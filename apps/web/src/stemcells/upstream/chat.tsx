@@ -1,6 +1,6 @@
 /**
- * The tabs' view of upstream's chats: how to open one, its title, whether it
- * still exists, and the view that renders it.
+ * The tabs' view of upstream's chats: how to open one, whether it still
+ * exists, and the view that renders it. Its title is in `thread.ts`.
  */
 import type { EnvironmentId } from "@t3tools/contracts";
 import { useRef } from "react";
@@ -18,11 +18,6 @@ import { isThreadRouteSnapshotAuthoritative } from "../../threadRoutes";
 import type { CellRef } from "../tabs/layout";
 import { ChatPanelHostContext } from "./chatPanel";
 import { routeTargetForCell, threadRefOf, type ThreadRouteTarget } from "./routes";
-
-/** The chat's title once it is a thread; null while it is an unsent draft. */
-export function useCellTitle(cell: CellRef | null): string | null {
-  return useQuietThreadShell(cell ? threadRefOf(cell) : null)?.title ?? null;
-}
 
 type CellLiveness = "alive" | "gone" | "unknown";
 

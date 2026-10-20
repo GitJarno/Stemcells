@@ -1,0 +1,40 @@
+/* The line over a Cell's composer: its own touches, scoped to it, so
+   loading this sheet never restyles upstream's banners. */
+
+/* The Cell stands on the line's top edge and wears a rim in the page's own
+   colour, two of its pixels wide round its sides and top, so it reads over
+   whatever scrolls under it; its feet stay bare on the edge. Each shadow
+   steps one pixel (--cell) and carries the ones before it. */
+[data-stemcells-composer-line] .composer-line-roof {
+  --rim: var(--background);
+  filter: drop-shadow(var(--cell) 0 0 var(--rim)) drop-shadow(calc(var(--cell) * -1) 0 0 var(--rim))
+    drop-shadow(var(--cell) 0 0 var(--rim)) drop-shadow(calc(var(--cell) * -1) 0 0 var(--rim))
+    drop-shadow(0 calc(var(--cell) * -1) 0 var(--rim))
+    drop-shadow(0 calc(var(--cell) * -1) 0 var(--rim));
+}
+
+/* The Cell's name as a token in the Cell tone (--sc-peer), in the shape
+   every token takes: its plate 1.95 capitals tall with 0.36 of them each
+   side, its corner 0.3 of its height. A token is a wash of its tone at half
+   the skin's tint strength (--token-share), its edge the same share of the
+   tint edge. The name keeps most of the tone and leans to the page's ink,
+   so it reads on a light page and a dark one. */
+[data-stemcells-composer-line] .composer-line-name {
+  --token-share: 50%;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: calc(1cap * 1.95);
+  padding-inline: calc(1cap * 0.36);
+  border: 0.5px solid
+    color-mix(in srgb, var(--sc-peer) calc(var(--sc-tint-edge) * var(--token-share)), transparent);
+  border-radius: calc(1cap * 1.95 * 0.3);
+  background: color-mix(
+    in srgb,
+    var(--sc-peer) calc(var(--sc-tint-fill) * var(--token-share)),
+    transparent
+  );
+  color: color-mix(in oklch, var(--sc-peer) 70%, var(--foreground));
+  font-weight: 500;
+  white-space: nowrap;
+}

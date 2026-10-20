@@ -1,6 +1,7 @@
 import { formatProviderSkillDisplayName } from "@t3tools/shared/inlineSkills";
 import { useComposerTypingGuard } from "./useComposerTypingGuard";
 import { useOwnsChatWindowInput } from "./chatWindowInput";
+import { CellComposerLine } from "../../stemcells/composer/CellComposerLine";
 import { insertAttachmentReferencesForDraft } from "./composerAttachmentReferences";
 import { DESKTOP_PASTE_AS_TEXT_EVENT } from "../../lib/desktopPasteAsText";
 import { runtimeModeConfig, runtimeModeOptions as runtimeModes } from "./runtimeModeConfig";
@@ -6493,6 +6494,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         : null}
       <ComposerBanner.Dock>
         <ComposerBanner.Column>
+          <CellComposerLine />
           <ComposerBannerStack
             key={activeThreadId}
             className="relative z-0"

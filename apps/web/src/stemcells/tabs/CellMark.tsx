@@ -23,14 +23,16 @@ const HEAD_ROOM = -wornPixels(
  * A chat's Cell, small: its look dealt by the chat's thread id (a draft
  * keeps it once sent), its face from the chat's status, the "?" over it
  * while it waits on you. It wears the ink of the text beside it, and its
- * box holds all of it, so centring the box centres the whole Cell.
+ * box holds all of it, so centring the box centres the whole Cell. Drawn
+ * `points` a sprite pixel; small beside a label unless told.
  */
-export function CellMark(props: { cell: CellRef | null }) {
+export function CellMark(props: { cell: CellRef | null; points?: number }) {
   const status = useCellStatus(props.cell);
+  const points = props.points ?? POINTS;
   return (
     <span
       className="flex shrink-0"
-      style={{ paddingTop: HEAD_ROOM * POINTS }}
+      style={{ paddingTop: HEAD_ROOM * points }}
       data-stemcells-cell-status={status ?? "idle"}
     >
       <CellFigure
@@ -38,7 +40,7 @@ export function CellMark(props: { cell: CellRef | null }) {
         mood={moodOfStatus(status)}
         activity={activityOfStatus(status)}
         hue="currentColor"
-        points={POINTS}
+        points={points}
       />
     </span>
   );

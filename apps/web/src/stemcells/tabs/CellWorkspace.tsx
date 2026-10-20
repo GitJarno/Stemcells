@@ -2,7 +2,8 @@ import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "rea
 
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import type { AskiChat } from "../upstream/aski";
-import { ChatPaneView, useCellPresence, useCellTitle, useOpenNewCell } from "../upstream/chat";
+import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
+import { useCellTitle } from "../upstream/thread";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
@@ -33,6 +34,7 @@ import {
   type Pane,
   type Workspace,
 } from "./layout";
+import { PaneCellContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { TabStrip } from "./TabStrip";
 import { useWorkspaceKeys } from "./useWorkspaceKeys";
@@ -347,11 +349,13 @@ function PaneSlot(props: {
           {/* Upstream's thread view sizes itself to the window; a pane sizes it to the pane. */}
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
             {target ? (
-              <ChatPaneView
-                target={target}
-                ownsWindowInput={props.focused}
-                panelHost={props.panelHost}
-              />
+              <PaneCellContext value={props.pane.cell}>
+                <ChatPaneView
+                  target={target}
+                  ownsWindowInput={props.focused}
+                  panelHost={props.panelHost}
+                />
+              </PaneCellContext>
             ) : props.pane.cell !== null && presence.liveness === "gone" ? (
               <Empty>
                 <EmptyHeader>

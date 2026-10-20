@@ -3,7 +3,7 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 
 import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
 import type { AskiChat } from "../upstream/aski";
-import { useCellTitle } from "../upstream/chat";
+import { useCellTitle } from "../upstream/thread";
 import {
   Button,
   cn,
