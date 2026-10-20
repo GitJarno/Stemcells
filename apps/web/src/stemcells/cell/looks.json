@@ -1,0 +1,1491 @@
+{
+  "about": "What a Cell wears over its character, as data every screen draws from. Each theme holds pieces; a piece fills one slot, `wrap` round the body, `face` over it (never inside the eyes' boxes of cell.json) or `head` on top, and slots draw back to front in `slots`' order. `at` is a piece's top-left pixel from the body's top-left; a piece may rise above the body or reach past its sides. `art` is one string per row of pixels from the top, one letter per pixel, `.` clear, each letter an ink in `inks`, the same in every skin. A theme with no `season` is an outfit: the one the person picks in Settings › General › Outfit theme is worn, the `house` theme when none is picked. A theme with a `season` is worn over it while Seasons is on, from its `from` to its `to` (month-day, both days in, a window may run over the new year), the narrowest when two hold the day. A Cell wears one piece of each theme worn, dealt by its codename over the roster: each piece scores the words `codename|theme|piece`, ties to the first by name, and the Cells, first-born first, each take their highest-scoring piece among those held least, and keep it while they stay awake; a season's piece wins a slot both fill. Pieces hold still.",
+  "slots": ["wrap", "face", "head"],
+  "inks": {
+    "!": "#FFC66D",
+    "*": "#FFDE94",
+    "1": "#7E9CC6",
+    "2": "#56759F",
+    "3": "#FF9A3D",
+    "4": "#4A5366",
+    "A": "#C2E55E",
+    "C": "#E2D6B9",
+    "D": "#7C8C9F",
+    "F": "#7DB76B",
+    "G": "#F2BF65",
+    "I": "#FFC1DA",
+    "J": "#F3B94C",
+    "K": "#0C1728",
+    "M": "#9D516C",
+    "N": "#B52332",
+    "P": "#F09DA9",
+    "Q": "#4CE4E4",
+    "R": "#C94F50",
+    "S": "#9DE2FF",
+    "U": "#244C80",
+    "W": "#FFF6E5",
+    "Y": "#FED756",
+    "Z": "#5E3C24",
+    "a": "#92D058",
+    "d": "#82C5FD",
+    "f": "#386844",
+    "g": "#BEC6CD",
+    "h": "#3065A0",
+    "i": "#EAA3DA",
+    "j": "#472B1B",
+    "k": "#654632",
+    "l": "#E0C8FF",
+    "m": "#901C2B",
+    "n": "#A36C46",
+    "o": "#BE8647",
+    "p": "#DBE2E9",
+    "q": "#BFC8D4",
+    "r": "#8D333D",
+    "s": "#F4C775",
+    "t": "#C1A783",
+    "u": "#ADB9C8",
+    "v": "#C5AAF7",
+    "x": "#21C7D7",
+    "y": "#FFDF95"
+  },
+  "themes": {
+    "house": {
+      "pieces": {
+        "bee": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["..WW.WW..", "...WWWW..", ".YYY4Y4..", "YKYY4Y4J4", ".YYJ4J4J."]
+        },
+        "blush": {
+          "slot": "face",
+          "at": [1, 6],
+          "art": ["II.......II"]
+        },
+        "bunny": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [".W...W.", "WPq.WPq", "WPq.WPq", "WPq.WPq", "WWq.WWq", ".Wq.Wq."]
+        },
+        "cat": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            ".G...G......",
+            ".GG.GG.GGG..",
+            ".GGGGGGoGoGo",
+            ".GnGnGGoGoGo",
+            ".GGIGGGGGGGo",
+            "WoGoGoGoGoGo",
+            ".oooooooooo."
+          ]
+        },
+        "crown": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": ["W...W...W", "G..GGG..G", "GG.GGG.Go", "GGGGNGGGo", "ooooooooo"]
+        },
+        "duck": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": ["....YYY.", "....YKY3", "Y..YYYY.", "YYYYYYYJ", ".JJJJJJ."]
+        },
+        "frog": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": [".AA...AA.", "AKAA.AKAa", "AAAAAAAAa", "AIaaaaaIa", ".AAa.AAa."]
+        },
+        "kitsune": {
+          "slot": "face",
+          "at": [1, 0],
+          "art": [
+            "W.........W",
+            "WR.......RW",
+            "WWWWWRWWWWq",
+            "WW...W...Wq",
+            "WW...W...Wq",
+            "WW...W...Wq",
+            "RW...W...Rq",
+            ".WWWWKWWWq.",
+            "...WWWWq..."
+          ]
+        },
+        "mushroom": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "..NNNNN...",
+            ".NWNNNWNm.",
+            "NNNNWNNNNm",
+            "mmmmmmmmmm",
+            "....WWp...",
+            "....WWp..."
+          ]
+        },
+        "overalls": {
+          "slot": "wrap",
+          "at": [0, 5],
+          "art": [
+            ".1.........2.",
+            ".1.........2.",
+            "1G111111111o2",
+            "1111111111122",
+            ".22222222222."
+          ]
+        },
+        "paperboat": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "......W......",
+            ".....WWp.....",
+            "W...WWWpp...p",
+            "WW.WWWWppp.pp",
+            ".WWWWWWWWWWp.",
+            "..ppppppppq.."
+          ]
+        },
+        "propeller": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": ["IIIIYiiii", "....o....", "...RYS...", "..RRYSS..", ".RRRYSSd.", "rrrrJdddd"]
+        },
+        "raincloud": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "....WW.WWW...",
+            "..WWWWWWWWW..",
+            ".WWWWWWWWWWWp",
+            "WWWWWWWWWWWWp",
+            ".ppppppppppq.",
+            ".S.S.S.......",
+            ".........S.S.",
+            "............."
+          ]
+        },
+        "snail": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "D..D.......",
+            ".pp..GGGG..",
+            "ppp.GnnnnGo",
+            "pKp.GnGGnGo",
+            "ppp.GnGnnGo",
+            "ppppGGGGooq",
+            ".qpppppppq."
+          ]
+        },
+        "specs": {
+          "slot": "face",
+          "at": [2, 2],
+          "art": [".GGG.GGG.", "G...G...G", "G...G...G", "G...G...G", "G...G...G", ".ooo.ooo."]
+        },
+        "sprout": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": [".AA...AA.", "AAAa.AAAa", ".aaaFaaa.", "....F....", "....F...."]
+        }
+      }
+    },
+    "animals": {
+      "pieces": {
+        "axolotl": {
+          "slot": "head",
+          "at": [0, -3],
+          "art": [
+            "I...........I",
+            ".P..IIIIi..P.",
+            "IPPIIIIIIiPPI",
+            ".P.........P.",
+            "I...........I"
+          ]
+        },
+        "bearhood": {
+          "slot": "head",
+          "at": [0, -4],
+          "art": [
+            "..nn.....nn..",
+            ".ntnn...nntk.",
+            ".nnnnnnnnnnk.",
+            "...nnnnnnk...",
+            "..nnnnnnnnk..",
+            ".ntttttttttk.",
+            "nt.........tk",
+            "nt.........tk",
+            "nt.........tk"
+          ]
+        },
+        "catears": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            ".l.......l.",
+            ".lI.....Iv.",
+            ".lIl...lIv.",
+            "..llllllv..",
+            ".llllllllv.",
+            "vlvlvlvlvlv",
+            "vlvlvlvlvlv"
+          ]
+        },
+        "foxhood": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "..3.......3..",
+            "..3W3...3Wn..",
+            "..3W33333Wn..",
+            "....3333n....",
+            "...333333n...",
+            "..33333333n..",
+            ".3WWWWWWWWWn.",
+            "3W.........Wn",
+            "WW.........Wq",
+            "WW.........Wq"
+          ]
+        },
+        "lamb": {
+          "slot": "head",
+          "at": [0, -4],
+          "art": [
+            ".....Wpq.....",
+            "..WpqpppWpq..",
+            ".Wppppppppqq.",
+            "Wpppppppppppq",
+            "ppppppppppppq",
+            "pp.........pq",
+            "tt.........tt",
+            "tn.........nt",
+            ".t.........t."
+          ]
+        },
+        "panda": {
+          "slot": "head",
+          "at": [0, -4],
+          "art": [
+            "..44.....44..",
+            ".4444...4444.",
+            ".4444WWW4444.",
+            "...W4WWW4q...",
+            "..WWWWWWWWq..",
+            ".WWWWWWWWWWq.",
+            "WW.........Wq",
+            "WW.........Wq",
+            "WW.........Wq"
+          ]
+        },
+        "shark": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "........u....",
+            ".......uD....",
+            "......uuD....",
+            "....uuuuD....",
+            "...uuuuuuD...",
+            "..uIIIIIIID..",
+            ".uW.W.W.W.WD.",
+            "uu.........uD",
+            "uu.........uD",
+            "uu.........uD"
+          ]
+        },
+        "tail": {
+          "slot": "wrap",
+          "at": [7, -4],
+          "art": [
+            ".WW...",
+            "WWWW..",
+            ".WWq3.",
+            "..3333",
+            "..y33n",
+            "..333n",
+            "...33n",
+            "....3n",
+            "....3n",
+            "....3n",
+            "....3n",
+            "....3n",
+            "..33n."
+          ]
+        }
+      }
+    },
+    "dinosaurs": {
+      "pieces": {
+        "baby": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["....FFF.", "....FWKF", "....FFFf", "..AFFf..", "AFFFCFf.", "..Ff.Ff."]
+        },
+        "goggles": {
+          "slot": "face",
+          "at": [1, 2],
+          "art": [
+            "..GGG.GGG..",
+            "nG...G...Gn",
+            ".G...G...o.",
+            ".G...G...o.",
+            ".G...G...o.",
+            "..ooo.ooo.."
+          ]
+        },
+        "hatching": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["...II..", "..IKIi.", ".W.Ii.W", ".WWWWWq", "WWFWWWq", ".WWWAWq", "..pppq."]
+        },
+        "horns": {
+          "slot": "face",
+          "at": [3, 1],
+          "art": ["W.....W", "WC...WC", ".......", ".......", ".......", "...W...", "..WC..."]
+        },
+        "longneck": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [
+            "......SS",
+            "......Sd",
+            ".....Sd.",
+            ".SSSSSd.",
+            "SSWSSSd.",
+            ".ddddd..",
+            ".Sd.Sd.."
+          ]
+        },
+        "ptero": {
+          "slot": "head",
+          "at": [1, -4],
+          "art": ["l....v....l", "ll..lll3.ll", ".lllllllll.", "...vlllv...", "....3.3...."]
+        },
+        "stego": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "...3..3...",
+            "..333333..",
+            "W.AAAAAAAA",
+            ".AAAAAAAKA",
+            "..aaaaaaAa",
+            "..Aa.Aa.Aa"
+          ]
+        },
+        "trike": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            ".WW....W.",
+            "W33W..WC.",
+            "W3G3WYC..",
+            ".W3YYKYYW",
+            ".YYYYYYYJ",
+            "YYYYYYYJ.",
+            ".YJ.YJ..."
+          ]
+        }
+      }
+    },
+    "fable": {
+      "pieces": {
+        "beanstalk": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "....FFF...",
+            "...F.f.f..",
+            ".WWWWWWWWp",
+            "..pppFfpp.",
+            "AAa.Ff....",
+            "...FfAAa..",
+            "....Ff...."
+          ]
+        },
+        "dragon": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "R...........R",
+            "YR..C...C..RJ",
+            "YYR.RRRRr.RJJ",
+            ".YYRRKRKrRJJ.",
+            "...RRyyyRr...",
+            "....RyysR...."
+          ]
+        },
+        "ermine": {
+          "slot": "wrap",
+          "at": [0, 4],
+          "art": [
+            "W...........q",
+            "W...........q",
+            "WN.........Nq",
+            "WNN.......NNq",
+            "WNN.......NNq",
+            "WWWGGGGGGoWWq"
+          ]
+        },
+        "hennin": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [
+            "...IWW....",
+            "...IiWWp..",
+            "..WIi.WWp.",
+            "..IIi..WWp",
+            "..IIIi.WpW",
+            ".IIIIi.W.W",
+            "GGGGGGo..."
+          ]
+        },
+        "jester": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "......G......",
+            "......Q......",
+            ".RRr..Qx.RRr.",
+            "R.RRRQQxRRr.r",
+            "G..RRQQxRr..G",
+            "...YYYYYYJ..."
+          ]
+        },
+        "knight": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            ".....RRr.....",
+            "....RIRRRr...",
+            "....Go..RRr..",
+            "...gWuuuuRRr.",
+            ".gpKKKKKKKqRr",
+            "..guuuuuuuDRr",
+            ".guuuuuuuuuDr",
+            "gu.........DD",
+            "g...........D",
+            "g...........D"
+          ]
+        },
+        "unicorn": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["....W.", "....Wv", "....lq", "...Wpv", "...llq", ".lIWpq", "lIl...", "vl...."]
+        },
+        "viking": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "W...........W",
+            "Ct.........Ct",
+            "Ct.........Ct",
+            "CCt.guGuD.CCt",
+            ".CCguuGuuDCt.",
+            "..guuuGuuuD..",
+            ".GGGGGGGGGGo."
+          ]
+        }
+      }
+    },
+    "food": {
+      "pieces": {
+        "burger": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["..GGWGG..", ".GWGGGGo.", "GGGGGWGGo", "AaAaAaAaA", ".YYYYYYJ.", ".ZZZZZZj."]
+        },
+        "cucumber": {
+          "slot": "face",
+          "at": [2, 7],
+          "art": [".F.....F.", "FAF...FAF", ".f.....f."]
+        },
+        "cupcake": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["...F...", "..RWr..", ".IIIIi.", "IISIAIi", "iiiiiii", ".GoGoG.", ".oGoGo."]
+        },
+        "dango": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": ["..Cn.", "IWIIi", ".iii.", "WWWWp", ".ppq.", "AWAAa", ".aaa."]
+        },
+        "donuts": {
+          "slot": "face",
+          "at": [2, 2],
+          "art": [".III.III.", "I...I...i", "I...G...i", "G...o...o", "I...I...i", ".ooo.ooo."]
+        },
+        "icecream": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["...R...", ".IIIIi.", ".IWIIi.", ".QQQQx.", "QWQQQQx", ".GoGoG.", "..oGo.."]
+        },
+        "pancakes": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "...WY....",
+            "..nnnnn..",
+            ".GGnGGnG.",
+            ".ooooooo.",
+            ".GGGGGGG.",
+            ".ooooooo.",
+            "WWWWWWWWq"
+          ]
+        },
+        "sushi": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": ["..3W333..", ".33W3W33.", "3W333W333", ".WWWffWq.", "..qqffq.."]
+        }
+      }
+    },
+    "matsuri": {
+      "pieces": {
+        "chochin": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": [".....k..", ".....Go.", "...nRRRr", "..n.WWWp", ".n..RRRr", "n....Go."]
+        },
+        "daruma": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "..RRRr..",
+            ".RRRRRr.",
+            "RRWWWWRr",
+            "RWpWWKWr",
+            "RRWWWWRr",
+            "RRRRRRrr",
+            ".rrrrrr."
+          ]
+        },
+        "kasa": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": ["....W..W...", "....AAAa...", "...yyyyss..", ".yyoyyyoss.", "tttttttttto"]
+        },
+        "kingyo": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["..W.W..", "...R...", ".WpppW.", "WQ33Q3x", "Q3K333x", "QQ33Q3x", ".xxxxx."]
+        },
+        "kitsune": {
+          "slot": "face",
+          "at": [1, 0],
+          "art": [
+            "W.........W",
+            "W.........W",
+            "WR.......RW",
+            "WW...R...WW",
+            "R....W....R",
+            "W....W....q",
+            "W....W....q",
+            "..WWWKWWq..",
+            "....WWq...."
+          ]
+        },
+        "koinobori": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["W........", "u.hhh...h", "uGWKhhhhh", "uGhhhhSh.", "uGSSSShhh", "u.UUU...U"]
+        },
+        "obi": {
+          "slot": "wrap",
+          "at": [0, 7],
+          "art": ["IIIIIIIIYYIYY", "iiiiiiiiYYWYJ", "........JJ.JJ"]
+        },
+        "tengu": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "....RRRRr.",
+            "...RWRRWRr",
+            "...RRKRKRr",
+            "RRRRRRRRRr",
+            ".rrrrWWWr.",
+            ".....WWp.."
+          ]
+        }
+      }
+    },
+    "ocean": {
+      "pieces": {
+        "crab": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "R.R.....R.R",
+            "RR.W...W.RR",
+            ".R.R...R.R.",
+            "..RRRRRRR..",
+            ".RRRRRRRRr.",
+            "R.rrrrrrr.R"
+          ]
+        },
+        "jellyfish": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "..IIIII..",
+            ".IWIIIIi.",
+            "IIKIIKIii",
+            "iIiIiIiIi",
+            ".l.I.l.I.",
+            "l.I.l.I..",
+            ".l.I.l.I."
+          ]
+        },
+        "octopus": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "...lllll...",
+            "..lWllllv..",
+            "..lKllKlv..",
+            "..llllllv..",
+            ".l.l.l.v.v.",
+            "l..l.l.v..v"
+          ]
+        },
+        "seagull": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "..WW....",
+            ".WKWq...",
+            "YYWWq...",
+            "..WWWgg.",
+            "..WWggDD",
+            "...qqq..",
+            "...3.3.."
+          ]
+        },
+        "seahorse": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": ["..GG.", "GGGKo", "..GGQ", ".WGGQ", ".WGo.", "o.Go.", ".GG.."]
+        },
+        "snorkel": {
+          "slot": "face",
+          "at": [1, 1],
+          "art": [
+            "...........3",
+            "...........Y",
+            "QQ...Q...Q.Y",
+            "W.........QY",
+            "Q.........Q.",
+            "Q.........Q.",
+            ".xxxxxxxxx.."
+          ]
+        },
+        "starfish": {
+          "slot": "face",
+          "at": [10, 4],
+          "art": ["Go", "o.", "Go"]
+        },
+        "whale": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "..Q.Q......",
+            "...Q.......",
+            "...Q.......",
+            ".SSSSS...Sd",
+            "SKSSSSS.Sd.",
+            "SppSSSSSd..",
+            ".ppppddd..."
+          ]
+        }
+      }
+    },
+    "space": {
+      "pieces": {
+        "alien": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["I.....I", ".A.A.A.", ".AAAAa.", "AKAAKAa", ".AAAAa.", "A.aaa.A", ".Aa.Aa."]
+        },
+        "astronaut": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["..WWW..", ".WSSdq.", "W.WWq.W", ".WWWWq.", ".Wq.Wq.", "...g...", "..g...."]
+        },
+        "moon": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": ["..YY.W", ".YYJ..", "YYJ...", "YYJ..Y", "YYYJYJ", ".YYYJ.", "..JJJ."]
+        },
+        "rocket": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": [".RR..", ".RRr.", "WSdq.", "WWWq.", "RRRrr", "R3Y3r", ".33.."]
+        },
+        "saturn": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["...GGo...", "..GWGGo..", "l.G333o.v", ".llllllv.", "..Goooo..", "...ooo..."]
+        },
+        "sparkle": {
+          "slot": "face",
+          "at": [0, 3],
+          "art": [".Y.........Y.", "YWY.......YWY", ".Y.........Y."]
+        },
+        "starglasses": {
+          "slot": "face",
+          "at": [0, 1],
+          "art": [
+            ".Y.........Y.",
+            "YWY.......YWY",
+            ".YG.......GY.",
+            ".G....G....G.",
+            ".G.........G.",
+            ".G.........o.",
+            "..ooo...ooo.."
+          ]
+        },
+        "ufo": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["...SSd...", "..SWSdd..", ".ppppppq.", "pYpYpYpYq", ".qqqqqqq.", "..y...y.."]
+        }
+      }
+    },
+    "spring": {
+      "season": {
+        "from": "03-20",
+        "to": "04-19"
+      },
+      "pieces": {
+        "butterfly": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "...n...n...",
+            ".ll.n.n.lv.",
+            "lIlllnlllIv",
+            "vvlllnlllvv",
+            "..iIInIIi..",
+            "...iinii..."
+          ]
+        },
+        "catkins": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["...qq..", "...pu..", "qq.qu..", "pu.n.qq", "qu.n.pu", ".nnn...", "..n...."]
+        },
+        "chick": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "..WWWq..",
+            ".YWYWYJ.",
+            ".YKYYKJ.",
+            "WYY3YYJq",
+            "WWYWWYWq",
+            "WWWWWWCq",
+            ".CWWWCq.",
+            "..CCqq.."
+          ]
+        },
+        "egg": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [
+            "..IIi..",
+            ".IWIIi.",
+            ".WWWWq.",
+            "YYYSYYJ",
+            "SYSSSYd",
+            "llllllv",
+            ".lWllv.",
+            "..vvv.."
+          ]
+        },
+        "eggshell": {
+          "slot": "wrap",
+          "at": [0, 6],
+          "art": ["W.....W.....q", "WW...WWW...Wq", "WWWWWWWWWWWCq", ".CCCCCCCCCCq."]
+        },
+        "kerchief": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "...........SS",
+            "..........SSd",
+            ".........SS..",
+            "....SSSSdSSSS",
+            "..SSWSSWSS.Sd",
+            ".SSWYWSSSS..d",
+            "SWSSWSSSWSS..",
+            "Sd..........."
+          ]
+        },
+        "rairuoho": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "..A.A.A..",
+            "F.A.A.A.a",
+            ".FAFAFAa.",
+            ".F.FAF.a.",
+            "..AAAAA..",
+            ".llllllv.",
+            "..llllv..",
+            "...vvv..."
+          ]
+        },
+        "tulip": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [
+            ".R.R.r.",
+            ".RRRRr.",
+            ".RRRrr.",
+            "F.rrr.F",
+            "FF.F.FF",
+            ".fFFFf.",
+            "...F...",
+            "...F..."
+          ]
+        }
+      }
+    },
+    "vappu": {
+      "season": {
+        "from": "04-20",
+        "to": "05-02"
+      },
+      "pieces": {
+        "balloons": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["RR..SS", "RWYYSd", "rYWYJd", ".WJJdW", "..WWW.", "...W..", "..NmN."]
+        },
+        "hearts": {
+          "slot": "face",
+          "at": [1, 3],
+          "art": ["II.......II", "I....I....I", "I.........I", "I.........i", ".iii...iii."]
+        },
+        "lakki": {
+          "slot": "head",
+          "at": [3, -4],
+          "art": [".WWWWW.", "WWWWWWq", "ppppppq", "444G444", ".44444.", "..D444."]
+        },
+        "mask": {
+          "slot": "face",
+          "at": [0, 1],
+          "art": [
+            "............I",
+            "l..........Il",
+            "lll...l...lll",
+            ".lG...l...Gl.",
+            ".l....l....l.",
+            ".l....v....v.",
+            "..vvv...vvv.."
+          ]
+        },
+        "munkki": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [".GWGo..", "GWo.oGo", "GG...Go", "GWo.oWo", ".GGGGo.", "..ooo.."]
+        },
+        "serpentine": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "....Y.I....",
+            "..S.YI.S...",
+            ".I.YAIY.A..",
+            "S.AISYAS.Y.",
+            ".SY.IA.YI..",
+            "S..AYSI...Y",
+            ".S.......Y."
+          ]
+        },
+        "sima": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": ["..W..", ".gWg.", ".poq.", "pYooq", "pYWkq", "pokoq", ".qqq."]
+        },
+        "tippaleipa": {
+          "slot": "head",
+          "at": [2, -4],
+          "art": ["..WGWW...", ".GoWGoWo.", "GoG.GoGoG", "oGoGoGoGo", ".ooooooo."]
+        }
+      }
+    },
+    "midsummer": {
+      "season": {
+        "from": "06-15",
+        "to": "06-30"
+      },
+      "pieces": {
+        "berries": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "t.........t",
+            ".a.......a.",
+            ".RR.....RR.",
+            ".RN.....RN.",
+            "..a.....a..",
+            "..RR...RR..",
+            "...a...a..."
+          ]
+        },
+        "daisies": {
+          "slot": "face",
+          "at": [0, 2],
+          "art": [
+            "...W.....W...",
+            "..Y.......Y..",
+            ".Y....W....Y.",
+            "WY.........YW",
+            ".Y.........Y.",
+            "..YYY...YYY.."
+          ]
+        },
+        "itikka": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["....S.S.", "g..SpSpS", ".ggKgRRN", ".g.g.g.g", "g..g..g.", "g..g...g"]
+        },
+        "koivu": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["..AA...", ".AAaAA.", "AaAWAaA", ".a.Wa..", "...4...", "...W...", "..WWq.."]
+        },
+        "kokko": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["...Y...", "...R...", "..R3R..", ".R3Y3R.", ".R3W3R.", "nkn.nkn", "knnnnnk"]
+        },
+        "leaf": {
+          "slot": "face",
+          "at": [6, 0],
+          "art": ["..A", "AAa", "AFa"]
+        },
+        "salko": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "....WSS...",
+            "....FS....",
+            ".AFAFAFA..",
+            "AF..F..FA.",
+            "I.A.Fa.W.A",
+            ".FY.F..FI.",
+            "....FF...."
+          ]
+        },
+        "seppele": {
+          "slot": "head",
+          "at": [0, -3],
+          "art": [
+            "....I.Y.W....",
+            "..S.fffff.l..",
+            ".SWS.....lYl.",
+            ".YS.WIYIW.lI.",
+            "Y3YFFFIFFFIWI"
+          ]
+        }
+      }
+    },
+    "summer": {
+      "season": {
+        "from": "07-01",
+        "to": "07-31"
+      },
+      "pieces": {
+        "beachball": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["..SSW..", ".WSWWW.", "RRWYYYJ", "RRWYYJJ", ".RWWJJ.", "..WCC.."]
+        },
+        "flamingo": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["....IPW", "....P.4", "...P...", "PIIIP..", ".MPMM..", "..M.P..", "....P.."]
+        },
+        "parasol": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "...RWRWR...",
+            ".RRWWRWWrr.",
+            "RRWWRRRpprr",
+            "R..W.W.p..r",
+            ".....W.....",
+            ".....W....."
+          ]
+        },
+        "popsicle": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": ["PPI..", "WPPI.", "WPPPI", "PPPPM", "PPPMM", "..C..", "..C.."]
+        },
+        "sandcastle": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["....WRr..", "..C.W.o..", "..Cttto..", "C.Ctkto.o", "Cttttttto", "Cttkkktto"]
+        },
+        "sunhat": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            ".....yyy.....",
+            "....yyyys....",
+            "....RRRRRrR..",
+            ".yyyyyyyyRys.",
+            "yyyyyyyyyRyrs",
+            "s.........R.s"
+          ]
+        },
+        "swimring": {
+          "slot": "wrap",
+          "at": [0, 2],
+          "art": [
+            "..........YY.",
+            "..........YK3",
+            "...........YJ",
+            "...........YJ",
+            "...........YJ",
+            "PPWWPPPPPWWPP",
+            "RRWWRRRRRWWrr",
+            ".rpprrrrrppr."
+          ]
+        },
+        "watermelon": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "....R....",
+            "...RRr...",
+            "..RKRRr..",
+            ".RRRRKRr.",
+            "RRKRRRRRr",
+            "WWWWWWWWW",
+            ".FFFFFFf."
+          ]
+        }
+      }
+    },
+    "autumn": {
+      "season": {
+        "from": "09-15",
+        "to": "10-14"
+      },
+      "pieces": {
+        "acorn": {
+          "slot": "head",
+          "at": [0, -4],
+          "art": [
+            "......nk....",
+            ".....nk.....",
+            "...tnknknk..",
+            ".tnknknknkk.",
+            "tnknknknknkk",
+            ".kkkkkkkkkk."
+          ]
+        },
+        "apple": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            ".......II",
+            "...k.F.Ik",
+            ".RRkRR.I.",
+            "RWRRRrI..",
+            "RWRRRrr..",
+            "RRRRRrr..",
+            ".RRrrr..."
+          ]
+        },
+        "chanterelle": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            ".y.yy.....",
+            "yYYYYJ....",
+            "YYYYYJ....",
+            ".GoGJ.y.yy",
+            "..YJ.yYYYJ",
+            "..YJ..GoJ.",
+            "..YJ.YJ..."
+          ]
+        },
+        "hedgehog": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            ".....k.....",
+            "....RRr....",
+            "..t.RRrt...",
+            ".tnkrrknt..",
+            "tnknknkCCC.",
+            "nknknkCKCCk",
+            ".kk.kkCCC.."
+          ]
+        },
+        "leafpile": {
+          "slot": "wrap",
+          "at": [0, 5],
+          "art": [
+            "R.R.......Y.Y",
+            "RRR.......YYJ",
+            "3RR3Y...G3YJ3",
+            "R3YRrRYJR3YRR",
+            ".rRYr3rYRrr3."
+          ]
+        },
+        "maple": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "....3R3.....",
+            "3...RRr...3.",
+            "33.RRRRr.33.",
+            "..3RRRRRRRr.",
+            ".33RRRRRRRr3",
+            "...3rRRRrr.."
+          ]
+        },
+        "souwester": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "....yYYYJ....",
+            "...yYYYYJJ...",
+            "...YYYYYJJ...",
+            ".yyyyyyyyyJs.",
+            "yYYJJJJJJYYJJ",
+            "YJ.........JJ",
+            "J...........J",
+            "............S"
+          ]
+        },
+        "squirrel": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            ".333.......",
+            "3nnnn......",
+            "3nkkn..k.k.",
+            "3nk.k..nnn.",
+            "3nk...nnnKC",
+            ".3nk..3nWok",
+            "..3nnnnWWoo",
+            "....nnn.kk."
+          ]
+        }
+      }
+    },
+    "halloween": {
+      "season": {
+        "from": "10-15",
+        "to": "11-01"
+      },
+      "pieces": {
+        "bat": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "u...........u",
+            "uu...u.u...uu",
+            "uDu.uDDDu.uDu",
+            "uDDuD3D3DuDDu",
+            ".uDDDDDDDDDu.",
+            "..uu.uDu.uu.."
+          ]
+        },
+        "batmask": {
+          "slot": "face",
+          "at": [0, 2],
+          "art": [
+            "vv.........vv",
+            ".vv...v...vv.",
+            ".vv...v...vv.",
+            ".vv...v...vv.",
+            ".vv...v...vv.",
+            "..vvvv.vvvv.."
+          ]
+        },
+        "cat": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["4...4..", "4I44I..", "4Y44Y.4", "44II4.4", "4444444", ".4D.4D."]
+        },
+        "ghost": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": ["...WWWWp...", "W.WWKWKWp.p", ".WWWWKWWpp.", "..WWWWWWp..", "..WqWWqWq.."]
+        },
+        "mummy": {
+          "slot": "face",
+          "at": [0, 1],
+          "art": [
+            "..CCCCCCCCq..",
+            "..........qCC",
+            ".............",
+            ".............",
+            ".............",
+            "C............",
+            ".CC..........",
+            "...CCC.......",
+            "......CCCq..."
+          ]
+        },
+        "pumpkin": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["....Fa..", ".G3333o.", "G3Y33Y3o", "G33J333o", "G3YYYY3o", ".ooooo.."]
+        },
+        "spider": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "......p.....",
+            "......p.....",
+            "..v.lllv.v..",
+            ".v.lWlWvv.v.",
+            "v.vlllvvv..v",
+            ".v.v...v..v.",
+            "...v...v...."
+          ]
+        },
+        "witch": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [".....vl.", "....vv..", "...lvv..", "...lvvv.", "..44G44.", "lvvvvvvv"]
+        }
+      }
+    },
+    "christmas": {
+      "season": {
+        "from": "12-01",
+        "to": "12-26"
+      },
+      "pieces": {
+        "antlers": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "C.C.....C.C",
+            "n.n.....n.n",
+            "nnn.....nnn",
+            ".n.n...n.n.",
+            "..n.n.NnN..",
+            "...RFFFRr..",
+            "...rRRRRr.."
+          ]
+        },
+        "gingerbread": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["..nnn..", "..nnnk.", "..WWWk.", "WnnnnnW", "..nRnk.", ".nnknnk", ".Wk..kW"]
+        },
+        "nose": {
+          "slot": "face",
+          "at": [6, 6],
+          "art": ["W", "m"]
+        },
+        "olkipukki": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "......GG.",
+            ".....G.G.",
+            ".....GGGG",
+            ".GGGGRGo.",
+            "GoRGoGRo.",
+            ".ooooooo.",
+            ".Go.Go.G."
+          ]
+        },
+        "present": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [".GG.GG.", "G.GoG.G", ".RRGGRr", ".rrooor", ".RRGGRr", ".rrooor"]
+        },
+        "santa": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": ["...RRr...", "..RRRRrWW", "..RRRRRWq", ".RRRRRRr.", "WWWWWWWWq", "pWWpWWpWq"]
+        },
+        "sweater": {
+          "slot": "wrap",
+          "at": [0, 7],
+          "art": ["RWRRWRRWRRWRr", "WRWWRWWRWWRWr", ".rrrrrrrrrrr."]
+        },
+        "tree": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": ["...Y...", "..YWY..", "..FRf..", ".FFFFf.", ".FSFRf.", "FFFFFFf", "..nnk.."]
+        }
+      }
+    },
+    "newyear": {
+      "season": {
+        "from": "12-27",
+        "to": "01-01"
+      },
+      "pieces": {
+        "clock": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "yG.RRR.Gy",
+            "GoRWKWrGo",
+            ".RWWKWWr.",
+            ".RWWRWWr.",
+            ".RWWWWWr.",
+            "..rWWWr..",
+            "...rrr..."
+          ]
+        },
+        "confetti": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            ".I..S...A.",
+            "S..A..I..l",
+            "..yy......",
+            "..RRGo....",
+            "...GGRr...",
+            "....RRGo..",
+            "......Go.."
+          ]
+        },
+        "firework": {
+          "slot": "head",
+          "at": [0, -5],
+          "art": [
+            "...W..I..W...",
+            ".S..S...S..S.",
+            "I...........I",
+            ".S..S...S..S.",
+            "...W.....W...",
+            "......R......"
+          ]
+        },
+        "luckypig": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "........AF",
+            "......I.FF",
+            "..IIIIIIf.",
+            "P.IIIIIKIP",
+            ".IIIIIIIIM",
+            "..ii...ii."
+          ]
+        },
+        "partyhat": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [".....WW", "....IWq", "...QIi.", "..IQQx.", ".QIIQi.", "GGGGGGo"]
+        },
+        "sparkler": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": ["*...*", ".!.!.", "..W..", ".!D!.", "..D..", "..g.."]
+        },
+        "streamers": {
+          "slot": "wrap",
+          "at": [0, 2],
+          "art": [
+            ".A.........l.",
+            "A.A.......l.l",
+            "A...........l",
+            ".A.........l.",
+            ".A.........l.",
+            "I...IIIII...I",
+            ".III.....III.",
+            "S.SSS...SSS.S"
+          ]
+        },
+        "tophat": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [".......I.", "..4D444..", "..4D444..", "..4D444..", "..GGGGo..", "444444444"]
+        }
+      }
+    },
+    "winter": {
+      "season": {
+        "from": "12-01",
+        "to": "02-28"
+      },
+      "pieces": {
+        "bobble": {
+          "slot": "head",
+          "at": [2, -5],
+          "art": [
+            "...WW...",
+            "...Wq...",
+            "..SSSd..",
+            ".SSWSSd.",
+            "SWSWSWSd",
+            "WWWWWWWq",
+            "WpWpWpWq"
+          ]
+        },
+        "earmuffs": {
+          "slot": "head",
+          "at": [0, -3],
+          "art": [
+            "....DDDDD....",
+            "...DggggggD..",
+            "IIID.....DIII",
+            "IWIi.....IIIi",
+            ".ii.......ii."
+          ]
+        },
+        "goggles": {
+          "slot": "face",
+          "at": [0, 2],
+          "art": [
+            "..qqqqqqqqq..",
+            ".QY...Y...YQ.",
+            ".Q.........Q.",
+            "RQ.........QR",
+            ".Q....Q....Q.",
+            "..QQQQ.QQQQ.."
+          ]
+        },
+        "karvalakki": {
+          "slot": "head",
+          "at": [1, -5],
+          "art": [
+            "....C.C....",
+            "...CnnnC...",
+            "..CnnknnC..",
+            ".CCCCCCCCC.",
+            ".CnCnCnCnk.",
+            "Cnk.....Cnk",
+            "CCk.....CCk"
+          ]
+        },
+        "owl": {
+          "slot": "head",
+          "at": [3, -5],
+          "art": [".WWWWW.", "WYKWKYq", "WWWDWWq", "WgWWWgq", ".WWWWq.", ".3.3.3."]
+        },
+        "penguin": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": [".444.", "4WKW4", "4W3W4", "RRRRr", "4WWW4", ".3.3."]
+        },
+        "scarf": {
+          "slot": "wrap",
+          "at": [0, 7],
+          "art": ["RRWWRRWWRRWWr", "........RWr..", "........RWr.."]
+        },
+        "snowman": {
+          "slot": "head",
+          "at": [4, -5],
+          "art": [".444.", "44444", ".WWq.", "WK33.", "RRRRr", "WWKWq", ".pqq."]
+        }
+      }
+    }
+  }
+}
