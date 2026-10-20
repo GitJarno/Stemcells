@@ -68,7 +68,8 @@ export function seasonOn(day: string): string | undefined {
   for (const { theme, season } of [...THEMES.values()].sort((a, b) =>
     a.theme < b.theme ? -1 : 1,
   )) {
-    if (season === null) continue;
+    // A season dated year by year needs the year, which `day` doesn't carry yet.
+    if (season === null || !("from" in season)) continue;
     const holds =
       season.from <= season.to
         ? day >= season.from && day <= season.to

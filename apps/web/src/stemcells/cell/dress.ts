@@ -1,13 +1,14 @@
-// What a Cell wears, as layers for the compositor: an outfit's trim, a
-// wrap, a face piece, headwear and the tool in its hands, each from the
-// wardrobe library or a pack (`theme/piece`). Clothing is fabric too: a
-// band recolours the body's own cells before anything is stamped, so it
-// reaches the silhouette and follows every pose.
+// What a Cell wears, as layers for the compositor: a back piece, an
+// outfit's trim, a wrap, a face piece, headwear and the tool in its hands,
+// each from the wardrobe library or a pack (`theme/piece`). Clothing is
+// fabric too: a band recolours the body's own cells before anything is
+// stamped, so it reaches the silhouette and follows every pose.
 
 import {
   ACCESSORIES,
   animates,
   type Band,
+  FABRICS,
   HEADWEAR,
   HERO,
   MINI,
@@ -61,6 +62,7 @@ export function layersOf(wardrobe: Wardrobe, compact: boolean, beat: Beat = STIL
     const marked = { ...layer, worn: isWorn };
     out.push(compact ? miniOf(marked) : marked);
   };
+  if (wardrobe.back !== undefined) add(worn(wardrobe.back, new Map(), "back", beat));
   if (wardrobe.outfit !== undefined) OUTFITS.get(wardrobe.outfit)?.trim.forEach((l) => add(l));
   if (wardrobe.wrap !== undefined) add(worn(wardrobe.wrap, new Map(), "wrap", beat));
   if (wardrobe.accessory !== undefined) add(worn(wardrobe.accessory, ACCESSORIES, "face", beat));
@@ -92,6 +94,7 @@ export function animatedOf(wardrobe: Wardrobe): Piece[] {
     [wardrobe.headwear, "headwear"],
     [wardrobe.accessory, "face"],
     [wardrobe.wrap, "wrap"],
+    [wardrobe.back, "back"],
   ];
   return slots.flatMap(([name, slot]) => {
     const piece = name === undefined ? undefined : pieceOf(name, slot);
@@ -99,9 +102,10 @@ export function animatedOf(wardrobe: Wardrobe): Piece[] {
   });
 }
 
-/** The outfit's fabric. */
+/** The fabric the body is dyed in: a pack fabric's, else the library outfit's. */
 export const fabricOf = (wardrobe: Wardrobe): readonly Band[] | undefined =>
-  wardrobe.outfit === undefined ? undefined : OUTFITS.get(wardrobe.outfit)?.fabric;
+  (wardrobe.fabric === undefined ? undefined : FABRICS.get(wardrobe.fabric)) ??
+  (wardrobe.outfit === undefined ? undefined : OUTFITS.get(wardrobe.outfit)?.fabric);
 
 /**
  * The body in `pose`, hero or miniature, dressed in `fabric`. The body is

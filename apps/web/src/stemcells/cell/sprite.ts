@@ -205,9 +205,10 @@ export function miniOf(layer: Layer): Layer {
 /**
  * Stamps `layers` on `body`, back to front: by depth (the body at 0, its
  * features at 2, lifted limbs at 4), then in the order given. A layer's
- * cells overwrite what is under them; what falls off the grid is clipped.
+ * cells overwrite what is under them; what falls off the grid is clipped,
+ * and counted in `spill` when one is given.
  */
-export function compose(body: Body, layers: readonly Layer[]): string[] {
+export function compose(body: Body, layers: readonly Layer[], spill?: { count: number }): string[] {
   const h = body.rows.length;
   const w = body.rows[0]?.length ?? 0;
   if (w === 0 || h === 0) return [...body.rows];
@@ -241,7 +242,11 @@ export function compose(body: Body, layers: readonly Layer[]): string[] {
     const narrowed = op.layer?.worn ? body.narrowed : undefined;
     op.art.forEach((row, ry) => {
       const cy = op.oy + ry;
-      if (cy < 0 || cy >= h) return;
+      if (cy < 0 || cy >= h) {
+        if (spill !== undefined && op.layer !== undefined)
+          spill.count += [...row].filter((cell) => cell !== ".").length;
+        return;
+      }
       for (let rx = 0; rx < row.length; rx++) {
         const cell = row.charCodeAt(rx);
         if (cell === CLEAR) continue;
@@ -250,6 +255,7 @@ export function compose(body: Body, layers: readonly Layer[]): string[] {
             ? place(narrowed, op.ox + rx, cy, op.layer.attach, op.at)
             : op.ox + rx;
         if (cx >= 0 && cx < w) grid.cells[cy * w + cx] = cell;
+        else if (spill !== undefined && op.layer !== undefined) spill.count += 1;
       }
     });
   }
