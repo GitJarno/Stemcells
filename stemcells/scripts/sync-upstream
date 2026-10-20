@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Merges upstream/main into a sync branch and opens a pull request.
+# Exits 3 on a conflict, leaving the merge in progress for whoever resolves it.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+git fetch -q upstream main
+git fetch -q origin main
+behind=$(git rev-list --count origin/main..upstream/main)
+if [ "$behind" -eq 0 ]; then
+  echo "sync: already up to date with upstream"
+  exit 0
+fi
+
+branch="sync/upstream-$(date +%Y-%m-%d)"
+git switch -q -c "$branch" origin/main
+if ! git merge --no-edit -m "Merge upstream $(git rev-parse --short upstream/main)" upstream/main; then
+  echo "sync: conflicts in:"
+  git diff --name-only --diff-filter=U
+  exit 3
+fi
+
+stemcells/scripts/drift
+git push -q -u origin "$branch"
+gh pr create --base main --head "$branch" \
+  --title "Take $behind upstream commits" \
+  --body "Merges upstream/main at $(git rev-parse --short upstream/main) ($behind commits)."
