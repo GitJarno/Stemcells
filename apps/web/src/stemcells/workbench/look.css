@@ -38,9 +38,6 @@
 [data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane] {
   border-width: 0;
 }
-[data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane]::after {
-  content: none;
-}
 
 /* The Cell and its workbench share the page half and half, whatever width
    the panel was dragged to beside a single chat. */

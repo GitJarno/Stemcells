@@ -383,7 +383,7 @@ function PaneSlot(props: {
   /** Set on Aski's pane: Aski's chat as it stands. */
   aski: AskiChat | null;
   stacked: boolean;
-  /** The tab's focused pane, which shows it when the tab holds several. */
+  /** The tab's focused pane. Its composer shows it, never a ring round the pane. */
   focused: boolean;
   /** The focused pane of the page on stage: it owns window input and the workbench. */
   ownsInput: boolean;
@@ -407,13 +407,7 @@ function PaneSlot(props: {
       onPointerDownCapture={() => {
         if (!props.focused) props.onFocus(props.pane.id);
       }}
-      className={cn(
-        "relative flex min-h-0 min-w-0 flex-1 flex-col",
-        props.stacked && "border-t",
-        props.showsFocus &&
-          props.focused &&
-          "after:pointer-events-none after:absolute after:inset-0 after:z-20 after:ring-1 after:ring-ring/40 after:ring-inset",
-      )}
+      className={cn("relative flex min-h-0 min-w-0 flex-1 flex-col", props.stacked && "border-t")}
     >
       {props.aski ? (
         <AskiPane
