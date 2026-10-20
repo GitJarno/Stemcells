@@ -42,9 +42,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/glow/CellComposerGlass` and renders it first inside `ComposerSurface.Main`, given `selectedProvider` | The composer's glass and light: in a pane of ours every composer's plate is frosted glass with a rim, that comes forward when its chat is focused and lets a vertical wheel through to the transcript; a Cell's also fills with the provider's colour while it works, clears when it's your turn, and holds the provider's faded mark. A layer behind the composer's words that draws nothing outside our panes (`glass.contract.test.ts` pins where it sits and what it reads there) |
 | `apps/web/src/components/chat/providerIconUtils.ts` | Imports `stemcells/models/names`; `getDisplayModelName` returns `conciseModelName(…)` of what it returned | Concise model names (below): the helper the picker's rows, the composer's model button, the sidebar, the context meter, lifecycle rows and the subagent bar name a model with |
 | `apps/web/src/components/settings/ProviderModelsSection.tsx` | Imports `withConciseName`; Settings › Models groups `models.map(withConciseName)` | Same, for Settings › Models' rows and their filter |
-| `apps/web/src/components/chat/SubagentTooltipContent.tsx` | `resolveSubagentMetadata` is imported from `stemcells/upstream/modelNames` (same name) | Same, for a subagent's tooltip |
 | `apps/web/src/components/chat/ProviderSubagentBar.tsx` | Imports `conciseModelName` and shows `conciseModelName(props.modelLabel)` | Same, for the subagent bar when its model isn't in the provider's list (a name built from the slug, which the helper never sees) |
-| `apps/web/src/components/chat/ModelPickerContent.tsx` | `formatProviderUpdateRequiredNotice` is imported from `stemcells/upstream/modelNames` (same name) | Same, for the picker's "Update … to use …" notice |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/ThreadRelationshipsControl.agents.browser.test.tsx` | Expect the concise names, and nothing else changes in them | They pin the names these seams change |
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/verbs/WorkWord`; the rows' shared state carries `turnVerbs: turnVerbsOf(timelineEntries)`; the working row says `CellWorkingWord` where it said "Working", and the turn fold renders its label through `CellWorkedLabel` | The work verbs: "Noodling for 12s" while a Cell works, "Noodled for 3m 12s" once done. Upstream keeps its row, timer and layout, and screen readers its words (`workVerbs.contract.test.ts` pins what the verbs read). Upstream's hottest file; there is no cooler place for these words |
 | `apps/web/src/branding.ts` | Imports `stemcells/brand/name`; `APP_BASE_NAME` falls back to `APP_NAME` where it fell back to "T3 Code" | The app's name (below): a browser's window title, the auth and pairing screens and every other view that names the app through upstream's branding |
@@ -63,7 +61,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The usage-data note says "Stemcells sends no usage data.", without T3's privacy policy link | Same: T3's note said usage data goes to T3 |
 | `apps/web/src/components/settings/SettingsPanels.tsx`, `apps/web/src/components/settings/settingsSearch.ts` | About's "Privacy policy" row and its search entry are gone | Same: the row linked T3's policy as the account of "the anonymous usage data T3 Code collects" |
 | `apps/server/src/serverRuntimeStartup.ts` | The boot heartbeat no longer records the install's owners, and drops the `getServerOwners` import | Same: naming them read the Codex and Claude login files and the T3 Connect account on every start |
-| `apps/web/src/components/ChatMarkdown.tsx`, `apps/web/src/components/chat/MessagesTimeline.tsx`, `apps/web/src/lib/favicon.ts`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/threads/thread-work-log.tsx` | `faviconUrlForOrigin` and `toolActivityFaviconUrl` are imported from `stemcells/upstream/favicon` (same names, one import line each) | No favicon fetched (below): a link's icon came from Google's favicon service, and a page's from its own site |
+| `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/threads/thread-work-log.tsx` | `faviconUrlForOrigin` and `toolActivityFaviconUrl` are imported from `stemcells/upstream/favicon` (same names, one import line each) | No favicon fetched (below): a link's icon came from Google's favicon service, and a page's from its own site. The web's views need no seam: they get the same adapter through a substitute (below) |
 | `apps/web/src/components/ChatMarkdown.browser.test.tsx` | Its favicon test expects no image for any link | It pinned the Google favicon URL |
 | `apps/web/src/components/sidebar/useUpdateEverything.ts` | The servers to update come from `stemcells/upstream/updates`'s `offeredServerUpdates`, in place of the npm lookup | No T3 build offered (below) |
 | `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
@@ -78,6 +76,33 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
 | `apps/web/src/components/chat/ContextWindowMeter.tsx` | Imports `stemcells/compaction/meter`; `usage` is `towardCompaction(props.usage)` | Same: the meter fills toward where the chat compacts |
+| `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
+
+### Substitutes
+
+A seam that only changes which module upstream's code imports, or wraps
+what a module exports, needs no edit to the file that imports it. The
+web's Vite config (one seam, above) hands upstream's code our module in
+place of upstream's: `apps/web/src/stemcells/upstream/substitutes/plugin.ts`
+lists each upstream module and its substitute, a file of the same name
+beside it. Our own folder still gets upstream's module, so a substitute
+re-exports it (`export * from …`) and replaces only the names it changes.
+
+- **Every build of the web.** Dev, the production build (which the desktop
+  app ships) and both test projects take the plugin from the config.
+  `substitutes.contract.test.ts` proves each one, and that every substitute
+  exports what its upstream module does; the type check holds each to the
+  upstream module's types.
+- **The web only.** The server runs from source in dev, with no bundler to
+  substitute through, and the phone builds with Metro. The contract test
+  fails when the server imports a substituted module.
+- **The web's tests run with the web's config:** `pnpm --filter
+  @t3tools/web exec vp test run --project unit src/stemcells`, as CI does.
+  The root config substitutes nothing, and the contract test says so.
+- **Only at a module's surface.** A change inside an upstream function's
+  body is still a seam. The importing file reads one module and runs
+  another, so each substitute says at its top what it replaces, and the
+  contract test lists the upstream views that rely on it.
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -128,8 +153,9 @@ and a server feature call) would retire the `cli/theme.ts` seam.
 Stemcells writes a model's name family first, without the vendor word:
 "GPT-6.1 Sol" reads "Sol 6.1", "Claude Opus 5.5" reads "Opus 5.5". The rule
 is `apps/web/src/stemcells/models/names.ts`; `modelNames.contract.test.ts`
-pins the five seams above and checks the rule knows every name in
-upstream's model manifest.
+pins the three seams above and checks the rule knows every name in
+upstream's model manifest. A subagent's tooltip and the picker's update
+notice take theirs through substitutes (below), with no seam.
 
 The names are changed where the web shows them, not where they come from:
 
@@ -148,7 +174,8 @@ that don't use it. The mobile app still shows upstream's names; it needs the
 rule in a `packages/stemcells-*` package once it gets a layer of ours.
 
 To offer upstream: one function every view names a model through. Then a
-fork's naming is that one function instead of five seams.
+fork's naming is that one function instead of three seams and two
+substitutes.
 
 ### The app's name
 
@@ -215,9 +242,11 @@ Nothing tells a third party what the person reads or which build they run.
   (or a CDN). `stemcells/upstream/favicon.ts` (the web's and the phone's,
   the same file) keeps only an icon the provider sent inline, so each view
   shows its own glyph: a globe for a link, GitHub's mark for GitHub, the
-  tool's icon for a page. `favicon.contract.test.ts` pins it, and
-  `privacy/noTelemetry.test.ts` fails when a view imports upstream's
-  favicons directly or the two copies differ.
+  tool's icon for a page. The web's views get it through a substitute for
+  upstream's module (below); the phone's import it. `favicon.contract.test.ts`
+  pins it, and `privacy/noTelemetry.test.ts` fails when the web stops
+  substituting upstream's favicons, a phone or desktop view imports them
+  directly, or the two copies differ.
 - **Update Everything** offers a server update only to a server this app
   runs, which updates with the app. Any other server updates by downloading
   T3's build, so it is listed as needing a manual update, and npm is never

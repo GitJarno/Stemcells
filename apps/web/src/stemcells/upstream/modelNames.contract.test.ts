@@ -8,9 +8,7 @@ import { formatCodexModelName, formatModelSlugName } from "@t3tools/shared/model
 import { describe, expect, it } from "vite-plus/test";
 
 import providerIconUtilsSource from "../../components/chat/providerIconUtils.ts?raw";
-import modelPickerContentSource from "../../components/chat/ModelPickerContent.tsx?raw";
 import providerSubagentBarSource from "../../components/chat/ProviderSubagentBar.tsx?raw";
-import subagentTooltipContentSource from "../../components/chat/SubagentTooltipContent.tsx?raw";
 import providerModelsSectionSource from "../../components/settings/ProviderModelsSection.tsx?raw";
 import {
   getDisplayModelName,
@@ -19,6 +17,7 @@ import {
 import manifestSource from "../../../../server/src/provider/model-manifest.json?raw";
 import { conciseModelName } from "../models/names";
 import { formatProviderUpdateRequiredNotice, resolveSubagentMetadata } from "./modelNames";
+import { SUBSTITUTES } from "./substitutes/plugin";
 
 interface Manifest {
   readonly providers: Record<string, { readonly models: ReadonlyArray<{ readonly name: string }> }>;
@@ -117,11 +116,13 @@ describe("concise model names' contracts with upstream", () => {
       "const modelLabel = conciseModelName(props.modelLabel);",
     );
     expect(providerSubagentBarSource).not.toContain("{props.modelLabel}");
-    expect(subagentTooltipContentSource).toContain(
-      'import { resolveSubagentMetadata } from "../../stemcells/upstream/modelNames";',
-    );
-    expect(modelPickerContentSource).toContain(
-      'import { formatProviderUpdateRequiredNotice } from "../../stemcells/upstream/modelNames";',
-    );
+    // The tooltip and the picker's notice read ours through substitutes of
+    // upstream's modules (`substitutes/plugin.ts`); the substitutes contract
+    // test proves every build hands them ours.
+    expect(SUBSTITUTES).toMatchObject({
+      "packages/client-runtime/src/providerUpdateRequiredModels.ts":
+        "providerUpdateRequiredModels.ts",
+      "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
+    });
   });
 });

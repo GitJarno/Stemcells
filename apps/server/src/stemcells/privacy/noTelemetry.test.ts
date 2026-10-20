@@ -82,21 +82,26 @@ describe("no Stemcells build reports on the person", () => {
  */
 describe("no Stemcells build tells a third party what the person reads", () => {
   const code = trackedFiles().filter(isShippedCode);
-  const adapters = [
-    "apps/web/src/stemcells/upstream/favicon.ts",
-    "apps/mobile/src/stemcells/upstream/favicon.ts",
-  ];
+  const read = (file: string) => NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8");
+  const webAdapter = "apps/web/src/stemcells/upstream/favicon.ts";
+  const mobileAdapter = "apps/mobile/src/stemcells/upstream/favicon.ts";
 
   it("fetches favicons only through Stemcells' adapters, the same on the web and the phone", () => {
+    // The web's build hands every import of upstream's favicons the adapter
+    // (`substitutes/plugin.ts`; `substitutes.contract.test.ts` proves it for
+    // each build). The phone and the desktop substitute nothing, so there
+    // only the adapter may import them.
+    const substitutes = "apps/web/src/stemcells/upstream/substitutes/";
+    expect(read(`${substitutes}plugin.ts`)).toContain(
+      '"packages/shared/src/favicon.ts": "favicon.ts"',
+    );
+    expect(read(`${substitutes}favicon.ts`)).toContain('from "../favicon";');
     const callers = filesMatching(
-      code.filter((file) => /^apps\/(?:web|mobile|desktop)\/src\//.test(file)),
+      code.filter((file) => /^apps\/(?:mobile|desktop)\/src\//.test(file)),
       /["']@t3tools\/shared\/favicon["']/,
     );
-    expect(callers.toSorted()).toEqual(adapters.toSorted());
-    const [web, mobile] = adapters.map((file) =>
-      NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8"),
-    );
-    expect(mobile).toBe(web);
+    expect(callers).toEqual([mobileAdapter]);
+    expect(read(mobileAdapter)).toBe(read(webAdapter));
   });
 
   it("asks npm about no T3 release", () => {

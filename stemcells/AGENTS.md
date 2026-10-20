@@ -65,6 +65,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Dev loop
 Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
-`pnpm install`, `pnpm dev:desktop`, `pnpm exec vp test run <files>`,
+`pnpm install`, `pnpm dev:desktop`, `pnpm exec vp test run <files>` (the
+web's from `apps/web`, whose config has our substitutes),
 `pnpm --filter @t3tools/web typecheck`, `pnpm exec vp lint`. To build and
 install the app: `stemcells/scripts/install-app` (`stemcells/docs/install.md`).

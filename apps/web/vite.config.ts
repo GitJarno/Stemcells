@@ -19,6 +19,7 @@ import { loadRepoEnv } from "../../scripts/lib/public-config";
 import { thirdPartyLicensesPlugin } from "../../scripts/lib/third-party-licenses";
 import { tailwindPlugins } from "./vite/tailwind";
 import { warmBundledDevPlugin } from "./vite/warmBundledDev";
+import { substituteUpstreamModules } from "./src/stemcells/upstream/substitutes/plugin";
 
 const repoEnv = loadRepoEnv();
 Object.assign(process.env, repoEnv);
@@ -174,6 +175,7 @@ export default defineConfig(() => {
   return {
     assetsInclude: ["**/*.wasm"],
     plugins: [
+      substituteUpstreamModules(),
       devCompressionPlugin(),
       thirdPartyLicensesPlugin({
         bundleName: "web",

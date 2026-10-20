@@ -67,7 +67,7 @@ const NOOP_USE_ARTIFACT_TEMPLATE = () => {};
 const NOOP_OPEN_ATTACHMENT = (_attachment: ChatFileAttachment) => {};
 
 import { resolveChatListAnchoredEndSpace } from "@t3tools/shared/chatList";
-import { toolActivityFaviconUrl } from "../../stemcells/upstream/favicon";
+import { toolActivityFaviconUrl } from "@t3tools/shared/favicon";
 import { formatDuration } from "@t3tools/shared/orchestrationTiming";
 import { getProjectFaviconCacheKey } from "@t3tools/shared/projectFavicon";
 import { claudeSkillInvocation, isJavaScriptReplTool } from "@t3tools/shared/toolActivity";

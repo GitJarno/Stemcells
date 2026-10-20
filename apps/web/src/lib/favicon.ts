@@ -1,1 +1,1 @@
-export { faviconUrlForOrigin } from "../stemcells/upstream/favicon";
+export { faviconUrlForOrigin } from "@t3tools/shared/favicon";
