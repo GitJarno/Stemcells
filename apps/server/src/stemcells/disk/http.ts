@@ -13,10 +13,12 @@ import {
   isMeasuredKind,
 } from "./rules.ts";
 import * as StemcellsDisk from "./StemcellsDisk.ts";
-import type { DiskItem } from "./walk.ts";
+import type { DiskItem, DiskVolume } from "./walk.ts";
 
 // GET /api/stemcells/disk: the disk now and the last measurement, polled
 // while Settings › Disk is open (`?measure=again` measures anew).
+// GET /api/stemcells/disk/volume: free space alone, one statfs, for the
+// sidebar's foot; it never starts a walk.
 // GET /api/stemcells/disk/cleanup-draft: the cleanup Cell's first message.
 
 const DISK_PATH = "/api/stemcells/disk";
@@ -28,11 +30,15 @@ const itemName = (path: string) => {
   return name.endsWith(".app") ? name.slice(0, -4) : name;
 };
 const wireItem = (item: DiskItem) => ({ ...item, name: itemName(item.path) });
+const wireVolume = (volume: DiskVolume) => ({
+  ...volume,
+  used: Math.max(0, volume.total - volume.free),
+});
 
 function toWire(look: StemcellsDisk.DiskLook) {
   const { volume, map } = look;
   return {
-    volume: { ...volume, used: Math.max(0, volume.total - volume.free) },
+    volume: wireVolume(volume),
     scanning: look.scanning,
     counted: look.counted,
     map:
@@ -80,6 +86,16 @@ const lookRoute = Effect.gen(function* () {
   );
 });
 
+const volumeRoute = Effect.gen(function* () {
+  const disk = yield* StemcellsDisk.StemcellsDisk;
+  return yield* disk.volume().pipe(
+    Effect.map((volume) =>
+      HttpServerResponse.jsonUnsafe(wireVolume(volume), { headers: NO_STORE }),
+    ),
+    Effect.catchTags({ DiskVolumeError: volumeUnreadable }),
+  );
+});
+
 const draftRoute = Effect.gen(function* () {
   const disk = yield* StemcellsDisk.StemcellsDisk;
   return yield* disk.cleanupDraft().pipe(
@@ -96,6 +112,7 @@ export const layer = HttpRouter.use((router) =>
         route.pipe(Effect.provideService(StemcellsDisk.StemcellsDisk, disk)),
       );
     yield* router.add("GET", DISK_PATH, serve(lookRoute));
+    yield* router.add("GET", `${DISK_PATH}/volume`, serve(volumeRoute));
     yield* router.add("GET", `${DISK_PATH}/cleanup-draft`, serve(draftRoute));
   }),
 ).pipe(Layer.provide(StemcellsDisk.layer));

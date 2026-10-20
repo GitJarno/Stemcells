@@ -98,6 +98,57 @@ export function useDiskReading() {
   return { reading, failed, measureAgain: () => readNow.current(true) };
 }
 
+/** How often the sidebar's foot reads free space while the window is visible. */
+const FREE_EVERY_MS = 60_000;
+/** A window focused this soon after a read keeps it. */
+const FREE_FOCUS_AFTER_MS = 10_000;
+
+/**
+ * Free space alone (`GET /api/stemcells/disk/volume`, one statfs on the
+ * server, never the walk): on mount, every minute while visible, and when
+ * the window comes back. Null until the first read lands; a failed read
+ * keeps the last.
+ */
+export function useDiskFree(): DiskReading["volume"] | null {
+  const [volume, setVolume] = useState<DiskReading["volume"] | null>(null);
+
+  useEffect(() => {
+    let stopped = false;
+    let inFlight = false;
+    let readAt = 0;
+    const read = async () => {
+      if (stopped || inFlight || document.visibilityState !== "visible") return;
+      inFlight = true;
+      readAt = performance.now();
+      try {
+        const response = await getFromPrimary(`${DISK_PATH}/volume`);
+        if (!response.ok) return;
+        const next = (await response.json()) as DiskReading["volume"];
+        if (!stopped) setVolume(next);
+      } catch {
+        // The last reading stands until a read succeeds.
+      } finally {
+        inFlight = false;
+      }
+    };
+    const readIfStale = () => {
+      if (performance.now() - readAt >= FREE_FOCUS_AFTER_MS) void read();
+    };
+    void read();
+    const timer = setInterval(() => void read(), FREE_EVERY_MS);
+    window.addEventListener("focus", readIfStale);
+    document.addEventListener("visibilitychange", readIfStale);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+      window.removeEventListener("focus", readIfStale);
+      document.removeEventListener("visibilitychange", readIfStale);
+    };
+  }, []);
+
+  return volume;
+}
+
 /** The cleanup Cell's first message: the ask, and the last measurement for it to start from. */
 export async function readCleanupDraft(): Promise<string> {
   const response = await getFromPrimary(`${DISK_PATH}/cleanup-draft`);

@@ -50,6 +50,8 @@ export class StemcellsDisk extends Context.Service<
      * when there is none yet, the last is old, or `again` asks for one.
      */
     readonly look: (input: { readonly again: boolean }) => Effect.Effect<DiskLook, DiskVolumeError>;
+    /** The disk now, one `statfs`: never starts a walk, never keeps one alive. */
+    readonly volume: () => Effect.Effect<DiskVolume, DiskVolumeError>;
     /** The cleanup Cell's first message, with the last measurement once there is one. */
     readonly cleanupDraft: () => Effect.Effect<string, DiskVolumeError>;
   }
@@ -138,7 +140,11 @@ const make = Effect.gen(function* () {
     return cleanupDraft(rebased(map, yield* volumeNow), machine);
   });
 
-  return StemcellsDisk.of({ look, cleanupDraft: draft });
+  const volume = Effect.fn("StemcellsDisk.volume")(function* () {
+    return yield* volumeNow;
+  });
+
+  return StemcellsDisk.of({ look, volume, cleanupDraft: draft });
 });
 
 export const layer = Layer.effect(StemcellsDisk, make);

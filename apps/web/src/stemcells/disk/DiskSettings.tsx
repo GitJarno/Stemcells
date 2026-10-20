@@ -14,23 +14,21 @@ import {
   useRelativeTimeTick,
 } from "../upstream/disk";
 import { diskBytes, readCleanupDraft, useDiskReading, type DiskReading } from "./diskReading";
+import { diskPressure, type DiskPressure } from "./pressure";
 
 // Settings › Disk: how full the disk is, what is large, and a Cell to free
 // space with. The app deletes nothing itself: "Free space" opens a new Cell
 // with the measurement in its composer, for the person to send.
 
-/** Below these, free space wants attention: soon, then now. */
-const SOON_BELOW = 20_000_000_000;
-const NOW_BELOW = 10_000_000_000;
+const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
+  calm: "bg-primary",
+  soon: "bg-warning",
+  now: "bg-destructive",
+};
 
 function DiskGauge({ volume }: { readonly volume: DiskReading["volume"] }) {
   const share = volume.total > 0 ? Math.min(1, volume.used / volume.total) : 0;
-  const tone =
-    volume.free < NOW_BELOW
-      ? "bg-destructive"
-      : volume.free < SOON_BELOW
-        ? "bg-warning"
-        : "bg-primary";
+  const tone = GAUGE_TONE[diskPressure(volume.free)];
   return (
     <div className="space-y-1.5 pb-3">
       <div
