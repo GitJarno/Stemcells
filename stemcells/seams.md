@@ -66,6 +66,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/sidebar/useUpdateEverything.ts` | The servers to update come from `stemcells/upstream/updates`'s `offeredServerUpdates`, in place of the npm lookup | No T3 build offered (below) |
 | `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
 | `apps/mobile/app.config.ts` | `updates.enabled` only when `T3CODE_MOBILE_UPDATES_ENABLED=1` | Same: the configured over-the-air source is T3's Expo project |
+| `packages/source-control-bitbucket/src/server/BitbucketApi.ts` | `probeAuth` sends its `GET /2.0/user` only when a Bitbucket token is configured | Same: without one the answer is "unauthenticated" either way, and the request only told Atlassian the app runs, whenever the command palette opened (`bitbucket.contract.test.ts`) |
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -213,6 +214,8 @@ Nothing tells a third party what the person reads or which build they run.
 - **The command line** has no `t3 update`.
 - **Phone builds** check no over-the-air update source unless the build sets
   `T3CODE_MOBILE_UPDATES_ENABLED=1`.
+- **Bitbucket** is asked who is signed in only when a Bitbucket token is
+  configured.
 
 Left as they are:
 
@@ -222,10 +225,6 @@ Left as they are:
   T3's build already.
 - Tool logos a provider names (an MCP server's icon) still load from the
   URL the provider gave.
-- Source control discovery (the command palette, the git actions) checks
-  Bitbucket's sign-in with a plain `GET api.bitbucket.org/2.0/user`,
-  without a token when none is set: it carries nothing about the person or
-  their repositories.
 
 ### The left column's rail
 

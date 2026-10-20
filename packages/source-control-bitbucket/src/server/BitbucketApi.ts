@@ -961,6 +961,11 @@ export const make = Effect.gen(function* () {
         detail: Option.none<string>(),
       })),
       Effect.catch(() => currentCredential.pipe(Effect.map(authFromCredential))),
+      // No token, no request: the answer is "unauthenticated" either way.
+      (probe) =>
+        Effect.flatMap(currentCredential, (credential) =>
+          credential === null ? Effect.succeed(authFromCredential(null)) : probe,
+        ),
     ),
     listPullRequests: (input) =>
       resolveRepository(input).pipe(
