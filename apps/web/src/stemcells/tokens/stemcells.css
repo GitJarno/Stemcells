@@ -479,26 +479,30 @@
   }
 }
 
+/* Magma, the default, wears the T3 theme it runs in: its surfaces, lines
+   and inks name T3's roles (the slate is T3's --background, raised its
+   card, the frame its chrome), so our parts sit on whichever theme is on,
+   light or dark. Hues stay Stemcells' own. */
 :root,
 [data-skin="magma"] {
   --sc-notch: rgba(0, 0, 0, 1);
-  --sc-field: rgba(0, 0, 0, 1);
-  --sc-page: rgba(0, 0, 0, 1);
-  --sc-wash: rgba(7, 7, 6, 1);
-  --sc-plate: rgba(13, 13, 12, 1);
-  --sc-raised: rgba(22, 21, 20, 1);
-  --sc-hot: rgba(32, 31, 30, 1);
-  --sc-edge: rgba(233, 232, 230, 0.12);
-  --sc-hairline: rgba(115, 113, 111, 0.25);
+  --sc-field: var(--app-chrome-background);
+  --sc-page: var(--background);
+  --sc-wash: color-mix(in srgb, var(--app-chrome-background) 50%, var(--background));
+  --sc-plate: var(--background);
+  --sc-raised: var(--card);
+  --sc-hot: var(--accent);
+  --sc-edge: var(--border);
+  --sc-hairline: var(--border);
   --sc-grip: rgba(115, 113, 111, 0.58);
   --sc-grip-active: rgba(203, 202, 201, 1);
-  --sc-text: rgba(245, 244, 243, 1);
-  --sc-soft: rgba(203, 202, 201, 1);
-  --sc-reading: rgba(181, 180, 178, 1);
-  --sc-dim: rgba(145, 144, 142, 1);
-  --sc-mute: rgba(104, 103, 101, 1);
-  --sc-faint: rgba(58, 57, 56, 1);
-  --sc-on-text: rgba(16, 15, 14, 1);
+  --sc-text: var(--foreground);
+  --sc-soft: color-mix(in srgb, var(--foreground) 83%, var(--background));
+  --sc-reading: color-mix(in srgb, var(--foreground) 74%, var(--background));
+  --sc-dim: var(--muted-foreground);
+  --sc-mute: color-mix(in srgb, var(--foreground) 42%, var(--background));
+  --sc-faint: color-mix(in srgb, var(--foreground) 24%, var(--background));
+  --sc-on-text: var(--background);
   --sc-inverse: rgba(245, 244, 243, 1);
   --sc-highlight: rgba(255, 255, 255, 1);
   --sc-drop-target: rgba(255, 255, 255, 1);
@@ -521,14 +525,14 @@
   --sc-merged: rgba(203, 202, 201, 1);
   --sc-diff-added: rgba(40, 235, 186, 1);
   --sc-diff-removed: rgba(255, 100, 139, 1);
-  --sc-chrome: rgba(245, 244, 243, 0.72);
+  --sc-chrome: color-mix(in srgb, var(--foreground) 72%, transparent);
   --sc-beckon: rgba(255, 255, 255, 0.16);
   --sc-selection: rgba(255, 255, 255, 0.22);
   --sc-new-rule: rgba(131, 147, 255, 0.35);
   --sc-peek: rgba(0, 0, 0, 0.94);
   --sc-frame-edge: rgba(233, 232, 230, 0);
-  --sc-surface: rgba(13, 13, 12, 1);
-  --sc-code: rgba(22, 21, 20, 1);
+  --sc-surface: var(--background);
+  --sc-code: var(--code-background);
   --sc-cooled: rgba(16, 18, 19, 1);
   --sc-diff-added-fill: rgba(40, 235, 186, 0.16);
   --sc-diff-removed-fill: rgba(255, 100, 139, 0.15);
@@ -584,12 +588,12 @@
   --sc-scrollbar-track: rgba(115, 113, 111, 0.25);
   --sc-scrollbar-tick: rgba(203, 202, 201, 1);
   --sc-scrollbar-tick-active: rgba(245, 244, 243, 1);
-  --sc-content-ink: rgba(181, 180, 178, 1);
-  --sc-content-strong-ink: rgba(245, 244, 243, 1);
-  --sc-interface-ink: rgba(203, 202, 201, 1);
-  --sc-meta-ink: rgba(145, 144, 142, 1);
-  --sc-quiet-ink: rgba(104, 103, 101, 1);
-  --sc-disabled-ink: rgba(58, 57, 56, 1);
+  --sc-content-ink: var(--sc-reading);
+  --sc-content-strong-ink: var(--sc-text);
+  --sc-interface-ink: var(--sc-soft);
+  --sc-meta-ink: var(--sc-dim);
+  --sc-quiet-ink: var(--sc-mute);
+  --sc-disabled-ink: var(--sc-faint);
   --sc-radius-chip: 8px;
   --sc-radius-card: 12px;
   --sc-radius-sheet: 16px;

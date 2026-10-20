@@ -79,11 +79,12 @@ export function AskiFigure() {
     // oxlint-disable-next-line t3code/no-raw-resize-observer -- The size goes to the canvas and the worker, never into React state.
     const sized = new ResizeObserver(ask);
     sized.observe(canvas);
-    // A skin change re-colours the ink and the ground; the root's skin attribute says when.
+    // A skin or theme change re-colours the ink and the ground; the root's
+    // attributes say when (a theme sets its id, the dark class and its palette).
     const skinned = new MutationObserver(ask);
     skinned.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["data-skin", "data-device"],
+      attributeFilter: ["data-skin", "data-device", "data-theme-id", "class", "style"],
     });
     return () => {
       sized.disconnect();

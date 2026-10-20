@@ -1,10 +1,23 @@
-// Colours the skin gives the page, read back as 0–255 channels for what
-// draws pixels itself: Aski's figure and its scenes.
+// Colours the page gives Aski, read back as 0–255 channels for what draws
+// pixels itself: Aski's figure and its scenes.
 
-/** A computed colour as 0–255 channels, and its alpha. */
+let probe: CanvasRenderingContext2D | null = null;
+
+/**
+ * A computed colour as 0–255 sRGB channels, and its alpha. A computed colour
+ * keeps the space it was written in (a theme's oklch() stays oklch()), so the
+ * browser paints it on one pixel and the pixel is read back.
+ */
 export function channels(colour: string): { rgb: [number, number, number]; alpha: number } {
-  const [r = 0, g = 0, b = 0, alpha = 1] = (colour.match(/[\d.]+/g) ?? []).map(Number);
-  return { rgb: [r, g, b], alpha };
+  probe ??= document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  if (probe === null) return { rgb: [0, 0, 0], alpha: 0 };
+  probe.clearRect(0, 0, 1, 1);
+  // A colour the canvas can't read leaves the pixel clear.
+  probe.fillStyle = "transparent";
+  probe.fillStyle = colour.trim();
+  probe.fillRect(0, 0, 1, 1);
+  const [r = 0, g = 0, b = 0, a = 0] = probe.getImageData(0, 0, 1, 1).data;
+  return { rgb: [r, g, b], alpha: a / 255 };
 }
 
 /** The skin's ink, read from the element's own colour. */
