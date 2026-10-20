@@ -18,8 +18,8 @@ Ported from the Swift app: the same table, the same picker, the same rules.
 - [x] One seam in `MessagesTimeline.tsx`: the working row's word and the turn
       fold's label; upstream keeps its row, timer and layout
 - [x] Prove it in the dev app: a working row and a finished one
-- [ ] Light the word with the composer's sheen on its beat, once that port
-      lands (no second clock)
+- [x] Light the word with the composer's sheen on its beat, once that port
+      lands (no second clock): `glow/WorkingSheen.tsx`
 
 ## Decisions
 

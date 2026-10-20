@@ -1,0 +1,130 @@
+/* The light in a Cell's composer and on its working word, scoped to them,
+   so loading this sheet never restyles upstream's views. What moves is set
+   by `motion.ts` and `WorkingSheen.tsx`; this is where it stands. */
+
+/* How far open the iris is, 0 to 1, and the wash's three colours: typed,
+   so the iris opens and a recolour fades rather than jumping. */
+@property --sc-glass-iris {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --sc-glass-wash-0 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sc-glass-wash-1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sc-glass-wash-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+/* Behind the composer's words, over its glass: the surface is a stacking
+   context, so a layer under its content still paints over its background.
+   Two attributes outrank the ultrathink frame's `> *`, which would pull
+   this back into the flow. */
+[data-chat-composer-main-surface] > [data-stemcells-composer-glass] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+[data-stemcells-composer-glass] :is(.glass-light, .glass-lit, .glass-wash, .glass-wash > *) {
+  position: absolute;
+  inset: 0;
+}
+
+[data-stemcells-composer-glass] .glass-wash-far {
+  opacity: 0;
+}
+
+[data-stemcells-composer-glass] .glass-band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+
+[data-stemcells-composer-glass] .glass-bloom {
+  position: absolute;
+  opacity: 0;
+}
+
+/* The iris: solid to its feathered rim, centred on the send button. */
+[data-stemcells-composer-glass] .glass-lit[data-iris] {
+  --iris-edge: calc(var(--sc-glass-iris) * var(--iris-r));
+  mask-image: radial-gradient(
+    circle at var(--iris-x) var(--iris-y),
+    black 0,
+    black calc(var(--iris-edge) * var(--iris-solid)),
+    transparent var(--iris-edge)
+  );
+}
+
+/* The provider's mark, a quiet impression in the glass: in the words' ink
+   at 8% of their strength, fading in from its top-left, hanging past
+   the glass's trailing and bottom edges. */
+[data-stemcells-composer-glass] .glass-imprint {
+  position: absolute;
+  right: var(--imprint-overhang);
+  bottom: var(--imprint-overhang);
+  display: none;
+  height: var(--imprint-side);
+  color: var(--sc-text);
+  opacity: 0.08;
+  mask-image: linear-gradient(to bottom right, transparent, rgb(0 0 0 / 65%), black);
+}
+
+[data-stemcells-composer-glass][data-imprint] .glass-imprint {
+  display: block;
+}
+
+[data-stemcells-composer-glass] .glass-imprint svg {
+  display: block;
+  width: auto;
+  height: 100%;
+}
+
+/* The working word's sheen: the word's box clips a window that slides
+   across it, and the copy of the word inside slides back under it. */
+.working-sheen {
+  position: relative;
+  display: inline-block;
+}
+
+.working-sheen .sheen-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.working-sheen .sheen-window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  transform: translateX(-100vw);
+  mask-image: linear-gradient(to right, transparent, black, transparent);
+}
+
+.working-sheen .sheen-glyphs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+}

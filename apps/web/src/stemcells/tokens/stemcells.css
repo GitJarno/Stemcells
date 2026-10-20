@@ -327,6 +327,7 @@
   --sc-timing-send-landed: 280ms;
   --sc-timing-keyboard-landed: 300ms;
   --sc-timing-page-landed: 620ms;
+  --sc-timing-glow-pass: 3200ms;
   --sc-timing-glow-pass-pill: 2400ms;
   --sc-timing-glow-rest: 1000ms;
   --sc-timing-glow-lead: 200ms;
@@ -1545,4 +1546,12 @@
   --sc-state-paused: rgba(255, 214, 0, 1);
   --sc-state-reviewing: rgba(60, 211, 254, 1);
   --sc-state-scheduled: rgba(0, 145, 255, 1);
+}
+
+/* A chat's colour is its provider's brand, the same in every skin: the
+   light in its composer's glass and on its working word wear it. A provider
+   with no brand here wears the skin's accent. */
+:root {
+  --sc-provider-claude: rgba(217, 119, 87, 1);
+  --sc-provider-codex: rgba(16, 163, 127, 1);
 }

@@ -1,0 +1,63 @@
+/**
+ * What the composer's light relies on in upstream: where it sits in the
+ * composer, what it reads there (the glass's colour, the send button) and
+ * which providers upstream draws a mark for. A failure here after a sync
+ * names the contract that moved; the light is likely in the wrong place,
+ * off its button, or wearing the wrong colour.
+ */
+import { describe, expect, it } from "vite-plus/test";
+
+import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
+import providerInstanceIcon from "../../components/chat/ProviderInstanceIcon.tsx?raw";
+import { toneTokenOf } from "../glow/light";
+
+/** The source of the function or memo named `name`, up to the next top-level one. */
+function body(source: string, name: string): string {
+  const start = source.search(new RegExp(`\\n(?:export )?(?:const|function) ${name}\\b`));
+  expect(start).toBeGreaterThanOrEqual(0);
+  const end = source
+    .slice(start + 1)
+    .search(/\n(?:export )?(?:const|let|function|interface|type|class|enum) /);
+  return source.slice(start, end < 0 ? undefined : start + 1 + end);
+}
+
+describe("the composer light's contracts with upstream", () => {
+  it("is the first thing inside the composer's main surface, told the composer's provider", () => {
+    expect(chatComposer).toMatch(
+      /<ComposerSurface\.Main\b[^>]*>\s*<CellComposerGlass provider=\{selectedProvider\} \/>\s*<div\s+ref=\{composerSurfaceRef\}/,
+    );
+  });
+
+  it("the main surface carries the attribute glow.css names, and is a stacking context", () => {
+    // The light's z-index -1 puts it over this surface's own background and
+    // under the words only because the surface stacks its children.
+    const main = body(composerSurface, "Main");
+    expect(main).toContain('data-chat-composer-main-surface="true"');
+    expect(main).toMatch(/"group relative z-10 rounded-3xl p-px"/);
+    expect(main).toContain("{...props}");
+  });
+
+  it("the composer names its glass's colour in a property the light reads", () => {
+    expect(body(composerSurface, "Shell")).toContain("[--chat-composer-glass-surface:");
+  });
+
+  it("the send button is the last button in the composer's trailing actions", () => {
+    const opens = chatComposer.indexOf('data-chat-composer-actions="right"');
+    expect(opens).toBeGreaterThanOrEqual(0);
+    const actions = chatComposer.slice(opens);
+    const closes = actions.search(/\n {16}<\/div>/);
+    const components = [...actions.slice(0, closes).matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
+    expect(components.at(-1)).toBe("ComposerFooterPrimaryActions");
+    const footer = body(chatComposer, "ComposerFooterPrimaryActions");
+    const drawn = [...footer.matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
+    expect(drawn.at(-1)).toBe("ComposerPrimaryActions");
+  });
+
+  it("upstream draws Claude's and OpenAI's marks for the drivers the light names", () => {
+    expect(providerInstanceIcon).toContain('[ProviderDriverKind.make("claudeAgent")]: ClaudeAI,');
+    expect(providerInstanceIcon).toContain('[ProviderDriverKind.make("codex")]: OpenAI,');
+    expect(toneTokenOf("claudeAgent")).toBe("--sc-provider-claude");
+    expect(toneTokenOf("codex")).toBe("--sc-provider-codex");
+  });
+});
