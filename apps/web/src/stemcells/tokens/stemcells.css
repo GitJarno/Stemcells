@@ -1,0 +1,1544 @@
+/* Stemcells' design tokens, as custom properties under --sc-: one block
+   per skin, Magma the default, and each Cell state's hue at the end. Only
+   our components import this sheet. It defines --sc-* properties alone and
+   sets no `color-scheme`, so loading it never restyles upstream's views. */
+
+:root {
+  --sc-motion-flick-duration: 120ms;
+  --sc-motion-flick-easing: cubic-bezier(0, 0, 0.58, 1);
+  --sc-motion-fade-duration: 200ms;
+  --sc-motion-fade-easing: cubic-bezier(0, 0, 0.58, 1);
+  --sc-motion-leave-duration: 140ms;
+  --sc-motion-leave-easing: cubic-bezier(0.42, 0, 1, 1);
+  --sc-motion-recede-duration: 350ms;
+  --sc-motion-recede-easing: cubic-bezier(0, 0, 0.58, 1);
+  --sc-motion-icon-hover-duration: 220ms;
+  --sc-motion-icon-hover-easing: cubic-bezier(0.42, 0, 0.58, 1);
+  --sc-motion-beckon-in-duration: 120ms;
+  --sc-motion-beckon-in-easing: cubic-bezier(0, 0, 0.58, 1);
+  --sc-motion-beckon-out-duration: 800ms;
+  --sc-motion-beckon-out-easing: cubic-bezier(0, 0, 0.58, 1);
+  --sc-motion-settle-duration: 419ms;
+  --sc-motion-settle-easing: linear(
+    0,
+    0.0013 0.6%,
+    0.0062 1.31%,
+    0.0128 1.91%,
+    0.0233 2.63%,
+    0.0364 3.34%,
+    0.0518 4.06%,
+    0.0722 4.89%,
+    0.095 5.73%,
+    0.1344 7.04%,
+    0.1854 8.59%,
+    0.4131 15.04%,
+    0.4662 16.59%,
+    0.5171 18.14%,
+    0.569 19.81%,
+    0.6143 21.36%,
+    0.6566 22.91%,
+    0.6959 24.46%,
+    0.7321 26.01%,
+    0.7652 27.57%,
+    0.7953 29.12%,
+    0.8226 30.67%,
+    0.849 32.34%,
+    0.8725 34.01%,
+    0.8931 35.68%,
+    0.9125 37.47%,
+    0.9302 39.38%,
+    0.9461 41.41%,
+    0.9593 43.44%,
+    0.9708 45.58%,
+    0.9804 47.85%,
+    0.9883 50.24%,
+    0.9948 52.86%,
+    0.9997 55.73%,
+    1.0047 61.1%,
+    1.0063 67.78%,
+    1
+  );
+  --sc-motion-settle-response: 0.3;
+  --sc-motion-settle-damping: 0.85;
+  --sc-motion-travel-duration: 481ms;
+  --sc-motion-travel-easing: linear(
+    0,
+    0.0014 0.62%,
+    0.0064 1.35%,
+    0.0132 1.98%,
+    0.024 2.7%,
+    0.0373 3.43%,
+    0.0553 4.26%,
+    0.0759 5.09%,
+    0.0988 5.93%,
+    0.143 7.38%,
+    0.1947 8.94%,
+    0.424 15.38%,
+    0.4812 17.05%,
+    0.5292 18.5%,
+    0.5813 20.17%,
+    0.6272 21.73%,
+    0.67 23.28%,
+    0.7098 24.84%,
+    0.7463 26.4%,
+    0.7798 27.96%,
+    0.8102 29.52%,
+    0.8376 31.08%,
+    0.8623 32.64%,
+    0.8857 34.3%,
+    0.9062 35.97%,
+    0.9253 37.73%,
+    0.9425 39.6%,
+    0.957 41.48%,
+    0.9698 43.45%,
+    0.9807 45.53%,
+    0.9897 47.71%,
+    0.9972 50.1%,
+    1.0069 55.3%,
+    1.0105 59.98%,
+    1.0109 65.8%,
+    1
+  );
+  --sc-motion-travel-response: 0.35;
+  --sc-motion-travel-damping: 0.82;
+  --sc-motion-unfold-duration: 471ms;
+  --sc-motion-unfold-easing: linear(
+    0,
+    0.0015 0.64%,
+    0.0058 1.27%,
+    0.0125 1.91%,
+    0.0233 2.65%,
+    0.0368 3.4%,
+    0.0526 4.14%,
+    0.093 5.73%,
+    0.1335 7.11%,
+    0.1811 8.6%,
+    0.4033 15.07%,
+    0.456 16.67%,
+    0.5033 18.15%,
+    0.5547 19.85%,
+    0.5999 21.44%,
+    0.6421 23.04%,
+    0.6813 24.63%,
+    0.7175 26.22%,
+    0.7506 27.81%,
+    0.7808 29.41%,
+    0.8099 31.1%,
+    0.836 32.8%,
+    0.8593 34.5%,
+    0.8799 36.2%,
+    0.8992 38%,
+    0.9178 40.02%,
+    0.9336 42.04%,
+    0.9477 44.16%,
+    0.9604 46.5%,
+    0.971 48.94%,
+    0.9798 51.49%,
+    0.9925 57.11%,
+    0.9994 63.16%,
+    1.0026 70.81%,
+    1.0026 82.59%,
+    1
+  );
+  --sc-motion-unfold-response: 0.34;
+  --sc-motion-unfold-damping: 0.88;
+  --sc-motion-send-duration: 586ms;
+  --sc-motion-send-easing: linear(
+    0,
+    0.0013 0.6%,
+    0.0059 1.28%,
+    0.0134 1.96%,
+    0.0235 2.65%,
+    0.036 3.33%,
+    0.0525 4.1%,
+    0.0712 4.86%,
+    0.0942 5.72%,
+    0.135 7.08%,
+    0.1852 8.62%,
+    0.4096 15.02%,
+    0.4645 16.64%,
+    0.5117 18.09%,
+    0.5618 19.71%,
+    0.6089 21.33%,
+    0.6527 22.95%,
+    0.6913 24.49%,
+    0.7268 26.02%,
+    0.7611 27.65%,
+    0.7907 29.18%,
+    0.819 30.8%,
+    0.8444 32.42%,
+    0.8682 34.13%,
+    0.8892 35.84%,
+    0.9084 37.63%,
+    0.9266 39.59%,
+    0.9419 41.55%,
+    0.9554 43.6%,
+    0.9673 45.82%,
+    0.9772 48.12%,
+    0.9855 50.6%,
+    0.9921 53.24%,
+    0.9973 56.14%,
+    1.0029 61.77%,
+    1.005 68.77%,
+    1
+  );
+  --sc-motion-send-response: 0.42;
+  --sc-motion-send-damping: 0.86;
+  --sc-motion-keyboard-duration: 383ms;
+  --sc-motion-keyboard-easing: linear(
+    0,
+    0.0011 0.52%,
+    0.0055 1.17%,
+    0.0111 1.7%,
+    0.0205 2.35%,
+    0.0458 3.66%,
+    0.0816 5.09%,
+    0.1154 6.27%,
+    0.1603 7.7%,
+    0.3664 13.84%,
+    0.4616 16.84%,
+    0.5116 18.54%,
+    0.555 20.1%,
+    0.5956 21.67%,
+    0.6363 23.37%,
+    0.671 24.93%,
+    0.7054 26.63%,
+    0.7368 28.33%,
+    0.7653 30.03%,
+    0.793 31.85%,
+    0.8177 33.68%,
+    0.8398 35.51%,
+    0.8607 37.47%,
+    0.8813 39.69%,
+    0.8991 41.91%,
+    0.916 44.39%,
+    0.9303 46.87%,
+    0.9428 49.48%,
+    0.954 52.35%,
+    0.9714 58.49%,
+    0.9834 65.4%,
+    0.9915 73.76%,
+    0.996 83.16%,
+    1
+  );
+  --sc-motion-keyboard-response: 0.26;
+  --sc-motion-keyboard-damping: 1;
+  --sc-motion-page-duration: 735ms;
+  --sc-motion-page-easing: linear(
+    0,
+    0.0012 0.54%,
+    0.0047 1.09%,
+    0.0111 1.7%,
+    0.0198 2.31%,
+    0.0445 3.61%,
+    0.0816 5.1%,
+    0.1168 6.33%,
+    0.1593 7.69%,
+    0.3645 13.81%,
+    0.4151 15.37%,
+    0.4615 16.87%,
+    0.5115 18.57%,
+    0.5565 20.2%,
+    0.5985 21.84%,
+    0.6375 23.47%,
+    0.6734 25.1%,
+    0.7077 26.8%,
+    0.7389 28.5%,
+    0.7672 30.2%,
+    0.7937 31.97%,
+    0.8176 33.74%,
+    0.8405 35.65%,
+    0.8607 37.55%,
+    0.881 39.73%,
+    0.899 41.97%,
+    0.9153 44.35%,
+    0.9298 46.87%,
+    0.9425 49.52%,
+    0.9535 52.31%,
+    0.9631 55.31%,
+    0.9713 58.57%,
+    0.9833 65.44%,
+    0.9914 73.74%,
+    0.996 83.13%,
+    1
+  );
+  --sc-motion-page-response: 0.5;
+  --sc-motion-page-damping: 1;
+  --sc-motion-rise-duration: 1176ms;
+  --sc-motion-rise-easing: linear(
+    0,
+    0.0013 0.55%,
+    0.0049 1.11%,
+    0.0111 1.7%,
+    0.0202 2.34%,
+    0.0315 2.98%,
+    0.0457 3.66%,
+    0.0816 5.1%,
+    0.1157 6.29%,
+    0.1596 7.7%,
+    0.3647 13.82%,
+    0.4169 15.43%,
+    0.463 16.92%,
+    0.5117 18.58%,
+    0.5574 20.24%,
+    0.599 21.85%,
+    0.6375 23.47%,
+    0.6739 25.13%,
+    0.7073 26.79%,
+    0.7386 28.49%,
+    0.7669 30.19%,
+    0.7931 31.93%,
+    0.8178 33.76%,
+    0.8403 35.63%,
+    0.8606 37.54%,
+    0.8808 39.71%,
+    0.8992 42.01%,
+    0.9155 44.39%,
+    0.9299 46.9%,
+    0.9425 49.53%,
+    0.9536 52.34%,
+    0.9632 55.36%,
+    0.9714 58.59%,
+    0.9833 65.48%,
+    0.9914 73.77%,
+    0.996 83.16%,
+    1
+  );
+  --sc-motion-rise-response: 0.8;
+  --sc-motion-rise-damping: 1;
+  --sc-motion-rise-delay: 120ms;
+  --sc-motion-light-duration: 3200ms;
+  --sc-motion-light-easing: cubic-bezier(0.3, 0.1, 0.7, 0.9);
+  --sc-motion-reflow-duration: 0ms;
+  --sc-motion-reflow-easing: linear;
+  --sc-motion-cut-duration: 0ms;
+  --sc-motion-cut-easing: linear;
+  --sc-timing-beat: 120ms;
+  --sc-timing-linger: 1200ms;
+  --sc-timing-dwell: 400ms;
+  --sc-timing-read-before-allow: 1000ms;
+  --sc-timing-answer-undo: 3000ms;
+  --sc-timing-banner-stay: 5000ms;
+  --sc-timing-banner-stale: 120000ms;
+  --sc-timing-typing-pause: 1000ms;
+  --sc-timing-talk-quiet: 600000ms;
+  --sc-timing-spring-load: 350ms;
+  --sc-timing-rewrap-rest: 120ms;
+  --sc-timing-send-landed: 280ms;
+  --sc-timing-keyboard-landed: 300ms;
+  --sc-timing-page-landed: 620ms;
+  --sc-timing-glow-pass-pill: 2400ms;
+  --sc-timing-glow-rest: 1000ms;
+  --sc-timing-glow-lead: 200ms;
+  --sc-timing-glow-arrive: 450ms;
+  --sc-timing-glow-exhale: 650ms;
+  --sc-timing-glow-bloom: 450ms;
+  --sc-timing-glow-fade: 300ms;
+  --sc-timing-glow-breath: 3200ms;
+  --sc-timing-glow-drift: 9000ms;
+  --sc-timing-bob: 1300ms;
+  --sc-lean-travel: 14px;
+  --sc-step-travel: 40px;
+  --sc-chrome-ink: 0.72;
+  --sc-absent: 0.72;
+  --sc-light-band: 0.5;
+  --sc-light-band-least: 36;
+  --sc-light-lean: 24;
+  --sc-receded: 0.75;
+  --sc-receded-saturation: 0.25;
+  --sc-low-charge: 20;
+  --sc-looks-headroom: 10px;
+  --sc-notch-shape-rest-corner: 10px;
+  --sc-notch-shape-open-corner: 24px;
+  --sc-notch-shape-flare: 16px;
+  --sc-veil-radius: 3.4;
+  --sc-veil-clear-foot: 0.25;
+  --sc-veil-halo-feather: 10;
+  --sc-veil-halo-dim: 0.72;
+  --sc-veil-lights-down: 0.86;
+  --sc-veil-parked: 0.4;
+  --sc-page-max-share: 0.9;
+  --sc-reading-measure: 940px;
+  --sc-body: 11.5px;
+  --sc-body-compact: 11px;
+  --sc-page-code: 13px;
+  --sc-table-cell-measure: 40ch;
+  --sc-reader-scale: 1;
+  --sc-reader-scale-min: 0.7;
+  --sc-reader-scale-max: 2.2;
+  --sc-reader-scale-step: 0.05;
+  --sc-heading-1-step: 6px;
+  --sc-heading-2-step: 4px;
+  --sc-heading-3-step: 2px;
+  --sc-heading-4-step: 1px;
+  --sc-natural-line: 1.22;
+  --sc-leading: 0.38;
+  --sc-rhythm-item: 0.75;
+  --sc-rhythm-paragraph: 1;
+  --sc-rhythm-block: 1.25;
+  --sc-rhythm-section: 1.5;
+  --sc-rhythm-message: 1.5;
+  --sc-copy-drop: 0.375;
+  --sc-table-line-spacing: 0.12;
+  --sc-content-size: 0px;
+  --sc-content-weight: 400;
+  --sc-interface-size: -1px;
+  --sc-interface-weight: 400;
+  --sc-meta-size: -2px;
+  --sc-meta-weight: 400;
+  --sc-quiet-size: -2px;
+  --sc-quiet-weight: 400;
+  --sc-font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-ease: linear(
+    0,
+    0.0015 0.64%,
+    0.0058 1.27%,
+    0.0125 1.91%,
+    0.0233 2.65%,
+    0.0368 3.4%,
+    0.0526 4.14%,
+    0.093 5.73%,
+    0.1335 7.11%,
+    0.1811 8.6%,
+    0.4033 15.07%,
+    0.456 16.67%,
+    0.5033 18.15%,
+    0.5547 19.85%,
+    0.5999 21.44%,
+    0.6421 23.04%,
+    0.6813 24.63%,
+    0.7175 26.22%,
+    0.7506 27.81%,
+    0.7808 29.41%,
+    0.8099 31.1%,
+    0.836 32.8%,
+    0.8593 34.5%,
+    0.8799 36.2%,
+    0.8992 38%,
+    0.9178 40.02%,
+    0.9336 42.04%,
+    0.9477 44.16%,
+    0.9604 46.5%,
+    0.971 48.94%,
+    0.9798 51.49%,
+    0.9925 57.11%,
+    0.9994 63.16%,
+    1.0026 70.81%,
+    1.0026 82.59%,
+    1
+  );
+  --sc-enter: 471ms;
+  --sc-beat: 120ms;
+  --sc-flick: 120ms;
+  --sc-fade: 200ms;
+  --sc-rise: 1176ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sc-motion-flick-duration: 200ms;
+    --sc-motion-flick-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-fade-duration: 200ms;
+    --sc-motion-fade-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-leave-duration: 200ms;
+    --sc-motion-leave-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-recede-duration: 200ms;
+    --sc-motion-recede-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-icon-hover-duration: 200ms;
+    --sc-motion-icon-hover-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-beckon-in-duration: 200ms;
+    --sc-motion-beckon-in-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-beckon-out-duration: 200ms;
+    --sc-motion-beckon-out-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-settle-duration: 200ms;
+    --sc-motion-settle-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-travel-duration: 200ms;
+    --sc-motion-travel-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-unfold-duration: 200ms;
+    --sc-motion-unfold-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-send-duration: 200ms;
+    --sc-motion-send-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-keyboard-duration: 200ms;
+    --sc-motion-keyboard-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-page-duration: 200ms;
+    --sc-motion-page-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-rise-duration: 200ms;
+    --sc-motion-rise-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-rise-delay: 0ms;
+    --sc-motion-light-duration: 200ms;
+    --sc-motion-light-easing: cubic-bezier(0, 0, 0.58, 1);
+    --sc-motion-reflow-duration: 0ms;
+    --sc-motion-reflow-easing: linear;
+    --sc-motion-cut-duration: 0ms;
+    --sc-motion-cut-easing: linear;
+    --sc-ease: cubic-bezier(0, 0, 0.58, 1);
+    --sc-enter: 200ms;
+    --sc-flick: 200ms;
+    --sc-fade: 200ms;
+    --sc-rise: 200ms;
+  }
+}
+
+:root,
+[data-skin="magma"] {
+  --sc-notch: rgba(0, 0, 0, 1);
+  --sc-field: rgba(22, 22, 22, 1);
+  --sc-page: rgba(0, 0, 0, 1);
+  --sc-wash: rgba(15, 15, 16, 1);
+  --sc-plate: rgba(0, 0, 0, 1);
+  --sc-raised: rgba(28, 28, 30, 1);
+  --sc-hot: rgba(41, 41, 43, 1);
+  --sc-edge: rgba(233, 232, 230, 0.12);
+  --sc-hairline: rgba(115, 113, 111, 0.25);
+  --sc-grip: rgba(115, 113, 111, 0.58);
+  --sc-grip-active: rgba(203, 202, 201, 1);
+  --sc-text: rgba(245, 244, 243, 1);
+  --sc-soft: rgba(203, 202, 201, 1);
+  --sc-reading: rgba(181, 180, 178, 1);
+  --sc-dim: rgba(145, 144, 142, 1);
+  --sc-mute: rgba(104, 103, 101, 1);
+  --sc-faint: rgba(58, 57, 56, 1);
+  --sc-on-text: rgba(16, 15, 14, 1);
+  --sc-inverse: rgba(245, 244, 243, 1);
+  --sc-highlight: rgba(255, 255, 255, 1);
+  --sc-drop-target: rgba(255, 255, 255, 1);
+  --sc-code-span: rgba(245, 244, 243, 1);
+  --sc-accent: rgba(61, 64, 238, 1);
+  --sc-accent-pressed: rgba(51, 48, 214, 1);
+  --sc-on-accent: rgba(245, 244, 243, 1);
+  --sc-accent-ink: rgba(131, 147, 255, 1);
+  --sc-warning: rgba(253, 190, 72, 1);
+  --sc-needs-you: rgba(253, 190, 72, 1);
+  --sc-living: rgba(253, 190, 72, 1);
+  --sc-error: rgba(242, 78, 113, 1);
+  --sc-success: rgba(42, 211, 148, 1);
+  --sc-info: rgba(92, 212, 232, 1);
+  --sc-notification: rgba(131, 147, 255, 1);
+  --sc-cold: rgba(198, 228, 238, 1);
+  --sc-working: rgba(131, 147, 255, 1);
+  --sc-peer: rgba(131, 147, 255, 1);
+  --sc-place: rgba(203, 202, 201, 1);
+  --sc-merged: rgba(203, 202, 201, 1);
+  --sc-diff-added: rgba(40, 235, 186, 1);
+  --sc-diff-removed: rgba(255, 100, 139, 1);
+  --sc-chrome: rgba(245, 244, 243, 0.72);
+  --sc-beckon: rgba(255, 255, 255, 0.16);
+  --sc-selection: rgba(255, 255, 255, 0.22);
+  --sc-new-rule: rgba(131, 147, 255, 0.35);
+  --sc-peek: rgba(0, 0, 0, 0.94);
+  --sc-frame-edge: rgba(233, 232, 230, 0);
+  --sc-surface: rgba(0, 0, 0, 1);
+  --sc-code: rgba(28, 28, 30, 1);
+  --sc-cooled: rgba(16, 18, 19, 1);
+  --sc-diff-added-fill: rgba(40, 235, 186, 0.16);
+  --sc-diff-removed-fill: rgba(255, 100, 139, 0.15);
+  --sc-diff-added-edge: rgba(40, 235, 186, 0.3);
+  --sc-diff-removed-edge: rgba(255, 100, 139, 0.28);
+  --sc-diff-added-word: rgba(40, 235, 186, 0.4);
+  --sc-diff-removed-word: rgba(255, 100, 139, 0.38);
+  --sc-diff-added-wash: rgba(40, 235, 186, 0.09);
+  --sc-diff-removed-wash: rgba(255, 100, 139, 0.08);
+  --sc-chart-other: rgba(95, 120, 138, 1);
+  --sc-group-1: rgba(157, 195, 163, 1);
+  --sc-group-2: rgba(168, 209, 238, 1);
+  --sc-group-3: rgba(215, 184, 148, 1);
+  --sc-group-4: rgba(215, 201, 243, 1);
+  --sc-group-5: rgba(150, 209, 208, 1);
+  --sc-group-6: rgba(213, 162, 161, 1);
+  --sc-data-hue-1: rgba(80, 113, 222, 1);
+  --sc-data-hue-2: rgba(179, 140, 21, 1);
+  --sc-data-hue-3: rgba(0, 159, 125, 1);
+  --sc-data-hue-4: rgba(187, 44, 84, 1);
+  --sc-data-hue-5: rgba(45, 149, 211, 1);
+  --sc-data-hue-6: rgba(144, 68, 191, 1);
+  --sc-data-hue-7: rgba(198, 88, 156, 1);
+  --sc-data-hue-8: rgba(95, 120, 138, 1);
+  --sc-project-1: rgba(144, 181, 220, 1);
+  --sc-project-2: rgba(238, 180, 170, 1);
+  --sc-project-3: rgba(198, 174, 126, 1);
+  --sc-project-4: rgba(141, 210, 214, 1);
+  --sc-project-5: rgba(237, 201, 245, 1);
+  --sc-project-6: rgba(198, 201, 148, 1);
+  --sc-heat-0: rgba(245, 244, 243, 0.05);
+  --sc-heat-1: rgba(131, 147, 255, 0.3);
+  --sc-heat-2: rgba(131, 147, 255, 0.52);
+  --sc-heat-3: rgba(131, 147, 255, 0.76);
+  --sc-heat-4: rgba(131, 147, 255, 1);
+  --sc-data-1: rgba(125, 157, 247, 1);
+  --sc-data-2: rgba(214, 182, 105, 1);
+  --sc-data-3: rgba(105, 196, 167, 1);
+  --sc-data-4: rgba(178, 120, 218, 1);
+  --sc-data-5: rgba(115, 189, 240, 1);
+  --sc-data-6: rgba(231, 139, 192, 1);
+  --sc-syntax-plain: rgba(206, 209, 214, 1);
+  --sc-syntax-punctuation: rgba(161, 165, 171, 1);
+  --sc-syntax-comment: rgba(142, 146, 154, 1);
+  --sc-syntax-keyword: rgba(193, 144, 246, 1);
+  --sc-syntax-function: rgba(102, 180, 252, 1);
+  --sc-syntax-string: rgba(141, 220, 124, 1);
+  --sc-syntax-type: rgba(238, 196, 105, 1);
+  --sc-syntax-number: rgba(86, 210, 223, 1);
+  --sc-syntax-property: rgba(230, 232, 236, 1);
+  --sc-scrollbar-thumb: rgba(115, 113, 111, 0.58);
+  --sc-scrollbar-thumb-active: rgba(203, 202, 201, 1);
+  --sc-scrollbar-track: rgba(115, 113, 111, 0.25);
+  --sc-scrollbar-tick: rgba(203, 202, 201, 1);
+  --sc-scrollbar-tick-active: rgba(245, 244, 243, 1);
+  --sc-content-ink: rgba(181, 180, 178, 1);
+  --sc-content-strong-ink: rgba(245, 244, 243, 1);
+  --sc-interface-ink: rgba(203, 202, 201, 1);
+  --sc-meta-ink: rgba(145, 144, 142, 1);
+  --sc-quiet-ink: rgba(104, 103, 101, 1);
+  --sc-disabled-ink: rgba(58, 57, 56, 1);
+  --sc-radius-chip: 8px;
+  --sc-radius-card: 18px;
+  --sc-radius-sheet: 28px;
+  --sc-radius-control: 12px;
+  --sc-space-xs: 4px;
+  --sc-space-sm: 6px;
+  --sc-space-md: 8px;
+  --sc-space-lg: 10px;
+  --sc-space-xl: 12px;
+  --sc-space-xxl: 16px;
+  --sc-spacing-step: 4px;
+  --sc-spacing-density: 1;
+  --sc-column-inset: 16px;
+  --sc-column-gap: 8px;
+  --sc-control-icon: 24px;
+  --sc-control-glyph: 11px;
+  --sc-control-capsule: 24px;
+  --sc-control-primary: 24px;
+  --sc-control-radius: calc(infinity * 1px);
+  --sc-shadow-shell: 0 10px 26px rgba(0, 0, 0, 0.62);
+  --sc-shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --sc-shadow-none: 0 0px 0px rgba(0, 0, 0, 0);
+  --sc-tint-fill: 0.16;
+  --sc-tint-edge: 0.36;
+  --sc-font-ui: -apple-system, system-ui, sans-serif;
+  --sc-font-ui-adjust: 1.06;
+  --sc-font-ui-weight: 500;
+  --sc-font-prose: -apple-system, system-ui, sans-serif;
+  --sc-font-prose-adjust: 1.08;
+  --sc-font-prose-weight: 500;
+  --sc-font-display: -apple-system, system-ui, sans-serif;
+  --sc-font-display-adjust: 1.1;
+  --sc-font-display-weight: 600;
+  --sc-font-code: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-font-code-adjust: 1;
+  --sc-font-code-weight: 600;
+  --sc-size: 12px;
+  --sc-other: rgba(95, 120, 138, 1);
+  --sc-font: -apple-system, system-ui, sans-serif;
+  --sc-radius: 18px;
+}
+
+:root:not([data-skin])[data-device="phone"],
+[data-skin="magma"][data-device="phone"] {
+  --sc-notch: rgba(22, 22, 22, 1);
+  --sc-page: rgba(22, 22, 22, 1);
+  --sc-text: rgba(234, 233, 232, 1);
+  --sc-soft: rgba(194, 193, 192, 1);
+  --sc-code-span: rgba(234, 233, 232, 1);
+  --sc-place: rgba(194, 193, 192, 1);
+  --sc-merged: rgba(194, 193, 192, 1);
+  --sc-chrome: rgba(234, 233, 232, 0.72);
+  --sc-peek: rgba(22, 22, 22, 0.94);
+  --sc-frame-edge: rgba(233, 232, 230, 0.06);
+  --sc-heat-0: rgba(234, 233, 232, 0.05);
+  --sc-scrollbar-tick: rgba(194, 193, 192, 1);
+  --sc-scrollbar-tick-active: rgba(234, 233, 232, 1);
+  --sc-content-strong-ink: rgba(234, 233, 232, 1);
+  --sc-interface-ink: rgba(194, 193, 192, 1);
+}
+
+[data-skin="graphite"] {
+  --sc-notch: rgba(0, 0, 0, 1);
+  --sc-field: rgba(0, 0, 0, 1);
+  --sc-page: rgba(13, 13, 12, 1);
+  --sc-wash: rgba(7, 7, 6, 1);
+  --sc-plate: rgba(13, 13, 12, 1);
+  --sc-raised: rgba(22, 21, 20, 1);
+  --sc-hot: rgba(32, 31, 30, 1);
+  --sc-edge: rgba(233, 232, 230, 0.12);
+  --sc-hairline: rgba(115, 113, 111, 0.25);
+  --sc-grip: rgba(115, 113, 111, 0.58);
+  --sc-grip-active: rgba(203, 202, 201, 1);
+  --sc-text: rgba(245, 244, 243, 1);
+  --sc-soft: rgba(203, 202, 201, 1);
+  --sc-reading: rgba(181, 180, 178, 1);
+  --sc-dim: rgba(138, 137, 135, 1);
+  --sc-mute: rgba(103, 102, 100, 1);
+  --sc-faint: rgba(70, 69, 67, 1);
+  --sc-on-text: rgba(16, 15, 14, 1);
+  --sc-inverse: rgba(245, 244, 243, 1);
+  --sc-highlight: rgba(255, 255, 255, 1);
+  --sc-drop-target: rgba(255, 255, 255, 1);
+  --sc-code-span: rgba(245, 244, 243, 1);
+  --sc-accent: rgba(61, 64, 238, 1);
+  --sc-accent-pressed: rgba(51, 48, 214, 1);
+  --sc-on-accent: rgba(245, 244, 243, 1);
+  --sc-accent-ink: rgba(131, 147, 255, 1);
+  --sc-warning: rgba(253, 190, 72, 1);
+  --sc-needs-you: rgba(253, 190, 72, 1);
+  --sc-living: rgba(253, 190, 72, 1);
+  --sc-error: rgba(242, 78, 113, 1);
+  --sc-success: rgba(42, 211, 148, 1);
+  --sc-info: rgba(92, 212, 232, 1);
+  --sc-notification: rgba(131, 147, 255, 1);
+  --sc-cold: rgba(198, 228, 238, 1);
+  --sc-working: rgba(131, 147, 255, 1);
+  --sc-peer: rgba(131, 147, 255, 1);
+  --sc-place: rgba(203, 202, 201, 1);
+  --sc-merged: rgba(203, 202, 201, 1);
+  --sc-diff-added: rgba(40, 235, 186, 1);
+  --sc-diff-removed: rgba(255, 100, 139, 1);
+  --sc-chrome: rgba(245, 244, 243, 0.72);
+  --sc-beckon: rgba(255, 255, 255, 0.16);
+  --sc-selection: rgba(255, 255, 255, 0.22);
+  --sc-new-rule: rgba(131, 147, 255, 0.35);
+  --sc-peek: rgba(0, 0, 0, 0.94);
+  --sc-frame-edge: rgba(233, 232, 230, 0.06);
+  --sc-surface: rgba(13, 13, 12, 1);
+  --sc-code: rgba(22, 21, 20, 1);
+  --sc-cooled: rgba(28, 30, 30, 1);
+  --sc-diff-added-fill: rgba(40, 235, 186, 0.16);
+  --sc-diff-removed-fill: rgba(255, 100, 139, 0.15);
+  --sc-diff-added-edge: rgba(40, 235, 186, 0.3);
+  --sc-diff-removed-edge: rgba(255, 100, 139, 0.28);
+  --sc-diff-added-word: rgba(40, 235, 186, 0.4);
+  --sc-diff-removed-word: rgba(255, 100, 139, 0.38);
+  --sc-diff-added-wash: rgba(40, 235, 186, 0.09);
+  --sc-diff-removed-wash: rgba(255, 100, 139, 0.08);
+  --sc-chart-other: rgba(95, 120, 138, 1);
+  --sc-group-1: rgba(157, 195, 163, 1);
+  --sc-group-2: rgba(168, 209, 238, 1);
+  --sc-group-3: rgba(215, 184, 148, 1);
+  --sc-group-4: rgba(215, 201, 243, 1);
+  --sc-group-5: rgba(150, 209, 208, 1);
+  --sc-group-6: rgba(213, 162, 161, 1);
+  --sc-data-hue-1: rgba(80, 113, 222, 1);
+  --sc-data-hue-2: rgba(179, 140, 21, 1);
+  --sc-data-hue-3: rgba(0, 159, 125, 1);
+  --sc-data-hue-4: rgba(187, 44, 84, 1);
+  --sc-data-hue-5: rgba(45, 149, 211, 1);
+  --sc-data-hue-6: rgba(144, 68, 191, 1);
+  --sc-data-hue-7: rgba(198, 88, 156, 1);
+  --sc-data-hue-8: rgba(95, 120, 138, 1);
+  --sc-project-1: rgba(144, 181, 220, 1);
+  --sc-project-2: rgba(238, 180, 170, 1);
+  --sc-project-3: rgba(198, 174, 126, 1);
+  --sc-project-4: rgba(141, 210, 214, 1);
+  --sc-project-5: rgba(237, 201, 245, 1);
+  --sc-project-6: rgba(198, 201, 148, 1);
+  --sc-heat-0: rgba(245, 244, 243, 0.05);
+  --sc-heat-1: rgba(131, 147, 255, 0.3);
+  --sc-heat-2: rgba(131, 147, 255, 0.52);
+  --sc-heat-3: rgba(131, 147, 255, 0.76);
+  --sc-heat-4: rgba(131, 147, 255, 1);
+  --sc-data-1: rgba(125, 157, 247, 1);
+  --sc-data-2: rgba(214, 182, 105, 1);
+  --sc-data-3: rgba(105, 196, 167, 1);
+  --sc-data-4: rgba(178, 120, 218, 1);
+  --sc-data-5: rgba(115, 189, 240, 1);
+  --sc-data-6: rgba(231, 139, 192, 1);
+  --sc-syntax-plain: rgba(206, 209, 214, 1);
+  --sc-syntax-punctuation: rgba(161, 165, 171, 1);
+  --sc-syntax-comment: rgba(142, 146, 154, 1);
+  --sc-syntax-keyword: rgba(193, 144, 246, 1);
+  --sc-syntax-function: rgba(102, 180, 252, 1);
+  --sc-syntax-string: rgba(141, 220, 124, 1);
+  --sc-syntax-type: rgba(238, 196, 105, 1);
+  --sc-syntax-number: rgba(86, 210, 223, 1);
+  --sc-syntax-property: rgba(230, 232, 236, 1);
+  --sc-scrollbar-thumb: rgba(115, 113, 111, 0.58);
+  --sc-scrollbar-thumb-active: rgba(203, 202, 201, 1);
+  --sc-scrollbar-track: rgba(115, 113, 111, 0.25);
+  --sc-scrollbar-tick: rgba(203, 202, 201, 1);
+  --sc-scrollbar-tick-active: rgba(245, 244, 243, 1);
+  --sc-content-ink: rgba(181, 180, 178, 1);
+  --sc-content-strong-ink: rgba(245, 244, 243, 1);
+  --sc-interface-ink: rgba(203, 202, 201, 1);
+  --sc-meta-ink: rgba(138, 137, 135, 1);
+  --sc-quiet-ink: rgba(103, 102, 100, 1);
+  --sc-disabled-ink: rgba(70, 69, 67, 1);
+  --sc-radius-chip: 8px;
+  --sc-radius-card: 12px;
+  --sc-radius-sheet: 16px;
+  --sc-radius-control: 12px;
+  --sc-space-xs: 4px;
+  --sc-space-sm: 6px;
+  --sc-space-md: 8px;
+  --sc-space-lg: 10px;
+  --sc-space-xl: 12px;
+  --sc-space-xxl: 16px;
+  --sc-spacing-step: 4px;
+  --sc-spacing-density: 1;
+  --sc-column-inset: 16px;
+  --sc-column-gap: 8px;
+  --sc-control-icon: 24px;
+  --sc-control-glyph: 11px;
+  --sc-control-capsule: 24px;
+  --sc-control-primary: 24px;
+  --sc-control-radius: calc(infinity * 1px);
+  --sc-shadow-shell: 0 10px 26px rgba(0, 0, 0, 0.62);
+  --sc-shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --sc-shadow-none: 0 0px 0px rgba(0, 0, 0, 0);
+  --sc-tint-fill: 0.16;
+  --sc-tint-edge: 0.36;
+  --sc-font-ui: -apple-system, system-ui, sans-serif;
+  --sc-font-ui-adjust: 1.06;
+  --sc-font-ui-weight: 500;
+  --sc-font-prose: -apple-system, system-ui, sans-serif;
+  --sc-font-prose-adjust: 1.08;
+  --sc-font-prose-weight: 500;
+  --sc-font-display: -apple-system, system-ui, sans-serif;
+  --sc-font-display-adjust: 1.1;
+  --sc-font-display-weight: 600;
+  --sc-font-code: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-font-code-adjust: 1;
+  --sc-font-code-weight: 600;
+  --sc-size: 12px;
+  --sc-other: rgba(95, 120, 138, 1);
+  --sc-font: -apple-system, system-ui, sans-serif;
+  --sc-radius: 12px;
+}
+
+[data-skin="graphite"][data-device="phone"] {
+  --sc-notch: rgba(13, 13, 12, 1);
+  --sc-text: rgba(233, 232, 231, 1);
+  --sc-soft: rgba(194, 193, 192, 1);
+  --sc-code-span: rgba(233, 232, 231, 1);
+  --sc-place: rgba(194, 193, 192, 1);
+  --sc-merged: rgba(194, 193, 192, 1);
+  --sc-chrome: rgba(233, 232, 231, 0.72);
+  --sc-peek: rgba(13, 13, 12, 0.94);
+  --sc-frame-edge: rgba(233, 232, 230, 0);
+  --sc-heat-0: rgba(233, 232, 231, 0.05);
+  --sc-scrollbar-tick: rgba(194, 193, 192, 1);
+  --sc-scrollbar-tick-active: rgba(233, 232, 231, 1);
+  --sc-content-strong-ink: rgba(233, 232, 231, 1);
+  --sc-interface-ink: rgba(194, 193, 192, 1);
+}
+
+[data-skin="ember"] {
+  --sc-notch: rgba(0, 0, 0, 1);
+  --sc-field: rgba(0, 0, 0, 1);
+  --sc-page: rgba(14, 13, 11, 1);
+  --sc-wash: rgba(8, 7, 6, 1);
+  --sc-plate: rgba(14, 13, 11, 1);
+  --sc-raised: rgba(22, 21, 19, 1);
+  --sc-hot: rgba(33, 31, 29, 1);
+  --sc-edge: rgba(234, 231, 227, 0.12);
+  --sc-hairline: rgba(117, 113, 108, 0.25);
+  --sc-grip: rgba(117, 113, 108, 0.58);
+  --sc-grip-active: rgba(205, 202, 197, 1);
+  --sc-text: rgba(247, 244, 239, 1);
+  --sc-soft: rgba(205, 202, 197, 1);
+  --sc-reading: rgba(183, 180, 174, 1);
+  --sc-dim: rgba(139, 137, 132, 1);
+  --sc-mute: rgba(106, 101, 97, 1);
+  --sc-faint: rgba(72, 68, 63, 1);
+  --sc-on-text: rgba(17, 15, 13, 1);
+  --sc-inverse: rgba(247, 244, 239, 1);
+  --sc-highlight: rgba(255, 255, 255, 1);
+  --sc-drop-target: rgba(255, 255, 255, 1);
+  --sc-code-span: rgba(247, 244, 239, 1);
+  --sc-accent: rgba(245, 240, 228, 1);
+  --sc-accent-pressed: rgba(221, 215, 202, 1);
+  --sc-on-accent: rgba(17, 15, 13, 1);
+  --sc-accent-ink: rgba(245, 240, 228, 1);
+  --sc-warning: rgba(222, 162, 128, 1);
+  --sc-needs-you: rgba(222, 162, 128, 1);
+  --sc-living: rgba(222, 162, 128, 1);
+  --sc-error: rgba(211, 112, 95, 1);
+  --sc-success: rgba(100, 160, 141, 1);
+  --sc-info: rgba(143, 166, 196, 1);
+  --sc-notification: rgba(245, 240, 228, 1);
+  --sc-cold: rgba(180, 214, 228, 1);
+  --sc-working: rgba(245, 240, 228, 1);
+  --sc-peer: rgba(245, 240, 228, 1);
+  --sc-place: rgba(205, 202, 197, 1);
+  --sc-merged: rgba(205, 202, 197, 1);
+  --sc-diff-added: rgba(104, 215, 161, 1);
+  --sc-diff-removed: rgba(243, 121, 136, 1);
+  --sc-chrome: rgba(247, 244, 239, 0.72);
+  --sc-beckon: rgba(255, 255, 255, 0.16);
+  --sc-selection: rgba(255, 255, 255, 0.22);
+  --sc-new-rule: rgba(245, 240, 228, 0.35);
+  --sc-peek: rgba(0, 0, 0, 0.94);
+  --sc-frame-edge: rgba(234, 231, 227, 0.06);
+  --sc-surface: rgba(14, 13, 11, 1);
+  --sc-code: rgba(22, 21, 19, 1);
+  --sc-cooled: rgba(27, 29, 28, 1);
+  --sc-diff-added-fill: rgba(104, 215, 161, 0.16);
+  --sc-diff-removed-fill: rgba(243, 121, 136, 0.15);
+  --sc-diff-added-edge: rgba(104, 215, 161, 0.3);
+  --sc-diff-removed-edge: rgba(243, 121, 136, 0.28);
+  --sc-diff-added-word: rgba(104, 215, 161, 0.4);
+  --sc-diff-removed-word: rgba(243, 121, 136, 0.38);
+  --sc-diff-added-wash: rgba(104, 215, 161, 0.09);
+  --sc-diff-removed-wash: rgba(243, 121, 136, 0.08);
+  --sc-chart-other: rgba(89, 122, 138, 1);
+  --sc-group-1: rgba(157, 195, 163, 1);
+  --sc-group-2: rgba(168, 209, 238, 1);
+  --sc-group-3: rgba(215, 184, 148, 1);
+  --sc-group-4: rgba(215, 201, 243, 1);
+  --sc-group-5: rgba(150, 209, 208, 1);
+  --sc-group-6: rgba(213, 162, 161, 1);
+  --sc-data-hue-1: rgba(95, 115, 202, 1);
+  --sc-data-hue-2: rgba(181, 139, 21, 1);
+  --sc-data-hue-3: rgba(26, 151, 105, 1);
+  --sc-data-hue-4: rgba(171, 43, 81, 1);
+  --sc-data-hue-5: rgba(50, 153, 210, 1);
+  --sc-data-hue-6: rgba(126, 72, 178, 1);
+  --sc-data-hue-7: rgba(180, 93, 153, 1);
+  --sc-data-hue-8: rgba(89, 122, 138, 1);
+  --sc-project-1: rgba(144, 181, 220, 1);
+  --sc-project-2: rgba(237, 201, 245, 1);
+  --sc-project-3: rgba(166, 226, 251, 1);
+  --sc-project-4: rgba(205, 224, 174, 1);
+  --sc-project-5: rgba(206, 161, 195, 1);
+  --sc-project-6: rgba(255, 201, 181, 1);
+  --sc-heat-0: rgba(247, 244, 239, 0.05);
+  --sc-heat-1: rgba(245, 240, 228, 0.3);
+  --sc-heat-2: rgba(245, 240, 228, 0.52);
+  --sc-heat-3: rgba(245, 240, 228, 0.76);
+  --sc-heat-4: rgba(245, 240, 228, 1);
+  --sc-data-1: rgba(138, 157, 230, 1);
+  --sc-data-2: rgba(216, 182, 105, 1);
+  --sc-data-3: rgba(105, 188, 149, 1);
+  --sc-data-4: rgba(160, 120, 206, 1);
+  --sc-data-5: rgba(119, 193, 240, 1);
+  --sc-data-6: rgba(213, 141, 189, 1);
+  --sc-syntax-plain: rgba(212, 208, 203, 1);
+  --sc-syntax-punctuation: rgba(161, 158, 153, 1);
+  --sc-syntax-comment: rgba(143, 140, 134, 1);
+  --sc-syntax-keyword: rgba(148, 169, 225, 1);
+  --sc-syntax-function: rgba(126, 207, 230, 1);
+  --sc-syntax-string: rgba(152, 205, 159, 1);
+  --sc-syntax-type: rgba(226, 200, 138, 1);
+  --sc-syntax-number: rgba(238, 178, 179, 1);
+  --sc-syntax-property: rgba(235, 231, 226, 1);
+  --sc-scrollbar-thumb: rgba(117, 113, 108, 0.58);
+  --sc-scrollbar-thumb-active: rgba(205, 202, 197, 1);
+  --sc-scrollbar-track: rgba(117, 113, 108, 0.25);
+  --sc-scrollbar-tick: rgba(205, 202, 197, 1);
+  --sc-scrollbar-tick-active: rgba(247, 244, 239, 1);
+  --sc-content-ink: rgba(183, 180, 174, 1);
+  --sc-content-strong-ink: rgba(247, 244, 239, 1);
+  --sc-interface-ink: rgba(205, 202, 197, 1);
+  --sc-meta-ink: rgba(139, 137, 132, 1);
+  --sc-quiet-ink: rgba(106, 101, 97, 1);
+  --sc-disabled-ink: rgba(72, 68, 63, 1);
+  --sc-radius-chip: 8px;
+  --sc-radius-card: 12px;
+  --sc-radius-sheet: 16px;
+  --sc-radius-control: 12px;
+  --sc-space-xs: 4px;
+  --sc-space-sm: 6px;
+  --sc-space-md: 8px;
+  --sc-space-lg: 10px;
+  --sc-space-xl: 12px;
+  --sc-space-xxl: 16px;
+  --sc-spacing-step: 4px;
+  --sc-spacing-density: 1;
+  --sc-column-inset: 16px;
+  --sc-column-gap: 8px;
+  --sc-control-icon: 24px;
+  --sc-control-glyph: 11px;
+  --sc-control-capsule: 24px;
+  --sc-control-primary: 24px;
+  --sc-control-radius: calc(infinity * 1px);
+  --sc-shadow-shell: 0 10px 26px rgba(0, 0, 0, 0.62);
+  --sc-shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --sc-shadow-none: 0 0px 0px rgba(0, 0, 0, 0);
+  --sc-tint-fill: 0.16;
+  --sc-tint-edge: 0.34;
+  --sc-font-ui: -apple-system, system-ui, sans-serif;
+  --sc-font-ui-adjust: 1.06;
+  --sc-font-ui-weight: 500;
+  --sc-font-prose: -apple-system, system-ui, sans-serif;
+  --sc-font-prose-adjust: 1.08;
+  --sc-font-prose-weight: 500;
+  --sc-font-display: -apple-system, system-ui, sans-serif;
+  --sc-font-display-adjust: 1.1;
+  --sc-font-display-weight: 600;
+  --sc-font-code: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-font-code-adjust: 1;
+  --sc-font-code-weight: 600;
+  --sc-size: 12px;
+  --sc-other: rgba(89, 122, 138, 1);
+  --sc-font: -apple-system, system-ui, sans-serif;
+  --sc-radius: 12px;
+}
+
+[data-skin="ember"][data-device="phone"] {
+  --sc-notch: rgba(14, 13, 11, 1);
+  --sc-text: rgba(235, 232, 228, 1);
+  --sc-soft: rgba(195, 193, 188, 1);
+  --sc-code-span: rgba(235, 232, 228, 1);
+  --sc-place: rgba(195, 193, 188, 1);
+  --sc-merged: rgba(195, 193, 188, 1);
+  --sc-chrome: rgba(235, 232, 228, 0.72);
+  --sc-peek: rgba(14, 13, 11, 0.94);
+  --sc-frame-edge: rgba(234, 231, 227, 0);
+  --sc-heat-0: rgba(235, 232, 228, 0.05);
+  --sc-scrollbar-tick: rgba(195, 193, 188, 1);
+  --sc-scrollbar-tick-active: rgba(235, 232, 228, 1);
+  --sc-content-strong-ink: rgba(235, 232, 228, 1);
+  --sc-interface-ink: rgba(195, 193, 188, 1);
+}
+
+[data-skin="iceberg"] {
+  --sc-notch: rgba(0, 0, 0, 1);
+  --sc-field: rgba(0, 0, 0, 1);
+  --sc-page: rgba(12, 13, 15, 1);
+  --sc-wash: rgba(6, 7, 9, 1);
+  --sc-plate: rgba(12, 13, 15, 1);
+  --sc-raised: rgba(20, 21, 23, 1);
+  --sc-hot: rgba(30, 31, 33, 1);
+  --sc-edge: rgba(229, 232, 236, 0.12);
+  --sc-hairline: rgba(109, 114, 119, 0.25);
+  --sc-grip: rgba(109, 114, 119, 0.58);
+  --sc-grip-active: rgba(199, 203, 207, 1);
+  --sc-text: rgba(241, 245, 248, 1);
+  --sc-soft: rgba(199, 203, 207, 1);
+  --sc-reading: rgba(177, 181, 185, 1);
+  --sc-dim: rgba(134, 138, 140, 1);
+  --sc-mute: rgba(98, 103, 107, 1);
+  --sc-faint: rgba(66, 69, 73, 1);
+  --sc-on-text: rgba(14, 16, 18, 1);
+  --sc-inverse: rgba(241, 245, 248, 1);
+  --sc-highlight: rgba(255, 255, 255, 1);
+  --sc-drop-target: rgba(255, 255, 255, 1);
+  --sc-code-span: rgba(241, 245, 248, 1);
+  --sc-accent: rgba(151, 211, 253, 1);
+  --sc-accent-pressed: rgba(129, 188, 229, 1);
+  --sc-on-accent: rgba(14, 16, 18, 1);
+  --sc-accent-ink: rgba(151, 211, 253, 1);
+  --sc-warning: rgba(238, 208, 89, 1);
+  --sc-needs-you: rgba(238, 208, 89, 1);
+  --sc-living: rgba(238, 208, 89, 1);
+  --sc-error: rgba(236, 90, 94, 1);
+  --sc-success: rgba(44, 198, 154, 1);
+  --sc-info: rgba(110, 205, 204, 1);
+  --sc-notification: rgba(151, 211, 253, 1);
+  --sc-cold: rgba(193, 229, 239, 1);
+  --sc-working: rgba(151, 211, 253, 1);
+  --sc-peer: rgba(151, 211, 253, 1);
+  --sc-place: rgba(199, 203, 207, 1);
+  --sc-merged: rgba(199, 203, 207, 1);
+  --sc-diff-added: rgba(55, 225, 196, 1);
+  --sc-diff-removed: rgba(242, 98, 142, 1);
+  --sc-chrome: rgba(241, 245, 248, 0.72);
+  --sc-beckon: rgba(255, 255, 255, 0.16);
+  --sc-selection: rgba(255, 255, 255, 0.22);
+  --sc-new-rule: rgba(151, 211, 253, 0.35);
+  --sc-peek: rgba(0, 0, 0, 0.94);
+  --sc-frame-edge: rgba(229, 232, 236, 0.06);
+  --sc-surface: rgba(12, 13, 15, 1);
+  --sc-code: rgba(20, 21, 23, 1);
+  --sc-cooled: rgba(26, 30, 33, 1);
+  --sc-diff-added-fill: rgba(55, 225, 196, 0.16);
+  --sc-diff-removed-fill: rgba(242, 98, 142, 0.15);
+  --sc-diff-added-edge: rgba(55, 225, 196, 0.3);
+  --sc-diff-removed-edge: rgba(242, 98, 142, 0.28);
+  --sc-diff-added-word: rgba(55, 225, 196, 0.4);
+  --sc-diff-removed-word: rgba(242, 98, 142, 0.38);
+  --sc-diff-added-wash: rgba(55, 225, 196, 0.09);
+  --sc-diff-removed-wash: rgba(242, 98, 142, 0.08);
+  --sc-chart-other: rgba(99, 119, 140, 1);
+  --sc-group-1: rgba(157, 195, 163, 1);
+  --sc-group-2: rgba(168, 209, 238, 1);
+  --sc-group-3: rgba(215, 184, 148, 1);
+  --sc-group-4: rgba(215, 201, 243, 1);
+  --sc-group-5: rgba(150, 209, 208, 1);
+  --sc-group-6: rgba(213, 162, 161, 1);
+  --sc-data-hue-1: rgba(96, 100, 213, 1);
+  --sc-data-hue-2: rgba(176, 145, 31, 1);
+  --sc-data-hue-3: rgba(0, 157, 134, 1);
+  --sc-data-hue-4: rgba(180, 47, 86, 1);
+  --sc-data-hue-5: rgba(45, 149, 211, 1);
+  --sc-data-hue-6: rgba(133, 60, 165, 1);
+  --sc-data-hue-7: rgba(185, 87, 156, 1);
+  --sc-data-hue-8: rgba(99, 119, 140, 1);
+  --sc-project-1: rgba(144, 181, 220, 1);
+  --sc-project-2: rgba(238, 180, 170, 1);
+  --sc-project-3: rgba(198, 174, 126, 1);
+  --sc-project-4: rgba(141, 210, 214, 1);
+  --sc-project-5: rgba(237, 201, 245, 1);
+  --sc-project-6: rgba(198, 201, 148, 1);
+  --sc-heat-0: rgba(241, 245, 248, 0.05);
+  --sc-heat-1: rgba(151, 211, 253, 0.3);
+  --sc-heat-2: rgba(151, 211, 253, 0.52);
+  --sc-heat-3: rgba(151, 211, 253, 0.76);
+  --sc-heat-4: rgba(151, 211, 253, 1);
+  --sc-data-1: rgba(136, 145, 238, 1);
+  --sc-data-2: rgba(212, 187, 109, 1);
+  --sc-data-3: rgba(104, 194, 174, 1);
+  --sc-data-4: rgba(166, 110, 194, 1);
+  --sc-data-5: rgba(115, 189, 240, 1);
+  --sc-data-6: rgba(218, 137, 191, 1);
+  --sc-syntax-plain: rgba(204, 210, 213, 1);
+  --sc-syntax-punctuation: rgba(154, 159, 163, 1);
+  --sc-syntax-comment: rgba(135, 141, 145, 1);
+  --sc-syntax-keyword: rgba(141, 168, 241, 1);
+  --sc-syntax-function: rgba(98, 210, 240, 1);
+  --sc-syntax-string: rgba(140, 209, 149, 1);
+  --sc-syntax-type: rgba(232, 199, 115, 1);
+  --sc-syntax-number: rgba(234, 155, 114, 1);
+  --sc-syntax-property: rgba(227, 233, 236, 1);
+  --sc-scrollbar-thumb: rgba(109, 114, 119, 0.58);
+  --sc-scrollbar-thumb-active: rgba(199, 203, 207, 1);
+  --sc-scrollbar-track: rgba(109, 114, 119, 0.25);
+  --sc-scrollbar-tick: rgba(199, 203, 207, 1);
+  --sc-scrollbar-tick-active: rgba(241, 245, 248, 1);
+  --sc-content-ink: rgba(177, 181, 185, 1);
+  --sc-content-strong-ink: rgba(241, 245, 248, 1);
+  --sc-interface-ink: rgba(199, 203, 207, 1);
+  --sc-meta-ink: rgba(134, 138, 140, 1);
+  --sc-quiet-ink: rgba(98, 103, 107, 1);
+  --sc-disabled-ink: rgba(66, 69, 73, 1);
+  --sc-radius-chip: 8px;
+  --sc-radius-card: 12px;
+  --sc-radius-sheet: 16px;
+  --sc-radius-control: 12px;
+  --sc-space-xs: 4px;
+  --sc-space-sm: 6px;
+  --sc-space-md: 8px;
+  --sc-space-lg: 10px;
+  --sc-space-xl: 12px;
+  --sc-space-xxl: 16px;
+  --sc-spacing-step: 4px;
+  --sc-spacing-density: 1;
+  --sc-column-inset: 16px;
+  --sc-column-gap: 8px;
+  --sc-control-icon: 24px;
+  --sc-control-glyph: 11px;
+  --sc-control-capsule: 24px;
+  --sc-control-primary: 24px;
+  --sc-control-radius: calc(infinity * 1px);
+  --sc-shadow-shell: 0 10px 26px rgba(0, 0, 0, 0.62);
+  --sc-shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --sc-shadow-none: 0 0px 0px rgba(0, 0, 0, 0);
+  --sc-tint-fill: 0.16;
+  --sc-tint-edge: 0.34;
+  --sc-font-ui: -apple-system, system-ui, sans-serif;
+  --sc-font-ui-adjust: 1.06;
+  --sc-font-ui-weight: 500;
+  --sc-font-prose: -apple-system, system-ui, sans-serif;
+  --sc-font-prose-adjust: 1.08;
+  --sc-font-prose-weight: 500;
+  --sc-font-display: -apple-system, system-ui, sans-serif;
+  --sc-font-display-adjust: 1.1;
+  --sc-font-display-weight: 600;
+  --sc-font-code: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-font-code-adjust: 1;
+  --sc-font-code-weight: 600;
+  --sc-size: 12px;
+  --sc-other: rgba(99, 119, 140, 1);
+  --sc-font: -apple-system, system-ui, sans-serif;
+  --sc-radius: 12px;
+}
+
+[data-skin="iceberg"][data-device="phone"] {
+  --sc-notch: rgba(12, 13, 15, 1);
+  --sc-text: rgba(230, 233, 236, 1);
+  --sc-soft: rgba(190, 194, 197, 1);
+  --sc-code-span: rgba(230, 233, 236, 1);
+  --sc-place: rgba(190, 194, 197, 1);
+  --sc-merged: rgba(190, 194, 197, 1);
+  --sc-chrome: rgba(230, 233, 236, 0.72);
+  --sc-peek: rgba(12, 13, 15, 0.94);
+  --sc-frame-edge: rgba(229, 232, 236, 0);
+  --sc-heat-0: rgba(230, 233, 236, 0.05);
+  --sc-scrollbar-tick: rgba(190, 194, 197, 1);
+  --sc-scrollbar-tick-active: rgba(230, 233, 236, 1);
+  --sc-content-strong-ink: rgba(230, 233, 236, 1);
+  --sc-interface-ink: rgba(190, 194, 197, 1);
+}
+
+[data-skin="horizon"] {
+  --sc-notch: rgba(0, 0, 0, 1);
+  --sc-field: rgba(0, 0, 0, 1);
+  --sc-page: rgba(0, 0, 0, 1);
+  --sc-wash: rgba(8, 7, 5, 1);
+  --sc-plate: rgba(14, 12, 11, 1);
+  --sc-raised: rgba(23, 21, 19, 1);
+  --sc-hot: rgba(33, 31, 29, 1);
+  --sc-edge: rgba(236, 231, 227, 0.12);
+  --sc-hairline: rgba(118, 112, 108, 0.25);
+  --sc-grip: rgba(118, 112, 108, 0.58);
+  --sc-grip-active: rgba(207, 201, 196, 1);
+  --sc-text: rgba(236, 231, 227, 1);
+  --sc-soft: rgba(207, 201, 196, 1);
+  --sc-reading: rgba(185, 179, 174, 1);
+  --sc-dim: rgba(145, 139, 134, 1);
+  --sc-mute: rgba(109, 103, 98, 1);
+  --sc-faint: rgba(74, 68, 63, 1);
+  --sc-on-text: rgba(17, 15, 13, 1);
+  --sc-inverse: rgba(236, 231, 227, 1);
+  --sc-highlight: rgba(236, 231, 227, 1);
+  --sc-drop-target: rgba(236, 231, 227, 1);
+  --sc-code-span: rgba(236, 231, 227, 1);
+  --sc-accent: rgba(31, 110, 203, 1);
+  --sc-accent-pressed: rgba(20, 92, 176, 1);
+  --sc-on-accent: rgba(246, 243, 240, 1);
+  --sc-accent-ink: rgba(98, 164, 247, 1);
+  --sc-warning: rgba(250, 182, 13, 1);
+  --sc-needs-you: rgba(250, 182, 13, 1);
+  --sc-living: rgba(250, 182, 13, 1);
+  --sc-error: rgba(240, 83, 43, 1);
+  --sc-success: rgba(98, 208, 164, 1);
+  --sc-info: rgba(165, 205, 235, 1);
+  --sc-notification: rgba(98, 164, 247, 1);
+  --sc-cold: rgba(199, 227, 241, 1);
+  --sc-working: rgba(98, 164, 247, 1);
+  --sc-peer: rgba(98, 164, 247, 1);
+  --sc-place: rgba(207, 201, 196, 1);
+  --sc-merged: rgba(207, 201, 196, 1);
+  --sc-diff-added: rgba(40, 235, 186, 1);
+  --sc-diff-removed: rgba(255, 100, 139, 1);
+  --sc-chrome: rgba(236, 231, 227, 0.72);
+  --sc-beckon: rgba(236, 231, 227, 0.16);
+  --sc-selection: rgba(236, 231, 227, 0.22);
+  --sc-new-rule: rgba(98, 164, 247, 0.35);
+  --sc-peek: rgba(0, 0, 0, 0.94);
+  --sc-frame-edge: rgba(236, 231, 227, 0.06);
+  --sc-surface: rgba(14, 12, 11, 1);
+  --sc-code: rgba(23, 21, 19, 1);
+  --sc-cooled: rgba(29, 29, 29, 1);
+  --sc-diff-added-fill: rgba(40, 235, 186, 0.16);
+  --sc-diff-removed-fill: rgba(255, 100, 139, 0.15);
+  --sc-diff-added-edge: rgba(40, 235, 186, 0.3);
+  --sc-diff-removed-edge: rgba(255, 100, 139, 0.28);
+  --sc-diff-added-word: rgba(40, 235, 186, 0.4);
+  --sc-diff-removed-word: rgba(255, 100, 139, 0.38);
+  --sc-diff-added-wash: rgba(40, 235, 186, 0.09);
+  --sc-diff-removed-wash: rgba(255, 100, 139, 0.08);
+  --sc-chart-other: rgba(95, 120, 138, 1);
+  --sc-group-1: rgba(157, 195, 163, 1);
+  --sc-group-2: rgba(168, 209, 238, 1);
+  --sc-group-3: rgba(215, 184, 148, 1);
+  --sc-group-4: rgba(215, 201, 243, 1);
+  --sc-group-5: rgba(150, 209, 208, 1);
+  --sc-group-6: rgba(213, 162, 161, 1);
+  --sc-data-hue-1: rgba(80, 113, 222, 1);
+  --sc-data-hue-2: rgba(179, 140, 21, 1);
+  --sc-data-hue-3: rgba(0, 159, 125, 1);
+  --sc-data-hue-4: rgba(187, 44, 84, 1);
+  --sc-data-hue-5: rgba(45, 149, 211, 1);
+  --sc-data-hue-6: rgba(144, 68, 191, 1);
+  --sc-data-hue-7: rgba(198, 88, 156, 1);
+  --sc-data-hue-8: rgba(95, 120, 138, 1);
+  --sc-project-1: rgba(144, 181, 220, 1);
+  --sc-project-2: rgba(238, 180, 170, 1);
+  --sc-project-3: rgba(198, 174, 126, 1);
+  --sc-project-4: rgba(141, 210, 214, 1);
+  --sc-project-5: rgba(237, 201, 245, 1);
+  --sc-project-6: rgba(198, 201, 148, 1);
+  --sc-heat-0: rgba(236, 231, 227, 0.05);
+  --sc-heat-1: rgba(98, 164, 247, 0.3);
+  --sc-heat-2: rgba(98, 164, 247, 0.52);
+  --sc-heat-3: rgba(98, 164, 247, 0.76);
+  --sc-heat-4: rgba(98, 164, 247, 1);
+  --sc-data-1: rgba(125, 157, 247, 1);
+  --sc-data-2: rgba(214, 182, 105, 1);
+  --sc-data-3: rgba(105, 196, 167, 1);
+  --sc-data-4: rgba(178, 120, 218, 1);
+  --sc-data-5: rgba(115, 189, 240, 1);
+  --sc-data-6: rgba(231, 139, 192, 1);
+  --sc-syntax-plain: rgba(206, 209, 214, 1);
+  --sc-syntax-punctuation: rgba(161, 165, 171, 1);
+  --sc-syntax-comment: rgba(142, 146, 154, 1);
+  --sc-syntax-keyword: rgba(193, 144, 246, 1);
+  --sc-syntax-function: rgba(102, 180, 252, 1);
+  --sc-syntax-string: rgba(141, 220, 124, 1);
+  --sc-syntax-type: rgba(238, 196, 105, 1);
+  --sc-syntax-number: rgba(86, 210, 223, 1);
+  --sc-syntax-property: rgba(230, 232, 236, 1);
+  --sc-scrollbar-thumb: rgba(118, 112, 108, 0.58);
+  --sc-scrollbar-thumb-active: rgba(207, 201, 196, 1);
+  --sc-scrollbar-track: rgba(118, 112, 108, 0.25);
+  --sc-scrollbar-tick: rgba(207, 201, 196, 1);
+  --sc-scrollbar-tick-active: rgba(236, 231, 227, 1);
+  --sc-content-ink: rgba(185, 179, 174, 1);
+  --sc-content-strong-ink: rgba(236, 231, 227, 1);
+  --sc-interface-ink: rgba(207, 201, 196, 1);
+  --sc-meta-ink: rgba(145, 139, 134, 1);
+  --sc-quiet-ink: rgba(109, 103, 98, 1);
+  --sc-disabled-ink: rgba(74, 68, 63, 1);
+  --sc-radius-chip: 8px;
+  --sc-radius-card: 12px;
+  --sc-radius-sheet: 16px;
+  --sc-radius-control: 12px;
+  --sc-space-xs: 4px;
+  --sc-space-sm: 6px;
+  --sc-space-md: 8px;
+  --sc-space-lg: 10px;
+  --sc-space-xl: 12px;
+  --sc-space-xxl: 16px;
+  --sc-spacing-step: 4px;
+  --sc-spacing-density: 1;
+  --sc-column-inset: 16px;
+  --sc-column-gap: 8px;
+  --sc-control-icon: 24px;
+  --sc-control-glyph: 11px;
+  --sc-control-capsule: 24px;
+  --sc-control-primary: 24px;
+  --sc-control-radius: calc(infinity * 1px);
+  --sc-shadow-shell: 0 10px 26px rgba(0, 0, 0, 0.62);
+  --sc-shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --sc-shadow-none: 0 0px 0px rgba(0, 0, 0, 0);
+  --sc-tint-fill: 0.16;
+  --sc-tint-edge: 0.36;
+  --sc-font-ui: -apple-system, system-ui, sans-serif;
+  --sc-font-ui-adjust: 1.06;
+  --sc-font-ui-weight: 500;
+  --sc-font-prose: -apple-system, system-ui, sans-serif;
+  --sc-font-prose-adjust: 1.08;
+  --sc-font-prose-weight: 500;
+  --sc-font-display: -apple-system, system-ui, sans-serif;
+  --sc-font-display-adjust: 1.1;
+  --sc-font-display-weight: 600;
+  --sc-font-code: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-font-code-adjust: 1;
+  --sc-font-code-weight: 600;
+  --sc-size: 12px;
+  --sc-other: rgba(95, 120, 138, 1);
+  --sc-font: -apple-system, system-ui, sans-serif;
+  --sc-radius: 12px;
+}
+
+[data-skin="horizon"][data-device="phone"] {
+  --sc-notch: rgba(13, 11, 9, 1);
+  --sc-page: rgba(13, 11, 9, 1);
+  --sc-wash: rgba(18, 16, 14, 1);
+  --sc-plate: rgba(23, 21, 19, 1);
+  --sc-raised: rgba(30, 28, 26, 1);
+  --sc-hot: rgba(38, 36, 34, 1);
+  --sc-text: rgba(225, 220, 216, 1);
+  --sc-soft: rgba(197, 192, 187, 1);
+  --sc-code-span: rgba(225, 220, 216, 1);
+  --sc-place: rgba(197, 192, 187, 1);
+  --sc-merged: rgba(197, 192, 187, 1);
+  --sc-chrome: rgba(225, 220, 216, 0.72);
+  --sc-peek: rgba(13, 11, 9, 0.94);
+  --sc-frame-edge: rgba(236, 231, 227, 0);
+  --sc-surface: rgba(23, 21, 19, 1);
+  --sc-code: rgba(30, 28, 26, 1);
+  --sc-cooled: rgba(37, 37, 37, 1);
+  --sc-heat-0: rgba(225, 220, 216, 0.05);
+  --sc-scrollbar-tick: rgba(197, 192, 187, 1);
+  --sc-scrollbar-tick-active: rgba(225, 220, 216, 1);
+  --sc-content-strong-ink: rgba(225, 220, 216, 1);
+  --sc-interface-ink: rgba(197, 192, 187, 1);
+}
+
+[data-skin="twilight"] {
+  --sc-notch: rgba(0, 0, 0, 1);
+  --sc-field: rgba(0, 0, 0, 1);
+  --sc-page: rgba(1, 4, 10, 1);
+  --sc-wash: rgba(6, 7, 8, 1);
+  --sc-plate: rgba(12, 13, 14, 1);
+  --sc-raised: rgba(20, 21, 22, 1);
+  --sc-hot: rgba(30, 31, 33, 1);
+  --sc-edge: rgba(230, 232, 235, 0.12);
+  --sc-hairline: rgba(111, 114, 117, 0.25);
+  --sc-grip: rgba(111, 114, 117, 0.58);
+  --sc-grip-active: rgba(200, 202, 206, 1);
+  --sc-text: rgba(243, 244, 248, 1);
+  --sc-soft: rgba(200, 202, 206, 1);
+  --sc-reading: rgba(178, 180, 184, 1);
+  --sc-dim: rgba(138, 140, 144, 1);
+  --sc-mute: rgba(102, 104, 108, 1);
+  --sc-faint: rgba(67, 69, 73, 1);
+  --sc-on-text: rgba(15, 15, 17, 1);
+  --sc-inverse: rgba(243, 244, 248, 1);
+  --sc-highlight: rgba(207, 181, 254, 1);
+  --sc-drop-target: rgba(207, 181, 254, 1);
+  --sc-code-span: rgba(243, 244, 248, 1);
+  --sc-accent: rgba(4, 104, 228, 1);
+  --sc-accent-pressed: rgba(1, 83, 219, 1);
+  --sc-on-accent: rgba(247, 248, 255, 1);
+  --sc-accent-ink: rgba(99, 152, 253, 1);
+  --sc-warning: rgba(247, 188, 80, 1);
+  --sc-needs-you: rgba(247, 188, 80, 1);
+  --sc-living: rgba(247, 188, 80, 1);
+  --sc-error: rgba(247, 91, 107, 1);
+  --sc-success: rgba(55, 213, 159, 1);
+  --sc-info: rgba(89, 214, 221, 1);
+  --sc-notification: rgba(99, 152, 253, 1);
+  --sc-cold: rgba(193, 229, 239, 1);
+  --sc-working: rgba(99, 152, 253, 1);
+  --sc-peer: rgba(99, 152, 253, 1);
+  --sc-place: rgba(200, 202, 206, 1);
+  --sc-merged: rgba(200, 202, 206, 1);
+  --sc-diff-added: rgba(40, 235, 186, 1);
+  --sc-diff-removed: rgba(255, 100, 139, 1);
+  --sc-chrome: rgba(243, 244, 248, 0.72);
+  --sc-beckon: rgba(207, 181, 254, 0.16);
+  --sc-selection: rgba(207, 181, 254, 0.22);
+  --sc-new-rule: rgba(99, 152, 253, 0.35);
+  --sc-peek: rgba(0, 0, 0, 0.94);
+  --sc-frame-edge: rgba(230, 232, 235, 0.06);
+  --sc-surface: rgba(12, 13, 14, 1);
+  --sc-code: rgba(20, 21, 22, 1);
+  --sc-cooled: rgba(26, 30, 32, 1);
+  --sc-diff-added-fill: rgba(40, 235, 186, 0.16);
+  --sc-diff-removed-fill: rgba(255, 100, 139, 0.15);
+  --sc-diff-added-edge: rgba(40, 235, 186, 0.3);
+  --sc-diff-removed-edge: rgba(255, 100, 139, 0.28);
+  --sc-diff-added-word: rgba(40, 235, 186, 0.4);
+  --sc-diff-removed-word: rgba(255, 100, 139, 0.38);
+  --sc-diff-added-wash: rgba(40, 235, 186, 0.09);
+  --sc-diff-removed-wash: rgba(255, 100, 139, 0.08);
+  --sc-chart-other: rgba(95, 120, 138, 1);
+  --sc-group-1: rgba(157, 195, 163, 1);
+  --sc-group-2: rgba(168, 209, 238, 1);
+  --sc-group-3: rgba(215, 184, 148, 1);
+  --sc-group-4: rgba(215, 201, 243, 1);
+  --sc-group-5: rgba(150, 209, 208, 1);
+  --sc-group-6: rgba(213, 162, 161, 1);
+  --sc-data-hue-1: rgba(80, 113, 222, 1);
+  --sc-data-hue-2: rgba(179, 140, 21, 1);
+  --sc-data-hue-3: rgba(0, 159, 125, 1);
+  --sc-data-hue-4: rgba(187, 44, 84, 1);
+  --sc-data-hue-5: rgba(45, 149, 211, 1);
+  --sc-data-hue-6: rgba(144, 68, 191, 1);
+  --sc-data-hue-7: rgba(198, 88, 156, 1);
+  --sc-data-hue-8: rgba(95, 120, 138, 1);
+  --sc-project-1: rgba(144, 181, 220, 1);
+  --sc-project-2: rgba(238, 180, 170, 1);
+  --sc-project-3: rgba(198, 174, 126, 1);
+  --sc-project-4: rgba(141, 210, 214, 1);
+  --sc-project-5: rgba(237, 201, 245, 1);
+  --sc-project-6: rgba(198, 201, 148, 1);
+  --sc-heat-0: rgba(243, 244, 248, 0.05);
+  --sc-heat-1: rgba(99, 152, 253, 0.3);
+  --sc-heat-2: rgba(99, 152, 253, 0.52);
+  --sc-heat-3: rgba(99, 152, 253, 0.76);
+  --sc-heat-4: rgba(99, 152, 253, 1);
+  --sc-data-1: rgba(125, 157, 247, 1);
+  --sc-data-2: rgba(214, 182, 105, 1);
+  --sc-data-3: rgba(105, 196, 167, 1);
+  --sc-data-4: rgba(178, 120, 218, 1);
+  --sc-data-5: rgba(115, 189, 240, 1);
+  --sc-data-6: rgba(231, 139, 192, 1);
+  --sc-syntax-plain: rgba(206, 209, 214, 1);
+  --sc-syntax-punctuation: rgba(161, 165, 171, 1);
+  --sc-syntax-comment: rgba(142, 146, 154, 1);
+  --sc-syntax-keyword: rgba(193, 144, 246, 1);
+  --sc-syntax-function: rgba(102, 180, 252, 1);
+  --sc-syntax-string: rgba(141, 220, 124, 1);
+  --sc-syntax-type: rgba(238, 196, 105, 1);
+  --sc-syntax-number: rgba(86, 210, 223, 1);
+  --sc-syntax-property: rgba(230, 232, 236, 1);
+  --sc-scrollbar-thumb: rgba(111, 114, 117, 0.58);
+  --sc-scrollbar-thumb-active: rgba(200, 202, 206, 1);
+  --sc-scrollbar-track: rgba(111, 114, 117, 0.25);
+  --sc-scrollbar-tick: rgba(200, 202, 206, 1);
+  --sc-scrollbar-tick-active: rgba(243, 244, 248, 1);
+  --sc-content-ink: rgba(178, 180, 184, 1);
+  --sc-content-strong-ink: rgba(243, 244, 248, 1);
+  --sc-interface-ink: rgba(200, 202, 206, 1);
+  --sc-meta-ink: rgba(138, 140, 144, 1);
+  --sc-quiet-ink: rgba(102, 104, 108, 1);
+  --sc-disabled-ink: rgba(67, 69, 73, 1);
+  --sc-radius-chip: 8px;
+  --sc-radius-card: 12px;
+  --sc-radius-sheet: 16px;
+  --sc-radius-control: 12px;
+  --sc-space-xs: 4px;
+  --sc-space-sm: 6px;
+  --sc-space-md: 8px;
+  --sc-space-lg: 10px;
+  --sc-space-xl: 12px;
+  --sc-space-xxl: 16px;
+  --sc-spacing-step: 4px;
+  --sc-spacing-density: 1;
+  --sc-column-inset: 16px;
+  --sc-column-gap: 8px;
+  --sc-control-icon: 24px;
+  --sc-control-glyph: 11px;
+  --sc-control-capsule: 24px;
+  --sc-control-primary: 24px;
+  --sc-control-radius: calc(infinity * 1px);
+  --sc-shadow-shell: 0 10px 26px rgba(0, 0, 0, 0.62);
+  --sc-shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --sc-shadow-none: 0 0px 0px rgba(0, 0, 0, 0);
+  --sc-tint-fill: 0.16;
+  --sc-tint-edge: 0.36;
+  --sc-font-ui: -apple-system, system-ui, sans-serif;
+  --sc-font-ui-adjust: 1.06;
+  --sc-font-ui-weight: 500;
+  --sc-font-prose: -apple-system, system-ui, sans-serif;
+  --sc-font-prose-adjust: 1.08;
+  --sc-font-prose-weight: 500;
+  --sc-font-display: -apple-system, system-ui, sans-serif;
+  --sc-font-display-adjust: 1.1;
+  --sc-font-display-weight: 600;
+  --sc-font-code: ui-monospace, "SF Mono", Menlo, monospace;
+  --sc-font-code-adjust: 1;
+  --sc-font-code-weight: 600;
+  --sc-size: 12px;
+  --sc-other: rgba(95, 120, 138, 1);
+  --sc-font: -apple-system, system-ui, sans-serif;
+  --sc-radius: 12px;
+}
+
+[data-skin="twilight"][data-device="phone"] {
+  --sc-notch: rgba(6, 11, 20, 1);
+  --sc-page: rgba(6, 11, 20, 1);
+  --sc-wash: rgba(14, 15, 16, 1);
+  --sc-plate: rgba(20, 21, 22, 1);
+  --sc-raised: rgba(27, 28, 29, 1);
+  --sc-hot: rgba(36, 36, 38, 1);
+  --sc-text: rgba(231, 232, 237, 1);
+  --sc-soft: rgba(190, 192, 197, 1);
+  --sc-code-span: rgba(231, 232, 237, 1);
+  --sc-place: rgba(190, 192, 197, 1);
+  --sc-merged: rgba(190, 192, 197, 1);
+  --sc-chrome: rgba(231, 232, 237, 0.72);
+  --sc-peek: rgba(6, 11, 20, 0.94);
+  --sc-frame-edge: rgba(230, 232, 235, 0);
+  --sc-surface: rgba(20, 21, 22, 1);
+  --sc-code: rgba(27, 28, 29, 1);
+  --sc-cooled: rgba(34, 38, 39, 1);
+  --sc-heat-0: rgba(231, 232, 237, 0.05);
+  --sc-scrollbar-tick: rgba(190, 192, 197, 1);
+  --sc-scrollbar-tick-active: rgba(231, 232, 237, 1);
+  --sc-content-strong-ink: rgba(231, 232, 237, 1);
+  --sc-interface-ink: rgba(190, 192, 197, 1);
+}
+
+/* A Cell's state, one hue used three ways: a pill's fill (the hue at
+   --sc-state-fill-share over black), the word and the glyph in the hue
+   itself. Magma gives each state the system's own colour, as macOS draws
+   it in dark appearance; every one clears 4.5:1 on its own fill, so the
+   word's ink is the hue. A skin that gives none says each state in its
+   functional colour. */
+:root,
+[data-skin] {
+  --sc-state-fill-share: 0.22;
+  --sc-state-working: var(--sc-accent-ink);
+  --sc-state-asking: var(--sc-needs-you);
+  --sc-state-ready: var(--sc-success);
+  --sc-state-waiting: var(--sc-soft);
+  --sc-state-queued: var(--sc-needs-you);
+  --sc-state-paused: var(--sc-mute);
+  --sc-state-reviewing: var(--sc-info);
+  --sc-state-scheduled: var(--sc-info);
+}
+
+:root:not([data-skin]),
+[data-skin="magma"] {
+  --sc-state-working: rgba(255, 146, 48, 1);
+  --sc-state-asking: rgba(255, 66, 69, 1);
+  --sc-state-ready: rgba(48, 209, 88, 1);
+  --sc-state-waiting: rgba(255, 55, 95, 1);
+  --sc-state-queued: rgba(219, 52, 242, 1);
+  --sc-state-paused: rgba(255, 214, 0, 1);
+  --sc-state-reviewing: rgba(60, 211, 254, 1);
+  --sc-state-scheduled: rgba(0, 145, 255, 1);
+}

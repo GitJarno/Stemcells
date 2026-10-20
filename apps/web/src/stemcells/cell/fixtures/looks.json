@@ -1,0 +1,141 @@
+{
+  "about": "What each Cell of a roster wears on a day (looks.json), as a Mac's core deals it. `cells` are the Cells' codenames in the order they took their seats, the first-born first; `day` is the screen's month-day; `looks` is each Cell's pieces as `theme/piece`, the outfit theme's before the season's. `dress`, when a case has one, is the Mac's Settings › General › Outfit theme and Seasons; without it the Cells wear the house theme with Seasons on.",
+  "cases": [
+    {
+      "says": "out of season each Cell wears one house piece, no two the same",
+      "cells": ["Otter", "Puffin", "Wren", "Heron", "Marten", "Lark"],
+      "day": "08-15",
+      "looks": {
+        "Otter": ["house/bee"],
+        "Puffin": ["house/kitsune"],
+        "Wren": ["house/frog"],
+        "Heron": ["house/bunny"],
+        "Marten": ["house/sprout"],
+        "Lark": ["house/cat"]
+      }
+    },
+    {
+      "says": "in a season each Cell wears the season's piece too, and the season's wins a slot both fill",
+      "cells": ["Otter", "Puffin", "Wren", "Heron", "Marten", "Lark"],
+      "day": "10-19",
+      "looks": {
+        "Otter": ["house/bee", "halloween/mummy"],
+        "Puffin": ["house/kitsune", "halloween/cat"],
+        "Wren": ["halloween/pumpkin"],
+        "Heron": ["halloween/bat"],
+        "Marten": ["house/sprout", "halloween/batmask"],
+        "Lark": ["halloween/witch"]
+      }
+    },
+    {
+      "says": "a season's window holds its first day",
+      "cells": ["Otter"],
+      "day": "10-15",
+      "looks": {
+        "Otter": ["house/bee", "halloween/mummy"]
+      }
+    },
+    {
+      "says": "a season's window holds its last day",
+      "cells": ["Otter"],
+      "day": "11-01",
+      "looks": {
+        "Otter": ["house/bee", "halloween/mummy"]
+      }
+    },
+    {
+      "says": "the day after a season's window, its pieces are put away",
+      "cells": ["Otter"],
+      "day": "11-02",
+      "looks": {
+        "Otter": ["house/bee"]
+      }
+    },
+    {
+      "says": "a Cell alone wears its own first choice, whoever else might stand",
+      "cells": ["Lark"],
+      "day": "08-15",
+      "looks": {
+        "Lark": ["house/cat"]
+      }
+    },
+    {
+      "says": "where two seasons hold the day, the narrower one's pieces are worn",
+      "cells": ["Otter"],
+      "day": "12-24",
+      "looks": {
+        "Otter": ["christmas/olkipukki"]
+      }
+    },
+    {
+      "says": "a season's window may run over the new year, holding its days on both sides",
+      "cells": ["Otter"],
+      "day": "12-30",
+      "looks": {
+        "Otter": ["newyear/tophat"]
+      }
+    },
+    {
+      "says": "the day after the narrower window, the wider season's pieces are worn",
+      "cells": ["Otter"],
+      "day": "01-02",
+      "looks": {
+        "Otter": ["winter/karvalakki"]
+      }
+    },
+    {
+      "says": "a picked outfit theme deals from that theme in place of the house theme",
+      "cells": ["Otter", "Puffin", "Wren"],
+      "day": "08-15",
+      "dress": {
+        "theme": "ocean",
+        "seasons": true
+      },
+      "looks": {
+        "Otter": ["ocean/starfish"],
+        "Puffin": ["ocean/crab"],
+        "Wren": ["ocean/whale"]
+      }
+    },
+    {
+      "says": "a season's pieces are worn over the picked theme, the season's winning a slot both fill",
+      "cells": ["Otter", "Puffin", "Wren"],
+      "day": "12-24",
+      "dress": {
+        "theme": "ocean",
+        "seasons": true
+      },
+      "looks": {
+        "Otter": ["ocean/starfish", "christmas/olkipukki"],
+        "Puffin": ["christmas/gingerbread"],
+        "Wren": ["christmas/santa"]
+      }
+    },
+    {
+      "says": "with Seasons off only the picked theme is worn, in a season too",
+      "cells": ["Otter", "Puffin", "Wren"],
+      "day": "12-24",
+      "dress": {
+        "theme": "ocean",
+        "seasons": false
+      },
+      "looks": {
+        "Otter": ["ocean/starfish"],
+        "Puffin": ["ocean/crab"],
+        "Wren": ["ocean/whale"]
+      }
+    },
+    {
+      "says": "a theme the data does not hold as an outfit wears the house theme",
+      "cells": ["Otter"],
+      "day": "10-19",
+      "dress": {
+        "theme": "christmas",
+        "seasons": false
+      },
+      "looks": {
+        "Otter": ["house/bee"]
+      }
+    }
+  ]
+}
