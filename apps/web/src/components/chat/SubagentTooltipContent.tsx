@@ -7,10 +7,8 @@ import type {
   ProviderInstanceId,
   OrchestrationV2Subagent,
 } from "@t3tools/contracts";
-import {
-  resolveSubagentMetadata,
-  subagentDetailPreview,
-} from "@t3tools/client-runtime/state/subagent-display";
+import { subagentDetailPreview } from "@t3tools/client-runtime/state/subagent-display";
+import { resolveSubagentMetadata } from "../../stemcells/upstream/modelNames";
 import { REASONING_EFFORT_OPTION_IDS } from "@t3tools/client-runtime/state/thread-execution";
 import { getModelSelectionStringOptionValue, resolveSelectableModel } from "@t3tools/shared/model";
 import { getTraitsSpeedDisplay, TraitsSpeedIcon } from "./TraitsSpeed";

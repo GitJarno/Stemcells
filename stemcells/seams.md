@@ -35,6 +35,12 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/settings/SettingsScopeSentence.tsx` | `/settings/disk` in `SETTINGS_DEVICE_ONLY_PATHS` | The page reads this machine's disk; no settings scope applies to it |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/disk/DiskFoot` and renders it after Usage in `SidebarUtilityMenu` | The space left on the disk sits in the sidebar's foot and opens Settings › Disk |
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/composer/CellComposerLine` and renders it first in the banner column | The line over a Cell's composer (its name, project and one-liner) is an attached banner, so it stacks with upstream's own. It draws nothing outside a Cell's pane |
+| `apps/web/src/components/chat/providerIconUtils.ts` | Imports `stemcells/models/names`; `getDisplayModelName` returns `conciseModelName(…)` of what it returned | Concise model names (below): the helper the picker's rows, the composer's model button, the sidebar, the context meter, lifecycle rows and the subagent bar name a model with |
+| `apps/web/src/components/settings/ProviderModelsSection.tsx` | Imports `withConciseName`; Settings › Models groups `models.map(withConciseName)` | Same, for Settings › Models' rows and their filter |
+| `apps/web/src/components/chat/SubagentTooltipContent.tsx` | `resolveSubagentMetadata` is imported from `stemcells/upstream/modelNames` (same name) | Same, for a subagent's tooltip |
+| `apps/web/src/components/chat/ProviderSubagentBar.tsx` | Imports `conciseModelName` and shows `conciseModelName(props.modelLabel)` | Same, for the subagent bar when its model isn't in the provider's list (a name built from the slug, which the helper never sees) |
+| `apps/web/src/components/chat/ModelPickerContent.tsx` | `formatProviderUpdateRequiredNotice` is imported from `stemcells/upstream/modelNames` (same name) | Same, for the picker's "Update … to use …" notice |
+| `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/ThreadRelationshipsControl.agents.browser.test.tsx` | Expect the concise names, and nothing else changes in them | They pin the names these seams change |
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -79,6 +85,33 @@ To offer upstream: publish a theme and set it as the default from server
 code. `t3 theme set`'s guarded publish and settings write take explicit
 paths but aren't exported; exporting them (or a small module both the CLI
 and a server feature call) would retire the `cli/theme.ts` seam.
+
+### Concise model names
+
+Stemcells writes a model's name family first, without the vendor word:
+"GPT-6.1 Sol" reads "Sol 6.1", "Claude Opus 5.5" reads "Opus 5.5". The rule
+is `apps/web/src/stemcells/models/names.ts`; `modelNames.contract.test.ts`
+pins the five seams above and checks the rule knows every name in
+upstream's model manifest.
+
+The names are changed where the web shows them, not where they come from:
+
+- The manifest can't carry them: upstream's server refetches it from
+  upstream's repository every hour.
+- The server's provider list can't either: the same names go to the models
+  themselves (the orchestration tools list them for Aski), and anything sent
+  to a provider keeps the name the provider gave.
+- The wire to the clients (`ws.ts`) could, but it's upstream's hottest server
+  file and sends the list from four places, and a changed `name` there would
+  also change what the picker's search and name lookups match ("gpt" would
+  stop finding Sol 6.1).
+
+So: one helper most views already name a model with, plus the four views
+that don't use it. The mobile app still shows upstream's names; it needs the
+rule in a `packages/stemcells-*` package once it gets a layer of ours.
+
+To offer upstream: one function every view names a model through. Then a
+fork's naming is that one function instead of five seams.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

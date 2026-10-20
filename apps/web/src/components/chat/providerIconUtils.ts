@@ -1,3 +1,5 @@
+import { conciseModelName } from "../../stemcells/models/names";
+
 export type ModelEsque = {
   slug: string;
   name: string;
@@ -29,7 +31,7 @@ export function getDisplayModelName(
   options?: { preferShortName?: boolean },
 ): string {
   const name = options?.preferShortName && model.shortName ? model.shortName : model.name;
-  return stripLeadingQualifier(name, model.subProvider);
+  return conciseModelName(stripLeadingQualifier(name, model.subProvider));
 }
 
 export function getProviderRowLabel(
