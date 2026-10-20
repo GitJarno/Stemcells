@@ -44,6 +44,9 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 - In a conflict, upstream's logic wins and our seam goes back on top.
 
 ## Nothing leaves for anyone else's cloud
+- No telemetry or usage data, to T3 or anyone else: the server's analytics
+  service is a no-op (`seams.md`, No telemetry). Turn off anything a sync
+  adds that reports on the person.
 - No `.env` made from `.env.example`, and none of the `T3CODE_RELAY_URL`,
   `T3CODE_CLERK_*` or `T3CODE_*OTLP*` variables set: they connect to
   upstream's hosted services.

@@ -51,6 +51,12 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/index.html` | The boot page's title, the splash's label and its logo's alt text say Stemcells | Before the app loads; `__root.tsx` titles it from `APP_DISPLAY_NAME` after |
 | `apps/web/public/manifest.webmanifest` | `name` and `short_name` are "Stemcells" | The name a browser installs the web app under |
 | `apps/web/src/branding.test.ts`, `apps/web/src/components/settings/SettingsPanels.logic.test.ts` | Expect "Stemcells" for the fallback name, and nothing else changes in them | They pin the name these seams change |
+| `apps/server/src/server.ts` (analytics) | Provides `Stemcells.analytics` where it provided `AnalyticsService.layer`, and drops that import | No telemetry (below): the server records through a service that keeps nothing |
+| `apps/server/src/telemetry/AnalyticsService.ts` | No default PostHog key or host, and telemetry off unless `T3CODE_TELEMETRY_ENABLED` turns it on | Same: no build carries T3's endpoint or key, and upstream's service, if a sync wired it back, has nowhere to send |
+| `packages/ssh/src/tunnel.ts` | The remote launch sets `T3CODE_TELEMETRY_ENABLED=false` | Same: an SSH environment runs upstream's released server on the remote machine |
+| `apps/web/src/connection/platform.ts` | `AnalyticsDevice` is `stemcells/privacy/analyticsDevice`'s `noAnalyticsDevice`; upstream's stored id and its `randomUUID` import are gone | Same: the client keeps no analytics id, and removes one an earlier build left |
+| `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The usage-data note says "Stemcells sends no usage data.", without T3's privacy policy link | Same: T3's note said usage data goes to T3 |
+| `apps/web/src/components/settings/SettingsPanels.tsx`, `apps/web/src/components/settings/settingsSearch.ts` | About's "Privacy policy" row and its search entry are gone | Same: the row linked T3's policy as the account of "the anonymous usage data T3 Code collects" |
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -154,11 +160,31 @@ What keeps T3's name, on purpose:
   (`MessagesTimeline`) marks upstream's orchestration tools, and
   `V2LifecycleRow`'s "Created thread" row is one of them at work. They
   name the infrastructure, not the app; revisit with the brand mark.
-- The welcome wizard's usage data note: the data goes to T3's analytics,
-  under T3's privacy policy.
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).
+
+### No telemetry
+
+Stemcells sends no telemetry or usage data, to T3 or anyone else. Upstream's
+server reports to T3's PostHog (`ingest.t3.codes`) unless
+`T3CODE_TELEMETRY_ENABLED=false`: a boot heartbeat with thread and project
+counts, client connects with OS, browser and app version, turns, MCP tool
+calls, and hashes of the Codex, Claude and T3 Connect accounts it finds.
+
+- The server provides `apps/server/src/stemcells/upstream/analytics.ts`'s
+  no-op in place of upstream's service. It needs no service, so nothing is
+  built, buffered, written or sent, and no install id is made or read.
+- On start, `stemcells/privacy/telemetry.ts` removes the install id
+  upstream's telemetry left (`<state dir>/anonymous-id`).
+- `analytics.contract.test.ts` and `privacy/noTelemetry.test.ts` fail when
+  a sync brings any of it back: upstream's service provided anywhere, its
+  endpoint or a PostHog key or client in the tree, an analytics id in the
+  web client, or the usage-data words.
+
+Left as it is: upstream's boot heartbeat still reads the provider login
+files to name the install's owners, and hands them to the no-op, which
+drops them.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened
