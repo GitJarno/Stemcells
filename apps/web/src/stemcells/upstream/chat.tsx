@@ -50,6 +50,23 @@ export function useCellPresence(cell: CellRef | null): {
 }
 
 /**
+ * When the user last wrote in the Cell's chat: an ISO time, null while it
+ * holds no message of theirs (a draft), undefined while that isn't known yet
+ * (its environment's thread list is loading). Older servers don't tell the
+ * user's own messages apart; there, any user-role message counts.
+ */
+export function useCellLastSent(cell: CellRef | null): string | null | undefined {
+  const shell = useQuietThreadShell(cell ? threadRefOf(cell) : null);
+  const presence = useCellPresence(cell);
+  if (shell !== null && shell.deletedAt == null) {
+    return shell.latestUserAuthoredMessageAt !== undefined
+      ? shell.latestUserAuthoredMessageAt
+      : shell.latestUserMessageAt;
+  }
+  return presence.liveness === "alive" ? null : undefined;
+}
+
+/**
  * Opens a new draft in the project of the chat the route shows (else the
  * first project), through upstream's own "new thread", which also routes to
  * it. Null when there is no project or the user moved on meanwhile.

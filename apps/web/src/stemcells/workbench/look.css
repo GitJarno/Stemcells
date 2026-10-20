@@ -1,0 +1,93 @@
+/* Look (LookFrame.tsx): the Look Cell and its workbench take the page; the
+   tab's other Cells wait on a rail. Every rule here hangs off the rail, so
+   it holds only while the rail is there, and the page's layout itself
+   stays the tabs'. */
+
+/* The rail: the other Cells' marks, in a slim column at the page's left. */
+[data-stemcells-look-rail] {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  padding: var(--sc-space-md) var(--sc-space-xs);
+  border-inline-end: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+/* A Cell that asks wears a dot. */
+[data-stemcells-look-asking] {
+  position: absolute;
+  inset-block-start: var(--sc-space-xs);
+  inset-inline-end: var(--sc-space-xs);
+  width: var(--sc-space-sm);
+  height: var(--sc-space-sm);
+  border-radius: 50%;
+  background: var(--sc-needs-you);
+}
+
+/* The Look Cell steps out of its row, its column and its stack: the rest
+   of the grid hides, and none of the grid's rules show around it. */
+[data-stemcells-look-rail] ~ [data-stemcells-grid] > :not(:has([data-focused="true"])),
+[data-stemcells-look-rail] ~ [data-stemcells-grid] > * > :not(:has([data-focused="true"])),
+[data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane][data-focused="false"] {
+  display: none;
+}
+[data-stemcells-look-rail] ~ [data-stemcells-grid] > *,
+[data-stemcells-look-rail] ~ [data-stemcells-grid] > * > *,
+[data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane] {
+  border-width: 0;
+}
+[data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane]::after {
+  content: none;
+}
+
+/* The Cell and its workbench share the page half and half, whatever width
+   the panel was dragged to beside a single chat. */
+[data-stemcells-look-rail] ~ [data-stemcells-grid],
+[data-stemcells-look-rail] ~ [data-stemcells-workbench] {
+  flex: 1 1 0;
+  min-width: 0;
+}
+[data-stemcells-look-rail] ~ [data-stemcells-workbench] [data-preview-panel-mode="inline"] {
+  --resizable-width: 100% !important;
+}
+[data-stemcells-look-rail]
+  ~ [data-stemcells-workbench]
+  [data-preview-panel-mode="inline"]
+  > [role="separator"] {
+  display: none;
+}
+
+/* The workbench's ×. Upstream's controls stand over the panel's tab bar,
+   in room the tab bar keeps for them; its right-panel toggle (which closes
+   the panel too) steps aside in Look, its neighbours move over by one
+   control (size-7) and its gap (gap-1), and the × takes the corner. */
+[data-stemcells-look-rail] ~ [data-stemcells-grid] {
+  --sc-look-controls-right: var(--workspace-controls-right);
+}
+[data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane] {
+  --workspace-controls-right: calc(var(--sc-look-controls-right) + var(--spacing) * 8);
+}
+[data-stemcells-look-rail] ~ [data-stemcells-grid] :has(> [data-right-panel-toggle]) {
+  display: none;
+}
+[data-stemcells-look-close] {
+  position: absolute;
+  inset-block-start: var(--workspace-controls-top);
+  /* Upstream sets its controls in by a pixel more (mr-px). */
+  inset-inline-end: calc(var(--workspace-controls-right) + 1px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  height: var(--workspace-topbar-height);
+}
+
+/* The rail fades in: a fade is all the motion Look has, so it stays when
+   the person asks for less. */
+[data-stemcells-look-rail] {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+  @starting-style {
+    opacity: 0;
+  }
+}

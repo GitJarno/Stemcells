@@ -41,7 +41,9 @@ showing several threads at once is ours to carry.
   right edge, showing the focused thread's surfaces. Focusing another
   thread shows that thread's surfaces (upstream keeps them per thread, as
   it does when switching threads in the sidebar). A tab with one thread
-  looks and works exactly like upstream.
+  looks and works exactly like upstream. With two or more, an open
+  workbench is Look: its Cell and the workbench take the slate
+  (`look-mode.md`).
 - Paint goes through upstream's theme system: a Stemcells theme (black
   chrome and sidebar, gray canvas) published as an environment theme and
   set as the server default only when none is chosen.

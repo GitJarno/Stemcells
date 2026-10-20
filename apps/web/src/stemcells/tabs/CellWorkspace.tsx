@@ -15,6 +15,7 @@ import { useCellTitle } from "../upstream/thread";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
+import { Look, LookChip } from "../workbench/LookFrame";
 import {
   ASKI_TAB_ID,
   closeTabUnlessAski,
@@ -335,6 +336,8 @@ function TabPage(props: {
   const [workbench, setWorkbench] = useState<HTMLDivElement | null>(null);
   return (
     <>
+      {/* Look: the focused Cell and its workbench take the page (stemcells/workbench). */}
+      <Look tab={tab} onStage={props.onStage} onFocus={props.onFocus} />
       <div ref={props.onStage ? props.gridRef : undefined} data-stemcells-grid="">
         {tab.rows.map((row, rowIndex) => (
           <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
@@ -450,6 +453,7 @@ function PaneHeader(props: { cell: CellRef | null }) {
     >
       <CellMark cell={props.cell} />
       <span className="min-w-0 truncate">{title}</span>
+      <LookChip cell={props.cell} />
     </div>
   );
 }
