@@ -21,6 +21,7 @@ import {
   createClaudeAdapterV2,
   type ClaudeAdapterV2DriverEnv,
 } from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
+import { withCompactWindow } from "../../stemcells/compaction/claudeWindow.ts";
 import { ProviderDriverError } from "../Errors.ts";
 import { claudeUsageReader } from "./claudeUsage.ts";
 import { makeClaudeScopedLimitNames } from "../claudeUsageLimits.ts";
@@ -177,7 +178,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv, Path.
         accentColor,
         environment,
         enabled,
-        config,
+        config: withCompactWindow(config),
       },
       { scopedLimitNames, onUsageLimits: (update) => snapshot.applyUsageLimits(update) },
     ).pipe(

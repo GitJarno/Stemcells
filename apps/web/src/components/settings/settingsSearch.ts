@@ -7,6 +7,7 @@ import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connect
 import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
 import { DEFAULT_KEYBINDINGS } from "@t3tools/shared/keybindings";
 import { commandLabel } from "./KeybindingsSettings.logic";
+import { COMPACTION_SEARCH_ITEMS } from "../../stemcells/compaction/search";
 import {
   validateSettingsScopeSearch,
   type ResolvedSettingsScope,
@@ -643,6 +644,7 @@ export const SETTINGS_SEARCH_ITEMS = [
       "agents cli codex claude cursor grok opencode antigravity google sign in sign out install subscription instances authentication api key models configuration binary path config directory endpoint arguments environment variables display name accent color custom favorite hidden auto compact",
     ],
   },
+  ...COMPACTION_SEARCH_ITEMS,
   {
     id: "usage-providers",
     title: "Usage providers",

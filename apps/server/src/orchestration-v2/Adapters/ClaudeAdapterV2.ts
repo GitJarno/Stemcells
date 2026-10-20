@@ -187,6 +187,7 @@ import {
   makeSubagentConversationArtifacts,
   subagentThreadTitle,
 } from "@t3tools/provider-core/server/subagentProjection";
+import { claudeAutoCompactThreshold } from "../../stemcells/compaction/claudeWindow.ts";
 
 export const CLAUDE_PROVIDER = ProviderDriverKind.make("claudeAgent");
 export const CLAUDE_AGENT_SDK_QUERY_PROTOCOL = "claude-agent-sdk.query" as const;
@@ -209,14 +210,6 @@ function claudePromptCacheTtlMs(
   if (cacheCreation.ephemeral_1h_input_tokens > 0) return 60 * 60_000;
   if (cacheCreation.ephemeral_5m_input_tokens > 0) return 5 * 60_000;
   return undefined;
-}
-
-// Claude caps the window at the model's context, so a setting at or above it never applies.
-function claudeAutoCompactThreshold(autoCompactWindow: string, maxTokens: number | null) {
-  const threshold = Number(autoCompactWindow);
-  return threshold > 0 && (maxTokens === null || threshold < maxTokens)
-    ? { autoCompactThreshold: threshold }
-    : {};
 }
 
 function claudeMessageInputTokens(usage: {

@@ -130,6 +130,7 @@ import {
   resolveRemoteOperateAccess,
   resolveSelectedProviderEnvironmentId,
 } from "./ProviderSettingsPanel.logic";
+import { searchedInstanceId } from "../../stemcells/compaction/searchTarget";
 
 function modelListChanges(current: ReadonlyArray<string>, next: ReadonlyArray<string>) {
   const currentSet = new Set(current);
@@ -453,7 +454,7 @@ function ProviderSettingsPanelContent(target: ProviderSettingsTarget) {
           targetInstanceId={
             target.environmentId === undefined ||
             selectedEnvironment.environmentId === target.environmentId
-              ? target.instanceId
+              ? (target.instanceId ?? searchedInstanceId(searchTargetId))
               : undefined
           }
           projectIds={target.projectIds ?? []}

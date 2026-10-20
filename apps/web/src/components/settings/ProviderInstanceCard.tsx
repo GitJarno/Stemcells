@@ -61,6 +61,7 @@ import { ProviderAccentColorPicker } from "./ProviderAccentColorPicker";
 import { RedactedSensitiveText } from "./RedactedSensitiveText";
 import { SettingResetButton, SettingsRow, SettingsSection } from "./settingsLayout";
 import { AcpSessionManagementSection } from "./AcpSessionManagementSection";
+import { CompactWindowRow } from "../../stemcells/compaction/CompactWindowRow";
 import { FoldedSettingsSection } from "./FoldedSettingsSection";
 import { readCodexSetupMode } from "./CodexSetupSection.logic";
 import {
@@ -1227,6 +1228,12 @@ export function ProviderInstanceCard({
           className={readOnly ? "opacity-50 select-none" : undefined}
         >
           {runtimeFields}
+          <CompactWindowRow
+            instanceId={instanceId}
+            driver={instance.driver}
+            config={instance.config}
+            onChange={updateConfig}
+          />
         </SettingsSection>
       ) : null}
 

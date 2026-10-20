@@ -69,6 +69,15 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
 | `apps/mobile/app.config.ts` | `updates.enabled` only when `T3CODE_MOBILE_UPDATES_ENABLED=1` | Same: the configured over-the-air source is T3's Expo project |
 | `packages/source-control-bitbucket/src/server/BitbucketApi.ts` | `probeAuth` sends its `GET /2.0/user` only when a Bitbucket token is configured | Same: without one the answer is "unauthenticated" either way, and the request only told Atlassian the app runs, whenever the command palette opened (`bitbucket.contract.test.ts`) |
+| `apps/server/src/provider/Drivers/ClaudeDriver.ts` | Imports `stemcells/compaction/claudeWindow`; the adapter gets `withCompactWindow(config)` | The auto-compact window (below): a Claude instance that names no window hands 500k at launch |
+| `packages/contracts/src/settings.ts` | `ClaudeSettings.autoCompactWindow`'s form annotation adds `hidden: true` | Same: our row sets the window in its place |
+| `apps/web/src/components/settings/ProviderSettingsForm.test.ts` | The Claude field list leaves out `autoCompactWindow`, and its name says so; nothing else changes in it | It pins the field the hidden annotation takes away |
+| `apps/web/src/components/settings/ProviderInstanceCard.tsx` | Imports `stemcells/compaction/CompactWindowRow` and renders it after the runtime fields in the Runtime section | Same: the row, in each Claude instance's card. It draws nothing for other providers |
+| `apps/web/src/components/settings/settingsSearch.ts` | Imports `stemcells/compaction/search` and spreads `COMPACTION_SEARCH_ITEMS` after the Providers entry | Same: search finds the row ("compaction", "auto compact", "context window") |
+| `apps/web/src/components/settings/ProviderSettingsPanel.tsx` | Imports `stemcells/compaction/searchTarget`; the target instance falls back to `searchedInstanceId(searchTargetId)` | Same: Providers shows one instance at a time, so a search for the row opens the default Claude's |
+| `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
+| `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
+| `apps/web/src/components/chat/ContextWindowMeter.tsx` | Imports `stemcells/compaction/meter`; `usage` is `towardCompaction(props.usage)` | Same: the meter fills toward where the chat compacts |
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -246,6 +255,51 @@ and the way back in the wide foot.
 To offer upstream: a compact sidebar state of upstream's own (open, compact,
 closed), or a slot for the sidebar's content. Then the rail is a component
 in that slot, and both seams go.
+
+### Auto-compact window
+
+Claude Cells compact at a window set in Settings › Providers, in each
+Claude instance's Runtime section: 300k, 500k (the default), 750k or the
+model's own. It is upstream's own setting, `ClaudeSettings.autoCompactWindow`,
+which upstream hands each session at launch through the Agent SDK's
+`settings` (the CLI's `--settings` flag layer); nothing writes
+`~/.claude/settings.json`, so Claude Code outside the app is untouched.
+
+- **The default lives in the driver, not the schema.** Empty is upstream's
+  "hand no window"; the Claude driver hands 500k for it. A default in the
+  schema would put the window in every launch upstream's replay tests
+  expect (42 recorded transcripts, and the tests that write theirs
+  inline); the driver is the one path real instances take and those
+  tests don't.
+- **"Model's own" hands 1,000,000**, the CLI's largest, which it caps at
+  the model's context. Handing none would let the person's own
+  `~/.claude/settings.json` cap it: a window in the flag layer outranks
+  theirs, model entries included, and with none theirs applies.
+- **Where it compacts.** Measured with the CLI's `getContextUsage` (Claude
+  Code 2.1.305): `min(window, context) - 33,000`, room for the reply and a
+  buffer. 500k compacts at 467k; a 200k model under 500k at 167k. The
+  adapter reports that, and the context meter fills toward it, reading
+  "38k/467k" where upstream read "38k/1m".
+- **Running Cells keep their window** until their process starts again;
+  a new Cell takes a change at once (seen in the dev app: a running Cell
+  kept 500k after a switch to 300k, the next one launched with 300k).
+
+`compaction.contract.test.ts` (server and web) fails when a sync moves what
+this relies on: the launch carrying the window, the driver's argument, the
+reported thresholds, the hidden field, the row in the card, the search and
+the meter.
+
+To offer upstream: the threshold. Upstream's meter says "Compacts
+automatically at about 500,000 tokens" for a chat that compacts at 467,000,
+and nothing for a window at or above the model's context, where Claude
+still compacts 33,000 short of full. Any T3 user would want the fix; it
+would retire the adapter seam and its test seam.
+
+Not done: Codex. Its `model_auto_compact_token_limit` would go in
+`codexThreadRuntimeParams`'s per-thread `config` (one entry), but it is a
+threshold, not a window, capped at 90 % of the context, with its own
+choices and its own meter reading. Until then Codex's launch arguments take
+`-c model_auto_compact_token_limit=…`.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

@@ -691,6 +691,7 @@ export const ClaudeSettings = makeProviderSettingsSchema(
         providerSettingsForm: {
           placeholder: "e.g. 300000",
           clearWhenEmpty: "omit",
+          hidden: true,
         },
       }),
     ),

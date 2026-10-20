@@ -108,14 +108,13 @@ describe("ProviderSettingsForm helpers", () => {
     expect(fields.find((field) => field.key === "apiKey")?.control).toBe("password");
   });
 
-  it("shows the auto-compaction threshold for Claude providers", () => {
+  it("leaves the auto-compaction threshold to Stemcells' row for Claude providers", () => {
     const claude = providerClients.get(ProviderDriverKind.make("claudeAgent"));
     expect(claude).toBeDefined();
 
     expect(deriveProviderSettingsFields(claude!).map((field) => field.key)).toEqual([
       "binaryPath",
       "homePath",
-      "autoCompactWindow",
       "launchArgs",
     ]);
   });
