@@ -2,10 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import persona from "./persona.md?raw";
 import {
+  ASKI_INSTANCE_ID,
   askiChatAmong,
   askiDriver,
   askiInstance,
   personaArgs,
+  personaFor,
   rememberAskiThread,
   rememberedAskiThread,
   sameInstance,
@@ -72,15 +74,24 @@ describe("Aski's instance", () => {
 
 describe("the persona", () => {
   it("names only the orchestration tools Aski is given", () => {
-    const tools = new Set(persona.match(/\b(?:t3_[a-z_]+|delegate_task)\b/g));
+    const tools = new Set(persona.match(/\b(?:t3_[a-z_]+|delegate_task|orchestrator_[a-z_]+)\b/g));
     expect([...tools].toSorted()).toEqual([
       "delegate_task",
+      "orchestrator_capabilities",
+      "t3_project_read",
       "t3_thread_launch",
       "t3_thread_list",
       "t3_thread_read",
       "t3_thread_send",
       "t3_thread_wait",
     ]);
+  });
+
+  it("starts Cells away from Aski's instance, on the driver's own when nothing else is set", () => {
+    expect(persona).toContain(`never runs on your own provider instance, ${ASKI_INSTANCE_ID}:`);
+    expect(personaFor("codex")).toContain("instanceId codex, with your own model");
+    expect(personaFor("claudeAgent")).toContain("instanceId claudeAgent, with your own model");
+    expect(personaFor("claudeAgent")).not.toContain("{");
   });
 
   it("says Cell and Aski to the person", () => {
@@ -100,14 +111,24 @@ describe("Aski's chat on the server", () => {
     ...fact,
   });
 
+  const adopted = (chats: readonly ChatFact[]) => askiChatAmong(chats)?.threadId ?? null;
+
   it("a fresh browser adopts the existing Aski chat", () => {
     const server = [
       chat("cell-on-claude", { instanceId: "claudeAgent" }),
       chat("aski-chat"),
-      chat("cell-aski-started", { pinned: false }),
       chat("aski-subagent", { topLevel: false }),
     ];
-    expect(askiChatAmong(server)).toBe("aski-chat");
+    expect(adopted(server)).toBe("aski-chat");
+    expect(askiChatAmong(server)?.pinned).toBe(true);
+  });
+
+  it("is the pinned one, even when an unpinned one is older", () => {
+    const server = [
+      chat("older-unpinned", { pinned: false, createdAt: "2026-09-30T09:00:00.000Z" }),
+      chat("pinned"),
+    ];
+    expect(adopted(server)).toBe("pinned");
   });
 
   it("is the first made when a server holds more than one", () => {
@@ -115,14 +136,24 @@ describe("Aski's chat on the server", () => {
       chat("later", { createdAt: "2026-10-02T09:00:00.000Z" }),
       chat("first", { createdAt: "2026-09-30T09:00:00.000Z" }),
     ];
-    expect(askiChatAmong(server)).toBe("first");
+    expect(adopted(server)).toBe("first");
   });
 
-  it("is none when no pinned chat on Aski's instance is left, so one is made", () => {
-    expect(askiChatAmong([])).toBeNull();
-    expect(askiChatAmong([chat("deleted", { deleted: true })])).toBeNull();
-    expect(askiChatAmong([chat("unpinned", { pinned: false })])).toBeNull();
-    expect(askiChatAmong([chat("elsewhere", { instanceId: "codex" })])).toBeNull();
+  it("is the first made, unpinned, once someone unpinned it, so no second one is made", () => {
+    const server = [
+      chat("later", { pinned: false, createdAt: "2026-10-02T09:00:00.000Z" }),
+      chat("first", { pinned: false, createdAt: "2026-09-30T09:00:00.000Z" }),
+    ];
+    expect(adopted(server)).toBe("first");
+    // Unpinned, so the adapter pins it again.
+    expect(askiChatAmong(server)?.pinned).toBe(false);
+  });
+
+  it("is none when no top-level chat on Aski's instance is left, so one is made", () => {
+    expect(adopted([])).toBeNull();
+    expect(adopted([chat("deleted", { deleted: true })])).toBeNull();
+    expect(adopted([chat("subagent", { pinned: false, topLevel: false })])).toBeNull();
+    expect(adopted([chat("elsewhere", { instanceId: "codex" })])).toBeNull();
   });
 });
 

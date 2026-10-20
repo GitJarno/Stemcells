@@ -14,8 +14,7 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import { resolveThreadStatusPill, type ThreadStatusPill } from "../../components/Sidebar.logic";
 import { getDefaultProviderInstanceModel } from "../../providerInstances";
-import persona from "../aski/persona.md?raw";
-import { askiInstance, personaArgs } from "../aski/setup";
+import { askiInstance, personaArgs, personaFor } from "../aski/setup";
 import { chatFactsOf } from "./askiChats";
 import { CELL_STATUSES, type CellStatus } from "./status";
 
@@ -57,7 +56,7 @@ describe("a chat's status", () => {
 describe("Aski's persona travels in launch arguments", () => {
   it("Claude reads it back whole from --append-system-prompt", () => {
     const { flags } = parseCliArgs(personaArgs("claudeAgent"));
-    expect(flags["append-system-prompt"]).toBe(persona.trim());
+    expect(flags["append-system-prompt"]).toBe(personaFor("claudeAgent"));
   });
 
   it("survives the characters a shell would read", () => {
@@ -71,7 +70,7 @@ describe("Aski's persona travels in launch arguments", () => {
     const { config } = askiInstance("claudeAgent", { launchArgs: "--chrome" });
     const { flags } = parseCliArgs(config.launchArgs as string);
     expect(flags).toHaveProperty("chrome");
-    expect(flags["append-system-prompt"]).toBe(persona.trim());
+    expect(flags["append-system-prompt"]).toBe(personaFor("claudeAgent"));
   });
 
   it("Codex reads it as a -c override holding a TOML string of developer instructions", () => {
@@ -79,7 +78,7 @@ describe("Aski's persona travels in launch arguments", () => {
     expect(tokens[0]).toBe("-c");
     const [key, ...value] = tokens[1]!.split("=");
     expect(key).toBe("developer_instructions");
-    expect(JSON.parse(value.join("="))).toBe(persona.trim());
+    expect(JSON.parse(value.join("="))).toBe(personaFor("codex"));
   });
 
   it("an instance is written whole through settings, its driver config left to the driver", () => {

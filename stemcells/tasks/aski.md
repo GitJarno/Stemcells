@@ -31,11 +31,21 @@
   reported of five test chats' runs (WebSocket and `/api/orchestration/shell`),
   never by calling a provider.
 - One Aski chat per server: a browser that hasn't met it (or remembers one
-  since deleted) adopts the pinned top-level chat on the "aski" instance,
-  the first made, once the server's chats have loaded; it makes one only
-  when none exists. `stemcells.aski` is just the fast path. Checked in the
-  dev app: a fresh browser opened the existing chat and made none.
-- Open: activity from the newest running tool item needs the thread's detail
+  since deleted) adopts the top-level chat on the "aski" instance, the
+  pinned one first, else the first made, once the server's chats have
+  loaded, and pins it again if someone unpinned it; it makes one only when
+  none exists. `stemcells.aski` is just the fast path. Checked in the dev
+  app: a fresh browser opened the existing chat and made none.
+- Cells Aski starts never run on the "aski" instance: both
+  `t3_thread_launch` and `delegate_task` inherit the caller's instance when
+  told nothing, so the persona has every launch name the project's default
+  model (`t3_project_read`), whole as `modelSelection`, or as
+  `target.providerInstanceId` and `target.model`; without one, the driver's
+  own instance with Aski's model. A server contract test resolves every
+  `tool(argument).result` the persona spells out against the tools' schemas.
+- Open: `t3_thread_list` without a projectId lists only Aski's own chat's
+  project, so Aski sees Cells in one project unless it goes project by
+  project; activity from the newest running tool item needs the thread's detail
   (one subscription per tab), so only "waiting" is shown, from the status;
   the Codex persona path is unverified end to end (T3's per-turn
   collaboration-mode instructions may override it); upstream's first-message

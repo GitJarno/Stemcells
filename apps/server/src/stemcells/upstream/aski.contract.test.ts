@@ -1,14 +1,15 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads Aski's persona from the web app's source.
 /**
  * Server behaviour Aski relies on. A failure here after a sync names the
- * contract that moved: the tools Aski's persona calls, and the launch
- * arguments that carry the persona to Claude and Codex.
+ * contract that moved: the tools Aski's persona calls and the arguments it
+ * names, and the launch arguments that carry the persona to Claude and Codex.
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
 import { ClaudeSettings, ProviderInstanceId } from "@t3tools/contracts";
+import { Tool } from "effect/ai";
 import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
@@ -25,17 +26,94 @@ const personaPath = NodePath.resolve(
   "../../../../web/src/stemcells/aski/persona.md",
 );
 
+const persona = NodeFS.readFileSync(personaPath, "utf8");
+
+const offered: Record<string, Tool.Any> = {
+  ...OrchestratorToolkit.tools,
+  ...ProjectToolkit.tools,
+  ...ThreadToolkit.tools,
+};
+
+type JsonSchema = {
+  readonly $ref?: string;
+  readonly $defs?: Record<string, JsonSchema>;
+  readonly anyOf?: readonly JsonSchema[];
+  readonly oneOf?: readonly JsonSchema[];
+  readonly allOf?: readonly JsonSchema[];
+  readonly properties?: Record<string, JsonSchema>;
+};
+
+/** Whether a dotted path (`target.model`) leads to a property of the schema. */
+function hasPath(root: JsonSchema, path: readonly string[]): boolean {
+  const defs = root.$defs ?? {};
+  const visit = (node: JsonSchema, rest: readonly string[]): boolean => {
+    if (node.$ref !== undefined) {
+      const target = defs[node.$ref.replace("#/$defs/", "")];
+      return target !== undefined && visit(target, rest);
+    }
+    const [head, ...tail] = rest;
+    if (head === undefined) return true;
+    const branches = [...(node.anyOf ?? []), ...(node.oneOf ?? []), ...(node.allOf ?? [])];
+    const child = node.properties?.[head];
+    return (
+      (child !== undefined && visit(child, tail)) || branches.some((branch) => visit(branch, rest))
+    );
+  };
+  return visit(root, path);
+}
+
+/**
+ * The tool calls the persona spells out: `tool(arg, arg.field).result`,
+ * each argument and the result a dotted path.
+ */
+function namedCalls(text: string) {
+  return [...text.matchAll(/\b([a-z0-9_]+)\(([^)]*)\)((?:\.[A-Za-z]+)*)/g)].map(
+    ([, tool = "", args = "", result = ""]) => ({
+      tool,
+      args: args
+        .split(",")
+        .map((arg) => arg.trim())
+        .filter((arg) => arg !== ""),
+      result: result.slice(1),
+    }),
+  );
+}
+
 describe("the tools Aski's persona names", () => {
   it("are tools of the orchestration toolkits", () => {
-    const persona = NodeFS.readFileSync(personaPath, "utf8");
-    const named = [...new Set(persona.match(/\b(?:t3_[a-z_]+|delegate_task)\b/g))];
-    const offered = new Set([
-      ...Object.keys(OrchestratorToolkit.tools),
-      ...Object.keys(ProjectToolkit.tools),
-      ...Object.keys(ThreadToolkit.tools),
-    ]);
+    const named = [
+      ...new Set(persona.match(/\b(?:t3_[a-z_]+|delegate_task|orchestrator_[a-z_]+)\b/g)),
+    ];
     expect(named.length).toBeGreaterThan(0);
-    expect(named.filter((tool) => !offered.has(tool))).toEqual([]);
+    expect(named.filter((tool) => !(tool in offered))).toEqual([]);
+  });
+
+  it("are called with arguments the tools take and read for results they give", () => {
+    const calls = namedCalls(persona);
+    expect(calls.length).toBeGreaterThan(0);
+    const missing = calls.flatMap(({ tool, args, result }) => {
+      const offeredTool = offered[tool];
+      if (offeredTool === undefined) return [`${tool}: no such tool`];
+      const parameters = Tool.getJsonSchema(offeredTool) as JsonSchema;
+      const success = Tool.getJsonSchemaFromSchema(offeredTool.successSchema) as JsonSchema;
+      return [
+        ...args
+          .filter((arg) => !hasPath(parameters, arg.split(".")))
+          .map((arg) => `${tool}(${arg})`),
+        ...(result !== "" && !hasPath(success, result.split(".")) ? [`${tool}().${result}`] : []),
+      ];
+    });
+    expect(missing).toEqual([]);
+  });
+
+  it("start delegated Cells on a named instance and model, never Aski's own", () => {
+    const delegations = namedCalls(persona).filter((call) => call.tool === "delegate_task");
+    expect(delegations.flatMap((call) => call.args)).toEqual([
+      "target.providerInstanceId",
+      "target.model",
+    ]);
+    const launches = namedCalls(persona).filter((call) => call.tool === "t3_thread_launch");
+    expect(launches.flatMap((call) => call.args)).toContain("modelSelection");
   });
 });
 

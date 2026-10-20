@@ -60,11 +60,20 @@ function quoted(text: string): string {
 }
 
 /**
+ * The persona Aski runs with on `driver`. `{driverInstance}` names the
+ * driver's own instance, where the Cells Aski starts run when their project
+ * has no default model.
+ */
+export function personaFor(driver: AskiDriver, text: string = persona): string {
+  return text.replaceAll("{driverInstance}", driver).trim();
+}
+
+/**
  * The persona as launch arguments for `driver`. Claude appends it to its
  * system prompt; Codex takes it as developer instructions, a TOML string.
  */
 export function personaArgs(driver: AskiDriver, text: string = persona): string {
-  const words = text.trim();
+  const words = personaFor(driver, text);
   return driver === "claudeAgent"
     ? `--append-system-prompt ${quoted(words)}`
     : `-c ${quoted(`developer_instructions=${JSON.stringify(words)}`)}`;
@@ -122,16 +131,16 @@ export interface ChatFact {
 }
 
 /**
- * Aski's chat among a server's chats: the pinned top-level chat on Aski's
- * instance, the first made if there are several. There is one Aski chat per
- * server, so a browser that hasn't met it adopts it rather than make another.
+ * Aski's chat among a server's chats: the top-level chat on Aski's
+ * instance, the pinned one first, else the first made. There is one Aski
+ * chat per server, so a browser that hasn't met it adopts it rather than
+ * make another, even after someone unpinned it.
  */
-export function askiChatAmong(chats: readonly ChatFact[]): string | null {
-  const candidates = chats.filter(
-    (chat) => chat.instanceId === ASKI_INSTANCE_ID && chat.pinned && chat.topLevel && !chat.deleted,
-  );
-  const first = candidates.toSorted((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
-  return first?.threadId ?? null;
+export function askiChatAmong(chats: readonly ChatFact[]): ChatFact | null {
+  const own = chats
+    .filter((chat) => chat.instanceId === ASKI_INSTANCE_ID && chat.topLevel && !chat.deleted)
+    .toSorted((a, b) => a.createdAt.localeCompare(b.createdAt));
+  return own.find((chat) => chat.pinned) ?? own[0] ?? null;
 }
 
 // Each browser remembers Aski's chat per environment (a server), by its

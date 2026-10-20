@@ -10,7 +10,7 @@ import {
   ProviderDriverKind,
   ProviderInstanceId,
   type ServerConfig,
-  type ThreadId,
+  ThreadId,
 } from "@t3tools/contracts";
 import { useEffect, useState } from "react";
 
@@ -72,12 +72,13 @@ function wantedInstance(config: ServerConfig | null): AskiInstance | null | "no-
 // One setup step at a time for the whole page, whoever asks.
 let stepInFlight: string | null = null;
 const instancesWritten = new Set<string>();
+const repinsAsked = new Set<string>();
 
 /**
  * Aski's chat on the primary server: its instance kept current, and its one
- * thread found among the server's chats, else made in the most recent
- * project and pinned. This browser remembers it, to show it before the
- * server's chats have loaded.
+ * thread found among the server's chats (pinned again if someone unpinned
+ * it), else made in the most recent project and pinned. This browser
+ * remembers it, to show it before the server's chats have loaded.
  */
 export function useAskiChat(): AskiChat {
   const catalogReady = useAtomValue(environmentCatalog.catalogValueAtom).isReady;
@@ -119,14 +120,24 @@ export function useAskiChat(): AskiChat {
   // A browser that hasn't met Aski's chat, or remembers one since deleted,
   // takes the server's; the server's chats are read only while it looks.
   const serverChats = useThreadShells(needsThread && chatsLoaded);
-  const adopted =
+  const adoptedChat =
     environmentId !== null && needsThread && chatsLoaded
       ? askiChatAmong(chatFactsOf(serverChats, environmentId))
       : null;
+  const adopted = adoptedChat?.threadId ?? null;
+  const adoptedPinned = adoptedChat?.pinned ?? false;
 
   useEffect(() => {
-    if (environmentId !== null && adopted !== null) rememberAskiThread(environmentId, adopted);
-  }, [environmentId, adopted]);
+    if (environmentId === null || adopted === null) return;
+    rememberAskiThread(environmentId, adopted);
+    // Asked once per page; a server that can't pin still gives Aski its chat.
+    if (adoptedPinned || repinsAsked.has(adopted)) return;
+    repinsAsked.add(adopted);
+    void pinThread({
+      environmentId: environmentId as EnvironmentId,
+      input: { threadId: ThreadId.make(adopted) },
+    });
+  }, [environmentId, adopted, adoptedPinned, pinThread]);
 
   useEffect(() => {
     if (environmentId === null || failed || stepInFlight !== null) return;
