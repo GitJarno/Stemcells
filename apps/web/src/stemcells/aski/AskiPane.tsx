@@ -44,6 +44,8 @@ export function AskiPane(props: {
   chat: AskiChat;
   target: ThreadRouteTarget | null;
   ownsWindowInput: boolean;
+  /** The tab's workbench, where Aski's surfaces show while its chat is focused. */
+  panelHost: HTMLElement | null;
 }) {
   return (
     <div data-stemcells-aski="" className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -55,7 +57,11 @@ export function AskiPane(props: {
       </div>
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
         {props.target ? (
-          <ChatPaneView target={props.target} ownsWindowInput={props.ownsWindowInput} />
+          <ChatPaneView
+            target={props.target}
+            ownsWindowInput={props.ownsWindowInput}
+            panelHost={props.panelHost}
+          />
         ) : (
           <Empty>
             <EmptyHeader>

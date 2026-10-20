@@ -62,6 +62,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const navigateToCell = useNavigateToCell();
   const openNewCell = useOpenNewCell();
   const gridRef = useRef<HTMLDivElement>(null);
+  const [workbench, setWorkbench] = useState<HTMLDivElement | null>(null);
   const tab = activeTab(workspace);
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
@@ -262,31 +263,38 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         }
         onNew={() => openCellInto((current) => openTab(current, newIds(), null))}
       />
-      <div ref={gridRef} className="flex min-h-0 flex-1 flex-col">
-        {tab === null ? <AskiPane chat={askiChat} target={null} ownsWindowInput={false} /> : null}
-        {tab?.rows.map((row, rowIndex) => (
-          <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
-            {row.columns.map((column, columnIndex) => (
-              <div
-                key={column.id}
-                className={cn("flex min-w-0 flex-1 flex-col", columnIndex > 0 && "border-l")}
-              >
-                {column.panes.map((pane, paneIndex) => (
-                  <PaneSlot
-                    key={pane.id}
-                    pane={pane}
-                    aski={isAskiTab(tab) ? askiChat : null}
-                    stacked={paneIndex > 0}
-                    focused={pane.id === tab.focusedPaneId}
-                    showsFocus={panesOf(tab).length > 1}
-                    routeTarget={pane.id === routeOwnerId ? props.target : null}
-                    onFocus={focusPaneAndRoute}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        ))}
+      <div data-stemcells-slate="">
+        <div ref={gridRef} data-stemcells-grid="">
+          {tab === null ? (
+            <AskiPane chat={askiChat} target={null} ownsWindowInput={false} panelHost={null} />
+          ) : null}
+          {tab?.rows.map((row, rowIndex) => (
+            <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
+              {row.columns.map((column, columnIndex) => (
+                <div
+                  key={column.id}
+                  className={cn("flex min-w-0 flex-1 flex-col", columnIndex > 0 && "border-l")}
+                >
+                  {column.panes.map((pane, paneIndex) => (
+                    <PaneSlot
+                      key={pane.id}
+                      pane={pane}
+                      aski={isAskiTab(tab) ? askiChat : null}
+                      stacked={paneIndex > 0}
+                      focused={pane.id === tab.focusedPaneId}
+                      showsFocus={panesOf(tab).length > 1}
+                      routeTarget={pane.id === routeOwnerId ? props.target : null}
+                      panelHost={workbench}
+                      onFocus={focusPaneAndRoute}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        {/* The tab's workbench: the focused chat's surfaces (stemcells/upstream/chatPanel). */}
+        <div ref={setWorkbench} data-stemcells-workbench="" />
       </div>
     </SidebarInset>
   );
@@ -301,6 +309,8 @@ function PaneSlot(props: {
   showsFocus: boolean;
   /** Set on the pane the URL names: it renders the route as upstream would. */
   routeTarget: ThreadRouteTarget | null;
+  /** The tab's workbench, which the focused pane's surfaces fill. */
+  panelHost: HTMLElement | null;
   onFocus: (paneId: string) => void;
 }) {
   const presence = useCellPresence(props.pane.cell);
@@ -325,14 +335,23 @@ function PaneSlot(props: {
       )}
     >
       {props.aski ? (
-        <AskiPane chat={props.aski} target={target} ownsWindowInput={props.focused} />
+        <AskiPane
+          chat={props.aski}
+          target={target}
+          ownsWindowInput={props.focused}
+          panelHost={props.panelHost}
+        />
       ) : (
         <>
           {props.showsFocus ? <PaneHeader cell={props.pane.cell} /> : null}
           {/* Upstream's thread view sizes itself to the window; a pane sizes it to the pane. */}
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
             {target ? (
-              <ChatPaneView target={target} ownsWindowInput={props.focused} />
+              <ChatPaneView
+                target={target}
+                ownsWindowInput={props.focused}
+                panelHost={props.panelHost}
+              />
             ) : props.pane.cell !== null && presence.liveness === "gone" ? (
               <Empty>
                 <EmptyHeader>

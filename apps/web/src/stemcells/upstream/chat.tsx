@@ -16,6 +16,7 @@ import { useQuietThreadShell } from "../../state/entities";
 import { useEnvironmentShellStatus } from "../../state/shell";
 import { isThreadRouteSnapshotAuthoritative } from "../../threadRoutes";
 import type { CellRef } from "../tabs/layout";
+import { ChatPanelHostContext } from "./chatPanel";
 import { routeTargetForCell, threadRefOf, type ThreadRouteTarget } from "./routes";
 
 /** The chat's title once it is a thread; null while it is an unsent draft. */
@@ -88,8 +89,15 @@ export function useOpenNewCell(): () => Promise<CellRef | null> {
  * it, and a chat's composer fills it), as there is one chat on screen. Each
  * pane's composer fills a handle of its own; the pane that owns input fills
  * the app's, so the palette and window shortcuts reach the focused chat.
+ *
+ * The pane that owns input also owns the tab's workbench (`panelHost`): its
+ * thread's surfaces show there, and the other panes show none.
  */
-export function ChatPaneView(props: { target: ThreadRouteTarget; ownsWindowInput: boolean }) {
+export function ChatPaneView(props: {
+  target: ThreadRouteTarget;
+  ownsWindowInput: boolean;
+  panelHost: HTMLElement | null;
+}) {
   const appComposerRef = useComposerHandleContext();
   const paneComposerRef = useRef<ChatComposerHandle | null>(null);
   return (
@@ -97,7 +105,9 @@ export function ChatPaneView(props: { target: ThreadRouteTarget; ownsWindowInput
       value={props.ownsWindowInput && appComposerRef ? appComposerRef : paneComposerRef}
     >
       <ChatWindowInputContext value={props.ownsWindowInput}>
-        <ThreadRouteView target={props.target} />
+        <ChatPanelHostContext value={{ node: props.panelHost, owns: props.ownsWindowInput }}>
+          <ThreadRouteView target={props.target} />
+        </ChatPanelHostContext>
       </ChatWindowInputContext>
     </ComposerHandleContext>
   );
