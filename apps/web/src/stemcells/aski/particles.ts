@@ -3,7 +3,7 @@
 // seed, so a dissolve can be seeked, reversed and rendered offline exactly.
 
 import { EYES, GOO, LOBES } from "./canon.ts";
-import { APOSTROPHE } from "./eye.ts";
+import { BLOCK } from "./eye.ts";
 import { BODY_CHARS, RAMP } from "./font.ts";
 import { clamp, hash, sdPolygon, smin } from "./math.ts";
 
@@ -37,7 +37,7 @@ export function restDistance(x: number, y: number): number {
 function inEye(x: number, y: number): boolean {
   return EYES.centers.some(
     ([ex, ey]) =>
-      sdPolygon((x - ex) / EYES.height, (y - ey) / EYES.height, APOSTROPHE) * EYES.height < 7,
+      sdPolygon((x - ex) / EYES.height, (y - ey) / EYES.height, BLOCK) * EYES.height < 7,
   );
 }
 

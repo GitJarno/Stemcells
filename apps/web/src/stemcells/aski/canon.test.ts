@@ -2,29 +2,40 @@ import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { Aski } from "./aski.ts";
 import { EYES, LOBES } from "./canon.ts";
-import { APOSTROPHE, eyeDistance } from "./eye.ts";
+import { BLOCK, BLOCK_WIDTH, eyeDistance } from "./eye.ts";
 import { eyesDistance, sceneDistance } from "./sdf.ts";
 
-test("the apostrophe is one closed outline, one unit tall, centred on its ink", () => {
+test("the eye is the canon’s block cursor: upright, squared ends, one unit tall, 0.55 wide, centred on its ink", () => {
   let y0 = Infinity,
     y1 = -Infinity,
     x0 = Infinity,
     x1 = -Infinity,
     area = 0;
-  const n = APOSTROPHE.length / 2;
+  const n = BLOCK.length / 2;
   for (let i = 0, j = n - 1; i < n; j = i, i++) {
-    const x = APOSTROPHE[2 * i]!,
-      y = APOSTROPHE[2 * i + 1]!;
+    const x = BLOCK[2 * i]!,
+      y = BLOCK[2 * i + 1]!;
     x0 = Math.min(x0, x);
     x1 = Math.max(x1, x);
     y0 = Math.min(y0, y);
     y1 = Math.max(y1, y);
-    area += APOSTROPHE[2 * j]! * y - x * APOSTROPHE[2 * j + 1]!;
+    area += BLOCK[2 * j]! * y - x * BLOCK[2 * j + 1]!;
   }
   NodeAssert.ok(Math.abs(y1 - y0 - 1) < 1e-9);
+  NodeAssert.ok(Math.abs(x1 - x0 - BLOCK_WIDTH) < 1e-9);
   NodeAssert.ok(Math.abs((x0 + x1) / 2) < 1e-9 && Math.abs((y0 + y1) / 2) < 1e-9);
-  // Heavy enough to read as an eye: a good share of its box is ink.
-  NodeAssert.ok(Math.abs(area / 2) / ((x1 - x0) * (y1 - y0)) > 0.45);
+  // Squared ends, no taper: the ink fills its box.
+  NodeAssert.ok(Math.abs(Math.abs(area / 2) - (x1 - x0) * (y1 - y0)) < 1e-9);
+});
+
+test("the eyes sit level, a block’s width apart, as the canon types them", () => {
+  const [[lx, ly], [rx, ry]] = EYES.centers;
+  NodeAssert.equal(ly, ry);
+  const width = EYES.height * BLOCK_WIDTH;
+  NodeAssert.ok(
+    Math.abs(rx - lx - 2 * width) < width * 0.1,
+    "the gap between them is about one block",
+  );
 });
 
 test("facing left mirrors the eye exactly", () => {

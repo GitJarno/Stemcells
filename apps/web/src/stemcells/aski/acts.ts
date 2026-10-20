@@ -16,7 +16,7 @@ export interface Controls {
   wave: number; // the front hand up, 0..1
   melt: number; // slumped into a puddle, 0..1
   open: number; // eyelids, 1 open
-  eyeRot: number; // radians; π is the opening quote
+  eyeRot: number; // radians: an act's sway of the eyes off upright
   gazeX: number; // -1..1
   gazeY: number;
   look: number; // 0..1: how much the act's gaze overrides the host's
@@ -140,15 +140,10 @@ const hello: Act = {
   },
 };
 
-// Listening: the eyes turn into an opening quote; answering turns them back.
+// Listening: Aski leans in and looks up to hear you out, its eyes as they are.
 const listen: Act = {
   duration: () => 3.6,
   apply(c, u, dur) {
-    const turn =
-      u < 2.3
-        ? Math.PI * ease.outBack(clamp(u / 0.6, 0, 1))
-        : Math.PI + Math.PI * ease.outBack(clamp((u - 2.3) / 0.6, 0, 1));
-    c.eyeRot += u >= dur - 0.05 ? 0 : turn;
     const w = envelope(u, dur, 0.5, 0.6);
     c.lean -= 0.06 * w;
     c.squash -= 0.25 * w;
@@ -259,8 +254,12 @@ const dissolve: Act = {
 export const ACTS = { walk, hop, hello, listen, melt, dance, dissolve } as const;
 export type ActName = keyof typeof ACTS;
 
-/** One blink: the eyes squash shut over `close` seconds, to `shut` of their height, and open again over `open`. */
-export const BLINK = { close: 0.07, open: 0.12, shut: 0.07 } as const;
+/**
+ * One blink: the eyes squash shut over `close` seconds, to `shut` of their
+ * height, and open again over `open`. A host that blinks by pictures drawn
+ * ahead (the iPhone, the Watch) draws them open, `half` open and shut.
+ */
+export const BLINK = { close: 0.07, open: 0.12, shut: 0.07, half: 0.5 } as const;
 
 /** Blinks are seeded: the same seed blinks at the same moments. */
 export function blinkAt(t: number, seed: number): number {
@@ -274,4 +273,28 @@ export function blinkAt(t: number, seed: number): number {
     at += 2.2 + hash(seed, 7, i++) * 3.6;
   }
   return 1;
+}
+
+/**
+ * Aski's blinks at rest, on the wall clock rather than a scene's: one in
+ * each `slot` seconds, its seed's own way up to `jitter` off the slot's
+ * middle, so two never fall on a beat, and now and then (`doubles` of
+ * them) a second one `double` seconds after the first.
+ */
+export const IDLE_BLINKS = { slot: 4.4, jitter: 0.4, double: 0.26, doubles: 0.2 } as const;
+
+/**
+ * When the blinks at rest start, in seconds of the wall clock, from `from`
+ * (inclusive) to `to`, soonest first. Pure time, so every place that shows
+ * Aski blinks together.
+ */
+export function idleBlinks(from: number, to: number, seed: number): number[] {
+  const { slot, jitter, double, doubles } = IDLE_BLINKS;
+  const starts: number[] = [];
+  for (let k = Math.floor(from / slot) - 1; k * slot < to; k++) {
+    const start = (k + 0.5) * slot + (2 * hash(seed, 11, k) - 1) * jitter;
+    starts.push(start);
+    if (hash(seed, 13, k) < doubles) starts.push(start + double);
+  }
+  return starts.filter((at) => at >= from && at < to);
 }

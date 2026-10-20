@@ -64,6 +64,9 @@ export interface Look {
 }
 
 const STEP = 1 / 240;
+
+/** How far the eyes travel, in canon units at the crown's resting size, when Aski looks all the way across (`x`) or down (`y`). */
+export const GAZE = { x: 7, y: 6 } as const;
 const ANCHOR = [LEFT, RIGHT, FOOT_L, FOOT_R] as const;
 
 export class Aski {
@@ -212,8 +215,8 @@ export class Aski {
     // The eyes belong to the crown: they ride it and grow or shrink with it.
     const es = Math.min(1.2, Math.max(0.6, crown.r / LOBES[CROWN]!.r));
     const eyes = EYES.centers.map(([ex, ey]) => ({
-      x: crown.x + (ex - LOBES[CROWN]!.x) * f * es + c.gazeX * 7 * es,
-      y: crown.y + (ey - LOBES[CROWN]!.y) * es + c.gazeY * 6 * es,
+      x: crown.x + (ex - LOBES[CROWN]!.x) * f * es + c.gazeX * GAZE.x * es,
+      y: crown.y + (ey - LOBES[CROWN]!.y) * es + c.gazeY * GAZE.y * es,
       height: EYES.height * es,
       open: c.open,
       rot: c.eyeRot,

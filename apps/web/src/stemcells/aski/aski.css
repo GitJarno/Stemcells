@@ -2,6 +2,7 @@
 
 /* Aski stands six body lines tall, as wide as its own shape asks. */
 .aski-figure {
+  position: relative;
   display: grid;
   block-size: calc(var(--sc-body) * (var(--sc-natural-line) + var(--sc-leading)) * 6);
   aspect-ratio: 1;
@@ -11,6 +12,33 @@
 .aski-figure canvas {
   inline-size: 100%;
   block-size: 100%;
+}
+
+/* Aski's eyes, over its body where the figure drew them, each open over
+   shut: a look moves them on `settle`, a blink turns from one to the other
+   (eyes.ts). Under Reduce Motion they cut to where they look. */
+.aski-figure .aski-eyes {
+  position: absolute;
+  transition: transform var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+
+.aski-eyes .aski-eye {
+  position: absolute;
+}
+
+.aski-eyes canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.aski-eyes .aski-eyes-shut {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aski-figure .aski-eyes {
+    transition: none;
+  }
 }
 
 /* The theater: Aski's square standing on its ground line, and under the

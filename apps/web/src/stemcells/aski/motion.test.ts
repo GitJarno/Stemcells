@@ -1,6 +1,6 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
-import { DISSOLVE } from "./acts.ts";
+import { DISSOLVE, IDLE_BLINKS, idleBlinks } from "./acts.ts";
 import { Aski, type Script } from "./aski.ts";
 import { particleAt, restHomes } from "./particles.ts";
 import { SCENES } from "./scenes.ts";
@@ -35,6 +35,23 @@ test("blinks are seeded", () => {
     opens(3).some((o) => o < 0.5),
     "it does blink",
   );
+});
+
+test("at rest Aski blinks every few seconds, a double now and then, never in a flutter, and at the same moments wherever it shows", () => {
+  const day = 1_760_000_000;
+  const blinks = idleBlinks(day, day + 600, 1);
+  NodeAssert.deepEqual(blinks, idleBlinks(day, day + 600, 1));
+  const gaps = blinks.slice(1).map((at, i) => at - blinks[i]!);
+  const doubles = gaps.filter((gap) => Math.abs(gap - IDLE_BLINKS.double) < 1e-3).length;
+  NodeAssert.ok(
+    gaps.every((gap) => Math.abs(gap - IDLE_BLINKS.double) < 1e-3 || gap >= 3),
+    "no two blinks crowd",
+  );
+  NodeAssert.ok(
+    blinks.length - doubles >= 130 && blinks.length - doubles <= 140,
+    "one blink to a slot",
+  );
+  NodeAssert.ok(doubles > 10 && doubles < 50, "a double now and then");
 });
 
 test("a walk ends where it was sent, facing the way it went", () => {

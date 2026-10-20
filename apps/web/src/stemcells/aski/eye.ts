@@ -1,78 +1,122 @@
-// The eye is an apostrophe: a round ball and a long thin tail, the way a typeset
-// apostrophe sits. The tail sweeps down and to the left to a sharp tip, and its
-// inner edge meets the ball in a crisp corner rather than flowing out of it. It is
-// drawn here as Aski's own outline, not taken from any typeface, so it is
-// identical on every machine.
+// The eye is a block cursor, the █ of SC█, as the canon types it: an upright
+// box with squared ends, a terminal cell across and a line down, no taper and
+// no point. It is drawn here as Aski's own outline, not taken from any
+// typeface, so it is identical on every machine; the phone and the Watch wear
+// it as drawn here.
 
 import { sdPolygon } from "./math.ts";
 
-function flatten(): Float64Array {
-  const pts: number[] = [];
-  const head = (a: number): [number, number] => [Math.cos(a), Math.sin(a)];
-  // The head (a unit circle): from where the tail's inner edge meets it, low and just
-  // right of its foot, over the top, to where its outer edge leaves on the right.
-  const a0 = (84 * Math.PI) / 180,
-    a1 = 2 * Math.PI;
-  const ARC = 48,
-    EDGE = 24;
-  for (let i = 0; i <= ARC; i++) pts.push(...head(a0 + ((a1 - a0) * i) / ARC));
-  const cubic = (
-    p0: readonly number[],
-    c1: readonly number[],
-    c2: readonly number[],
-    p3: readonly number[],
-  ): void => {
-    for (let i = 1; i <= EDGE; i++) {
-      const t = i / EDGE,
-        u = 1 - t;
-      pts.push(
-        u * u * u * p0[0]! + 3 * u * u * t * c1[0]! + 3 * u * t * t * c2[0]! + t * t * t * p3[0]!,
-        u * u * u * p0[1]! + 3 * u * u * t * c1[1]! + 3 * u * t * t * c2[1]! + t * t * t * p3[1]!,
-      );
-    }
-  };
-  // The outer edge leaves the head along its tangent and sweeps down to the tip; the
-  // inner edge runs back up and meets the head at an angle (not along its tangent),
-  // so the tail is thin and the corner where it joins the ball is crisp.
-  const outer = head(a1),
-    inner = head(a0),
-    tip = [-1.05, 3.05];
-  cubic(outer, [1.0, 1.05], [0.3, 2.3], tip);
-  cubic(tip, [-0.3, 2.4], [0.3, 1.5], inner);
-  pts.pop();
-  pts.pop(); // the last point closes onto the first
-  // Normalise: ink box centred on (0, 0), one unit tall.
-  let x0 = Infinity,
-    x1 = -Infinity,
-    y0 = Infinity,
-    y1 = -Infinity;
-  for (let i = 0; i < pts.length; i += 2) {
-    x0 = Math.min(x0, pts[i]!);
-    x1 = Math.max(x1, pts[i]!);
-    y0 = Math.min(y0, pts[i + 1]!);
-    y1 = Math.max(y1, pts[i + 1]!);
-  }
-  const cx = (x0 + x1) / 2,
-    cy = (y0 + y1) / 2,
-    s = 1 / (y1 - y0);
-  return Float64Array.from(pts, (v, i) => (i % 2 ? (v - cy) * s : (v - cx) * s));
-}
+/** How wide the block is for a height of one: a terminal's block, a cell across and a line down. */
+export const BLOCK_WIDTH = 0.55;
 
 /** The outline, one unit tall, centred on its ink box. */
-export const APOSTROPHE: Float64Array = flatten();
+export const BLOCK: Float64Array = Float64Array.from([
+  -BLOCK_WIDTH / 2,
+  -0.5,
+  BLOCK_WIDTH / 2,
+  -0.5,
+  BLOCK_WIDTH / 2,
+  0.5,
+  -BLOCK_WIDTH / 2,
+  0.5,
+]);
 
 export interface EyePose {
   /** Ink centre in canon units. */
   readonly x: number;
   readonly y: number;
   readonly height: number;
-  /** 1 open, toward 0 closed (a blink squashes the mark, it never hides it). */
+  /** 1 open, toward 0 closed (a blink squashes the block toward a sliver, it never hides it). */
   readonly open: number;
-  /** Radians. π turns the closing quote into an opening one. */
+  /** Radians: how far an act sways the block off upright. */
   readonly rot: number;
-  /** Facing, -1..1: the mark mirrors when Aski faces left and flattens through the turn. */
+  /** Facing, -1..1: the block narrows through Aski's turn and is itself again facing either way. */
   readonly facing: number;
+  /** A character typed into the eye in place of the block (a mood), drawn by `GLYPHS`; a character it lacks draws the block. */
+  readonly glyph?: string | undefined;
 }
+
+/** How thick a typed character's strokes are in an eye one unit tall: a bold terminal face's. */
+const STROKE = 0.2;
+
+/** A stroke through `points` (x, y pairs), its ends cut square and its corners mitred, as a closed outline. */
+function stroke(...points: number[]): Float64Array {
+  const n = points.length / 2;
+  const at = (i: number): [number, number] => [points[2 * i]!, points[2 * i + 1]!];
+  const normal = (i: number): [number, number] => {
+    const [ax, ay] = at(i),
+      [bx, by] = at(i + 1),
+      length = Math.hypot(bx - ax, by - ay);
+    return [-(by - ay) / length, (bx - ax) / length];
+  };
+  const left: number[] = [],
+    right: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const before = i > 0 ? normal(i - 1) : normal(i),
+      after = i < n - 1 ? normal(i) : normal(i - 1);
+    const mx = before[0] + after[0],
+      my = before[1] + after[1],
+      length = Math.hypot(mx, my);
+    // The mitre: along the corner's bisector, long enough that both edges stay STROKE apart.
+    const reach = STROKE / 2 / ((mx / length) * before[0] + (my / length) * before[1]);
+    const [x, y] = at(i);
+    left.push(x + (mx / length) * reach, y + (my / length) * reach);
+    // The far side runs back, so the outline closes on itself.
+    right.unshift(x - (mx / length) * reach, y - (my / length) * reach);
+  }
+  return Float64Array.from([...left, ...right]);
+}
+
+/** A square dot, a little heavier than a stroke, its foot on the eye's. */
+const dot = (): Float64Array => {
+  const half = STROKE * 0.55;
+  return Float64Array.from([-half, 0.5 - 2 * half, half, 0.5 - 2 * half, half, 0.5, -half, 0.5]);
+};
+
+/** Outlines moved sideways so their ink sits centred across the eye; how high each one sits is its own. */
+function centred(...outlines: Float64Array[]): readonly Float64Array[] {
+  let x0 = Infinity,
+    x1 = -Infinity;
+  for (const o of outlines)
+    for (let i = 0; i < o.length; i += 2) {
+      x0 = Math.min(x0, o[i]!);
+      x1 = Math.max(x1, o[i]!);
+    }
+  const shift = (x0 + x1) / 2;
+  return outlines.map((o) => o.map((v, i) => (i % 2 ? v : v - shift)));
+}
+
+const a = STROKE / 2;
+
+/**
+ * The characters Aski types into its eyes, each an eye one unit tall and centred on it, in strokes as square
+ * as the block's: drawn here, not taken from a typeface, so they read the same on every machine.
+ */
+export const GLYPHS: Readonly<Record<string, readonly Float64Array[]>> = {
+  "^": centred(stroke(-0.3, 0.1, 0, -0.26, 0.3, 0.1)),
+  "-": centred(stroke(-0.3, 0, 0.3, 0)),
+  "?": centred(
+    stroke(
+      -0.3 + a,
+      -0.2,
+      -0.3 + a,
+      -0.5 + a,
+      0.3 - a,
+      -0.5 + a,
+      0.3 - a,
+      -0.06,
+      0,
+      -0.06,
+      0,
+      0.16,
+    ),
+    dot(),
+  ),
+  "!": centred(stroke(0, -0.5, 0, 0.16), dot()),
+  ">": centred(stroke(-0.2, -0.3, 0.2, 0, -0.2, 0.3)),
+  "<": centred(stroke(0.2, -0.3, -0.2, 0, 0.2, 0.3)),
+  x: centred(stroke(-0.29, -0.29, 0.29, 0.29), stroke(-0.29, 0.29, 0.29, -0.29)),
+};
 
 /** Signed distance from (px, py) to one eye, in canon units. */
 export function eyeDistance(px: number, py: number, e: EyePose): number {
@@ -83,13 +127,14 @@ export function eyeDistance(px: number, py: number, e: EyePose): number {
   [qx, qy] = [c * qx + s * qy, -s * qx + c * qy];
   const open = Math.max(e.open, 0.07);
   const flip = Math.sign(e.facing || 1) * Math.max(Math.abs(e.facing), 0.08);
+  const glyph = e.glyph === undefined ? undefined : GLYPHS[e.glyph];
   qy /= open;
-  qx /= flip;
+  // A typed character narrows through the turn like the block but never reads backwards.
+  qx /= glyph === undefined ? flip : Math.abs(flip);
+  let ink = Infinity;
+  for (const outline of glyph ?? [BLOCK]) ink = Math.min(ink, sdPolygon(qx, qy, outline));
   // Squashing the mark shrinks distances along that axis; scale back by the tighter one so edges stay crisp.
   return (
-    sdPolygon(qx, qy, APOSTROPHE) *
-    e.height *
-    Math.max(Math.min(open, 1), 0.3) *
-    Math.max(Math.min(Math.abs(flip), 1), 0.3)
+    ink * e.height * Math.max(Math.min(open, 1), 0.3) * Math.max(Math.min(Math.abs(flip), 1), 0.3)
   );
 }

@@ -10,5 +10,8 @@ const scope = self as unknown as {
 
 scope.addEventListener("message", (event) => {
   const drawn = drawFigure(event.data);
-  scope.postMessage(drawn, [drawn.pixels]);
+  scope.postMessage(drawn, [
+    drawn.pixels,
+    ...drawn.eyes.each.flatMap((eye) => [eye.open, eye.shut]),
+  ]);
 });

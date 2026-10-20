@@ -28,13 +28,16 @@ export const CROWN = 0,
   FOOT_L = 3,
   FOOT_R = 4;
 
-/** Where the two apostrophes sit (ink centres) and how tall they are. They ride the crown. */
+/**
+ * Where the two block eyes sit (ink centres) and how tall they are: level, as
+ * the canon types them, a block's width apart. They ride the crown.
+ */
 export const EYES = {
   centers: [
-    [6, -137],
-    [56, -142],
+    [6, -151],
+    [56, -151],
   ] as const,
-  height: 76,
+  height: 47,
 };
 
 /** At rest the lobes meet almost edge to edge; motion softens the joins. */

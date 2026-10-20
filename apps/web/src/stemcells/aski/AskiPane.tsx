@@ -38,7 +38,8 @@ export const ASKI_UNAVAILABLE: Record<
 
 /**
  * Aski's pane: Aski over its chat. The chat is upstream's thread view, as
- * in any pane; until it exists, the pane says why.
+ * in any pane; until it exists, the pane says why. Aski's eyes follow the
+ * pointer anywhere over the pane, and the caret in its chat's field.
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -48,12 +49,12 @@ export function AskiPane(props: {
   panelHost: HTMLElement | null;
 }) {
   return (
-    <div data-stemcells-aski="" className="flex min-h-0 min-w-0 flex-1 flex-col">
+    <div data-stemcells-aski="" data-aski-looks="" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div
         data-stemcells-aski-stage=""
         className="flex shrink-0 justify-center border-b border-border py-3"
       >
-        <AskiFigure />
+        <AskiFigure aski={props.chat.status === "ready" ? props.chat.cell : null} />
       </div>
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
         {props.target ? (
