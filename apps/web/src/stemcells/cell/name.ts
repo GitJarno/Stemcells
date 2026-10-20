@@ -10,7 +10,7 @@ export const NAMES: readonly string[] = data.names;
 const MASK = (1n << 64n) - 1n;
 
 /** FNV-1a over the words' UTF-8, in 64 bits. */
-function fnv1a(words: string): bigint {
+export function fnv1a(words: string): bigint {
   let hash = 0xcbf29ce484222325n;
   for (const byte of new TextEncoder().encode(words))
     hash = ((hash ^ BigInt(byte)) * 0x100000001b3n) & MASK;

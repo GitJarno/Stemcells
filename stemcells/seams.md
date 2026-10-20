@@ -41,6 +41,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/ProviderSubagentBar.tsx` | Imports `conciseModelName` and shows `conciseModelName(props.modelLabel)` | Same, for the subagent bar when its model isn't in the provider's list (a name built from the slug, which the helper never sees) |
 | `apps/web/src/components/chat/ModelPickerContent.tsx` | `formatProviderUpdateRequiredNotice` is imported from `stemcells/upstream/modelNames` (same name) | Same, for the picker's "Update … to use …" notice |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/ThreadRelationshipsControl.agents.browser.test.tsx` | Expect the concise names, and nothing else changes in them | They pin the names these seams change |
+| `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/verbs/WorkWord`; the rows' shared state carries `turnVerbs: turnVerbsOf(timelineEntries)`; the working row says `CellWorkingWord` where it said "Working", and the turn fold renders its label through `CellWorkedLabel` | The work verbs: "Noodling for 12s" while a Cell works, "Noodled for 3m 12s" once done. Upstream keeps its row, timer and layout, and screen readers its words (`workVerbs.contract.test.ts` pins what the verbs read). Upstream's hottest file; there is no cooler place for these words |
 
 ### Upstream first: "ChatView safe to render twice"
 

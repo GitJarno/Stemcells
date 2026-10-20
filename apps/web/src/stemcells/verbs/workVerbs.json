@@ -1,0 +1,365 @@
+{
+  "about": "The playful word on a turn's working row: present while the Cell works, past once it is done. Each verb is [present, past, span, topics, ...flags]: the past form is written out, never derived; span is how the past meets its clock (\"Noodled for 3m\", \"Sent it in 3m\"); topics are the prompts it suits. A favourite comes up twice as often; a topic-only verb waits for its topic and stays out of the general pool. A prompt's earliest keyword in its first 400 characters picks its topic. Playful, kind, work-shaped, one word or two short ones; never one a person could take for real work.",
+  "topics": ["fix", "design", "test", "research", "build", "plan", "refactor", "remove"],
+  "keywords": {
+    "fix": [
+      "fix",
+      "fixes",
+      "fixing",
+      "bug",
+      "bugs",
+      "buggy",
+      "broken",
+      "break",
+      "breaks",
+      "crash",
+      "crashes",
+      "crashing",
+      "error",
+      "errors",
+      "failing",
+      "fails",
+      "debug",
+      "flaky",
+      "regression",
+      "hang",
+      "hangs",
+      "leak",
+      "retry"
+    ],
+    "design": [
+      "design",
+      "style",
+      "styles",
+      "styling",
+      "colour",
+      "colours",
+      "color",
+      "colors",
+      "polish",
+      "ui",
+      "ux",
+      "layout",
+      "font",
+      "fonts",
+      "icon",
+      "icons",
+      "animation",
+      "theme",
+      "pretty",
+      "prettier",
+      "spacing",
+      "typography",
+      "typeface",
+      "kerning",
+      "rebrand",
+      "logo"
+    ],
+    "test": [
+      "test",
+      "tests",
+      "testing",
+      "check",
+      "verify",
+      "validate",
+      "prove",
+      "review",
+      "audit",
+      "qa",
+      "benchmark"
+    ],
+    "research": [
+      "find",
+      "search",
+      "research",
+      "why",
+      "how",
+      "explain",
+      "investigate",
+      "explore",
+      "understand",
+      "summarize",
+      "summarise",
+      "compare",
+      "read",
+      "look"
+    ],
+    "build": [
+      "build",
+      "add",
+      "make",
+      "implement",
+      "create",
+      "write",
+      "ship",
+      "feature",
+      "scaffold",
+      "wire",
+      "port",
+      "setup"
+    ],
+    "plan": [
+      "plan",
+      "think",
+      "strategy",
+      "idea",
+      "ideas",
+      "brainstorm",
+      "roadmap",
+      "decide",
+      "propose",
+      "approach",
+      "architecture",
+      "spec"
+    ],
+    "refactor": [
+      "refactor",
+      "clean",
+      "cleanup",
+      "simplify",
+      "tidy",
+      "rename",
+      "restructure",
+      "reorganize",
+      "reorganise",
+      "dedupe",
+      "consolidate"
+    ],
+    "remove": ["remove", "delete", "drop", "prune", "purge", "strip", "yeet", "uninstall"]
+  },
+  "groups": [
+    {
+      "group": "Favourites",
+      "verbs": [
+        ["Aura-farming", "Aura-farmed", "for", ["design"], "favourite"],
+        ["Glazing", "Glazed", "for", ["design"], "favourite"],
+        ["Goblinmaxxing", "Goblinmaxxed", "for", ["fix"], "favourite"],
+        ["Vibechecking", "Vibechecked", "for", ["test"], "favourite"],
+        ["Bamboozling", "Bamboozled", "for", [], "favourite"],
+        ["Discombobulating", "Discombobulated", "for", [], "favourite"],
+        ["Scheming", "Schemed", "for", ["plan"], "favourite"],
+        ["Noodling", "Noodled", "for", ["research"], "favourite"],
+        ["Finagling", "Finagled", "for", ["build"], "favourite"],
+        ["Shenaniganing", "Shenaniganed", "for", [], "favourite"],
+        ["Vibecoding", "Vibecoded", "for", ["build"], "favourite"],
+        ["Lore-dumping", "Lore-dumped", "for", ["research"], "favourite"],
+        ["Hoodwinking", "Hoodwinked", "for", [], "favourite"],
+        ["Yoinking", "Yoinked", "for", ["remove"], "favourite"],
+        ["Finessing", "Finessed", "for", ["design"], "favourite"],
+        ["Speedrunning", "Speedran", "in", ["test"], "favourite"],
+        ["Min-maxing", "Min-maxed", "for", ["test", "refactor"], "favourite"],
+        ["MacGyvering", "MacGyvered", "for", ["fix"], "favourite"],
+        ["Sending it", "Sent it", "in", ["build"], "favourite"]
+      ]
+    },
+    {
+      "group": "The -maxxing register",
+      "verbs": [
+        ["Cookmaxxing", "Cookmaxxed", "for", ["build"]],
+        ["Whimsymaxxing", "Whimsymaxxed", "for", ["design"]],
+        ["Looksmaxxing", "Looksmaxxed", "for", ["design"]],
+        ["Vibemaxxing", "Vibemaxxed", "for", []],
+        ["Auramaxxing", "Auramaxxed", "for", []],
+        ["Codemaxxing", "Codemaxxed", "for", ["build"]],
+        ["Tastemaxxing", "Tastemaxxed", "for", ["design"]],
+        ["Focusmaxxing", "Focusmaxxed", "for", ["plan"]],
+        ["Grindmaxxing", "Grindmaxxed", "for", []],
+        ["Sleepmaxxing", "Sleepmaxxed", "for", []],
+        ["Lockmaxxing", "Lockmaxxed", "for", []]
+      ]
+    },
+    {
+      "group": "Mischief and muddle",
+      "verbs": [
+        ["Rizzing", "Rizzed", "for", []],
+        ["Locking in", "Locked in", "for", ["plan"]],
+        ["Cooking", "Cooked", "for", ["build"]],
+        ["Yapping", "Yapped", "for", ["research"]],
+        ["Gremlining", "Gremlined", "for", ["fix"]],
+        ["Scurrying", "Scurried", "for", []],
+        ["Befuddling", "Befuddled", "for", []],
+        ["Yak-shaving", "Yak-shaved", "for", ["refactor"], "topic-only"],
+        ["Braincelling", "Braincelled", "for", ["plan"]],
+        ["Overthinking", "Overthought", "for", ["plan"]],
+        ["Plotting", "Plotted", "for", ["plan"]],
+        ["Alchemizing", "Alchemized", "for", ["design"]],
+        ["Frankensteining", "Frankensteined", "for", ["build"]],
+        ["Kerfuffling", "Kerfuffled", "for", []],
+        ["Flummoxing", "Flummoxed", "for", []],
+        ["Lollygagging", "Lollygagged", "for", []],
+        ["Malarkeying", "Malarkeyed", "for", []],
+        ["Crazypilling", "Crazypilled", "for", []],
+        ["Spelunking", "Spelunked", "for", ["research"]],
+        ["Rummaging", "Rummaged", "for", ["research"]],
+        ["Sleuthing", "Sleuthed", "for", ["research", "fix"]],
+        ["Nerd-sniping", "Nerd-sniped", "for", ["research"]],
+        ["Wrangling", "Wrangled", "for", ["fix"]],
+        ["Rubber-ducking", "Rubber-ducked", "for", ["fix"]],
+        ["Tinkering", "Tinkered", "for", ["fix", "build"]],
+        ["Untangling", "Untangled", "for", ["refactor", "fix"]],
+        ["Decluttering", "Decluttered", "for", ["refactor", "remove"]],
+        ["Side-questing", "Side-quested", "for", []],
+        ["Skedaddling", "Skedaddled", "in", []]
+      ]
+    },
+    {
+      "group": "San Francisco",
+      "verbs": [
+        ["Matcha-sipping", "Matcha-sipped", "for", []],
+        ["Cold-plunging", "Cold-plunged", "for", []],
+        ["Cold-brewing", "Cold-brewed", "for", []],
+        ["Sourdoughing", "Sourdoughed", "for", []],
+        ["Pickleballing", "Pickleballed", "for", []],
+        ["Run-clubbing", "Run-clubbed", "for", []],
+        ["Biohacking", "Biohacked", "for", []],
+        ["Monk-moding", "Monk-moded", "for", []],
+        ["Founder-moding", "Founder-moded", "for", []],
+        ["10x-ing", "10x'd", "in", []],
+        ["Bikeshedding", "Bikeshedded", "for", ["design"], "topic-only"],
+        ["Deep-working", "Deep-worked", "for", []]
+      ]
+    },
+    {
+      "group": "Terminally online",
+      "verbs": [
+        ["Slaying", "Slayed", "in", []],
+        ["Eating", "Ate", "in", []],
+        ["Manifesting", "Manifested", "for", ["plan"]],
+        ["Delulu-ing", "Delulu'd", "for", ["plan"]],
+        ["Girlbossing", "Girlbossed", "for", []],
+        ["Gatekeeping", "Gatekept", "for", []],
+        ["Big-braining", "Big-brained", "for", ["plan"]],
+        ["Vibe-shifting", "Vibe-shifted", "for", ["design"]],
+        ["Glowing up", "Glowed up", "in", ["design"]],
+        ["Romanticizing", "Romanticized", "for", ["refactor"]],
+        ["Doomscrolling", "Doomscrolled", "for", ["research"]],
+        ["Brainrotting", "Brainrotted", "for", ["research"]],
+        ["Yeeting", "Yeeted", "in", ["remove"], "topic-only"],
+        ["Ratioing", "Ratioed", "in", []],
+        ["Touching grass", "Touched grass", "for", []]
+      ]
+    },
+    {
+      "group": "Medical",
+      "verbs": [
+        ["Suturing", "Sutured", "for", ["fix"]],
+        ["Stitching up", "Stitched up", "for", ["fix"]],
+        ["Defibrillating", "Defibrillated", "for", ["fix"]],
+        ["Scrubbing in", "Scrubbed in", "for", ["build"]],
+        ["X-raying", "X-rayed", "for", ["research"]],
+        ["Biopsying", "Biopsied", "for", ["research"]]
+      ]
+    },
+    {
+      "group": "The therapist's chair",
+      "verbs": [
+        ["Holding space", "Held space", "for", []],
+        ["Reframing", "Reframed", "for", ["refactor"]],
+        ["Healing", "Healed", "for", ["fix"]],
+        ["Inner-childing", "Inner-childed", "for", []]
+      ]
+    },
+    {
+      "group": "Video games",
+      "verbs": [
+        ["Grinding", "Ground", "for", [], "favourite"],
+        ["Leveling up", "Leveled up", "in", ["build"], "favourite"],
+        ["Looting", "Looted", "for", ["research"], "favourite"],
+        ["Cheesing", "Cheesed", "in", []],
+        ["Clutching", "Clutched", "in", ["fix"], "favourite"],
+        ["Button-mashing", "Button-mashed", "for", []],
+        ["Crafting", "Crafted", "for", ["build"]],
+        ["Save-scumming", "Save-scummed", "for", ["test"]],
+        ["Boss-fighting", "Boss-fought", "for", ["fix"], "favourite"],
+        ["No-clipping", "No-clipped", "for", [], "favourite"],
+        ["Comboing", "Comboed", "for", [], "favourite"]
+      ]
+    },
+    {
+      "group": "Marketing",
+      "verbs": [["Synergizing", "Synergized", "for", []]]
+    },
+    {
+      "group": "The studio",
+      "verbs": [
+        ["Doodling", "Doodled", "for", []],
+        ["Cadoodling", "Cadoodled", "for", []],
+        ["Riffing", "Riffed", "for", []],
+        ["Jamming", "Jammed", "for", []],
+        ["Remixing", "Remixed", "for", ["refactor"]],
+        ["Moodboarding", "Moodboarded", "for", ["design"]],
+        ["Freestyling", "Freestyled", "for", []],
+        ["Sculpting", "Sculpted", "for", ["refactor"]],
+        ["Inking", "Inked", "for", []]
+      ]
+    },
+    {
+      "group": "MMOs",
+      "verbs": [
+        ["Raiding", "Raided", "for", []],
+        ["Kiting", "Kited", "for", []],
+        ["Pulling aggro", "Pulled aggro", "for", []],
+        ["Buffing", "Buffed", "for", ["design"]],
+        ["Farming", "Farmed", "for", []]
+      ]
+    },
+    {
+      "group": "Role-playing",
+      "verbs": [
+        ["Questing", "Quested", "for", []],
+        ["Critting", "Crit", "in", []],
+        ["Nat-20ing", "Nat-20'd", "in", []],
+        ["Spellcasting", "Spellcast", "for", []],
+        ["Enchanting", "Enchanted", "for", ["design"]],
+        ["Dungeon-crawling", "Dungeon-crawled", "for", ["research"]]
+      ]
+    },
+    {
+      "group": "Fighting games",
+      "verbs": [
+        ["Juggling", "Juggled", "for", []],
+        ["Parrying", "Parried", "in", []],
+        ["Frame-trapping", "Frame-trapped", "for", []],
+        ["Teching", "Teched", "in", []]
+      ]
+    },
+    {
+      "group": "Arenas",
+      "verbs": [
+        ["Ganking", "Ganked", "in", []],
+        ["Jungling", "Jungled", "for", []],
+        ["Last-hitting", "Last-hit", "in", []],
+        ["Tower-diving", "Tower-dove", "in", []],
+        ["Pentakilling", "Pentakilled", "in", []]
+      ]
+    },
+    {
+      "group": "Hero shooters",
+      "verbs": [
+        ["Ulting", "Ulted", "in", []],
+        ["Flanking", "Flanked", "for", []],
+        ["Healbotting", "Healbotted", "for", ["fix"]]
+      ]
+    },
+    {
+      "group": "Tactical shooters",
+      "verbs": [
+        ["Rushing B", "Rushed B", "in", []],
+        ["Peeking", "Peeked", "for", ["research"]],
+        ["Defusing", "Defused", "in", ["fix"]],
+        ["One-tapping", "One-tapped", "in", []],
+        ["Acing", "Aced", "in", []],
+        ["Eco-ing", "Eco'd", "for", []]
+      ]
+    },
+    {
+      "group": "Streaming",
+      "verbs": [
+        ["Pogging", "Pogged", "for", []],
+        ["Backseating", "Backseated", "for", ["plan"]],
+        ["Emote-spamming", "Emote-spammed", "for", []],
+        ["Hype-training", "Hype-trained", "for", []]
+      ]
+    }
+  ]
+}

@@ -309,6 +309,12 @@ import {
   formatReviewCommentFence,
   type ReviewCommentContext,
 } from "../../reviewCommentContext";
+import {
+  CellWorkedLabel,
+  CellWorkingWord,
+  turnVerbsOf,
+  type TurnVerbs,
+} from "../../stemcells/verbs/WorkWord";
 
 interface TimelineRowSharedState {
   citationRequest: AssistantCitationTarget | null;
@@ -354,6 +360,7 @@ interface TimelineRowSharedState {
   onWorktreeSetupWorkLocally: (() => void) | null;
   onOpenWorktreeSetupTerminal: ((terminalId: string) => void) | null;
   workGroupViewState: WorkGroupViewState;
+  turnVerbs: TurnVerbs;
 }
 
 interface TimelineRowActivityState {
@@ -1319,6 +1326,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
     onWorktreeSetupWorkLocally: onWorktreeSetupWorkLocally ?? null,
     onOpenWorktreeSetupTerminal: onOpenWorktreeSetupTerminal ?? null,
     workGroupViewState,
+    turnVerbs: turnVerbsOf(timelineEntries),
   };
   const compactionAwaitingRow =
     isCompacting && !rows.some((row) => row.kind === "context-compaction" && row.active);
@@ -2627,7 +2635,9 @@ function TurnFoldTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "turn-
         onClick={() => ctx.onToggleTurnFold(row.runId)}
         className="flex cursor-pointer select-none items-center gap-1 rounded-md px-1 text-sm leading-relaxed text-muted-foreground tabular-nums transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/70"
       >
-        <span>{row.label}</span>
+        <span>
+          <CellWorkedLabel verbs={ctx.turnVerbs} createdAt={row.createdAt} label={row.label} />
+        </span>
         <MorphIcon className="size-3.5" icon={row.expanded ? ChevronDown : ChevronRight} />
       </button>
       <TimelineRowTimestamp
@@ -3593,6 +3603,7 @@ function toolIconAcceptsTint(toolIcon: ToolActivityIcon | undefined): boolean {
 function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "working" }> }) {
   const { isCompacting, isPreparingWorktree, backgroundWorktreeSetup } =
     use(TimelineRowActivityCtx);
+  const { turnVerbs } = use(TimelineRowCtx);
   const shimmer = isPreparingWorktree || isCompacting;
   const label = isPreparingWorktree ? (
     "Setting up worktree…"
@@ -3600,10 +3611,13 @@ function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "workin
     <CompactingLabel />
   ) : row.createdAt ? (
     <>
-      Working for <WorkingTimer createdAt={row.createdAt} />
+      <CellWorkingWord verbs={turnVerbs} /> for <WorkingTimer createdAt={row.createdAt} />
     </>
   ) : (
-    "Working..."
+    <>
+      <CellWorkingWord verbs={turnVerbs} />
+      ...
+    </>
   );
   return (
     <div className="border-b border-border/60 pb-2 pt-1">
