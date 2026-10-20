@@ -117,6 +117,32 @@
     );
   }
 }
+/* A draft waits at the foot like every chat, so a tab's composers line up
+   along the bottom. Upstream centres a draft's composer: the overlay fills
+   the chat and centres its lane. In a pane the lane sits at the overlay's
+   foot, where a sent chat's composer sits (upstream/draft.contract.test.ts
+   pins the hooks below). */
+[data-stemcells-pane] [data-chat-composer-overlay="true"] {
+  align-items: flex-end;
+}
+/* Its headline, upstream's "What should we build in …?", becomes a quiet
+   line over the composer, at the size the chat reads in. The project in it
+   is still upstream's picker, in the page's ink; the rest takes the meta
+   ink. Upstream sizes the headline with Tailwind's theme sizes, so the
+   pane lowers those for the headline alone. */
+[data-stemcells-pane] [data-chat-composer-stack="true"] > .bottom-full {
+  --text-3xl: var(--text-sm);
+  --text-3xl--line-height: var(--text-sm--line-height);
+  --text-2xl: var(--text-sm);
+  --text-2xl--line-height: var(--text-sm--line-height);
+  --text-base: var(--text-sm);
+  --text-base--line-height: var(--text-sm--line-height);
+  --tracking-tight: normal;
+}
+[data-stemcells-pane] [data-chat-composer-stack="true"] > .bottom-full h1 {
+  color: var(--sc-meta-ink);
+}
+
 /* Only the focused chat shows the panel toggles: they act on its surfaces. */
 [data-stemcells-pane][data-focused="false"] [data-workspace-titlebar-controls] {
   display: none;
