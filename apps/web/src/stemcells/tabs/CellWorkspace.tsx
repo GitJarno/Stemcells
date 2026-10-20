@@ -11,11 +11,10 @@ import {
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
-import { useCellTitle } from "../upstream/thread";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
-import { Look, LookChip } from "../workbench/LookFrame";
+import { Look } from "../workbench/LookFrame";
 import {
   ASKI_TAB_ID,
   closeTabUnlessAski,
@@ -26,7 +25,6 @@ import {
   splitDownOutsideAski,
   splitRightOutsideAski,
 } from "./askiTab";
-import { CellMark } from "./CellMark";
 import { DropWash } from "./DropWash";
 import { provideNewCellTab } from "./commands";
 import {
@@ -47,6 +45,7 @@ import {
   type Workspace,
 } from "./layout";
 import { mountedTabs } from "./pager";
+import { CellPill, PaneButtons } from "./PaneButtons";
 import { PaneCellContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { PagerPage, TabPager } from "./TabPager";
@@ -193,6 +192,12 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
   };
 
+  /** A pane's ×: closes it, and the route follows the pane focused after. */
+  const closePaneAndRoute = (paneId: string) => {
+    updateWorkspace((current) => closePane(current, paneId));
+    routeToFocused();
+  };
+
   const isLastPane = () => {
     const current = readWorkspace();
     return current.tabs.length === 1 && panesOf(current.tabs[0]!).length === 1;
@@ -310,6 +315,13 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
                     routeTarget={props.target}
                     gridRef={gridRef}
                     onFocus={focusPaneAndRoute}
+                    onClose={
+                      // Aski's pane never closes, nor the last pane of the last tab.
+                      isAskiTab(pageTab) ||
+                      (workspace.tabs.length === 1 && panesOf(pageTab).length === 1)
+                        ? null
+                        : closePaneAndRoute
+                    }
                   />
                 </PagerPage>
               );
@@ -338,6 +350,8 @@ function TabPage(props: {
   /** Set to the grid of the page on stage. */
   gridRef: RefObject<HTMLDivElement | null>;
   onFocus: (paneId: string) => void;
+  /** Closes a pane of the tab; null where none may close. */
+  onClose: ((paneId: string) => void) | null;
 }) {
   const { tab } = props;
   const [workbench, setWorkbench] = useState<HTMLDivElement | null>(null);
@@ -361,10 +375,10 @@ function TabPage(props: {
                     stacked={paneIndex > 0}
                     focused={pane.id === tab.focusedPaneId}
                     ownsInput={props.onStage && pane.id === tab.focusedPaneId}
-                    showsFocus={panesOf(tab).length > 1}
                     routeTarget={pane.id === props.routeOwnerId ? props.routeTarget : null}
                     panelHost={workbench}
                     onFocus={props.onFocus}
+                    onClose={props.onClose}
                   />
                 ))}
               </div>
@@ -387,14 +401,15 @@ function PaneSlot(props: {
   focused: boolean;
   /** The focused pane of the page on stage: it owns window input and the workbench. */
   ownsInput: boolean;
-  showsFocus: boolean;
   /** Set on the pane the URL names: it renders the route as upstream would. */
   routeTarget: ThreadRouteTarget | null;
   /** The tab's workbench, which the focused pane's surfaces fill. */
   panelHost: HTMLElement | null;
   onFocus: (paneId: string) => void;
+  onClose: ((paneId: string) => void) | null;
 }) {
   const presence = useCellPresence(props.pane.cell);
+  const { onClose } = props;
   // Other panes render only a chat that still exists, so upstream's view never
   // leaves the route on their behalf (it does for a chat that is gone).
   const target =
@@ -418,7 +433,13 @@ function PaneSlot(props: {
         />
       ) : (
         <>
-          {props.showsFocus ? <PaneHeader cell={props.pane.cell} /> : null}
+          {/* No header: the line over the composer names the Cell, and the
+              pane's buttons float at its top-right (PaneButtons). */}
+          <PaneButtons
+            cell={props.pane.cell}
+            onClose={onClose ? () => onClose(props.pane.id) : null}
+          />
+          {props.pane.cell ? <CellPill cell={props.pane.cell} /> : null}
           {/* Upstream's thread view sizes itself to the window; a pane sizes it to the pane. */}
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
             {target ? (
@@ -440,21 +461,6 @@ function PaneSlot(props: {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-/** Names a pane's Cell when a tab holds more than one. */
-function PaneHeader(props: { cell: CellRef | null }) {
-  const title = useCellTitle(props.cell) ?? "New Cell";
-  return (
-    <div
-      data-stemcells-pane-header=""
-      className="flex h-7 shrink-0 items-center gap-1.5 border-b border-border px-2 text-xs text-muted-foreground"
-    >
-      <CellMark cell={props.cell} />
-      <span className="min-w-0 truncate">{title}</span>
-      <LookChip cell={props.cell} />
     </div>
   );
 }

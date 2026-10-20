@@ -143,9 +143,132 @@
   color: var(--sc-meta-ink);
 }
 
-/* Only the focused chat shows the panel toggles: they act on its surfaces. */
-[data-stemcells-pane][data-focused="false"] [data-workspace-titlebar-controls] {
+/* No header in a chat: the line over its composer names the Cell, where it
+   runs and what the chat is about, and the pane's buttons float at its
+   top-right. Upstream's header stays in place at no height, holding the
+   panel toggles and anchoring the thread panel; what it showed is hidden.
+   Upstream's own routes keep their header (upstream/header.contract.test.ts
+   pins the hooks). */
+[data-stemcells-pane] [data-chat-header] {
+  height: 0;
+  min-height: 0;
+  padding-block: 0;
+}
+[data-stemcells-pane] [data-chat-header] > :not([data-workspace-titlebar-controls]) {
   display: none;
+}
+
+/* The pane's buttons (PaneButtons.tsx): the Look chip, upstream's panel
+   toggles for the chat, and ×, in one row of round glass at the pane's
+   top-right, while the pointer or focus is in the pane. The toggles are
+   upstream's own, moved from the window's corner to the pane's. */
+[data-stemcells-pane] :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons]) {
+  position: absolute;
+  top: var(--sc-space-md);
+  right: var(--sc-space-md);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  height: auto;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing),
+    visibility 0s linear var(--sc-motion-fade-duration);
+}
+[data-stemcells-pane]:is(:hover, :focus-within)
+  :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons]) {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+/* With the chat's right panel open, upstream splits its toggles: the
+   thread details toggle stays by the header, the rest go to the chat's
+   root. The second row sits under the first. */
+[data-stemcells-pane]
+  [data-workspace-titlebar-controls]
+  ~ [data-chat-column]
+  [data-chat-header]
+  > [data-workspace-titlebar-controls] {
+  top: calc(var(--sc-space-md) + var(--sc-pane-button) + var(--sc-space-xs));
+}
+[data-stemcells-pane] [data-workspace-titlebar-controls] > * {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+[data-stemcells-pane] [data-stemcells-look-chip] {
+  order: -1;
+}
+[data-stemcells-pane] [data-stemcells-pane-close] {
+  order: 1;
+}
+[data-stemcells-pane]
+  :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons])
+  :is(button, [data-stemcells-look-chip]) {
+  justify-content: center;
+  height: var(--sc-pane-button);
+  min-width: var(--sc-pane-button);
+  margin: 0;
+  border: 1px solid var(--sc-pane-button-edge);
+  border-radius: 9999px;
+  background: var(--sc-pane-button-ground);
+  backdrop-filter: blur(var(--sc-glass-blur)) saturate(var(--sc-glass-saturation));
+  box-shadow: var(--sc-glass-shadow);
+  color: var(--muted-foreground);
+  pointer-events: auto;
+}
+[data-stemcells-pane]
+  :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons])
+  :is(button, [data-stemcells-look-chip]):hover,
+[data-stemcells-pane] [data-workspace-titlebar-controls] button[aria-pressed="true"] {
+  background: var(--sc-pane-button-lit);
+  color: var(--foreground);
+}
+[data-stemcells-pane] [data-stemcells-look-chip] {
+  max-width: 12rem;
+  padding-inline: var(--sc-space-lg);
+}
+[data-stemcells-pane] [data-stemcells-pane-close] svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* A pane with no composer names its Cell in a pill at its top-left, where
+   the line over the composer would otherwise say it. */
+[data-stemcells-cell-pill] {
+  position: absolute;
+  top: var(--sc-space-md);
+  left: var(--sc-space-md);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  max-width: calc(100% - 2 * var(--sc-space-md));
+  height: var(--sc-pane-button);
+  padding-inline: var(--sc-space-md) var(--sc-space-lg);
+  border: 1px solid var(--sc-pane-button-edge);
+  border-radius: 9999px;
+  background: var(--sc-pane-button-ground);
+  backdrop-filter: blur(var(--sc-glass-blur)) saturate(var(--sc-glass-saturation));
+  font-size: var(--text-xs);
+  color: var(--muted-foreground);
+}
+[data-stemcells-pane]:has([data-chat-composer-stack]) [data-stemcells-cell-pill] {
+  display: none;
+}
+[data-stemcells-cell-pill-name] {
+  flex: none;
+  font-weight: 500;
+  color: var(--foreground);
+}
+[data-stemcells-cell-pill-title] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* A chat whose panel is maximized elsewhere keeps its column in its pane. */
 [data-stemcells-pane] [data-chat-column-maximized-away="true"] {
