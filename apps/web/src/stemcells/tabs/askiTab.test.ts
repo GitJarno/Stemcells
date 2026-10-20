@@ -1,0 +1,119 @@
+import { describe, expect, it } from "vite-plus/test";
+
+import {
+  ASKI_TAB_ID,
+  askiCellOf,
+  closeTabUnlessAski,
+  moveTabAfterAski,
+  seatAski,
+  showRouteBesideAski,
+  splitDownOutsideAski,
+  splitRightOutsideAski,
+} from "./askiTab";
+import {
+  activeTab,
+  EMPTY_WORKSPACE,
+  focusedPane,
+  openTab,
+  panesOf,
+  parseWorkspace,
+  serializeWorkspace,
+  type CellRef,
+  type NewIds,
+  type Workspace,
+} from "./layout";
+
+let counter = 0;
+function ids(): NewIds {
+  counter += 1;
+  return {
+    tab: `tab-${counter}`,
+    row: `row-${counter}`,
+    column: `column-${counter}`,
+    pane: `pane-${counter}`,
+  };
+}
+
+const thread = (threadId: string): CellRef => ({ environmentId: "env", threadId, draftId: null });
+const aski = thread("aski-thread");
+
+function withCells(...threadIds: string[]): Workspace {
+  return threadIds.reduce(
+    (workspace, id) => openTab(workspace, ids(), thread(id)),
+    EMPTY_WORKSPACE,
+  );
+}
+
+const tabIds = (workspace: Workspace) => workspace.tabs.map((tab) => tab.id);
+
+describe("Aski's tab", () => {
+  it("comes first, and opens the app the first time", () => {
+    const seated = seatAski(withCells("a", "b"), aski, ids());
+    expect(seated.tabs[0]!.id).toBe(ASKI_TAB_ID);
+    expect(seated.tabs).toHaveLength(3);
+    expect(seated.activeTabId).toBe(ASKI_TAB_ID);
+    expect(askiCellOf(seated)).toEqual(aski);
+  });
+
+  it("keeps the tab the person was on once it exists", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const onCell = { ...seated, activeTabId: seated.tabs[1]!.id };
+    expect(seatAski(onCell, aski, ids())).toBe(onCell);
+  });
+
+  it("follows Aski's chat when it is made again, in the same pane", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const paneId = panesOf(seated.tabs[0]!)[0]!.id;
+    const reseated = seatAski(seated, thread("aski-again"), ids());
+    expect(askiCellOf(reseated)).toEqual(thread("aski-again"));
+    expect(panesOf(reseated.tabs[0]!)[0]!.id).toBe(paneId);
+  });
+
+  it("goes back to the front if a stored layout put it elsewhere", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const moved = { ...seated, tabs: [seated.tabs[1]!, seated.tabs[0]!] };
+    expect(tabIds(seatAski(moved, aski, ids()))[0]).toBe(ASKI_TAB_ID);
+  });
+
+  it("never closes, moves or splits, and no tab moves before it", () => {
+    const seated = seatAski(withCells("a", "b"), aski, ids());
+    expect(closeTabUnlessAski(seated, ASKI_TAB_ID)).toBe(seated);
+    expect(moveTabAfterAski(seated, ASKI_TAB_ID, 2)).toBe(seated);
+    const last = seated.tabs[2]!.id;
+    expect(tabIds(moveTabAfterAski(seated, last, 0))).toEqual([
+      ASKI_TAB_ID,
+      last,
+      seated.tabs[1]!.id,
+    ]);
+    expect(splitRightOutsideAski(seated, ids(), 2000)).toBe(seated);
+    expect(splitDownOutsideAski(seated, ids())).toBe(seated);
+    const onCell = { ...seated, activeTabId: seated.tabs[1]!.id };
+    expect(panesOf(activeTab(splitDownOutsideAski(onCell, ids()))!)).toHaveLength(2);
+  });
+
+  it("keeps Aski's chat when another chat is routed to from it, in a tab of its own", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const routed = showRouteBesideAski(seated, thread("new"), ids());
+    expect(askiCellOf(routed)).toEqual(aski);
+    expect(routed.tabs).toHaveLength(3);
+    expect(focusedPane(routed)?.cell).toEqual(thread("new"));
+  });
+
+  it("hands a chat already in a pane to that pane", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const routed = showRouteBesideAski(seated, thread("a"), ids());
+    expect(routed.tabs).toHaveLength(2);
+    expect(activeTab(routed)?.id).toBe(seated.tabs[1]!.id);
+  });
+
+  it("is focused when Aski's chat is routed to", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const onCell = { ...seated, activeTabId: seated.tabs[1]!.id };
+    expect(showRouteBesideAski(onCell, aski, ids()).activeTabId).toBe(ASKI_TAB_ID);
+  });
+
+  it("is kept with the layout", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    expect(parseWorkspace(JSON.parse(JSON.stringify(serializeWorkspace(seated))))).toEqual(seated);
+  });
+});

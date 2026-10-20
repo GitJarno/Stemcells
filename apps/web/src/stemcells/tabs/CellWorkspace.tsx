@@ -1,26 +1,34 @@
-import { useEffect, useEffectEvent, useRef, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 
-import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
+import { AskiKeeper, AskiPane } from "../aski/AskiPane";
+import type { AskiChat } from "../upstream/aski";
+import { ChatPaneView, useCellPresence, useCellTitle, useOpenNewCell } from "../upstream/chat";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import {
+  ASKI_TAB_ID,
+  closeTabUnlessAski,
+  isAskiTab,
+  moveTabAfterAski,
+  seatAski,
+  showRouteBesideAski,
+  splitDownOutsideAski,
+  splitRightOutsideAski,
+} from "./askiTab";
+import { CellMark } from "./CellMark";
+import {
   activateTab,
   activeTab,
   closePane,
-  closeTab,
   findPane,
   focusedPane,
   focusPane,
-  moveTab,
   openTab,
   panesOf,
   paneShowing,
   sameChat,
   setCell,
-  showRoute,
-  splitDown,
-  splitRight,
   type CellRef,
   type Pane,
   type Workspace,
@@ -28,6 +36,8 @@ import {
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { TabStrip } from "./TabStrip";
 import { useWorkspaceKeys } from "./useWorkspaceKeys";
+import "../tokens/stemcells.css";
+import "./workspace.css";
 
 function routeKey(cell: CellRef): string {
   return `${cell.environmentId}/${cell.threadId}/${cell.draftId ?? ""}`;
@@ -55,6 +65,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const tab = activeTab(workspace);
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
+  const [askiChat, setAskiChat] = useState<AskiChat>({ status: "starting" });
 
   const routeToFocused = () => {
     const cell = focusedPane(readWorkspace())?.cell;
@@ -62,7 +73,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   const onRoute = useEffectEvent((cell: CellRef) => {
-    updateWorkspace((current) => showRoute(current, cell, newIds()));
+    updateWorkspace((current) => showRouteBesideAski(current, cell, newIds()));
     useWorkspaceStore.setState({ takenRoute: routeKey(cell) });
     const holder = paneShowing(readWorkspace(), cell);
     if (holder && cell.draftId !== null) fileDraftUnderPane(cell.draftId, holder.pane.id);
@@ -112,7 +123,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
 
   const closeTabAndRoute = (tabId: string) => {
     const before = readWorkspace();
-    updateWorkspace((current) => closeTab(current, tabId));
+    updateWorkspace((current) => closeTabUnlessAski(current, tabId));
     if (activeTab(readWorkspace())?.id !== activeTab(before)?.id) routeToFocused();
   };
 
@@ -147,6 +158,17 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     openQueue.current = openQueue.current.then(() => openCellNow(change));
   };
 
+  const inAskiTab = () => isAskiTab(activeTab(readWorkspace()));
+
+  /** Aski's chat, once it exists, goes in Aski's tab; the first time, the app opens on it. */
+  const onAskiChat = (chat: AskiChat) => {
+    setAskiChat(chat);
+    if (chat.status !== "ready") return;
+    const before = readWorkspace();
+    updateWorkspace((current) => seatAski(current, chat.cell, newIds()));
+    if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
+  };
+
   const isLastPane = () => {
     const current = readWorkspace();
     return current.tabs.length === 1 && panesOf(current.tabs[0]!).length === 1;
@@ -159,34 +181,47 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     },
     closeTab: () => {
       const current = readWorkspace();
-      if (!current.activeTabId || current.tabs.length < 2) return false;
+      if (!current.activeTabId || current.tabs.length < 2 || inAskiTab()) return false;
       closeTabAndRoute(current.activeTabId);
       return true;
     },
     splitRight: () => {
-      if (!focusedPane(readWorkspace())) return false;
+      if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
       const width = gridRef.current?.clientWidth ?? window.innerWidth;
-      openCellInto((current) => splitRight(current, newIds(), width));
+      openCellInto((current) => splitRightOutsideAski(current, newIds(), width));
       return true;
     },
     splitDown: () => {
-      if (!focusedPane(readWorkspace())) return false;
-      openCellInto((current) => splitDown(current, newIds()));
+      if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
+      openCellInto((current) => splitDownOutsideAski(current, newIds()));
       return true;
     },
     closePane: () => {
       const pane = focusedPane(readWorkspace());
-      // The last pane of the last tab is left to upstream: on the desktop, ⌘W closes the window.
-      if (!pane || isLastPane()) return false;
+      // The last pane of the last tab is left to upstream: on the desktop, ⌘W
+      // closes the window. So is Aski's, which never closes.
+      if (!pane || isLastPane() || inAskiTab()) return false;
       updateWorkspace((current) => closePane(current, pane.id));
       routeToFocused();
       return true;
     },
   });
 
-  const keepGrid = isIndexRoute && tab !== null && focusedPresence.liveness !== "gone";
-  if (props.target === null && !keepGrid) return props.fallback;
-  if (!tab) return null;
+  // On the index route Aski's chat is on its way: the grid waits for it
+  // rather than letting upstream's index start a draft beside it.
+  const askiOnTheWay = isIndexRoute && askiChat.status === "starting" && tab === null;
+  const keepGrid =
+    isIndexRoute && ((tab !== null && focusedPresence.liveness !== "gone") || askiOnTheWay);
+  const keeper = <AskiKeeper onChat={onAskiChat} />;
+  if (props.target === null && !keepGrid) {
+    return (
+      <>
+        {keeper}
+        {props.fallback}
+      </>
+    );
+  }
+  if (!tab && !askiOnTheWay) return keeper;
 
   // The pane that renders the route as upstream would: the one showing its
   // chat, or the focused pane for a chat just routed to. A route already
@@ -196,20 +231,40 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const routeOwnerId =
     props.target === null ? null : (routeHolder?.pane.id ?? (routeIsNew ? focused?.id : null));
 
+  const askiTab = workspace.tabs.find(isAskiTab) ?? null;
+  const cellTabs = askiTab
+    ? workspace.tabs.filter((candidate) => candidate !== askiTab)
+    : workspace.tabs;
+
   return (
-    <SidebarInset className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh">
+    <SidebarInset
+      data-stemcells-workspace=""
+      className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
+    >
+      {keeper}
       <TabStrip
-        tabs={workspace.tabs}
+        tabs={cellTabs}
         activeTabId={workspace.activeTabId}
+        aski={{
+          active: askiTab !== null && workspace.activeTabId === ASKI_TAB_ID,
+          cell: askiTab ? (panesOf(askiTab)[0]?.cell ?? null) : null,
+          chat: askiChat,
+        }}
         onActivate={activateTabAndRoute}
         onClose={(tabId) => {
           if (readWorkspace().tabs.length > 1) closeTabAndRoute(tabId);
         }}
-        onMove={(tabId, toIndex) => updateWorkspace((current) => moveTab(current, tabId, toIndex))}
+        onMove={(tabId, toIndex) =>
+          // The strip counts the Cells' tabs; Aski's comes before them.
+          updateWorkspace((current) =>
+            moveTabAfterAski(current, tabId, toIndex + (askiTab ? 1 : 0)),
+          )
+        }
         onNew={() => openCellInto((current) => openTab(current, newIds(), null))}
       />
       <div ref={gridRef} className="flex min-h-0 flex-1 flex-col">
-        {tab.rows.map((row, rowIndex) => (
+        {tab === null ? <AskiPane chat={askiChat} target={null} ownsWindowInput={false} /> : null}
+        {tab?.rows.map((row, rowIndex) => (
           <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
             {row.columns.map((column, columnIndex) => (
               <div
@@ -220,6 +275,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
                   <PaneSlot
                     key={pane.id}
                     pane={pane}
+                    aski={isAskiTab(tab) ? askiChat : null}
                     stacked={paneIndex > 0}
                     focused={pane.id === tab.focusedPaneId}
                     showsFocus={panesOf(tab).length > 1}
@@ -238,6 +294,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
 
 function PaneSlot(props: {
   pane: Pane;
+  /** Set on Aski's pane: Aski's chat as it stands. */
+  aski: AskiChat | null;
   stacked: boolean;
   focused: boolean;
   showsFocus: boolean;
@@ -259,24 +317,47 @@ function PaneSlot(props: {
         if (!props.focused) props.onFocus(props.pane.id);
       }}
       className={cn(
-        // Upstream's thread view sizes itself to the window; a pane sizes it to the pane.
-        "relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!",
+        "relative flex min-h-0 min-w-0 flex-1 flex-col",
         props.stacked && "border-t",
         props.showsFocus &&
           props.focused &&
           "after:pointer-events-none after:absolute after:inset-0 after:z-20 after:ring-1 after:ring-ring/40 after:ring-inset",
       )}
     >
-      {target ? (
-        <ChatPaneView target={target} ownsWindowInput={props.focused} />
-      ) : props.pane.cell !== null && presence.liveness === "gone" ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>This Cell is gone</EmptyTitle>
-            <EmptyDescription>Its chat was deleted. ⌘W closes the pane.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : null}
+      {props.aski ? (
+        <AskiPane chat={props.aski} target={target} ownsWindowInput={props.focused} />
+      ) : (
+        <>
+          {props.showsFocus ? <PaneHeader cell={props.pane.cell} /> : null}
+          {/* Upstream's thread view sizes itself to the window; a pane sizes it to the pane. */}
+          <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
+            {target ? (
+              <ChatPaneView target={target} ownsWindowInput={props.focused} />
+            ) : props.pane.cell !== null && presence.liveness === "gone" ? (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>This Cell is gone</EmptyTitle>
+                  <EmptyDescription>Its chat was deleted. ⌘W closes the pane.</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            ) : null}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Names a pane's Cell when a tab holds more than one. */
+function PaneHeader(props: { cell: CellRef | null }) {
+  const title = useCellTitle(props.cell) ?? "New Cell";
+  return (
+    <div
+      data-stemcells-pane-header=""
+      className="flex h-7 shrink-0 items-center gap-1.5 border-b border-border px-2 text-xs text-muted-foreground"
+    >
+      <CellMark cell={props.cell} />
+      <span className="min-w-0 truncate">{title}</span>
     </div>
   );
 }
