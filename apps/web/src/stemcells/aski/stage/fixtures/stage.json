@@ -1,0 +1,218 @@
+{
+  "about": "Aski's stage: where each awake Cell stands around Aski and how it got there. Each case is a run of steps on one stage; a step lists every Cell the screen holds then (`stage` as core sent it, `born` and `needSince` in milliseconds, `closing` true in its close's grace) and what the stage then shows: who orbits, who stands on each side of the ground line from Aski outward, who stands at the front in order, how each came to its spot (`appears`, `arrives`, `moves` or `stays`), and who left the stage, hopping into Aski. The first step of a case is the stage's first showing.",
+  "cases": [
+    {
+      "says": "a Cell's place follows its stage: at work it orbits, starting or landed it stands on the ground line, needing you it stands at the front; a stage the screen does not know orbits, and a close in its grace is off the stage",
+      "steps": [
+        {
+          "cells": [
+            { "name": "Otter", "stage": "working", "born": 100 },
+            { "name": "Heron", "stage": "landed", "born": 200 },
+            { "name": "Wren", "stage": "starting", "born": 300 },
+            { "name": "Puffin", "stage": "needsYou", "born": 400, "needSince": 900 },
+            { "name": "Kestrel", "stage": "compiling", "born": 500 },
+            { "name": "Plover", "stage": "landed", "born": 600, "closing": true }
+          ],
+          "orbit": ["Otter", "Kestrel"],
+          "ground": { "trailing": ["Heron"], "leading": ["Wren"] },
+          "front": ["Puffin"],
+          "entries": {
+            "Otter": "appears",
+            "Kestrel": "appears",
+            "Heron": "appears",
+            "Wren": "appears",
+            "Puffin": "appears"
+          },
+          "left": []
+        }
+      ]
+    },
+    {
+      "says": "a newcomer to the ground line takes the outer end of the side with fewer Cells, the trailing one on a tie; one leaving closes the gap on its own side, and the rest keep theirs",
+      "steps": [
+        {
+          "cells": [
+            { "name": "Otter", "stage": "landed", "born": 100 },
+            { "name": "Heron", "stage": "landed", "born": 200 },
+            { "name": "Wren", "stage": "landed", "born": 300 },
+            { "name": "Puffin", "stage": "landed", "born": 400 }
+          ],
+          "orbit": [],
+          "ground": { "trailing": ["Otter", "Wren"], "leading": ["Heron", "Puffin"] },
+          "front": [],
+          "entries": {
+            "Otter": "appears",
+            "Heron": "appears",
+            "Wren": "appears",
+            "Puffin": "appears"
+          },
+          "left": []
+        },
+        {
+          "cells": [
+            { "name": "Otter", "stage": "working", "born": 100 },
+            { "name": "Heron", "stage": "landed", "born": 200 },
+            { "name": "Wren", "stage": "landed", "born": 300 },
+            { "name": "Puffin", "stage": "landed", "born": 400 }
+          ],
+          "orbit": ["Otter"],
+          "ground": { "trailing": ["Wren"], "leading": ["Heron", "Puffin"] },
+          "front": [],
+          "entries": { "Otter": "moves", "Heron": "stays", "Wren": "stays", "Puffin": "stays" },
+          "left": []
+        },
+        {
+          "cells": [
+            { "name": "Otter", "stage": "working", "born": 100 },
+            { "name": "Heron", "stage": "landed", "born": 200 },
+            { "name": "Wren", "stage": "landed", "born": 300 },
+            { "name": "Puffin", "stage": "landed", "born": 400 },
+            { "name": "Kestrel", "stage": "landed", "born": 500 }
+          ],
+          "orbit": ["Otter"],
+          "ground": { "trailing": ["Wren", "Kestrel"], "leading": ["Heron", "Puffin"] },
+          "front": [],
+          "entries": {
+            "Otter": "stays",
+            "Heron": "stays",
+            "Wren": "stays",
+            "Puffin": "stays",
+            "Kestrel": "appears"
+          },
+          "left": []
+        },
+        {
+          "cells": [
+            { "name": "Otter", "stage": "working", "born": 100 },
+            { "name": "Heron", "stage": "landed", "born": 200 },
+            { "name": "Wren", "stage": "landed", "born": 300 },
+            { "name": "Puffin", "stage": "landed", "born": 400 },
+            { "name": "Kestrel", "stage": "landed", "born": 500 },
+            { "name": "Plover", "stage": "starting", "born": 600 }
+          ],
+          "orbit": ["Otter"],
+          "ground": { "trailing": ["Wren", "Kestrel", "Plover"], "leading": ["Heron", "Puffin"] },
+          "front": [],
+          "entries": {
+            "Otter": "stays",
+            "Heron": "stays",
+            "Wren": "stays",
+            "Puffin": "stays",
+            "Kestrel": "stays",
+            "Plover": "arrives"
+          },
+          "left": []
+        }
+      ]
+    },
+    {
+      "says": "the front first shows its Cells in the order their needs began; one stepping out later stands at its end",
+      "steps": [
+        {
+          "cells": [
+            { "name": "Otter", "stage": "needsYou", "born": 100, "needSince": 2000 },
+            { "name": "Heron", "stage": "needsYou", "born": 200, "needSince": 1000 },
+            { "name": "Wren", "stage": "working", "born": 300 }
+          ],
+          "orbit": ["Wren"],
+          "ground": { "trailing": [], "leading": [] },
+          "front": ["Heron", "Otter"],
+          "entries": { "Otter": "appears", "Heron": "appears", "Wren": "appears" },
+          "left": []
+        },
+        {
+          "cells": [
+            { "name": "Otter", "stage": "needsYou", "born": 100, "needSince": 2000 },
+            { "name": "Heron", "stage": "needsYou", "born": 200, "needSince": 1000 },
+            { "name": "Wren", "stage": "needsYou", "born": 300, "needSince": 500 }
+          ],
+          "orbit": [],
+          "ground": { "trailing": [], "leading": [] },
+          "front": ["Heron", "Otter", "Wren"],
+          "entries": { "Otter": "stays", "Heron": "stays", "Wren": "moves" },
+          "left": []
+        },
+        {
+          "cells": [
+            { "name": "Otter", "stage": "needsYou", "born": 100, "needSince": 2000 },
+            { "name": "Heron", "stage": "working", "born": 200 },
+            { "name": "Wren", "stage": "needsYou", "born": 300, "needSince": 500 }
+          ],
+          "orbit": ["Heron"],
+          "ground": { "trailing": [], "leading": [] },
+          "front": ["Otter", "Wren"],
+          "entries": { "Otter": "stays", "Heron": "moves", "Wren": "stays" },
+          "left": []
+        }
+      ]
+    },
+    {
+      "says": "a closed Cell hops into Aski, comes back out of it on Undo, and hops in again when it sleeps",
+      "steps": [
+        {
+          "cells": [{ "name": "Otter", "stage": "landed", "born": 100 }],
+          "orbit": [],
+          "ground": { "trailing": ["Otter"], "leading": [] },
+          "front": [],
+          "entries": { "Otter": "appears" },
+          "left": []
+        },
+        {
+          "cells": [{ "name": "Otter", "stage": "landed", "born": 100, "closing": true }],
+          "orbit": [],
+          "ground": { "trailing": [], "leading": [] },
+          "front": [],
+          "entries": {},
+          "left": ["Otter"]
+        },
+        {
+          "cells": [{ "name": "Otter", "stage": "landed", "born": 100 }],
+          "orbit": [],
+          "ground": { "trailing": ["Otter"], "leading": [] },
+          "front": [],
+          "entries": { "Otter": "arrives" },
+          "left": []
+        },
+        {
+          "cells": [],
+          "orbit": [],
+          "ground": { "trailing": [], "leading": [] },
+          "front": [],
+          "entries": {},
+          "left": ["Otter"]
+        }
+      ]
+    },
+    {
+      "says": "after the first showing, a Cell first seen starting comes out of Aski, and one first seen in any other stage stands in its spot at once",
+      "steps": [
+        {
+          "cells": [],
+          "orbit": [],
+          "ground": { "trailing": [], "leading": [] },
+          "front": [],
+          "entries": {},
+          "left": []
+        },
+        {
+          "cells": [
+            { "name": "Otter", "stage": "working", "born": 100 },
+            { "name": "Heron", "stage": "starting", "born": 200 },
+            { "name": "Wren", "stage": "landed", "born": 300 },
+            { "name": "Puffin", "stage": "needsYou", "born": 400, "needSince": 900 }
+          ],
+          "orbit": ["Otter"],
+          "ground": { "trailing": ["Heron"], "leading": ["Wren"] },
+          "front": ["Puffin"],
+          "entries": {
+            "Otter": "appears",
+            "Heron": "arrives",
+            "Wren": "appears",
+            "Puffin": "appears"
+          },
+          "left": []
+        }
+      ]
+    }
+  ]
+}
