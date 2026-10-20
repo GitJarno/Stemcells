@@ -19,9 +19,10 @@ riding the fingers.
       corners; header and composer float over the transcript
 - [x] Width: each pane lays out by its own width, not the window's (lane padding)
 - [x] Right column with panes: one workbench per tab, the focused chat's surfaces
-- [ ] Swipe: neighbour tabs stay mounted; 1:1 tracking on the compositor,
+- [x] Swipe: neighbour tabs stay mounted; 1:1 tracking on the compositor,
       rubber band at the ends, 110 px commit, page spring, latest input wins,
-      horizontal scrollers keep their own gestures
+      horizontal scrollers keep their own gestures (the fingers' lift is read
+      from wheel deltas, `tabs/swipe.ts`; a native phase source can replace it)
 - [ ] Prove it in the real app (dev server in a browser, then the desktop build)
 
 ## Design

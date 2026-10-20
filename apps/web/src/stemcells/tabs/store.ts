@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import { randomUUID } from "../upstream/ui";
 import { EMPTY_WORKSPACE, parseWorkspace, serializeWorkspace, type Workspace } from "./layout";
+import { visit } from "./pager";
 
 const WORKSPACE_STORAGE_KEY = "stemcells.tabs";
 
@@ -28,20 +29,32 @@ interface WorkspaceStore {
   readonly workspace: Workspace;
   /** The last route the panes took in; a route not yet taken in is new. */
   readonly takenRoute: string | null;
+  /** The tabs active last, most recent first: their pages stay mounted. */
+  readonly visited: readonly string[];
   readonly update: (change: (workspace: Workspace) => Workspace) => void;
 }
 
-export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
-  workspace: readStoredWorkspace(),
-  takenRoute: null,
-  update: (change) => {
-    const previous = get().workspace;
-    const next = change(previous);
-    if (next === previous) return;
-    set({ workspace: next });
-    writeStoredWorkspace(next);
-  },
-}));
+const tabIdsOf = (workspace: Workspace): string[] => workspace.tabs.map((tab) => tab.id);
+
+export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
+  const workspace = readStoredWorkspace();
+  return {
+    workspace,
+    takenRoute: null,
+    visited: visit([], workspace.activeTabId, tabIdsOf(workspace)),
+    update: (change) => {
+      const previous = get().workspace;
+      const next = change(previous);
+      if (next === previous) return;
+      const visited =
+        next.activeTabId !== previous.activeTabId || next.tabs.length !== previous.tabs.length
+          ? visit(get().visited, next.activeTabId, tabIdsOf(next))
+          : get().visited;
+      set({ workspace: next, visited });
+      writeStoredWorkspace(next);
+    },
+  };
+});
 
 export function readWorkspace(): Workspace {
   return useWorkspaceStore.getState().workspace;

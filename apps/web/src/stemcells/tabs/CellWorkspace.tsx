@@ -1,4 +1,12 @@
-import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import type { AskiChat } from "../upstream/aski";
@@ -32,10 +40,13 @@ import {
   setCell,
   type CellRef,
   type Pane,
+  type Tab,
   type Workspace,
 } from "./layout";
+import { mountedTabs } from "./pager";
 import { PaneCellContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
+import { PagerPage, TabPager } from "./TabPager";
 import { TabStrip } from "./TabStrip";
 import { useWorkspaceKeys } from "./useWorkspaceKeys";
 import "../tokens/stemcells.css";
@@ -59,12 +70,15 @@ function cellsOf(workspace: Workspace): CellRef[] {
 export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallback: ReactNode }) {
   const workspace = useWorkspaceStore((store) => store.workspace);
   const takenRoute = useWorkspaceStore((store) => store.takenRoute);
+  const visited = useWorkspaceStore((store) => store.visited);
+  // A turn renders the arriving page's ownership at once; the pages that
+  // become its neighbours mount after, without holding up the slide.
+  const settledTabId = useDeferredValue(workspace.activeTabId);
   const routeCell = useCellForRoute(props.target);
   const isIndexRoute = useIsIndexRoute();
   const navigateToCell = useNavigateToCell();
   const openNewCell = useOpenNewCell();
   const gridRef = useRef<HTMLDivElement>(null);
-  const [workbench, setWorkbench] = useState<HTMLDivElement | null>(null);
   const tab = activeTab(workspace);
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
@@ -234,6 +248,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const routeOwnerId =
     props.target === null ? null : (routeHolder?.pane.id ?? (routeIsNew ? focused?.id : null));
 
+  const tabIds = workspace.tabs.map((candidate) => candidate.id);
   const askiTab = workspace.tabs.find(isAskiTab) ?? null;
   const cellTabs = askiTab
     ? workspace.tabs.filter((candidate) => candidate !== askiTab)
@@ -266,39 +281,90 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         onNew={() => openCellInto((current) => openTab(current, newIds(), null))}
       />
       <div data-stemcells-slate="">
-        <div ref={gridRef} data-stemcells-grid="">
-          {tab === null ? (
-            <AskiPane chat={askiChat} target={null} ownsWindowInput={false} panelHost={null} />
-          ) : null}
-          {tab?.rows.map((row, rowIndex) => (
-            <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
-              {row.columns.map((column, columnIndex) => (
-                <div
-                  key={column.id}
-                  className={cn("flex min-w-0 flex-1 flex-col", columnIndex > 0 && "border-l")}
-                >
-                  {column.panes.map((pane, paneIndex) => (
-                    <PaneSlot
-                      key={pane.id}
-                      pane={pane}
-                      aski={isAskiTab(tab) ? askiChat : null}
-                      stacked={paneIndex > 0}
-                      focused={pane.id === tab.focusedPaneId}
-                      showsFocus={panesOf(tab).length > 1}
-                      routeTarget={pane.id === routeOwnerId ? props.target : null}
-                      panelHost={workbench}
-                      onFocus={focusPaneAndRoute}
-                    />
-                  ))}
-                </div>
-              ))}
+        {tab === null ? (
+          <div data-stemcells-page="">
+            <div data-stemcells-grid="">
+              <AskiPane chat={askiChat} target={null} ownsWindowInput={false} panelHost={null} />
             </div>
-          ))}
-        </div>
-        {/* The tab's workbench: the focused chat's surfaces (stemcells/upstream/chatPanel). */}
-        <div ref={setWorkbench} data-stemcells-workbench="" />
+          </div>
+        ) : (
+          <TabPager tabIds={tabIds} activeId={tab.id} onTurn={activateTabAndRoute}>
+            {mountedTabs(tabIds, tab.id, settledTabId, visited).map((tabId) => {
+              const pageTab = workspace.tabs.find((candidate) => candidate.id === tabId);
+              if (!pageTab) return null;
+              const onStage = tabId === tab.id;
+              return (
+                <PagerPage key={tabId} tabId={tabId} onStage={onStage}>
+                  <TabPage
+                    tab={pageTab}
+                    onStage={onStage}
+                    aski={isAskiTab(pageTab) ? askiChat : null}
+                    routeOwnerId={routeOwnerId ?? null}
+                    routeTarget={props.target}
+                    gridRef={gridRef}
+                    onFocus={focusPaneAndRoute}
+                  />
+                </PagerPage>
+              );
+            })}
+          </TabPager>
+        )}
       </div>
     </SidebarInset>
+  );
+}
+
+/**
+ * One tab's page on the slate: its panes, and at its right edge its
+ * workbench, which the focused chat's surfaces fill while the page is on
+ * stage. Off stage, a page shows its chats as they are but owns no input.
+ */
+function TabPage(props: {
+  tab: Tab;
+  onStage: boolean;
+  /** Set on Aski's tab: Aski's chat as it stands. */
+  aski: AskiChat | null;
+  /** The pane the URL names, which renders the route as upstream would. */
+  routeOwnerId: string | null;
+  routeTarget: ThreadRouteTarget | null;
+  /** Set to the grid of the page on stage. */
+  gridRef: RefObject<HTMLDivElement | null>;
+  onFocus: (paneId: string) => void;
+}) {
+  const { tab } = props;
+  const [workbench, setWorkbench] = useState<HTMLDivElement | null>(null);
+  return (
+    <>
+      <div ref={props.onStage ? props.gridRef : undefined} data-stemcells-grid="">
+        {tab.rows.map((row, rowIndex) => (
+          <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
+            {row.columns.map((column, columnIndex) => (
+              <div
+                key={column.id}
+                className={cn("flex min-w-0 flex-1 flex-col", columnIndex > 0 && "border-l")}
+              >
+                {column.panes.map((pane, paneIndex) => (
+                  <PaneSlot
+                    key={pane.id}
+                    pane={pane}
+                    aski={props.aski}
+                    stacked={paneIndex > 0}
+                    focused={pane.id === tab.focusedPaneId}
+                    ownsInput={props.onStage && pane.id === tab.focusedPaneId}
+                    showsFocus={panesOf(tab).length > 1}
+                    routeTarget={pane.id === props.routeOwnerId ? props.routeTarget : null}
+                    panelHost={workbench}
+                    onFocus={props.onFocus}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {/* The tab's workbench: the focused chat's surfaces (stemcells/upstream/chatPanel). */}
+      <div ref={setWorkbench} data-stemcells-workbench="" />
+    </>
   );
 }
 
@@ -307,7 +373,10 @@ function PaneSlot(props: {
   /** Set on Aski's pane: Aski's chat as it stands. */
   aski: AskiChat | null;
   stacked: boolean;
+  /** The tab's focused pane, which shows it when the tab holds several. */
   focused: boolean;
+  /** The focused pane of the page on stage: it owns window input and the workbench. */
+  ownsInput: boolean;
   showsFocus: boolean;
   /** Set on the pane the URL names: it renders the route as upstream would. */
   routeTarget: ThreadRouteTarget | null;
@@ -340,7 +409,7 @@ function PaneSlot(props: {
         <AskiPane
           chat={props.aski}
           target={target}
-          ownsWindowInput={props.focused}
+          ownsWindowInput={props.ownsInput}
           panelHost={props.panelHost}
         />
       ) : (
@@ -352,7 +421,7 @@ function PaneSlot(props: {
               <PaneCellContext value={props.pane.cell}>
                 <ChatPaneView
                   target={target}
-                  ownsWindowInput={props.focused}
+                  ownsWindowInput={props.ownsInput}
                   panelHost={props.panelHost}
                 />
               </PaneCellContext>
