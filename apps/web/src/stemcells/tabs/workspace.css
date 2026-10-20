@@ -1,0 +1,8 @@
+/* The workspace's own touches, each scoped to one of its parts, so loading
+   this sheet never restyles upstream's screens. */
+
+/* Aski stands on Stemcells' own ground in its own ink: its renderer reads
+   both back as rgb() channels, which upstream's oklch() colours are not. */
+[data-stemcells-aski-stage] {
+  background: var(--sc-page);
+}

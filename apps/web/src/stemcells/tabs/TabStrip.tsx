@@ -1,6 +1,8 @@
-import { MessageSquare, Plus, Sparkles } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
+import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
+import type { AskiChat } from "../upstream/aski";
 import { useCellTitle } from "../upstream/chat";
 import {
   Button,
@@ -10,7 +12,9 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "../upstream/ui";
-import { panesOf, type Tab } from "./layout";
+import { ASKI_TAB_ID } from "./askiTab";
+import { CellMark } from "./CellMark";
+import { panesOf, type CellRef, type Tab } from "./layout";
 import { clampOffset, nearestSlot, restingOffsets, type TabDragGeometry } from "./tabDrag";
 
 /** A press that moves less than this is a click, not a drag. */
@@ -28,8 +32,10 @@ interface Drag {
 }
 
 export function TabStrip(props: {
+  /** The Cells' tabs; Aski's is drawn on its own, before them. */
   tabs: ReadonlyArray<Tab>;
   activeTabId: string | null;
+  aski: { readonly active: boolean; readonly cell: CellRef | null; readonly chat: AskiChat };
   onActivate: (tabId: string) => void;
   onClose: (tabId: string) => void;
   onMove: (tabId: string, toIndex: number) => void;
@@ -84,8 +90,8 @@ export function TabStrip(props: {
       className="flex h-9 shrink-0 items-center gap-1 border-b border-border px-2"
       data-stemcells-tab-strip=""
     >
-      <AskiSlot />
       <div className="flex min-w-0 items-center gap-1" role="tablist">
+        <AskiChip {...props.aski} onActivate={() => onActivate(ASKI_TAB_ID)} />
         {tabs.map((tab, index) => {
           const dragged = drag?.geometry != null && drag.tabId === tab.id;
           const offset = dragged ? drag.offset : (offsets?.[index] ?? 0);
@@ -109,7 +115,7 @@ export function TabStrip(props: {
                   : undefined
               }
               className={cn(
-                "group/tab flex h-6 w-40 min-w-0 shrink cursor-pointer select-none items-center gap-1 rounded-md pr-2 pl-1.5 text-xs",
+                "group/tab flex h-6 w-40 min-w-0 shrink cursor-pointer select-none items-center gap-1.5 rounded-md pr-1 pl-1.5 text-xs",
                 // Lifted off the strip, a dragged tab is opaque so the tabs it passes stay under it.
                 dragged
                   ? "relative z-10 bg-popover text-foreground shadow-md ring-1 ring-border"
@@ -119,14 +125,12 @@ export function TabStrip(props: {
                 drag?.geometry && !dragged && "transition-transform",
               )}
             >
+              <TabTitle tab={tab} />
               {tabs.length > 1 ? (
                 <PanelTabCloseButton label="Close tab" onClick={() => props.onClose(tab.id)}>
-                  <MessageSquare className="size-3" />
+                  {null}
                 </PanelTabCloseButton>
-              ) : (
-                <MessageSquare className="size-3 shrink-0" />
-              )}
-              <TabTitle tab={tab} />
+              ) : null}
             </div>
           );
         })}
@@ -145,38 +149,68 @@ export function TabStrip(props: {
   );
 }
 
+/** The tab's focused Cell: its character, then its chat's title. */
 function TabTitle(props: { tab: Tab }) {
   const panes = panesOf(props.tab);
   const focused = panes.find((pane) => pane.id === props.tab.focusedPaneId) ?? panes[0];
   const title = useCellTitle(focused?.cell ?? null) ?? "New Cell";
   return (
-    <span className="min-w-0 truncate">
-      {title}
-      {panes.length > 1 ? <span className="text-muted-foreground"> · {panes.length}</span> : null}
-    </span>
+    <>
+      <CellMark cell={focused?.cell ?? null} />
+      <span className="min-w-0 flex-1 truncate">
+        {title}
+        {panes.length > 1 ? <span className="text-muted-foreground"> · {panes.length}</span> : null}
+      </span>
+    </>
   );
 }
 
 /**
- * Aski's slot: the fixed first place in the strip. Aski arrives in a later
- * change; until then this holds the place, and it never drags or closes.
+ * Aski's tab: the fixed first place in the strip. It never drags or closes.
+ * Until Aski's chat exists it can't be opened, and says why.
  */
-function AskiSlot() {
+function AskiChip(props: {
+  active: boolean;
+  cell: CellRef | null;
+  chat: AskiChat;
+  onActivate: () => void;
+}) {
+  if (props.cell !== null) {
+    return (
+      <div
+        role="tab"
+        aria-selected={props.active}
+        data-stemcells-tab={ASKI_TAB_ID}
+        onClick={props.onActivate}
+        className={cn(
+          "flex h-6 shrink-0 cursor-pointer select-none items-center rounded-md px-2 text-xs font-medium",
+          props.active
+            ? "bg-accent text-foreground"
+            : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+        )}
+      >
+        Aski
+      </div>
+    );
+  }
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <div
             aria-disabled
-            data-stemcells-slot="aski"
-            className="flex h-6 shrink-0 items-center gap-1 rounded-md px-2 text-xs text-muted-foreground/70"
+            data-stemcells-tab={ASKI_TAB_ID}
+            className="flex h-6 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground/70"
           />
         }
       >
-        <Sparkles className="size-3" />
         Aski
       </TooltipTrigger>
-      <TooltipPopup>Aski arrives soon</TooltipPopup>
+      <TooltipPopup>
+        {props.chat.status === "unavailable"
+          ? ASKI_UNAVAILABLE[props.chat.reason]
+          : "Aski is getting its chat ready."}
+      </TooltipPopup>
     </Tooltip>
   );
 }
