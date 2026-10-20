@@ -40,8 +40,18 @@ original app composed.
 
 ## Slice 3 · It acts
 
-- [ ] The activity of the call in flight from the thread (adapter and
-      contract test), shown after 3 s, held 8 s.
-- [ ] The cheer when a turn lands, then rest; asleep after a while idle.
+- [x] The activity of the call in flight, from the run's live turn items
+      (`upstream/cellWork.ts`, contract-tested over decoded items), shown
+      after 3 s, held 8 s; read only while the chat works.
+- [x] The cheer for 6 s when a turn lands, then rest; asleep once the
+      chat's prompt cache is cold, as the original slept. Claude: the
+      expiry upstream's adapter stamps on the turn's usage (1 h when the
+      request wrote 1-hour cache, 5 min when only 5-minute, from that
+      request's start), read from the thread's detail once per landing.
+      Codex: 30 min after the landing (OpenAI's documented floor). Other
+      providers, and a turn served wholly from cache: no claim, awake.
+      No seam: upstream already carries the expiry.
+- [x] Live: a Codex turn running `sleep 12` showed thinking, then waiting
+      (the hourglass), then the cheer, then rest.
 
 ## Review
