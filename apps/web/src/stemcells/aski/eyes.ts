@@ -12,6 +12,7 @@
 // Under Reduce Motion the eyes don't blink, and they cut to where they look
 // (aski.css).
 
+import { clockSeconds } from "../cell/blink.ts";
 import { reducedMotion } from "../tokens/motion.ts";
 import { BLINK, IDLE_BLINKS, idleBlinks } from "./acts.ts";
 
@@ -91,11 +92,16 @@ export function blinking(eyes: HTMLElement, shut: HTMLElement): () => void {
 }
 
 /** A cursor's beat, open then shut, in milliseconds: the eyes open half of it and shut the other half. */
-const CURSOR = 1060;
+export const CURSOR = 1060;
+
+/** How far into the cursor's beat `now` (Unix milliseconds) falls, on the clock the Cells read: open in its first half. */
+export const cursorPhase = (now: number = Date.now()): number =>
+  (((clockSeconds(now) * 1000) % CURSOR) + CURSOR) % CURSOR;
 
 /**
  * An eye, open and shut, blinks like a cursor until the animations are
- * cancelled: on whole beats of the wall clock, so every Aski keeps one beat.
+ * cancelled: on whole beats of the clock the Cells read (`clockSeconds`), so
+ * every Aski keeps one beat, and it with a Cell that waits on the person.
  */
 export function cursoring(eye: HTMLElement, shut: HTMLElement): Animation[] {
   const timing = { duration: CURSOR, iterations: Number.POSITIVE_INFINITY };
@@ -109,7 +115,7 @@ export function cursoring(eye: HTMLElement, shut: HTMLElement): Animation[] {
       timing,
     ),
   ];
-  for (const beat of beats) beat.currentTime = Date.now() % timing.duration;
+  for (const beat of beats) beat.currentTime = cursorPhase();
   return beats;
 }
 
