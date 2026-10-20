@@ -1,0 +1,363 @@
+[
+  {
+    "text": "Harbor fix the header",
+    "groups": ["default in Harbor"],
+    "why": "the address routes"
+  },
+  {
+    "text": "fix the Harbor header modal",
+    "groups": ["default in draft"],
+    "quiet": ["Harbor"],
+    "why": "a name mid-sentence is a mention, never a route"
+  },
+  {
+    "text": "Atlas",
+    "groups": ["default in Atlas"],
+    "why": "a name that is the whole message routes"
+  },
+  {
+    "text": "fix the header in the Atlas repo",
+    "groups": ["default in Atlas"],
+    "why": "a cue points the name out"
+  },
+  {
+    "text": "a Cell for Kestrel",
+    "groups": ["default in Kestrel"],
+    "why": "'for' after a Cell noun is a cue"
+  },
+  {
+    "text": "Review this Mac's disk",
+    "groups": ["default in draft"],
+    "why": "a determiner after the address word makes it a verb: the replay sent this to Reviews 20 times"
+  },
+  {
+    "text": "Resume the session about the trip",
+    "groups": ["default in draft"],
+    "why": "an exact name followed by a determiner is a verb, not the address"
+  },
+  {
+    "text": "review the showtime parser with Opus 5.5 at max",
+    "groups": ["Opus 5.5 at max in draft"],
+    "why": "'review the' is never heard as Reviews: a heard name never ends in a determiner"
+  },
+  {
+    "text": "write the release notes for Atlas",
+    "groups": ["default in draft"],
+    "quiet": ["Atlas"],
+    "why": "a weak 'for X' may be about Atlas, not in it"
+  },
+  {
+    "text": "work on Tidepool One checkout",
+    "groups": ["default in draft"],
+    "quiet": ["Tidepool One"],
+    "why": "the longer name wins at the same start; 'on' is weak"
+  },
+  {
+    "text": "Tidepool One fix the checkout",
+    "groups": ["default in Tidepool One"],
+    "why": "the longer name wins at the address"
+  },
+  {
+    "text": "spawn a Cell in at less",
+    "groups": ["default in Atlas"],
+    "why": "a name heard by ear routes where it's pointed at"
+  },
+  {
+    "text": "a Cell for bright lane",
+    "groups": ["default in Brightlane"],
+    "why": "two spoken words are one name"
+  },
+  {
+    "text": "fix the harbour page header",
+    "groups": ["default in draft"],
+    "why": "prose stays plain: a heard name is never even a mention"
+  },
+  {
+    "text": "a Cell for harbour",
+    "groups": ["default in Harbor"],
+    "why": "a near spelling routes behind a cue"
+  },
+  {
+    "text": "an agent for the importer in harbor, then atlas",
+    "groups": ["default in Harbor"],
+    "why": "the pointed-at name, not the later word"
+  },
+  {
+    "text": "Find from Relay the message about the harbor credentials",
+    "groups": ["default in draft"],
+    "quiet": ["Relay"],
+    "why": "no address, no point: no place"
+  },
+  {
+    "text": "the price drop rollout",
+    "groups": ["default in PriceDrop"],
+    "why": "camel-cased names split into words"
+  },
+  {
+    "text": "a Cell for Lantern",
+    "groups": ["default in Lanterns"],
+    "why": "the singular of a plural folder routes behind a cue"
+  },
+  {
+    "text": "Review notes for Atlas",
+    "groups": ["default in draft"],
+    "quiet": ["Atlas"],
+    "why": "at the address the other number is a verb: 'Review' is not Reviews"
+  },
+  {
+    "text": "Lanterns: fix the header\nAtlas: fix the cart",
+    "groups": ["default in Lanterns", "default in Atlas"],
+    "share": "clauses",
+    "why": "each line has its address"
+  },
+  {
+    "text": "3 Harbor: the flaky checkout test",
+    "groups": ["3 × default in Harbor"],
+    "share": "planner",
+    "why": "a count on the address"
+  },
+  {
+    "text": "Harbor ×3 fix the flaky test",
+    "groups": ["3 × default in Harbor"],
+    "share": "planner",
+    "why": "a count after the address"
+  },
+  {
+    "text": "spawn two Cells in Atlas",
+    "groups": ["2 × default in Atlas"],
+    "share": "planner",
+    "why": "a counted Cell noun"
+  },
+  {
+    "text": "3 Cells fix the board review flow before the holidays",
+    "groups": ["3 × default in draft"],
+    "share": "planner",
+    "why": "everyday words are not the Board or Holidays projects"
+  },
+  {
+    "text": "Harbor fix the header so it looks as it does in the Atlas repo",
+    "groups": ["default in Harbor"],
+    "quiet": ["Atlas"],
+    "why": "after the address, another place is a mention"
+  },
+  {
+    "text": "Fix the header in Harbor and the docs in Atlas",
+    "groups": ["default in Harbor", "default in Atlas"],
+    "share": "clauses",
+    "why": "a Cell has one folder: two cue'd places in a sentence are two Cells"
+  },
+  {
+    "text": "Fix the header in Harbor so it matches the one in Atlas",
+    "groups": ["default in Harbor", "default in Atlas"],
+    "share": "planner",
+    "why": "two cue'd places are two Cells even without a clause each"
+  },
+  {
+    "text": "spawn 2 Cells, one in Harbor and one in Atlas: bump the shared API client",
+    "groups": ["default in Harbor", "default in Atlas"],
+    "share": "planner",
+    "why": "a counted group shares itself out over its 'one in X' places"
+  },
+  {
+    "text": "find the free cells and add to cells B1",
+    "groups": ["default in draft"],
+    "launch": false,
+    "why": "a bare 'cells' is never counted, nor asks for a Cell"
+  },
+  {
+    "text": "cells",
+    "groups": ["default in draft"],
+    "why": "the Cells are never heard as Sales"
+  },
+  {
+    "text": "Sales fix the funnel",
+    "groups": ["default in Sales"],
+    "why": "a project's own name still routes"
+  },
+  {
+    "text": "with Opus 5.5 at max",
+    "groups": ["Opus 5.5 at max in draft"],
+    "why": "a cue anchors a model; an effort after 'at' in a message that routes"
+  },
+  {
+    "text": "Opus: tidy the parser, max effort",
+    "groups": ["Opus 5.5 at max in draft"],
+    "why": "a family alone is its newest model; a qualifier anchors an effort"
+  },
+  {
+    "text": "fix it with Opus 5",
+    "groups": ["Opus 5 in draft"],
+    "why": "an older version the catalog has is that version"
+  },
+  {
+    "text": "write a haiku about tab swipes",
+    "groups": ["default in draft"],
+    "why": "writing a model's name doesn't pick it"
+  },
+  {
+    "text": "Flash the firmware on the test board",
+    "groups": ["default in draft"],
+    "why": "a model word at the start needs a continuation"
+  },
+  {
+    "text": "the flash message flickers",
+    "groups": ["default in draft"],
+    "why": "a model word in prose stays text"
+  },
+  {
+    "text": "Read the Claude docs and fix the bug",
+    "groups": ["default in draft"],
+    "why": "a provider's name in prose isn't a route"
+  },
+  {
+    "text": "build the dashboard with Codex",
+    "groups": ["Codex in draft"],
+    "why": "a provider's name after a cue means its default model"
+  },
+  {
+    "text": "Codex with xhigh",
+    "groups": ["Codex at xhigh in draft"],
+    "why": "a provider at the address; xhigh is never an everyday word"
+  },
+  {
+    "text": "use Claude Opus please",
+    "groups": ["Opus 5.5 in draft"],
+    "why": "the provider's word before a family is one name"
+  },
+  {
+    "text": "Opus 5.5 high fix it",
+    "groups": ["Opus 5.5 at high in draft"],
+    "why": "an effort right after the model"
+  },
+  {
+    "text": "use Opus at extra high",
+    "groups": ["Opus 5.5 at xhigh in draft"],
+    "why": "'extra high' is xhigh"
+  },
+  {
+    "text": "run the tests with high coverage",
+    "groups": ["default in draft"],
+    "why": "an everyday effort word in prose stays text"
+  },
+  {
+    "text": "spawn 2 Sol in Harbor and an Opus 5.5 at max in Atlas: move sign-in to passkeys, same API on both sides",
+    "groups": ["2 × Sol 6.1 in Harbor", "Opus 5.5 at max in Atlas"],
+    "share": "planner",
+    "needsPlan": true,
+    "why": "several models, counts, efforts and places in one message"
+  },
+  {
+    "text": "Sol in Harbor fix the export; Opus 5.5 in Atlas update the docs",
+    "groups": ["Sol 6.1 in Harbor", "Opus 5.5 in Atlas"],
+    "share": "clauses",
+    "needsPlan": false,
+    "why": "each model opens a clause of its own: no planner"
+  },
+  {
+    "text": "Fable Cells: fix the header and the footer",
+    "groups": ["2 × Fable 5.1 in draft"],
+    "share": "planner",
+    "why": "a plural Cell noun is two"
+  },
+  {
+    "text": "two sols and an Opus",
+    "groups": ["2 × Sol 6.1 in draft", "Opus 5.5 in draft"],
+    "share": "planner",
+    "why": "a count, a plural, and a model joined to the one before"
+  },
+  {
+    "text": "Sol x2 fix the flaky test",
+    "groups": ["2 × Sol 6.1 in draft"],
+    "share": "planner",
+    "why": "a count after the model"
+  },
+  {
+    "text": "Start a Cell with Opus 5.5. Review this literal: \"spawn three Cells with Codex at xhigh\"",
+    "groups": ["Opus 5.5 in draft"],
+    "why": "quoted words never act"
+  },
+  {
+    "text": "with Sol\n```\nspawn 3 Cells with Opus at max\n```",
+    "groups": ["Sol 6.1 in draft"],
+    "why": "fenced code never acts"
+  },
+  {
+    "text": "3 Cells on Sol: fix the flaky tests",
+    "groups": ["3 × Sol 6.1 in draft"],
+    "share": "planner",
+    "why": "a counted Cell noun before its model is the model's count, not more Cells"
+  },
+  {
+    "text": "Fable Cell [fix the modal], another Sol Cell [fix hover]",
+    "groups": ["Fable 5.1 in draft", "Sol 6.1 in draft"],
+    "share": "verbatims",
+    "verbatims": 2,
+    "why": "a [bracket] is its Cell's prompt, word for word"
+  },
+  {
+    "text": "Fable Cell [use codex for this]",
+    "groups": ["Fable 5.1 in draft"],
+    "share": "verbatims",
+    "verbatims": 1,
+    "why": "a model inside a bracket is inert"
+  },
+  {
+    "text": "update the array [1, 2, 3] to be sorted",
+    "groups": ["default in draft"],
+    "verbatims": 0,
+    "why": "brackets in a message that asks for no Cell stay literal"
+  },
+  {
+    "text": "sort items[0] fast with Fable",
+    "groups": ["Fable 5.1 in draft"],
+    "verbatims": 0,
+    "why": "an attached bracket is text"
+  },
+  {
+    "text": "3 Harbor:\n- fix the header\n- fix the footer\n- fix the cart",
+    "groups": ["3 × default in Harbor"],
+    "share": "items",
+    "needsPlan": false,
+    "why": "a pasted list is shared out one item each"
+  },
+  {
+    "text": "Spawn 3 Opus Cells: fix sign-in across Harbor, Atlas and Kestrel",
+    "groups": ["3 × Opus 5.5 in ?"],
+    "share": "planner",
+    "quiet": ["Harbor", "Atlas", "Kestrel"],
+    "needsPlan": true,
+    "why": "several Cells and mentioned projects: Aski picks the places"
+  },
+  {
+    "door": "aski",
+    "text": "Opus 5.5 at max and 2 Cells: move sign-in to passkeys across Harbor and Atlas, same API on both sides",
+    "groups": ["Opus 5.5 at max in ?", "2 × default in ?"],
+    "share": "planner",
+    "quiet": ["Harbor", "Atlas"],
+    "needsPlan": true,
+    "launch": true,
+    "why": "Aski's tab has no project: unpointed places are open"
+  },
+  {
+    "door": "aski",
+    "text": "Harbor fix the flaky checkout test",
+    "groups": ["default in Harbor"],
+    "needsPlan": false,
+    "launch": true,
+    "why": "an address in Aski's tab starts a Cell with no planner"
+  },
+  {
+    "door": "aski",
+    "text": "how is the passkey work going?",
+    "groups": ["default in ?"],
+    "launch": false,
+    "why": "a question to Aski starts nothing"
+  },
+  {
+    "door": "aski",
+    "text": "what's new in Harbor?",
+    "groups": ["default in Harbor"],
+    "launch": false,
+    "why": "a cue'd place alone doesn't ask for a Cell in Aski's tab"
+  }
+]
