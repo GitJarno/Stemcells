@@ -18,7 +18,7 @@ import { defaultUrlTransform } from "react-markdown";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 
-import { useAssetUrlState, useAssetUrls } from "../../assets/assetUrls";
+import { useAssetUrlRefresh, useAssetUrlState, useAssetUrls } from "../../assets/assetUrls";
 import { expandedImagePreviewAtom } from "../../components/chat/ExpandedImageDialog";
 import {
   buildAttachmentVideoPreview,
@@ -41,7 +41,7 @@ export { MediaActions } from "../../components/media/MediaActions";
 export { MediaVideoPlayer } from "../../components/media/MediaVideoPlayer";
 export { isContextMenuOpen } from "../../contextMenuFallback";
 export { windowControlsOverlayHeight } from "../../lib/windowControlsOverlay";
-export { useAssetUrlState };
+export { useAssetUrlRefresh, useAssetUrlState };
 
 /** One picture or video, as upstream's viewer takes it. */
 export type MediaItem = ExpandedImageItem;
@@ -156,20 +156,28 @@ export function entryMedia(
     // Annotated previews show as context, not in the message's pictures.
     if (!isImageAttachment(image) || image.name.startsWith("preview-annotation-")) return [];
     const src = image.previewUrl ?? pictureUrl(image.id) ?? null;
+    // A picture still sending is only its own copy in memory: the server
+    // doesn't know it by this id yet (`selectMessageImageResources`).
+    const sending = /^(?:blob|data):/.test(image.previewUrl ?? "");
     const item: MediaItem = {
       src,
       name: image.name,
       mimeType: image.mimeType,
       ...(image.source?.kind === "snap-shot" ? { source: image.source } : {}),
-      // The stored file, which the viewer fetches when the URL isn't known yet.
+      // The stored file: fetched when the URL isn't known yet, and what the
+      // picture's menu copies and saves from, minted afresh.
       actionsSource: {
         kind: "image",
         name: image.name,
         src,
-        asset: {
-          environmentId: place.environmentId,
-          resource: { _tag: "attachment", attachmentId: image.id },
-        },
+        ...(sending
+          ? {}
+          : {
+              asset: {
+                environmentId: place.environmentId,
+                resource: { _tag: "attachment" as const, attachmentId: image.id },
+              },
+            }),
       },
     };
     return [{ item, at }];

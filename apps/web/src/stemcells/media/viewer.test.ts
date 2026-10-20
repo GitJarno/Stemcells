@@ -203,6 +203,40 @@ describe("a picture on its way home", () => {
   });
 });
 
+describe("a video whose URL fails part way", () => {
+  it("picks up where it was on its next URL (a seek past a signed URL's time started it over)", () => {
+    class Video {
+      currentTime = 0;
+      paused = true;
+      videoWidth = 640;
+      videoHeight = 360;
+      play = vi.fn(() => Promise.resolve());
+      pause = vi.fn();
+    }
+    vi.stubGlobal("HTMLVideoElement", Video);
+    const clip: MediaItem = {
+      src: "https://local/clip.webm?v=1",
+      name: "clip.webm",
+      type: "video",
+    };
+    const { parts } = open([clip], SIZE);
+    const heard = (type: string, video: Video) => {
+      const event = new Event(type);
+      Object.defineProperty(event, "target", { value: video });
+      parts.figure.dispatchEvent(event);
+    };
+    heard("error", Object.assign(new Video(), { currentTime: 95, paused: false }));
+    const next = new Video();
+    heard("loadedmetadata", next);
+    expect(next.currentTime).toBe(95);
+    expect(next.play).toHaveBeenCalledOnce();
+    // Once: a later load of it is left where it is.
+    const later = new Video();
+    heard("loadedmetadata", later);
+    expect(later.currentTime).toBe(0);
+  });
+});
+
 describe("the picture showing", () => {
   it("stays as it is when its URL is re-signed (the entrance played again)", () => {
     const { viewer } = open([stored("out/chart.png", "https://local/chart?v=1")], SIZE);

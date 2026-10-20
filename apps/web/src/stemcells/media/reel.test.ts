@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { MediaItem } from "../upstream/media";
-import { MarkdownSources, itemKey, reelAround, sameItem } from "./reel";
+import { MarkdownSources, itemKey, reelAround, restand, sameItem } from "./reel";
 
 const picture = (src: string, name = src): MediaItem => ({ src, name });
 
@@ -55,6 +55,46 @@ describe("what the viewer steps through", () => {
     const opened = reelAround(showing, [picture("blob:1"), picture("blob:3")], [picture("blob:9")]);
     expect(opened.items).toEqual([showing]);
     expect(opened.index).toBe(0);
+  });
+});
+
+describe("the viewer's place as the reel changes under it", () => {
+  const chart = stored("out/chart.png", "https://local/chart?v=1");
+
+  it("stays on the picture showing as pictures arrive before it (it jumped to another picture)", () => {
+    const standing = { item: chart, step: 2 };
+    const placed = restand(standing, [picture("blob:new"), picture("blob:1"), chart], []);
+    expect(placed.index).toBe(2);
+    expect(placed.standing).toBe(standing);
+  });
+
+  it("keeps its standing through a re-signed URL, showing the newer copy", () => {
+    const standing = { item: chart, step: 1 };
+    const resigned = stored("out/chart.png", "https://local/chart?v=2");
+    const placed = restand(standing, [resigned], []);
+    expect(placed.standing).toBe(standing);
+    expect(placed.items[placed.index]).toBe(resigned);
+  });
+
+  it("takes the reel's copy when the reel knows the click by its stored file, on the same step", () => {
+    const clicked = picture("https://local/chart?v=1");
+    const placed = restand({ item: clicked, step: 0 }, [picture("blob:1"), chart], [clicked]);
+    expect(placed.items[placed.index]).toBe(chart);
+    expect(placed.standing).toEqual({ item: chart, step: 0 });
+    // Settled: the next change finds it by its stored file.
+    const again = restand(
+      placed.standing,
+      [stored("out/chart.png", "https://local/chart?v=2")],
+      [],
+    );
+    expect(again.standing).toBe(placed.standing);
+  });
+
+  it("stays on the picture alone when its message is reverted away", () => {
+    const standing = { item: chart, step: 3 };
+    const placed = restand(standing, [picture("blob:1")], []);
+    expect(placed.items).toEqual([chart]);
+    expect(placed.standing).toBe(standing);
   });
 });
 

@@ -10,11 +10,12 @@ import {
   TIMELINE_ROW,
   composerFloatingLayerProps,
   keybindingCaptureProps,
+  useAssetUrlRefresh,
   useAssetUrlState,
   type MediaItem,
 } from "../upstream/media";
 import type { Size } from "./geometry";
-import { itemKey, reelAround } from "./reel";
+import { itemKey, restand, type Standing } from "./reel";
 import type { MediaElement } from "./thumbnails";
 import { UNAVAILABLE_SIZE, Viewer } from "./viewer";
 
@@ -41,15 +42,13 @@ export function MediaViewer(props: {
   /** The viewer has put its picture away; unmount it. */
   onClosed: () => void;
 }) {
-  // What shows is held by the item itself, and `step` counts the steps to
-  // it: the reel may change under the viewer (it streams, a URL is
-  // re-signed, a message is reverted) and never puts another picture up.
-  const [at, setAt] = useState(() => ({ item: props.start, step: 0 }));
-  const { items, index } = reelAround(at.item, props.reel, props.own);
+  // What shows is held by the item itself: the reel may change under the
+  // viewer and never puts another picture up.
+  const [at, setAt] = useState<Standing>(() => ({ item: props.start, step: 0 }));
+  const { items, index, standing } = restand(at, props.reel, props.own);
+  if (standing !== at) setAt(standing);
   const item: MediaItem | undefined = items[index];
   const key = item ? itemKey(item) : null;
-  // The freshest copy of what shows, so it answers to the reel's names as they settle.
-  if (item && key !== itemKey(at.item)) setAt({ item, step: at.step });
   const count = items.length;
   const scope = { root: props.scope, within: items === props.reel ? TIMELINE_ROW : null };
 
@@ -135,6 +134,7 @@ export function MediaViewer(props: {
                 key={at.step}
                 item={item}
                 src={resolved.src}
+                refresh={resolved.refresh}
                 failed={failed}
                 onFailed={() => setFailedKey(key)}
               />
@@ -161,48 +161,69 @@ export function MediaViewer(props: {
   );
 }
 
-/** An item's URL (an asset's is fetched, as its thumbnail's was), and its size when the server knows it. */
-function useResolvedMedia(item: MediaItem | undefined): {
+interface ResolvedMedia {
+  /** The item's URL now (an asset's is fetched, as its thumbnail's was). */
   readonly src: string | null;
   readonly failed: boolean;
+  /** Its size, when the server knows it. */
   readonly size: Size | null;
-} {
+  /** Asks again by the item's stored file for a newly signed URL (none: it has no stored file). */
+  readonly refresh: () => Promise<unknown>;
+}
+
+function useResolvedMedia(item: MediaItem | undefined): ResolvedMedia {
   // A picture still sending shows from memory; there is nothing stored to fetch yet.
   const local = item?.src != null && /^(?:blob|data):/.test(item.src);
   const asset = local ? null : (item?.actionsSource?.asset ?? null);
   const state = useAssetUrlState(asset?.environmentId ?? null, asset?.resource ?? null);
-  if (item === undefined) return { src: null, failed: true, size: null };
-  if (asset === null) return { src: item.src, failed: item.src === null, size: null };
+  const refresh = useAssetUrlRefresh(asset?.environmentId ?? null, asset?.resource ?? null);
+  if (item === undefined) return { src: null, failed: true, size: null, refresh };
+  if (asset === null) return { src: item.src, failed: item.src === null, size: null, refresh };
   if (state._tag === "Success") {
     return {
       src: state.url + (item.srcFragment ?? ""),
       failed: false,
       size: state.imageDimensions ?? null,
+      refresh,
     };
   }
-  return { src: item.src, failed: state._tag === "Failure" && item.src === null, size: null };
+  return {
+    src: item.src,
+    failed: state._tag === "Failure" && item.src === null,
+    size: null,
+    refresh,
+  };
 }
 
-/** The item on stage, drawn by upstream's pieces: its picture or player, and its context menu. */
+/**
+ * The item on stage, drawn by upstream's pieces: its picture or player, and
+ * its context menu. `src` is the item's URL now; what acts on the item
+ * (copy, save, seeking a video, a retry) goes by that, or by its stored
+ * file, never by a URL kept from before, which may have expired or been
+ * revoked since.
+ */
 function OnStage(props: {
   item: MediaItem;
   src: string | null;
+  refresh: () => Promise<unknown>;
   failed: boolean;
   onFailed: () => void;
 }) {
   const { item } = props;
-  // The first URL it shows by stays: a re-signed one would load the picture
-  // again, or start a playing video over.
-  const [src, setSrc] = useState(props.src);
-  if (src === null && props.src !== null) setSrc(props.src);
+  // A picture draws by the first URL it had: a re-signed one would load it again.
+  const [drawnSrc, setDrawnSrc] = useState(props.src);
+  if (drawnSrc === null && props.src !== null) setDrawnSrc(props.src);
+  // The menu mints the stored file's URL afresh when it acts; with none, it takes the URL now.
   const actions = {
     ...(item.actionsSource ?? { kind: item.type === "video" ? "video" : "image", name: item.name }),
-    src,
+    src: props.src,
   } as const;
   if (item.type === "video") {
+    // The player keeps its URL while it plays, and moves to the newest when that one fails.
     return (
       <MediaVideoPlayer
-        src={src}
+        src={props.src}
+        onRetry={props.refresh}
         sourceFailed={props.failed}
         label={item.name}
         originalUrl={item.originalUrl}
@@ -222,18 +243,21 @@ function OnStage(props: {
       </div>
     );
   }
-  if (src === null) return null;
+  if (drawnSrc === null) return null;
   return (
     <MediaActions source={actions}>
       <AttachmentImage
         name={item.name}
         mimeType={item.mimeType}
-        src={src}
+        src={drawnSrc}
         alt={item.name}
         decoding="sync"
         draggable={false}
         data-stemcells-media-picture=""
-        onError={props.onFailed}
+        // A URL that fails to draw (revoked, expired) gives way to the newest.
+        onError={() =>
+          props.src !== null && props.src !== drawnSrc ? setDrawnSrc(props.src) : props.onFailed()
+        }
       />
     </MediaActions>
   );

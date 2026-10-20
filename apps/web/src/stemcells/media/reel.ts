@@ -138,3 +138,27 @@ export function reelAround(
   }
   return { items: [showing], index: 0 };
 }
+
+/** Where the viewer stands: the item showing, and how many steps it took to reach it. */
+export interface Standing {
+  readonly item: MediaItem;
+  readonly step: number;
+}
+
+/**
+ * The viewer's place after the reel changed under it (it streamed, a URL
+ * was re-signed, a message was reverted): found again by the item showing,
+ * on the same step, so nothing on screen starts over. The standing comes
+ * back as it was unless the reel knows the item by a newer first name (its
+ * stored file, its message's place), whose copy it then keeps.
+ */
+export function restand(
+  standing: Standing,
+  reel: readonly MediaItem[],
+  own: readonly MediaItem[],
+): { readonly items: readonly MediaItem[]; readonly index: number; readonly standing: Standing } {
+  const { items, index } = reelAround(standing.item, reel, own);
+  const item = items[index] ?? standing.item;
+  const fresher = itemKey(item) !== itemKey(standing.item);
+  return { items, index, standing: fresher ? { item, step: standing.step } : standing };
+}

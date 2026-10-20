@@ -80,6 +80,8 @@ export class Viewer {
   #slot: MediaElement | null = null;
   #restoreSlot: (() => void) | null = null;
   #landing: MediaElement | null = null;
+  /** Where the video showing was when its URL failed, to pick up there on the next one. */
+  #resume: { at: number; playing: boolean } | null = null;
   #closing = false;
   #closed = false;
   readonly #contact = new WheelContact();
@@ -249,6 +251,7 @@ export class Viewer {
     else stage.blank();
     this.#emptySlot(null);
     this.#arrival = { kind: "step", direction };
+    this.#resume = null;
     this.#shown = null;
     this.#onStep(item);
   }
@@ -388,6 +391,7 @@ export class Viewer {
 
   readonly #onMediaSize = (event: Event): void => {
     const target = event.target;
+    if (target instanceof HTMLVideoElement) this.#pickUp(target);
     const key = this.#key;
     if (key === null) return;
     if (target instanceof HTMLImageElement || target instanceof HTMLVideoElement) {
@@ -396,11 +400,30 @@ export class Viewer {
     }
   };
 
-  /** A picture or video that won't load still takes the stage, to say so. */
-  readonly #onMediaError = (): void => {
+  /**
+   * A picture or video that won't load still takes the stage, to say so. A
+   * video that fails part way (its signed URL ran out as it seeked) is
+   * remembered where it was: the player moves to a newer URL, or retries by
+   * its stored file, and it picks up there.
+   */
+  readonly #onMediaError = (event: Event): void => {
+    const target = event.target;
+    if (target instanceof HTMLVideoElement && target.currentTime > 0) {
+      this.#resume = { at: target.currentTime, playing: !target.paused };
+    }
     const key = this.#key;
     if (key !== null && !this.#sizes.has(key)) this.measured(key, UNAVAILABLE_SIZE);
   };
+
+  /** The video's next URL has loaded: back to where the last one failed, playing as it was. */
+  #pickUp(video: HTMLVideoElement): void {
+    const resume = this.#resume;
+    if (resume === null) return;
+    this.#resume = null;
+    video.currentTime = resume.at;
+    if (resume.playing) void video.play().catch(() => undefined);
+    else video.pause();
+  }
 
   readonly #onWheel = (event: WheelEvent): void => {
     // The viewer owns every wheel over it: nothing behind scrolls or turns.

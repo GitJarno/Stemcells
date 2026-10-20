@@ -1,3 +1,4 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads upstream's markup on disk.
 /**
  * What the media viewer relies on in upstream: every thumbnail opens through
  * `openExpandedImagePreview`'s atom; a chat's timeline holds its pictures,
@@ -6,6 +7,8 @@
  * finds its place in the chat's reel and a picture finds its way home. If
  * one fails after a sync, `media.ts` follows upstream's new shape.
  */
+import * as NodeFS from "node:fs";
+
 import { classifyMarkdownImageSource } from "@t3tools/client-runtime/markdown-images";
 import { EnvironmentId, MessageId, PlanId, RunId, ThreadId } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
@@ -18,8 +21,10 @@ import { buildAttachmentVideoPreview } from "../../components/chat/ExpandedImage
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { chatReel, itemKey, reelAround, sameItem } from "../media/reel";
 import {
+  TIMELINE_ROW,
   attachedPictureResources,
   closeOpenedMedia,
+  keybindingCaptureProps,
   markdownMediaSources,
   type ChatPlace,
   type TimelineEntries,
@@ -228,6 +233,27 @@ describe("a chat's reel", () => {
     expect(sameItem(stored[0]!, sending[0]!)).toBe(true);
   });
 
+  it("acts on a sent picture by its blob until it is stored, then by the stored file (copy took a dead blob)", () => {
+    const [sending] = chatReel(
+      [
+        message("u9", "user", 1, "", [picture("local-1", "screen.png", "blob:screen")]),
+      ] as unknown as TimelineEntries,
+      place,
+      () => undefined,
+    );
+    expect(sending!.actionsSource).toMatchObject({ src: "blob:screen" });
+    expect(sending!.actionsSource?.asset).toBeUndefined();
+    const [stored] = chatReel(
+      [message("u9", "user", 1, "", [picture("a9", "screen.png")])] as unknown as TimelineEntries,
+      place,
+      () => undefined,
+    );
+    expect(stored!.actionsSource?.asset?.resource).toEqual({
+      _tag: "attachment",
+      attachmentId: "a9",
+    });
+  });
+
   it("waits for a reply a Cell is still writing before reading its markdown", () => {
     const streaming = [
       message("c9", "assistant", 2, "![chart](out/chart.png)", undefined, true),
@@ -253,5 +279,26 @@ describe("markdown media", () => {
         ].join("\n"),
       ),
     ).toEqual(["one.png", "three.png", "four.png"]);
+  });
+});
+
+/** An upstream source file, as text: the markup the viewer leans on is written there. */
+const upstreamSource = (path: string) =>
+  NodeFS.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
+
+describe("upstream's markup", () => {
+  it("marks each timeline row as the viewer looks for it (a picture flies home into the timeline)", () => {
+    const attribute = TIMELINE_ROW.slice(1, -1);
+    expect(upstreamSource("components/chat/MessagesTimeline.tsx")).toContain(`${attribute}={`);
+  });
+
+  it("lets the root shortcuts stand down for keys inside the viewer (⌘B folded the sidebar behind it)", () => {
+    const [attribute] = Object.keys(keybindingCaptureProps);
+    for (const file of [
+      "components/AppSidebarLayout.tsx",
+      "components/ReopenClosedViewShortcut.tsx",
+    ]) {
+      expect(upstreamSource(file)).toContain(`.closest("[${attribute}]")`);
+    }
   });
 });

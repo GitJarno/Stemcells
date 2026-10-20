@@ -144,3 +144,17 @@ second picture's thumbnail with focus on it; at the reel's end, with the
 only copies below the fold and on the other tab's page, the picture faded
 and focus went back to the picture that opened it. Each test was checked to
 fail with its fix taken out.
+
+## Follow-up: stale URLs, pinned seams (2026-10-21)
+
+- [x] The picture on stage keeps its first URL for drawing only. Copy and
+      save act on the item's stored file, minted fresh when acting, or on
+      the URL it shows now. A video gets the latest URL, retries from the
+      stored file, and picks up where it was when its URL failed.
+- [x] Contract tests pin `data-keybinding-capture` (upstream's root
+      shortcuts) and `[data-timeline-row-id]` (the timeline's rows).
+- [x] A test for the viewer's re-anchoring.
+
+Each test was checked to fail with its fix taken out. Headless in the same
+chat: a picture draws, the attached video plays and Space pauses it, Esc
+lands it with focus on its play button, no failed requests.
