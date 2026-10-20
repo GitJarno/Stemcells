@@ -46,7 +46,8 @@ jobs:
         if: steps.sync.outputs.code != '0'
         run: |
           title="Upstream sync needs a hand"
-          if [ -z "$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')" ]; then
+          open=$(gh api "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" --jq "[.[] | select(.title == \"$title\")] | length")
+          if [ "$open" = "0" ]; then
             {
               echo "The nightly merge of upstream stopped (exit ${{ steps.sync.outputs.code }}: 3 = conflict, 4 = a check failed)."
               echo
@@ -56,6 +57,6 @@ jobs:
               echo
               echo "Resolve it with \`stemcells/scripts/sync-upstream\` locally: upstream's logic wins and our seam goes back on top (stemcells/docs/fork.md)."
             } > issue.md
-            gh issue create --title "$title" --body-file issue.md
+            gh api "repos/$GITHUB_REPOSITORY/issues" -f title="$title" -F body=@issue.md --jq .html_url
           fi
           exit 1

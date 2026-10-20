@@ -60,8 +60,15 @@ if [ "$check" = 1 ]; then
 fi
 
 git push -q -f -u origin "$branch"
-if ! gh pr view "$branch" >/dev/null 2>&1; then
-  gh pr create --base main --head "$branch" \
-    --title "Take upstream at $short ($behind commits)" \
-    --body "Merges upstream's newest green commit, $short ($behind commits behind). $([ "$check" = 1 ] && echo 'Drift, the type checks and the Stemcells tests passed on the merged tree.')"
+
+# REST rather than `gh pr`: Actions' token may not use the GraphQL calls.
+repo=${GITHUB_REPOSITORY:-$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')}
+open=$(gh api "repos/$repo/pulls?state=open&head=${repo%%/*}:$branch" --jq length)
+if [ "$open" = "0" ]; then
+  checked=""
+  [ "$check" = 1 ] && checked=" Drift, the type checks and the Stemcells tests passed on the merged tree."
+  gh api "repos/$repo/pulls" -f base=main -f head="$branch" \
+    -f title="Take upstream at $short ($behind commits)" \
+    -f body="Merges upstream's newest commit on which its CI passed, $short ($behind commits).$checked" \
+    --jq .html_url
 fi
