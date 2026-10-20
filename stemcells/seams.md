@@ -15,6 +15,12 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/app/DesktopStatePaths.ts` | State in `~/.stemcells` | Own database, never `~/.t3` |
 | `apps/server/src/os-jank.ts` | Server base dir `~/.stemcells` | Same, for the server and CLI |
 | `apps/server/src/cli/browser.ts` | `sudo` home falls back to `~/.stemcells` | Same, under `sudo` on Linux |
+| `apps/server/src/server.ts` | Imports `stemcells/disk/http.ts` and adds its layer to `layerMakeRoutes` | Mounts Settings › Disk's `/api/stemcells/disk` routes |
+| `apps/web/src/routes/settings.disk.tsx` | New route file; renders `stemcells/disk/DiskSettings` | TanStack's file routes live in `routes/` |
+| `apps/web/src/routeTree.gen.ts` | Regenerated for `settings.disk.tsx` | The router plugin writes it |
+| `apps/web/src/components/settings/settingsSearch.ts` | `/settings/disk` in `SettingsPath`, `SETTINGS_SECTION_LABELS` ("Disk") and `SETTINGS_CATEGORY_SCOPES` (none) | The settings sidebar lists its pages from these |
+| `apps/web/src/components/settings/SettingsSidebarNav.tsx` | Imports `stemcells/disk/DiskSettingsIcon` and adds it to `SETTINGS_SECTION_ICONS` | Every settings page has an icon |
+| `apps/web/src/components/settings/SettingsScopeSentence.tsx` | `/settings/disk` in `SETTINGS_DEVICE_ONLY_PATHS` | The page reads this machine's disk; no settings scope applies to it |
 
 Upstream's tests pin T3's identity, so each identity seam also changes the
 values these tests expect, and nothing else in them:
@@ -30,6 +36,13 @@ values these tests expect, and nothing else in them:
 To offer upstream: one module holding the app's identity (name, app id,
 profile and state folder names, link scheme) that code and tests both
 read. Then a fork's identity is one file instead of fifteen.
+
+To offer upstream: register a settings page from a module. Settings ›
+Disk needs five seams for one page: the route file, the regenerated route
+tree, three lists in `settingsSearch.ts`, an icon in `SettingsSidebarNav.tsx`
+and the device-only list in `SettingsScopeSentence.tsx`. One registration
+(path, label, icon, scope, component) read by all of them would make a
+module's settings page one line.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

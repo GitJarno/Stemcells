@@ -25,6 +25,7 @@ export type SettingsPath =
   | "/settings/scheduled-tasks"
   | "/settings/source-control"
   | "/settings/storage"
+  | "/settings/disk"
   | "/settings/connections"
   | "/settings/archived";
 
@@ -83,6 +84,7 @@ export const SETTINGS_SECTION_LABELS: Readonly<Record<SettingsPath, string>> = {
   "/settings/scheduled-tasks": "Scheduled Tasks",
   "/settings/source-control": "Source Control",
   "/settings/storage": "Storage",
+  "/settings/disk": "Disk",
   "/settings/connections": "Connections",
   "/settings/archived": "Archive",
 };
@@ -1017,6 +1019,7 @@ const SETTINGS_CATEGORY_SCOPES: Readonly<Record<SettingsPath, SettingsSearchScop
   "/settings/integrations": null,
   "/settings/source-control": "environment-defaults",
   "/settings/storage": "project-defaults",
+  "/settings/disk": null,
   "/settings/connections": "connections",
   "/settings/scheduled-tasks": null,
   "/settings/archived": "project-defaults",
