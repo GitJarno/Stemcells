@@ -13,7 +13,7 @@ page. Usage and plans stay upstream's for now.
       drag; inside a tab, chats sit side by side or stacked. Clicking a
       chat in the sidebar opens it in the focused pane. Layout persists.
 - [ ] **2. Aski** (`packages/stemcells-aski`, `apps/web/src/stemcells/aski/`). The
-      canon and scenes copied from SC-legacy; a React figure. A
+      canon and scenes copied from the earlier Stemcells app; a React figure. A
       pinned Aski chat in the first, fixed tab, on its own provider
       instance whose launch arguments add Aski's persona. It drives other
       chats with upstream's orchestration tools.
@@ -31,7 +31,7 @@ page. Usage and plans stay upstream's for now.
 - New code in our folders; each upstream edit is a seam in
   `stemcells/seams.md`; `stemcells/scripts/drift` passes before a push.
 - Port faithfully: Aski and the Cells use the same art and behaviour as
-  the SC-legacy and the original app apps. Pure TypeScript is copied; views are
-  rewritten in React because SC-legacy views are Solid.
+  the earlier Stemcells apps. Pure TypeScript is copied; views are
+  rewritten in React because the earlier views are Solid.
 
 ## Review

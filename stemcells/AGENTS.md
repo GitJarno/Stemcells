@@ -13,10 +13,10 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 `stemcells/docs/fork.md`; read it before your first change. The rules:
 
 ## Where you work
-- In your own worktree, never in the main checkout:
-  `git -C "~/Documents/AI Projects/Stemcells" worktree add
-  "../Stemcells-wt/<task>" -b stemcells/<task> origin/main`, then
-  `pnpm install --frozen-lockfile --prefer-offline` inside it.
+- In your own worktree, never in the main checkout. From the main
+  checkout: `git worktree add ../Stemcells-wt/<task> -b stemcells/<task>
+  origin/main`, then `pnpm install --frozen-lockfile --prefer-offline`
+  inside it.
 - Remove your worktree once its pull request merges.
 
 ## Where code goes
