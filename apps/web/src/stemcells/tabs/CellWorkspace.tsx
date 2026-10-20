@@ -354,7 +354,7 @@ function PaneHeader(props: { cell: CellRef | null }) {
   return (
     <div
       data-stemcells-pane-header=""
-      className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-2 text-xs text-muted-foreground"
+      className="flex h-7 shrink-0 items-center gap-1.5 border-b border-border px-2 text-xs text-muted-foreground"
     >
       <CellMark cell={props.cell} />
       <span className="min-w-0 truncate">{title}</span>

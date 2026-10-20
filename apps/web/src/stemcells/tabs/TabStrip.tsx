@@ -87,8 +87,7 @@ export function TabStrip(props: {
 
   return (
     <div
-      // Tall enough for what a Cell wears on its head, which rises above its body.
-      className="flex h-11 shrink-0 items-center gap-1 border-b border-border px-2"
+      className="flex h-9 shrink-0 items-center gap-1 border-b border-border px-2"
       data-stemcells-tab-strip=""
     >
       <div className="flex min-w-0 items-center gap-1" role="tablist">
@@ -116,7 +115,7 @@ export function TabStrip(props: {
                   : undefined
               }
               className={cn(
-                "group/tab flex h-6 w-40 min-w-0 shrink cursor-pointer select-none items-center gap-2 rounded-md pr-1 pl-1.5 text-xs",
+                "group/tab flex h-6 w-40 min-w-0 shrink cursor-pointer select-none items-center gap-1.5 rounded-md pr-1 pl-1.5 text-xs",
                 // Lifted off the strip, a dragged tab is opaque so the tabs it passes stay under it.
                 dragged
                   ? "relative z-10 bg-popover text-foreground shadow-md ring-1 ring-border"
