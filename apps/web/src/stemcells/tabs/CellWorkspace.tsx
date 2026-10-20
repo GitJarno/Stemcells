@@ -337,7 +337,7 @@ function TabPage(props: {
   return (
     <>
       {/* Look: the focused Cell and its workbench take the page (stemcells/workbench). */}
-      <Look tab={tab} onStage={props.onStage} onFocus={props.onFocus} />
+      <Look tab={tab} onStage={props.onStage} workbench={workbench} onFocus={props.onFocus} />
       <div ref={props.onStage ? props.gridRef : undefined} data-stemcells-grid="">
         {tab.rows.map((row, rowIndex) => (
           <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>

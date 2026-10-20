@@ -135,6 +135,11 @@ describe("the DOM Look's stylesheet and Esc read", () => {
     expect(resizeHandle).toContain('role="separator"');
   });
 
+  it("the panel paints its own background, over Look's stand-in", () => {
+    // look.css lays the stand-in at the bottom of the workbench's own layer.
+    expect(previewPanelShell).toMatch(/"relative flex [^"]*\bbg-background\b/);
+  });
+
   it("the panel toggle sits in its own span among controls placed by --workspace-controls-right", () => {
     // look.css hides the toggle's span and moves its neighbours over by one
     // control (size-7) and the gap (gap-1), and the × takes its place.

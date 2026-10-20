@@ -29,6 +29,9 @@ again.
 - [x] Prove it headless: three Cells with one stacked, Look on the stacked
       one, each ending, the chip, tab memory across a tab switch and a
       reload, the narrow window
+- [x] Off stage, a page in Look lays out as Look: the rail, the Cell at
+      half, and a stand-in naming the surface in the workbench half, so
+      nothing jumps as a swipe brings the page on or takes it off
 
 ## Decisions
 
@@ -55,14 +58,16 @@ again.
   is ignored there; when the composer uses Esc it stops it too.
 - **The chip** shows on any Cell whose panel is closed but remembers a
   surface. With two Cells or more the pane header shows it.
+- **Off stage, a stand-in, not the surfaces.** Only the page on stage
+  holds its Cell's surfaces (one browser, one terminal per thread). Every
+  page in Look keeps a quiet stand-in under them naming the surface, so a
+  page off stage keeps Look's geometry and the surfaces arrive and leave
+  inside a box already there.
 
 ## Later
 
 - The PR surface led by Merge; phone, tablet and desktop browser sizes;
   marking up what's wrong; the auto-open chip for dev servers; thumbnails.
-- Off stage, a tab in Look shows its Cell full width while the swipe
-  passes; its workbench fills in when the page arrives (only the page on
-  stage owns a workbench).
 
 ## Review
 
@@ -75,3 +80,8 @@ the workbench, the chip, a rail mark (focuses that Cell,
 Watch), the ×, a send (Look ends, the chip names `README.md`), Look kept
 across a tab switch and a reload, and none below 980 px. The asking dot
 wasn't seen live: no Cell asked during the run.
+
+The stand-in, proved the same way: a swipe held mid-slide shows the
+arriving page in Look with its stand-in naming `README.md`, its halves the
+widths they keep once it lands; the leaving page keeps Look too, and the
+surfaces are in the workbench when the slide settles.
