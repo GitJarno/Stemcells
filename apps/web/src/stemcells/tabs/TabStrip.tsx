@@ -86,10 +86,7 @@ export function TabStrip(props: {
   const offsets = drag?.geometry ? restingOffsets(drag.geometry, drag.slot) : null;
 
   return (
-    <div
-      className="flex h-9 shrink-0 items-center gap-1 border-b border-border px-2"
-      data-stemcells-tab-strip=""
-    >
+    <div className="flex h-9 shrink-0 items-center gap-1 px-2" data-stemcells-tab-strip="">
       <div className="flex min-w-0 items-center gap-1" role="tablist">
         <AskiChip {...props.aski} onActivate={() => onActivate(ASKI_TAB_ID)} />
         {tabs.map((tab, index) => {

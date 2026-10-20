@@ -1,8 +1,9 @@
 /* The workspace's own touches, each scoped to one of its parts, so loading
-   this sheet never restyles upstream's screens. */
+   this sheet never restyles upstream's screens; the one exception, the
+   sidebar's edge on Stemcells' own theme, is marked below. */
 
-/* Aski stands on Stemcells' own ground in its own ink: its renderer reads
-   both back as rgb() channels, which upstream's oklch() colours are not. */
+/* Aski stands on the page's ground in the page's ink (its figure reads both
+   back as pixels). */
 [data-stemcells-aski-stage] {
   background: var(--sc-page);
 }
@@ -34,6 +35,18 @@
   border-radius: inherit;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sc-edge) 50%, transparent);
   pointer-events: none;
+}
+/* On Stemcells' own theme the frame is black and the slate reads by its
+   gray alone, so the frame and the slate meet with no line: the slate drops
+   its edge, and the sidebar its border (upstream's, on `[data-app-sidebar]`;
+   upstream/frame.contract.test.ts pins it, and this selector outranks
+   upstream's dark one). Themes whose frame is the canvas keep both, or the
+   slate would vanish into the frame. */
+:root.dark[data-theme-id="stemcells"] [data-stemcells-slate]::after {
+  content: none;
+}
+:root.dark[data-theme-id="stemcells"] [data-app-sidebar] {
+  border-color: transparent;
 }
 /* Clipped, not hidden: nothing can scroll the slate to bring a page that is
    off stage into view, as focusing a field in it would. */
