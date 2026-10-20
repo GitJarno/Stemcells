@@ -41,9 +41,13 @@ type JsonSchema = {
   readonly oneOf?: readonly JsonSchema[];
   readonly allOf?: readonly JsonSchema[];
   readonly properties?: Record<string, JsonSchema>;
+  readonly items?: JsonSchema;
 };
 
-/** Whether a dotted path (`target.model`) leads to a property of the schema. */
+/**
+ * Whether a dotted path (`target.model`) leads to a property of the schema;
+ * a list's items stand for the list (`projects.title`).
+ */
 function hasPath(root: JsonSchema, path: readonly string[]): boolean {
   const defs = root.$defs ?? {};
   const visit = (node: JsonSchema, rest: readonly string[]): boolean => {
@@ -53,7 +57,12 @@ function hasPath(root: JsonSchema, path: readonly string[]): boolean {
     }
     const [head, ...tail] = rest;
     if (head === undefined) return true;
-    const branches = [...(node.anyOf ?? []), ...(node.oneOf ?? []), ...(node.allOf ?? [])];
+    const branches = [
+      ...(node.anyOf ?? []),
+      ...(node.oneOf ?? []),
+      ...(node.allOf ?? []),
+      ...(node.items === undefined ? [] : [node.items]),
+    ];
     const child = node.properties?.[head];
     return (
       (child !== undefined && visit(child, tail)) || branches.some((branch) => visit(branch, rest))
@@ -114,6 +123,27 @@ describe("the tools Aski's persona names", () => {
     ]);
     const launches = namedCalls(persona).filter((call) => call.tool === "t3_thread_launch");
     expect(launches.flatMap((call) => call.args)).toContain("modelSelection");
+  });
+
+  it("find Cells project by project, as a thread list reads one project at a time", () => {
+    const calls = namedCalls(persona);
+    expect(calls).toContainEqual({ tool: "t3_project_list", args: [], result: "projects.title" });
+    const listed = calls.filter((call) => call.tool === "t3_thread_list");
+    expect(listed.flatMap((call) => call.args)).toEqual(
+      expect.arrayContaining(["projectId", "cursor", "settled"]),
+    );
+    expect(listed.map((call) => call.result)).toContain("nextCursor");
+  });
+
+  it("can't reach archived Cells, as the persona tells the person", () => {
+    const listInput = Tool.getJsonSchema(OrchestratorToolkit.tools.t3_thread_list) as JsonSchema;
+    const searchInput = Tool.getJsonSchema(ThreadToolkit.tools.t3_thread_search) as JsonSchema;
+    const options = [
+      ...Object.keys(listInput.properties ?? {}),
+      ...Object.keys(searchInput.properties ?? {}),
+    ];
+    expect(options.filter((option) => /archiv|location/i.test(option))).toEqual([]);
+    expect(persona).toContain("Archived Cells are out of reach");
   });
 });
 

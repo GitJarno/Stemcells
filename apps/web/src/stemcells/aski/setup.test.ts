@@ -78,6 +78,7 @@ describe("the persona", () => {
     expect([...tools].toSorted()).toEqual([
       "delegate_task",
       "orchestrator_capabilities",
+      "t3_project_list",
       "t3_project_read",
       "t3_thread_launch",
       "t3_thread_list",

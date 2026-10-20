@@ -43,9 +43,13 @@
   `target.providerInstanceId` and `target.model`; without one, the driver's
   own instance with Aski's model. A server contract test resolves every
   `tool(argument).result` the persona spells out against the tools' schemas.
-- Open: `t3_thread_list` without a projectId lists only Aski's own chat's
-  project, so Aski sees Cells in one project unless it goes project by
-  project; activity from the newest running tool item needs the thread's detail
+- Aski finds Cells project by project: `t3_thread_list` without a projectId
+  lists only its own chat's project, so the persona lists projects with
+  `t3_project_list` and then each named project's (or every project's)
+  Cells, following `nextCursor`. Settled Cells come along when `settled` is
+  left out; archived ones are out of reach of every tool (the list and the
+  search read active chats only), and the persona says so to the person.
+- Open: activity from the newest running tool item needs the thread's detail
   (one subscription per tab), so only "waiting" is shown, from the status;
   the Codex persona path is unverified end to end (T3's per-turn
   collaboration-mode instructions may override it); upstream's first-message
