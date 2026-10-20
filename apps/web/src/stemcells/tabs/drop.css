@@ -1,0 +1,83 @@
+/* A file carried over the slate (DropWash.tsx) and over the tab strip
+   (springTab.ts): one lit target at a time, in colour, never stitching. */
+
+/* The wash: the chat a drop would land in, in its tone (the accent until a
+   Cell has a tone of its own) at a quarter of a tint, enough to say "this
+   one", never enough to dim a word under it; its hairline is the tone at a
+   tint's edge. It stands over the panes and under the slate's edge. */
+[data-stemcells-drop-wash] {
+  --drop-tone: var(--sc-accent);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  border: 1px solid
+    color-mix(in srgb, var(--drop-tone) calc(var(--sc-tint-edge) * 100%), transparent);
+  background: color-mix(in srgb, var(--drop-tone) calc(var(--sc-tint-fill) * 25%), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
+[data-stemcells-drop-wash][data-lit="true"] {
+  opacity: 1;
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-drop-wash][data-lit="true"][data-motion="glide"] {
+  transition:
+    opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
+    translate var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
+    width var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
+    height var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
+    border-radius var(--sc-motion-travel-duration) var(--sc-motion-travel-easing);
+}
+[data-stemcells-drop-wash][data-motion="cut"] {
+  transition: none;
+}
+
+/* Upstream's own picture of the same moment (a dashed frame round a "Drop
+   files to attach" pill) steps aside in a pane: the wash says it. Its words
+   stay for screen readers (upstream/drop.contract.test.ts). */
+[data-stemcells-pane] [data-chat-workspace-drop-overlay] {
+  opacity: 0;
+}
+
+/* The composer the file would land in rises a touch toward the hand,
+   from its foot, and eases back when the drag leaves or lets go. */
+[data-stemcells-pane] [data-chat-composer-stack="true"] {
+  transform-origin: bottom center;
+  transition: scale var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+[data-stemcells-pane]:has([data-chat-workspace-drop-overlay]) [data-chat-composer-stack="true"] {
+  scale: 1.01;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-pane]:has([data-chat-workspace-drop-overlay]) [data-chat-composer-stack="true"] {
+    scale: none;
+  }
+}
+
+/* A tab a drag rests on lights, as a tab lights for a chat carried to it:
+   "rest here and it opens". The light lies under the tab's words. */
+[data-stemcells-tab] {
+  position: relative;
+  isolation: isolate;
+}
+[data-stemcells-tab]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: color-mix(
+    in srgb,
+    var(--sc-drop-target) calc(var(--sc-tint-fill) * 100%),
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-tab][data-spring-lit="true"]::before {
+  opacity: 1;
+}

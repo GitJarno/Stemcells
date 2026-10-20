@@ -27,6 +27,7 @@ import {
   splitRightOutsideAski,
 } from "./askiTab";
 import { CellMark } from "./CellMark";
+import { DropWash } from "./DropWash";
 import {
   activateTab,
   activeTab,
@@ -310,6 +311,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
             })}
           </TabPager>
         )}
+        <DropWash />
       </div>
     </SidebarInset>
   );

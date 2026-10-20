@@ -15,7 +15,9 @@ import {
 import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
+import { useSpringTabs, type SpringHandlers } from "./springTab";
 import { clampOffset, nearestSlot, restingOffsets, type TabDragGeometry } from "./tabDrag";
+import "./drop.css";
 
 /** A press that moves less than this is a click, not a drag. */
 const DRAG_START_DISTANCE = 4;
@@ -44,6 +46,8 @@ export function TabStrip(props: {
   const tabElements = useRef(new Map<string, HTMLElement>());
   const [drag, setDrag] = useState<Drag | null>(null);
   const { tabs, onActivate, onMove } = props;
+  // A tab a drag rests on opens, so a file can be carried to another tab's chat.
+  const spring = useSpringTabs(props.activeTabId, onActivate);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
     if (event.button !== 0 || (event.target as Element).closest("button")) return;
@@ -88,7 +92,12 @@ export function TabStrip(props: {
   return (
     <div className="flex h-9 shrink-0 items-center gap-1 px-2" data-stemcells-tab-strip="">
       <div className="flex min-w-0 items-center gap-1" role="tablist">
-        <AskiChip {...props.aski} onActivate={() => onActivate(ASKI_TAB_ID)} />
+        <AskiChip
+          {...props.aski}
+          onActivate={() => onActivate(ASKI_TAB_ID)}
+          springLit={spring.lit === ASKI_TAB_ID}
+          springHandlers={spring.handlers(ASKI_TAB_ID)}
+        />
         {tabs.map((tab, index) => {
           const dragged = drag?.geometry != null && drag.tabId === tab.id;
           const offset = dragged ? drag.offset : (offsets?.[index] ?? 0);
@@ -102,6 +111,8 @@ export function TabStrip(props: {
               role="tab"
               aria-selected={tab.id === props.activeTabId}
               data-stemcells-tab={tab.id}
+              data-spring-lit={spring.lit === tab.id}
+              {...spring.handlers(tab.id)}
               onPointerDown={(event) => onPointerDown(event, tab.id)}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
@@ -171,6 +182,8 @@ function AskiChip(props: {
   cell: CellRef | null;
   chat: AskiChat;
   onActivate: () => void;
+  springLit: boolean;
+  springHandlers: SpringHandlers;
 }) {
   if (props.cell !== null) {
     return (
@@ -178,6 +191,8 @@ function AskiChip(props: {
         role="tab"
         aria-selected={props.active}
         data-stemcells-tab={ASKI_TAB_ID}
+        data-spring-lit={props.springLit}
+        {...props.springHandlers}
         onClick={props.onActivate}
         className={cn(
           "flex h-6 shrink-0 cursor-pointer select-none items-center rounded-md px-2 text-xs font-medium",
