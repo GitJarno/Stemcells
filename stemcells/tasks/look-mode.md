@@ -32,6 +32,7 @@ again.
 - [x] Off stage, a page in Look lays out as Look: the rail, the Cell at
       half, and a stand-in naming the surface in the workbench half, so
       nothing jumps as a swipe brings the page on or takes it off
+- [x] The × moves into the workbench once chat headers went (#45)
 
 ## Decisions
 
@@ -45,8 +46,11 @@ again.
   dragged to beside a single chat, and its resize handle hides. Upstream
   caps the panel against the chat column it sits beside, which on our slate
   is a pane, so its width would chase itself.
-- **The × replaces upstream's right-panel toggle in Look** rather than
-  sitting beside it: both close the panel, and one control per job.
+- **The × is the workbench's own**, at its top right, in the room the
+  panel's tab bar keeps there, always shown, round glass like the pane's
+  buttons. Nothing of Look's rides a chat's header or the pane's floating
+  buttons: those are the pane's (its × closes the pane), and upstream's
+  right-panel toggle among them stays as it is, lit while the panel is open.
 - **A send is read from the thread**: the shell's last user-authored
   message moving past what Look first saw. Any way of sending counts; a
   chat whose history arrives after Look began (a reload) doesn't.
@@ -57,7 +61,7 @@ again.
   surface tab, a file, the diff) doesn't hold it. The composer's editor marks every Esc handled, so that mark
   is ignored there; when the composer uses Esc it stops it too.
 - **The chip** shows on any Cell whose panel is closed but remembers a
-  surface. With two Cells or more the pane header shows it.
+  surface. It leads the pane's floating buttons (`tabs/PaneButtons.tsx`).
 - **Off stage, a stand-in, not the surfaces.** Only the page on stage
   holds its Cell's surfaces (one browser, one terminal per thread). Every
   page in Look keeps a quiet stand-in under them naming the surface, so a

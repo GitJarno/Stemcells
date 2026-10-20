@@ -8,7 +8,7 @@ import { panesOf, type CellRef, type Tab } from "../tabs/layout";
 import { useCellLastSent } from "../upstream/chat";
 import { useCellTitle } from "../upstream/thread";
 import { useCellStatus } from "../upstream/status";
-import { Button, cn, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
+import { cn, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import {
   closeCellPanel,
   escapeHeldElsewhere,
@@ -26,8 +26,8 @@ import "./look.css";
  * workbench, it is there only while the tab is in Look, and its stylesheet
  * folds the page around it: the Look Cell steps out of its column and stack,
  * the other Cells hide, and the workbench takes the other half. It draws the
- * rail of the other Cells and the workbench's ×, and ends Look when the user
- * sends from the Cell or presses Esc.
+ * rail of the other Cells and, in the workbench, its ×, and ends Look when
+ * the user sends from the Cell or presses Esc.
  *
  * Only the page on stage fills its workbench with the Cell's surfaces. Under
  * them, every page in Look keeps a stand-in naming the surface, so a page
@@ -70,23 +70,10 @@ export function Look(props: {
           <RailMark key={pane.id} cell={pane.cell} onSelect={() => end(pane.id)} />
         ))}
       </nav>
-      <div data-stemcells-look-close="">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Back to watching"
-                onClick={() => end()}
-              />
-            }
-          >
-            <X />
-          </TooltipTrigger>
-          <TooltipPopup side="bottom">Back to watching (Esc)</TooltipPopup>
-        </Tooltip>
-      </div>
+      {/* Only the page on stage fills its workbench; the × stays out of an empty one. */}
+      {props.onStage && props.workbench !== null
+        ? createPortal(<LookClose onClose={() => end()} />, props.workbench)
+        : null}
     </>
   );
 }
@@ -106,6 +93,22 @@ function LookStandIn(props: { cell: CellRef }) {
           <span className="min-w-0 truncate">{name}</span>
         </>
       )}
+    </div>
+  );
+}
+
+/** The workbench's ×: back to watching. */
+function LookClose(props: { onClose: () => void }) {
+  return (
+    <div data-stemcells-look-close="">
+      <Tooltip>
+        <TooltipTrigger
+          render={<button type="button" aria-label="Back to watching" onClick={props.onClose} />}
+        >
+          <X aria-hidden />
+        </TooltipTrigger>
+        <TooltipPopup side="bottom">Back to watching (Esc)</TooltipPopup>
+      </Tooltip>
     </div>
   );
 }

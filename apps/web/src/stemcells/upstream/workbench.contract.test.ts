@@ -7,13 +7,13 @@ import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell
 import { beforeEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
-import panelLayoutControls from "../../components/chat/PanelLayoutControls.tsx?raw";
 import mcpAppFrame from "../../components/chat/McpAppFrame.tsx?raw";
 import threadFindBar from "../../components/chat/ThreadFindBar.tsx?raw";
 import serverBrowser from "../../browser/ServerBrowserSurface.tsx?raw";
 import hostedBrowser from "../../browser/HostedBrowserWebview.tsx?raw";
 import composerEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
 import previewPanelShell from "../../components/preview/PreviewPanelShell.tsx?raw";
+import rightPanelTabs from "../../components/RightPanelTabs.tsx?raw";
 import resizeHandle from "../../components/preview/RightPanelResizeHandle.tsx?raw";
 import dialog from "../../components/ui/dialog.tsx?raw";
 import menu from "../../components/ui/menu.tsx?raw";
@@ -140,15 +140,13 @@ describe("the DOM Look's stylesheet and Esc read", () => {
     expect(previewPanelShell).toMatch(/"relative flex [^"]*\bbg-background\b/);
   });
 
-  it("the panel toggle sits in its own span among controls placed by --workspace-controls-right", () => {
-    // look.css hides the toggle's span and moves its neighbours over by one
-    // control (size-7) and the gap (gap-1), and the × takes its place.
-    expect(panelLayoutControls).toMatch(
-      /<TooltipTrigger render=\{<span className="flex shrink-0" \/>\}>\s*<Toggle[^>]*?data-right-panel-toggle/s,
+  it("the inline panel's tab bar keeps room at its right end, where Look's × stands", () => {
+    // Only the sheet gets the chat's controls in its tab bar; inline, the room stays empty.
+    expect(chatView.match(/\blayoutControls=\{/g)).toHaveLength(1);
+    expect(chatView).toMatch(/<RightPanelSheet[\s\S]*?layoutControls=\{/);
+    expect(rightPanelTabs).toContain(
+      'props.mode === "inline" && !props.layoutControls ? "pr-28" : "pr-3"',
     );
-    expect(panelLayoutControls).toContain('size="sm"');
-    expect(panelLayoutControls).toContain("items-center gap-1");
-    expect(chatView).toContain("right-[var(--workspace-controls-right)] z-50 mr-px");
   });
 
   it("open overlays mark their popups; the find bar and a full-screen app view mark themselves", () => {
