@@ -60,6 +60,12 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/connection/platform.ts` | `AnalyticsDevice` is `stemcells/privacy/analyticsDevice`'s `noAnalyticsDevice`; upstream's stored id and its `randomUUID` import are gone | Same: the client keeps no analytics id, and removes one an earlier build left |
 | `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The usage-data note says "Stemcells sends no usage data.", without T3's privacy policy link | Same: T3's note said usage data goes to T3 |
 | `apps/web/src/components/settings/SettingsPanels.tsx`, `apps/web/src/components/settings/settingsSearch.ts` | About's "Privacy policy" row and its search entry are gone | Same: the row linked T3's policy as the account of "the anonymous usage data T3 Code collects" |
+| `apps/server/src/serverRuntimeStartup.ts` | The boot heartbeat no longer records the install's owners, and drops the `getServerOwners` import | Same: naming them read the Codex and Claude login files and the T3 Connect account on every start |
+| `apps/web/src/components/ChatMarkdown.tsx`, `apps/web/src/components/chat/MessagesTimeline.tsx`, `apps/web/src/lib/favicon.ts`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/threads/thread-work-log.tsx` | `faviconUrlForOrigin` and `toolActivityFaviconUrl` are imported from `stemcells/upstream/favicon` (same names, one import line each) | No favicon fetched (below): a link's icon came from Google's favicon service, and a page's from its own site |
+| `apps/web/src/components/ChatMarkdown.browser.test.tsx` | Its favicon test expects no image for any link | It pinned the Google favicon URL |
+| `apps/web/src/components/sidebar/useUpdateEverything.ts` | The servers to update come from `stemcells/upstream/updates`'s `offeredServerUpdates`, in place of the npm lookup | No T3 build offered (below) |
+| `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
+| `apps/mobile/app.config.ts` | `updates.enabled` only when `T3CODE_MOBILE_UPDATES_ENABLED=1` | Same: the configured over-the-air source is T3's Expo project |
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -180,14 +186,46 @@ calls, and hashes of the Codex, Claude and T3 Connect accounts it finds.
   built, buffered, written or sent, and no install id is made or read.
 - On start, `stemcells/privacy/telemetry.ts` removes the install id
   upstream's telemetry left (`<state dir>/anonymous-id`).
-- `analytics.contract.test.ts` and `privacy/noTelemetry.test.ts` fail when
-  a sync brings any of it back: upstream's service provided anywhere, its
-  endpoint or a PostHog key or client in the tree, an analytics id in the
-  web client, or the usage-data words.
+- The boot heartbeat no longer names the install's owners, so the server
+  never reads the provider logins for telemetry.
+- `analytics.contract.test.ts`, `outbound.contract.test.ts` and
+  `privacy/noTelemetry.test.ts` fail when a sync brings any of it back:
+  upstream's service provided anywhere, its endpoint or a PostHog key or
+  client in the tree, an analytics id in the web client, the usage-data
+  words, or the owners read again.
 
-Left as it is: upstream's boot heartbeat still reads the provider login
-files to name the install's owners, and hands them to the no-op, which
-drops them.
+### No favicon fetched, no T3 build offered
+
+Nothing tells a third party what the person reads or which build they run.
+
+- **Favicons.** Upstream asks `www.google.com/s2/favicons` for the icon of
+  every link in a chat, and loads a page's icon a Cell read from that site
+  (or a CDN). `stemcells/upstream/favicon.ts` (the web's and the phone's,
+  the same file) keeps only an icon the provider sent inline, so each view
+  shows its own glyph: a globe for a link, GitHub's mark for GitHub, the
+  tool's icon for a page. `favicon.contract.test.ts` pins it, and
+  `privacy/noTelemetry.test.ts` fails when a view imports upstream's
+  favicons directly or the two copies differ.
+- **Update Everything** offers a server update only to a server this app
+  runs, which updates with the app. Any other server updates by downloading
+  T3's build, so it is listed as needing a manual update, and npm is never
+  asked whether T3 published a version (`updates.contract.test.ts`).
+- **The command line** has no `t3 update`.
+- **Phone builds** check no over-the-air update source unless the build sets
+  `T3CODE_MOBILE_UPDATES_ENABLED=1`.
+
+Left as they are:
+
+- A server's own Update button and the version-mismatch notice still offer
+  a server that isn't this app's the update its own install takes (`npx
+  t3@…`, or T3's release for a background service). Those servers run
+  T3's build already.
+- Tool logos a provider names (an MCP server's icon) still load from the
+  URL the provider gave.
+- Source control discovery (the command palette, the git actions) checks
+  Bitbucket's sign-in with a plain `GET api.bitbucket.org/2.0/user`,
+  without a token when none is set: it carries nothing about the person or
+  their repositories.
 
 ### The left column's rail
 

@@ -73,3 +73,38 @@ describe("no Stemcells build reports on the person", () => {
     expect(filesMatching(words, /anonymous usage data/i)).toEqual([]);
   });
 });
+
+/**
+ * Nor does it tell anyone what the person reads or which build they run: a
+ * link's or a page's icon is never fetched (a favicon service learns every
+ * hostname in a chat), and Update Everything never asks npm about T3's
+ * release, since Stemcells never offers T3's build.
+ */
+describe("no Stemcells build tells a third party what the person reads", () => {
+  const code = trackedFiles().filter(isShippedCode);
+  const adapters = [
+    "apps/web/src/stemcells/upstream/favicon.ts",
+    "apps/mobile/src/stemcells/upstream/favicon.ts",
+  ];
+
+  it("fetches favicons only through Stemcells' adapters, the same on the web and the phone", () => {
+    const callers = filesMatching(
+      code.filter((file) => /^apps\/(?:web|mobile|desktop)\/src\//.test(file)),
+      /["']@t3tools\/shared\/favicon["']/,
+    );
+    expect(callers.toSorted()).toEqual(adapters.toSorted());
+    const [web, mobile] = adapters.map((file) =>
+      NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8"),
+    );
+    expect(mobile).toBe(web);
+  });
+
+  it("asks npm about no T3 release", () => {
+    const web = code.filter(
+      (file) => file.startsWith("apps/web/src/") && file !== "apps/web/src/state/npmRelease.ts",
+    );
+    expect(filesMatching(web, /\b(?:useNpmReleasePublished|npmReleasePublishedAtom)\(/)).toEqual(
+      [],
+    );
+  });
+});
