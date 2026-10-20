@@ -26,6 +26,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx` | Digit keys answer a question only when the context is `true` | Same |
 | `apps/web/src/components/RightPanelTabs.tsx` | The empty panel's launcher keys and `rightPanel.new` act only when the context is `true` | Same |
 | `apps/web/src/components/preview/PreviewView.tsx` | Preview actions (refresh, zoom, focus URL) act only when the context is `true` | Same |
+| `apps/web/src/components/ChatView.tsx` | Renders `stemcells/media/ChatMediaViewerHost` where it rendered `ExpandedImageDialogHost`, with the timeline it drew (`displayedTimeline.entries`), the thread and its cwd | The media viewer: a picture flies out of its thumbnail and steps through the whole chat, which only the timeline knows (the list mounts just the rows near the screen) |
+| `apps/web/src/components/chat/ExpandedImageDialog.tsx` | `expandedImagePreviewAtom` is exported | Every thumbnail opens through upstream's `openExpandedImagePreview`; our host reads what it opened |
 | `apps/server/src/server.ts` | Imports `stemcells/layer.ts` and adds its layer to `layerMakeRoutes` | Mounts all of Stemcells' server layer: Settings › Disk's `/api/stemcells/disk` routes, and the theme published on start |
 | `apps/server/src/cli/theme.ts` | Exports `publishThemeFile` and `writeDefaultTheme` | Stemcells publishes its theme and makes it a fresh server's default through the same guarded writes `t3 theme set` uses (`stemcells/upstream/theme.ts`) |
 | `apps/web/src/routes/settings.disk.tsx` | New route file; renders `stemcells/disk/DiskSettings` | TanStack's file routes live in `routes/` |

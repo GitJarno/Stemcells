@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 
+import { viewerHearsFirst } from "../media/viewer";
 import { isCommandPaletteOpen, isTerminalFocused, shortcutMatcher } from "../upstream/keys";
 
 export interface WorkspaceKeyHandlers {
@@ -29,6 +30,35 @@ const WINNING_KEYS = [
  */
 const matchesClosePane = shortcutMatcher("mod+w");
 
+/**
+ * The workspace's key listeners: one heard on the way down, before the
+ * chats', and ⌘W on the way back up. A picture viewer that is up hears
+ * every key first, and the workspace stands down.
+ */
+export function workspaceKeyListeners(latest: () => WorkspaceKeyHandlers): {
+  readonly onKeyDownCapture: (event: KeyboardEvent) => void;
+  readonly onKeyDown: (event: KeyboardEvent) => void;
+} {
+  return {
+    onKeyDownCapture: (event) => {
+      if (viewerHearsFirst(event)) return;
+      if (event.defaultPrevented || event.repeat || isCommandPaletteOpen()) return;
+      if (isTerminalFocused()) return;
+      const key = WINNING_KEYS.find((candidate) => candidate.matches(event));
+      if (!key || !latest()[key.run]()) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    },
+    onKeyDown: (event) => {
+      if (viewerHearsFirst(event)) return;
+      if (event.defaultPrevented || isCommandPaletteOpen() || isTerminalFocused()) return;
+      if (!matchesClosePane(event)) return;
+      // Holding ⌘W must not run on into the next pane, or the window.
+      if (event.repeat || latest().closePane()) event.preventDefault();
+    },
+  };
+}
+
 export function useWorkspaceKeys(handlers: WorkspaceKeyHandlers) {
   const latest = useRef(handlers);
   useLayoutEffect(() => {
@@ -37,20 +67,7 @@ export function useWorkspaceKeys(handlers: WorkspaceKeyHandlers) {
   // A layout effect, so this capture listener is in place before any chat's
   // own (passive-effect) listeners and hears these keys first.
   useLayoutEffect(() => {
-    const onKeyDownCapture = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.repeat || isCommandPaletteOpen()) return;
-      if (isTerminalFocused()) return;
-      const key = WINNING_KEYS.find((candidate) => candidate.matches(event));
-      if (!key || !latest.current[key.run]()) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || isCommandPaletteOpen() || isTerminalFocused()) return;
-      if (!matchesClosePane(event)) return;
-      // Holding ⌘W must not run on into the next pane, or the window.
-      if (event.repeat || latest.current.closePane()) event.preventDefault();
-    };
+    const { onKeyDownCapture, onKeyDown } = workspaceKeyListeners(() => latest.current);
     window.addEventListener("keydown", onKeyDownCapture, true);
     window.addEventListener("keydown", onKeyDown);
     return () => {

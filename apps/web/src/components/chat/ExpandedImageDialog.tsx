@@ -292,7 +292,7 @@ export const ExpandedImageDialog = memo(function ExpandedImageDialog({
  * The chat view's open media preview. It lives outside ChatView so opening or
  * closing it renders only the dialog host, not the whole chat chrome.
  */
-const expandedImagePreviewAtom = Atom.make<{
+export const expandedImagePreviewAtom = Atom.make<{
   readonly threadKey: string;
   readonly preview: ExpandedImagePreview;
 } | null>(null).pipe(Atom.keepAlive, Atom.withLabel("chat:expanded-image-preview"));

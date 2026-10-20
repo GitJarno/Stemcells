@@ -408,7 +408,8 @@ import { ChatComposer, type ChatComposerHandle } from "./chat/ChatComposer";
 import { createPageScrollController, type PageScrollKey } from "./chat/pageScrollController";
 import { createUpwardScrollDetector, isTimelineScrollTarget } from "./chat/timelineScrollTarget";
 import { DraftHeroHeadline } from "./chat/DraftHeroHeadline";
-import { ExpandedImageDialogHost, openExpandedImagePreview } from "./chat/ExpandedImageDialog";
+import { openExpandedImagePreview } from "./chat/ExpandedImageDialog";
+import { ChatMediaViewerHost } from "../stemcells/media/ChatMediaViewerHost";
 import {
   BranchRestoreConfirmHost,
   DeviceSetupDialogHost,
@@ -8919,7 +8920,12 @@ export default function ChatView(props: ChatViewProps) {
       <RevertConfirmHost threadKey={routeThreadKey} onConfirm={onConfirmRevertStable} />
       <LinkPullRequestDialogHost />
       <ThreadVisitWatermark threadRef={routeThreadRef} />
-      <ExpandedImageDialogHost threadKey={routeThreadKey} />
+      <ChatMediaViewerHost
+        threadKey={routeThreadKey}
+        threadRef={routeThreadRef}
+        entries={displayedTimeline.entries}
+        cwd={gitCwd ?? undefined}
+      />
     </div>
   );
   return (

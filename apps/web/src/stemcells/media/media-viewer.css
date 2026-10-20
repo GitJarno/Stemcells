@@ -1,0 +1,108 @@
+/* The media viewer: the dim, the picture on stage, its caption. Every
+   place and move is set from script (stage.ts); this holds what doesn't
+   move. */
+
+[data-stemcells-media] {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  outline: none;
+  overscroll-behavior: contain;
+  touch-action: none;
+  user-select: none;
+}
+
+[data-stemcells-media-scrim] {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+}
+
+[data-stemcells-media-figure] {
+  position: absolute;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+[data-stemcells-media-figure="image"] {
+  cursor: zoom-in;
+}
+
+[data-stemcells-media-figure][data-zoomed] {
+  cursor: grab;
+}
+
+[data-stemcells-media][data-dragging] [data-stemcells-media-figure] {
+  cursor: grabbing;
+}
+
+[data-stemcells-media-picture] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+}
+
+[data-stemcells-media-unavailable] {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--sc-space-xxl);
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-card);
+  text-align: center;
+  font-size: var(--sc-body);
+  color: rgb(255 255 255 / var(--sc-chrome-ink));
+}
+
+/* One quiet line under the picture: its name, and where it is in the chat. */
+[data-stemcells-media-caption] {
+  position: absolute;
+  display: flex;
+  max-width: min(560px, calc(100vw - 112px));
+  gap: 0.75em;
+  transform: translateX(-50%);
+  font-size: var(--sc-body);
+  line-height: var(--sc-natural-line);
+  white-space: nowrap;
+  color: rgb(255 255 255 / var(--sc-chrome-ink));
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-stemcells-media-name] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-stemcells-media-count] {
+  flex: none;
+  opacity: var(--sc-absent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* For the keyboard and screen readers: unseen until focus reaches it. */
+[data-stemcells-media-close] {
+  position: absolute;
+  top: calc(var(--native-titlebar-height, 0px) + var(--sc-space-xl));
+  right: var(--sc-space-xl);
+  padding: var(--sc-space-xs) var(--sc-space-xl);
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-control-radius);
+  background: #000;
+  font-size: var(--sc-body);
+  color: rgb(255 255 255 / var(--sc-chrome-ink));
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-stemcells-media-close]:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  outline: 2px solid var(--ring, currentColor);
+  outline-offset: 2px;
+}

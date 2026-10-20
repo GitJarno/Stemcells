@@ -307,6 +307,15 @@
   --sc-motion-rise-response: 0.8;
   --sc-motion-rise-damping: 1;
   --sc-motion-rise-delay: 120ms;
+  /* The media viewer's springs, played from script (spring.ts): a picture
+     lifting out of its thumbnail, landing back in one, and leaning past
+     the end of its row. */
+  --sc-motion-lift-response: 0.44;
+  --sc-motion-lift-damping: 0.86;
+  --sc-motion-land-response: 0.32;
+  --sc-motion-land-damping: 1;
+  --sc-motion-nudge-response: 0.16;
+  --sc-motion-nudge-damping: 1;
   --sc-motion-light-duration: 3200ms;
   --sc-motion-light-easing: cubic-bezier(0.3, 0.1, 0.7, 0.9);
   --sc-motion-reflow-duration: 0ms;
