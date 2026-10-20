@@ -22,16 +22,20 @@ import {
   readProjects,
   readThreadShells,
   useProjects,
+  useThreadShells,
   waitForThreadShell,
 } from "../../state/entities";
 import { usePrimaryEnvironmentId } from "../../state/environments";
 import { primaryServerConfigAtom, serverEnvironment } from "../../state/server";
+import { useEnvironmentShellStatus } from "../../state/shell";
 import { threadEnvironment } from "../../state/threads";
 import { useAtomCommand } from "../../state/use-atom-command";
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
+import { isThreadRouteSnapshotAuthoritative } from "../../threadRoutes";
 import {
   ASKI_INSTANCE_ID,
   ASKI_TITLE,
+  askiChatAmong,
   askiDriver,
   askiInstance,
   rememberAskiThread,
@@ -40,6 +44,7 @@ import {
   type AskiInstance,
 } from "../aski/setup";
 import type { CellRef } from "../tabs/layout";
+import { chatFactsOf } from "./askiChats";
 import { useCellPresence } from "./chat";
 
 export type AskiChat =
@@ -69,9 +74,10 @@ let stepInFlight: string | null = null;
 const instancesWritten = new Set<string>();
 
 /**
- * Aski's chat on the primary server: its instance kept current, its thread
- * made in the most recent project the first time (and again if deleted),
- * pinned, and remembered in this browser.
+ * Aski's chat on the primary server: its instance kept current, and its one
+ * thread found among the server's chats, else made in the most recent
+ * project and pinned. This browser remembers it, to show it before the
+ * server's chats have loaded.
  */
 export function useAskiChat(): AskiChat {
   const catalogReady = useAtomValue(environmentCatalog.catalogValueAtom).isReady;
@@ -91,6 +97,8 @@ export function useAskiChat(): AskiChat {
   const cell: CellRef | null =
     environmentId !== null && threadId !== null ? { environmentId, threadId, draftId: null } : null;
   const presence = useCellPresence(cell);
+  // Whether the server's chats have loaded: until then, no chat is known to be missing.
+  const chatsLoaded = isThreadRouteSnapshotAuthoritative(useEnvironmentShellStatus(environmentId));
 
   const mutateInstance = useAtomCommand(serverEnvironment.mutateProviderInstance, {
     reportFailure: false,
@@ -108,9 +116,21 @@ export function useAskiChat(): AskiChat {
   const instanceLive =
     instanceStored && config.providers.some((provider) => provider.instanceId === askiInstanceId);
   const needsThread = cell === null || presence.liveness === "gone";
+  // A browser that hasn't met Aski's chat, or remembers one since deleted,
+  // takes the server's; the server's chats are read only while it looks.
+  const serverChats = useThreadShells(needsThread && chatsLoaded);
+  const adopted =
+    environmentId !== null && needsThread && chatsLoaded
+      ? askiChatAmong(chatFactsOf(serverChats, environmentId))
+      : null;
 
   useEffect(() => {
-    if (environmentId === null || instanceKey === null || failed || stepInFlight !== null) return;
+    if (environmentId !== null && adopted !== null) rememberAskiThread(environmentId, adopted);
+  }, [environmentId, adopted]);
+
+  useEffect(() => {
+    if (environmentId === null || failed || stepInFlight !== null) return;
+    if (instanceKey === null) return;
     const instance = JSON.parse(instanceKey) as AskiInstance;
     const run = async (step: string, work: () => Promise<void>) => {
       stepInFlight = step;
@@ -144,7 +164,7 @@ export function useAskiChat(): AskiChat {
       return;
     }
 
-    if (!instanceLive || !needsThread || !hasProject) return;
+    if (!instanceLive || !needsThread || !chatsLoaded || adopted !== null || !hasProject) return;
     void run("thread", async () => {
       const ownProjects = readProjects().filter(
         (project) => project.environmentId === environmentId,
@@ -193,6 +213,9 @@ export function useAskiChat(): AskiChat {
   }
   if (wanted === "no-provider") return { status: "unavailable", reason: "no-provider" };
   if (failed) return { status: "unavailable", reason: "failed" };
+  if (environmentId !== null && adopted !== null) {
+    return { status: "ready", cell: { environmentId, threadId: adopted, draftId: null } };
+  }
   if (cell !== null && presence.liveness === "alive") return { status: "ready", cell };
   if (config !== null && !hasProject && needsThread) {
     return { status: "unavailable", reason: "no-project" };

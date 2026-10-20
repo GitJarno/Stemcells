@@ -16,6 +16,7 @@ import { resolveThreadStatusPill, type ThreadStatusPill } from "../../components
 import { getDefaultProviderInstanceModel } from "../../providerInstances";
 import persona from "../aski/persona.md?raw";
 import { askiInstance, personaArgs } from "../aski/setup";
+import { chatFactsOf } from "./askiChats";
 import { CELL_STATUSES, type CellStatus } from "./status";
 
 describe("a chat's status", () => {
@@ -115,5 +116,45 @@ describe("Aski's chat", () => {
 
   it("shows as pinned through the shell's pinnedAt", () => {
     expectTypeOf<EnvironmentThreadShell>().toHaveProperty("pinnedAt");
+  });
+
+  it("is found among a server's chats by their shells", () => {
+    const shell = (fields: Record<string, unknown>) =>
+      ({
+        environmentId: "env",
+        id: "thread",
+        providerInstanceId: "aski",
+        pinnedAt: "2026-10-01T09:05:00.000Z",
+        lineage: { parentThreadId: null, relationshipToParent: null, rootThreadId: "thread" },
+        deletedAt: null,
+        createdAt: "2026-10-01T09:00:00.000Z",
+        ...fields,
+      }) as unknown as EnvironmentThreadShell;
+    const facts = chatFactsOf(
+      [
+        shell({}),
+        shell({ id: "child", pinnedAt: null, lineage: { parentThreadId: "thread" } }),
+        shell({ id: "other-server", environmentId: "env-2" }),
+      ],
+      "env",
+    );
+    expect(facts).toEqual([
+      {
+        threadId: "thread",
+        instanceId: "aski",
+        pinned: true,
+        topLevel: true,
+        deleted: false,
+        createdAt: "2026-10-01T09:00:00.000Z",
+      },
+      {
+        threadId: "child",
+        instanceId: "aski",
+        pinned: false,
+        topLevel: false,
+        deleted: false,
+        createdAt: "2026-10-01T09:00:00.000Z",
+      },
+    ]);
   });
 });

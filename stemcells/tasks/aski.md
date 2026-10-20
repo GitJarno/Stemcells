@@ -30,6 +30,11 @@
 - Proof shots: the Cells' moods were reached by rewriting what the dev server
   reported of five test chats' runs (WebSocket and `/api/orchestration/shell`),
   never by calling a provider.
+- One Aski chat per server: a browser that hasn't met it (or remembers one
+  since deleted) adopts the pinned top-level chat on the "aski" instance,
+  the first made, once the server's chats have loaded; it makes one only
+  when none exists. `stemcells.aski` is just the fast path. Checked in the
+  dev app: a fresh browser opened the existing chat and made none.
 - Open: activity from the newest running tool item needs the thread's detail
   (one subscription per tab), so only "waiting" is shown, from the status;
   the Codex persona path is unverified end to end (T3's per-turn

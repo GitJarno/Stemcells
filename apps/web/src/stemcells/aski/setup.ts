@@ -110,7 +110,32 @@ export function sameInstance(stored: unknown, wanted: AskiInstance): boolean {
   );
 }
 
-// Aski's chat is kept per environment (a server), by its thread id.
+/** What Aski reads of a chat on the server. */
+export interface ChatFact {
+  readonly threadId: string;
+  readonly instanceId: string;
+  readonly pinned: boolean;
+  /** Not a fork or a subagent of another chat. */
+  readonly topLevel: boolean;
+  readonly deleted: boolean;
+  readonly createdAt: string;
+}
+
+/**
+ * Aski's chat among a server's chats: the pinned top-level chat on Aski's
+ * instance, the first made if there are several. There is one Aski chat per
+ * server, so a browser that hasn't met it adopts it rather than make another.
+ */
+export function askiChatAmong(chats: readonly ChatFact[]): string | null {
+  const candidates = chats.filter(
+    (chat) => chat.instanceId === ASKI_INSTANCE_ID && chat.pinned && chat.topLevel && !chat.deleted,
+  );
+  const first = candidates.toSorted((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+  return first?.threadId ?? null;
+}
+
+// Each browser remembers Aski's chat per environment (a server), by its
+// thread id: a fast path to it before the server's chats have loaded.
 
 const STORAGE_KEY = "stemcells.aski";
 

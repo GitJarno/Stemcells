@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import persona from "./persona.md?raw";
 import {
+  askiChatAmong,
   askiDriver,
   askiInstance,
   personaArgs,
   rememberAskiThread,
   rememberedAskiThread,
   sameInstance,
+  type ChatFact,
   type ProviderFact,
 } from "./setup";
 
@@ -84,6 +86,43 @@ describe("the persona", () => {
   it("says Cell and Aski to the person", () => {
     expect(persona).toMatch(/^You are Aski\b/);
     expect(persona).toContain("call the coding chats Cells");
+  });
+});
+
+describe("Aski's chat on the server", () => {
+  const chat = (threadId: string, fact: Partial<ChatFact> = {}): ChatFact => ({
+    threadId,
+    instanceId: "aski",
+    pinned: true,
+    topLevel: true,
+    deleted: false,
+    createdAt: "2026-10-01T09:00:00.000Z",
+    ...fact,
+  });
+
+  it("a fresh browser adopts the existing Aski chat", () => {
+    const server = [
+      chat("cell-on-claude", { instanceId: "claudeAgent" }),
+      chat("aski-chat"),
+      chat("cell-aski-started", { pinned: false }),
+      chat("aski-subagent", { topLevel: false }),
+    ];
+    expect(askiChatAmong(server)).toBe("aski-chat");
+  });
+
+  it("is the first made when a server holds more than one", () => {
+    const server = [
+      chat("later", { createdAt: "2026-10-02T09:00:00.000Z" }),
+      chat("first", { createdAt: "2026-09-30T09:00:00.000Z" }),
+    ];
+    expect(askiChatAmong(server)).toBe("first");
+  });
+
+  it("is none when no pinned chat on Aski's instance is left, so one is made", () => {
+    expect(askiChatAmong([])).toBeNull();
+    expect(askiChatAmong([chat("deleted", { deleted: true })])).toBeNull();
+    expect(askiChatAmong([chat("unpinned", { pinned: false })])).toBeNull();
+    expect(askiChatAmong([chat("elsewhere", { instanceId: "codex" })])).toBeNull();
   });
 });
 
