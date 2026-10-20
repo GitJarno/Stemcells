@@ -89,6 +89,7 @@ import { PreviewPanelShell, type PreviewPanelMode } from "./preview/PreviewPanel
 import { FaviconImage } from "./preview/PreviewFaviconIcon";
 import { previewBridge } from "./preview/previewBridge";
 import { PierreEntryIcon } from "./chat/PierreEntryIcon";
+import { useOwnsChatWindowInput } from "./chat/chatWindowInput";
 import { resolvePullRequestState } from "./pullRequest/pullRequestPresentation";
 import { PullRequestGlyph } from "~/components/pullRequest/pullRequestIcons";
 import { observeResize } from "~/lib/observeResize";
@@ -325,6 +326,7 @@ function RightPanelEmptyState(props: {
   pullRequestsAvailable: boolean;
   deviceAvailable: boolean;
 }) {
+  const ownsWindowInput = useOwnsChatWindowInput();
   const [highlight, setHighlight] = useState(-1);
 
   const actions = [
@@ -404,10 +406,11 @@ function RightPanelEmptyState(props: {
     action.onClick();
   });
   useEffect(() => {
+    if (!ownsWindowInput) return;
     const handler = (event: KeyboardEvent) => handleShortcut(event);
     window.addEventListener("keydown", handler, true);
     return () => window.removeEventListener("keydown", handler, true);
-  }, []);
+  }, [ownsWindowInput]);
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -961,6 +964,7 @@ function RightPanelTab(
 }
 
 export function RightPanelTabs(props: RightPanelTabsProps) {
+  const ownsWindowInput = useOwnsChatWindowInput();
   const ownsDesktopTitleBar = isElectron && props.mode === "inline";
   const browserProfiles = useBrowserDefaults().profiles;
   const { resolvedTheme } = useTheme();
@@ -993,10 +997,10 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
     }
   });
   useEffect(() => {
-    if (props.open === false) return;
+    if (props.open === false || !ownsWindowInput) return;
     document.addEventListener("keydown", onNewSurfaceKeyDown, true);
     return () => document.removeEventListener("keydown", onNewSurfaceKeyDown, true);
-  }, [props.open]);
+  }, [ownsWindowInput, props.open]);
 
   const updateTabScrollState = () => {
     const viewport = tabScrollViewport(tabListRef.current);

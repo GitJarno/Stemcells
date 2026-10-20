@@ -62,6 +62,7 @@ import { useRightPanelStore } from "~/rightPanelStore";
 
 import { previewBridge } from "./previewBridge";
 import { subscribePreviewAction } from "./previewActionBus";
+import { useOwnsChatWindowInput } from "../chat/chatWindowInput";
 import { closePreviewSession } from "./closePreviewSession";
 import { openPreviewSession } from "./openPreviewSession";
 import { showPreviewPopup } from "./showPreviewPopup";
@@ -152,6 +153,7 @@ export function PreviewView({
   visible,
   onSendAnnotation,
 }: Props) {
+  const ownsWindowInput = useOwnsChatWindowInput();
   const [focusUrlNonce, setFocusUrlNonce] = useState<number | undefined>(undefined);
   const [pickActive, setPickActive] = useState(false);
   const canSendAnnotation =
@@ -905,9 +907,9 @@ export function PreviewView({
     },
   );
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || !ownsWindowInput) return;
     return subscribePreviewAction((action) => onPreviewAction(action));
-  }, [visible]);
+  }, [ownsWindowInput, visible]);
 
   return (
     <div
