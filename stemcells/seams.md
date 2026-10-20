@@ -8,7 +8,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | File | Change | Why |
 |---|---|---|
 | `CLAUDE.md` | Adds `@stemcells/AGENTS.md` | Agents read our house rules beside upstream's |
-| `.github/workflows/stemcells.yml` | New: drift, type check, our tests | Upstream's workflows run on runners and secrets this repo doesn't have, so they're switched off in the repository settings (which survive merges), and this one runs instead |
+| `.github/workflows/stemcells.yml` | New: drift, type check, our tests; on `main`, switches off any upstream workflow a merge brought in | Upstream's workflows run on runners and secrets this repo doesn't have, so they stay switched off in the repository settings (which survive merges), and this one runs instead |
+| `.github/workflows/stemcells-sync.yml` | New: nightly `stemcells/scripts/sync-upstream --check`; opens an issue when it needs a person | Takes upstream's work every night (`stemcells/docs/fork.md`, rule 6) |
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
 | `apps/desktop/src/app/DesktopEnvironment.ts` | `APP_BASE_NAME` is "Stemcells" | Window and menu name, keychain entry |
 | `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app` | Own bundle id |
