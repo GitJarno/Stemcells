@@ -1,0 +1,61 @@
+name: Stemcells upstream sync
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: stemcells-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/pingdotgg/t3code.git
+          git config user.name "stemcells-sync"
+          git config user.email "stemcells-sync@users.noreply.github.com"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Merge upstream's newest green commit
+        id: sync
+        run: |
+          set +e
+          stemcells/scripts/sync-upstream --check > sync.log 2>&1
+          code=$?
+          cat sync.log
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report a sync that needs a person
+        if: steps.sync.outputs.code != '0'
+        run: |
+          title="Upstream sync needs a hand"
+          if [ -z "$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')" ]; then
+            {
+              echo "The nightly merge of upstream stopped (exit ${{ steps.sync.outputs.code }}: 3 = conflict, 4 = a check failed)."
+              echo
+              echo '```'
+              tail -60 sync.log
+              echo '```'
+              echo
+              echo "Resolve it with \`stemcells/scripts/sync-upstream\` locally: upstream's logic wins and our seam goes back on top (stemcells/docs/fork.md)."
+            } > issue.md
+            gh issue create --title "$title" --body-file issue.md
+          fi
+          exit 1

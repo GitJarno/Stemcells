@@ -1,27 +1,67 @@
 #!/usr/bin/env bash
-# Merges upstream/main into a sync branch and opens a pull request.
-# Exits 3 on a conflict, leaving the merge in progress for whoever resolves it.
+# Merges upstream's newest green commit into a sync branch and opens a
+# pull request. With --check it first runs drift, the type checks and our
+# tests, so a pull request it opens has already passed them.
+#
+# Exits 0 when done or already up to date, 3 on a merge conflict (the
+# conflicted files are printed), 4 when the merged tree fails a check.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-git fetch -q upstream main
-git fetch -q origin main
-behind=$(git rev-list --count origin/main..upstream/main)
-if [ "$behind" -eq 0 ]; then
-  echo "sync: already up to date with upstream"
+check=0
+[ "${1:-}" = "--check" ] && check=1
+
+git fetch -q --no-tags upstream main
+git fetch -q --no-tags origin main
+
+# Upstream's tip can be red. Take the newest of its last 30 commits on
+# which upstream's own CI workflow passed, so a sync never imports a break
+# upstream is mid-fix on. (Other check runs on a commit are previews, bots
+# and optional jobs; their failures say nothing about the code.)
+target=""
+for sha in $(git rev-list --first-parent -n 30 upstream/main); do
+  ci=$(gh api "repos/pingdotgg/t3code/actions/runs?head_sha=$sha&event=push&per_page=50" \
+    --jq '[.workflow_runs[] | select(.path == ".github/workflows/ci.yml")] | first | .conclusion // ""' \
+    2>/dev/null || echo "")
+  if [ "$ci" = "success" ]; then
+    target=$sha
+    break
+  fi
+done
+if [ -z "$target" ]; then
+  echo "sync: upstream CI passed on none of its last 30 commits; nothing to take"
   exit 0
 fi
 
-branch="sync/upstream-$(date +%Y-%m-%d)"
-git switch -q -c "$branch" origin/main
-if ! git merge --no-edit -m "Merge upstream $(git rev-parse --short upstream/main)" upstream/main; then
+behind=$(git rev-list --count "origin/main..$target")
+if [ "$behind" -eq 0 ]; then
+  echo "sync: already has upstream's newest green commit ($(git rev-parse --short "$target"))"
+  exit 0
+fi
+
+short=$(git rev-parse --short "$target")
+branch="sync/upstream-$short"
+git switch -q -C "$branch" origin/main
+if ! git merge -q --no-edit -m "Take upstream at $short" "$target"; then
   echo "sync: conflicts in:"
   git diff --name-only --diff-filter=U
   exit 3
 fi
 
-stemcells/scripts/drift
-git push -q -u origin "$branch"
-gh pr create --base main --head "$branch" \
-  --title "Take $behind upstream commits" \
-  --body "Merges upstream/main at $(git rev-parse --short upstream/main) ($behind commits)."
+if [ "$check" = 1 ]; then
+  pnpm install --frozen-lockfile
+  if ! { stemcells/scripts/drift &&
+    pnpm --filter @t3tools/web typecheck &&
+    pnpm --filter t3 typecheck &&
+    pnpm exec vp test run apps/web/src/stemcells apps/server/src/stemcells --passWithNoTests; }; then
+    echo "sync: the merged tree fails a check"
+    exit 4
+  fi
+fi
+
+git push -q -f -u origin "$branch"
+if ! gh pr view "$branch" >/dev/null 2>&1; then
+  gh pr create --base main --head "$branch" \
+    --title "Take upstream at $short ($behind commits)" \
+    --body "Merges upstream's newest green commit, $short ($behind commits behind). $([ "$check" = 1 ] && echo 'Drift, the type checks and the Stemcells tests passed on the merged tree.')"
+fi
