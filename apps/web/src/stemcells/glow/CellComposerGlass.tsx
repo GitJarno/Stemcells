@@ -3,6 +3,7 @@ import { use, useLayoutEffect, useRef } from "react";
 
 import { channels, groundOf, inkOf } from "../aski/stage/colour";
 import { path, SIZE } from "../cell/look";
+import { scrollThrough } from "../composer/scrollThrough";
 import { PaneCellContext } from "../tabs/paneCell";
 import { reducedMotion } from "../tokens/motion";
 import { ProviderLogo } from "../upstream/providers";
@@ -40,7 +41,9 @@ const SEND_REACH = 48;
  * Behind the composer's words and over its glass. The words keep their ink:
  * the band's strength is set by them (`light.ts`). Under reduced motion
  * nothing sweeps or drifts: the tint holds, breathes slowly and leaves on a
- * fade. Nothing outside a Cell's pane.
+ * fade. Every composer in a pane of ours wears the glass's rim and depth
+ * (`glow.css`); the light and the mark only a Cell's. Nothing outside our
+ * panes.
  */
 export function CellComposerGlass(props: { readonly provider: string }) {
   const cell = use(PaneCellContext);
@@ -58,6 +61,15 @@ export function CellComposerGlass(props: { readonly provider: string }) {
     place(root, light);
     light.configure(glow, paletteOf(root, tone), reducedMotion());
   }, [glow, tone]);
+
+  // The composer floats over the transcript: a wheel over it scrolls the
+  // chat (`scrollThrough`), in every pane of ours.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    const composer = root?.closest<HTMLElement>('[data-chat-composer-stack="true"]');
+    if (!root?.closest("[data-stemcells-pane]") || !composer) return;
+    return scrollThrough(composer);
+  }, []);
 
   const hasCell = cell !== null;
   useLayoutEffect(() => {
@@ -95,7 +107,9 @@ export function CellComposerGlass(props: { readonly provider: string }) {
     };
   }, [hasCell]);
 
-  if (!hasCell) return null;
+  // Every composer in a pane of ours wears the glass; a Cell's also wears
+  // its light and its provider's mark.
+  if (!hasCell) return <div ref={rootRef} data-stemcells-composer-glass="" aria-hidden="true" />;
   return (
     <div ref={rootRef} data-stemcells-composer-glass="" aria-hidden="true">
       <div className="glass-light">

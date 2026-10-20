@@ -42,6 +42,23 @@ describe("the composer light's contracts with upstream", () => {
     expect(body(composerSurface, "Shell")).toContain("[--chat-composer-glass-surface:");
   });
 
+  it("the plate's glass is upstream's, tuned through the properties glow.css sets", () => {
+    const shell = body(composerSurface, "Shell");
+    expect(shell).toContain('data-slot="composer-shell"');
+    expect(shell).toContain(
+      "before:bg-(--chat-composer-glass-surface)/(--glass-opacity) before:backdrop-blur-(--glass-blur) before:backdrop-saturate-(--glass-saturation)",
+    );
+    // An attached line moves the glass off the shell onto the main surface;
+    // the shadow in glow.css moves with it.
+    expect(shell).toContain("has-data-[composer-banner-surface=attached]:before:hidden");
+    expect(body(composerSurface, "Main")).toContain(
+      "group-has-data-[composer-banner-surface=attached]/composer-surface:backdrop-blur-(--glass-blur)",
+    );
+    expect(body(composerSurface, "Host")).toContain('data-slot="composer-host"');
+    // Upstream's top highlight, which the rim replaces.
+    expect(composerSurface).toContain("inset-shadow-(color:--chat-composer-highlight)");
+  });
+
   it("the send button is the last button in the composer's trailing actions", () => {
     const opens = chatComposer.indexOf('data-chat-composer-actions="right"');
     expect(opens).toBeGreaterThanOrEqual(0);
