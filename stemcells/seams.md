@@ -8,6 +8,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | File | Change | Why |
 |---|---|---|
 | `CLAUDE.md` | Adds `@stemcells/AGENTS.md` | Agents read our house rules beside upstream's |
+| `.github/README.md` | New: Stemcells' front page | GitHub shows `.github/README.md` before the root one, so upstream's `README.md` stays untouched and never conflicts |
 | `.github/workflows/stemcells.yml` | New: drift, type check, our tests; on `main`, switches off any upstream workflow a merge brought in | Upstream's workflows run on runners and secrets this repo doesn't have, so they stay switched off in the repository settings (which survive merges), and this one runs instead |
 | `.github/workflows/stemcells-sync.yml` | New: nightly `stemcells/scripts/sync-upstream --check`; opens an issue when it needs a person | Takes upstream's work every night (`stemcells/docs/fork.md`, rule 6) |
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
