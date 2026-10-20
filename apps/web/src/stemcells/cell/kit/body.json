@@ -1,0 +1,241 @@
+{
+  "about": "The Cell's body: the rig that draws it from a pose (its rest profile, half-widths by row from the base), the hero drawn at rest on a 32 × 32 grid, the miniature drawn on 13 × 14, and the faces and mouths the rig stamps. Generated; do not edit by hand.",
+  "eyes": {
+    "angry": {
+      "art": [".E..........E.", ".EE........EE.", ".EE........EE.", ".EE........EE."],
+      "attach": "eyes",
+      "hotspot": [6, 2],
+      "mini": ["E.....E", ".E...E.", ".E...E."],
+      "miniHotspot": [3, 1],
+      "z": 2
+    },
+    "calm": {
+      "art": [".EE........EE.", ".EE........EE.", ".EE........EE.", ".EE........EE."],
+      "attach": "eyes",
+      "hotspot": [6, 2],
+      "mini": ["E...E", "E...E", "E...E"],
+      "miniHotspot": [2, 1],
+      "z": 2
+    },
+    "dizzy": {
+      "art": ["E..E......E..E", ".EE........EE.", ".EE........EE.", "E..E......E..E"],
+      "attach": "eyes",
+      "hotspot": [6, 2],
+      "mini": ["E.E...E.E", ".E.....E.", "E.E...E.E"],
+      "miniHotspot": [4, 1],
+      "z": 2
+    },
+    "drowsy": {
+      "art": ["EEEE......EEEE", ".EE........EE.", ".EE........EE."],
+      "attach": "eyes",
+      "hotspot": [6, 1],
+      "mini": ["E...E", "E...E"],
+      "miniHotspot": [2, 0],
+      "z": 2
+    },
+    "focused": {
+      "art": ["..E........E..", "..E........E..", "..E........E..", "..E........E.."],
+      "attach": "eyes",
+      "hotspot": [6, 2],
+      "mini": ["E...E", "E...E", "E...E"],
+      "miniHotspot": [2, 1],
+      "z": 2
+    },
+    "happy": {
+      "art": [".EE........EE.", "E..E......E..E", "E..E......E..E"],
+      "attach": "eyes",
+      "hotspot": [6, 1],
+      "mini": [".E.....E.", "E.E...E.E"],
+      "miniHotspot": [4, 0],
+      "z": 2
+    },
+    "open": {
+      "art": [".EE........EE.", ".EE........EE.", "..............", ".EE........EE."],
+      "attach": "eyes",
+      "hotspot": [6, 2],
+      "mini": ["EE...EE", "EE...EE", "EE...EE"],
+      "miniHotspot": [3, 1],
+      "z": 2
+    },
+    "sad": {
+      "art": ["..E........E..", ".EE........EE.", ".EE........EE.", ".EE........EE."],
+      "attach": "eyes",
+      "hotspot": [6, 2],
+      "mini": [".E...E.", "E.....E", "E.....E"],
+      "miniHotspot": [3, 1],
+      "z": 2
+    },
+    "serene": {
+      "art": ["EEEE......EEEE"],
+      "attach": "eyes",
+      "hotspot": [6, 0],
+      "mini": ["EE...EE"],
+      "miniHotspot": [3, 0],
+      "z": 2
+    },
+    "sleepy": {
+      "art": ["EEEE......EEEE"],
+      "attach": "eyes",
+      "hotspot": [6, -1],
+      "mini": ["EE...EE"],
+      "miniHotspot": [3, -1],
+      "z": 2
+    },
+    "squeeze": {
+      "art": ["EE..........EE", "..EE......EE..", "EE..........EE"],
+      "attach": "eyes",
+      "hotspot": [6, 1],
+      "mini": ["E.......E", ".E.....E.", "E.......E"],
+      "miniHotspot": [4, 1],
+      "z": 2
+    },
+    "wide": {
+      "art": [
+        ".EE........EE.",
+        ".EE........EE.",
+        ".EE........EE.",
+        ".EE........EE.",
+        ".EE........EE."
+      ],
+      "attach": "eyes",
+      "hotspot": [6, 3],
+      "mini": ["E...E", "E...E", "E...E"],
+      "miniHotspot": [2, 1],
+      "z": 2
+    }
+  },
+  "hero": {
+    "anchors": {
+      "back": [15, 20],
+      "eyes": [15, 21],
+      "ground": [15, 30],
+      "handL": [3, 24],
+      "handR": [28, 24],
+      "headTop": [15, 14],
+      "hold": [15, 27],
+      "mouth": [15, 24],
+      "torso": [15, 26]
+    },
+    "rows": [
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "................................",
+      "...........BBBBBBBBbb...........",
+      "........BBBBBBBBBBBBBBbb........",
+      ".......BLLBBBBBBBBBBBBBbb.......",
+      "......BBLBBBBBBBBBBBBBBBbb......",
+      "......BBBBBBBBBBBBBBBBBBbb......",
+      ".....BBBBBBBBBBBBBBBBBBBBbb.....",
+      ".....BBBBBBBBBBBBBBBBBBBBbb.....",
+      ".....BBBBBBBBBBBBBBBBBBBBbb.....",
+      "....BBBBBBBBBBBBBBBBBBBBBBbb....",
+      "....BBBBBBBBBBBBBBBBBBBBBBbb....",
+      "....BBBBBBBBBBBBBBBBBBBBBBbb....",
+      "...BBBBBBBBBBBBBBBBBBBBBBBBbb...",
+      "...BBBBBBBBBBBBBBBBBBBBBBBBbb...",
+      "...BBBBBBBBBBBBBBBBBBBBBBBBbb...",
+      "....bbbbbbbbbbbbbbbbbbbbbbbb....",
+      "......bbbbbbbbbbbbbbbbbbbb......",
+      "................................",
+      "................................"
+    ]
+  },
+  "mini": {
+    "anchors": {
+      "back": [6, 10],
+      "eyes": [6, 9],
+      "ground": [6, 14],
+      "handL": [0, 11],
+      "handR": [12, 11],
+      "headTop": [6, 6],
+      "hold": [6, 12],
+      "mouth": [6, 11],
+      "torso": [6, 11]
+    },
+    "rows": [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "....BBBBb....",
+      "..BBBBBBBBb..",
+      ".BBBBBBBBBbb.",
+      ".BBBBBBBBBbb.",
+      "BBBBBBBBBBBbb",
+      "BBBBBBBBBBBbb",
+      "bbbbbbbbbbbbb",
+      ".bbbbbbbbbbb."
+    ]
+  },
+  "mouths": {
+    "grin": {
+      "art": ["KKKK", ".KK."],
+      "attach": "mouth",
+      "hotspot": [1, 0],
+      "mini": ["KK"],
+      "miniHotspot": [0, 0],
+      "z": 2
+    },
+    "open": {
+      "art": [".KK.", "KRRK", ".KK."],
+      "attach": "mouth",
+      "hotspot": [1, 0],
+      "mini": ["K"],
+      "miniHotspot": [0, 0],
+      "z": 2
+    },
+    "small": {
+      "art": ["KK", "KK"],
+      "attach": "mouth",
+      "hotspot": [0, 0],
+      "mini": ["K"],
+      "miniHotspot": [0, 0],
+      "z": 2
+    },
+    "smile": {
+      "art": ["K..K", ".KK."],
+      "attach": "mouth",
+      "hotspot": [1, 0],
+      "mini": ["KK"],
+      "miniHotspot": [0, 0],
+      "z": 2
+    },
+    "wavy": {
+      "art": [".K.K", "K.K."],
+      "attach": "mouth",
+      "hotspot": [1, 0],
+      "mini": ["KK"],
+      "miniHotspot": [0, 0],
+      "z": 2
+    },
+    "whistle": {
+      "art": [".RR.", "RrrR", ".RR."],
+      "attach": "mouth",
+      "hotspot": [1, 0],
+      "mini": ["R"],
+      "miniHotspot": [0, 0],
+      "z": 2
+    }
+  },
+  "rig": {
+    "profile": [10, 12, 13, 13, 13, 12, 12, 12, 11, 11, 11, 10, 10, 9, 8, 5],
+    "restBase": 29,
+    "restRows": 16,
+    "restX": 15.5,
+    "shadeRows": 2,
+    "shadow": "-"
+  }
+}

@@ -1,0 +1,3993 @@
+{
+  "about": "Every move a Cell plays, by scene: its rate, which way it faces, and per frame the rig pose and what the frame adds (`layers`, indexes into `layers`; `swaps`, a worn piece for its posed variant). `held` is the tool a scene that `holds` one holds (none: empty hands); `pieces` says how worn animated pieces run (loop, once, still). `cheers` are the curated looks' own cheers, played in place of `happy`. Generated; do not edit by hand.",
+  "cheers": {
+    "alien": {
+      "facing": "right",
+      "fps": 8,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "layers": [3],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [3, 4, 5],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [3, 6],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 7],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 8],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 7],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 8],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 7],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 8],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 7],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 8],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [3, 6],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [3, 4],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [3],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "dragon": {
+      "facing": "right",
+      "fps": 7,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.6071428571428571,
+                "dx": 2,
+                "dy": 0,
+                "side": -1
+              },
+              {
+                "at": 0.6071428571428571,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "sy": 0.9375
+          }
+        },
+        {
+          "layers": [9],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": -1
+              },
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [10, 11],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -4,
+                "side": -1
+              },
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [12, 11],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -4,
+                "side": -1
+              },
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [13],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": -1
+              },
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.6071428571428571,
+                "dx": 2,
+                "dy": 0,
+                "side": -1
+              },
+              {
+                "at": 0.6071428571428571,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "knight": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [0, 1],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [0, 2],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -2,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [0],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    }
+  },
+  "layers": [
+    {
+      "art": [
+        "..p..",
+        "..pq.",
+        "..pq.",
+        "..pq.",
+        "..pq.",
+        "..pq.",
+        "..pq.",
+        "YYYYY",
+        "..n..",
+        ".....",
+        "..Y.."
+      ],
+      "attach": "handR",
+      "hotspot": [2, 9],
+      "mini": [".p", ".p", "YY", "..", ".Y"],
+      "miniHotspot": [1, 3],
+      "z": 4
+    },
+    {
+      "art": [".W.", "WWW", ".W."],
+      "attach": "handR",
+      "hotspot": [1, 10],
+      "mini": ["W"],
+      "miniHotspot": [0, 4],
+      "z": 5
+    },
+    {
+      "art": ["W.W", ".W.", "W.W"],
+      "attach": "handR",
+      "hotspot": [1, 10],
+      "mini": ["W"],
+      "miniHotspot": [0, 4],
+      "z": 5
+    },
+    {
+      "art": ["p", "D", ".", "D"],
+      "attach": "handR",
+      "hotspot": [0, 2],
+      "mini": ["p"],
+      "miniHotspot": [0, 1],
+      "z": 4
+    },
+    {
+      "art": [".Q.", "QWQ", "QWQ"],
+      "attach": "handR",
+      "hotspot": [1, 5],
+      "mini": ["W", "Q"],
+      "miniHotspot": [0, 3],
+      "z": 5
+    },
+    {
+      "art": ["y.y", ".*.", "y.y"],
+      "attach": "handR",
+      "hotspot": [1, 4],
+      "mini": ["*"],
+      "miniHotspot": [0, 2],
+      "z": 5
+    },
+    {
+      "art": [".Q.", "QWQ", "QWQ", "QWQ", "QWQ", "QWQ"],
+      "attach": "handR",
+      "hotspot": [1, 8],
+      "mini": ["W", "Q", "Q"],
+      "miniHotspot": [0, 4],
+      "z": 5
+    },
+    {
+      "art": [".Q.", "QWQ", "QWQ", "QWQ", "QWQ", "QWQ", "QWQ", "QWQ", "QWQ", "QWQ"],
+      "attach": "handR",
+      "hotspot": [1, 12],
+      "mini": ["W", "Q", "Q", "Q"],
+      "miniHotspot": [0, 5],
+      "z": 5
+    },
+    {
+      "art": [".x.", "xWx", "xWx", "xWx", "xWx", "xWx", "xWx", "xWx", "xWx", "xWx"],
+      "attach": "handR",
+      "hotspot": [1, 12],
+      "mini": ["W", "x", "x", "x"],
+      "miniHotspot": [0, 5],
+      "z": 5
+    },
+    {
+      "art": [".Y", "RY"],
+      "attach": "headTop",
+      "hotspot": [-9, 5],
+      "mini": ["R"],
+      "miniHotspot": [-5, 2],
+      "z": 5
+    },
+    {
+      "art": [".*.", "*W*", ".*."],
+      "attach": "handL",
+      "hotspot": [1, 5],
+      "mini": ["*"],
+      "miniHotspot": [0, 2],
+      "z": 5
+    },
+    {
+      "art": ["...RR", "..RYY", ".RWY.", "RYY..", "RY..."],
+      "attach": "headTop",
+      "hotspot": [-9, 8],
+      "mini": [".Y", "RY"],
+      "miniHotspot": [-5, 3],
+      "z": 5
+    },
+    {
+      "art": [".*.", "*W*", ".*."],
+      "attach": "handR",
+      "hotspot": [1, 5],
+      "mini": ["*"],
+      "miniHotspot": [0, 2],
+      "z": 5
+    },
+    {
+      "art": [".uu", "uuu", ".u."],
+      "attach": "headTop",
+      "hotspot": [-11, 9],
+      "mini": ["u"],
+      "miniHotspot": [-6, 3],
+      "z": 5
+    },
+    {
+      "art": ["zzz", "..z", ".z.", "zzz"],
+      "attach": "headTop",
+      "hotspot": [-9, -2],
+      "mini": ["zz", ".z", "zz"],
+      "miniHotspot": [-4, 0],
+      "z": 5
+    },
+    {
+      "art": ["zzz", "..z", ".z.", "zzz"],
+      "attach": "headTop",
+      "hotspot": [-10, -1],
+      "mini": ["zz", ".z", "zz"],
+      "miniHotspot": [-4, 0],
+      "z": 5
+    },
+    {
+      "art": ["zzz", "..z", ".z.", "zzz"],
+      "attach": "headTop",
+      "hotspot": [-11, 0],
+      "mini": ["zz", ".z", "zz"],
+      "miniHotspot": [-5, 1],
+      "z": 5
+    },
+    {
+      "art": ["zzz", "..z", ".z.", "zzz"],
+      "attach": "headTop",
+      "hotspot": [-12, 1],
+      "mini": ["zz", ".z", "zz"],
+      "miniHotspot": [-5, 1],
+      "z": 5
+    },
+    {
+      "art": ["!!", "!!", "!!", "..", "!!"],
+      "attach": "headTop",
+      "hotspot": [-12, 0],
+      "mini": ["!", "!", ".", "!"],
+      "miniHotspot": [-6, 0],
+      "z": 5
+    },
+    {
+      "art": [".WWW", ".WWK", ".W.K", ".W.K", ".W.K", "WW.K", "WW.."],
+      "attach": "ground",
+      "hotspot": [-11, 28],
+      "mini": [".WW", ".WK", ".WK", "WWK", "WW."],
+      "miniHotspot": [-4, 12],
+      "z": 5
+    },
+    {
+      "art": [".WWW", ".WWK", ".W.K", ".W.K", ".W.K", "WW.K", "WW.."],
+      "attach": "ground",
+      "hotspot": [-11, 29],
+      "mini": [".WW", ".WK", ".WK", "WWK", "WW."],
+      "miniHotspot": [-4, 13],
+      "z": 5
+    },
+    {
+      "art": [".WWW", ".WWK", ".W.K", ".W.K", ".W.K", "WW.K", "WW.."],
+      "attach": "ground",
+      "hotspot": [-11, 30],
+      "mini": [".WW", ".WK", ".WK", "WWK", "WW."],
+      "miniHotspot": [-4, 14],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [5, 0],
+      "mini": ["B"],
+      "miniHotspot": [3, -1],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [-3, 0],
+      "mini": ["B"],
+      "miniHotspot": [-3, -1],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [5, 2],
+      "mini": ["B"],
+      "miniHotspot": [3, 0],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [-3, 2],
+      "mini": ["B"],
+      "miniHotspot": [-3, 0],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [5, 0],
+      "mini": ["B"],
+      "miniHotspot": [3, 0],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [-1, 2],
+      "mini": ["BB"],
+      "miniHotspot": [-1, 1],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [-1, 0],
+      "mini": ["BB"],
+      "miniHotspot": [-1, 0],
+      "z": 5
+    },
+    {
+      "art": ["G....", ".....", "...G.", ".....", ".G..."],
+      "attach": "handR",
+      "hotspot": [5, 10],
+      "mini": ["G..", "..G", ".G."],
+      "miniHotspot": [4, 4],
+      "z": 5
+    },
+    {
+      "art": ["..G..", ".....", "G....", ".....", "....G"],
+      "attach": "handR",
+      "hotspot": [5, 13],
+      "mini": [".G.", "...", "G.G"],
+      "miniHotspot": [4, 5],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [6, 1],
+      "mini": ["B"],
+      "miniHotspot": [3, 1],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [-1, 2],
+      "mini": ["B"],
+      "miniHotspot": [-1, 1],
+      "z": 5
+    },
+    {
+      "art": ["W"],
+      "attach": "hold",
+      "hotspot": [0, 0],
+      "mini": [],
+      "miniHotspot": [0, 0],
+      "z": 5
+    },
+    {
+      "art": ["BBB", "bbb"],
+      "attach": "hold",
+      "hotspot": [1, 2],
+      "mini": ["B"],
+      "miniHotspot": [0, 1],
+      "z": 5
+    },
+    {
+      "art": ["W"],
+      "attach": "hold",
+      "hotspot": [2, 0],
+      "mini": [],
+      "miniHotspot": [0, 0],
+      "z": 5
+    },
+    {
+      "art": ["..y..", ".G.G.", "y.*.y", ".G.G.", "..y.."],
+      "attach": "handR",
+      "hotspot": [1, 7],
+      "mini": [".y.", "y*y", ".y."],
+      "miniHotspot": [2, 4],
+      "z": 5
+    },
+    {
+      "art": ["y...y", ".....", "..*..", ".....", "y...y"],
+      "attach": "handR",
+      "hotspot": [1, 8],
+      "mini": ["y.y", ".*.", "y.y"],
+      "miniHotspot": [2, 5],
+      "z": 5
+    },
+    {
+      "art": ["..W..", "W.W.W", ".YYY.", "YYWYY", "YYYYY", ".YYY.", ".ppp.", ".DDD."],
+      "attach": "headTop",
+      "hotspot": [-8, 9],
+      "mini": [".Y.", "YYY", ".p."],
+      "miniHotspot": [-4, 3],
+      "z": 5
+    },
+    {
+      "art": [
+        "..YYYYY...",
+        ".YSSSSSY..",
+        "YSSEEESSY.",
+        "YSSEEESSY.",
+        "YSSEEESSY.",
+        "YSSSSSSSY.",
+        ".YSSSSSYn.",
+        "..YYYYYnn.",
+        ".......nn.",
+        "........nn"
+      ],
+      "attach": "eyes",
+      "hotspot": [-1, 3],
+      "mini": [".YYY.", "YSESY", "YSESY", ".YYYn", "....n"],
+      "miniHotspot": [-1, 2],
+      "z": 3
+    },
+    {
+      "art": [
+        "..YYYYY...",
+        ".YSSSSSY..",
+        "YSSEEESSY.",
+        "YSSEEESSY.",
+        "YSSEEESSY.",
+        "YSSSSSSSY.",
+        ".YSSSSSYn.",
+        "..YYYYYnn.",
+        ".......nn.",
+        "........nn"
+      ],
+      "attach": "eyes",
+      "hotspot": [-1, 2],
+      "mini": [".YYY.", "YSESY", "YSESY", ".YYYn", "....n"],
+      "miniHotspot": [-1, 2],
+      "z": 3
+    },
+    {
+      "art": [
+        "..YYYYY...",
+        ".YSSSSSY..",
+        "YSSEEESSY.",
+        "YSSEEESSY.",
+        "YSSEEESSY.",
+        "YSSSSSSSY.",
+        ".YSSSSSYn.",
+        "..YYYYYnn.",
+        ".......nn.",
+        "........nn"
+      ],
+      "attach": "eyes",
+      "hotspot": [-1, 4],
+      "mini": [".YYY.", "YSESY", "YSESY", ".YYYn", "....n"],
+      "miniHotspot": [-1, 2],
+      "z": 3
+    },
+    {
+      "art": [
+        "..nn...",
+        "..pp...",
+        "..pp...",
+        ".pAAp..",
+        "pAAAAp.",
+        "pAAWAp.",
+        "pAAAAp.",
+        ".pppp.."
+      ],
+      "attach": "handR",
+      "hotspot": [2, 8],
+      "mini": [".n.", ".p.", "pAp", "pAp"],
+      "miniHotspot": [2, 4],
+      "z": 4
+    },
+    {
+      "art": ["..W.", "....", "...W", "...."],
+      "attach": "handR",
+      "hotspot": [0, 12],
+      "mini": [".", "W"],
+      "miniHotspot": [0, 6],
+      "z": 5
+    },
+    {
+      "art": [".W..", "..W.", "....", "...."],
+      "attach": "handR",
+      "hotspot": [0, 12],
+      "mini": ["W"],
+      "miniHotspot": [0, 6],
+      "z": 5
+    },
+    {
+      "art": ["....", ".W..", "....", "..W."],
+      "attach": "handR",
+      "hotspot": [0, 12],
+      "mini": [".", "W"],
+      "miniHotspot": [0, 6],
+      "z": 5
+    },
+    {
+      "art": ["....", "....", "..W.", "...."],
+      "attach": "handR",
+      "hotspot": [0, 12],
+      "mini": ["W"],
+      "miniHotspot": [0, 6],
+      "z": 5
+    },
+    {
+      "art": ["DDDDDD", "DggggD", "DDDDDD", "..nn..", "..nn..", "..nn.."],
+      "attach": "handR",
+      "hotspot": [2, 5],
+      "mini": ["DDD", ".n."],
+      "miniHotspot": [2, 1],
+      "z": 4
+    },
+    {
+      "art": ["..nn..", "..nn..", "DDDDDD", "DggggD", "DDDDDD"],
+      "attach": "handR",
+      "hotspot": [2, 0],
+      "mini": [".n.", "DDD"],
+      "miniHotspot": [2, 0],
+      "z": 4
+    },
+    {
+      "art": ["Y.....Y", ".W...W.", "......."],
+      "attach": "handR",
+      "hotspot": [3, -5],
+      "mini": ["Y.Y"],
+      "miniHotspot": [2, -3],
+      "z": 5
+    },
+    {
+      "art": ["W......", "WWW....", "WWWWWW.", ".WWWW..", ".WW....", ".W....."],
+      "attach": "handR",
+      "hotspot": [3, 5],
+      "mini": ["W..", "WWW"],
+      "miniHotspot": [2, 1],
+      "z": 4
+    },
+    {
+      "art": ["....W..", "..WWWW.", "WWWWWWW", "..WWW..", "...W..."],
+      "attach": "headTop",
+      "hotspot": [-6, 7],
+      "mini": [".W.", "WWW"],
+      "miniHotspot": [-2, 2],
+      "z": 5
+    },
+    {
+      "art": ["....W..", "..WWWW.", "WWWWWWW", "..WWW..", "...W..."],
+      "attach": "headTop",
+      "hotspot": [-9, 9],
+      "mini": [".W.", "WWW"],
+      "miniHotspot": [-4, 3],
+      "z": 5
+    },
+    {
+      "art": ["nnnnn", "pYYYp", ".pYp.", "..p..", ".p.p.", "pYYYp", "nnnnn"],
+      "attach": "handR",
+      "hotspot": [2, 7],
+      "mini": ["nnn", ".Y.", "nnn"],
+      "miniHotspot": [2, 2],
+      "z": 4
+    },
+    {
+      "art": ["nnnnn", "p.Y.p", ".pYp.", "..p..", ".pYp.", "pYYYp", "nnnnn"],
+      "attach": "handR",
+      "hotspot": [2, 7],
+      "mini": ["nnn", ".Y.", "nnn"],
+      "miniHotspot": [2, 2],
+      "z": 4
+    },
+    {
+      "art": ["n.....n", "npp.ppn", "nYYpYYn", "npp.ppn", "n.....n"],
+      "attach": "handR",
+      "hotspot": [3, 6],
+      "mini": ["n.n", "nYn", "n.n"],
+      "miniHotspot": [2, 2],
+      "z": 4
+    },
+    {
+      "art": [
+        "..........nWWS",
+        "..........nYYW",
+        ".......WWWnYYS",
+        "......nYYYnYYS",
+        "...YYYnYYYnJJS",
+        "nnnYYYnJJJn...",
+        "nknJJJn.......",
+        "nnn..........."
+      ],
+      "attach": "eyes",
+      "hotspot": [-3, 5],
+      "mini": ["...YS", "..YYS", "nYY..", "n...."],
+      "miniHotspot": [-2, 2],
+      "z": 3
+    },
+    {
+      "art": [
+        "..........nWWS",
+        "..........nYYW",
+        ".......WWWnYYS",
+        "......nYYYnYYS",
+        "...YYYnYYYnJJS",
+        "nnnYYYnJJJn...",
+        "nknJJJn.......",
+        "nnn..........."
+      ],
+      "attach": "eyes",
+      "hotspot": [-3, 6],
+      "mini": ["...YS", "..YYS", "nYY..", "n...."],
+      "miniHotspot": [-2, 3],
+      "z": 3
+    },
+    {
+      "art": [
+        "..........nWWS",
+        "..........nYYW",
+        ".......WWWnYYS",
+        "......nYYYnYYS",
+        "...YYYnYYYnJJS",
+        "nnnYYYnJJJn...",
+        "nknJJJn.......",
+        "nnn..........."
+      ],
+      "attach": "eyes",
+      "hotspot": [-3, 4],
+      "mini": ["...YS", "..YYS", "nYY..", "n...."],
+      "miniHotspot": [-2, 1],
+      "z": 3
+    },
+    {
+      "art": [".WWW.", "W...W", "...W.", "..W..", ".....", "..W.."],
+      "attach": "headTop",
+      "hotspot": [-9, 9],
+      "mini": ["WW.", "..W", ".W.", "...", ".W."],
+      "miniHotspot": [-4, 3],
+      "z": 5
+    }
+  ],
+  "scenes": {
+    "alert": {
+      "facing": "right",
+      "fps": 4,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "open"
+          }
+        },
+        {
+          "layers": [18],
+          "pose": {
+            "eyes": "open",
+            "sy": 1.1000000000000001
+          }
+        },
+        {
+          "layers": [18],
+          "pose": {
+            "eyes": "open",
+            "sy": 1.1000000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 1.05
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 0.9375
+          }
+        }
+      ],
+      "pieces": "loop"
+    },
+    "asleep": {
+      "facing": "right",
+      "fps": 2,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.59999999999999998,
+            "sy": 0.875
+          }
+        },
+        {
+          "layers": [14],
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.59999999999999998,
+            "sy": 0.875
+          }
+        },
+        {
+          "layers": [15],
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.59999999999999998,
+            "sy": 0.875
+          }
+        },
+        {
+          "layers": [16],
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.59999999999999998,
+            "sy": 0.875
+          }
+        },
+        {
+          "layers": [17],
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "spread": 0.80000000000000004,
+            "sy": 0.8125
+          }
+        }
+      ],
+      "pieces": "loop"
+    },
+    "browsing/0": {
+      "facing": "right",
+      "fps": 4,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "layers": [56],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [56],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [57],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [57],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [56],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [56],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [58],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [56],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "building/0": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "layers": [47],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 4,
+                "dy": -3,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [47],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 4,
+                "dy": -3,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [48, 49],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [48],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, 1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "layers": [47],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 4,
+                "dy": -3,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [47],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 4,
+                "dy": -3,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [48, 49],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [48],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, 1]
+          }
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/0": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [24, 23],
+          "pose": {}
+        },
+        {
+          "layers": [24, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 25],
+          "pose": {}
+        },
+        {
+          "layers": [22, 25],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [24, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 25],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        }
+      ],
+      "held": "laptop",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/1": {
+      "facing": "right",
+      "fps": 4,
+      "frames": [
+        {
+          "layers": [26, 27],
+          "pose": {}
+        },
+        {
+          "layers": [26, 27],
+          "pose": {}
+        },
+        {
+          "layers": [26, 28],
+          "pose": {}
+        },
+        {
+          "layers": [26, 28],
+          "pose": {}
+        },
+        {
+          "layers": [26, 27],
+          "pose": {}
+        },
+        {
+          "layers": [26, 28],
+          "pose": {}
+        },
+        {
+          "layers": [26, 27],
+          "pose": {}
+        },
+        {
+          "layers": [26, 28],
+          "pose": {}
+        }
+      ],
+      "held": "guitar",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/2": {
+      "facing": "right",
+      "fps": 2,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "held": "book",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/3": {
+      "facing": "right",
+      "fps": 5,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -2,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -1,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -1,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -2,
+                "side": 1
+              }
+            ]
+          }
+        }
+      ],
+      "held": "brush",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/4": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [20],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [20],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [20],
+          "pose": {
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [20],
+          "pose": {
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [21],
+          "pose": {
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [21],
+          "pose": {
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [21],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [21],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "mouth": "open"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        }
+      ],
+      "held": "mic",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/5": {
+      "facing": "right",
+      "fps": 5,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -2,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": -1,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -1,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -2,
+                "side": 1
+              }
+            ]
+          }
+        }
+      ],
+      "held": "wand",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/6": {
+      "facing": "right",
+      "fps": 5,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "layers": [29],
+          "pose": {}
+        },
+        {
+          "layers": [29],
+          "pose": {}
+        },
+        {
+          "layers": [30],
+          "pose": {}
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.5,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        }
+      ],
+      "held": "pan",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/7": {
+      "facing": "right",
+      "fps": 8,
+      "frames": [
+        {
+          "layers": [31, 32, 33],
+          "pose": {}
+        },
+        {
+          "layers": [31, 34, 35],
+          "pose": {}
+        },
+        {
+          "layers": [31, 34, 35],
+          "pose": {}
+        },
+        {
+          "layers": [31, 32, 33],
+          "pose": {}
+        },
+        {
+          "layers": [31, 32, 33],
+          "pose": {}
+        },
+        {
+          "layers": [31, 34, 35],
+          "pose": {}
+        },
+        {
+          "layers": [31, 32, 33],
+          "pose": {}
+        },
+        {
+          "layers": [31, 32, 33],
+          "pose": {}
+        }
+      ],
+      "held": "decks",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "busy/8": {
+      "facing": "right",
+      "fps": 8,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "layers": [36],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [36],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [37],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "layers": [37],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "pieces": "loop"
+    },
+    "busy/9": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.65000000000000002,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              }
+            ],
+            "eyes": "happy",
+            "hatDX": 1,
+            "lean": -3,
+            "look": [-1, 0],
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.65000000000000002,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              }
+            ],
+            "eyes": "happy",
+            "lean": -2,
+            "look": [-1, 0],
+            "sy": 0.90000000000000002
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.65000000000000002,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              }
+            ],
+            "eyes": "happy",
+            "hatDX": -1,
+            "lean": 3,
+            "look": [1, 0],
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.65000000000000002,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              }
+            ],
+            "eyes": "happy",
+            "lean": 2,
+            "look": [1, 0],
+            "sy": 0.90000000000000002
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.93999999999999995
+          }
+        }
+      ],
+      "pieces": "loop"
+    },
+    "falling": {
+      "facing": "right",
+      "fps": 7,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              },
+              {
+                "at": 0.45000000000000001,
+                "dx": 4,
+                "dy": 2,
+                "side": 1
+              }
+            ],
+            "eyes": "squeeze",
+            "mouth": "open",
+            "sy": 1.1000000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              },
+              {
+                "at": 0.45000000000000001,
+                "dx": 4,
+                "dy": 2,
+                "side": -1
+              }
+            ],
+            "eyes": "squeeze",
+            "mouth": "open",
+            "sy": 1.1000000000000001
+          }
+        }
+      ],
+      "pieces": "loop"
+    },
+    "happy": {
+      "facing": "right",
+      "fps": 12,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sx": 1.1323242051298517,
+            "sy": 0.84730339233123086
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              },
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              }
+            ],
+            "base": 27,
+            "eyes": "happy",
+            "mouth": "grin",
+            "sx": 1.0633135420298938,
+            "sy": 0.92140706951884721
+          }
+        },
+        {
+          "layers": [10],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              },
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              }
+            ],
+            "base": 26,
+            "eyes": "happy",
+            "mouth": "grin",
+            "sx": 0.91378296599651487,
+            "sy": 1.127740704207369
+          }
+        },
+        {
+          "layers": [12],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              },
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              }
+            ],
+            "base": 28,
+            "eyes": "happy",
+            "mouth": "grin",
+            "sx": 0.95774616641836752,
+            "sy": 1.0592523518363322
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sx": 1.0338612323362153,
+            "sy": 0.95657053516598856
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sx": 1.0263628578727275,
+            "sy": 0.96589984607289414
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 0.99087280868519345,
+            "sy": 1.012300502242689
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 0.98894983633640021,
+            "sy": 1.0149258547614144
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 1.0020853642395624,
+            "sy": 0.99722626342116627
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 1.0046611586487664,
+            "sy": 0.99381874426836059
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 0.99981560116998691,
+            "sy": 1.0002459180109677
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 0.99817528204349282,
+            "sy": 1.0024381471680976
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 0.99982528503814949,
+            "sy": 1.0002330007755147
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sx": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ],
+      "pieces": "loop"
+    },
+    "idle": {
+      "facing": "right",
+      "fps": 3,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "pieces": "loop"
+    },
+    "meditating": {
+      "facing": "right",
+      "fps": 1,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0,
+                "dx": 2,
+                "dy": 0,
+                "side": -1
+              },
+              {
+                "at": 0,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "serene",
+            "float": 2
+          }
+        }
+      ],
+      "pieces": "still"
+    },
+    "meditating/still": {
+      "facing": "right",
+      "fps": 1,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0,
+                "dx": 2,
+                "dy": 0,
+                "side": -1
+              },
+              {
+                "at": 0,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "serene"
+          }
+        }
+      ],
+      "pieces": "still"
+    },
+    "reading/0": {
+      "facing": "right",
+      "fps": 2,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "held": "book",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "running/0": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [24, 23],
+          "pose": {}
+        },
+        {
+          "layers": [24, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 25],
+          "pose": {}
+        },
+        {
+          "layers": [22, 25],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [24, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 25],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        },
+        {
+          "layers": [22, 23],
+          "pose": {}
+        }
+      ],
+      "held": "laptop",
+      "holds": true,
+      "pieces": "loop"
+    },
+    "searching/0": {
+      "facing": "right",
+      "fps": 4,
+      "frames": [
+        {
+          "layers": [39],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, 0]
+          }
+        },
+        {
+          "layers": [39],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, 0]
+          }
+        },
+        {
+          "layers": [40],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, 1]
+          }
+        },
+        {
+          "layers": [40],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, 1]
+          }
+        },
+        {
+          "layers": [39],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, 0]
+          }
+        },
+        {
+          "layers": [39],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [41],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, -1]
+          }
+        },
+        {
+          "layers": [41],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.36666666666666664,
+                "dx": 2,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [-1, -1]
+          }
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "shipping/0": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "layers": [50],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.76666666666666672,
+                "dx": 4,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [50],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.76666666666666672,
+                "dx": 4,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [51],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [52],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 2,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "testing/0": {
+      "facing": "right",
+      "fps": 5,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "layers": [42],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [42, 43],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [42, 44],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [42, 45],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [42, 46],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [42, 43],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [42, 44],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [42, 45],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "thinking/0": {
+      "facing": "right",
+      "fps": 4,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [-1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [-1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [-1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [-1, -1],
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "look": [0, -1],
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.9375
+          }
+        },
+        {
+          "layers": [38],
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [38],
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "thinking/1": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [59],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": -1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [59],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "layers": [59],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": -1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [59],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": -1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.83333333333333337,
+                "dx": 1,
+                "dy": -4,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [0, -1]
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "tossed": {
+      "facing": "right",
+      "fps": 10,
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": -1
+              },
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -5,
+                "side": 1
+              }
+            ],
+            "eyes": "happy",
+            "lift": 1,
+            "mouth": "open",
+            "sy": 1.1200000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "spread": 1,
+            "sy": 0.69999999999999996
+          }
+        },
+        {
+          "pose": {
+            "eyes": "dizzy",
+            "lean": -1,
+            "look": [-1, -1],
+            "mouth": "wavy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "dizzy",
+            "look": [1, -1],
+            "mouth": "wavy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "dizzy",
+            "lean": 1,
+            "look": [1, 1],
+            "mouth": "wavy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "dizzy",
+            "look": [-1, 1],
+            "mouth": "wavy"
+          }
+        }
+      ],
+      "pieces": "still"
+    },
+    "waiting": {
+      "facing": "right",
+      "fps": 7,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 2,
+                "dy": -6,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 0.5,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -7,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 5,
+                "dy": -6,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1.5,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 5,
+                "dy": -6,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1.5,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -7,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 2,
+                "dy": -6,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 0.5,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -7,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 5,
+                "dy": -6,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1.5,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": -7,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 1,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 2,
+                "dy": -6,
+                "side": 1
+              }
+            ],
+            "eyes": "open",
+            "lean": 0.5,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sy": 1.0600000000000001
+          }
+        }
+      ],
+      "pieces": "loop"
+    },
+    "waiting/0": {
+      "facing": "right",
+      "fps": 3,
+      "frames": [
+        {
+          "layers": [53],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [54],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [54],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [54],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "eyes": "sleepy"
+          }
+        },
+        {
+          "layers": [55],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.69999999999999996,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [53],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [53],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "layers": [54],
+          "pose": {
+            "arms": [
+              {
+                "at": 0.56666666666666665,
+                "dx": 3,
+                "dy": 0,
+                "side": 1
+              }
+            ],
+            "look": [1, -1]
+          }
+        }
+      ],
+      "holds": true,
+      "pieces": "loop"
+    },
+    "whistling": {
+      "facing": "right",
+      "fps": 24,
+      "frames": [
+        {
+          "pose": {
+            "sx": 1
+          }
+        },
+        {
+          "pose": {
+            "sx": 1.0133000000000001,
+            "sy": 1.0152000000000001
+          }
+        },
+        {
+          "pose": {
+            "sx": 1.0251999999999999,
+            "sy": 1.0287999999999999
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0357000000000001,
+            "sy": 1.0407999999999999
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0448,
+            "sy": 1.0511999999999999
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0525,
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0588,
+            "sy": 1.0671999999999999
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0637000000000001,
+            "sy": 1.0728
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0671999999999999,
+            "sy": 1.0768
+          }
+        },
+        {
+          "pose": {
+            "lift": 1,
+            "sx": 1.0692999999999999,
+            "sy": 1.0791999999999999
+          }
+        },
+        {
+          "pose": {
+            "mouth": "whistle",
+            "sx": 1.0700000000000001,
+            "sy": 1.0800000000000001
+          }
+        },
+        {
+          "pose": {
+            "lean": 0.65082560867633721,
+            "mouth": "whistle",
+            "sx": 1.0600000000000001,
+            "sy": 1.0685714285714287
+          }
+        },
+        {
+          "pose": {
+            "lean": 1.1727472237020446,
+            "mouth": "whistle",
+            "sx": 1.05,
+            "sy": 1.0571428571428572
+          }
+        },
+        {
+          "pose": {
+            "lean": 1.4623918682727355,
+            "mouth": "whistle",
+            "sx": 1.04,
+            "sy": 1.0457142857142858
+          }
+        },
+        {
+          "pose": {
+            "lean": 1.4623918682727355,
+            "mouth": "whistle",
+            "sx": 1.03,
+            "sy": 1.0342857142857143
+          }
+        },
+        {
+          "pose": {
+            "lean": 1.1727472237020449,
+            "mouth": "whistle",
+            "sx": 1.02,
+            "sy": 1.0228571428571429
+          }
+        },
+        {
+          "pose": {
+            "lean": 0.65082560867633732,
+            "mouth": "whistle",
+            "sx": 1.01,
+            "sy": 1.0114285714285716
+          }
+        },
+        {
+          "pose": {
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "lean": -0.65082560867633721,
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.0342857142857143
+          }
+        },
+        {
+          "pose": {
+            "lean": -1.1727472237020446,
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.0285714285714287
+          }
+        },
+        {
+          "pose": {
+            "lean": -1.4623918682727355,
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.0228571428571429
+          }
+        },
+        {
+          "pose": {
+            "lean": -1.4623918682727355,
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.0171428571428571
+          }
+        },
+        {
+          "pose": {
+            "lean": -1.1727472237020449,
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.0114285714285716
+          }
+        },
+        {
+          "pose": {
+            "lean": -0.65082560867633732,
+            "look": [0, -1],
+            "mouth": "whistle",
+            "sy": 1.0057142857142858
+          }
+        },
+        {
+          "pose": {
+            "mouth": "whistle",
+            "sy": 0.90000000000000002
+          }
+        },
+        {
+          "pose": {
+            "base": 28,
+            "mouth": "whistle",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "base": 27,
+            "mouth": "whistle",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "base": 27,
+            "mouth": "whistle",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "base": 27,
+            "mouth": "whistle",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "base": 28,
+            "mouth": "whistle",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 1.0600000000000001
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 1.0311527373767675
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 0.99048918863793312
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 0.96838921235317288
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 0.9738100490678957
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 0.99485780941304081
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 1.0129323316497303
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "sy": 1.0170168356884435
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "pieces": "once"
+    },
+    "windswept": {
+      "facing": "right",
+      "fps": 6,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "spread": 0.59999999999999998,
+            "sy": 0.85999999999999999
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "spread": 0.59999999999999998,
+            "sy": 0.85999999999999999
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "spread": 0.59999999999999998,
+            "sy": 0.85999999999999999
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "spread": 0.59999999999999998,
+            "sy": 0.85999999999999999
+          }
+        },
+        {
+          "pose": {
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [-1, -1],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [19],
+          "pose": {
+            "look": [-1, -1],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [19],
+          "pose": {
+            "look": [-1, -1],
+            "mouth": "open",
+            "sy": 0.9375
+          }
+        },
+        {
+          "layers": [20],
+          "pose": {
+            "look": [-1, 0],
+            "mouth": "open",
+            "sy": 0.9375
+          }
+        },
+        {
+          "layers": [20],
+          "pose": {
+            "look": [-1, 0],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [21],
+          "pose": {
+            "look": [-1, -1],
+            "mouth": "open"
+          }
+        },
+        {
+          "layers": [21],
+          "pose": {
+            "look": [-1, -1],
+            "mouth": "open",
+            "sy": 0.9375
+          }
+        },
+        {
+          "pose": {}
+        }
+      ],
+      "pieces": "once"
+    }
+  }
+}

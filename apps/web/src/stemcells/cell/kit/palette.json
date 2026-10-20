@@ -1,0 +1,92 @@
+{
+  "about": "The colour behind every role letter of the Cell's art. A provider paints the body's four roles (B body, b shade, L highlight, O contour); every other letter keeps its colour on every body. Generated; do not edit by hand.",
+  "bodies": {
+    "claude": {
+      "b": "#D65F3A",
+      "B": "#FF8154",
+      "L": "#FFAD7E",
+      "O": "#B54E32"
+    },
+    "codex": {
+      "b": "#087B65",
+      "B": "#10A37F",
+      "L": "#65D2B3",
+      "O": "#064F45"
+    },
+    "frost": {
+      "b": "#8EC5EA",
+      "B": "#BFE6FF",
+      "L": "#EEF9FF",
+      "O": "#5B93C2"
+    },
+    "gemini": {
+      "b": "#7950B8",
+      "B": "#A879E8",
+      "L": "#D4B5FF",
+      "O": "#513579"
+    },
+    "kimi": {
+      "b": "#204FC6",
+      "B": "#2E6BFF",
+      "L": "#80A5FF",
+      "O": "#1A3674"
+    }
+  },
+  "inks": {
+    "_": "#08090B",
+    "-": "#08090BCC",
+    "!": "#FFC66D",
+    "*": "#FFDE94",
+    "^": "#08090B",
+    ">": "#08090B",
+    "1": "#7E9CC6",
+    "2": "#56759F",
+    "3": "#FF9A3D",
+    "4": "#4A5366",
+    "a": "#92D058",
+    "A": "#C2E55E",
+    "c": "#132341",
+    "C": "#E2D6B9",
+    "d": "#82C5FD",
+    "D": "#7C8C9F",
+    "E": "#08090B",
+    "f": "#386844",
+    "F": "#7DB76B",
+    "g": "#BEC6CD",
+    "G": "#F2BF65",
+    "h": "#3065A0",
+    "H": "#0A2644",
+    "i": "#EAA3DA",
+    "I": "#FFC1DA",
+    "j": "#472B1B",
+    "J": "#F3B94C",
+    "k": "#654632",
+    "K": "#0C1728",
+    "l": "#E0C8FF",
+    "m": "#901C2B",
+    "M": "#9D516C",
+    "n": "#A36C46",
+    "N": "#B52332",
+    "o": "#BE8647",
+    "p": "#DBE2E9",
+    "P": "#F09DA9",
+    "q": "#BFC8D4",
+    "Q": "#4CE4E4",
+    "r": "#8D333D",
+    "R": "#C94F50",
+    "s": "#F4C775",
+    "S": "#9DE2FF",
+    "t": "#C1A783",
+    "u": "#ADB9C8",
+    "U": "#244C80",
+    "v": "#C5AAF7",
+    "V": "#0D2B50",
+    "w": "#1E345E",
+    "W": "#FFF6E5",
+    "x": "#21C7D7",
+    "y": "#FFDF95",
+    "Y": "#FED756",
+    "z": "#A9BDD4CC",
+    "Z": "#5E3C24"
+  }
+}

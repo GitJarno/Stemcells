@@ -1,0 +1,4824 @@
+{
+  "about": "The wardrobe packs: one theme each, or one season when it has dates (month-day, both days in; the narrower window wins a day two hold). A piece is headwear (on the crown), a face piece (at the eyes) or a wrap (round the base); `art` and `hotspot` are the hero's, `mini` and `miniHotspot` the miniature's; `frames` and `miniFrames`, when present, animate it at `fps`. Generated; do not edit by hand.",
+  "packs": [
+    {
+      "pieces": [
+        {
+          "art": [
+            "....3................3....",
+            "....33..............3n....",
+            "....3W3............3Wn....",
+            "....3WW3..........3WWn....",
+            "....3WWW3........3WWWn....",
+            "...33WWW33......33WWW3n...",
+            "...333WW33333333333WW3n...",
+            ".......33333333333n.......",
+            ".....333333333333333n.....",
+            "....33333333333333333n....",
+            "...3333333333333333333n...",
+            "...3333333333333333333n...",
+            "..333WWWWWWWWWWWWWWWW33n..",
+            "..333W..............W33n..",
+            "..333W..............W33n..",
+            ".3333W..............W333n.",
+            ".WWWWW..............WWWWq.",
+            ".WWWWW..............WWWWq.",
+            "WWWWWW..............WWWWWq",
+            ".qqqqW..............Wqqqq."
+          ],
+          "hotspot": [12, 10],
+          "mini": [
+            "..3.......3..",
+            "..3W3...3Wn..",
+            "..3W33333Wn..",
+            "....3333n....",
+            "...333333n...",
+            "..33333333n..",
+            ".3WWWWWWWWWn.",
+            "3W.........Wn",
+            "WW.........Wq",
+            "WW.........Wq"
+          ],
+          "miniHotspot": [6, 5],
+          "name": "foxhood",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...nnnn..........nnnn.....",
+            "..nntttn........ntttnk....",
+            "..nnttnn........nnttnk....",
+            "..nnnnnnnnnnnnnnnnnnnk....",
+            ".....nnnnnnnnnnnnnnnk.....",
+            "....nnnnnnnnnnnnnnnnnk....",
+            "...nnnnnnnnnnnnnnnnnnnk...",
+            "...nnnnnnnnnnnnnnnnnnnk...",
+            "..nnnttttttttttttttttnnk..",
+            "..nnnt..............tnnk..",
+            "..nnnt..............tnnk..",
+            ".nnnnt..............tnnnk.",
+            ".nnnnt..............tnnnk.",
+            ".nnnnt..............tnnnk.",
+            "nnnnnt..............tnnnnk",
+            ".kkkkt..............tkkkk."
+          ],
+          "hotspot": [12, 6],
+          "mini": [
+            "..nn.....nn..",
+            ".ntnn...nntk.",
+            ".nnnnnnnnnnk.",
+            "...nnnnnnk...",
+            "..nnnnnnnnk..",
+            ".ntttttttttk.",
+            "nt.........tk",
+            "nt.........tk",
+            "nt.........tk"
+          ],
+          "miniHotspot": [6, 4],
+          "name": "bearhood",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "................u.........",
+            "...............uD.........",
+            "..............uuD.........",
+            ".............uuuD.........",
+            "............uuuuD.........",
+            "...........uuuuuD.........",
+            "...........uuuuuuD........",
+            ".......uuuuuuuuuuuD.......",
+            ".....uuuuuuuuuuuuuuuD.....",
+            "....uuuuuuuuuuuuuuuuuD....",
+            "...uKuuuuuuuuuuuuuuuuKD...",
+            "...uuIIIIIIIIIIIIIIIIuD...",
+            "..uuuWW.W.W.WW.W.W.WWuuD..",
+            "..uuuu..............uuuD..",
+            "..uuuu..............uuuD..",
+            ".uuuuu..............uuuuD.",
+            ".uuuuu..............uuuuD.",
+            ".uuuuu..............uuuuD.",
+            "uuuuuu..............uuuuuD",
+            ".DDDDD..............DDDDD."
+          ],
+          "hotspot": [12, 10],
+          "mini": [
+            "........u....",
+            ".......uD....",
+            "......uuD....",
+            "....uuuuD....",
+            "...uuuuuuD...",
+            "..uIIIIIIID..",
+            ".uW.W.W.W.WD.",
+            "uu.........uD",
+            "uu.........uD",
+            "uu.........uD"
+          ],
+          "miniHotspot": [6, 5],
+          "name": "shark",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "I.I..........................I.I",
+            ".PPI........................IPP.",
+            "IPPP........................PPPI",
+            "..PPP......................PPP..",
+            "...PPP.....IIIIIIIIIi.....PPP...",
+            "I.I.PPP..IIIIIIIIIIIIIi..PPP.I.I",
+            ".PPI.PPPIIIIIIIIIIIIIIIiPPP.IPP.",
+            "IPPPPPPIIIIIIIIIIIIIIIIIiPPPPPPI",
+            ".PPI.PPiiiiiiiiiiiiiiiiiiPP.IPP.",
+            "I.I.PPP..................PPP.I.I",
+            "...PPP....................PPP...",
+            "..PPP......................PPP..",
+            "IPPP........................PPPI",
+            ".PPI........................IPP.",
+            "I.I..........................I.I"
+          ],
+          "hotspot": [15, 7],
+          "mini": [
+            "I...........I",
+            ".P..IIIIi..P.",
+            "IPPIIIIIIiPPI",
+            ".P.........P.",
+            "I...........I"
+          ],
+          "miniHotspot": [6, 3],
+          "name": "axolotl",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...4444..........4444.....",
+            "..444444........444444....",
+            "..444444........444444....",
+            "..444444WWWWWWWW444444....",
+            ".....WWWW44WWWW44WWWq.....",
+            "....WWWW44KWWWWK44WWWq....",
+            "...WWWWW444WWWW444WWWWq...",
+            "...WWWWWWWWWWWWWWWWWWWq...",
+            "..WWWWWWWWWWWWWWWWWWWWWq..",
+            "..WWWW..............WWWq..",
+            "..WWWW..............WWWq..",
+            ".WWWWW..............WWWWq.",
+            ".WWWWW..............WWWWq.",
+            ".WWWWW..............WWWWq.",
+            "WWWWWW..............WWWWWq",
+            ".qqqqq..............qqqqq."
+          ],
+          "hotspot": [12, 6],
+          "mini": [
+            "..44.....44..",
+            ".4444...4444.",
+            ".4444WWW4444.",
+            "...W4WWW4q...",
+            "..WWWWWWWWq..",
+            ".WWWWWWWWWWq.",
+            "WW.........Wq",
+            "WW.........Wq",
+            "WW.........Wq"
+          ],
+          "miniHotspot": [6, 4],
+          "name": "panda",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".l.............l....",
+            ".ll...........lv....",
+            ".lIl.........lIv....",
+            ".lIIl.......lIIv....",
+            ".lIIIl.....lIIIlv...",
+            ".lllllllllllllllv...",
+            "...lllllllllllllv...",
+            "..lllllllllllllllv..",
+            ".lllllllllllllllllv.",
+            ".lllllllllllllllllv.",
+            "lvlvlvlvlvlvlvlvlvlv",
+            "lvlvlvlvlvlvlvlvlvlv"
+          ],
+          "hotspot": [9, 9],
+          "mini": [
+            ".l.......l.",
+            ".lI.....Iv.",
+            ".lIl...lIv.",
+            "..llllllv..",
+            ".llllllllv.",
+            "vlvlvlvlvlv",
+            "vlvlvlvlvlv"
+          ],
+          "miniHotspot": [5, 5],
+          "name": "catears",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "............WWp.WWp...........",
+            "........WWpWWpppWpppWWp.......",
+            ".......WWppWpppqpppqWppp......",
+            "......WWpppqppqWppqWpppqp.....",
+            ".....WWpppqppqWppqWpppqppp....",
+            "....WWpppqpppqpppqpppqpppqp...",
+            ".tttWpppqqppqqppqqppqpppqpttt.",
+            "tnnntppqqppqqppqqppqqppqptnnnt",
+            "tn.ttpqq...............ppttqnt",
+            "tntWWppp...............WWpptnt",
+            ".ttWpppq...............Wppptt.",
+            "...pppqq...............pppqq..",
+            "...WWppp...............WWppp..",
+            "...Wpppq...............Wpppq..",
+            "...pppqq...............pppqq..",
+            "....pqq.................pqq..."
+          ],
+          "hotspot": [14, 5],
+          "mini": [
+            ".....Wpq.....",
+            "..WpqpppWpq..",
+            ".Wppppppppqq.",
+            "Wpppppppppppq",
+            "ppppppppppppq",
+            "pp.........pq",
+            "tt.........tt",
+            "tn.........nt",
+            ".t.........t."
+          ],
+          "miniHotspot": [6, 4],
+          "name": "lamb",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..W.........",
+            ".WWW.W......",
+            ".WWWWWW.....",
+            "..WWWWWW....",
+            "..WWWWWWq...",
+            "...W3W3W33..",
+            "...y3333333.",
+            "..3y33333333",
+            "...3y333333n",
+            "...y3333333n",
+            "....y333333n",
+            "...3y333333n",
+            "....3333333n",
+            ".....333333n",
+            "......33333n",
+            "......33333n",
+            "......33333n",
+            "......33333n",
+            "......33333n",
+            "......3333nn",
+            "......3333n.",
+            ".....3333nn.",
+            "....3333nn..",
+            "..33333nn...",
+            "3333333n....",
+            ".nnnnnn....."
+          ],
+          "hotspot": [-5, 28],
+          "mini": [
+            ".WW...",
+            "WWWW..",
+            ".WWq3.",
+            "..3333",
+            "..y33n",
+            "..333n",
+            "...33n",
+            "....3n",
+            "....3n",
+            "....3n",
+            "....3n",
+            "....3n",
+            "..33n."
+          ],
+          "miniHotspot": [-1, 14],
+          "name": "tail",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": null,
+      "theme": "animals"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            ".......33333.....3...",
+            "......3RRRRr...333...",
+            "...333RRRRRr..R333...",
+            "....3RRRRRRRRRRR33...",
+            ".....rRRRRRRRRRRR3...",
+            "......RRRRRRRRRRR33..",
+            ".33RRRRRRRRRRRRRRR3..",
+            "333RRRRRRRRRRRRRRr...",
+            "..3RRRRRRRRRRRRRr....",
+            "...RRRRRRRRRRRRRRr...",
+            "...3RRRRRRRRRRRrr33..",
+            "..33rrRRRRRRRRr......",
+            "......RRRRRRRr.......",
+            "......Rrrrrrr........",
+            ".....33.....nn.......",
+            ".............n.......",
+            ".............n......."
+          ],
+          "fps": 3,
+          "frames": [
+            [
+              ".......33333.....3...",
+              "......3RRRRr...333...",
+              "...333RRRRRr..R333...",
+              "....3RRRRRRRRRRR33...",
+              ".....rRRRRRRRRRRR3...",
+              "......RRRRRRRRRRR33..",
+              ".33RRRRRRRRRRRRRRR3..",
+              "333RRRRRRRRRRRRRRr...",
+              "..3RRRRRRRRRRRRRr....",
+              "...RRRRRRRRRRRRRRr...",
+              "...3RRRRRRRRRRRrr33..",
+              "..33rrRRRRRRRRr......",
+              "......RRRRRRRr.......",
+              "......Rrrrrrr........",
+              ".....33.....nn.......",
+              ".............n.......",
+              ".............n......."
+            ],
+            [
+              "......3RRRRRRR3......",
+              ".......RRRRRRr.......",
+              ".333...RRRRRRr...333.",
+              ".333Rr.RRRRRRr.RR333.",
+              "..33RRRRRRRRRRRRR33..",
+              "..3RRRRRRRRRRRRRRR3..",
+              "...RRRRRRRRRRRRRRr...",
+              ".33RRRRRRRRRRRRRRR33.",
+              "..3rRRRRRRRRRRRRRr3..",
+              "....RRRRRRRRRRRRr....",
+              "....RRRRRRRRRRRRr....",
+              "...33rrrrRRRrrrr33...",
+              ".........rRr.........",
+              "..........n..........",
+              "..........n..........",
+              "..........n..........",
+              "....................."
+            ],
+            [
+              "...3.....33333.......",
+              "...333...RRRRR3......",
+              "...333r..RRRRRR333...",
+              "...33RRRRRRRRRRR3....",
+              "...3RRRRRRRRRRRr.....",
+              "..33RRRRRRRRRRr......",
+              "..3RRRRRRRRRRRRRRR33.",
+              "...rRRRRRRRRRRRRRR333",
+              "....RRRRRRRRRRRRRR3..",
+              "...RRRRRRRRRRRRRRr...",
+              "..33rrRRRRRRRRRRR3...",
+              "......rRRRRRRRRrr33..",
+              ".......rRRRRRRr......",
+              "........Rrrrrrr......",
+              ".......nn.....33.....",
+              ".......n.............",
+              ".......n............."
+            ]
+          ],
+          "hotspot": [10, 14],
+          "mini": [
+            "....3R3......",
+            "3...RRr...3..",
+            "33.RRRRr.33..",
+            "..3RRRRRRRr..",
+            ".33RRRRRRRr3.",
+            "...3rRRRrr..."
+          ],
+          "miniFrames": [
+            [
+              "....3R3......",
+              "3...RRr...3..",
+              "33.RRRRr.33..",
+              "..3RRRRRRRr..",
+              ".33RRRRRRRr3.",
+              "...3rRRRrr..."
+            ],
+            [
+              ".....3R3.....",
+              ".3...RRr...3.",
+              ".33.RRRRr.33.",
+              "..3RRRRRRRr..",
+              ".33RRRRRRRr3.",
+              "...3rRRRrr..."
+            ],
+            [
+              "......3R3....",
+              "..3...RRr...3",
+              "..33.RRRRr.33",
+              "..3RRRRRRRr..",
+              ".33RRRRRRRr3.",
+              "...3rRRRrr..."
+            ]
+          ],
+          "miniHotspot": [6, 6],
+          "name": "maple",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..........nk.......",
+            "..........nk.......",
+            ".........nk........",
+            ".....tntnknknkk....",
+            "...tntnknknknknkk..",
+            "..tnknknknknknknkk.",
+            ".tnknknknknknknknkk",
+            "tnknknknknknknknknk",
+            ".kkkkkkkkkkkkkkkkk."
+          ],
+          "hotspot": [9, 7],
+          "mini": [
+            "......nk....",
+            ".....nk.....",
+            "...tnknknk..",
+            ".tnknknknkk.",
+            "tnknknknknkk",
+            ".kkkkkkkkkk."
+          ],
+          "miniHotspot": [6, 4],
+          "name": "acorn",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....y.yyy.yy.y......",
+            "...yyYYYYYYYYYy.....",
+            "...yYYYYYYYYYYJ.....",
+            "....YYYYYYYYYJJ.....",
+            ".....GoGoGoGoJ..y.yy",
+            "......oGoGoGJ.yyYYYY",
+            ".y.yy..GoGoJ..yYYYYJ",
+            "yYYYYJ.YYYJJ...GoGoJ",
+            ".GoGJ..YYYJJ...GoGJ.",
+            "..oGJ..YYYJJ..YYJ...",
+            "...YJ..YYYJJ.YYJ....",
+            "....YJ.YYYJJYYJ....."
+          ],
+          "hotspot": [10, 11],
+          "mini": [
+            ".y.yy.....",
+            "yYYYYJ....",
+            "YYYYYJ....",
+            ".GoGJ.y.yy",
+            "..YJ.yYYYJ",
+            "..YJ..GoJ.",
+            "..YJ.YJ..."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "chanterelle",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........k........",
+            ".........kF.......",
+            ".......RRkRR......",
+            "......RWRRRRr.....",
+            "...t..RWRRRRr..t..",
+            "..tn.tRRRRRRrtn...",
+            ".tnnktnRRRRrnnkt..",
+            "tnnknnknrrrknnknt.",
+            "nnknnknnknnknnkCC.",
+            "nknnknnknnknnCCCCC",
+            "knnknnknnknnCCKCCC",
+            "nnknnknnknnCCCCCCk",
+            ".nknnknnknCCCCC...",
+            "..kkkk..kkk......."
+          ],
+          "hotspot": [7, 13],
+          "mini": [
+            ".....k.....",
+            "....RRr....",
+            "..t.RRrt...",
+            ".tnkrrknt..",
+            "tnknknkCCC.",
+            "nknknkCKCCk",
+            ".kk.kkCCC.."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "hedgehog",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....33333.............",
+            "...33nnnnn3............",
+            "..3nnnnnnnnn...........",
+            ".3nnnnnnnnnnk..........",
+            ".3nnnnkkknnnk..k..k....",
+            "3nnnnk...knnk..nk.nk...",
+            "3nnnk.....kk...nnnnn...",
+            "3nnnk.........3nnnnnn..",
+            "3nnnnk........nnnnKnnC.",
+            ".3nnnnk.......nnnnnnCCk",
+            "..3nnnnk.....3nnnWnnC..",
+            "...3nnnnnk...nnnWWoGo..",
+            "....3nnnnnnnnnnWWWooo..",
+            ".......nnnnnnn.kk..kk.."
+          ],
+          "hotspot": [15, 14],
+          "mini": [
+            ".333.......",
+            "3nnnn......",
+            "3nkkn..k.k.",
+            "3nk.k..nnn.",
+            "3nk...nnnKC",
+            ".3nk..3nWok",
+            "..3nnnnWWoo",
+            "....nnn.kk."
+          ],
+          "miniHotspot": [6, 6],
+          "name": "squirrel",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...............III",
+            "...............IKI",
+            ".......k.FF....Iii",
+            ".......kFFf....Ii.",
+            "..RRRR.kRRRR..Ii..",
+            ".RRWRRRRRRRRrIi...",
+            "RRWRRRRRRRRRkIi...",
+            "RWWRRRRRRRRRrr....",
+            "RWRRRRRRRRRRrr....",
+            "RRRRRRRRRRRrrr....",
+            ".RRRRRRRRRrrr.....",
+            "..RRRrRRrrrr......"
+          ],
+          "hotspot": [6, 12],
+          "mini": [
+            ".......II",
+            "...k.F.Ik",
+            ".RRkRR.I.",
+            "RWRRRrI..",
+            "RWRRRrr..",
+            "RRRRRrr..",
+            ".RRrrr..."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "apple",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...........yyyYYYJ..............",
+            ".........yyYYYYYYYJJ............",
+            "........yYYYYYYYYYYJJ...........",
+            "........yYYYYYYYYYYJJ...........",
+            "........YYYYYYYYYYYYJJ..........",
+            "........YYYYYYYYYYYYJJ..........",
+            ".......yyyyyyyyyyyyyyyyJ........",
+            ".....yyYYYYYYYYYYYYYYYYYJJ......",
+            "...yyYYYJJJJJJJJJJJJJJYYYYJJ....",
+            "..yYYYJ..............JJYYYYJJ...",
+            ".yYYYJ.................JJYYYJJ..",
+            "yYYYJ....................JJYYJJ.",
+            "YYJ.........................JJJJ",
+            "..............................Sd",
+            "................................",
+            "................................",
+            "................................",
+            ".S..............................",
+            "SS..............................",
+            "Sd..............................",
+            "................................",
+            "................................"
+          ],
+          "fps": 4,
+          "frames": [
+            [
+              "...........yyyYYYJ..............",
+              ".........yyYYYYYYYJJ............",
+              "........yYYYYYYYYYYJJ...........",
+              "........yYYYYYYYYYYJJ...........",
+              "........YYYYYYYYYYYYJJ..........",
+              "........YYYYYYYYYYYYJJ..........",
+              ".......yyyyyyyyyyyyyyyyJ........",
+              ".....yyYYYYYYYYYYYYYYYYYJJ......",
+              "...yyYYYJJJJJJJJJJJJJJYYYYJJ....",
+              "..yYYYJ..............JJYYYYJJ...",
+              ".yYYYJ.................JJYYYJJ..",
+              "yYYYJ....................JJYYJJ.",
+              "YYJ.........................JJJJ",
+              "..............................Sd",
+              "................................",
+              "................................",
+              "................................",
+              ".S..............................",
+              "SS..............................",
+              "Sd..............................",
+              "................................",
+              "................................"
+            ],
+            [
+              "...........yyyYYYJ..............",
+              ".........yyYYYYYYYJJ............",
+              "........yYYYYYYYYYYJJ...........",
+              "........yYYYYYYYYYYJJ...........",
+              "........YYYYYYYYYYYYJJ..........",
+              "........YYYYYYYYYYYYJJ..........",
+              ".......yyyyyyyyyyyyyyyyJ........",
+              ".....yyYYYYYYYYYYYYYYYYYJJ......",
+              "...yyYYYJJJJJJJJJJJJJJYYYYJJ....",
+              "..yYYYJ..............JJYYYYJJ...",
+              ".yYYYJ.................JJYYYJJ..",
+              "yYYYJ....................JJYYJJ.",
+              "YYJ.........................JJJJ",
+              "Sd..............................",
+              "................................",
+              "...............................S",
+              "..............................SS",
+              "..............................Sd",
+              "................................",
+              "................................",
+              "................................",
+              "................................"
+            ],
+            [
+              "...........yyyYYYJ..............",
+              ".........yyYYYYYYYJJ............",
+              "........yYYYYYYYYYYJJ...........",
+              "........yYYYYYYYYYYJJ...........",
+              "........YYYYYYYYYYYYJJ..........",
+              "........YYYYYYYYYYYYJJ..........",
+              ".......yyyyyyyyyyyyyyyyJ........",
+              ".....yyYYYYYYYYYYYYYYYYYJJ......",
+              "...yyYYYJJJJJJJJJJJJJJYYYYJJ....",
+              "..yYYYJ..............JJYYYYJJ...",
+              ".yYYYJ.................JJYYYJJ..",
+              "yYYYJ....................JJYYJJ.",
+              "YYJ.........................JJJJ",
+              "................................",
+              "................................",
+              ".S..............................",
+              "SS..............................",
+              "Sd..............................",
+              "................................",
+              "...............................S",
+              "..............................SS",
+              "..............................Sd"
+            ]
+          ],
+          "hotspot": [15, 8],
+          "mini": [
+            "....yYYYJ....",
+            "...yYYYYJJ...",
+            "...YYYYYJJ...",
+            ".yyyyyyyyyJs.",
+            "yYYJJJJJJYYJJ",
+            "YJ.........JJ",
+            "J...........J",
+            "............S",
+            "............."
+          ],
+          "miniFrames": [
+            [
+              "....yYYYJ....",
+              "...yYYYYJJ...",
+              "...YYYYYJJ...",
+              ".yyyyyyyyyJs.",
+              "yYYJJJJJJYYJJ",
+              "YJ.........JJ",
+              "J...........J",
+              "............S",
+              "............."
+            ],
+            [
+              "....yYYYJ....",
+              "...yYYYYJJ...",
+              "...YYYYYJJ...",
+              ".yyyyyyyyyJs.",
+              "yYYJJJJJJYYJJ",
+              "YJ.........JJ",
+              "J...........J",
+              "S............",
+              "............S"
+            ],
+            [
+              "....yYYYJ....",
+              "...yYYYYJJ...",
+              "...YYYYYJJ...",
+              ".yyyyyyyyyJs.",
+              "yYYJJJJJJYYJJ",
+              "YJ.........JJ",
+              "J...........J",
+              ".............",
+              "S............"
+            ]
+          ],
+          "miniHotspot": [6, 5],
+          "name": "souwester",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "R..R........................G..G",
+            "RR.RR......................GG.GG",
+            ".RRRRRrYY..............RRGGGGGo.",
+            "RRRRrrYYYJ............RRRrGGGGoo",
+            "..RGG..3J..............R3..NNo..",
+            "..GG3n333.3..........3.333n3NN..",
+            ".Gon333333onnNNnYYnnn333333okmN.",
+            ".nnkn3333oknNNmYYYRRnn3333onnnn.",
+            "nYYnnn3kGGnNmknnYJrRRnn3kNNknRRn",
+            "nYJnnnnnGonnnnnnknnnrRnknNmnnRrn"
+          ],
+          "hotspot": [15, 8],
+          "mini": [
+            "R.R.......Y.Y",
+            "RRRr.....YYYJ",
+            "3RR3Y...G3YJ3",
+            "R3YRrRYJR3YRR",
+            ".rRYr3rYRrr3."
+          ],
+          "miniHotspot": [6, 5],
+          "name": "leafpile",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": {
+        "from": "09-15",
+        "to": "10-14"
+      },
+      "theme": "autumn"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "C......C........C......C",
+            "n..C...n........n...C..n",
+            "n..n...n........n...n..n",
+            "nn.n..nn........nn..n.nn",
+            ".n.nn.n..........n.nn.n.",
+            ".nn.nnn..........nnn.nn.",
+            "..n..nk..........kn..n..",
+            "..nn.nk..........kn.nn..",
+            "...nnnk..........knnn...",
+            ".....nnk........knn.....",
+            "......nk........kn......",
+            "......nnk.....NNknn.....",
+            ".......nk..FFAFFkn......",
+            "......RRRRRFFFFRRr......",
+            "......rRRRRRRRRRRr......"
+          ],
+          "hotspot": [11, 14],
+          "mini": [
+            "C.C.....C.C",
+            "n.n.....n.n",
+            "nnn.....nnn",
+            ".n.n...n.n.",
+            "..n.n.NnN..",
+            "...RFFFRr..",
+            "...rRRRRr.."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "antlers",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......RRRRR.........",
+            ".....RRRRRRRr.......",
+            "....RRRRRRRRRrr.....",
+            "....RRRRRRR..rRr....",
+            "...RRRRRRRR....rWWW.",
+            "...RRRRRRRRr...WWWWq",
+            "..RRRRRRRRRRr..WWWq.",
+            ".RRRRRRRRRRRRr..qq..",
+            "WWWWWWWWWWWWWWWq....",
+            "pWWpWWWpWWWpWWWq...."
+          ],
+          "hotspot": [7, 8],
+          "mini": ["...RRr...", "..RRRRrWW", "..RRRRRWq", ".RRRRRRr.", "WWWWWWWWq", "pWWpWWpWq"],
+          "miniHotspot": [4, 5],
+          "name": "santa",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....Y.....",
+            "....YWY....",
+            ".....F.....",
+            "....FFf....",
+            "...FFRFf...",
+            "....FFf....",
+            "...FFFFf...",
+            "..FFSFFFf..",
+            "...FFFFf...",
+            "..FFFFFFf..",
+            ".FFFYFFRFf.",
+            "FFFFFFFFFFf",
+            "....nnk....",
+            "...RRRRr..."
+          ],
+          "hotspot": [5, 13],
+          "mini": ["...Y...", "..YWY..", "..FRf..", ".FFFFf.", ".FSFRf.", "FFFFFFf", "..nnk.."],
+          "miniHotspot": [3, 6],
+          "name": "tree",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..GGG..GGG...",
+            ".G..GooG..G..",
+            ".G...GG...G..",
+            "..GGGooGGG...",
+            "RRRRRGGRRRRRr",
+            "rrrrrooorrrrr",
+            ".RRRRGGRRRRr.",
+            ".RRRRGGRRRRr.",
+            ".GGGGGGGGGGo.",
+            ".RRRRGGRRRRr.",
+            ".rrrrooorrrr."
+          ],
+          "hotspot": [6, 10],
+          "mini": [".GG.GG.", "G.GoG.G", ".RRGGRr", ".rrooor", ".RRGGRr", ".rrooor"],
+          "miniHotspot": [4, 5],
+          "name": "present",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....nnn....",
+            "...nnnnnk..",
+            "...nKnKnk..",
+            "...nWWWnk..",
+            "....nnnk...",
+            "WnnnnnnnnnW",
+            ".nnnnRnnnk.",
+            "....nnnk...",
+            "....nAnk...",
+            "...nnnnnk..",
+            "..nnk.nnnk.",
+            ".Wnk...nkW."
+          ],
+          "hotspot": [5, 11],
+          "mini": ["..nnn..", "..nnnk.", "..WWWk.", "WnnnnnW", "..nRnk.", ".nnknnk", ".Wk..kW"],
+          "miniHotspot": [3, 6],
+          "name": "gingerbread",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...........GG....",
+            "..........G..G...",
+            "..........G.GG...",
+            "...........GGGG..",
+            "...........GGGGGG",
+            "..........RGGGo..",
+            ".GGGGGGGGGGGGo...",
+            "GoRoGoGoGoRoGo...",
+            ".GGRGGGGGGRGGo...",
+            "..oooooooooooo...",
+            "..Go.Go...Go.Go..",
+            "..Go.Go...Go.Go..",
+            "..RR.RR...RR.RR.."
+          ],
+          "hotspot": [9, 12],
+          "mini": [
+            "......GG.",
+            ".....G.G.",
+            ".....GGGG",
+            ".GGGGRGo.",
+            "GoRGoGRo.",
+            ".ooooooo.",
+            ".Go.Go.G."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "olkipukki",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".RRRRRRRRRRRRRRRRRRRRRRrr.",
+            "RRWRRRWRRRWRRRWRRRWRRRWRrr",
+            "RWRWRWRWRWRWRWRWRWRWRWRWrr",
+            "RRWRRRWRRRWRRRWRRRWRRRWRrr",
+            ".RRRRRRRRRRRRRRRRRRRRRRrr.",
+            "...rrrrrrrrrrrrrrrrrrrr..."
+          ],
+          "hotspot": [12, 6],
+          "mini": ["RWRRWRRWRRWRr", "WRWWRWWRWWRWr", ".rrrrrrrrrrr."],
+          "miniHotspot": [6, 3],
+          "name": "sweater",
+          "slot": "wrap",
+          "z": 1
+        },
+        {
+          "art": [".NNN.", "NWNNm", "NNNmm", ".mmm."],
+          "hotspot": [1, 1],
+          "mini": ["NWN", ".m."],
+          "miniHotspot": [1, -1],
+          "name": "nose",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": {
+        "from": "12-01",
+        "to": "12-26"
+      },
+      "theme": "christmas"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "........FFFFF...",
+            ".......FFFFFFFF.",
+            ".......FFFFFWKFf",
+            ".......FFFFFFFFf",
+            ".......FFFFFFIff",
+            "........ffFFff..",
+            "......AFFFFFF.F.",
+            ".....AFFCCCFFFf.",
+            "....AFFFCCCCFf..",
+            "A..AFFFFCCCCFf..",
+            "AAFFFFFFFCCCFf..",
+            ".FFFFFFFFFFFff..",
+            "......Ff..Ff...."
+          ],
+          "hotspot": [8, 12],
+          "mini": ["....FFF.", "....FWKF", "....FFFf", "..AFFf..", "AFFFCFf.", "..Ff.Ff."],
+          "miniHotspot": [4, 5],
+          "name": "baby",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..............SSS..",
+            ".............SSSSS.",
+            ".............SSKSSS",
+            ".............SSSSd.",
+            "............SSSd...",
+            "............SSd....",
+            "...........SSSd....",
+            "...........SSd.....",
+            "..........SSSd.....",
+            "...SSSSSSSSSSd.....",
+            "..SSSSWSSSSWSSd....",
+            "SSSSSSSSSSSSSSd....",
+            ".SSSSSSSSSSSSdd....",
+            "...dddddddddd......",
+            "...SSd....SSd......"
+          ],
+          "hotspot": [7, 14],
+          "mini": [
+            "......SS",
+            "......Sd",
+            ".....Sd.",
+            ".SSSSSd.",
+            "SSWSSSd.",
+            ".ddddd..",
+            ".Sd.Sd.."
+          ],
+          "miniHotspot": [3, 6],
+          "name": "longneck",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "l....................l",
+            "ll..................ll",
+            "lll................lll",
+            ".llll....vlll.....llll",
+            ".lllll...lKll333.lllll",
+            "..lllll..llll...lllll.",
+            "..vlllllllllllllllllv.",
+            "...vvlllllllllllllvv..",
+            ".....vvvlllllllvvv....",
+            "........llllll........",
+            "........lvvvvl........",
+            "........3..3.........."
+          ],
+          "hotspot": [11, 11],
+          "mini": ["l....v....l", "ll..lll3.ll", ".lllllllll.", "...vlllv...", "....3.3...."],
+          "miniHotspot": [5, 4],
+          "name": "ptero",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....WWW.........W.",
+            "..WW333WW......WC.",
+            ".W3333333W....WC..",
+            "W333GGG333W..WC...",
+            "W33GGGGG333WWC....",
+            ".W3GGGGG3YYYC.....",
+            "..W3GGG3YYYYYYY...",
+            "...W333YYYYKYYYYW.",
+            "....WWYYYYYYYYYYYJ",
+            "..YYYYYYYYYYYYYJJ.",
+            ".YYYYYYYYYYYYYJ...",
+            "YYYYYYYYYYYYYJJ...",
+            ".JYYYYYYYYYYJJ....",
+            "..JJJJJJJJJJJ.....",
+            "..YJ..YJ..YJ.YJ..."
+          ],
+          "hotspot": [9, 14],
+          "mini": [
+            ".WW....W.",
+            "W33W..WC.",
+            "W3G3WYC..",
+            ".W3YYKYYW",
+            ".YYYYYYYJ",
+            "YYYYYYYJ.",
+            ".YJ.YJ..."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "trike",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "........33..........",
+            "....3...333...3.....",
+            "...333.33333.333....",
+            "..3333.33333.3333.3.",
+            "..3333.33333.3333.33",
+            "W..AAAAAAAAAAAAAA...",
+            ".WAAAAAAAAAAAAAAAAA.",
+            "..AAAAAAAAAAAAAAAAKA",
+            "...AAAAAAAAAAAAAaAAa",
+            "....aaaaaaaaaaaaa...",
+            "....Aa..Aa...Aa..Aa.",
+            "....aa..aa...aa..aa."
+          ],
+          "hotspot": [9, 12],
+          "mini": [
+            "...3..3...",
+            "..333333..",
+            "W.AAAAAAAA",
+            ".AAAAAAAKA",
+            "..aaaaaaAa",
+            "..Aa.Aa.Aa"
+          ],
+          "miniHotspot": [4, 5],
+          "name": "stego",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....III.....",
+            "....IIIII....",
+            "....IWKIIi...",
+            "....IIIIIi...",
+            "...IIIIIIi...",
+            "..W.WIIiW.W..",
+            ".WWWWWWWWWWq.",
+            ".WWFWWWWWFWq.",
+            "WWWWWWAWWWWWq",
+            "WWWWWWWWWWWWq",
+            "WFWWWWWWWAWWq",
+            "WWWWWWWWWWWqq",
+            ".pWWWWWWWWqq.",
+            "..pppppppqq.."
+          ],
+          "hotspot": [6, 12],
+          "mini": ["...II..", "..IKIi.", ".W.Ii.W", ".WWWWWq", "WWFWWWq", ".WWWAWq", "..pppq."],
+          "miniHotspot": [3, 6],
+          "name": "hatching",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".W..........W.",
+            ".WC........WC.",
+            ".WC........WC.",
+            "WWC........WWC",
+            "WWCC......WWCC",
+            "..............",
+            "......W.......",
+            "......WC......",
+            ".....WWC......",
+            ".....WWCC....."
+          ],
+          "hotspot": [6, 7],
+          "mini": ["W.....W.", "WC....WC", "........", "........", "...W....", "..WC...."],
+          "miniHotspot": [3, 3],
+          "name": "horns",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....GGGGGG....GGGGGG.....",
+            "nnnnGW....GGnnGW....Gonnnn",
+            "....GG....Go..GG....Go....",
+            "....GG....Go..GG....Go....",
+            "....GG....Go..GG....Go....",
+            ".....oooooo....oooooo....."
+          ],
+          "hotspot": [12, 3],
+          "mini": [
+            "..GGG...GGG..",
+            "nG...GnG...Gn",
+            ".G...G.G...o.",
+            ".G...G.G...o.",
+            "..ooo...ooo.."
+          ],
+          "miniHotspot": [6, 2],
+          "name": "goggles",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": null,
+      "theme": "dinosaurs"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "............RRRr...........",
+            "...........RRRRRRr.........",
+            "..........RRIIRRRRr........",
+            "..........RIRRr.RRRRr......",
+            "...........Go...RIRRr......",
+            "..........gWuuuD.RIRRr.....",
+            "........gWuuuuuuDDRIRRr....",
+            ".......gWuuuuuuuuDDRIRRr...",
+            "....gGpppppppppppppqoDRRRr.",
+            "...gpKKKKKKKKKKKKKKKKqDRRr.",
+            "....gGpppppppppppppqoD..RRr",
+            ".....guuuuuuuuuuuuuDD...RRr",
+            "....guuuuuuuuuuuuuuuDD...Rr",
+            "...guuuuuuuuuuuuuuuuuDD....",
+            "..guuuuuuuuuuuuuuuuuuuDD...",
+            ".guuuuuuuuuuuuuuuuuuuuuDD..",
+            ".guu..................uDD..",
+            ".guu..................uDD..",
+            "guu....................uDD.",
+            "guu....................uDD.",
+            "gu......................DD.",
+            "gu......................DD."
+          ],
+          "hotspot": [12, 13],
+          "mini": [
+            ".....RRr.....",
+            "....RIRRRr...",
+            "....Go..RRr..",
+            "...gWuuuuRRr.",
+            ".gpKKKKKKKqRr",
+            "..guuuuuuuDRr",
+            ".guuuuuuuuuDr",
+            "gu.........DD",
+            "g...........D",
+            "g...........D"
+          ],
+          "miniHotspot": [6, 6],
+          "name": "knight",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".......W...",
+            ".......Wv..",
+            ".......lq..",
+            "......Wpq..",
+            "......Wpv..",
+            "......llpq.",
+            "......Wppq.",
+            ".....Wppvv.",
+            ".....lllpq.",
+            "...I.Wpppqq",
+            "..lI.Wppvvv",
+            ".lIlllllpqq",
+            "lIlvWppppqq",
+            "lIlv.......",
+            "vlv........",
+            ".v........."
+          ],
+          "hotspot": [7, 13],
+          "mini": ["....W.", "....Wv", "....lq", "...Wpv", "...llq", ".lIWpq", "lIl...", "vl...."],
+          "miniHotspot": [4, 6],
+          "name": "unicorn",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..W........................W..",
+            ".CC........................CC.",
+            ".CCt......................CCt.",
+            "CCt........................CCt",
+            "CCt........................CCt",
+            "CCCt.......guuGouDD.......CCCt",
+            ".CCCt....gguuuGouuuDD....CCCt.",
+            "..CCCCt.guuuuuGouuuuDD.CCCCt..",
+            "...tCCCguuuuuuGouuuuuDDCCCt...",
+            "....ttguuuuuuuGouuuuuuDDtt....",
+            "......guuuuuuuGouuuuuuDD......",
+            ".....guuuuuuuuGouuuuuuuDD.....",
+            ".....GGGGGGGGGGGGGGGGGGGo.....",
+            "....oooooooooooooooooooooo...."
+          ],
+          "hotspot": [14, 11],
+          "mini": [
+            "W...........W",
+            "Ct.........Ct",
+            "Ct.........Ct",
+            "CCt.guGuD.CCt",
+            ".CCguuGuuDCt.",
+            "..guuuGuuuD..",
+            ".GGGGGGGGGGo."
+          ],
+          "miniHotspot": [6, 6],
+          "name": "viking",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...............WG...............",
+            "...............Go...............",
+            "...............Q................",
+            "...............Qx...............",
+            "...............Qx...............",
+            "......RR......QQx.......RR......",
+            "....RRRRr.....QQQx.....RRRRr....",
+            "...Rr.RRRr....QQQx....RRRr.Rr...",
+            "..WG...RRRr..QQQQx...RRRr...WG..",
+            "..Go...RRRRr.QQQQQx.RRRRr...Go..",
+            "........RRRRrQQQQxxRRRRr........",
+            "........RRRRQQQQQQxxRRRr........",
+            ".........RRRQQQQQQxxRRr.........",
+            ".........WYYYYYYYYYYYYJ.........",
+            "........YYYYYYYYYYYYYYJJ........",
+            ".......JJJJJJJJJJJJJJJJJJ......."
+          ],
+          "fps": 4,
+          "frames": [
+            [
+              "...............WG...............",
+              "...............Go...............",
+              "...............Q................",
+              "...............Qx...............",
+              "...............Qx...............",
+              "......RR......QQx.......RR......",
+              "....RRRRr.....QQQx.....RRRRr....",
+              "...Rr.RRRr....QQQx....RRRr.Rr...",
+              "..WG...RRRr..QQQQx...RRRr...WG..",
+              "..Go...RRRRr.QQQQQx.RRRRr...Go..",
+              "........RRRRrQQQQxxRRRRr........",
+              "........RRRRQQQQQQxxRRRr........",
+              ".........RRRQQQQQQxxRRr.........",
+              ".........WYYYYYYYYYYYYJ.........",
+              "........YYYYYYYYYYYYYYJJ........",
+              ".......JJJJJJJJJJJJJJJJJJ......."
+            ],
+            [
+              "................................",
+              "................WG..............",
+              "................Go..............",
+              "...............Qx...............",
+              "...............Qx...............",
+              "......RR......QQx.......RR......",
+              "....RRRRr.....QQQx.....RRRRr...*",
+              "*.RRr.RRRr....QQQx....RRRr.RRr..",
+              "..Rr...RRRr..QQQQx...RRRr...Rr..",
+              ".WG....RRRRr.QQQQQx.RRRRr....WG.",
+              ".Go.....RRRRrQQQQxxRRRRr.....Go.",
+              "........RRRRQQQQQQxxRRRr........",
+              ".........RRRQQQQQQxxRRr.........",
+              ".........WYYYYYYYYYYYYJ.........",
+              "........YYYYYYYYYYYYYYJJ........",
+              ".......JJJJJJJJJJJJJJJJJJ......."
+            ]
+          ],
+          "hotspot": [15, 14],
+          "mini": [
+            "......G......",
+            "......Q......",
+            ".RRr..Qx.RRr.",
+            "R.RRRQQxRRr.r",
+            "G..RRQQxRr..G",
+            "...YYYYYYJ..."
+          ],
+          "miniFrames": [
+            [
+              "......G......",
+              "......Q......",
+              ".RRr..Qx.RRr.",
+              "R.RRRQQxRRr.r",
+              "G..RRQQxRr..G",
+              "...YYYYYYJ..."
+            ],
+            [
+              ".*.....G.....",
+              ".......Q...*.",
+              ".RRr..Qx.RRr.",
+              "..RRRQQxRRr..",
+              "R..RRQQxRr..r",
+              "G..YYYYYYJ..G"
+            ]
+          ],
+          "miniHotspot": [6, 5],
+          "name": "jester",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...R....................R...",
+            "..YYR....W........W....RYY..",
+            ".YYYYR....C......C....RYYYY.",
+            ".YYYYYR...RRRRRRRr...RYYYYY.",
+            "YYYYYYYR..RRRRRRRr..RYYYYYYY",
+            "YJYYYYYR..RWKRRWKr..RYYYYYJY",
+            ".J.YJYYYR.RKKRRKKr.RYYYJY.J.",
+            "....J.YYR.RRRRRRRr.RYY.J....",
+            "......YYR..RRyyRr..RYY......",
+            ".........RRRyyyyRrR.........",
+            "..........RRyyysRr..........",
+            "..........RRyyysRrRr........",
+            ".........WRRRyyRRrWRr.......",
+            "....................Rr......",
+            "....................rYY.....",
+            ".....................YJ....."
+          ],
+          "fps": 4,
+          "frames": [
+            [
+              "...R....................R...",
+              "..YYR....W........W....RYY..",
+              ".YYYYR....C......C....RYYYY.",
+              ".YYYYYR...RRRRRRRr...RYYYYY.",
+              "YYYYYYYR..RRRRRRRr..RYYYYYYY",
+              "YJYYYYYR..RWKRRWKr..RYYYYYJY",
+              ".J.YJYYYR.RKKRRKKr.RYYYJY.J.",
+              "....J.YYR.RRRRRRRr.RYY.J....",
+              "......YYR..RRyyRr..RYY......",
+              ".........RRRyyyyRrR.........",
+              "..........RRyyysRr..........",
+              "..........RRyyysRrRr........",
+              ".........WRRRyyRRrWRr.......",
+              "....................Rr......",
+              "....................rYY.....",
+              ".....................YJ....."
+            ],
+            [
+              "............................",
+              ".........W........W.........",
+              "..........C......C..........",
+              "..........RRRRRRRr..........",
+              "..........RRRRRRRr..........",
+              "..........RWKRRWKr..........",
+              "RR........RKKRRKKr........RR",
+              "YYRRR.....RRRRRRRr.....RRRYY",
+              "YYYYYRRR...RRyyRr...RRRYYYYY",
+              ".YJYYYYYRRRRyyyyRrRRYYYYYJY.",
+              ".J.YJYYY..RRyyysRr..YYYJY.J.",
+              "....J.Y...RRyyysRrRr.Y.J....",
+              ".........WRRRyyRRrWRr.......",
+              "....................Rr......",
+              "....................rYY.....",
+              ".....................YJ....."
+            ]
+          ],
+          "hotspot": [13, 13],
+          "mini": [
+            "R...........R",
+            "YR..C...C..RJ",
+            "YYR.RRRRr.RJJ",
+            ".YYRRKRKrRJJ.",
+            "...RRyyyRr...",
+            "....RyysR...."
+          ],
+          "miniFrames": [
+            [
+              "R...........R",
+              "YR..C...C..RJ",
+              "YYR.RRRRr.RJJ",
+              ".YYRRKRKrRJJ.",
+              "...RRyyyRr...",
+              "....RyysR...."
+            ],
+            [
+              ".............",
+              "....C...C....",
+              "....RRRRr....",
+              ".RRRRKRKrRRr.",
+              "RYYRRyyyRrJJr",
+              "Y.Y.RyysR.J.J"
+            ]
+          ],
+          "miniHotspot": [6, 6],
+          "name": "dragon",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".......WW............",
+            "......IWWWp..........",
+            ".....WI..WWWpp.......",
+            ".....WIi..pWWWp......",
+            "....WIIi...pWWWpp....",
+            "....IWIi....pWWWWp...",
+            "....IWIIi...WpWWWWp..",
+            "...IIWIIi....WpWWWp..",
+            "...IIIIIi....WWpWWWp.",
+            "...IIIIIii....WWpWWp.",
+            "..IIIIIIii....WpWWpWp",
+            "..IIIIIIii.....WWpWpW",
+            "..IIIIIIIii....W.p.Wp",
+            ".IIIIIIIIii.....p...p",
+            "GGGGGGGGGGGo........."
+          ],
+          "hotspot": [5, 14],
+          "mini": [
+            "...IWW....",
+            "...IiWWp..",
+            "..WIi.WWp.",
+            "..IIi..WWp",
+            "..IIIi.WpW",
+            ".IIIIi.W.W",
+            "GGGGGGo..."
+          ],
+          "miniHotspot": [3, 6],
+          "name": "hennin",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".......FFF......",
+            "......F...f.....",
+            "......Ff.Ff.....",
+            "......WWWW......",
+            "..WW.WWWWWWp....",
+            ".WWWWWWWWWWWWWp.",
+            "WWWWWWWWWWWWWWWp",
+            "WWWWWWWWWWWWWWpp",
+            ".pppppppppppppp.",
+            ".......Ff.......",
+            "......FfAAa.....",
+            ".....FfAAAAa....",
+            ".AAAaFf.........",
+            "..AAa.Ff........"
+          ],
+          "hotspot": [6, 14],
+          "mini": [
+            "....FFF...",
+            "...F.f.f..",
+            ".WWWWWWWWp",
+            "..pppFfpp.",
+            "AAa.Ff....",
+            "...FfAAa..",
+            "....Ff...."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "beanstalk",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...WNN....................NNq...",
+            "..WNNN....................NNNq..",
+            ".WNNNNN..................NNNNNq.",
+            ".WNNNNN..................NNNNNq.",
+            "WWNNNNNN................NNNNNNWq",
+            "WWNNNNNN................NNNNNNWq",
+            "WKNNNNNNN..............NNNNNNNKq",
+            "WWNNNNNNN..............NNNNNNNWq",
+            "WWNNNNNNNN............NNNNNNNNWq",
+            ".WWWWWWWWWGGGGGGGGGGGoWWWWWWWWq."
+          ],
+          "hotspot": [15, 10],
+          "mini": [
+            "W...........q",
+            "W...........q",
+            "WN.........Nq",
+            "WNN.......NNq",
+            "WNN.......NNq",
+            "WWWGGGGGGoWWq"
+          ],
+          "miniHotspot": [6, 6],
+          "name": "ermine",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": null,
+      "theme": "fable"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "......WY........",
+            ".....WYYJ.......",
+            "...nnnYJJnnn....",
+            "..GnnnnnnnnnnG..",
+            ".GGGnGGGGGnGGGo.",
+            ".ooonoooooonooo.",
+            "..GGGnGGGGGGGGo.",
+            "..oooooooooooon.",
+            ".GGGGGGGGGGGGGo.",
+            ".oooooooooooooo.",
+            "WWWWWWWWWWWWWWWq",
+            ".qqqqqqqqqqqqqq."
+          ],
+          "hotspot": [7, 10],
+          "mini": [
+            "...WY....",
+            "..nnnnn..",
+            ".GGnGGnG.",
+            ".ooooooo.",
+            ".GGGGGGG.",
+            ".ooooooo.",
+            "WWWWWWWWq"
+          ],
+          "miniHotspot": [4, 6],
+          "name": "pancakes",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....GGGGGG.....",
+            "...GGWGGGGWGGo..",
+            "..GGGGGGWGGGGGo.",
+            ".GWGGGGGGGGGWGGo",
+            ".oooooooooooooo.",
+            "AaAaAaAaAaAaAaAa",
+            ".YYYYYYYYYYYYYYJ",
+            ".ZZZZZZZZZZZZZZj",
+            "..GGGGGGGGGGGGo.",
+            "...oooooooooo..."
+          ],
+          "hotspot": [7, 9],
+          "mini": ["..GGWGG..", ".GWGGGGo.", "GGGGGWGGo", "AaAaAaAaA", ".YYYYYYJ.", ".ZZZZZZj."],
+          "miniHotspot": [4, 5],
+          "name": "burger",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......F......",
+            ".....RR......",
+            "....RWRr.....",
+            "....IrrIi....",
+            "...IIIIIIi...",
+            "..IISIIIAIi..",
+            ".IIIIIIYIIIi.",
+            "IIQIIIIIIISIi",
+            "iiiiiiiiiiiii",
+            ".GoGoGoGoGoG.",
+            ".GoGoGoGoGoG.",
+            "..GoGoGoGoG.."
+          ],
+          "hotspot": [6, 11],
+          "mini": ["...F...", "..RWr..", ".IIIIi.", "IISIAIi", "iiiiiii", ".GoGoG.", ".oGoGo."],
+          "miniHotspot": [3, 6],
+          "name": "cupcake",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....R.....",
+            "....RWr....",
+            "..IIIIIIi..",
+            ".IWIIIIIIi.",
+            ".IIIIIIIIi.",
+            ".iIiiIiiii.",
+            ".QQQQQQQQx.",
+            "QWQQQQQQQQx",
+            "xQxxQxxQxxx",
+            ".GoGoGoGoG.",
+            "..oGoGoGo..",
+            "...GoGoG...",
+            "....oGo....",
+            ".....o....."
+          ],
+          "hotspot": [5, 13],
+          "mini": ["...R...", ".IIIIi.", ".IWIIi.", ".QQQQx.", "QWQQQQx", ".GoGoG.", "..oGo.."],
+          "miniHotspot": [3, 6],
+          "name": "icecream",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..33333W33333...",
+            ".3W3333W3333W33.",
+            "33333W3333W33333",
+            "333W3333W33333W3",
+            ".WWWWWWffffWWWWq",
+            ".WWWpWWffffWpWWq",
+            "..qqqqqffffqqqq."
+          ],
+          "hotspot": [7, 6],
+          "mini": ["..3W333..", ".33W3W33.", "3W333W333", ".WWWffWq.", "..qqffq.."],
+          "miniHotspot": [4, 4],
+          "name": "sushi",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...Cn...",
+            ".IIIIII.",
+            "IWIIIIIi",
+            "IIIIIIii",
+            ".iiiiii.",
+            ".WWWWWW.",
+            "WWWWWWWp",
+            "WWWWWWpq",
+            ".pppppq.",
+            ".AAAAAA.",
+            "AWAAAAAa",
+            "AAAAAAaa",
+            ".aaaaaa.",
+            "...Cn...",
+            "...Cn..."
+          ],
+          "hotspot": [3, 14],
+          "mini": ["..Cn.", "IWIIi", ".iii.", "WWWWp", ".ppq.", "AWAAa", ".aaa."],
+          "miniHotspot": [2, 6],
+          "name": "dango",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".IIIIII....IIIIII.",
+            "IIAIIYII..IISIIAII",
+            "II....Ii..II....Ii",
+            "IS....Ii..IA....Ii",
+            "GG....GoGGGG....Go",
+            "GG....Go..GG....Go",
+            ".oooooo....oooooo."
+          ],
+          "hotspot": [8, 4],
+          "mini": [".III...III.", "I...I.I...i", "I...IGI...i", "G...o.G...o", ".ooo...ooo."],
+          "miniHotspot": [5, 2],
+          "name": "donuts",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            "..FFFF..",
+            ".FAAAAf.",
+            "FAAWAAAf",
+            "FAWAWAAf",
+            "FAAWAAaf",
+            "FAAAAAaf",
+            ".ffffff."
+          ],
+          "hotspot": [8, 4],
+          "mini": [".FFF.", "FAWAf", "FWAWf", "FAWaf", ".fff."],
+          "miniHotspot": [5, 2],
+          "name": "cucumber",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": null,
+      "theme": "food"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "............vv...",
+            "..........vvvl...",
+            ".........vvv.....",
+            "........lvvv.....",
+            ".......lvvvv.....",
+            ".......lvvvvv....",
+            "......lvvvvvv....",
+            "......lvvvvvvv...",
+            ".....44444GG444..",
+            ".....lvvvvvvvvv..",
+            "lvvvvvvvvvvvvvvvv",
+            ".vvvvvvvvvvvvvvv."
+          ],
+          "hotspot": [6, 11],
+          "mini": [".....vl.", "....vv..", "...lvv..", "...lvvv.", "..44G44.", "lvvvvvvv"],
+          "miniHotspot": [3, 6],
+          "name": "witch",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......Ff.AA....",
+            "......FfAAa....",
+            "...G3333333o...",
+            ".G33333333333o.",
+            "G333Y33333Y333o",
+            "G33YYY333YYY33o",
+            "G333333J333333o",
+            "G33YYYYYYYYY33o",
+            "G333Y33Y33Y333o",
+            ".G33333333333o.",
+            "...ooooooooo..."
+          ],
+          "hotspot": [7, 10],
+          "mini": ["....Fa..", ".G3333o.", "G3Y33Y3o", "G33J333o", "G3YYYY3o", ".ooooo.."],
+          "miniHotspot": [3, 6],
+          "name": "pumpkin",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "u...................u",
+            "uu.......u.u.......uu",
+            "uDu.....uDuDu.....uDu",
+            "uDDu...uDDDDDu...uDDu",
+            "uDDDu..uD3D3Du..uDDDu",
+            "uDDDDDDDDWDWDDDDDDDDu",
+            ".uDDDDDDDDDDDDDDDDDu.",
+            "..uDDu.uDDDDDu.uDDu..",
+            "...uu...uDDDu...uu...",
+            ".........u.u........."
+          ],
+          "hotspot": [10, 9],
+          "mini": [
+            "u...........u",
+            "uu...u.u...uu",
+            "uDu.uDDDu.uDu",
+            "uDDuD3D3DuDDu",
+            ".uDDDDDDDDDu.",
+            "..uu.uDu.uu.."
+          ],
+          "miniHotspot": [6, 5],
+          "name": "bat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......WWW......",
+            "....WWWWWWp....",
+            "...WWWWWWWWp...",
+            "W..WWKWWWKWp..p",
+            "WW.WWKWWWKWp.pp",
+            ".WWWIWWKWWIWpp.",
+            "..WWWWWWWWWWp..",
+            "..WWWWWWWWWWp..",
+            "..WqqWWqqWWqq.."
+          ],
+          "hotspot": [7, 8],
+          "mini": ["...WWWWp...", "W.WWKWKWp.p", ".WWWWKWWpp.", "..WWWWWWp..", "..WqWWqWq.."],
+          "miniHotspot": [5, 5],
+          "name": "ghost",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........p..........",
+            ".........p..........",
+            ".........p..........",
+            ".........p..........",
+            ".........pp.........",
+            "..vv.....ll.....vv..",
+            ".v..v.llllllvv.v..v.",
+            "v....vllllllvvv....v",
+            "v.vvvvlWlllWvvvvvv.v",
+            ".v...llWKllWKvv...v.",
+            "v..vvvllllllvvvvv..v",
+            "v.v...vlllllvv...v.v",
+            "..v..v........v..v..",
+            ".v..v..........v..v.",
+            "....v..........v...."
+          ],
+          "hotspot": [9, 14],
+          "mini": [
+            "......p.....",
+            "......p.....",
+            "..v.lllv.v..",
+            ".v.lWlWvv.v.",
+            "v.vlllvvv..v",
+            ".v.v...v..v.",
+            "...v...v...."
+          ],
+          "miniHotspot": [6, 6],
+          "name": "spider",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".4.....4.....",
+            ".44...44.....",
+            ".4I4444I4....",
+            ".44444444....",
+            ".4YY44YY4....",
+            ".4YK44KY4....",
+            ".444II444....",
+            "..444444...4.",
+            ".44444444..44",
+            "4444444444.4.",
+            "44444444444..",
+            ".444444444...",
+            ".4D4..4D4...."
+          ],
+          "hotspot": [6, 12],
+          "mini": ["4...4..", "4I44I..", "4Y44Y.4", "44II4.4", "4444444", ".4D.4D."],
+          "miniHotspot": [3, 6],
+          "name": "cat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........................CC",
+            ".......................CCq.",
+            "...............CCCCCCCCCq..",
+            ".......CCCCCCCCCqqqqqqqq...",
+            ".CCCCCCCCqqqqqqqq..........",
+            ".qqqqqqqq..................",
+            ".........CC................",
+            "CC........CC...............",
+            ".CC........CC.......CC.....",
+            "..CC........CC.....CCq.....",
+            "...Cq........Cq............"
+          ],
+          "hotspot": [11, 8],
+          "mini": [
+            "...........CC",
+            ".....CCCCCCq.",
+            "..CCCCqqqq...",
+            ".....C.......",
+            "C.....C......",
+            "Cq.....C....."
+          ],
+          "miniHotspot": [6, 4],
+          "name": "mummy",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            "l......................l.",
+            "lv....................vl.",
+            ".lvv..................vvl",
+            "..lvvv....v....v....vvvl.",
+            "..lvvvllllvvvvvvllllvvvl.",
+            "...vvv....vvvvvv....vvv..",
+            "...vvv....vvvvvv....vvv..",
+            "....vv....vv..vv....vv...",
+            ".....v....v....v....v....",
+            "......v..v......v..v....."
+          ],
+          "hotspot": [12, 7],
+          "mini": [
+            "v...........v",
+            "vv.........vv",
+            ".vvvvvvvvvvv.",
+            ".v...vvv...v.",
+            ".v...v.v...v.",
+            ".v...v.v...v.",
+            "..v.v...v.v.."
+          ],
+          "miniHotspot": [6, 4],
+          "name": "batmask",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": {
+        "from": "10-15",
+        "to": "11-01"
+      },
+      "theme": "halloween"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            ".........YYYY....",
+            "........YYYYYY...",
+            "........YYYYWYJ..",
+            "........YYYYKY33.",
+            "Y.......YYYYYY333",
+            "YY.......YYYYJ...",
+            "YYY....YYYYYYYY..",
+            "YYYYYYYYYYYYYYYJ.",
+            "JYYYYJJJJYYYYYYJ.",
+            ".JYYYYJJJYYYYYJJ.",
+            "..JJJJJJJJJJJJJ.."
+          ],
+          "hotspot": [8, 10],
+          "mini": ["....YYY.", "....YKY3", "Y..YYYY.", "YYYYYYYJ", ".JJJJJJ."],
+          "miniHotspot": [4, 4],
+          "name": "duck",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".AAA........AAA.",
+            "AAWAA......AAAAa",
+            "AAAAAa....AAAAAa",
+            ".AAAAAa..AAAAAa.",
+            "..aAAAAaaAAAAa..",
+            "....aaaFfaaa....",
+            ".......Ff.......",
+            ".......Ff.......",
+            ".......Ff.......",
+            ".......Ff.......",
+            "......FFFf......"
+          ],
+          "hotspot": [7, 10],
+          "mini": [".AA...AA.", "AAAa.AAAa", ".aaaFaaa.", "....F....", "....F...."],
+          "miniHotspot": [4, 4],
+          "name": "sprout",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "W.....WW.....W",
+            "GG....GG....Go",
+            "GGG..GGGG..GGo",
+            "GGGW.GGGG.WGGo",
+            "GWGGGGGGGGGGGo",
+            "GGGGGGGGGGGGGo",
+            "GRGGSGNNGSGGRo",
+            "GGGGGGGGGGGGGo",
+            "oooooooooooooo"
+          ],
+          "hotspot": [6, 7],
+          "mini": ["W...W...W", "G..GGG..G", "GG.GGG.Go", "GGGGNGGGo", "ooooooooo"],
+          "miniHotspot": [4, 4],
+          "name": "crown",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".IIIIIIYYiiiiii.",
+            ".......oo.......",
+            ".......oo.......",
+            "......YYYJ......",
+            ".....RRYYSS.....",
+            "...RRRRYYSSSS...",
+            "..RRRRRYYYSSSd..",
+            ".RRRRRRYYYSSSSd.",
+            "RRRRRRYYYYSSSSdd",
+            "rrrrrrJJJJdddddd"
+          ],
+          "fps": 12,
+          "frames": [
+            [
+              ".IIIIIIYYiiiiii.",
+              ".......oo.......",
+              ".......oo.......",
+              "......YYYJ......",
+              ".....RRYYSS.....",
+              "...RRRRYYSSSS...",
+              "..RRRRRYYYSSSd..",
+              ".RRRRRRYYYSSSSd.",
+              "RRRRRRYYYYSSSSdd",
+              "rrrrrrJJJJdddddd"
+            ],
+            [
+              "....IIIYYiii....",
+              ".......oo.......",
+              ".......oo.......",
+              "......YYYJ......",
+              ".....RRYYSS.....",
+              "...RRRRYYSSSS...",
+              "..RRRRRYYYSSSd..",
+              ".RRRRRRYYYSSSSd.",
+              "RRRRRRYYYYSSSSdd",
+              "rrrrrrJJJJdddddd"
+            ],
+            [
+              ".......YY.......",
+              ".......oo.......",
+              ".......oo.......",
+              "......YYYJ......",
+              ".....RRYYSS.....",
+              "...RRRRYYSSSS...",
+              "..RRRRRYYYSSSd..",
+              ".RRRRRRYYYSSSSd.",
+              "RRRRRRYYYYSSSSdd",
+              "rrrrrrJJJJdddddd"
+            ],
+            [
+              "....iiiYYIII....",
+              ".......oo.......",
+              ".......oo.......",
+              "......YYYJ......",
+              ".....RRYYSS.....",
+              "...RRRRYYSSSS...",
+              "..RRRRRYYYSSSd..",
+              ".RRRRRRYYYSSSSd.",
+              "RRRRRRYYYYSSSSdd",
+              "rrrrrrJJJJdddddd"
+            ]
+          ],
+          "hotspot": [7, 8],
+          "mini": ["IIIIYiiii", "....o....", "...RYS...", "..RRYSS..", ".RRRYSSd.", "rrrrJdddd"],
+          "miniFrames": [
+            ["IIIIYiiii", "....o....", "...RYS...", "..RRYSS..", ".RRRYSSd.", "rrrrJdddd"],
+            ["..IIYii..", "....o....", "...RYS...", "..RRYSS..", ".RRRYSSd.", "rrrrJdddd"],
+            ["....Y....", "....o....", "...RYS...", "..RRYSS..", ".RRRYSSd.", "rrrrJdddd"],
+            ["..iiYII..", "....o....", "...RYS...", "..RRYSS..", ".RRRYSSd.", "rrrrJdddd"]
+          ],
+          "miniHotspot": [4, 4],
+          "name": "propeller",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".AAAA....AAAA.",
+            "AAWKAA..AAWKAa",
+            "AAAAAAAAAAAAAa",
+            "AAAAAAAAAAAAAa",
+            "AIIAAAAAAAAIIa",
+            "AAAAaaaaaaAAAa",
+            ".AAAAAAAAAAAa.",
+            "AAa..aaaaa..Aa"
+          ],
+          "hotspot": [6, 7],
+          "mini": [".AA...AA.", "AKAA.AKAa", "AAAAAAAAa", "AIaaaaaIa", ".AAa.AAa."],
+          "miniHotspot": [4, 4],
+          "name": "frog",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".WW.........",
+            "WWWq........",
+            "WPPq........",
+            "WPPq.....WW.",
+            "WPPq....WWWq",
+            "WPPq....WPPq",
+            "WPPq....WPPq",
+            "WPPq....WPPq",
+            "WPPq....WPPq",
+            "WPPq....WPPq",
+            "WPPq....WPPq",
+            "WWWq....WWWq",
+            "WWWq....WWWq",
+            ".WWq....WWq."
+          ],
+          "hotspot": [5, 13],
+          "mini": [".W...W.", "WPq.WPq", "WPq.WPq", "WPq.WPq", "WWq.WWq", ".Wq.Wq."],
+          "miniHotspot": [3, 5],
+          "name": "bunny",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....GGGG......GGGG....",
+            "GGGG....GGGGGG....GGGG",
+            "...G....G....G....G...",
+            "...G....G....G....G...",
+            "...G....G....G....G...",
+            "....oooo......oooo...."
+          ],
+          "hotspot": [10, 3],
+          "mini": [".GGG...GGG.", "G...GGG...G", "G...G.G...G", "G...G.G...G", ".ooo...ooo."],
+          "miniHotspot": [5, 2],
+          "name": "specs",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": ["III..............III", "III..............III"],
+          "hotspot": [9, -1],
+          "mini": ["II.........II"],
+          "miniHotspot": [6, -1],
+          "name": "blush",
+          "slot": "face",
+          "z": 2
+        },
+        {
+          "art": [
+            ".W................q.",
+            ".WW..............Wq.",
+            ".WRW............WRq.",
+            ".WRRW..........WRRq.",
+            "WWRRRW........WRRRWq",
+            "WWWRRRW......WRRRWWq",
+            ".WRRRWWWWGGWWWWRRRW.",
+            "WWRWWWWWWRRWWWWWWRWW",
+            "WRW.....WWWW.....WRq",
+            "WRW.....WWWW.....WRq",
+            "WWW.....WWWW.....Wqq",
+            "WWW.....WWWW.....Wqq",
+            "WWW.....WWWW.....Wqq",
+            "WWW.....WWWW.....Wqq",
+            ".WRWWWWWWWWWWWWWWRq.",
+            "...RWWWWWWWWWWWqR...",
+            ".....WWWWKKWWqq.....",
+            ".......WWRRqq......."
+          ],
+          "hotspot": [9, 12],
+          "mini": [
+            "W.........W",
+            "W.........W",
+            "WR.......RW",
+            "WWWWWRWWWWW",
+            "R...WWW...R",
+            "W...WWW...q",
+            "W...WWW...q",
+            "..WWWKWWq..",
+            "....WWq...."
+          ],
+          "miniHotspot": [5, 5],
+          "name": "kitsune",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            "....11..............12....",
+            "....11..............12....",
+            "....11..............12....",
+            "....11..............12....",
+            "....11..............12....",
+            "....11..............12....",
+            "....11..............12....",
+            "....GG11111111111111oo....",
+            "....111111111111111122....",
+            "12221111111111111111112222",
+            "11111111111111111111111122",
+            ".111111111111111111111122.",
+            "...22222222222222222222..."
+          ],
+          "hotspot": [12, 13],
+          "mini": [
+            ".1.........2.",
+            ".1.........2.",
+            "1G111111111o2",
+            "1111111111122",
+            ".22222222222."
+          ],
+          "miniHotspot": [6, 5],
+          "name": "overalls",
+          "slot": "wrap",
+          "z": 1
+        },
+        {
+          "art": [
+            "D.....D.................",
+            "D.....D.................",
+            ".p...p.........GGGG.....",
+            "..pppp.......GGGGGGGo...",
+            ".pppppp.....GGnnnnnGGo..",
+            ".pKpppq....GGnGGGGGnGo..",
+            ".pppppq....GnGGnnnGGno..",
+            "..ppppq....GnGnGGGnGno..",
+            "..ppppq....GnGnGnGnGno..",
+            "..ppppq....GnGnnGGnGno..",
+            "..ppppq....GGnGGGnGGoo..",
+            "..ppppppppqGGGnnnGGooq..",
+            "...ppppppppppppppppppppq",
+            "....qqq...........qqqqq."
+          ],
+          "hotspot": [12, 13],
+          "mini": [
+            "D..D.......",
+            ".pp..GGGG..",
+            "ppp.GnnnnGo",
+            "pKp.GnGGnGo",
+            "ppp.GnGnnGo",
+            "ppppGGGGooq",
+            ".qpppppppq."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "snail",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..G...G.............",
+            "..GG.GG.............",
+            ".GGIGGIG...GGGGG....",
+            ".GGGGGGGG.GGoGGoGG..",
+            ".GGGGGGGGGGoGGoGGoG.",
+            ".GKKGGKKGGGoGGoGGoGo",
+            ".GGWIIWGGGGGGGGGGGGo",
+            "..GWWWWGGGGGGGGGGGGo",
+            "W.GGGGGGGGGGGGGGGGoo",
+            "WGoGGoGGoGGoGGoGGoGo",
+            ".oooooooooooooooooo."
+          ],
+          "hotspot": [9, 10],
+          "mini": [
+            ".G...G......",
+            ".GG.GG.GGG..",
+            ".GGGGGGoGoGo",
+            ".GnGnGGoGoGo",
+            ".GGIGGGGGGGo",
+            "WoGoGoGoGoGo",
+            ".oooooooooo."
+          ],
+          "miniHotspot": [6, 6],
+          "name": "cat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..........WWWW...........",
+            "........WWWWWWWW.........",
+            "...WWW.WWWWWWWWWp.WWW....",
+            "..WWWWWWWWWWWWWWWWWWWWp..",
+            ".WWWWWWWWWWWWWWWWWWWWWWp.",
+            "WWWWWWWWWWWWWWWWWWWWWWWpp",
+            "WWWWWWWWWWWWWWWWWWWWWWWpp",
+            "pWWWWWWWWWWWWWWWWWWWWWppp",
+            ".ppppppppppppppppppppppp.",
+            "...qqqqqqqqqqqqqqqqqqqq..",
+            "...S.....................",
+            "...d.....S...........S...",
+            ".........d.....S.....d...",
+            "......S........d.........",
+            "......d..................",
+            "........................."
+          ],
+          "fps": 6,
+          "frames": [
+            [
+              "..........WWWW...........",
+              "........WWWWWWWW.........",
+              "...WWW.WWWWWWWWWp.WWW....",
+              "..WWWWWWWWWWWWWWWWWWWWp..",
+              ".WWWWWWWWWWWWWWWWWWWWWWp.",
+              "WWWWWWWWWWWWWWWWWWWWWWWpp",
+              "WWWWWWWWWWWWWWWWWWWWWWWpp",
+              "pWWWWWWWWWWWWWWWWWWWWWppp",
+              ".ppppppppppppppppppppppp.",
+              "...qqqqqqqqqqqqqqqqqqqq..",
+              "...S.....................",
+              "...d.....S...........S...",
+              ".........d.....S.....d...",
+              "......S........d.........",
+              "......d..................",
+              "........................."
+            ],
+            [
+              "..........WWWW...........",
+              "........WWWWWWWW.........",
+              "...WWW.WWWWWWWWWp.WWW....",
+              "..WWWWWWWWWWWWWWWWWWWWp..",
+              ".WWWWWWWWWWWWWWWWWWWWWWp.",
+              "WWWWWWWWWWWWWWWWWWWWWWWpp",
+              "WWWWWWWWWWWWWWWWWWWWWWWpp",
+              "pWWWWWWWWWWWWWWWWWWWWWppp",
+              ".ppppppppppppppppppppppp.",
+              "...qqqqqqqqqqqqqqqqqqqq..",
+              "............S............",
+              "............d.....S......",
+              "...S..............d......",
+              "...d.....S...........S...",
+              ".....................d...",
+              "........................."
+            ],
+            [
+              "..........WWWW...........",
+              "........WWWWWWWW.........",
+              "...WWW.WWWWWWWWWp.WWW....",
+              "..WWWWWWWWWWWWWWWWWWWWp..",
+              ".WWWWWWWWWWWWWWWWWWWWWWp.",
+              "WWWWWWWWWWWWWWWWWWWWWWWpp",
+              "WWWWWWWWWWWWWWWWWWWWWWWpp",
+              "pWWWWWWWWWWWWWWWWWWWWWppp",
+              ".ppppppppppppppppppppppp.",
+              "...qqqqqqqqqqqqqqqqqqqq..",
+              "...............S.........",
+              "......S........d.........",
+              "......d.....S............",
+              "............d.....S......",
+              "...S..............d......",
+              "...d.................S..."
+            ]
+          ],
+          "hotspot": [12, 14],
+          "mini": [
+            "....WW.WWW...",
+            "..WWWWWWWWW..",
+            ".WWWWWWWWWWWp",
+            "WWWWWWWWWWWWp",
+            ".ppppppppppq.",
+            ".S.S.S.......",
+            ".........S.S.",
+            "............."
+          ],
+          "miniFrames": [
+            [
+              "....WW.WWW...",
+              "..WWWWWWWWW..",
+              ".WWWWWWWWWWWp",
+              "WWWWWWWWWWWWp",
+              ".ppppppppppq.",
+              ".S.S.S.......",
+              ".........S.S.",
+              "............."
+            ],
+            [
+              "....WW.WWW...",
+              "..WWWWWWWWW..",
+              ".WWWWWWWWWWWp",
+              "WWWWWWWWWWWWp",
+              ".ppppppppppq.",
+              ".......S.....",
+              ".S.S.........",
+              "...........S."
+            ],
+            [
+              "....WW.WWW...",
+              "..WWWWWWWWW..",
+              ".WWWWWWWWWWWp",
+              "WWWWWWWWWWWWp",
+              ".ppppppppppq.",
+              "......S..S.S.",
+              ".............",
+              ".S..........."
+            ]
+          ],
+          "miniHotspot": [6, 6],
+          "name": "raincloud",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".......NNNNNNNN.......",
+            ".....NNNNWWNNNNNN.....",
+            "...NNWWNNWWNNNNWWNm...",
+            "..NNNWWNNNNNNNNWWNmm..",
+            ".NNNNNNNNNNWWNNNNNmm..",
+            ".NWWNNNNNNNWWNNNNNNm..",
+            "mmmmmmmmmmmmmmmmmmmmm.",
+            "..CCCCCCCCCCCCCCCCCC..",
+            "........WWWWp.........",
+            ".......CWWWWpC........",
+            "........WWWWp....NNNN.",
+            "........WWWWp...NWNNNm",
+            ".......WWWWWpp..mmmmmm",
+            "..................Wp.."
+          ],
+          "hotspot": [11, 12],
+          "mini": [
+            "..NNNNN...",
+            ".NWNNNWNm.",
+            "NNNNWNNNNm",
+            "mmmmmmmmmm",
+            "....WWp...",
+            "....WWp..."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "mushroom",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".............W.............",
+            "............WWp............",
+            "...........WWWpp...........",
+            "..........WWWWppp..........",
+            ".........WWWWWpppp.........",
+            "........WWWWWWppppp........",
+            "WW.....WWWWWWWpppppp.....pp",
+            "WWWW..WWWWWWWWppppppp..pppp",
+            ".WWWWWWWWWWWWWWWWWWWWWWWWp.",
+            "...WWWWWWWWWWWWWWWWWWWWWp..",
+            ".....ppppppppppppppppppqq..",
+            ".......qqqqqqqqqqqqqqqq...."
+          ],
+          "hotspot": [13, 11],
+          "mini": [
+            "......W......",
+            ".....WWp.....",
+            "W...WWWpp...p",
+            "WW.WWWWppp.pp",
+            ".WWWWWWWWWWp.",
+            "..ppppppppq.."
+          ],
+          "miniHotspot": [6, 6],
+          "name": "paperboat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......WWW.WWW.....",
+            ".....WSSWWSSSW....",
+            ".....WSSSWSSSW....",
+            "......WSSWSSW.....",
+            ".4.4..............",
+            "..4.4.YY4YY4Y.....",
+            ".YYYYYYY4YY4YYJ...",
+            "YYKYYYYY4YY4YYJJ..",
+            "YYYYYYYY4YY4YYJJ4.",
+            "YYYYYYYY4YY4YYJJ44",
+            ".YYYYJJJ4JJ4JJJ...",
+            "...JJJJJ4JJ4JJ...."
+          ],
+          "fps": 8,
+          "frames": [
+            [
+              "......WWW.WWW.....",
+              ".....WSSWWSSSW....",
+              ".....WSSSWSSSW....",
+              "......WSSWSSW.....",
+              ".4.4..............",
+              "..4.4.YY4YY4Y.....",
+              ".YYYYYYY4YY4YYJ...",
+              "YYKYYYYY4YY4YYJJ..",
+              "YYYYYYYY4YY4YYJJ4.",
+              "YYYYYYYY4YY4YYJJ44",
+              ".YYYYJJJ4JJ4JJJ...",
+              "...JJJJJ4JJ4JJ...."
+            ],
+            [
+              "..................",
+              "..................",
+              ".......WW..WW.....",
+              "......WSSWWSSW....",
+              ".4.4..............",
+              "..4.4.YY4YY4Y.....",
+              ".YYYYYYY4YY4YYJ...",
+              "YYKYYYYY4YY4YYJJ..",
+              "YYYYYYYY4YY4YYJJ4.",
+              "YYYYYYYY4YY4YYJJ44",
+              ".YYYYJJJ4JJ4JJJ...",
+              "...JJJJJ4JJ4JJ...."
+            ]
+          ],
+          "hotspot": [6, 13],
+          "mini": ["..WW.WW..", "...WWWW..", ".YYY4Y4..", "YKYY4Y4J4", ".YYJ4J4J."],
+          "miniFrames": [
+            ["..WW.WW..", "...WWWW..", ".YYY4Y4..", "YKYY4Y4J4", ".YYJ4J4J."],
+            [".........", ".WWW.WWW.", ".YYY4Y4..", "YKYY4Y4J4", ".YYJ4J4J."]
+          ],
+          "miniHotspot": [4, 6],
+          "name": "bee",
+          "slot": "headwear",
+          "z": 3
+        }
+      ],
+      "season": null,
+      "theme": "house"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            ".W................q.",
+            ".WW..............Wq.",
+            ".WRW............WRq.",
+            ".WRRW..........WRRq.",
+            "WWRRRW........WRRRWq",
+            "WWWRRRW......WRRRWWq",
+            ".WRRRWWWWGGWWWWRRRW.",
+            "WWRWWWWWWRRWWWWWWRWW",
+            "WRW.....WWWW.....WRq",
+            "WRW.....WWWW.....WRq",
+            "WWW.....WWWW.....Wqq",
+            "WWW.....WWWW.....Wqq",
+            "WWW.....WWWW.....Wqq",
+            "WWW.....WWWW.....Wqq",
+            ".WRWWWWWWWWWWWWWWRq.",
+            "...RWWWWWWWWWWWqR...",
+            ".....WWWWKKWWqq.....",
+            ".......WWRRqq......."
+          ],
+          "hotspot": [9, 12],
+          "mini": [
+            "W.........W",
+            "W.........W",
+            "WR.......RW",
+            "WWWWWRWWWWW",
+            "R...WWW...R",
+            "W...WWW...q",
+            "W...WWW...q",
+            "..WWWKWWq..",
+            "....WWq...."
+          ],
+          "miniHotspot": [5, 5],
+          "name": "kitsune",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....RRRRr.....",
+            "...RPRRRRRrr...",
+            "..RPRRRRRRRRr..",
+            ".RRRWWWWWWWRRr.",
+            ".RRWWWWWWWWWRr.",
+            "RRWppWWWWWKKWrr",
+            "RRWpWpWWWWKKWrr",
+            "RRWWpWWWWWWWWrr",
+            "RRRWWWGWGWWWRrr",
+            "RRRRWWWGWWWRrrr",
+            "RGGRRRRRRRRGGrr",
+            ".RRGGRRRRRGGrr.",
+            "..RRRRRRRRRrr..",
+            "....rrrrrrr...."
+          ],
+          "hotspot": [7, 14],
+          "mini": [
+            "..RRRr..",
+            ".RRRRRr.",
+            "RRWWWWRr",
+            "RWpWWKWr",
+            "RRWWWWRr",
+            "RRRRRRrr",
+            ".rrrrrr."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "daruma",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...W...W....",
+            "...WW.WW....",
+            "....pWp.....",
+            ".....RR.....",
+            "....WppW....",
+            "...WpppppW..",
+            "..WQQQQQQQp.",
+            ".WQQQQQQQQxp",
+            ".QQQ33QQ3Qxx",
+            "pQQ3K3333Qxx",
+            "pQQQ33QQ3Qxx",
+            ".QQQQQQQQxx.",
+            "..xxxxxxxx.."
+          ],
+          "hotspot": [5, 13],
+          "mini": ["..W.W..", "...R...", ".WpppW.", "WQ33Q3x", "Q3K333x", "QQ33Q3x", ".xxxxx."],
+          "miniHotspot": [3, 6],
+          "name": "kingyo",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "W....................",
+            "u.hhhhh..............",
+            "uGhhhhhhhhhS.......hh",
+            "uGhWWWhhShhhhhS...hhh",
+            "uGhWKWhSShShhhhhhhhh.",
+            "uGhWWWhhhShhShhhhhh..",
+            "uGhhhhhhShhhShhhhhhh.",
+            "uGSSSShhhhhhhhhhh.hhh",
+            "uGSSSSSSSSSSSSU...UUU",
+            "u.UUUUUUU.........UU.",
+            "u....................",
+            "u....................",
+            "u....................",
+            "u...................."
+          ],
+          "fps": 4,
+          "frames": [
+            [
+              "W....................",
+              "u.hhhhh..............",
+              "uGhhhhhhhhhS.......hh",
+              "uGhWWWhhShhhhhS...hhh",
+              "uGhWKWhSShShhhhhhhhh.",
+              "uGhWWWhhhShhShhhhhh..",
+              "uGhhhhhhShhhShhhhhhh.",
+              "uGSSSShhhhhhhhhhh.hhh",
+              "uGSSSSSSSSSSSSU...UUU",
+              "u.UUUUUUU.........UU.",
+              "u....................",
+              "u....................",
+              "u....................",
+              "u...................."
+            ],
+            [
+              "W....................",
+              "u.hhhhh............hh",
+              "uGhhhhhhhh........hhh",
+              "uGhWWWhhShhS....hhhh.",
+              "uGhWKWhSShhhhhS.hhh..",
+              "uGhWWWhhhSShhhhhhhhh.",
+              "uGhhhhhhShhhShhhh.hhh",
+              "uGSSSShhhhhhShhh..UUU",
+              "uGSSSSSSSShhhhhh..UU.",
+              "u.UUUUUUU.SSSSU......",
+              "u....................",
+              "u....................",
+              "u....................",
+              "u...................."
+            ],
+            [
+              "W....................",
+              "u.hhhhh...hS.........",
+              "uGhhhhhhhhhhhhS......",
+              "uGhWWWhhShShhhhh...hh",
+              "uGhWKWhSShhhShhh..hhh",
+              "uGhWWWhhhShhShhhhhhh.",
+              "uGhhhhhhShhhhhhhhhh..",
+              "uGSSSShhhhSSSSU.hhhh.",
+              "uGSSSSSSSS......h.hhh",
+              "u.UUUUUUU.........UUU",
+              "u.................UU.",
+              "u....................",
+              "u....................",
+              "u...................."
+            ]
+          ],
+          "hotspot": [5, 14],
+          "mini": [
+            "W........",
+            "u.hhh...h",
+            "uGWKhhhhh",
+            "uGhhhhSh.",
+            "uGSSSShhh",
+            "u.UUU...U",
+            "........."
+          ],
+          "miniFrames": [
+            [
+              "W........",
+              "u.hhh...h",
+              "uGWKhhhhh",
+              "uGhhhhSh.",
+              "uGSSSShhh",
+              "u.UUU...U",
+              "........."
+            ],
+            [
+              "W.......h",
+              "u.hhh..hh",
+              "uGWKhhhh.",
+              "uGhhhhShh",
+              "uGSSSSh.U",
+              "u.UUU....",
+              "........."
+            ],
+            [
+              "W........",
+              "u.hhh....",
+              "uGWKhhh.h",
+              "uGhhhhShh",
+              "uGSSSShh.",
+              "u.UUU..hh",
+              "........U"
+            ]
+          ],
+          "miniHotspot": [4, 6],
+          "name": "koinobori",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..........k....",
+            ".........GGGo..",
+            "........RRRRRr.",
+            ".......RRRRRRrr",
+            ".......WWWWWWpp",
+            ".......RRRRRRrr",
+            "......nWWWWWWpp",
+            ".....n.RRRRRRrr",
+            "....n...RRRRRr.",
+            "...n.....GGGo..",
+            "..n.......R....",
+            ".n........R....",
+            "n.............."
+          ],
+          "hotspot": [3, 13],
+          "mini": [".....k..", ".....Go.", "...nRRRr", "..n.WWWp", ".n..RRRr", "n....Go."],
+          "miniHotspot": [2, 6],
+          "name": "chochin",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........WW...WW..........",
+            "........AWKAAAKWa.........",
+            "........AAAAAAAAa.........",
+            ".........AAAAAAa..........",
+            "..........ayysa...........",
+            "..........yoyyos..........",
+            "........yoyoyyosos........",
+            ".......yoyoyyyyosos.......",
+            ".....yyoyyoyyyyossoss.....",
+            "....yyoyyoyyyyyyossoss....",
+            "..yyyoyyyoyyyyyyosssosss..",
+            "yyyyoyyyyoyyyyyyoysssossss",
+            "ttttttttttttttttttttttttoo"
+          ],
+          "hotspot": [12, 13],
+          "mini": ["....W..W...", "....AAAa...", "...yyyyss..", ".yyoyyyoss.", "tttttttttto"],
+          "miniHotspot": [5, 5],
+          "name": "kasa",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......RRRRRr............",
+            ".....RRRRRRRr...........",
+            "....RWWRRRWWr...........",
+            "....RRRWRWRRr...........",
+            "....RGKRRRKGr...........",
+            "RRRRRRRRRRRRr...........",
+            ".rrrrrrrRRRRr...........",
+            "....RWWWWWWRr...........",
+            ".....WWrrWWrWWWWWWWW....",
+            ".....WWWWWWp........WWp.",
+            "......WWWWp...........Wp",
+            "......................p."
+          ],
+          "hotspot": [15, 8],
+          "mini": [
+            "....RRRRr.",
+            "...RWRRWRr",
+            "...RRKRKRr",
+            "RRRRRRRRRr",
+            ".rrrrWWWr.",
+            ".....WWp.."
+          ],
+          "miniHotspot": [6, 5],
+          "name": "tengu",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....................Y.....Y.",
+            ".IiIIIiIIIIIIIIIIIiIIYYii.YYJ",
+            ".iIIIiIIIIIIIIIIIIIIIYYYIIYYJ",
+            "WWWWWWWWWWWWWWWWWWWWWYYYIiYJJ",
+            "IIIiIIIiIIIIIIIIIIIiIYYYIiYYJ",
+            "iiiiiiiiiiiiiiiiiiiiiJJiIiJJJ",
+            "........................YJ...",
+            ".......................YJ.J.."
+          ],
+          "hotspot": [12, 8],
+          "mini": ["IIIIIIIIYYIYY", "iiiiiiiiYYWYJ", "........JJ.JJ"],
+          "miniHotspot": [6, 3],
+          "name": "obi",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": null,
+      "theme": "matsuri"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            ".......AI.YW.lA.......",
+            "...S..ffffffffff..l...",
+            "..SWSF..........FlYl..",
+            "...S..W........W..l...",
+            ".YF.AWYW..I...WYWA.FI.",
+            "Y3YFFFWFFIYIFFFWFFFIWI",
+            ".Y.....A..I...A.....I."
+          ],
+          "hotspot": [10, 2],
+          "mini": [
+            "....I.Y.W....",
+            "..S.fffff.l..",
+            ".SWS.....lYl.",
+            ".YS.WIYIW.lI.",
+            "Y3YFFFIFFFIWI"
+          ],
+          "miniHotspot": [6, 3],
+          "name": "seppele",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......AA......",
+            "....AAAAaA....",
+            "..AAaAAAAAaA..",
+            ".AAaAAWAAAAaA.",
+            "AAaAA.WW.AAaAA",
+            ".a.Aa.W..aA.a.",
+            "...a.AW.Aa....",
+            "......WW......",
+            "......4W......",
+            "......WW......",
+            "......W4......",
+            "......WW......",
+            "......WW......",
+            ".....WWWq....."
+          ],
+          "hotspot": [6, 13],
+          "mini": ["..AA...", ".AAaAA.", "AaAWAaA", ".a.Wa..", "...4...", "...W...", "..WWq.."],
+          "miniHotspot": [3, 6],
+          "name": "koivu",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....Y......",
+            "............",
+            "......R.....",
+            ".....R3.....",
+            "....R33R..R.",
+            "...R3YY3RR3.",
+            "..R3YWY33R..",
+            "..R3YWWY3R..",
+            "..R33YWY3R..",
+            "...R3YY3R...",
+            "...nkn.nkn..",
+            ".nnnnnnnnnnk",
+            "kn.kn..kn.kn"
+          ],
+          "fps": 6,
+          "frames": [
+            [
+              ".....Y......",
+              "............",
+              "......R.....",
+              ".....R3.....",
+              "....R33R..R.",
+              "...R3YY3RR3.",
+              "..R3YWY33R..",
+              "..R3YWWY3R..",
+              "..R33YWY3R..",
+              "...R3YY3R...",
+              "...nkn.nkn..",
+              ".nnnnnnnnnnk",
+              "kn.kn..kn.kn"
+            ],
+            [
+              ".........Y..",
+              "..Y.........",
+              ".....R......",
+              "....R3R.....",
+              ".R..R33R....",
+              ".R3RR3YY3R..",
+              "..R33YWY3R..",
+              "..R3YWWY3R..",
+              "..R3YWWYY3R.",
+              "...R3YY3R...",
+              "...nkn.nkn..",
+              ".nnnnnnnnnnk",
+              "kn.kn..kn.kn"
+            ]
+          ],
+          "hotspot": [5, 12],
+          "mini": ["...Y...", "...R...", "..R3R..", ".R3Y3R.", ".R3W3R.", "nkn.nkn", "knnnnnk"],
+          "miniFrames": [
+            ["...Y...", "...R...", "..R3R..", ".R3Y3R.", ".R3W3R.", "nkn.nkn", "knnnnnk"],
+            [".Y.....", "..R....", "..R3R..", ".R3YYR.", ".R3W3R.", "nkn.nkn", "knnnnnk"]
+          ],
+          "miniHotspot": [3, 6],
+          "name": "kokko",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".......SS.SS...",
+            "......SppSppS..",
+            "..g...SppSppS..",
+            "...g...SpSpS...",
+            "....gg..SgS....",
+            "...gKgDgggRRRNN",
+            "..g.gD.gDDNNNm.",
+            ".g....g.g.g....",
+            "g....g..g..g...",
+            ".....g..g...g..",
+            "....g...g....g.",
+            "....g...g....g."
+          ],
+          "hotspot": [7, 11],
+          "mini": ["....S.S.", "g..SpSpS", ".ggKgRRN", ".g.g.g.g", "g..g..g.", "g..g...g"],
+          "miniHotspot": [4, 5],
+          "name": "itikka",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "........WSSS......",
+            "........WSS.......",
+            "........FF........",
+            "..FAFAFAFAFAFAFA..",
+            "..F.....AFF....F..",
+            "..FA.....FAa..FA..",
+            ".F..A...FF...F..A.",
+            "I....A.AFA...W...A",
+            "F....A..FFa..F...A",
+            ".F..AY..FA...F..AI",
+            "..FW...AFF....FY..",
+            "........FAa.......",
+            "........FF........",
+            ".......AFA........",
+            "........FF........"
+          ],
+          "hotspot": [8, 14],
+          "mini": [
+            "....WSS...",
+            "....FS....",
+            ".AFAFAFA..",
+            "AF..F..FA.",
+            "I.A.Fa.W.A",
+            ".FY.F..FI.",
+            "....FF...."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "salko",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".t..................t.",
+            "tt..................tt",
+            ".a..................a.",
+            "..A...............Aa..",
+            "..RR..............RR..",
+            "..RN..............RN..",
+            "....A...........Aa....",
+            "....RR..........RR....",
+            "....RN..........RN....",
+            ".....Aa........A......",
+            ".....RRa......aRR.....",
+            ".....RNa......aRN.....",
+            "........a....a........",
+            "........a....a........",
+            ".........a..a........."
+          ],
+          "hotspot": [10, 14],
+          "mini": [
+            "t.........t",
+            ".a.......a.",
+            ".RR.....RR.",
+            ".RN.....RN.",
+            "..a.....a..",
+            "..RR...RR..",
+            "...a...a..."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "berries",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......A.",
+            "....AAAa",
+            "...AAFAa",
+            "..AAFAa.",
+            ".AAFAa..",
+            ".AFaa...",
+            "F......."
+          ],
+          "hotspot": [2, 9],
+          "mini": ["...A", ".AAa", ".AFa", "F..."],
+          "miniHotspot": [1, 5],
+          "name": "leaf",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            "....WW........WW....",
+            ".W..WW..W..W..WW..W.",
+            "..WYYYYW....WYYYYW..",
+            "WWY....YWWWWY....YWW",
+            "WWY....YWWWWY....YWW",
+            ".WY....YW..WY....YW.",
+            ".WY....YW..WY....YW.",
+            ".W.YYYY.W..W.YYYY.W."
+          ],
+          "hotspot": [9, 5],
+          "mini": [
+            "...W.....W...",
+            "..YYY...YYY..",
+            ".Y...YWY...Y.",
+            "WY...Y.Y...YW",
+            ".Y...Y.Y...Y.",
+            "..YYY...YYY.."
+          ],
+          "miniHotspot": [6, 3],
+          "name": "daisies",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": {
+        "from": "06-15",
+        "to": "06-30"
+      },
+      "theme": "midsummer"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            ".......WW...",
+            "......WWWq..",
+            "......WWqq..",
+            ".......qq...",
+            ".......Ix...",
+            "......IIi...",
+            "......IIIi..",
+            ".....QQIIi..",
+            "....QQQQIi..",
+            "....IQQQQQi.",
+            "...IIIQQQQx.",
+            "..QIIIIIQQx.",
+            ".QQQQIIIIQQx",
+            "GGGGGGGGGGGo"
+          ],
+          "hotspot": [4, 14],
+          "mini": [".....WW", "....IWq", "...QIi.", "..IQQx.", ".QIIQi.", "GGGGGGo"],
+          "miniHotspot": [3, 6],
+          "name": "partyhat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......W......",
+            "..W.l.I.A.W..",
+            ".A.S..I..S.l.",
+            "....S...S....",
+            ".............",
+            "WII.......IIW",
+            ".............",
+            "....S...S....",
+            ".l.S..I..S.A.",
+            "..W.A.I.l.W..",
+            "......W......",
+            ".............",
+            ".....RRr.....",
+            ".....WWq....."
+          ],
+          "fps": 4,
+          "frames": [
+            [
+              "......W......",
+              "..W.l.I.A.W..",
+              ".A.S..I..S.l.",
+              "....S...S....",
+              ".............",
+              "WII.......IIW",
+              ".............",
+              "....S...S....",
+              ".l.S..I..S.A.",
+              "..W.A.I.l.W..",
+              "......W......",
+              ".............",
+              ".....RRr.....",
+              ".....WWq....."
+            ],
+            [
+              ".............",
+              ".............",
+              ".*....y....*.",
+              "...v.....v...",
+              ".............",
+              ".............",
+              "y...........y",
+              ".............",
+              ".............",
+              ".d..........d",
+              "..*.......*..",
+              "......*......",
+              ".....RRr.....",
+              ".....WWq....."
+            ],
+            [
+              ".............",
+              ".............",
+              ".............",
+              ".............",
+              "......W......",
+              "......*......",
+              "......!......",
+              "......!.y....",
+              "......y......",
+              "....!.o......",
+              "......o......",
+              ".....u.g.....",
+              ".....RRr.....",
+              ".....WWq....."
+            ],
+            [
+              ".............",
+              ".............",
+              "...I..*..S...",
+              "....!.W.!....",
+              ".....*W*.....",
+              "...A*WWW*l...",
+              ".....*W*.....",
+              "....!.W.!....",
+              "...S..*..I...",
+              ".............",
+              ".............",
+              ".............",
+              ".....RRr.....",
+              ".....WWq....."
+            ]
+          ],
+          "hotspot": [6, 14],
+          "mini": [
+            "...W..I..W...",
+            ".S..S...S..S.",
+            "I...........I",
+            ".S..S...S..S.",
+            "...W.....W...",
+            "......R......"
+          ],
+          "miniFrames": [
+            [
+              "...W..I..W...",
+              ".S..S...S..S.",
+              "I...........I",
+              ".S..S...S..S.",
+              "...W.....W...",
+              "......R......"
+            ],
+            [
+              ".............",
+              "..*...y...*..",
+              ".............",
+              "d...........d",
+              "..*.......*..",
+              "......R......"
+            ],
+            [
+              ".............",
+              "......W......",
+              "......*......",
+              "......!......",
+              "......o......",
+              "......R......"
+            ],
+            [
+              "....S.I.S....",
+              ".....!.!.....",
+              "...I..W..I...",
+              ".....!.!.....",
+              "....S...S....",
+              "......R......"
+            ]
+          ],
+          "miniHotspot": [6, 6],
+          "name": "firework",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........*.",
+            ".y.......y.",
+            "..!.......!",
+            "...*..y..*.",
+            "....*!*....",
+            "y!..!W!....",
+            "....*!*..*y",
+            "..*..D..!..",
+            ".y...D...y.",
+            ".....D.....",
+            ".....g.....",
+            ".....g.....",
+            ".....g....."
+          ],
+          "fps": 8,
+          "frames": [
+            [
+              ".........*.",
+              ".y.......y.",
+              "..!.......!",
+              "...*..y..*.",
+              "....*!*....",
+              "y!..!W!....",
+              "....*!*..*y",
+              "..*..D..!..",
+              ".y...D...y.",
+              ".....D.....",
+              ".....g.....",
+              ".....g.....",
+              ".....g....."
+            ],
+            [
+              ".....y.....",
+              "*..........",
+              ".*....*...y",
+              "..y...!..*.",
+              "....*!*.!..",
+              "....!W!....",
+              "..!.*!*....",
+              ".y...D.*...",
+              ".....D..*..",
+              "...*.D.....",
+              ".....g.....",
+              ".....g.....",
+              ".....g....."
+            ],
+            [
+              "...........",
+              "..*.....y..",
+              "....y......",
+              "y..!.....*.",
+              "..*.*!*.!..",
+              "....!W!..y*",
+              ".y..*!*....",
+              "...!.D.!...",
+              "..y..D..*..",
+              ".....D.....",
+              ".....g.....",
+              ".....g.....",
+              ".....g....."
+            ]
+          ],
+          "hotspot": [5, 13],
+          "mini": ["..*...*..", "...!.!...", "....W....", "...!D!...", "....D....", "....g...."],
+          "miniFrames": [
+            ["..*...*..", "...!.!...", "....W....", "...!D!...", "....D....", "....g...."],
+            [".y..!....", ".....!..*", ".*.!W....", "....D!...", "..y.D....", "....g...."],
+            [".......y.", "*..!.!...", "....W!.y.", "...!D....", "....D.*..", "....g...."]
+          ],
+          "miniHotspot": [4, 6],
+          "name": "sparkler",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..........S.......",
+            "....4444444444....",
+            "....4Du4444444....",
+            "....4Du4444444....",
+            "....4Du4444444....",
+            "....4Du4444444....",
+            "....4D44444444....",
+            "....4444444444....",
+            "....GGGGGGGGGo....",
+            "....GGGGGGGGGo....",
+            "4..............I4.",
+            "444444444444444444"
+          ],
+          "hotspot": [8, 12],
+          "mini": [".......I.", "..4D444..", "..4D444..", "..4D444..", "..GGGGo..", "444444444"],
+          "miniHotspot": [4, 6],
+          "name": "tophat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".*...........*.",
+            "*.GG.......GG.*",
+            ".GyGo.....GyGo.",
+            ".oooo.RRR.oooo.",
+            "....rRWWWRr....",
+            "...RWWWKWWWr...",
+            "...RWWWKWWWr...",
+            "..RWWWWKWWWWr..",
+            "..RWDWWRWWDWr..",
+            "..RWWWWWWWWWr..",
+            "...RWWWWWWWr...",
+            "...rRWWDWWRr...",
+            "....rrRRRrr....",
+            "....o.....o...."
+          ],
+          "hotspot": [7, 14],
+          "mini": [
+            "yG.RRR.Gy",
+            "GoRWKWrGo",
+            ".RWWKWWr.",
+            ".RWWRWWr.",
+            ".RWWWWWr.",
+            "..rWWWr..",
+            "...rrr..."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "clock",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..Y.....S.....l..",
+            "I....II..S..A....",
+            "....I..I..S......",
+            ".A..I.....S..Y...",
+            "....l..I.S..y....",
+            "S..A..I....yr....",
+            "..A..I....yRRo...",
+            "l.A......yRRGo...",
+            "........yRRGGRr..",
+            ".......yRRGGRRo..",
+            ".........GGRRGor.",
+            "...........RGGRr.",
+            ".............RRG.",
+            "................R"
+          ],
+          "hotspot": [14, 14],
+          "mini": [
+            ".I..S...A.",
+            "S..A..I..l",
+            "..yy......",
+            "..RRGo....",
+            "...GGRr...",
+            "....RRGo..",
+            "......Go.."
+          ],
+          "miniHotspot": [6, 6],
+          "name": "confetti",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "................FF.FF",
+            "................FAaAF",
+            ".................aaa.",
+            "................FAaAF",
+            ".........Ii.....FF.FF",
+            "....IIIIIPII....f....",
+            "...IIIIIIIIII..f.....",
+            ".P.IIIIIIIIKII.f.....",
+            "P.PIIIIIIIIIIIPP.....",
+            ".PPIIIIIIIIIPIPM.....",
+            "...IIIIIIIIIIIPP.....",
+            "...iiiiiiiiiii.......",
+            "...ii.ii..ii.ii......"
+          ],
+          "hotspot": [8, 13],
+          "mini": [
+            "........AF",
+            "......I.FF",
+            "..IIIIIIf.",
+            "P.IIIIIKIP",
+            ".IIIIIIIIM",
+            "..ii...ii."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "luckypig",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".A............................l.",
+            "A.A..........................l.l",
+            "A..A........................l..l",
+            ".AA.........................l...",
+            "...A.........................l..",
+            "...A..........................l.",
+            "..IIII.....III.....III.....II..I",
+            ".I....I...I...I...I...I...I...I.",
+            ".I.....III.....III.....III.....I",
+            "..SSSS.....SSS.....SSS.....SS.S.",
+            ".S....S...S...S...S...S...S....S",
+            "S.l....SSS.....SSS.....SSS...A..",
+            "..l...........................A.",
+            ".l............................A."
+          ],
+          "hotspot": [15, 13],
+          "mini": [
+            ".A.........l.",
+            "A.A.......l.l",
+            "A...........l",
+            ".A.........l.",
+            ".A.........l.",
+            "I...IIIII...I",
+            ".III.....III.",
+            "S.SSS...SSS.S"
+          ],
+          "miniHotspot": [6, 8],
+          "name": "streamers",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": {
+        "from": "12-27",
+        "to": "01-01"
+      },
+      "theme": "newyear"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "R.R..............R.R",
+            "RRR..............RRR",
+            ".RR...WWW..WWW...RR.",
+            "..RR..WKW..WKW..RR..",
+            "...RR..R....R..RR...",
+            "....RRRRRRRRRRRR....",
+            "...RRRRRRRRRRRRRr...",
+            "...RRRRRRRRRRRRRr...",
+            "..R.rrrrrrrrrrrr.R..",
+            ".R..R..........R..R."
+          ],
+          "hotspot": [9, 8],
+          "mini": [
+            "R.R.....R.R",
+            "RR.W...W.RR",
+            ".R.R...R.R.",
+            "..RRRRRRR..",
+            ".RRRRRRRRr.",
+            "R.rrrrrrr.R"
+          ],
+          "miniHotspot": [5, 5],
+          "name": "crab",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......llllllll......",
+            "....lllWWllllllv....",
+            "...llWWllllllllvv...",
+            "...llWllllllllllv...",
+            "...llllllllllllvv...",
+            "...llWKllllllWKvv...",
+            "...llKKllIIllKKvv...",
+            "....llllllllllllv...",
+            "..ll.llllllllvv.vv..",
+            ".ll.ll.ll..vl.vv.vv.",
+            "ll..l..l....v..v..vv",
+            "l..ll..ll..vv..vv..v"
+          ],
+          "hotspot": [9, 10],
+          "mini": [
+            "...lllll...",
+            "..lWllllv..",
+            "..lKllKlv..",
+            "..llllllv..",
+            ".l.l.l.v.v.",
+            "l..l.l.v..v"
+          ],
+          "miniHotspot": [5, 5],
+          "name": "octopus",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....IIIIII.....",
+            "...IIIIIIIIii...",
+            "..IWWIIIIIIIIi..",
+            ".IWIIIIIIIIIIii.",
+            ".IIIIKIIIIKIIIi.",
+            "IIIIIIIIIIIIIIii",
+            "iiIiiIiiIiiIiiii",
+            ".l..I..l..I..l..",
+            "..l..I..l..I..l.",
+            ".l..I..l..I..l..",
+            "..l..I..l..I..l.",
+            ".l..I..l..I..l..",
+            "..l..I..l..I..l."
+          ],
+          "hotspot": [7, 12],
+          "mini": [
+            "..IIIII..",
+            ".IWIIIIi.",
+            "IIKIIKIii",
+            "iIiIiIiIi",
+            ".l.I.l.I.",
+            "l.I.l.I..",
+            ".l.I.l.I."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "jellyfish",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....S..Q..S...........",
+            ".....Q.Q.Q............",
+            "......QQQ.............",
+            ".......Q..............",
+            ".......Q..............",
+            "....SSSSSSSS..........",
+            "..SSSSSSSSSSSSd....S.S",
+            ".SSSSSSSSSSSSSSd...SSd",
+            ".SSKSSSSSSSSSSSSd.SSd.",
+            "SSSSISSSSSSSSSSSSSSd..",
+            "SpppSSSSSSSSSSSSSdd...",
+            ".ppppppppppSSSddd.....",
+            "..ppppppppppdd........"
+          ],
+          "hotspot": [10, 12],
+          "mini": [
+            "..Q.Q......",
+            "...Q.......",
+            "...Q.......",
+            ".SSSSS...Sd",
+            "SKSSSSS.Sd.",
+            "SppSSSSSd..",
+            ".ppppddd..."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "whale",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....WWW........",
+            "...WWWWW.......",
+            "...WKWWq.......",
+            "YYYWWWWq.......",
+            "..RYWWWq.......",
+            "....WWWWq......",
+            "...WWWWWWgggg..",
+            "..WWWWWggggggD.",
+            "..WWWWWWgggDDDD",
+            "...qWWWWqqgD...",
+            "....qqqqqq.....",
+            ".....3...3.....",
+            "....33..33....."
+          ],
+          "hotspot": [7, 12],
+          "mini": [
+            "..WW....",
+            ".WKWq...",
+            "YYWWq...",
+            "..WWWgg.",
+            "..WWggDD",
+            "...qqq..",
+            "...3.3.."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "seagull",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....G.G....",
+            "....GGGGo..",
+            "GGGGGKGGGo.",
+            "....GGGGo..",
+            "....GGGGGQ.",
+            "...WGGGGGQQ",
+            "...WGGGGGQ.",
+            "...WGGGGo..",
+            "....WGGGo..",
+            ".....GGGo..",
+            "...o..GGo..",
+            "...Go.GGo..",
+            "....GGGo..."
+          ],
+          "hotspot": [6, 12],
+          "mini": ["..GG.", "GGGKo", "..GGQ", ".WGGQ", ".WGo.", "o.Go.", ".GG.."],
+          "miniHotspot": [2, 6],
+          "name": "seahorse",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....................33",
+            ".....................YJ",
+            ".....................YJ",
+            ".....................YJ",
+            ".....................YJ",
+            ".....................YJ",
+            ".....................YJ",
+            ".....................YJ",
+            "....QQQQQQQQQQQQQQQQ.YJ",
+            "...QW..............QQYJ",
+            "xxxQ................QYJ",
+            "...Q................QQJ",
+            "...Q.......QQ.......Q..",
+            "....xxxxxxxxxxxxxxxx..."
+          ],
+          "hotspot": [11, 11],
+          "mini": [
+            "...........3",
+            "...........Y",
+            "QQQQQQQQQQ.Y",
+            "W.........QY",
+            "Q.........Q.",
+            "Q.........Q.",
+            ".xxxxxxxxx.."
+          ],
+          "miniHotspot": [5, 4],
+          "name": "snorkel",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            "...GG...",
+            "...GG...",
+            "GGGGGGGo",
+            ".GG33Go.",
+            "..GGGo..",
+            ".GGooGo.",
+            ".Go..Go."
+          ],
+          "hotspot": [-2, 4],
+          "mini": ["..G..", "GG3Go", ".G3o.", "Go.Go"],
+          "miniHotspot": [-1, 2],
+          "name": "starfish",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": null,
+      "theme": "ocean"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "....RR....",
+            "...RRRr...",
+            "...RRRr...",
+            "..WWWWWq..",
+            "..WSSdWq..",
+            "..WSddWq..",
+            "..WWWWWq..",
+            "..WWWWWq..",
+            "..RRRRRr..",
+            ".RWWWWWqr.",
+            "RRWWWWWqrr",
+            "RR.gDDg.rr",
+            "...3YY3...",
+            "....33....",
+            ".....3...."
+          ],
+          "hotspot": [4, 14],
+          "mini": [".RR..", ".RRr.", "WSdq.", "WWWq.", "RRRrr", "R3Y3r", ".33.."],
+          "miniHotspot": [2, 6],
+          "name": "rocket",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......SSSd......",
+            ".....SWSSdd.....",
+            "....SSSSSSdd....",
+            "..pppppppppppq..",
+            "pYppYppYppYppYpq",
+            ".qqqqqqqqqqqqqq.",
+            ".....y....y.....",
+            ".....y....y.....",
+            "....y......y....",
+            "....y..y...y....",
+            "...y........y...",
+            "...y....y...y..."
+          ],
+          "hotspot": [7, 11],
+          "mini": ["...SSd...", "..SWSdd..", ".ppppppq.", "pYpYpYpYq", ".qqqqqqq.", "..y...y.."],
+          "miniHotspot": [4, 5],
+          "name": "ufo",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "........GGGGo.........",
+            "......GGWGGGGoo.......",
+            ".....GGWGGGGGGoo......",
+            "....G33333333333o.....",
+            "l...GGGGGGGGGGGoo....v",
+            "ll..GGGGGGGGGGGoo..vv.",
+            ".llllllllllllllvvvvv..",
+            "..lllllllllllllvvvv...",
+            ".....Goooooooooo......",
+            "......ooooooooo.......",
+            "........ooooo........."
+          ],
+          "hotspot": [10, 11],
+          "mini": ["...GGo...", "..GWGGo..", "l.G333o.v", ".llllllv.", "..Goooo..", "...ooo..."],
+          "miniHotspot": [4, 5],
+          "name": "saturn",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".II.......II.",
+            "..A.......A..",
+            "...A.AAA.A...",
+            "...AAAAAAa...",
+            "..AKKAAAKKa..",
+            "..AKWAAAKWa..",
+            "...AAAKAAa...",
+            "A...aaaaa...A",
+            ".A.AAAAAAa.A.",
+            "..AAAAAAAAa..",
+            "...AAAAAAa...",
+            "..AA.....Aa..",
+            "..aa.....aa.."
+          ],
+          "hotspot": [6, 12],
+          "mini": ["I.....I", ".A.A.A.", ".AAAAa.", "AKAAKAa", ".AAAAa.", "A.aaa.A", ".Aa.Aa."],
+          "miniHotspot": [3, 6],
+          "name": "alien",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......YY......",
+            "....YYYJ......",
+            "...YYYJ.......",
+            "..YYYJ.....W..",
+            ".YYYJ.....WWW.",
+            ".YYYJ......W..",
+            "YYYYJ.........",
+            "YYYYJ.........",
+            "YYYYJ.........",
+            "YYYYYJ.......Y",
+            ".YYYYYJ.....YJ",
+            ".YYYYYYYJJJYYJ",
+            "..YYYYYYYYYYJ.",
+            "....JJJJJJJ..."
+          ],
+          "hotspot": [4, 13],
+          "mini": ["..YY.W", ".YYJ..", "YYJ...", "YYJ..Y", "YYYJYJ", ".YYYJ.", "..JJJ."],
+          "miniHotspot": [2, 6],
+          "name": "moon",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....WWWWW....",
+            "...WSSSSdW...",
+            "...WSWSSdq...",
+            "W..WSSSSdq..W",
+            "WW..WWWWq..WW",
+            ".WWWWWWWWWqq.",
+            "....WW1Wq....",
+            "....WWWWq....",
+            "...WWq.WWq...",
+            "..WWq...WWq..",
+            "..qq..g..qq..",
+            ".....g.......",
+            "......g......",
+            ".....g.......",
+            "......g......"
+          ],
+          "hotspot": [6, 14],
+          "mini": ["..WWW..", ".WSSdq.", "W.WWq.W", ".WWWWq.", ".Wq.Wq.", "...g...", "..g...."],
+          "miniHotspot": [3, 6],
+          "name": "astronaut",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..Y.................Y..",
+            "YYWYY.............YYWYY",
+            "..Y.................Y..",
+            "....GGGG......GGGG.....",
+            "...G....GGGGGG....G....",
+            "...G....G....G....G....",
+            "...G....G....G....G....",
+            "...G....G....G....G....",
+            "....oooo......oooo....."
+          ],
+          "hotspot": [10, 6],
+          "mini": [
+            ".Y.........Y.",
+            "YWY.......YWY",
+            ".YGGG...GGGY.",
+            ".G...GGG...G.",
+            ".G...G.G...G.",
+            ".G...G.G...o.",
+            "..ooo...ooo.."
+          ],
+          "miniHotspot": [6, 4],
+          "name": "starglasses",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            "....Y..............Y....",
+            "........................",
+            "..Y..................Y..",
+            "..Y..................Y..",
+            "YYWYY..............YYWYY",
+            "..Y..................Y..",
+            "..Y..................Y.."
+          ],
+          "hotspot": [11, 4],
+          "mini": [".Y.........Y.", "YWY.......YWY", ".Y.........Y."],
+          "miniHotspot": [6, 2],
+          "name": "sparkle",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": null,
+      "theme": "space"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            ".....WWWq.....",
+            "....WWWWWq....",
+            "...YWYWYWYJ...",
+            "..YYYYYYYYYJ..",
+            "..YYKYYYYKYJ..",
+            "..YYYY33YYYJ..",
+            "..YIYYYYYYIJ..",
+            "WWYYYYWWYYYJWq",
+            "WWWYYWWWWYJWWq",
+            "WWWWWWWWWWWWCq",
+            "WWWWWWWWWWWWCq",
+            ".WWWWWWWWWWCq.",
+            "..CWWWWWWWCq..",
+            "...CCCCCCqq..."
+          ],
+          "hotspot": [6, 13],
+          "mini": [
+            "..WWWq..",
+            ".YWYWYJ.",
+            ".YKYYKJ.",
+            "WYY3YYJq",
+            "WWYWWYWq",
+            "WWWWWWCq",
+            ".CWWWCq.",
+            "..CCqq.."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "chick",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....IIIi....",
+            "..IWIIIIIi..",
+            ".IWIIIIIIIi.",
+            ".IIIIIIIIIi.",
+            "WWWWWWWWWWWq",
+            "YYYYYYYYYYYJ",
+            "SYYYYSSYYYYd",
+            "SSYYSSSSYYSd",
+            "SSSSSSSSSSSd",
+            "WWWWWWWWWWWq",
+            "llllllllllvv",
+            "llWlllWlllpv",
+            "llllllllllvv",
+            ".lllWlllWvv.",
+            "..lllllllv..",
+            "...vvvvvv..."
+          ],
+          "hotspot": [5, 14],
+          "mini": [
+            "..IIi..",
+            ".IWIIi.",
+            ".WWWWq.",
+            "YYYSYYJ",
+            "SYSSSYd",
+            "llllllv",
+            ".lWllv.",
+            "..vvv.."
+          ],
+          "miniHotspot": [3, 6],
+          "name": "egg",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".qq....qq.....",
+            ".pu....pu...qq",
+            ".qu....qu...pu",
+            ".n..qq.n....qu",
+            ".n..qpqn....n.",
+            "..n..qun...n..",
+            "..n....n...n..",
+            "qqn....nqqn...",
+            "qpqn...qpunqq.",
+            ".qun..nuunqpu.",
+            "...n..n..nuu..",
+            "....n.n..n....",
+            "....n.n.n.....",
+            "....n.n.n....."
+          ],
+          "hotspot": [6, 14],
+          "mini": ["...qq..", "...pu..", "qq.qu..", "pu.n.qq", "qu.n.pu", ".nnn...", "..n...."],
+          "miniHotspot": [3, 6],
+          "name": "catkins",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...R..R..r.........",
+            "...RRRRRRr.........",
+            "...RRRRRRr.........",
+            "...WRRRRRr.........",
+            "...RRRRRrr.Y.Y.J...",
+            "....RRRrr..YYYYJ...",
+            ".....rrr...WYYYJ...",
+            "......F....YYYJJ...",
+            "F.....F.....JJJ....",
+            "FF....F......F....F",
+            ".FF...F....F.F...FF",
+            ".fFF..F...FF.F..FFf",
+            "..fFF.F..FFf.F.FFf.",
+            "...fFFF.FFf..FFFf.."
+          ],
+          "hotspot": [9, 14],
+          "mini": [
+            ".R.R.r.",
+            ".RRRRr.",
+            ".RRRrr.",
+            "F.rrr.F",
+            "FF.F.FF",
+            ".fFFFf.",
+            "...F...",
+            "...F..."
+          ],
+          "miniHotspot": [3, 6],
+          "name": "tulip",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".....A.....A......",
+            "..F..A..A..A......",
+            "..F.FA..A..A...a..",
+            ".A.FF.A.A..A.a.a..",
+            "..AA.FA.A.FA.aa...",
+            "..AAFFAFA.FAa.a...",
+            "F..AA.AF.FFFF.F..a",
+            ".F.AAFAF.FFYYY..a.",
+            "..F.AA.A.FYKYKJF..",
+            "...FAAAAAFYY3YJ...",
+            "....AAAAAFFJJJ....",
+            "...Wllllllllllv...",
+            "....lllllllllv....",
+            "....YYYYYYYYYJ....",
+            ".....lllllllv.....",
+            "......vvvvvv......"
+          ],
+          "hotspot": [8, 14],
+          "mini": [
+            "..A.A.A..",
+            "F.A.A.A.a",
+            ".FAFAFAa.",
+            ".F.FAF.a.",
+            "..AAAAA..",
+            ".llllllv.",
+            "..llllv..",
+            "...vvv..."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "rairuoho",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........................SS.",
+            "........................SSSd",
+            ".......................SSWSd",
+            "......................SSSSd.",
+            "........SSSSWSSSSd...SSSSd..",
+            "......SWSSSWYWSSSWSdSSSSd...",
+            "....SSWYWSSSWSSSWYWSSSSSS...",
+            "..SSWSSWSSWSSSWSSWSSWSSdSS..",
+            ".SSSd..................SSSd.",
+            "SSWd...................SWSSd",
+            "Sd......................SSSd",
+            ".........................dd."
+          ],
+          "hotspot": [11, 5],
+          "mini": [
+            "...........SS",
+            "..........SSd",
+            ".........SS..",
+            "....SSSSdSSSS",
+            "..SSWSSWSS.Sd",
+            ".SSWYWSSSS..d",
+            "SWSSWSSSWSS..",
+            "Sd..........."
+          ],
+          "miniHotspot": [6, 5],
+          "name": "kerchief",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...................",
+            ".......n...n.......",
+            "..lll..n...n..llv..",
+            ".llllll.n.n.lllllv.",
+            "llIIllll.n.llllIIlv",
+            "llIllllllnllllllIlv",
+            "vllllllllnllllllllv",
+            ".vlllllllnlllllllv.",
+            "..vvlllllnlllllvv..",
+            "....IIIIInIIIIi....",
+            "...IIIIIInIIIIIi...",
+            "...iIIIIiniIIIIi...",
+            "....iIIi.n.iIIi....",
+            ".....ii.....ii....."
+          ],
+          "fps": 6,
+          "frames": [
+            [
+              "...................",
+              ".......n...n.......",
+              "..lll..n...n..llv..",
+              ".llllll.n.n.lllllv.",
+              "llIIllll.n.llllIIlv",
+              "llIllllllnllllllIlv",
+              "vllllllllnllllllllv",
+              ".vlllllllnlllllllv.",
+              "..vvlllllnlllllvv..",
+              "....IIIIInIIIIi....",
+              "...IIIIIInIIIIIi...",
+              "...iIIIIiniIIIIi...",
+              "....iIIi.n.iIIi....",
+              ".....ii.....ii....."
+            ],
+            [
+              "...................",
+              "....ll.n...n.lv....",
+              "...lllln...nlllv...",
+              "...lIllln.nlllIv...",
+              "...lIllllnllllIv...",
+              "...vlllllnlllllv...",
+              "....vllllnllllv....",
+              ".....vlllnlllv.....",
+              "......lllnllv......",
+              "......IIInIIi......",
+              ".....IIIInIIIi.....",
+              ".....iIIiniIIi.....",
+              "......ii.n.ii......",
+              "..................."
+            ],
+            [
+              "......ll...lv......",
+              "......lnl.lnv......",
+              "......Inl.lni......",
+              "......lln.nlv......",
+              "......vllnllv......",
+              ".......llnlv.......",
+              ".......vlnlv.......",
+              "........lnv........",
+              "........Ini........",
+              ".......IInIi.......",
+              ".......iInIi.......",
+              "........ini........",
+              ".........n.........",
+              "..................."
+            ]
+          ],
+          "hotspot": [9, 14],
+          "mini": [
+            "...n...n...",
+            ".ll.n.n.lv.",
+            "lIlllnlllIv",
+            "vvlllnlllvv",
+            "..iIInIIi..",
+            "...iinii..."
+          ],
+          "miniFrames": [
+            [
+              "...n...n...",
+              ".ll.n.n.lv.",
+              "lIlllnlllIv",
+              "vvlllnlllvv",
+              "..iIInIIi..",
+              "...iinii..."
+            ],
+            [
+              "...n...n...",
+              "..lln.nlv..",
+              "..Illnlli..",
+              "..vllnllv..",
+              "...iInIi...",
+              "....ini...."
+            ],
+            [
+              "...nl.ln...",
+              "...ln.nv...",
+              "...vlnlv...",
+              "....lnv....",
+              "....ini....",
+              ".....n....."
+            ]
+          ],
+          "miniHotspot": [5, 6],
+          "name": "butterfly",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..Wq....Wq....Wq....Wq....Cq..",
+            ".WWWq..WWWq..WWWq..WWWq..WCCq.",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWCCCq",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWCCCq",
+            ".CCCCCCCCCCCCCCCCCCCCCCCCCCCq.",
+            "...qqqqqqqqqqqqqqqqqqqqqqqq..."
+          ],
+          "hotspot": [14, 6],
+          "mini": ["W.....W.....q", "WW...WWW...Wq", "WWWWWWWWWWWCq", ".CCCCCCCCCCq."],
+          "miniHotspot": [6, 4],
+          "name": "eggshell",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": {
+        "from": "03-20",
+        "to": "04-19"
+      },
+      "theme": "spring"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "............yyyyys............",
+            "...........yWyyyyys...........",
+            "..........yWyyyysyys..........",
+            "..........yyyyyyyyRR..RR......",
+            "..........RRRRRRRRRrRRrR......",
+            "....yyyyy.RRRRRRRRRRrrRRyyy...",
+            ".yyyysyyyyyyyyysyyyyRryyyyys..",
+            "yyyyyyyysyyyyyyyyyyRyyryysyyss",
+            "sssyyyyyyyyyyyyyyyyRyyyryyysss",
+            ".ssssssssssssssssssssssssssss."
+          ],
+          "hotspot": [14, 7],
+          "mini": [
+            ".....yyy.....",
+            "....yyyys....",
+            "....RRRRRrR..",
+            ".yyyyyyyyRys.",
+            "yyyyyyyyyRyrs",
+            "s.........R.s"
+          ],
+          "miniHotspot": [6, 5],
+          "name": "sunhat",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......r......",
+            "......r......",
+            ".....RRr.....",
+            ".....PRr.....",
+            "....PRKRr....",
+            "....PRRRr....",
+            "...PRRRRRr...",
+            "...PRKRRKr...",
+            "..PRRRRRRRr..",
+            "..PKRRRRRRr..",
+            ".WRRRRKRRRRW.",
+            ".AWWWWWWWWWa.",
+            "FFAAAAAAAaaff",
+            ".FFFFFFFFfff.",
+            "....FFFFF...."
+          ],
+          "hotspot": [6, 14],
+          "mini": [
+            "....R....",
+            "...RRr...",
+            "..RKRRr..",
+            ".RRRRKRr.",
+            "RRKRRRRRr",
+            "WWWWWWWWW",
+            ".FFFFFFf."
+          ],
+          "miniHotspot": [4, 6],
+          "name": "watermelon",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".PPI....",
+            "WPPI....",
+            "WPPPI...",
+            "WPPPPI..",
+            "WPPPPPII",
+            "WPPPPPPM",
+            "PPPPPPPM",
+            "PPPPPPPM",
+            "PPPPPPPM",
+            "PPPPPPMM",
+            "MPMMMMMM",
+            ".P.Ct...",
+            ".M.Ct...",
+            "...Ct..."
+          ],
+          "hotspot": [3, 13],
+          "mini": ["PPI..", "WPPI.", "WPPPI", "PPPPM", "PPPMM", "..C..", "..C.."],
+          "miniHotspot": [2, 6],
+          "name": "popsicle",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....SSSS....",
+            "..WSSSSWWW..",
+            ".WWWSSSWWWW.",
+            ".WWWSSWWWWW.",
+            "WWWWWWWWWWWW",
+            "RRRRWWYYYYYJ",
+            "RRRRWWYYYYJJ",
+            "RRRRWWWYYJJJ",
+            "RRRWWWWYJJJJ",
+            "RRWWWWWCJJJJ",
+            ".RWWWWCCJJJ.",
+            "..WWWCCCCJ..",
+            "....CCCC...."
+          ],
+          "hotspot": [5, 13],
+          "mini": ["..SSW..", ".WSWWW.", "RRWYYYJ", "RRWYYJJ", ".RWWJJ.", "..WCC.."],
+          "miniHotspot": [3, 6],
+          "name": "beachball",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...........Go...........",
+            "..........RWRW..........",
+            ".......WWRWWRWWRW.......",
+            "....RRWWRRWWRRWWRRWW....",
+            "..RRWWWRRWWWrrppprrppp..",
+            "RRRWWWRRRWWWrrrppprrrppp",
+            ".R..W..R..WWgr..p..r..p.",
+            "...........Wg...........",
+            "...........Wg...........",
+            "...........Wg...........",
+            "...........Wg...........",
+            "...........Wg...........",
+            "...........Wg...........",
+            "...........Wg..........."
+          ],
+          "hotspot": [11, 14],
+          "mini": [
+            "...RWRWR...",
+            ".RRWWRWWrr.",
+            "RRWWRRRpprr",
+            "R..W.W.p..r",
+            ".....W.....",
+            ".....W....."
+          ],
+          "miniHotspot": [5, 6],
+          "name": "parasol",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........IPP....",
+            "........IPPKPWW.",
+            "........PPPP..W4",
+            ".......PP......4",
+            ".......PP.......",
+            "........PP......",
+            ".PP......PP.....",
+            "PIIIIIIIIPPM....",
+            ".PIIPPPPPPPM....",
+            ".MPPMMMMPPPM....",
+            "...MMPPPPMM.....",
+            ".....M.P........",
+            "....M..P........",
+            ".....MPPM......."
+          ],
+          "hotspot": [8, 14],
+          "mini": ["....IPW", "....P.4", "...P...", "PIIIP..", ".MPMM..", "..M.P..", "....P.."],
+          "miniHotspot": [4, 6],
+          "name": "flamingo",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "........WRRr.....",
+            "........WRr......",
+            "........W........",
+            ".....Ct.t.to.....",
+            ".....Cttttto.....",
+            ".....Cttttto.....",
+            "C.t.tCttkttot.t.o",
+            "CtttoCttkttoCttto",
+            "CtttoCtttttoCttto",
+            "CooooCtttttoCoooo",
+            "CtttoCttkttoCttto",
+            "CtttoCtkkktoCttto",
+            "CooooCtkkktoCoooo",
+            "CtItoCtkkktoCttto"
+          ],
+          "hotspot": [8, 14],
+          "mini": ["....WRr..", "..C.W.o..", "..Cttto..", "C.Ctkto.o", "Cttttttto", "Cttkkktto"],
+          "miniHotspot": [4, 6],
+          "name": "sandcastle",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...........................YYY..",
+            "..........................YYKY3.",
+            "..........................YYYJ33",
+            "...........................YJ...",
+            "...........................YJ...",
+            "...PWWWWWWWWPPPPPPPPWWWWWWWWP...",
+            ".RRRWWWWWWWWRRRRRRRRWWWWWWWWRRR.",
+            "RRRRWWWWWWWWRRRRRRRRWWWWWWWWrrrr",
+            "RRRRWWWWWWWWRRRRRRRRWWWWWWWWrrrr",
+            ".rrrpppppppprrrrrrrrpppppppprrr.",
+            "...rpppppppprrrrrrrrppppppppr..."
+          ],
+          "hotspot": [15, 11],
+          "mini": [
+            "..........YY.",
+            "..........YK3",
+            "...........YJ",
+            "...........YJ",
+            "...........YJ",
+            "PPWWPPPPPWWPP",
+            "RRWWRRRRRWWrr",
+            ".rpprrrrrppr."
+          ],
+          "miniHotspot": [6, 8],
+          "name": "swimring",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": {
+        "from": "07-01",
+        "to": "07-31"
+      },
+      "theme": "summer"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "....WWWWWWWWWW....",
+            "..WWWWWWWWWWWWWq..",
+            ".WWWWWWWWWWWWWWWq.",
+            "WWWWWWWWWWWWWWWWqq",
+            ".pppppppppppppppq.",
+            "..444444GG444444..",
+            "..44444G44G44444..",
+            "..444444GG444444..",
+            "....D444444444...."
+          ],
+          "hotspot": [8, 6],
+          "mini": [".WWWWW.", "WWWWWWq", "ppppppq", "444G444", ".44444.", "..D444."],
+          "miniHotspot": [3, 4],
+          "name": "lakki",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".RRR.....SSS.",
+            "RWRRr...SWSSd",
+            "RRRRr.YYYSSSd",
+            "RRRrrYWYYJSdd",
+            ".rrr.YYYYJdd.",
+            "..r..YYYJJ.d.",
+            "...W..JJJ...W",
+            "...W...W...W.",
+            "....W..W..W..",
+            "....W..W..W..",
+            ".....W.W.W...",
+            ".....W.W.W...",
+            "......WWW....",
+            "......NmN....",
+            ".....N...N..."
+          ],
+          "hotspot": [6, 14],
+          "mini": ["RR..SS", "RWYYSd", "rYWYJd", ".WJJdW", "..WWW.", "...W..", "..NmN."],
+          "miniHotspot": [3, 6],
+          "name": "balloons",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..........Y...........",
+            ".........Y.Y.II.......",
+            "......SS.Y.YI.........",
+            "........S.A.AIIS......",
+            "......SS..A.A.S.S.....",
+            ".....IIY.Y.AYYS.I.I...",
+            "....I..Y.YI...Y.I.I...",
+            "...A.II.YI.IYY.AAIYY..",
+            "..A.AS.S.AASS.A.....Y.",
+            "..AYYS.SA....S.AAIYY..",
+            ".S...YS..AASS...I.I.Y.",
+            "S..YY...........I.I..Y",
+            ".S..................Y.",
+            "S....................Y",
+            ".S..................Y."
+          ],
+          "hotspot": [10, 10],
+          "mini": [
+            "....Y.I....",
+            "..S.YI.S...",
+            ".I.YAIY.A..",
+            "S.AISYAS.Y.",
+            ".SY.IA.YI..",
+            "S..AYSI...Y",
+            ".S.......Y."
+          ],
+          "miniHotspot": [5, 5],
+          "name": "serpentine",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...WW...",
+            "..gWWg..",
+            "...pp...",
+            "...pp...",
+            "..pooq..",
+            ".pooooq.",
+            "pooWoooq",
+            "poooookq",
+            "pYYYoooq",
+            "pYWYokoq",
+            "pYYYoooq",
+            "pokooooq",
+            "poooWooq",
+            "poooooqq",
+            ".qqqqqq."
+          ],
+          "hotspot": [3, 14],
+          "mini": ["..W..", ".gWg.", ".poq.", "pYooq", "pYWkq", "pokoq", ".qqq."],
+          "miniHotspot": [2, 6],
+          "name": "sima",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....WGWWGW....",
+            "..GWoGWoWGWo..",
+            ".GoWGo.GWoGWo.",
+            "GoGo.GoGo.GoGo",
+            "oGo.GoG.oGo.oG",
+            "GoGoGoGoGoGoGo",
+            ".oooooooooooo."
+          ],
+          "hotspot": [6, 6],
+          "mini": ["..WGWW...", ".GoWGoWo.", "GoG.GoGoG", "oGoGoGoGo", ".ooooooo."],
+          "miniHotspot": [4, 4],
+          "name": "tippaleipa",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....GGGG....",
+            "..GGWGGGGo..",
+            ".GWGGGGWGGo.",
+            ".GGGo..oGGo.",
+            "GWGo....oGGo",
+            "GGGo....oGWo",
+            "GGGo....oGGo",
+            ".GWGo..oGGo.",
+            ".GGGGoGGWoo.",
+            "..oGGGGGoo..",
+            "....oooo...."
+          ],
+          "hotspot": [5, 10],
+          "mini": [".GWGo..", "GWo.oGo", "GG...Go", "GWo.oWo", ".GGGGo.", "..ooo.."],
+          "miniHotspot": [3, 6],
+          "name": "munkki",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "..........................I.",
+            ".........................IIi",
+            ".........................IIi",
+            "........................IIi.",
+            "........................Ii..",
+            ".......................Ii...",
+            ".......................I....",
+            "l......................l....",
+            "ll....................ll....",
+            ".llllllllllllllllllllll.....",
+            "..llG....GllllG....Gll......",
+            "..llG....GllllG....Gll......",
+            "...lG....GlvvlG....Gv.......",
+            "....G....GvvvvG....G........",
+            ".....vvvv......vvvv........."
+          ],
+          "hotspot": [11, 12],
+          "mini": [
+            "............I",
+            "l..........Il",
+            "lllllllllllll",
+            ".lG...l...Gl.",
+            ".l...lll...l.",
+            ".l...lvl...v.",
+            "..vvv...vvv.."
+          ],
+          "miniHotspot": [6, 4],
+          "name": "mask",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            ".III..III..III..III.",
+            "I...II...II...II...I",
+            "I........II........I",
+            "I........II........I",
+            ".I......i..I......i.",
+            "..I....i....I....i..",
+            "...iiii......iiii..."
+          ],
+          "hotspot": [9, 4],
+          "mini": ["II.II.II.II", "I...III...I", "I...I.I...I", "I...i.I...i", ".iii...iii."],
+          "miniHotspot": [5, 2],
+          "name": "hearts",
+          "slot": "face",
+          "z": 3
+        }
+      ],
+      "season": {
+        "from": "04-20",
+        "to": "05-02"
+      },
+      "theme": "vappu"
+    },
+    {
+      "pieces": [
+        {
+          "art": [
+            "......WWW.......",
+            ".....WWWWq......",
+            ".....WWWWq......",
+            "......qqq.......",
+            ".....SSSSSd.....",
+            "...SSSSSSSSdd...",
+            "..SSWSSSSSSSdd..",
+            ".SSSSSSSSSSSSdd.",
+            ".SWSWSWSWSWSWdd.",
+            "SSSSSSSSSSSSSSdd",
+            "WWWWWWWWWWWWWWWq",
+            "WpWpWpWpWpWpWpWq"
+          ],
+          "hotspot": [7, 10],
+          "mini": [
+            "...WW...",
+            "...Wq...",
+            "..SSSd..",
+            ".SSWSSd.",
+            "SWSWSWSd",
+            "WWWWWWWq",
+            "WpWpWpWq"
+          ],
+          "miniHotspot": [4, 6],
+          "name": "bobble",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........DDDDDDDDDD........",
+            ".......DDggggggggggDD......",
+            "......DgggggggggggggD......",
+            ".IIII.Dg............gDIIII.",
+            "IIWIIiD..............DIIIIi",
+            "IWIIIi................IIIIi",
+            "IIIIIi................IIIIi",
+            ".iiii..................iii."
+          ],
+          "hotspot": [13, 3],
+          "mini": [
+            "....DDDDD....",
+            "...DggggggD..",
+            "IIID.....DIII",
+            "IWIi.....IIIi",
+            ".ii.......ii."
+          ],
+          "miniHotspot": [6, 3],
+          "name": "earmuffs",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....4444....",
+            "...444444...",
+            "..44WWWW44..",
+            "..4WKWWKW4..",
+            "..4WW33WW4..",
+            ".RRRRRRRRRr.",
+            "4.4WWWWRr4.4",
+            "..4WWWWWW4..",
+            "..4WWWWWW4..",
+            "...4WWWW4...",
+            "...33..33..."
+          ],
+          "hotspot": [5, 10],
+          "mini": [".444.", "4WKW4", "4W3W4", "RRRRr", "4WWW4", ".3.3."],
+          "miniHotspot": [2, 6],
+          "name": "penguin",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "...WWWWWWW....",
+            "..WWWWWWWWWq..",
+            ".WWYYWWWYYWWq.",
+            ".WYKYWWWYKYWq.",
+            ".WWYWWDWWYWWq.",
+            ".WWWWWDWWWWWq.",
+            "WWWgWWWWWgWWWq",
+            "WWWWWgWWgWWWWq",
+            "WWgWWWWWWWgWWq",
+            ".WWWWgWWgWWWq.",
+            "..WWWWWWWWWq..",
+            "...3.3..3.3..."
+          ],
+          "hotspot": [6, 11],
+          "mini": [".WWWWW.", "WYKWKYq", "WWWDWWq", "WgWWWgq", ".WWWWq.", ".3.3.3."],
+          "miniHotspot": [3, 6],
+          "name": "owl",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "....44444....",
+            "....44444....",
+            "....4RRR4....",
+            "..444444444..",
+            "....WWWWWq...",
+            "...WKWWWKWq..",
+            "...WWWW333...",
+            "....WWWWWq...",
+            "....RRRRRRr..",
+            "n..WWWWWWWq.n",
+            ".nWWWKWWWWWqn",
+            "..WWWWWWWWWq.",
+            "..WWWKWWWWqq.",
+            "...pWWWWWqq..",
+            "....ppppqq..."
+          ],
+          "hotspot": [6, 14],
+          "mini": [".444.", "44444", ".WWq.", "WK33.", "RRRRr", "WWKWq", ".pqq."],
+          "miniHotspot": [2, 6],
+          "name": "snowman",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            ".........C.C.C.........",
+            "......C.CnCnCnC.C......",
+            ".....CnnnnnnnnnnnC.....",
+            "....CnnnnnknnnnnnnC....",
+            "...CnnnknnnnnnknnnnC...",
+            "...CnnnnnnnnnnnnnnnC...",
+            "..CCCCCCCCCCCCCCCCCCC..",
+            "..CnCnCnCnCnCnCnCnCnk..",
+            ".CnnnnnnnnnnnnnnnnnnnC.",
+            ".CnCnCnCnCnCnCnCnCnCnk.",
+            "Cnnk...............Cnnk",
+            "Cnnk...............Cnnk",
+            "CnCk...............CnCk",
+            ".kk.................kk."
+          ],
+          "hotspot": [10, 9],
+          "mini": [
+            "....C.C....",
+            "...CnnnC...",
+            "..CnnknnC..",
+            ".CCCCCCCCC.",
+            ".CnCnCnCnk.",
+            "Cnk.....Cnk",
+            "CCk.....CCk"
+          ],
+          "miniHotspot": [5, 5],
+          "name": "karvalakki",
+          "slot": "headwear",
+          "z": 3
+        },
+        {
+          "art": [
+            "......qqqqqqqqqqqqqqqqqqqq......",
+            ".....qQYYYYYYYYYYYYYYYYYYQq.....",
+            ".....qQ..................Qq.....",
+            "RRRRRqQ..................QqRRRRR",
+            ".....qQ..................Qq.....",
+            ".....qQ.......QQQQ.......Qq.....",
+            "......qQQQQQQQq....qQQQQQQq....."
+          ],
+          "hotspot": [15, 4],
+          "mini": [
+            "..qqqqqqqqq..",
+            ".QYYYYYYYYYQ.",
+            ".Q.........Q.",
+            "RQ.........QR",
+            ".Q....Q....Q.",
+            "..QQQQ.QQQQ.."
+          ],
+          "miniHotspot": [6, 3],
+          "name": "goggles",
+          "slot": "face",
+          "z": 3
+        },
+        {
+          "art": [
+            ".RRRWWRRRWWRRRWWRRRWWRRRr.",
+            "RRRRWWRRRWWRRRWWRRRWWRRRrr",
+            "...................RRRr...",
+            "...................WWWq...",
+            "...................RRRr...",
+            "...................WWWq...",
+            "...................RRRr...",
+            "...................W.W...."
+          ],
+          "hotspot": [12, 6],
+          "mini": ["RRWWRRWWRRWWr", "........RWr..", "........RWr.."],
+          "miniHotspot": [6, 3],
+          "name": "scarf",
+          "slot": "wrap",
+          "z": 1
+        }
+      ],
+      "season": {
+        "from": "12-01",
+        "to": "02-28"
+      },
+      "theme": "winter"
+    }
+  ]
+}
