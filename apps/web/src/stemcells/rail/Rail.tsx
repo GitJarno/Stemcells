@@ -1,0 +1,79 @@
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import {
+  ChartNoAxesColumnIcon,
+  ChevronsRightIcon,
+  SearchIcon,
+  SettingsIcon,
+  SquarePenIcon,
+} from "lucide-react";
+import { useLayoutEffect } from "react";
+
+import { openNewCellTab } from "../tabs/commands";
+import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
+import { cn } from "../upstream/ui";
+import { useColumnStore } from "./column";
+import { DiskGauge } from "./DiskGauge";
+import { PlanRing } from "./PlanRing";
+import { RailButton, RailRule } from "./RailParts";
+import { RailProjects } from "./RailProjects";
+import "../tokens/stemcells.css";
+import "./rail.css";
+
+/**
+ * The left column at its smallest: search and a new Cell, a badge for each
+ * project with a chat, and the foot (update, settings, usage, plans, disk). It
+ * stands in upstream's sidebar, which takes the rail's width while it shows
+ * (rail.css); upstream's toggle hides and shows it as it does the wide one.
+ */
+export function Rail() {
+  const navigate = useNavigate();
+  const onUsage = useLocation({ select: (location) => location.pathname === "/usage" });
+  const searchKeys = useShortcutLabel("commandPalette.toggle");
+  const setWidth = useColumnStore((store) => store.setWidth);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.stemcellsColumn = "rail";
+    return () => {
+      delete root.dataset.stemcellsColumn;
+    };
+  }, []);
+
+  return (
+    <div data-stemcells-rail="">
+      {/* Upstream's sidebar button, or the window's controls, stand here. */}
+      <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
+      <RailButton label="Search" detail={searchKeys} onClick={openSearch}>
+        <SearchIcon />
+      </RailButton>
+      <RailButton
+        label="New Cell"
+        detail="⌘T"
+        onClick={() => {
+          if (!openNewCellTab()) void navigate({ to: "/" });
+        }}
+      >
+        <SquarePenIcon />
+      </RailButton>
+      <RailRule />
+      <RailProjects />
+      <div data-stemcells-rail-foot="">
+        <ul data-stemcells-rail-update="">
+          <SidebarUpdatePill />
+        </ul>
+        <RailRule />
+        <RailButton label="Settings" onClick={() => void navigate({ to: "/settings" })}>
+          <SettingsIcon />
+        </RailButton>
+        <RailButton label="Usage" on={onUsage} onClick={() => void navigate({ to: "/usage" })}>
+          <ChartNoAxesColumnIcon />
+        </RailButton>
+        <PlanRing on={onUsage} />
+        <DiskGauge />
+        <RailButton label="Widen the column" onClick={() => setWidth("wide")}>
+          <ChevronsRightIcon />
+        </RailButton>
+      </div>
+    </div>
+  );
+}

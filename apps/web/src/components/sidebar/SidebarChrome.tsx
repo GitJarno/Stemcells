@@ -31,6 +31,7 @@ import { PullRequestGlyph } from "~/components/pullRequest/pullRequestIcons";
 import { observeResize } from "~/lib/observeResize";
 import { DiskFoot } from "../../stemcells/disk/DiskFoot";
 import { SidebarWordmark } from "../../stemcells/brand/Wordmark";
+import { NarrowColumnButton } from "../../stemcells/rail/LeftColumn";
 
 export const SidebarChromeHeader = memo(function SidebarChromeHeader({
   isElectron,
@@ -207,6 +208,7 @@ export const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
             onClick={handleUsageClick}
           />
           <DiskFoot />
+          <NarrowColumnButton />
         </>
       )}
       <SidebarUpdatePill />

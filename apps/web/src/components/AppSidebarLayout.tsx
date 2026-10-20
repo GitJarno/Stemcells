@@ -56,6 +56,7 @@ import {
 } from "./ui/sidebar";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "./ui/tooltip";
 import { useThreadRouteRef } from "../hooks/useThreadRouteTarget";
+import { LeftColumn } from "../stemcells/rail/LeftColumn";
 
 const MACOS_TRAFFIC_LIGHTS_LEFT_INSET = "var(--desktop-window-controls-inset, 90px)";
 
@@ -350,7 +351,7 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
           ) : legacySidebarEnabled ? (
             <LegacyThreadSidebar />
           ) : (
-            <ThreadSidebar />
+            <LeftColumn wide={<ThreadSidebar />} />
           )}
           <SidebarRail onDoubleClick={resetSidebarWidth} />
         </Sidebar>

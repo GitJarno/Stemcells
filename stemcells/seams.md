@@ -34,6 +34,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/settings/SettingsSidebarNav.tsx` | Imports `stemcells/disk/DiskSettingsIcon` and adds it to `SETTINGS_SECTION_ICONS` | Every settings page has an icon |
 | `apps/web/src/components/settings/SettingsScopeSentence.tsx` | `/settings/disk` in `SETTINGS_DEVICE_ONLY_PATHS` | The page reads this machine's disk; no settings scope applies to it |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/disk/DiskFoot` and renders it after Usage in `SidebarUtilityMenu` | The space left on the disk sits in the sidebar's foot and opens Settings › Disk |
+| `apps/web/src/components/sidebar/SidebarChrome.tsx` (narrow) | Imports `NarrowColumnButton` from `stemcells/rail/LeftColumn` and renders it after `DiskFoot` | The left column (below): the wide sidebar's way back to the rail, where the rail has its way out |
+| `apps/web/src/components/AppSidebarLayout.tsx` | Renders `<LeftColumn wide={<ThreadSidebar />} />` where it rendered `<ThreadSidebar />` | The left column's rail (below): our rail or upstream's wide list in the sidebar's slot |
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/composer/CellComposerLine` and renders it first in the banner column | The line over a Cell's composer (its name, project and one-liner) is an attached banner, so it stacks with upstream's own. It draws nothing outside a Cell's pane |
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/glow/CellComposerGlass` and renders it first inside `ComposerSurface.Main`, given `selectedProvider` | The composer's light: its glass fills with the provider's colour while the Cell works, clears when it's your turn, and holds the provider's faded mark. A layer behind the composer's words that draws nothing outside a Cell's pane (`glass.contract.test.ts` pins where it sits and what it reads there) |
 | `apps/web/src/components/chat/providerIconUtils.ts` | Imports `stemcells/models/names`; `getDisplayModelName` returns `conciseModelName(…)` of what it returned | Concise model names (below): the helper the picker's rows, the composer's model button, the sidebar, the context meter, lifecycle rows and the subagent bar name a model with |
@@ -186,6 +188,25 @@ calls, and hashes of the Codex, Claude and T3 Connect accounts it finds.
 Left as it is: upstream's boot heartbeat still reads the provider login
 files to name the install's owners, and hands them to the no-op, which
 drops them.
+
+### The left column's rail
+
+The left column has three states: the rail (the default, the smallest it
+goes), upstream's wide sidebar, and hidden. Hidden is upstream's own open
+and closed, so its shortcut and button keep working; rail or wide is ours,
+remembered in the browser (`stemcells.leftColumn`). While the rail shows,
+our sheet gives upstream's sidebar the rail's width through
+`--sidebar-width`, on the element that holds the sidebar's gap and
+container; `rail.contract.test.ts` pins what that relies on.
+
+Not shadcn's icon mode: `collapsible="icon"` makes the one closed state
+the icon one, which takes hidden away, and it shrinks upstream's own list,
+which has no icon form. Two lines, then: the slot in `AppSidebarLayout.tsx`
+and the way back in the wide foot.
+
+To offer upstream: a compact sidebar state of upstream's own (open, compact,
+closed), or a slot for the sidebar's content. Then the rail is a component
+in that slot, and both seams go.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

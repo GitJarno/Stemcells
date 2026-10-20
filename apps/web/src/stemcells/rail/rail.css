@@ -1,0 +1,205 @@
+/* The left column's rail. Colours, radii, spaces and motion are the design
+   tokens; the sizes below are the rail's own geometry, as the Swift app's
+   slim column measured it. The rail sets `data-stemcells-column="rail"` on
+   the root while it shows; the rules on upstream's parts apply only then,
+   apart from the tab strip's room for upstream's sidebar button. */
+
+:root {
+  /* 12 before the plates, 32 of plates, 4 after: with the slate's own
+     8 px gutter, a plate stands 12 px from either edge of the frame. */
+  --stemcells-rail-width: 48px;
+  --stemcells-rail-plate: 32px;
+  --stemcells-rail-glyph: 16px;
+  --stemcells-rail-badge-width: 28px;
+  --stemcells-rail-badge-height: 22px;
+  --stemcells-rail-dot: 7px;
+}
+
+/* Upstream's sidebar takes the rail's width. It reads `--sidebar-width` on
+   its gap and its container, both inside this element, so setting it here
+   overrides the width its provider sets above. No resize handle on the
+   rail: it has one width. */
+:root[data-stemcells-column="rail"] [data-slot="sidebar"]:has(> [data-app-sidebar]) {
+  --sidebar-width: var(--stemcells-rail-width);
+}
+:root[data-stemcells-column="rail"] [data-app-sidebar] [data-slot="sidebar-rail"] {
+  display: none;
+}
+
+/* The tab strip starts after upstream's sidebar button and the window's
+   controls: past them on the frame while the column is hidden, as
+   upstream's own headers do, and past what of them overhangs the rail. */
+[data-sidebar-state="collapsed"] [data-stemcells-tab-strip] {
+  padding-inline-start: var(--workspace-titlebar-content-left);
+}
+:root[data-stemcells-column="rail"] [data-sidebar-state="expanded"] [data-stemcells-tab-strip] {
+  padding-inline-start: max(
+    var(--sc-space-md),
+    calc(var(--workspace-titlebar-content-left) - var(--stemcells-rail-width))
+  );
+}
+
+[data-stemcells-rail] {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  width: 100%;
+  padding: 0 var(--sc-space-xs) var(--sc-space-md) var(--sc-space-xl);
+  gap: var(--sc-space-xs);
+}
+
+[data-stemcells-rail-titlebar] {
+  flex-shrink: 0;
+  align-self: stretch;
+  height: var(--workspace-topbar-height);
+}
+
+[data-stemcells-rail-rule] {
+  flex-shrink: 0;
+  width: 20px;
+  height: 1px;
+  margin-block: var(--sc-space-xs);
+  background: var(--sc-hairline);
+}
+
+/* The projects scroll between the top and the foot. */
+[data-stemcells-rail-projects] {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+[data-stemcells-rail-foot] {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sc-space-md);
+}
+
+[data-stemcells-rail-update] {
+  display: contents;
+  list-style: none;
+}
+
+/* A glyph on a plate; lit when it is where you are, as a tab on the strip. */
+[data-stemcells-rail-plate] {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--stemcells-rail-plate);
+  height: var(--stemcells-rail-plate);
+  border-radius: var(--sc-radius-card);
+  color: var(--sc-soft);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
+    color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-rail-plate]:hover {
+  background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
+  color: var(--sc-text);
+}
+[data-stemcells-rail-plate][data-on="true"] {
+  background: var(--sc-hot);
+  color: var(--sc-text);
+}
+[data-stemcells-rail-plate]:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
+}
+[data-stemcells-rail-plate] > svg {
+  width: var(--stemcells-rail-glyph);
+  height: var(--stemcells-rail-glyph);
+}
+
+/* A project's badge: its letters in its colour on a tint of it. */
+[data-stemcells-badge] {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--stemcells-rail-badge-width);
+  height: var(--stemcells-rail-badge-height);
+  border-radius: calc(var(--sc-radius-chip) / 2);
+  background: color-mix(in srgb, currentColor calc(var(--sc-tint-fill) * 100%), transparent);
+  font-family: var(--sc-font-ui);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Its dot, centred on the badge's corner, ringed in what stands behind it. */
+[data-stemcells-badge-dot] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--stemcells-rail-dot);
+  height: var(--stemcells-rail-dot);
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+  box-shadow: 0 0 0 1.5px var(--sc-field);
+  animation: stemcells-rail-dot-in var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-rail-plate]:hover [data-stemcells-badge-dot] {
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--sc-hot) 60%, var(--sc-field));
+}
+[data-stemcells-rail-plate][data-on="true"] [data-stemcells-badge-dot] {
+  box-shadow: 0 0 0 1.5px var(--sc-hot);
+}
+[data-stemcells-badge-dot="needsYou"] {
+  background: var(--sc-needs-you);
+}
+@keyframes stemcells-rail-dot-in {
+  from {
+    transform: translate(50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* The disk: an arc of how full it is, the gigabytes left inside it. */
+[data-stemcells-gauge] {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--stemcells-rail-badge-width);
+  height: var(--stemcells-rail-badge-width);
+}
+[data-stemcells-gauge] > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+[data-stemcells-gauge-track],
+[data-stemcells-gauge-fill] {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+[data-stemcells-gauge-track] {
+  stroke: var(--sc-faint);
+}
+[data-stemcells-gauge-fill] {
+  stroke: currentColor;
+}
+[data-stemcells-gauge-figure] {
+  font-family: var(--sc-font-ui);
+  font-size: 9.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+[data-stemcells-rail-tip-detail] {
+  color: var(--sc-dim);
+}

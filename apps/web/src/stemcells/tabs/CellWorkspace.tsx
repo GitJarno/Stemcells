@@ -28,6 +28,7 @@ import {
 } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { DropWash } from "./DropWash";
+import { provideNewCellTab } from "./commands";
 import {
   activateTab,
   activeTab,
@@ -179,6 +180,10 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
 
   const inAskiTab = () => isAskiTab(activeTab(readWorkspace()));
 
+  const openNewTab = () => openCellInto((current) => openTab(current, newIds(), null));
+  const provideNewTab = useEffectEvent(openNewTab);
+  useEffect(() => provideNewCellTab(() => provideNewTab()), []);
+
   /** Aski's chat, once it exists, goes in Aski's tab; the first time, the app opens on it. */
   const onAskiChat = (chat: AskiChat) => {
     setAskiChat(chat);
@@ -195,7 +200,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
 
   useWorkspaceKeys({
     newTab: () => {
-      openCellInto((current) => openTab(current, newIds(), null));
+      openNewTab();
       return true;
     },
     closeTab: () => {
@@ -280,7 +285,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
             moveTabAfterAski(current, tabId, toIndex + (askiTab ? 1 : 0)),
           )
         }
-        onNew={() => openCellInto((current) => openTab(current, newIds(), null))}
+        onNew={openNewTab}
       />
       <div data-stemcells-slate="">
         {tab === null ? (
