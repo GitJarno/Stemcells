@@ -22,22 +22,26 @@ original app composed.
 
 ## Slice 2 · The figure draws it
 
-- [ ] `CellFigure` paints kit frames: the hero art wherever half a cell is
-      whole device pixels, else the miniature; the provider's palette; a
-      fixed 13 × 14 box; a seeded blink, a caret blink while it needs you.
-- [ ] Same props. Moods map to scenes: awake → listening, needsYou → the
-      plea, asleep, pleased → the cheer, crashed → the dizzy face held,
-      braced → the squeeze held.
-- [ ] Dealing reads the kit's packs; `CellMark` stops padding for hats and
+- [x] `CellFigure` paints kit frames on a canvas: the hero art wherever half
+      a cell is whole device pixels, else the miniature; the provider's
+      palette (`useCellDriver`); a fixed 13 × 14 box; a seeded blink, a
+      caret blink while it needs you (proven against the original's blink).
+- [x] Same props, less the hue. Moods map to scenes: awake → listening (or
+      the activity it is given), needsYou → the plea, asleep, pleased → the
+      cheer, crashed → the dizzy face held, braced → the hunker held.
+- [x] One beat clock for every Cell: 12 a second on the wall clock, still
+      off screen, in a hidden window and under Reduce Motion.
+- [x] Dealing reads the kit's packs; `CellMark` stops padding for hats and
       passes the provider.
-- [ ] The 13 × 10 art goes. Proof sheet of old and new.
+- [x] The 13 × 10 art goes; the mark in one ink (the composer glass's
+      fallback) and Aski's stage draw from the kit. Proof sheet of old and
+      new, and the live app checked: tab and composer, Codex's colours,
+      frames moving, still under Reduce Motion.
 
 ## Slice 3 · It acts
 
 - [ ] The activity of the call in flight from the thread (adapter and
       contract test), shown after 3 s, held 8 s.
 - [ ] The cheer when a turn lands, then rest; asleep after a while idle.
-- [ ] One beat clock for every Cell, still off screen and under Reduce
-      Motion.
 
 ## Review

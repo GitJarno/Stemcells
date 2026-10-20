@@ -1,11 +1,17 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
-import look from "./cell.json" with { type: "json" };
-import { coreOf, lineMarks, MOODS, moodOf, orbOf, path, pixels, SIZE } from "./look.ts";
+import { coreOf, lineMarks, MOODS, moodOf, orbOf, path, SIZE } from "./look.ts";
 
-const filled = (x: number, y: number) => look.body[y]?.[x] === "#";
+/** The unit cells a mark's path fills, as `x,y` keys. */
+function cells(d: string): Set<string> {
+  const out = new Set<string>();
+  for (const [, x, y, run] of d.matchAll(/M(\d+) (\d+)h(\d+)/g)) {
+    for (let dx = 0; dx < Number(run); dx++) out.add(`${Number(x) + dx},${y}`);
+  }
+  return out;
+}
 
-test("the look file draws every mood the product names, its eyes cut from inside the body, each face its own", () => {
+test("the Cell as a mark wears a face of its own in every mood the product names, inside its box", () => {
   NodeAssert.deepEqual([...MOODS].sort(), [
     "asleep",
     "awake",
@@ -14,19 +20,14 @@ test("the look file draws every mood the product names, its eyes cut from inside
     "needsYou",
     "pleased",
   ]);
-  NodeAssert.ok(
-    look.body.every((r) => r.length === SIZE.width),
-    "every row of the body is as wide as the first",
-  );
-  const body = [...look.body.join("")].filter((p) => p === "#").length;
   const faces = new Set<string>();
   for (const mood of MOODS) {
-    const drawn = pixels(mood);
+    const filled = [...cells(path(mood))].map((key) => key.split(",").map(Number));
+    NodeAssert.ok(filled.length > 0, `${mood}: drawn`);
     NodeAssert.ok(
-      drawn.every(([x, y]) => filled(x, y)),
-      `${mood}: nothing drawn outside the body`,
+      filled.every(([x = -1, y = -1]) => x >= 0 && x < SIZE.width && y >= 0 && y < SIZE.height),
+      `${mood}: nothing drawn outside the mark's box`,
     );
-    NodeAssert.ok(drawn.length < body, `${mood}: its eyes show`);
     faces.add(path(mood));
   }
   NodeAssert.equal(faces.size, MOODS.length, "no two moods look alike");

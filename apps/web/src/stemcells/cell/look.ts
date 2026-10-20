@@ -1,81 +1,65 @@
-// A Cell's character and orb, drawn from data (`cell.json`) so every screen
-// draws the same pixels: the body in its provider's hue, its eyes cut out of
-// it in the shape of its mood, and beside it the orb that marks its stage.
+// A Cell's moods, its box, the Cell as a mark in one ink, and the marks a
+// project's line in the left column draws for its Cells.
 
-import { wornPixels } from "./looks.ts";
-import look from "./cell.json" with { type: "json" };
+import { sceneFor } from "./cast.ts";
+import { MINI } from "./kit.ts";
+import { packLook } from "./scene.ts";
 
 /** The faces a character wears. */
 export type Mood = "awake" | "needsYou" | "asleep" | "pleased" | "crashed" | "braced";
 
-export const MOODS = Object.keys(look.moods) as Mood[];
+export const MOODS: readonly Mood[] = [
+  "awake",
+  "needsYou",
+  "asleep",
+  "pleased",
+  "crashed",
+  "braced",
+];
 
-/** The character's size in pixels: columns, rows. */
-export const SIZE = { width: look.body[0]!.length, height: look.body.length } as const;
-
-/** Each pixel is drawn this many points square, so its edges land on whole device pixels on every display. */
+/** CSS pixels a cell of a Cell's miniature is drawn where it stands large: on a 2× display, its hero art at one device pixel a cell. */
 export const POINTS_PER_PIXEL = 2;
 
-/** The mood a screen draws for the word core sent: one it does not know draws as the fallback. */
+/** The mood a screen draws for the word core sent: one it does not know draws as awake. */
 export function moodOf(word: string | undefined): Mood {
-  return word !== undefined && Object.hasOwn(look.moods, word)
-    ? (word as Mood)
-    : (look.fallback as Mood);
+  return MOODS.find((mood) => mood === word) ?? "awake";
 }
 
-const mirror = (rows: readonly string[]): string[] =>
-  rows.map((row) => [...row].toReversed().join(""));
+/** A Cell's box in cells of its miniature, hats and all: columns, rows. Every surface measures a Cell by it. */
+export const BOX = { width: MINI.rows[0]?.length ?? 0, height: MINI.rows.length } as const;
 
-/** Where a mood's eyes are, as `x,y` pixel keys. */
-function eyes(mood: Mood): Set<string> {
-  const face: { left: readonly string[]; right?: readonly string[] } = look.moods[mood];
-  const out = new Set<string>();
-  const cut = (rows: readonly string[], [x, y]: readonly number[]) => {
-    rows.forEach((row, dy) => {
-      [...row].forEach((pixel, dx) => {
-        if (pixel === "#") out.add(`${x! + dx},${y! + dy}`);
-      });
-    });
-  };
-  cut(face.left, look.eyes.left);
-  cut(face.right ?? mirror(face.left), look.eyes.right);
-  return out;
-}
+/** The bare Cell's hero art in a mood, held still. */
+const pictureIn = (mood: Mood): readonly string[] =>
+  sceneFor(packLook([]), mood, undefined, 0).mini[0]?.detail ?? [];
 
-/** Every filled pixel of the character in a mood: the body, less its eyes. */
-export function pixels(mood: Mood): [x: number, y: number][] {
-  const holes = eyes(mood);
-  const out: [number, number][] = [];
-  look.body.forEach((row, y) => {
-    [...row].forEach((pixel, x) => {
-      if (pixel === "#" && !holes.has(`${x},${y}`)) out.push([x, y]);
-    });
-  });
-  return out;
-}
+const filled = (row: string) => /[^.]/.test(row);
+const STANDING = pictureIn("awake");
+const TOP = STANDING.findIndex(filled);
 
-/** The character in a mood as one SVG path on a grid of unit pixels, each row's runs joined. */
+/** The Cell as a mark (`path`): the rows its body fills standing, in hero cells: columns, rows. */
+export const SIZE = {
+  width: STANDING[0]?.length ?? 0,
+  height: STANDING.findLastIndex(filled) - TOP + 1,
+} as const;
+
+/** The body's own colours, which the mark fills; its face is cut out of it. */
+const BODY = new Set(["B", "b", "L", "O"]);
+
+/** The bare Cell in a mood as a mark in one ink: one SVG path on a grid of unit cells `SIZE` in size, each row's runs joined. */
 export function path(mood: Mood): string {
-  const rows = new Map<number, number[]>();
-  for (const [x, y] of pixels(mood)) rows.set(y, [...(rows.get(y) ?? []), x]);
   let d = "";
-  for (const [y, xs] of rows) {
-    let start = xs[0]!;
-    for (let i = 1; i <= xs.length; i++) {
-      if (xs[i] === xs[i - 1]! + 1) continue;
-      d += `M${start} ${y}h${xs[i - 1]! - start + 1}v1H${start}z`;
-      start = xs[i]!;
-    }
-  }
+  pictureIn(mood)
+    .slice(TOP, TOP + SIZE.height)
+    .forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (!BODY.has(row[x]!)) continue;
+        let end = x;
+        while (BODY.has(row[end + 1] ?? "")) end++;
+        d += `M${x} ${y}h${end - x + 1}v1H${x}z`;
+        x = end;
+      }
+    });
   return d;
-}
-
-/** What a Cell wears (`theme/piece` ids) as one SVG path per ink, on the character's pixel grid. */
-export function wornPaths(worn: readonly string[]): [ink: string, d: string][] {
-  const byInk = new Map<string, string>();
-  for (const { x, y, ink } of wornPixels(worn))
-    byInk.set(ink, `${byInk.get(ink) ?? ""}M${x} ${y}h1v1h-1z`);
-  return [...byInk];
 }
 
 /**

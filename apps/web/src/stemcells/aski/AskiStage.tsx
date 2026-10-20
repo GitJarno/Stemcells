@@ -13,7 +13,7 @@
 // the stage, drawn by its own worker (`stage/stage-scene.ts`).
 
 import { type CSSProperties, useEffect, useLayoutEffect, useRef } from "react";
-import { POINTS_PER_PIXEL, SIZE } from "../cell/look.ts";
+import { BOX, POINTS_PER_PIXEL } from "../cell/look.ts";
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { settledDuration } from "../tokens/spring.ts";
 import { AskiFigure } from "./AskiFigure.tsx";
@@ -52,8 +52,8 @@ export interface StageRow {
   readonly closing?: boolean | undefined;
   /** The face its character wears; a word the look does not know draws as `awake`. */
   readonly mood: string;
-  /** Its provider's hue as `#RRGGBB`; absent, the character wears the interface ink. */
-  readonly hue?: string | undefined;
+  /** Its provider's driver (`claudeAgent`, `codex`, …), whose colours it wears; absent, the coral Cell's. */
+  readonly provider?: string | undefined;
   /** What it wears over its character (`theme/piece` ids); absent, nothing. */
   readonly look?: readonly string[] | undefined;
 }
@@ -78,8 +78,8 @@ export interface AskiStageProps {
 const BUD = 0.4;
 
 const CELL = {
-  width: SIZE.width * POINTS_PER_PIXEL,
-  height: SIZE.height * POINTS_PER_PIXEL,
+  width: BOX.width * POINTS_PER_PIXEL,
+  height: BOX.height * POINTS_PER_PIXEL,
 } as const;
 
 const stageCell = (c: StageRow): StageCell => ({
@@ -93,7 +93,7 @@ const stageCell = (c: StageRow): StageCell => ({
 /** Only what the stage shows of a Cell places them again: a work line's clock or a tool count does not. */
 const standingOf = (cells: readonly StageRow[]): string =>
   cells
-    .map((c) => `${c.key} ${c.stage} ${c.closing !== true} ${c.needSince} ${c.mood} ${c.hue}`)
+    .map((c) => `${c.key} ${c.stage} ${c.closing !== true} ${c.needSince} ${c.mood} ${c.provider}`)
     .join("\n");
 
 const same = (a: Pose, b: Pose): boolean =>
@@ -200,7 +200,7 @@ export function AskiStage(props: AskiStageProps) {
           actor = new Actor({ far: farLayer, near: nearLayer }, now);
           actors.set(key, actor);
         }
-        if (row !== undefined) actor.dress(row.mood, row.hue, row.look);
+        if (row !== undefined) actor.dress(row.mood, row.provider, row.look);
 
         if (spot.place === "orbit") {
           const offset = orbits.get(key);

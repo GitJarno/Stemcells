@@ -1,6 +1,5 @@
 import { CellFigure } from "../cell/CellFigure";
-import { wornPixels } from "../cell/looks";
-import looks from "../cell/looks.json" with { type: "json" };
+import { useCellDriver } from "../upstream/providers";
 import { useCellStatus } from "../upstream/status";
 import { activityOfStatus, moodOfStatus } from "./cellMood";
 import type { CellRef } from "./layout";
@@ -9,38 +8,23 @@ import type { CellRef } from "./layout";
 const POINTS = 1;
 
 /**
- * How many sprite pixels the tallest piece any Cell may wear rises above its
- * body. Every mark keeps that room above its Cell, so bodies line up across
- * tabs and a hat never reaches past the mark's own box.
- */
-const HEAD_ROOM = -wornPixels(
-  Object.entries(looks.themes).flatMap(([theme, { pieces }]) =>
-    Object.keys(pieces).map((piece) => `${theme}/${piece}`),
-  ),
-).reduce((top, pixel) => Math.min(top, pixel.y), 0);
-
-/**
  * A chat's Cell, small: its look dealt by the chat's thread id (a draft
  * keeps it once sent), its face from the chat's status, the "?" over it
- * while it waits on you. It wears the ink of the text beside it, and its
- * box holds all of it, so centring the box centres the whole Cell. Drawn
- * `points` a sprite pixel; small beside a label unless told.
+ * while it waits on you, in its provider's colours. Its box holds all of
+ * it, hats too, so centring the box centres the whole Cell. Drawn `points`
+ * a sprite pixel; small beside a label unless told.
  */
 export function CellMark(props: { cell: CellRef | null; points?: number }) {
   const status = useCellStatus(props.cell);
-  const points = props.points ?? POINTS;
+  const provider = useCellDriver(props.cell);
   return (
-    <span
-      className="flex shrink-0"
-      style={{ paddingTop: HEAD_ROOM * points }}
-      data-stemcells-cell-status={status ?? "idle"}
-    >
+    <span className="flex shrink-0" data-stemcells-cell-status={status ?? "idle"}>
       <CellFigure
         name={props.cell?.threadId ?? ""}
         mood={moodOfStatus(status)}
         activity={activityOfStatus(status)}
-        hue="currentColor"
-        points={points}
+        provider={provider}
+        points={props.points ?? POINTS}
       />
     </span>
   );

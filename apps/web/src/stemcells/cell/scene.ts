@@ -22,6 +22,7 @@ import {
   type Move,
   type Piece,
   pieceOf,
+  type Pose,
   SCENES,
   type Slot,
   TOOLS,
@@ -245,5 +246,15 @@ export function sceneOf(look: CellLook, key: string): CellScene | undefined {
   const wardrobe = scene.holds ? { ...look.wardrobe, held: scene.held } : look.wardrobe;
   const made = composed(cheer ?? scene, wardrobe, scene.pieces);
   scenes.set(`${look.name}|${key}`, made);
+  return made;
+}
+
+/** `pose` held still in `look`, kept among its scenes as `name` (a name no scene in the kit has). */
+export function stillOf(look: CellLook, name: string, pose: Pose): CellScene {
+  const known = scenes.get(`${look.name}|${name}`);
+  if (known !== undefined) return known;
+  const still: Move = { fps: 0, facing: "right", frames: [{ pose, layers: [], swaps: {} }] };
+  const made = composed(still, look.wardrobe, "still");
+  scenes.set(`${look.name}|${name}`, made);
   return made;
 }

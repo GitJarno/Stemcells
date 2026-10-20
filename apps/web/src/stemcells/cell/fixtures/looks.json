@@ -1,5 +1,5 @@
 {
-  "about": "What each Cell of a roster wears on a day (looks.json), as a Mac's core deals it. `cells` are the Cells' codenames in the order they took their seats, the first-born first; `day` is the screen's month-day; `looks` is each Cell's pieces as `theme/piece`, the outfit theme's before the season's. `dress`, when a case has one, is the Mac's Settings › General › Outfit theme and Seasons; without it the Cells wear the house theme with Seasons on.",
+  "about": "What each Cell of a roster wears on a day, dealt from the kit's packs (kit/packs.json). `cells` are the Cells' codenames in the order they took their seats, the first-born first; `day` is the screen's month-day; `looks` is each Cell's pieces as `theme/piece`, the outfit theme's before the season's. `dress`, when a case has one, is the Mac's Settings › General › Outfit theme and Seasons; without it the Cells wear the house theme with Seasons on.",
   "cases": [
     {
       "says": "out of season each Cell wears one house piece, no two the same",

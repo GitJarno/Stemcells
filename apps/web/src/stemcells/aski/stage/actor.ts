@@ -13,7 +13,10 @@
 // speed it has.
 
 import { type Spring, settledDuration, springAt, springEasing } from "../../tokens/spring.ts";
-import { moodOf, POINTS_PER_PIXEL, path, SIZE, wornPaths } from "../../cell/look.ts";
+import { bodyOf, frameShown, sceneFor } from "../../cell/cast.ts";
+import { BOX, moodOf, POINTS_PER_PIXEL } from "../../cell/look.ts";
+import { paint } from "../../cell/paint.ts";
+import { packLook } from "../../cell/scene.ts";
 import { angleAt, behind, type Metrics, type Orbit, orbitPose, type Pose } from "./stage.ts";
 
 /** A hop into Aski: up, over and in. Theater: hand-set for this one move. */
@@ -59,34 +62,25 @@ const css = (p: Pose): Keyframe => ({
 
 const HIDDEN: Keyframe = { opacity: "0" };
 
-const SVG = "http://www.w3.org/2000/svg";
-
 /** One copy of a Cell's character. */
 interface Copy {
   readonly root: HTMLElement;
-  /** Its body in its provider's hue, its eyes in the shape of its mood. */
-  readonly path: SVGPathElement;
-  /** What it wears over the body, which may reach outside the body's box. */
-  readonly worn: SVGGElement;
+  /** Its picture: what it wears, its mood's face, its provider's colours. */
+  readonly canvas: HTMLCanvasElement;
 }
 
 function copy(layer: Element): Copy {
   const root = document.createElement("div");
   root.className = "stage-cell";
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("class", "character");
-  svg.setAttribute("viewBox", `0 0 ${SIZE.width} ${SIZE.height}`);
-  svg.setAttribute("width", String(SIZE.width * POINTS_PER_PIXEL));
-  svg.setAttribute("height", String(SIZE.height * POINTS_PER_PIXEL));
-  svg.setAttribute("overflow", "visible");
-  svg.setAttribute("aria-hidden", "true");
-  const shape = document.createElementNS(SVG, "path");
-  const worn = document.createElementNS(SVG, "g");
-  svg.append(shape, worn);
-  root.append(svg);
+  const canvas = document.createElement("canvas");
+  canvas.className = "character";
+  canvas.style.width = `${BOX.width * POINTS_PER_PIXEL}px`;
+  canvas.style.height = `${BOX.height * POINTS_PER_PIXEL}px`;
+  canvas.setAttribute("aria-hidden", "true");
+  root.append(canvas);
   root.style.opacity = "0";
   layer.append(root);
-  return { root, path: shape, worn };
+  return { root, canvas };
 }
 
 export class Actor {
@@ -99,7 +93,7 @@ export class Actor {
   #move: Move = { kind: "still" };
   /** Bumped by every move, so a landing that was taken over does nothing. */
   #turn = 0;
-  /** The face, hue and pieces it wears. */
+  /** The face, provider and pieces it wears. */
   #look = "";
 
   /** `now` is the document timeline's time in milliseconds, the clock every animation here runs on. */
@@ -109,26 +103,15 @@ export class Actor {
     this.#now = now;
   }
 
-  /** Wears a mood's face in a provider's hue (absent: the interface ink), and the pieces it was dealt over it. */
-  dress(mood: string, hue: string | undefined, worn: readonly string[] = []): void {
-    const look = `${moodOf(mood)} ${hue ?? ""} ${worn.join(" ")}`;
+  /** Wears a mood's face in its provider's colours (absent: the coral Cell's), and the pieces it was dealt. */
+  dress(mood: string, provider: string | undefined, worn: readonly string[] = []): void {
+    const look = `${moodOf(mood)} ${provider ?? ""} ${worn.join(" ")}`;
     if (look === this.#look) return;
     this.#look = look;
-    const d = path(moodOf(mood));
-    const inks = wornPaths(worn);
-    for (const c of [this.#near, this.#far]) {
-      c.path.setAttribute("d", d);
-      if (hue === undefined) c.root.style.removeProperty("--hue");
-      else c.root.style.setProperty("--hue", hue);
-      c.worn.replaceChildren(
-        ...inks.map(([ink, pixels]) => {
-          const piece = document.createElementNS(SVG, "path");
-          piece.setAttribute("d", pixels);
-          piece.setAttribute("fill", ink);
-          return piece;
-        }),
-      );
-    }
+    const scene = sceneFor(packLook(worn), moodOf(mood), undefined, 0);
+    const frame = frameShown(scene, "", undefined, false);
+    for (const c of [this.#near, this.#far])
+      paint(c.canvas, frame, bodyOf(provider), POINTS_PER_PIXEL, devicePixelRatio || 1);
   }
 
   /** Where the Cell is drawn now. */

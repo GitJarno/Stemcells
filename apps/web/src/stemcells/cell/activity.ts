@@ -181,33 +181,3 @@ export class ActivityHold {
     return ready;
   }
 }
-
-/** What a Cell acts for each activity: reading and running keep the book and the laptop; the rest carry their own props. */
-export interface Acting {
-  readonly action: string;
-  readonly prop?: "book" | "laptop";
-}
-
-/** Each activity's action and the prop it holds; thinking alternates with puzzling by `variant`. */
-export function acting(activity: Activity, variant = 0): Acting {
-  switch (activity) {
-    case "thinking":
-      return { action: variant % 2 === 0 ? "thinking" : "puzzling" };
-    case "reading":
-      return { action: "reading", prop: "book" };
-    case "searching":
-      return { action: "searching" };
-    case "running":
-      return { action: "typing", prop: "laptop" };
-    case "testing":
-      return { action: "testing" };
-    case "building":
-      return { action: "building" };
-    case "shipping":
-      return { action: "shipping" };
-    case "waiting":
-      return { action: "waiting" };
-    case "browsing":
-      return { action: "browsing" };
-  }
-}

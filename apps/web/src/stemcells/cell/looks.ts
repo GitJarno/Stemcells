@@ -1,30 +1,12 @@
-// What a Cell wears over its character, as data
-// (`looks.json`) every screen draws from: one piece of the outfit theme the
-// person picked (Settings › General › Outfit theme, the house theme until
-// they do) and, in a season while Seasons is on, one of that season's. A
-// Mac's core deals them, by codename over its Cells, as each wakes, and the
-// Cell keeps its look while it stays awake; screens draw the ids its row
-// carries and never deal. Pure; the deal is tested from
-// fixtures/looks.json.
+// What a Cell wears, dealt from the kit's packs (`kit/packs.json`): one
+// piece of the outfit theme the person picked (the house theme until they
+// do) and, in a season while Seasons is on, one of that season's. Dealt by
+// codename over a roster, and a Cell keeps its look while it stays awake.
+// Pure; the deal is tested from fixtures/looks.json.
 
-import looks from "./looks.json" with { type: "json" };
+import { type Pack, PACKS, pieceOf } from "./kit.ts";
 
-/** Where a piece sits: round the body, over its face, or on its head. */
-export type Slot = "wrap" | "face" | "head";
-
-interface Piece {
-  readonly slot: string;
-  readonly at: readonly number[];
-  readonly art: readonly string[];
-}
-
-interface Theme {
-  readonly season?: { readonly from: string; readonly to: string };
-  readonly pieces: Readonly<Record<string, Piece>>;
-}
-
-const THEMES: Readonly<Record<string, Theme>> = looks.themes;
-const INKS: Readonly<Record<string, string>> = looks.inks;
+const THEMES: ReadonlyMap<string, Pack> = new Map(PACKS.map((pack) => [pack.theme, pack]));
 
 /** The outfit theme every Cell wears from until the person picks another. */
 export const HOUSE = "house";
@@ -32,8 +14,9 @@ export const HOUSE = "house";
 /** The outfit themes a person may pick, the themes with no season: the house theme first, then by name. */
 export const OUTFITS: readonly string[] = [
   HOUSE,
-  ...Object.keys(THEMES)
-    .filter((theme) => theme !== HOUSE && THEMES[theme]?.season === undefined)
+  ...[...THEMES.values()]
+    .filter((pack) => pack.theme !== HOUSE && pack.season === null)
+    .map((pack) => pack.theme)
     .sort(),
 ];
 
@@ -82,8 +65,10 @@ const length = (from: string, to: string): number => {
 /** The season `day` falls in: the narrowest window when two hold it, ties to the first by name. */
 export function seasonOn(day: string): string | undefined {
   let best: { theme: string; days: number } | undefined;
-  for (const [theme, { season }] of Object.entries(THEMES).sort(([a], [b]) => (a < b ? -1 : 1))) {
-    if (season === undefined) continue;
+  for (const { theme, season } of [...THEMES.values()].sort((a, b) =>
+    a.theme < b.theme ? -1 : 1,
+  )) {
+    if (season === null) continue;
     const holds =
       season.from <= season.to
         ? day >= season.from && day <= season.to
@@ -101,7 +86,8 @@ export function ranked(codename: string, theme: string): readonly string[] {
   const key = `${codename}|${theme}`;
   const known = rankings.get(key);
   if (known !== undefined) return known;
-  const order = Object.keys(THEMES[theme]?.pieces ?? {})
+  const order = (THEMES.get(theme)?.pieces ?? [])
+    .map((piece) => piece.name)
     .sort()
     .map((piece) => ({ piece, score: score(`${codename}|${theme}|${piece}`) }))
     .sort((a, b) => (a.score === b.score ? 0 : a.score > b.score ? -1 : 1))
@@ -142,7 +128,7 @@ export function looksOf(
     const keeps = (codename: string): string | undefined => {
       const id = kept.get(codename)?.dealt.find((d) => d.startsWith(`${theme}/`));
       const piece = id?.slice(theme.length + 1);
-      return piece !== undefined && THEMES[theme]?.pieces[piece] !== undefined ? piece : undefined;
+      return piece !== undefined && pieceOf(`${theme}/${piece}`) !== undefined ? piece : undefined;
     };
     const fresh: string[] = [];
     for (const codename of codenames) {
@@ -158,10 +144,7 @@ export function looksOf(
       if (piece !== undefined) take(codename, piece);
     }
   }
-  const slotOf = (id: string): string | undefined => {
-    const [theme = "", piece = ""] = id.split("/");
-    return THEMES[theme]?.pieces[piece]?.slot;
-  };
+  const slotOf = (id: string) => pieceOf(id)?.slot;
   return new Map(
     [...dealt].map(([codename, ids]) => {
       const ordered = themes.flatMap((theme) => ids.filter((id) => id.startsWith(`${theme}/`)));
@@ -171,32 +154,4 @@ export function looksOf(
       return [codename, { dealt: ordered, worn }];
     }),
   );
-}
-
-/** One pixel a look draws: where it is from the body's top-left, and its ink. */
-export interface Worn {
-  readonly x: number;
-  readonly y: number;
-  readonly ink: string;
-}
-
-/** Every pixel a look draws, back to front by slot; an id the data does not know draws nothing. */
-export function wornPixels(ids: readonly string[]): Worn[] {
-  const pieces = ids.flatMap((id) => {
-    const [theme = "", name = ""] = id.split("/");
-    const piece = THEMES[theme]?.pieces[name];
-    return piece === undefined ? [] : [piece];
-  });
-  pieces.sort((a, b) => looks.slots.indexOf(a.slot) - looks.slots.indexOf(b.slot));
-  const out: Worn[] = [];
-  for (const piece of pieces) {
-    const [left = 0, top = 0] = piece.at;
-    piece.art.forEach((row, dy) => {
-      [...row].forEach((letter, dx) => {
-        const ink = INKS[letter];
-        if (ink !== undefined) out.push({ x: left + dx, y: top + dy, ink });
-      });
-    });
-  }
-  return out;
 }

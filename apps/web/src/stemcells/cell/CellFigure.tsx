@@ -1,14 +1,19 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
-// A Cell's character, drawn pixel for pixel from the look data in its
-// provider's hue, wearing what it was dealt, with the "?" over it while it
-// waits on you. Its activity rides on it as data (`data-activity`,
-// `data-action`, `data-prop`) for what acts it out.
+// A Cell's character: the original app's Cell, drawn from the kit frame by
+// frame in its provider's colours, wearing what it was dealt, playing what
+// its mood and its work call for, with the "?" over it while it waits on
+// you. Its box is the miniature's (13 × 14 cells), hats and all, so every
+// Cell stands on the same line.
 
-import { type CSSProperties, useState } from "react";
-import { acting, type Activity } from "./activity.ts";
+import { useLayoutEffect, useRef, useState } from "react";
+import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
-import { moodOf, POINTS_PER_PIXEL, path, SIZE, wornPaths } from "./look.ts";
+import { bodyOf, frameShown, sceneFor } from "./cast.ts";
+import { onStage } from "./clock.ts";
+import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
+import { paint } from "./paint.ts";
+import { type MiniFrame, packLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
@@ -21,47 +26,47 @@ export function lookOf(name: string, day: string): readonly string[] {
  * A Cell's character in its mood. It wears `look` (`theme/piece` ids, dealt
  * over the whole roster so no two wear one piece) when given; otherwise the
  * look its name is dealt alone, on the day it was first drawn, kept while it
- * stays on screen. The pieces may rise above the body and reach past its
- * sides: they draw outside the character's box, which stays the body's size.
+ * stays on screen. Its name also picks when it blinks.
  */
 export function CellFigure(props: {
   readonly name: string;
   readonly mood: string;
   readonly activity?: Activity | undefined;
-  /** Its provider's hue as a CSS colour; absent, the interface ink. */
-  readonly hue?: string | undefined;
+  /** Its provider (`claudeAgent`, `codex`, …), whose colours it wears; absent, the coral Cell's. */
+  readonly provider?: string | null | undefined;
   readonly look?: readonly string[] | undefined;
-  /** Points a pixel of the look is drawn; a whole number keeps its edges on device pixels. */
+  /** CSS pixels a cell of the miniature is drawn; 1 or 2 draw the hero art on a 2× display. */
   readonly points?: number | undefined;
 }) {
+  const { name, activity } = props;
   const [day] = useState(() => dayOf(new Date()));
   const mood = moodOf(props.mood);
-  const worn = wornPaths(props.look ?? lookOf(props.name, day));
+  const worn = (props.look ?? lookOf(name, day)).join("+");
+  const body = bodyOf(props.provider);
   const points = props.points ?? POINTS_PER_PIXEL;
-  const act = props.activity === undefined ? undefined : acting(props.activity);
-  const hue = props.hue === undefined ? undefined : ({ "--hue": props.hue } as CSSProperties);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  useLayoutEffect(() => {
+    const element = canvas.current;
+    if (element === null) return;
+    const look = packLook(worn.split("+"));
+    let shown: { frame: MiniFrame; dpr: number } | undefined;
+    return onStage(element, (seconds) => {
+      const scene = sceneFor(look, mood, activity, seconds ?? 0);
+      const frame = frameShown(scene, name, seconds, mood === "needsYou");
+      const dpr = devicePixelRatio || 1;
+      if (shown?.frame === frame && shown.dpr === dpr) return;
+      shown = { frame, dpr };
+      paint(element, frame, body, points, dpr);
+    });
+  }, [worn, mood, activity, name, body, points]);
   return (
-    <span
-      className="cell-figure"
-      data-mood={mood}
-      data-activity={props.activity}
-      data-action={act?.action}
-      data-prop={act?.prop}
-    >
-      <svg
+    <span className="cell-figure" data-mood={mood} data-activity={activity}>
+      <canvas
+        ref={canvas}
         className="character"
-        viewBox={`0 0 ${SIZE.width} ${SIZE.height}`}
-        width={SIZE.width * points}
-        height={SIZE.height * points}
-        overflow="visible"
+        style={{ width: BOX.width * points, height: BOX.height * points }}
         aria-hidden="true"
-        style={hue}
-      >
-        <path d={path(mood)} />
-        {worn.map(([ink, d]) => (
-          <path key={ink} d={d} fill={ink} />
-        ))}
-      </svg>
+      />
       <AskMark active={mood === "needsYou"} pixel={points} />
     </span>
   );

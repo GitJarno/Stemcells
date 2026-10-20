@@ -1,8 +1,8 @@
-/* A Cell's character: its body in its provider's hue, its eyes cut out of it. */
+/* A Cell's character, painted cell for cell: where its box falls between
+   device pixels, the nearest one, never a blur. */
 .character {
   flex: none;
-  fill: var(--hue, var(--sc-interface-ink));
-  shape-rendering: crispEdges;
+  image-rendering: pixelated;
 }
 
 .cell-figure {
