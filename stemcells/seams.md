@@ -42,6 +42,15 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/ModelPickerContent.tsx` | `formatProviderUpdateRequiredNotice` is imported from `stemcells/upstream/modelNames` (same name) | Same, for the picker's "Update … to use …" notice |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/ThreadRelationshipsControl.agents.browser.test.tsx` | Expect the concise names, and nothing else changes in them | They pin the names these seams change |
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/verbs/WorkWord`; the rows' shared state carries `turnVerbs: turnVerbsOf(timelineEntries)`; the working row says `CellWorkingWord` where it said "Working", and the turn fold renders its label through `CellWorkedLabel` | The work verbs: "Noodling for 12s" while a Cell works, "Noodled for 3m 12s" once done. Upstream keeps its row, timer and layout, and screen readers its words (`workVerbs.contract.test.ts` pins what the verbs read). Upstream's hottest file; there is no cooler place for these words |
+| `apps/web/src/branding.ts` | Imports `stemcells/brand/name`; `APP_BASE_NAME` falls back to `APP_NAME` where it fell back to "T3 Code" | The app's name (below): a browser's window title, the auth and pairing screens and every other view that names the app through upstream's branding |
+| `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/brand/Wordmark` and renders `SidebarWordmark` where it rendered `SidebarBrandMark` (the T3 logo beside "Code"), in the link and in the width probe; `SidebarBrandMark` and its `T3Wordmark` import go | The sidebar's top-left reads Stemcells |
+| `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The header's title is `Set up ${APP_BASE_NAME}` and its identity `WizardWordmark`, where it drew the T3 logo beside "Code" | The first thing a person reads |
+| `apps/web/src/components/settings/IntegrationsSettings.tsx` | "Open links in"'s `app` option and the pull request links row (description, reset label, switch label) say `APP_BASE_NAME` | The app as a place links open in |
+| `apps/web/src/components/settings/settingsSearch.ts` | The pull request links row's title says `APP_BASE_NAME` (one more name in the existing `~/branding` import) | Same row |
+| `apps/web/src/components/settings/SettingsPanels.logic.ts` | Imports `APP_BASE_NAME`; the changed-settings list names that row the same way | Same row |
+| `apps/web/index.html` | The boot page's title, the splash's label and its logo's alt text say Stemcells | Before the app loads; `__root.tsx` titles it from `APP_DISPLAY_NAME` after |
+| `apps/web/public/manifest.webmanifest` | `name` and `short_name` are "Stemcells" | The name a browser installs the web app under |
+| `apps/web/src/branding.test.ts`, `apps/web/src/components/settings/SettingsPanels.logic.test.ts` | Expect "Stemcells" for the fallback name, and nothing else changes in them | They pin the name these seams change |
 
 ### Upstream first: "ChatView safe to render twice"
 
@@ -114,6 +123,43 @@ rule in a `packages/stemcells-*` package once it gets a layer of ours.
 To offer upstream: one function every view names a model through. Then a
 fork's naming is that one function instead of five seams.
 
+### The app's name
+
+Stemcells says its own name where a person reads the app's name most: the
+sidebar's top-left, the window's title, the menu and About panel, the
+welcome wizard, the auth and pairing screens, and Settings › Integrations.
+`appName.contract.test.ts` fails when a sync brings "T3 Code" back to the
+sidebar or a window's title.
+
+- **One name per app.** The web's is `APP_NAME` in
+  `apps/web/src/stemcells/brand/name.ts`; the desktop's is `APP_BASE_NAME`
+  in `DesktopEnvironment.ts` (above), which the desktop hands the web as
+  its branding, so in the app the web shows the desktop's. The contract
+  test keeps the two and `productName` equal; a rename changes those three
+  and `stemcells/scripts/install-app`'s `Stemcells.app`.
+- **Already Stemcells, no seam:** the desktop's window title, app menu
+  and About panel read the desktop's branding, and every web view that
+  names the app through `APP_BASE_NAME` or `APP_DISPLAY_NAME` follows the
+  branding seam: the browser's title, auth and pairing, the not-found
+  page, the error report. Notifications name no app: their titles are a
+  thread's state, and macOS shows the bundle's name.
+- **The name in type, no logo,** in the size and weight upstream gives the
+  T3 logo and "Code" (`brand/Wordmark.tsx`). The brand mark comes later.
+
+What keeps T3's name, on purpose:
+
+- What credits upstream: `LICENSE`, the notices, the docs.
+- T3's own theme, "T3 Code" in the theme picker.
+- The T3 logo as the icon of T3's own tools: the work log's `t3-code` icon
+  (`MessagesTimeline`) marks upstream's orchestration tools, and
+  `V2LifecycleRow`'s "Created thread" row is one of them at work. They
+  name the infrastructure, not the app; revisit with the brand mark.
+- The welcome wizard's usage data note: the data goes to T3's analytics,
+  under T3's privacy policy.
+- The welcome wizard's steps for other computers (`npx t3 pair`,
+  `npx t3 connect`): they run T3's own command line tool there (Remote
+  hosts, below).
+
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened
   from outside may land in T3 Code. Renaming it touches six upstream files
@@ -126,3 +172,12 @@ fork's naming is that one function instead of five seams.
   "T3 Code (Dev)") if one exists. A Mac release build never does.
 - **Remote hosts** (SSH, WSL, devices) still use `~/.t3` on the remote
   machine.
+- **Upstream's other sentences that name T3 Code.** About 90 lines in
+  the web's views (settings descriptions, dialogs, errors, the chat's
+  "Sent by T3 Code"), 50 in the desktop's (mostly Linux and Windows
+  capture) and more in the server and CLI write "T3 Code" in the text.
+  Each file is another seam, and some are upstream's hottest files, where
+  every changed line is another likely conflict (`MessagesTimeline.tsx`).
+  To offer upstream: every sentence that names
+  the app reads `APP_BASE_NAME` (web), the desktop's branding, and one
+  server constant. Then a fork's name is the branding seams alone.
