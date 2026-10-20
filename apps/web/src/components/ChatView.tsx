@@ -43,6 +43,7 @@ import { feedbackBannerItem } from "./chat/ComposerFeedback";
 import { useUsageLimitsPanel } from "./chat/useUsageLimitsPanel";
 import { useWorktreeSetup } from "./chat/useWorktreeSetup";
 import { useChatShortcuts, type ChatShortcutHandler } from "./chat/useChatShortcuts";
+import { useOwnsChatWindowInput } from "./chat/chatWindowInput";
 import {
   eventPathContainsSelector,
   pasteTextToFocusComposer,
@@ -1061,6 +1062,7 @@ export default function ChatView(props: ChatViewProps) {
     reserveTitleBarControlInset = true,
     forceExpandedMobileComposer = false,
   } = props;
+  const ownsWindowInput = useOwnsChatWindowInput();
   const canOperateThread = useEnvironmentScope(environmentId, AuthOrchestrationOperateScope);
   const canOperateTerminal = useEnvironmentScope(environmentId, AuthTerminalOperateScope);
   const hasTerminalWriteAccess = () =>
@@ -3470,7 +3472,10 @@ export default function ChatView(props: ChatViewProps) {
     }
   };
   const onInterruptStable = useStableCallback(onInterrupt);
-  useEffect(() => subscribeSnapShotComposerFocus(focusComposerStable), [focusComposerStable]);
+  useEffect(
+    () => (ownsWindowInput ? subscribeSnapShotComposerFocus(focusComposerStable) : undefined),
+    [focusComposerStable, ownsWindowInput],
+  );
   const scheduleComposerFocus = () => {
     window.requestAnimationFrame(() => {
       focusComposer();
@@ -4083,10 +4088,12 @@ export default function ChatView(props: ChatViewProps) {
   const copyRightPanelFilePathStable = useStableCallback(copyRightPanelFilePath);
   useEffect(
     () =>
-      subscribePreviewAction((action) => {
-        if (action === "toggle-panel") togglePreviewPanelStable();
-      }),
-    [togglePreviewPanelStable],
+      ownsWindowInput
+        ? subscribePreviewAction((action) => {
+            if (action === "toggle-panel") togglePreviewPanelStable();
+          })
+        : undefined,
+    [ownsWindowInput, togglePreviewPanelStable],
   );
   const persistThreadSettingsForNextTurn = async (input: {
     threadId: ThreadId;
@@ -4414,8 +4421,8 @@ export default function ChatView(props: ChatViewProps) {
           if (
             !(event.target instanceof Node) ||
             (!scrollNode.contains(event.target) &&
-              event.target !== document.body &&
-              event.target !== document.documentElement) ||
+              ((event.target !== document.body && event.target !== document.documentElement) ||
+                !ownsWindowInput)) ||
             event.defaultPrevented ||
             event.isComposing ||
             event.altKey ||
@@ -4520,6 +4527,7 @@ export default function ChatView(props: ChatViewProps) {
     activeThread?.id,
     composerRef,
     isTimelineAtLogicalEndStable,
+    ownsWindowInput,
     timelineRealContentOverflowsViewportStable,
   ]);
 
@@ -4691,17 +4699,18 @@ export default function ChatView(props: ChatViewProps) {
   }, [timelineThreadReset]);
 
   useEffect(() => {
-    if (!activeThread?.id || terminalUiState.terminalOpen) return;
+    if (!activeThread?.id || terminalUiState.terminalOpen || !ownsWindowInput) return;
     const frame = window.requestAnimationFrame(() => {
       focusComposerStable();
     });
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [activeThread?.id, focusComposerStable, terminalUiState.terminalOpen]);
+  }, [activeThread?.id, focusComposerStable, ownsWindowInput, terminalUiState.terminalOpen]);
 
   useEffect(() => {
     if (!activeThread?.id || terminalUiState.terminalOpen || isMobileViewport) return;
+    if (!ownsWindowInput) return;
     let frame: number | null = null;
     const onWindowFocus = () => {
       if (frame !== null) window.cancelAnimationFrame(frame);
@@ -4721,7 +4730,13 @@ export default function ChatView(props: ChatViewProps) {
       window.removeEventListener("focus", onWindowFocus);
       if (frame !== null) window.cancelAnimationFrame(frame);
     };
-  }, [activeThread?.id, focusComposerStable, isMobileViewport, terminalUiState.terminalOpen]);
+  }, [
+    activeThread?.id,
+    focusComposerStable,
+    isMobileViewport,
+    ownsWindowInput,
+    terminalUiState.terminalOpen,
+  ]);
 
   useEffect(() => {
     if (!activeThread?.id) return;
@@ -5778,7 +5793,7 @@ export default function ChatView(props: ChatViewProps) {
       if (!event.repeat) composerRef.current?.openControl(command);
     }) satisfies ChatShortcutHandler;
   useChatShortcuts({
-    enabled: activeThreadId !== null,
+    enabled: activeThreadId !== null && ownsWindowInput,
     keybindings,
     scriptKeybindings,
     getShortcutContext: getShortcutContextStable,
@@ -5906,15 +5921,17 @@ export default function ChatView(props: ChatViewProps) {
 
   // A focused desktop browser page forwards these chords as menu actions.
   useEffect(() => {
+    if (!ownsWindowInput) return;
     return window.desktopBridge?.onMenuAction((action) => {
       if (action === "rightPanel.toggle") toggleRightPanelStable();
       else if (action === "rightPanel.toggleMaximized") toggleRightPanelMaximizedStable();
     });
-  }, [toggleRightPanelStable, toggleRightPanelMaximizedStable]);
+  }, [ownsWindowInput, toggleRightPanelStable, toggleRightPanelMaximizedStable]);
 
   // Paste-to-focus: the resting composer blurs on a click into the timeline,
   // so a paste that follows has no editable target and would be dropped.
   useEffect(() => {
+    if (!ownsWindowInput) return;
     const keyHandler = (event: KeyboardEvent) => {
       if (
         shouldRedirectInputToComposer(event) &&
@@ -5947,7 +5964,7 @@ export default function ChatView(props: ChatViewProps) {
       window.removeEventListener("keydown", keyHandler, true);
       window.removeEventListener("paste", handler, true);
     };
-  }, [activeThreadId, composerRef]);
+  }, [activeThreadId, composerRef, ownsWindowInput]);
 
   const onRevertToTurnCount = async (
     turnCount: number,
@@ -8721,6 +8738,7 @@ export default function ChatView(props: ChatViewProps) {
               availableEditors={availableEditors}
               showOpenInPicker={showOpenInPicker}
               openInShortcutEnabled={
+                ownsWindowInput &&
                 !(
                   rightPanelOpen &&
                   renderedRightPanelSurface?.kind === "file" &&

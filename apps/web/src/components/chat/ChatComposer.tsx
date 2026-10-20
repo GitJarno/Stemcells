@@ -1,5 +1,6 @@
 import { formatProviderSkillDisplayName } from "@t3tools/shared/inlineSkills";
 import { useComposerTypingGuard } from "./useComposerTypingGuard";
+import { useOwnsChatWindowInput } from "./chatWindowInput";
 import { insertAttachmentReferencesForDraft } from "./composerAttachmentReferences";
 import { DESKTOP_PASTE_AS_TEXT_EVENT } from "../../lib/desktopPasteAsText";
 import { runtimeModeConfig, runtimeModeOptions as runtimeModes } from "./runtimeModeConfig";
@@ -1894,6 +1895,7 @@ const NO_PROVIDER_SKILLS: ServerProvider["skills"] = [];
 const NO_PROVIDER_SLASH_COMMANDS: ServerProvider["slashCommands"] = [];
 
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
+  const ownsWindowInput = useOwnsChatWindowInput();
   const {
     composerDraftTarget,
     environmentId,
@@ -2540,7 +2542,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         ) !== null;
       if (
         (activeElement instanceof Node && composerFormRef.current?.contains(activeElement)) ||
-        !blocksPasteToFocus
+        (!blocksPasteToFocus && ownsWindowInput)
       ) {
         armPasteAsTextShortcut();
       }
@@ -2553,7 +2555,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("blur", onBlur);
     };
-  }, []);
+  }, [ownsWindowInput]);
 
   const composerSendState = deriveComposerSendState({
     prompt,
@@ -5359,6 +5361,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   }
 
   useEffect(() => {
+    if (!ownsWindowInput) return;
     const handler = (event: globalThis.KeyboardEvent) => {
       const command = resolveShortcutCommand(event, keybindings, {
         context: {
@@ -5391,6 +5394,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     isComposerApprovalState,
     isComposerModelPickerOpen,
     keybindings,
+    ownsWindowInput,
     pendingUserInputs.length,
     projectSelectionRequired,
     stashCurrentPromptStable,

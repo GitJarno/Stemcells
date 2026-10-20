@@ -1,0 +1,109 @@
+/* Aski's figure and its stage. Every value is a token, chosen by role. */
+
+/* Aski stands six body lines tall, as wide as its own shape asks. */
+.aski-figure {
+  display: grid;
+  block-size: calc(var(--sc-body) * (var(--sc-natural-line) + var(--sc-leading)) * 6);
+  aspect-ratio: 1;
+  color: var(--sc-content-strong-ink);
+}
+
+.aski-figure canvas {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* The theater: Aski's square standing on its ground line, and under the
+   line the front, a Cell's height deep, where a Cell that needs you steps
+   out to. Cells are drawn twice, under Aski and over it (stage/actor.ts);
+   each stands with its feet at the middle of the ground line and moves
+   only by transform. */
+.aski-theater {
+  --aski-size: calc(var(--sc-body) * (var(--sc-natural-line) + var(--sc-leading)) * 6);
+  --stage-front: calc(var(--stage-cell-height) + var(--sc-space-sm));
+  position: relative;
+  inline-size: 100%;
+  block-size: calc(var(--aski-size) + var(--stage-front));
+}
+
+.aski-theater .aski-figure {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+}
+
+.stage-far,
+.stage-near {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stage-ground {
+  position: absolute;
+  inset-block-start: var(--aski-size);
+  inset-inline: 0;
+  block-size: 1px;
+  background: var(--sc-hairline);
+}
+
+/* A stage given room to sweep (the main window's): the orbit drawn as a dotted ellipse behind Aski and its Cells,
+   through their middles, the size `stage/stage.ts` lays it out at; the ground line under Aski four fifths as wide. */
+.stage-orbit {
+  position: absolute;
+  inset-block-start: calc(var(--aski-size) + var(--orbit-cy) - var(--orbit-ry));
+  inset-inline-start: calc(50% - var(--orbit-rx));
+  box-sizing: border-box;
+  inline-size: calc(var(--orbit-rx) * 2);
+  block-size: calc(var(--orbit-ry) * 2);
+  border: 1px dotted var(--sc-hairline);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.aski-theater[data-wide] .stage-ground {
+  inset-inline: calc(50% - var(--orbit-rx) * 0.8);
+}
+
+.stage-cell {
+  position: absolute;
+  inset-block-start: calc(var(--aski-size) - var(--stage-cell-height));
+  inset-inline-start: calc(50% - var(--stage-cell-width) / 2);
+  display: grid;
+  transform-origin: 50% 100%;
+}
+
+/* A scene draws the whole stage in Aski's ink, its canvas placed from the
+   theater's corner by stage/stage-scene.ts. While one plays, Aski's figure,
+   the ground line and the Cells fade away under it, and come back as it
+   ends: one fade, each way, on opacity alone. */
+.stage-scene {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  color: var(--sc-content-strong-ink);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.stage-scene,
+.aski-theater .aski-figure,
+.stage-ground,
+.stage-orbit,
+.stage-far,
+.stage-near {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
+
+.aski-theater[data-scene] .stage-scene {
+  opacity: 1;
+}
+
+.aski-theater[data-scene] .aski-figure,
+.aski-theater[data-scene] .stage-ground,
+.aski-theater[data-scene] .stage-orbit,
+.aski-theater[data-scene] .stage-far,
+.aski-theater[data-scene] .stage-near {
+  opacity: 0;
+}
