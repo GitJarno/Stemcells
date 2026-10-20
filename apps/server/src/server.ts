@@ -190,7 +190,7 @@ import * as NetService from "@t3tools/shared/Net";
 import * as RelayClient from "@t3tools/shared/relayClient";
 import { disableTailscaleServe, ensureTailscaleServe } from "@t3tools/tailscale";
 import * as ServerActivation from "./serverActivation.ts";
-import * as StemcellsDiskHttp from "./stemcells/disk/http.ts";
+import * as Stemcells from "./stemcells/layer.ts";
 
 // MCP handoff thread IDs include escaped provenance and can exceed find-my-way's
 // 100-character default for one path segment.
@@ -708,7 +708,7 @@ const layerMakeRoutes = Layer.mergeAll(
     DeviceHubProxy.layer,
     ServerBrowserStream.routeLayer,
     ServerHttp.layerStaticAndDevRoute,
-    StemcellsDiskHttp.layer,
+    Stemcells.layer,
     Ws.layer,
   ),
   McpHttpServer.layer.pipe(

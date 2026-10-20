@@ -26,7 +26,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx` | Digit keys answer a question only when the context is `true` | Same |
 | `apps/web/src/components/RightPanelTabs.tsx` | The empty panel's launcher keys and `rightPanel.new` act only when the context is `true` | Same |
 | `apps/web/src/components/preview/PreviewView.tsx` | Preview actions (refresh, zoom, focus URL) act only when the context is `true` | Same |
-| `apps/server/src/server.ts` | Imports `stemcells/disk/http.ts` and adds its layer to `layerMakeRoutes` | Mounts Settings › Disk's `/api/stemcells/disk` routes |
+| `apps/server/src/server.ts` | Imports `stemcells/layer.ts` and adds its layer to `layerMakeRoutes` | Mounts all of Stemcells' server layer: Settings › Disk's `/api/stemcells/disk` routes, and the theme published on start |
+| `apps/server/src/cli/theme.ts` | Exports `publishThemeFile` and `writeDefaultTheme` | Stemcells publishes its theme and makes it a fresh server's default through the same guarded writes `t3 theme set` uses (`stemcells/upstream/theme.ts`) |
 | `apps/web/src/routes/settings.disk.tsx` | New route file; renders `stemcells/disk/DiskSettings` | TanStack's file routes live in `routes/` |
 | `apps/web/src/routeTree.gen.ts` | Regenerated for `settings.disk.tsx` | The router plugin writes it |
 | `apps/web/src/components/settings/settingsSearch.ts` | `/settings/disk` in `SettingsPath`, `SETTINGS_SECTION_LABELS` ("Disk") and `SETTINGS_CATEGORY_SCOPES` (none) | The settings sidebar lists its pages from these |
@@ -72,6 +73,11 @@ tree, three lists in `settingsSearch.ts`, an icon in `SettingsSidebarNav.tsx`
 and the device-only list in `SettingsScopeSentence.tsx`. One registration
 (path, label, icon, scope, component) read by all of them would make a
 module's settings page one line.
+
+To offer upstream: publish a theme and set it as the default from server
+code. `t3 theme set`'s guarded publish and settings write take explicit
+paths but aren't exported; exporting them (or a small module both the CLI
+and a server feature call) would retire the `cli/theme.ts` seam.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

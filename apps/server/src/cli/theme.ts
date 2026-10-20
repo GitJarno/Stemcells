@@ -201,7 +201,7 @@ const readSettingsObject = Effect.fn(function* (settingsPath: string) {
  */
 const CONCURRENT_WRITE_ATTEMPTS = 5;
 
-const writeDefaultTheme = Effect.fn(function* (input: {
+export const writeDefaultTheme = Effect.fn(function* (input: {
   readonly settingsPath: string;
   readonly themeId: string;
 }) {
@@ -247,7 +247,7 @@ const writeDefaultTheme = Effect.fn(function* (input: {
   }
 });
 
-const publishThemeFile = Effect.fn(function* (input: {
+export const publishThemeFile = Effect.fn(function* (input: {
   readonly themesDir: string;
   readonly filePath: string;
   readonly explicitId: Option.Option<string>;
