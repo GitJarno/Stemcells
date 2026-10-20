@@ -1,0 +1,63 @@
+/* A Cell's character: its body in its provider's hue, its eyes cut out of it. */
+.character {
+  flex: none;
+  fill: var(--hue, var(--sc-interface-ink));
+  shape-rendering: crispEdges;
+}
+
+.cell-figure {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+}
+
+/* The "?" a Cell wears while it waits on you: the glyph heavy and
+   monospaced in the notch's black on an amber bubble with an amber glow,
+   off the character's top corner, bobbing one sprite pixel each way. Its
+   measures are in sprite pixels (--ask-pixel); it comes and goes by scale
+   and fade on one spring. */
+.ask-mark {
+  position: absolute;
+  inset-block-start: calc(var(--ask-pixel) * -3);
+  inset-inline-end: calc(var(--ask-pixel) * -2.5);
+  padding: calc(var(--ask-pixel) * 0.7) calc(var(--ask-pixel) * 1.6);
+  border-radius: calc(var(--ask-pixel) * 1.8);
+  background: var(--sc-needs-you);
+  box-shadow: 0 0 calc(var(--ask-pixel) * 5)
+    color-mix(in srgb, var(--sc-needs-you) 55%, transparent);
+  color: var(--sc-notch);
+  font-family: var(--sc-font-code);
+  font-size: calc(var(--ask-pixel) * 5.5);
+  font-weight: 800;
+  line-height: normal;
+  pointer-events: none;
+  transition:
+    scale var(--ask-arrive-duration) var(--ask-arrive-easing),
+    opacity var(--ask-arrive-duration) var(--ask-arrive-easing);
+}
+
+.ask-mark[data-active="false"] {
+  scale: 0.4;
+  opacity: 0;
+}
+
+/* The bob is a sine: each half of its period is a sine's half wave. */
+.ask-mark[data-active="true"] {
+  animation: sc-ask-bob calc(var(--sc-timing-bob) / 2) cubic-bezier(0.37, 0, 0.63, 1) infinite
+    alternate;
+}
+
+@keyframes sc-ask-bob {
+  from {
+    translate: 0 calc(var(--ask-pixel) * -1);
+  }
+  to {
+    translate: 0 var(--ask-pixel);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ask-mark[data-active="true"] {
+    animation: none;
+  }
+}

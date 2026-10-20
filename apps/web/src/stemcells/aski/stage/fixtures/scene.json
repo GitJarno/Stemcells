@@ -1,0 +1,49 @@
+{
+  "about": "Aski's stage and the scene core says is due or played. Each case is the `scene` part a screen holds (null for none) and the screen's clock `now`, in milliseconds. `shown` is what the stage does: `none`, `due` (it plays the scene once someone can see it) or `playing`, with `at` the seconds in. `said` is the line the stage says then, absent for Aski's own; `next` is when, on the screen's clock, what it shows next changes.",
+  "cases": [
+    { "says": "no part, no scene", "part": null, "now": 1000, "shown": "none" },
+    {
+      "says": "a part with no start is due",
+      "part": { "id": "the-pond", "seed": 7 },
+      "now": 1000,
+      "shown": "due"
+    },
+    {
+      "says": "a scene this screen does not know shows nothing, due or started",
+      "part": { "id": "the-tide", "seed": 7, "startedAt": 1000 },
+      "now": 2000,
+      "shown": "none"
+    },
+    {
+      "says": "a started scene plays from where the clock says, before its line",
+      "part": { "id": "the-pond", "seed": 7, "startedAt": 100000 },
+      "now": 104000,
+      "shown": "playing",
+      "at": 4,
+      "next": 115400
+    },
+    {
+      "says": "from its moment to say it, the scene's line is the stage's",
+      "part": { "id": "the-rain", "seed": 7, "startedAt": 100000 },
+      "now": 106300,
+      "shown": "playing",
+      "at": 6.3,
+      "said": "There is no tab.",
+      "next": 111000
+    },
+    {
+      "says": "a screen whose clock is behind the Mac's starts the scene from its start",
+      "part": { "id": "the-rain", "seed": 7, "startedAt": 100000 },
+      "now": 99500,
+      "shown": "playing",
+      "at": 0,
+      "next": 106300
+    },
+    {
+      "says": "a screen that comes after its end shows nothing of it",
+      "part": { "id": "the-pond", "seed": 7, "startedAt": 100000 },
+      "now": 122600,
+      "shown": "none"
+    }
+  ]
+}
