@@ -1,0 +1,37 @@
+name: Stemcells
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: stemcells-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/pingdotgg/t3code.git
+          git fetch --no-tags upstream main
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Drift
+        run: stemcells/scripts/drift
+      - name: Type check
+        run: |
+          pnpm --filter @t3tools/web typecheck
+          pnpm --filter t3 typecheck
+      - name: Stemcells tests
+        run: pnpm exec vp test run apps/web/src/stemcells apps/server/src/stemcells --passWithNoTests
