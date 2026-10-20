@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Lists every upstream file this fork changes and fails on one that
+# stemcells/seams.md doesn't name. Our own folders are never drift.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+git rev-parse -q --verify upstream/main >/dev/null || {
+  echo "drift: no upstream/main; run: git remote add upstream https://github.com/pingdotgg/t3code.git && git fetch upstream" >&2
+  exit 2
+}
+base=$(git merge-base HEAD upstream/main)
+ours='^(stemcells/|apps/(web|server|mobile)/src/stemcells/|packages/stemcells-)'
+
+changed=$({ git diff --name-only "$base"; git ls-files --others --exclude-standard; } \
+  | sort -u | grep -Ev "$ours" || true)
+
+echo "        heat = upstream commits in 90 days"
+unlisted=0
+while IFS= read -r file; do
+  [ -z "$file" ] && continue
+  # Upstream commits touching the file in 90 days: a hot file is a poor seam.
+  heat=$(git log --since=90.days --format=%h upstream/main -- "$file" | wc -l | tr -d ' ')
+  if grep -qF "\`$file\`" stemcells/seams.md; then
+    printf '  seam  %4s  %s\n' "$heat" "$file"
+  else
+    printf '  DRIFT %4s  %s  (not in stemcells/seams.md)\n' "$heat" "$file"
+    unlisted=1
+  fi
+done <<< "$changed"
+
+lines=$(git diff --numstat "$base" -- $(echo "$changed") 2>/dev/null | awk '{s+=$1+$2} END {print s+0}')
+echo "$(echo "$changed" | grep -c . || true) upstream files changed, $lines lines"
+exit $unlisted
