@@ -1,0 +1,21 @@
+{
+  "diff": {
+    "rise": [0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6],
+    "added": {
+      "art": ["..a..", "..a..", "aaaaa", "..a..", "..a.."],
+      "attach": "ground",
+      "hotspot": [-8, 22],
+      "z": 6,
+      "mini": [".a.", "aaa", ".a."],
+      "miniHotspot": [-4, 11]
+    },
+    "removed": {
+      "art": ["RRRRR"],
+      "attach": "ground",
+      "hotspot": [-8, 16],
+      "z": 6,
+      "mini": ["RRR"],
+      "miniHotspot": [-4, 7]
+    }
+  }
+}

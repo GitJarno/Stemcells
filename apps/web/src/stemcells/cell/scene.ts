@@ -20,13 +20,16 @@ import {
   animates,
   type Arm,
   CHEERS,
+  DIFF_MARKS,
   LOOKS,
   MOUTHS,
+  type Frame,
   type Move,
   PACK_OUTFITS,
   type Piece,
   pieceOf,
   type Pose,
+  REST,
   type Scene,
   SCENES,
   type Slot,
@@ -36,7 +39,16 @@ import {
   type Wardrobe,
 } from "./kit.ts";
 import { fitted, hero, mini, seated } from "./rig.ts";
-import { compose, crop, type Layer, miniOf, round } from "./sprite.ts";
+import {
+  anchorOf,
+  type Body,
+  compose,
+  crop,
+  type Layer,
+  miniOf,
+  type Point,
+  round,
+} from "./sprite.ts";
 
 /** The eyes a blink shuts, and the lids it shows instead. */
 const SHUTS = new Set(["open", "calm"]);
@@ -57,6 +69,16 @@ interface Probe {
   readonly spill?: { count: number };
 }
 
+/** `wardrobe` as `frame` shows it: each piece the frame swaps, posed. */
+function swappedIn(frame: Frame, wardrobe: Wardrobe): Wardrobe {
+  const look: { -readonly [K in keyof Wardrobe]: Wardrobe[K] } = { ...wardrobe };
+  for (const field of ["headwear", "accessory", "wrap", "back"] as const) {
+    const worn = look[field];
+    if (worn !== undefined) look[field] = frame.swaps[worn] ?? worn;
+  }
+  return look;
+}
+
 /** Pose `index` of `move` as worn: its swaps, the face blinked, a hop held under the hat, fabric, the tool, marks. */
 function composeFrame(
   move: Move,
@@ -68,11 +90,7 @@ function composeFrame(
   probe: Probe = {},
 ): string[] {
   const frame = move.frames[index]!;
-  const look: { -readonly [K in keyof Wardrobe]: Wardrobe[K] } = { ...wardrobe };
-  for (const field of ["headwear", "accessory", "wrap", "back"] as const) {
-    const worn = look[field];
-    if (worn !== undefined) look[field] = frame.swaps[worn] ?? worn;
-  }
+  const look = swappedIn(frame, wardrobe);
   let pose = frame.pose;
   if (blinking && SHUTS.has(pose.eyes)) pose = { ...pose, eyes: LIDS };
   if (probe.eyeless) pose = { ...pose, eyes: "none" };
@@ -285,12 +303,19 @@ function composed(move: Move, wardrobe: Wardrobe, pieces: "loop" | "once" | "sti
   };
 }
 
-/** A look a Cell wears: its name (its scenes' identity), what it wears, whose cheer it plays, and how strong it has grown. */
+/** A look a Cell wears: its name (its scenes' identity), what it wears, whose cheer it plays, how strong it has grown, and what its landing changed. */
 export interface CellLook {
   readonly name: string;
   readonly wardrobe: Wardrobe;
   readonly cheer?: string | undefined;
   readonly strength?: Strength | undefined;
+  readonly diff?: Diff | undefined;
+}
+
+/** What a landing's run did to the lines of the files it changed. */
+export interface Diff {
+  readonly added: boolean;
+  readonly removed: boolean;
 }
 
 /** The flex, the gym's cheer: a landing that earned it plays it in place of the look's own (`growth.ts`). */
@@ -304,6 +329,59 @@ export function grown(look: CellLook, strength: Strength | undefined, flexes = f
     name: `${look.name}@${strength ?? ""}${flexes ? `:${FLEX}` : ""}`,
     cheer: flexes ? FLEX : look.cheer,
     strength,
+  };
+}
+
+/** `look` cheering a landing whose run did `diff`: a `+` rises if it added lines, a `−` if it removed some. */
+export function marked(look: CellLook, diff: Diff): CellLook {
+  if (!diff.added && !diff.removed) return look;
+  return {
+    ...look,
+    name: `${look.name}${diff.added ? "+" : ""}${diff.removed ? "−" : ""}`,
+    diff,
+  };
+}
+
+/** How far `pose` carries the ground from where it stands at rest. */
+const carried = (body: (pose: Pose) => Body, pose: Pose): Point => {
+  const at = anchorOf(body(pose), "ground");
+  const home = anchorOf(body(REST), "ground");
+  return { x: at.x - home.x, y: at.y - home.y };
+};
+
+/**
+ * `move`, worn in `wardrobe`, with `diff`'s marks rising over its first
+ * frames from the shoulder (`DIFF_MARKS`). They rise from the box, not the
+ * body: each frame's hop and step, as its hat holds them, are taken back out.
+ */
+function withMarks(move: Move, diff: Diff | undefined, wardrobe: Wardrobe): Move {
+  if (DIFF_MARKS === undefined || diff === undefined) return move;
+  const marks = [
+    ...(diff.added ? [DIFF_MARKS.added] : []),
+    ...(diff.removed ? [DIFF_MARKS.removed] : []),
+  ];
+  const { rise } = DIFF_MARKS;
+  const risen = (frame: Frame, up: number): Frame => {
+    const look = swappedIn(frame, wardrobe);
+    const pose = fitted(frame.pose, headroomOf(look), backroomOf(look));
+    const big = carried(hero, pose);
+    const small = carried(mini, pose);
+    const raised = marks.map((mark): Layer => ({
+      ...mark,
+      hotspot: { x: mark.hotspot.x + big.x, y: mark.hotspot.y + up + big.y },
+      miniHotspot:
+        mark.miniHotspot === undefined
+          ? undefined
+          : {
+              x: mark.miniHotspot.x + small.x,
+              y: mark.miniHotspot.y + round(up / 2) + small.y,
+            },
+    }));
+    return { ...frame, layers: [...frame.layers, ...raised] };
+  };
+  return {
+    ...move,
+    frames: move.frames.map((frame, i) => (i < rise.length ? risen(frame, rise[i]!) : frame)),
   };
 }
 
@@ -440,8 +518,9 @@ function playOf(
   const cheer = key === "happy" && look.cheer !== undefined ? CHEERS.get(look.cheer) : undefined;
   const dressed = posedIn(look.wardrobe, key.split("/")[0]!);
   const wardrobe = scene.holds ? { ...dressed, held: scene.held } : dressed;
+  const played = strong(cheer ?? scene, look.strength, wardrobe.held);
   return {
-    move: strong(cheer ?? scene, look.strength, wardrobe.held),
+    move: key === "happy" ? withMarks(played, look.diff, wardrobe) : played,
     wardrobe,
     pieces: scene.pieces,
   };

@@ -460,11 +460,16 @@ interface SceneData extends MoveData {
   readonly pieces?: string;
 }
 
-/** A move set as its file in `art/moves/` holds it: new scenes, meta for the export's, and the arms a strength holds at rest. */
+/** A move set as its file in `art/moves/` holds it: new scenes, meta for the export's, the arms a strength holds at rest, and the marks a landing's diff raises. */
 export interface MoveFile {
   readonly scenes?: Readonly<Record<string, SceneData>>;
   readonly meta?: Readonly<Record<string, MoveMeta>>;
   readonly strength?: Readonly<Partial<Record<Strength, Omit<Arm, "side">>>>;
+  readonly diff?: {
+    readonly rise: readonly number[];
+    readonly added: LayerData;
+    readonly removed: LayerData;
+  };
 }
 
 const MOVE_LAYERS = (movesData.layers as readonly LayerData[]).map(layer);
@@ -533,6 +538,19 @@ export const STRENGTH_ARMS: ReadonlyMap<Strength, Omit<Arm, "side">> = new Map(
     }),
   ),
 );
+
+/**
+ * The marks a landing raises over its cheer when its run added lines (`+`)
+ * or removed some (`−`), and how many hero cells they have risen in each
+ * frame of the cheer; past the last, they are gone.
+ */
+export const DIFF_MARKS: { rise: readonly number[]; added: Layer; removed: Layer } | undefined = [
+  ...MOVE_FILES.values(),
+].flatMap((file) =>
+  file.diff === undefined
+    ? []
+    : [{ rise: file.diff.rise, added: layer(file.diff.added), removed: layer(file.diff.removed) }],
+)[0];
 
 /** The scenes drawn for Stemcells, by name. */
 export const DRAWN_SCENES: ReadonlyMap<string, Scene> = new Map(

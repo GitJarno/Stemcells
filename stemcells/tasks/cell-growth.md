@@ -73,9 +73,9 @@ arms are the only limb that stays.
 
 - [x] Rule: `cell/growth.ts`, the time worked alone and the tier and flex
       from it.
-- [x] Read: `growthOf` and `useCellGrowth` in `upstream/cellWork.ts`, with
-      a contract test over runs, requests and nodes decoded by upstream's
-      own field schemas.
+- [x] Read: `growthOf` and `useCellGrowth` (now `useCellLanding`) in
+      `upstream/cellWork.ts`, with a contract test over runs, requests and
+      nodes decoded by upstream's own field schemas.
 - [x] Art: `Arm.bulge` in the rig, the tier arms in `art/moves/growth.json`,
       `ownArms` on the gym's flex.
 - [x] Cast: strength in the look (it names its scenes), the flex in place of

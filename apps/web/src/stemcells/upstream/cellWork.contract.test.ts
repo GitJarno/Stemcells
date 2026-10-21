@@ -1,12 +1,14 @@
 /**
  * What a Cell's acting relies on in upstream: the turn items a run's tool
  * calls become, the run a shell names, the desktop keeping running threads
- * live, the prompt cache's expiry Claude's turns carry, and the runs and
- * requests its growth is read from. A failure here after a sync names the
- * contract that moved; the fix goes in `cellWork.ts`, not in the views.
+ * live, the prompt cache's expiry Claude's turns carry, the runs and
+ * requests its growth is read from, and the checkpoints that count a run's
+ * lines. A failure here after a sync names the contract that moved; the fix
+ * goes in `cellWork.ts`, not in the views.
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import {
+  OrchestrationV2Checkpoint,
   OrchestrationV2ExecutionNode,
   OrchestrationV2PendingBackgroundTask,
   OrchestrationV2Run,
@@ -29,6 +31,7 @@ import {
   CODEX_CACHE_MS,
   coldAtFor,
   coldAtOf,
+  diffOf,
   growthOf,
   newsOf,
   subagentsAwayOf,
@@ -360,5 +363,41 @@ describe("how long a chat's Cell has worked alone, from its thread's detail", ()
     expect(projectionStoreSource).toContain(
       'blocking: request.responseCapability.type !== "message",',
     );
+  });
+});
+
+const decodeCheckpoints = Schema.decodeUnknownSync(
+  Schema.Array(
+    Schema.Struct({
+      runId: OrchestrationV2Checkpoint.fields.runId,
+      files: OrchestrationV2Checkpoint.fields.files,
+    }),
+  ),
+);
+
+describe("what a run did to the lines of its files, from its checkpoints", () => {
+  const file = (path: string, additions: number, deletions: number) => ({
+    path,
+    kind: "modified",
+    additions,
+    deletions,
+  });
+  const thread = {
+    checkpoints: decodeCheckpoints([
+      { runId: "run-1", files: [file("src/a.ts", 12, 0), file("src/b.ts", 0, 3)] },
+      { runId: "run-2", files: [file("README.md", 4, 0)] },
+      { runId: "run-3", files: [] },
+      { runId: null, files: [file("src/c.ts", 0, 9)] },
+    ]),
+  };
+
+  it("adds and removes by git's count of each file's lines", () => {
+    expect(diffOf(thread, "run-1")).toEqual({ added: true, removed: true });
+    expect(diffOf(thread, "run-2")).toEqual({ added: true, removed: false });
+  });
+
+  it("is nothing for a run that changed no file, or that has no checkpoint", () => {
+    expect(diffOf(thread, "run-3")).toEqual({ added: false, removed: false });
+    expect(diffOf(thread, "run-4")).toEqual({ added: false, removed: false });
   });
 });

@@ -26,7 +26,8 @@ const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.
                                  on the original's art
 
   <look>    bare | builder | gym/towel+gym/sweatband | outfit:gym/athlete[~sky]
-            any grown to a strength, flexing or not: bare@arms | bare@biceps:flex
+            any grown to a strength, cheering a landing: bare@arms | bare@biceps:flex
+            | bare@:added:removed (the marks of the lines it added and removed)
   options   --body claude|codex|gemini|kimi|frost   --out <dir>   (default: $TMPDIR/cells)`;
 
 const DEFAULT_SCENES = ["idle", "happy", "waiting", "asleep"];

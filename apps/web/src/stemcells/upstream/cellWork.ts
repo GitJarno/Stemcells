@@ -1,15 +1,16 @@
 /**
  * What a chat's Cell acts out, read from upstream's thread: the tool calls of
  * the run in progress, newest last, when anything last came into it, when its
- * last turn landed, when its prompt cache goes cold, and how long it has
- * worked alone. A Cell reads the turn items only while its chat works, and
- * the thread's detail as it is drawn and as a run starts or lands. On the
- * desktop app every running thread's items are live already (upstream's
- * `RunningThreadKeepAlive`); in a browser this keeps a working chat's live
- * while its Cell is mounted.
+ * last turn landed, when its prompt cache goes cold, how long it has worked
+ * alone, and what its last run did to the lines of its files. A Cell reads
+ * the turn items only while its chat works, and the thread's detail as it is
+ * drawn and as a run starts or lands. On the desktop app every running
+ * thread's items are live already (upstream's `RunningThreadKeepAlive`); in
+ * a browser this keeps a working chat's live while its Cell is mounted.
  */
 import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-label";
 import type {
+  OrchestrationV2Checkpoint,
   OrchestrationV2ExecutionNode,
   OrchestrationV2ProjectedTurnItem,
   OrchestrationV2Run,
@@ -29,6 +30,7 @@ import {
 import { ACTIVITY_HOLD, budsOf, type ToolBeat } from "../cell/activity";
 import { aloneIn, FLEX_MS, type Span, strengthOf } from "../cell/growth";
 import type { Strength } from "../cell/kit";
+import type { Diff } from "../cell/scene";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
 
@@ -302,13 +304,38 @@ export function growthOf(
 }
 
 /**
- * How strong the chat's Cell has grown, and whether its landing flexes (its
- * run worked alone `FLEX_MS` or more): read from the thread's detail as the
- * Cell is drawn, again as a run starts, and as it lands.
+ * What run `runId` did to the lines of the files it changed, from its
+ * checkpoints: git's count of the lines each file gained and lost. A run
+ * that changed no file did neither.
  */
-export function useCellGrowth(cell: CellRef | null): {
+export function diffOf(
+  projection: {
+    readonly checkpoints: ReadonlyArray<Pick<OrchestrationV2Checkpoint, "runId" | "files">>;
+  },
+  runId: string,
+): Diff {
+  const files = projection.checkpoints.flatMap((checkpoint) =>
+    checkpoint.runId === runId ? checkpoint.files : [],
+  );
+  return {
+    added: files.some((file) => file.additions > 0),
+    removed: files.some((file) => file.deletions > 0),
+  };
+}
+
+const NO_DIFF: Diff = { added: false, removed: false };
+
+/**
+ * What the chat's Cell carries from its landings: how strong it has grown,
+ * and what its last landing cheers with, the flex (its run worked alone
+ * `FLEX_MS` or more) and the marks of the lines the run added and removed.
+ * Read from the thread's detail as the Cell is drawn, again as a run
+ * starts, and as it lands.
+ */
+export function useCellLanding(cell: CellRef | null): {
   readonly strength: Strength | undefined;
   readonly flexes: boolean;
+  readonly diff: Diff;
 } {
   const ref = cell ? threadRefOf(cell) : null;
   const run = useQuietThreadShell(ref)?.latestRun;
@@ -319,17 +346,21 @@ export function useCellGrowth(cell: CellRef | null): {
     thread: string;
     alone: number;
     run: number;
+    diff: Diff;
   } | null>(null);
   const reading = key !== null && read?.key !== key;
   const thread = useThreadProjection(reading ? ref : null);
   if (reading && cell !== null && thread !== null) {
     const growth = growthOf(thread.projection, landed);
-    if (growth !== null) setRead({ key, thread: cell.threadId, ...growth });
+    const diff = landed === null ? NO_DIFF : diffOf(thread.projection, landed);
+    if (growth !== null) setRead({ key, thread: cell.threadId, ...growth, diff });
   }
   // Until the next read, the last one of this chat's stands: growth only comes as a run lands.
   const mine = read !== null && read.thread === cell?.threadId ? read : null;
+  const cheer = landed !== null && mine?.key === key ? mine : null;
   return {
     strength: strengthOf(mine?.alone ?? 0),
-    flexes: landed !== null && mine?.key === key && mine.run >= FLEX_MS,
+    flexes: cheer !== null && cheer.run >= FLEX_MS,
+    diff: cheer?.diff ?? NO_DIFF,
   };
 }
