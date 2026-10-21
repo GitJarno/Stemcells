@@ -9,7 +9,6 @@ import { ClaudeSettings, ProviderDriverKind } from "@t3tools/contracts";
 import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
-import contextWindowMeterSource from "../../components/chat/ContextWindowMeter.tsx?raw";
 import providerInstanceCardSource from "../../components/settings/ProviderInstanceCard.tsx?raw";
 import { formatContextWindowCompactionMessage } from "../../components/chat/ContextWindowMeter.logic";
 import { providerClients } from "../../components/settings/providerDriverMeta";
@@ -18,6 +17,7 @@ import { searchSettings } from "../../components/settings/settingsSearch";
 import { deriveLatestContextWindowSnapshot } from "../../lib/contextWindow";
 import { towardCompaction } from "../compaction/meter";
 import { compactWindowIn, DEFAULT_COMPACT_WINDOW, MODEL_OWN_WINDOW } from "../compaction/windows";
+import { SUBSTITUTES } from "./substitutes/plugin";
 
 const decodeClaudeSettings = Schema.decodeSync(ClaudeSettings);
 
@@ -51,7 +51,11 @@ describe("the auto-compact window's contracts with upstream's web", () => {
   });
 
   it("the context meter fills toward where the chat compacts", () => {
-    expect(contextWindowMeterSource).toContain("towardCompaction(props.usage)");
+    // Upstream's composer gets the meter through a substitute that hands it
+    // `towardCompaction(usage)` (`substitutes/ContextWindowMeter.tsx`).
+    expect(SUBSTITUTES["apps/web/src/components/chat/ContextWindowMeter.tsx"]).toBe(
+      "ContextWindowMeter.tsx",
+    );
     const snapshot = deriveLatestContextWindowSnapshot([], {
       usedTokens: 233_500,
       maxTokens: 1_000_000,

@@ -10,10 +10,20 @@ import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } fro
 import { describe, expect, it } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
+import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
+import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
+import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
+import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
+import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
+import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurFavicon from "./favicon";
 import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
+import * as OurProviderIconUtils from "./providerIconUtils";
+import * as OurProviderSubagentBar from "./ProviderSubagentBar";
 import * as OurUpdateNotice from "./providerUpdateRequiredModels";
+import * as OurRightPanelSheet from "./RightPanelSheet";
+import * as OurRightPanelTabs from "./RightPanelTabs";
 import * as OurSubagentDisplay from "./subagentDisplay";
 
 /**
@@ -29,39 +39,125 @@ const repoRoot = NodePath.resolve(here, "../../../../../..");
 const webRoot = NodePath.join(repoRoot, "apps/web");
 const fromRepo = (file: string) => NodePath.join(repoRoot, file);
 
+/**
+ * The same names, each taking what upstream's does. For components that may
+ * render nothing where upstream's always renders: JSX doesn't read a
+ * component's return type, so null is safe there.
+ */
+type RendersOrNothing<Module> = {
+  [Name in keyof Module]: Module[Name] extends (...args: infer Args) => unknown
+    ? (...args: Args) => unknown
+    : Module[Name];
+};
+
 interface Case {
-  readonly specifier: string;
   readonly upstream: object;
   readonly substitute: object;
-  /** Upstream files that must keep importing these names from `specifier`. */
-  readonly importers: Readonly<Record<string, ReadonlyArray<string>>>;
+  /**
+   * Upstream files that import the module: the specifier each imports it by,
+   * and the names it must keep taking from there.
+   */
+  readonly importers: Readonly<Record<string, readonly [string, ReadonlyArray<string>]>>;
 }
 
 const CASES: Readonly<Record<string, Case>> = {
   "packages/shared/src/favicon.ts": {
-    specifier: "@t3tools/shared/favicon",
     upstream: UpstreamFavicon,
     substitute: OurFavicon satisfies typeof UpstreamFavicon,
     importers: {
-      "apps/web/src/components/ChatMarkdown.tsx": ["faviconUrlForOrigin"],
-      "apps/web/src/components/chat/MessagesTimeline.tsx": ["toolActivityFaviconUrl"],
-      "apps/web/src/lib/favicon.ts": ["faviconUrlForOrigin"],
+      "apps/web/src/components/ChatMarkdown.tsx": [
+        "@t3tools/shared/favicon",
+        ["faviconUrlForOrigin"],
+      ],
+      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+        "@t3tools/shared/favicon",
+        ["toolActivityFaviconUrl"],
+      ],
+      "apps/web/src/lib/favicon.ts": ["@t3tools/shared/favicon", ["faviconUrlForOrigin"]],
     },
   },
   "packages/client-runtime/src/providerUpdateRequiredModels.ts": {
-    specifier: "@t3tools/client-runtime/providerUpdateRequiredModels",
     upstream: UpstreamUpdateNotice,
     substitute: OurUpdateNotice satisfies typeof UpstreamUpdateNotice,
     importers: {
-      "apps/web/src/components/chat/ModelPickerContent.tsx": ["formatProviderUpdateRequiredNotice"],
+      "apps/web/src/components/chat/ModelPickerContent.tsx": [
+        "@t3tools/client-runtime/providerUpdateRequiredModels",
+        ["formatProviderUpdateRequiredNotice"],
+      ],
     },
   },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
-    specifier: "@t3tools/client-runtime/state/subagent-display",
     upstream: UpstreamSubagentDisplay,
     substitute: OurSubagentDisplay satisfies typeof UpstreamSubagentDisplay,
     importers: {
-      "apps/web/src/components/chat/SubagentTooltipContent.tsx": ["resolveSubagentMetadata"],
+      "apps/web/src/components/chat/SubagentTooltipContent.tsx": [
+        "@t3tools/client-runtime/state/subagent-display",
+        ["resolveSubagentMetadata"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/providerIconUtils.ts": {
+    upstream: UpstreamProviderIconUtils,
+    substitute: OurProviderIconUtils satisfies typeof UpstreamProviderIconUtils,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": [
+        "./chat/providerIconUtils",
+        ["getTriggerDisplayModelName"],
+      ],
+      "apps/web/src/components/Sidebar.tsx": [
+        "./chat/providerIconUtils",
+        ["getTriggerDisplayModelLabel"],
+      ],
+      "apps/web/src/components/chat/ModelListRow.tsx": [
+        "./providerIconUtils",
+        ["getDisplayModelName", "getTriggerDisplayModelLabel"],
+      ],
+      "apps/web/src/components/chat/ProviderModelPicker.tsx": [
+        "./providerIconUtils",
+        ["getTriggerDisplayModelLabel", "getTriggerDisplayModelName"],
+      ],
+      "apps/web/src/components/chat/V2LifecycleRow.tsx": [
+        "./providerIconUtils",
+        ["getTriggerDisplayModelName"],
+      ],
+      "apps/web/src/components/chat/ContextWindowMeter.logic.ts": [
+        "./providerIconUtils",
+        ["getTriggerDisplayModelName"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/ProviderSubagentBar.tsx": {
+    upstream: UpstreamProviderSubagentBar,
+    substitute: OurProviderSubagentBar satisfies typeof UpstreamProviderSubagentBar,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": [
+        "./chat/ProviderSubagentBar",
+        ["ProviderSubagentBar"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/ContextWindowMeter.tsx": {
+    upstream: UpstreamContextWindowMeter,
+    substitute: OurContextWindowMeter satisfies typeof UpstreamContextWindowMeter,
+    importers: {
+      "apps/web/src/components/chat/ChatComposer.tsx": [
+        "./ContextWindowMeter",
+        ["ContextWindowMeter"],
+      ],
+    },
+  },
+  "apps/web/src/components/RightPanelTabs.tsx": {
+    upstream: UpstreamRightPanelTabs,
+    substitute: OurRightPanelTabs satisfies RendersOrNothing<typeof UpstreamRightPanelTabs>,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": ["./RightPanelTabs", ["RightPanelTabs"]],
+    },
+  },
+  "apps/web/src/components/RightPanelSheet.tsx": {
+    upstream: UpstreamRightPanelSheet,
+    substitute: OurRightPanelSheet satisfies RendersOrNothing<typeof UpstreamRightPanelSheet>,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": ["./RightPanelSheet", ["RightPanelSheet"]],
     },
   },
 };
@@ -69,10 +165,12 @@ const CASES: Readonly<Record<string, Case>> = {
 const substitutePath = (upstream: string) => NodePath.join(here, SUBSTITUTES[upstream]!);
 
 /** Every (specifier, upstream importer) pair, and the file it must resolve to. */
-const expectations = Object.entries(CASES).flatMap(([upstream, { specifier, importers }]) =>
-  Object.keys(importers).map((importer) => ({
+const expectations = Object.entries(CASES).flatMap(([upstream, { importers }]) =>
+  Object.entries(importers).map(([importer, [specifier]]) => ({
     key: `${specifier} from ${importer}`,
     specifier,
+    // How our own folder would name the same module.
+    ownSpecifier: specifier.startsWith(".") ? fromRepo(upstream) : specifier,
     importer: fromRepo(importer),
     upstream: fromRepo(upstream),
     substitute: substitutePath(upstream),
@@ -109,8 +207,8 @@ describe("Stemcells' substitutes for upstream modules", () => {
 
   it("upstream's views still import what we replace from the substituted module", () => {
     // A view that took the name from somewhere else would bypass the substitute.
-    for (const { specifier, importers } of Object.values(CASES)) {
-      for (const [importer, names] of Object.entries(importers)) {
+    for (const { importers } of Object.values(CASES)) {
+      for (const [importer, [specifier, names]] of Object.entries(importers)) {
         const source = NodeFS.readFileSync(fromRepo(importer), "utf8");
         expect(importedNames(source, specifier), importer).toEqual(
           expect.arrayContaining([...names]),
@@ -152,11 +250,11 @@ describe("Stemcells' substitutes for upstream modules", () => {
     });
     try {
       const container = server.environments.client.pluginContainer;
-      for (const { key, specifier, importer, upstream, substitute } of expectations) {
+      const ours = NodePath.join(here, "plugin.ts");
+      for (const { key, specifier, ownSpecifier, importer, upstream, substitute } of expectations) {
         expect((await container.resolveId(specifier, importer))?.id, key).toBe(substitute);
         // Our own folder gets upstream's module, so a substitute can wrap it.
-        const ours = NodePath.join(here, "plugin.ts");
-        expect((await container.resolveId(specifier, ours))?.id, key).toBe(upstream);
+        expect((await container.resolveId(ownSpecifier, ours))?.id, key).toBe(upstream);
       }
       const served = await server.transformRequest("/src/lib/favicon.ts");
       expect(served?.code).toContain("/src/stemcells/upstream/substitutes/favicon.ts");
@@ -213,7 +311,11 @@ describe("Stemcells' substitutes for upstream modules", () => {
     // The server runs from source in dev (`node src/bin.ts`), with no bundler
     // to substitute through. A server import of one of these would get
     // upstream's module: give the server a seam of its own instead.
-    const specifiers = Object.values(CASES).map(({ specifier }) => specifier);
+    const specifiers = Object.values(CASES).flatMap(({ importers }) =>
+      Object.values(importers)
+        .map(([specifier]) => specifier)
+        .filter((specifier) => specifier.startsWith("@")),
+    );
     const serverSource = NodePath.join(repoRoot, "apps/server/src");
     const offenders = NodeFS.readdirSync(serverSource, { recursive: true })
       .map(String)

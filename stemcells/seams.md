@@ -21,7 +21,6 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/routes/_chat.tsx` | Renders `CellWorkspace` (our tabs and panes) where it rendered `ThreadRouteView`, with its `<Outlet />` as the fallback | The chat area becomes tabs of panes; the route names the focused pane's chat |
 | `apps/web/src/components/chat/chatWindowInput.ts` | New: `ChatWindowInputContext`, default `true` | Upstream first: "ChatView safe to render twice" (below) |
 | `apps/web/src/components/ChatView.tsx` | Window shortcuts, type-to-focus, paste-to-focus, composer refocus (mount, window focus, snapshot), preview toggle, desktop menu actions, body-targeted scroll keys and the open-in shortcut act only when the context is `true` | Same |
-| `apps/web/src/components/ChatView.tsx` (imports) | `RightPanelTabs` and `RightPanelSheet` are imported from `stemcells/upstream/chatPanel` (same names, two import lines) | The tab's workbench: the focused chat's panel renders at the slate's right edge, the other chats' render none (`chatPanel.contract.test.ts` pins it) |
 | `apps/web/src/components/chat/ChatComposer.tsx` | The stash shortcut and desktop paste-as-text arm only when the context is `true` | Same |
 | `apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx` | Digit keys answer a question only when the context is `true` | Same |
 | `apps/web/src/components/RightPanelTabs.tsx` | The empty panel's launcher keys and `rightPanel.new` act only when the context is `true` | Same |
@@ -40,9 +39,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/AppSidebarLayout.tsx` | Renders `<LeftColumn wide={<ThreadSidebar />} />` where it rendered `<ThreadSidebar />` | The left column's rail (below): our rail or upstream's wide list in the sidebar's slot |
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/composer/CellComposerLine` and renders it first in the banner column | The line over a Cell's composer (its name, project and one-liner) is an attached banner, so it stacks with upstream's own, in the overlay whose height the transcript keeps clear. It draws nothing outside a Cell's pane (`composerLine.contract.test.ts` pins its place) |
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/glow/CellComposerGlass` and renders it first inside `ComposerSurface.Main`, given `selectedProvider` | The composer's glass and light: in a pane of ours every composer's plate is frosted glass with a rim, that comes forward when its chat is focused and lets a vertical wheel through to the transcript; a Cell's also fills with the provider's colour while it works, clears when it's your turn, and holds the provider's faded mark. A layer behind the composer's words that draws nothing outside our panes (`glass.contract.test.ts` pins where it sits and what it reads there) |
-| `apps/web/src/components/chat/providerIconUtils.ts` | Imports `stemcells/models/names`; `getDisplayModelName` returns `conciseModelName(…)` of what it returned | Concise model names (below): the helper the picker's rows, the composer's model button, the sidebar, the context meter, lifecycle rows and the subagent bar name a model with |
-| `apps/web/src/components/settings/ProviderModelsSection.tsx` | Imports `withConciseName`; Settings › Models groups `models.map(withConciseName)` | Same, for Settings › Models' rows and their filter |
-| `apps/web/src/components/chat/ProviderSubagentBar.tsx` | Imports `conciseModelName` and shows `conciseModelName(props.modelLabel)` | Same, for the subagent bar when its model isn't in the provider's list (a name built from the slug, which the helper never sees) |
+| `apps/web/src/components/settings/ProviderModelsSection.tsx` | Imports `withConciseName`; Settings › Models groups `models.map(withConciseName)` | Concise model names (below), for Settings › Models' rows and their filter. A seam, not a substitute: the grouping happens inside this module, and wrapping the component's `models` would also rename the custom-model editor's "Start from" list |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/ThreadRelationshipsControl.agents.browser.test.tsx` | Expect the concise names, and nothing else changes in them | They pin the names these seams change |
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/verbs/WorkWord`; the rows' shared state carries `turnVerbs: turnVerbsOf(timelineEntries)`; the working row says `CellWorkingWord` where it said "Working", and the turn fold renders its label through `CellWorkedLabel` | The work verbs: "Noodling for 12s" while a Cell works, "Noodled for 3m 12s" once done. Upstream keeps its row, timer and layout, and screen readers its words (`workVerbs.contract.test.ts` pins what the verbs read). Upstream's hottest file; there is no cooler place for these words |
 | `apps/web/src/branding.ts` | Imports `stemcells/brand/name`; `APP_BASE_NAME` falls back to `APP_NAME` where it fell back to "T3 Code" | The app's name (below): a browser's window title, the auth and pairing screens and every other view that names the app through upstream's branding |
@@ -75,7 +72,6 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/settings/ProviderSettingsPanel.tsx` | Imports `stemcells/compaction/searchTarget`; the target instance falls back to `searchedInstanceId(searchTargetId)` | Same: Providers shows one instance at a time, so a search for the row opens the default Claude's |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
-| `apps/web/src/components/chat/ContextWindowMeter.tsx` | Imports `stemcells/compaction/meter`; `usage` is `towardCompaction(props.usage)` | Same: the meter fills toward where the chat compacts |
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
 
 ### Substitutes
@@ -100,7 +96,10 @@ re-exports it (`export * from …`) and replaces only the names it changes.
   @t3tools/web exec vp test run --project unit src/stemcells`, as CI does.
   The root config substitutes nothing, and the contract test says so.
 - **Only at a module's surface.** A change inside an upstream function's
-  body is still a seam. The importing file reads one module and runs
+  body is still a seam, and so is a call one export makes to another inside
+  the module: it reaches upstream's, not ours. So a substitute wraps every
+  export such a call passes through (`providerIconUtils` wraps all three
+  name helpers). The importing file reads one module and runs
   another, so each substitute says at its top what it replaces, and the
   contract test lists the upstream views that rely on it.
 
@@ -153,9 +152,13 @@ and a server feature call) would retire the `cli/theme.ts` seam.
 Stemcells writes a model's name family first, without the vendor word:
 "GPT-6.1 Sol" reads "Sol 6.1", "Claude Opus 5.5" reads "Opus 5.5". The rule
 is `apps/web/src/stemcells/models/names.ts`; `modelNames.contract.test.ts`
-pins the three seams above and checks the rule knows every name in
-upstream's model manifest. A subagent's tooltip and the picker's update
-notice take theirs through substitutes (below), with no seam.
+pins the seam above and checks the rule knows every name in upstream's
+model manifest. Everything else takes the names through substitutes
+(below), with no seam: the naming helpers (`providerIconUtils`, which the
+picker's rows, the composer's model button, the sidebar, the context meter
+and lifecycle rows name a model with), the subagent bar (a model the
+provider doesn't list gets a name built from its slug, which the helpers
+never see), a subagent's tooltip and the picker's update notice.
 
 The names are changed where the web shows them, not where they come from:
 
@@ -174,7 +177,7 @@ that don't use it. The mobile app still shows upstream's names; it needs the
 rule in a `packages/stemcells-*` package once it gets a layer of ours.
 
 To offer upstream: one function every view names a model through. Then a
-fork's naming is that one function instead of three seams and two
+fork's naming is that one function instead of a seam and five
 substitutes.
 
 ### The app's name
@@ -307,8 +310,8 @@ which upstream hands each session at launch through the Agent SDK's
 - **Where it compacts.** Measured with the CLI's `getContextUsage` (Claude
   Code 2.1.305): `min(window, context) - 33,000`, room for the reply and a
   buffer. 500k compacts at 467k; a 200k model under 500k at 167k. The
-  adapter reports that, and the context meter fills toward it, reading
-  "38k/467k" where upstream read "38k/1m".
+  adapter reports that, and the context meter (through a substitute) fills
+  toward it, reading "38k/467k" where upstream read "38k/1m".
 - **Running Cells keep their window** until their process starts again;
   a new Cell takes a change at once (seen in the dev app: a running Cell
   kept 500k after a switch to 300k, the next one launched with 300k).

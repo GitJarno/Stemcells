@@ -7,7 +7,6 @@ import { ArrowUpLeftIcon } from "lucide-react";
 import { useLayoutEffect, useRef } from "react";
 
 import type { ProviderInstanceEntry } from "../../providerInstances";
-import { conciseModelName } from "../../stemcells/models/names";
 import { Button } from "../ui/button";
 import { ProviderInstanceIcon } from "./ProviderInstanceIcon";
 
@@ -22,9 +21,8 @@ export function ProviderSubagentBar(props: {
   const statusRef = useRef<HTMLSpanElement>(null);
   const { status } = props;
   const live = status !== null && isOrchestrationV2WorkActive(status.status);
-  const modelLabel = conciseModelName(props.modelLabel);
   const modelDescription =
-    props.effortLabel === null ? modelLabel : `${modelLabel}, ${props.effortLabel}`;
+    props.effortLabel === null ? props.modelLabel : `${props.modelLabel}, ${props.effortLabel}`;
   const announcement = formatProviderSubagentStatus(
     status === null ? null : { ...status, startedAt: null },
     0,
@@ -60,7 +58,7 @@ export function ProviderSubagentBar(props: {
             badgeClassName="right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 px-0.5 text-5xs"
           />
         ) : null}
-        <span className="min-w-0 truncate font-medium text-foreground">{modelLabel}</span>
+        <span className="min-w-0 truncate font-medium text-foreground">{props.modelLabel}</span>
         {props.effortLabel === null ? null : (
           <span className="shrink-0 text-muted-foreground">{props.effortLabel}</span>
         )}

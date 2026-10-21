@@ -21,6 +21,14 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // Concise model names: the picker's update notice and a subagent's tooltip.
   "packages/client-runtime/src/providerUpdateRequiredModels.ts": "providerUpdateRequiredModels.ts",
   "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
+  // Concise model names: the naming helpers, and the subagent bar's own.
+  "apps/web/src/components/chat/providerIconUtils.ts": "providerIconUtils.ts",
+  "apps/web/src/components/chat/ProviderSubagentBar.tsx": "ProviderSubagentBar.tsx",
+  // The auto-compact window: the context meter fills toward where it compacts.
+  "apps/web/src/components/chat/ContextWindowMeter.tsx": "ContextWindowMeter.tsx",
+  // The workbench: a pane's chat draws its panel and sheet at the tab's edge.
+  "apps/web/src/components/RightPanelTabs.tsx": "RightPanelTabs.tsx",
+  "apps/web/src/components/RightPanelSheet.tsx": "RightPanelSheet.tsx",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

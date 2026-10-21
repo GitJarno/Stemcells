@@ -5,6 +5,8 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
+import { SUBSTITUTES } from "./substitutes/plugin";
+
 import chatView from "../../components/ChatView.tsx?raw";
 import previewPanelShell from "../../components/preview/PreviewPanelShell.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
@@ -12,14 +14,13 @@ import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 
 describe("the workbench's contracts with upstream", () => {
   it("the thread view draws its panel and sheet through our adapter", () => {
-    // The seam: two imports in the thread view. A sync that resolved a
-    // conflict there in upstream's favour would put a panel back in every pane.
-    expect(chatView).toContain(
-      'import { ChatPanelTabs as RightPanelTabs } from "../stemcells/upstream/chatPanel";',
-    );
-    expect(chatView).toContain(
-      'import { ChatPanelSheet as RightPanelSheet } from "../stemcells/upstream/chatPanel";',
-    );
+    // Substitutes for upstream's panel and sheet modules hand the thread view
+    // ours (the substitutes contract test proves it for every build). Without
+    // them every pane would draw a panel of its own.
+    expect(SUBSTITUTES).toMatchObject({
+      "apps/web/src/components/RightPanelTabs.tsx": "RightPanelTabs.tsx",
+      "apps/web/src/components/RightPanelSheet.tsx": "RightPanelSheet.tsx",
+    });
     expect(chatView).toContain('mode="inline"');
   });
 

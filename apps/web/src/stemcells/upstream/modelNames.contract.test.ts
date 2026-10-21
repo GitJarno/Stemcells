@@ -1,23 +1,19 @@
 /**
  * Upstream behaviour the concise model names rely on. A failure here after a
  * sync names the contract that moved; the fix goes in `modelNames.ts`,
- * `stemcells/models/names.ts` or the seam, not in the views.
+ * `stemcells/models/names.ts`, a substitute or the seam, not in the views.
  */
 import { ProviderDriverKind } from "@t3tools/contracts";
 import { formatCodexModelName, formatModelSlugName } from "@t3tools/shared/model";
 import { describe, expect, it } from "vite-plus/test";
 
-import providerIconUtilsSource from "../../components/chat/providerIconUtils.ts?raw";
-import providerSubagentBarSource from "../../components/chat/ProviderSubagentBar.tsx?raw";
 import providerModelsSectionSource from "../../components/settings/ProviderModelsSection.tsx?raw";
-import {
-  getDisplayModelName,
-  getTriggerDisplayModelName,
-} from "../../components/chat/providerIconUtils";
 import manifestSource from "../../../../server/src/provider/model-manifest.json?raw";
 import { conciseModelName } from "../models/names";
 import { formatProviderUpdateRequiredNotice, resolveSubagentMetadata } from "./modelNames";
 import { SUBSTITUTES } from "./substitutes/plugin";
+// What upstream's views get in place of upstream's helpers.
+import { getDisplayModelName, getTriggerDisplayModelName } from "./substitutes/providerIconUtils";
 
 interface Manifest {
   readonly providers: Record<string, { readonly models: ReadonlyArray<{ readonly name: string }> }>;
@@ -106,23 +102,18 @@ describe("concise model names' contracts with upstream", () => {
   it("every view that names a model reads it through the seams", () => {
     // A sync that resolved a conflict in upstream's favour would bring a
     // vendor word back to that view.
-    expect(providerIconUtilsSource).toContain(
-      "return conciseModelName(stripLeadingQualifier(name, model.subProvider));",
-    );
     expect(providerModelsSectionSource).toContain(
       "groupModelsForDisplay(models.map(withConciseName), {",
     );
-    expect(providerSubagentBarSource).toContain(
-      "const modelLabel = conciseModelName(props.modelLabel);",
-    );
-    expect(providerSubagentBarSource).not.toContain("{props.modelLabel}");
-    // The tooltip and the picker's notice read ours through substitutes of
-    // upstream's modules (`substitutes/plugin.ts`); the substitutes contract
-    // test proves every build hands them ours.
+    // The rest read ours through substitutes of upstream's modules
+    // (`substitutes/plugin.ts`); the substitutes contract test proves every
+    // build hands them ours.
     expect(SUBSTITUTES).toMatchObject({
       "packages/client-runtime/src/providerUpdateRequiredModels.ts":
         "providerUpdateRequiredModels.ts",
       "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
+      "apps/web/src/components/chat/providerIconUtils.ts": "providerIconUtils.ts",
+      "apps/web/src/components/chat/ProviderSubagentBar.tsx": "ProviderSubagentBar.tsx",
     });
   });
 });
