@@ -120,12 +120,7 @@ describe("the ink plugin", () => {
   const start = (text: string, from: WordsSetting | null = setting) =>
     EditorState.create({
       doc: doc(p(...(text ? [t(text)] : []))),
-      plugins: [
-        wordsPlugin(
-          () => from,
-          () => clock,
-        ),
-      ],
+      plugins: [wordsPlugin(() => from, { now: () => clock })],
     });
   // An inline decoration keeps the attributes it draws on its type.
   const classes = (state: EditorState) =>

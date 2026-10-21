@@ -29,8 +29,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // The workbench: a pane's chat draws its panel and sheet at the tab's edge.
   "apps/web/src/components/RightPanelTabs.tsx": "RightPanelTabs.tsx",
   "apps/web/src/components/RightPanelSheet.tsx": "RightPanelSheet.tsx",
-  // Smart prompting: the composer inks the words that set a new chat up.
+  // Smart prompting: the composer inks the words that set a new chat up,
+  // and sends the Cell its message without them.
   "apps/web/src/components/ComposerPromptEditor.tsx": "ComposerPromptEditor.tsx",
+  "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

@@ -10,7 +10,8 @@
    the next word, and rises within the line's leading, so plates on
    adjacent lines never touch. The edge is an outline round the plate.
    Neutral by default: colour is state. */
-[data-stemcells-words] .sc-word {
+[data-stemcells-words] .sc-word,
+.sc-word-flight {
   --token-share: 50%;
   --token-tone: var(--sc-text);
   --token-reach: 0.08em;
@@ -89,4 +90,111 @@
 [data-stemcells-words] .sc-word-ghost-key {
   margin-inline-start: 0.5em;
   color: var(--sc-faint);
+}
+
+/* A word on its way to the control it set (`flight.ts`): the plate in
+   flight, over everything, never in the way. */
+.sc-word-flight {
+  position: fixed;
+  z-index: 60;
+  color: var(--foreground);
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* While its word is on the way, a control's new value waits for it, gone
+   at once, then settles in as the word lands (`driver.ts`). */
+[data-draft-project-trigger][data-stemcells-from-words],
+[data-chat-provider-model-picker][data-stemcells-from-words]
+  [data-chat-provider-model-picker-label],
+[data-composer-shortcut="composer.effort"][data-stemcells-from-words]
+  [data-composer-control-label] {
+  transition: opacity var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+
+[data-draft-project-trigger][data-stemcells-landing],
+[data-chat-provider-model-picker][data-stemcells-landing] [data-chat-provider-model-picker-label],
+[data-composer-shortcut="composer.effort"][data-stemcells-landing] [data-composer-control-label] {
+  opacity: 0;
+  transition: none;
+}
+
+/* A control the words set (the hero's project, a picker) says so: its
+   value wears the token plate, as the word does. */
+[data-draft-project-trigger][data-stemcells-from-words],
+[data-chat-provider-model-picker][data-stemcells-from-words]
+  [data-chat-provider-model-picker-label],
+[data-composer-shortcut="composer.effort"][data-stemcells-from-words]
+  [data-composer-control-label] {
+  --token-share: 50%;
+  --token-reach: 0.08em;
+  --token-wash: color-mix(
+    in srgb,
+    var(--sc-text) calc(var(--sc-tint-fill) * var(--token-share)),
+    transparent
+  );
+  border-radius: calc(1cap * 1.95 * 0.3);
+  background-color: var(--token-wash);
+  box-shadow: 0 0 0 var(--token-reach) var(--token-wash);
+  outline: 0.5px solid
+    color-mix(in srgb, var(--sc-text) calc(var(--sc-tint-edge) * var(--token-share)), transparent);
+  outline-offset: var(--token-reach);
+}
+
+/* A read word's menu: under the word, never wider than the composer. */
+.sc-word-menu {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+  padding: var(--sc-space-xs);
+  overflow-y: auto;
+  border: 1px solid var(--sc-edge);
+  border-radius: var(--sc-radius-card);
+  background: var(--sc-raised);
+  color: var(--sc-text);
+  font-size: var(--text-sm, 0.875rem);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.24);
+}
+
+.sc-word-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  padding: var(--sc-space-xs) var(--sc-space-md);
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-soft);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.sc-word-menu-item:hover {
+  background: var(--sc-hot);
+  color: var(--sc-text);
+}
+
+.sc-word-menu-item[data-current] {
+  color: var(--sc-text);
+}
+
+.sc-word-menu-item[data-rule] {
+  margin-top: var(--sc-space-xs);
+  border-top: 1px solid var(--sc-hairline);
+  border-radius: 0;
+  padding-top: var(--sc-space-sm);
+}
+
+.sc-word-menu-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-word-menu-mark,
+.sc-word-menu-check {
+  display: inline-flex;
+  flex: none;
+  color: var(--sc-dim);
 }

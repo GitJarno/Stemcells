@@ -19,6 +19,7 @@ import { useRailProjects } from "./rail";
 
 /** An unsent draft: where its words will start a Cell. */
 export interface WordsDraft {
+  readonly draftId: string;
   readonly environmentId: string;
   /** `environmentId:projectId`, as the rail keys a project. */
   readonly projectKey: string;
@@ -32,6 +33,7 @@ export function useWordsDraft(cell: CellRef | null): WordsDraft | null {
   );
   if (session === null || session.promotedTo != null) return null;
   return {
+    draftId: draftId!,
     environmentId: session.environmentId,
     projectKey: `${session.environmentId}:${session.projectId}`,
   };
@@ -44,6 +46,8 @@ export function useWordsDraft(cell: CellRef | null): WordsDraft | null {
  */
 export function useWordsPlaces(): {
   readonly places: ReadonlyArray<WordsPlace>;
+  /** Each place's projects, as `environmentId:projectId`: a place can span machines. */
+  readonly members: ReadonlyMap<string, ReadonlyArray<string>>;
   readonly recency: ReadonlyMap<string, number>;
 } {
   const projects = useRailProjects();
@@ -56,13 +60,17 @@ export function useWordsPlaces(): {
     if (group === undefined) continue;
     latest.set(group, Math.max(latest.get(group) ?? 0, Date.parse(shell.updatedAt)));
   }
-  const names = JSON.stringify(projects.map((p) => [p.key, p.name]));
+  const names = JSON.stringify(projects.map((p) => [p.key, p.name, p.memberKeys]));
   const order = JSON.stringify([...latest].toSorted((a, b) => b[1] - a[1]).map(([key]) => key));
-  return { places: placesOf(names), recency: recencyOf(order) };
+  return { places: placesOf(names), members: membersOf(names), recency: recencyOf(order) };
 }
 
 function placesOf(names: string): WordsPlace[] {
   return (JSON.parse(names) as [string, string][]).map(([id, name]) => ({ id, name }));
+}
+
+function membersOf(names: string): Map<string, string[]> {
+  return new Map((JSON.parse(names) as [string, string, string[]][]).map(([id, , m]) => [id, m]));
 }
 
 function recencyOf(order: string): Map<string, number> {
@@ -99,16 +107,23 @@ export function wordsCatalogOf(snapshots: ReadonlyArray<ServerProvider>): {
     const word = providerWord(snapshot);
     const words = word === null || taken.has(word) ? [] : [word];
     if (word !== null) taken.add(word);
+    const defaultModel = (snapshot.models.find((m) => m.isDefault) ?? snapshot.models[0])?.slug;
     providers.push({
       id: snapshot.instanceId,
       name: snapshot.displayName ?? word ?? snapshot.instanceId,
       words,
-      models: snapshot.models.map((model) => ({
-        id: model.slug,
-        name: conciseModelName(model.name),
-        efforts: effortsOf(model.capabilities),
-        ...(model.aliases ? { aliases: model.aliases } : {}),
-      })),
+      driver: snapshot.driver,
+      ...(defaultModel === undefined ? {} : { defaultModel }),
+      models: snapshot.models.map((model) => {
+        const effort = effortOf(model.capabilities);
+        return {
+          id: model.slug,
+          name: conciseModelName(model.name),
+          efforts: effort?.levels ?? [],
+          ...(effort ? { effortOption: effort.option } : {}),
+          ...(model.aliases ? { aliases: model.aliases } : {}),
+        };
+      }),
     });
   }
   return { catalog: { providers }, ready };
@@ -124,11 +139,14 @@ function providerWord(snapshot: ServerProvider): string | null {
   return word === undefined || word.length === 0 ? null : word;
 }
 
-/** A model's effort levels, in the provider's order: its first reasoning-effort choice. */
-function effortsOf(capabilities: ServerProvider["models"][number]["capabilities"]): string[] {
+/** A model's effort option and its levels, in the provider's order: its first reasoning-effort choice. */
+function effortOf(
+  capabilities: ServerProvider["models"][number]["capabilities"],
+): { readonly option: string; readonly levels: string[] } | null {
   for (const id of REASONING_EFFORT_OPTION_IDS) {
     const descriptor = capabilities?.optionDescriptors?.find((d) => d.id === id);
-    if (descriptor?.type === "select") return descriptor.options.map((option) => option.id);
+    if (descriptor?.type === "select")
+      return { option: id, levels: descriptor.options.map((option) => option.id) };
   }
-  return [];
+  return null;
 }

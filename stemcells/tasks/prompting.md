@@ -69,10 +69,13 @@ quiet underline keeps the easy case one click away without guessing.
   behaviour: the hero re-files the draft, the model picker sets the draft's
   model).
 - Undo is the editor's undo. Delete the word and the hero goes back to the
-  draft's project. There is no hidden pinned state.
-- The draft stays filed under its own project until Send. The hero shows the
-  destination, and Send creates the thread there, on that project's default
-  model unless the words or a pick say otherwise.
+  draft's project. There is no hidden pinned state: the words remember what
+  the draft had before they set it, and put that back only when their word
+  goes.
+- The words file the draft where they point, the way the hero's own picker
+  does, so the hero and the pickers show the destination. Send creates the
+  thread there, on that project's default model unless the words or a pick
+  say otherwise.
 - "Just a word" in a token's menu puts the word in quotes, which makes it
   literal, so nothing reads it. This is the escape hatch for a misread
   address, like "Atlas is a good name, write a tagline". It edits the text
@@ -154,15 +157,16 @@ Why: the person sees cause and effect in one glance, and it's the spawn's
 own language ("in, around, out") at the size of one word.
 
 ### 6. A click on a token
-The click places the caret as usual, and a small menu opens under the word.
-It never takes focus: typing closes it.
+The click places the caret as usual, and a small menu opens at the word:
+under it, or over it when the composer sits too low. It never takes focus:
+typing closes it, and it opens on what the word says now.
 
 - **Place**: the current project ✓, up to 5 recent projects, then the
   readings the words also allow, then "Just a word". When two cued places
   made two Cells, it also offers "One Cell, in Harbor", which puts the other
   place in quotes.
 - **Model**: the providers' current models by concise name, each with its
-  provider's mark, then "Just a word".
+  provider's mark, the word's own provider first, then "Just a word".
 - **Effort**: the bound model's own ladder.
 - **Count**: 1 to 6.
 - **Quiet mention**: "Start in Atlas".
@@ -575,10 +579,15 @@ From the TypeScript rebuild (`SC-legacy`), keep:
   skips their spans.
 - **Draft hero**: `DraftHeroHeadline` / `DraftHeroProjectHeading` already
   names the project, with a picker that re-files the draft and applies the
-  project's default model. A seam passes it the destination.
+  project's default model. The words re-file the draft the same way
+  (`upstream/draftWords.ts`), so the hero names the destination with no
+  seam.
 - **Draft store**: `useComposerDraftStore` (prompt, model selection per
   provider, runtime and interaction modes) and `selectedModelSelection` into
-  ChatView's send. A seam lets the words override at send.
+  ChatView's send. The words set the draft's model through the store, as the
+  pickers do. A substitute for `ChatComposer.tsx` wraps its `onSend`: the
+  text becomes what the Cell is sent before upstream's send reads it, and
+  comes back if nothing went. No seam.
 - **Models**: `ServerProvider.models` (the manifest and the Codex
   `model/list`), effort as `optionDescriptors`, and `conciseModelName` for
   the names.
@@ -624,11 +633,17 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      read as text with code blank and a chip one character.
    - The reader takes spans Aski's cards claimed, and a live Cell's name at
      the head of a message to Aski (fixtures for both).
-3. **One Cell from words.**
-   - The hero shows the destination (a seam).
-   - The pickers follow the words, edits go back into the words, and
+3. **One Cell from words.** Built: `words/follow.ts` (what to do, pure),
+   `words/driver.ts` (doing it), `words/flight.ts`, `words/menu.ts`,
+   `words/TokenMenu.tsx` and `words/send.ts`, through
+   `upstream/draftWords.ts` and a substitute for `ChatComposer.tsx` (no
+   seam).
+   - The hero shows the destination: the words re-file the draft as its
+     picker does, and put it back when their word goes.
+   - The pickers follow the words, picks go back into the words, and
      project defaults resolve in the order of decision 14.
-   - Token menus, "Just a word" and the flight.
+   - Token menus, "Just a word" and the flight; the control's new value
+     waits for its word and settles in as it lands.
    - Send creates the thread in the destination with the words' model and
      effort, minus the grammar words.
 4. **Several Cells from words alone.**

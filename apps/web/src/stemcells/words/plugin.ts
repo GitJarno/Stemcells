@@ -32,11 +32,24 @@ export interface WordsSetting {
   readonly recency: (place: RosterPlace) => number;
 }
 
-interface Placed {
+/** A mark on the document: its word in the text (`start`, `end`) and in the document (`from`, `to`). */
+export interface Placed {
   readonly kind: InkKind;
   readonly warn: boolean;
+  readonly start: number;
+  readonly end: number;
   readonly from: number;
   readonly to: number;
+}
+
+/** What the composer around the plugin hears from it. */
+export interface WordsHooks {
+  /** After the reading or the caret changed. */
+  readonly onChange?: (view: EditorView) => void;
+  /** A click on a read word (the caret moves as usual). */
+  readonly onToken?: (view: EditorView, mark: Placed) => void;
+  /** The clock, for the bloom. */
+  readonly now?: () => number;
 }
 
 interface WordsState {
@@ -73,7 +86,8 @@ export function refreshWords(view: EditorView): void {
   view.dispatch(view.state.tr.setMeta(wordsKey, { refresh: true }).setMeta("addToHistory", false));
 }
 
-export function wordsPlugin(source: () => WordsSetting | null, now = () => performance.now()) {
+export function wordsPlugin(source: () => WordsSetting | null, hooks: WordsHooks = {}) {
+  const now = hooks.now ?? (() => performance.now());
   const next = (
     prev: WordsState | null,
     state: EditorState,
@@ -100,6 +114,8 @@ export function wordsPlugin(source: () => WordsSetting | null, now = () => perfo
           ? inkOf(facts, setting.ready).map((m) => ({
               kind: m.kind,
               warn: m.warn,
+              start: m.start,
+              end: m.end,
               ...rangeOf(text, m),
             }))
           : [];
@@ -189,11 +205,28 @@ export function wordsPlugin(source: () => WordsSetting | null, now = () => perfo
       const settle = setTimeout(() => {
         if (!view.isDestroyed && view.hasFocus()) tell(view, { focused: true });
       });
-      return { destroy: () => clearTimeout(settle) };
+      return {
+        update: (updated, previous) => {
+          const before = wordsKey.getState(previous);
+          const after = wordsKey.getState(updated.state);
+          if (
+            before?.facts !== after?.facts ||
+            before?.focused !== after?.focused ||
+            !previous.selection.eq(updated.state.selection)
+          )
+            hooks.onChange?.(updated);
+        },
+        destroy: () => clearTimeout(settle),
+      };
     },
     props: {
       attributes: { "data-stemcells-words": "" },
       decorations: (state) => wordsKey.getState(state)?.decorations ?? null,
+      handleClick: (view, pos) => {
+        const mark = wordsKey.getState(view.state)?.marks.find((m) => pos >= m.from && pos <= m.to);
+        if (mark) hooks.onToken?.(view, mark);
+        return false;
+      },
       handleKeyDown: (view, event) => {
         if (event.key !== "Tab" || event.shiftKey || event.altKey || event.metaKey) return false;
         if (event.ctrlKey || event.isComposing) return false;

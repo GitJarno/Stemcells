@@ -84,8 +84,14 @@ describe("the providers' models, as words", () => {
     ]);
     expect(catalog.providers[0]?.words).toEqual(["claude"]);
     expect(catalog.providers[0]?.models).toEqual([
-      { id: "claude-opus-5-5", name: "Opus 5.5", efforts: ["low", "high", "max"] },
+      {
+        id: "claude-opus-5-5",
+        name: "Opus 5.5",
+        efforts: ["low", "high", "max"],
+        effortOption: "effort",
+      },
     ]);
+    expect(catalog.providers[0]?.defaultModel).toBe("claude-opus-5-5");
   });
 
   it("gives a provider's word to its first account only, and knows which can start a Cell", () => {

@@ -11,12 +11,14 @@ import { describe, expect, it } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
 import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
+import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
+import * as OurChatComposer from "./ChatComposer";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurFavicon from "./favicon";
@@ -176,6 +178,13 @@ const CASES: Readonly<Record<string, Case>> = {
         "../ComposerPromptEditor",
         ["ComposerPromptEditor"],
       ],
+    },
+  },
+  "apps/web/src/components/chat/ChatComposer.tsx": {
+    upstream: UpstreamChatComposer,
+    substitute: OurChatComposer satisfies RendersOrNothing<typeof UpstreamChatComposer>,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": ["./chat/ChatComposer", ["ChatComposer"]],
     },
   },
 };

@@ -17,6 +17,8 @@ export interface WordsModel {
   readonly efforts: readonly string[];
   /** Other names from the catalog: "opus", "gpt-6.1-sol". */
   readonly aliases?: readonly string[];
+  /** The option that holds its effort, as its provider names it ("effort", "reasoningEffort"). */
+  readonly effortOption?: string;
 }
 
 export interface WordsProvider {
@@ -25,6 +27,10 @@ export interface WordsProvider {
   /** Words that mean this provider; defaults to its name: ["claude"]. */
   readonly words?: readonly string[];
   readonly models: readonly WordsModel[];
+  /** The model its own word means ("claude"): the provider's default, else its first. */
+  readonly defaultModel?: string;
+  /** Upstream's driver, for the provider's mark. */
+  readonly driver?: string;
 }
 
 export interface WordsCatalog {
