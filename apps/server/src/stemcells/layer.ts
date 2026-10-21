@@ -3,18 +3,21 @@ import * as Layer from "effect/Layer";
 import * as DiskHttp from "./disk/http.ts";
 import * as Look from "./look/publish.ts";
 import * as NeedsHttp from "./needs/http.ts";
+import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
 
 // Everything Stemcells adds to the server, mounted by one line in server.ts:
 // Settings › Disk's routes, whether somebody is at this Mac for Aski's
-// eyes, what needs the person for Aski's page, the theme published on
-// start, and the telemetry id upstream left behind, removed on start.
+// eyes, what needs the person for Aski's page, Aski's planner, the theme
+// published on start, and the telemetry id upstream left behind, removed
+// on start.
 
 export const layer = Layer.mergeAll(
   DiskHttp.layer,
   PresenceHttp.layer,
   NeedsHttp.layer,
+  PlannerHttp.layer,
   Look.layer,
   Privacy.layer,
 );

@@ -228,6 +228,8 @@ export const makeClaudeTextGeneration = Effect.fn("makeClaudeTextGeneration")(fu
           ...(managedMcpConfig ? [] : ["--strict-mcp-config"]),
           "--permission-mode",
           "dontAsk",
+          // Stemcells: a lean call loads no settings files and saves no session.
+          ...(operation === "runLean" ? ["--setting-sources", "", "--no-session-persistence"] : []),
         ],
         { env: claudeEnvironment },
       );

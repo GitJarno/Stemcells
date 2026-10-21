@@ -429,4 +429,46 @@ it.layer(layerClaudeTextGenerationTest)("ClaudeTextGeneration", (it) => {
       }),
     ),
   );
+
+  // Stemcells: a lean call loads no settings files and saves no session (stemcells/seams.md).
+  it.effect("runs a lean call without settings files or a saved session", () =>
+    withFakeClaudeEnv(
+      {
+        output: JSON.stringify({ structured_output: { done: true } }),
+        argsMustContain: "--permission-mode dontAsk --setting-sources  --no-session-persistence",
+      },
+      (textGeneration) =>
+        Effect.gen(function* () {
+          const answer = yield* textGeneration.runLean!({
+            operation: "runLean",
+            cwd: process.cwd(),
+            prompt: "Plan these Cells.",
+            outputSchema: Schema.Struct({ done: Schema.Boolean }),
+            modelSelection: {
+              instanceId: ProviderInstanceId.make("claudeAgent"),
+              model: SYNTHETIC_CLAUDE_STANDARD_MODEL,
+            },
+          });
+          expect(answer).toEqual({ done: true });
+        }),
+    ),
+  );
+
+  it.effect("keeps settings files and sessions for its own operations", () =>
+    withFakeClaudeEnv(
+      {
+        output: JSON.stringify({ structured_output: { title: "Lean", body: "" } }),
+        argsMustNotContain: "--setting-sources",
+      },
+      (textGeneration) =>
+        textGeneration.generateThreadTitle({
+          cwd: process.cwd(),
+          message: "Name this thread.",
+          modelSelection: {
+            instanceId: ProviderInstanceId.make("claudeAgent"),
+            model: SYNTHETIC_CLAUDE_STANDARD_MODEL,
+          },
+        }),
+    ),
+  );
 });

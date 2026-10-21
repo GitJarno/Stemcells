@@ -23,6 +23,7 @@ import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
+import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
@@ -64,6 +65,7 @@ import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
+import * as OurUsageProviders from "./usageProviders";
 import * as OurVisibleAnimation from "./visibleAnimation";
 
 /**
@@ -474,6 +476,26 @@ const CASES: Readonly<Record<string, Case>> = {
     },
     serverKeepsUpstream:
       "The server publishes Stemcells' theme for other clients, so the id the web reserves for its built-in must stay open to it.",
+  },
+  "apps/web/src/components/usage/usageProviders.ts": {
+    upstream: UpstreamUsageProviders,
+    substitute: OurUsageProviders satisfies typeof UpstreamUsageProviders,
+    importers: {
+      // The chart's lines and areas, the legend's dots, the models' bars.
+      "apps/web/src/components/usage/UsageProviderChart.tsx": [
+        "./usageProviders",
+        ["PROVIDER_PRESENTATION"],
+      ],
+      "apps/web/src/components/usage/UsagePage.tsx": [
+        "./usageProviders",
+        ["PROVIDER_PRESENTATION"],
+      ],
+      // The plan bars, which the rail's plan rings take too.
+      "apps/web/src/components/usage/UsageLimits.tsx": [
+        "./usageProviders",
+        ["PROVIDER_PRESENTATION"],
+      ],
+    },
   },
 };
 

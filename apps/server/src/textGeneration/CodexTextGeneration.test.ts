@@ -320,6 +320,45 @@ it.layer(layerCodexTextGenerationTest)("CodexTextGeneration", (it) => {
     ),
   );
 
+  // Stemcells (stemcells/seams.md): Aski's planner runs lean.
+  it.effect("runs a lean call without config.toml or rules files", () =>
+    withFakeCodexEnv(
+      {
+        output: JSON.stringify({ done: true }),
+        requireArg: "--ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check",
+      },
+      (textGeneration) =>
+        Effect.gen(function* () {
+          const answer = yield* textGeneration.runLean!({
+            operation: "runLean",
+            cwd: process.cwd(),
+            prompt: "Plan these Cells.",
+            outputSchema: Schema.Struct({ done: Schema.Boolean }),
+            modelSelection: DEFAULT_TEST_MODEL_SELECTION,
+          });
+          expect(answer).toEqual({ done: true });
+        }),
+    ),
+  );
+
+  it.effect("keeps config.toml and rules for its own operations", () =>
+    withFakeCodexEnv(
+      {
+        output: JSON.stringify({ title: "Remove default shapes" }),
+        forbidArg: "--ignore-user-config",
+      },
+      (textGeneration) =>
+        Effect.gen(function* () {
+          const result = yield* textGeneration.generateThreadTitle({
+            cwd: process.cwd(),
+            message: "Remove default shapes from characters",
+            modelSelection: DEFAULT_TEST_MODEL_SELECTION,
+          });
+          expect(result.title).toBe("Remove default shapes");
+        }),
+    ),
+  );
+
   it.effect("passes exec-safe launch args into codex exec", () =>
     withFakeCodexEnv(
       {

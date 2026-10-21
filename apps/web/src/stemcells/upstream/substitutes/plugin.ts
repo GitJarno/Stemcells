@@ -68,6 +68,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/lib/visibleAnimation.ts": "visibleAnimation.ts",
   // Stemcells' theme is built in, so the app wears it from its first frame.
   "packages/shared/src/themePalettes.ts": "themePalettes.ts",
+  // Each provider's colour on the usage page is its own.
+  "apps/web/src/components/usage/usageProviders.ts": "usageProviders.ts",
 };
 
 /**

@@ -5,6 +5,7 @@
  * Swift app's glow; the DOM side is `motion.ts`.
  */
 import { CREST_REACH } from "../motion/beat";
+import { brandTokenOf } from "../tokens/providers";
 import type { CellStatus } from "../upstream/status";
 
 /**
@@ -31,14 +32,9 @@ export function glowOf(status: CellStatus | null): Glow {
   return status === null ? "quiet" : GLOW_BY_STATUS[status];
 }
 
-/** A provider's brand token, by upstream's driver id; any other wears the accent. */
-const BRAND_BY_DRIVER: Readonly<Record<string, string>> = {
-  claudeAgent: "--sc-provider-claude",
-  codex: "--sc-provider-codex",
-};
-
+/** A provider's brand token (`tokens/providers.ts`); any other wears the accent. */
 export function toneTokenOf(driver: string | null): string {
-  return (driver !== null && BRAND_BY_DRIVER[driver]) || "--sc-accent";
+  return brandTokenOf(driver) ?? "--sc-accent";
 }
 
 // MARK: - Colour

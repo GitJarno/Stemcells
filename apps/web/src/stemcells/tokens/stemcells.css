@@ -1568,8 +1568,10 @@
 }
 
 /* A chat's colour is its provider's brand, the same in every skin: the
-   light in its composer's glass and on its working word wear it. A provider
-   with no brand here wears the skin's accent. */
+   light in its composer's glass and on its working word wear it, and so do
+   its marks on the usage page. `tokens/providers.ts` gives each provider its
+   token; one with no brand here wears the skin's accent in the light, and
+   neutral on the usage page. */
 :root {
   --sc-provider-claude: rgba(217, 119, 87, 1);
   --sc-provider-codex: rgba(16, 163, 127, 1);
