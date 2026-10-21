@@ -1,0 +1,3311 @@
+{
+  "theme": "august",
+  "season": {
+    "from": "08-01",
+    "to": "08-31"
+  },
+  "about": "A late-summer crayfish party in the garden: paper hats, a paper moon lantern, bibs at the table.",
+  "pieces": [
+    {
+      "name": "partyhat",
+      "slot": "headwear",
+      "about": "A paper party hat with a red crayfish printed on it, worn on the crown at a late-summer crayfish party.",
+      "art": [
+        "....qWWq....",
+        ".....Wq.....",
+        ".....Sd.....",
+        ".....Sd.....",
+        "....pSSd....",
+        "....pSSd....",
+        "...pSSSSd...",
+        "...pRSSRd...",
+        "..pRRSSRRd..",
+        ".pSSrRRrSSd.",
+        "pSSSSrrSSSdd",
+        "YYYYYYYYYYYJ"
+      ],
+      "hotspot": [5, 12],
+      "mini": ["...W...", "...S...", "..pSd..", "..pRd..", ".pSrSd.", "YYYYYYJ"],
+      "miniHotspot": [3, 6]
+    },
+    {
+      "name": "moonlantern",
+      "slot": "back",
+      "about": "A round paper lantern with a smiling moon face, hung from a bamboo pole carried behind the shoulder, as lanterns light a crayfish party in the garden.",
+      "poses": {
+        "happy": "moonlantern-swing"
+      },
+      "art": [
+        "....tt.",
+        "...t..t",
+        "...k..t",
+        ".yYYYGt",
+        "yYjYjYG",
+        "yjYYYjG",
+        "yYjjjYG",
+        ".GYYYG.",
+        "...3.t.",
+        "....t..",
+        "....t..",
+        "....t..",
+        "...t...",
+        "...t..."
+      ],
+      "hotspot": [-6, 17],
+      "mini": [".yY.t", "yYYGt", "yYYGt", ".GG.t", "....t", "...t."],
+      "miniHotspot": [-2, 9]
+    },
+    {
+      "name": "moonlantern-swing",
+      "slot": "back",
+      "about": "The moon lantern swinging on its pole, worn behind the shoulder while the Cell cheers.",
+      "posed": true,
+      "art": [
+        "......tt...",
+        ".....t..t..",
+        "....k...t..",
+        "..yYYYG.t..",
+        ".yYjYjYGt..",
+        ".yjYYYjG...",
+        ".yYjjjYG...",
+        "..GYYYGt...",
+        "....3..t...",
+        "......t....",
+        "......t....",
+        "......t....",
+        ".....t.....",
+        ".....t....."
+      ],
+      "hotspot": [-4, 17],
+      "mini": [".yY..t", "yYYG.t", "yYYG.t", ".GG..t", ".....t", "....t."],
+      "miniHotspot": [-1, 9],
+      "frames": [
+        [
+          "......tt...",
+          ".....t..t..",
+          "....k...t..",
+          "..yYYYG.t..",
+          ".yYjYjYGt..",
+          ".yjYYYjG...",
+          ".yYjjjYG...",
+          "..GYYYGt...",
+          "....3..t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          "...kkt..t..",
+          ".yYYYG..t..",
+          "yYjYjYG.t..",
+          "yjYYYjG.t..",
+          "yYjjjYGt...",
+          ".GYYYG.t...",
+          "...3...t...",
+          ".......t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          "....k...t..",
+          "..yYYYG.t..",
+          ".yYjYjYGt..",
+          ".yjYYYjG...",
+          ".yYjjjYG...",
+          "..GYYYGt...",
+          "....3..t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          ".....k..t..",
+          "...yYYYGt..",
+          "..yYjYjYG..",
+          "..yjYYYjG..",
+          "..yYjjjYG..",
+          "...GYYYG...",
+          ".....3.t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          "......k.t..",
+          "....yYYYG..",
+          "...yYjYjYG.",
+          "...yjYYYjG.",
+          "...yYjjjYG.",
+          "....GYYYG..",
+          "......3t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....tkkt..",
+          ".....yYYYG.",
+          "....yYjYjYG",
+          "....yjYYYjG",
+          "....yYjjjYG",
+          ".....GYYYG.",
+          ".......3...",
+          ".......t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          "......k.t..",
+          "....yYYYG..",
+          "...yYjYjYG.",
+          "...yjYYYjG.",
+          "...yYjjjYG.",
+          "....GYYYG..",
+          "......3t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          ".....k..t..",
+          "...yYYYGt..",
+          "..yYjYjYG..",
+          "..yjYYYjG..",
+          "..yYjjjYG..",
+          "...GYYYG...",
+          ".....3.t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          "....k...t..",
+          "..yYYYG.t..",
+          ".yYjYjYGt..",
+          ".yjYYYjG...",
+          ".yYjjjYG...",
+          "..GYYYGt...",
+          "....3..t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ],
+        [
+          "......tt...",
+          ".....t..t..",
+          ".....k..t..",
+          "...yYYYGt..",
+          "..yYjYjYG..",
+          "..yjYYYjG..",
+          "..yYjjjYG..",
+          "...GYYYG...",
+          ".....3.t...",
+          "......t....",
+          "......t....",
+          "......t....",
+          ".....t.....",
+          ".....t....."
+        ]
+      ],
+      "miniFrames": [
+        [".yY..t", "yYYG.t", "yYYG.t", ".GG..t", ".....t", "....t."],
+        [".yY..t", "yYYG.t", "yYYG.t", ".GG..t", ".....t", "....t."],
+        [".yY..t", "yYYG.t", "yYYG.t", ".GG..t", ".....t", "....t."],
+        ["..yY.t", ".yYYGt", ".yYYGt", "..GG.t", ".....t", "....t."],
+        ["...yYt", "..yYYG", "..yYYG", "...GGt", ".....t", "....t."],
+        ["...yYt", "..yYYG", "..yYYG", "...GGt", ".....t", "....t."],
+        ["...yYt", "..yYYG", "..yYYG", "...GGt", ".....t", "....t."],
+        ["..yY.t", ".yYYGt", ".yYYGt", "..GG.t", ".....t", "....t."],
+        [".yY..t", "yYYG.t", "yYYG.t", ".GG..t", ".....t", "....t."],
+        ["..yY.t", ".yYYGt", ".yYYGt", "..GG.t", ".....t", "....t."]
+      ],
+      "fps": 6
+    }
+  ],
+  "fabrics": {
+    "bib": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [3, 3],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [5, 5],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [7, 7],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [9, 9],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [11, 11],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [13, 13],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [15, 15],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [17, 17],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [19, 19],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [21, 21],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [23, 23],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [25, 25],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [27, 27],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [0, 0],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [2, 2],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [4, 4],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [6, 6],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [8, 8],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [25, 29],
+        "miniRows": [12, 13]
+      }
+    ],
+    "bib-yellow": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [3, 3],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [5, 5],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [7, 7],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [9, 9],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [11, 11],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [13, 13],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [15, 15],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [17, 17],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [19, 19],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [21, 21],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [23, 23],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [25, 25],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [27, 27],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [0, 0],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [2, 2],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [4, 4],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [6, 6],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [8, 8],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "L": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [25, 29],
+        "miniRows": [12, 13]
+      }
+    ],
+    "bib-pink": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [3, 3],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [5, 5],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [7, 7],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [9, 9],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [11, 11],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [13, 13],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [15, 15],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [17, 17],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [19, 19],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [21, 21],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [23, 23],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [25, 25],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "columns": [27, 27],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [0, 0],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [2, 2],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [4, 4],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [6, 6],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [8, 8],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "L": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [25, 29],
+        "miniRows": [12, 13]
+      }
+    ],
+    "checks": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [3, 4],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [7, 8],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [11, 12],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [15, 16],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [19, 20],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [23, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [27, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [5, 6],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [9, 10],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [13, 14],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [17, 18],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [21, 22],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [25, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [3, 4],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [7, 8],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [11, 12],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [15, 16],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [19, 20],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [23, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [27, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [5, 6],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [9, 10],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [13, 14],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [17, 18],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [21, 22],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [25, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [1, 1],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [3, 3],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [5, 5],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [7, 7],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [9, 9],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [0, 0],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [2, 2],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [4, 4],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [6, 6],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [8, 8],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [1, 1],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [3, 3],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [5, 5],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [7, 7],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [9, 9],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "L": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [23, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "checks-sky": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [3, 4],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [7, 8],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [11, 12],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [15, 16],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [19, 20],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [23, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [27, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [5, 6],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [9, 10],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [13, 14],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [17, 18],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [21, 22],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [25, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [3, 4],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [7, 8],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [11, 12],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [15, 16],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [19, 20],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [23, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [27, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [5, 6],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [9, 10],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [13, 14],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [17, 18],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [21, 22],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [25, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [1, 1],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [3, 3],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [5, 5],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [7, 7],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [9, 9],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [0, 0],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [2, 2],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [4, 4],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [6, 6],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [8, 8],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [1, 1],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [3, 3],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [5, 5],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [7, 7],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [9, 9],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [23, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "checks-lime": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [3, 4],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [7, 8],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [11, 12],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [15, 16],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [19, 20],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [23, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [23, 24],
+        "columns": [27, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [5, 6],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [9, 10],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [13, 14],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [17, 18],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [21, 22],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [25, 26],
+        "columns": [25, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [3, 4],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [7, 8],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [11, 12],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [15, 16],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [19, 20],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [23, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [27, 28],
+        "columns": [27, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [5, 6],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [9, 10],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [13, 14],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [17, 18],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [21, 22],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "rows": [29, 30],
+        "columns": [25, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [1, 1],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [3, 3],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [5, 5],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [7, 7],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [9, 9],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "miniColumns": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [0, 0],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [2, 2],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [4, 4],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [6, 6],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [8, 8],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "miniColumns": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [1, 1],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [3, 3],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [5, 5],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [7, 7],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [9, 9],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "L": "A",
+          "b": "a"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "miniColumns": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [23, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "stripes": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [23, 23],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "v",
+          "L": "v",
+          "b": "v"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [25, 25],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "v",
+          "L": "v",
+          "b": "v"
+        },
+        "rides": false,
+        "rows": [26, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [27, 27],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "v",
+          "L": "v",
+          "b": "v"
+        },
+        "rides": false,
+        "rows": [28, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [29, 29],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "v",
+          "L": "v",
+          "b": "v"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "v",
+          "L": "v",
+          "b": "v"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "only": "mini"
+      }
+    ],
+    "stripes-denim": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [23, 23],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "2",
+          "L": "2",
+          "b": "2"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [25, 25],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "2",
+          "L": "2",
+          "b": "2"
+        },
+        "rides": false,
+        "rows": [26, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [27, 27],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "2",
+          "L": "2",
+          "b": "2"
+        },
+        "rides": false,
+        "rows": [28, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [29, 29],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "2",
+          "L": "2",
+          "b": "2"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "2",
+          "L": "2",
+          "b": "2"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "only": "mini"
+      }
+    ],
+    "stripes-sky": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [23, 23],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [24, 24],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [25, 25],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [26, 26],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [27, 27],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "rows": [28, 28],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "rows": [29, 29],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [10, 10],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [11, 11],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "p",
+          "L": "p",
+          "b": "q"
+        },
+        "rides": false,
+        "miniRows": [12, 12],
+        "only": "mini"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "L": "S",
+          "b": "d"
+        },
+        "rides": false,
+        "miniRows": [13, 13],
+        "only": "mini"
+      }
+    ]
+  },
+  "outfits": [
+    {
+      "id": "host",
+      "headwear": "august/partyhat",
+      "back": "august/moonlantern",
+      "fabric": "august/bib",
+      "colourways": [
+        {
+          "id": "yellow",
+          "fabric": "august/bib-yellow"
+        },
+        {
+          "id": "pink",
+          "fabric": "august/bib-pink"
+        }
+      ],
+      "cheer": "august/swing",
+      "silhouette": "cone",
+      "family": "sky"
+    },
+    {
+      "id": "crayfish",
+      "headwear": "ocean/crab",
+      "face": "blush",
+      "fabric": "august/checks",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "august/checks-sky"
+        },
+        {
+          "id": "lime",
+          "fabric": "august/checks-lime"
+        }
+      ],
+      "cheer": "august/scuttle",
+      "silhouette": "claws",
+      "family": "red"
+    },
+    {
+      "id": "lamplighter",
+      "face": "space/sparkle",
+      "back": "august/moonlantern",
+      "fabric": "august/stripes",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "august/stripes-sky"
+        },
+        {
+          "id": "denim",
+          "fabric": "august/stripes-denim"
+        }
+      ],
+      "cheer": "august/swing",
+      "silhouette": "lantern",
+      "family": "lilac"
+    }
+  ],
+  "cheers": {
+    "swing": {
+      "fps": 6,
+      "facing": "right",
+      "kind": "once",
+      "tell": 1,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "happy",
+            "look": [1, -1],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.85,
+                "dx": 2,
+                "dy": -3
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "look": [-1, -1],
+            "base": 28
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "look": [-1, -1],
+            "base": 28,
+            "lean": -1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "base": 29,
+            "sy": 0.94
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "look": [1, -1],
+            "lean": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "look": [1, -1],
+            "lean": 1,
+            "base": 28
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "lean": -1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "smile",
+            "look": [-1, -1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    },
+    "scuttle": {
+      "fps": 6,
+      "facing": "right",
+      "kind": "once",
+      "tell": 2,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 13.5,
+            "base": 29
+          },
+          "layers": [
+            {
+              "art": ["..*..", "*...*"],
+              "attach": "headTop",
+              "hotspot": [10, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [4, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 15.5,
+            "base": 28,
+            "mouth": "grin"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 17.5,
+            "base": 29
+          },
+          "layers": [
+            {
+              "art": ["..*..", "*...*"],
+              "attach": "headTop",
+              "hotspot": [-7, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [-4, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 15.5,
+            "base": 28,
+            "mouth": "grin"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 13.5,
+            "base": 29,
+            "mouth": "smile"
+          },
+          "layers": [
+            {
+              "art": ["..*..", "*...*"],
+              "attach": "headTop",
+              "hotspot": [10, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [4, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 15.5,
+            "base": 28,
+            "mouth": "grin"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 17.5,
+            "base": 29,
+            "mouth": "smile"
+          },
+          "layers": [
+            {
+              "art": ["..*..", "*...*"],
+              "attach": "headTop",
+              "hotspot": [-7, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [-4, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "x": 15.5,
+            "base": 29,
+            "mouth": "smile"
+          }
+        }
+      ]
+    }
+  }
+}
