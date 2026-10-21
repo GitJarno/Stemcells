@@ -69,7 +69,11 @@ upstream at <sha> (N commits)" waits for its merge. When it stops, the issue
 
 5. **Pull request.** `stemcells/scripts/sync-upstream --pr`. Add how many
    minutes resolving took (`fork.md`, rule 7), and anything upstream shipped
-   that we should adopt into our layer.
+   that we should adopt into our layer. While it waits, main moves: merge
+   it in (`git merge origin/main`, never a rebase) and run the gates again.
+   Main's newest work meets upstream's new rules and moved files for the
+   first time here, and a pull request's own checks run on it merged with
+   main.
 
 6. **Merge it with a merge commit** (`gh pr merge --merge`), never squash or
    rebase, then remove your worktree. The nightly closes the issue the next
