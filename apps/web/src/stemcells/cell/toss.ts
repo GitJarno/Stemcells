@@ -39,8 +39,14 @@ export interface Toss {
   readonly hits?: readonly Hit[] | undefined;
   /** Its dizzy beat, from when it began (`performance.now()` ms) until the walk home. */
   readonly dizzyFrom?: number | undefined;
-  /** Walking home: since when (`performance.now()` ms), and which way. */
-  readonly walking?: { readonly from: number; readonly toward: -1 | 1 } | undefined;
+  /**
+   * Walking home: since when (`performance.now()` ms), which way, and how
+   * many times its home pace (1 unless a long way quickens it: its scoot's
+   * beat quickens with it, so each step covers the same ground).
+   */
+  readonly walking?:
+    | { readonly from: number; readonly toward: -1 | 1; readonly rate?: number | undefined }
+    | undefined;
 }
 
 /** The scoot it walks home with, facing left (`art/moves/toss.json`). */
@@ -218,7 +224,8 @@ export function tossFrame(
 ): MiniFrame {
   const walk = toss.walking === undefined ? undefined : sceneOf(look, WALK);
   if (walk !== undefined && toss.walking !== undefined) {
-    const beats = Math.max(0, ((now - toss.walking.from) / 1000) * onBeat(walk.fps));
+    const rate = toss.walking.rate ?? 1;
+    const beats = Math.max(0, ((now - toss.walking.from) / 1000) * onBeat(walk.fps) * rate);
     const frame = walk.mini[Math.trunc(beats) % walk.mini.length]!;
     return toss.walking.toward > 0 ? mirrored(frame) : frame;
   }

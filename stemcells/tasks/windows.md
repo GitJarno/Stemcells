@@ -58,9 +58,12 @@ asked for by name), then W7, W4, W9, W11.
         stage: the card, the wash, the landing, Esc.
   - [x] W7b The strip in its own window: a chip spring-loads its tab, the
         strip makes room for a new tab.
-  - [ ] W7c Other windows: the card on the flight layer, their panes and
+  - [x] W7c Thrown: let go with speed in its own tab, the chat stays and
+        its Cell flies (the original's toss), bonks, and walks home
+        (`tasks/cell-toss.md`, The flight).
+  - [ ] W7d Other windows: the card on the flight layer, their panes and
         strips answering, spring-load raising them.
-  - [ ] W7d Open space: the card unfolds into a one-pane window.
+  - [ ] W7e Open space: the card unfolds into a one-pane window.
 - [ ] W4 The browser in any window: one seam in the preview manager; a
       moved browser pane shows its last frame until its new guest paints.
 - [ ] W9 Displays: unplugging gathers that display's windows, plugging it
@@ -391,6 +394,13 @@ Aski's chip takes no chat. Let go in the room, the chat becomes a tab
 there and the card lands on its chip; let go anywhere else after a tab
 sprang open, the tab the chat came from comes back on stage before the
 card flies home.
+
+As built (W7c): let go faster than 100 px/s in the chat's own tab, the
+chat stays and only its Cell flies, in a layer over the window's content:
+the original's thrown soft Cell with its numbers, bouncing off the
+content's sides, top and floor, then walking home in at most 3 s. It can
+be caught mid-air; Esc sends it home; under Reduce Motion nothing is
+thrown. Its spec and numbers: `tasks/cell-toss.md`, The flight.
 
 ### Move Tab to New Window (⌥⌘T)
 
@@ -864,3 +874,7 @@ window answers.
   (500 ms), and the tab it left, now empty, closed. ⌥⌘Z put it back. Let
   go on a chip after a tab sprang open, the chat's own tab came back on
   stage and the card flew home.
+- W7c: proved in the lab at 120 Hz with a lab chat: a flick into a wall, a
+  lob, a throw to the top, a plop and a catch mid-air flew with no
+  dropped frames; Esc and Reduce Motion went home (`tasks/cell-toss.md`,
+  The flight, Review).

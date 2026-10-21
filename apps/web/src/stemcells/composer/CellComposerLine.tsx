@@ -20,6 +20,7 @@ import { useCellBranch } from "../upstream/checkout";
 import { useCellPlace } from "../upstream/thread";
 import { cn, ComposerBanner, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { startChatCarry } from "../windows/ChatCarry";
+import { useCellAway } from "../windows/CellThrow";
 import { LineEnv } from "./LineEnv";
 import { oneLinerOf } from "./oneLiner";
 import { ComposerEnvSlot, ComposerRoofSlot, ComposerStashSlot } from "./slot";
@@ -61,6 +62,7 @@ export function CellComposerLine() {
   const stash = use(ComposerStashSlot);
   const env = use(ComposerEnvSlot);
   const checkout = useCellBranch(cell);
+  const away = useCellAway(cell?.threadId);
   const offered = env?.offered === true;
   // Where the menu offers a choice, a checkout on no branch reads as
   // upstream's picker reads it; elsewhere it names nothing.
@@ -108,6 +110,7 @@ export function CellComposerLine() {
         {/* The Cell is the chat's handle: carried, the chat goes with it. */}
         <span
           data-stemcells-chat-handle=""
+          data-away={away || undefined}
           className="flex w-fit"
           onPointerDown={(event) => startChatCarry(event, cell)}
         >

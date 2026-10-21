@@ -1,0 +1,30 @@
+/* A Cell thrown (CellThrow.tsx). */
+
+/* Its layer, over the window's content: only the Cell takes the pointer. */
+[data-stemcells-throw] {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  contain: layout paint;
+}
+
+/* The Cell's box, moved by its transform alone. */
+[data-stemcells-thrown] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  will-change: transform;
+}
+[data-stemcells-thrown][data-held="true"] {
+  cursor: grabbing;
+}
+
+/* Its place on the composer's line stands empty while it is away. */
+[data-stemcells-chat-handle][data-away] {
+  visibility: hidden;
+}
