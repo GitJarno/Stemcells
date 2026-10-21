@@ -56,6 +56,7 @@ import { DispatchModeLimit, exceededDispatchModeLimit } from "./DispatchModeLimi
 import { projectTurnItemForDetail } from "./WireProjection.ts";
 import * as LegacyV1ThreadImporter from "./legacy/LegacyV1ThreadImporter.ts";
 import * as ServerSettings from "../serverSettings.ts";
+import { refuseAskisInstance } from "../stemcells/upstream/askiInstance.ts";
 
 export type ThreadManagementSendMode = "auto" | "queue" | "steer" | "restart";
 
@@ -288,10 +289,14 @@ export class ThreadManagementProviderInstanceDisabledError extends Schema.Tagged
   {
     projectId: ProjectId,
     instanceId: ProviderInstanceId,
+    reason: Schema.optional(Schema.String),
   },
 ) {
   override get message(): string {
-    return `Provider instance "${this.instanceId}" is disabled for project ${this.projectId}.`;
+    return (
+      this.reason ??
+      `Provider instance "${this.instanceId}" is disabled for project ${this.projectId}.`
+    );
   }
 }
 
@@ -380,6 +385,7 @@ export interface ThreadManagementServiceShape {
     readonly projectId: ProjectId;
     readonly commandId: CommandId;
     readonly instanceId: ProviderInstanceId;
+    readonly threadId?: ThreadId;
   }) => Effect.Effect<void, ThreadManagementProviderInstanceDisabledError>;
   readonly isProviderInstanceEnabledForProject: (input: {
     readonly projectId: ProjectId;
@@ -526,7 +532,12 @@ const make = Effect.gen(function* () {
                 Effect.orDie,
                 Effect.flatMap((current) =>
                   resolveProjectProviderInstanceEnabled(current, input.projectId, input.instanceId)
-                    ? Effect.void
+                    ? refuseAskisInstance(
+                        input,
+                        current,
+                        orchestrator.getShellSnapshot(),
+                        ThreadManagementProviderInstanceDisabledError,
+                      )
                     : new ThreadManagementProviderInstanceDisabledError({
                         projectId: input.projectId,
                         instanceId: input.instanceId,
@@ -651,6 +662,7 @@ const make = Effect.gen(function* () {
               projectId: projection.thread.projectId,
               commandId: command.commandId,
               instanceId: (command.modelSelection ?? projection.thread.modelSelection).instanceId,
+              threadId: command.threadId,
             }),
           ),
         );

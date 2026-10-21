@@ -74,6 +74,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/settings/ProviderSettingsPanel.tsx` | Imports `stemcells/compaction/searchTarget`; the target instance falls back to `searchedInstanceId(searchTargetId)` | Same: Providers shows one instance at a time, so a search for the row opens the default Claude's |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
+| `apps/server/src/orchestration-v2/ThreadManagementService.ts` | Imports `refuseAskisInstance` from `stemcells/upstream/askiInstance`; `assertProviderInstanceEnabled` (the gate every thread start and every message asks) also runs it, takes an optional `threadId`, and the message gate passes its thread; `ThreadManagementProviderInstanceDisabledError` takes an optional `reason` its message reads | Aski's instance runs only Aski (below): the server refuses a Cell there, rather than trusting Aski's instructions |
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
@@ -429,6 +430,35 @@ threshold, not a window, capped at 90 % of the context, with its own
 choices and its own meter reading. Until then Codex's launch arguments take
 `-c model_auto_compact_token_limit=…`.
 
+### Aski's instance runs only Aski
+
+Aski's chat runs on a provider instance of its own (`aski`), whose launch
+arguments carry Aski's persona, so a Cell started there takes itself for
+Aski. The server refuses it, at upstream's gate for "may this thread run
+on this instance" (`assertProviderInstanceEnabled`), which every thread
+start asks before it creates anything (`t3_thread_launch`,
+`create_threads`, `delegate_task`, a scheduled run, a new chat's first
+message) and the dispatch of every message asks for its thread:
+
+- A thread being started on Aski's instance is refused: it has no id yet,
+  and Aski's own chat is made by the web's setup, never launched.
+- A message on Aski's instance runs only in Aski's own chat: the top-level
+  chat there, the pinned one first (`askiThreadOf`, as the web picks it).
+  The rule reads the thread shells only for such a message.
+- The refusal is upstream's "instance disabled" error with a `reason`, so
+  every caller hands it back as it already does: Aski gets a plain tool
+  error that names the instances a Cell may use (every one the project
+  enables but Aski's), and starts the Cell again on one of them; the web
+  shows it where a send fails.
+- A Cell's chat made on Aski's instance before this moves off it at its
+  next send from the web ("Aski's instance is Aski's", above), which asks
+  for the driver's own instance. Until then a message that names no model
+  (Aski's `t3_thread_send`) meets the refusal.
+
+`stemcells/upstream/askiInstance.contract.test.ts` launches on Aski's
+instance and expects the refusal. To offer upstream: a refusal that can
+say why (the `reason`). The rule itself is ours.
+
 ### Scroll phases
 
 DOM wheel events say nothing of a trackpad's phases: when the fingers touch,
@@ -472,8 +502,8 @@ after a model was picked in Aski's chat. No new chat starts there now:
   last pick for the Cells a message starts, passes it over the same way.
 
 `newChatInstance.test.ts` pins both. A Cell Aski starts itself
-(`t3_thread_launch`) is told in Aski's persona where it runs; the server
-doesn't check it.
+(`t3_thread_launch`) is told in Aski's persona where it runs, and the
+server refuses it on Aski's instance ("Aski's instance runs only Aski").
 
 A chat already on Aski's instance, made before then, moves off it at its
 next send. The composer's substitute (no seam) hands upstream's composer
