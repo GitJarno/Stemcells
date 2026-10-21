@@ -30,6 +30,7 @@ const fakeSource = Effect.gen(function* () {
     options: [],
     questions: [],
     responseMode: null,
+    capability: "live",
   });
   const source: NeedsSource = {
     ready: Effect.void,

@@ -4,6 +4,7 @@ import { useAskiChat, type AskiChat } from "../upstream/aski";
 import { ChatPaneView } from "../upstream/chat";
 import type { ThreadRouteTarget } from "../upstream/routes";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui";
+import { NeedsFrame } from "../needs/NeedsFrame";
 import { AskiFigure } from "./AskiFigure";
 import { AskiMoments } from "./moments/AskiMoments";
 
@@ -38,7 +39,8 @@ export const ASKI_UNAVAILABLE: Record<
 };
 
 /**
- * Aski's pane: Aski over its chat. The chat is upstream's thread view, as
+ * Aski's pane: Aski over its chat, and beside them what needs the person
+ * while anything does (NeedsFrame). The chat is upstream's thread view, as
  * in any pane; until it exists, the pane says why. Aski's eyes follow the
  * pointer anywhere over the pane, and the caret in its chat's field.
  */
@@ -49,36 +51,39 @@ export function AskiPane(props: {
   /** The tab's workbench, where Aski's surfaces show while its chat is focused. */
   panelHost: HTMLElement | null;
 }) {
+  const aski = props.chat.status === "ready" ? props.chat.cell : null;
   return (
     <div data-stemcells-aski="" data-aski-looks="" className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div
-        data-stemcells-aski-stage=""
-        className="flex shrink-0 justify-center border-b border-border py-3"
-      >
-        <AskiMoments aski={props.chat.status === "ready" ? props.chat.cell : null}>
-          <AskiFigure aski={props.chat.status === "ready" ? props.chat.cell : null} />
-        </AskiMoments>
-      </div>
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
-        {props.target ? (
-          <ChatPaneView
-            target={props.target}
-            ownsWindowInput={props.ownsWindowInput}
-            panelHost={props.panelHost}
-          />
-        ) : (
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>Aski</EmptyTitle>
-              <EmptyDescription>
-                {props.chat.status === "unavailable"
-                  ? ASKI_UNAVAILABLE[props.chat.reason]
-                  : "Aski is getting its chat ready."}
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-      </div>
+      <NeedsFrame aski={aski} ownsWindowInput={props.ownsWindowInput}>
+        <div
+          data-stemcells-aski-stage=""
+          className="flex shrink-0 justify-center border-b border-border py-3"
+        >
+          <AskiMoments aski={aski}>
+            <AskiFigure aski={aski} />
+          </AskiMoments>
+        </div>
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
+          {props.target ? (
+            <ChatPaneView
+              target={props.target}
+              ownsWindowInput={props.ownsWindowInput}
+              panelHost={props.panelHost}
+            />
+          ) : (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>Aski</EmptyTitle>
+                <EmptyDescription>
+                  {props.chat.status === "unavailable"
+                    ? ASKI_UNAVAILABLE[props.chat.reason]
+                    : "Aski is getting its chat ready."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </div>
+      </NeedsFrame>
     </div>
   );
 }

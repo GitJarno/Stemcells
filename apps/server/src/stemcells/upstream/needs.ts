@@ -35,7 +35,12 @@ export interface AskedQuestion {
   readonly id: string;
   readonly header: string;
   readonly question: string;
-  readonly options: ReadonlyArray<{ readonly label: string; readonly description: string }>;
+  /** `value`, when the Cell gave one, is what its answer carries in place of the label. */
+  readonly options: ReadonlyArray<{
+    readonly label: string;
+    readonly description: string;
+    readonly value: string | null;
+  }>;
   readonly multiSelect: boolean;
   readonly allowCustomAnswer: boolean;
 }
@@ -50,6 +55,8 @@ export interface RequestDetail {
   readonly questions: ReadonlyArray<AskedQuestion>;
   /** "message": the answer goes as a message, and the question can be dismissed. */
   readonly responseMode: "message" | null;
+  /** How the provider takes the answer; "not_resumable" can't be answered any more. */
+  readonly capability: "live" | "message" | "not_resumable";
 }
 
 /** The plan a shell's `hasActionableProposedPlan` points at. */
@@ -128,7 +135,8 @@ export const makeNeedsSource = Effect.gen(function* () {
               (candidate.type === "approval_request" || candidate.type === "user_input_request") &&
               candidate.requestId === (requestId as RuntimeRequestId),
           );
-          const message = pending.responseCapability.type === "message";
+          const capability = pending.responseCapability.type;
+          const message = capability === "message";
           if (item?.type === "user_input_request") {
             return {
               id: requestId,
@@ -142,11 +150,13 @@ export const makeNeedsSource = Effect.gen(function* () {
                 options: question.options.map((option) => ({
                   label: option.label,
                   description: option.description,
+                  value: option.value ?? null,
                 })),
                 multiSelect: question.multiSelect ?? false,
                 allowCustomAnswer: question.allowCustomAnswer ?? true,
               })),
               responseMode: item.responseMode === "message" || message ? "message" : null,
+              capability,
             };
           }
           return {
@@ -156,6 +166,7 @@ export const makeNeedsSource = Effect.gen(function* () {
             options: item?.type === "approval_request" ? (item.options ?? []) : [],
             questions: [],
             responseMode: message ? "message" : null,
+            capability,
           };
         }),
         Effect.catchCause(() => Effect.succeed(null)),

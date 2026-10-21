@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
+import { NeedsTabCount } from "../needs/NeedsTabCount";
 import type { AskiChat } from "../upstream/aski";
 import { useCellTitle } from "../upstream/thread";
 import {
@@ -202,6 +203,7 @@ function AskiChip(props: {
         )}
       >
         Aski
+        <NeedsTabCount />
       </div>
     );
   }

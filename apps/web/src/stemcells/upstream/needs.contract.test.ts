@@ -1,0 +1,39 @@
+/**
+ * Upstream behaviour Aski's column relies on to answer a Cell the way the
+ * Cell's own chat would. A failure here after a sync names what moved; the
+ * fix goes in `needs.ts` or the card's words, not in the column.
+ */
+import { describe, expect, it } from "vite-plus/test";
+
+import { buildPlanImplementationPrompt } from "../../proposedPlan";
+import { PHRASES } from "../needs/card";
+import { COMPOSER_SURFACE_SELECTOR } from "./needs";
+
+import approvalActions from "../../components/chat/ComposerPendingApprovalActions.tsx?raw";
+import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import chatView from "../../components/ChatView.tsx?raw";
+
+describe("the column's contracts with upstream", () => {
+  it("offers a permission upstream's own buttons when the provider names none", () => {
+    // card.ts DEFAULT_DECISIONS mirrors these, so the column and the chat agree.
+    expect(approvalActions).toContain('{ decision: "decline", label: "Decline" }');
+    expect(approvalActions).toContain(
+      '{ decision: "acceptForSession", label: "Always allow this session" }',
+    );
+    expect(approvalActions).toContain('{ decision: "accept", label: "Approve" }');
+  });
+
+  it("builds a plan with the words upstream's Implement sends", () => {
+    expect(buildPlanImplementationPrompt("  # Plan\n")).toBe("PLEASE IMPLEMENT THIS PLAN:\n# Plan");
+  });
+
+  it("resumes a limited run with upstream's own words", () => {
+    expect(chatView).toContain(`text: "${PHRASES.continueNow}"`);
+    expect(chatView).toContain("manualContinuationOfRunId");
+  });
+
+  it("marks the composer, so the narrow sheet stops above it", () => {
+    expect(COMPOSER_SURFACE_SELECTOR).toBe('[data-chat-composer-surface="true"]');
+    expect(chatComposer).toContain('data-chat-composer-surface="true"');
+  });
+});

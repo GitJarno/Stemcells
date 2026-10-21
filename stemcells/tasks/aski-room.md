@@ -180,12 +180,12 @@ approve), and RiskFloor is the one floor shared with `tasks/prompting.md`
 - **Holds live in a store outside the page,** so switching tabs doesn't drop
   them. When the window closes, a hold is sent at once if the socket is up.
   Otherwise nothing was sent and the card is still there next time.
-- **The window** is 5 s by default, with Off, 5 s and 10 s in Settings ›
-  Aski. A permission holds too: undoing a mis-clicked Allow is the most
-  valuable undo there is, and a blocked Cell barely notices 5 s.
-- **State actions** (snooze, carry on at reset, nothing to do) happen at
-  once and leave an Undo on the card's receipt. Undo sends the reverse:
-  unsnooze, cancel auto-resume, or unsettle.
+- **The window** is 3 s by default (the `answerUndo` timing token), with
+  Off, 3 s and 10 s in Settings › Aski. A permission holds too: undoing a
+  mis-clicked Allow is the most valuable undo there is, and a blocked Cell
+  barely notices 3 s.
+- **State actions** (Later, carry on at the reset) hold the same way, so
+  Undo never has to send a reverse.
 
 Why the client sends: the approval keeps going through T3's own
 authenticated path, with T3's checks (a resolved request can't be answered
@@ -250,7 +250,7 @@ When it unfreezes, everything queued plays as one motion.
 
 The column also never arrives under a caret. A card that arrives while the
 person is typing first shows as the count on Aski's header. The column
-slides in after 1.5 s of idle (the Swift room's rule).
+slides in after a pause in typing (the `typingPause` timing token, 1 s).
 
 ### 10. Layout: the column only when needed
 - **Wide (Aski's pane ≥ 880 px):**
@@ -314,7 +314,7 @@ This design owns the page. Its rows, in this order:
     Cell's own questions and permissions are never read."
   - Below that, what it cost this week: reads, tokens, and tokens per read.
   - When it's off, cards fall back to the Cell's own words.
-- **Undo window:** Off, 5 s or 10 s.
+- **Undo window:** Off, 3 s or 10 s.
 - **At a usage limit:**
   - "Carry on at the reset" is on by default, through T3's `limitRecovery`.
   - With it on, a limit reaches the person only when the reset is more

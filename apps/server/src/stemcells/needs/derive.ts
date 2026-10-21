@@ -196,6 +196,8 @@ export interface NeedRequest {
   readonly options: ReadonlyArray<ApprovalOption>;
   readonly questions: ReadonlyArray<AskedQuestion>;
   readonly responseMode: "message" | null;
+  /** Null when the request couldn't be read; the card then only opens the chat. */
+  readonly capability: "live" | "message" | "not_resumable" | null;
 }
 
 export interface NeedPlan {
@@ -204,6 +206,8 @@ export interface NeedPlan {
   readonly runId: string;
   readonly title: string | null;
   readonly steps: ReadonlyArray<string>;
+  /** The whole plan, which building it sends back to the Cell. */
+  readonly markdown: string | null;
 }
 
 export interface NeedLimit {
@@ -229,6 +233,8 @@ export interface Need {
   /** Set for a subagent's thread, whose card goes under its parent's name. */
   readonly parentThreadId: string | null;
   readonly title: string;
+  /** The provider instance the Cell runs on, for a sign-in. */
+  readonly providerInstanceId: string;
   readonly since: string;
   readonly blocks: boolean;
   readonly request: NeedRequest | null;
@@ -257,6 +263,7 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
     projectId: shell.projectId,
     parentThreadId: shell.lineage.parentThreadId,
     title: shell.title,
+    providerInstanceId: shell.providerInstanceId,
     since: DateTime.formatIso(DateTime.makeUnsafe(signal.since)),
     blocks: signal.blocks,
     request:
@@ -270,6 +277,7 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             options: read?.options ?? [],
             questions: read?.questions ?? [],
             responseMode: read?.responseMode ?? null,
+            capability: read?.capability ?? null,
           },
     plan:
       signal.kind === "plan"
@@ -278,6 +286,7 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             runId,
             title: outline?.title ?? null,
             steps: outline?.steps ?? [],
+            markdown: detail.plan?.markdown ?? null,
           }
         : null,
     limit:

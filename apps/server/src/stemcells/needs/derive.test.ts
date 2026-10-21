@@ -178,6 +178,7 @@ describe("a card's data", () => {
           options: [{ decision: "accept", label: "Allow once" }],
           questions: [],
           responseMode: null,
+          capability: "live",
         },
       },
       2,
@@ -187,7 +188,7 @@ describe("a card's data", () => {
       kind: "permission",
       parentThreadId: "thread-parent",
       blocks: true,
-      request: { id: "request-2", kind: "command", prompt: command },
+      request: { id: "request-2", kind: "command", prompt: command, capability: "live" },
     });
     expect(read.request?.options).toHaveLength(1);
     expect(needOf(signal, { request: null }, 2).request).toEqual({
@@ -198,6 +199,7 @@ describe("a card's data", () => {
       options: [],
       questions: [],
       responseMode: null,
+      capability: null,
     });
   });
 

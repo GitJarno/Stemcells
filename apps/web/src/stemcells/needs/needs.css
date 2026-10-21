@@ -1,0 +1,356 @@
+/* Aski's page with what needs the person (needs/NeedsFrame.tsx). Every
+   value is a token, chosen by role, but the column's widths: those are the
+   page's own layout (stemcells/tasks/aski-room.md, decision 10). */
+
+[data-stemcells-needs-frame] {
+  --stemcells-needs-width: 380px;
+  --stemcells-needs-width-roomy: 420px;
+  container-type: inline-size;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  font-size: var(--sc-body);
+}
+
+[data-stemcells-needs-main] {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Wide: the column slides in beside the chat while anything needs you. */
+[data-stemcells-needs-column] {
+  flex: none;
+  inline-size: var(--stemcells-needs-width);
+  overflow-y: auto;
+  border-inline-start: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  animation: stemcells-needs-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+@container (min-width: 1400px) {
+  [data-stemcells-needs-column] {
+    inline-size: var(--stemcells-needs-width-roomy);
+  }
+}
+@keyframes stemcells-needs-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--sc-space-xxl));
+  }
+}
+
+/* Two screens: the chat keeps the first, the list the second, never across
+   the hinge (needs/hinge.ts finds where it crosses the page). Held like a
+   laptop, the list takes the top screen and the chat the bottom one. */
+[data-stemcells-needs-frame][data-hinge] > [data-stemcells-needs-column] {
+  flex: 1;
+  inline-size: auto;
+  border-inline-start: 0;
+  animation: none;
+}
+[data-stemcells-needs-frame][data-hinge="side"] > [data-stemcells-needs-main] {
+  flex: none;
+  inline-size: var(--stemcells-needs-hinge-start);
+}
+[data-stemcells-needs-frame][data-hinge="side"] > [data-stemcells-needs-column] {
+  margin-inline-start: calc(var(--stemcells-needs-hinge-end) - var(--stemcells-needs-hinge-start));
+}
+[data-stemcells-needs-frame][data-hinge="stacked"] {
+  flex-direction: column-reverse;
+}
+[data-stemcells-needs-frame][data-hinge="stacked"] > [data-stemcells-needs-column] {
+  flex: none;
+  block-size: var(--stemcells-needs-hinge-start);
+  margin-block-end: calc(var(--stemcells-needs-hinge-end) - var(--stemcells-needs-hinge-start));
+}
+
+/* Narrow: a count over the chat, which opens the list as a sheet. */
+[data-stemcells-needs-count] {
+  position: absolute;
+  inset-block-start: var(--sc-space-md);
+  inset-inline-start: var(--sc-space-md);
+  z-index: 2;
+  padding: var(--sc-space-xs) var(--sc-space-md);
+  border: 1px solid color-mix(in srgb, var(--sc-needs-you) 45%, transparent);
+  border-radius: var(--sc-radius-chip);
+  background: color-mix(in srgb, var(--sc-needs-you) 12%, transparent);
+  color: var(--sc-needs-you);
+  font-weight: 600;
+}
+[data-stemcells-needs-sheet] {
+  position: absolute;
+  inset: 0;
+  /* Over the chat's own buttons (tabs/workspace.css lays them at 30). */
+  z-index: 31;
+  overflow-y: auto;
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow-pop);
+}
+
+[data-stemcells-needs-list] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-md);
+  padding: var(--sc-space-xl);
+}
+[data-needs-head] {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sc-space-md);
+  color: var(--sc-text);
+}
+[data-needs-still] {
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-needs-close] {
+  margin-inline-start: auto;
+  color: var(--sc-dim);
+}
+[data-needs-cleared] {
+  padding: var(--sc-space-xxl) 0;
+  color: var(--sc-reading);
+  text-align: center;
+}
+
+/* A card. A request that blocks a running turn carries an amber edge:
+   urgency is ink, never position. */
+[data-stemcells-need] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-sm);
+  padding: var(--sc-space-lg) var(--sc-space-xl);
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-card);
+  background: var(--sc-raised);
+  transition:
+    opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing),
+    filter var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+  animation: stemcells-need-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+[data-stemcells-need][data-blocks] {
+  border-inline-start: 2px solid var(--sc-needs-you);
+}
+/* Gone: it recedes in place until the page stops holding still. */
+[data-stemcells-need][data-gone] {
+  opacity: var(--sc-receded);
+  filter: saturate(var(--sc-receded-saturation));
+}
+@keyframes stemcells-need-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--sc-space-sm) * -1));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-needs-column],
+  [data-stemcells-need] {
+    animation: none;
+  }
+}
+
+[data-need-head] {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sc-space-sm);
+  min-width: 0;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-need-number] {
+  color: var(--sc-text);
+  font-family: var(--sc-font-mono);
+  font-weight: 600;
+}
+[data-need-who] {
+  color: var(--sc-text);
+}
+[data-need-place] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-need-tag] {
+  margin-inline-start: auto;
+}
+[data-need-headline] {
+  color: var(--sc-text);
+  font-weight: 600;
+}
+[data-need-request] {
+  margin: 0;
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  border-radius: var(--sc-radius-chip);
+  background: var(--sc-field);
+  color: var(--sc-text);
+  font-family: var(--sc-font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+[data-need-quote] {
+  display: -webkit-box;
+  margin: 0;
+  padding-inline-start: var(--sc-space-md);
+  overflow: hidden;
+  border-inline-start: 2px solid var(--sc-hairline);
+  color: var(--sc-dim);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+[data-need-steps] {
+  margin: 0;
+  padding-inline-start: 1.4em;
+  color: var(--sc-reading);
+  list-style: decimal;
+}
+[data-need-note],
+[data-need-receipt] {
+  color: var(--sc-dim);
+}
+[data-need-receipt][data-warn] {
+  color: var(--sc-error);
+}
+
+[data-need-questions],
+[data-need-question],
+[data-need-options] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+}
+[data-need-questions] {
+  gap: var(--sc-space-md);
+}
+[data-need-question-head] {
+  color: var(--sc-dim);
+}
+[data-need-question-text] {
+  color: var(--sc-reading);
+}
+[data-need-option],
+[data-need-send] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--sc-space-md);
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  border: 1px solid var(--sc-edge);
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-text);
+  text-align: start;
+}
+[data-need-option]:hover:not(:disabled),
+[data-need-send]:hover:not(:disabled) {
+  background: var(--sc-hot);
+}
+[data-need-option][aria-pressed="true"] {
+  border-color: var(--sc-text);
+}
+[data-need-option]:disabled,
+[data-need-send]:disabled {
+  color: var(--sc-disabled-ink);
+  cursor: default;
+}
+[data-need-option-title] {
+  font-weight: 600;
+}
+[data-need-option-mark] {
+  padding: 0 var(--sc-space-sm);
+  border-radius: var(--sc-radius-chip);
+  background: var(--sc-hot);
+  color: var(--sc-reading);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-need-option-consequence] {
+  grid-column: 1 / -1;
+  color: var(--sc-dim);
+}
+[data-need-option][data-warn] [data-need-option-consequence] {
+  color: var(--sc-needs-you);
+}
+[data-need-send] {
+  justify-self: start;
+  font-weight: 600;
+}
+
+[data-need-words] {
+  display: flex;
+  gap: var(--sc-space-sm);
+}
+[data-need-words] input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sc-space-xs) var(--sc-space-md);
+  border: 1px solid var(--sc-edge);
+  border-radius: var(--sc-radius-chip);
+  background: var(--sc-field);
+  color: var(--sc-text);
+}
+
+/* A held answer: the one chosen, a flat fuse, Undo. */
+[data-need-held-row] {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-md);
+}
+[data-need-held-what] {
+  flex: 1;
+  min-width: 0;
+  color: var(--sc-text);
+}
+[data-need-held-sending] {
+  color: var(--sc-dim);
+}
+[data-need-fuse] {
+  block-size: 2px;
+  margin-block-start: var(--sc-space-sm);
+  overflow: hidden;
+  border-radius: 1px;
+  background: var(--sc-hairline);
+}
+[data-need-fuse] i {
+  display: block;
+  block-size: 100%;
+  background: var(--sc-dim);
+  transform-origin: left;
+  animation-name: stemcells-need-fuse;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes stemcells-need-fuse {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+[data-need-foot] {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sc-space-xs);
+}
+[data-need-foot] button,
+[data-need-held-row] button,
+[data-need-words] button,
+[data-needs-close] {
+  padding: var(--sc-space-xs) var(--sc-space-sm);
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-dim);
+}
+[data-need-foot] button:hover,
+[data-need-held-row] button:hover,
+[data-need-words] button:hover:not(:disabled),
+[data-needs-close]:hover {
+  background: var(--sc-hot);
+  color: var(--sc-text);
+}
+
+/* The count on Aski's tab. */
+[data-stemcells-needs-tab-count] {
+  margin-inline-start: var(--sc-space-sm);
+  color: var(--sc-needs-you);
+  font-family: var(--sc-font-mono);
+  font-weight: 600;
+}
