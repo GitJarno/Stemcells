@@ -30,7 +30,7 @@ import {
 import { ACTIVITY_HOLD, budsOf, type ToolBeat } from "../cell/activity";
 import { aloneIn, FLEX_MS, type Span, strengthOf } from "../cell/growth";
 import type { Strength } from "../cell/kit";
-import type { Diff } from "../cell/scene";
+import type { Diff } from "../cell/marks";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
 

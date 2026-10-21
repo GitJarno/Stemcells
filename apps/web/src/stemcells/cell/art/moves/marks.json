@@ -1,21 +1,12 @@
 {
   "diff": {
-    "rise": [0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6],
+    "rise": [0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4],
     "added": {
-      "art": ["..a..", "..a..", "aaaaa", "..a..", "..a.."],
-      "attach": "ground",
-      "hotspot": [-8, 22],
-      "z": 6,
+      "art": [".a.", "aaa", ".a."],
+      "at": [24, 6],
       "mini": [".a.", "aaa", ".a."],
-      "miniHotspot": [-4, 11]
+      "miniAt": [10, 2]
     },
-    "removed": {
-      "art": ["RRRRR"],
-      "attach": "ground",
-      "hotspot": [-8, 16],
-      "z": 6,
-      "mini": ["RRR"],
-      "miniHotspot": [-4, 7]
-    }
+    "removed": { "art": ["RRR"], "at": [24, 10], "mini": ["RRR"], "miniAt": [10, 6] }
   }
 }

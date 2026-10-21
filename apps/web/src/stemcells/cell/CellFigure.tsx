@@ -9,14 +9,16 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
+import { clockSeconds } from "./blink.ts";
 import { bodyOf, frameShown, sceneFor } from "./cast.ts";
 import { onStage } from "./clock.ts";
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
 import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
+import { type Diff, withMarks } from "./marks.ts";
 import { paint } from "./paint.ts";
-import { type Diff, grown, MARGIN, marked, type MiniFrame, wornLook } from "./scene.ts";
+import { BEAT, grown, MARGIN, type MiniFrame, wornLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
@@ -30,8 +32,8 @@ export function lookOf(name: string, day: string): readonly string[] {
  * the crew in view, so no two look alike) when given; otherwise the
  * look its name is dealt alone, on the day it was first drawn, kept while it
  * stays on screen. Its name also picks when it blinks. Grown strong, it holds
- * its arms at rest; a landing that earned it flexes, and the lines its run
- * added and removed rise over the cheer.
+ * its arms at rest; a landing that earned it flexes. As its cheer starts, a
+ * + and a − rise for the lines its run added and removed, and are gone.
  */
 export function CellFigure(props: {
   readonly name: string;
@@ -48,13 +50,16 @@ export function CellFigure(props: {
   readonly strength?: Strength | undefined;
   /** Its landing earned the flex, which it plays in place of its cheer. */
   readonly flexes?: boolean | undefined;
-  /** What its landing's run did to the lines of its files: the marks over its cheer. */
+  /** What its landing's run did to the lines of its files (`marks.ts`). */
   readonly diff?: Diff | undefined;
+  /** When it landed (ms since the epoch): the marks rise once a landing. */
+  readonly landedAt?: number | null | undefined;
 }) {
   const { name, activity, strength } = props;
   const flexes = props.flexes ?? false;
   const added = props.diff?.added ?? false;
   const removed = props.diff?.removed ?? false;
+  const landedAt = props.landedAt ?? null;
   const [day] = useState(() => dayOf(new Date()));
   const mood = moodOf(props.mood);
   const worn = (props.look ?? lookOf(name, day)).join("+");
@@ -62,20 +67,49 @@ export function CellFigure(props: {
   const points = props.points ?? POINTS_PER_PIXEL;
   const ground = props.ground ?? "black";
   const canvas = useRef<HTMLCanvasElement>(null);
+  /** The landing whose marks it has raised, and from when (`clockSeconds`). */
+  const rising = useRef<{ landing: number; from: number } | null>(null);
   useLayoutEffect(() => {
     const element = canvas.current;
     if (element === null) return;
-    const look = marked(grown(wornLook(worn.split("+")), strength, flexes), { added, removed });
+    const look = grown(wornLook(worn.split("+")), strength, flexes);
+    // The marks rise over the cheer only, once, from when the figure first
+    // draws them: the landing's diff is read a moment after the landing.
+    const landing = mood === "pleased" && (added || removed) ? landedAt : null;
+    if (landing !== null && rising.current?.landing !== landing)
+      rising.current = { landing, from: clockSeconds() };
+    const from = landing === null ? undefined : rising.current?.from;
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
       const scene = sceneFor(look, mood, activity, seconds ?? 0);
-      const frame = frameShown(scene, name, seconds, mood === "needsYou");
+      const played = frameShown(scene, name, seconds, mood === "needsYou");
+      const frame =
+        from === undefined
+          ? played
+          : withMarks(
+              played,
+              { added, removed },
+              seconds === undefined ? undefined : Math.trunc((seconds - from) * BEAT),
+            );
       const dpr = devicePixelRatio || 1;
       if (shown?.frame === frame && shown.dpr === dpr) return;
       shown = { frame, dpr };
       paint(element, frame, body, points, dpr, ground);
     });
-  }, [worn, strength, flexes, added, removed, mood, activity, name, body, points, ground]);
+  }, [
+    worn,
+    strength,
+    flexes,
+    added,
+    removed,
+    landedAt,
+    mood,
+    activity,
+    name,
+    body,
+    points,
+    ground,
+  ]);
   return (
     <span
       className="cell-figure"

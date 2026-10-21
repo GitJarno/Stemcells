@@ -33,8 +33,7 @@ A `<look>` is one of:
 - an outfit (`outfit:gym/athlete`), optionally in a colourway (`outfit:gym/athlete~sky`).
 
 Any of them can be grown to a strength (`bare@arms`) and flex for its cheer
-(`bare@biceps:flex`). Its cheer can raise the marks of a landing that added
-and removed lines (`bare@:added:removed`, or either one).
+(`bare@biceps:flex`).
 
 Options: `--body claude|codex|gemini|kimi|frost` and `--out <dir>`. Output
 goes to `$TMPDIR/cells` by default, never into the repo.
@@ -246,12 +245,13 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   a Cell with biceps bulges in every arm a move shows. The arms reach past
   the box into the margin a display draws, as the original's own arms do.
 - **`diff`** (`marks.json`) is the `+` and `−` a landing's cheer raises when
-  its run added or removed lines (`stemcells/tasks/cell-diff-marks.md`):
-  `added` and `removed` are each a layer, and `rise` lifts both by that many
-  hero rows (half as many at the miniature) over the cheer's first frames.
-  They rise from the box, not the body: a frame's hop doesn't carry them.
-  Past the last rise the cheer plays as it is, so the marks rise again each
-  time it loops.
+  its run added or removed lines (`stemcells/tasks/cell-diff-marks.md`).
+  `added` and `removed` are each a mark: its `art` with its top-left cell
+  `at` on the hero grid, and its `mini` with `miniAt` on the miniature's.
+  They stand on the box, not the body, and are drawn over the frame
+  (`cell/marks.ts`). `rise` lifts both by that many hero rows (half as many
+  at the miniature) on each beat of the sprite clock from the landing; past
+  the last they are gone, once a landing.
 
 ### A temperament: `art/temperaments/<id>.json`
 

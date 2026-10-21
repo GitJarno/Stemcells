@@ -8,7 +8,6 @@ import {
   type CellScene,
   curated,
   grown,
-  marked,
   outfitLook,
   packLook,
   sceneOf,
@@ -28,18 +27,16 @@ export const GROUNDS: readonly Ground[] = ["black", "light"];
  * A look by what the command line says: `bare`, a curated look (`builder`),
  * pack pieces (`gym/towel+gym/sweatband`), or a pack's outfit
  * (`outfit:gym/athlete`, `outfit:gym/athlete~sky` in a colourway); grown to
- * a strength after `@` (`bare@arms`), and after it, cheering a landing:
- * flexing (`:flex`), and with the marks of lines `:added` and `:removed`
- * (`bare@biceps:flex:added`, `bare@:added:removed`).
+ * a strength after `@` (`bare@arms`), flexing for its cheer with `:flex`
+ * (`bare@biceps:flex`).
  */
 export function lookOf(spec: string): CellLook {
   const [worn = "", growth] = spec.split("@");
   if (growth === undefined) return wornOf(worn);
-  const [strength, ...landing] = growth.split(":");
+  const [strength, flex] = growth.split(":");
   const known = STRENGTHS.find((s) => s === strength);
   if (strength !== "" && known === undefined) throw new Error(`no strength "${strength}"`);
-  const look = grown(wornOf(worn), known, landing.includes("flex"));
-  return marked(look, { added: landing.includes("added"), removed: landing.includes("removed") });
+  return grown(wornOf(worn), known, flex === "flex");
 }
 
 function wornOf(spec: string): CellLook {

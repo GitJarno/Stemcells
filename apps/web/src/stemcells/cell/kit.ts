@@ -467,10 +467,33 @@ export interface MoveFile {
   readonly strength?: Readonly<Partial<Record<Strength, Omit<Arm, "side">>>>;
   readonly diff?: {
     readonly rise: readonly number[];
-    readonly added: LayerData;
-    readonly removed: LayerData;
+    readonly added: MarkData;
+    readonly removed: MarkData;
   };
 }
+
+/** A mark as its file holds it: its art and where it stands on the hero grid, and the same for the miniature. */
+interface MarkData {
+  readonly art: readonly string[];
+  readonly at: readonly number[];
+  readonly mini: readonly string[];
+  readonly miniAt: readonly number[];
+}
+
+/** A mark drawn over a frame, standing on the box rather than the body: its top-left cell on the hero grid (`at`) and on the miniature's (`miniAt`). */
+export interface Mark {
+  readonly art: readonly string[];
+  readonly at: Point;
+  readonly mini: readonly string[];
+  readonly miniAt: Point;
+}
+
+const mark = (data: MarkData): Mark => ({
+  art: data.art,
+  at: point(data.at),
+  mini: data.mini,
+  miniAt: point(data.miniAt),
+});
 
 const MOVE_LAYERS = (movesData.layers as readonly LayerData[]).map(layer);
 
@@ -541,15 +564,15 @@ export const STRENGTH_ARMS: ReadonlyMap<Strength, Omit<Arm, "side">> = new Map(
 
 /**
  * The marks a landing raises over its cheer when its run added lines (`+`)
- * or removed some (`−`), and how many hero cells they have risen in each
- * frame of the cheer; past the last, they are gone.
+ * or removed some (`−`), and how many hero cells they have risen each beat
+ * from the landing; past the last, they are gone.
  */
-export const DIFF_MARKS: { rise: readonly number[]; added: Layer; removed: Layer } | undefined = [
+export const DIFF_MARKS: { rise: readonly number[]; added: Mark; removed: Mark } | undefined = [
   ...MOVE_FILES.values(),
 ].flatMap((file) =>
   file.diff === undefined
     ? []
-    : [{ rise: file.diff.rise, added: layer(file.diff.added), removed: layer(file.diff.removed) }],
+    : [{ rise: file.diff.rise, added: mark(file.diff.added), removed: mark(file.diff.removed) }],
 )[0];
 
 /** The scenes drawn for Stemcells, by name. */
