@@ -38,3 +38,35 @@
   font-weight: 500;
   white-space: nowrap;
 }
+
+/* The ground the Cell and its line stand on: the transcript fades out across
+   the band from the Cell's head down to the plate (`dropOff.ts` measures it
+   up from the transcript's foot), so nothing reads through them; it shows
+   again only behind the plate's straight sides, between its rounded
+   corners, for the glass to blur, so no corner ever shows it; below the
+   plate, down to the pane's foot, it stays out. The fade begins no higher than the room the
+   transcript keeps clear above the band (--sc-drop-lead), so at the end the
+   last row is never faded. A mask, not a tint: the slate itself shows
+   through. The scrollbar's lane stays, as in upstream's own fades. */
+[data-stemcells-pane][data-drop-off] [data-assistant-citation-viewport="true"] {
+  --drop-off-from: calc(var(--sc-drop-top) + min(var(--sc-drop-lead), var(--sc-drop-fade)));
+  --drop-off-corner: min(
+    var(--sc-drop-return),
+    calc((var(--sc-drop-plate) - var(--sc-drop-under)) / 2)
+  );
+  --drop-off: linear-gradient(
+    to top,
+    transparent calc(var(--sc-drop-under) + var(--drop-off-corner)),
+    black calc(var(--sc-drop-under) + var(--drop-off-corner) + var(--sc-drop-soft)),
+    black calc(var(--sc-drop-plate) - var(--drop-off-corner) - var(--sc-drop-soft)),
+    transparent calc(var(--sc-drop-plate) - var(--drop-off-corner)),
+    transparent calc(var(--drop-off-from) - var(--sc-drop-fade)),
+    black var(--drop-off-from)
+  );
+  mask-image: var(--drop-off), linear-gradient(black, black);
+  mask-position: left, right;
+  mask-repeat: no-repeat;
+  mask-size:
+    calc(100% - var(--app-scrollbar-width)) 100%,
+    var(--app-scrollbar-width) 100%;
+}

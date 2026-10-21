@@ -1606,3 +1606,13 @@
   --sc-glass-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.55);
   --sc-glass-shadow-raised: 0 18px 44px -12px rgba(0, 0, 0, 0.85);
 }
+
+/* The ground under a Cell's line: the transcript fades out over
+   --sc-drop-fade at the band's top, and shows behind the plate only between
+   its rounded corners (--sc-drop-return, the plate's radius), softened over
+   --sc-drop-soft, which the glass then blurs. */
+:root {
+  --sc-drop-fade: 16px;
+  --sc-drop-return: var(--radius-3xl, 24px);
+  --sc-drop-soft: 6px;
+}

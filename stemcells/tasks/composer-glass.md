@@ -59,3 +59,31 @@ transcript under it.
   fresh mid-slide: the last row stayed 24 to 87 px clear of the line's top.
   The covered last row seen on a compact composer mid-slide didn't
   reproduce; `composerLine.contract.test.ts` pins what keeps it clear.
+
+## Follow-up: the line stands on clean ground
+
+Scrolled up, the transcript's text ran straight behind the Cell and its
+line: the plate was glass, the line above it sat on bare text.
+
+- [x] `composer/dropOff.ts` measures the band from the Cell's head down to
+      the plate, up from the transcript's foot, and the room above it the
+      transcript keeps clear at its end; it writes them to the pane
+- [x] `composer-line.css` masks the transcript's viewport with it: faded out
+      across the band, back in behind the plate for the glass to blur. A
+      mask on the viewport, not the scroller (upstream's top fade lives
+      there) and not the column (the scroll-to-end pill lives there)
+- [x] The fade starts no higher than the kept-clear room, so at the end the
+      last row is untouched
+- [x] Contract: the viewport holds the list alone and shares the overlay's
+      foot; unit tests on the band
+
+Review: the same four-pane, scrolled-up shot before and after, dark and
+light: every Cell and line stands on the slate, and the plates still blur
+what passes behind them. At the end, the last row sits 24 px above the band.
+Scroll cost with four long chats, second rounds: 1.84 ms a frame with the
+mask, 1.83 without.
+
+- [x] Below the plate, down to the pane's foot, the transcript showed raw
+      again. The mask now shows it only inside the plate's own rect,
+      between its rounded corners (so no corner shows a fragment), and
+      keeps it out below; `dropOff.ts` measures the plate's bottom too
