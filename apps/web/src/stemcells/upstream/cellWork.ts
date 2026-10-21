@@ -3,10 +3,11 @@
  * the run in progress, newest last, when anything last came into it, when its
  * last turn landed, when its prompt cache goes cold, how long it has worked
  * alone, and what its last run did to the lines of its files. A Cell reads
- * the turn items only while its chat works, and the thread's detail as it is
- * drawn and as a run starts or lands. On the desktop app every running
- * thread's items are live already (upstream's `RunningThreadKeepAlive`); in
- * a browser this keeps a working chat's live while its Cell is mounted.
+ * the turn items only while its chat works, and the thread's detail, once
+ * the server lists the thread, as it is drawn and as a run starts or lands.
+ * On the desktop app every running thread's items are live already
+ * (upstream's `RunningThreadKeepAlive`); in a browser this keeps a working
+ * chat's live while its Cell is mounted.
  */
 import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-label";
 import type {
@@ -326,6 +327,23 @@ export function diffOf(
 const NO_DIFF: Diff = { added: false, removed: false };
 
 /**
+ * When a Cell's landing is read again from its thread's detail: as the Cell
+ * is drawn, as a run starts and as it lands. Never before the server lists
+ * the thread, as upstream's own view waits (`resolveThreadDetailRef`): a
+ * draft's thread read early keeps its detail empty while the read lasts, so
+ * the chat its first send makes shows nothing of its own turn (no stop, no
+ * working row) until a reload.
+ */
+export function landingKeyOf(
+  cell: Pick<CellRef, "threadId"> | null,
+  shell: { readonly latestRun: { readonly runId: string; readonly status: string } | null } | null,
+): string | null {
+  if (cell === null || shell === null) return null;
+  const run = shell.latestRun;
+  return `${cell.threadId}|${run?.runId ?? ""}|${run?.status === "completed"}`;
+}
+
+/**
  * What the chat's Cell carries from its landings: how strong it has grown,
  * and what its last landing cheers with, the flex (its run worked alone
  * `FLEX_MS` or more) and the marks of the lines the run added and removed.
@@ -338,9 +356,9 @@ export function useCellLanding(cell: CellRef | null): {
   readonly diff: Diff;
 } {
   const ref = cell ? threadRefOf(cell) : null;
-  const run = useQuietThreadShell(ref)?.latestRun;
-  const landed = run?.status === "completed" ? run.runId : null;
-  const key = cell === null ? null : `${cell.threadId}|${run?.runId ?? ""}|${landed !== null}`;
+  const shell = useQuietThreadShell(ref);
+  const landed = shell?.latestRun?.status === "completed" ? shell.latestRun.runId : null;
+  const key = landingKeyOf(cell, shell);
   const [read, setRead] = useState<{
     key: string;
     thread: string;

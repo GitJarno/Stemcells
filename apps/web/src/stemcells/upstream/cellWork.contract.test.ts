@@ -21,7 +21,9 @@ import * as DateTime from "effect/DateTime";
 import * as Schema from "effect/Schema";
 import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
+import chatViewSource from "../../components/ChatView.tsx?raw";
 import rootSource from "../../routes/__root.tsx?raw";
+import { resolveThreadDetailRef } from "../../state/entities";
 import claudeAdapterSource from "../../../../server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts?raw";
 import projectionStoreSource from "../../../../server/src/orchestration-v2/ProjectionStore.ts?raw";
 import { budsOf, currentActivity } from "../cell/activity";
@@ -145,6 +147,19 @@ describe("what a working Cell acts out, from its run's turn items", () => {
 
   it("the desktop app keeps every running thread's items live, seen or not", () => {
     expect(rootSource).toContain("{isElectron ? <RunningThreadKeepAlive /> : null}");
+  });
+
+  it("upstream's view reads a draft's thread only once the shell lists it, as a Cell must", () => {
+    // `landingKeyOf` waits the same way; read earlier, the thread's detail
+    // stays empty and the chat's first turn shows no stop.
+    expect(chatViewSource).toMatch(
+      /resolveThreadDetailRef\(routeThreadRef, \{\s*shellExists: serverThreadShell !== null,\s*waitForShell: draftThread !== null,\s*\}\)/,
+    );
+    const ref = { environmentId: "e", threadId: "t" } as Parameters<
+      typeof resolveThreadDetailRef
+    >[0];
+    expect(resolveThreadDetailRef(ref, { shellExists: false, waitForShell: true })).toBeNull();
+    expect(resolveThreadDetailRef(ref, { shellExists: true, waitForShell: true })).toBe(ref);
   });
 });
 
