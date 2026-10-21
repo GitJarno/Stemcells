@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 
 import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
 import { NeedsTabCount } from "../needs/NeedsTabCount";
@@ -39,6 +39,14 @@ export function TabStrip(props: {
   tabs: ReadonlyArray<Tab>;
   activeTabId: string | null;
   aski: { readonly active: boolean; readonly cell: CellRef | null; readonly chat: AskiChat };
+  /**
+   * The new Cell past the last tab (`newCell.ts`): its tab, and whether it
+   * is taken (then it is among `tabs`). Its tab is last, and shows only as
+   * much as its page does (`TabPager` sets `--stemcells-shown` through
+   * `newTabRef`).
+   */
+  newCell: { readonly tab: Tab; readonly taken: boolean } | null;
+  newTabRef: RefObject<HTMLDivElement | null>;
   onActivate: (tabId: string) => void;
   onClose: (tabId: string) => void;
   onMove: (tabId: string, toIndex: number) => void;
@@ -89,6 +97,9 @@ export function TabStrip(props: {
   };
 
   const offsets = drag?.geometry ? restingOffsets(drag.geometry, drag.slot) : null;
+  const { newCell, newTabRef } = props;
+  // In one list with the tabs, so taking or leaving the new Cell keeps its tab's element.
+  const shownTabs = newCell && !newCell.taken ? [...tabs, newCell.tab] : tabs;
 
   return (
     <div className="flex h-9 shrink-0 items-center gap-1 px-2" data-stemcells-tab-strip="">
@@ -99,22 +110,30 @@ export function TabStrip(props: {
           springLit={spring.lit === ASKI_TAB_ID}
           springHandlers={spring.handlers(ASKI_TAB_ID)}
         />
-        {tabs.map((tab, index) => {
+        {shownTabs.map((tab, index) => {
           const dragged = drag?.geometry != null && drag.tabId === tab.id;
           const offset = dragged ? drag.offset : (offsets?.[index] ?? 0);
+          const isNewCell = tab.id === newCell?.tab.id;
+          // Not yet taken, the new Cell's tab only opens: there is no tab to drag or close.
+          const untaken = isNewCell && !newCell.taken;
           return (
             <div
               key={tab.id}
               ref={(element) => {
                 if (element) tabElements.current.set(tab.id, element);
                 else tabElements.current.delete(tab.id);
+                if (isNewCell) newTabRef.current = element;
               }}
               role="tab"
               aria-selected={tab.id === props.activeTabId}
               data-stemcells-tab={tab.id}
+              data-stemcells-new-tab={isNewCell ? "" : undefined}
               data-spring-lit={spring.lit === tab.id}
               {...spring.handlers(tab.id)}
-              onPointerDown={(event) => onPointerDown(event, tab.id)}
+              onPointerDown={(event) => {
+                if (!untaken) onPointerDown(event, tab.id);
+                else if (event.button === 0) onActivate(tab.id);
+              }}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={() => setDrag(null)}
@@ -135,7 +154,7 @@ export function TabStrip(props: {
               )}
             >
               <TabTitle tab={tab} />
-              {tabs.length > 1 ? (
+              {tabs.length > 1 && !untaken ? (
                 <PanelTabCloseButton label="Close tab" onClick={() => props.onClose(tab.id)}>
                   {null}
                 </PanelTabCloseButton>

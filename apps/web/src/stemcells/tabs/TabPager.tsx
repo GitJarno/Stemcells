@@ -1,4 +1,12 @@
-import { createContext, use, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  use,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { cssLinear, settledDuration } from "../tokens/spring.ts";
@@ -21,6 +29,11 @@ import { LIFT_GAP } from "./swipe";
  * slide sets off until it rests on a page, `[data-stemcells-pages]` carries
  * `data-moving`. Whatever can't move with them (a native view over a page)
  * watches it.
+ *
+ * The new Cell's page, past the last tab (`newCell.ts`), is the strip's
+ * last. Its tab in the tab bar shows as much as the page does: the strip
+ * sets the tab's `--stemcells-shown` (0 to 1) each frame it moves, and
+ * slides it alongside, on the same spring.
  */
 export function TabPager(props: {
   /** Every tab, in the strip's order: a tab's place is its index. */
@@ -28,6 +41,12 @@ export function TabPager(props: {
   activeId: string;
   /** Turns to a tab a swipe went to. */
   onTurn: (tabId: string) => void;
+  /** The new Cell's page, among `tabIds`, if there is one. */
+  newCellId?: string | null;
+  /** Its tab in the tab bar. */
+  newTabRef?: RefObject<HTMLElement | null>;
+  /** The pages started moving, or came to rest (`data-moving`). */
+  onMotion?: (moving: boolean) => void;
   /** A `PagerPage` for each tab whose page is mounted, the active one among them. */
   children: ReactNode;
 }) {
@@ -42,7 +61,11 @@ export function TabPager(props: {
   }, [strip]);
 
   useLayoutEffect(() => {
-    strip.sync(props.tabIds, props.activeId, props.onTurn);
+    strip.sync(props.tabIds, props.activeId, props.onTurn, {
+      id: props.newCellId ?? NO_NEW_CELL.id,
+      tab: props.newTabRef ?? NO_NEW_CELL.tab,
+      onMotion: props.onMotion ?? NO_NEW_CELL.onMotion,
+    });
   });
 
   return (
@@ -74,6 +97,15 @@ export function PagerPage(props: { tabId: string; onStage: boolean; children: Re
     </div>
   );
 }
+
+/** The new Cell's page, and what follows it (`TabPager`). */
+interface NewCellPage {
+  readonly id: string | null;
+  readonly tab: RefObject<HTMLElement | null>;
+  readonly onMotion: (moving: boolean) => void;
+}
+
+const NO_NEW_CELL: NewCellPage = { id: null, tab: { current: null }, onMotion: () => undefined };
 
 /** The strip at `position` (in pages): page `i` is on stage at `i`. */
 const stripAt = (position: number): string => `translate3d(${-position * 100}%, 0, 0)`;
@@ -136,6 +168,11 @@ class PageStrip {
   /** Where the strip is when no slide runs: at rest, or held by the fingers. */
   #position = 0;
   #slide: Animation | null = null;
+  /** The new Cell's tab, sliding alongside. */
+  #tabSlide: Animation | null = null;
+  #newCell: NewCellPage = NO_NEW_CELL;
+  /** Whether the pages were moving, as `data-moving` last said. */
+  #moving = false;
   /**
    * A turn to a tab further than the next one: the page being left stands
    * in beside the page arriving, over the page that is really there, so the
@@ -173,8 +210,8 @@ class PageStrip {
     this.#unphase?.();
     this.#unphase = undefined;
     this.#viewport?.removeAttribute("data-moving");
-    this.#slide?.cancel();
-    this.#slide = null;
+    this.#moving = false;
+    this.#stopSlide();
     cancelAnimationFrame(this.#frame);
     this.#frame = 0;
     cancelAnimationFrame(this.#beat);
@@ -194,8 +231,14 @@ class PageStrip {
   }
 
   /** After each render: the strip's tabs and the active one, as React has them now. */
-  sync(order: readonly string[], active: string, turn: (tabId: string) => void): void {
+  sync(
+    order: readonly string[],
+    active: string,
+    turn: (tabId: string) => void,
+    newCell: NewCellPage,
+  ): void {
     this.#turn = turn;
+    this.#newCell = newCell;
     if (this.#active === null) {
       this.#order = order;
       this.#active = active;
@@ -215,6 +258,7 @@ class PageStrip {
     this.#active = active;
     if (reordered) this.#standIn = null;
     this.#placeAll();
+    if (this.#slide === null) this.#showNewTab(this.#position);
     if (!turned && !reordered) return;
     const stageSlot = stage === null ? -1 : this.#slotOf(stage);
     const here = stageSlot < 0 ? null : stageSlot + offStage;
@@ -232,8 +276,7 @@ class PageStrip {
       this.#cut(this.#slotOf(active));
     } else if (Math.abs(here - at) > 1e-6) {
       const sliding = this.#slide !== null;
-      this.#slide?.cancel();
-      this.#slide = null;
+      this.#stopSlide();
       this.#show(here);
       if (this.#hand.holding) this.#hand.regrab();
       else if (sliding) this.#travel(here, this.#slotOf(heading), 0);
@@ -276,6 +319,7 @@ class PageStrip {
   #show(position: number): void {
     this.#position = position;
     if (this.#strip) this.#strip.style.transform = stripAt(position);
+    this.#showNewTab(position);
   }
 
   /** Puts the strip at its position on the next frame: once a frame, however many events came. */
@@ -284,12 +328,34 @@ class PageStrip {
     this.#frame = requestAnimationFrame(() => {
       this.#frame = 0;
       if (this.#strip) this.#strip.style.transform = stripAt(this.#position);
+      this.#showNewTab(this.#position);
     });
   }
 
-  #cut(slot: number): void {
+  /** How much of the new Cell's page shows with the strip at `position`, 0 to 1. */
+  #newCellShown(position: number): number {
+    const slot = this.#newCell.id === null ? -1 : this.#slotOf(this.#newCell.id);
+    return slot < 0 ? 0 : Math.min(Math.max(1 - Math.abs(position - slot), 0), 1);
+  }
+
+  /** The new Cell's tab shows as much as its page does with the strip at `position`. */
+  #showNewTab(position: number): void {
+    const tab = this.#newCell.tab.current;
+    if (tab === null) return;
+    const shown = this.#newCellShown(position);
+    tab.style.setProperty("--stemcells-shown", String(shown));
+    tab.style.visibility = shown > 0 ? "" : "hidden";
+  }
+
+  #stopSlide(): void {
     this.#slide?.cancel();
     this.#slide = null;
+    this.#tabSlide?.cancel();
+    this.#tabSlide = null;
+  }
+
+  #cut(slot: number): void {
+    this.#stopSlide();
     this.#standIn = null;
     this.#placeAll();
     this.#show(slot);
@@ -320,8 +386,7 @@ class PageStrip {
   /** Springs the strip from `from` to page `to`, setting off at `pagesPerSecond`. */
   #travel(from: number, to: number, pagesPerSecond: number): void {
     const strip = this.#strip;
-    this.#slide?.cancel();
-    this.#slide = null;
+    this.#stopSlide();
     this.#show(to);
     if (strip === null || Math.abs(to - from) < 1e-3) {
       this.#settle();
@@ -339,19 +404,35 @@ class PageStrip {
     } else {
       const page = spring("page");
       const velocity = releaseVelocity(from, to, pagesPerSecond, (2 * Math.PI) / page.response);
-      slide = strip.animate([{ transform: stripAt(from) }, { transform: stripAt(to) }], {
+      const timing = {
         duration: settledDuration(page, velocity) * 1000,
         easing: cssLinear(page, velocity),
-      });
+      };
+      slide = strip.animate([{ transform: stripAt(from) }, { transform: stripAt(to) }], timing);
+      this.#slideNewTab(from, to, timing);
     }
     this.#slide = slide;
     this.#moved();
     slide.onfinish = () => {
       if (this.#slide !== slide) return;
       this.#slide = null;
+      this.#tabSlide = null;
       this.#settle();
       this.#moved();
     };
+  }
+
+  /** The new Cell's tab slides alongside the strip, from `from` to `to`, on the same spring. */
+  #slideNewTab(from: number, to: number, timing: KeyframeAnimationOptions): void {
+    const tab = this.#newCell.tab.current;
+    const start = this.#newCellShown(from);
+    const end = this.#newCellShown(to);
+    if (tab === null || start === end) return;
+    const keyframe = (shown: number): Keyframe => ({
+      "--stemcells-shown": shown,
+      visibility: shown > 0 ? "visible" : "hidden",
+    });
+    this.#tabSlide = tab.animate([keyframe(start), keyframe(end)], timing);
   }
 
   /** At rest: a stand-in goes back to its own place, and the strip with it if it is on stage. */
@@ -365,7 +446,11 @@ class PageStrip {
 
   /** Marks the pages moving while the fingers hold the strip or a slide runs, and at rest once neither does. */
   #moved(): void {
-    this.#viewport?.toggleAttribute("data-moving", this.#hand.holding || this.#slide !== null);
+    const moving = this.#hand.holding || this.#slide !== null;
+    this.#viewport?.toggleAttribute("data-moving", moving);
+    if (moving === this.#moving) return;
+    this.#moving = moving;
+    this.#newCell.onMotion(moving);
   }
 
   /** The strip as the hand holds it. */
@@ -381,8 +466,7 @@ class PageStrip {
       count: () => this.#order.length,
       width: () => this.#strip?.clientWidth ?? 0,
       grab: (at) => {
-        this.#slide?.cancel();
-        this.#slide = null;
+        this.#stopSlide();
         this.#show(at);
       },
       hold: (position) => {

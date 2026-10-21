@@ -353,12 +353,14 @@ const runs = cases.flatMap(({ name, pads, turns }) => {
     .map(({ what, delivery }) => [`${name}${what}`, pads, turns, delivery] as const);
 });
 
-/** The pages `turns` (each swipe's way) lead to from page 2. */
-function expectedTurns(turns: readonly number[]): number[] {
-  let page = 2;
+/** The pages `turns` (each swipe's way) lead to from page `from` of `count`: none past either end. */
+function expectedTurns(turns: readonly number[], from = 2, count = 5): number[] {
+  let page = from;
   const expected: number[] = [];
   for (const way of turns) {
-    if (way !== 0) expected.push((page += way));
+    const next = Math.min(Math.max(page + way, 0), count - 1);
+    if (next !== page) expected.push(next);
+    page = next;
   }
   return expected;
 }
@@ -493,6 +495,31 @@ describe("swipes with macOS's phases: the strip lets go as the fingers lift", ()
     const scrolls = phasesDelivered(phasesOf(pads), delivery, first);
     const followed = replayPhased(samples, scrolls, coast, strip);
     expect(strip.turns).toEqual(expectedTurns(turns));
+    expect(strip.overshoot * 1200).toBeLessThan(1);
+    expect(followed).toBe(0);
+  });
+});
+
+// Past the last tab, the new Cell's page is the strip's last (`newCell.ts`):
+// from the last tab, a swipe on goes to it and one back comes back, one page
+// a swipe, as anywhere on the strip; a swipe on from it goes nowhere.
+
+describe("at the right end, between the last tab and the new Cell's page", () => {
+  const LAST_TAB = 3;
+  const PAGES = 5;
+  it.each(runs)("%s", (_, pads, turns, delivery) => {
+    const strip = new ReplayStrip(LAST_TAB, PAGES, 1200);
+    replay(delivered(pads, delivery), strip);
+    expect(strip.turns).toEqual(expectedTurns(turns, LAST_TAB, PAGES));
+    expect(strip.overshoot * 1200).toBeLessThan(1);
+  });
+
+  it.each(runs)("%s, with macOS's phases", (_, pads, turns, delivery) => {
+    const strip = new ReplayStrip(LAST_TAB, PAGES, 1200);
+    const coast = new Set(pads.filter((pad) => pad.coast).map((pad) => pad.t));
+    const scrolls = phasesDelivered(phasesOf(pads), delivery, true);
+    const followed = replayPhased(delivered(pads, delivery), scrolls, coast, strip);
+    expect(strip.turns).toEqual(expectedTurns(turns, LAST_TAB, PAGES));
     expect(strip.overshoot * 1200).toBeLessThan(1);
     expect(followed).toBe(0);
   });

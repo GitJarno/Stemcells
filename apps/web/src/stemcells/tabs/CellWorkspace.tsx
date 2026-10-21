@@ -48,12 +48,14 @@ import {
   type Workspace,
 } from "./layout";
 import { keepEndAcrossWidth } from "./keepEnd";
+import { newCellTab, newCellTaken, takeNewCell, type NewCell } from "./newCell";
 import { mountedTabs } from "./pager";
 import { CellPill, PaneButtons } from "./PaneButtons";
 import { PaneCellContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { PagerPage, TabPager } from "./TabPager";
 import { TabStrip } from "./TabStrip";
+import { useNewCell } from "./useNewCell";
 import { useWorkspaceKeys } from "./useWorkspaceKeys";
 import "../tokens/stemcells.css";
 import "./workspace.css";
@@ -64,6 +66,11 @@ function routeKey(cell: CellRef): string {
 
 function cellsOf(workspace: Workspace): CellRef[] {
   return workspace.tabs.flatMap((tab) => panesOf(tab).flatMap((pane) => pane.cell ?? []));
+}
+
+/** Whether `cell` is the new Cell's draft. */
+function isNewCellDraft(cell: CellRef, newCell: NewCell | null): boolean {
+  return newCell !== null && cell.draftId !== null && cell.draftId === newCell.cell.draftId;
 }
 
 /**
@@ -77,6 +84,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const workspace = useWorkspaceStore((store) => store.workspace);
   const takenRoute = useWorkspaceStore((store) => store.takenRoute);
   const visited = useWorkspaceStore((store) => store.visited);
+  const newCell = useWorkspaceStore((store) => store.newCell);
   // A turn renders the arriving page's ownership at once; the pages that
   // become its neighbours mount after, without holding up the slide.
   const settledTabId = useDeferredValue(workspace.activeTabId);
@@ -89,6 +97,11 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
   const [askiChat, setAskiChat] = useState<AskiChat>({ status: "starting" });
+  const newTabRef = useRef<HTMLDivElement>(null);
+  const newCellIsTaken = newCellTaken(workspace, newCell);
+  const lastTabOnStage =
+    workspace.tabs.length > 0 && workspace.tabs.at(-1)?.id === workspace.activeTabId;
+  const newCellMotion = useNewCell(lastTabOnStage && !newCellIsTaken).motion;
 
   const routeToFocused = () => {
     const cell = focusedPane(readWorkspace())?.cell;
@@ -96,10 +109,20 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   const onRoute = useEffectEvent((cell: CellRef) => {
-    updateWorkspace((current) => showRouteBesideAski(current, cell, newIds()));
+    // The new Cell's draft, routed to (a reload, the sidebar): its tab is taken.
+    const routedNewCell = useWorkspaceStore.getState().newCell;
+    const ofNewCell = isNewCellDraft(cell, routedNewCell);
+    updateWorkspace((current) =>
+      ofNewCell && routedNewCell !== null
+        ? takeNewCell(current, routedNewCell)
+        : showRouteBesideAski(current, cell, newIds()),
+    );
     useWorkspaceStore.setState({ takenRoute: routeKey(cell) });
     const holder = paneShowing(readWorkspace(), cell);
-    if (holder && cell.draftId !== null) fileDraftUnderPane(cell.draftId, holder.pane.id);
+    // The new Cell's draft stays under its own key until it is sent.
+    if (holder && cell.draftId !== null && !ofNewCell) {
+      fileDraftUnderPane(cell.draftId, holder.pane.id);
+    }
     // A draft sent in a pane the user has since left routes to its thread;
     // the route goes back to the pane the user is in.
     const nowFocused = focusedPane(readWorkspace())?.cell;
@@ -122,13 +145,18 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     if (returnToFocused) goToFocused();
   }, [returnToFocused]);
 
-  // A draft that left every pane goes too, unless something was written in it.
+  // A draft that left every pane goes too, unless something was written in
+  // it. The new Cell's stays, for the next swipe past the last tab.
   useEffect(
     () =>
       useWorkspaceStore.subscribe((state, previous) => {
         const kept = cellsOf(state.workspace);
         for (const cell of cellsOf(previous.workspace)) {
-          if (!kept.some((other) => sameChat(other, cell))) dropLeftDraft(cell);
+          if (kept.some((other) => sameChat(other, cell))) continue;
+          if (isNewCellDraft(cell, state.newCell) || isNewCellDraft(cell, previous.newCell)) {
+            continue;
+          }
+          dropLeftDraft(cell);
         }
       }),
     [],
@@ -140,7 +168,13 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   const activateTabAndRoute = (tabId: string) => {
-    updateWorkspace((current) => activateTab(current, tabId));
+    // The new Cell's page, gone to: its tab is taken, and the route goes to its draft.
+    const current = useWorkspaceStore.getState().newCell;
+    updateWorkspace((latest) =>
+      current !== null && tabId === current.ids.tab
+        ? takeNewCell(latest, current)
+        : activateTab(latest, tabId),
+    );
     routeToFocused();
   };
 
@@ -276,7 +310,13 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const routeOwnerId =
     props.target === null ? null : (routeHolder?.pane.id ?? (routeIsNew ? focused?.id : null));
 
-  const tabIds = workspace.tabs.map((candidate) => candidate.id);
+  // The new Cell's page is the strip's last, taken or not.
+  const workspaceTabIds = workspace.tabs.map((candidate) => candidate.id);
+  const untakenNewCell = newCell !== null && !newCellIsTaken ? newCell : null;
+  const tabIds = untakenNewCell ? [...workspaceTabIds, untakenNewCell.ids.tab] : workspaceTabIds;
+  const tabOf = (tabId: string): Tab | undefined =>
+    workspace.tabs.find((candidate) => candidate.id === tabId) ??
+    (untakenNewCell && tabId === untakenNewCell.ids.tab ? newCellTab(untakenNewCell) : undefined);
   const askiTab = workspace.tabs.find(isAskiTab) ?? null;
   const cellTabs = askiTab
     ? workspace.tabs.filter((candidate) => candidate !== askiTab)
@@ -296,6 +336,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
           cell: askiTab ? (panesOf(askiTab)[0]?.cell ?? null) : null,
           chat: askiChat,
         }}
+        newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}
+        newTabRef={newTabRef}
         onActivate={activateTabAndRoute}
         onClose={(tabId) => {
           if (readWorkspace().tabs.length > 1) closeTabAndRoute(tabId);
@@ -316,9 +358,16 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
             </div>
           </div>
         ) : (
-          <TabPager tabIds={tabIds} activeId={tab.id} onTurn={activateTabAndRoute}>
+          <TabPager
+            tabIds={tabIds}
+            activeId={tab.id}
+            onTurn={activateTabAndRoute}
+            newCellId={newCell?.ids.tab ?? null}
+            newTabRef={newTabRef}
+            onMotion={newCellMotion}
+          >
             {mountedTabs(tabIds, tab.id, settledTabId, visited).map((tabId) => {
-              const pageTab = workspace.tabs.find((candidate) => candidate.id === tabId);
+              const pageTab = tabOf(tabId);
               if (!pageTab) return null;
               const onStage = tabId === tab.id;
               return (
