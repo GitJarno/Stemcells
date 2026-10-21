@@ -7,6 +7,8 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import { PACKS } from "../kit.ts";
+import { dayOf, looksOf } from "../looks.ts";
+import { wornLook } from "../scene.ts";
 import { check, looksOfPack } from "./check.ts";
 import { animation, contactSheet, GROUNDS, lookOf, sheetOf, SIZES, slugOf } from "./draw.ts";
 import { lookbook } from "./lookbook.ts";
@@ -17,6 +19,8 @@ const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.
                                  a sheet (PNG) and an animation per size and frame (APNG)
   cells pack <theme>             a sheet of every piece and outfit of a pack, still
   cells lookbook [theme…]        a page of packs, animated (every drawn pack by default)
+  cells crew [day] [count]       a sheet of a crew in view, dealt together on a day
+                                 (YYYY-MM-DD, today by default; twelve Cells by default)
   cells check [theme…] [--original]
                                  the rules; exits 1 on a failure. --original adds notes
                                  on the original's art
@@ -90,6 +94,20 @@ function main(argv: readonly string[]): number {
           ? (flags.get("scenes") as string).split(",")
           : DEFAULT_SCENES;
       console.log(write(NodePath.join(out, "lookbook.html"), lookbook(rest, scenes, body)));
+      return 0;
+    }
+    case "crew": {
+      const [day = dayOf(new Date()), count = "12"] = rest;
+      const names = Array.from({ length: Number(count) }, (_, i) => `cell-${i + 1}`);
+      const looks = [...looksOf(names, day).values()].map(
+        (look) => [look.worn.join(" ") || "bare", wornLook(look.worn)] as const,
+      );
+      console.log(
+        write(
+          NodePath.join(out, `crew-${slugOf(day)}.png`),
+          contactSheet(`crew ${day}`, looks, ["idle", "happy"], body),
+        ),
+      );
       return 0;
     }
     case "check": {

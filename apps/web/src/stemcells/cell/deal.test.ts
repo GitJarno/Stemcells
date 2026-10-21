@@ -1,7 +1,11 @@
 import * as NodeAssert from "node:assert/strict";
-import { test } from "vite-plus/test";
+import { test, vi } from "vite-plus/test";
 import fixtureJson from "./fixtures/looks.json" with { type: "json" };
 import { type Dress, looksOf } from "./looks.ts";
+
+// The fixture is the deal over the kit's packs (`kit/packs.json`): packs drawn
+// in `art/` bring their own seasons and are tested with their own data.
+vi.mock("./art.ts", () => ({ ART_PACKS: {}, ART_MOVES: {}, ART_TEMPERAMENTS: {} }));
 
 interface Case {
   readonly says: string;

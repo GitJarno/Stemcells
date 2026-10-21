@@ -1,10 +1,14 @@
-// What a Cell wears, dealt from the kit's packs (`kit/packs.json`): one
-// piece of the outfit theme the person picked (the house theme until they
-// do) and, in a season while Seasons is on, one of that season's. Dealt by
-// codename over a roster, and a Cell keeps its look while it stays awake.
-// Pure; the deal is tested from fixtures/looks.json.
+// What a Cell wears, dealt from the packs (`kit/packs.json` and `art/packs/`):
+// one item of the outfit theme the person picked (the house theme until
+// they do) and, in a season while Seasons is on, one of that season's. An
+// item is an outfit, dealt as one in one of its colourways, where the pack
+// has outfits, and a piece where it has none. The season's item is dealt
+// first, being the day's; the theme's takes the slots it leaves free. Dealt
+// by codename over the crew in view, no two alike while the catalogue
+// lasts, and a Cell keeps its look while it stays in view. Pure; the deal is
+// tested from fixtures/looks.json.
 
-import { type Pack, PACKS, pieceOf } from "./kit.ts";
+import { type Pack, type PackOutfit, PACKS, type Slot } from "./kit.ts";
 
 const THEMES: ReadonlyMap<string, Pack> = new Map(PACKS.map((pack) => [pack.theme, pack]));
 
@@ -24,18 +28,18 @@ export const OUTFITS: readonly string[] = [
 export interface Dress {
   /** An outfit theme; one the data does not hold as an outfit wears the house theme. */
   readonly theme: string;
-  /** Whether a season's pieces are worn over the theme while it runs. */
+  /** Whether a season's items are worn while it runs, the theme's in the slots they leave free. */
   readonly seasons: boolean;
 }
 
 /** What a Mac dresses its Cells in until the person says otherwise. */
 export const HOUSE_DRESS: Dress = { theme: HOUSE, seasons: true };
 
-/** The themes worn on `day` in `dress`: its outfit theme, then the season's while one runs and Seasons is on. */
+/** The themes worn on `day` in `dress`, in the order they are dealt: the season's while one runs and Seasons is on, then its outfit theme. */
 export function themesOn(day: string, dress: Dress = HOUSE_DRESS): readonly string[] {
   const theme = OUTFITS.includes(dress.theme) ? dress.theme : HOUSE;
   const season = dress.seasons ? seasonOn(day) : undefined;
-  return [theme, ...(season === undefined ? [] : [season])];
+  return [...(season === undefined ? [] : [season]), theme];
 }
 
 const MASK = (1n << 64n) - 1n;
@@ -51,9 +55,9 @@ export function score(words: string): bigint {
   return z ^ (z >> 31n);
 }
 
-/** A date as the month-day seasons are written in, on the screen's own calendar. */
+/** A date as the deal reads it, on the screen's own calendar: year, month and day (`2027-02-06`). */
 export const dayOf = (date: Date): string =>
-  `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 /** How many days a season's window holds, counting over the new year when it runs past it. */
 const length = (from: string, to: string): number => {
@@ -62,55 +66,127 @@ const length = (from: string, to: string): number => {
   return days >= 0 ? days : days + 12 * 31;
 };
 
-/** The season `day` falls in: the narrowest window when two hold it, ties to the first by name. */
+/** The window a season holds in `year` (none for a year a moving feast doesn't name). */
+function windowIn(season: NonNullable<Pack["season"]>, year: string | undefined) {
+  if ("from" in season) return season;
+  const dated = year === undefined ? undefined : season.years[year];
+  return dated === undefined ? undefined : { from: dated[0], to: dated[1] };
+}
+
+/**
+ * The season `day` falls in (`2027-02-06`, or a month-day, `02-06`, which
+ * holds no moving feast): the narrowest window when two hold it, ties to the
+ * first by name.
+ */
 export function seasonOn(day: string): string | undefined {
+  const monthDay = day.slice(-5);
+  const year = day.length > 5 ? day.slice(0, 4) : undefined;
   let best: { theme: string; days: number } | undefined;
   for (const { theme, season } of [...THEMES.values()].sort((a, b) =>
     a.theme < b.theme ? -1 : 1,
   )) {
-    // A season dated year by year needs the year, which `day` doesn't carry yet.
-    if (season === null || !("from" in season)) continue;
+    const window = season === null ? undefined : windowIn(season, year);
+    if (window === undefined) continue;
     const holds =
-      season.from <= season.to
-        ? day >= season.from && day <= season.to
-        : day >= season.from || day <= season.to;
-    const days = length(season.from, season.to);
+      window.from <= window.to
+        ? monthDay >= window.from && monthDay <= window.to
+        : monthDay >= window.from || monthDay <= window.to;
+    const days = length(window.from, window.to);
     if (holds && (best === undefined || days < best.days)) best = { theme, days };
   }
   return best?.theme;
 }
 
+/** What a theme deals: an outfit or a piece, the slots it fills, and what keeps two apart. */
+interface Item {
+  readonly name: string;
+  readonly slots: readonly WornSlot[];
+  readonly outfit?: PackOutfit | undefined;
+}
+
+/** Where a look wears something: the pieces' slots, and the body's dye. */
+type WornSlot = Slot | "fabric";
+
+/** A theme's items: its outfits where it has any, else its pieces (posed variants aside). */
+function itemsOf(theme: string): readonly Item[] {
+  const pack = THEMES.get(theme);
+  if (pack === undefined) return [];
+  if (pack.outfits.length > 0)
+    return pack.outfits.map((outfit) => ({
+      name: outfit.name,
+      outfit,
+      slots: [
+        ...(["headwear", "face", "wrap", "back"] as const).filter(
+          (slot) => outfit[slot] !== undefined,
+        ),
+        ...(outfit.fabric !== undefined || outfit.outfit !== undefined
+          ? (["fabric"] as const)
+          : []),
+      ],
+    }));
+  return pack.pieces
+    .filter((piece) => !piece.posed)
+    .map((piece) => ({ name: piece.name, slots: [piece.slot] }));
+}
+
 const rankings = new Map<string, readonly string[]>();
 
-/** A theme's pieces in a codename's order: each scores `codename|theme|piece`, the highest first, ties by name. */
+/** A theme's items in a codename's order: each scores `codename|theme|item`, the highest first, ties by name. */
 export function ranked(codename: string, theme: string): readonly string[] {
   const key = `${codename}|${theme}`;
   const known = rankings.get(key);
   if (known !== undefined) return known;
-  const order = (THEMES.get(theme)?.pieces ?? [])
-    .map((piece) => piece.name)
-    .sort()
-    .map((piece) => ({ piece, score: score(`${codename}|${theme}|${piece}`) }))
-    .sort((a, b) => (a.score === b.score ? 0 : a.score > b.score ? -1 : 1))
-    .map((p) => p.piece);
+  const order = rankedBy(
+    itemsOf(theme).map((item) => item.name),
+    (name) => `${codename}|${theme}|${name}`,
+  );
   rankings.set(key, order);
   return order;
 }
 
-/** What a Cell was dealt, a piece of each theme worn, and of those what it wears: the season's wins a slot both fill. */
+/** `names` by their scores under `key`, the highest first, ties by name. */
+const rankedBy = (names: readonly string[], key: (name: string) => string): string[] =>
+  names
+    .toSorted()
+    .map((name) => ({ name, score: score(key(name)) }))
+    .sort((a, b) => (a.score === b.score ? 0 : a.score > b.score ? -1 : 1))
+    .map((p) => p.name);
+
+/** What a Cell wears, as ids in the order dealt, the season's first (`theme/piece`, or `outfit:theme/outfit~colourway`). */
 export interface Look {
-  readonly dealt: readonly string[];
   readonly worn: readonly string[];
 }
 
+/** The id an item is worn by: a piece's `theme/piece`; an outfit's `outfit:theme/outfit`, with `~colourway` for one of its own. */
+const idOf = (theme: string, item: Item, colourway: string): string =>
+  item.outfit === undefined
+    ? `${theme}/${item.name}`
+    : `outfit:${theme}/${item.name}${colourway === "" ? "" : `~${colourway}`}`;
+
+/** The theme, item and colourway an id names, when its theme still deals it. */
+function parse(id: string): { theme: string; item: Item; colourway: string } | undefined {
+  const outfit = id.startsWith("outfit:");
+  const [path = "", colourway = ""] = (outfit ? id.slice("outfit:".length) : id).split("~");
+  const at = path.indexOf("/");
+  const theme = path.slice(0, at);
+  const item = itemsOf(theme).find((i) => i.name === path.slice(at + 1));
+  if (item === undefined || (item.outfit !== undefined) !== outfit) return undefined;
+  if (colourway !== "" && !item.outfit?.colourways.some((c) => c.id === colourway))
+    return undefined;
+  return { theme, item, colourway };
+}
+
 /**
- * What each Cell of a roster wears on `day` (month-day) in `dress`, as
- * `theme/piece` ids, the Cells given in the order they took their seats, the
- * first-born first. In each theme worn, a Cell `kept` names keeps the piece it was
- * dealt there; each other Cell takes the first piece in its own order among
- * those held least, so no two wear the same piece while the theme has one
- * free, and no Cell's look changes while it stays awake. With nothing kept
- * the deal is the roster's own, the same on every screen.
+ * What each Cell of a crew wears on `day` (`2027-02-06`, or a month-day) in
+ * `dress`, as ids, the Cells given in the order they took their seats, the
+ * first-born first. Each theme worn is dealt in turn, the season's first
+ * (`themesOn`). In each, a Cell `kept` names keeps what it was dealt there
+ * while it still fits. Each other Cell takes the first item in
+ * its own order that fits the slots it has free and whose silhouette and
+ * colour family no other Cell wears; past those (and for pieces, which name
+ * neither), the first among those held least. An outfit worn twice takes a
+ * colourway the other doesn't. With nothing kept the deal is the crew's own,
+ * the same on every screen.
  */
 export function looksOf(
   codenames: readonly string[],
@@ -120,39 +196,59 @@ export function looksOf(
 ): ReadonlyMap<string, Look> {
   const themes = themesOn(day, dress);
   const dealt = new Map<string, string[]>(codenames.map((c) => [c, []]));
+  const filled = new Map<string, Set<WornSlot>>(codenames.map((c) => [c, new Set()]));
+  const fits = (codename: string, item: Item) =>
+    item.slots.every((slot) => !filled.get(codename)!.has(slot));
   for (const theme of themes) {
+    const items = new Map(itemsOf(theme).map((item) => [item.name, item]));
     const held = new Map<string, number>();
-    const take = (codename: string, piece: string): void => {
-      held.set(piece, (held.get(piece) ?? 0) + 1);
-      dealt.get(codename)?.push(`${theme}/${piece}`);
+    const silhouettes = new Set<string>();
+    const families = new Set<string>();
+    const colourways = new Map<string, Set<string>>();
+    const take = (codename: string, item: Item, colourway: string): void => {
+      held.set(item.name, (held.get(item.name) ?? 0) + 1);
+      if (item.outfit !== undefined) {
+        silhouettes.add(item.outfit.silhouette);
+        families.add(item.outfit.family);
+        colourways.set(item.name, (colourways.get(item.name) ?? new Set()).add(colourway));
+      }
+      for (const slot of item.slots) filled.get(codename)!.add(slot);
+      dealt.get(codename)!.push(idOf(theme, item, colourway));
     };
-    const keeps = (codename: string): string | undefined => {
-      const id = kept.get(codename)?.dealt.find((d) => d.startsWith(`${theme}/`));
-      const piece = id?.slice(theme.length + 1);
-      return piece !== undefined && pieceOf(`${theme}/${piece}`) !== undefined ? piece : undefined;
+    const keeps = (codename: string) => {
+      for (const id of kept.get(codename)?.worn ?? []) {
+        const known = parse(id);
+        if (known?.theme === theme && fits(codename, known.item)) return known;
+      }
+      return undefined;
     };
     const fresh: string[] = [];
     for (const codename of codenames) {
-      const piece = keeps(codename);
-      if (piece === undefined) fresh.push(codename);
-      else take(codename, piece);
+      const known = keeps(codename);
+      if (known === undefined) fresh.push(codename);
+      else take(codename, known.item, known.colourway);
     }
     for (const codename of fresh) {
-      let piece: string | undefined;
-      for (const p of ranked(codename, theme)) {
-        if (piece === undefined || (held.get(p) ?? 0) < (held.get(piece) ?? 0)) piece = p;
-      }
-      if (piece !== undefined) take(codename, piece);
+      const order = ranked(codename, theme)
+        .map((name) => items.get(name)!)
+        .filter((item) => fits(codename, item));
+      let item = order.find(
+        (i) =>
+          i.outfit !== undefined &&
+          !silhouettes.has(i.outfit.silhouette) &&
+          !families.has(i.outfit.family),
+      );
+      if (item === undefined)
+        for (const i of order)
+          if (item === undefined || (held.get(i.name) ?? 0) < (held.get(item.name) ?? 0)) item = i;
+      if (item === undefined) continue;
+      const options = rankedBy(
+        ["", ...(item.outfit?.colourways.map((c) => c.id) ?? [])],
+        (colourway) => `${codename}|${theme}|${item.name}|${colourway}`,
+      );
+      const worn = colourways.get(item.name);
+      take(codename, item, options.find((c) => !worn?.has(c)) ?? options[0]!);
     }
   }
-  const slotOf = (id: string) => pieceOf(id)?.slot;
-  return new Map(
-    [...dealt].map(([codename, ids]) => {
-      const ordered = themes.flatMap((theme) => ids.filter((id) => id.startsWith(`${theme}/`)));
-      const worn = ordered.filter(
-        (id, i) => !ordered.slice(i + 1).some((later) => slotOf(later) === slotOf(id)),
-      );
-      return [codename, { dealt: ordered, worn }];
-    }),
-  );
+  return new Map([...dealt].map(([codename, worn]) => [codename, { worn }]));
 }

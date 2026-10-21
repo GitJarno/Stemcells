@@ -10,6 +10,7 @@ import {
   dyed,
   fabricOf,
   frameAt,
+  backroomOf,
   headroomOf,
   layersOf,
   STILL,
@@ -69,8 +70,7 @@ function composeFrame(
   let pose = frame.pose;
   if (blinking && SHUTS.has(pose.eyes)) pose = { ...pose, eyes: LIDS };
   if (probe.eyeless) pose = { ...pose, eyes: "none" };
-  const room = headroomOf(look);
-  if (room !== undefined) pose = fitted(pose, room);
+  pose = fitted(pose, headroomOf(look), backroomOf(look));
   const fabric = probe.bare ? undefined : fabricOf(look);
   const held = look.held === undefined ? undefined : TOOLS.get(look.held);
   const body = seated(
@@ -268,6 +268,37 @@ export function outfitLook(id: string, colourway?: string): CellLook | undefined
     },
     cheer: outfit.cheer,
   };
+}
+
+/**
+ * What a Cell was dealt (`looks.ts`) as one look: outfits
+ * (`outfit:theme/outfit~colourway`) and pieces (`theme/piece`), each filling
+ * the slots still free, the first-dealt first, and the first outfit's cheer.
+ * Pieces alone are a pack look.
+ */
+export function wornLook(ids: readonly string[]): CellLook {
+  if (!ids.some((id) => id.startsWith("outfit:"))) return packLook(ids);
+  const wardrobe: { -readonly [K in keyof Wardrobe]: Wardrobe[K] } = {};
+  let cheer: string | undefined;
+  const worn: string[] = [];
+  for (const id of ids) {
+    if (id.startsWith("outfit:")) {
+      const [outfit = "", colourway] = id.slice("outfit:".length).split("~");
+      const look = outfitLook(outfit, colourway);
+      if (look === undefined) continue;
+      for (const [field, piece] of Object.entries(look.wardrobe) as [keyof Wardrobe, string][])
+        if (piece !== undefined && wardrobe[field] === undefined) wardrobe[field] = piece;
+      cheer ??= look.cheer;
+    } else {
+      const piece = pieceOf(id);
+      if (piece === undefined) continue;
+      const field = SLOT_FIELD[piece.slot];
+      if (wardrobe[field] !== undefined) continue;
+      wardrobe[field] = id;
+    }
+    worn.push(id);
+  }
+  return { name: `worn:${worn.join("+")}`, wardrobe, cheer };
 }
 
 /** `wardrobe` in the scenes of `state` (`building` for `building/0`): each pack piece that poses for it swapped for its variant. */

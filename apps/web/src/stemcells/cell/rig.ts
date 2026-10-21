@@ -312,13 +312,24 @@ const mouthOf = (name: string): Layer | undefined =>
 
 /**
  * `pose` held low enough that headwear reaching `headroom` rows above the
- * crown (hero, then miniature) stays on the canvas: the hat's lift gives way
- * first, then the float, then the hop, then the stretch.
+ * crown, and a back piece reaching `backroom` rows above its anchor (hero,
+ * then miniature), stay on the canvas: the hat's lift gives way first, then
+ * the float, then the hop, then the stretch.
  */
-export function fitted(pose: Pose, headroom: { hero: number; mini: number }): Pose {
+export function fitted(
+  pose: Pose,
+  headroom: { hero: number; mini: number } | undefined,
+  backroom?: { hero: number; mini: number },
+): Pose {
   const fit: { -readonly [K in keyof Pose]: Pose[K] } = { ...pose };
-  while (crown(fit) < headroom.hero || miniCrown(fit) < headroom.mini) {
-    if (fit.lift > 0) fit.lift -= 1;
+  const hatOff = () =>
+    headroom !== undefined && (crown(fit) < headroom.hero || miniCrown(fit) < headroom.mini);
+  const backOff = () =>
+    backroom !== undefined &&
+    (anchorOf(hero(fit), "back").y < backroom.hero ||
+      anchorOf(mini(fit), "back").y < backroom.mini);
+  while (hatOff() || backOff()) {
+    if (fit.lift > 0 && hatOff()) fit.lift -= 1;
     else if (fit.float > 0) fit.float -= 1;
     else if (fit.base < RIG.restBase) fit.base += 1;
     else if (fit.sy > 1) fit.sy = Math.max(1, fit.sy - 1 / RIG.restRows);

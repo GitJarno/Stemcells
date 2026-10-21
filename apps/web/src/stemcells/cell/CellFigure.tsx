@@ -13,18 +13,18 @@ import { onStage } from "./clock.ts";
 import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
 import { paint } from "./paint.ts";
-import { type MiniFrame, packLook } from "./scene.ts";
+import { type MiniFrame, wornLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
-/** What a Cell named `name` wears on `day` when dealt alone: its own first piece of each theme worn. */
+/** What a Cell named `name` wears on `day` when dealt alone: its own first item of each theme worn. */
 export function lookOf(name: string, day: string): readonly string[] {
   return looksOf([name], day).get(name)?.worn ?? [];
 }
 
 /**
- * A Cell's character in its mood. It wears `look` (`theme/piece` ids, dealt
- * over the whole roster so no two wear one piece) when given; otherwise the
+ * A Cell's character in its mood. It wears `look` (ids `looks.ts` deals over
+ * the crew in view, so no two look alike) when given; otherwise the
  * look its name is dealt alone, on the day it was first drawn, kept while it
  * stays on screen. Its name also picks when it blinks.
  */
@@ -48,7 +48,7 @@ export function CellFigure(props: {
   useLayoutEffect(() => {
     const element = canvas.current;
     if (element === null) return;
-    const look = packLook(worn.split("+"));
+    const look = wornLook(worn.split("+"));
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
       const scene = sceneFor(look, mood, activity, seconds ?? 0);

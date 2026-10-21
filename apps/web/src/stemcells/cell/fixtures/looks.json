@@ -1,5 +1,5 @@
 {
-  "about": "What each Cell of a roster wears on a day, dealt from the kit's packs (kit/packs.json). `cells` are the Cells' codenames in the order they took their seats, the first-born first; `day` is the screen's month-day; `looks` is each Cell's pieces as `theme/piece`, the outfit theme's before the season's. `dress`, when a case has one, is the Mac's Settings › General › Outfit theme and Seasons; without it the Cells wear the house theme with Seasons on.",
+  "about": "What each Cell of a roster wears on a day, dealt from the kit's packs (kit/packs.json). `cells` are the Cells' codenames in the order they took their seats, the first-born first; `day` is the screen's month-day; `looks` is each Cell's pieces as `theme/piece` in the order dealt: the season's first, then the outfit theme's in the slots it leaves free. `dress`, when a case has one, is the Mac's Settings › General › Outfit theme and Seasons; without it the Cells wear the house theme with Seasons on.",
   "cases": [
     {
       "says": "out of season each Cell wears one house piece, no two the same",
@@ -15,16 +15,16 @@
       }
     },
     {
-      "says": "in a season each Cell wears the season's piece too, and the season's wins a slot both fill",
+      "says": "in a season each Cell wears one of the season's pieces, and one of its theme's in the slots it leaves free",
       "cells": ["Otter", "Puffin", "Wren", "Heron", "Marten", "Lark"],
       "day": "10-19",
       "looks": {
-        "Otter": ["house/bee", "halloween/mummy"],
-        "Puffin": ["house/kitsune", "halloween/cat"],
-        "Wren": ["halloween/pumpkin"],
-        "Heron": ["halloween/bat"],
-        "Marten": ["house/sprout", "halloween/batmask"],
-        "Lark": ["halloween/witch"]
+        "Otter": ["halloween/mummy", "house/bee"],
+        "Puffin": ["halloween/cat", "house/kitsune"],
+        "Wren": ["halloween/pumpkin", "house/specs"],
+        "Heron": ["halloween/bat", "house/blush"],
+        "Marten": ["halloween/batmask", "house/sprout"],
+        "Lark": ["halloween/witch", "house/overalls"]
       }
     },
     {
@@ -32,7 +32,7 @@
       "cells": ["Otter"],
       "day": "10-15",
       "looks": {
-        "Otter": ["house/bee", "halloween/mummy"]
+        "Otter": ["halloween/mummy", "house/bee"]
       }
     },
     {
@@ -40,7 +40,7 @@
       "cells": ["Otter"],
       "day": "11-01",
       "looks": {
-        "Otter": ["house/bee", "halloween/mummy"]
+        "Otter": ["halloween/mummy", "house/bee"]
       }
     },
     {
@@ -64,7 +64,7 @@
       "cells": ["Otter"],
       "day": "12-24",
       "looks": {
-        "Otter": ["christmas/olkipukki"]
+        "Otter": ["christmas/olkipukki", "house/overalls"]
       }
     },
     {
@@ -72,7 +72,7 @@
       "cells": ["Otter"],
       "day": "12-30",
       "looks": {
-        "Otter": ["newyear/tophat"]
+        "Otter": ["newyear/tophat", "house/overalls"]
       }
     },
     {
@@ -80,7 +80,7 @@
       "cells": ["Otter"],
       "day": "01-02",
       "looks": {
-        "Otter": ["winter/karvalakki"]
+        "Otter": ["winter/karvalakki", "house/overalls"]
       }
     },
     {
@@ -98,7 +98,7 @@
       }
     },
     {
-      "says": "a season's pieces are worn over the picked theme, the season's winning a slot both fill",
+      "says": "a season's pieces are dealt first, the picked theme's in the slots they leave free",
       "cells": ["Otter", "Puffin", "Wren"],
       "day": "12-24",
       "dress": {
@@ -106,9 +106,9 @@
         "seasons": true
       },
       "looks": {
-        "Otter": ["ocean/starfish", "christmas/olkipukki"],
-        "Puffin": ["christmas/gingerbread"],
-        "Wren": ["christmas/santa"]
+        "Otter": ["christmas/olkipukki", "ocean/starfish"],
+        "Puffin": ["christmas/gingerbread", "ocean/snorkel"],
+        "Wren": ["christmas/santa", "ocean/starfish"]
       }
     },
     {

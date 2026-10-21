@@ -23,6 +23,7 @@ build. It uses node's own TypeScript.
 | `cells render <look> [scene…]` | `sheet.png`: every frame of each scene, at the miniature and the hero, on black and on light. Also one animated PNG per scene, size and frame |
 | `cells pack <theme>` | A still sheet of every piece and outfit in a pack, at rest and cheering |
 | `cells lookbook [theme…]` | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack |
+| `cells crew [day] [count]` | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering |
 | `cells check [theme…]` | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art |
 
 A `<look>` is one of:
@@ -121,7 +122,6 @@ people: open it in a browser.
   - `{"from": "08-01", "to": "08-31"}` (MM-DD, inclusive, and it may wrap the
     new year);
   - for a feast that moves, `{"years": {"2027": ["02-06", "02-20"]}}`.
-    Year-dated seasons are worn once dealing carries the year (slice 4).
 - **`slot`** names where the piece sits:
 
   | Slot | Anchor | Depth |
@@ -131,7 +131,8 @@ people: open it in a browser.
   | `wrap` | the ground: (15, 30) and (6, 14) | z 1: over the body, under the face and arms |
   | `back` | (15, 20) and (6, 10) | z −1: behind the body |
 
-  `z` overrides the depth.
+  `z` overrides the depth. Headwear, and a back piece that rises above the
+  crown, hold the Cell's hop and stretch down so they stay on the canvas.
 - **`hotspot`** is the cell of the art that lands on the anchor.
 - **`frames`** is the whole hero cycle, starting with `art`. `miniFrames`
   matches it, and `fps` divides 12. A scene folds the cycle into its own
@@ -159,6 +160,20 @@ people: open it in a browser.
     curated look's (`knight`, `alien`, `dragon`).
   - `silhouette` (what it reads as at a glance) and `family` (its colour
     family) keep a crew apart. No two outfits in a pack share both.
+
+### How a crew is dealt
+
+The Cells in view are dealt together (`cell/looks.ts`, rules in
+`stemcells/tasks/cell-outfits.md`):
+- A pack with outfits deals each Cell one outfit, in one of its colourways;
+  a pack without deals one piece.
+- No two Cells in view wear the same silhouette or colour family while the
+  catalogue lasts; past it, the least worn, in a colourway no other wearer
+  has.
+- A season's item is dealt first, being the day's; the theme's item takes
+  the slots it leaves free, so a season outfit that leaves a slot free lets
+  a Cell's own theme show beside it.
+- A Cell keeps its look while it stays in view.
 
 ### A move set: `art/moves/<set>.json`
 

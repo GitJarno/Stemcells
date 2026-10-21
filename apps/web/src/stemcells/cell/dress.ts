@@ -71,12 +71,8 @@ export function layersOf(wardrobe: Wardrobe, compact: boolean, beat: Beat = STIL
   return out;
 }
 
-/** How far the headwear reaches above the crown, hero and miniature rows, at the tallest of its frames. */
-export function headroomOf(wardrobe: Wardrobe): { hero: number; mini: number } | undefined {
-  if (wardrobe.headwear === undefined) return undefined;
-  const library = libraryPiece(wardrobe.headwear, HEADWEAR);
-  const frames =
-    pieceOf(wardrobe.headwear, "headwear")?.frames ?? (library === undefined ? [] : [library]);
+/** How far `frames` reach above their hotspot, hero and miniature rows, at the tallest. */
+function reachOf(frames: readonly Layer[]): { hero: number; mini: number } | undefined {
   if (frames.length === 0) return undefined;
   const above = (layer: Layer) => {
     const first = layer.art.findIndex((row) => [...row].some((cell) => cell !== "."));
@@ -86,6 +82,22 @@ export function headroomOf(wardrobe: Wardrobe): { hero: number; mini: number } |
     hero: Math.max(...frames.map(above)),
     mini: Math.max(...frames.map((frame) => above(miniOf(frame)))),
   };
+}
+
+/** How far the headwear reaches above the crown, hero and miniature rows, at the tallest of its frames. */
+export function headroomOf(wardrobe: Wardrobe): { hero: number; mini: number } | undefined {
+  if (wardrobe.headwear === undefined) return undefined;
+  const library = libraryPiece(wardrobe.headwear, HEADWEAR);
+  return reachOf(
+    pieceOf(wardrobe.headwear, "headwear")?.frames ?? (library === undefined ? [] : [library]),
+  );
+}
+
+/** How far the back piece reaches above its anchor, hero and miniature rows, at the tallest of its frames. */
+export function backroomOf(wardrobe: Wardrobe): { hero: number; mini: number } | undefined {
+  return wardrobe.back === undefined
+    ? undefined
+    : reachOf(pieceOf(wardrobe.back, "back")?.frames ?? []);
 }
 
 /** The pack pieces worn that animate: a scene folds their cycles in. */
