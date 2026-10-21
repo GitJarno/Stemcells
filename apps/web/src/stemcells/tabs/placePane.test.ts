@@ -40,33 +40,33 @@ const moving = { id: "m", cell: cell("m") };
 
 describe("placePane", () => {
   it("puts a pane in a new column beside the anchor's", () => {
-    expect(layoutOf(placePane(workspace(), moving, "b", "left", "cm"))).toEqual([
+    expect(layoutOf(placePane(workspace(), moving, "b", "left", "cm", 1200))).toEqual([
       [["a"], ["m"], ["b", "c"]],
     ]);
-    expect(layoutOf(placePane(workspace(), moving, "a", "right", "cm"))).toEqual([
+    expect(layoutOf(placePane(workspace(), moving, "a", "right", "cm", 1200))).toEqual([
       [["a"], ["m"], ["b", "c"]],
     ]);
   });
 
   it("stacks a pane above or below the anchor in its column", () => {
-    expect(layoutOf(placePane(workspace(), moving, "c", "above", "cm"))).toEqual([
+    expect(layoutOf(placePane(workspace(), moving, "c", "above", "cm", 1200))).toEqual([
       [["a"], ["b", "m", "c"]],
     ]);
-    expect(layoutOf(placePane(workspace(), moving, "c", "below", "cm"))).toEqual([
+    expect(layoutOf(placePane(workspace(), moving, "c", "below", "cm", 1200))).toEqual([
       [["a"], ["b", "c", "m"]],
     ]);
   });
 
   it("focuses the pane and makes its tab active", () => {
-    const placed = placePane(workspace(), moving, "b", "right", "cm");
+    const placed = placePane(workspace(), moving, "b", "right", "cm", 1200);
     expect(placed.activeTabId).toBe("t");
     expect(placed.tabs[0]!.focusedPaneId).toBe("m");
   });
 
   it("does nothing without the anchor, or when the pane is already there", () => {
     const start = workspace();
-    expect(placePane(start, moving, "nowhere", "left", "cm")).toBe(start);
-    expect(placePane(start, { id: "a", cell: cell("a") }, "b", "left", "cm")).toBe(start);
+    expect(placePane(start, moving, "nowhere", "left", "cm", 1200)).toBe(start);
+    expect(placePane(start, { id: "a", cell: cell("a") }, "b", "left", "cm", 1200)).toBe(start);
   });
 });
 

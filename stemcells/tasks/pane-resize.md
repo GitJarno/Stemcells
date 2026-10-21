@@ -37,6 +37,7 @@ and rows (heights), and for the edge between the chats and the workbench.
       press dragged isn't one; a missed pointerup lets go; a press over a
       Cell while a glide keeps the pointer goes to the Cell; the Cell's
       pill shows while no composer is drawn
+- [x] Re-review: a press passed on to a Cell gives it the page's own click, so the row hears one; the release listener goes on cancel, blur or after 5 s; a chat dropped beside a Cell takes its room as ⌘D's newcomer does, or stacks with the Cell it was dropped on
 - [ ] The workbench's edge on the same separator, proven beside a live
       browser in a desktop lab (its own PR)
 

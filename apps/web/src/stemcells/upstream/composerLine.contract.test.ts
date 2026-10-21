@@ -11,7 +11,7 @@
  * wheel over the composer reaches it; and that the chat's column, which the
  * halo reaches past, scrolls unless clipped. A failure here after a sync names the
  * contract that moved; the line likely covers the transcript's last row or
- * sits in a box of its own, the halo covers the plate or misses the Cell,
+ * sits in a box of its own, the halo covers the plate or misses the ledge,
  * the veil covers the plate or stops short of the foot, the composer shrinks on a scroll or opens tall, a wheel over it stops
  * at the plate, or one scrolls the whole chat up.
  */

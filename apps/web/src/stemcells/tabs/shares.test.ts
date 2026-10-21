@@ -181,7 +181,7 @@ describe("what is left fills its parent", () => {
     expect(moving.share).toBeCloseTo(1.6, 9);
     const left = closePane(dragged, moving.id);
     const anchor = row(left).columns[0]!.panes[0]!.id;
-    const placed = placePane(left, moving, anchor, "right", "c-x");
+    const placed = placePane(left, moving, anchor, "right", "c-x", 1200);
     expect(row(placed).columns[1]!.panes[0]!.share).toBeUndefined();
     expect(
       sharesOf(row(placed).columns[0]!.panes).reduce((sum, share) => sum + share, 0),
@@ -230,5 +230,31 @@ describe("a newcomer beside others keeps every column over its floor", () => {
     const stacked = addPane(narrow, ids(), 460);
     expect(stacked.tabs[0]!.rows).toHaveLength(1);
     expect(row(stacked).columns.map((column) => column.panes.length)).toEqual([1, 2]);
+  });
+
+  // A chat dropped beside a Cell still came in at an even share: 160 | 840
+  // and a drop on the right gave 107 / 560 / 333.
+  it("so does a pane dropped beside one, or it stacks with the one it was dropped on", () => {
+    const workspace = besideEachOther(2);
+    const [first, second] = row(workspace).columns.map((column) => column.panes[0]!.id);
+    const moving = {
+      id: "dropped",
+      cell: { environmentId: "env", threadId: "dropped", draftId: null },
+    };
+    const narrow = resizePair(workspace, row(workspace).id, 0, 160, 840);
+    const right = placePane(narrow, moving, second!, "right", "c-x", 1000);
+    expect(widthsOf(right, 1000)).toEqual([160, 507, 333]);
+    const left = placePane(narrow, moving, first!, "left", "c-x", 1000);
+    expect(widthsOf(left, 1000)).toEqual([333, 160, 507]);
+
+    const panesOfRow = (placed: Workspace) =>
+      row(placed).columns.map((column) => column.panes.map((pane) => pane.id));
+    const crowded = resizePair(workspace, row(workspace).id, 0, 160, 300);
+    const under = placePane(crowded, moving, first!, "right", "c-x", 460);
+    expect(panesOfRow(under)).toEqual([[first, "dropped"], [second]]);
+    expect(widthsOf(under, 460)).toEqual([160, 300]);
+    const over = placePane(crowded, moving, second!, "left", "c-x", 460);
+    expect(panesOfRow(over)).toEqual([[first], ["dropped", second]]);
+    expect(over.tabs[0]!.focusedPaneId).toBe("dropped");
   });
 });

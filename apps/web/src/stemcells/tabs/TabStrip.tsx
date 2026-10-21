@@ -3,7 +3,9 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObjec
 
 import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
 import { NeedsTabCount } from "../needs/NeedsTabCount";
+import { RenameField } from "../rename/RenameField";
 import type { AskiChat } from "../upstream/aski";
+import { canRenameCell, useCellRename } from "../upstream/chatHeader";
 import { useCellTitle } from "../upstream/thread";
 import {
   Button,
@@ -51,15 +53,19 @@ export function TabStrip(props: {
   onClose: (tabId: string) => void;
   onMove: (tabId: string, toIndex: number) => void;
   onNew: () => void;
+  /** Names a tab of more than one Cell; null gives it back its focused chat's name. */
+  onRename: (tabId: string, name: string | null) => void;
 }) {
   const tabElements = useRef(new Map<string, HTMLElement>());
   const [drag, setDrag] = useState<Drag | null>(null);
+  const [renaming, setRenaming] = useState<string | null>(null);
   const { tabs, onActivate, onMove } = props;
   // A tab a drag rests on opens, so a file can be carried to another tab's chat.
   const spring = useSpringTabs(props.activeTabId, onActivate);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
-    if (event.button !== 0 || (event.target as Element).closest("button")) return;
+    // A press in the name being edited places the caret: it never drags.
+    if (event.button !== 0 || (event.target as Element).closest("button, input")) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     const from = tabs.findIndex((tab) => tab.id === tabId);
     setDrag({
@@ -138,6 +144,13 @@ export function TabStrip(props: {
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={() => setDrag(null)}
+              onDoubleClick={(event) => {
+                // Its first click opened the tab; Aski's tab and the new Cell's are never renamed.
+                if (untaken || (event.target as Element).closest("button, input")) return;
+                if (panesOf(tab).length > 1 || canRenameCell(focusedCellOf(tab))) {
+                  setRenaming(tab.id);
+                }
+              }}
               style={
                 offset !== 0 || dragged
                   ? { transform: `translateX(${offset}px)${dragged ? " scale(1.04)" : ""}` }
@@ -154,7 +167,12 @@ export function TabStrip(props: {
                 drag?.geometry && !dragged && "transition-transform",
               )}
             >
-              <TabTitle tab={tab} />
+              <TabTitle
+                tab={tab}
+                renaming={renaming === tab.id}
+                onRename={(name) => props.onRename(tab.id, name)}
+                onDone={() => setRenaming(null)}
+              />
               {tabs.length > 1 && !untaken ? (
                 <PanelTabCloseButton label="Close tab" onClick={() => props.onClose(tab.id)}>
                   {null}
@@ -178,19 +196,85 @@ export function TabStrip(props: {
   );
 }
 
-/** The tab's focused Cell: its character, then its chat's title. */
-function TabTitle(props: { tab: Tab }) {
+function focusedCellOf(tab: Tab): CellRef | null {
+  const panes = panesOf(tab);
+  return (panes.find((pane) => pane.id === tab.focusedPaneId) ?? panes[0])?.cell ?? null;
+}
+
+/**
+ * The tab's focused Cell: its character, then its name. A tab of one Cell
+ * is that chat, and named by its title; a tab of more is named by the name
+ * it was given, else by its focused chat's title, and counts its Cells.
+ * Double-clicked, the name opens for a new one in place, as the one-liner's
+ * does: in a tab of one Cell it renames the chat, wherever the chat shows.
+ */
+function TabTitle(props: {
+  tab: Tab;
+  renaming: boolean;
+  onRename: (name: string | null) => void;
+  onDone: () => void;
+}) {
   const panes = panesOf(props.tab);
-  const focused = panes.find((pane) => pane.id === props.tab.focusedPaneId) ?? panes[0];
-  const title = useCellTitle(focused?.cell ?? null) ?? "New Cell";
+  const cell = focusedCellOf(props.tab);
+  const title = useCellTitle(cell) ?? "New Cell";
+  const many = panes.length > 1;
+  const name = many ? (props.tab.name ?? title) : title;
+  const count = many ? (
+    <span className="shrink-0 text-muted-foreground"> · {panes.length}</span>
+  ) : null;
+  if (props.renaming) {
+    return (
+      <>
+        <CellMark cell={cell} />
+        {many ? (
+          <RenameField
+            value={name}
+            label="Tab name"
+            className={TAB_RENAME}
+            onCommit={(value) => {
+              props.onDone();
+              const given = value.trim();
+              if (given !== name) props.onRename(given.length > 0 ? given : null);
+            }}
+            onCancel={props.onDone}
+          />
+        ) : (
+          <ChatRename cell={cell} title={title} onDone={props.onDone} />
+        )}
+        {count}
+      </>
+    );
+  }
   return (
     <>
-      <CellMark cell={focused?.cell ?? null} />
+      <CellMark cell={cell} />
       <span className="min-w-0 flex-1 truncate">
-        {title}
-        {panes.length > 1 ? <span className="text-muted-foreground"> · {panes.length}</span> : null}
+        {name}
+        {count}
       </span>
     </>
+  );
+}
+
+/** The field takes the name's room in the tab, its text where the name's was. */
+const TAB_RENAME = "-ml-1 h-5 flex-1 px-1";
+
+/** A tab of one Cell renames its chat. */
+function ChatRename(props: { cell: CellRef | null; title: string; onDone: () => void }) {
+  const { commitRename } = useCellRename(props.cell);
+  return (
+    <RenameField
+      value={props.title}
+      label="Title"
+      className={TAB_RENAME}
+      onCommit={(value) => {
+        // Not applied (its chat not loaded here yet): the field stays, with what was typed, saying why.
+        const refused = commitRename(value);
+        if (refused === undefined) props.onDone();
+        return refused;
+      }}
+      onCancel={props.onDone}
+    />
   );
 }
 

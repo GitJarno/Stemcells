@@ -3,9 +3,12 @@
  * Only the composer's box is glass. The halo round the dock is a plain fade
  * in the page's colour and the Cell's ledge is solid: a blur under either
  * reads as a second pane of frosted glass round the line. The halo stopped
- * below the line once, so text ran on under the line's words and the Cell's
- * head; it covers them and fades out above. What passes under the box blurs
- * (the veil), and only below the box's top.
+ * below the line once, so text ran on under the line's words; then it
+ * covered the Cell too, and dimmed a band of text the pane's width over the
+ * Cell's height (2026-10-21). It stops a short fade above the ledge, and
+ * the Cell and Aski stay clear of the text behind them by a glow of their
+ * own. What passes under the box blurs (the veil), and only below the box's
+ * top.
  */
 import * as NodeFS from "node:fs";
 
@@ -16,10 +19,11 @@ const read = (path: string) => NodeFS.readFileSync(new URL(path, import.meta.url
 const glowCss = read("./glow.css");
 const veilCss = read("./veil.css");
 const lineCss = read("../composer/composer-line.css");
+const perchCss = read("../aski/perch.css");
 const dockCss = {
   "glow.css": glowCss,
   "cell.css": read("../cell/cell.css"),
-  "perch.css": read("../aski/perch.css"),
+  "perch.css": perchCss,
 };
 
 /** The rule a selector opens, up to its closing brace. */
@@ -49,6 +53,32 @@ describe("the halo covers the dock, never frosted", () => {
     // that off and blurs nothing of its own.
     expect(ruleOf(lineCss, ".composer-line-ledge::before {")).toContain("backdrop-filter: none;");
     expect(lineCss.match(/backdrop-filter: (?!none;)|\bblur\(/g)).toBeNull();
+  });
+});
+
+describe("the halo stops at the ledge, and what stands on the dock glows on its own", () => {
+  it("stands its top a short fade over the ledge's top, or the box's where no ledge shows, never over the Cell", () => {
+    // The block's own top is the Cell's head (or Aski's): the halo's top
+    // follows the dock's top instead, through an anchor in the block.
+    const halo = ruleOf(glowCss, HALO);
+    expect(halo).toContain(
+      "top: calc(anchor(--sc-dock-top top, 0px) - var(--sc-halo-reach) - var(--sc-halo-fade-top));",
+    );
+    expect(halo).toMatch(/to bottom,\s*transparent,\s*black var\(--sc-halo-fade-top\),/);
+    const dockTop = ruleOf(
+      glowCss,
+      "[data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge,",
+    );
+    expect(dockTop).toContain(
+      '> :not(:has(.composer-line-ledge))\n  > [data-slot="composer-shell"] {\n  anchor-name: --sc-dock-top;',
+    );
+    expect(glowCss.match(/anchor-name/g)).toHaveLength(1);
+  });
+
+  it("the Cell, its buds and Aski wear the page's colour round their shape", () => {
+    const glow = "filter: drop-shadow(0 0 var(--sc-figure-glow) var(--background))";
+    expect(ruleOf(lineCss, ".composer-line-roof .character {")).toContain(glow);
+    expect(ruleOf(perchCss, "[data-stemcells-aski-perch] {")).toContain(glow);
   });
 });
 

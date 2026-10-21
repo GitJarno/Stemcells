@@ -324,11 +324,21 @@ export function useSeparator(
   };
 }
 
+/** How long a press passed on to a Cell waits for its release to click it. */
+export const PASS_THROUGH_MS = 5000;
+
 /**
  * A press over a Cell while a gliding border keeps the pointer landed on the
  * border's reach (`keepPointer`): the reach is gone by now, and the press
  * goes on to what is under it, its click with it, as if the reach had never
  * been there.
+ *
+ * The page clicks the nearest element both the press and its release were
+ * on: the border's row, not the Cell. That click, which follows the release
+ * in the same task, is taken and given to the Cell, so the Cell and
+ * everything over it hear one click. A press that never ends here (it is
+ * cancelled, the window loses the focus, or it is held past PASS_THROUGH_MS)
+ * leaves nothing listening for a release.
  */
 function passThrough(event: PointerEvent<HTMLDivElement>) {
   const { clientX, clientY, button, buttons, pointerId, pointerType } = event;
@@ -350,19 +360,49 @@ function passThrough(event: PointerEvent<HTMLDivElement>) {
   under
     .closest<HTMLElement>("input, textarea, select, button, a[href], [contenteditable], [tabindex]")
     ?.focus({ preventScroll: true });
-  // The page clicks the nearest element both the press and its release were
-  // on, the border's row: the click is the Cell's.
+
+  /** Whether the release was over the Cell; null until it comes. */
+  let released: boolean | null = null;
+  let timer = window.setTimeout(() => end(), PASS_THROUGH_MS);
+  const end = () => {
+    window.clearTimeout(timer);
+    window.removeEventListener("pointerup", onUp, true);
+    window.removeEventListener("pointercancel", onCancel, true);
+    window.removeEventListener("click", onClick, true);
+    window.removeEventListener("blur", end);
+  };
   const onUp = (up: globalThis.PointerEvent) => {
     if (up.pointerId !== pointerId) return;
-    window.removeEventListener("pointerup", onUp, true);
     const over = document.elementFromPoint(up.clientX, up.clientY);
-    if (over !== null && (over === under || under.contains(over))) {
-      under.dispatchEvent(
-        new MouseEvent("click", { ...init, clientX: up.clientX, clientY: up.clientY, buttons: 0 }),
-      );
-    }
+    released = over !== null && (over === under || under.contains(over));
+    window.removeEventListener("pointerup", onUp, true);
+    // The page's click comes in this task, or not at all.
+    window.clearTimeout(timer);
+    timer = window.setTimeout(end);
+  };
+  const onCancel = (cancel: globalThis.PointerEvent) => {
+    if (cancel.pointerId === pointerId) end();
+  };
+  const onClick = (click: MouseEvent) => {
+    if (released === null) return;
+    end();
+    if (!released) return;
+    click.stopImmediatePropagation();
+    click.preventDefault();
+    under.dispatchEvent(
+      new MouseEvent("click", {
+        ...init,
+        clientX: click.clientX,
+        clientY: click.clientY,
+        buttons: 0,
+        detail: click.detail,
+      }),
+    );
   };
   window.addEventListener("pointerup", onUp, true);
+  window.addEventListener("pointercancel", onCancel, true);
+  window.addEventListener("click", onClick, true);
+  window.addEventListener("blur", end);
 }
 
 /** A border that stands between its neighbours in a flex row or column, taking no room. */

@@ -18,6 +18,14 @@
 [data-stemcells-composer-line] .composer-line-roof {
   padding-inline-start: calc(var(--ledge-inset) + var(--ledge-pad) + var(--cell-stands-in));
 }
+/* The Cell and its buds stand above the halo's top (`glow.css`), over the
+   transcript at full strength: a glow in the page's colour hugging each
+   figure's shape keeps it clear of the text behind it, and is nothing over
+   the bare page. Over the ledge the ledge covers it. */
+[data-stemcells-composer-line] .composer-line-roof .character {
+  filter: drop-shadow(0 0 var(--sc-figure-glow) var(--background))
+    drop-shadow(0 0 var(--sc-figure-glow) var(--background));
+}
 [data-stemcells-composer-line] .composer-line-ledge {
   margin-inline: var(--ledge-inset);
   margin-block-end: calc(-1 * var(--chat-composer-attachment-overlap));

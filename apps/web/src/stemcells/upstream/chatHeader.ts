@@ -47,15 +47,29 @@ export { ProjectFavicon } from "../../components/ProjectFavicon";
  */
 const TITLE_MENU_OPEN_DELAY_MS = 500;
 
+/** Whether a chat can be renamed now: it was sent, and its environment lets this window operate. */
+export function canRenameCell(cell: CellRef | null): boolean {
+  return (
+    cell !== null &&
+    cell.draftId === null &&
+    readEnvironmentScope(cell.environmentId as EnvironmentId, AuthOrchestrationOperateScope)
+  );
+}
+
+/** Why a chat's new title wasn't applied: it isn't loaded here, or this window may not change it. */
+export const CANT_RENAME_CELL = "Can't rename this Cell here";
+
 /**
- * The chat's thread menu and rename, as upstream's header gives them from
- * its title: a click opens the menu under what was clicked, a double-click
- * renames, a right-click opens the menu at the pointer.
+ * Renames the chat, as upstream's header does: an empty title is refused
+ * with a word, the same title does nothing, a failure says so. Whatever
+ * shows the chat's title takes the new one from the thread, in every window.
+ * `commitRename` answers why when it couldn't apply the title at all (the
+ * chat isn't loaded here, or this window may not change it), so what was
+ * typed isn't dropped unsaid.
  */
-export function useCellThreadMenu(cell: CellRef | null) {
+export function useCellRename(cell: CellRef | null) {
   const threadRef = cell ? threadRefOf(cell) : null;
   const shell = useQuietThreadShell(threadRef);
-  const project = useProject(shell ? scopeProjectRef(shell.environmentId, shell.projectId) : null);
   const canOperate = useEnvironmentScope(
     shell?.environmentId ?? null,
     AuthOrchestrationOperateScope,
@@ -63,24 +77,16 @@ export function useCellThreadMenu(cell: CellRef | null) {
   const updateThreadMetadata = useOrchestrationCommand(threadEnvironment.updateMetadata, {
     reportFailure: false,
   });
-  const [renamingKey, setRenamingKey] = useState<string | null>(null);
-  const key = shell ? `${shell.environmentId}:${shell.id}` : null;
-  const renaming = canOperate && key !== null && renamingKey === key;
-
-  const startRename = () => {
-    if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) return;
-    setRenamingKey(`${shell.environmentId}:${shell.id}`);
-  };
-  const cancelRename = () => setRenamingKey(null);
-  const commitRename = (title: string) => {
-    setRenamingKey(null);
-    if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) return;
+  const commitRename = (title: string): string | undefined => {
+    if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) {
+      return CANT_RENAME_CELL;
+    }
     const resolution = resolveRenameCommit({ title, originalTitle: shell.title });
     if (resolution.action === "reject-empty") {
       toastManager.add({ type: "warning", title: "Thread title cannot be empty" });
-      return;
+      return undefined;
     }
-    if (resolution.action === "noop") return;
+    if (resolution.action === "noop") return undefined;
     void updateThreadMetadata({
       environmentId: shell.environmentId,
       input: { threadId: shell.id, title: resolution.title },
@@ -94,6 +100,33 @@ export function useCellThreadMenu(cell: CellRef | null) {
         });
       }
     });
+    return undefined;
+  };
+  return { shell, canRename: canOperate && shell !== null, commitRename };
+}
+
+/**
+ * The chat's thread menu and rename, as upstream's header gives them from
+ * its title: a click opens the menu under what was clicked, a double-click
+ * renames, a right-click opens the menu at the pointer.
+ */
+export function useCellThreadMenu(cell: CellRef | null) {
+  const threadRef = cell ? threadRefOf(cell) : null;
+  const { shell, canRename, commitRename: rename } = useCellRename(cell);
+  const project = useProject(shell ? scopeProjectRef(shell.environmentId, shell.projectId) : null);
+  const [renamingKey, setRenamingKey] = useState<string | null>(null);
+  const key = shell ? `${shell.environmentId}:${shell.id}` : null;
+  const renaming = canRename && key !== null && renamingKey === key;
+
+  const startRename = () => {
+    if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) return;
+    setRenamingKey(`${shell.environmentId}:${shell.id}`);
+  };
+  const cancelRename = () => setRenamingKey(null);
+  const commitRename = (title: string): string | undefined => {
+    const refused = rename(title);
+    if (refused === undefined) setRenamingKey(null);
+    return refused;
   };
 
   const { openMenu, closeMenu } = useThreadActionMenu({
@@ -146,7 +179,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
     title: shell?.title ?? null,
     renaming,
     onClick,
-    onDoubleClick: canOperate ? onDoubleClick : undefined,
+    onDoubleClick: canRename ? onDoubleClick : undefined,
     onBlur: cancelPendingMenu,
     onContextMenu,
     commitRename,

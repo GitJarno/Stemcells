@@ -52,6 +52,7 @@ import {
   focusPane,
   MIN_COLUMN_WIDTH,
   MIN_PANE_HEIGHT,
+  nameTab,
   openTab,
   panesOf,
   paneShowing,
@@ -390,6 +391,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
           )
         }
         onNew={openNewTab}
+        onRename={(tabId, name) => updateWorkspace((current) => nameTab(current, tabId, name))}
       />
       <div data-stemcells-slate="">
         {tab === null ? (

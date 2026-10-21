@@ -33,19 +33,24 @@
 
 /* A halo round the composer's dock in a pane of ours, so it always reads
    clearly and what scrolls under it passes quietly: the page's own colour
-   over the transcript, under the box, the Cell's ledge and the Cell, and a
-   little past them, fading to nothing. A plain fade, never frosted: only
-   the box is glass (asked for on 2026-10-21); the ledge is solid and keeps
-   the line's words clear. The transcript runs on behind it and out through
-   the pane's foot. It is the ::before of the block upstream holds the line
-   and the box in, which stacks its own layers, so the halo lies under
-   both. */
+   over the transcript, under the box and the Cell's ledge, and a little
+   past them, fading to nothing. It stops at the ledge, its top a short
+   fade over the ledge's top edge: over the Cell's height too, it dimmed a
+   band of text the pane's width (asked for on 2026-10-21). The Cell reads
+   on its own glow instead (`composer-line.css`), as Aski does on its perch
+   (`perch.css`). A plain fade, never frosted: only the box is glass (asked
+   for on 2026-10-21); the ledge is solid and keeps the line's words clear.
+   The transcript runs on behind it and out through the pane's foot. It is
+   the ::before of the block upstream holds the line and the box in, which
+   stacks its own layers, so the halo lies under both; its top follows the
+   dock's top (below). */
 [data-stemcells-pane]
   [data-chat-composer-stack="true"]
   > :has(> [data-slot="composer-shell"])::before {
   content: "";
   position: absolute;
   inset: calc(-1 * (var(--sc-halo-reach) + var(--sc-halo-fade)));
+  top: calc(anchor(--sc-dock-top top, 0px) - var(--sc-halo-reach) - var(--sc-halo-fade-top));
   z-index: -1;
   background: color-mix(in srgb, var(--background) var(--sc-halo-strength), transparent);
   mask-image:
@@ -59,12 +64,25 @@
     linear-gradient(
       to bottom,
       transparent,
-      black var(--sc-halo-fade),
+      black var(--sc-halo-fade-top),
       black calc(100% - var(--sc-halo-fade)),
       transparent
     );
   mask-composite: intersect;
   pointer-events: none;
+}
+
+/* The dock's top, where the halo's top stands: the ledge's top in a Cell's
+   pane, and the box's own top (its banners and upstream's stash tab are
+   inside it) where no ledge shows: Aski's perch and a pane with no line.
+   A halo finds only the anchor inside its own block, so each pane's finds
+   its own. */
+[data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge,
+[data-stemcells-pane]
+  [data-chat-composer-stack="true"]
+  > :not(:has(.composer-line-ledge))
+  > [data-slot="composer-shell"] {
+  anchor-name: --sc-dock-top;
 }
 
 /* The halo reaches past the pane's foot, and upstream lets the chat's

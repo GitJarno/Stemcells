@@ -151,6 +151,7 @@ export function randomMove(arrangement: Arrangement, seed: number): Moved | null
         anchor: rng.pick(panes).id,
         side: rng.pick(["left", "right", "above", "below"] as const),
         column: ids.column,
+        rowWidth: 1200,
       });
     case 3:
       return carry(arrangement, rng.pick(panes).id, {

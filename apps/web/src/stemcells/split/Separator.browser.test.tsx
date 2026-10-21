@@ -1,14 +1,24 @@
-import { describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, onTestFinished, vi } from "vite-plus/test";
 
 import { render } from "../upstream/testRender";
 import { growSides } from "./grow";
-import { Separator, type Sides } from "./Separator";
+import { PASS_THROUGH_MS, Separator, type Sides } from "./Separator";
 import { HOLD, NUDGE } from "./split";
 
 /** Two Cells side by side, 400 px each, a border between them. */
-function Row(props: { sides: Sides; width?: number; onPress?: () => void; onClick?: () => void }) {
+function Row(props: {
+  sides: Sides;
+  width?: number;
+  onPress?: () => void;
+  onClick?: () => void;
+  onRowClick?: () => void;
+}) {
   return (
-    <div style={{ display: "flex", width: props.width ?? 800, height: 200 }}>
+    <div
+      data-testid="row"
+      style={{ display: "flex", width: props.width ?? 800, height: 200 }}
+      onClick={props.onRowClick}
+    >
       <div data-testid="before" data-stemcells-share="" style={{ flex: "1 1 0%", minWidth: 0 }} />
       <Separator axis="x" label="Cell width" shares={[1, 1]} sides={props.sides} />
       <div data-testid="after" data-stemcells-share="" style={{ flex: "1 1 0%", minWidth: 0 }}>
@@ -46,6 +56,44 @@ function partsOf(container: HTMLElement) {
       new PointerEvent(type, { pointerId: 1, button: 0, buttons: 1, clientX, bubbles: true }),
     );
   return { separator, width, x, pointer };
+}
+
+/**
+ * A border gliding (a double-click evens the row) over a Cell's button, and
+ * a press and release over the button as the page sends them: the press
+ * lands on the border's reach, the page's click on the row both are in.
+ */
+async function passingThrough() {
+  const onPress = vi.fn();
+  const onClick = vi.fn();
+  const onRowClick = vi.fn();
+  const { sides } = setUp();
+  // Narrow enough that the Cell is in the test page's view, where a press finds it.
+  const screen = await render(
+    <Row sides={sides} width={300} onPress={onPress} onClick={onClick} onRowClick={onRowClick} />,
+  );
+  onTestFinished(() => screen[Symbol.asyncDispose]());
+  const { separator } = partsOf(screen.container);
+  const row = screen.container.querySelector<HTMLElement>('[data-testid="row"]')!;
+  const button = screen.container.querySelector<HTMLElement>('[data-testid="in-cell"]')!;
+  const box = button.getBoundingClientRect();
+  const at = { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
+  separator.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+  const press = () =>
+    separator.dispatchEvent(
+      new PointerEvent("pointerdown", {
+        pointerId: 1,
+        button: 0,
+        buttons: 1,
+        bubbles: true,
+        ...at,
+      }),
+    );
+  const release = () => {
+    window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 1, bubbles: true, ...at }));
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ...at }));
+  };
+  return { onPress, onClick, onRowClick, separator, button, press, release };
 }
 
 describe("a border between Cells", () => {
@@ -142,33 +190,44 @@ describe("a border between Cells", () => {
   // A press over a Cell while the border kept the pointer landed on the
   // border's reach, and the Cell never had it.
   it("passes a press over a Cell while it glides on to the Cell, its click with it", async () => {
-    const onPress = vi.fn();
-    const onClick = vi.fn();
-    const { sides } = setUp();
-    // Narrow enough that the Cell is in the test page's view, where a press finds it.
-    await using screen = await render(
-      <Row sides={sides} width={300} onPress={onPress} onClick={onClick} />,
-    );
-    const { separator } = partsOf(screen.container);
-    const button = screen.container.querySelector<HTMLElement>('[data-testid="in-cell"]')!;
-    const box = button.getBoundingClientRect();
-    const at = { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
-    separator.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
-    separator.dispatchEvent(
-      new PointerEvent("pointerdown", {
-        pointerId: 1,
-        button: 0,
-        buttons: 1,
-        bubbles: true,
-        ...at,
-      }),
-    );
+    const { onPress, onClick, onRowClick, separator, button, press, release } =
+      await passingThrough();
+    press();
     expect(separator.hasAttribute("data-gliding")).toBe(false);
     expect(separator.hasAttribute("data-held")).toBe(false);
     expect(onPress).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(button);
-    window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 1, bubbles: true, ...at }));
+    release();
     expect(onClick).toHaveBeenCalledOnce();
+    // The page clicked the row, which both the press and the release were
+    // on; with the Cell's click bubbling up too, the row heard two.
+    expect(onRowClick).toHaveBeenCalledOnce();
+  });
+
+  // The release listener outlived a cancelled press, and the next release
+  // over the same Cell clicked it.
+  it.each([
+    ["cancelled", () => window.dispatchEvent(new PointerEvent("pointercancel", { pointerId: 1 }))],
+    ["the window losing the focus", () => window.dispatchEvent(new Event("blur"))],
+  ])("leaves no click behind for a press passed on and then %s", async (_, end) => {
+    const { onClick, press, release } = await passingThrough();
+    press();
+    end();
+    release();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("leaves no click behind for a press passed on and held past its time", async () => {
+    const { onClick, press, release } = await passingThrough();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      press();
+      vi.advanceTimersByTime(PASS_THROUGH_MS);
+    } finally {
+      vi.useRealTimers();
+    }
+    release();
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it("Escape puts a held border back where the press found it", async () => {
