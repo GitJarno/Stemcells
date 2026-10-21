@@ -254,10 +254,25 @@ While it is frozen:
 When it unfreezes, everything queued plays as one motion.
 
 The column also never arrives under a caret. A card that arrives while the
-person is typing first shows as the count on Aski's header. The column
+person is typing first shows as the count in the pane's band. The column
 slides in after a pause in typing (the `typingPause` timing token, 1 s).
 
-### 10. Layout: the column only when needed
+### 10. Layout: Aski in its chat, the column only when needed
+- **Aski is in its chat, not over it** (the person, 2026-10-21: "they should be
+  combined"). There is no band of Aski's own. It stands over the composer,
+  where a Cell's line stands in a Cell's pane, in the composer's flow, so
+  the transcript keeps its foot clear of it:
+  - In a chat not yet started, Aski floats whole in the middle of the empty
+    transcript, where upstream would say "Send a message": you speak to it.
+  - Once the chat has started, Aski perches on the composer's edge at half
+    its size, centred. It leans in while it answers, and stands whole while
+    a moment plays.
+  - The first message glides it from the middle to its perch. A pose is
+    only a transform, so its eyes and moments never restart.
+- **The pane's buttons keep their band.** Nothing lies under them: the
+  transcript starts under the band, as in any pane; the column's head
+  shares the band's row, with its cards below it; the narrow count sits at
+  the band's left end; the sheet hangs from the band's foot.
 - **Wide (Aski's pane ≥ 880 px):**
   - The chat keeps its reading width.
   - The column (380 px; 420 px past 1,400 px) slides in on the right with
@@ -266,11 +281,11 @@ slides in after a pause in typing (the `typingPause` timing token, 1 s).
     1 min 12 s". That is a true fact and the page's one beat of reward.
   - With nothing in it, there is no column: the chat fills the page.
 - **Narrow:**
-  - The list becomes a count in Aski's header: "4 need you", the one
+  - The list becomes a count in the pane's band: "4 need you", the one
     accent in view.
   - Tapping the count opens the list as a sheet over the chat. The sheet
-    stops above the composer, so the person can dictate while reading the
-    numbers.
+    stops above Aski on its perch, so the person can dictate while reading
+    the numbers, to Aski in sight.
 - **Two screens (Duo, a foldable held as a book):**
   - Under `@media (horizontal-viewport-segments: 2)`, the page lays out on
     the segments. The chat is `env(viewport-segment-width 0 0)` wide, the

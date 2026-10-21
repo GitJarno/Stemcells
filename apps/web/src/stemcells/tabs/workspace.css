@@ -2,12 +2,6 @@
    this sheet never restyles upstream's screens; the one exception, the
    sidebar's edge on Stemcells' own theme, is marked below. */
 
-/* Aski stands on the page's ground in the page's ink (its figure reads both
-   back as pixels). */
-[data-stemcells-aski-stage] {
-  background: var(--sc-page);
-}
-
 /* The slate: one rounded panel on the window's frame, holding the tab's
    chats and, at its right edge, the workbench. The frame (sidebar, tab
    strip, gutters) is the theme's chrome; the slate is its canvas. Each tab

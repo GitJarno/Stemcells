@@ -68,27 +68,45 @@
   margin-block-end: calc(var(--stemcells-needs-hinge-end) - var(--stemcells-needs-hinge-start));
 }
 
-/* Narrow: a count over the chat, which opens the list as a sheet. */
+/* Narrow: a count over the chat, which opens the list as a sheet. It sits
+   in the pane's band, at the left end of the row the pane's buttons end
+   on the right (tabs/workspace.css), as tall as they are. */
 [data-stemcells-needs-count] {
   position: absolute;
   inset-block-start: var(--sc-space-md);
   inset-inline-start: var(--sc-space-md);
-  z-index: 2;
-  padding: var(--sc-space-xs) var(--sc-space-md);
+  /* With the pane's buttons (tabs/workspace.css), over the sheet. */
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  block-size: var(--sc-pane-button);
+  padding: 0 var(--sc-space-md);
   border: 1px solid color-mix(in srgb, var(--sc-needs-you) 45%, transparent);
   border-radius: var(--sc-radius-chip);
-  background: color-mix(in srgb, var(--sc-needs-you) 12%, transparent);
+  /* Solid: the transcript scrolls under the band, and never shows through. */
+  background: color-mix(in srgb, var(--sc-needs-you) 12%, var(--background));
   color: var(--sc-needs-you);
   font-weight: 600;
 }
+/* The sheet starts under the band: nothing lies under the pane's buttons.
+   It lies over all of the chat, its transcript's minimap too (upstream
+   lays that at 40: upstream/askiPerch.contract.test.ts). While it is open
+   the band takes its ground, under the buttons and the count (30), so no
+   transcript shows between them. */
 [data-stemcells-needs-sheet] {
   position: absolute;
-  inset: 0;
-  /* Over the chat's own buttons (tabs/workspace.css lays them at 30). */
-  z-index: 31;
+  inset: var(--sc-pane-band) 0 0;
+  z-index: 41;
   overflow-y: auto;
   background: var(--sc-surface);
   box-shadow: var(--sc-shadow-pop);
+}
+[data-stemcells-needs-band] {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 29;
+  block-size: var(--sc-pane-band);
+  background: var(--sc-surface);
 }
 
 [data-stemcells-needs-list] {
@@ -96,6 +114,15 @@
   flex-direction: column;
   gap: var(--sc-space-md);
   padding: var(--sc-space-xl);
+}
+/* In the column, its head shares the band's row with the pane's buttons,
+   and the cards start under the band, as the chat's transcript does. */
+[data-stemcells-needs-column] > [data-stemcells-needs-list] {
+  padding-block-start: var(--sc-space-md);
+}
+[data-stemcells-needs-column] [data-needs-head] {
+  align-items: center;
+  min-block-size: var(--sc-pane-button);
 }
 [data-needs-head] {
   display: flex;

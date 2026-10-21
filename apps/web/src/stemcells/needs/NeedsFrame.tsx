@@ -201,6 +201,7 @@ export function NeedsFrame(props: {
             {needYou(waiting)}
           </button>
         ) : null}
+        {showSheet ? <div data-stemcells-needs-band="" /> : null}
         {showSheet ? <Sheet main={main}>{list}</Sheet> : null}
       </div>
       {showColumn ? <aside data-stemcells-needs-column="">{list}</aside> : null}
@@ -208,24 +209,29 @@ export function NeedsFrame(props: {
   );
 }
 
-/** The list over the chat, from under Aski down to just above the composer. */
+/**
+ * The list over the chat, from under the pane's buttons down to just above
+ * Aski on its composer (aski/AskiPerch.tsx), or the composer when Aski
+ * isn't there: Aski stays in sight while you answer.
+ */
 function Sheet(props: { main: RefObject<HTMLElement | null>; children: ReactNode }) {
-  const [edges, setEdges] = useState<{ top: number; bottom: number } | null>(null);
+  const [bottom, setBottom] = useState<number | null>(null);
   useLayoutEffect(() => {
     const main = props.main.current;
     if (main === null) return;
     return observeResize(main, () => {
-      const box = main.getBoundingClientRect();
-      const band = main.firstElementChild?.getBoundingClientRect();
-      const composer = main.querySelector<HTMLElement>(COMPOSER_SURFACE_SELECTOR);
-      setEdges({
-        top: band === undefined ? 0 : band.bottom - box.top,
-        bottom: composer === null ? 0 : box.bottom - composer.getBoundingClientRect().top,
-      });
+      const above =
+        main.querySelector<HTMLElement>("[data-stemcells-aski-perch]") ??
+        main.querySelector<HTMLElement>(COMPOSER_SURFACE_SELECTOR);
+      setBottom(
+        above === null
+          ? 0
+          : main.getBoundingClientRect().bottom - above.getBoundingClientRect().top,
+      );
     });
   }, [props.main]);
   return (
-    <div data-stemcells-needs-sheet="" style={edges ?? undefined}>
+    <div data-stemcells-needs-sheet="" style={bottom === null ? undefined : { bottom }}>
       {props.children}
     </div>
   );

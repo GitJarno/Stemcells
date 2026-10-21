@@ -18,6 +18,7 @@ import { useNavigateToCell } from "../upstream/routes";
 import { useCellPlace } from "../upstream/thread";
 import { cn, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { oneLinerOf } from "./oneLiner";
+import { ComposerRoofSlot } from "./slot";
 import "../tokens/stemcells.css";
 import "./composer-line.css";
 
@@ -35,6 +36,7 @@ import "./composer-line.css";
  * double-click renames it; the project starts a new chat in it; the parent's
  * mark goes back to the chat this one came from. As the pane narrows, words
  * become marks and then go (`composer-line.css`); the name never does.
+ * A pane with no Cell stands its roof slot here instead (`slot.ts`).
  */
 export function CellComposerLine() {
   const cell = use(PaneCellContext);
@@ -44,7 +46,10 @@ export function CellComposerLine() {
   const parent = useCellParent(cell);
   const runsOn = useCellRunsOn(cell);
   const navigateToCell = useNavigateToCell();
-  if (cell === null || menu.title === null) return null;
+  // A pane with no Cell may stand something else here: Aski, in Aski's pane.
+  const roof = use(ComposerRoofSlot);
+  if (cell === null) return roof;
+  if (menu.title === null) return null;
   const name = cellNameOf(cell.threadId);
   const line = oneLinerOf(menu.title, place?.isProject ? [name, place.name] : [name]);
   const titleProps = {

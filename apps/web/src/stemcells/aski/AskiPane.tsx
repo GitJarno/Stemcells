@@ -4,9 +4,11 @@ import { useAskiChat, type AskiChat } from "../upstream/aski";
 import { ChatPaneView } from "../upstream/chat";
 import type { ThreadRouteTarget } from "../upstream/routes";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui";
+import { ComposerRoofSlot } from "../composer/slot";
 import { NeedsFrame } from "../needs/NeedsFrame";
 import { PaneRows } from "../tabs/PaneButtons";
 import { AskiFigure } from "./AskiFigure";
+import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
 
 /**
@@ -40,10 +42,12 @@ export const ASKI_UNAVAILABLE: Record<
 };
 
 /**
- * Aski's pane: Aski over its chat, and beside them what needs the person
- * while anything does (NeedsFrame). The chat is upstream's thread view, as
- * in any pane; until it exists, the pane says why. Aski's eyes follow the
- * pointer anywhere over the pane, and the caret in its chat's field.
+ * Aski's pane: its chat, with Aski in it, and beside them what needs the
+ * person while anything does (NeedsFrame). The chat is upstream's thread
+ * view, as in any pane, and Aski stands over its composer where a Cell's
+ * line would (AskiPerch); until the chat exists, Aski stands over why. Aski's
+ * eyes follow the pointer anywhere over the pane, and the caret in its
+ * chat's field.
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -56,25 +60,22 @@ export function AskiPane(props: {
   return (
     <div data-stemcells-aski="" data-aski-looks="" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <NeedsFrame aski={aski} ownsWindowInput={props.ownsWindowInput}>
-        <div
-          data-stemcells-aski-stage=""
-          className="flex shrink-0 justify-center border-b border-border py-3"
-        >
-          <AskiMoments aski={aski}>
-            <AskiFigure aski={aski} />
-          </AskiMoments>
-        </div>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
           {/* With the Surface open, upstream's two rows of toggles sit side by side, as in any pane. */}
           <PaneRows />
           {props.target ? (
-            <ChatPaneView
-              target={props.target}
-              ownsWindowInput={props.ownsWindowInput}
-              panelHost={props.panelHost}
-            />
+            <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
+              <ChatPaneView
+                target={props.target}
+                ownsWindowInput={props.ownsWindowInput}
+                panelHost={props.panelHost}
+              />
+            </ComposerRoofSlot>
           ) : (
             <Empty>
+              <AskiMoments aski={aski}>
+                <AskiFigure aski={aski} />
+              </AskiMoments>
               <EmptyHeader>
                 <EmptyTitle>Aski</EmptyTitle>
                 <EmptyDescription>
