@@ -31,11 +31,13 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/ExpandedImageDialog.tsx` | `expandedImagePreviewAtom` is exported | Every thumbnail opens through upstream's `openExpandedImagePreview`; our host reads what it opened |
 | `apps/server/src/server.ts` | Imports `stemcells/layer.ts` and adds its layer to `layerMakeRoutes` | Mounts all of Stemcells' server layer: Settings › Disk's `/api/stemcells/disk` routes, and the theme published on start |
 | `apps/server/src/cli/theme.ts` | Exports `publishThemeFile` and `writeDefaultTheme` | Stemcells publishes its theme and makes it a fresh server's default through the same guarded writes `t3 theme set` uses (`stemcells/upstream/theme.ts`) |
+| `apps/server/src/htmlRender/publicProxy.ts` | Exports `publicAddresses` (one word) | A web address brought into a chat's draft (`/api/stemcells/attachments/import`) reaches only what the HTML renderer's proxy lets through: the same check that every address a name resolves to is public (not this machine, its networks, link-local or a cloud's metadata address), and the checked addresses the connection is pinned to, so a rebinding name reaches nothing new (`stemcells/upstream/attachments.ts`; `attachments.contract.test.ts` pins it) |
 | `apps/web/src/routes/settings.disk.tsx` | New route file; renders `stemcells/disk/DiskSettings` | TanStack's file routes live in `routes/` |
-| `apps/web/src/routeTree.gen.ts` | Regenerated for `settings.disk.tsx` | The router plugin writes it |
-| `apps/web/src/components/settings/settingsSearch.ts` | `/settings/disk` in `SettingsPath`, `SETTINGS_SECTION_LABELS` ("Disk") and `SETTINGS_CATEGORY_SCOPES` (none) | The settings sidebar lists its pages from these |
-| `apps/web/src/components/settings/SettingsSidebarNav.tsx` | Imports `stemcells/disk/DiskSettingsIcon` and adds it to `SETTINGS_SECTION_ICONS` | Every settings page has an icon |
-| `apps/web/src/components/settings/SettingsScopeSentence.tsx` | `/settings/disk` in `SETTINGS_DEVICE_ONLY_PATHS` | The page reads this machine's disk; no settings scope applies to it |
+| `apps/web/src/routes/settings.aski.tsx` | New route file; renders `stemcells/aski/AskiSettings` | Settings › Aski, the same way |
+| `apps/web/src/routeTree.gen.ts` | Regenerated for `settings.disk.tsx` and `settings.aski.tsx` | The router plugin writes it |
+| `apps/web/src/components/settings/settingsSearch.ts` | Imports `stemcells/pages/settingsPages`; `StemcellsSettingsPath` in `SettingsPath`, and `STEMCELLS_SETTINGS_LABELS` and `STEMCELLS_SETTINGS_SCOPES` spread into `SETTINGS_SECTION_LABELS` and `SETTINGS_CATEGORY_SCOPES`, where Disk's entries stood | The settings sidebar lists its pages from these. A hot file, so our pages (Disk, Aski) come from one module of ours, and a new page edits only that module (`stemcells/docs/fork.md`, rule 7) |
+| `apps/web/src/components/settings/SettingsSidebarNav.tsx` | Imports `stemcells/pages/settingsIcons` and spreads `STEMCELLS_SETTINGS_ICONS` into `SETTINGS_SECTION_ICONS` | Every settings page has an icon |
+| `apps/web/src/components/settings/SettingsScopeSentence.tsx` | Imports `stemcells/pages/settingsPages` and spreads `STEMCELLS_DEVICE_ONLY_PATHS` into `SETTINGS_DEVICE_ONLY_PATHS` | Disk reads this machine's disk and Aski's switch lives on this device; no settings scope applies to them |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/disk/DiskFoot` and renders it after Usage in `SidebarUtilityMenu` | The space left on the disk sits in the sidebar's foot and opens Settings › Disk |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` (narrow) | Imports `NarrowColumnButton` from `stemcells/rail/LeftColumn` and renders it after `DiskFoot` | The left column (below): the wide sidebar's way back to the rail, where the rail has its way out |
 | `apps/web/src/components/AppSidebarLayout.tsx` | Renders `<LeftColumn wide={<ThreadSidebar />} />` where it rendered `<ThreadSidebar />` | The left column's rail (below): our rail or upstream's wide list in the sidebar's slot |
@@ -180,12 +182,14 @@ To offer upstream: one module holding the app's identity (name, app id,
 profile and state folder names, link scheme) that code and tests both
 read. Then a fork's identity is one file instead of fifteen.
 
-To offer upstream: register a settings page from a module. Settings ›
-Disk needs five seams for one page: the route file, the regenerated route
-tree, three lists in `settingsSearch.ts`, an icon in `SettingsSidebarNav.tsx`
-and the device-only list in `SettingsScopeSentence.tsx`. One registration
-(path, label, icon, scope, component) read by all of them would make a
-module's settings page one line.
+To offer upstream: register a settings page from a module. Our pages
+(Disk, Aski) take five seams: their route files, the regenerated route
+tree, three lists in `settingsSearch.ts`, the icons in
+`SettingsSidebarNav.tsx` and the device-only list in
+`SettingsScopeSentence.tsx`. Those lists now spread ours from
+`stemcells/pages/`, so a new page of ours adds a route file and a line
+there. One registration (path, label, icon, scope, component) read by all
+of upstream's lists would make a module's settings page one line.
 
 To offer upstream: publish a theme and set it as the default from server
 code. `t3 theme set`'s guarded publish and settings write take explicit

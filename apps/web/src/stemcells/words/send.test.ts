@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { type BeforeSend, type Sending, sendSlots } from "./send";
+import { type BeforeSend, oneSendAtATime, type Sending, sendSlots } from "./send";
 
 const sending = (hold: boolean): Sending => ({
   hold,
@@ -51,5 +51,53 @@ describe("a composer's send slots", () => {
 
   it("changes nothing when no one is registered", () => {
     expect(sendSlots().ask(undefined)).toBeNull();
+  });
+});
+
+/** A wait the test settles by hand. */
+function wait() {
+  let settle: { resolve: () => void; reject: (error: Error) => void } | null = null;
+  const ready = new Promise<void>((resolve, reject) => {
+    settle = { resolve, reject };
+  });
+  return { ready, settle: settle! };
+}
+
+const flushed = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+// The composer froze: a send waiting on Aski's plan whose wait failed held
+// every later Enter, since nothing let go (#173's review).
+describe("a composer's sends, one at a time", () => {
+  it("goes at once with nothing to wait for", () => {
+    const queue = oneSendAtATime();
+    let sent = 0;
+    queue.send(null, () => sent++);
+    expect(sent).toBe(1);
+    expect(queue.waiting()).toBe(false);
+  });
+
+  it("takes no other while one waits, and goes once the wait is over", async () => {
+    const queue = oneSendAtATime();
+    const { ready, settle } = wait();
+    let sent = 0;
+    queue.send(ready, () => sent++);
+    expect(queue.waiting()).toBe(true);
+    settle.resolve();
+    await flushed();
+    expect(sent).toBe(1);
+    expect(queue.waiting()).toBe(false);
+  });
+
+  it("sends nothing when the wait fails, and takes the next send", async () => {
+    const queue = oneSendAtATime();
+    const { ready, settle } = wait();
+    let sent = 0;
+    queue.send(ready, () => sent++);
+    settle.reject(new Error("the plan broke"));
+    await flushed();
+    expect(sent).toBe(0);
+    expect(queue.waiting()).toBe(false);
+    queue.send(null, () => sent++);
+    expect(sent).toBe(1);
   });
 });

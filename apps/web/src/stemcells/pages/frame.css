@@ -7,8 +7,20 @@
    sidebar wears it, from the window's corner as the sidebar's is, so the
    two run on with no edge. The workspace paints the same over it. */
 [data-slot="sidebar-wrapper"] {
-  /* The band over the slate: the tab strip's row (TabStrip's h-9). */
-  --stemcells-band: calc(var(--spacing) * 9);
+  /* The line the window's controls stand on, down from the window's top:
+     upstream centres its sidebar button in its topbar, and the desktop app
+     the traffic lights, moving them as the page zooms so they stay on it.
+     In the page's pixels the line holds at every zoom
+     (upstream/controlsLine.contract.test.ts). */
+  --stemcells-controls-line: calc(
+    var(--workspace-controls-top) + var(--workspace-topbar-height) / 2
+  );
+  /* The tab strip's row (TabStrip's h-9), its tabs and + centred in it. It
+     stands on the controls' line, as the Swift app's header row stands on
+     its lights'. */
+  --stemcells-strip-row: calc(var(--spacing) * 9);
+  /* The band over the slate: down to the foot of the strip's row. */
+  --stemcells-band: calc(var(--stemcells-controls-line) + var(--stemcells-strip-row) / 2);
   background-color: var(--app-chrome-background);
   background-image: var(--surface-grain);
   background-repeat: repeat;

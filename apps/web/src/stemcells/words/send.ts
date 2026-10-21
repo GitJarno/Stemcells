@@ -77,6 +77,35 @@ export function sendSlots(): {
   };
 }
 
+/**
+ * A composer's sends, one at a time. While one waits for its `ready` (a
+ * word that acted only now showing, Aski thinking), the composer takes no
+ * other; once `ready` settles the send goes. If it fails, nothing goes and
+ * the composer takes the next send: a wait can never leave Enter dead.
+ */
+export function oneSendAtATime(): {
+  readonly waiting: () => boolean;
+  readonly send: (ready: Promise<void> | null, go: () => void) => void;
+} {
+  let waiting = false;
+  return {
+    waiting: () => waiting,
+    send: (ready, go) => {
+      if (ready === null) return go();
+      waiting = true;
+      ready.then(
+        () => {
+          waiting = false;
+          go();
+        },
+        () => {
+          waiting = false;
+        },
+      );
+    },
+  };
+}
+
 /** Replace `[start, end)` with `insert`. */
 export interface Edit extends Span {
   readonly insert: string;

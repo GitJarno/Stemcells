@@ -24,8 +24,11 @@ interface Pop {
  * place in the controls row (`readoutSlot.ts`). A word you typed wears its
  * plate and opens its menu; a default is dim. Past the most Cells, the
  * count wears the warning edge and says so; so does a message whose Cells
- * only the planner could share the work out to, which holds. A provider
- * whose plan runs short says so too.
+ * only a planner could share the work out to, when there's none to ask.
+ * While Aski thinks, and once its plan waits for a second Enter, it says
+ * so, and a place Aski picked wears the accent; a risky act Aski wrote
+ * asks "Is this what you meant?", and only ⌘↵ starts it. A provider whose plan runs
+ * short says so too.
  *
  * Upstream's fitting measures it as it measures the picker. The whole
  * sentence shows when the row holds it beside every other control at full
@@ -112,7 +115,7 @@ export function Readout(props: {
 
   const word = (part: ReadoutWord) =>
     part.mark === null ? (
-      <span className="sc-readout-default">{part.text}</span>
+      <span className={part.aski ? "sc-readout-aski" : "sc-readout-default"}>{part.text}</span>
     ) : (
       <button
         type="button"
@@ -130,15 +133,35 @@ export function Readout(props: {
       {readout.total} Cells
     </span>
   );
-  // What holds the send: it stays in the fold too, as the notes do.
-  const warning = readout.held ? (
-    <span className="sc-readout-warning"> · say what each Cell does</span>
-  ) : readout.over ? (
-    <span className="sc-readout-warning">
-      {" "}
-      · {readout.total} is over your {readout.most} · ⌘↵ sends
-    </span>
-  ) : null;
+  // What holds the send, or what Enter does next: it stays in the fold
+  // too, as the notes do.
+  const plan = readout.plan;
+  const warning =
+    plan?.state === "thinking" ? (
+      <span className="sc-readout-share"> · Aski is dividing the work</span>
+    ) : plan?.state === "check" && plan.risk !== undefined ? (
+      <span className="sc-readout-share">
+        {" · Is this what you meant? "}
+        <span className="sc-readout-warning">“{plan.risk}”</span>
+        {" · ⌘↵ starts them anyway"}
+      </span>
+    ) : plan?.state === "check" ? (
+      <span className={plan.why === null ? "sc-readout-share" : "sc-readout-warning"}>
+        {plan.why === null ? "" : ` · ${plan.why}`}
+        {plan.startable
+          ? plan.why === null
+            ? " · ↵ starts them"
+            : " · ↵ gives each the whole message"
+          : " · say where each goes"}
+      </span>
+    ) : readout.held ? (
+      <span className="sc-readout-warning"> · say what each Cell does</span>
+    ) : readout.over ? (
+      <span className="sc-readout-warning">
+        {" "}
+        · {readout.total} is over your {readout.most} · ⌘↵ sends
+      </span>
+    ) : null;
   const rest = (
     <>
       {": "}
@@ -245,6 +268,8 @@ export function Readout(props: {
  * a list's places share their model's words, so the place tells them apart.
  */
 function keyOf(group: ReadoutData["groups"][number], index: number): string {
+  // A plan's Cells share their words; the place Aski picked tells them apart.
+  if (group.place?.aski) return `aski-${index}`;
   const words = [group.count, group.model, group.effort, group.place];
   if (!words.some((w) => w?.mark)) return `default-${index}`;
   return `at-${words.map((w) => w?.mark?.start ?? "").join(":")}`;

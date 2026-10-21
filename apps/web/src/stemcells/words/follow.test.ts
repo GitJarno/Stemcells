@@ -274,7 +274,17 @@ describe("the choice the words make for one Cell", () => {
       choiceOf(read("Fix the header in Harbor and the docs in Atlas"))?.place?.place.place.name,
     ).toBe("Harbor");
   });
-  it("is none when Aski has to plan the Cells", () => {
-    expect(choiceOf(read("2 Sol in Harbor fix the header"))).toBeNull();
+  // The draft is the first Cell of a plan too: it went out on the draft's
+  // own model while the words said Haiku.
+  it("is the first Cell's when Aski plans them, its place only where the words set it", () => {
+    const set = choiceOf(read("2 Sol in Harbor fix the header"))!;
+    expect([set.place?.place.place.name, set.model?.form.model?.name]).toEqual([
+      "Harbor",
+      "Sol 6.1",
+    ]);
+    const open = choiceOf(
+      read("Spawn 3 Opus Cells: fix sign-in across Harbor, Atlas and Kestrel"),
+    )!;
+    expect([open.place, open.model?.form.model?.name]).toEqual([null, "Opus 5.5"]);
   });
 });

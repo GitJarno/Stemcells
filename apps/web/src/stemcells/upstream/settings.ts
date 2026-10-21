@@ -2,7 +2,8 @@
  * What Settings on the slate reads from upstream: its section list as
  * upstream's sidebar drew it, the sections' names and which of them a scope
  * shows, and the way back to where you were. `pages.contract.test.ts` pins
- * what the slate relies on.
+ * what the slate relies on. Our own pages (Settings › Aski) are laid out
+ * with upstream's rows and switch.
  */
 import { useLocation } from "@tanstack/react-router";
 
@@ -14,6 +15,12 @@ import {
 import { validateSettingsScopeSearch } from "../../components/settings/settingsScope";
 
 export { SettingsSidebarNav } from "../../components/settings/SettingsSidebarNav";
+export {
+  SettingsPageContainer,
+  SettingsRow,
+  SettingsSection,
+} from "../../components/settings/settingsLayout";
+export { Switch } from "../../components/ui/switch";
 export { useNavigateToMainApp } from "../../components/sidebar/mainAppLocation";
 export type { SettingsPath };
 

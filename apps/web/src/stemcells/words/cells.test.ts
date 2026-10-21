@@ -187,8 +187,9 @@ describe("a list of places with one task", () => {
 });
 
 describe("Cells only the planner could share the work out to", () => {
-  // Until the planner is in, these must not go as one Cell with the places
-  // cut out of the text: they hold, and the readout says what's missing.
+  // These must never go as one Cell with the places cut out of the text:
+  // Aski divides them, and with no planner to ask they hold, and the
+  // readout says what's missing.
   it.each([
     "Sol and Opus: fix the header",
     "Fix the header in Harbor so it matches the one in Atlas",

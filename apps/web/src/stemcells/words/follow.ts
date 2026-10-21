@@ -13,7 +13,6 @@
  * decisions 2, 5 and 14.
  */
 
-import { launchOf } from "./cells";
 import type { EffortHit, ModelHit } from "./models";
 import type { PlaceHit } from "./places";
 import type { Facts } from "./read";
@@ -21,8 +20,8 @@ import type { Span } from "./text";
 
 /**
  * What the words set for the Cell the draft becomes: the one Cell they
- * start, or the first of several they start alone (`cells.ts`); null when
- * Aski has to plan them.
+ * start, or the first of several, whether they start alone (`cells.ts`)
+ * or Aski plans them (`plan/`). A place they leave open is Aski's to pick.
  */
 export interface Choice {
   readonly place: PlaceHit | null;
@@ -31,10 +30,10 @@ export interface Choice {
 }
 
 export function choiceOf(facts: Facts): Choice | null {
-  if (facts.cell !== null || facts.open) return null;
-  if (facts.cells.length !== 1 && launchOf(facts) === null) return null;
-  const group = facts.groups[facts.cells[0]!.group]!;
-  return { place: group.place, model: group.model, effort: group.effort };
+  const first = facts.cells[0];
+  if (facts.cell !== null || first === undefined) return null;
+  const group = facts.groups[first.group]!;
+  return { place: group.open ? null : group.place, model: group.model, effort: group.effort };
 }
 
 /**

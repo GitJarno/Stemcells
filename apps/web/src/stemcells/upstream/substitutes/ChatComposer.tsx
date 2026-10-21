@@ -6,14 +6,14 @@
 // through slots, each reader under its turn; upstream's composer and its
 // send stay as they are. Only
 // Aski's own chat offers Aski's instance (`../cellInstance.ts`).
-import { memo, type ReactNode, useRef, useState } from "react";
+import { memo, type ReactNode, useState } from "react";
 
 import {
   ChatComposer as UpstreamChatComposer,
   type ChatComposerProps,
 } from "../../../components/chat/ChatComposer";
 import { type ShownReadout, WordsReadoutShown, WordsReadoutSlot } from "../../words/readoutSlot";
-import { sendSlots, WordsSendSlot } from "../../words/send";
+import { oneSendAtATime, sendSlots, WordsSendSlot } from "../../words/send";
 import { useComposerInstances } from "../cellInstance";
 
 export * from "../../../components/chat/ChatComposer";
@@ -21,15 +21,15 @@ export * from "../../../components/chat/ChatComposer";
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
   const [slots] = useState(sendSlots);
   const instances = useComposerInstances(props);
-  // A send waiting for the draft to show what a last word set takes no other.
-  const waiting = useRef(false);
+  // A send waiting for the draft to show what a last word set, or for Aski's
+  // plan, takes no other; one whose wait fails sends nothing and lets go.
+  const [queue] = useState(oneSendAtATime);
   const { onSend } = props;
   const send: ChatComposerProps["onSend"] = (event, dispatchMode, submissionIntent) => {
-    if (waiting.current) return;
+    if (queue.waiting()) return;
     const sending = slots.ask(submissionIntent);
     if (sending?.hold) return;
-    const go = () => {
-      waiting.current = false;
+    queue.send(sending?.ready ?? null, () => {
       const settle = sending?.edit() ?? null;
       if (settle === false) return;
       // Upstream's send is async though its type says void: settle when it does.
@@ -39,11 +39,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         sending?.foreground ? "foreground" : submissionIntent,
       );
       settle?.(sent);
-    };
-    if (sending?.ready) {
-      waiting.current = true;
-      void sending.ready.then(go);
-    } else go();
+    });
   };
   return (
     <WordsSendSlot value={slots.register}>

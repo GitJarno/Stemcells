@@ -312,6 +312,11 @@
   color: var(--sc-warning);
 }
 
+/* A place Aski picked for an open Cell: neither your word nor a default. */
+.sc-readout-aski {
+  color: var(--sc-accent-ink);
+}
+
 /* A plan running short, in the rail ring's tones (rail/PlanRing.tsx). */
 .sc-readout-limit[data-tone="low"],
 .sc-readout-fold[data-tone="low"] .sc-readout-caret {

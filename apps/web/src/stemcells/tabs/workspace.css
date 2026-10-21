@@ -16,7 +16,12 @@
   --stemcells-strip-lead: var(--sc-space-md);
   background-color: var(--app-chrome-background);
 }
+/* The strip fills the band: its row (TabStrip's h-9, its content box) at
+   the band's foot, the air over it the rest, so the row's middle is the
+   line the traffic lights stand on (pages/frame.css). */
 [data-stemcells-tab-strip] {
+  box-sizing: content-box;
+  padding-block-start: calc(var(--stemcells-band) - var(--stemcells-strip-row));
   padding-inline-start: var(--stemcells-strip-lead);
 }
 [data-stemcells-slate] {
@@ -59,15 +64,15 @@
 }
 /* There the tab on stage is cut from the slate, as a folder's tab is from
    its folder: the slate's gray, rounded at the top, reaching down through
-   the strip's air under it (half the strip's row less the tab: TabStrip's
-   h-9 and h-6) and flaring into the slate's top edge with two concave
+   the strip's air under it (half the strip's row less the tab, TabStrip's
+   h-6) and flaring into the slate's top edge with two concave
    curves, its own corner turned inside out. The tabs start far enough in
    that the first one's flare lands past the slate's corner. A tab lifted
    in a drag is a chip again. Elsewhere the tab on stage stays a lit chip:
    on a frame the slate's own colour, a tab cut from it would vanish. */
 :root.dark[data-theme-id="stemcells"] [data-stemcells-workspace] {
   --stemcells-tab-flare: var(--sc-radius-chip);
-  --stemcells-tab-reach: calc(var(--spacing) * (9 - 6) / 2);
+  --stemcells-tab-reach: calc((var(--stemcells-strip-row) - var(--spacing) * 6) / 2);
   --stemcells-strip-lead: calc(
     var(--sc-space-md) + var(--stemcells-slate-corner) + var(--stemcells-tab-flare)
   );

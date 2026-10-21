@@ -16,8 +16,9 @@ import {
 import * as ServerConfig from "../../config.ts";
 import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
 
-// What Settings › Disk takes from upstream: its request authentication, the
-// projects the person added, and where this app keeps its state.
+// What Settings › Disk takes from upstream: its request authentication (the
+// planner's and the attachment import's too), the projects the person added,
+// and where this app keeps its state.
 
 /**
  * Upstream's 401 or 403 for a caller without `scope` in this environment,
@@ -60,7 +61,11 @@ const withScope =
 /** Runs `handler` only for a caller allowed to read this environment. */
 export const withReadAccess = withScope(AuthOrchestrationReadScope);
 
-/** Runs `handler` only for a caller allowed to start work in this environment (it spends). */
+/**
+ * Runs `handler` only for a caller allowed to start work in this environment:
+ * the planner spends, and the attachment import writes into upstream's store
+ * (the scope upstream asks of its own uploads).
+ */
 export const withOperateAccess = withScope(AuthOrchestrationOperateScope);
 
 /** The platform the server runs on, as upstream injects it. */
