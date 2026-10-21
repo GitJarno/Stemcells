@@ -1,10 +1,15 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads t3_thread_send's service source.
 /**
  * No Cell runs on Aski's provider instance, whose launch arguments carry
- * Aski's persona: the server refuses it, rather than trusting Aski's
- * instructions to keep Cells off it. A failure here after a sync names the
- * upstream gate that moved: the one every thread start and every message
- * asks whether its instance may run.
+ * Aski's persona. The server refuses a Cell started there, rather than
+ * trusting Aski's instructions to keep Cells off it, and a message to a Cell
+ * made there before runs on the driver's own instance instead, whoever sends
+ * it. A failure here after a sync names the upstream path that moved: the
+ * gate every thread start asks whether its instance may run, and the one
+ * dispatch every message takes.
  */
+import * as NodeFS from "node:fs";
+
 import { assert, expect, it } from "@effect/vitest";
 import {
   CommandId,
@@ -75,24 +80,40 @@ const shells = {
 
 const receipts = CommandReceiptStore.layer.pipe(Layer.provide(SqlitePersistence.layerMemory));
 
-const threadManagement = (dispatched: Array<ThreadId>) =>
+const sendMessageId = MessageId.make("message:aski-instance:send");
+
+/** What a dispatch sent on: the thread, and the instance named, if any. */
+type Dispatched = { readonly threadId: ThreadId; readonly instanceId: string | undefined };
+
+const threadManagement = (dispatched: Array<Dispatched>) =>
   ThreadManagement.layer.pipe(
     Layer.provide(Layer.mock(ProviderSessionManager.ProviderSessionManagerV2)({})),
     Layer.provide(
       Layer.mock(Orchestrator.OrchestratorV2)({
         getShellSnapshot: () => Effect.succeed(shells),
+        // Every chat here sits on Aski's instance; the one message sent has queued its run.
         getThreadRecords: (threadId) =>
           Effect.succeed({
             thread: {
               id: threadId,
               projectId,
               deletedAt: null,
+              archivedAt: null,
               modelSelection: { instanceId: askis, model: "m" },
             },
+            runs: [{ id: "run:aski-instance:send", status: "queued" }],
+            providerTurns: [],
+            messages: [{ id: sendMessageId, runId: "run:aski-instance:send" }],
+            turnItems: [],
           } as unknown as OrchestrationV2ThreadProjection),
         dispatch: (command) =>
           Effect.sync(() => {
-            if (command.type === "message.dispatch") dispatched.push(command.threadId);
+            if (command.type === "message.dispatch") {
+              dispatched.push({
+                threadId: command.threadId,
+                instanceId: command.modelSelection?.instanceId,
+              });
+            }
             return { sequence: 1, storedEvents: [] } as never;
           }),
       }),
@@ -170,15 +191,55 @@ it.effect("a Cell launched on Aski's instance is refused, naming the instances i
   }).pipe(Effect.provide(launches)),
 );
 
-it.effect("Aski's own chat still runs on its instance; another chat there is refused", () => {
-  const dispatched: Array<ThreadId> = [];
+it.effect("t3_thread_send to a Cell on Aski's instance delivers it on the driver's own", () => {
+  const dispatched: Array<Dispatched> = [];
   return Effect.gen(function* () {
     const threads = yield* ThreadManagement.ThreadManagementService;
-    yield* threads.dispatch(message(askiChat, "aski"));
-    const refused = yield* threads.dispatch(message(cell, "cell")).pipe(Effect.flip);
-    assert.equal(refused.message, refusal);
-    expect(dispatched).toEqual([askiChat]);
+    // What t3_thread_send hands upstream: no model, so the chat's own.
+    const sent = yield* threads.sendToThread({
+      projectId,
+      commandId: CommandId.make("command:aski-instance:send"),
+      threadId: cell,
+      senderThreadId: askiChat,
+      messageId: sendMessageId,
+      text: "Look at the failing build",
+      attachments: [],
+      mode: "auto",
+      createdBy: "agent",
+      creationSource: "mcp",
+    });
+    assert.equal(sent.delivery, "queued");
+    expect(dispatched).toEqual([{ threadId: cell, instanceId: "claudeAgent" }]);
   }).pipe(Effect.provide(threadManagement(dispatched)));
+});
+
+it.effect("a message naming Aski's instance moves a Cell too; Aski's own chat stays", () => {
+  const dispatched: Array<Dispatched> = [];
+  return Effect.gen(function* () {
+    const threads = yield* ThreadManagement.ThreadManagementService;
+    yield* threads.dispatch({
+      ...message(cell, "cell"),
+      modelSelection: { instanceId: askis, model: "m" },
+    });
+    yield* threads.dispatch(message(askiChat, "aski"));
+    expect(dispatched).toEqual([
+      { threadId: cell, instanceId: "claudeAgent" },
+      { threadId: askiChat, instanceId: undefined },
+    ]);
+  }).pipe(Effect.provide(threadManagement(dispatched)));
+});
+
+it("t3_thread_send sends through upstream's thread management, naming no model", () => {
+  const orchestratorMcp = NodeFS.readFileSync(
+    new URL("../../mcp/OrchestratorMcpService.ts", import.meta.url),
+    "utf8",
+  );
+  const send = orchestratorMcp.slice(
+    orchestratorMcp.indexOf('sendToThread: Effect.fn("OrchestratorMcpService.sendToThread")'),
+    orchestratorMcp.indexOf('waitForThread: Effect.fn("OrchestratorMcpService.waitForThread")'),
+  );
+  expect(send).toMatch(/yield\* threadManagement\s*\.sendToThread\(\{/);
+  expect(send).not.toContain("modelSelection");
 });
 
 it.effect("a task delegated on Aski's instance is refused", () =>

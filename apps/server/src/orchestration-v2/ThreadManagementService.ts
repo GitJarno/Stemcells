@@ -56,7 +56,10 @@ import { DispatchModeLimit, exceededDispatchModeLimit } from "./DispatchModeLimi
 import { projectTurnItemForDetail } from "./WireProjection.ts";
 import * as LegacyV1ThreadImporter from "./legacy/LegacyV1ThreadImporter.ts";
 import * as ServerSettings from "../serverSettings.ts";
-import { refuseAskisInstance } from "../stemcells/upstream/askiInstance.ts";
+import {
+  moveCellsOffAskisInstance,
+  refuseAskisInstance,
+} from "../stemcells/upstream/askiInstance.ts";
 
 export type ThreadManagementSendMode = "auto" | "queue" | "steer" | "restart";
 
@@ -535,7 +538,6 @@ const make = Effect.gen(function* () {
                     ? refuseAskisInstance(
                         input,
                         current,
-                        orchestrator.getShellSnapshot(),
                         ThreadManagementProviderInstanceDisabledError,
                       )
                     : new ThreadManagementProviderInstanceDisabledError({
@@ -681,10 +683,18 @@ const make = Effect.gen(function* () {
     }
   };
 
-  const dispatch: ThreadManagementServiceShape["dispatch"] = (command) =>
-    ensureCommandTranscripts(command).pipe(
-      Effect.andThen(assertDispatchTargetEnabled(command)),
-      Effect.andThen(orchestrator.dispatch(command)),
+  const moveOffAskisInstance = moveCellsOffAskisInstance({
+    thread: (threadId) => orchestrator.getThreadRecords(threadId, []),
+    settings: serverSettings.getSettings.pipe(Effect.orDie),
+    shells: () => orchestrator.getShellSnapshot(),
+  });
+
+  const dispatch: ThreadManagementServiceShape["dispatch"] = (input) =>
+    ensureCommandTranscripts(input).pipe(
+      Effect.andThen(moveOffAskisInstance(input)),
+      Effect.flatMap((command) =>
+        assertDispatchTargetEnabled(command).pipe(Effect.andThen(orchestrator.dispatch(command))),
+      ),
     );
 
   const getProjectThread: ThreadManagementServiceShape["getProjectThread"] = (input) =>

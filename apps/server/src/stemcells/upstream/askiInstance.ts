@@ -1,15 +1,21 @@
 /**
  * Aski's provider instance is Aski's alone. Its launch arguments carry Aski's
  * persona, so a Cell started there takes itself for Aski. The server refuses
- * it wherever upstream asks whether a thread may run on an instance: a thread
- * being started (t3_thread_launch, create_threads, delegate_task, a scheduled
- * run, a new chat's first message) and a message to any chat on it but
- * Aski's own. The refusal names the instances a Cell may use, so Aski, which
- * gets it as a tool error, starts the Cell again on one of them.
+ * a thread being started there (t3_thread_launch, create_threads,
+ * delegate_task, a scheduled task that starts one), naming the instances a
+ * Cell may use, so Aski, which gets it as a tool error, starts the Cell again
+ * on one of them.
+ * A message to a chat already there that isn't Aski's own, from whoever
+ * sends it, runs on the driver's own instance instead, as the web's composer
+ * sends it (`apps/web/src/stemcells/upstream/cellInstance.ts`): upstream's
+ * dispatch carries the chat over and delivers the message.
  */
 import {
+  defaultInstanceIdForDriver,
   ProviderInstanceId,
   resolveProjectProviderInstanceEnabled,
+  type ModelSelection,
+  type OrchestrationV2ServerCommand,
   type OrchestrationV2ThreadShellSnapshot,
   type ProjectId,
   type ServerSettings,
@@ -46,40 +52,78 @@ export function askisInstanceRefusalText(usable: ReadonlyArray<string>): string 
 }
 
 /**
- * Refuses a thread on Aski's instance, with `Refusal` (upstream's "instance
- * disabled" error, which every caller already hands back as it reads). Only
- * Aski's own chat runs there; a thread being started has no id yet, so it
- * never may. `shells` is read only for a message to a chat on Aski's
- * instance.
+ * Refuses a thread being started on Aski's instance, with `Refusal`
+ * (upstream's "instance disabled" error, which every caller already hands
+ * back as it reads). A message names its thread: it reaches Aski's instance
+ * only in Aski's own chat, since `moveCellsOffAskisInstance` moves any other.
  */
-export function refuseAskisInstance<E, R>(
+export function refuseAskisInstance<R>(
   input: {
     readonly projectId: ProjectId;
     readonly instanceId: ProviderInstanceId;
     readonly threadId?: ThreadId | undefined;
   },
   settings: InstanceSettings,
-  shells: Effect.Effect<OrchestrationV2ThreadShellSnapshot, E>,
   Refusal: new (props: {
     readonly projectId: ProjectId;
     readonly instanceId: ProviderInstanceId;
     readonly reason: string;
   }) => R,
 ): Effect.Effect<void, R> {
-  if (input.instanceId !== ASKI_INSTANCE_ID) return Effect.void;
-  const refusal = Effect.fail(
+  if (input.instanceId !== ASKI_INSTANCE_ID || input.threadId !== undefined) return Effect.void;
+  return Effect.fail(
     new Refusal({
       projectId: input.projectId,
       instanceId: input.instanceId,
       reason: askisInstanceRefusalText(cellInstances(settings, input.projectId)),
     }),
   );
-  const { threadId } = input;
-  if (threadId === undefined) return refusal;
-  return shells.pipe(
-    Effect.orDie,
-    Effect.flatMap((snapshot) =>
-      askiThreadOf(snapshot.threads) === threadId ? Effect.void : refusal,
-    ),
-  );
+}
+
+/** Where a message to a Cell's chat on Aski's instance runs: the same model on the driver's own. */
+export function cellSelection(
+  selection: ModelSelection,
+  settings: Pick<ServerSettings, "providerInstances">,
+): ModelSelection {
+  const askis = settings.providerInstances[ProviderInstanceId.make(ASKI_INSTANCE_ID)];
+  return askis === undefined
+    ? selection
+    : { ...selection, instanceId: defaultInstanceIdForDriver(askis.driver) };
+}
+
+/**
+ * Moves a message to a chat on Aski's instance that isn't Aski's own (a Cell
+ * made there before Cells were kept off it) to the driver's own instance.
+ * Every other command passes as it is. The chat is read only for a message
+ * that names no model, and the shells only for one on Aski's instance.
+ */
+export function moveCellsOffAskisInstance<E, S>(read: {
+  readonly thread: (
+    threadId: ThreadId,
+  ) => Effect.Effect<{ readonly thread: { readonly modelSelection: ModelSelection } }, E>;
+  readonly settings: Effect.Effect<Pick<ServerSettings, "providerInstances">>;
+  readonly shells: () => Effect.Effect<OrchestrationV2ThreadShellSnapshot, S>;
+}) {
+  return (
+    command: OrchestrationV2ServerCommand,
+  ): Effect.Effect<OrchestrationV2ServerCommand, E> => {
+    if (command.type !== "message.dispatch") return Effect.succeed(command);
+    const selection =
+      command.modelSelection === undefined
+        ? read.thread(command.threadId).pipe(Effect.map(({ thread }) => thread.modelSelection))
+        : Effect.succeed(command.modelSelection);
+    return selection.pipe(
+      Effect.flatMap((selection) =>
+        selection.instanceId !== ASKI_INSTANCE_ID
+          ? Effect.succeed(command)
+          : Effect.all([read.shells().pipe(Effect.orDie), read.settings]).pipe(
+              Effect.map(([snapshot, settings]) =>
+                askiThreadOf(snapshot.threads) === command.threadId
+                  ? command
+                  : { ...command, modelSelection: cellSelection(selection, settings) },
+              ),
+            ),
+      ),
+    );
+  };
 }
