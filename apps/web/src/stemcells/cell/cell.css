@@ -11,6 +11,15 @@
   flex: none;
 }
 
+/* The stage at a Cell's right where its buds stand (CellBuds), on the
+   Cell's floor, its start where the Cell's box ends. It takes no room: the
+   box holds only the Cell. */
+.cell-buds {
+  position: absolute;
+  inset-block-end: 0;
+  pointer-events: none;
+}
+
 /* The "?" a Cell wears while it waits on you: the glyph heavy and
    monospaced in the notch's black on an amber bubble with an amber glow,
    off the character's top corner, bobbing one sprite pixel each way. Its

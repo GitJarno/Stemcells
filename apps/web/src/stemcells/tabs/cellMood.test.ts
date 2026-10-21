@@ -60,9 +60,11 @@ describe("a Cell's face from its chat's status", () => {
     expect(moodTurnsAt(null, null, undefined, 0)).toBeUndefined();
   });
 
-  it("acts out only what the status says: waiting", () => {
+  it("acts out only what the status says: waiting, or watching its subagents away", () => {
     expect(activityOfStatus("Waiting")).toBe("waiting");
+    expect(activityOfStatus("Waiting", 1)).toBe("delegating");
     expect(activityOfStatus("Working")).toBeUndefined();
+    expect(activityOfStatus("Completed", 1)).toBeUndefined();
   });
 });
 

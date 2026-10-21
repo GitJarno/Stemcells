@@ -22,7 +22,7 @@ import {
   useThreadProjection,
   useThreadVisibleTurnItems,
 } from "../../state/entities";
-import { ACTIVITY_HOLD, type ToolBeat } from "../cell/activity";
+import { ACTIVITY_HOLD, budsOf, type ToolBeat } from "../cell/activity";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
 
@@ -93,6 +93,36 @@ export function useCellCalls(cell: CellRef | null, working: boolean): ToolBeat[]
   const shell = useQuietThreadShell(ref);
   const items = useThreadVisibleTurnItems(working ? ref : null);
   return working ? beatsOf(items, shell?.runtime?.activeRunId ?? null) : [];
+}
+
+/** How many of a chat's subagents work on in the background, its turn over: upstream's pending background work of that kind. */
+export function subagentsAwayOf(
+  tasks: ReadonlyArray<{ readonly kind: string }> | undefined,
+): number {
+  return tasks?.filter((task) => task.kind === "subagent").length ?? 0;
+}
+
+/** The chat's subagents at work in the background (`subagentsAwayOf`). */
+export function useCellSubagentsAway(cell: CellRef | null): number {
+  const shell = useQuietThreadShell(cell ? threadRefOf(cell) : null);
+  return subagentsAwayOf(shell?.pendingBackgroundTasks);
+}
+
+/**
+ * The buds a chat's Cell stands beside it (`budsOf`): its subagents at work.
+ * While it works, those are its subagent items still running, in any run: a
+ * subagent sent to the background keeps its item running past the turn that
+ * started it. Its upstream lists them as pending background work too, which
+ * is all there is to read once the chat stops working.
+ */
+export function useCellBuds(cell: CellRef | null, working: boolean): number {
+  const ref = cell ? threadRefOf(cell) : null;
+  const shell = useQuietThreadShell(ref);
+  const items = useThreadVisibleTurnItems(working ? ref : null);
+  return budsOf(
+    working ? beatsOf(items, null) : [],
+    subagentsAwayOf(shell?.pendingBackgroundTasks),
+  );
 }
 
 /** What a run's items say, as a key that turns with each new item, change and word; and whether a compaction is running. */

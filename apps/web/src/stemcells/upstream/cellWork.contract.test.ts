@@ -6,6 +6,7 @@
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import {
+  OrchestrationV2PendingBackgroundTask,
   OrchestrationV2TurnItem,
   type OrchestrationV2ProviderTurn,
   type OrchestrationV2ThreadProjection,
@@ -16,10 +17,19 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import rootSource from "../../routes/__root.tsx?raw";
 import claudeAdapterSource from "../../../../server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts?raw";
-import { currentActivity } from "../cell/activity";
-import { beatOf, beatsOf, CODEX_CACHE_MS, coldAtFor, coldAtOf, newsOf } from "./cellWork";
+import { budsOf, currentActivity } from "../cell/activity";
+import {
+  beatOf,
+  beatsOf,
+  CODEX_CACHE_MS,
+  coldAtFor,
+  coldAtOf,
+  newsOf,
+  subagentsAwayOf,
+} from "./cellWork";
 
 const decode = Schema.decodeUnknownSync(OrchestrationV2TurnItem);
+const decodePending = Schema.decodeUnknownSync(Schema.Array(OrchestrationV2PendingBackgroundTask));
 const at = DateTime.makeUnsafe("2026-10-21T08:00:00.000Z");
 
 /** A turn item as the wire carries it: a call of `type` in run `run-1`, `status`. */
@@ -44,6 +54,17 @@ function item(type: string, fields: Record<string, unknown>, status = "running")
   });
 }
 
+/** What a subagent item carries beside the common fields: Claude's Task, as its adapter reports it. */
+const subagent = {
+  subagentId: "node-subagent",
+  origin: "provider_native",
+  driver: "claudeAgent",
+  providerInstanceId: "claudeAgent",
+  childThreadId: null,
+  prompt: "Find where the gate stalls",
+  result: null,
+};
+
 const acting = (type: string, fields: Record<string, unknown>) => {
   const beat = beatOf(item(type, fields));
   return currentActivity(true, beat === undefined ? [] : [beat]);
@@ -63,6 +84,13 @@ describe("what a working Cell acts out, from its run's turn items", () => {
     expect(acting("web_search", { patterns: ["kit"] })).toBe("browsing");
     expect(acting("file_change", { fileName: "a.ts" })).toBe("editing");
     expect(acting("reasoning", { text: "hm", streaming: true })).toBe("thinking");
+    expect(acting("subagent", subagent)).toBe("delegating");
+  });
+
+  it("stands a bud beside the Cell for each subagent still at work", () => {
+    const running = projected(item("subagent", subagent));
+    const done = projected(item("subagent", subagent, "completed"));
+    expect(budsOf(beatsOf([running, done], "run-1"))).toBe(1);
   });
 
   it("thinks again once its call has returned, and reads only the run in progress", () => {
@@ -91,6 +119,19 @@ describe("what a working Cell acts out, from its run's turn items", () => {
       readonly runtime: { readonly activeRunId: string | null } | null;
       readonly latestRun: { readonly status: string; readonly completedAt: string | null } | null;
     }>();
+  });
+
+  it("a shell lists the subagents still at work once its turn is over", () => {
+    expectTypeOf<EnvironmentThreadShell>().toMatchTypeOf<{
+      readonly pendingBackgroundTasks?: ReadonlyArray<{ readonly kind: string }>;
+    }>();
+    const pending = decodePending([
+      { taskId: "bg-1", kind: "subagent", childThreadId: "thread-child" },
+      { taskId: "bg-2", kind: "monitor" },
+      { taskId: "bg-3", kind: "subagent" },
+    ]);
+    expect(subagentsAwayOf(pending)).toBe(2);
+    expect(subagentsAwayOf(undefined)).toBe(0);
   });
 
   it("the desktop app keeps every running thread's items live, seen or not", () => {

@@ -59,10 +59,15 @@ export function moodTurnsAt(
 
 /**
  * What the status alone says the Cell is doing: waiting on another chat or
- * its background work. What a working Cell is doing needs its tool calls.
+ * its background work, or watching its subagents work on in the background
+ * (`subagentsAway`). What a working Cell is doing needs its tool calls.
  */
-export function activityOfStatus(status: CellStatus | null): Activity | undefined {
-  return status === "Waiting" ? "waiting" : undefined;
+export function activityOfStatus(
+  status: CellStatus | null,
+  subagentsAway = 0,
+): Activity | undefined {
+  if (status !== "Waiting") return undefined;
+  return subagentsAway > 0 ? "delegating" : "waiting";
 }
 
 /** Thinking with no call in flight, raw and shown: the only time a Cell's thought can go deep (`useCellDeep`). */

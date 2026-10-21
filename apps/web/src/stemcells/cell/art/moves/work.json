@@ -440,6 +440,1248 @@
           ]
         }
       ]
+    },
+    "delegating/0": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "loop",
+      "tell": 0,
+      "pieces": "loop",
+      "frames": [
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0],
+            "sy": 0.96
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 1]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        }
+      ]
+    },
+    "bud/1": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "loop",
+      "tell": 0,
+      "frames": [
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        }
+      ]
+    },
+    "bud/2": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "loop",
+      "tell": 0,
+      "frames": [
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 4]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 4]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 4]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            }
+          ]
+        }
+      ]
+    },
+    "bud/out/1": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 5,
+      "frames": [
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [20, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [10, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [18, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [9, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [15, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [8, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [13, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [7, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [11, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [6, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        }
+      ]
+    },
+    "bud/out/2": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 5,
+      "frames": [
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [20, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [10, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [8, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [4, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [18, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [9, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [5, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [2, 4]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [15, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [8, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [2, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [1, 4]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [13, 8],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [7, 4]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [0, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [0, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [11, 7],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [6, 3]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "hidden": true,
+          "layers": [
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [-2, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [-1, 3]
+            },
+            {
+              "art": ["..BBBBb..", ".BLBBBBb.", "BBEBBEBbb", "BBEBBEBbb", "bbbbbbbbb", ".bbbbbbb."],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": [".BBb.", "BEBEb", ".bbb."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        }
+      ]
     }
   }
 }

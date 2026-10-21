@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 
 import { currentActivity } from "../cell/activity";
+import { CellBuds } from "../cell/CellBuds";
 import { CellFigure } from "../cell/CellFigure";
 import { useShownActivity } from "../cell/useShownActivity";
 import { useCellGround } from "../upstream/appearance";
-import { useCellCalls, useCellDeep, useCellRest } from "../upstream/cellWork";
+import {
+  useCellBuds,
+  useCellCalls,
+  useCellDeep,
+  useCellRest,
+  useCellSubagentsAway,
+} from "../upstream/cellWork";
 import { useCellDriver } from "../upstream/providers";
 import { useCellStatus } from "../upstream/status";
 import { activityOfStatus, moodAt, moodTurnsAt, thinkingQuietly } from "./cellMood";
@@ -23,8 +30,11 @@ const POINTS = 1;
  * the chat's prompt cache has gone cold.
  * Its box holds all of it, hats too, so centring the box centres the whole
  * Cell. Drawn `points` a sprite pixel; small beside a label unless told.
+ * Given a `stage` (room at its right, as on the composer), the buds of its
+ * subagents at work stand there, those in the background too; the box stays
+ * its own.
  */
-export function CellMark(props: { cell: CellRef | null; points?: number }) {
+export function CellMark(props: { cell: CellRef | null; points?: number; stage?: boolean }) {
   const status = useCellStatus(props.cell);
   const provider = useCellDriver(props.cell);
   const ground = useCellGround();
@@ -32,8 +42,10 @@ export function CellMark(props: { cell: CellRef | null; points?: number }) {
   const calls = useCellCalls(props.cell, working);
   const raw = currentActivity(working, calls);
   const shown = useShownActivity(raw);
-  const activity = shown ?? activityOfStatus(status);
+  const away = useCellSubagentsAway(props.cell);
+  const activity = shown ?? activityOfStatus(status, away);
   const deep = useCellDeep(props.cell, working, thinkingQuietly(raw, shown));
+  const buds = useCellBuds(props.cell, working);
   const { landedAt, coldAt } = useCellRest(props.cell, provider);
   const look = useRosterLook(props.cell?.threadId);
   const [now, setNow] = useState(Date.now);
@@ -45,7 +57,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number }) {
     return () => clearTimeout(timer);
   }, [turnsAt]);
   return (
-    <span className="flex shrink-0" data-stemcells-cell-status={status ?? "idle"}>
+    <span className="relative flex shrink-0" data-stemcells-cell-status={status ?? "idle"}>
       <CellFigure
         name={props.cell?.threadId ?? ""}
         ground={ground}
@@ -55,6 +67,14 @@ export function CellMark(props: { cell: CellRef | null; points?: number }) {
         look={look}
         points={props.points ?? POINTS}
       />
+      {props.stage ? (
+        <CellBuds
+          count={buds}
+          provider={provider}
+          ground={ground}
+          points={props.points ?? POINTS}
+        />
+      ) : null}
     </span>
   );
 }

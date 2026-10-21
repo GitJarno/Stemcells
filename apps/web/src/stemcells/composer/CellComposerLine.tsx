@@ -25,7 +25,8 @@ import "./composer-line.css";
  * The line over a Cell's composer: who, where and on what. The Cell's name
  * in its tone, its project, where it runs when that is news, the chat it
  * came from, and what the chat is about, quiet. The Cell stands on the
- * line's top edge at its left end, past the rounded corner. The line is one
+ * line's top edge at its left end, past the rounded corner, with room at its
+ * right for the buds of its subagents at work. The line is one
  * of upstream's attached banners, so it stacks with theirs and wears their
  * surface. Nothing until the chat is sent, and nothing outside a Cell's pane.
  *
@@ -59,7 +60,7 @@ export function CellComposerLine() {
         className="composer-line-roof pointer-events-none ps-(--radius-2xl) text-foreground"
         style={{ "--cell": `${POINTS_PER_PIXEL}px` } as CSSProperties}
       >
-        <CellMark cell={cell} points={POINTS_PER_PIXEL} />
+        <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />
       </div>
       <ComposerBanner.Root>
         <div className="flex min-w-0 items-center gap-1.5 px-1" onContextMenu={menu.onContextMenu}>

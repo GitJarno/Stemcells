@@ -8,6 +8,7 @@ export type Activity =
   | "reading"
   | "searching"
   | "editing"
+  | "delegating"
   | "running"
   | "testing"
   | "building"
@@ -20,6 +21,7 @@ export const ACTIVITIES: readonly Activity[] = [
   "reading",
   "searching",
   "editing",
+  "delegating",
   "running",
   "testing",
   "building",
@@ -41,6 +43,22 @@ export function currentActivity(busy: boolean, tools: readonly ToolBeat[]): Acti
   const call = tools.at(-1);
   if (call === undefined || call.state !== "requested") return "thinking";
   return activityOf(call.name, call.brief);
+}
+
+/** The most buds a Cell shows beside it, however many subagents work for it. */
+export const BUDS_MOST = 2;
+
+/**
+ * How many buds stand beside a Cell: its subagents at work, at most
+ * `BUDS_MOST`. Those its turn waits on are its calls still in flight; those
+ * gone to the background (`away`) work on after the turn. One subagent can
+ * be both while the turn runs on, so the larger count is the truer one.
+ */
+export function budsOf(tools: readonly ToolBeat[], away = 0): number {
+  const working = tools.filter(
+    (call) => call.state === "requested" && activityOf(call.name, call.brief) === "delegating",
+  );
+  return Math.min(Math.max(working.length, away), BUDS_MOST);
 }
 
 /** A call's activity from its tool name and its one-line brief. */
@@ -79,6 +97,7 @@ export function activityOf(tool: string, brief: string): Activity {
       return commandActivity(brief);
     case "task":
     case "agent":
+      return "delegating";
     case "todowrite":
     case "exitplanmode":
       return "thinking";

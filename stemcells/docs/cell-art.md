@@ -219,6 +219,13 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   `"held": "<tool>"`.
 - **A second body** (a bud, a vesicle) is a layer drawn in the body's letters,
   so it wears the Cell's colours.
+- **The buds** stand on a stage of their own: a box the size of the Cell's,
+  just past it, where the Cell is given room (the composer's line; not a
+  tab). Their scenes are frames with the Cell `hidden` and the buds as
+  layers on its `ground`: `bud/1` and `bud/2` stand one or two, and
+  `bud/out/1` and `bud/out/2` step the next one out of the Cell's side, the
+  step home being the same frames backwards (`cell/buds.ts`). Stepping out
+  leaves the box on purpose, so `check` warns on those two.
 - **`meta`** adds meta to the original's scenes by name. Their frames stay as
   exported.
 
