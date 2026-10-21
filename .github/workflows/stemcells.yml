@@ -33,11 +33,12 @@ jobs:
         run: |
           pnpm --filter @t3tools/web typecheck
           pnpm --filter t3 typecheck
-      # The web's tests run with the web's config: it builds with our
+      # Each app's tests run with its own config: it builds with our
       # substitutes for upstream modules (stemcells/seams.md, Substitutes).
       - name: Stemcells tests
         run: |
           pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells
+          pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells
           pnpm exec vp test run apps/server/src/stemcells --passWithNoTests
 
   # Upstream's workflows need runners and secrets this repo doesn't have.

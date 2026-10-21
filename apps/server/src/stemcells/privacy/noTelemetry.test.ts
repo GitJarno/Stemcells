@@ -87,20 +87,24 @@ describe("no Stemcells build tells a third party what the person reads", () => {
   const mobileAdapter = "apps/mobile/src/stemcells/upstream/favicon.ts";
 
   it("fetches favicons only through Stemcells' adapters, the same on the web and the phone", () => {
-    // The web's build hands every import of upstream's favicons the adapter
-    // (`substitutes/plugin.ts`; `substitutes.contract.test.ts` proves it for
-    // each build). The phone and the desktop substitute nothing, so there
-    // only the adapter may import them.
-    const substitutes = "apps/web/src/stemcells/upstream/substitutes/";
-    expect(read(`${substitutes}plugin.ts`)).toContain(
+    // The web's and the phone's builds hand every import of upstream's
+    // favicons the adapter (each app's `substitutes.contract.test.ts` proves
+    // it for each build). The desktop substitutes nothing, so none of its
+    // code may import them.
+    const web = "apps/web/src/stemcells/upstream/substitutes/";
+    const phone = "apps/mobile/src/stemcells/upstream/substitutes/";
+    expect(read(`${web}plugin.ts`)).toContain('"packages/shared/src/favicon.ts": "favicon.ts"');
+    expect(read(`${phone}substitutes.cjs`)).toContain(
       '"packages/shared/src/favicon.ts": "favicon.ts"',
     );
-    expect(read(`${substitutes}favicon.ts`)).toContain('from "../favicon";');
+    for (const folder of [web, phone]) {
+      expect(read(`${folder}favicon.ts`)).toContain('from "../favicon";');
+    }
     const callers = filesMatching(
-      code.filter((file) => /^apps\/(?:mobile|desktop)\/src\//.test(file)),
+      code.filter((file) => file.startsWith("apps/desktop/src/")),
       /["']@t3tools\/shared\/favicon["']/,
     );
-    expect(callers).toEqual([mobileAdapter]);
+    expect(callers).toEqual([]);
     expect(read(mobileAdapter)).toBe(read(webAdapter));
   });
 

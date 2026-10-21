@@ -4,6 +4,7 @@ const { pathToFileURL } = require("node:url");
 const { getDefaultConfig } = require("expo/metro-config");
 const { withUniwindConfig } = require("uniwind/metro");
 const extraThemes = require("./generated-uniwind-theme-names.json");
+const { substituteRequests } = require("./src/stemcells/upstream/substitutes/substitutes.cjs");
 
 /** @type {import("expo/metro-config").MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -60,6 +61,7 @@ config.resolver = {
     "@shikijs/vscode-textmate": resolveShikiDependencyRoot("@shikijs/vscode-textmate"),
   },
 };
+config.resolver.resolveRequest = substituteRequests(config.resolver.resolveRequest);
 
 async function writeFileIfChanged(filePath, contents) {
   try {

@@ -1,5 +1,6 @@
 import { defineConfig } from "vite-plus";
 import "vite-plus/test/config";
+import { substituteUpstreamModules } from "./src/stemcells/upstream/substitutes/substitutes.cjs";
 
 const reactTests = [
   "src/components/ui/Dialog.android.test.tsx",
@@ -13,6 +14,7 @@ const reactTests = [
 ];
 
 export default defineConfig({
+  plugins: [substituteUpstreamModules()],
   test: {
     hookTimeout: 60_000,
     testTimeout: 60_000,

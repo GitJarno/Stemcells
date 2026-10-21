@@ -58,7 +58,6 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The usage-data note says "Stemcells sends no usage data.", without T3's privacy policy link | Same: T3's note said usage data goes to T3 |
 | `apps/web/src/components/settings/SettingsPanels.tsx`, `apps/web/src/components/settings/settingsSearch.ts` | About's "Privacy policy" row and its search entry are gone | Same: the row linked T3's policy as the account of "the anonymous usage data T3 Code collects" |
 | `apps/server/src/serverRuntimeStartup.ts` | The boot heartbeat no longer records the install's owners, and drops the `getServerOwners` import | Same: naming them read the Codex and Claude login files and the T3 Connect account on every start |
-| `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/threads/thread-work-log.tsx` | `faviconUrlForOrigin` and `toolActivityFaviconUrl` are imported from `stemcells/upstream/favicon` (same names, one import line each) | No favicon fetched (below): a link's icon came from Google's favicon service, and a page's from its own site. The web's views need no seam: they get the same adapter through a substitute (below) |
 | `apps/web/src/components/ChatMarkdown.browser.test.tsx` | Its favicon test expects no image for any link | It pinned the Google favicon URL |
 | `apps/web/src/components/sidebar/useUpdateEverything.ts` | The servers to update come from `stemcells/upstream/updates`'s `offeredServerUpdates`, in place of the npm lookup | No T3 build offered (below) |
 | `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
@@ -73,6 +72,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
+| `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
+| `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
 
 ### Substitutes
 
@@ -89,12 +90,16 @@ re-exports it (`export * from …`) and replaces only the names it changes.
   `substitutes.contract.test.ts` proves each one, and that every substitute
   exports what its upstream module does; the type check holds each to the
   upstream module's types.
-- **The web only.** The server runs from source in dev, with no bundler to
-  substitute through, and the phone builds with Metro. The contract test
-  fails when the server imports a substituted module.
-- **The web's tests run with the web's config:** `pnpm --filter
-  @t3tools/web exec vp test run --project unit src/stemcells`, as CI does.
-  The root config substitutes nothing, and the contract test says so.
+- **The phone too.** `apps/mobile/src/stemcells/upstream/substitutes/`
+  holds the phone's table and substitutes, in CommonJS for Metro's config;
+  Metro (the app) and the phone's test config both read it, and its own
+  contract test proves both.
+- **Not the server.** It runs from source in dev, with no bundler to
+  substitute through. The web's contract test fails when the server imports
+  a substituted module.
+- **Tests run with their app's config:** `pnpm --filter @t3tools/web exec
+  vp test run --project unit src/stemcells` (and `@t3tools/mobile`'s), as CI
+  does. The root config substitutes nothing, and the contract test says so.
 - **Only at a module's surface.** A change inside an upstream function's
   body is still a seam, and so is a call one export makes to another inside
   the module: it reaches upstream's, not ours. So a substitute wraps every
@@ -245,11 +250,11 @@ Nothing tells a third party what the person reads or which build they run.
   (or a CDN). `stemcells/upstream/favicon.ts` (the web's and the phone's,
   the same file) keeps only an icon the provider sent inline, so each view
   shows its own glyph: a globe for a link, GitHub's mark for GitHub, the
-  tool's icon for a page. The web's views get it through a substitute for
-  upstream's module (below); the phone's import it. `favicon.contract.test.ts`
-  pins it, and `privacy/noTelemetry.test.ts` fails when the web stops
-  substituting upstream's favicons, a phone or desktop view imports them
-  directly, or the two copies differ.
+  tool's icon for a page. The web's and the phone's views get it through a
+  substitute for upstream's module (below). `favicon.contract.test.ts` pins
+  it, and `privacy/noTelemetry.test.ts` fails when the web or the phone
+  stops substituting upstream's favicons, a desktop view imports them, or
+  the two copies differ.
 - **Update Everything** offers a server update only to a server this app
   runs, which updates with the app. Any other server updates by downloading
   T3's build, so it is listed as needing a manual update, and npm is never
