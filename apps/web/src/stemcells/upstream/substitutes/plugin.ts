@@ -66,6 +66,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/ComposerStashBadge.tsx": "ComposerStashBadge.tsx",
   // Upstream's live rows ride the pane's one wave of light.
   "apps/web/src/lib/visibleAnimation.ts": "visibleAnimation.ts",
+  // Stemcells' theme is built in, so the app wears it from its first frame.
+  "packages/shared/src/themePalettes.ts": "themePalettes.ts",
 };
 
 /**

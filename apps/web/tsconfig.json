@@ -36,6 +36,7 @@
     "../../scripts/lib/third-party-licenses.ts",
     "../../scripts/lib/brand-assets.ts",
     "../../stemcells/brand/assets.ts",
+    "../../stemcells/brand/look.ts",
     "../../stemcells/brand/mark.ts",
     "../../stemcells/brand/name.ts",
     "../../stemcells/words/cellTools.ts",

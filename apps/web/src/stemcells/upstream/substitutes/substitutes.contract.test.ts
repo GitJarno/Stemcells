@@ -8,6 +8,7 @@ import * as UpstreamSubagentDisplay from "@t3tools/client-runtime/state/subagent
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
+import * as UpstreamThemePalettes from "@t3tools/shared/themePalettes";
 import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } from "vite-plus";
 import { describe, expect, it } from "vite-plus/test";
 
@@ -59,6 +60,7 @@ import * as OurSubagentDisplay from "./subagentDisplay";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
+import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
@@ -96,6 +98,8 @@ interface Case {
    * and the names it must keep taking from there.
    */
   readonly importers: Readonly<Record<string, readonly [string, ReadonlyArray<string>]>>;
+  /** Why the server must keep upstream's module, when it imports it too. */
+  readonly serverKeepsUpstream?: string;
 }
 
 const CASES: Readonly<Record<string, Case>> = {
@@ -449,6 +453,22 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "packages/shared/src/themePalettes.ts": {
+    upstream: UpstreamThemePalettes,
+    substitute: OurThemePalettes satisfies typeof UpstreamThemePalettes,
+    importers: {
+      "apps/web/src/themePalette.ts": [
+        "@t3tools/shared/themePalettes",
+        ["BUILT_IN_THEMES", "RESERVED_THEME_IDS"],
+      ],
+      "apps/web/src/components/CommandPalette.tsx": [
+        "@t3tools/shared/themePalettes",
+        ["BUILT_IN_THEMES"],
+      ],
+    },
+    serverKeepsUpstream:
+      "The server publishes Stemcells' theme for other clients, so the id the web reserves for its built-in must stay open to it.",
+  },
 };
 
 const substitutePath = (upstream: string) => NodePath.join(here, SUBSTITUTES[upstream]!);
@@ -601,11 +621,13 @@ describe("Stemcells' substitutes for upstream modules", () => {
     // to substitute through. A server import of one of these would get
     // upstream's module: give the server a seam of its own instead. Its
     // tests may read upstream's (the server's T3 tools are upstream's).
-    const specifiers = Object.values(CASES).flatMap(({ importers }) =>
-      Object.values(importers)
-        .map(([specifier]) => specifier)
-        .filter((specifier) => specifier.startsWith("@")),
-    );
+    const specifiers = Object.values(CASES)
+      .filter(({ serverKeepsUpstream }) => serverKeepsUpstream === undefined)
+      .flatMap(({ importers }) =>
+        Object.values(importers)
+          .map(([specifier]) => specifier)
+          .filter((specifier) => specifier.startsWith("@")),
+      );
     const serverSource = NodePath.join(repoRoot, "apps/server/src");
     const offenders = NodeFS.readdirSync(serverSource, { recursive: true })
       .map(String)

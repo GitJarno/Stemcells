@@ -89,7 +89,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
 | `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the web's also adds `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/name.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
 | `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsAboutRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsMicrophoneRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsNotificationsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsEnvironmentDetailRouteScreen.tsx`, `apps/mobile/src/features/home/ThreadListToolbar.tsx`, `apps/mobile/src/features/pull-requests/PullRequestToolbar.android.tsx`, `apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx`, `apps/mobile/src/features/threads/ThreadComposer.tsx`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/agent-awareness/remoteRegistration.ts`, `apps/mobile/src/features/diagnostics/crash-log-model.ts`, `apps/mobile/src/lib/authClientMetadata.ts`, `apps/mobile/src/features/showcase/showcaseAgentActivity.ts` | Each imports `APP_NAME` from `stemcells/brand/name` and says it where it said "T3 Code": a title, a label, a prompt, the crash report's first line, the Live Activity's title, the name a Mac lists this phone by ("Stemcells Mobile") | Same: the phone's screens write the name as text, with no name of upstream's to follow |
@@ -110,6 +110,10 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/AppSidebarLayout.tsx` (settings) | Renders the left column on `/settings/*` as on every page, where it swapped it for `SidebarChromeHeader` and `SettingsSidebarNav`, so its label is always Threads; those two imports and `isOnSettings` go | Every page on the slate (below): the rail never goes away; Settings' section list moves onto the slate |
 | `apps/web/src/routes/settings.tsx` | Renders `stemcells/pages/SettingsOnSlab` (the pathname, General's restore button as `actions`, the outlet inside) where it rendered the breadcrumb header over the outlet; the `SettingsBreadcrumb`, `WorkspacePageHeader` and `isElectron` imports go | Same: upstream's section list at the slate's left edge and the panel beside it, folding into one row on a narrow slate, with no breadcrumb bar (`pages.contract.test.ts` pins both seams) |
 | `apps/web/src/components/settings/settingsScopeRetention.browser.test.tsx` | Mocks `SettingsOnSlab` to its children, as it mocks the header that went; nothing else changes in it | It renders the settings layout round a stub page |
+| `apps/web/src/components/settings/ThemeSettings.tsx` | Imports `STEMCELLS_THEME` from `stemcells/upstream/look` and lists it first in `MAINTAINER_THEMES` | Stemcells' look, built in (below): the server's published copy is left out, so Settings' card is the built-in's |
+| `apps/web/index.html` (theme) | The boot script knows Stemcells' theme: its splash colours in `BUILT_IN_THEME_PALETTES`, its id in `RESERVED_THEME_IDS`, a built-in with one mode takes that mode as its base appearance, where every built-in was light, and no stored preference reads as `"stemcells"` | Same: the splash and the window's ground wear it before the app loads, on a first launch too |
+| `apps/web/src/hooks/useTheme.ts` | `DEFAULT_THEME_SNAPSHOT.theme` is `"stemcells"`, where it was `"system"` | Same: what the app opens on with nothing stored, or a stored theme that's gone |
+| `apps/web/src/hooks/useEnvironmentThemeSync.test.ts` | Expects `"stemcells"` where a published theme that's gone falls back to the default; nothing else changes in it | It pins the default |
 
 ### Substitutes
 
@@ -612,3 +616,25 @@ list the left column: the column stays, and the route lays the list out at
 the slate's left edge beside the panel (`SettingsOnSlab`), where the
 breadcrumb bar was. Not a substitute of `AppSidebarLayout` or the route:
 each seam is a few lines, and the rest is ours.
+
+### Stemcells' look, built in
+
+Stemcells' look is T3's dark theme in a black frame (`stemcells/brand/look.ts`,
+the one place it's written). The server publishes it as a theme file, and
+upstream's client knew published themes only once the server's theme event
+came: its config cache and the server's snapshot leave them out. So every
+launch painted T3's stock palette for a couple of seconds in the desktop app,
+the frame round the slate in the canvas's colour under the grain, the slate's
+edge and the column's border showing. The web now ships the look built in:
+a substitute for `@t3tools/shared/themePalettes` puts it first among the
+built-ins and reserves its id, so the theme module resolves it as it loads,
+before the first frame, and the boot script paints the splash in it before
+that. The reserved id leaves the server's published copy out on the web; the
+server keeps upstream's module (the substitutes are the web's), so it still
+publishes the file for any other client. It is also the client's default
+preference, so a first launch with nothing stored opens on it rather than
+T3's stock theme until the server's default theme is adopted. Settings'
+"Restore defaults" still sets upstream's `"system"` (`SettingsPanels.tsx`,
+one of upstream's hottest files, so not a seam for this). The seams are
+Settings' card, the boot script and the default.
+`builtInTheme.contract.test.ts` pins the parts.
