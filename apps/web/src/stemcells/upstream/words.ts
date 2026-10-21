@@ -17,6 +17,7 @@ import { PROVIDER_PRESENTATION } from "../../components/usage/usageProviders";
 import { useEnvironmentProviders } from "../../state/environments";
 import { useThreadShells } from "../../state/entities";
 import { conciseModelName } from "../models/names";
+import { isAskisInstance } from "../aski/setup";
 import type { CellRef } from "../tabs/layout";
 import type { WordsCatalog, WordsProvider } from "../words/catalog";
 import type { WordsPlace } from "../words/places";
@@ -154,6 +155,9 @@ export function wordsCatalogOf(snapshots: ReadonlyArray<ServerProvider>): {
   const providers: WordsProvider[] = [];
   for (const snapshot of snapshots) {
     if (!snapshot.enabled || !isProviderAvailable(snapshot)) continue;
+    // Aski's instance is Aski's: no Cell starts on it (`cellInstance.ts`),
+    // so no word names it, not even "claude" when it's listed first.
+    if (isAskisInstance(snapshot.instanceId)) continue;
     if (snapshot.status === "ready" && snapshot.auth.status !== "unauthenticated")
       ready.add(snapshot.instanceId);
     // One provider word per driver: the first instance listed (the default

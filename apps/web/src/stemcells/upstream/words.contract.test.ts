@@ -140,4 +140,15 @@ describe("the providers' models, as words", () => {
     ]);
     expect([...ready]).toEqual(["claudeAgent"]);
   });
+
+  // Listed first, Aski's instance took "claude" and every Claude model word,
+  // and the Cells those words started were refused.
+  it("never offers Aski's instance, wherever it is listed", () => {
+    const { catalog, ready } = wordsCatalogOf([
+      snapshot({ instanceId: "aski" as never }),
+      snapshot({}),
+    ]);
+    expect(catalog.providers.map((p) => [p.id, p.words])).toEqual([["claudeAgent", ["claude"]]]);
+    expect([...ready]).toEqual(["claudeAgent"]);
+  });
 });
