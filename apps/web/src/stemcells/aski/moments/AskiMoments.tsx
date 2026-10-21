@@ -1,9 +1,11 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (aski.css), outside upstream's Tailwind entry. */
-// Aski's moments, around its figure: the theater a moment plays in, the
-// line it types beside Aski, and the watch for what earns one. A moment
-// earned while Aski is out of sight waits a while for the person to look.
-// When it plays it asks the lively budget first, so moments stay rare and
-// none plays while anything waits on the person.
+// Aski's moments, around its figure: the theater a moment plays in, and
+// the line it types beside Aski. Most are earned by the watch
+// (`AskiMomentWatch.tsx`); the seven bits and the night shift are earned
+// here, by looking at Aski. A moment earned while Aski is out of sight
+// waits a while for the person to look. When it plays it asks the lively
+// budget first, so moments stay rare and none plays while anything waits
+// on the person.
 
 import { type ReactNode, useEffect, useEffectEvent, useRef } from "react";
 
@@ -12,15 +14,18 @@ import { useMinute } from "../../rail/clock";
 import type { CellRef } from "../../tabs/layout";
 import { reducedMotion } from "../../tokens/motion";
 import { useAskiHome } from "../../upstream/askiEyes";
-import { useRunsDropped } from "../../upstream/askiMoments";
+import { useMomentChats } from "../../upstream/askiMoments";
+import { BLOCK_WIDTH } from "../eye";
 import { usePresent } from "../presence";
 import words from "../strings/en.json" with { type: "json" };
 import { useShown } from "../useShown";
-import { MOMENT_CARDS, type MomentId } from "./cards";
+import { momentCard } from "./cards";
+import { earn, earnedMoment, onEarned, takeEarned } from "./earned";
 import { typeLine } from "./line";
+import { type LinePlace } from "./news";
 import { MomentPlayer } from "./player";
 import { markPlayed, playedFor } from "./seen";
-import { backAfter, clicked, nightOf } from "./triggers";
+import { clicked, nightOf } from "./triggers";
 import "../../tokens/stemcells.css";
 import "../aski.css";
 
@@ -33,14 +38,6 @@ const DUE_FOR = 10 * 60_000;
  */
 const LOOK = 1_000;
 const NOTICE = 400;
-
-/** A moment earned: which, what it says, when, and what it plays once for, if it does. */
-interface Earned {
-  readonly id: MomentId;
-  readonly line: string;
-  readonly at: number;
-  readonly once?: string | undefined;
-}
 
 /** Ends the moment playing, if one is: its line cleared and the figure back. */
 function stopPlaying(playing: { current: (() => void) | null }): void {
@@ -57,38 +54,69 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
   const typedRef = useRef<HTMLSpanElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
   const saidRef = useRef<HTMLSpanElement>(null);
+  const lineRef = useRef<HTMLParagraphElement>(null);
   const playerRef = useRef<MomentPlayer | null>(null);
-  const earnedRef = useRef<Earned | null>(null);
   const playingRef = useRef<(() => void) | null>(null);
   const shownSince = useRef<number | null>(null);
   const due = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const minute = useMinute();
   const home = useAskiHome(props.aski, new Date(minute).toISOString());
+  const chats = useMomentChats(props.aski, new Date(minute).toISOString());
   const present = usePresent();
-  const dropped = useRunsDropped();
   const shown = useShown(theaterRef);
-  const working = home.chats.filter((standing) => standing === "working").length;
+  const working = chats.filter((chat) => chat.standing === "working").length;
+
+  /**
+   * Where `line` will stand once typed, in the moment's cells: where its
+   * cursor stands as it starts, and after its last character.
+   */
+  const linePlace = (line: string): LinePlace | undefined => {
+    const p = lineRef.current,
+      typed = typedRef.current,
+      theater = theaterRef.current,
+      player = playerRef.current;
+    if (!p || !typed || !theater || !player || line.length === 0) return undefined;
+    typed.textContent = line;
+    const text = typed.firstChild;
+    const range = document.createRange();
+    const box = theater.getBoundingClientRect();
+    const cursor = (Number.parseFloat(getComputedStyle(p).fontSize) * BLOCK_WIDTH) / 2;
+    const at = (n: number, side: "left" | "right"): readonly [number, number] | undefined => {
+      if (text === null) return undefined;
+      range.setStart(text, n);
+      range.setEnd(text, n + 1);
+      const rect = [...range.getClientRects()].at(-1);
+      if (rect === undefined) return undefined;
+      // The cursor's middle: half a block past the edge it stands at.
+      return player.cellAt(rect[side] - box.left + cursor, rect.top + rect.height / 2 - box.top);
+    };
+    const from = at(0, "left"),
+      to = at(line.length - 1, "right");
+    typed.textContent = "";
+    return from && to ? { from, to } : undefined;
+  };
 
   /** Plays the moment earned, if the person can see it and the budget allows. */
   const play = useEffectEvent(() => {
-    const earned = earnedRef.current;
     const player = playerRef.current;
-    if (earned === null || player === null || playingRef.current !== null) return;
-    if (shownSince.current === null) return;
-    earnedRef.current = null;
+    if (player === null || playingRef.current !== null || shownSince.current === null) return;
+    const earned = takeEarned();
+    if (earned === null) return;
     const now = Date.now();
     if (now - earned.at > DUE_FOR) return;
     if (earned.once !== undefined && playedFor(earned.id, earned.once)) return;
     if (!takeRare(earned.id, now, home.waits)) return;
-    if (!player.play({ id: earned.id, startedAt: now })) return;
+    const args = { ...earned.args, line: linePlace(earned.line) };
+    const card = momentCard(earned.id, args);
+    if (card === undefined || !player.play({ id: earned.id, startedAt: now, args })) return;
     if (earned.once !== undefined) markPlayed(earned.id, earned.once);
-    const card = MOMENT_CARDS[earned.id]();
     const said = saidRef.current;
     // Under Reduce Motion the still tells it all at once, the line with it.
     const still = reducedMotion();
+    // A moment with no line says it all in its picture.
     const clear =
-      typedRef.current && cursorRef.current
+      earned.line !== "" && typedRef.current && cursorRef.current
         ? typeLine(
             typedRef.current,
             cursorRef.current,
@@ -110,16 +138,15 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
   /** Plays the moment earned once Aski has been in sight a while, if it is. */
   const schedule = useEffectEvent(() => {
     clearTimeout(due.current);
-    if (earnedRef.current === null || shownSince.current === null) return;
+    if (earnedMoment() === null || shownSince.current === null) return;
     const wait = Math.max(NOTICE, shownSince.current + LOOK - Date.now());
     due.current = setTimeout(() => play(), wait);
   });
 
-  /** A moment is earned: it plays when the person has seen Aski a moment, now or once they look. */
-  const earn = useEffectEvent((earned: Earned) => {
-    if (playingRef.current !== null) return;
-    earnedRef.current = earned;
-    schedule();
+  /** A moment is earned: it plays when the person has seen Aski a moment, now or once they look; one earned while another plays is dropped. */
+  const heard = useEffectEvent(() => {
+    if (playingRef.current === null) schedule();
+    else takeEarned();
   });
 
   const clicks = useRef<number[]>([]);
@@ -152,7 +179,9 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
     measure();
     const click = (event: MouseEvent): void => onClick(event);
     theater.addEventListener("click", click);
+    const deaf = onEarned(() => heard());
     return () => {
+      deaf();
       theater.removeEventListener("click", click);
       clearTimeout(due.current);
       sized.disconnect();
@@ -169,33 +198,19 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
     schedule();
   }, [shown]);
 
-  // Back: the server answers again after a silence in which no run was lost.
-  const silentSince = useRef<number | null>(null);
-  const droppedNow = useEffectEvent(() => dropped);
-  useEffect(() => {
-    const now = Date.now();
-    if (!home.answers) {
-      silentSince.current ??= now;
-      return;
-    }
-    const since = silentSince.current;
-    silentSince.current = null;
-    if (since !== null && backAfter(since, now, droppedNow()))
-      earn({ id: "back", line: words["moment.back"], at: now });
-  }, [home.answers]);
-
   // The night shift: the first look at Aski tonight while Cells work.
   useEffect(() => {
     if (!shown || !present || working === 0) return;
     const night = nightOf(new Date(minute));
-    if (night === null || playedFor("night", night)) return;
+    // A moment already waiting to play goes first; the night is earned again next minute.
+    if (night === null || playedFor("night", night) || earnedMoment() !== null) return;
     earn({ id: "night", line: words["moment.night"], at: Date.now(), once: night });
   }, [shown, present, working, minute]);
 
   return (
     <div ref={theaterRef} className="aski-moments">
       {props.children}
-      <p className="aski-moment-line" role="status">
+      <p ref={lineRef} className="aski-moment-line" role="status">
         <span ref={saidRef} className="sr-only" />
         <span ref={typedRef} aria-hidden="true" />
         <span ref={cursorRef} aria-hidden="true" className="aski-moment-cursor" hidden />

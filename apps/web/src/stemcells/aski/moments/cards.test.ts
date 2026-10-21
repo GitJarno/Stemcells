@@ -9,9 +9,10 @@ import { BODY_MID, BODY_WIDTH, cellToCanon, cloudAtRest, cloudCells, homeFit } f
 import { BACK } from "./back.ts";
 import { BITS } from "./bits.ts";
 import { MOMENT_CARDS, momentCard } from "./cards.ts";
+import { budOf } from "./many.ts";
 import { TYPING, typingFor } from "./line.ts";
 import { NIGHT } from "./night.ts";
-import { eyesLooking } from "./stage.ts";
+import { eyesLooking, squareOf } from "./stage.ts";
 
 const STAGES = [
   { cols: 180, rows: 21 },
@@ -49,16 +50,17 @@ test("a moment's frame depends on its time and stage alone", () => {
 test("each line fits its moment: eight words at most, typed and read before it ends, its still showing the eyes", () => {
   for (const [id, make] of Object.entries(MOMENT_CARDS)) {
     const card = make();
-    NodeAssert.equal(card.lines.length, 1, id);
-    const line = card.lines[0]!;
+    NodeAssert.ok(card.still > 0 && card.still < card.end, `${id}: the still is inside`);
+    NodeAssert.ok(card.eyes(card.still) > 0, `${id}: the still shows its eyes`);
+    NodeAssert.ok(card.lines.length <= 1, id);
+    const line = card.lines[0];
+    if (line === undefined) continue;
     NodeAssert.ok(line.trim().split(/\s+/).length <= 8, `${id}: ${line}`);
     const say = card.beats.say!;
     NodeAssert.ok(
       say * 1000 + typingFor(line) + TYPING.hold <= card.end * 1000,
       `${id}: the line is typed and the cursor has rested before the moment ends`,
     );
-    NodeAssert.ok(card.still > 0 && card.still < card.end, `${id}: the still is inside`);
-    NodeAssert.ok(card.eyes(card.still) > 0, `${id}: the still shows its eyes`);
   }
 });
 
@@ -151,3 +153,92 @@ function sameCell(
     y = cellAt(b, i, j);
   return x.ch === y.ch && x.ink === y.ink;
 }
+
+test("clear shows each ask as a mark beside Aski, takes them away one by one, then is pleased", () => {
+  const stage = STAGES[0]!,
+    card = MOMENT_CARDS.clear({ n: 4 }),
+    rest = cloudAtRest(stage),
+    marks = (t: number) =>
+      card.frame(t, stage).cells.filter((c, k) => c.ch === "!" && rest.cells[k]!.ch !== "!").length;
+  NodeAssert.equal(marks(0.5), 4);
+  NodeAssert.equal(marks(card.beats.gone!), 0);
+  NodeAssert.equal(card.mood?.(card.beats.gone! + 0.3), "pleased");
+  NodeAssert.deepEqual(card.lines, [], "the list of what needs the person says it");
+  NodeAssert.equal(
+    MOMENT_CARDS.clear({ n: 40 })
+      .frame(0.5, stage)
+      .cells.filter((c) => c.ch === "!").length,
+    9,
+  );
+});
+
+test("many buds one Cell per title, named by its longest word, and leaves Aski as it was", () => {
+  const stage = STAGES[0]!,
+    titles = ["Fix the login page", "Add tests", "Write docs", "Tune the api", "Polish ui"],
+    card = MOMENT_CARDS.many({ titles }),
+    seen = card
+      .frame(card.still, stage)
+      .cells.map((c) => c.ch)
+      .join("");
+  for (const word of ["(login)", "(tests)", "(write)", "(tune)", "(polish)"])
+    NodeAssert.ok(seen.includes(word), `buds ${word}`);
+  const body = new Set(cloudCells(stage)),
+    rest = cloudAtRest(stage),
+    frame = card.frame(card.still, stage);
+  for (const k of body) NodeAssert.deepEqual(frame.cells[k], rest.cells[k], "Aski is untouched");
+});
+
+test("a bud holds the longest word that fits it whole", () => {
+  NodeAssert.equal(budOf("Spell banana backwards"), "(banana)");
+  NodeAssert.equal(budOf("Describe a teapot"), "(describe)");
+  NodeAssert.equal(budOf("Internationalization"), "(internat)");
+  NodeAssert.equal(budOf("Do it"), "(cell)");
+});
+
+test("many's buds settle no higher or lower than Aski, so the band never cuts one off", () => {
+  const card = MOMENT_CARDS.many({
+    titles: ["a1", "b22", "c333", "d4444", "e55555", "f666666", "g7"],
+  });
+  for (const stage of STAGES) {
+    const sq = squareOf(stage),
+      body = new Set(cloudCells(stage)),
+      frame = card.frame(card.still, stage);
+    for (const [k, cell] of frame.cells.entries()) {
+      if (body.has(k) || isEmpty(cell)) continue;
+      const row = Math.floor(k / stage.cols);
+      NodeAssert.ok(row >= sq.top && row <= sq.bottom, `row ${row} on ${stage.cols}×${stage.rows}`);
+    }
+  }
+});
+
+test("the news: asleep, then one eye goes to the line, stands aside while it types, and comes home", () => {
+  const stage = STAGES[0]!,
+    line = { from: [150, 10] as const, to: [180, 10] as const },
+    card = MOMENT_CARDS.news({ n: 3, line });
+  NodeAssert.equal(card.mood?.(0.2), "asleep");
+  NodeAssert.equal(card.lines[0], "3 landed while you were out.");
+  const there = card.eyesAt?.(card.beats.there! - 0.001, stage);
+  NodeAssert.ok(there && there.at.length === 2 && Math.abs(there.at[1]![0] - 150) < 0.5);
+  NodeAssert.equal(
+    card.eyesAt?.(card.beats.say! + 0.5, stage)?.at.length,
+    1,
+    "its eye is the cursor",
+  );
+  const leaving = card.eyesAt?.(card.beats.typed! + 0.01, stage);
+  NodeAssert.ok(
+    leaving && Math.abs(leaving.at[1]![0] - 180) < 1,
+    "it comes home from the line's end",
+  );
+  NodeAssert.equal(card.eyesAt?.(card.still, stage) ?? null, null, "both home on the still");
+});
+
+test("a haul says its whole hours", () => {
+  NodeAssert.equal(
+    MOMENT_CARDS.haul({ hours: 1 }).lines[0],
+    "An hour of work. No questions asked.",
+  );
+  NodeAssert.equal(
+    MOMENT_CARDS.haul({ hours: 3 }).lines[0],
+    "3 hours of work. No questions asked.",
+  );
+});

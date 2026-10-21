@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
+import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
@@ -251,7 +252,12 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const askiOnTheWay = isIndexRoute && askiChat.status === "starting" && tab === null;
   const keepGrid =
     isIndexRoute && ((tab !== null && focusedPresence.liveness !== "gone") || askiOnTheWay);
-  const keeper = <AskiKeeper onChat={onAskiChat} />;
+  const keeper = (
+    <>
+      <AskiKeeper onChat={onAskiChat} />
+      <AskiMomentWatch aski={askiChat.status === "ready" ? askiChat.cell : null} />
+    </>
+  );
   if (props.target === null && !keepGrid) {
     return (
       <>

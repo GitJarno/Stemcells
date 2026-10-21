@@ -45,9 +45,15 @@ export interface SceneCard {
   frame(t: number, stage: Stage): Grid;
 }
 
-/** The eyes away from home: each one's ink centre in cells (column, row), left one first, and how tall they are in rows. */
+/**
+ * The eyes away from home: each one's ink centre in cells (column, row),
+ * left one first, and how tall they are in rows. The left one alone while
+ * the right one is off being something else (a moment's cursor).
+ */
 export interface EyePlace {
-  readonly at: readonly [readonly [number, number], readonly [number, number]];
+  readonly at:
+    | readonly [readonly [number, number], readonly [number, number]]
+    | readonly [readonly [number, number]];
   readonly rows: number;
 }
 

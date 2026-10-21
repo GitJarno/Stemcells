@@ -6,6 +6,7 @@
  */
 import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connection";
 import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
+import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
 
 import { isSidebarSubagentThread } from "../../components/Sidebar.logic";
@@ -41,24 +42,38 @@ const SILENT: ReadonlySet<EnvironmentConnectionPhase> = new Set([
   "unsupported",
 ]);
 
-/** How things stand for Aski's eyes, `aski` being Aski's chat; `now` decides which chats are still snoozed. */
-export function useAskiHome(aski: CellRef | null, now: string): AskiHome {
-  const environment = useEnvironment(usePrimaryEnvironmentId());
+/** An open chat and where it stands. */
+export interface OpenChat {
+  readonly key: string;
+  readonly shell: EnvironmentThreadShell;
+  readonly standing: Standing;
+}
+
+/** The chats the rail counts (open, the person's own), less Aski's; `now` decides which are still snoozed. */
+export function useOpenChats(aski: CellRef | null, now: string): ReadonlyArray<OpenChat> {
   const shells = useThreadShells();
   const visited = useUiStateStore((state) => state.threadLastVisitedAtById);
-  const shell = useQuietThreadShell(aski ? threadRefOf(aski) : null);
-  const askiStatus = useCellStatus(aski);
-  const askiStands = aski ? standingOf(askiStatus) : null;
-  // The chats the rail counts (open, the person's own), less Aski's and those never run.
-  const others = shells.flatMap((chat) => {
+  return shells.flatMap((chat) => {
     if (chat.archivedAt !== null || chat.settledOverride === "settled") return [];
     if (isSidebarSubagentThread(chat) || effectiveSnoozed(chat, { now })) return [];
     if (aski !== null && chat.environmentId === aski.environmentId && chat.id === aski.threadId)
       return [];
-    const ref = scopedThreadKey(scopeThreadRef(chat.environmentId, chat.id));
-    const standing = standingOf(statusOfShell(chat, visited[ref]));
-    return standing === "done" && chat.latestRun == null ? [] : [standing];
+    const key = scopedThreadKey(scopeThreadRef(chat.environmentId, chat.id));
+    return [{ key, shell: chat, standing: standingOf(statusOfShell(chat, visited[key])) }];
   });
+}
+
+/** How things stand for Aski's eyes, `aski` being Aski's chat; `now` decides which chats are still snoozed. */
+export function useAskiHome(aski: CellRef | null, now: string): AskiHome {
+  const environment = useEnvironment(usePrimaryEnvironmentId());
+  const open = useOpenChats(aski, now);
+  const shell = useQuietThreadShell(aski ? threadRefOf(aski) : null);
+  const askiStatus = useCellStatus(aski);
+  const askiStands = aski ? standingOf(askiStatus) : null;
+  // A chat never sent anything holds no work yet.
+  const others = open.flatMap(({ shell: chat, standing }) =>
+    standing === "done" && chat.latestRun == null ? [] : [standing],
+  );
   const latestRun = shell?.latestRun ?? null;
   return {
     answers: environment === null || !SILENT.has(environment.connection.phase),

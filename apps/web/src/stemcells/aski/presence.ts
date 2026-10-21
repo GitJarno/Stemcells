@@ -5,9 +5,11 @@
 // return shows itself here first: while nobody was there, the pointer
 // moving, a key or the window coming forward asks again at once. A server
 // that stops answering leaves its last word standing: a Mac that said
-// nobody was at it and then went quiet is taken to be asleep.
+// nobody was at it and then went quiet is taken to be asleep. Back from a
+// while away, the server also says how long the person was gone. Every
+// part of the page that wants it shares one watch.
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { getFromPrimary } from "../upstream/askiEyes";
 
@@ -16,6 +18,18 @@ const PRESENCE_PATH = "/api/stemcells/presence";
 export const EVERY = { present: 10_000, away: 60_000 } as const;
 /** The least time between two asks a return prompts, in milliseconds: the server's own reading lasts this long. */
 export const AGAIN = 2_000;
+
+/** A stretch nobody was at the Mac, in Unix milliseconds. */
+export interface Stretch {
+  readonly from: number;
+  readonly to: number;
+}
+
+/** What the server says: whether somebody is at the Mac and, back lately, the stretch they were away. */
+export interface PresenceSaid {
+  readonly present: boolean;
+  readonly back?: Stretch | undefined;
+}
 
 /** The page as the watch needs it: whether it is hidden, and where its visibility, pointer, keys and focus are heard. */
 export interface PresencePage {
@@ -31,14 +45,14 @@ export interface PresencePage {
  * server said nothing. Returns the function that stops it.
  */
 export function watchPresence(
-  read: () => Promise<boolean | undefined>,
-  tell: (present: boolean) => void,
+  read: () => Promise<PresenceSaid | undefined>,
+  tell: (said: PresenceSaid) => void,
   page: PresencePage,
 ): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let gone = false;
   let asking = false;
-  let last = true;
+  let last: PresenceSaid = { present: true };
   let askedAt = 0;
   const ask = async (): Promise<void> => {
     if (timer !== undefined) clearTimeout(timer);
@@ -55,14 +69,14 @@ export function watchPresence(
     }
     if (gone || page.hidden()) return;
     tell(last);
-    timer = setTimeout(() => void ask(), last ? EVERY.present : EVERY.away);
+    timer = setTimeout(() => void ask(), last.present ? EVERY.present : EVERY.away);
   };
   const shown = (): void => {
     if (!page.hidden() && timer === undefined) void ask();
   };
   // Somebody may be back: ask now rather than at the next slow turn.
   const stirred = (): void => {
-    if (!last && Date.now() - askedAt >= AGAIN) void ask();
+    if (!last.present && Date.now() - askedAt >= AGAIN) void ask();
   };
   void ask();
   page.document.addEventListener("visibilitychange", shown);
@@ -77,21 +91,52 @@ export function watchPresence(
   };
 }
 
-/** What the server says, true or false; undefined when it says nothing it can be taken at. */
-async function readPresence(): Promise<boolean | undefined> {
+const isStretch = (value: unknown): value is Stretch =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as Stretch).from === "number" &&
+  typeof (value as Stretch).to === "number";
+
+/** What the server says; undefined when it says nothing it can be taken at. */
+async function readPresence(): Promise<PresenceSaid | undefined> {
   const response = await getFromPrimary(PRESENCE_PATH);
   if (!response.ok) return undefined;
-  const said = (await response.json()) as { present?: unknown };
-  return typeof said.present === "boolean" ? said.present : undefined;
+  const said = (await response.json()) as { present?: unknown; back?: unknown };
+  if (typeof said.present !== "boolean") return undefined;
+  return isStretch(said.back)
+    ? { present: said.present, back: said.back }
+    : { present: said.present };
 }
 
-/** Whether somebody is at this Mac; true until the server says otherwise. */
-export function usePresent(): boolean {
-  const [present, setPresent] = useState(true);
-  useEffect(
-    () =>
-      watchPresence(readPresence, setPresent, { hidden: () => document.hidden, document, window }),
-    [],
+const sameSaid = (a: PresenceSaid, b: PresenceSaid): boolean =>
+  a.present === b.present && a.back?.from === b.back?.from && a.back?.to === b.back?.to;
+
+/** The one watch the page shares: running while anything listens. */
+let current: PresenceSaid = { present: true };
+const listeners = new Set<() => void>();
+let unwatch: (() => void) | undefined;
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  unwatch ??= watchPresence(
+    readPresence,
+    (said) => {
+      if (sameSaid(said, current)) return;
+      current = said;
+      for (const heard of listeners) heard();
+    },
+    { hidden: () => document.hidden, document, window },
   );
-  return present;
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size > 0) return;
+    unwatch?.();
+    unwatch = undefined;
+  };
 }
+
+/** What the server says of this Mac; somebody is there until it says otherwise. */
+export const usePresence = (): PresenceSaid => useSyncExternalStore(subscribe, () => current);
+
+/** Whether somebody is at this Mac; true until the server says otherwise. */
+export const usePresent = (): boolean => usePresence().present;

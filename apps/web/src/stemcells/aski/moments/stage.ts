@@ -4,10 +4,11 @@
 // (`cloudAtRest`), so the figure fades out under it and back without a seam.
 
 import { BLINK } from "../acts.ts";
-import { EYES } from "../canon.ts";
+import { BODY_HEIGHT, EYES } from "../canon.ts";
+import { CURSOR } from "../eyes.ts";
 import { type Grid, makeGrid, put, type Stage } from "../grid.ts";
 import { hash, lerp } from "../math.ts";
-import { cloudCells, type EyePlace, homeFit, spell } from "../scene.ts";
+import { BODY_MID, BODY_WIDTH, cloudCells, type EyePlace, homeFit, spell } from "../scene.ts";
 
 /** How open the eyes are through one blink starting at `at`, the canon's blink: shut over `close`, open over `open`. */
 export function blinkFrom(t: number, at: number): number {
@@ -50,3 +51,34 @@ export function middleOf(stage: Stage, [x, y]: readonly [number, number]): [numb
   const fit = homeFit(stage);
   return [x * fit.kx + fit.cx, y * fit.ky + fit.ground];
 }
+
+/** Aski's square on a stage, in cells: its left and right columns, the top and bottom rows its cloud spans, the row of its middle and of its eyes. */
+export function squareOf(stage: Stage): {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+  readonly middle: number;
+  readonly eyes: number;
+} {
+  const fit = homeFit(stage),
+    half = Math.max(BODY_WIDTH, BODY_HEIGHT) / 2,
+    rows = cloudCells(stage).map((k) => Math.floor(k / stage.cols));
+  return {
+    left: (BODY_MID.x - half) * fit.kx + fit.cx,
+    right: (BODY_MID.x + half) * fit.kx + fit.cx,
+    top: Math.min(...rows),
+    bottom: Math.max(...rows),
+    middle: BODY_MID.y * fit.ky + fit.ground,
+    eyes: EYES.centers[0][1] * fit.ky + fit.ground,
+  };
+}
+
+/** Writes `text` from cell (i, j) at `ink`, one character to a cell; outside the stage it writes nothing. */
+export function write(g: Grid, i: number, j: number, text: string, ink = 1): void {
+  for (const [n, ch] of [...text].entries()) put(g, Math.round(i) + n, Math.round(j), ch, ink);
+}
+
+/** Whether a cursor's beat, starting at 0 seconds, is in its open half at t: as the eyes blink while they wait. */
+export const cursorOpen = (t: number): boolean =>
+  (((t * 1000) % CURSOR) + CURSOR) % CURSOR < CURSOR / 2;

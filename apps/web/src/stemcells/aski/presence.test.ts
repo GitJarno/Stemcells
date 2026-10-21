@@ -19,9 +19,9 @@ function awayMac() {
   const stop = watchPresence(
     async () => {
       reads++;
-      return present;
+      return { present };
     },
-    (said) => told.push(said),
+    (said) => told.push(said.present),
     page,
   );
   return { reads: () => reads, told, back: () => (present = true), stop };

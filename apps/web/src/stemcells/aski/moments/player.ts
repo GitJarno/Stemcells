@@ -50,6 +50,16 @@ export class MomentPlayer {
     });
   }
 
+  /** The point (x, y), in CSS pixels from the theater's corner, in the moment's cells (column, row). */
+  cellAt(x: number, y: number): readonly [number, number] | undefined {
+    const placed = this.#placed;
+    if (placed === undefined) return undefined;
+    return [
+      ((x - placed.x) / placed.width) * placed.cols,
+      ((y - placed.y) / placed.height) * placed.rows,
+    ];
+  }
+
   /** Whether the theater is in sight: a moment draws only then. */
   run(inSight: boolean): void {
     if (inSight === this.#inSight) return;

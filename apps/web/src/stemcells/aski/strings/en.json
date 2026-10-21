@@ -3,5 +3,9 @@
   "scene.pond": "Let's do something memorable.",
   "moment.bits": "Seven bits. All of them.",
   "moment.back": "Back. Nothing dropped.",
-  "moment.night": "The night shift is theirs."
+  "moment.night": "The night shift is theirs.",
+  "moment.news": "{n} landed while you were out.",
+  "moment.many": "Talk to one. Run many.",
+  "moment.haul.one": "An hour of work. No questions asked.",
+  "moment.haul.many": "{n} hours of work. No questions asked."
 }
