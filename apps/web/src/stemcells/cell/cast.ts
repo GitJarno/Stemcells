@@ -50,6 +50,9 @@ function sceneKey(mood: Mood, activity: Activity | undefined, seconds: number): 
       return "asleep";
     case "pleased":
       return "happy";
+    case "meditating":
+      // Floating over its shadow; held still with no clock, it sits on it.
+      return seconds === 0 ? "meditating/still" : "meditating";
     default:
       if (activity === undefined) return "idle";
       return activity === "thinking"

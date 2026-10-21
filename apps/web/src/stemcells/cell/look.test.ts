@@ -17,6 +17,7 @@ test("the Cell as a mark wears a face of its own in every mood the product names
     "awake",
     "braced",
     "crashed",
+    "meditating",
     "needsYou",
     "pleased",
   ]);

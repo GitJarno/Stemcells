@@ -4,10 +4,10 @@ import { currentActivity } from "../cell/activity";
 import { CellFigure } from "../cell/CellFigure";
 import { useShownActivity } from "../cell/useShownActivity";
 import { useCellGround } from "../upstream/appearance";
-import { useCellCalls, useCellRest } from "../upstream/cellWork";
+import { useCellCalls, useCellDeep, useCellRest } from "../upstream/cellWork";
 import { useCellDriver } from "../upstream/providers";
 import { useCellStatus } from "../upstream/status";
-import { activityOfStatus, moodAt, moodTurnsAt } from "./cellMood";
+import { activityOfStatus, moodAt, moodTurnsAt, thinkingQuietly } from "./cellMood";
 import type { CellRef } from "./layout";
 import { useRosterLook } from "./roster";
 
@@ -18,8 +18,9 @@ const POINTS = 1;
  * A chat's Cell, small: its look dealt by the chat's thread id with the crew
  * in view (`roster.ts`; a draft keeps it once sent), its face from the chat's
  * status, the "?" over it while it waits on you, in its provider's colours.
- * While the chat works it acts out the call in flight; when a turn lands it
- * cheers, then rests, and sleeps once the chat's prompt cache has gone cold.
+ * While the chat works it acts out the call in flight, and meditates once its
+ * thought goes deep; when a turn lands it cheers, then rests, and sleeps once
+ * the chat's prompt cache has gone cold.
  * Its box holds all of it, hats too, so centring the box centres the whole
  * Cell. Drawn `points` a sprite pixel; small beside a label unless told.
  */
@@ -29,11 +30,15 @@ export function CellMark(props: { cell: CellRef | null; points?: number }) {
   const ground = useCellGround();
   const working = status === "Working";
   const calls = useCellCalls(props.cell, working);
-  const activity = useShownActivity(currentActivity(working, calls)) ?? activityOfStatus(status);
+  const raw = currentActivity(working, calls);
+  const shown = useShownActivity(raw);
+  const activity = shown ?? activityOfStatus(status);
+  const deep = useCellDeep(props.cell, working, thinkingQuietly(raw, shown));
   const { landedAt, coldAt } = useCellRest(props.cell, provider);
   const look = useRosterLook(props.cell?.threadId);
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
+  const mood = moodAt(status, landedAt, coldAt, now);
   useEffect(() => {
     if (turnsAt === undefined) return;
     const timer = setTimeout(() => setNow(Date.now()), Math.max(0, turnsAt - Date.now()));
@@ -44,7 +49,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number }) {
       <CellFigure
         name={props.cell?.threadId ?? ""}
         ground={ground}
-        mood={moodAt(status, landedAt, coldAt, now)}
+        mood={mood === "awake" && deep ? "meditating" : mood}
         activity={activity}
         provider={provider}
         look={look}

@@ -1,8 +1,8 @@
 /**
  * What a chat's Cell acts out, read from upstream's thread: the tool calls of
- * the run in progress, newest last, when its last turn landed, and when its
- * prompt cache goes cold. A Cell reads the turn items only while its chat
- * works, and the thread's detail once per landing. On the desktop app every
+ * the run in progress, newest last, when anything last came into it, when its
+ * last turn landed, and when its prompt cache goes cold. A Cell reads the turn
+ * items only while its chat works, and the thread's detail once per landing. On the desktop app every
  * running thread's items are live already (upstream's
  * `RunningThreadKeepAlive`); in a browser this keeps a working chat's live
  * while its Cell is mounted.
@@ -13,7 +13,8 @@ import type {
   OrchestrationV2ThreadProjection,
   OrchestrationV2TurnItem,
 } from "@t3tools/contracts";
-import { useState } from "react";
+import { DateTime } from "effect";
+import { useEffect, useState } from "react";
 
 import { latestProviderTurnTokenUsage } from "../../lib/contextWindow";
 import {
@@ -21,7 +22,7 @@ import {
   useThreadProjection,
   useThreadVisibleTurnItems,
 } from "../../state/entities";
-import type { ToolBeat } from "../cell/activity";
+import { ACTIVITY_HOLD, type ToolBeat } from "../cell/activity";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
 
@@ -92,6 +93,46 @@ export function useCellCalls(cell: CellRef | null, working: boolean): ToolBeat[]
   const shell = useQuietThreadShell(ref);
   const items = useThreadVisibleTurnItems(working ? ref : null);
   return working ? beatsOf(items, shell?.runtime?.activeRunId ?? null) : [];
+}
+
+/** What a run's items say, as a key that turns with each new item, change and word; and whether a compaction is running. */
+export function newsOf(
+  items: ReadonlyArray<OrchestrationV2ProjectedTurnItem>,
+  runId: string | null,
+): { readonly key: string; readonly compacting: boolean } {
+  let count = 0;
+  let latest = 0;
+  let words = 0;
+  let compacting = false;
+  for (const { item } of items) {
+    if (runId !== null && item.runId !== runId) continue;
+    count += 1;
+    latest = Math.max(latest, DateTime.toEpochMillis(item.updatedAt));
+    if (item.type === "assistant_message" || item.type === "reasoning") words += item.text.length;
+    if (item.type === "compaction" && stateOf(item.status) === "requested") compacting = true;
+  }
+  return { key: `${runId}|${count}|${latest}|${words}`, compacting };
+}
+
+/**
+ * Whether the chat's thought has gone deep, as the original's did: it is
+ * `quiet` (it shows thinking with no call in flight), nothing has come into
+ * the run (its start, a call, a change in one, a word of the reply or of its
+ * shown thought) for the activity's hold, and no compaction runs.
+ */
+export function useCellDeep(cell: CellRef | null, working: boolean, quiet: boolean): boolean {
+  const ref = cell ? threadRefOf(cell) : null;
+  const shell = useQuietThreadShell(ref);
+  const items = useThreadVisibleTurnItems(working ? ref : null);
+  const news = newsOf(items, shell?.runtime?.activeRunId ?? null);
+  const [silent, setSilent] = useState<string | null>(null);
+  // The silence counts from the last news, quiet or not, as the original's.
+  useEffect(() => {
+    if (!working) return;
+    const timer = setTimeout(() => setSilent(news.key), ACTIVITY_HOLD);
+    return () => clearTimeout(timer);
+  }, [working, news.key]);
+  return working && quiet && !news.compacting && silent === news.key;
 }
 
 /**

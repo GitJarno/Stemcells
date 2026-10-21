@@ -7,6 +7,7 @@ export type Activity =
   | "thinking"
   | "reading"
   | "searching"
+  | "editing"
   | "running"
   | "testing"
   | "building"
@@ -18,6 +19,7 @@ export const ACTIVITIES: readonly Activity[] = [
   "thinking",
   "reading",
   "searching",
+  "editing",
   "running",
   "testing",
   "building",
@@ -57,6 +59,12 @@ export function activityOf(tool: string, brief: string): Activity {
     case "codebase_search":
     case "file_search":
       return "searching";
+    case "edit":
+    case "write":
+    case "multiedit":
+    case "notebookedit":
+    case "apply_patch":
+      return "editing";
     case "webfetch":
     case "websearch":
     case "web_search":

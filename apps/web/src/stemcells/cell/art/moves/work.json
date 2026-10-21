@@ -1,0 +1,445 @@
+{
+  "scenes": {
+    "editing/0": {
+      "fps": 6,
+      "facing": "right",
+      "kind": "loop",
+      "tell": 1,
+      "pieces": "loop",
+      "frames": [
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -2
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -2
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 1],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 1],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0],
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.55,
+                "dx": 3,
+                "dy": -1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".P.", ".P.", ".g.", "YYJ", "YYJ", "YYJ", "YYJ", ".o.", ".k."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": ["P", "Y", "k"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

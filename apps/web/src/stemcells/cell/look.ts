@@ -6,10 +6,18 @@ import { MINI } from "./kit.ts";
 import { packLook } from "./scene.ts";
 
 /** The faces a character wears. */
-export type Mood = "awake" | "needsYou" | "asleep" | "pleased" | "crashed" | "braced";
+export type Mood =
+  | "awake"
+  | "meditating"
+  | "needsYou"
+  | "asleep"
+  | "pleased"
+  | "crashed"
+  | "braced";
 
 export const MOODS: readonly Mood[] = [
   "awake",
+  "meditating",
   "needsYou",
   "asleep",
   "pleased",

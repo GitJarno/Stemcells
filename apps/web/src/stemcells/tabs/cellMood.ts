@@ -64,3 +64,7 @@ export function moodTurnsAt(
 export function activityOfStatus(status: CellStatus | null): Activity | undefined {
   return status === "Waiting" ? "waiting" : undefined;
 }
+
+/** Thinking with no call in flight, raw and shown: the only time a Cell's thought can go deep (`useCellDeep`). */
+export const thinkingQuietly = (raw: Activity | undefined, shown: Activity | undefined): boolean =>
+  raw === "thinking" && shown === "thinking";

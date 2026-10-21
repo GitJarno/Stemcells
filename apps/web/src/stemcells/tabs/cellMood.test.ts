@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { MOODS } from "../cell/look";
 import { CELL_STATUSES } from "../upstream/status";
-import { activityOfStatus, CHEER_MS, moodAt, moodTurnsAt } from "./cellMood";
+import { activityOfStatus, CHEER_MS, moodAt, moodTurnsAt, thinkingQuietly } from "./cellMood";
 
 describe("a Cell's face from its chat's status", () => {
   it("is a face the art draws, for every status", () => {
@@ -63,5 +63,14 @@ describe("a Cell's face from its chat's status", () => {
   it("acts out only what the status says: waiting", () => {
     expect(activityOfStatus("Waiting")).toBe("waiting");
     expect(activityOfStatus("Working")).toBeUndefined();
+  });
+});
+
+describe("thought gone deep, as the original's", () => {
+  it("can come only while the Cell shows thinking and no call is in flight", () => {
+    expect(thinkingQuietly("thinking", "thinking")).toBe(true);
+    expect(thinkingQuietly("running", "thinking")).toBe(false);
+    expect(thinkingQuietly("thinking", "reading")).toBe(false);
+    expect(thinkingQuietly(undefined, undefined)).toBe(false);
   });
 });

@@ -17,7 +17,7 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 import rootSource from "../../routes/__root.tsx?raw";
 import claudeAdapterSource from "../../../../server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts?raw";
 import { currentActivity } from "../cell/activity";
-import { beatOf, beatsOf, CODEX_CACHE_MS, coldAtFor, coldAtOf } from "./cellWork";
+import { beatOf, beatsOf, CODEX_CACHE_MS, coldAtFor, coldAtOf, newsOf } from "./cellWork";
 
 const decode = Schema.decodeUnknownSync(OrchestrationV2TurnItem);
 const at = DateTime.makeUnsafe("2026-10-21T08:00:00.000Z");
@@ -61,7 +61,7 @@ describe("what a working Cell acts out, from its run's turn items", () => {
     expect(acting("dynamic_tool", { toolName: "Grep", input: { pattern: "x" } })).toBe("searching");
     expect(acting("file_search", { pattern: "*.ts" })).toBe("searching");
     expect(acting("web_search", { patterns: ["kit"] })).toBe("browsing");
-    expect(acting("file_change", { fileName: "a.ts" })).toBe("running");
+    expect(acting("file_change", { fileName: "a.ts" })).toBe("editing");
     expect(acting("reasoning", { text: "hm", streaming: true })).toBe("thinking");
   });
 
@@ -177,3 +177,37 @@ function projected(turnItem: OrchestrationV2TurnItem) {
     item: turnItem,
   };
 }
+
+describe("what is news in a run: the original's silence before thought goes deep", () => {
+  const reply = (text: string) =>
+    projected(item("assistant_message", { messageId: "m-1", text, streaming: true }));
+
+  it("turns with a new item, a word of the reply or thought, and a call's change", () => {
+    const first = newsOf([projected(item("reasoning", { text: "hm", streaming: true }))], "run-1");
+    const more = newsOf([projected(item("reasoning", { text: "hmm", streaming: true }))], "run-1");
+    expect(more.key).not.toBe(first.key);
+    expect(newsOf([reply("a"), reply("ab")], "run-1").key).not.toBe(
+      newsOf([reply("a")], "run-1").key,
+    );
+    // A call's change stamps the item anew.
+    const running = item("command_execution", { input: "make" });
+    const done = {
+      ...item("command_execution", { input: "make" }, "completed"),
+      updatedAt: DateTime.makeUnsafe("2026-10-21T08:00:05.000Z"),
+    };
+    expect(newsOf([projected(done)], "run-1").key).not.toBe(
+      newsOf([projected(running)], "run-1").key,
+    );
+  });
+
+  it("reads only the run in progress, and says while a compaction runs", () => {
+    const other = projected(item("reasoning", { text: "hm", streaming: true }));
+    expect(newsOf([other], "run-2").key).toBe(newsOf([], "run-2").key);
+    expect(newsOf([projected(item("compaction", { driver: null }))], "run-1").compacting).toBe(
+      true,
+    );
+    expect(
+      newsOf([projected(item("compaction", { driver: null }, "completed"))], "run-1").compacting,
+    ).toBe(false);
+  });
+});

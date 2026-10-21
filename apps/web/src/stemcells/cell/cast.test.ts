@@ -17,6 +17,12 @@ test("every mood plays a scene of its own, and a Cell at work acts out each acti
   NodeAssert.equal(scenes.size, MOODS.length + ACTIVITIES.length);
   NodeAssert.equal(sceneFor(bare, "needsYou", undefined, 0), sceneOf(bare, "waiting"));
   NodeAssert.equal(sceneFor(bare, "pleased", undefined, 0), sceneOf(bare, "happy"));
+  NodeAssert.equal(sceneFor(bare, "meditating", "thinking", 12), sceneOf(bare, "meditating"));
+  NodeAssert.equal(
+    sceneFor(bare, "meditating", "thinking", 0),
+    sceneOf(bare, "meditating/still"),
+    "held still with no clock, it sits on its shadow",
+  );
 });
 
 test("every piece a Cell can be dealt plays every mood", () => {
