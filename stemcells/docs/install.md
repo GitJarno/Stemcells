@@ -28,11 +28,13 @@ finds with your own accounts.
 ## What it does
 
 1. Checks the list above.
-2. With `--pull`, updates the checkout to the latest `main` first.
+2. With `--pull`, updates the checkout to the latest `main` first, then
+   carries on with the updated script.
 3. Installs dependencies exactly as locked (`pnpm install --frozen-lockfile`).
 4. Builds the app for your Mac's processor, with the small addon that
    reads the trackpad's own phases for the tab swipe
-   (`stemcells/scripts/build-scroll-phases`).
+   (`stemcells/scripts/build-scroll-phases`). It stops if the built app
+   lacks the addon.
 5. Quits a running Stemcells, moves the old copy to the Trash, and puts the
    new one in `/Applications` (or the folder given with `--to`).
 6. Opens it.
@@ -56,6 +58,7 @@ automatic updater.
 | --- | --- |
 | Chats, settings and state | `~/.stemcells` |
 | Window and browser data | `~/Library/Application Support/sh.stemcells.app` |
+| Whether the swipe reads the trackpad's phases, as of the last start | `stemcells-scroll-phases.log` in that folder |
 
 It never touches T3 Code's data (`~/.t3`), so both can be installed side by
 side.

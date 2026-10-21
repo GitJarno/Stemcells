@@ -11,6 +11,7 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 BUNDLE_ID="sh.stemcells.app"
+args=("$@")
 dest_dir="/Applications"
 pull=0
 force=0
@@ -60,6 +61,11 @@ if [ "$pull" = 1 ]; then
   [ -z "$(git status --porcelain --untracked-files=no)" ] || fail "this checkout has uncommitted changes." "commit or set them aside, then run again"
   git switch -q main
   git pull -q --ff-only
+  # Bash reads a script as it runs it, so after a pull that changed this one
+  # it would run the rest of the old copy. Start the new one, without --pull.
+  rest=()
+  for arg in ${args[@]+"${args[@]}"}; do [ "$arg" = --pull ] || rest+=("$arg"); done
+  exec stemcells/scripts/install-app ${rest[@]+"${rest[@]}"}
 fi
 
 # 3–4. Dependencies as locked, then the app for this processor.
@@ -75,6 +81,11 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 ditto -x -k "$zip" "$stage"
 [ -d "$stage/Stemcells.app" ] || fail "the archive holds no Stemcells.app."
+# The tab swipe reads the trackpad's own phases only with its addon: an app
+# without it would swipe on wheel events alone, and say nothing.
+node stemcells/scripts/asar-has.mjs "$stage/Stemcells.app/Contents/Resources/app.asar" \
+  stemcells-scroll-phases.node ||
+  fail "the built app lacks the scroll-phases addon." "stemcells/scripts/build-scroll-phases --check, then run again"
 
 # 5. Swap it in: quit the running copy, keep the old one in the Trash.
 if pgrep -f "$dest/Contents/MacOS/" >/dev/null 2>&1; then

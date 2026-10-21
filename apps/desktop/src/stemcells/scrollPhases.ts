@@ -1,5 +1,6 @@
 // @effect-diagnostics nodeBuiltinImport:off -- Loads a native addon from beside the main bundle, before any runtime.
 // @effect-diagnostics globalTimers:off -- Clock ticks to a page that just loaded, outside any Effect fiber.
+// @effect-diagnostics globalDate:off -- Stamps the line that says whether phases are live, outside any Effect fiber.
 /**
  * Stemcells: macOS's own phases for trackpad scrolls, for the tab swipe
  * (apps/web/src/stemcells/tabs/phases.ts). DOM wheel events lack them. The
@@ -8,7 +9,12 @@
  * and this sends it to the page of the window it happened in, where
  * scrollPhasesPreload.ts hands it on. Without the addon (not built, or not
  * a Mac) nothing is sent, and the page reads swipes from wheel events alone.
+ *
+ * Each start says which it is, in one line of stemcells-scroll-phases.log
+ * in the app's user data folder (and on stdout), so an install can be
+ * checked.
  */
+import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 
 import * as Electron from "electron";
@@ -36,15 +42,30 @@ interface ScrollPhasesAddon {
 }
 
 /** The addon beside the main bundle: resources/ in a checkout, prod-resources/ in the built app. */
-function loadAddon(): ScrollPhasesAddon | null {
+function loadAddon(): { readonly addon: ScrollPhasesAddon; readonly path: string } | string {
+  const failures: string[] = [];
   for (const folder of ["../resources", "../prod-resources"]) {
+    const path = NodePath.join(__dirname, folder, "build/stemcells-scroll-phases.node");
     try {
-      return require(
-        NodePath.join(__dirname, folder, "build/stemcells-scroll-phases.node"),
-      ) as ScrollPhasesAddon;
-    } catch {}
+      return { addon: require(path) as ScrollPhasesAddon, path };
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message.split("\n")[0]! : String(error));
+    }
   }
-  return null;
+  return failures.join("; ");
+}
+
+/** Says, once a start, whether the swipe reads the phases: on stdout and in the user data folder. */
+function report(line: string): void {
+  const stamped = `${new Date().toISOString()} ${line}\n`;
+  process.stdout.write(`[stemcells] ${stamped}`);
+  try {
+    const folder = Electron.app.getPath("userData");
+    NodeFS.mkdirSync(folder, { recursive: true });
+    NodeFS.writeFileSync(NodePath.join(folder, "stemcells-scroll-phases.log"), stamped);
+  } catch {
+    // A folder that can't be written loses the line, nothing more.
+  }
 }
 
 /** Pages by the system's number for their window, as scroll events name it. */
@@ -63,13 +84,23 @@ function pageOf(windowNumber: number): Electron.WebContents | null {
   return null;
 }
 
-const addon = loadAddon();
-if (addon !== null) {
-  void Electron.app.whenReady().then(() =>
-    addon.start((time, phase, momentum, window, dx, dy, now) => {
-      pageOf(window)?.send(CHANNEL, [time * 1000, phase, momentum, dx, dy, now * 1000]);
-    }),
-  );
+const loaded = loadAddon();
+if (typeof loaded === "string") {
+  void Electron.app
+    .whenReady()
+    .then(() => report(`scroll phases: off, wheel events alone (no addon: ${loaded})`));
+} else {
+  const { addon, path } = loaded;
+  void Electron.app.whenReady().then(() => {
+    try {
+      addon.start((time, phase, momentum, window, dx, dy, now) => {
+        pageOf(window)?.send(CHANNEL, [time * 1000, phase, momentum, dx, dy, now * 1000]);
+      });
+      report(`scroll phases: live (${path})`);
+    } catch (error) {
+      report(`scroll phases: off, wheel events alone (the addon didn't start: ${String(error)})`);
+    }
+  });
   Electron.app.on("browser-window-created", (_event, window) => {
     const page = window.webContents;
     page.on("did-finish-load", () => {

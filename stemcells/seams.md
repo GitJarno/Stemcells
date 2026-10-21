@@ -83,7 +83,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `vite.config.ts` | Imports `removeVitestTmpDir` from `apps/server/src/stemcells/testing/vitestTmpDir.ts` and adds `plugins: [removeVitestTmpDir()]` | Vitest never removes the temp folder it copies a run's modules into when the config has no `projects`, as the root's (and the server's, which extends it) hasn't: each run of the server's tests left about 40 MB in the system temp dir. The plugin removes it when Vitest closes; `vitestTmpDir.test.ts` fails once Vitest does that itself, and the seam goes |
 | `apps/desktop/src/main.ts` | Imports `./stemcells/scrollPhases.ts` (for its side effect) after its own imports | Scroll phases (below): the tab swipe reads macOS's own phases for trackpad scrolls, which wheel events lack |
 | `apps/desktop/src/preload.ts` | Imports `./stemcells/scrollPhasesPreload.ts` (for its side effect) after its own imports | Same: hands the phases to the page |
-| `apps/desktop/src/stemcells/scrollPhases.ts` | New: loads the scroll-phases addon and sends each phased scroll event to its window's page, with clock ticks after a page loads | Same: the main process's side |
+| `apps/desktop/src/stemcells/scrollPhases.ts` | New: loads the scroll-phases addon and sends each phased scroll event to its window's page, with clock ticks after a page loads; says once a start whether the phases are live (stdout, and `stemcells-scroll-phases.log` in the user data folder) | Same: the main process's side |
 | `apps/desktop/src/stemcells/scrollPhasesPreload.ts` | New: exposes `window.stemcellsScrollPhases` and puts the phases on the page's clock | Same: the preload's side |
 
 ### Substitutes
@@ -390,8 +390,9 @@ over several events. On the Mac the app reads the system's own phases:
   `stemcells/scripts/build-scroll-phases` builds it with the system's
   compiler into `apps/desktop/resources/build/` (ignored by git).
   `install-app` runs it, and the artifact build ships it with the rest of
-  `apps/desktop/resources`, so it needs no seam. The Stemcells workflow
-  builds and loads it on a Mac.
+  `apps/desktop/resources`, so it needs no seam; `install-app` stops if the
+  built app's archive lacks it (`stemcells/scripts/asar-has.mjs`). The
+  Stemcells workflow builds and loads it on a Mac.
 - The two desktop modules (rows above) send the phases to the page and put
   them on the page's clock. A wheel event's time is its system event's
   time, so the page places each wheel event by the phases at that time
