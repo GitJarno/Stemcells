@@ -12,6 +12,7 @@ import { viewerHearsFirst } from "../media/viewer";
 import { parseWorkspace } from "../tabs/layout";
 import { readWorkspace, updateWorkspace } from "../tabs/store";
 import { isCommandPaletteOpen, isTerminalFocused, shortcutMatcher } from "../upstream/keys";
+import { toastManager } from "../upstream/ui";
 import { welcomeAskiHome } from "./askiHome";
 import { windowsBridge } from "./bridge";
 import { moveTabToNewWindow } from "./newWindow";
@@ -21,6 +22,16 @@ import { undoMove } from "./undoMove";
 const matchesMoveToNewWindow = shortcutMatcher("mod+alt+t");
 // ⌘Z stays the composer's.
 const matchesUndoMove = shortcutMatcher("mod+alt+z");
+
+/** ⌥⌘Z: the latest move back, or a quiet note that it can't go back any more. */
+async function pressUndoMove(): Promise<void> {
+  if ((await undoMove()) !== "forgotten") return;
+  toastManager.add({
+    type: "info",
+    title: "Can't undo that move",
+    description: "Its windows have changed since.",
+  });
+}
 
 export function WindowsKeeper(props: {
   /** A move changed this window's workspace. */
@@ -40,7 +51,7 @@ export function WindowsKeeper(props: {
       if (matchesUndoMove(event)) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        void undoMove();
+        void pressUndoMove();
         return;
       }
       if (!matchesMoveToNewWindow(event)) return;

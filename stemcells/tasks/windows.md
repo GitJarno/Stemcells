@@ -404,14 +404,21 @@ memory.
 
 Every move above, and closing a window, pushes its inverse. Undo Move
 plays it with the move's own motion reversed, as long as every tab and pane
-it names still exists where expected; otherwise that entry is dropped and
-the next one is offered. ⌘Z stays the composer's.
+it names still exists where expected and no chat it brings back is open in
+another window; otherwise that entry is dropped with a quiet note, and the
+press does nothing else: the moves are a stack, and a press never reaches
+past the latest to an older one. ⌘Z stays the composer's. A carry in the
+hand holds ⌥⌘Z (and ⌥⌘G) off until it is put down.
 
 As built (W6c): each move a page commits carries its undo entry (the
 arrangement before and after, written as the windows file writes them),
 and main keeps the latest 20, not between launches. ⌥⌘Z in any window
 takes the latest back with `undo` from a fresh snapshot; one whose windows
-have changed shape since is forgotten and the one before it is tried. The
+have changed shape since, or that would bring back a chat opened elsewhere
+since (a window closed, then one of its chats opened in another), is
+forgotten with a note, "Can't undo that move", and the next press tries the
+one before it. Every undo's result is checked whole in the tests: no tab,
+pane or chat in two places. The
 windows change at once, without motion yet (W6d). Closing a window isn't a
 move yet: it closes natively and the lead takes Aski home, so Undo Move
 can't reopen it (W6d makes the close a move, Aski's tab going home in the

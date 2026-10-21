@@ -20,6 +20,7 @@ import {
 import {
   leadAfter,
   moved,
+  problemsOf,
   samePlace,
   shapeOf,
   windowById,
@@ -229,8 +230,10 @@ function withCells(workspace: Workspace, cells: ReadonlyMap<string, CellRef | nu
 
 /**
  * Takes a move back, while every window it touched still holds what the move
- * left there (focus and the active tab aside). Windows return to their
- * places only where the move placed them; one moved by hand since stays put.
+ * left there (focus and the active tab aside), and every chat it brings back
+ * is in no window it leaves alone: a window closed, then one of its chats
+ * opened in another, stays closed. Windows return to their places only where
+ * the move placed them; one moved by hand since stays put.
  */
 export function undo(current: Arrangement, entry: Moved["undo"]): Moved | null {
   const { before, after } = entry;
@@ -274,7 +277,7 @@ export function undo(current: Arrangement, entry: Moved["undo"]): Moved | null {
     ((windowById(current, id) !== null && !closing.has(id)) ||
       closed.some((window) => window.id === id));
   const lead = [current.lead, before.lead].find(standsAfter) ?? leadAfter(current, closing, front);
-  return moved(current, {
+  const back = moved(current, {
     open: closed.map((window) => ({ ...window, workspace: withCells(window.workspace, cells) })),
     change: restore,
     close: [...closing],
@@ -282,4 +285,7 @@ export function undo(current: Arrangement, entry: Moved["undo"]): Moved | null {
     lead,
     memories: memoriesChanged ? before.memories : current.memories,
   });
+  // A chat, tab or pane it brings back that is somewhere else now would be in two places.
+  const wrong = new Set(problemsOf(current));
+  return problemsOf(back.next).every((problem) => wrong.has(problem)) ? back : null;
 }

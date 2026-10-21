@@ -20,4 +20,5 @@ export {
   MenuTrigger,
 } from "../../components/ui/menu";
 export { cn, randomUUID } from "../../lib/utils";
+export { toastManager } from "../../components/ui/toast";
 export { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../../components/ui/empty";
