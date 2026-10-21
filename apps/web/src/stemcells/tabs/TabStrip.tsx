@@ -18,6 +18,7 @@ import {
 import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
+import { useCarrySpringLit } from "../windows/ChatCarry";
 import { GatherButton } from "../windows/GatherButton";
 import { useFlownChips } from "../windows/gatherFlight";
 import { useHosting, useStripMeasure } from "../windows/hostStrip";
@@ -54,6 +55,8 @@ export function TabStrip(props: {
   const { tabs, onActivate, onMove } = props;
   // A tab a drag rests on opens, so a file can be carried to another tab's chat.
   const spring = useSpringTabs(props.activeTabId, onActivate);
+  // A chat carried by its Cell rests on chips as a file does.
+  const carryLit = useCarrySpringLit();
   const carry = useTabCarry({
     tabs,
     activeTabId: props.activeTabId,
@@ -89,7 +92,17 @@ export function TabStrip(props: {
       className="flex h-9 shrink-0 items-center gap-1 pr-2"
       data-stemcells-tab-strip=""
     >
-      <div className="flex min-w-0 items-center gap-1" role="tablist">
+      <div
+        className="flex min-w-0 items-center gap-1"
+        role="tablist"
+        style={{
+          // The room a carried tab is given: what follows the chips moves over with them.
+          paddingInlineEnd: hosting.grows,
+          transition: hosting.gliding
+            ? "padding-inline-end var(--sc-motion-travel-duration) var(--sc-motion-travel-easing)"
+            : undefined,
+        }}
+      >
         <AskiChip
           {...props.aski}
           onActivate={() => onActivate(ASKI_TAB_ID)}
@@ -117,7 +130,7 @@ export function TabStrip(props: {
               aria-selected={tab.id === props.activeTabId}
               data-stemcells-tab={tab.id}
               data-stemcells-new-tab={isNewCell ? "" : undefined}
-              data-spring-lit={spring.lit === tab.id}
+              data-spring-lit={spring.lit === tab.id || carryLit === tab.id}
               data-dragged={dragged || undefined}
               {...spring.handlers(tab.id)}
               onPointerDown={(event) => {

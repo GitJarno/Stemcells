@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { halfOf, paneLandingAt, sideAt } from "./paneLanding";
+import { halfOf, paneLandingAt, sideAt, stripLandingAt } from "./paneLanding";
 
 const pane = { x: 100, y: 0, width: 400, height: 200 };
 
@@ -30,5 +30,24 @@ describe("carrying a chat onto a pane", () => {
       side: "left",
       half: { x: 100, y: 0, width: 200, height: 200 },
     });
+  });
+});
+
+describe("carrying a chat over the strip", () => {
+  const strip = { x: 0, y: 0, width: 1000, height: 36 };
+  const chips = [
+    { tabId: "a", rect: { x: 60, y: 6, width: 160, height: 24 } },
+    { tabId: "b", rect: { x: 224, y: 6, width: 160, height: 24 } },
+  ];
+
+  it("rests on the chip under the hand, the whole strip's height", () => {
+    expect(stripLandingAt(strip, chips, { x: 300, y: 2 })).toEqual({ kind: "chip", tabId: "b" });
+  });
+
+  it("offers a new tab past the last chip, and nothing between chips or off the strip", () => {
+    expect(stripLandingAt(strip, chips, { x: 600, y: 18 })).toEqual({ kind: "end" });
+    expect(stripLandingAt(strip, chips, { x: 222, y: 18 })).toBeNull();
+    expect(stripLandingAt(strip, chips, { x: 20, y: 18 })).toBeNull();
+    expect(stripLandingAt(strip, chips, { x: 600, y: 40 })).toBeNull();
   });
 });

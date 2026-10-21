@@ -56,7 +56,7 @@ asked for by name), then W7, W4, W9, W11.
       windows and open space.
   - [x] W7a In its own window, onto a half of another pane in the tab on
         stage: the card, the wash, the landing, Esc.
-  - [ ] W7b The strip in its own window: a chip spring-loads its tab, the
+  - [x] W7b The strip in its own window: a chip spring-loads its tab, the
         strip makes room for a new tab.
   - [ ] W7c Other windows: the card on the flight layer, their panes and
         strips answering, spring-load raising them.
@@ -380,6 +380,17 @@ desktop app's moves come back as adoptions, which the drop-left-draft
 cleanup leaves alone, and a chat carried within a window never leaves the
 workspace; `commitMove` flushes the pending draft write first. The empty
 place keeps the grid's hairlines.
+
+As built (W7b): over the strip, the chip under the hand lights and opens
+its tab after `spring-load`, and past the last chip the strip makes room
+for a new tab, growing by a chip so the + and what follows move over (a
+tab carried in from another window gets the same room). Between chips is
+nothing: the room only opens at the end, so the chip under the hand never
+slides away from it, and a new tab can be dragged into order afterwards.
+Aski's chip takes no chat. Let go in the room, the chat becomes a tab
+there and the card lands on its chip; let go anywhere else after a tab
+sprang open, the tab the chat came from comes back on stage before the
+card flies home.
 
 ### Move Tab to New Window (⌥⌘T)
 
@@ -846,3 +857,10 @@ window answers.
   Esc, or letting go over its own place, flew the card back. ⌥⌘Z put the
   chat back. Under Reduce Motion the card faded where it was. The Cell as
   the handle in a sent chat is for the hand check.
+- W7b: proved in the lab the same way. Resting on another tab's chip for
+  700 ms opened that tab, and the chat then landed on a half of its pane.
+  Past the last chip the + moved over by a chip (164 px); let go, the
+  chat became a new last tab, its chip hidden until the card landed on it
+  (500 ms), and the tab it left, now empty, closed. ⌥⌘Z put it back. Let
+  go on a chip after a tab sprang open, the chat's own tab came back on
+  stage and the card flew home.

@@ -13,7 +13,7 @@ const cell = { environmentId: "env", threadId: "t1", draftId: null };
 function Slate(props: { cellGone?: boolean }) {
   return (
     <div style={{ position: "relative", width: 600, height: 400 }}>
-      <ChatCarry />
+      <ChatCarry onOpenTab={() => undefined} />
       <div data-stemcells-pane="p1" style={{ width: 300, height: 400 }}>
         {props.cellGone ? null : (
           <button type="button" onPointerDown={(event) => startChatCarry(event, cell)}>
