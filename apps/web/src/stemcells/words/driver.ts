@@ -109,7 +109,12 @@ export class WordsDriver {
    * An effort with no model applies to the model the Cell would run on.
    */
   besides(
-    cells: ReadonlyArray<{ readonly group: CellGroup; readonly text: string }>,
+    cells: ReadonlyArray<{
+      readonly group: CellGroup;
+      readonly text: string;
+      /** The place Aski picked, where the words left it open. */
+      readonly placeId?: string;
+    }>,
   ): CellStart[] | null {
     const { draftId, catalog } = this.source();
     if (draftId === null) return null;
@@ -118,7 +123,7 @@ export class WordsDriver {
     if (draftProject === null || setup === null) return null;
     const starts: CellStart[] = [];
     for (const cell of cells) {
-      const placeId = cell.group.place?.place.place.id ?? null;
+      const placeId = cell.placeId ?? cell.group.place?.place.place.id ?? null;
       const projectKey = placeId === null ? draftProject : this.projectKeyOf(placeId, draftProject);
       if (projectKey === null) return null;
       const named = cell.group.model ? modelFor(cell.group.model, catalog) : null;
@@ -152,6 +157,11 @@ export class WordsDriver {
   }
 
   /** A place's project as `environmentId:projectId`, in the draft's environment when it has one there. */
+  placeKey(placeId: string): string | null {
+    const { draftId } = this.source();
+    return this.projectKeyOf(placeId, draftId === null ? null : readDraftProjectKey(draftId));
+  }
+
   private projectKeyOf(placeId: string, draftProject: string | null): string | null {
     const environment = draftProject?.slice(0, draftProject.indexOf(":")) ?? "";
     const ref = projectRefOf(this.source().places.get(placeId)?.members ?? [], environment);

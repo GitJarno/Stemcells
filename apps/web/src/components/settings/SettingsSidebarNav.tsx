@@ -48,7 +48,7 @@ import {
 } from "./settingsSearch";
 import { useAvailableSettingsSearchItems } from "./useAvailableSettingsSearchItems";
 import { validateSettingsScopeSearch } from "./settingsScope";
-import { DiskSettingsIcon } from "../../stemcells/disk/DiskSettingsIcon";
+import { STEMCELLS_SETTINGS_ICONS } from "../../stemcells/pages/settingsIcons";
 
 const SnapShotIcon = createLucideIcon("snap-shot", [
   [
@@ -87,7 +87,7 @@ const SETTINGS_SECTION_ICONS: Readonly<
   "/settings/scheduled-tasks": CalendarClockIcon,
   "/settings/source-control": GitBranchIcon,
   "/settings/storage": HardDriveIcon,
-  "/settings/disk": DiskSettingsIcon,
+  ...STEMCELLS_SETTINGS_ICONS,
   "/settings/connections": Link2Icon,
   "/settings/archived": ArchiveIcon,
 };

@@ -4,7 +4,8 @@
  * item each, a clause each), the Cells start at once, with no planner. This
  * says which Cells, each one's part, and what the readout reads back
  * (decision 10).
- * Anything else the words start several of waits for Aski's planner.
+ * Anything else the words start several of, Aski's planner divides
+ * (`plan/`).
  */
 
 import { CHIP } from "./docText";
@@ -25,7 +26,7 @@ export interface LaunchCell {
 export interface Launch {
   readonly share: Share;
   readonly cells: readonly LaunchCell[];
-  /** Only Aski's planner could share the work out: nothing is sent yet. */
+  /** Only Aski's planner can share the work out: Enter asks it first. */
   readonly held?: boolean;
 }
 
@@ -39,10 +40,11 @@ export function launchOf(facts: Facts): Launch | null {
 }
 
 /**
- * Cells the words start that only Aski's planner could share the work out
+ * Cells the words start that only Aski's planner can share the work out
  * to: "Sol and Opus: fix the header", "fix the header in Harbor so it
- * matches the one in Atlas". Until the planner is in, the message holds
- * and loses no word; the readout says what the words still need.
+ * matches the one in Atlas". Enter asks it first, and the message loses
+ * no word while it thinks; with no planner to ask it holds, and the
+ * readout says what the words still need.
  */
 export function heldOf(facts: Facts): Launch | null {
   if (facts.cell !== null || facts.cells.length < 2 || launchOf(facts) !== null) return null;
@@ -126,6 +128,8 @@ export interface ReadoutWord {
   readonly text: string;
   /** The word it reads back; null for a default, which is dim and has no plate. */
   readonly mark: ({ readonly kind: InkKind } & Span) | null;
+  /** Aski chose it: the place of an open Cell, in a plan. */
+  readonly aski?: boolean;
 }
 
 export interface ReadoutGroup {
@@ -139,13 +143,24 @@ export interface Readout {
   readonly total: number;
   /** Past the most Cells: the count wears the warning edge, and only ⌘↵ sends. */
   readonly over: boolean;
-  /** The words don't say what each Cell does: nothing is sent (`heldOf`). */
+  /** The words don't say what each Cell does, and no planner can: nothing is sent (`heldOf`). */
   readonly held: boolean;
+  /** Aski's plan, while it thinks and once it waits for a second Enter. */
+  readonly plan?: ReadoutPlan;
   readonly most: number;
   readonly groups: readonly ReadoutGroup[];
   /** How the work is shared, in a few words. */
   readonly share: string;
 }
+
+/**
+ * Aski's plan in the readout: thinking, or waiting for Enter to start it
+ * (a place Aski picked, or the floor, with why). A floor with a place left
+ * open can't start: the words have to say where.
+ */
+export type ReadoutPlan =
+  | { readonly state: "thinking" }
+  | { readonly state: "check"; readonly why: string | null; readonly startable: boolean };
 
 /** What a readout fills in that the words don't say: the defaults, by place (null: the draft's). */
 export interface ReadoutDefaults {
@@ -159,6 +174,7 @@ const SHARE: Partial<Record<Share, string>> = {
   items: "one list item each",
   clauses: "each its own part",
   each: "the same task in each",
+  planner: "Aski divides the work",
 };
 
 /** The places a readout starts Cells in, each once, in the words' order: what the hero names. */
@@ -224,18 +240,26 @@ function wordsOf(group: CellGroup, defaults: ReadoutDefaults): ReadoutGroup {
           text: group.place.place.place.name,
           mark: { kind: "place", start: group.place.start, end: group.place.end },
         }
-      : defaults.place === null
+      : // An open place is Aski's to pick, not the draft's.
+        group.open || defaults.place === null
         ? null
         : { text: defaults.place, mark: null },
   };
 }
 
-/** Each Cell's readout words, in the launch's order: "Sol 6.1 · Harbor". */
-export function cellTitles(launch: Launch, defaults: ReadoutDefaults): string[] {
+/** Each Cell's words read back, in the launch's order. */
+export function cellWords(launch: Launch, defaults: ReadoutDefaults): ReadoutGroup[] {
   const words = new Map<CellGroup, ReadoutGroup>();
   return launch.cells.map(({ group }) => {
     const read = words.get(group) ?? wordsOf(group, defaults);
     words.set(group, read);
-    return [read.model?.text, read.place?.text].filter(Boolean).join(" · ");
+    return read;
   });
+}
+
+/** Each Cell's readout words, in the launch's order: "Sol 6.1 · Harbor". */
+export function cellTitles(launch: Launch, defaults: ReadoutDefaults): string[] {
+  return cellWords(launch, defaults).map((read) =>
+    [read.model?.text, read.place?.text].filter(Boolean).join(" · "),
+  );
 }

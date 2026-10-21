@@ -9,6 +9,11 @@ import { DEFAULT_KEYBINDINGS } from "@t3tools/shared/keybindings";
 import { commandLabel } from "./KeybindingsSettings.logic";
 import { COMPACTION_SEARCH_ITEMS } from "../../stemcells/compaction/search";
 import {
+  STEMCELLS_SETTINGS_LABELS,
+  STEMCELLS_SETTINGS_SCOPES,
+  type StemcellsSettingsPath,
+} from "../../stemcells/pages/settingsPages";
+import {
   validateSettingsScopeSearch,
   type ResolvedSettingsScope,
   type SettingsScopeSearch,
@@ -26,7 +31,7 @@ export type SettingsPath =
   | "/settings/scheduled-tasks"
   | "/settings/source-control"
   | "/settings/storage"
-  | "/settings/disk"
+  | StemcellsSettingsPath
   | "/settings/connections"
   | "/settings/archived";
 
@@ -85,7 +90,7 @@ export const SETTINGS_SECTION_LABELS: Readonly<Record<SettingsPath, string>> = {
   "/settings/scheduled-tasks": "Scheduled Tasks",
   "/settings/source-control": "Source Control",
   "/settings/storage": "Storage",
-  "/settings/disk": "Disk",
+  ...STEMCELLS_SETTINGS_LABELS,
   "/settings/connections": "Connections",
   "/settings/archived": "Archive",
 };
@@ -1015,7 +1020,7 @@ const SETTINGS_CATEGORY_SCOPES: Readonly<Record<SettingsPath, SettingsSearchScop
   "/settings/integrations": null,
   "/settings/source-control": "environment-defaults",
   "/settings/storage": "project-defaults",
-  "/settings/disk": null,
+  ...STEMCELLS_SETTINGS_SCOPES,
   "/settings/connections": "connections",
   "/settings/scheduled-tasks": null,
   "/settings/archived": "project-defaults",

@@ -2,8 +2,9 @@ import type { Editor, TiptapEditorHTMLElement } from "@tiptap/core";
 import type { Node as PmNode } from "@tiptap/pm/model";
 import type { Transaction } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
-import { use, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { use, useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState } from "react";
 
+import { useAskiPlans } from "../aski/planning";
 import { paneShowing } from "../tabs/layout";
 import { PaneCellContext } from "../tabs/paneCell";
 import { newIds, readWorkspace, updateWorkspace } from "../tabs/store";
@@ -17,8 +18,17 @@ import {
   subscribeDraft,
 } from "../upstream/draftWords";
 import { readCarry } from "../upstream/carry";
-import { readDraftSetup, reportUnstarted, useStartCells, withSentModel } from "../upstream/launch";
+import {
+  type CellStart,
+  readDraftSetup,
+  reportUnstarted,
+  useStartCells,
+  withSentModel,
+} from "../upstream/launch";
+import { askPlanner, readProjectLines } from "../upstream/planner";
 import { ProviderLogo } from "../upstream/providers";
+import { useLimitPools } from "../upstream/rail";
+import { useMinute } from "../rail/clock";
 import {
   draftHeroBox,
   promptOf,
@@ -42,11 +52,25 @@ import {
   readoutOf,
   withPart,
 } from "./cells";
-import { type DocText, rangeOf } from "./docText";
+import { CHIP, type DocText, rangeOf } from "./docText";
 import { type DriverSource, WordsDriver } from "./driver";
 import { showPlaces } from "./heroPlaces";
+import { limitNotes } from "./limits";
 import { effortLabel, type MenuAction, type MenuEntry, menuFor } from "./menu";
 import { placeCells } from "./placement";
+import {
+  askOf,
+  needsCheck,
+  ownFirst,
+  type Plan,
+  planTitles,
+  readoutOfPlan,
+  shortlistOf,
+  startable,
+} from "./plan/plan";
+import { escDropsPlan } from "./plan/esc";
+import { planKeyOf } from "./plan/key";
+import { type PlannerModel, plannerModel, thinkThrough } from "./plan/think";
 import { roster, type WordsPlace } from "./places";
 import { type Placed, refreshWords, type WordsSetting, wordsKey, wordsPlugin } from "./plugin";
 import type { Facts, ReadContext } from "./read";
@@ -56,6 +80,8 @@ import {
   type Edit,
   type Outgoing,
   outgoingOf,
+  type SendIntent,
+  type Sending,
   setupEdits,
   WordsSendSlot,
 } from "./send";
@@ -79,6 +105,25 @@ interface OpenMenu {
 interface Joined {
   readonly editor: Editor;
   readonly driver: WordsDriver;
+}
+
+/** Aski's plan for the words as they stood when Enter asked for it. */
+interface Planning {
+  /** What it was made from (`planKeyOf`): any other words drop it. */
+  readonly key: string;
+  readonly launch: Launch;
+  readonly abort: AbortController;
+  /** Settles once Aski has thought it through, or the words changed. */
+  done: Promise<void>;
+  plan: Plan | null;
+}
+
+/** What Aski plans with: its model, the plans' limits, and the projects' order and machines. */
+interface PlanSource {
+  readonly model: PlannerModel | null;
+  readonly pools: ReturnType<typeof useLimitPools>;
+  readonly recency: ReadonlyMap<string, number>;
+  readonly members: ReadonlyMap<string, ReadonlyArray<string>>;
 }
 
 /**
@@ -109,11 +154,17 @@ export function ComposerWords(props: { readonly anchor: string }) {
   const [readout, setReadout] = useState<ReadoutData | null>(null);
   const [drivers, setDrivers] = useState<readonly string[]>([]);
   const startCells = useStartCells();
+  const pools = useLimitPools(useMinute());
+  // Off in Settings › Aski, no planner is asked: the words alone set the Cells up.
+  const plans = useAskiPlans();
+  const thinker = draft === null ? null : plannerModel(catalog, (id) => ready.has(id), plans);
 
   const current = useRef<WordsSetting | null>(setting);
   const driverSource = useRef<DriverSource>({ draftId, catalog, places: new Map() });
   const joined = useRef<Joined | null>(null);
   const starting = useRef(startCells);
+  const planSource = useRef<PlanSource>({ model: thinker, pools, recency, members });
+  const planning = useRef<Planning | null>(null);
   // The draft the hero names places for, so they go when the draft does.
   const named = useRef<string | null>(null);
 
@@ -136,11 +187,28 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const editor = joined.current?.editor;
     if (editor && !editor.isDestroyed) refreshWords(editor.view);
   }, [setting, startCells, draftId, catalog, places, members]);
+  useLayoutEffect(() => {
+    planSource.current = { model: thinker, pools, recency, members };
+  });
 
   /** Several Cells read back, and the hero names their places; one Cell, or none, reads nothing back. */
   const readBack = (view: EditorView) => {
     const facts = wordsKey.getState(view.state)?.facts ?? null;
-    const next = facts === null ? null : readoutFor(facts, driverSource.current);
+    // Words changed under a plan, code and chips too: the plan goes with them.
+    const known = planning.current;
+    if (known !== null && known.key !== planKeyNow(view)) {
+      known.abort.abort();
+      planning.current = null;
+    }
+    const next =
+      facts === null
+        ? null
+        : readoutFor(
+            facts,
+            driverSource.current,
+            planSource.current.model !== null,
+            planning.current,
+          );
     setReadout((last) => (JSON.stringify(last) === JSON.stringify(next) ? last : next));
     nameInHero(driverSource.current.draftId, next === null ? null : placesOf(next));
     const on = next === null || facts === null ? [] : driversFor(facts, driverSource.current);
@@ -247,6 +315,32 @@ export function ComposerWords(props: { readonly anchor: string }) {
     if (view && !view.isDestroyed) markComposer(view.dom, readout);
   });
 
+  // Esc in the composer drops Aski's plan, while it thinks or once it waits
+  // for Enter: the words read back as they did before it, and nothing
+  // starts. A send waiting on the plan lets go of Enter (`plan/esc.ts`).
+  const planShown = readout?.plan !== undefined;
+  const dropPlan = useEffectEvent((event: KeyboardEvent) => {
+    const view = joined.current?.editor.view;
+    if (!view || view.isDestroyed) return;
+    const composer = view.dom.closest('[data-chat-composer-stack="true"]');
+    const at = {
+      inComposer: composer?.contains(document.activeElement) ?? false,
+      menuOpen: document.querySelector(".sc-word-menu") !== null,
+    };
+    if (!escDropsPlan(event, at)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    planning.current?.abort.abort();
+    planning.current = null;
+    readBack(view);
+  });
+  useEffect(() => {
+    if (!planShown) return;
+    const drop = (event: KeyboardEvent) => dropPlan(event);
+    window.addEventListener("keydown", drop, true);
+    return () => window.removeEventListener("keydown", drop, true);
+  }, [planShown]);
+
   // The menu closes on Esc, a click elsewhere, and typing (above).
   useEffect(() => {
     if (menu === null) return;
@@ -271,11 +365,12 @@ export function ComposerWords(props: { readonly anchor: string }) {
     view: EditorView,
     launch: Launch,
     threadId: string,
+    named?: readonly string[],
   ): { readonly play: SpawnPlay | null; readonly titles: readonly string[] } | null => {
     const defaults = defaultsFor(driverSource.current);
     const hero = draftHeroBox(view.dom);
     if (defaults === null || hero === null) return null;
-    const titles = cellTitles(launch, defaults);
+    const titles = named ?? cellTitles(launch, defaults);
     const play = playSpawn({
       editor: view.dom,
       hero,
@@ -283,6 +378,211 @@ export function ComposerWords(props: { readonly anchor: string }) {
       titles,
     });
     return { play, titles };
+  };
+
+  /**
+   * Sends the draft's own Cell what `write` makes of its text and, once it
+   * has started, the Cells `besides` it, which land after its pane. Several
+   * Cells play the spawn from the words as they stand; a Cell with no spawn
+   * to come from forms on its line. The text comes back if nothing went.
+   * Returns what to do once upstream's send settles.
+   */
+  const sendCells = (
+    view: EditorView,
+    driver: WordsDriver,
+    draftId: string,
+    input: {
+      readonly launch: Launch | null;
+      readonly write: (tr: Transaction) => Transaction;
+      readonly besides: CellStart[] | null;
+      readonly titles?: readonly string[];
+    },
+  ) => {
+    const { launch, besides } = input;
+    const setup = launch ? readDraftSetup(draftId) : null;
+    // Read now: upstream's send clears the draft's pictures and chips.
+    const carry = besides && besides.length > 0 ? readCarry(draftId) : null;
+    const pane = cell ? paneShowing(readWorkspace(), cell)?.pane.id : undefined;
+    const width = view.dom.closest("[data-stemcells-grid]")?.clientWidth ?? window.innerWidth;
+    const before = view.state.doc;
+    const spawn = launch && cell ? spawnFor(view, launch, cell.threadId, input.titles) : null;
+    if (spawn === null && cell) playForming(cell.threadId);
+    driver.hold(true);
+    view.dispatch(input.write(view.state.tr));
+    const sent = view.state.doc;
+    return (result: unknown) => {
+      void Promise.resolve(result)
+        .catch(() => undefined)
+        .then(async () => {
+          const gone = isDraftGone(draftId);
+          if (!gone && !view.isDestroyed && view.state.doc.eq(sent)) putBack(view, before);
+          driver.hold(false);
+          if (!gone) {
+            spawn?.play?.off();
+            return;
+          }
+          if (!besides || !setup || besides.length === 0 || !cell) {
+            spawn?.play?.started([]);
+            return;
+          }
+          const started = await starting
+            .current(await withSentModel(setup, cell), besides, carry)
+            .finally(() => carry?.release());
+          reportUnstarted(started);
+          const formed = started.flatMap((s, i) =>
+            s.ok ? [{ threadId: s.cell.threadId, title: spawn?.titles[i + 1] ?? "" }] : [],
+          );
+          if (spawn) spawn.play?.started(formed);
+          else for (const one of formed) playForming(one.threadId);
+          const cells = started.flatMap((s) => (s.ok ? [s.cell] : []));
+          if (pane !== undefined && cells.length > 0)
+            updateWorkspace((workspace) => placeCells(workspace, pane, cells, width, newIds));
+        });
+    };
+  };
+
+  /**
+   * Asks Aski to plan the Cells only it can share the work out to: the
+   * projects the words mention and the recent ones, each with its line;
+   * then the call, its checks and the floor (`plan/think.ts`). The readout
+   * says Aski is thinking until the plan is in. Null when nothing can plan.
+   */
+  const startPlanning = (view: EditorView, facts: Facts, launch: Launch): Planning | null => {
+    const { model, pools, recency, members } = planSource.current;
+    const setting = current.current;
+    const defaults = defaultsFor(driverSource.current);
+    const text = wordsKey.getState(view.state)?.text;
+    if (model === null || setting === null || defaults === null || !text) return null;
+    const roster = setting.ctx.roster.places.map((p) => p.place);
+    const written = plannerWords(view, text);
+    const abort = new AbortController();
+    const known: Planning = {
+      key: planKeyOf(view.state.doc, text),
+      launch,
+      abort,
+      done: Promise.resolve(),
+      plan: null,
+    };
+    known.done = (async () => {
+      // A spent plan makes no call: the floor says why.
+      const spent =
+        limitNotes([model.driver], pools, Date.now()).find((note) => note.tone === "out")?.text ??
+        null;
+      const shortlist = shortlistOf(facts, roster, (place) => recency.get(place.id) ?? 0);
+      const projectsOf = (placeId: string) =>
+        (members.get(placeId) ?? []).map((key) => key.slice(key.indexOf(":") + 1));
+      // The lines wait at most a moment, and end with the plan.
+      const lines =
+        spent === null
+          ? await readProjectLines(
+              [...new Set(shortlist.flatMap((p) => projectsOf(p.id)))],
+              abort.signal,
+            )
+          : new Map<string, string>();
+      const projects = shortlist.map((place) => ({
+        name: place.name,
+        line: projectsOf(place.id).flatMap((id) => lines.get(id) ?? [])[0] ?? null,
+      }));
+      const plan = await thinkThrough({
+        ask: askOf(facts, launch, defaults, projects, written),
+        launch,
+        roster,
+        call: (prompt) => askPlanner(prompt, model, abort.signal),
+        limit: spent,
+        signal: abort.signal,
+      });
+      if (plan === null || planning.current !== known) return;
+      known.plan = ownFirst(plan, ownPlace(driverSource.current));
+      if (needsCheck(plan) && !view.isDestroyed) readBack(view);
+    })().catch(() => {
+      // Thinking broke in a way nothing expected: the plan goes, the words
+      // read as before, and the send waiting on it sends nothing.
+      if (planning.current !== known) return;
+      planning.current = null;
+      if (!view.isDestroyed) readBack(view);
+    });
+    planning.current = known;
+    readBack(view);
+    return known;
+  };
+
+  /** Sends a plan: each Cell its prompt, in its place; the floor sends each the whole message. */
+  const sendPlan = (view: EditorView, driver: WordsDriver, draftId: string, known: Planning) => {
+    const now = wordsKey.getState(view.state);
+    const plan = known.plan;
+    if (plan === null || !now?.facts || !now.text || view.isDestroyed) return false;
+    // A plan made from other words never replaces these (`plan/key.ts`).
+    if (planKeyOf(view.state.doc, now.text) !== known.key) return false;
+    const { facts, text } = now;
+    const whole = setupEdits(facts.text, facts.grammar, text)?.edits ?? [];
+    const wholeText = promptOf(editDoc(view.state.tr, text, whole).doc);
+    const [first, ...rest] = plan.cells;
+    const besides = driver.besides(
+      rest.map((one) => ({
+        group: one.group,
+        text: plan.kind === "floor" ? wholeText : one.prompt,
+        ...(one.picked ? { placeId: one.picked.id } : {}),
+      })),
+    );
+    const defaults = defaultsFor(driverSource.current);
+    if (!first || besides === null) return false;
+    planning.current = null;
+    return sendCells(view, driver, draftId, {
+      launch: known.launch,
+      besides,
+      ...(defaults ? { titles: planTitles(plan, known.launch, defaults) } : {}),
+      write: (tr) =>
+        plan.kind === "floor"
+          ? editDoc(tr, text, whole)
+          : tr.replaceWith(0, tr.doc.content.size, paragraphsOf(view, first.prompt)),
+    });
+  };
+
+  /**
+   * Cells only Aski can share the work out to (decisions 11 and 12). The
+   * first Enter asks it and waits: a plan that only divides the work
+   * starts at once; one where Aski picked a place, or the floor, waits in
+   * the readout for a second Enter. Changing the words drops the plan.
+   */
+  const planSending = (
+    view: EditorView,
+    driver: WordsDriver,
+    draftId: string,
+    facts: Facts,
+    launch: Launch,
+    intent: SendIntent,
+  ): Sending => {
+    const hold: Sending = { hold: true, ready: null, foreground: false, edit: () => null };
+    // Past the most Cells, only ⌘↵ sends.
+    if (launch.cells.length > MOST_CELLS && intent !== "background") return hold;
+    const madeFrom = planKeyNow(view);
+    const known = madeFrom !== null && planning.current?.key === madeFrom ? planning.current : null;
+    if (known?.plan) {
+      if (!startable(known.plan)) return hold;
+      const first = known.plan.cells[0]?.picked ?? null;
+      const key = first === null ? null : driver.placeKey(first.id);
+      if (first !== null && key === null) return hold;
+      // The draft's own Cell goes where Aski put it, and upstream's send has to see it there.
+      if (key !== null) moveDraft(draftId, key);
+      return {
+        hold: false,
+        ready: key === null ? null : nextPaint(),
+        foreground: true,
+        edit: () => sendPlan(view, driver, draftId, known),
+      };
+    }
+    if (known !== null) return hold;
+    const started = startPlanning(view, facts, launch);
+    if (started === null) return hold;
+    return {
+      hold: false,
+      ready: started.done,
+      foreground: true,
+      edit: () =>
+        planning.current === started && started.plan !== null && !needsCheck(started.plan)
+          ? sendPlan(view, driver, draftId, started)
+          : false,
+    };
   };
 
   // As the composer sends, the text becomes what the draft's Cell is sent;
@@ -299,9 +599,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
       const launch = launchOf(state.facts);
       const out = outgoingFor(state.facts, state.text);
       const held = { hold: true, ready: null, foreground: false, edit: () => null };
-      // Cells only the planner could share the work out to wait for it,
-      // with every word kept.
-      if (heldOf(state.facts) !== null) return held;
+      const waiting = heldOf(state.facts);
+      if (waiting !== null) return planSending(view, driver, draftId, state.facts, waiting, intent);
       // Past the most Cells, only ⌘↵ sends.
       if (launch !== null && launch.cells.length > MOST_CELLS && intent !== "background")
         return held;
@@ -329,55 +628,20 @@ export function ComposerWords(props: { readonly anchor: string }) {
         if (first === null && several === null) return null;
         const own = several ? partOf(facts, several.cells[0]!.part, text) : null;
         const besides = several ? driver.besides(siblingsOf(view, facts, text, several)) : null;
-        const setup = several ? readDraftSetup(draftId) : null;
-        // Read now: upstream's send clears the draft's pictures and chips.
-        const carry = besides && besides.length > 0 ? readCarry(draftId) : null;
-        const pane = cell ? paneShowing(readWorkspace(), cell)?.pane.id : undefined;
-        const width = view.dom.closest("[data-stemcells-grid]")?.clientWidth ?? window.innerWidth;
-        const before = view.state.doc;
-        // Several Cells play the spawn from the words as they stand; a Cell
-        // with no spawn to come from forms on its line.
-        const spawn = several && cell ? spawnFor(view, several, cell.threadId) : null;
-        if (spawn === null && cell) playForming(cell.threadId);
-        driver.hold(true);
-        let tr = editDoc(view.state.tr, text, first?.edits ?? []);
-        // A blank line, then its part, as the others are sent theirs (`withPart`).
-        if (own !== null)
-          tr = tr.insert(tr.doc.content.size, [
-            paragraphOf(view, ""),
-            paragraphOf(view, partLine(own)),
-          ]);
-        view.dispatch(tr);
-        const sent = view.state.doc;
-        return (result: unknown) => {
-          void Promise.resolve(result)
-            .catch(() => undefined)
-            .then(async () => {
-              const gone = isDraftGone(draftId);
-              if (!gone && !view.isDestroyed && view.state.doc.eq(sent)) putBack(view, before);
-              driver.hold(false);
-              if (!gone) {
-                spawn?.play?.off();
-                return;
-              }
-              if (!besides || !setup || besides.length === 0 || !cell) {
-                spawn?.play?.started([]);
-                return;
-              }
-              const started = await starting
-                .current(await withSentModel(setup, cell), besides, carry)
-                .finally(() => carry?.release());
-              reportUnstarted(started);
-              const formed = started.flatMap((s, i) =>
-                s.ok ? [{ threadId: s.cell.threadId, title: spawn?.titles[i + 1] ?? "" }] : [],
-              );
-              if (spawn) spawn.play?.started(formed);
-              else for (const one of formed) playForming(one.threadId);
-              const cells = started.flatMap((s) => (s.ok ? [s.cell] : []));
-              if (pane !== undefined && cells.length > 0)
-                updateWorkspace((workspace) => placeCells(workspace, pane, cells, width, newIds));
-            });
-        };
+        return sendCells(view, driver, draftId, {
+          launch: several,
+          besides,
+          write: (tr) => {
+            const edited = editDoc(tr, text, first?.edits ?? []);
+            // A blank line, then its part, as the others are sent theirs (`withPart`).
+            return own === null
+              ? edited
+              : edited.insert(edited.doc.content.size, [
+                  paragraphOf(view, ""),
+                  paragraphOf(view, partLine(own)),
+                ]);
+          },
+        });
       };
       return { hold: false, ready, foreground: launch !== null, edit };
     };
@@ -430,13 +694,37 @@ export function ComposerWords(props: { readonly anchor: string }) {
 }
 
 /**
- * The words read back when they start several Cells alone, with what they
- * don't say filled in: the model each would run on, the draft's project.
+ * The words read back when they start several Cells, with what they don't
+ * say filled in: the model each would run on, the draft's project. Cells
+ * only Aski can share the work out to hold when nothing can plan; while it
+ * thinks, and once its plan waits for Enter, the readout says so.
  */
-function readoutFor(facts: Facts, source: DriverSource): ReadoutData | null {
+function readoutFor(
+  facts: Facts,
+  source: DriverSource,
+  canPlan: boolean,
+  planning: Planning | null,
+): ReadoutData | null {
   const launch = launchOf(facts) ?? heldOf(facts);
   const defaults = defaultsFor(source);
-  return launch === null || defaults === null ? null : readoutOf(launch, defaults);
+  if (launch === null || defaults === null) return null;
+  if (planning?.plan && needsCheck(planning.plan))
+    return readoutOfPlan(planning.plan, planning.launch, defaults);
+  const readout = readoutOf(launch.held ? { ...launch, held: !canPlan } : launch, defaults);
+  return planning ? { ...readout, share: "", plan: { state: "thinking" } } : readout;
+}
+
+/** What a plan made from the words as they stand now would be made from. */
+function planKeyNow(view: EditorView): string | null {
+  const text = wordsKey.getState(view.state)?.text;
+  return text ? planKeyOf(view.state.doc, text) : null;
+}
+
+/** The place the draft stands in. */
+function ownPlace(source: DriverSource): string | null {
+  const draftProject = source.draftId === null ? null : readDraftProjectKey(source.draftId);
+  if (draftProject === null) return null;
+  return [...source.places].find(([, place]) => place.members.includes(draftProject))?.[0] ?? null;
 }
 
 /** What a readout fills in that the words don't say, for the draft's composer. */
@@ -561,6 +849,37 @@ function editDoc(tr: Transaction, text: DocText, edits: readonly Edit[]): Transa
 function paragraphOf(view: EditorView, line: string): PmNode {
   const { schema } = view.state;
   return schema.nodes.paragraph!.create(null, line.length > 0 ? schema.text(line) : null);
+}
+
+function paragraphsOf(view: EditorView, text: string): PmNode[] {
+  return text.split("\n").map((line) => paragraphOf(view, line));
+}
+
+/**
+ * The message as the planner reads it: its code as written, and each
+ * chip's words as upstream sends them, where the reader sees one `CHIP`.
+ */
+function plannerWords(
+  view: EditorView,
+  text: DocText,
+): { readonly text: string; readonly chips: readonly string[] } {
+  const { schema, doc } = view.state;
+  const chips: string[] = [];
+  for (let i = 0; i < text.raw.length; i++) {
+    if (text.raw[i] !== CHIP) continue;
+    const node = doc.nodeAt(text.at[i]!);
+    let words = "";
+    try {
+      if (node)
+        words = promptOf(
+          schema.topNodeType.create(null, schema.nodes.paragraph!.create(null, node)),
+        );
+    } catch {
+      // A chip that can't stand alone reads as nothing.
+    }
+    chips.push(words.trim());
+  }
+  return { text: text.raw, chips };
 }
 
 /** The text as it was before the send, when nothing was sent. */

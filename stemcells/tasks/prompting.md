@@ -433,6 +433,9 @@ defaults.**
   in the settings, and a project can override it (`ProjectSettingsOverrides`;
   an absent key inherits). We add no second store.
 - **Settings › Aski** is ours:
+  - **Aski divides the work.** On by default (built, 5b). Off, no
+    planner call goes, and a message whose words don't say what each
+    Cell does waits until they do.
   - **Aski thinks with.** A provider and a model from that provider's
     catalog. The default is the strong tier (Opus 5.5 on Claude) at low
     effort. The "Recommended" label and any change of default come from an
@@ -693,10 +696,11 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      yet, it takes the model the first Cell was sent on.
    - Placement as in decision 15. A Cell that fails to start says why in a
      toast, and the others still start.
-   - Until the planner is in (slice 5), Cells that only it could share the
-     work out to hold: "Sol and Opus: fix the header", or "fix the header
-     in Harbor so it matches the one in Atlas". Enter and ⌘↵ send nothing,
-     no word is cut, and the readout says "say what each Cell does".
+   - Cells that only the planner can share the work out to ("Sol and Opus:
+     fix the header", "fix the header in Harbor so it matches the one in
+     Atlas") go to it (slice 5). With no planner to ask, they hold: Enter
+     and ⌘↵ send nothing, no word is cut, and the readout says "say what
+     each Cell does".
    - 4b, built: every Cell takes what the message carries, as every thread
      of upstream's send to several models does: its pictures and files,
      and the context its chips point at (`upstream/carry.ts`). Upstream
@@ -717,11 +721,38 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      letters, the orbit, the streams and the glyphs, handing each Cell to
      its forming. A new chat sent as typed forms its Cell on its line too.
 5. **The planner.**
-   - The `TextGeneration` operation, run lean, with its arguments pinned
-     by a test.
-   - The shortlist and project lines, the schema, the checks, the retry,
-     the floor, and the risk floor with its hold.
-   - The plan history.
+   - 5a, built: the `TextGeneration` operation `runLean`, any structured
+     one-shot call with no settings files and no saved session, its
+     arguments pinned by a test. `POST /api/stemcells/planner` runs it on
+     the model the web names, for at most 20 s, in a fresh private folder
+     for each call, removed after it; `GET /api/stemcells/planner/lines`
+     reads each project's line, cached by the file's date, and never a
+     file that resolves outside the project
+     (`apps/server/src/stemcells/planner/`).
+   - 5b, built: the web half (`words/plan/`). The shortlist and its lines,
+     the prompt (⟦Pn⟧ marks, code as written, each chip in its words), the
+     schema, the checks, one retry naming what failed, the floor, and no
+     call when the planner's plan is spent. Aski thinks with its provider's
+     own instance: the strongest model, else the default, at low effort.
+     The first Enter asks, and the readout says Aski is dividing the work.
+     A plan that only divides the work starts at once; one where Aski
+     picked a place, or the floor, waits in the readout for a second
+     Enter, and changing the words drops it. A floor with a place still
+     open can't start. The draft is the first Cell: it takes the first
+     Cell's model words, and keeps its own project when Aski sent a Cell
+     of the same words there.
+   - 5b, review fixes: nothing a plan waits for can hold the composer.
+     The lines wait 2 s and end with the plan, a call ends with the plan
+     or at 25 s, and a send whose wait fails lets go of Enter
+     (`plan/wait.ts`, `oneSendAtATime` in `send.ts`). Esc drops the plan
+     while Aski thinks or once it waits. A plan is keyed by the words as
+     written, code and chips too (`plan/key.ts`), so any edit drops it,
+     and a plan never replaces words it wasn't made from. Only a failure
+     under 5 s gets the retry, never one the server refused (401, 403,
+     413). Settings › Aski has its first row: "Aski divides the work", on
+     by default; off, the words alone set the Cells up, as with no
+     planner to ask, and no call goes.
+   - To come: the risk floor with its hold (5c), and the plan history (5d).
 6. **Checking a plan, and Settings.**
    - The plan rows: sources, edits, Enter and Esc, and keep-or-drop on text
      edits.
