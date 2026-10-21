@@ -15,6 +15,8 @@ function Pages(props: { activeId: string; onTurn: (tabId: string) => void }) {
         {TABS.map((tabId) => (
           <PagerPage key={tabId} tabId={tabId} onStage={tabId === props.activeId}>
             {tabId}
+            {/* A border between two Cells, as the grid draws it (`split/Separator.tsx`). */}
+            <div data-stemcells-split="x" data-testid={`border-${tabId}`} />
           </PagerPage>
         ))}
       </TabPager>
@@ -63,5 +65,26 @@ describe("TabPager data-moving", () => {
       timeout: 3000,
     });
     expect(onTurn).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("TabPager and the borders between Cells", () => {
+  it("never starts a swipe from a border", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const pages = screen.container.querySelector<HTMLElement>("[data-stemcells-pages]")!;
+    const border = screen.container.querySelector<HTMLElement>('[data-testid="border-one"]')!;
+    const page = screen.container.querySelector<HTMLElement>('[data-stemcells-page="one"]')!;
+    const at = page.getBoundingClientRect().left;
+    for (let i = 0; i < 10; i++) {
+      border.dispatchEvent(
+        new WheelEvent("wheel", { deltaX: 30, cancelable: true, bubbles: true }),
+      );
+      await nextFrame();
+    }
+    expect(page.getBoundingClientRect().left).toBe(at);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(onTurn).not.toHaveBeenCalled();
+    expect(pages.hasAttribute("data-moving")).toBe(false);
   });
 });

@@ -223,9 +223,8 @@ function foldedIn(pane: HTMLElement): ReadonlyArray<Folded> {
 }
 
 /**
- * A pane with no composer names its Cell in a pill at its top-left, where
- * the line over the composer would otherwise say it (`workspace.css` shows
- * it only then).
+ * A pane with no chat to show, so no composer, names its Cell in a pill at
+ * its top-left, where the line over the composer would otherwise say it.
  */
 export function CellPill(props: { cell: CellRef }) {
   const title = useCellTitle(props.cell);

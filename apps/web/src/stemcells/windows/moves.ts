@@ -6,6 +6,7 @@
 import { askiTabOf, isAskiTab } from "../tabs/askiTab";
 import {
   activateTab,
+  arriving,
   closePane,
   closeTab,
   insertTab,
@@ -149,7 +150,7 @@ export function carry(arrangement: Arrangement, paneId: string, to: CarryTarget)
   const workspaceOf = (window: Placed) => workspaces.get(window.id) ?? window.workspace;
   const tabOf = (ids: NewTabIds): Tab => ({
     id: ids.tab,
-    rows: [{ id: ids.row, columns: [{ id: ids.column, panes: [found.pane] }] }],
+    rows: [{ id: ids.row, columns: [{ id: ids.column, panes: [arriving(found.pane)] }] }],
     focusedPaneId: found.pane.id,
   });
 

@@ -89,3 +89,15 @@ export function readProjectLines(
     LINES_WAIT_MS,
   );
 }
+
+/** Adds one plan to the plan history on this machine; never throws. */
+export async function recordPlan(record: Record<string, unknown>): Promise<void> {
+  try {
+    await fromPrimary(resolvePrimaryEnvironmentHttpUrl(`${PLANNER_PATH}/history`), {
+      method: "POST",
+      body: JSON.stringify(record),
+    });
+  } catch {
+    // The history is a record, never a reason a Cell doesn't start.
+  }
+}

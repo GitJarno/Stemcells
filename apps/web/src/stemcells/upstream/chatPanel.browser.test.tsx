@@ -4,7 +4,7 @@ import "../tabs/workspace.css";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { WorkbenchPanel } from "./chatPanel";
+import { PanelMaximizedContext, WorkbenchPanel } from "./chatPanel";
 import { render } from "./testRender";
 
 /** A tab's page: its workbench, inside the pages, which may be moving. */
@@ -23,12 +23,18 @@ function Frame(props: { children?: ReactNode }) {
   return <section data-panel-frame="">{props.children}</section>;
 }
 
-function Panel(props: { workbench: HTMLElement; shows: boolean; focused: boolean }) {
+function Panel(props: {
+  workbench: HTMLElement;
+  shows: boolean;
+  focused: boolean;
+  maximized?: boolean;
+}) {
   return (
     <WorkbenchPanel
       workbench={props.workbench}
       shows={props.shows}
       focused={props.focused}
+      maximized={props.maximized ?? false}
       Frame={Frame}
       frameProps={{}}
     >
@@ -93,5 +99,33 @@ describe("what a Surface shows, coming with the stage", () => {
     await screen.rerender(<Panel workbench={workbench} shows focused />);
     // `getAnimations()` resolves style first, so a fade the rerender started is already listed.
     expect(fades(workbench)).toBe(false);
+  });
+});
+
+// The page gives a maximized panel all its room. It used to find the panel
+// with a `:has()` on the page, which restyled the whole page whenever
+// anything in a chat changed: 15–20 ms a frame while a border was dragged.
+describe("a maximized panel tells its page", () => {
+  it("while it is drawn maximized, and no longer once it isn't or is gone", async () => {
+    using stage = page(false);
+    const { workbench } = stage;
+    const tell = vi.fn();
+    const Told = (props: { maximized: boolean; focused: boolean }) => (
+      <PanelMaximizedContext value={tell}>
+        <Panel workbench={workbench} shows focused={props.focused} maximized={props.maximized} />
+      </PanelMaximizedContext>
+    );
+    await using screen = await render(<Told maximized={false} focused />);
+    expect(tell).not.toHaveBeenCalled();
+    await screen.rerender(<Told maximized focused />);
+    expect(tell).toHaveBeenLastCalledWith(true);
+    await screen.rerender(<Told maximized={false} focused />);
+    expect(tell).toHaveBeenLastCalledWith(false);
+    await screen.rerender(<Told maximized focused />);
+    expect(tell).toHaveBeenLastCalledWith(true);
+    await screen.unmount();
+    expect(tell).toHaveBeenLastCalledWith(false);
+    expect(tell.mock.calls.filter(([on]) => on).length).toBe(2);
+    expect(tell.mock.calls.filter(([on]) => !on).length).toBe(2);
   });
 });

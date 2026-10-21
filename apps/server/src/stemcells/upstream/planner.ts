@@ -1,12 +1,14 @@
 import type { ModelSelection, ProjectId } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
+import * as Path from "effect/Path";
 
+import * as ServerConfig from "../../config.ts";
 import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
 import * as ProviderInstanceRegistry from "../../provider/ProviderInstanceRegistry.ts";
 
 // What Aski's planner takes from upstream: a provider instance's lean
-// structured call (`runLean`, a seam in provider-core), and where the
-// person's projects live.
+// structured call (`runLean`, a seam in provider-core), where the person's
+// projects live, and the app's own data folder.
 
 /** The lean structured call of the instance `selection` names; null when it is off or has none. */
 export const leanRunner = Effect.fn("Planner.leanRunner")(function* (selection: ModelSelection) {
@@ -31,3 +33,10 @@ export const projectRoots = Effect.fn("Planner.projectRoots")(
       ),
   }),
 );
+
+/** Where the plan history lives: in the app's own data folder, on this machine. */
+export const historyFolder = Effect.gen(function* () {
+  const config = yield* ServerConfig.ServerConfig;
+  const path = yield* Path.Path;
+  return path.join(config.stateDir, "stemcells", "plans");
+});

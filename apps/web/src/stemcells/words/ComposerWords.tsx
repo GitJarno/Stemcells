@@ -26,7 +26,7 @@ import {
   useStartCells,
   withSentModel,
 } from "../upstream/launch";
-import { askPlanner, readProjectLines } from "../upstream/planner";
+import { askPlanner, readProjectLines, recordPlan } from "../upstream/planner";
 import { ProviderLogo } from "../upstream/providers";
 import { useLimitPools } from "../upstream/rail";
 import { useMinute } from "../rail/clock";
@@ -69,10 +69,11 @@ import {
   shortlistOf,
   startsOn,
 } from "./plan/plan";
-import { withChips } from "./plan/ask";
+import { type PlanAsk, withChips } from "./plan/ask";
 import { escDropsPlan } from "./plan/esc";
+import { type PlanOutcome, planRecord } from "./plan/history";
 import { planKeyOf } from "./plan/key";
-import { type PlannerModel, plannerModel, thinkThrough } from "./plan/think";
+import { type PlannerModel, plannerModel, thinkThrough, type Try } from "./plan/think";
 import { roster, type WordsPlace } from "./places";
 import { type Placed, refreshWords, type WordsSetting, wordsKey, wordsPlugin } from "./plugin";
 import type { Facts, ReadContext } from "./read";
@@ -120,6 +121,30 @@ interface Planning {
   plan: Plan | null;
   /** The risky acts the plan's prompts ask for that the words don't: only ⌘↵ starts it. */
   risk: readonly HoldLine[];
+  /** What the planner was asked, and each call: for the plan history. */
+  ask: PlanAsk | null;
+  readonly tries: Try[];
+  /** The plan history has it. */
+  told: boolean;
+}
+
+/** Puts a plan in the plan history once, with what came of it (decision 19). */
+function tell(known: Planning, outcome: PlanOutcome, source: DriverSource): void {
+  const defaults = defaultsFor(source);
+  if (known.told || known.plan === null || known.ask === null || defaults === null) return;
+  known.told = true;
+  const risk = known.risk.map((line) => line.sentence.slice(line.trigger.start, line.trigger.end));
+  void recordPlan(
+    planRecord({
+      ask: known.ask,
+      tries: known.tries,
+      plan: known.plan,
+      launch: known.launch,
+      defaults,
+      risk,
+      outcome,
+    }),
+  );
 }
 
 /** What Aski plans with: its model, the plans' limits, and the projects' order and machines. */
@@ -202,6 +227,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const known = planning.current;
     if (known !== null && known.key !== planKeyNow(view)) {
       known.abort.abort();
+      tell(known, "changed", driverSource.current);
       planning.current = null;
     }
     const next =
@@ -334,7 +360,11 @@ export function ComposerWords(props: { readonly anchor: string }) {
     if (!escDropsPlan(event, at)) return;
     event.preventDefault();
     event.stopPropagation();
-    planning.current?.abort.abort();
+    const known = planning.current;
+    if (known !== null) {
+      known.abort.abort();
+      tell(known, "dropped", driverSource.current);
+    }
     planning.current = null;
     readBack(view);
   });
@@ -467,6 +497,9 @@ export function ComposerWords(props: { readonly anchor: string }) {
       done: Promise.resolve(),
       plan: null,
       risk: [],
+      ask: null,
+      tries: [],
+      told: false,
     };
     known.done = (async () => {
       // A spent plan makes no call: the floor says why.
@@ -488,13 +521,15 @@ export function ComposerWords(props: { readonly anchor: string }) {
         name: place.name,
         line: projectsOf(place.id).flatMap((id) => lines.get(id) ?? [])[0] ?? null,
       }));
+      known.ask = askOf(facts, launch, defaults, projects, written);
       const plan = await thinkThrough({
-        ask: askOf(facts, launch, defaults, projects, written),
+        ask: known.ask,
         launch,
         roster,
         call: (prompt) => askPlanner(prompt, model, abort.signal),
         limit: spent,
         signal: abort.signal,
+        tried: (one) => known.tries.push(one),
       });
       if (plan === null || planning.current !== known) return;
       known.plan = ownFirst(plan, ownPlace(driverSource.current));
@@ -538,6 +573,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const defaults = defaultsFor(driverSource.current);
     if (!first || besides === null) return false;
     planning.current = null;
+    // Only ⌘↵ sends a plan that holds a risky act.
+    tell(known, known.risk.length > 0 ? "anyway" : "started", driverSource.current);
     return sendCells(view, driver, draftId, {
       launch: known.launch,
       besides,

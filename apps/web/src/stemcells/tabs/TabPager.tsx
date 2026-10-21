@@ -130,6 +130,8 @@ const BUSY = 40;
 /**
  * Whether something under `target`, inside `boundary`, scrolls sideways in
  * `direction` and has room to: then the gesture is its, not the pager's.
+ * A border between Cells keeps the gesture too: a swipe never starts from
+ * one (`split/Separator.tsx`).
  */
 function scrollerTakes(
   target: EventTarget | null,
@@ -141,6 +143,7 @@ function scrollerTakes(
     element !== null && element !== boundary;
     element = element.parentElement
   ) {
+    if (element.hasAttribute("data-stemcells-split")) return true;
     if (element.scrollWidth <= element.clientWidth + 1) continue;
     const overflow = getComputedStyle(element).overflowX;
     if (overflow !== "auto" && overflow !== "scroll") continue;
@@ -478,8 +481,10 @@ class PageStrip {
   }
 
   readonly #onWheel = (event: WheelEvent): void => {
-    // Pinches, and wheels that step by lines or pages, aren't swipes.
+    // Pinches, and wheels that step by lines or pages, aren't swipes; nor is
+    // anything while a border between Cells is held (`split/Separator.tsx`).
     if (event.ctrlKey || event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL) return;
+    if (document.documentElement.hasAttribute("data-stemcells-splitting")) return;
     const viewport = this.#viewport;
     if (viewport === null) return;
     const sample = {

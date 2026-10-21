@@ -760,7 +760,15 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      does nothing, ⌘↵ starts it anyway, and Esc drops the plan with the
      words as they were. The floor sends the person's own words, so it
      never holds for this.
-   - To come: the plan history (5d).
+   - 5d, built: the plan history. Every plan, once, with what came of it
+     (started, started anyway with ⌘↵, dropped with Esc, or the words
+     changed): the words with each chip in its words, the facts, the
+     shortlist, each call (its time, what came back, the checks it failed),
+     the plan, and the risky acts it held for. It goes to a file per day
+     in the server's state folder (`stemcells/plans/`), never anywhere
+     else, and a day goes after 30 days. `DELETE
+     /api/stemcells/planner/history` clears it, for Settings › Aski
+     (slice 6). Tokens aren't kept: `runLean` returns the answer alone.
 6. **Checking a plan, and Settings.**
    - The plan rows: sources, edits, Enter and Esc, and keep-or-drop on text
      edits.

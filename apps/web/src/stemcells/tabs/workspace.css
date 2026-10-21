@@ -166,12 +166,16 @@
 [data-stemcells-workbench]:empty {
   display: none;
 }
-/* Maximized, the workbench fills the page. */
-[data-stemcells-page]:has(> [data-stemcells-workbench] [data-preview-panel-maximized="true"])
-  > [data-stemcells-grid] {
+/* Maximized, the workbench fills the page (its chat's panel tells the page:
+   `upstream/chatPanel.tsx`). No `:has()` here, nor on the grid or a pane:
+   Chrome restyles everything inside the element a `:has()` stands on
+   whenever anything in it is added or removed, so a composer folding its
+   controls restyled the whole page, 15–20 ms a frame while a border was
+   dragged (`restyle.test.ts`). */
+[data-stemcells-grid][data-maximized-away] {
   display: none;
 }
-[data-stemcells-workbench]:has([data-preview-panel-maximized="true"]) {
+[data-stemcells-workbench][data-maximized] {
   flex: 1;
 }
 /* Off stage, the focused Cell's panel keeps its frame and tabs in the
@@ -214,6 +218,38 @@
   padding-inline-end: calc(
     var(--sc-lane-room) + var(--chat-lane-inset-end, 0px) - var(--chat-timeline-gutter, 0px)
   );
+}
+/* While a border between Cells side by side is held, their transcripts
+   keep the width and lanes they had (`stillTranscripts.ts`): the border
+   slides over them, the one after it anchored to its far edge, and nothing
+   in them re-wraps until the border rests or is let go. The composers
+   follow the border. What they keep doesn't inherit: inherited, setting
+   it restyled every row of a long chat at the press (3 x 1,838 elements,
+   25 ms). */
+@property --sc-still-width {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --sc-still-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --sc-still-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+[data-stemcells-still] {
+  overflow: clip;
+}
+[data-stemcells-still] [data-stemcells-pane] [data-chat-canvas] .messages-timeline-scroll {
+  width: var(--sc-still-width);
+  padding-inline: var(--sc-still-start) var(--sc-still-end);
+}
+[data-stemcells-still="after"] [data-stemcells-pane] [data-chat-canvas] .messages-timeline-scroll {
+  margin-inline-start: calc(100% - var(--sc-still-width));
 }
 /* The composer keeps one height: a row of text over its controls, lower
    than upstream's open field, growing only with what is typed. It never
@@ -485,9 +521,6 @@
   backdrop-filter: blur(var(--sc-glass-blur)) saturate(var(--sc-glass-saturation));
   font-size: var(--text-xs);
   color: var(--muted-foreground);
-}
-[data-stemcells-pane]:has([data-chat-composer-stack]) [data-stemcells-cell-pill] {
-  display: none;
 }
 [data-stemcells-cell-pill-name] {
   flex: none;

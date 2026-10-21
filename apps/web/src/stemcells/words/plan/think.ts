@@ -29,6 +29,18 @@ export const FAST_FAILURE_MS = 5_000;
 
 export type PlannerCall = (prompt: string) => Promise<PlannerReply>;
 
+/** One call, as the plan history keeps it (decision 19). */
+export interface Try {
+  readonly ms: number;
+  /** An answer came, or why none did. */
+  readonly came: "answer" | PlannerReplyFailure;
+  readonly answer?: unknown;
+  /** The checks its answer failed. */
+  readonly failed?: readonly string[];
+}
+
+type PlannerReplyFailure = Extract<PlannerReply, { ok: false }>["reason"];
+
 /** The model Aski thinks with: one structured call, run lean. */
 export interface PlannerModel {
   readonly instanceId: string;
@@ -108,6 +120,8 @@ export async function thinkThrough(input: {
   readonly signal: AbortSignal;
   /** The time in milliseconds, for how fast a call failed. */
   readonly now?: () => number;
+  /** Each call as it comes back. */
+  readonly tried?: (one: Try) => void;
 }): Promise<Plan | null> {
   const { ask, launch, roster, call, signal } = input;
   const now = input.now ?? Date.now;
@@ -122,16 +136,24 @@ export async function thinkThrough(input: {
       signal,
       null,
     );
+    const ms = Math.round(now() - asked);
     if (signal.aborted) return null;
     if (!reply.ok) {
+      input.tried?.({ ms, came: reply.reason });
       // Only a fast failure gets one more call: a slow one would double the
       // wait, and a refused one fails the same again.
-      const again = reply.reason === "failed" && !reply.refused && now() - asked < FAST_FAILURE_MS;
+      const again = reply.reason === "failed" && !reply.refused && ms < FAST_FAILURE_MS;
       if (!again) return floorOf(launch, ask.task, FLOOR_WHY[reply.reason]);
       failed = [];
       continue;
     }
     const checked = checkAnswer(reply.answer, ask, roster);
+    input.tried?.({
+      ms,
+      came: "answer",
+      answer: reply.answer,
+      ...(checked.ok ? {} : { failed: checked.failed }),
+    });
     if (checked.ok) return joined(launch, checked.cells);
     failed = checked.failed;
   }

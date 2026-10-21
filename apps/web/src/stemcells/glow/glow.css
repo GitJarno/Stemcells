@@ -77,7 +77,7 @@
 /* In a grid of panes, the focused pane's plate steps its outline up to
    upstream's input border, so you can tell where your words will go. A lone
    pane needs no cue and keeps upstream's outline. */
-[data-stemcells-grid]:has([data-stemcells-pane][data-focused="false"])
+[data-stemcells-grid][data-many]
   [data-stemcells-pane][data-focused="true"]
   [data-slot="composer-shell"] {
   --chat-composer-outline: var(--input);

@@ -4,6 +4,8 @@
  * change is a pure function from one workspace to the next.
  */
 
+import { sharePair } from "../split/split";
+
 /** The chat a pane shows. A draft and the thread it becomes share `threadId`. */
 export interface CellRef {
   readonly environmentId: string;
@@ -12,18 +14,27 @@ export interface CellRef {
   readonly draftId: string | null;
 }
 
-export interface Pane {
+/**
+ * A pane, column or row's share of its parent's height or width, against
+ * its siblings' (`shareOf`). Unset, it takes an even share: a newcomer
+ * shares its parent evenly, and the others keep theirs to each other.
+ */
+interface Shared {
+  readonly share?: number;
+}
+
+export interface Pane extends Shared {
   readonly id: string;
   /** Null while a new Cell is being opened into it. */
   readonly cell: CellRef | null;
 }
 
-export interface Column {
+export interface Column extends Shared {
   readonly id: string;
   readonly panes: ReadonlyArray<Pane>;
 }
 
-export interface Row {
+export interface Row extends Shared {
   readonly id: string;
   readonly columns: ReadonlyArray<Column>;
 }
@@ -49,6 +60,13 @@ export const MIN_COLUMN_WIDTH = 160;
  * pane a chat is made to read at (stemcells/tasks/narrow-panes.md).
  */
 export const CELL_COLUMN_WIDTH = 300;
+
+/**
+ * The shortest a pane gets when a border is dragged: its buttons' band, a
+ * line of its chat, and its composer under the line that names its Cell
+ * (measured at about 200 px together, the buttons then on the line).
+ */
+export const MIN_PANE_HEIGHT = 240;
 
 /** Fresh ids for whatever an action may create. */
 export interface NewIds {
@@ -113,6 +131,107 @@ function mapPanes(tab: Tab, map: (pane: Pane) => Pane): Tab {
   };
 }
 
+/**
+ * Each child's share of its parent, in order, at a mean of 1: its own, or,
+ * unset, the mean of the shares its siblings have, so a newcomer takes an
+ * even share. Read at a mean of 1, the children always fill their parent,
+ * whatever left it: a column closed or carried away leaves its siblings'
+ * shares summing under 1, and a flex parent fills only that part of itself.
+ */
+export function sharesOf(children: ReadonlyArray<Shared>): number[] {
+  const set = children.flatMap((child) => child.share ?? []);
+  const even = set.length > 0 ? set.reduce((sum, share) => sum + share, 0) / set.length : 1;
+  const shares = children.map((child) => child.share ?? even);
+  const mean = shares.reduce((sum, share) => sum + share, 0) / Math.max(1, shares.length);
+  return shares.map((share) => share / mean);
+}
+
+/** A pane arriving somewhere new: it takes an even share there, not the one it had. */
+export function arriving(pane: Pane): Pane {
+  const { share: _left, ...fresh } = pane;
+  return fresh;
+}
+
+function withShares<T extends Shared>(children: ReadonlyArray<T>, shares: number[]): T[] {
+  // Kept to a mean of 1, so an even share is 1 whatever was dragged before.
+  const total = shares.reduce((sum, share) => sum + share, 0);
+  return children.map((child, index) => ({
+    ...child,
+    share: (shares[index]! * children.length) / total,
+  }));
+}
+
+/** A tab's rows, a row's columns or a column's panes, by the parent's id. */
+function childrenOf(tab: Tab, parentId: string): ReadonlyArray<Shared> | null {
+  if (tab.id === parentId) return tab.rows;
+  for (const row of tab.rows) {
+    if (row.id === parentId) return row.columns;
+    const column = row.columns.find((candidate) => candidate.id === parentId);
+    if (column) return column.panes;
+  }
+  return null;
+}
+
+/**
+ * Shares out a parent between its children, in order: a tab's rows, a
+ * row's columns or a column's panes, the parent named by its id. Shares
+ * that don't fit its children leave the workspace as it was.
+ */
+export function shareOut(workspace: Workspace, parentId: string, shares: number[]): Workspace {
+  const tab = workspace.tabs.find((candidate) => childrenOf(candidate, parentId) !== null);
+  const fits =
+    tab !== undefined &&
+    childrenOf(tab, parentId)!.length === shares.length &&
+    shares.every((share) => Number.isFinite(share) && share > 0);
+  if (!fits) return workspace;
+  const share = <T extends Shared>(children: ReadonlyArray<T>, id: string) =>
+    id === parentId ? withShares(children, shares) : children;
+  const rows = share(tab.rows, tab.id).map((row) => ({
+    ...row,
+    columns: share(row.columns, row.id).map((column) => ({
+      ...column,
+      panes: share(column.panes, column.id),
+    })),
+  }));
+  return replaceTab(workspace, { ...tab, rows });
+}
+
+/**
+ * A border dragged: the children at `index` and `index + 1` of a parent
+ * share what they had between them as `before` to `after`.
+ */
+export function resizePair(
+  workspace: Workspace,
+  parentId: string,
+  index: number,
+  before: number,
+  after: number,
+): Workspace {
+  const children = workspace.tabs.map((tab) => childrenOf(tab, parentId)).find(Boolean);
+  if (!children || index < 0 || index + 1 >= children.length) return workspace;
+  return shareOut(workspace, parentId, sharePair(sharesOf(children), index, before, after));
+}
+
+/** A parent's children, evened out. */
+export function evenOut(workspace: Workspace, parentId: string): Workspace {
+  const children = workspace.tabs.map((tab) => childrenOf(tab, parentId)).find(Boolean);
+  return children
+    ? shareOut(
+        workspace,
+        parentId,
+        children.map(() => 1),
+      )
+    : workspace;
+}
+
+/**
+ * The shortest a row gets: its tallest stack of panes, each at its
+ * shortest.
+ */
+export function rowFloor(row: Row): number {
+  return Math.max(...row.columns.map((column) => column.panes.length)) * MIN_PANE_HEIGHT;
+}
+
 /** Opens a tab at the end of the strip and makes it active. */
 export function openTab(workspace: Workspace, ids: NewIds, cell: CellRef | null): Workspace {
   return { tabs: [...workspace.tabs, newTab(ids, cell)], activeTabId: ids.tab };
@@ -164,25 +283,59 @@ export function setCell(workspace: Workspace, paneId: string, cell: CellRef | nu
 }
 
 /**
- * Adds an empty pane beside the focused one, in a new column. Columns share
- * the row's width equally; when that would make them narrower than
- * MIN_COLUMN_WIDTH, the newcomer starts a new row under the focused one.
+ * The row's columns' shares with a newcomer `width` wide after the column at
+ * `index`, as the row lays them out `rowWidth` wide: the others give it
+ * room in proportion to what each has over MIN_COLUMN_WIDTH, so none goes
+ * under it; null when they haven't that much room between them.
+ */
+function sharesBeside(
+  columns: ReadonlyArray<Column>,
+  index: number,
+  rowWidth: number,
+  width: number,
+): number[] | null {
+  const widths = sharesOf(columns).map((share) => (rowWidth * share) / columns.length);
+  const spare = widths.map((each) => Math.max(0, each - MIN_COLUMN_WIDTH));
+  const room = spare.reduce((sum, each) => sum + each, 0);
+  if (width < MIN_COLUMN_WIDTH || room < width) return null;
+  const kept = widths.map((each, at) => each - (width * spare[at]!) / room);
+  kept.splice(index + 1, 0, width);
+  return kept;
+}
+
+/** The focused pane's row, and its column's index in it. */
+function focusedColumn(tab: Tab): { row: Row; index: number } | null {
+  for (const row of tab.rows) {
+    const index = row.columns.findIndex((column) =>
+      column.panes.some((candidate) => candidate.id === tab.focusedPaneId),
+    );
+    if (index >= 0) return { row, index };
+  }
+  return null;
+}
+
+/**
+ * Adds an empty pane beside the focused one, in a new column as wide as an
+ * even share of the row; the other columns give it room as they have it
+ * over MIN_COLUMN_WIDTH (`sharesBeside`). When they haven't the room, the
+ * newcomer starts a new row under the focused one.
  */
 export function splitRight(workspace: Workspace, ids: NewIds, rowWidth: number): Workspace {
   const tab = activeTab(workspace);
-  if (!tab) return workspace;
+  const focused = tab ? focusedColumn(tab) : null;
+  if (!tab || !focused) return workspace;
   const pane: Pane = { id: ids.pane, cell: null };
-  const rows = tab.rows.flatMap((row): Row[] => {
-    const columnIndex = row.columns.findIndex((column) =>
-      column.panes.some((candidate) => candidate.id === tab.focusedPaneId),
-    );
-    if (columnIndex < 0) return [row];
-    if (rowWidth / (row.columns.length + 1) < MIN_COLUMN_WIDTH) {
+  const { row, index } = focused;
+  const width = rowWidth / (row.columns.length + 1);
+  const shares = sharesBeside(row.columns, index, rowWidth, width);
+  const rows = tab.rows.flatMap((candidate): Row[] => {
+    if (candidate !== row) return [candidate];
+    if (shares === null) {
       return [row, { id: ids.row, columns: [{ id: ids.column, panes: [pane] }] }];
     }
     const columns = [...row.columns];
-    columns.splice(columnIndex + 1, 0, { id: ids.column, panes: [pane] });
-    return [{ ...row, columns }];
+    columns.splice(index + 1, 0, { id: ids.column, panes: [pane] });
+    return [{ ...row, columns: withShares(columns, shares) }];
   });
   return replaceTab(workspace, { ...tab, rows, focusedPaneId: pane.id });
 }
@@ -218,7 +371,10 @@ export function addPane(workspace: Workspace, ids: NewIds, rowWidth: number): Wo
   const row = tab.rows.find((candidate) => candidate.columns.some(holdsFocus));
   const column = row?.columns.find(holdsFocus);
   if (!row || !column) return workspace;
-  const fitsBeside = rowWidth / (row.columns.length + 1) >= CELL_COLUMN_WIDTH;
+  const width = rowWidth / (row.columns.length + 1);
+  const fitsBeside =
+    width >= CELL_COLUMN_WIDTH &&
+    sharesBeside(row.columns, row.columns.indexOf(column), rowWidth, width) !== null;
   return column.panes.length > 1 || !fitsBeside
     ? splitDown(workspace, ids)
     : splitRight(workspace, ids, rowWidth);
@@ -339,22 +495,27 @@ function parseList<T>(value: unknown, parse: (item: unknown) => T | null): T[] |
   return items.every((item) => item !== null) && items.length > 0 ? (items as T[]) : null;
 }
 
+/** A kept share; any other value is no share, an even one. */
+function parseShare(value: unknown): Shared {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? { share: value } : {};
+}
+
 function parsePane(value: unknown): Pane | null {
   if (!isRecord(value) || !isNonEmptyString(value.id)) return null;
   const cell = parseCell(value.cell);
-  return cell ? { id: value.id, cell } : null;
+  return cell ? { id: value.id, cell, ...parseShare(value.share) } : null;
 }
 
 function parseColumn(value: unknown): Column | null {
   if (!isRecord(value) || !isNonEmptyString(value.id)) return null;
   const panes = parseList(value.panes, parsePane);
-  return panes ? { id: value.id, panes } : null;
+  return panes ? { id: value.id, panes, ...parseShare(value.share) } : null;
 }
 
 function parseRow(value: unknown): Row | null {
   if (!isRecord(value) || !isNonEmptyString(value.id)) return null;
   const columns = parseList(value.columns, parseColumn);
-  return columns ? { id: value.id, columns } : null;
+  return columns ? { id: value.id, columns, ...parseShare(value.share) } : null;
 }
 
 function parseTab(value: unknown): Tab | null {
@@ -414,7 +575,10 @@ export function placePane(
     if (columnIndex < 0) return row;
     if (side === "left" || side === "right") {
       const columns = [...row.columns];
-      columns.splice(columnIndex + (side === "right" ? 1 : 0), 0, { id: columnId, panes: [pane] });
+      columns.splice(columnIndex + (side === "right" ? 1 : 0), 0, {
+        id: columnId,
+        panes: [arriving(pane)],
+      });
       return { ...row, columns };
     }
     return {
@@ -423,7 +587,7 @@ export function placePane(
         const index = column.panes.findIndex((p) => p.id === anchorId);
         if (index < 0) return column;
         const panes = [...column.panes];
-        panes.splice(index + (side === "below" ? 1 : 0), 0, pane);
+        panes.splice(index + (side === "below" ? 1 : 0), 0, arriving(pane));
         return { ...column, panes };
       }),
     };
