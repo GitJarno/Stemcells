@@ -50,10 +50,13 @@ fi
 
 if [ "$check" = 1 ]; then
   pnpm install --frozen-lockfile
+  # The same checks as stemcells.yml. The web's tests run with the web's
+  # config, which carries our substitutes for upstream modules.
   if ! { stemcells/scripts/drift &&
     pnpm --filter @t3tools/web typecheck &&
     pnpm --filter t3 typecheck &&
-    pnpm exec vp test run apps/web/src/stemcells apps/server/src/stemcells --passWithNoTests; }; then
+    pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells &&
+    pnpm exec vp test run apps/server/src/stemcells --passWithNoTests; }; then
     echo "sync: the merged tree fails a check"
     exit 4
   fi
