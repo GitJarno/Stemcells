@@ -42,9 +42,8 @@ const SEND_REACH = 48;
  * Behind the composer's words and over its glass. The words keep their ink:
  * the band's strength is set by them (`light.ts`). Under reduced motion
  * nothing sweeps or drifts: the tint holds, breathes slowly and leaves on a
- * fade. Every composer in a pane of ours wears the glass's rim and depth
- * (`glow.css`); the light and the mark only a Cell's. Nothing outside our
- * panes.
+ * fade. The plate itself is upstream's (`glow.css`); the light and the
+ * mark are a Cell's only. Nothing outside our panes.
  */
 export function CellComposerGlass(props: { readonly provider: string }) {
   const cell = use(PaneCellContext);
@@ -113,21 +112,13 @@ export function CellComposerGlass(props: { readonly provider: string }) {
     };
   }, [hasCell]);
 
-  // Every composer in a pane of ours wears the glass; a Cell's also wears
-  // its light and its provider's mark.
+  // Every composer in a pane of ours holds the layer (it anchors the
+  // scroll-through and the drop-off); a Cell's also holds its light and its
+  // provider's mark.
   if (!hasCell) return <div ref={rootRef} data-stemcells-composer-glass="" aria-hidden="true" />;
   return (
     <div ref={rootRef} data-stemcells-composer-glass="" aria-hidden="true">
-      <div className="glass-light">
-        <div className="glass-lit">
-          <div className="glass-wash">
-            <div className="glass-wash-near" />
-            <div className="glass-wash-far" />
-          </div>
-          <div className="glass-band" />
-        </div>
-        <div className="glass-bloom" />
-      </div>
+      {/* Under the light, which washes over it while the Cell works. */}
       <span className="glass-imprint">
         <ProviderLogo
           driver={props.provider}
@@ -138,6 +129,16 @@ export function CellComposerGlass(props: { readonly provider: string }) {
           }
         />
       </span>
+      <div className="glass-light">
+        <div className="glass-lit">
+          <div className="glass-wash">
+            <div className="glass-wash-near" />
+            <div className="glass-wash-far" />
+          </div>
+          <div className="glass-band" />
+        </div>
+        <div className="glass-bloom" />
+      </div>
     </div>
   );
 }

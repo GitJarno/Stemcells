@@ -28,40 +28,15 @@
   initial-value: transparent;
 }
 
-/* The glass. In a pane of ours the composer's plate is frosted glass:
-   upstream's own glass is tuned through its variables (blur, saturation,
-   the share of the person's glass opacity), so the plate, the line on it
-   and the strip under it stay one surface, and upstream keeps its border.
-   The rim, the depth, the lift and the shadow are ours. */
-[data-stemcells-pane] [data-slot="composer-shell"] {
-  --glass-blur: var(--sc-glass-blur);
-  --glass-saturation: var(--sc-glass-saturation);
-  --glass-opacity: var(--sc-glass-tint);
-  /* Upstream's faint top highlight gives way to the rim. */
-  --chat-composer-highlight: transparent;
-}
+/* The plate is upstream's composer with upstream's glass, as T3 draws it (asked for on 2026-10-21): don't brighten it. */
 
-/* The focused chat's plate comes forward, as does one a drop is over and
-   one being typed in. */
-[data-stemcells-pane]:is([data-focused="true"], :has([data-chat-workspace-drop-overlay]))
-  [data-slot="composer-shell"],
-[data-stemcells-pane] [data-slot="composer-shell"]:focus-within {
-  --glass-opacity: var(--sc-glass-tint-raised);
-  --sc-glass-rim: var(--sc-glass-rim-raised);
-  --sc-glass-shadow: var(--sc-glass-shadow-raised);
-}
-
-/* The shadow sits where upstream puts its own: under the whole plate, or
-   under its main surface once a line is attached on top. A box shadow, not
-   a filter: a filter would cut the blur off from what is under the plate. */
-[data-stemcells-pane]
-  [data-slot="composer-shell"]:not(:has([data-composer-banner-surface="attached"]))
-  > [data-slot="composer-host"],
-[data-stemcells-pane]
-  [data-slot="composer-shell"]:has([data-composer-banner-surface="attached"])
-  [data-chat-composer-main-surface] {
-  box-shadow: var(--sc-glass-shadow);
-  transition: box-shadow var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+/* In a grid of panes, the focused pane's plate steps its outline up to
+   upstream's input border, so you can tell where your words will go. A lone
+   pane needs no cue and keeps upstream's outline. */
+[data-stemcells-grid]:has([data-stemcells-pane][data-focused="false"])
+  [data-stemcells-pane][data-focused="true"]
+  [data-slot="composer-shell"] {
+  --chat-composer-outline: var(--input);
 }
 
 /* Behind the composer's words, over its glass: the surface is a stacking
@@ -80,49 +55,6 @@
   overflow: hidden;
   border-radius: inherit;
   pointer-events: none;
-  /* Depth: the glass thickens toward its foot. */
-  box-shadow: inset 0 -14px 24px -18px var(--sc-glass-depth);
-}
-
-/* Lift: a focused plate is a touch lighter. */
-[data-stemcells-pane] [data-stemcells-composer-glass]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--sc-glass-lift);
-  opacity: 0;
-  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
-}
-
-[data-stemcells-pane]:is([data-focused="true"], :has([data-chat-workspace-drop-overlay]))
-  [data-stemcells-composer-glass]::before,
-[data-stemcells-pane]
-  [data-slot="composer-shell"]:focus-within
-  [data-stemcells-composer-glass]::before {
-  opacity: 1;
-}
-
-/* The rim: light catching along the top edge and round the shoulders,
-   fading down the sides, with a faint return along the foot. A one-pixel
-   ring over the light and the imprint. */
-[data-stemcells-pane] [data-stemcells-composer-glass]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(
-    to bottom,
-    var(--sc-glass-rim),
-    transparent 45%,
-    transparent 75%,
-    color-mix(in srgb, var(--sc-glass-rim) 35%, transparent)
-  );
-  mask:
-    linear-gradient(black 0 0) content-box,
-    linear-gradient(black 0 0);
-  mask-composite: exclude;
 }
 
 [data-stemcells-composer-glass] :is(.glass-light, .glass-lit, .glass-wash, .glass-wash > *) {
@@ -157,17 +89,16 @@
   );
 }
 
-/* The provider's mark, a quiet impression in the glass: in the words' ink
-   at 8% of their strength, fading in from its top-left, hanging past
-   the glass's trailing and bottom edges. */
+/* The provider's mark, a barely-there watermark in the glass: halfway
+   between the plate and upstream's accent surface, fading in from its
+   top-left and hanging past the glass's trailing and bottom edges. */
 [data-stemcells-composer-glass] .glass-imprint {
   position: absolute;
   right: var(--imprint-overhang);
   bottom: var(--imprint-overhang);
   display: none;
   height: var(--imprint-side);
-  color: var(--sc-text);
-  opacity: 0.08;
+  color: color-mix(in oklab, var(--accent), var(--chat-composer-glass-surface));
   mask-image: linear-gradient(to bottom right, transparent, rgb(0 0 0 / 65%), black);
 }
 

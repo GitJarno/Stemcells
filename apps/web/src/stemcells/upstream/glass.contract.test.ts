@@ -1,9 +1,10 @@
 /**
  * What the composer's light relies on in upstream: where it sits in the
  * composer, what it reads there (the glass's colour, the send button) and
- * which providers upstream draws a mark for. A failure here after a sync
- * names the contract that moved; the light is likely in the wrong place,
- * off its button, or wearing the wrong colour.
+ * which providers upstream draws a mark for; and the outline the focused
+ * pane's plate steps up. A failure here after a sync names the contract
+ * that moved; the light is likely in the wrong place, off its button, or
+ * wearing the wrong colour, or the focused pane no longer shows.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -42,21 +43,14 @@ describe("the composer light's contracts with upstream", () => {
     expect(body(composerSurface, "Shell")).toContain("[--chat-composer-glass-surface:");
   });
 
-  it("the plate's glass is upstream's, tuned through the properties glow.css sets", () => {
+  it("the plate's outline is one property, which the focused pane's cue steps up", () => {
     const shell = body(composerSurface, "Shell");
     expect(shell).toContain('data-slot="composer-shell"');
-    expect(shell).toContain(
-      "before:bg-(--chat-composer-glass-surface)/(--glass-opacity) before:backdrop-blur-(--glass-blur) before:backdrop-saturate-(--glass-saturation)",
-    );
-    // An attached line moves the glass off the shell onto the main surface;
-    // the shadow in glow.css moves with it.
-    expect(shell).toContain("has-data-[composer-banner-surface=attached]:before:hidden");
-    expect(body(composerSurface, "Main")).toContain(
-      "group-has-data-[composer-banner-surface=attached]/composer-surface:backdrop-blur-(--glass-blur)",
-    );
-    expect(body(composerSurface, "Host")).toContain('data-slot="composer-host"');
-    // Upstream's top highlight, which the rim replaces.
-    expect(composerSurface).toContain("inset-shadow-(color:--chat-composer-highlight)");
+    expect(shell).toContain("[--chat-composer-outline:");
+    // The plate draws it, and so does the main surface under an attached line.
+    expect(composerSurface).toContain("after:border-(--chat-composer-outline)");
+    expect(body(composerSurface, "Host")).toContain("outlineClasses");
+    expect(body(composerSurface, "Main")).toContain("outlineClasses");
   });
 
   it("the send button is the last button in the composer's trailing actions", () => {

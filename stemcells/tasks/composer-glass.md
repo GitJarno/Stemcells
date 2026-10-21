@@ -87,3 +87,27 @@ mask, 1.83 without.
       again. The mask now shows it only inside the plate's own rect,
       between its rounded corners (so no corner shows a fragment), and
       keeps it out below; `dropOff.ts` measures the plate's bottom too
+
+## Follow-up: T3's plate, our light (2026-10-21)
+
+The plate read as a light grey slab with a bright rim, and the provider's
+mark was big and present. Asked for: T3's own composer, with our glow.
+
+- [x] The plate is upstream's surface with upstream's glass values: no tint,
+      raised tint, lift, rim, depth or shadows of ours (`glow.css` says why
+      at the surface)
+- [x] The light while a Cell works stays
+- [x] The focused pane's cue is a quiet step: in a grid of panes its plate
+      takes upstream's input border for its outline; a lone pane keeps
+      upstream's outline
+- [x] The mark is a watermark: halfway between the plate and upstream's
+      accent surface, under the light
+- [x] Contract: the outline is upstream's one property, drawn by the plate
+      and by the main surface under an attached line
+
+Review: ours next to a plain upstream checkout at the same state (a new
+chat, then focused, then working; dark and light, in T3's own themes):
+page and plate are the same pixels (dark 10/16, light 252/254) and so is
+the edge (dark 28); what differs is the faint mark and our light while
+a Cell works. In Stemcells' theme the plate follows upstream's rule for a
+themed app.

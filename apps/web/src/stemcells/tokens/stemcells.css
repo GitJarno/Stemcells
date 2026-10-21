@@ -1580,38 +1580,17 @@
   --sc-pane-button-edge: color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
-/* The composer's glass: the plate a chat's words sit on floats over its
-   transcript, frosted and a little more colourful than what scrolls under
-   it, with a light rim along its top, some depth inside and a quiet shadow
-   beneath. The focused chat's plate comes forward: denser, lighter, its rim
-   brighter and its shadow deeper. On a light page, where the plate is near
-   the slate's white, the rim is an ink hairline and the shadow does the
-   rest. The tint is a share of the glass opacity the person set in T3's
-   appearance settings. */
+/* Glass for our own floating pieces (a pane's buttons, its Cell's pill,
+   Look's frame): frosted, a little more colourful than what is under it,
+   with a quiet shadow. The composer's plate is upstream's own (`glow.css`). */
 :root {
   --sc-glass-blur: 12px;
   --sc-glass-saturation: 1.8;
-  --sc-glass-tint: calc(var(--glass-opacity, 80%) * 0.3);
-  --sc-glass-tint-raised: var(--glass-opacity, 80%);
-  --sc-glass-rim: color-mix(in srgb, var(--foreground) 7%, transparent);
-  --sc-glass-rim-raised: color-mix(in srgb, var(--foreground) 32%, transparent);
-  --sc-glass-lift: rgba(255, 255, 255, 0.35);
-  --sc-glass-depth: rgba(0, 0, 0, 0.05);
   --sc-glass-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.08);
-  --sc-glass-shadow-raised: 0 8px 20px -6px rgba(0, 0, 0, 0.32), 0 2px 4px -1px rgba(0, 0, 0, 0.14);
 }
 
-/* On a dark page the plate's light carries focus; its tints are set here
-   so a light page's tuning never moves them. */
 :root.dark {
-  --sc-glass-tint: calc(var(--glass-opacity, 80%) * 0.45);
-  --sc-glass-tint-raised: var(--glass-opacity, 80%);
-  --sc-glass-rim: rgba(255, 255, 255, 0.08);
-  --sc-glass-rim-raised: rgba(255, 255, 255, 0.6);
-  --sc-glass-lift: rgba(255, 255, 255, 0.1);
-  --sc-glass-depth: rgba(0, 0, 0, 0.35);
   --sc-glass-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.55);
-  --sc-glass-shadow-raised: 0 18px 44px -12px rgba(0, 0, 0, 0.85);
 }
 
 /* The ground under a Cell's line: the transcript fades out over
