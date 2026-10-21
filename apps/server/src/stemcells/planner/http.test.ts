@@ -14,13 +14,15 @@ import * as HttpPlatform from "effect/http/HttpPlatform";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
 import * as EnvironmentAuth from "../../auth/EnvironmentAuth.ts";
+import * as ServerConfig from "../../config.ts";
 import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
 import * as ProviderInstanceRegistry from "../../provider/ProviderInstanceRegistry.ts";
-import { makeLayer, PLAN_BODY_MOST, PLANNER_PATH, PROMPT_MOST } from "./http.ts";
+import { makeLayer, PLAN_BODY_MOST, PLAN_RECORD_MOST, PLANNER_PATH, PROMPT_MOST } from "./http.ts";
 
 // Contract: the planner's routes answer only callers with their scope, read
 // no more than they take, stop a call at its time, run each call in a
-// private folder, and read a project's line only inside the project.
+// private folder, read a project's line only inside the project, and keep
+// the plan history only in the app's own state folder, which they clear.
 
 /** A caller's scopes ride a test header; none is no credential. */
 const auth = Layer.succeed(EnvironmentAuth.EnvironmentAuth, {
@@ -87,9 +89,13 @@ const projects = Layer.succeed(ProjectStore.ProjectStoreV2, {
     ),
 } as never);
 
+/** The app's state folder, where the plan history lives. */
+const stateDir = NodePath.join(root, "state");
+const config = Layer.succeed(ServerConfig.ServerConfig, { stateDir } as never);
+
 function serve(lean: Lean, planTime = Duration.seconds(5)) {
   const routes = makeLayer(planTime).pipe(
-    Layer.provideMerge(Layer.mergeAll(auth, registry(lean), projects)),
+    Layer.provideMerge(Layer.mergeAll(auth, registry(lean), projects, config)),
     Layer.provideMerge(
       HttpPlatform.layer.pipe(
         Layer.provideMerge(NodeServices.layer),
@@ -195,6 +201,35 @@ describe("the planner's routes", () => {
       expect(reply.status).toBe(200);
       // AGENTS.md links outside the project, so the README's line is read.
       expect(await reply.json()).toEqual({ lines: { harbor: "The ferry timetable." } });
+    } finally {
+      await web.dispose();
+    }
+  });
+
+  it("keep the plan history in the app's state folder, refuse a record too large, and forget it", async () => {
+    const web = serve(lean());
+    const history = (
+      method: string,
+      body?: string,
+      scopes: string = AuthOrchestrationOperateScope,
+    ) =>
+      web.handler(
+        new Request(`http://127.0.0.1${PLANNER_PATH}/history`, {
+          method,
+          headers: { "content-type": "application/json", "x-test-scopes": scopes },
+          ...(body === undefined ? {} : { body }),
+        }),
+      );
+    const plans = NodePath.join(stateDir, "stemcells", "plans");
+    try {
+      expect((await history("POST", JSON.stringify({ words: "fix it" }))).status).toBe(200);
+      expect(NodeFS.readdirSync(plans)).toHaveLength(1);
+      const tooLarge = JSON.stringify({ words: "x".repeat(PLAN_RECORD_MOST) });
+      expect((await history("POST", tooLarge)).status).toBe(413);
+      expect((await history("POST", "[1]")).status).toBe(400);
+      expect((await history("DELETE", undefined, AuthOrchestrationReadScope)).status).toBe(403);
+      expect((await history("DELETE")).status).toBe(200);
+      expect(NodeFS.existsSync(plans)).toBe(false);
     } finally {
       await web.dispose();
     }

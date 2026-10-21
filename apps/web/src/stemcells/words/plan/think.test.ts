@@ -84,7 +84,20 @@ describe("Aski thinking a plan through", () => {
   it("asks once more, naming what failed, then falls to the floor", async () => {
     const short = { cells: answer.cells.slice(0, 2) };
     const { asked, call } = planner({ ok: true, answer: short }, { ok: true, answer: short });
-    const plan = await think(call);
+    const tries: unknown[] = [];
+    const plan = await thinkThrough({
+      ask,
+      launch,
+      roster: testPlaces,
+      call,
+      limit: null,
+      signal: new AbortController().signal,
+      tried: (one) => tries.push({ ...one, ms: 0 }),
+    });
+    expect(tries).toEqual([
+      { ms: 0, came: "answer", answer: short, failed: ["Cell 3 has no answer."] },
+      { ms: 0, came: "answer", answer: short, failed: ["Cell 3 has no answer."] },
+    ]);
     expect(asked).toHaveLength(2);
     expect(asked[1]).toContain("- Cell 3 has no answer.");
     expect(plan).toMatchObject({ kind: "floor", why: FLOOR_WHY.failed });

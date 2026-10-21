@@ -622,6 +622,11 @@ work is shared out), the web asks Aski's planner for one structured answer
   line: the first paragraph of prose in its AGENTS.md, CLAUDE.md or README,
   kept until the file changes. A file that resolves outside the project is
   skipped, and so is an id that isn't one.
+- `POST /api/stemcells/planner/history` adds one plan, as the web saw it
+  through, to the plan history: a file per day under the server's state
+  folder (`stemcells/plans/`), kept 30 days and never sent anywhere. It
+  reads at most 256 KB of record. `DELETE` forgets them all. Both take the
+  operate scope.
 
 Nothing joins `TextGeneration`'s service, RPC or fakes: a provider without a
 runner (ACP, Muse, Codex's managed one) has no `runLean`, and the planner

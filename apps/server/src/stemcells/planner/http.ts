@@ -12,12 +12,15 @@ import { boundedText } from "../http/body.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Upstream from "../upstream/planner.ts";
 import { PlanAnswer } from "./answer.ts";
+import { appendPlan, clearPlans, PlanRecord } from "./history.ts";
 import { firstParagraph, LINE_FILES, LINE_READ_MOST } from "./lines.ts";
 
 // POST /api/stemcells/planner: one lean structured call on the model the
 // request names, with the web's prompt, answering `PlanAnswer`; it spends,
 // so it takes the operate scope.
 // GET /api/stemcells/planner/lines?project=…: each project's one line.
+// POST /api/stemcells/planner/history: one plan, as the web saw it through,
+// added to the plan history; DELETE forgets them all (`history.ts`).
 
 export const PLANNER_PATH = "/api/stemcells/planner";
 const NO_STORE = { "cache-control": "private, no-store" };
@@ -29,6 +32,8 @@ export const PROMPT_MOST = 64_000;
 /** The most model options a plan request names, and the longest id or value. */
 const OPTIONS_MOST = 8;
 const OPTION_LENGTH_MOST = 64;
+/** The largest plan record the history takes, in bytes. */
+export const PLAN_RECORD_MOST = 256_000;
 /** The most projects one lines request names. */
 const LINES_MOST = 24;
 /** The largest file a project's line is read from: a line sits at its top. */
@@ -38,6 +43,7 @@ export const PLAN_TIME = Duration.seconds(20);
 
 const PlanRequest = Schema.Struct({ prompt: Schema.String, modelSelection: ModelSelection });
 const decodePlanRequest = Schema.decodeUnknownEffect(Schema.fromJsonString(PlanRequest));
+const decodePlanRecord = Schema.decodeUnknownEffect(Schema.fromJsonString(PlanRecord));
 const isProjectId = Schema.is(ProjectId);
 /** A project id as the store keeps them: never blank, never padded. */
 const isAskedId = (id: string): id is ProjectId =>
@@ -164,12 +170,40 @@ const linesRoute = Effect.gen(function* () {
   return json({ lines });
 });
 
+const recordRoute = Effect.gen(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  // As a plan request is, the record is read no further than it may be.
+  const text = yield* boundedText(request, PLAN_RECORD_MOST);
+  if (Option.isNone(text)) return json({ error: "The plan record is too large." }, 413);
+  const plan = yield* decodePlanRecord(text.value).pipe(Effect.option);
+  if (Option.isNone(plan)) return json({ error: "A plan record is one JSON object." }, 400);
+  const folder = yield* Upstream.historyFolder;
+  const now = yield* Clock.currentTimeMillis;
+  yield* appendPlan(folder, plan.value, now);
+  return json({ ok: true });
+});
+
+const clearRoute = Effect.gen(function* () {
+  yield* clearPlans(yield* Upstream.historyFolder);
+  return json({ ok: true });
+});
+
 /** The planner's routes; `planTime` stops a plan's call. */
 export const makeLayer = (planTime: Duration.Duration = PLAN_TIME) =>
   HttpRouter.use((router) =>
     Effect.gen(function* () {
       yield* router.add("POST", PLANNER_PATH, UpstreamDisk.withOperateAccess(planRoute(planTime)));
       yield* router.add("GET", `${PLANNER_PATH}/lines`, UpstreamDisk.withReadAccess(linesRoute));
+      yield* router.add(
+        "POST",
+        `${PLANNER_PATH}/history`,
+        UpstreamDisk.withOperateAccess(recordRoute),
+      );
+      yield* router.add(
+        "DELETE",
+        `${PLANNER_PATH}/history`,
+        UpstreamDisk.withOperateAccess(clearRoute),
+      );
     }),
   );
 
