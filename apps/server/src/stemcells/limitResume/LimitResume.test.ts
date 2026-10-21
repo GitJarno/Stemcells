@@ -105,7 +105,7 @@ const run = (duration: Duration.Input) =>
     const steps = Math.ceil(Duration.toMillis(duration) / Duration.toMillis(TICK));
     for (let i = 0; i < steps; i++) {
       yield* TestClock.adjust(TICK);
-      yield* Effect.sleep(Duration.millis(0));
+      yield* Effect.yieldNow;
       yield* Effect.yieldNow;
     }
   });
