@@ -78,6 +78,48 @@ export type FlightCommand =
     }
   | { readonly op: "remove"; readonly id: string };
 
+/** A rectangle in a page's CSS pixels, from its top left. */
+export interface PageRect {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** A window's strip as its page measured it, in its CSS pixels. */
+export interface MeasuredStrip {
+  /** Screen points per CSS pixel: the page's zoom. */
+  readonly zoom: number;
+  readonly rect: PageRect;
+  /** The Cells' chips a carried tab can land among, in order. */
+  readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: PageRect }>;
+  readonly gap: number;
+  /** Where a first chip sits. */
+  readonly start: number;
+}
+
+/** Another window's strip, in screen points, for a carry to land in. */
+export interface StripPlace {
+  readonly id: string;
+  readonly frame: Rect;
+  readonly strip: {
+    readonly rect: Rect;
+    readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: Rect }>;
+    readonly gap: number;
+    readonly start: number;
+  };
+}
+
+/** A carried tab over a window's strip: the room it makes, or that it arrived there. */
+export type Visit =
+  | {
+      readonly tabId: string;
+      /** The chip's width, in screen points. */
+      readonly width: number;
+      readonly slot: number;
+    }
+  | { readonly tabId: string; readonly arrived: true };
+
 /** Another window's workspace, as its page published it; null once it closed. */
 export interface WindowElsewhere {
   readonly id: string;
@@ -136,6 +178,16 @@ export interface WindowsBridge {
   moveWindow(frame: Rect): void;
   /** Shows this window, or hides it under the flight; it shows again when the flight ends. */
   windowShown(shown: boolean): void;
+  /** Every other window's strip, front to back, measured now: at a carry's pick-up. */
+  geometry(): Promise<ReadonlyArray<StripPlace>>;
+  /** How this window measures its strip when a carry elsewhere asks. */
+  onMeasure(measure: () => MeasuredStrip | null): () => void;
+  /** Tells `window` a carried tab is over its strip, has arrived there, or left (null). */
+  room(window: string, visit: Visit | null): void;
+  /** A carried tab over this window's strip, arrived there, or gone (null). */
+  onRoom(listener: (visit: Visit | null) => void): () => void;
+  /** Brings `window` forward without focusing it. */
+  raise(window: string): void;
 }
 
 declare global {

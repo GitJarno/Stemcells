@@ -37,16 +37,18 @@ import {
   pickUp,
   previewSize,
   release,
+  tick,
+  withOthers,
   type Carried,
   type Carry,
   type Landing,
   type Point,
 } from "./carry";
+import { TAB_GAP } from "./hostStrip";
+import { joinWindow } from "./joinWindow";
 import { tearToNewWindow, warmNewWindow } from "./newWindow";
 import { flyWindowHome, TearFlight } from "./tearFlight";
 
-/** The tab list's `gap-1`, in CSS pixels. */
-const TAB_GAP = 4;
 /** How long a new window may take to draw before its still goes anyway. */
 const LANDING_WAIT = 4000;
 
@@ -85,6 +87,10 @@ interface Live {
   unhear: () => void;
   /** A one-tab window carried has moved: it's picked up. */
   moved: boolean;
+  /** Another window whose strip makes room for the chip, and at which slot. */
+  visiting: { readonly window: string; readonly slot: number } | null;
+  /** Spring-load's wait while the chip rests in a strip whose window isn't in front. */
+  springLoad: ReturnType<typeof setTimeout> | undefined;
   /** The window a drop in open space opens, started hidden at the tear. */
   readonly windowId: string;
   done: boolean;
@@ -153,11 +159,54 @@ export function useTabCarry(options: {
     at.done = true;
     at.ends();
     at.unhear();
+    clearTimeout(at.springLoad);
     if (live.current === at) live.current = null;
     setView(null);
   };
 
-  /** Shows on the layer and the strip where the carry is now. */
+  /** Tells the window the chip is over to make room for it at its slot, and the one it left to close up. */
+  const visit = (at: Live, bridge: WindowsBridge) => {
+    const now = at.carry.carried;
+    const host =
+      now.kind === "docked" && now.window !== at.carry.pickUp.window
+        ? { window: now.window, slot: now.slot }
+        : null;
+    const was = at.visiting;
+    if (was?.window === host?.window && was?.slot === host?.slot) return;
+    if (was && was.window !== host?.window) bridge.room(was.window, null);
+    if (host) {
+      bridge.room(host.window, {
+        tabId: at.carry.pickUp.tabId,
+        width: at.carry.chip.width,
+        slot: host.slot,
+      });
+    }
+    at.visiting = host;
+  };
+
+  /**
+   * The carry as the hand or time left it: a window that spring-load brings
+   * forward comes forward, and the wait for the next starts over.
+   */
+  const advance = (at: Live, next: Carry) => {
+    const raised = at.carry.raised;
+    at.carry = next;
+    const bridge = windowsBridge();
+    if (!bridge) return;
+    if (next.raised !== raised && next.raised !== null) bridge.raise(next.raised);
+    clearTimeout(at.springLoad);
+    const { carried, dockedSince, order, pickUp: start } = next;
+    if (carried.kind !== "docked" || dockedSince === null || order[0] === carried.window) return;
+    const wait = start.springLoad - (next.at - dockedSince);
+    at.springLoad = setTimeout(
+      () => {
+        if (!at.done) advance(at, tick(at.carry, performance.now()));
+      },
+      Math.max(0, wait),
+    );
+  };
+
+  /** Shows on the layer and the strips where the carry is now. */
   const show = (at: Live, was: Carried) => {
     const now = at.carry.carried;
     if (!at.flight || at.tearing) return;
@@ -166,15 +215,33 @@ export function useTabCarry(options: {
     const token = morphOf(was, now, reducedMotion());
     if (now.kind === "open") at.flight.unfold(now.frame, point, token);
     else if (now.kind === "docked") at.flight.fold(token);
+    const bridge = windowsBridge();
+    if (bridge) visit(at, bridge);
+    // Its own strip makes room for it; while it's anywhere else, the strip is closed up after it.
+    const home = now.kind === "docked" && now.window === at.carry.pickUp.window;
     setView(
       (current) =>
         current && {
           ...current,
-          away: now.kind === "open" ? "open" : "over",
-          slot: now.kind === "docked" ? now.slot : current.slot,
+          away: home ? "over" : "open",
+          slot: home ? now.slot : current.slot,
         },
     );
   };
+
+  /** Resolves once window `id` has drawn what it was given, or after `LANDING_WAIT`. */
+  const landedIn = (id: string) =>
+    new Promise<void>((resolve) => {
+      const stop = windowsBridge()?.onLanded((window) => {
+        if (window !== id) return;
+        stop?.();
+        resolve();
+      });
+      setTimeout(() => {
+        stop?.();
+        resolve();
+      }, LANDING_WAIT);
+    });
 
   const tear = (at: Live, bridge: WindowsBridge) => {
     const { origin, zoom, element } = at;
@@ -253,6 +320,9 @@ export function useTabCarry(options: {
   const goHome = async (at: Live) => {
     const bridge = windowsBridge();
     if (at.carry.pickUp.onlyTab && bridge) return sendWindowHome(at, bridge);
+    clearTimeout(at.springLoad);
+    if (at.visiting) bridge?.room(at.visiting.window, null);
+    at.visiting = null;
     const { flight } = at;
     await at.tearing;
     if (!flight) return finish(at);
@@ -293,20 +363,25 @@ export function useTabCarry(options: {
         requestAnimationFrame(() => flight.end());
         return;
       }
+      case "strip": {
+        // The move is made first: the host paints the tab's chip, hidden, in
+        // its slot, and shows it once the still has landed there.
+        const host = landing.window;
+        clearTimeout(at.springLoad);
+        if ((await joinWindow(tabId, host, landing.slot)) === null) return goHome(at);
+        await flight.land(landing.chip, landingMotion(landing, reducedMotion()) ?? "land");
+        const landed = landedIn(host);
+        at.visiting = null;
+        windowsBridge()?.room(host, { tabId, arrived: true });
+        await landed;
+        finish(at);
+        flight.end();
+        return;
+      }
       case "window": {
         // The still stays until the new window has drawn under it.
         const id = at.windowId;
-        const landed = new Promise<void>((resolve) => {
-          const stop = windowsBridge()?.onLanded((window) => {
-            if (window !== id) return;
-            stop?.();
-            resolve();
-          });
-          setTimeout(() => {
-            stop?.();
-            resolve();
-          }, LANDING_WAIT);
-        });
+        const landed = landedIn(id);
         if ((await tearToNewWindow(tabId, landing.frame, id)) === null) return goHome(at);
         await landed;
         finish(at);
@@ -444,6 +519,8 @@ export function useTabCarry(options: {
       ends: carryStarts(),
       unhear: () => undefined,
       moved: false,
+      visiting: null,
+      springLoad: undefined,
       windowId: randomUUID(),
       done: false,
     };
@@ -475,13 +552,17 @@ export function useTabCarry(options: {
         pickUp: { ...at.carry.pickUp, preview: previewSize(null, frame, display.workArea) },
       };
     });
+    // Every other window's strip, for it to land in: each measures its own when asked.
+    void bridge?.geometry().then((others) => {
+      if (!at.done) at.carry = withOthers(at.carry, others);
+    });
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
     const at = live.current;
     if (!at || at.done || event.pointerId !== at.pointerId) return;
     const was = at.carry.carried;
-    at.carry = moveHand(at.carry, handOf(event), event.timeStamp);
+    advance(at, moveHand(at.carry, handOf(event), event.timeStamp));
     const now = at.carry.carried;
     if (now.kind === "pressed") return;
     // Out of the press, however far its first move went: a carry, which Esc sends home.

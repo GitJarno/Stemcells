@@ -50,6 +50,19 @@ export const WINDOWS_CHANNEL = {
   moveWindow: "stemcells:windows:move-window",
   /** Page → main: this window shows, or hides under the flight; it shows again when the flight ends. */
   windowShown: "stemcells:windows:window-shown",
+  /** Page → main, invoked, at a carry's pick-up: every other window's strip, in screen points, front to back. */
+  geometry: "stemcells:windows:geometry",
+  /** Main → page: measure your strip (`MeasuredStrip`), answering on `measured` with the request. */
+  measure: "stemcells:windows:measure",
+  /** Page → main: the strip it measured for a request, or null when it shows none. */
+  measured: "stemcells:windows:measured",
+  /**
+   * Page → main → the window a carried tab is over: make room for it at its
+   * slot (`Visit`), or it arrived, or it left (null).
+   */
+  room: "stemcells:windows:room",
+  /** Page → main: bring another window forward without focusing it (spring-load). */
+  raise: "stemcells:windows:raise",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */
@@ -105,6 +118,48 @@ export type FlightCommand =
       readonly timing: FlightTiming;
     }
   | { readonly op: "remove"; readonly id: string };
+
+/** A rectangle in a page's CSS pixels, from its top left. */
+export interface PageRect {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** A window's strip as its page measured it, in its CSS pixels. */
+export interface MeasuredStrip {
+  /** Screen points per CSS pixel: the page's zoom. */
+  readonly zoom: number;
+  readonly rect: PageRect;
+  /** The Cells' chips a carried tab can land among, in order. */
+  readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: PageRect }>;
+  readonly gap: number;
+  /** Where a first chip sits. */
+  readonly start: number;
+}
+
+/** Another window's strip, in screen points, for a carry to land in. */
+export interface StripPlace {
+  readonly id: string;
+  readonly frame: FlightRect;
+  readonly strip: {
+    readonly rect: FlightRect;
+    readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: FlightRect }>;
+    readonly gap: number;
+    readonly start: number;
+  };
+}
+
+/** A carried tab over a window's strip: the room it makes, or that it arrived there. */
+export type Visit =
+  | {
+      readonly tabId: string;
+      /** The chip's width, in screen points. */
+      readonly width: number;
+      readonly slot: number;
+    }
+  | { readonly tabId: string; readonly arrived: true };
 
 /** Another window's workspace, as its page published it; null once it closed. */
 export interface WindowElsewhere {

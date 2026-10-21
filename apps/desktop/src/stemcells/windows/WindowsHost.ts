@@ -34,11 +34,13 @@ import {
   WINDOWS_CHANNEL,
   type FlightCommand,
   type FlightRect,
+  type StripPlace,
   type WindowBoot,
 } from "./channels.ts";
 import { FlightLayer } from "./flightLayer.ts";
 import { fromWindowPage } from "./senders.ts";
 import { readStoredFile } from "./storedFile.ts";
+import { placeStrip, readMeasured } from "./strips.ts";
 
 const FILE_NAME = "stemcells-windows.json";
 /** How long the book rests before it's written: windows move and resize in bursts. */
@@ -50,6 +52,8 @@ const FOCUS_SETTLE_MS = 50;
  * an update that can't install lowers the flag with nothing to tell of it.
  */
 const QUIT_CHECK_MS = 250;
+/** How long a carry waits at its pick-up for another window to measure its strip. */
+const MEASURE_WAIT_MS = 150;
 
 /** One key per monitor at one size and scale, stable across launches. */
 export function displayKey(display: Electron.Display): string {
@@ -119,6 +123,11 @@ export const layer = Layer.effectDiscard(
     let unwatch = () => {};
     /** A window hidden under the flight (its still flies for it), shown again when the flight ends. */
     let hidden: Electron.BrowserWindow | null = null;
+    /** The window making room in its strip for a carried tab, told when the flight ends. */
+    let visited: Electron.BrowserWindow | null = null;
+    /** Strips asked of pages, by request, waiting for their answers. */
+    const measuring = new Map<number, (answer: unknown) => void>();
+    let lastMeasure = 0;
     /**
      * The window a carry's drop in open space would open, started hidden at
      * the tear (stemcells/tasks/windows.md, The warm window). It stays out of
@@ -580,6 +589,43 @@ export const layer = Layer.effectDiscard(
         ),
     };
 
+    /** `window`'s strip, as its page measures it; null if it shows none or doesn't answer in time. */
+    const measure = (id: string, window: Electron.BrowserWindow) =>
+      new Promise<StripPlace | null>((resolve) => {
+        lastMeasure += 1;
+        const request = lastMeasure;
+        const answer = (raw: unknown) => {
+          clearTimeout(timer);
+          measuring.delete(request);
+          const measured = readMeasured(raw);
+          resolve(
+            measured && !window.isDestroyed()
+              ? placeStrip(id, window.getContentBounds(), measured)
+              : null,
+          );
+        };
+        const timer = setTimeout(() => answer(null), MEASURE_WAIT_MS);
+        measuring.set(request, answer);
+        window.webContents.send(WINDOWS_CHANNEL.measure, request);
+      });
+
+    /** Every window's strip but the asker's, front to back, for a carry to land in. */
+    const geometry = async (asker: Electron.WebContents): Promise<StripPlace[]> => {
+      const others = book.ids().flatMap((id) => {
+        const window = live.get(id);
+        return window && !window.isDestroyed() && window.webContents !== asker
+          ? [{ id, window }]
+          : [];
+      });
+      const places = await Promise.all(others.map(({ id, window }) => measure(id, window)));
+      return places.filter((place) => place !== null);
+    };
+
+    const leaveVisited = () => {
+      if (visited && !visited.isDestroyed()) visited.webContents.send(WINDOWS_CHANNEL.room, null);
+      visited = null;
+    };
+
     const showHidden = () => {
       if (hidden && !hidden.isDestroyed()) hidden.setOpacity(1);
       hidden = null;
@@ -595,6 +641,7 @@ export const layer = Layer.effectDiscard(
       unwatch();
       unwatch = () => {};
       showHidden();
+      leaveVisited();
       flight.end();
       coolWarm();
     };
@@ -684,6 +731,23 @@ export const layer = Layer.effectDiscard(
           return window ? flight.still(window, rect) : null;
         });
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
+        ipc.handle(WINDOWS_CHANNEL.geometry, (event) => geometry(event.sender));
+        ipc.on(WINDOWS_CHANNEL.measured, (_event, request: unknown, strip: unknown) => {
+          if (typeof request === "number") measuring.get(request)?.(strip);
+        });
+        ipc.on(WINDOWS_CHANNEL.room, (_event, raw: { window?: unknown; visit?: unknown }) => {
+          const window = typeof raw?.window === "string" ? live.get(raw.window) : undefined;
+          if (!window || window.isDestroyed()) return;
+          const visit = typeof raw.visit === "object" && raw.visit !== null ? raw.visit : null;
+          if (visited !== window) leaveVisited();
+          // A tab still on its way is told to the window when the flight ends; one arrived isn't.
+          visited = visit && !("arrived" in visit) ? window : null;
+          window.webContents.send(WINDOWS_CHANNEL.room, visit);
+        });
+        ipc.on(WINDOWS_CHANNEL.raise, (_event, id: unknown) => {
+          const window = typeof id === "string" ? live.get(id) : undefined;
+          if (window && !window.isDestroyed()) window.moveTop();
+        });
         ipc.on(WINDOWS_CHANNEL.moveWindow, (event, raw: unknown) => {
           const window = Electron.BrowserWindow.fromWebContents(event.sender);
           const frame = readRect(raw);
@@ -732,6 +796,9 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.warm,
             WINDOWS_CHANNEL.moveWindow,
             WINDOWS_CHANNEL.windowShown,
+            WINDOWS_CHANNEL.measured,
+            WINDOWS_CHANNEL.room,
+            WINDOWS_CHANNEL.raise,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }
@@ -743,6 +810,7 @@ export const layer = Layer.effectDiscard(
           Electron.app.removeListener("browser-window-blur", blurred);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightStill);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightPainted);
+          Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.geometry);
           endFlight();
           if (saveTimer !== undefined) saveNow();
         }),

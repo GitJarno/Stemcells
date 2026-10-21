@@ -17,6 +17,7 @@ import {
   type Carry,
   type CarryGeometry,
   type PickUp,
+  withOthers,
   type WindowPlace,
 } from "./carry";
 import { LAPTOP, MONITOR } from "./fixtures";
@@ -193,6 +194,18 @@ describe("a tab torn off", () => {
       slot: 2,
       chip: { x: 1428, y: 156, width: 120, height: 24 },
     });
+  });
+
+  it("docks in a window the desktop app measured after the press", () => {
+    const alone = carried({}, { windows: [A], displays: [LAPTOP, MONITOR] });
+    const told = withOthers(alone, [C, B]);
+    expect(told.order).toEqual(["a", "c", "b"]);
+    const over = play(told, [
+      [364, 160],
+      [900, 300],
+      [1250, 165],
+    ]);
+    expect(over.carried).toMatchObject({ kind: "docked", window: "b", slot: 1 });
   });
 
   it("docks 8 px inside a zone and leaves 8 px past it", () => {

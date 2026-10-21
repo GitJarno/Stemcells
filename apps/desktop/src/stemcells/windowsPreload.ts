@@ -11,6 +11,8 @@ import {
   WINDOWS_CHANNEL,
   type FlightCommand,
   type FlightRect,
+  type MeasuredStrip,
+  type Visit,
   type WindowBoot,
   type WindowElsewhere,
 } from "./windows/channels.ts";
@@ -53,6 +55,12 @@ if (boot !== null) {
     };
   };
 
+  // The strip a carry in another window may land in, measured when asked.
+  let measureStrip: (() => MeasuredStrip | null) | null = null;
+  ipcRenderer.on(WINDOWS_CHANNEL.measure, (_event, request: number) => {
+    ipcRenderer.send(WINDOWS_CHANNEL.measured, request, measureStrip?.() ?? null);
+  });
+
   contextBridge.exposeInMainWorld("stemcellsWindows", {
     boot,
     publish: (workspace: unknown) => ipcRenderer.send(WINDOWS_CHANNEL.publish, workspace),
@@ -87,5 +95,16 @@ if (boot !== null) {
     onShown: listen<void>(WINDOWS_CHANNEL.shown),
     moveWindow: (frame: FlightRect) => ipcRenderer.send(WINDOWS_CHANNEL.moveWindow, frame),
     windowShown: (shown: boolean) => ipcRenderer.send(WINDOWS_CHANNEL.windowShown, shown),
+    geometry: () => ipcRenderer.invoke(WINDOWS_CHANNEL.geometry),
+    onMeasure: (measure: () => MeasuredStrip | null) => {
+      measureStrip = measure;
+      return () => {
+        if (measureStrip === measure) measureStrip = null;
+      };
+    },
+    room: (window: string, visit: Visit | null) =>
+      ipcRenderer.send(WINDOWS_CHANNEL.room, { window, visit }),
+    onRoom: listen<Visit | null>(WINDOWS_CHANNEL.room),
+    raise: (window: string) => ipcRenderer.send(WINDOWS_CHANNEL.raise, window),
   });
 }
