@@ -36,8 +36,10 @@ describe("the workbench's contracts with upstream", () => {
   it("the thread view hands its panel whether it is maximized, and the panel draws it so", () => {
     // ChatPanelTabs tells the page from that prop (PanelMaximizedContext), and
     // workspace.css then gives the workbench the page, with no `:has()`.
-    expect(chatView).toMatch(
-      /<RightPanelTabs\s+mode="inline"[^>]{0,400}maximized=\{rightPanelMaximized\}/,
+    // Upstream draws the inline panel in ChatRightPanel, which the thread view hands it to.
+    expect(chatView).toMatch(/<ChatRightPanel\s[^>]{0,600}maximized=\{rightPanelMaximized\}/);
+    expect(chatRightPanel).toContain(
+      '<RightPanelTabs {...tabs} mode="inline" maximized={maximized}',
     );
     expect(rightPanelTabs).toContain(
       "{...(props.maximized !== undefined ? { maximized: props.maximized } : {})}",

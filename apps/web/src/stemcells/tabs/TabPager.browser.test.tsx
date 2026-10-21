@@ -3,7 +3,7 @@ import "./workspace.css";
 
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { render } from "../upstream/testRender";
+import { fakeTimers, render } from "../upstream/testRender";
 import { PagerPage, TabPager } from "./TabPager";
 
 const TABS = ["one", "two", "three", "four"];
@@ -76,14 +76,16 @@ describe("TabPager and the borders between Cells", () => {
     const border = screen.container.querySelector<HTMLElement>('[data-testid="border-one"]')!;
     const page = screen.container.querySelector<HTMLElement>('[data-stemcells-page="one"]')!;
     const at = page.getBoundingClientRect().left;
+    // The pager's frames and timers, run by hand: a swipe it never started leaves nothing to run.
+    using _timers = fakeTimers();
     for (let i = 0; i < 10; i++) {
       border.dispatchEvent(
         new WheelEvent("wheel", { deltaX: 30, cancelable: true, bubbles: true }),
       );
-      await nextFrame();
+      vi.advanceTimersToNextFrame();
     }
     expect(page.getBoundingClientRect().left).toBe(at);
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    await vi.advanceTimersByTimeAsync(600);
     expect(onTurn).not.toHaveBeenCalled();
     expect(pages.hasAttribute("data-moving")).toBe(false);
   });
