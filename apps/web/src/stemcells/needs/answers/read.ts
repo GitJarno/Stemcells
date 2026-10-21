@@ -70,6 +70,8 @@ export type Reading =
 export interface Target {
   readonly number: number;
   readonly reading: Reading;
+  /** Where the words that answer this card end: a list's cards may stop at different words. */
+  readonly end: number;
 }
 
 export interface AnswerPart extends Span {
@@ -751,12 +753,16 @@ export function readAnswers(text: string, cards: ReadonlyArray<Addressee>): Answ
         continue;
       }
       const targets = reads.map(({ number, card, read }): Target => {
-        const kept = (why: Kept): Target => ({ number, reading: { kind: "kept", why } });
+        const kept = (why: Kept): Target => ({
+          number,
+          reading: { kind: "kept", why },
+          end: read.end,
+        });
         if (card.gone) return kept("gone");
         if (anchor.byName && reads.length > 1) return kept("names");
         if (anchor.numbers.length > 1 && card.kind === "permission") return kept("list");
         if (answered.has(number) || card.held) return kept("twice");
-        return { number, reading: read.reading };
+        return { number, reading: read.reading, end: read.end };
       });
       for (const target of targets) answered.add(target.number);
       part = {

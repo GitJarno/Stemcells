@@ -28,6 +28,10 @@ const staleLine = (need: Shown["need"], who: string): string =>
     ? `${who} moved again before yours went. Yours wasn't sent.`
     : `${who} already had an answer. Yours wasn't sent.`;
 
+/** Where the words of an answer that wasn't sent went. */
+const backLine = (hold: Hold | undefined): string =>
+  hold?.wordsBack ? " Your words are back in Aski's composer." : "";
+
 /**
  * One need: who and where, what is asked, and the options, each one app
  * action. A choice folds the card to it for the undo window; a need that is
@@ -106,7 +110,7 @@ export function NeedCard(props: {
           {hold?.state === "sent"
             ? "Sent."
             : hold?.state === "stale"
-              ? staleLine(need, who)
+              ? staleLine(need, who) + backLine(hold)
               : need.kind === "stuck"
                 ? "It's moving again."
                 : need.request !== null
@@ -121,7 +125,7 @@ export function NeedCard(props: {
         <>
           {hold?.state === "failed" || hold?.state === "stale" ? (
             <p data-need-receipt="" data-warn="">
-              {hold.state === "stale" ? staleLine(need, who) : hold.why}
+              {(hold.state === "stale" ? staleLine(need, who) : hold.why) + backLine(hold)}
             </p>
           ) : null}
           {fromWords?.kind === "chosen" && fromWords.words !== null ? (

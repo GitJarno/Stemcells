@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { CommandOutcome, ThreadCommand } from "../upstream/needs";
+import type { Spoken } from "./answers/giveBack";
 import { needFixture } from "./fixtures";
 import { createHolds } from "./holds";
 import type { NeedsState } from "./stream";
@@ -8,6 +9,17 @@ import type { NeedsState } from "./stream";
 const WINDOW = 3_000;
 const decline: ThreadCommand = { type: "respond", requestId: "request-1", decision: "decline" };
 const note: ThreadCommand = { type: "message", text: "use staging" };
+
+/** Words that said an answer, as Aski's composer keeps them. */
+const spoken = (...words: string[]): Spoken => ({
+  key: needFixture().key,
+  number: 3,
+  who: "Pip",
+  chose: "option decline",
+  lines: [[{ type: "text", text: words.join(" ") } as Spoken["lines"][number][number]]],
+});
+const NO = spoken("no");
+const NO_STAGING = spoken("no, use staging");
 
 function setup(outcomes: CommandOutcome[] = []) {
   let state: NeedsState = { needs: [needFixture()], live: true };
@@ -23,8 +35,14 @@ function setup(outcomes: CommandOutcome[] = []) {
     now: () => Date.now(),
     window: () => WINDOW,
   });
-  const hold = (commands: ThreadCommand[] = [decline]) =>
-    holds.hold({ key: needFixture().key, threadId: "thread-floof", label: "Decline", commands });
+  const hold = (commands: ThreadCommand[] = [decline], words?: Spoken) =>
+    holds.hold({
+      key: needFixture().key,
+      threadId: "thread-floof",
+      label: "Decline",
+      commands,
+      ...(words === undefined ? {} : { words }),
+    });
   return {
     holds,
     hold,
@@ -98,5 +116,55 @@ describe("an answer waits out the undo window", () => {
     expect(t.kept()).toBe(1);
     await vi.advanceTimersByTimeAsync(WINDOW);
     expect(t.kept()).toBe(0);
+  });
+});
+
+describe("an answer read from words in Aski's composer", () => {
+  const key = needFixture().key;
+
+  it("gives its words back once when the need moved before it went", async () => {
+    const t = setup();
+    t.hold([decline], NO);
+    t.setNeeds({ needs: [], live: true });
+    await vi.advanceTimersByTimeAsync(WINDOW);
+    expect(t.stateOf()).toBe("stale");
+    expect(t.holds.takeWords(key)).toBe(NO);
+    expect(t.holds.takeWords(key)).toBeNull();
+    expect(t.holds.read().get(key)?.wordsBack).toBe(true);
+  });
+
+  it("gives them back when nothing could be sent", async () => {
+    const t = setup([{ ok: false, why: "already answered" }]);
+    t.hold([decline, note], NO_STAGING);
+    await vi.advanceTimersByTimeAsync(WINDOW);
+    expect(t.holds.takeWords(key)).toBe(NO_STAGING);
+  });
+
+  it("keeps none once a command went: they would answer twice", async () => {
+    const t = setup([{ ok: true }, { ok: false, why: "the chat is gone" }]);
+    t.hold([decline, note], NO_STAGING);
+    await vi.advanceTimersByTimeAsync(WINDOW);
+    expect(t.stateOf()).toBe("failed");
+    expect(t.holds.takeWords(key)).toBeNull();
+  });
+
+  it("keeps none once sent, and none while it waits", async () => {
+    const t = setup();
+    t.hold([decline], NO);
+    expect(t.holds.takeWords(key)).toBeNull();
+    await vi.advanceTimersByTimeAsync(WINDOW);
+    expect(t.stateOf()).toBe("sent");
+    expect(t.holds.takeWords(key)).toBeNull();
+  });
+
+  it("keeps its hold while the words wait, so they never go unsaid, and lets it go once back", async () => {
+    const t = setup();
+    t.hold([decline], NO);
+    t.setNeeds({ needs: [], live: true });
+    await vi.advanceTimersByTimeAsync(WINDOW + 10 * 60_000);
+    expect(t.stateOf()).toBe("stale");
+    expect(t.holds.takeWords(key)).toBe(NO);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(t.stateOf()).toBeUndefined();
   });
 });
