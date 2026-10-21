@@ -23,6 +23,9 @@ Runbook: `stemcells/docs/upstream-sync.md`.
       gates on a Mac, in PR CI (the quick ones) and in the nightly
 - [x] Nightly keeps one issue; headless boot smoke; upstream workflows off on
       PRs too
+- [x] The gates in CI run upstream's suites as its CI does: libsecret and a
+      C toolchain installed, and the job's GitHub token kept out of them (its
+      source-control tests took it for a signed-in account)
 - [ ] The nightly needs `STEMCELLS_SYNC_TOKEN` to push upstream's workflow
       changes (the person)
 
