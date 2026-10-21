@@ -472,6 +472,18 @@ after a model was picked in Aski's chat. No new chat starts there now:
 (`t3_thread_launch`) is told in Aski's persona where it runs; the server
 doesn't check it.
 
+A chat already on Aski's instance, made before then, moves off it at its
+next send. The composer's substitute (no seam) hands upstream's composer
+every instance but Aski's, except in Aski's own chat
+(`stemcells/upstream/cellInstance.ts`), so a Cell's picker never lists
+it, and a Cell's chat still there shows, and sends with, the same model
+on its driver's own instance. Upstream's send takes the composer's
+selection, and its server carries the chat over: resumed in place, since
+Aski's instance shares its driver's home, else handed off. Nothing refuses
+that, so the composer needs no "Move" action. `cellInstance.contract.test.ts`
+runs upstream's composer on a chat seeded on Aski's instance, and the
+server's `askiInstanceMove.contract.test.ts` pins the carry-over.
+
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened
   from outside may land in T3 Code. Renaming it touches six upstream files
