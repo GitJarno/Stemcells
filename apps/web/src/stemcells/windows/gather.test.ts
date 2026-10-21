@@ -21,7 +21,7 @@ import {
   tab,
   window,
 } from "./fixtures";
-import { displaysChanged, gather, gatherButton, putBack } from "./gather";
+import { displaysChanged, gather, gatherButton, pressGather, putBack } from "./gather";
 import { tear } from "./moves";
 
 const BOTH = displaySetKey([LAPTOP, MONITOR]);
@@ -121,6 +121,18 @@ describe("the button", () => {
     expect(gatherButton(gathered, BOTH)).toBe("putBack");
     expect(gatherButton(gathered, displaySetKey([LAPTOP]))).toBeNull();
     expect(gatherButton({ ...gathered, memories: [] }, BOTH)).toBeNull();
+  });
+
+  it("gathers into the window it was pressed in, puts back, and leaves an unplug's memory to the replug", () => {
+    const start = desk();
+    const gathered = pressGather(start, "left", BOTH)!.next;
+    expect(gathered.windows.map((w) => w.id)).toEqual(["left"]);
+    expect(settled(pressGather(gathered, "left", BOTH)!.next)).toEqual(settled(start));
+    const unplugged = {
+      ...gathered,
+      memories: gathered.memories.map((memory) => ({ ...memory, automatic: true })),
+    };
+    expect(pressGather(unplugged, "left", BOTH)).toBeNull();
   });
 });
 

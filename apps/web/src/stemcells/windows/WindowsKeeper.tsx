@@ -1,11 +1,12 @@
 /**
  * The window's part in the app's windows: ⌥⌘T moves the active tab to a
- * new window, and ⌥⌘Z takes the latest move back; closing the window is a
- * move too; a workspace a move gave this window routes to its focused chat;
- * another window's request shows one of this window's chats; the lead takes
- * Aski's tab home from a window that closed without a move; tabs a move sent
- * to a window that couldn't open come back. Renders nothing, and does nothing
- * in a browser.
+ * new window, ⌥⌘G gathers the windows into this one or puts them back, and
+ * ⌥⌘Z takes the latest move back; closing the window is a move too; a
+ * workspace a move gave this window routes to its focused chat; another
+ * window's request shows one of this window's chats; the lead takes Aski's
+ * tab home from a window that closed without a move; tabs a move sent to a
+ * window that couldn't open come back. Renders nothing, and does nothing in
+ * a browser.
  */
 import { useEffect, useEffectEvent, useLayoutEffect } from "react";
 
@@ -17,6 +18,7 @@ import { toastManager } from "../upstream/ui";
 import { welcomeAskiHome } from "./askiHome";
 import { windowsBridge } from "./bridge";
 import { closeThisWindow } from "./closeAsMove";
+import { GATHER_SHORTCUT, gatherOrPutBack } from "./gatherWindows";
 import type { Refusal } from "./moves";
 import { moveTabToNewWindow } from "./newWindow";
 import { takeTabsBack } from "./returned";
@@ -25,6 +27,7 @@ import { undoMove } from "./undoMove";
 const matchesMoveToNewWindow = shortcutMatcher("mod+alt+t");
 // ⌘Z stays the composer's.
 const matchesUndoMove = shortcutMatcher("mod+alt+z");
+const matchesGather = shortcutMatcher(GATHER_SHORTCUT);
 
 /** Why a move couldn't go back, as the note says it. */
 const refusals: Record<Refusal, string> = {
@@ -64,6 +67,12 @@ export function WindowsKeeper(props: {
         event.preventDefault();
         event.stopImmediatePropagation();
         void pressUndoMove();
+        return;
+      }
+      if (matchesGather(event)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void gatherOrPutBack();
         return;
       }
       if (!matchesMoveToNewWindow(event)) return;

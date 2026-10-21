@@ -144,14 +144,35 @@ export function putBack(arrangement: Arrangement, memory: Memory): Moved | null 
   return moved(arrangement, transactionBetween(arrangement, next));
 }
 
+/** The memory Put back spends on this display set: the last Gather's, never an unplug's. */
+function gathered(arrangement: Arrangement, displays: string): Memory | null {
+  return arrangement.memories.find((kept) => kept.displays === displays && !kept.automatic) ?? null;
+}
+
 /** What the strip's button offers: Gather, Put back, or nothing to do. */
 export function gatherButton(
   arrangement: Arrangement,
   displays: string,
 ): "gather" | "putBack" | null {
   if (arrangement.windows.length > 1) return "gather";
-  const memory = arrangement.memories.find((kept) => kept.displays === displays && !kept.automatic);
+  const memory = gathered(arrangement, displays);
   return memory && putBack(arrangement, memory) ? "putBack" : null;
+}
+
+/** The button pressed in window `hereId`: what it offers, done. */
+export function pressGather(
+  arrangement: Arrangement,
+  hereId: string,
+  displays: string,
+): Moved | null {
+  switch (gatherButton(arrangement, displays)) {
+    case "gather":
+      return gather(arrangement, hereId, displays);
+    case "putBack":
+      return putBack(arrangement, gathered(arrangement, displays)!);
+    default:
+      return null;
+  }
 }
 
 /**

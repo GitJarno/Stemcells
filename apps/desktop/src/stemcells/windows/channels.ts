@@ -69,6 +69,8 @@ export const WINDOWS_CHANNEL = {
   dropUndo: "stemcells:windows:drop-undo",
   /** Main → page: the person closed this window; close it as a move Undo Move can take back. */
   closeRequest: "stemcells:windows:close-request",
+  /** Main → page: a window opened or closed, or the displays changed; what Gather offers may have. */
+  arranged: "stemcells:windows:arranged",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */

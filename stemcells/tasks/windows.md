@@ -46,6 +46,12 @@ asked for by name), then W7, W4, W9, W11.
   - [ ] W6e Undo Move playing the move's own motion reversed.
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
       the flights, full screen restored.
+  - [x] W8a The button and ⌥⌘G, read from the windows as they are, each
+        press a move Undo Move takes back.
+  - [ ] W8b Gather's flight: each other window's still shrinks into its
+        place in the home strip.
+  - [ ] W8c Put back's flight: chips lift and unfold into stills, and
+        each window lands under its still.
 - [ ] W7 Carry a chat: the Cell as the handle, pane halves, tabs, strips,
       windows and open space.
 - [ ] W4 The browser in any window: one seam in the preview manager; a
@@ -400,6 +406,15 @@ since stays in the home window; a tab's panes come back as they are now
 (the memory holds tab ids, not their insides). Gathering again replaces the
 memory.
 
+As built (W8a): main tells every window when a window opens or closes or
+a display is plugged in, out or changed, and each window's button reads
+the windows and the display set from a fresh snapshot. Pressed, the
+button or ⌥⌘G makes the move it offers from another fresh snapshot, so
+a stale button does nothing. Gather and Put back are moves like the rest:
+Undo Move takes either back, the memory with it. The Window menu items
+aren't built: the button and ⌥⌘G cover them, and they would need the
+menu's seam.
+
 ### Undo Move (⌥⌘Z)
 
 Every move above, and closing a window, pushes its inverse. Undo Move
@@ -639,13 +654,13 @@ slot; the warm window under the still before the fade; Gather's stagger.
 
 **By hand, once merged and installed:** tear off and drop on another
 display; drop into another window's strip; carry a chat to a pane half in
-another window; Esc mid-carry; Gather, Put back, Gather; unplug and replug
-a display; relaunch with three windows; a browser pane moved; Reduce
-Motion on; a carry with View › Zoom at 125 %; a one-tab window carried
-by its chip while its chat streams; the red button on one of two windows,
-then ⌥⌘Z; a chip rested on the strip of a window
-behind another coming forward; a quick tear and drop
-(under a second), watching for a wait before the new window answers.
+another window; Esc mid-carry; Gather, Put back, Gather, with one window
+full screen; unplug and replug a display; relaunch with three windows; a
+browser pane moved; Reduce Motion on; a carry with View › Zoom at 125 %; a
+one-tab window carried by its chip while its chat streams; the red button
+on one of two windows, then ⌥⌘Z; a chip rested on the strip of a window
+behind another coming forward; a quick tear and drop (under a second),
+watching for a wait before the new window answers.
 
 ## Review
 
@@ -757,3 +772,11 @@ behind another coming forward; a quick tear and drop
   showed main's `close()` (the red button's path) can be held and a page's
   own `window.close()` can't; the lab can't press the red button, so the
   hand-off itself is for the hand check.
+- W8a: proved in the lab with three windows. Each showed Gather. Pressed
+  in the middle one, it took every tab, the others closed, and its button
+  turned to Put back, the memory kept for the display set. ⌥⌘G put the
+  three back with their tabs and spent the memory; ⌥⌘Z twice gathered them
+  again and then took the gather back. Closed down to one window with no
+  memory, the button went; ⌥⌘Z reopening a window brought it back. The
+  lab helper stacks windows at one edge, so frames put back are proved by
+  the round-trip tests, not here.

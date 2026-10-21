@@ -204,6 +204,8 @@ export interface WindowsBridge {
   dropUndo(id: number): void;
   /** The person closed this window: close it as a move (`closeWindow`). */
   onCloseRequest(listener: () => void): () => void;
+  /** A window opened or closed, or the displays changed: what Gather offers may have. */
+  onArranged(listener: () => void): () => void;
 }
 
 declare global {
