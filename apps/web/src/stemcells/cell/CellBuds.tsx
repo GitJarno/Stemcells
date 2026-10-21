@@ -1,9 +1,9 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
 // The stage at a Cell's right where its buds stand while its subagents work
 // (`buds.ts`): a box the size of the Cell's, just past it, painted in the
-// Cell's colours on the Cell's clock. It takes no room, so the Cell's own
-// box still centres the Cell. Its parent places it: positioned, with the
-// Cell's box at its start.
+// Cell's colours on the Cell's clock, with the same margin past its box
+// (`MARGIN`). It takes no room, so the Cell's own box still centres the
+// Cell. Its parent places it: positioned, with the Cell's box at its start.
 
 import { useLayoutEffect, useRef, useState } from "react";
 
@@ -13,13 +13,20 @@ import { onStage } from "./clock.ts";
 import type { Ground } from "./keyline.ts";
 import { BOX } from "./look.ts";
 import { paint } from "./paint.ts";
-import { type MiniFrame, packLook, sceneOf } from "./scene.ts";
+import { MARGIN, type MiniFrame, packLook, sceneOf } from "./scene.ts";
 import "./cell.css";
+
+const clear = (width: number, height: number) =>
+  Array.from({ length: height }, () => ".".repeat(width));
 
 /** The stage with no bud on it. */
 const EMPTY: MiniFrame = {
-  rows: Array.from({ length: BOX.height }, () => ".".repeat(BOX.width)),
-  detail: Array.from({ length: BOX.height * 2 }, () => ".".repeat(BOX.width * 2)),
+  rows: clear(BOX.width, BOX.height),
+  detail: clear(BOX.width * 2, BOX.height * 2),
+  drawn: {
+    rows: clear(BOX.width + MARGIN.x * 2, BOX.height + MARGIN.y * 2),
+    detail: clear((BOX.width + MARGIN.x * 2) * 2, (BOX.height + MARGIN.y * 2) * 2),
+  },
 };
 
 /** Buds wear nothing: the Cell's body, small. */
@@ -55,9 +62,10 @@ export function CellBuds(props: {
       ref={canvas}
       className="character cell-buds"
       style={{
-        width: BOX.width * points,
-        height: BOX.height * points,
-        insetInlineStart: BOX.width * points,
+        width: (BOX.width + MARGIN.x * 2) * points,
+        height: (BOX.height + MARGIN.y * 2) * points,
+        insetInlineStart: (BOX.width - MARGIN.x) * points,
+        insetBlockEnd: -MARGIN.y * points,
       }}
       aria-hidden="true"
     />

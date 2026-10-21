@@ -410,7 +410,7 @@ describe("art drawn beside the kit", () => {
   it("fails each broken rule, and names it", () => {
     expect(rules("faulty/spire")).toContain("box");
     expect(about("faulty/brim").map((f) => `${f.level} ${f.rule} ${f.detail}`)).toContain(
-      "fail box hero at rest: 2 cells past the box, which a 2× display cuts off",
+      "fail box hero at rest: 2 cells past the box, which drawn art keeps inside",
     );
     expect(rules("faulty/visor")).toContain("eyes");
     expect(rules("faulty/soot")).toEqual(expect.arrayContaining(["void", "contrast"]));

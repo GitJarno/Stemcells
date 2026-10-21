@@ -42,9 +42,9 @@ export function lookOf(spec: string): CellLook {
 /** A spec as a file name. */
 export const slugOf = (spec: string): string => spec.replace(/[^a-z0-9~-]+/gi, "_");
 
-/** The frames a size shows: the hero as the app draws it (the miniature's footprint, cell for cell), or the miniature. */
+/** The frames a size shows as the app draws them, with the margin past the box: the hero detail, or the miniature. */
 export const framesOf = (scene: CellScene, size: Size): readonly (readonly string[])[] =>
-  size === "hero" ? scene.mini.map((frame) => frame.detail) : scene.mini.map((frame) => frame.rows);
+  scene.mini.map((frame) => (size === "hero" ? frame.drawn.detail : frame.drawn.rows));
 
 /** How far each frame of scene `key` stands from its place, in cells of `size`, for a move that travels. */
 function offsetsOf(key: string, frames: number, size: Size): number[] {

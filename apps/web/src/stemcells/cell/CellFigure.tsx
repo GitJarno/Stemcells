@@ -3,7 +3,8 @@
 // frame in its provider's colours, wearing what it was dealt, playing what
 // its mood and its work call for, with the "?" over it while it waits on
 // you. Its box is the miniature's (13 × 14 cells), hats and all, so every
-// Cell stands on the same line.
+// Cell stands on the same line. Its picture reaches past the box by a
+// margin (`MARGIN`), where the original's widest pieces go, taking no room.
 
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Activity } from "./activity.ts";
@@ -14,7 +15,7 @@ import type { Ground } from "./keyline.ts";
 import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
 import { paint } from "./paint.ts";
-import { type MiniFrame, wornLook } from "./scene.ts";
+import { MARGIN, type MiniFrame, wornLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
@@ -64,11 +65,21 @@ export function CellFigure(props: {
     });
   }, [worn, mood, activity, name, body, points, ground]);
   return (
-    <span className="cell-figure" data-mood={mood} data-activity={activity}>
+    <span
+      className="cell-figure"
+      data-mood={mood}
+      data-activity={activity}
+      style={{ width: BOX.width * points, height: BOX.height * points }}
+    >
       <canvas
         ref={canvas}
         className="character"
-        style={{ width: BOX.width * points, height: BOX.height * points }}
+        style={{
+          width: (BOX.width + MARGIN.x * 2) * points,
+          height: (BOX.height + MARGIN.y * 2) * points,
+          insetInlineStart: -MARGIN.x * points,
+          insetBlockStart: -MARGIN.y * points,
+        }}
         aria-hidden="true"
       />
       <AskMark active={mood === "needsYou"} pixel={points} />

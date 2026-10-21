@@ -94,7 +94,7 @@ export function frameShown(
  * The picture a miniature draws at `points` CSS pixels a cell on a display
  * of `dpr` device pixels a CSS pixel: its hero art at twice the density
  * wherever half a cell is whole device pixels (a 2× display, at 1 or 2
- * points), else the miniature itself.
+ * points), else the miniature itself; either with the margin past the box.
  */
 export function pictureOf(
   frame: MiniFrame,
@@ -103,6 +103,6 @@ export function pictureOf(
 ): { readonly rows: readonly string[]; readonly density: 1 | 2 } {
   const pixels = (points / 2) * dpr;
   return pixels >= 1 && Math.abs(pixels - Math.round(pixels)) < 0.001
-    ? { rows: frame.detail, density: 2 }
-    : { rows: frame.rows, density: 1 };
+    ? { rows: frame.drawn.detail, density: 2 }
+    : { rows: frame.drawn.rows, density: 1 };
 }

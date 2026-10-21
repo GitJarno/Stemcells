@@ -178,7 +178,7 @@ function lookFindings(
       if (dark.size > 0) say("void", `${size}: dark against the void (${[...dark].join(" ")})`);
       const past = compact ? 0 : pastDetail(probe.worn) - pastDetail(probe.bare);
       if (options.boxed && past > 0)
-        say("box", `hero at rest: ${past} cells past the box, which a 2× display cuts off`);
+        say("box", `hero at rest: ${past} cells past the box, which drawn art keeps inside`);
       if (options.mouth) {
         const zone = MOUTH_ZONE[size];
         const fabrics = fabricRoles(look);

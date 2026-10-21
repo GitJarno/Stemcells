@@ -58,6 +58,15 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   }, [turnsAt]);
   return (
     <span className="relative flex shrink-0" data-stemcells-cell-status={status ?? "idle"}>
+      {/* First, so the Cell is drawn over its buds: one steps out from behind it. */}
+      {props.stage ? (
+        <CellBuds
+          count={buds}
+          provider={provider}
+          ground={ground}
+          points={props.points ?? POINTS}
+        />
+      ) : null}
       <CellFigure
         name={props.cell?.threadId ?? ""}
         ground={ground}
@@ -67,14 +76,6 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
         look={look}
         points={props.points ?? POINTS}
       />
-      {props.stage ? (
-        <CellBuds
-          count={buds}
-          provider={provider}
-          ground={ground}
-          points={props.points ?? POINTS}
-        />
-      ) : null}
     </span>
   );
 }

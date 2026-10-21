@@ -42,10 +42,13 @@ people: open it in a browser.
 
 - **Draw for the miniature first, and judge it on both frames.** The 13 × 14
   miniature is the size people see most: tabs, pane headers, the phone.
-- The hero is 32 × 32. The app draws the miniature's footprint of it, 26 × 28
-  cells from (3, 2), at twice the density on a 2× display, in tabs and beside
-  the composer alike. Keep anything that tells the piece inside that
-  footprint.
+- The hero is 32 × 32. The miniature's footprint of it, 26 × 28 cells from
+  (3, 2), is the Cell's box: what lays it out. A 2× display draws the hero at
+  twice the density, in tabs and beside the composer alike, with a margin
+  past the box to the hero grid's edges (`MARGIN` in `scene.ts`: two cells of
+  the miniature each side, one above and below), where the original's widest
+  pieces reach. Keep anything drawn here inside the box; the margin is the
+  original's.
 - **Letters are roles, not colours.**
   - `B b L O` are the body (fill, shade, highlight, contour), painted in the
     provider's colours. Never use them for a piece unless it is the body,
@@ -267,15 +270,15 @@ These hold on drawn art. On the original's art they are notes.
     (12, or 24 with `sound`), and hands back to a real scene;
   - a temperament's weight is above 0, and its fidget and beats are scenes.
 - **The box.** A piece drawn here, worn alone at rest, keeps inside the
-  miniature's footprint on the hero (26 × 28 from (3, 2)): a 2× display draws
-  no further, so anything past it is cut flush. The original's pieces reach
-  past it, drawn for its larger stage, and stay as ported.
+  miniature's footprint on the hero (26 × 28 from (3, 2)): the margin a 2×
+  display draws past it is the original's, whose pieces reach there, drawn for
+  its larger stage, and stay as ported.
 - **Warnings** (look, then decide):
   - art that falls off the canvas in some scene (the original's own hats do,
     in the plea's hop). A posed variant is probed only in the scenes it is
     worn in: its states' scenes, and `happy` when a cheer swaps it in;
   - a drawn scene whose marks leave the canvas or, at the hero, the
-    miniature's footprint: the app has no larger stage that would show them.
+    miniature's footprint: the box, which drawn art keeps inside.
 
 Before a pack's pull request:
 1. `cells check <theme>` passes.

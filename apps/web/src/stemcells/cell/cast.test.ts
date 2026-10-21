@@ -4,8 +4,9 @@ import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
 import { bodyOf, frameShown, pictureOf, sceneFor } from "./cast.ts";
 import { BODIES, PACKS } from "./kit.ts";
-import { MOODS } from "./look.ts";
-import { packLook, sceneOf } from "./scene.ts";
+import { BOX, MOODS } from "./look.ts";
+import { MARGIN, packLook, sceneOf } from "./scene.ts";
+import { crop } from "./sprite.ts";
 
 const bare = packLook([]);
 
@@ -70,7 +71,24 @@ test("half a cell on whole device pixels draws the hero art, anything else the m
     [density(1, 1), density(1, 1.5), density(2, 1.5), density(1, 3)],
     [1, 1, 1, 1],
   );
-  NodeAssert.equal(pictureOf(frame, 1, 2).rows, frame.detail);
+  NodeAssert.equal(pictureOf(frame, 1, 2).rows, frame.drawn.detail);
+});
+
+test("a 2× display draws the original's widest pieces whole, past the box, and the box as it was", () => {
+  const souwester = sceneFor(packLook(["autumn/souwester"]), "awake", undefined, 0).mini[0]!;
+  const sharp = pictureOf(souwester, 1, 2).rows;
+  const [x, y, w, h] = [MARGIN.x * 2, MARGIN.y * 2, BOX.width * 2, BOX.height * 2];
+  NodeAssert.deepEqual(crop(sharp, x, y, w, h), souwester.detail, "the box, cell for cell");
+  const brim = sharp.flatMap((row, ry) =>
+    [...row].filter((cell, rx) => cell !== "." && (rx < x || rx >= x + w || ry < y || ry >= y + h)),
+  );
+  NodeAssert.ok(brim.length > 0, "the brim past the box");
+  const small = pictureOf(souwester, 1, 1).rows;
+  NodeAssert.deepEqual(crop(small, MARGIN.x, MARGIN.y, BOX.width, BOX.height), souwester.rows);
+  NodeAssert.equal(
+    small.join("").replace(/\./g, "").length,
+    souwester.rows.join("").replace(/\./g, "").length,
+  );
 });
 
 test("Codex, Kimi and Gemini wear their own bodies, every other provider the coral Cell", () => {

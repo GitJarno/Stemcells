@@ -1,8 +1,9 @@
 // A Cell's scenes: a move played in what it wears, composed once into
 // frames at both sizes, the hero (32 × 32) and the miniature (13 × 14), each
-// miniature carrying its hero art cropped cell for cell as detail, and the
-// same loop with its open eyes shut for the blink. A worn piece that
-// animates is folded into the scene's own clock.
+// miniature carrying its hero art cropped cell for cell as detail, both as a
+// display draws them with a margin past the box, and the same loop with its
+// open eyes shut for the blink. A worn piece that animates is folded into
+// the scene's own clock.
 
 import {
   animatedOf,
@@ -100,6 +101,8 @@ function composeFrame(
 export interface MiniFrame {
   readonly rows: readonly string[];
   readonly detail: readonly string[];
+  /** The frame as a display draws it: both, with the margin past the box (`MARGIN`). */
+  readonly drawn: { readonly rows: readonly string[]; readonly detail: readonly string[] };
 }
 
 export interface CellScene {
@@ -181,6 +184,43 @@ const DETAIL = { x: 3, y: 2, width: 26, height: 28 } as const;
 const detailOf = (hero: readonly string[]) =>
   crop(hero, DETAIL.x, DETAIL.y, DETAIL.width, DETAIL.height);
 
+/**
+ * How far a display draws a Cell past its box, in cells of the miniature: to
+ * the hero grid's edges, rounded out to whole cells. The original's pieces,
+ * drawn for its larger stage, reach there; the box still lays the Cell out.
+ */
+export const MARGIN = { x: 2, y: 1 } as const;
+
+/** A frame with the margin: the miniature padded with nothing, the hero uncropped. */
+const drawnOf = (rows: readonly string[], hero: readonly string[]): MiniFrame["drawn"] => ({
+  rows: crop(
+    rows,
+    -MARGIN.x,
+    -MARGIN.y,
+    (rows[0]?.length ?? 0) + MARGIN.x * 2,
+    rows.length + MARGIN.y * 2,
+  ),
+  detail: crop(
+    hero,
+    DETAIL.x - MARGIN.x * 2,
+    DETAIL.y - MARGIN.y * 2,
+    DETAIL.width + MARGIN.x * 4,
+    DETAIL.height + MARGIN.y * 4,
+  ),
+});
+
+/** A frame of a miniature and the hero it stands for; the margin's picture made the first time a display asks for it. */
+function frameOf(rows: readonly string[], hero: readonly string[]): MiniFrame {
+  let drawn: MiniFrame["drawn"] | undefined;
+  return {
+    rows,
+    detail: detailOf(hero),
+    get drawn() {
+      return (drawn ??= drawnOf(rows, hero));
+    },
+  };
+}
+
 /** Cells of a hero frame past the miniature's footprint: the Cell's box. */
 export const pastDetail = (hero: readonly string[]): number =>
   hero.reduce(
@@ -229,7 +269,7 @@ function composed(move: Move, wardrobe: Wardrobe, pieces: "loop" | "once" | "sti
   });
   const strip = (at: number) => frames.map((frame) => frame[at]!);
   const minis = (minis: readonly (readonly string[])[], heroes: readonly (readonly string[])[]) =>
-    minis.map((rows, i) => ({ rows, detail: detailOf(heroes[i]!) }));
+    minis.map((rows, i) => frameOf(rows, heroes[i]!));
   const [heroOpen, miniOpen, heroShut, miniShut] = [strip(0), strip(1), strip(2), strip(3)];
   return {
     fps: folded.fps,
@@ -402,10 +442,9 @@ export interface FrameProbe {
   readonly spilt: number;
   /**
    * Cells of the move's marks and the tool in hand that fell off the grid,
-   * or, at the hero, past the miniature's footprint: the detail every
-   * surface draws is cropped to it. The original's pieces spill past it on
-   * purpose, being drawn for its larger stage; a mark drawn here has no
-   * other stage.
+   * or, at the hero, past the miniature's footprint: the box, which art
+   * drawn here keeps inside. The margin a display draws past it is for the
+   * original's pieces, drawn for its larger stage.
    */
   readonly effects: number;
 }

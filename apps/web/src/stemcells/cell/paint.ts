@@ -67,8 +67,9 @@ function raster(art: readonly string[], body: string, ground: Ground): HTMLCanva
 /**
  * Paints `frame` on `canvas` in `body`'s colours, `points` CSS pixels a
  * cell on a display of `dpr`, as the frame `ground` behind it draws it: the
- * hero detail where it lands on whole device pixels, else the miniature. The
- * canvas's CSS size is the caller's.
+ * hero detail where it lands on whole device pixels, else the miniature,
+ * with the margin past the box (`MARGIN`). The canvas's CSS size is the
+ * caller's: the box and its margin.
  */
 export function paint(
   canvas: HTMLCanvasElement,
@@ -78,8 +79,8 @@ export function paint(
   dpr: number,
   ground: Ground = "black",
 ): void {
-  const width = Math.round((frame.rows[0]?.length ?? 0) * points * dpr);
-  const height = Math.round(frame.rows.length * points * dpr);
+  const width = Math.round((frame.drawn.rows[0]?.length ?? 0) * points * dpr);
+  const height = Math.round(frame.drawn.rows.length * points * dpr);
   if (canvas.width !== width) canvas.width = width;
   if (canvas.height !== height) canvas.height = height;
   const context = canvas.getContext("2d");
