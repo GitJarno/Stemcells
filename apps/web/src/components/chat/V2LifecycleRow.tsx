@@ -315,8 +315,12 @@ export function EnvironmentSubagentAvatar({
   providerInstanceId: ProviderInstanceId;
   driver?: ProviderDriverKind | undefined;
   status?: OrchestrationV2TurnItem["status"] | undefined;
-  /** Stemcells: the subagent's thread id, else its id, to draw it as its Subcell. */
-  subcell?: string | undefined;
+  /**
+   * Stemcells: the subagent's thread id, else its id, to draw it as its
+   * Subcell; and its status for the Subcell's face where upstream gives the
+   * avatar none, keeping its dot off.
+   */
+  subcell?: { readonly name: string; readonly status?: string | undefined } | undefined;
 }) {
   const providersAtom = serverEnvironment.providersValueAtom(environmentId);
   const displayName = useAtomValue(
@@ -331,7 +335,14 @@ export function EnvironmentSubagentAvatar({
   );
   if (subcell !== undefined) {
     const dot = props.status ? subagentStatusVisual(props.status).dotClass : undefined;
-    return <SubcellMark name={subcell} provider={props.driver} status={props.status} dot={dot} />;
+    return (
+      <SubcellMark
+        name={subcell.name}
+        provider={props.driver}
+        status={subcell.status ?? props.status}
+        dot={dot}
+      />
+    );
   }
   return <SubagentAvatar {...props} displayName={displayName} iconUrl={iconUrl} />;
 }
@@ -450,7 +461,7 @@ function SubagentTimelineLink(props: {
         providerInstanceId={props.providerInstanceId}
         driver={props.driver}
         status={status ?? undefined}
-        subcell={props.threadId ?? props.subagentId}
+        subcell={{ name: props.threadId ?? props.subagentId }}
       />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">

@@ -3,7 +3,9 @@
  * A turn's subagents are Subcells: the card that groups them says "2
  * Subcells", and each one, in the card's header and its rows and in a
  * workflow's members, is drawn as a Cell of its own (`SubcellMark`) where
- * upstream drew its provider's logo, dealt by its thread's id. A failure
+ * upstream drew its provider's logo, dealt by its thread's id, its face its
+ * status: in the card's header too, where upstream gives the avatars of two
+ * or more none, to keep their dots off. A failure
  * here after a sync names the line that moved: say Subcell there again, or
  * hand the avatar its Subcell again.
  */
@@ -34,11 +36,11 @@ describe("Subcells in upstream's views", () => {
     expect(chatView.match(from)).toHaveLength(1);
   });
 
-  it("the card counts Subcells and hands each header avatar its Subcell", () => {
+  it("the card counts Subcells and hands each header avatar its Subcell, with its status", () => {
     const card = body(messagesTimeline, "V2SubagentGroup");
     expect(card).toContain("const label = subcellCount(members.length);");
     expect(card).toMatch(
-      /<EnvironmentSubagentAvatar[^>]*subcell=\{item\.childThreadId \?\? item\.subagentId\}/,
+      /\.map\(\(\{ item, status \}\) => \(\s*<EnvironmentSubagentAvatar[^>]*subcell=\{\{ name: item\.childThreadId \?\? item\.subagentId, status \}\}/,
     );
   });
 
@@ -52,18 +54,24 @@ describe("Subcells in upstream's views", () => {
     );
   });
 
-  it("an avatar given its Subcell draws it as a Cell, with upstream's status dot", () => {
+  it("an avatar given its Subcell draws it as a Cell, its face its status, with upstream's status dot", () => {
     const avatar = body(lifecycleRow, "EnvironmentSubagentAvatar");
-    expect(avatar).toContain("subcell?: string | undefined;");
+    expect(avatar).toContain(
+      "subcell?: { readonly name: string; readonly status?: string | undefined } | undefined;",
+    );
     expect(avatar).toContain("subagentStatusVisual(props.status).dotClass");
-    expect(avatar).toMatch(/<SubcellMark name=\{subcell\} provider=\{props\.driver\}/);
+    expect(avatar).toMatch(
+      /<SubcellMark\s+name=\{subcell\.name\}\s+provider=\{props\.driver\}\s+status=\{subcell\.status \?\? props\.status\}/,
+    );
   });
 
   it("a Subcell's row and a workflow's member hand their avatar the Subcell's thread", () => {
     expect(body(lifecycleRow, "SubagentTimelineLink")).toContain(
-      "subcell={props.threadId ?? props.subagentId}",
+      "subcell={{ name: props.threadId ?? props.subagentId }}",
     );
-    expect(body(workflowOpening, "WorkflowMemberRow")).toContain("subcell={threadId ?? member.id}");
+    expect(body(workflowOpening, "WorkflowMemberRow")).toContain(
+      "subcell={{ name: threadId ?? member.id }}",
+    );
   });
 
   it("an untitled Subcell's title, and the divider over a Subcell's thread, go through the substitutes", () => {

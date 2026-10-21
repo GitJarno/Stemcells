@@ -152,7 +152,7 @@ function WorkflowMemberRow(props: {
             providerInstanceId={props.providerInstanceId}
             driver={props.driver}
             status={member.status}
-            subcell={threadId ?? member.id}
+            subcell={{ name: threadId ?? member.id }}
           />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs font-medium text-foreground">

@@ -3285,7 +3285,7 @@ const V2SubagentGroup = memo(function V2SubagentGroup({
                 providerInstanceId={item.providerInstanceId}
                 driver={item.driver}
                 status={agents.length === 1 ? status : undefined}
-                subcell={item.childThreadId ?? item.subagentId}
+                subcell={{ name: item.childThreadId ?? item.subagentId, status }}
               />
             ))}
             {agents.length > 3 ? (
