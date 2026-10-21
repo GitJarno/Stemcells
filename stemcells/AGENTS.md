@@ -27,7 +27,11 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   `pnpm-lock.yaml`, the file every sync touches.
 - An upstream file changes only at a **seam**: the smallest edit that hands
   control to our code. List it in `stemcells/seams.md`, with its reason,
-  in the same commit.
+  in the same commit. A seam that only swaps a module or wraps an export
+  is a substitute instead (`seams.md`, Substitutes).
+- `drift` marks a seam file upstream edits about daily as `hot`. Before a
+  feature touches a hot file, its seam gets a substitute or an extension
+  point (`stemcells/docs/fork.md`, rule 7).
 - `stemcells/scripts/drift` before every push: it fails on an upstream
   change `seams.md` doesn't name.
 - Only the `stemcells/upstream/` adapters import upstream modules. Every
@@ -41,7 +45,9 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 ## Taking upstream's work
 - `stemcells/scripts/sync-upstream` merges `upstream/main` on a branch and
   opens a pull request. Merge, never rebase or squash upstream history.
-- In a conflict, upstream's logic wins and our seam goes back on top.
+- In a conflict, upstream's logic wins and our seam goes back on top. The
+  pull request says how many minutes resolving took;
+  `stemcells/scripts/sync-stats` lists each sync's conflicts.
 
 ## Nothing leaves for anyone else's cloud
 - No telemetry or usage data, to T3 or anyone else: the server's analytics

@@ -14,14 +14,22 @@ ours='^(stemcells/|apps/(web|server|mobile)/src/stemcells/|packages/stemcells-)'
 changed=$({ git diff --name-only "$base"; git ls-files --others --exclude-standard; } \
   | sort -u | grep -Ev "$ours" || true)
 
-echo "        heat = upstream commits in 90 days"
+# Over this, upstream edits the file about every day: its seams get a
+# substitute or an extension point before a feature touches the file again
+# (stemcells/docs/fork.md, rule 7).
+HOT=90
+
+echo "        heat = upstream commits in 90 days; hot = over $HOT"
 unlisted=0
+hot=0
 while IFS= read -r file; do
   [ -z "$file" ] && continue
   # Upstream commits touching the file in 90 days: a hot file is a poor seam.
   heat=$(git log --since=90.days --format=%h upstream/main -- "$file" | wc -l | tr -d ' ')
   if grep -qF "\`$file\`" stemcells/seams.md; then
-    printf '  seam  %4s  %s\n' "$heat" "$file"
+    label=seam
+    [ "$heat" -gt "$HOT" ] && label=hot && hot=$((hot + 1))
+    printf '  %-4s  %4s  %s\n' "$label" "$heat" "$file"
   else
     printf '  DRIFT %4s  %s  (not in stemcells/seams.md)\n' "$heat" "$file"
     unlisted=1
@@ -29,5 +37,5 @@ while IFS= read -r file; do
 done <<< "$changed"
 
 lines=$(git diff --numstat "$base" -- $(echo "$changed") 2>/dev/null | awk '{s+=$1+$2} END {print s+0}')
-echo "$(echo "$changed" | grep -c . || true) upstream files changed, $lines lines"
+echo "$(echo "$changed" | grep -c . || true) upstream files changed, $lines lines; $hot hot"
 exit $unlisted

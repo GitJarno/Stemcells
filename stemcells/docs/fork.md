@@ -41,6 +41,10 @@ case, go back to the three costs and choose what keeps them lowest.
   constants. Avoid the files upstream changes every day. `drift` shows each
   seam file's upstream commits over the last 90 days; a hot file is a bad
   place for a seam.
+- **A seam that only swaps a module or wraps an export is a substitute
+  instead.** The web's and the phone's builds hand upstream's code our
+  module where it imports one of upstream's, so the importing file stays
+  untouched (`seams.md`, Substitutes).
 - Never reformat, rename, move or tidy upstream code. Each of those is a
   conflict waiting for the next merge.
 - `stemcells/scripts/drift` fails on any changed upstream file that
@@ -129,15 +133,32 @@ case, go back to the three costs and choose what keeps them lowest.
   3. If green, merge it. If it conflicts or goes red, a Cell resolves it:
      upstream's logic wins and our seam goes back on top.
 - **A seam that conflicts twice is a signal.** Move more of it into our
-  files, or make it upstream's extension point (rule 5).
+  files, or make it upstream's extension point (rule 5 and rule 7).
 
 ## 7. Watch the numbers
 
-- **Drift:** how many upstream files we've changed, how many lines, and
-  how hot each seam file is.
-- **Sync:** how long each sync takes, and how many need a person.
-- **Seam budget:** once seams pass about 30 files, stop adding features
-  and pay the debt down through rule 5.
+- **What a sync costs: conflicts per sync, and the minutes to resolve
+  them.** That's the number to keep low. A merge that comes in clean costs
+  nothing; a conflict costs a person's or a Cell's attention.
+  `stemcells/scripts/sync-stats` replays every upstream merge on main and
+  lists the files that conflicted. The pull request that resolves one says
+  how many minutes the resolving took.
+- **What predicts it: seam files and their heat.** `drift` lists every
+  upstream file we change, with upstream's commits to it in the last 90
+  days, and marks a file over 90 as hot: upstream edits it about every day,
+  so every nightly sync can conflict there. The file count alone predicts
+  little. Most seam files are cold and never conflict, and new files never
+  do.
+- **The rule:** a seam in a hot file, or one that has conflicted twice,
+  gets a substitute or an extension point (rule 5) before a new feature
+  touches that file.
+
+Why 90: on 2026-10-21, seam heat over 60 days ran from 78 to 310 for the
+eleven hottest files and 50 or less for the rest, with nothing in between.
+90 days to 90 commits is the same line. The first measured sync took 21
+upstream commits and conflicted in 2 files, both test expectations; its
+conflicts took about 2 minutes to resolve, and its checks about 20
+(`stemcells/tasks/seam-debt.md`).
 
 ## What we don't do, and why
 

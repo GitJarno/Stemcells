@@ -1,9 +1,11 @@
 # Seam debt
 
-`stemcells/docs/fork.md` rule 7: once seams pass about 30 files, stop adding
-features and pay the debt down. On 2026-10-21 `drift` counted 74 upstream
-files, 687 changed lines. This plan measures what those seams are, ranks the
-ways to shrink them, and lands them in order.
+`stemcells/docs/fork.md` rule 7 said: once seams pass about 30 files, stop
+adding features and pay the debt down. On 2026-10-21 `drift` counted 74
+upstream files, 687 changed lines. This plan measures what those seams are,
+ranks the ways to shrink them, and lands them in order. What it found
+changed rule 7 itself: the number to watch is conflicts per sync, with hot
+seam files as the warning (below).
 
 ## Plan
 
@@ -11,10 +13,16 @@ ways to shrink them, and lands them in order.
 - [x] Evaluate structural ways to shrink the count, with evidence.
 - [x] PR 1: build-time substitutes for the web's import-swap seams.
 - [x] Dry-run tonight's upstream merge against main.
-- [ ] PR 2: wrapper seams become substitutes.
-- [ ] PR 3: the hidden `autoCompactWindow` field through a substitute.
-- [ ] PR 4: the phone's favicon seams through Metro's resolver.
-- [ ] Offer the upstream extension points below (each retires its seams).
+- [x] Take upstream now: f9dd25914, 21 commits, 2 conflicts resolved (#52).
+- [x] PR 2: wrapper seams become substitutes (#58). `ProviderModelsSection`
+      stays a seam: its grouping runs inside its own module.
+- [x] ~~PR 3: the hidden `autoCompactWindow` field through a substitute.~~
+      Skipped: medium risk for one file.
+- [x] PR 4: the phone's favicon seams through Metro's resolver (#60).
+- [x] Rule 7 measures conflicts per sync; `drift` marks hot files;
+      `sync-stats` lists every sync's conflicts.
+- [x] Draft the three strongest upstream extension points (below).
+- [ ] Offer them upstream: the person's call.
 
 ## Measurement
 
@@ -80,7 +88,10 @@ What the numbers say:
 4. **Substitutes on the phone (PR 4).** Metro's `resolver.resolveRequest` in
    `apps/mobile/metro.config.js` (heat 6) can do what the Vite plugin does,
    retiring `ThreadFeed.tsx` (93) and `thread-work-log.tsx` (50). Saves 1 file
-   net and 143 heat. Risk: medium; needs a phone build to prove.
+   net and 143 heat. Risk: medium; needs a phone build to prove. Done in
+   #60, which saves no file: the phone's test config needs the plugin too
+   (heat 2). The heat still goes from 143 to 8, and an `expo export` showed
+   the bundle using the substitute.
 5. **Upstream extension points (rule 5).** Listed only; none is offered yet.
    Ranked by what each retires:
    - "`ChatView` safe to render twice" (the window-input context): 6 files,
@@ -113,12 +124,62 @@ What the numbers say:
      bundler alias, two hot seams, to save none today.
    - An i18n map for brand text: upstream has no i18n to hook.
 
-Where this leaves the budget: PRs 1 to 4 take the count from 74 to about 65.
-Getting under 30 needs the upstream extension points, the identity module
-and "safe to render twice" first. `drift` could also count new files apart
-from edited ones, since only edits conflict.
+Where this leaves the count: PRs 1, 2 and 4 take it from 74 to 68. They
+move seams out of files upstream edited 284 times in 60 days and into three
+config files it edited 24 times. Going much lower needs the upstream
+extension points. The file count turned out to be the wrong budget,
+though: rule 7 now watches conflicts per sync, and the hot files that
+predict them.
 
-## Tonight's upstream merge, dry run
+| Step                            | Files | Lines | Hot files (drift) |
+| ------------------------------- | ----- | ----- | ----------------- |
+| Before                          | 74    | 687   | 10                |
+| PR 1 (#47): web substitutes     | 71    | 679   | 9                 |
+| PR 2 (#58): wrapper substitutes | 68    | 661   | 9                 |
+| PR 4 (#60): phone substitutes   | 68    | 662   | 8                 |
+
+The rows after PR 1 assume the earlier PRs merged; each PR measured alone
+against main.
+
+## Upstream extension points, drafted
+
+Drafts for T3, ready if the person decides to offer them. Each is built on a
+branch from `upstream/main` with nothing of ours in it (rule 5).
+
+- **`ChatView` safe to render twice.** `ChatView` and its children listen
+  on `window` and `document` for shortcuts, typing, paste and focus, and
+  the composer takes focus when it mounts. That's right for one chat on
+  screen, but an app that shows two (a split view, a preview beside the
+  thread) gets every key acted on twice and focus fought over. The fix is
+  a `ChatWindowInputContext` (default `true`) that a host sets to `false`
+  for every chat but the one it gives the keyboard to. Each window-level
+  listener checks it before acting. With the default, nothing changes for
+  T3. It's under 80 changed lines across `ChatView`, `ChatComposer`,
+  `ComposerPendingUserInputPanel`, `RightPanelTabs` and `PreviewView`,
+  plus the context. It retires 6 of our seams, including `ChatView.tsx`
+  and `ChatComposer.tsx`, two of the three hottest.
+- **One module for the app's identity.** The app's name, its app id, its
+  Electron profile and state folder names and its link scheme are written
+  as literals across the desktop app, the server's base directory and the
+  web's branding, and the tests repeat each one. With one module that
+  holds them, which code and tests both read, a renamed build (a fork, or
+  T3's own side-by-side channels) changes one file, and the tests pin the
+  module rather than copies of its strings. It retires about 15 of our 19
+  identity files.
+- **Report where Claude compacts.** Claude compacts at
+  `min(window, context) - 33,000` tokens. We measured this with the CLI's
+  `getContextUsage` on Claude Code 2.1.305: it leaves room for the reply
+  and a buffer. The Claude adapter reports the configured window itself,
+  and nothing when the window is at or above the model's context. So the
+  meter says "Compacts automatically at about 500,000 tokens" for a chat
+  that compacts at 467,000, and says nothing for a 200k model, which
+  compacts at 167,000. Reporting the real threshold is a few lines in
+  `ClaudeAdapterV2` and its test, and every T3 user's meter reads true.
+  It retires our two seams there (95 and 83 upstream commits in 60 days).
+  The 33,000 is the CLI's own reserve, so it's better read from the SDK
+  than hard-coded, if the SDK exposes it.
+
+## The upstream merge (f9dd25914): dry run, then taken
 
 `git merge-tree` of `upstream/main` (f9dd25914, 21 commits past main) into
 `origin/main` (999ef557e), and into this branch: the same two conflicts,
@@ -131,6 +192,12 @@ both test-expectation seams.
 - `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`: the same
   harness change around the handoff test. Take upstream's and expect "Sol
   5.6" and "Fable 5" again.
+
+Taken in #52 the same night: take upstream's two files, put our expected
+values back, and each differs from upstream only by what `seams.md` lists.
+The conflicts took about 2 minutes to resolve, and the gate (drift, both
+type checks, the Stemcells tests, upstream's tests that pin our seams, and
+the browser tests around the two files) about 20.
 
 The three sync runs on 2026-10-20: the first failed to report (`gh issue
 create` lacked permission), the second was a deliberate test of the failure

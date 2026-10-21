@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Every merge of upstream into main: when, how many upstream commits it took,
+# and the files that conflicted. Git replays each merge without a worktree,
+# so the history is the record. Conflicts per sync is the fork's number to
+# watch (stemcells/docs/fork.md, rule 7).
+#
+# Usage: stemcells/scripts/sync-stats [ref]   (default origin/main)
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+git rev-parse -q --verify upstream/main >/dev/null || {
+  echo "sync-stats: no upstream/main; run: git remote add upstream https://github.com/pingdotgg/t3code.git && git fetch upstream" >&2
+  exit 2
+}
+
+ref=${1:-origin/main}
+syncs=0
+conflicted=0
+printf '%-10s  %-9s  %7s  %s\n' date upstream commits conflicts
+# Our merges only (upstream's own are in upstream/main), wherever a sync
+# landed: on main, or inside the pull request that brought it.
+while read -r ours theirs date; do
+  # A sync is a merge whose other side is upstream's history.
+  git merge-base --is-ancestor "$theirs" upstream/main || continue
+  taken=$(git rev-list --count "$ours..$theirs")
+  files=$(git merge-tree --write-tree --no-messages --name-only "$ours" "$theirs" | sed 1d || true)
+  count=$(printf '%s' "$files" | grep -c . || true)
+  printf '%-10s  %-9s  %7s  %s\n' "$date" "$(git rev-parse --short=9 "$theirs")" "$taken" \
+    "$count${files:+: $(echo $files)}"
+  syncs=$((syncs + 1))
+  [ "$count" -gt 0 ] && conflicted=$((conflicted + 1))
+done < <(git log --merges --format='%P %cs' "$ref" ^upstream/main | awk 'NF == 3')
+echo "$syncs syncs, $conflicted with conflicts"
