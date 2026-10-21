@@ -1,19 +1,38 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (aski.css), outside upstream's Tailwind entry. */
 // The spawn's theater: Aski's act (spawn.ts) at the rect the composer gave,
-// over the page. The scene worker draws it as it draws the moments; under
-// Reduce Motion each part holds its still. It fades in as the act starts and
-// out once the act is through, then goes.
+// over the page. The scene worker draws it as it draws the moments, with the
+// motion tokens' times read here. It fades in as the act starts and out once
+// the act is through, then goes. Under Reduce Motion Aski doesn't appear.
 
-import { useEffect, useEffectEvent, useRef, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { timed } from "../tokens/motion.ts";
+import { reducedMotion, timed, timing } from "../tokens/motion.ts";
 import { MomentPlayer } from "./moments/player.ts";
-import { type Spawn, onSpawn, spawnEndsAt, spawnGone, spawnNow, spawnPart } from "./spawn.ts";
+import {
+  type Spawn,
+  type SpawnTimes,
+  onSpawn,
+  spawnEndsAt,
+  spawnGone,
+  spawnNow,
+  spawnPart,
+} from "./spawn.ts";
 import "./aski.css";
+
+/** The act's times from the motion tokens, in seconds (stemcells/docs/interaction.md, The spawn). */
+function spawnTimes(): SpawnTimes {
+  return {
+    lookIn: (timing("lettersSpan") + timed("travel").duration) / 1000,
+    turn: timing("orbitTurn") / 1000,
+    stagger: timing("spawnStagger") / 1000,
+    travel: timed("travel").duration / 1000,
+    flick: timed("flick").duration / 1000,
+  };
+}
 
 export function AskiSpawn() {
   const spawn = useSyncExternalStore(onSpawn, spawnNow);
-  if (spawn === null || typeof document === "undefined") return null;
+  if (spawn === null || typeof document === "undefined" || reducedMotion()) return null;
   return createPortal(<SpawnTheater key={spawn.id} spawn={spawn} />, document.body);
 }
 
@@ -42,17 +61,18 @@ function SpawnTheater(props: { spawn: Spawn }) {
     };
   }, [rect]);
 
-  // The pour from the start, the bud once the plan is in.
+  // Aski waiting from the start, throwing once the plan is in.
+  const [times] = useState(spawnTimes);
   const play = useEffectEvent((from: number) => {
-    const part = spawnPart(spawn);
+    const part = spawnPart(spawn, times);
     if (part.startedAt === from) playerRef.current?.play(part);
   });
-  const from = spawnPart(spawn).startedAt;
+  const from = spawn.plannedAt ?? spawn.startedAt;
   useEffect(() => {
     play(from);
   }, [from]);
 
-  const endsAt = spawnEndsAt(spawn),
+  const endsAt = spawnEndsAt(spawn, times),
     id = spawn.id;
   useEffect(() => {
     let gone: ReturnType<typeof setTimeout> | undefined;

@@ -5,8 +5,8 @@ import type { Script } from "./aski.ts";
 import type { SceneCard } from "./scene.ts";
 import { theBud } from "./scenes/the-bud.ts";
 import { thePond } from "./scenes/the-pond.ts";
-import { thePour } from "./scenes/the-pour.ts";
 import { theRain } from "./scenes/the-rain.ts";
+import { theThrow, theWait } from "./scenes/the-throw.ts";
 
 export const SCENES: Record<string, Script> = {
   rest: { seed: 7, cues: [] },
@@ -44,14 +44,29 @@ export interface SceneArgs {
   readonly seed?: number | undefined;
   /** An act's task words, one per Cell it starts. */
   readonly words?: readonly string[] | undefined;
-  /** The message an act takes in. */
-  readonly text?: string | undefined;
+  /** An act's streams, and the way to each one's pane, canon units. */
+  readonly n?: number | undefined;
+  readonly looks?: readonly (readonly [number, number])[] | undefined;
+  /** An act's times, seconds, from the motion tokens the page reads. */
+  readonly times?: Readonly<Record<string, number>> | undefined;
 }
 
 export const SCENE_CARDS: Record<string, (args?: SceneArgs) => SceneCard> = {
   "the-rain": ({ seed }: SceneArgs = {}) => theRain(seed),
   "the-bud": ({ seed, words = ["tests", "docs", "fix"] }: SceneArgs = {}) => theBud(words, seed),
   "the-pond": ({ seed }: SceneArgs = {}) => thePond(seed),
-  "the-pour": ({ seed, text = "Plan the launch and write its notes" }: SceneArgs = {}) =>
-    thePour(text, seed),
+  // A spawn's two parts. The theater hands in the tokens' times; these are the render tool's sample.
+  "the-wait": ({ seed, times }: SceneArgs = {}) =>
+    theWait({ lookIn: times?.["lookIn"] ?? 0.94, turn: times?.["turn"] ?? 1.6 }, seed),
+  "the-throw": ({ seed, n = 3, looks = [], times }: SceneArgs = {}) =>
+    theThrow(
+      n,
+      looks,
+      {
+        stagger: times?.["stagger"] ?? 0.09,
+        travel: times?.["travel"] ?? 0.481,
+        flick: times?.["flick"] ?? 0.12,
+      },
+      seed,
+    ),
 };

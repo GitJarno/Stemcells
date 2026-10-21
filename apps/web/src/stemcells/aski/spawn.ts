@@ -1,16 +1,16 @@
-// Aski's half of a spawn, for a composer that starts several Cells from one
-// message. The composer says when the message goes (`spawnStart`), when its
-// Cells are known (`spawnPlanned`) and when they have started (`spawnDone`);
-// Aski pours the message in and circles it while the Cells are planned, then
-// buds one small cloud per Cell. `AskiSpawn` plays it at the rect the
-// composer gives. The calls are safe in any order: a repeat, or a call with
-// no spawn to belong to, does nothing.
+// Aski's half of a spawn (stemcells/docs/interaction.md, The spawn), for a
+// composer that starts several Cells from one message. The composer says when
+// the words go (`spawnStart`), when the plan is in and the streams leave
+// (`spawnPlanned`), and when the last stream has landed or the spawn is off
+// (`spawnDone`). The words and the streams are the composer's to draw; Aski
+// watches the words in and round, throws once a stream, and fades.
+// `AskiSpawn` plays it at the rect the composer gives, Aski centred in it;
+// under Reduce Motion it plays nothing. The calls are safe in any order: a
+// repeat, or a call with no spawn to belong to, does nothing.
 
-import { theBud } from "./scenes/the-bud.ts";
-import { POUR, POURED } from "./scenes/the-pour.ts";
-import { taskWord } from "./moments/many.ts";
+import { lookToward, type ThrowTimes, thrown, type WaitTimes } from "./scenes/the-throw.ts";
 
-/** Where the act plays, in viewport CSS pixels (`getBoundingClientRect`). */
+/** A box in viewport CSS pixels (`getBoundingClientRect`). */
 export interface SpawnRect {
   readonly x: number;
   readonly y: number;
@@ -18,16 +18,16 @@ export interface SpawnRect {
   readonly height: number;
 }
 
-/** A Cell the message starts, by its title. */
+/** A Cell the spawn starts: its title, and its pane's box once the pane is open, for Aski's eyes. */
 export interface SpawnCell {
   readonly title: string;
+  readonly to?: SpawnRect | undefined;
 }
 
 export interface Spawn {
   readonly id: number;
+  /** Where Aski stands, centred. */
   readonly rect: SpawnRect;
-  /** The message, poured in. */
-  readonly text: string;
   readonly cells: readonly SpawnCell[];
   /** Unix milliseconds; null until it happens. */
   readonly startedAt: number;
@@ -35,10 +35,11 @@ export interface Spawn {
   readonly doneAt: number | null;
 }
 
-/** The most Cells budded: the bud's own limit. More start all the same. */
-export const BUDDED = 4;
-/** Milliseconds an act waits for the composer's next word before it goes on its own. */
-export const SPAWN_WAITS = { plan: (POURED + POUR.hold) * 1000, start: 10_000 } as const;
+/** An act's times, seconds, from the motion tokens: the words' pour and orbit, the streams' gap and flight, and a pulse. */
+export type SpawnTimes = WaitTimes & ThrowTimes;
+
+/** Milliseconds Aski waits for the composer's next call before it goes on its own: a plan, then the streams landing. */
+export const SPAWN_WAITS = { plan: 120_000, start: 10_000 } as const;
 
 let current: Spawn | null = null;
 const listeners = new Set<() => void>();
@@ -48,13 +49,12 @@ function set(next: Spawn | null): void {
   for (const listener of listeners) listener();
 }
 
-/** The message `text` goes to start `cells` (none yet, when a plan will pick them). One spawn plays at a time. */
-export function spawnStart(rect: SpawnRect, cells: readonly SpawnCell[], text = ""): void {
+/** The words go, to start `cells` (none yet, when a plan will pick them). One spawn plays at a time. */
+export function spawnStart(rect: SpawnRect, cells: readonly SpawnCell[] = []): void {
   if (current !== null && current.doneAt === null) return;
   set({
     id: (current?.id ?? 0) + 1,
     rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-    text,
     cells,
     startedAt: Date.now(),
     plannedAt: null,
@@ -62,13 +62,13 @@ export function spawnStart(rect: SpawnRect, cells: readonly SpawnCell[], text = 
   });
 }
 
-/** The Cells are known: `cells`, when the plan picked them, or those it started with. */
+/** The plan is in and the streams leave: `cells` in the order their streams go, with their panes' boxes, or those it started with. */
 export function spawnPlanned(cells?: readonly SpawnCell[]): void {
   if (current === null || current.plannedAt !== null || current.doneAt !== null) return;
   set({ ...current, cells: cells ?? current.cells, plannedAt: Date.now() });
 }
 
-/** The Cells have started, or the spawn is off. */
+/** The last stream has landed, or the spawn is off. */
 export function spawnDone(): void {
   if (current === null || current.doneAt !== null) return;
   set({ ...current, doneAt: Date.now() });
@@ -86,35 +86,53 @@ export function onSpawn(listener: () => void): () => void {
 
 export const spawnNow = (): Spawn | null => current;
 
-/** The words the bud spells: one per Cell, the first `BUDDED`. */
-export const budWords = (cells: readonly SpawnCell[]): string[] =>
-  cells.slice(0, BUDDED).map((cell) => taskWord(cell.title));
+const middle = (r: SpawnRect): readonly [number, number] => [r.x + r.width / 2, r.y + r.height / 2];
 
-/** The message a spawn pours in: its text, or its Cells' titles when it came with none. */
-export const pourText = (spawn: Spawn): string =>
-  spawn.text.trim() !== "" ? spawn.text : spawn.cells.map((cell) => cell.title).join(" ");
+/** Where Aski's eyes look as each stream leaves, in the composer's order (it sends the nearest pane's first): straight ahead for a Cell whose pane isn't known. */
+export function throwLooks(spawn: Spawn): (readonly [number, number])[] {
+  const [ax, ay] = middle(spawn.rect);
+  return spawn.cells.map((cell) =>
+    cell.to === undefined ? [0, 0] : lookToward(middle(cell.to)[0] - ax, middle(cell.to)[1] - ay),
+  );
+}
 
-/** What plays of `spawn` now: the pour from its start, then the bud from its plan, when it has Cells to bud. */
-export function spawnPart(spawn: Spawn): {
-  readonly id: "the-pour" | "the-bud";
+/** What plays of `spawn` now: Aski waiting from its start, then throwing from its plan. */
+export function spawnPart(
+  spawn: Spawn,
+  times: SpawnTimes,
+): {
+  readonly id: "the-wait" | "the-throw";
   readonly startedAt: number;
-  readonly args: { readonly text?: string; readonly words?: readonly string[] };
+  readonly args: {
+    readonly n?: number;
+    readonly looks?: readonly (readonly [number, number])[];
+    readonly times: Readonly<Record<string, number>>;
+  };
 } {
-  const words = budWords(spawn.cells);
-  return spawn.plannedAt !== null && words.length > 0
-    ? { id: "the-bud", startedAt: spawn.plannedAt, args: { words } }
-    : { id: "the-pour", startedAt: spawn.startedAt, args: { text: pourText(spawn) } };
+  return spawn.plannedAt === null
+    ? {
+        id: "the-wait",
+        startedAt: spawn.startedAt,
+        args: { times: { lookIn: times.lookIn, turn: times.turn } },
+      }
+    : {
+        id: "the-throw",
+        startedAt: spawn.plannedAt,
+        args: {
+          n: Math.max(1, spawn.cells.length),
+          looks: throwLooks(spawn),
+          times: { stagger: times.stagger, travel: times.travel, flick: times.flick },
+        },
+      };
 }
 
 /**
- * When the act goes, Unix milliseconds: once the Cells started and the bud
- * has landed them; at once for a spawn called off before its plan. One the
- * composer stopped telling goes after `SPAWN_WAITS`.
+ * When Aski goes, Unix milliseconds: once the last stream has landed and
+ * Aski has thrown them all; at once for a spawn called off before its plan.
+ * One the composer stopped telling goes after `SPAWN_WAITS`.
  */
-export function spawnEndsAt(spawn: Spawn): number {
-  const words = budWords(spawn.cells);
+export function spawnEndsAt(spawn: Spawn, times: SpawnTimes): number {
   if (spawn.plannedAt === null) return spawn.doneAt ?? spawn.startedAt + SPAWN_WAITS.plan;
-  if (words.length === 0) return spawn.doneAt ?? spawn.plannedAt;
-  const landed = spawn.plannedAt + theBud(words).end * 1000;
-  return Math.max(landed, spawn.doneAt ?? spawn.plannedAt + SPAWN_WAITS.start);
+  const threw = spawn.plannedAt + thrown(spawn.cells.length, times) * 1000;
+  return Math.max(threw, spawn.doneAt ?? spawn.plannedAt + SPAWN_WAITS.start);
 }

@@ -1,8 +1,7 @@
 import * as NodeAssert from "node:assert/strict";
 import { afterEach, test, vi } from "vite-plus/test";
-import { theBud } from "./scenes/the-bud.ts";
+import { thrown } from "./scenes/the-throw.ts";
 import {
-  budWords,
   SPAWN_WAITS,
   spawnDone,
   spawnEndsAt,
@@ -11,10 +10,12 @@ import {
   spawnPart,
   spawnPlanned,
   spawnStart,
+  throwLooks,
 } from "./spawn.ts";
 
-const RECT = { x: 40, y: 600, width: 480, height: 120 };
-const CELLS = [{ title: "Fix the login bug" }, { title: "Write release notes" }];
+const RECT = { x: 400, y: 300, width: 480, height: 120 };
+const TIMES = { lookIn: 0.94, turn: 1.6, stagger: 0.09, travel: 0.481, flick: 0.12 };
+const CELLS = [{ title: "Sol 6.1 · Harbor" }, { title: "Sol 6.1 · Pier" }];
 
 let now = 1_000_000;
 vi.spyOn(Date, "now").mockImplementation(() => now);
@@ -27,21 +28,26 @@ afterEach(() => {
   }
 });
 
-test("a spawn pours from its start and buds its Cells from its plan", () => {
-  spawnStart(RECT, [], "Fix login and write the notes");
-  const started = spawnNow()!;
-  NodeAssert.deepEqual(spawnPart(started), {
-    id: "the-pour",
+test("Aski waits from the start and throws once the plan is in, a stream a Cell", () => {
+  spawnStart(RECT, CELLS);
+  NodeAssert.deepEqual(spawnPart(spawnNow()!, TIMES), {
+    id: "the-wait",
     startedAt: now,
-    args: { text: "Fix login and write the notes" },
+    args: { times: { lookIn: 0.94, turn: 1.6 } },
   });
   now += 3_000;
-  spawnPlanned(CELLS);
-  const planned = spawnNow()!;
-  NodeAssert.deepEqual(spawnPart(planned), {
-    id: "the-bud",
+  spawnPlanned();
+  NodeAssert.deepEqual(spawnPart(spawnNow()!, TIMES), {
+    id: "the-throw",
     startedAt: now,
-    args: { words: ["login", "release"] },
+    args: {
+      n: 2,
+      looks: [
+        [0, 0],
+        [0, 0],
+      ],
+      times: { stagger: 0.09, travel: 0.481, flick: 0.12 },
+    },
   });
 });
 
@@ -63,43 +69,45 @@ test("calls out of order, or again, change nothing", () => {
   NodeAssert.equal(spawnNow()!.id, first.id + 1, "a finished one makes way for the next");
 });
 
-test("the act goes once the Cells started and the bud landed them, at once when called off", () => {
+test("Aski goes once the streams have landed and it threw them all, at once when called off", () => {
   spawnStart(RECT, CELLS);
   const startedAt = now;
-  NodeAssert.equal(
-    spawnEndsAt(spawnNow()!),
-    startedAt + SPAWN_WAITS.plan,
-    "a plan that never comes",
-  );
+  NodeAssert.equal(spawnEndsAt(spawnNow()!, TIMES), startedAt + SPAWN_WAITS.plan, "no plan comes");
   now += 400;
   spawnDone();
-  NodeAssert.equal(spawnEndsAt(spawnNow()!), now, "called off before its plan");
+  NodeAssert.equal(spawnEndsAt(spawnNow()!, TIMES), now, "called off before its plan");
   spawnGone(spawnNow()!.id);
 
-  spawnStart(RECT, CELLS);
+  spawnStart(RECT, []);
   now += 2_000;
-  spawnPlanned();
-  const plannedAt = now,
-    landed = plannedAt + theBud(budWords(CELLS)).end * 1000;
+  const four = [1, 2, 3, 4].map((k) => ({ title: `Cell ${k}` }));
+  spawnPlanned(four);
+  const plannedAt = now;
   NodeAssert.equal(
-    spawnEndsAt(spawnNow()!),
+    spawnEndsAt(spawnNow()!, TIMES),
     plannedAt + SPAWN_WAITS.start,
-    "Cells that never start",
+    "streams that never land",
   );
   now += 100;
   spawnDone();
-  NodeAssert.equal(spawnEndsAt(spawnNow()!), landed, "started before the bud landed them");
+  NodeAssert.equal(
+    spawnEndsAt(spawnNow()!, TIMES),
+    plannedAt + thrown(4, TIMES) * 1000,
+    "landed before Aski threw the last",
+  );
 });
 
-test("a spawn pours its Cells' titles when it came without words, and buds four at most", () => {
-  spawnStart(RECT, CELLS);
-  NodeAssert.equal(spawnPart(spawnNow()!).args.text, "Fix the login bug Write release notes");
-  NodeAssert.deepEqual(
-    budWords(
-      ["Alpha task", "Beta task", "Gamma task", "Delta task", "Epsilon task"].map((title) => ({
-        title,
-      })),
-    ),
-    ["alpha", "beta", "gamma", "delta"],
-  );
+test("Aski's eyes go to each pane as its stream leaves, in the order the composer sends them", () => {
+  const right = { x: 1200, y: 300, width: 200, height: 40 },
+    below = { x: 400, y: 500, width: 480, height: 40 };
+  spawnStart(RECT, []);
+  spawnPlanned([
+    { title: "Near, below", to: below },
+    { title: "Far, right", to: right },
+    { title: "No pane yet" },
+  ]);
+  const [first, second, third] = throwLooks(spawnNow()!);
+  NodeAssert.ok(first![1] > 0 && Math.abs(first![0]) < 1e-9, "the first, below: eyes down");
+  NodeAssert.ok(second![0] > 0 && second![1] < 0, "then the next, to the right and up");
+  NodeAssert.deepEqual(third, [0, 0], "and straight ahead for one without a pane");
 });

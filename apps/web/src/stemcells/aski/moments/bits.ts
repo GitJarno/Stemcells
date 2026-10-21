@@ -15,31 +15,44 @@ import {
   spell,
 } from "../scene.ts";
 import words from "../strings/en.json" with { type: "json" };
-import { blinkFrom, eyesLooking, middleOf } from "./stage.ts";
+import { blinkFrom, eyesLooking, middleOf, squareOf } from "./stage.ts";
 
 /** Seconds: out from `out` until `laid`, back from `back` until `home`; the line from `say`. */
 export const BITS = { out: 0.4, laid: 1.6, back: 4.2, home: 5.4, say: 5.8, end: 9.6 } as const;
 
 /** Every printable character seven bits hold, in order, the space first. */
 const PRINTABLE = Array.from({ length: 95 }, (_, n) => String.fromCharCode(32 + n));
-/** The table they are laid out in: this many to a row at most, and never wider than Aski's square, so the line beside it stays clear. */
+/** The table they are laid out in: this many to a row, and no wider than Aski's square, while the rows fit above Aski's feet. */
 const PER_ROW = 19;
 /** How far down the eyes look while the table holds, canon units. */
 const LOOK_DOWN = 6;
 
-/** Where character `n` lands in the table on a stage, in cells: under the eyes, so none hides behind them, every other row while they fit. */
+/**
+ * Where character `n` lands in the table on a stage, in cells: under the
+ * eyes, so none hides behind them, and no lower than the cloud's own last
+ * row, so none falls below Aski's feet; every other row while they fit. A
+ * stage too short for the square's rows (a 1x screen has half the rows)
+ * widens the table to the left instead.
+ */
 function placeIn(stage: Stage): (n: number) => readonly [number, number] {
   const fit = homeFit(stage);
-  const perRow = Math.max(
+  const eyesFoot = (EYES.centers[0][1] + LOOK_DOWN + EYES.height / 2) * fit.ky + fit.ground;
+  const top = Math.ceil(eyesFoot + 0.5),
+    bottom = squareOf(stage).bottom;
+  const square = Math.max(
     1,
     Math.min(PER_ROW, Math.floor(Math.max(BODY_WIDTH, BODY_HEIGHT) * fit.kx)),
   );
+  const perRow = Math.max(
+    square,
+    Math.min(stage.cols, Math.ceil(PRINTABLE.length / Math.max(1, bottom - top + 1))),
+  );
   const rows = Math.ceil(PRINTABLE.length / perRow);
-  const eyesFoot = (EYES.centers[0][1] + LOOK_DOWN + EYES.height / 2) * fit.ky + fit.ground;
-  const top = Math.ceil(eyesFoot + 0.5);
-  const step = top + (rows - 1) * 2 < fit.ground ? 2 : 1;
-  const [mx] = middleOf(stage, [BODY_MID.x, BODY_MID.y]);
-  return (n) => [mx + (n % perRow) - (perRow - 1) / 2, top + Math.floor(n / perRow) * step];
+  const step = top + (rows - 1) * 2 <= bottom ? 2 : 1;
+  // Centred under the eyes; a wider table keeps the square's right edge and grows to the left, clear of the line.
+  const [mx] = middleOf(stage, [BODY_MID.x, BODY_MID.y]),
+    right = mx + (square - 1) / 2;
+  return (n) => [right - (perRow - 1) + (n % perRow), top + Math.floor(n / perRow) * step];
 }
 
 export function bits(seed = 7): SceneCard {

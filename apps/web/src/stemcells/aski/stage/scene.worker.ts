@@ -109,11 +109,8 @@ scope.addEventListener("message", (event) => {
   context?.clearRect(0, 0, canvas?.width ?? 0, canvas?.height ?? 0);
   if (order.kind === "stop" || canvas === undefined) return;
   const card =
-    SCENE_CARDS[order.id]?.({
-      seed: order.seed,
-      words: order.args?.words,
-      text: order.args?.text,
-    }) ?? momentCard(order.id, { ...order.args, seed: order.seed });
+    SCENE_CARDS[order.id]?.({ ...order.args, seed: order.seed }) ??
+    momentCard(order.id, { ...order.args, seed: order.seed });
   if (card === undefined) return;
   const painter = new GridPainter({ cols: order.cols, rows: order.rows }, order);
   canvas.width = painter.width;

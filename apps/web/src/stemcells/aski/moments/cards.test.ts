@@ -1,10 +1,11 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
 
-import { cellAt, type Grid, isEmpty, sameGrid } from "../grid.ts";
+import { cellAt, type Grid, isEmpty, sameGrid, type Stage } from "../grid.ts";
 import { BODY_HEIGHT } from "../canon.ts";
 import { eyeDistance } from "../eye.ts";
 import { gridEyes } from "../render.ts";
+import { place } from "../stage/stage-scene.ts";
 import {
   BODY_MID,
   BODY_WIDTH,
@@ -95,9 +96,19 @@ test("nothing a moment draws runs into its line, typed to the right of Aski's sq
   }
 });
 
-test("the bits lay out every character seven bits print, and gather back into Aski", () => {
-  const stage = STAGES[0]!,
-    card = MOMENT_CARDS.bits(),
+test("the bits lay out every character seven bits print above Aski's feet, and gather back into Aski", () => {
+  // The perched figure's stage at 1x and 2x: a 1x screen has half the rows.
+  for (const dpr of [1, 2]) bitsLaidOut(placedStage(dpr));
+  bitsLaidOut(STAGES[0]!);
+});
+
+function placedStage(dpr: number): Stage {
+  const placed = place({ width: 640, aski: 110.4 }, dpr);
+  return { cols: placed.cols, rows: placed.rows };
+}
+
+function bitsLaidOut(stage: Stage): void {
+  const card = MOMENT_CARDS.bits(),
     laid = card.frame(BITS.laid + 0.5, stage);
   const shown = laid.cells.filter((c) => !isEmpty(c)).map((c) => c.ch);
   for (let code = 33; code < 127; code++)
@@ -116,8 +127,15 @@ test("the bits lay out every character seven bits print, and gather back into As
     !sameGrid(card.frame(BITS.back + 0.6, stage), cloudAtRest(stage)),
     "on their way back",
   );
+  const feet = squareOf(stage).bottom;
+  laid.cells.forEach((c, k) =>
+    NodeAssert.ok(
+      isEmpty(c) || Math.floor(k / stage.cols) <= feet,
+      `${c.ch} falls below Aski's feet`,
+    ),
+  );
   NodeAssert.deepEqual(card.frame(BITS.home, stage), cloudAtRest(stage));
-});
+}
 
 test("back wears the crash's x x, flickers, and ends on the blocks", () => {
   const card = MOMENT_CARDS.back();
