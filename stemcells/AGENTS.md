@@ -75,3 +75,7 @@ Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
 web's from `apps/web`, whose config has our substitutes),
 `pnpm --filter @t3tools/web typecheck`, `pnpm exec vp lint`. To build and
 install the app: `stemcells/scripts/install-app` (`stemcells/docs/install.md`).
+
+A desktop lab (anything that starts Electron on a Mac someone is using)
+preloads `stemcells/lab/never-shown.cjs`: no window of it ever reaches the
+screen, and one that does ends the lab. Its header says how to load it.

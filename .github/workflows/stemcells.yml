@@ -40,6 +40,7 @@ jobs:
           pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells
           pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells
           pnpm exec vp test run apps/server/src/stemcells --passWithNoTests
+          pnpm exec vp test run stemcells/lab
 
   # The tab swipe's scroll-phases addon builds with the Mac's own compiler,
   # so it is built and loaded on a Mac.
