@@ -254,7 +254,9 @@ export async function flyPutBack(
       return from && still ? [{ window, from, still }] : [];
     }),
   );
-  const flights = found.flat().map((flight, index) => ({ ...flight, id: `put-back-${index}` }));
+  // Ids no other flight on the layer has.
+  const flight = `put-back-${homeId}-${(lastFlight += 1)}`;
+  const flights = found.flat().map((each, index) => ({ ...each, id: `${flight}-${index}` }));
   if (flights.length === 0) return (await commit()) !== null;
 
   const radius = windowRadius();
