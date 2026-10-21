@@ -40,6 +40,29 @@ Aski. The ambiguity read waits for prompt-smarts' structured operation
 - A note or reply runs to its sentence's end: "6 no, run nothing, and tell
   me what each Cell is on" sends all of it as the note. The readout shows
   it before Enter; a full stop splits it.
-- Left for later: the ambiguity read (slice 4), "1a"/"1b" for a card with
-  several questions, and the dictated words coming back when a hold goes
-  stale.
+- Left for later: the ambiguity read (slice 4), and "1a"/"1b" for a card
+  with several questions.
+- Follow-up: an answer read from words that wasn't sent (the Cell was
+  answered elsewhere first, or nothing could be sent) gives its words back
+  to Aski's composer, once, and its card says so. Once a command has gone,
+  the words stay out: they would answer twice.
+- How they come back (`needs/answers/giveBack.ts`):
+  - [x] Each answer on a line of its own, so a reply can't run on into the
+    next card's words ("for 1 later for 2 later" read as one reply). A
+    test gives back every shape in the reader's tests, alone, together and
+    reversed, into an empty composer and after half-typed drafts, and
+    reads the same answers again.
+  - [x] "for 3 …" only while 3 is still that card on the live list and
+    the line reads as the same answer; else "Pip › no", which answers no
+    card. Numbers start again at 1 once the list empties, and two Cells
+    can share a name, so neither is a sure address for words said
+    earlier. A test gives "3 no" back after 3 became another Cell's.
+  - [x] Chips, code and line breaks come back as the document held them,
+    not as "￼" or a typed newline.
+  - [x] They wait in their hold, which stays for them, until Aski's
+    composer is there, the list is live, and no message to Aski is on its
+    way (upstream puts a failed send back only into an empty composer).
+  - Left as typed words are: words that came back under their number sit
+    in the composer like anything typed, so if that card later leaves and
+    the list starts again at 1, the readout names the new card's Cell
+    before Enter (decision 3).

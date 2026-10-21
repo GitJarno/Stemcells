@@ -116,6 +116,19 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/settings/ThemeSettings.tsx` | Imports `STEMCELLS_THEME` from `stemcells/upstream/look` and lists it first in `MAINTAINER_THEMES` | Stemcells' look, built in (below): the server's published copy is left out, so Settings' card is the built-in's |
 | `apps/web/index.html` (theme) | The boot script knows Stemcells' theme: its splash colours in `BUILT_IN_THEME_PALETTES`, its id in `RESERVED_THEME_IDS`, a built-in with one mode takes that mode as its base appearance, where every built-in was light, and no stored preference reads as `"stemcells"` | Same: the splash and the window's ground wear it before the app loads, on a first launch too |
 | `apps/web/src/hooks/useTheme.ts` | `DEFAULT_THEME_SNAPSHOT.theme` is `"stemcells"`, where it was `"system"` | Same: what the app opens on with nothing stored, or a stored theme that's gone |
+| `apps/desktop/src/main.ts` (windows) | Imports `./stemcells/windows/WindowsHost.ts` and adds its `layer` to `layerDesktopApplication` | Windows (below): more than one app window, kept by the main process |
+| `apps/desktop/src/preload.ts` (windows) | Imports `./stemcells/windowsPreload.ts` (for its side effect) after its own imports | Same: hands the page its window as `window.stemcellsWindows` |
+| `apps/desktop/src/window/DesktopWindow.ts` | `createWindow` takes an optional `{ bounds, show }`; such a window skips the main window's bounds saving, preview registration, maximizing and dev tools, and shows only when `show`. The service gains an optional `createExtra` | Same: every window is made by upstream's own maker, with its webview hardening, popup handling, navigation guard and renderer recovery, rather than a copy that would drift |
+| `apps/desktop/src/stemcells/windows/WindowsHost.ts` | New: the main process's side of the windows: the book kept on disk, each page's boot, publishes and moves, windows opened and closed through upstream's maker, the lead passed on | Same |
+| `apps/desktop/src/stemcells/windows/book.ts` | New: the book of windows, and the check that refuses a move made from a stale view | Same |
+| `apps/desktop/src/stemcells/windows/book.test.ts` | New: pins the book | Same |
+| `apps/desktop/src/stemcells/windows/WindowsHost.test.ts` | New: pins the host against a stand-in for Electron: an update's quit, who may speak on the channels, an unreadable windows' file, a window that couldn't open, who leads | Same |
+| `apps/desktop/src/stemcells/windows/channels.ts` | New: the windows' IPC channel names and messages | Same |
+| `apps/desktop/src/stemcells/windows/senders.ts` | New: who may speak on the windows' channels: a window's own page from its top frame, never a preview's guest | Same |
+| `apps/desktop/src/stemcells/windows/senders.test.ts` | New: pins it | Same |
+| `apps/desktop/src/stemcells/windows/storedFile.ts` | New: reads the windows' file, moving one the app can't read aside | Same |
+| `apps/desktop/src/stemcells/windows/storedFile.test.ts` | New: pins it | Same |
+| `apps/desktop/src/stemcells/windowsPreload.ts` | New: exposes `window.stemcellsWindows` | Same |
 
 ### Substitutes
 
@@ -618,6 +631,27 @@ CLIs:
   holds, still load.
 - **Codex 0.163.0** still reads its login and the global `AGENTS.md` from
   `CODEX_HOME` (the `CodexTextGeneration.ts` row above).
+
+### Windows
+
+Tabs tear off into windows of their own (`stemcells/tasks/windows.md`).
+Each window runs upstream's app unchanged, with its own page and
+connection; what's ours is which tabs it holds.
+
+- The main process keeps the book of windows
+  (`apps/desktop/src/stemcells/windows/`): each window's place and its
+  workspace as its page published it, the lead window, and Gather's
+  memories, in `stemcells-windows.json` in the desktop state folder.
+  Moves between windows are whole workspaces per window, refused when a
+  window they touch changed meanwhile, so the main process holds no
+  layout logic.
+- The lead window is upstream's main window: when it closes, the front
+  window left becomes main (`setMain`) and hosts browser previews.
+- Our IPC channels are our own strings, so `packages/contracts` is
+  untouched. `createExtra` is optional so upstream's test doubles of the
+  service need no change.
+- Upstream candidate, offered only with the owner's go-ahead: "more than
+  one app window" would retire the `DesktopWindow.ts` seam.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

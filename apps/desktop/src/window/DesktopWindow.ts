@@ -93,6 +93,14 @@ export class DesktopWindow extends Context.Service<
   DesktopWindow,
   {
     readonly createMain: Effect.Effect<Electron.BrowserWindow, DesktopWindowError>;
+    /**
+     * Stemcells: one more app window, at `bounds`; it keeps no bounds of its
+     * own (stemcells/tasks/windows.md). Optional, so test doubles needn't.
+     */
+    readonly createExtra?: (
+      bounds: Electron.Rectangle,
+      show: boolean,
+    ) => Effect.Effect<Electron.BrowserWindow, DesktopWindowError>;
     readonly ensureMain: Effect.Effect<Electron.BrowserWindow, DesktopWindowError>;
     readonly revealOrCreateMain: Effect.Effect<Electron.BrowserWindow, DesktopWindowError>;
     readonly activate: Effect.Effect<void, DesktopWindowError>;
@@ -347,10 +355,10 @@ export const make = Effect.gen(function* () {
     yield* previewManager.reapplyZoom();
   });
 
-  const createWindow = Effect.fn("desktop.window.createWindow")(function* (): Effect.fn.Return<
-    Option.Option<Electron.BrowserWindow>,
-    DesktopWindowError
-  > {
+  const createWindow = Effect.fn("desktop.window.createWindow")(function* (extra?: {
+    readonly bounds: Electron.Rectangle;
+    readonly show: boolean;
+  }): Effect.fn.Return<Option.Option<Electron.BrowserWindow>, DesktopWindowError> {
     if (yield* Ref.get(desktopState.quitting)) return Option.none();
     yield* previewManager.getBrowserSession();
     const applicationUrl = getDesktopUrl(environment.isDevelopment);
@@ -375,7 +383,8 @@ export const make = Effect.gen(function* () {
         : yield* logWindowWarning("failed to read connected displays; using defaults", {
             cause: displayBoundsResult.cause,
           }).pipe(Effect.as<readonly Electron.Rectangle[]>([]));
-    const initialBounds = resolveInitialMainWindowBounds(persistedBounds, displayBounds);
+    const initialBounds =
+      extra?.bounds ?? resolveInitialMainWindowBounds(persistedBounds, displayBounds);
     const restoredPersistedBounds = persistedBounds !== null && initialBounds === persistedBounds;
     if (persistedBounds !== null && initialBounds === DesktopAppSettings.DEFAULT_MAIN_WINDOW_SIZE) {
       yield* logWindowWarning("saved main window bounds could not be restored; using defaults");
@@ -439,7 +448,7 @@ export const make = Effect.gen(function* () {
     const fallbackWindowBounds = boundsPersistenceEnabled ? null : readPersistableBounds();
     const fallbackWindowMaximized = persistedSettings.mainWindowMaximized;
     const persistCurrentBounds = (): Fiber.Fiber<void, never> | undefined => {
-      if (!boundsPersistenceEnabled) {
+      if (!boundsPersistenceEnabled || extra) {
         return pendingBoundsPersistFiber;
       }
       const bounds = readPersistableBounds();
@@ -503,9 +512,9 @@ export const make = Effect.gen(function* () {
         fiber === undefined ? Effect.void : Fiber.join(fiber).pipe(Effect.asVoid),
       ),
     );
-    flushMainWindowBounds = flushBoundsPersist;
+    if (!extra) flushMainWindowBounds = flushBoundsPersist;
 
-    yield* previewManager.setMainWindow(window);
+    if (!extra) yield* previewManager.setMainWindow(window);
     if (yield* Ref.get(desktopState.quitting)) {
       yield* electronWindow.destroyAll;
       return Option.none();
@@ -831,14 +840,15 @@ export const make = Effect.gen(function* () {
       if (!window.isDestroyed()) {
         window.webContents.setBackgroundThrottling(true);
       }
-      if (persistedSettings.mainWindowMaximized) {
+      if (persistedSettings.mainWindowMaximized && !extra) {
         window.maximize();
       }
+      if (extra?.show === false) return;
       void runPromise(Effect.andThen(electronWindow.reveal(window), dismissConnectingSplash));
     });
 
     loadApplication();
-    if (environment.isDevelopment) {
+    if (environment.isDevelopment && !extra) {
       window.webContents.openDevTools({ mode: "detach" });
     }
 
@@ -973,6 +983,8 @@ export const make = Effect.gen(function* () {
 
   return DesktopWindow.of({
     createMain: createMain.pipe(Effect.flatMap(requireWindow)),
+    createExtra: (bounds, show) =>
+      createWindow({ bounds, show }).pipe(Effect.flatMap(requireWindow)),
     ensureMain: ensureMain.pipe(Effect.flatMap(requireWindow)),
     revealOrCreateMain,
     prepareCaptureReveal: Effect.gen(function* () {

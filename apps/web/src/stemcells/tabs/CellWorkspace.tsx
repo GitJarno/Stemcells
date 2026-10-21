@@ -22,6 +22,8 @@ import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
+import { seatAskiHere } from "../windows/askiHome";
+import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import {
   addPaneOutsideAski,
@@ -164,10 +166,12 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   }, [returnToFocused]);
 
   // A draft that left every pane goes too, unless something was written in
-  // it. The new Cell's stays, for the next swipe past the last tab.
+  // it. The new Cell's stays, for the next swipe past the last tab. One a
+  // move took to another window hasn't left.
   useEffect(
     () =>
       useWorkspaceStore.subscribe((state, previous) => {
+        if (state.moved) return;
         const kept = cellsOf(state.workspace);
         for (const cell of cellsOf(previous.workspace)) {
           if (kept.some((other) => sameChat(other, cell))) continue;
@@ -246,14 +250,19 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const provideNewPane = useEffectEvent(openNewPane);
   useEffect(() => provideNewCellPane(() => provideNewPane()), []);
 
-  /** Aski's chat, once it exists, goes in Aski's tab; the first time, the app opens on it. */
+  /**
+   * Aski's chat, once it exists, goes in Aski's tab, in the window that holds
+   * it (stemcells/windows); the first time, the app opens on it.
+   */
   const onAskiChat = (chat: AskiChat) => {
     setAskiChat(chat);
     if (chat.status !== "ready") return;
-    const before = readWorkspace();
-    const acted = swiped.current || (navigator.userActivation?.hasBeenActive ?? false);
-    updateWorkspace((current) => seatAski(current, chat.cell, newIds(), acted));
-    if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
+    seatAskiHere(readWorkspace(), () => {
+      const before = readWorkspace();
+      const acted = swiped.current || (navigator.userActivation?.hasBeenActive ?? false);
+      updateWorkspace((current) => seatAski(current, chat.cell, newIds(), acted));
+      if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
+    });
   };
 
   /** A pane's ×: closes it, and the route follows the pane focused after. */
@@ -310,6 +319,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
       <AskiKeeper onChat={onAskiChat} />
       <AskiMomentWatch aski={askiChat.status === "ready" ? askiChat.cell : null} />
       <AskiSpawn />
+      <WindowsKeeper onMoved={routeToFocused} />
     </>
   );
   if (props.target === null && !keepGrid) {

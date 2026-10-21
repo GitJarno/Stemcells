@@ -14,6 +14,7 @@ import { createClerkOAuthCancel } from "./clerkOAuthCancel.ts";
 import * as IpcChannels from "./ipc/channels.ts";
 import { mergeLegacyLocalStorage } from "./legacyLocalStorageMerge.ts";
 import "./stemcells/scrollPhasesPreload.ts";
+import "./stemcells/windowsPreload.ts";
 
 const SNAP_SHOT_EVENT_TYPES = new Set([
   "requested",

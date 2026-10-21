@@ -11,7 +11,8 @@ import type { Node as DocNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey, type EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
 
-import { type DocText, docText, rangeOf } from "../../words/docText";
+import { promptBetween } from "../../upstream/words";
+import { CHIP, type DocText, docText, rangeOf } from "../../words/docText";
 import type { Span } from "../../words/text";
 import { type Addressee, type Answers, readAnswers } from "./read";
 
@@ -33,6 +34,28 @@ export function answersOf(state: EditorState): AnswersState | null {
 /** Reads again: the cards changed. */
 export function refreshAnswers(view: EditorView): void {
   view.dispatch(view.state.tr.setMeta(answersKey, true).setMeta("addToHistory", false));
+}
+
+/**
+ * What a document's words answer. Code reads as a chip does, something
+ * said whose words aren't read, so a reply keeps it to its edges; and the
+ * words a Cell is sent are the composer's own prompt for them, a chip as
+ * what it stands for and code in its backticks, never a blank or "￼".
+ */
+export function readDoc(
+  doc: DocNode,
+  cards: ReadonlyArray<Addressee>,
+): { readonly text: DocText; readonly answers: Answers } {
+  const text = docText(doc);
+  let read = "";
+  for (let i = 0; i < text.text.length; i++)
+    read += text.code.has(i) && text.text[i] !== "\n" ? CHIP : text.text[i];
+  const sent = (span: Span) => {
+    if (span.end <= span.start) return "";
+    const { from, to } = rangeOf(text, span);
+    return promptBetween(doc, from, to);
+  };
+  return { text, answers: readAnswers(read, cards, sent) };
 }
 
 /** Whether a part leaves words that answer nothing. */
@@ -71,8 +94,7 @@ export function answersPlugin(
   const next = (prev: AnswersState | null, state: EditorState, refresh: boolean): AnswersState => {
     const now = cards();
     if (prev !== null && prev.doc === state.doc && prev.cards === now && !refresh) return prev;
-    const text = docText(state.doc);
-    const answers = readAnswers(text.text, now);
+    const { text, answers } = readDoc(state.doc, now);
     return {
       cards: now,
       doc: state.doc,

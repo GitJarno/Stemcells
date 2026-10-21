@@ -10,13 +10,14 @@ import type { Span } from "../../words/text";
 import { commandsFor } from "../actions";
 import { useHolds } from "../holds";
 import { holds, page } from "../live";
-import { pickLabel } from "../NeedCard";
+import { pickLabel, whoOf } from "../NeedCard";
 import type { Need } from "../wire";
 import { addresseesOf } from "./cards";
 import { type Enter, enterOf } from "./enter";
+import { giveBack, spokenOf } from "./giveBack";
 import { readingLine } from "./line";
 import { type Lit, lit } from "./lit";
-import { answersKey, answersOf, answersPlugin, refreshAnswers } from "./plugin";
+import { type AnswersState, answersKey, answersOf, answersPlugin, refreshAnswers } from "./plugin";
 import type { Addressee, Answers } from "./read";
 import { AnswersRoom, type ReadoutPart, type ShownAnswers } from "./room";
 
@@ -44,6 +45,9 @@ function Answering(props: {
   const needs = useRef<ReadonlyMap<number, Need>>(new Map());
   const current = useRef(cards);
   const joined = useRef<Editor | null>(null);
+  // A message to Aski on its way: upstream puts a failed one back only into
+  // an empty composer, so no words come back until it settles.
+  const sending = useRef(false);
 
   /** What the words do now: the readout, and each card's light. */
   const publish = (editorView: EditorView) => {
@@ -80,6 +84,21 @@ function Answering(props: {
     );
     joined.current = editor;
   });
+  // An answer that wasn't sent gives its words back to the composer, once:
+  // when the composer has joined, the list is live (a number names nothing
+  // until it is) and no message to Aski is on its way. Until then they wait
+  // in their hold, which stays for them.
+  const giveBackWaiting = () => {
+    const editor = joined.current;
+    const { shown, live } = page.read();
+    if (editor === null || editor.isDestroyed || !live || sending.current) return;
+    for (const hold of holds.read().values()) {
+      const spoken = hold.words === null ? null : holds.takeWords(hold.key);
+      if (spoken !== null)
+        editor.view.dispatch(giveBack(editor.view.state, spoken, shown, current.current));
+    }
+  };
+  useEffect(giveBackWaiting);
   useEffect(
     () => () => {
       leave(joined.current, show);
@@ -95,9 +114,9 @@ function Answering(props: {
     const beforeSend: BeforeSend = () => {
       const editor = joined.current;
       const state = editor && !editor.isDestroyed ? answersOf(editor.view.state) : null;
-      const enter = state ? enterOf(state.answers) : null;
+      const enter = state ? enterOf(state.answers, state.text.raw) : null;
       if (!editor || !state || !enter) return null;
-      act(enter, needs.current, (threadId) => open.chat(threadId));
+      act(enter, state, needs.current, (threadId) => open.chat(threadId));
       const editorView = editor.view;
       if (enter.rest.length === 0) {
         keepOnly(editorView, state.text, enter.keep);
@@ -107,10 +126,12 @@ function Answering(props: {
         const before = editorView.state.doc;
         keepOnly(editorView, state.text, enter.rest);
         const sent = editorView.state.doc;
+        sending.current = true;
         return (result: unknown) => {
           void Promise.resolve(result)
             .catch(() => undefined)
             .then(() => {
+              sending.current = false;
               if (editorView.isDestroyed) return;
               // Nothing went: the words for Aski come back with what was kept.
               if (editorView.state.doc.eq(sent)) {
@@ -120,7 +141,8 @@ function Answering(props: {
                 const kept = enter.keep.map((span) => state.text.raw.slice(span.start, span.end));
                 editorView.dispatch(editorView.state.tr.insertText(kept.join(" ")));
               }
-            });
+            })
+            .finally(giveBackWaiting);
         };
       };
       return { hold: false, ready: null, foreground: false, edit };
@@ -131,22 +153,26 @@ function Answering(props: {
   return null;
 }
 
-/** Each answer into its card's hold; each click asked for on its card. */
+/** Each answer into its card's hold, with its words; each click asked for on its card. */
 function act(
   enter: Enter,
+  state: AnswersState,
   needs: ReadonlyMap<number, Need>,
   openChat: (threadId: string) => void,
 ): void {
   const now = Date.now();
-  for (const { number, reading } of enter.answers) {
+  for (const answer of enter.answers) {
+    const { number, reading } = answer;
     const need = needs.get(number);
     if (need === undefined) continue;
+    const words = spokenOf(state.doc, state.text, answer, { key: need.key, who: whoOf(need) });
     if (reading.kind === "answer") {
       holds.hold({
         key: need.key,
         threadId: need.threadId,
         label: reading.label,
         commands: commandsFor(need, { kind: "answer" }, { answers: reading.answers }, now),
+        words,
       });
       continue;
     }
@@ -156,6 +182,7 @@ function act(
       threadId: need.threadId,
       label: pickLabel(reading.option, given),
       commands: commandsFor(need, reading.option.choice, given, now),
+      words,
     });
   }
   for (const number of enter.opens) {

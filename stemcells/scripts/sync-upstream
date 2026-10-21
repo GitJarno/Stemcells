@@ -53,6 +53,7 @@ gate_ours() {
   pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells &&
     pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells &&
     pnpm exec vp test run apps/server/src/stemcells &&
+    pnpm --filter @t3tools/desktop exec vp test run src/stemcells &&
     pnpm exec vp test run --project root stemcells scripts/build-desktop-artifact.test.ts
 }
 # Upstream's suites, as its CI splits them: every package but the server and

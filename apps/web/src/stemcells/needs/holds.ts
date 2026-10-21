@@ -3,11 +3,15 @@
  * (stemcells/tasks/aski-room.md, decision 7). A hold lives here, outside the
  * page, so switching tabs keeps it. When its fuse ends it checks the newest
  * list still holds the need, then sends upstream's commands in order; if the
- * need is gone (answered elsewhere, or asked again), nothing is sent.
+ * need is gone (answered elsewhere, or asked again), nothing is sent. An
+ * answer read from words in Aski's composer keeps them: if nothing was sent,
+ * they go back there (`answers/giveBack.ts`), and the hold stays until they
+ * have.
  */
 import { useSyncExternalStore } from "react";
 
 import type { CommandOutcome, ThreadCommand } from "../upstream/needs";
+import type { Spoken } from "./answers/giveBack";
 import type { NeedsState } from "./stream";
 
 export type HoldState = "holding" | "sending" | "sent" | "stale" | "failed";
@@ -23,6 +27,13 @@ export interface Hold {
   readonly state: HoldState;
   /** Why it failed, in words the card shows. */
   readonly why: string | null;
+  /**
+   * The words in Aski's composer it was read from, until they go back
+   * there; kept only while nothing was sent.
+   */
+  readonly words: Spoken | null;
+  /** Its words went back to the composer. */
+  readonly wordsBack: boolean;
 }
 
 export interface HoldsDeps {
@@ -34,7 +45,7 @@ export interface HoldsDeps {
   readonly window: () => number;
 }
 
-/** A finished hold is kept this long for its card's receipt. */
+/** A finished hold is kept this long for its card's receipt, and longer while its words wait. */
 const KEEP_FINISHED_MS = 60_000;
 
 export function createHolds(deps: HoldsDeps) {
@@ -63,15 +74,24 @@ export function createHolds(deps: HoldsDeps) {
     timers.delete(key);
   }
 
-  function finish(key: string, state: HoldState, why: string | null) {
+  /** Ends a hold; its words stay only while nothing went. */
+  function finish(key: string, state: HoldState, why: string | null, nothingSent: boolean) {
     const hold = holds.get(key);
     if (hold === undefined) return;
-    set(key, { ...hold, state, why });
+    set(key, { ...hold, state, why, words: nothingSent ? hold.words : null });
+    expire(key, state);
+  }
+
+  /** A finished hold goes after a while, but never with words still to give back. */
+  function expire(key: string, state: HoldState) {
     timers.set(
       key,
       setTimeout(() => {
         timers.delete(key);
-        if (holds.get(key)?.state === state) set(key, null);
+        const hold = holds.get(key);
+        if (hold?.state !== state) return;
+        if (hold.words === null) set(key, null);
+        else expire(key, state);
       }, KEEP_FINISHED_MS),
     );
   }
@@ -81,29 +101,40 @@ export function createHolds(deps: HoldsDeps) {
     const hold = holds.get(key);
     if (hold?.state !== "holding") return;
     const { needs, live } = deps.needs();
-    if (!live) return finish(key, "failed", "Lost the connection to this Mac. Nothing was sent.");
-    if (!needs?.some((need) => need.key === key)) return finish(key, "stale", null);
+    if (!live)
+      return finish(key, "failed", "Lost the connection to this Mac. Nothing was sent.", true);
+    if (!needs?.some((need) => need.key === key)) return finish(key, "stale", null, true);
     set(key, { ...hold, state: "sending" });
-    for (const command of hold.commands) {
+    for (const [index, command] of hold.commands.entries()) {
       const outcome = await deps.send(hold.threadId, command);
-      if (!outcome.ok) return finish(key, "failed", `Couldn't send: ${outcome.why}`);
+      if (!outcome.ok) return finish(key, "failed", `Couldn't send: ${outcome.why}`, index === 0);
     }
-    finish(key, "sent", null);
+    finish(key, "sent", null, false);
   }
 
   return {
-    /** Starts the fuse on an answer; a new choice on the same card replaces the old one. */
-    hold(input: Pick<Hold, "key" | "threadId" | "label" | "commands">) {
+    /**
+     * Starts the fuse on an answer; a new choice on the same card replaces
+     * the old one. `words` are the composer's words that chose it.
+     */
+    hold(
+      input: Pick<Hold, "key" | "threadId" | "label" | "commands"> & { readonly words?: Spoken },
+    ) {
       if (input.commands.length === 0) return;
       clearTimer(input.key);
       const window = Math.max(0, deps.window());
       const startedAt = deps.now();
       set(input.key, {
-        ...input,
+        key: input.key,
+        threadId: input.threadId,
+        label: input.label,
+        commands: input.commands,
         startedAt,
         endsAt: startedAt + window,
         state: "holding",
         why: null,
+        words: input.words ?? null,
+        wordsBack: false,
       });
       if (window === 0) void fire(input.key);
       else
@@ -125,6 +156,14 @@ export function createHolds(deps: HoldsDeps) {
         .filter((hold) => hold.state === "holding")
         .toSorted((a, b) => b.endsAt - a.endsAt)[0];
       return newest === undefined ? false : this.undo(newest.key);
+    },
+    /** The words of an answer that wasn't sent, once: they go back to the composer. */
+    takeWords(key: string): Spoken | null {
+      const hold = holds.get(key);
+      if (hold === undefined || hold.words === null) return null;
+      if (hold.state !== "stale" && hold.state !== "failed") return null;
+      set(key, { ...hold, words: null, wordsBack: true });
+      return hold.words;
     },
     /** A failed or stale hold's card goes back to open. */
     forget(key: string) {
