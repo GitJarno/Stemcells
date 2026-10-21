@@ -47,7 +47,7 @@ import {
 import { TAB_GAP } from "./hostStrip";
 import { joinWindow } from "./joinWindow";
 import { tearToNewWindow, warmNewWindow } from "./newWindow";
-import { flyWindowHome, TearFlight } from "./tearFlight";
+import { flyWindowHome, TearFlight, windowRadius } from "./tearFlight";
 
 /** How long a new window may take to draw before its still goes anyway. */
 const LANDING_WAIT = 4000;
@@ -123,12 +123,6 @@ function chromeOf(element: HTMLElement): string {
     if (color && color !== "transparent" && !/rgba\(.*,\s*0\)$/.test(color)) return color;
   }
   return "rgb(11, 11, 12)";
-}
-
-/** The corners of a window, which its preview and its still are drawn with. */
-function windowRadius(): number {
-  const style = getComputedStyle(document.documentElement);
-  return Number.parseFloat(style.getPropertyValue("--sc-radius-sheet")) || 16;
 }
 
 /** Where the chip's top left is while it's off the strip. */

@@ -779,9 +779,12 @@ export const layer = Layer.effectDiscard(
           fly(event.sender);
           startWarm(raw);
         });
-        ipc.handle(WINDOWS_CHANNEL.flightStill, (event, rect: FlightRect) => {
-          const window = Electron.BrowserWindow.fromWebContents(event.sender);
-          return window ? flight.still(window, rect) : null;
+        ipc.handle(WINDOWS_CHANNEL.flightStill, (event, rect: FlightRect, id: unknown) => {
+          const window =
+            typeof id === "string"
+              ? live.get(id)
+              : Electron.BrowserWindow.fromWebContents(event.sender);
+          return window && !window.isDestroyed() ? flight.still(window, rect) : null;
         });
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
         ipc.handle(WINDOWS_CHANNEL.geometry, (event) => geometry(event.sender));

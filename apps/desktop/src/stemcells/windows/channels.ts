@@ -28,7 +28,10 @@ export const WINDOWS_CHANNEL = {
   notifies: "stemcells:windows:notifies",
   /** Page → main: what the flight layer draws (`FlightCommand`s, in order). */
   flight: "stemcells:windows:flight",
-  /** Page → main, invoked: a still of part of this window, answered with its id for `still`. */
+  /**
+   * Page → main, invoked: a still of part of this window, or of another
+   * window by its id, answered with its id for `still`.
+   */
   flightStill: "stemcells:windows:flight-still",
   /** Page → main, invoked: answered once the layer has painted every command sent before. */
   flightPainted: "stemcells:windows:flight-painted",
