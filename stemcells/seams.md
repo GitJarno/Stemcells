@@ -13,7 +13,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `.github/workflows/stemcells-sync.yml` | New: nightly `stemcells/scripts/sync-upstream --check`; opens an issue when it needs a person | Takes upstream's work every night (`stemcells/docs/fork.md`, rule 6) |
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
 | `apps/desktop/src/app/DesktopEnvironment.ts` | `APP_BASE_NAME` is "Stemcells" | Window and menu name, keychain entry |
-| `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app`; `artifactName` and the Mac's four permission prompts say `APP_NAME` | Own bundle id; people read the release files' names in Finder and the prompts in macOS's dialogs (The app's name, below) |
+| `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app`, exported for its test; `artifactName` and the Mac's four permission prompts say `APP_NAME` | Own bundle id; people read the release files' names in Finder and the prompts in macOS's dialogs (The app's name, below) |
+| `scripts/build-desktop-artifact.test.ts` | Reads the bundle id (`DESKTOP_APP_ID`), the product name (apps/desktop's `productName`) and `APP_NAME` from what the build reads, where it pinned T3's | It pinned `com.t3tools.t3code` and "T3 Code (Beta)", so it failed on our build; now `stemcells.yml` runs it and it guards the build |
 | `apps/desktop/src/app/DesktopUserData.ts` | Profile folder `sh.stemcells.app(.dev)` | Never opens T3 Code's Electron profile |
 | `apps/desktop/src/app/DesktopStatePaths.ts` | State in `~/.stemcells` | Own database, never `~/.t3` |
 | `apps/server/src/os-jank.ts` | Server base dir `~/.stemcells` | Same, for the server and CLI |

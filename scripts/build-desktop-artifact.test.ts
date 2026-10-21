@@ -20,6 +20,9 @@ import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 
+import desktopPackageJson from "../apps/desktop/package.json" with { type: "json" };
+import { APP_NAME } from "../stemcells/brand/name.ts";
+
 import {
   buildDesktopBundles,
   DesktopBuildManifestRestoreError,
@@ -33,6 +36,7 @@ import {
   createBuildConfig,
   DESKTOP_ELECTRON_LANGUAGES,
   DESKTOP_FILE_EXCLUSIONS,
+  DESKTOP_APP_ID,
   DESKTOP_EXTRA_RESOURCES,
   LINUX_CAPTURE_EXTRA_RESOURCES,
   LINUX_BROWSER_SECRET_EXTRA_RESOURCES,
@@ -546,7 +550,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
   });
 
   it("switches desktop packaging product names to nightly for nightly builds", () => {
-    assert.equal(resolveDesktopProductName("0.1.0"), "T3 Code (Beta)");
+    assert.equal(resolveDesktopProductName("0.1.0"), desktopPackageJson.productName);
     assert.equal(resolveDesktopProductName("0.0.17-nightly.20260413.42"), "T3 Code (Nightly)");
   });
 
@@ -979,7 +983,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
         "**/*.map",
       ]);
       assert.deepStrictEqual(mac.dmg, {
-        title: "T3 Code (Beta) 1.2.3 Installer",
+        title: `${desktopPackageJson.productName} 1.2.3 Installer`,
         background: "dmg/dmg-background-latest.png",
         window: { width: 640, height: 432 },
         contents: [
@@ -1018,7 +1022,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
       assert.propertyVal(
         (mac.mac as Record<string, unknown>).extendInfo as Record<string, unknown>,
         "NSLocalNetworkUsageDescription",
-        "T3 Code connects to devices on your local network for remote environments and commands run by terminals and coding agents.",
+        `${APP_NAME} connects to devices on your local network for remote environments and commands run by terminals and coding agents.`,
       );
       for (const config of [linux, win]) {
         assert.deepStrictEqual(config.electronLanguages, DESKTOP_ELECTRON_LANGUAGES);
@@ -2223,7 +2227,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
     });
 
     assert.deepStrictEqual(configuration, {
-      appId: "com.t3tools.t3code",
+      appId: DESKTOP_APP_ID,
       teamId: "ABC1234567",
       rpDomains: ["example.clerk.accounts.dev"],
       provisioningProfilePath: "/tmp/t3code.provisionprofile",
@@ -2246,7 +2250,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
       "clerk.example.com",
       "example.clerk.accounts.dev",
     ]);
-    assert.include(entitlements, "<string>ABC1234567.com.t3tools.t3code</string>");
+    assert.include(entitlements, `<string>ABC1234567.${DESKTOP_APP_ID}</string>`);
     assert.include(entitlements, "<string>webcredentials:clerk.example.com</string>");
     assert.include(entitlements, "<string>webcredentials:example.clerk.accounts.dev</string>");
     assert.include(entitlements, "<key>com.apple.security.cs.allow-jit</key>");
@@ -2412,7 +2416,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
       });
 
       const mac = config.mac as Record<string, unknown>;
-      assert.equal(config.appId, "com.t3tools.t3code");
+      assert.equal(config.appId, DESKTOP_APP_ID);
       assert.equal(mac.entitlements, "/tmp/entitlements.mac.plist");
       assert.equal(mac.provisioningProfile, "/tmp/t3code.provisionprofile");
       assert.match(String(mac.sign), /[\\/]scripts[\\/]sign-macos\.ts$/);
