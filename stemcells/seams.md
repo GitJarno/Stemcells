@@ -76,6 +76,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
 | `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
+| `vite.config.ts` | Imports `removeVitestTmpDir` from `apps/server/src/stemcells/testing/vitestTmpDir.ts` and adds `plugins: [removeVitestTmpDir()]` | Vitest never removes the temp folder it copies a run's modules into when the config has no `projects`, as the root's (and the server's, which extends it) hasn't: each run of the server's tests left about 40 MB in the system temp dir. The plugin removes it when Vitest closes; `vitestTmpDir.test.ts` fails once Vitest does that itself, and the seam goes |
 
 ### Substitutes
 
