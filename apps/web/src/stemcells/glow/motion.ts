@@ -2,14 +2,16 @@
  * The light in a Cell's composer, moving: the Swift app's glow layer on the
  * Web Animations API. Each change is set once and left to the browser, and
  * what loops while a Cell works is a transform or an opacity, so a working
- * chat costs no script per frame.
+ * chat costs no script per frame. What never rests (the drift, the breath)
+ * steps on the Cells' sprite clock, so it draws twelve frames a second, not
+ * one per refresh of the display.
  *
  * `light` holds it all and hides once the glass is plain; `lit` is the
  * colour, the wash and the band, and is what the iris opens and gathers at
  * the anchor; `bloom` is the small flare where the light drains, outside the
  * iris so it is the last thing seen.
  */
-import { crossing, onBeat, resweep, sweep } from "../motion/beat";
+import { crossing, cubicEase, onBeat, resweep, steppedFrames, sweep } from "../motion/beat";
 import { timing } from "../tokens/motion";
 import {
   axial,
@@ -56,7 +58,8 @@ export interface GlassInk {
 const ARRIVE_CURVE = "cubic-bezier(0.2, 0, 0.4, 1)";
 const EXHALE_CURVE = "cubic-bezier(0.3, 0, 0.5, 1)";
 const EASE_OUT = "cubic-bezier(0, 0, 0.58, 1)";
-const EASE_IN_OUT = "cubic-bezier(0.42, 0, 0.58, 1)";
+/** CSS `ease-in-out`, as control points. */
+const EASE_IN_OUT = [0.42, 0, 0.58, 1] as const;
 /** A shear, not a rotation: the band's ends stay on the glass's edges, its top ahead. */
 const LEAN = `skewX(${-BAND_LEAN}rad)`;
 const WASH_COLOURS = WASH.map((_, i) => `--sc-glass-wash-${i}`);
@@ -309,16 +312,31 @@ export class GlassLight {
       this.sweeping = sweep(band, from, to, LEAN);
       this.playing.push(this.sweeping);
       // The stained glass drifts: its far end wanders, so the light through
-      // it is never quite still.
+      // it is never quite still. It never rests either, so it steps on the
+      // Cells' sprite clock rather than every frame (`steppedFrames`).
       const drift = timing("glowDrift");
+      const half = drift / 2;
       const wander: KeyframeAnimationOptions = {
-        duration: drift / 2,
+        duration: half,
         iterations: Infinity,
         direction: "alternate",
-        easing: EASE_IN_OUT,
       };
-      onBeat(this.play(near, [{ opacity: 1 }, { opacity: 0 }], wander), drift);
-      onBeat(this.play(far, [{ opacity: 0 }, { opacity: 1 }], wander), drift);
+      onBeat(
+        this.play(
+          near,
+          unhurried(half, (p) => ({ opacity: 1 - p })),
+          wander,
+        ),
+        drift,
+      );
+      onBeat(
+        this.play(
+          far,
+          unhurried(half, (p) => ({ opacity: p })),
+          wander,
+        ),
+        drift,
+      );
       return;
     }
     // Blocked on you: the tint breathes in place; with less motion it holds.
@@ -327,11 +345,17 @@ export class GlassLight {
     }
     if (this.still) return;
     const breath = timing("glowBreath");
+    const low = this.glow === "needsYou" ? 0.7 : 0.8;
     const breathing = this.play(
       wash,
-      [{ opacity: this.glow === "needsYou" ? 0.7 : 0.8 }, { opacity: 1 }],
-      { duration: breath / 2, iterations: Infinity, direction: "alternate", easing: EASE_IN_OUT },
+      unhurried(breath / 2, (p) => ({ opacity: low + (1 - low) * p })),
+      { duration: breath / 2, iterations: Infinity, direction: "alternate" },
     );
     onBeat(breathing, breath);
   }
+}
+
+/** A half of a loop that never rests, eased in and out, stepping on the Cells' sprite clock. */
+function unhurried(duration: number, frame: (progress: number) => Keyframe): Keyframe[] {
+  return steppedFrames(duration, timing("formStep"), (time) => cubicEase(EASE_IN_OUT, time), frame);
 }

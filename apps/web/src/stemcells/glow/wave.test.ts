@@ -6,6 +6,10 @@
  * steps or stutters whenever the page is busy, which is what this keeps
  * from coming back. The one thing that must repaint, a shining label with
  * no copy of its words, repaints only while the crest passes over it.
+ *
+ * And what never rests (the drift, the breath) steps on the Cells' sprite
+ * clock rather than drawing every frame of a 120 Hz display: three working
+ * Cells held the GPU near 35% before.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -35,6 +39,7 @@ const TOKENS: Record<string, string> = {
   "--sc-timing-glow-fade": "300ms",
   "--sc-timing-glow-breath": "3200ms",
   "--sc-timing-glow-drift": "9000ms",
+  "--sc-timing-form-step": "83.333ms",
 };
 
 interface Played {
@@ -88,6 +93,11 @@ const looping = () =>
     .filter(({ options }) => options.iterations === Infinity)
     .flatMap(({ frames }) => frames.flatMap((frame) => Object.keys(frame)))
     .filter((key) => !TIMING.has(key));
+
+/** The endless animations. */
+const endless = () => played.filter(({ options }) => options.iterations === Infinity);
+
+const property = (frame: Keyframe) => Object.keys(frame).find((key) => !TIMING.has(key));
 
 beforeEach(() => {
   played = [];
@@ -192,5 +202,46 @@ describe("a shining label, which can only repaint", () => {
       const time = (frame.offset ?? 0) / share;
       expect(place(frame)).toBeCloseTo(-520 + 1700 * beatEase(time), 6);
     }
+  });
+});
+
+describe("what never rests steps on the Cells' sprite clock", () => {
+  const STEP = 83.333;
+  const stepped = (entry: Played) => {
+    const duration = Number(entry.options.duration);
+    expect(entry.options.easing ?? "linear").toBe("linear");
+    for (const [i, frame] of entry.frames.slice(0, -1).entries()) {
+      expect(frame.easing).toBe("step-end");
+      const next = entry.frames[i + 1]!;
+      expect(((next.offset ?? 0) - (frame.offset ?? 0)) * duration).toBeGreaterThanOrEqual(
+        STEP - 1,
+      );
+    }
+  };
+
+  it("the working glass's drift changes twelve times a second, on its curve and period", () => {
+    const light = glass();
+    light.layout({ width: 736, height: 98 }, { x: 704, y: 66 }, 32, { left: 240, width: 1216 });
+    light.configure("working", INK, false, true);
+    const drifts = endless().filter(({ frames }) => property(frames[0]!) === "opacity");
+    expect(drifts).toHaveLength(2);
+    for (const drift of drifts) {
+      stepped(drift);
+      expect(drift.options).toMatchObject({ duration: 4500, direction: "alternate" });
+    }
+    const near = drifts[0]!.frames.map((frame) => Number(frame.opacity));
+    expect(near[0]).toBe(1);
+    expect(near.at(-1)).toBe(0);
+    // Eased in and out: slow at the ends, quicker through the middle.
+    expect(near[0]! - near[1]!).toBeLessThan(near[26]! - near[27]!);
+  });
+
+  it("the breath of a glass that asks for you does the same", () => {
+    const light = glass();
+    light.layout({ width: 736, height: 98 }, { x: 704, y: 66 }, 32, { left: 240, width: 1216 });
+    light.configure("needsYou", INK, false, true);
+    const breaths = endless();
+    expect(breaths).toHaveLength(1);
+    stepped(breaths[0]!);
   });
 });

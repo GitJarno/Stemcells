@@ -122,6 +122,28 @@ export function sweepFrames(from: number, to: number, share: number, lean = ""):
   ];
 }
 
+/**
+ * Frames for a loop that never rests (a drift, a breath), stepping `step`
+ * ms apart instead of gliding: the compositor still runs it, but draws only
+ * when a step lands, where a glide that never rests drew every frame the
+ * display shows, 120 a second on a fast one. `frame` takes how far along the
+ * loop is, 0 to 1, already eased by `ease`; play the frames with a linear
+ * easing, on the beat.
+ */
+export function steppedFrames(
+  duration: number,
+  step: number,
+  ease: (time: number) => number,
+  frame: (progress: number) => Keyframe,
+): Keyframe[] {
+  const steps = Math.max(1, Math.round(duration / step));
+  return Array.from({ length: steps + 1 }, (_, i) => ({
+    ...frame(ease(i / steps)),
+    offset: i / steps,
+    easing: "step-end",
+  }));
+}
+
 /** One coordinate of the beat's curve at parameter `s`, from its two control values. */
 function bezier(s: number, a: number, b: number): number {
   const r = 1 - s;
@@ -140,10 +162,15 @@ function solve(value: number, a: number, b: number): number {
   return (low + high) / 2;
 }
 
+/** A `cubic-bezier(x1, y1, x2, y2)` easing at `time`, both 0 to 1. */
+export function cubicEase(points: readonly [number, number, number, number], time: number): number {
+  const [x1, y1, x2, y2] = points;
+  return bezier(solve(time, x1, x2), y1, y2);
+}
+
 /** How far across the crossing is at `time`, both 0 to 1, as `BEAT_CURVE` eases it. */
 export function beatEase(time: number): number {
-  const [x1, y1, x2, y2] = BEAT_POINTS;
-  return bezier(solve(time, x1, x2), y1, y2);
+  return cubicEase(BEAT_POINTS, time);
 }
 
 /** When the crossing is `progress` across, 0 to 1: `beatEase` run backwards. */
