@@ -3,13 +3,19 @@ import { test } from "vite-plus/test";
 
 import {
   backAfter,
+  BIG_MERGE,
+  carriedOn,
   type ChatSeen,
   CLEAR,
   CLICKS,
   clicked,
+  filesAdded,
   HAUL,
   hauled,
   landedWhileOut,
+  landings,
+  MERGE_NEWS,
+  type MergeSeen,
   MANY,
   nightOf,
   NONE_WAITING,
@@ -20,6 +26,7 @@ import {
   type Waiting,
   waited,
   type Watching,
+  zippedNow,
 } from "./triggers.ts";
 
 test("seven clicks within three seconds earn the bits, and start the count again", () => {
@@ -181,4 +188,108 @@ test("a haul is a run of an hour or more, watched from its start, that landed wi
     "the page opened after it began",
   );
   NodeAssert.deepEqual(step(new Map(), [landed(HAUL)]).hauls, [], "never seen running");
+});
+
+test("zipped: the newest merge of the last ten minutes; once one is zipped today, only a big one", () => {
+  const at = 1_000_000_000,
+    merge = (key: string, ago: number, lines = 10): MergeSeen => ({
+      key,
+      base: "main",
+      mergedAt: at - ago,
+      lines,
+    });
+  const merges = [merge("a#1", 60_000), merge("a#2", 30_000), merge("a#3", MERGE_NEWS + 1)];
+  NodeAssert.equal(zippedNow(merges, at, undefined, false)?.key, "a#2", "the newest fresh one");
+  NodeAssert.equal(zippedNow(merges, at, "a#2", false)?.key, "a#1", "not the one just zipped");
+  NodeAssert.equal(zippedNow(merges, at, "x#9", true), null, "small ones once a day");
+  NodeAssert.equal(
+    zippedNow([merge("a#4", 5_000, BIG_MERGE)], at, "x#9", true)?.key,
+    "a#4",
+    "a big one any time",
+  );
+  NodeAssert.equal(
+    zippedNow([merge("a#5", -5_000)], at, undefined, false),
+    null,
+    "not ahead of the clock",
+  );
+});
+
+test("the window counts Cells armed to carry on that started a new run once it opened, not the person's", () => {
+  const reset = 10_000_000,
+    run = (id: string, requestedAt: number): RunSeen => ({
+      id,
+      ended: null,
+      requestedAt,
+      startedAt: requestedAt,
+      endedAt: null,
+    });
+  const armed = { runId: "r1", resetAt: reset, autoResume: true };
+  let state = carriedOn(
+    new Map(),
+    [
+      { key: "a", recovery: armed, run: run("r1", 0) },
+      { key: "b", recovery: { ...armed, runId: "q1" }, run: run("q1", 0) },
+      { key: "c", recovery: { ...armed, runId: "s1", autoResume: false }, run: run("s1", 0) },
+    ],
+    reset - 1,
+  );
+  NodeAssert.deepEqual([...state.armed.keys()], ["a", "b"], "c's person turned carrying on off");
+  // b's recovery clears before its new run shows: still armed.
+  state = carriedOn(
+    state.armed,
+    [
+      { key: "a", recovery: armed, run: run("r1", 0) },
+      { key: "b", recovery: null, run: run("q1", 0) },
+    ],
+    reset + 100,
+  );
+  state = carriedOn(
+    state.armed,
+    [
+      { key: "a", recovery: null, run: run("r2", reset + 200) },
+      { key: "b", recovery: null, run: run("q2", reset + 300) },
+      { key: "c", recovery: null, run: run("s2", reset + 300) },
+    ],
+    reset + 400,
+  );
+  NodeAssert.deepEqual(state.carried, ["a", "b"]);
+  const early = carriedOn(
+    new Map([["a", { runId: "r1", resetAt: reset }]]),
+    [{ key: "a", recovery: null, run: run("r2", reset - 5_000) }],
+    reset - 1_000,
+  );
+  NodeAssert.deepEqual(early.carried, [], "the person sent it before the window opened");
+});
+
+test("a landing is a run seen going that has now landed; one first seen landed is not", () => {
+  const chat = (key: string, id: string, ended: RunSeen["ended"]): ChatSeen => ({
+    key,
+    standing: "working",
+    run: { id, ended, requestedAt: 0, startedAt: 0, endedAt: ended === null ? null : 1 },
+    createdAt: 0,
+    launched: false,
+  });
+  const first = landings(new Map(), [chat("a", "r1", null), chat("b", "q1", "landed")]);
+  NodeAssert.deepEqual(first.landed, []);
+  const next = landings(first.running, [chat("a", "r1", "landed"), chat("b", "q1", "landed")]);
+  NodeAssert.deepEqual(
+    next.landed.map((c) => c.key),
+    ["a"],
+  );
+  NodeAssert.deepEqual(landings(first.running, [chat("a", "r1", "dropped")]).landed, []);
+});
+
+test("files added are the diff's new files", () => {
+  const diff = [
+    "diff --git a/one.md b/one.md",
+    "new file mode 100644",
+    "--- /dev/null",
+    "+++ b/one.md",
+    "diff --git a/two.md b/two.md",
+    "index 1..2 100644",
+    "diff --git a/three.md b/three.md",
+    "new file mode 100755",
+  ].join("\n");
+  NodeAssert.equal(filesAdded(diff), 2);
+  NodeAssert.equal(filesAdded(""), 0);
 });

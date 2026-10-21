@@ -7,5 +7,11 @@
   "moment.news": "{n} landed while you were out.",
   "moment.many": "Talk to one. Run many.",
   "moment.haul.one": "An hour of work. No questions asked.",
-  "moment.haul.many": "{n} hours of work. No questions asked."
+  "moment.haul.many": "{n} hours of work. No questions asked.",
+  "moment.zipped": "Zipped into {base}.",
+  "moment.things.one": "One new file. Words became things.",
+  "moment.things.many": "{n} new files. Words became things.",
+  "moment.window.one": "Window's open. A Cell carried on.",
+  "moment.window.many": "Window's open. {n} Cells carried on.",
+  "moment.pages": "Same thread, fewer pages."
 }

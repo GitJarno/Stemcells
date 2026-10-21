@@ -1,17 +1,28 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
 
-import { cellAt, isEmpty, sameGrid } from "../grid.ts";
+import { cellAt, type Grid, isEmpty, sameGrid } from "../grid.ts";
 import { BODY_HEIGHT } from "../canon.ts";
 import { eyeDistance } from "../eye.ts";
 import { gridEyes } from "../render.ts";
-import { BODY_MID, BODY_WIDTH, cellToCanon, cloudAtRest, cloudCells, homeFit } from "../scene.ts";
+import {
+  BODY_MID,
+  BODY_WIDTH,
+  cellToCanon,
+  cloudAtRest,
+  cloudCells,
+  homeFit,
+  type SceneCard,
+} from "../scene.ts";
 import { BACK } from "./back.ts";
 import { BITS } from "./bits.ts";
 import { MOMENT_CARDS, momentCard } from "./cards.ts";
 import { budOf } from "./many.ts";
 import { TYPING, typingFor } from "./line.ts";
 import { NIGHT } from "./night.ts";
+import { PAGES } from "./pages.ts";
+import { WINDOW } from "./window.ts";
+import { ZIP } from "./zipped.ts";
 import { eyesLooking, squareOf } from "./stage.ts";
 
 const STAGES = [
@@ -241,4 +252,74 @@ test("a haul says its whole hours", () => {
     MOMENT_CARDS.haul({ hours: 3 }).lines[0],
     "3 hours of work. No questions asked.",
   );
+});
+
+test("zipped lays a zipper beside Aski, longer for a bigger change, and its pull closes it into Aski", () => {
+  const stage = STAGES[0]!,
+    sq = squareOf(stage),
+    mid = Math.round(sq.middle);
+  const row = (g: Grid, j: number): string =>
+    Array.from({ length: stage.cols }, (_, i) => cellAt(g, i, j).ch).join("");
+  const big = MOMENT_CARDS.zipped({ base: "main", lines: 2000 }),
+    small = MOMENT_CARDS.zipped({ base: "main", lines: 10 });
+  const open = (card: SceneCard): number =>
+    row(card.frame(ZIP.from + 0.05, stage), mid - 1).replaceAll(" ", "").length +
+    row(card.frame(ZIP.from + 0.05, stage), mid - 2).replaceAll(" ", "").length;
+  NodeAssert.ok(open(big) > open(small), "a bigger change, a longer zipper");
+  const closed = big.frame(big.still, stage);
+  NodeAssert.ok(row(closed, mid).includes("=>"), "closed up to its pull");
+  NodeAssert.ok(!row(closed, mid - 2).includes("-"), "no rail left open");
+  NodeAssert.equal(big.lines[0], "Zipped into main.");
+  NodeAssert.equal(big.mood?.(big.still), "pleased");
+});
+
+test("things: a letter for each new file leaves Aski and lands as a file, at most nine", () => {
+  const stage = STAGES[0]!,
+    files = (card: SceneCard): number =>
+      card
+        .frame(card.still, stage)
+        .cells.map((c) => c.ch)
+        .join("")
+        .split("[=]").length - 1;
+  NodeAssert.equal(files(MOMENT_CARDS.things({ n: 3 })), 3);
+  NodeAssert.equal(files(MOMENT_CARDS.things({ n: 40 })), 9);
+  NodeAssert.equal(MOMENT_CARDS.things({ n: 1 }).lines[0], "One new file. Words became things.");
+  NodeAssert.equal(MOMENT_CARDS.things({ n: 4 }).lines[0], "4 new files. Words became things.");
+});
+
+test("the window's blind goes up and the Cells that waited go on out", () => {
+  const stage = STAGES[0]!,
+    card = MOMENT_CARDS.window({ n: 2 }),
+    count = (t: number, ch: string): number =>
+      card.frame(t, stage).cells.filter((c) => c.ch === ch && c.ink > 0).length;
+  NodeAssert.ok(count(0.4, "#") > 0, "shut at first");
+  NodeAssert.equal(count(WINDOW.open, "#"), 0, "open");
+  NodeAssert.equal(count(WINDOW.open, "o"), 2, "two Cells waited behind it");
+  NodeAssert.equal(count(card.beats.gone!, "o"), 0, "and went on");
+  NodeAssert.equal(card.lines[0], "Window's open. 2 Cells carried on.");
+  NodeAssert.equal(MOMENT_CARDS.window({ n: 1 }).lines[0], "Window's open. A Cell carried on.");
+});
+
+test("pages fold a tall stack down to three, and the thread to Aski stays whole", () => {
+  NodeAssert.ok(
+    MOMENT_CARDS.pages()
+      .frame(PAGES.fold, STAGES[0]!)
+      .cells.filter((c) => c.ch === "=").length >=
+      5 * 8,
+    "a tall stack at first",
+  );
+  for (const stage of STAGES) {
+    const card = MOMENT_CARDS.pages(),
+      rows = (t: number): number[] => {
+        const g = card.frame(t, stage);
+        return Array.from({ length: stage.rows }, (_, j) => j).filter((j) =>
+          Array.from({ length: stage.cols }, (_, i) => cellAt(g, i, j).ch).includes("="),
+        );
+      },
+      thread = (t: number): number =>
+        card.frame(t, stage).cells.filter((c) => c.ch === "~" && c.ink > 0).length;
+    NodeAssert.ok(rows(PAGES.fold).length >= rows(PAGES.folded).length, "never more once folded");
+    NodeAssert.ok(rows(PAGES.folded).length <= 3, "three at most once folded");
+    NodeAssert.equal(thread(PAGES.fold), thread(PAGES.folded), "the same thread");
+  }
 });

@@ -80,7 +80,25 @@ Dropped, because T3 keeps no such number:
 ## Plan
 
 - [x] PR 1: engine, budget, bits, back, night; proofs (`aski-moment-{bits,back,night}.png`, `aski-moments-reduced-motion.png` beside the lookbook)
-- [ ] PR 2: news, many, clear, haul; proofs (`aski-moment-{news,many,clear,haul}.png`); CI green
-- [ ] PR 3: zipped, window, pages, things; proofs; CI green
+- [x] PR 2: news, many, clear, haul; proofs (`aski-moment-{news,many,clear,haul}.png`); CI green (#80)
+- [x] PR 3: zipped, window, pages, things; proofs (`aski-moment-{zipped,things,window,pages}.png`, `aski-moments-reduced-motion-3.png`); CI green
 
 ## Review
+
+All eleven moments are built and proven in the dev app, each on its real
+trigger and with no faked clock. The one exception is the window, where only
+the limit and its reset were staged; its two Cells carried on for real.
+Record and receipt were dropped (above).
+
+What proving them taught, now carried in the code:
+
+- **A merge settles its chat in the same sync that reads it**, so the open
+  chats never see one. Zipped reads merges from every chat, settled
+  included (`useMerges`).
+- **The tab pager unmounts Aski's page** after four visits elsewhere, so the
+  watch lives beside the workspace, not inside the page.
+- **A Cell's checkpoint covers its own folder.** A Cell working in
+  `apps/server` that writes to the repo root adds nothing to its diff,
+  which is right: that file isn't its work.
+- **A run that changed no files** needs no diff read; its checkpoint lists
+  none.

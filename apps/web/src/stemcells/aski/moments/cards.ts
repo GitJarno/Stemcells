@@ -9,6 +9,10 @@ import { haul } from "./haul.ts";
 import { many } from "./many.ts";
 import { type LinePlace, news } from "./news.ts";
 import { night } from "./night.ts";
+import { pages } from "./pages.ts";
+import { things } from "./things.ts";
+import { windowOpen } from "./window.ts";
+import { zipped } from "./zipped.ts";
 
 /** A moment's numbers, sent with it to the worker. */
 export interface MomentArgs {
@@ -19,6 +23,9 @@ export interface MomentArgs {
   readonly hours?: number | undefined;
   /** The titles of the Cells a message started. */
   readonly titles?: readonly string[] | undefined;
+  /** The branch a pull request merged into, and the lines it changed. */
+  readonly base?: string | undefined;
+  readonly lines?: number | undefined;
   /** Where the line stands on the stage, for a moment whose eye goes to it. */
   readonly line?: LinePlace | undefined;
 }
@@ -31,6 +38,10 @@ export const MOMENT_CARDS = {
   many: ({ titles, seed }: MomentArgs = {}) => many(titles, seed),
   clear: ({ n, seed }: MomentArgs = {}) => clear(n, seed),
   haul: ({ hours, seed }: MomentArgs = {}) => haul(hours, seed),
+  zipped: ({ base, lines, seed }: MomentArgs = {}) => zipped(base, lines, seed),
+  things: ({ n, seed }: MomentArgs = {}) => things(n, seed),
+  window: ({ n, seed }: MomentArgs = {}) => windowOpen(n, seed),
+  pages: ({ seed }: MomentArgs = {}) => pages(seed),
 } as const satisfies Record<string, (args?: MomentArgs) => SceneCard>;
 
 export type MomentId = keyof typeof MOMENT_CARDS;

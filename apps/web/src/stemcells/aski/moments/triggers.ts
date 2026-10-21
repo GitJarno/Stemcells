@@ -172,3 +172,101 @@ export function hauled(
   }
   return { watching: next, hauls };
 }
+
+/** A merged pull request as the triggers read it: its key, the branch it merged into, when, and how many lines it changed. */
+export interface MergeSeen {
+  readonly key: string;
+  readonly base: string;
+  readonly mergedAt: number;
+  readonly lines: number;
+}
+
+/** A change this many lines long is worth saying on any day, not only the day's first. */
+export const BIG_MERGE = 300;
+/** How recent a merge must be to be news, in milliseconds. */
+export const MERGE_NEWS = 10 * 60_000;
+
+/**
+ * The merge worth zipping at `now`: the newest merged in the last
+ * `MERGE_NEWS`, unless it was the last zipped; on a day one was zipped
+ * already (`zippedToday`), only a big one.
+ */
+export function zippedNow(
+  merges: readonly MergeSeen[],
+  now: number,
+  last: string | undefined,
+  zippedToday: boolean,
+): MergeSeen | null {
+  const fresh = merges
+    .filter(({ mergedAt }) => mergedAt <= now && now - mergedAt <= MERGE_NEWS)
+    .toSorted((a, b) => b.mergedAt - a.mergedAt);
+  return (
+    fresh.find(({ key, lines }) => key !== last && (!zippedToday || lines >= BIG_MERGE)) ?? null
+  );
+}
+
+/** A chat's armed limit recovery: the run the limit stopped, and when the window opens again. */
+export interface RecoverySeen {
+  readonly runId: string;
+  readonly resetAt: number;
+  readonly autoResume: boolean;
+}
+
+/** A recovery armed to carry on by itself, kept by chat until its Cell does or the hour after the reset is out. */
+export type Armed = ReadonlyMap<string, { readonly runId: string; readonly resetAt: number }>;
+
+/** How long after its reset a Cell's carrying on still counts, in milliseconds. */
+export const CARRY_WITHIN = 60 * 60_000;
+
+/**
+ * Each chat's recovery and run seen again at `now`. Says the chats that just
+ * carried on by themselves: armed to resume when the window opened, and now
+ * on a new run asked for once it had.
+ */
+export function carriedOn(
+  armed: Armed,
+  chats: readonly {
+    readonly key: string;
+    readonly recovery: RecoverySeen | null;
+    readonly run: RunSeen | null;
+  }[],
+  now: number,
+): { readonly armed: Armed; readonly carried: string[] } {
+  const next = new Map<string, { runId: string; resetAt: number }>();
+  const carried: string[] = [];
+  for (const { key, recovery, run } of chats) {
+    const before = armed.get(key);
+    if (before !== undefined && run !== null && run.id !== before.runId) {
+      if ((run.requestedAt ?? 0) >= before.resetAt) carried.push(key);
+      continue;
+    }
+    // Armed, or disarmed by the person; once cleared, armed still until the hour after the reset is out.
+    if (recovery !== null && recovery.runId === run?.id) {
+      if (recovery.autoResume) next.set(key, { runId: recovery.runId, resetAt: recovery.resetAt });
+    } else if (before !== undefined && now - before.resetAt < CARRY_WITHIN) next.set(key, before);
+  }
+  return { armed: next, carried };
+}
+
+/** How many files a unified diff adds. */
+export const filesAdded = (diff: string): number =>
+  diff.split("\n").filter((line) => line.startsWith("new file mode ")).length;
+
+/** Each chat's run last seen going, by chat. */
+export type Running = ReadonlyMap<string, string>;
+
+/** The chats whose run, seen going before, has now landed; and the runs going now. */
+export function landings<Chat extends ChatSeen>(
+  running: Running,
+  chats: readonly Chat[],
+): { readonly running: Running; readonly landed: Chat[] } {
+  const next = new Map<string, string>();
+  const landed: Chat[] = [];
+  for (const chat of chats) {
+    const run = chat.run;
+    if (run === null) continue;
+    if (run.ended === null) next.set(chat.key, run.id);
+    else if (run.ended === "landed" && running.get(chat.key) === run.id) landed.push(chat);
+  }
+  return { running: next, landed };
+}
