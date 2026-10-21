@@ -761,6 +761,23 @@ describe("a flight", () => {
       }).pipe(Effect.scoped),
   );
 
+  it.effect("has the strip it was making room in close up, when its page crashes", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      const b = yield* opened(page, "b");
+      fly(page);
+      send(page, WINDOWS_CHANNEL.room, { window: "b", visit: { tabId: "t", width: 160, slot: 1 } });
+
+      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+      expect(b.webContents.heard(WINDOWS_CHANNEL.room)).toEqual([
+        { tabId: "t", width: 160, slot: 1 },
+        null,
+      ]);
+    }).pipe(Effect.scoped),
+  );
+
   it.effect("closes a warmed window a move opened and another closed before it was made", () =>
     Effect.gen(function* () {
       yield* startHost();
