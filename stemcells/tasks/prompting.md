@@ -245,8 +245,9 @@ was right. Its placeholder was "Tell Aski what you need…".
 - **One Cell**: the hero and the footer pickers are the readout. The hero
   names the destination; the model and effort pickers show what will run.
   No new line.
-- **Several Cells**: the model and effort pickers give way to one sentence
-  of tokens, the person's words read back, normalised:
+- **Several Cells**: one sentence of tokens, the person's words read back,
+  normalised, stands in the model picker's place, and the effort picker
+  gives way:
 
   > **3 Cells**: **2 Sol 6.1** in **Harbor**, **Opus 5.5** at **Max** in
   > **Atlas** · Aski divides the work
@@ -511,9 +512,15 @@ money, release), each a verb and its object, with match and miss fixtures
   line.
 - The hero already moves the project name under "What should we build?",
   and the flight targets it there.
-- The several-Cells readout takes its own line above the footer buttons and
-  wraps like prose. Past two lines it folds to "3 Cells · Harbor, Atlas ▾",
-  which opens the full sentence in a popover.
+- The several-Cells readout stands in the model picker's place in the
+  controls row, so upstream's fitting of the row measures it as the
+  picker: one ladder. The whole sentence shows when the row holds it beside
+  the other controls at full size. Otherwise it folds to "3 Cells ·
+  Harbor, Atlas ▾", which opens the full sentence in a popover, and the
+  fold is what upstream fits: the other controls go small (icon, then
+  "…") only when even the fold doesn't fit. A plan's note rides in the
+  fold after the places, and when the fold cuts it short, the caret keeps
+  its tone. The count never goes.
 - A plan row wraps to two lines: model, effort and place first, then the
   task.
 - Menus open as popovers no wider than the pane, and the flight's arc stays
@@ -666,8 +673,8 @@ From the TypeScript rebuild (`SC-legacy`), keep:
 4. **Several Cells from words alone.** Built: `words/cells.ts` (which
    Cells, each one's part, the readout; pure), `words/placement.ts`,
    `words/Readout.tsx` and `upstream/launch.ts`, sent from `words/send.ts`.
-   - The readout sentence under the words: its tokens open their menus,
-     defaults are dim, the model and effort pickers give way to it, and
+   - The readout sentence in the controls row: its tokens open their menus,
+     defaults are dim, it takes the model picker's place, and
      Send carries the count. Past the most Cells (6), Enter holds and only
      ⌘↵ sends.
    - The first Cell is the draft, sent by upstream's own send. The others
@@ -707,8 +714,11 @@ From the TypeScript rebuild (`SC-legacy`), keep:
    - 4b, built: a provider the Cells start on whose plan runs short says so
      in the readout, as the rail's ring words it ("Claude Code Weekly: 6%
      left", `words/limits.ts`).
-   - Left for 4b: the spawn (with Aski's figure and the Cell kit) and the
-     narrow-pane fold.
+   - 4b, built: the narrow-pane fold (decision 18). The readout takes the
+     model picker's place through a substitute for `ProviderModelPicker.tsx`
+     (`words/readoutSlot.ts`), and asks upstream's own fitting whether the
+     row holds the whole sentence (`rowHoldsWider` in `upstream/words.ts`).
+   - Left for 4b: the spawn (with Aski's figure and the Cell kit).
 5. **The planner.**
    - The `TextGeneration` operation, run lean, with its arguments pinned
      by a test.

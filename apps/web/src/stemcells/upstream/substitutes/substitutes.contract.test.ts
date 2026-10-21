@@ -22,6 +22,7 @@ import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWin
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
+import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
@@ -34,6 +35,7 @@ import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
+import * as OurProviderModelPicker from "./ProviderModelPicker";
 import * as OurFavicon from "./favicon";
 import * as OurTimelineLogic from "./MessagesTimeline.logic";
 import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
@@ -304,6 +306,34 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/MessagesTimeline.tsx": [
         "./MessagesTimeline.logic",
         ["threadReadLabelPrefix"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/ProviderModelPicker.tsx": {
+    upstream: UpstreamProviderModelPicker,
+    substitute: OurProviderModelPicker satisfies RendersOrNothing<
+      typeof UpstreamProviderModelPicker
+    >,
+    importers: {
+      "apps/web/src/components/chat/ChatComposer.tsx": [
+        "./ProviderModelPicker",
+        ["ProviderModelPicker"],
+      ],
+      "apps/web/src/components/settings/SourceControlWritingSettings.tsx": [
+        "../chat/ProviderModelPicker",
+        ["ProviderModelPicker"],
+      ],
+      "apps/web/src/components/settings/SettingsPanels.tsx": [
+        "../chat/ProviderModelPicker",
+        ["ProviderModelPicker"],
+      ],
+      "apps/web/src/components/settings/ProjectDefaultsSettings.tsx": [
+        "../chat/ProviderModelPicker",
+        ["ProviderModelPicker"],
+      ],
+      "apps/web/src/components/settings/ScheduledTasksSettings.tsx": [
+        "../chat/ProviderModelPicker",
+        ["ProviderModelPicker"],
       ],
     },
   },

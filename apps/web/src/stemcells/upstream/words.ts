@@ -11,6 +11,8 @@ import type { Node as PmNode } from "@tiptap/pm/model";
 
 import { serializeEditorDoc } from "../../composer-rich-text-doc";
 import { useComposerDraftStore, type DraftId } from "../../composerDraftStore";
+import { measureRestingComposerControls } from "../../components/chat/restingComposerControlsMeasurement";
+import { resolveRestingComposerControlsLayout } from "../../components/composerFooterLayout";
 import { PROVIDER_PRESENTATION } from "../../components/usage/usageProviders";
 import { useEnvironmentProviders } from "../../state/environments";
 import { useThreadShells } from "../../state/entities";
@@ -19,6 +21,36 @@ import type { CellRef } from "../tabs/layout";
 import type { WordsCatalog, WordsProvider } from "../words/catalog";
 import type { WordsPlace } from "../words/places";
 import { useRailProjects } from "./rail";
+
+/** Upstream's resize watch: what it sets lands in the same frame. */
+export { observeResize } from "~/lib/observeResize";
+
+/**
+ * Whether the composer's controls row, fitted as upstream fits it, holds
+ * its first control `wider` px wider with every other control at full
+ * size. The readout in the model picker's place shows its whole sentence
+ * only then (`words/Readout.tsx`).
+ */
+export function rowHoldsWider(first: HTMLElement, wider: number): boolean {
+  const controls = first.parentElement;
+  // A resting row sits in a host of its own; the footer's row is its own.
+  const host = controls?.matches('[data-chat-composer-resting-controls="true"]')
+    ? controls.parentElement
+    : controls;
+  const measured = controls ? measureRestingComposerControls(controls) : null;
+  if (!host || !measured) return true;
+  const style = getComputedStyle(host);
+  const hostWidth =
+    host.clientWidth -
+    (Number.parseFloat(style.paddingInlineStart) || 0) -
+    (Number.parseFloat(style.paddingInlineEnd) || 0);
+  const layout = resolveRestingComposerControlsLayout({
+    ...measured,
+    naturalFixedWidth: measured.naturalFixedWidth + wider,
+    hostWidth,
+  });
+  return layout.hiddenCount === 0 && (layout.iconOnlyCount ?? 0) === 0;
+}
 
 /** The prompt the composer sends for a document, as its editor writes it. */
 export function promptOf(doc: PmNode): string {

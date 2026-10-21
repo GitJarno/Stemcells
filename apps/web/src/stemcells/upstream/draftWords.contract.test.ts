@@ -3,10 +3,11 @@
  * a draft the way `moveDraft` does, the draft store keeps a model where
  * `restoreDraftModelState` puts it back, upstream's send reads the prompt
  * when it sends (so the words' edit lands), and the controls the words fly
- * to and mark carry the attributes they're found by. A failure here after
- * a sync names the contract that moved: the draft would land in the wrong
- * project or model, the setup words would be sent, or the flights would
- * land nowhere.
+ * to and mark carry the attributes they're found by, and the readout is
+ * fitted where the model picker is. A failure here after a sync names the
+ * contract that moved: the draft would land in the wrong project or model,
+ * the setup words would be sent, the flights would land nowhere, or the
+ * readout would never fold.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -14,6 +15,7 @@ import chatView from "../../components/ChatView.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import draftHeroHeadline from "../../components/chat/DraftHeroHeadline.tsx?raw";
 import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?raw";
+import controlsMeasurement from "../../components/chat/restingComposerControlsMeasurement.ts?raw";
 import traitsPicker from "../../components/chat/TraitsPicker.tsx?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
 
@@ -75,5 +77,27 @@ describe("the words' contracts with upstream's drafts", () => {
     );
     expect(traitsPicker).toContain("<span data-composer-control-label");
     expect(chatView).toContain('data-chat-composer-stack="true"');
+  });
+
+  it("fits the readout where the composer's model picker is, by its label", () => {
+    // The readout takes the picker's place (`substitutes/ProviderModelPicker.tsx`)
+    // with a value other than "true", so the flights never land on it.
+    expect(chatComposer).toMatch(
+      /<ProviderModelPicker\s+environmentId=\{environmentId\}\s+compact=\{false\}\s+isComposerOwned\b/,
+    );
+    expect(controlsMeasurement).toContain(
+      'controls.querySelector<HTMLElement>("[data-chat-provider-model-picker]")',
+    );
+    expect(controlsMeasurement).toContain(
+      "picker.querySelector<HTMLElement>('[data-chat-provider-model-picker-label=\"true\"]')",
+    );
+    expect(controlsMeasurement).toContain("Math.max(0, label.scrollWidth - label.clientWidth)");
+    expect(controlsMeasurement).toContain("getComputedStyle(picker).minWidth");
+    // The row it asks about is its host when it sits in the footer, and in
+    // a host of its own when it rests (`rowHoldsWider`).
+    expect(chatComposer).toContain("useRestingComposerControlsLayout(null, true)");
+    expect(chatComposer).toContain('data-chat-composer-resting-controls="true"');
+    // The effort picker that makes way for it is a block of its own.
+    expect(chatComposer).toContain("data-resting-block={def.id}");
   });
 });

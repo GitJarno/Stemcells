@@ -41,8 +41,8 @@ import { effortLabel, type MenuAction, type MenuEntry, menuFor } from "./menu";
 import { placeCells } from "./placement";
 import { roster, type WordsPlace } from "./places";
 import { type Placed, refreshWords, type WordsSetting, wordsKey, wordsPlugin } from "./plugin";
-import { Readout } from "./Readout";
 import type { Facts, ReadContext } from "./read";
+import { WordsReadoutSlot } from "./readoutSlot";
 import {
   type BeforeSend,
   type Edit,
@@ -82,6 +82,7 @@ interface Joined {
 export function ComposerWords(props: { readonly anchor: string }) {
   const cell = use(PaneCellContext);
   const sendSlot = use(WordsSendSlot);
+  const readoutSlot = use(WordsReadoutSlot);
   const draft = useWordsDraft(cell);
   const draftId = draft?.draftId ?? null;
   const { places, members, recency } = useWordsPlaces();
@@ -229,8 +230,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
     });
   });
 
-  // The composer says how many Cells Send starts, and the readout stands
-  // in for the pickers (`words.css`). Upstream re-renders its controls,
+  // The composer says how many Cells Send starts, and the effort picker
+  // makes way for the readout (`words.css`). Upstream re-renders its controls,
   // so every render marks them again; leaving takes the marks off.
   useEffect(() => {
     const view = joined.current?.editor.view;
@@ -330,6 +331,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
     return () => sendSlot(null);
   });
 
+  // The readout stands in the model picker's place (`readoutSlot.ts`), and
+  // a token clicked there opens its menu as the word in the text would.
   const openFromReadout = (mark: Span, rect: DOMRect) => {
     const view = joined.current?.editor.view;
     const placed = view
@@ -339,10 +342,19 @@ export function ComposerWords(props: { readonly anchor: string }) {
       : undefined;
     if (view && placed) openMenu(view, placed, menuAtRect(rect, view.dom.getBoundingClientRect()));
   };
+  const fromReadout = useRef(openFromReadout);
+  useEffect(() => {
+    fromReadout.current = openFromReadout;
+  });
+  const [onWord] = useState(() => (mark: Span, rect: DOMRect) => fromReadout.current(mark, rect));
+  useEffect(() => {
+    if (readoutSlot === null || readout === null) return;
+    readoutSlot({ readout, drivers, onWord });
+    return () => readoutSlot(null);
+  }, [readoutSlot, readout, drivers, onWord]);
 
   return (
     <>
-      {readout ? <Readout readout={readout} drivers={drivers} onWord={openFromReadout} /> : null}
       {menu ? (
         <TokenMenu
           key={`${menu.mark.kind}:${menu.mark.from}`}

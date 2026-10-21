@@ -1,5 +1,5 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (words.css), outside upstream's Tailwind entry. */
-import { type ReactNode, useLayoutEffect, useRef } from "react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 /** Where the menu opens: under the word, or over it when there's more room there. */
@@ -34,20 +34,25 @@ export function TokenMenu(props: {
   readonly items: ReadonlyArray<TokenMenuItem>;
 }) {
   const menu = useRef<HTMLDivElement>(null);
+  const { left, width, top, bottom, maxHeight } = props.at;
+  // A word near the composer's right edge: the menu keeps its least width
+  // and moves left by what it would overhang, so it stays in the pane.
+  const [shift, setShift] = useState(0);
   useLayoutEffect(() => {
     const element = menu.current;
-    const current = element?.querySelector<HTMLElement>("[data-current]");
-    if (!element || !current) return;
-    element.scrollTop = current.offsetTop - (element.clientHeight - current.offsetHeight) / 2;
-  }, []);
-  const { left, width, top, bottom, maxHeight } = props.at;
+    if (!element) return;
+    setShift(Math.max(0, Math.min(element.offsetWidth - width, left)));
+    const current = element.querySelector<HTMLElement>("[data-current]");
+    if (current)
+      element.scrollTop = current.offsetTop - (element.clientHeight - current.offsetHeight) / 2;
+  }, [left, width]);
   return createPortal(
     <div
       ref={menu}
       className="sc-word-menu"
       role="menu"
       aria-label={props.label}
-      style={{ left, top, bottom, maxWidth: width, maxHeight }}
+      style={{ left: left - shift, top, bottom, maxWidth: width + shift, maxHeight }}
       // A press here keeps the caret where it is.
       onMouseDown={(event) => event.preventDefault()}
     >

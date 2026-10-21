@@ -1,15 +1,17 @@
 // Replaces `components/chat/ChatComposer.tsx` (`plugin.ts`): a message
 // whose words set up a new Cell is sent without its setup words, and one
-// that starts several waits past the most for ⌘↵ (`stemcells/words/send.ts`).
-// The composer's words hand it how, through a slot; upstream's composer and
-// its send stay as they are. Only Aski's own chat offers Aski's instance
-// (`../cellInstance.ts`).
-import { memo, useRef } from "react";
+// that starts several waits past the most for ⌘↵ (`stemcells/words/send.ts`),
+// and their readout stands in the model picker's place
+// (`stemcells/words/readoutSlot.ts`). The composer's words hand it both
+// through slots; upstream's composer and its send stay as they are. Only
+// Aski's own chat offers Aski's instance (`../cellInstance.ts`).
+import { memo, type ReactNode, useRef, useState } from "react";
 
 import {
   ChatComposer as UpstreamChatComposer,
   type ChatComposerProps,
 } from "../../../components/chat/ChatComposer";
+import { type ShownReadout, WordsReadoutShown, WordsReadoutSlot } from "../../words/readoutSlot";
 import { type BeforeSend, WordsSendSlot } from "../../words/send";
 import { useComposerInstances } from "../cellInstance";
 
@@ -47,7 +49,19 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   };
   return (
     <WordsSendSlot value={register}>
-      <UpstreamChatComposer {...props} {...instances} onSend={send} />
+      <ReadoutSlot>
+        <UpstreamChatComposer {...props} {...instances} onSend={send} />
+      </ReadoutSlot>
     </WordsSendSlot>
   );
 });
+
+/** Holds the readout the words show, so a new one renders the picker's place, not the composer. */
+function ReadoutSlot(props: { readonly children: ReactNode }) {
+  const [readout, setReadout] = useState<ShownReadout | null>(null);
+  return (
+    <WordsReadoutSlot value={setReadout}>
+      <WordsReadoutShown value={readout}>{props.children}</WordsReadoutShown>
+    </WordsReadoutSlot>
+  );
+}

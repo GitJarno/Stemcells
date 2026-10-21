@@ -50,6 +50,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
   "apps/web/src/components/chat/MessagesTimeline.logic.ts": "MessagesTimeline.logic.ts",
+  // Several Cells' readout stands in the composer's model picker's place.
+  "apps/web/src/components/chat/ProviderModelPicker.tsx": "ProviderModelPicker.tsx",
 };
 
 /**

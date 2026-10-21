@@ -11,7 +11,7 @@
    adjacent lines never touch. The edge is an outline round the plate.
    Neutral by default: colour is state. */
 [data-stemcells-words] .sc-word,
-.sc-readout .sc-word,
+:is(.sc-readout, .sc-readout-pop) .sc-word,
 .sc-word-flight {
   --token-share: 50%;
   --token-tone: var(--sc-text);
@@ -39,7 +39,7 @@
 
 /* A place is a where you could open: it adds an underline. */
 [data-stemcells-words] .sc-word-place,
-.sc-readout .sc-word-place {
+:is(.sc-readout, .sc-readout-pop) .sc-word-place {
   text-decoration: underline 1px var(--sc-place);
   text-underline-offset: 0.2em;
 }
@@ -201,21 +201,94 @@
   color: var(--sc-dim);
 }
 
-/* Several Cells: the words read back as one sentence (`Readout.tsx`), on
-   its own line above the footer, wrapping like prose. A typed word wears
-   its plate and opens its menu; a default is dim. */
+/* Several Cells: the words read back as one sentence (`Readout.tsx`), in
+   the model picker's place in the controls row. A typed word wears its
+   plate and opens its menu; a default is dim. When the row can't hold the
+   sentence beside its other controls at full size, it folds to its places
+   (`Readout.tsx`), and it is never narrower than its count and caret. */
 .sc-readout {
-  padding-top: var(--sc-space-xs);
+  position: relative;
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: calc(var(--sc-readout-least, 0px) + var(--sc-space-xs) + 1em);
+  color: var(--sc-soft);
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1.7;
+  white-space: nowrap;
+}
+
+.sc-readout-head {
+  flex: none;
+}
+
+/* Its padding keeps a last token's plate inside what it clips. */
+.sc-readout-sentence {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding-inline-end: 0.1em;
+  overflow: hidden;
+}
+
+/* Folded, the sentence leaves the row, unseen, to be measured. */
+.sc-readout[data-folded] .sc-readout-sentence {
+  position: absolute;
+  inset-inline-start: 0;
+  width: max-content;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Folded: the places, standing for the sentence, open it whole. */
+.sc-readout-fold {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sc-readout-places {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-readout-caret {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  opacity: 0.6;
+}
+
+.sc-readout-pop {
+  position: fixed;
+  z-index: 50;
+  margin-bottom: var(--sc-space-xs);
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  border: 1px solid var(--sc-edge);
+  border-radius: var(--sc-radius-card);
+  background: var(--sc-raised);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.24);
   color: var(--sc-soft);
   font-size: var(--text-sm, 0.875rem);
   line-height: 1.7;
 }
 
-.sc-readout .sc-word {
+/* A token here is a button: its plate takes the glyphs' height, as a
+   word's in the text does, not the line's. */
+:is(.sc-readout, .sc-readout-pop) .sc-word {
   padding-inline: 0;
   border: 0;
   color: var(--sc-text);
   font: inherit;
+  line-height: normal;
   cursor: pointer;
 }
 
@@ -240,26 +313,23 @@
 }
 
 /* A plan running short, in the rail ring's tones (rail/PlanRing.tsx). */
-.sc-readout-limit[data-tone="low"] {
+.sc-readout-limit[data-tone="low"],
+.sc-readout-fold[data-tone="low"] .sc-readout-caret {
   color: var(--sc-needs-you);
 }
-.sc-readout-limit[data-tone="out"] {
+.sc-readout-limit[data-tone="out"],
+.sc-readout-fold[data-tone="out"] .sc-readout-caret {
   color: var(--sc-error);
 }
 
-/* The readout stands in for the model and effort pickers, and the rule
-   before the next control goes with them. */
-[data-chat-composer-stack][data-stemcells-cells] [data-chat-provider-model-picker],
+/* Folded, the caret keeps a plan's tone when its note is cut short. */
+.sc-readout-fold[data-tone] .sc-readout-caret {
+  opacity: 1;
+}
+
+/* The readout says each Cell's effort, so the effort picker makes way. */
 [data-chat-composer-stack][data-stemcells-cells]
-  [data-resting-block]:has([data-composer-shortcut="composer.effort"]),
-[data-chat-composer-stack][data-stemcells-cells]
-  [data-chat-provider-model-picker]
-  + [data-resting-block]
-  > [role="separator"]:first-child,
-[data-chat-composer-stack][data-stemcells-cells]
-  [data-resting-block]:has([data-composer-shortcut="composer.effort"])
-  + [data-resting-block]
-  > [role="separator"]:first-child {
+  [data-resting-block]:has([data-composer-shortcut="composer.effort"]) {
   display: none;
 }
 
