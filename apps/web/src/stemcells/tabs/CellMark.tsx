@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { currentActivity } from "../cell/activity";
 import { CellBuds } from "../cell/CellBuds";
 import { CellFigure } from "../cell/CellFigure";
+import { useForming } from "../cell/forming";
 import { useShownActivity } from "../cell/useShownActivity";
 import { useCellGround } from "../upstream/appearance";
 import {
@@ -37,7 +38,7 @@ const POINTS = 1;
  * Cell. Drawn `points` a sprite pixel; small beside a label unless told.
  * Given a `stage` (room at its right, as on the composer), the buds of its
  * subagents at work stand there, those in the background too; the box stays
- * its own.
+ * its own, and a Cell starting there forms in it (`cell/forming.ts`).
  */
 export function CellMark(props: { cell: CellRef | null; points?: number; stage?: boolean }) {
   const status = useCellStatus(props.cell);
@@ -54,6 +55,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const { landedAt, coldAt } = useCellRest(props.cell, provider);
   const { strength, flexes, diff } = useCellLanding(props.cell);
   const look = useRosterLook(props.cell?.threadId);
+  const forming = useForming(props.stage ? props.cell?.threadId : undefined);
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
   const mood = moodAt(status, landedAt, coldAt, now, useCellLineDown(props.cell));
@@ -63,7 +65,11 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
     return () => clearTimeout(timer);
   }, [turnsAt]);
   return (
-    <span className="relative flex shrink-0" data-stemcells-cell-status={status ?? "idle"}>
+    <span
+      className="relative flex shrink-0"
+      data-stemcells-cell-status={status ?? "idle"}
+      data-stemcells-cell-box={props.stage ? props.cell?.threadId : undefined}
+    >
       {/* First, so the Cell is drawn over its buds: one steps out from behind it. */}
       {props.stage ? (
         <CellBuds
@@ -85,6 +91,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
         flexes={flexes}
         diff={diff}
         landedAt={landedAt}
+        forming={forming}
       />
     </span>
   );

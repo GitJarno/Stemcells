@@ -1,0 +1,43 @@
+{
+  "scenes": {
+    "form/hop": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 3,
+      "pieces": "loop",
+      "frames": [
+        {
+          "pose": {
+            "eyes": "open",
+            "sx": 1,
+            "sy": 0.85
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "base": 27,
+            "sx": 0.94,
+            "sy": 1.08
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "base": 26,
+            "sx": 0.97,
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "sx": 1,
+            "sy": 0.94
+          }
+        }
+      ]
+    }
+  }
+}

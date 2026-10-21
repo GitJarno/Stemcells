@@ -12,19 +12,29 @@ import { AskMark } from "./AskMark.tsx";
 import { clockSeconds } from "./blink.ts";
 import { bodyOf, frameShown, sceneFor } from "./cast.ts";
 import { onStage } from "./clock.ts";
+import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./forming.ts";
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
 import { asksYou, BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
 import { type Diff, withMarks } from "./marks.ts";
 import { paint } from "./paint.ts";
-import { BEAT, grown, MARGIN, type MiniFrame, wornLook } from "./scene.ts";
+import { BEAT, type CellLook, grown, MARGIN, type MiniFrame, sceneOf, wornLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
 /** What a Cell named `name` wears on `day` when dealt alone: its own first item of each theme worn. */
 export function lookOf(name: string, day: string): readonly string[] {
   return looksOf([name], day).get(name)?.worn ?? [];
+}
+
+/** The frames a Cell in `look` forms through: its box empty, its blocks, its hop; none when the kit has no hop. */
+function formedOf(look: CellLook) {
+  const hop = sceneOf(look, HOP)?.mini;
+  const first = hop?.[0];
+  if (hop === undefined || first === undefined) return undefined;
+  const blocks = Array.from({ length: BLOCKS }, (_, step) => inBlocks(first, step));
+  return { before: empty(first), blocks, hop };
 }
 
 /**
@@ -34,6 +44,8 @@ export function lookOf(name: string, day: string): readonly string[] {
  * stays on screen. Its name also picks when it blinks. Grown strong, it holds
  * its arms at rest; a landing that earned it flexes. As its cheer starts, a
  * + and a − rise for the lines its run added and removed, and are gone.
+ * Asked to form as it starts, it condenses on its line from blocks, then
+ * hops onto it (`forming.ts`).
  */
 export function CellFigure(props: {
   readonly name: string;
@@ -54,12 +66,15 @@ export function CellFigure(props: {
   readonly diff?: Diff | undefined;
   /** When it landed (ms since the epoch): the marks rise once a landing. */
   readonly landedAt?: number | null | undefined;
+  /** Its forming as it starts (`forming.ts`): its box empty until the hand-off, then its blocks and its hop. */
+  readonly forming?: Forming | undefined;
 }) {
   const { name, activity, strength } = props;
   const flexes = props.flexes ?? false;
   const added = props.diff?.added ?? false;
   const removed = props.diff?.removed ?? false;
   const landedAt = props.landedAt ?? null;
+  const formsAt = props.forming?.at;
   const [day] = useState(() => dayOf(new Date()));
   const mood = moodOf(props.mood);
   const worn = (props.look ?? lookOf(name, day)).join("+");
@@ -79,12 +94,24 @@ export function CellFigure(props: {
     if (landing !== null && rising.current?.landing !== landing)
       rising.current = { landing, from: clockSeconds() };
     const from = landing === null ? undefined : rising.current?.from;
+    const formed = formsAt === undefined ? undefined : formedOf(look);
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
+      const part =
+        formed === undefined || formsAt === undefined || seconds === undefined
+          ? undefined
+          : formingPart(Math.floor((seconds - formsAt) * BEAT), formed.hop.length);
       const scene = sceneFor(look, mood, activity, seconds ?? 0);
-      const played = frameShown(scene, name, seconds, asksYou(mood));
+      const played =
+        part === undefined || formed === undefined
+          ? frameShown(scene, name, seconds, asksYou(mood))
+          : part.part === "empty"
+            ? formed.before
+            : part.part === "blocks"
+              ? formed.blocks[part.step]!
+              : formed.hop[part.step]!;
       const frame =
-        from === undefined
+        from === undefined || part !== undefined
           ? played
           : withMarks(
               played,
@@ -103,6 +130,7 @@ export function CellFigure(props: {
     added,
     removed,
     landedAt,
+    formsAt,
     mood,
     activity,
     name,

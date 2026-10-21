@@ -252,6 +252,10 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   (`cell/marks.ts`). `rise` lifts both by that many hero rows (half as many
   at the miniature) on each beat of the sprite clock from the landing; past
   the last they are gone, once a landing.
+- **`form/hop`** (`form.json`) is the hop a Cell lands on its line with as
+  it forms (`stemcells/docs/interaction.md`, the spawn). Its first frame,
+  the crouch, is also the outline its blocks fill; every frame stays inside
+  the box. One frame a beat of the sprite clock.
 
 ### A temperament: `art/temperaments/<id>.json`
 
