@@ -43,14 +43,14 @@ A browser in a Cell's workbench misbehaves when the slate moves:
   work; it paints again only on a resize. The earlier draft (#88) hid the
   browser behind a stand-in while anything moved; riding keeps the page
   on screen and needs no stand-in.
-- The move and the cut sit on two boxes: the view moves, its first box
-  (holding the webview) is cut. Chromium draws a cut on the compositor only
-  while the same box isn't also moved there; on one box, a turn's busy main
-  thread left the cut behind the move and the page showed over the rail.
-- Cuts are in percent: a composited animation of a cut in pixels draws
-  half of it on a 2x display.
-- Where a slot's edge crosses the pages' edge mid-slide, the copies get a
-  key of their own there, so the cut stays exact through the kink.
+- The cut keeps still; only the page moves (follow-up to #88). While the
+  pages move, the view stays where it was placed and is cut to the pages'
+  frame by a fixed `clip-path`; its first box, holding the webview, moves
+  inside it. #88 moved the view and animated a cut on that box. Each ran on
+  the compositor, but the cut ran about a frame behind the move, so at peak
+  speed the leaving page showed up to 40 px over the rail (3 of 4 runs).
+  A cut that doesn't animate can't lag, and the percent cuts and the keys
+  where a slot crosses the frame's edge went with it.
 - The tabs code doesn't name surfaces: the ride watches `data-moving` on
   `[data-stemcells-pages]`, as the pager documents.
 
@@ -69,3 +69,20 @@ A browser in a Cell's workbench misbehaves when the slate moves:
   the edge every frame; nothing moves while held; release shifts nothing
   but a half-pixel rounding.
 - Reduced motion: the strip cuts and fades; the browser fades with it.
+
+### Follow-up: the cut keeps still (2026-10-21)
+
+Re-captured with the dev app off screen: its windows are shown once at
+zero opacity and hidden, and keep rendering hidden (a preload outside the
+repo). The CDP screencast draws the browser guest.
+
+- Before (main after #88), 4 runs of left-right-left between two Cells with
+  live browsers: 3 runs drew a browser over the rail, in 15-22 frames each,
+  by up to 40 css px. All during the slide whose leaving page exits left.
+- After, 4 runs: no frame draws a browser over the rail. In the two runs
+  between the browsers' tabs, 423 of 427 frames with a browser on screen sit
+  33 to 34 device px from the Surface header's mark, as at rest. The other
+  four: two frames where a browser first appears at the turn (30 and 31 px),
+  and two where the edge finder misread.
+- Still open: the arriving page shows its browser only once the turn mounts
+  its Surface (about 250 ms with no browser on the page). Next PR.

@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
+import { resolveBrowserViewportLayout } from "../../browser/browserViewportLayout";
 import { resolveHostedBrowserWebviewWrapperStyle } from "../../browser/hostedBrowserWebviewStyle";
 
 import slot from "../../browser/BrowserSurfaceSlot.tsx?raw";
@@ -38,7 +39,7 @@ describe("native surfaces' contracts with upstream", () => {
     }
   });
 
-  it("upstream never moves or cuts the view itself, so ours stay until we let go", () => {
+  it("upstream never moves, cuts or opens the view itself, so ours stay until we let go", () => {
     const shown = resolveHostedBrowserWebviewWrapperStyle({
       active: true,
       renderingActive: true,
@@ -46,16 +47,29 @@ describe("native surfaces' contracts with upstream", () => {
       rect: { x: 0, y: 0, width: 10, height: 10 },
       hiddenSize: hidden,
     });
-    expect(shown).not.toHaveProperty("transform");
-    expect(shown).not.toHaveProperty("clipPath");
+    for (const property of ["transform", "clipPath", "overflow", "backgroundColor"]) {
+      expect(shown).not.toHaveProperty(property);
+    }
     expect(hosted).toContain('style={{ ...wrapperStyle, overscrollBehavior: "contain" }}');
+    // Its overflow and ground are its classes, which the ride's inline style
+    // outranks while its page moves out of its box.
+    expect(hosted).toContain('className="fixed overflow-hidden bg-muted/35"');
   });
 
-  it("the view's first box holds the page, at its top-left", () => {
-    // The ride cuts that box, not the view it moves (`ride.ts`).
+  it("the view's first box holds the page, at its top-left, as big as the view", () => {
+    // The ride moves that box inside the view, which it cuts (`ride.ts`).
     expect(hosted).toMatch(
       /data-preview-viewport=\{runtimeTabId\}\s*>\s*<div className="relative" style=\{\{ width: layout\.canvasWidth, height: layout\.canvasHeight \}\}>/,
     );
+    for (const setting of [
+      { _tag: "fill" },
+      { _tag: "freeform", width: 900, height: 600 },
+    ] as const) {
+      expect(resolveBrowserViewportLayout({ width: 500, height: 900 }, setting)).toMatchObject({
+        canvasWidth: 500,
+        canvasHeight: 900,
+      });
+    }
   });
 
   it("the view and its slot are named by the same browser tab", () => {

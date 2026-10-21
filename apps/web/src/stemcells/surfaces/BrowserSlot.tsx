@@ -21,7 +21,7 @@ export function BrowserSurfaceSlot(props: ComponentProps<typeof UpstreamBrowserS
     return ride({
       anchor,
       view: () => shownBrowserView(tabId),
-      // Placed before the transform goes, in the same frame.
+      // Placed before the move and the cut go, in the same frame.
       rest: () => flushSync(() => setRests((count) => count + 1)),
     });
   }, [tabId]);

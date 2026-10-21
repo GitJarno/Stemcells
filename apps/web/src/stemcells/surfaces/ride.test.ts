@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { lookAt, mirroredKeys, ride, translation } from "./ride";
+import { frameCut, mirroredKeys, moveBy, ride, translation } from "./ride";
 
 /** Frames, mutations and animations by hand: the rider's whole world. */
 class HTMLElementStub {
@@ -76,7 +76,7 @@ function world() {
       animation: { startTime: number | null; cancel: () => void };
     }[] = [];
     return {
-      style: { transform: "", clipPath: "" },
+      style: { transform: "", clipPath: "", overflow: "", backgroundColor: "" },
       offsetWidth: width,
       offsetHeight: height,
       animated,
@@ -151,11 +151,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/** The view's cut to the pages' frame (56, 36, 1496 × 936), from where it was placed (1000, 36, 500 × 936). */
+const FRAME = "inset(0px -52px 0px -944px)";
+
 describe("a browser rides the page it sits on", () => {
   it("at rest it is left where upstream placed it", () => {
-    const { view } = world();
+    const { view, content } = world();
     frame();
-    expect(view.style.transform).toBe("");
+    expect(view.style).toEqual({ transform: "", clipPath: "", overflow: "", backgroundColor: "" });
+    expect(content.style.transform).toBe("");
     expect(frames).toHaveLength(0);
   });
 
@@ -166,22 +170,27 @@ describe("a browser rides the page it sits on", () => {
     // The pager writes the strip after our frame callback ran.
     strip.x = -300;
     changed("style");
-    expect(view.style.transform).toBe("translate3d(-300px, 0px, 0)");
-    expect(content.style.clipPath).toBe("");
+    expect(content.style.transform).toBe("translate3d(-300px, 0px, 0)");
+    expect(view.style.transform).toBe("");
   });
 
-  it("is cut where its page leaves the pages' frame", () => {
+  it("is cut to the pages' frame by a cut that keeps still while its page moves", () => {
+    // A cut that moved with the page ran a frame behind it, and the page
+    // showed over the rail as it sped past.
     const { pages, strip, view, content } = world();
     pages.moving = true;
     changed("data-moving");
+    expect(view.style.clipPath).toBe(FRAME);
+    expect(view.style.overflow).toBe("visible");
+    expect(view.style.backgroundColor).toBe("transparent");
     strip.x = -1100;
     changed("style");
-    // The slot spans -100..400; the frame starts at 56. The view moves; its content is cut.
-    expect(view.style.transform).toBe("translate3d(-1100px, 0px, 0)");
-    expect(content.style.clipPath).toBe("inset(0% 0% 0% 31.2%)");
+    expect(content.style.transform).toBe("translate3d(-1100px, 0px, 0)");
+    expect(view.style.clipPath).toBe(FRAME);
+    expect(view.animated).toHaveLength(0);
   });
 
-  it("rides a slide as copies of it, with its timing, from its start", () => {
+  it("rides a slide as a copy of it on its page, with its timing, from its start", () => {
     const { pages, strip, view, content } = world();
     pages.moving = true;
     changed("data-moving");
@@ -198,40 +207,37 @@ describe("a browser rides the page it sits on", () => {
       },
     ];
     frame();
-    // The view's copy moves it; its content's copy cuts it, on a box the
-    // compositor doesn't move from the main thread.
-    expect(view.animated).toHaveLength(1);
+    // Only the page moves; the view's cut stays the frame.
+    expect(view.animated).toHaveLength(0);
     expect(content.animated).toHaveLength(1);
-    const [move] = view.animated;
-    const [cut] = content.animated;
-    for (const copy of [move, cut]) {
-      expect(copy?.options).toMatchObject({ duration: 420, easing: "linear(0, 1)" });
-      expect(copy?.animation.startTime).toBe(1234);
-    }
-    expect(move?.frames.at(0)).toEqual({ offset: 0, transform: "none" });
-    expect(move?.frames.at(-1)).toEqual({ offset: 1, transform: "translate3d(-1496px, 0px, 0)" });
-    // The slot's left edge crosses the frame's at 944 / 1496 of the way.
-    expect(cut?.frames.map((key) => key.offset)).toEqual([0, 944 / 1496, 1]);
-    expect(cut?.frames.at(1)).toMatchObject({ clipPath: "inset(0%)" });
-    // Once both are done, the view stays where the slide ends.
-    expect(view.style.transform).toBe("translate3d(-1496px, 0px, 0)");
-    // Frames while the slide runs leave the copies alone.
+    const [move] = content.animated;
+    expect(move?.options).toMatchObject({ duration: 420, easing: "linear(0, 1)" });
+    expect(move?.animation.startTime).toBe(1234);
+    expect(move?.frames).toEqual([
+      { offset: 0, transform: "none" },
+      { offset: 1, transform: "translate3d(-1496px, 0px, 0)" },
+    ]);
+    expect(view.style.clipPath).toBe(FRAME);
+    // Once it is done, the page stays where the slide ends.
+    expect(content.style.transform).toBe("translate3d(-1496px, 0px, 0)");
+    // Frames while the slide runs leave the copy alone.
     frame();
-    expect(view.animated).toHaveLength(1);
+    expect(content.animated).toHaveLength(1);
   });
 
-  it("when the pages rest, its slot presents again and the transform goes", () => {
-    const { pages, strip, view, rest } = world();
+  it("when the pages rest, its slot presents again and the move and the cut go", () => {
+    const { pages, strip, view, content, rest } = world();
     pages.moving = true;
     changed("data-moving");
     strip.x = -40;
     changed("style");
-    expect(view.style.transform).not.toBe("");
+    expect(content.style.transform).not.toBe("");
     strip.x = 0;
     pages.moving = false;
     changed("data-moving");
     expect(rest).toHaveBeenCalledOnce();
-    expect(view.style.transform).toBe("");
+    expect(content.style.transform).toBe("");
+    expect(view.style).toEqual({ transform: "", clipPath: "", overflow: "", backgroundColor: "" });
     expect(frames).toHaveLength(0);
   });
 
@@ -242,8 +248,8 @@ describe("a browser rides the page it sits on", () => {
     strip.x = -1100;
     changed("style");
     stop();
-    expect(view.style.transform).toBe("");
-    expect(content.style.clipPath).toBe("");
+    expect(content.style.transform).toBe("");
+    expect(view.style).toEqual({ transform: "", clipPath: "", overflow: "", backgroundColor: "" });
     expect(observers).toHaveLength(0);
   });
 });
@@ -259,31 +265,29 @@ describe("the pieces of a ride", () => {
     expect(translation("translate3d(10, 0, 0)", box)).toBeNull();
   });
 
-  it("cuts in percent of the content's box", () => {
+  it("cuts the view to the frame in its own box, reaching past it where the frame does", () => {
     const frame = { left: 56, top: 36, right: 1552, bottom: 972 };
-    const size = { width: 500, height: 936 };
-    expect(
-      lookAt({ x: 0, y: 0 }, { left: 100, top: 36, right: 600, bottom: 972 }, size, frame),
-    ).toEqual({ transform: "", clipPath: "" });
-    expect(
-      lookAt({ x: -94, y: 0 }, { left: 6, top: 36, right: 506, bottom: 972 }, size, frame),
-    ).toEqual({ transform: "translate3d(-94px, 0px, 0)", clipPath: "inset(0% 0% 0% 10%)" });
+    expect(frameCut({ x: 1000, y: 36 }, { width: 500, height: 936 }, frame)).toBe(FRAME);
+    expect(frameCut({ x: 56, y: 40 }, { width: 500, height: 900 }, frame)).toBe(
+      "inset(-4px -996px -32px 0px)",
+    );
   });
 
-  it("keys the cut where the slot crosses the pages' edge", () => {
-    const keys = mirroredKeys(
-      [
-        { offset: 0, transform: { x: 0, y: 0 } },
-        { offset: 1, transform: { x: -1000, y: 0 } },
-      ],
-      { left: 900, top: 36, right: 1400, bottom: 972 },
-      { width: 500, height: 936 },
-      { x: 0, y: 0 },
-      { x: 900, y: 36 },
-      { left: 56, top: 36, right: 1552, bottom: 972 },
-    );
-    expect(keys.map((key) => key.offset)).toEqual([0, 0.844, 1]);
-    expect(keys[1]).toMatchObject({ clipPath: "inset(0%)" });
-    expect(keys[2]).toMatchObject({ clipPath: "inset(0% 0% 0% 31.2%)" });
+  it("moves the page as the slide moves its slot, from where the view was placed", () => {
+    expect(
+      mirroredKeys(
+        [
+          { offset: 0, transform: { x: -640, y: 0 }, opacity: 1 },
+          { offset: 1, transform: { x: -1496, y: 0 }, opacity: 0 },
+        ],
+        { x: 373, y: 36 },
+        { x: -640, y: 0 },
+        { x: 1013, y: 36 },
+      ),
+    ).toEqual([
+      { offset: 0, transform: "translate3d(-640px, 0px, 0)", opacity: 1 },
+      { offset: 1, transform: "translate3d(-1496px, 0px, 0)", opacity: 0 },
+    ]);
+    expect(moveBy({ x: 0.2, y: -0.3 })).toBe("");
   });
 });

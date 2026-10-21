@@ -6,27 +6,27 @@
  * slot resizes; a page sliding moves its slot without resizing it, so the
  * view stayed where the page had been, and the page slid away from it. While
  * the pages move (`data-moving` on `[data-stemcells-pages]`, the pager's),
- * the view follows its slot, moved by a transform and its content cut to the
- * pages' frame: nothing for React to render, nothing for the guest to paint
- * again (it paints on a resize; a move is the compositor's). When the pages
- * rest, the slot presents where it is and the transform goes.
+ * the view's page follows its slot, moved by a transform, inside the pages'
+ * frame: nothing for React to render, nothing for the guest to paint again
+ * (it paints on a resize; a move is the compositor's). When the pages rest,
+ * the slot presents where it is and the move goes.
  *
  * The fingers move the pages from the main thread, frame by frame, and the
- * view follows each frame there. A slide runs on the compositor, on through
- * a main thread busy with the turn it sets off, so the view gets copies of
- * it: the same timing and start, moving the view and cutting its content as
- * the slide moves the slot.
+ * page follows each frame there. A slide runs on the compositor, on through
+ * a main thread busy with the turn it sets off, so the page gets a copy of
+ * it: the same timing and start, moving it as the slide moves the slot.
  *
- * The move and the cut are on two boxes: the compositor draws a cut on the
- * box it moves from the main thread, so a busy main thread left the cut
- * behind the move, and the page showed past the pages' edge.
+ * The cut to the pages' frame doesn't move: the view keeps still and is cut
+ * to the frame, and only the box inside it, which holds the page, moves. A
+ * cut that moved with the page ran a frame behind it on the compositor, and
+ * the page showed over the rail while it sped past.
  */
 
 /** A shown view, and the point upstream placed it at. */
 export interface PlacedView {
-  /** The view, fixed over the app: it is moved. */
+  /** The view, fixed over the app: it is cut to the pages' frame. */
   readonly element: HTMLElement;
-  /** The box inside it at its top-left, holding the page: it is cut. */
+  /** The box inside it at its top-left, holding the page: it is moved. */
   readonly content: HTMLElement;
   readonly x: number;
   readonly y: number;
@@ -62,27 +62,31 @@ interface Size {
 export function ride(rider: Rider): () => void {
   const pages = rider.anchor.closest<HTMLElement>("[data-stemcells-pages]");
   if (pages === null) return () => undefined;
-  /** The view we move and cut, by inline style or by copies of a slide. */
+  /** The view we cut and whose page we move, by inline style or by a copy of a slide. */
   let held: PlacedView | null = null;
-  /** The slide the view has copies of, the copies, and where the view was placed for them. */
-  let mirrored: { slide: Animation; copies: Animation[]; placed: PlacedView } | null = null;
+  /** The slide the page has a copy of, the copy, and where the view was placed for it. */
+  let mirrored: { slide: Animation; copy: Animation; placed: PlacedView } | null = null;
   let frame = 0;
 
   const unmirror = () => {
-    for (const copy of mirrored?.copies ?? []) copy.cancel();
+    mirrored?.copy.cancel();
     mirrored = null;
   };
   const letGo = () => {
     unmirror();
     if (held === null) return;
-    held.element.style.transform = "";
-    held.content.style.clipPath = "";
+    held.element.style.overflow = "";
+    held.element.style.clipPath = "";
+    held.element.style.backgroundColor = "";
+    held.content.style.transform = "";
     held = null;
   };
-  const show = (view: PlacedView, look: Look) => {
-    const { element, content } = view;
-    if (element.style.transform !== look.transform) element.style.transform = look.transform;
-    if (content.style.clipPath !== look.clipPath) content.style.clipPath = look.clipPath;
+  const set = (
+    style: CSSStyleDeclaration,
+    property: "overflow" | "clipPath" | "backgroundColor" | "transform",
+    value: string,
+  ) => {
+    if (style[property] !== value) style[property] = value;
   };
 
   const follow = () => {
@@ -90,6 +94,12 @@ export function ride(rider: Rider): () => void {
     if (placed?.element !== held?.element || placed?.content !== held?.content) letGo();
     if (placed === null) return;
     held = placed;
+    const size = { width: placed.element.offsetWidth, height: placed.element.offsetHeight };
+    // The page moves out of the view's box, so the view shows past it, up to
+    // the frame, and its ground, which stays, goes.
+    set(placed.element.style, "overflow", "visible");
+    set(placed.element.style, "backgroundColor", "transparent");
+    set(placed.element.style, "clipPath", frameCut(placed, size, pages.getBoundingClientRect()));
     const slide = slideOf(rider.anchor, pages);
     if (
       slide !== null &&
@@ -101,15 +111,13 @@ export function ride(rider: Rider): () => void {
     }
     unmirror();
     const at = rider.anchor.getBoundingClientRect();
-    const size = { width: placed.content.offsetWidth, height: placed.content.offsetHeight };
-    const bounds = pages.getBoundingClientRect();
-    const copies = slide === null ? null : mirror(slide, at, size, placed, bounds);
-    if (slide !== null && copies !== null) {
-      mirrored = { slide, copies: copies.animations, placed };
-      // Where the slide ends: the view stays there once it and its copies are done.
-      show(placed, copies.end);
+    const copy = slide === null ? null : mirror(slide, at, placed);
+    if (slide !== null && copy !== null) {
+      mirrored = { slide, copy: copy.animation, placed };
+      // Where the slide ends: the page stays there once it and its copy are done.
+      set(placed.content.style, "transform", copy.end);
     } else {
-      show(placed, lookAt({ x: at.x - placed.x, y: at.y - placed.y }, at, size, bounds));
+      set(placed.content.style, "transform", moveBy({ x: at.x - placed.x, y: at.y - placed.y }));
     }
   };
 
@@ -119,7 +127,7 @@ export function ride(rider: Rider): () => void {
   };
   // A finger's stroke is written to the strip in the pager's own frame
   // callback, which may run after ours: following each write as it lands
-  // keeps the view on the frame the page is drawn in.
+  // keeps the page on the frame it is drawn in.
   const strokes = new MutationObserver(follow);
   const watch = () => {
     if (pages.hasAttribute("data-moving")) {
@@ -131,8 +139,10 @@ export function ride(rider: Rider): () => void {
       frame = 0;
       strokes.disconnect();
       unmirror();
+      // The slot presents where it is now, at once: the view is in place
+      // before anything paints, and the move and the cut go.
       rider.rest();
-      follow();
+      letGo();
     }
   };
   const moving = new MutationObserver(watch);
@@ -164,33 +174,23 @@ function slideOf(anchor: HTMLElement, pages: HTMLElement): Animation | null {
   return null;
 }
 
-/** The view's move and its content's cut, as inline style or a keyframe writes them. */
-interface Look {
-  readonly transform: string;
-  readonly clipPath: string;
+/** A move of the page by `by`, as inline style writes it: none when it hasn't moved. */
+export function moveBy(by: Point): string {
+  return Math.abs(by.x) < 0.5 && Math.abs(by.y) < 0.5 ? "" : `translate3d(${by.x}px, ${by.y}px, 0)`;
 }
 
 /**
- * The view moved by `by`, its slot at `at` once moved, its content of `size`
- * cut to `bounds`. The cut is in percent of the content's box: a composited
- * animation of a cut in pixels draws half of it on a 2x display (Electron 44).
+ * The view's cut to the pages' frame, `bounds`, in the view's own box (of
+ * `size`, at `placed`): past the box where the frame reaches beyond it, as
+ * the page moves out of it.
  */
-export function lookAt(by: Point, at: Box, size: Size, bounds: Box): Look {
-  const width = Math.max(1, size.width);
-  const height = Math.max(1, size.height);
-  const top = Math.max(0, bounds.top - at.top);
-  const right = Math.max(0, at.left + width - bounds.right);
-  const bottom = Math.max(0, at.top + height - bounds.bottom);
-  const left = Math.max(0, bounds.left - at.left);
-  const still = Math.abs(by.x) < 0.5 && Math.abs(by.y) < 0.5;
-  const whole = top + right + bottom + left < 0.5;
-  const percent = (part: number, of: number) => `${Number(((part / of) * 100).toFixed(3))}%`;
-  return {
-    transform: still ? "" : `translate3d(${by.x}px, ${by.y}px, 0)`,
-    clipPath: whole
-      ? ""
-      : `inset(${percent(top, height)} ${percent(right, width)} ${percent(bottom, height)} ${percent(left, width)})`,
-  };
+export function frameCut(placed: Point, size: Size, bounds: Box): string {
+  const top = bounds.top - placed.y;
+  const right = placed.x + size.width - bounds.right;
+  const bottom = placed.y + size.height - bounds.bottom;
+  const left = bounds.left - placed.x;
+  const px = (value: number) => `${Number(value.toFixed(2))}px`;
+  return `inset(${px(top)} ${px(right)} ${px(bottom)} ${px(left)})`;
 }
 
 /** A keyframe's transform as a move in pixels on `box`; null for anything else. */
@@ -222,90 +222,47 @@ export interface SlideKey {
   readonly opacity?: string | number | undefined;
 }
 
-/** A key of the copies: the view's move, its content's cut, and the slide's fade. */
-export interface MirroredKey extends Look {
+/** A key of the page's copy: its move, and the slide's fade. */
+export interface MirroredKey {
   readonly offset: number;
+  readonly transform: string;
   readonly opacity?: string | number | undefined;
 }
 
 /**
- * The view's keys for a slide whose keys move its target as given: the view
- * moves as the slot does, and its content's cut changes with it. Where a
- * slot's edge crosses the pages' edge between two keys, a key of its own
- * keeps the cut exact there.
+ * The page's keys for a slide whose keys move its target as given: the page
+ * moves as the slot does, from where the view was placed.
  */
 export function mirroredKeys(
   keys: readonly SlideKey[],
-  slot: Box,
-  size: Size,
+  slot: Point,
   now: Point,
   placed: Point,
-  bounds: Box,
 ): MirroredKey[] {
-  const at = (key: SlideKey): Box => {
-    const dx = key.transform.x - now.x;
-    const dy = key.transform.y - now.y;
-    return {
-      left: slot.left + dx,
-      top: slot.top + dy,
-      right: slot.left + dx + size.width,
-      bottom: slot.top + dy + size.height,
-    };
-  };
-  const keyAt = (offset: number, box: Box, opacity: SlideKey["opacity"]): MirroredKey => {
-    const look = lookAt({ x: box.left - placed.x, y: box.top - placed.y }, box, size, bounds);
-    return {
-      offset,
-      transform: look.transform || "none",
-      clipPath: look.clipPath || "inset(0%)",
-      ...(opacity === undefined ? {} : { opacity }),
-    };
-  };
-  const mirrored: MirroredKey[] = [];
-  keys.forEach((key, index) => {
-    const box = at(key);
-    mirrored.push(keyAt(key.offset, box, key.opacity));
-    const next = keys[index + 1];
-    if (next === undefined) return;
-    const to = at(next);
-    const crossings: number[] = [];
-    for (const [from, until, edge] of [
-      [box.left, to.left, bounds.left],
-      [box.right, to.right, bounds.right],
-      [box.top, to.top, bounds.top],
-      [box.bottom, to.bottom, bounds.bottom],
-    ] as const) {
-      const share = (edge - from) / (until - from);
-      if (share > 1e-6 && share < 1 - 1e-6) crossings.push(share);
-    }
-    for (const share of crossings.sort((a, b) => a - b)) {
-      const between: Box = {
-        left: box.left + (to.left - box.left) * share,
-        top: box.top + (to.top - box.top) * share,
-        right: box.right + (to.right - box.right) * share,
-        bottom: box.bottom + (to.bottom - box.bottom) * share,
-      };
-      mirrored.push(keyAt(key.offset + (next.offset - key.offset) * share, between, undefined));
-    }
-  });
-  return mirrored;
+  return keys.map((key) => ({
+    offset: key.offset,
+    transform:
+      moveBy({
+        x: slot.x + key.transform.x - now.x - placed.x,
+        y: slot.y + key.transform.y - now.y - placed.y,
+      }) || "none",
+    ...(key.opacity === undefined ? {} : { opacity: key.opacity }),
+  }));
 }
 
-/** Copies of `slide` on the view and its content, started with it; null when the slide can't be copied. */
+/** A copy of `slide` on the view's page, started with it; null when the slide can't be copied. */
 function mirror(
   slide: Animation,
   slot: DOMRect,
-  size: Size,
   placed: PlacedView,
-  bounds: DOMRect,
-): { animations: Animation[]; end: Look } | null {
+): { animation: Animation; end: string } | null {
   const effect = slide.effect;
   if (!(effect instanceof KeyframeEffect) || !(effect.target instanceof HTMLElement)) return null;
   const target = effect.target;
   const box = { width: target.offsetWidth, height: target.offsetHeight };
   const keys: SlideKey[] = [];
   for (const key of effect.getKeyframes()) {
-    // Between keys the view must move as the slot does: in a straight line.
+    // Between keys the page must move as the slot does: in a straight line.
     if (key.easing !== undefined && key.easing !== "linear") return null;
     const move = translation(key.transform as string | undefined, box);
     if (move === null) return null;
@@ -313,31 +270,16 @@ function mirror(
   }
   const computed = getComputedStyle(target).transform;
   const matrix = computed === "none" ? new DOMMatrixReadOnly() : new DOMMatrixReadOnly(computed);
-  const mirrored = mirroredKeys(keys, slot, size, { x: matrix.m41, y: matrix.m42 }, placed, bounds);
-  const timing = effect.getTiming();
-  const animations = [
-    placed.element.animate(
-      mirrored.map(({ offset, transform, opacity }) => ({
-        offset,
-        transform,
-        ...(opacity === undefined ? {} : { opacity }),
-      })),
-      timing,
-    ),
-    placed.content.animate(
-      mirrored.map(({ offset, clipPath }) => ({ offset, clipPath })),
-      timing,
-    ),
-  ];
+  const mirrored = mirroredKeys(keys, slot, { x: matrix.m41, y: matrix.m42 }, placed);
+  const animation = placed.content.animate(
+    mirrored.map((key) => ({ ...key })),
+    effect.getTiming(),
+  );
   const sync = () => {
-    for (const animation of animations) animation.startTime = slide.startTime;
+    animation.startTime = slide.startTime;
   };
   if (slide.startTime !== null) sync();
   else void slide.ready.then(sync, () => undefined);
   const last = mirrored.at(-1);
-  const end: Look = {
-    transform: last === undefined || last.transform === "none" ? "" : last.transform,
-    clipPath: last === undefined || last.clipPath === "inset(0%)" ? "" : last.clipPath,
-  };
-  return { animations, end };
+  return { animation, end: last === undefined || last.transform === "none" ? "" : last.transform };
 }
