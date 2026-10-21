@@ -68,6 +68,7 @@ const NOOP_OPEN_ATTACHMENT = (_attachment: ChatFileAttachment) => {};
 
 import { resolveChatListAnchoredEndSpace } from "@t3tools/shared/chatList";
 import { toolActivityFaviconUrl } from "@t3tools/shared/favicon";
+import { ToolRowLabel } from "../../stemcells/transcript/ToolRowLabel";
 import { formatDuration } from "@t3tools/shared/orchestrationTiming";
 import { getProjectFaviconCacheKey } from "@t3tools/shared/projectFavicon";
 import { claudeSkillInvocation, isJavaScriptReplTool } from "@t3tools/shared/toolActivity";
@@ -5596,7 +5597,7 @@ function WorkEntryLogRow(props: WorkEntryRowProps) {
                   linked
                 />
               ) : (
-                previewText
+                <ToolRowLabel label={previewText} command={workEntry.command} />
               )}
             </span>
             {answerPreview ? (

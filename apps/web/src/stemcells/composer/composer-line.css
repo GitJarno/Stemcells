@@ -76,8 +76,9 @@
    mark. Then what the chat is about, where it runs and its parent go, and
    the model in the composer shows its mark alone (upstream folds its own
    controls into its overflow before that). Last the project, the model's
-   chevron and the attach button go: dropping and pasting still attach.
-   The Cell, its name, the field and send or stop stay at every width. */
+   chevron and the attach button go (dropping and pasting still attach),
+   and the field's placeholder keeps to one line. The Cell, its name, the
+   field and send or stop stay at every width. */
 [data-stemcells-composer-line] .composer-line-project-mark {
   display: none;
 }
@@ -111,6 +112,12 @@
   }
   [data-chat-composer-footer="true"] [data-chat-provider-model-picker] {
     min-width: 0;
+  }
+  /* The field's placeholder keeps one line, so it never runs under send. */
+  [data-chat-composer-body="true"] .text-placeholder\/75 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

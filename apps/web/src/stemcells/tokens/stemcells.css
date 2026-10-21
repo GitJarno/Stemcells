@@ -1565,6 +1565,11 @@
   --sc-provider-codex: rgba(16, 163, 127, 1);
 }
 
+/* How far a wide table's edge fades in a pane, to say it scrolls sideways. */
+:root {
+  --sc-table-fade: 3.5rem;
+}
+
 /* A pane's buttons and its Cell's pill: round glass over the chat's top. */
 :root {
   --sc-pane-button: 28px;

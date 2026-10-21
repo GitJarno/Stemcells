@@ -318,3 +318,15 @@
   width: auto;
   flex: 1 1 0%;
 }
+
+/* A table wider than its pane says it scrolls sideways: upstream's edge
+   fade reaches further in, and its scrollbar stays in view while there is
+   more to see. */
+[data-stemcells-pane] .chat-markdown-table-container [data-slot="scroll-area-viewport"] {
+  --fade-size: var(--sc-table-fade);
+}
+[data-stemcells-pane]
+  .chat-markdown-table-container
+  [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"][data-has-overflow-x] {
+  opacity: 1;
+}

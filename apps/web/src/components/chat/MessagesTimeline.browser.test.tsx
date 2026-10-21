@@ -381,7 +381,7 @@ describe("MessagesTimeline work rows", () => {
       { workspaceRoot: "C:/Users/mike/dev-stuff/t3code" },
     );
     await click(screen.button(/^Received 1 update/));
-    await vi.waitFor(() => expect(screen.text()).toContain("t3code/apps/web/src/session-logic.ts"));
+    await vi.waitFor(() => expect(screen.text()).toContain("session-logic.ts t3code/apps/web/src"));
     expect(screen.text()).not.toContain(
       "C:/Users/mike/dev-stuff/t3code/apps/web/src/session-logic.ts",
     );

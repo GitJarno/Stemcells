@@ -44,6 +44,7 @@ import {
   type Tab,
   type Workspace,
 } from "./layout";
+import { keepEndAcrossWidth } from "./keepEnd";
 import { mountedTabs } from "./pager";
 import { CellPill, PaneButtons } from "./PaneButtons";
 import { PaneCellContext } from "./paneCell";
@@ -392,6 +393,11 @@ function TabPage(props: {
   );
 }
 
+/** A pane keeps a chat read to its end at its end as the pane's width changes. */
+function holdEndAcrossWidth(pane: HTMLDivElement | null) {
+  return pane ? keepEndAcrossWidth(pane) : undefined;
+}
+
 function PaneSlot(props: {
   pane: Pane;
   /** Set on Aski's pane: Aski's chat as it stands. */
@@ -417,6 +423,7 @@ function PaneSlot(props: {
     (presence.liveness === "alive" && props.pane.cell ? presence.target : null);
   return (
     <div
+      ref={holdEndAcrossWidth}
       data-stemcells-pane={props.pane.id}
       data-focused={props.focused}
       onPointerDownCapture={() => {
