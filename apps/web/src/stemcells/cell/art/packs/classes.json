@@ -1,0 +1,3878 @@
+{
+  "theme": "classes",
+  "season": null,
+  "about": "Six classes of adventurer: knight, mage, ranger, rogue, monk and bard, each with a cheer of its own.",
+  "pieces": [
+    {
+      "name": "cape",
+      "slot": "back",
+      "about": "A knight's cape, worn on the back: its blue edge and gold hem show past the shoulders.",
+      "art": [
+        "...hU................Uh...",
+        "..hU..................Uh..",
+        ".hU....................Uh.",
+        ".hU....................Uh.",
+        "hU......................Uh",
+        "hU......................Uh",
+        "YJ......................JY",
+        "Y........................Y"
+      ],
+      "hotspot": [12, 5],
+      "mini": ["h...........h", "h...........h", "Y...........Y"],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "cap",
+      "slot": "headwear",
+      "about": "A ranger's peaked cap with a red feather, worn on the crown.",
+      "art": [
+        "R......................",
+        "RW.....................",
+        ".RW....................",
+        "..RW...................",
+        "...RW..................",
+        "....RW.................",
+        ".....RRFFFFF...........",
+        ".....FFFFFFFFFF........",
+        "....FFFFFFFFFFFFf......",
+        "....FFFFFFFFFFFFFf.....",
+        "...FFFFFFFFFFFFFFFf....",
+        "..FFFFFFFFFFFFFFFFFFf..",
+        ".ffffffffffffffffffffff"
+      ],
+      "hotspot": [9, 11],
+      "mini": ["R.........", ".R........", "..R.......", "..RFFF....", "..FFFFFf..", ".FFFFFFFFf"],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "quiver",
+      "slot": "back",
+      "about": "A ranger's quiver, worn on the back: its arrows' pale fletching shows by the left shoulder.",
+      "art": ["W.W.", "pWpW", "pkp.", "tkt.", "nnn.", ".nnn", ".nnn", "..nn"],
+      "hotspot": [12, 11],
+      "mini": ["W.W", "pkp", ".tn", "..n"],
+      "miniHotspot": [6, 7]
+    },
+    {
+      "name": "cloak",
+      "slot": "back",
+      "about": "A rogue's hooded cape, worn on the back: the hood's point rises over the crown, and the cape falls past the shoulders to a pale hem.",
+      "art": [
+        "............44............",
+        "...........4444...........",
+        "..........444444..........",
+        ".........44444444.........",
+        "........4444444444........",
+        "......44..........44......",
+        "...4444............4444...",
+        "..444................444..",
+        ".444..................444.",
+        ".44....................44.",
+        "444....................444",
+        "44......................44",
+        "pp......................pp",
+        "p........................p"
+      ],
+      "hotspot": [12, 11],
+      "mini": [
+        "......4......",
+        ".....444.....",
+        "...4.....4...",
+        ".4.........4.",
+        "4...........4",
+        "p...........p"
+      ],
+      "miniHotspot": [6, 6]
+    },
+    {
+      "name": "headband",
+      "slot": "headwear",
+      "about": "A monk's cloth headband, tied round the brow and knotted at the side, its two tails fluttering free.",
+      "art": [
+        "R......................",
+        "RR.....................",
+        ".RN..R.................",
+        ".mNRRN.................",
+        "..mNN..................",
+        "...NN..................",
+        "..RRNN.................",
+        ".RNmmNR................",
+        ".RNNRRRRRRRRRRRRRRRRR..",
+        "..NNNNNNNNNNNNNNNNNNNN.",
+        "..mmmmmmmmmmmmmmmmmmmmm"
+      ],
+      "hotspot": [12, 7],
+      "mini": ["R..........", "RN.........", ".NR........", "NNNNNNNNNNm"],
+      "miniHotspot": [5, 2],
+      "frames": [
+        [
+          "R......................",
+          "RR.....................",
+          ".RN..R.................",
+          ".mNRRN.................",
+          "..mNN..................",
+          "...NN..................",
+          "..RRNN.................",
+          ".RNmmNR................",
+          ".RNNRRRRRRRRRRRRRRRRR..",
+          "..NNNNNNNNNNNNNNNNNNNN.",
+          "..mmmmmmmmmmmmmmmmmmmmm"
+        ],
+        [
+          ".......................",
+          ".......................",
+          "RR.....................",
+          "RNNR..R................",
+          ".mNNNNN................",
+          "..mNNN.................",
+          "..RRNN.................",
+          ".RNmmNR................",
+          ".RNNRRRRRRRRRRRRRRRRR..",
+          "..NNNNNNNNNNNNNNNNNNNN.",
+          "..mmmmmmmmmmmmmmmmmmmmm"
+        ]
+      ],
+      "miniFrames": [
+        ["R..........", "RN.........", ".NR........", "NNNNNNNNNNm"],
+        ["...........", "RR.........", "NNR........", "NNNNNNNNNNm"]
+      ],
+      "fps": 4
+    },
+    {
+      "name": "lute",
+      "slot": "back",
+      "about": "A bard's lute, slung on the back: its neck and bent pegbox rise over the right shoulder.",
+      "art": [
+        ".........kW.",
+        "........okk.",
+        ".......oo.kW",
+        "......oon.Wk",
+        ".....oon...k",
+        "....oon.....",
+        "...oon......",
+        "..oon.......",
+        ".oon........",
+        "oon........."
+      ],
+      "hotspot": [-2, 15],
+      "mini": ["...o.", "..o.k", ".o..k", "o...."],
+      "miniHotspot": [-2, 8]
+    },
+    {
+      "name": "beret",
+      "slot": "headwear",
+      "about": "A bard's soft beret with a feather tucked in its band, worn tipped over the crown.",
+      "art": [
+        "........NNNNNN.........",
+        "......NNNNNNNNNNN......",
+        "....pNNNNNNNNNNNNNN....",
+        ".ppWYNNNNNNNNNNNNNNNm..",
+        "ppp.YNNNNNNNNNNNNNNNNmm",
+        ".....mmmmmmmmmmmmmmmmm."
+      ],
+      "hotspot": [12, 4],
+      "mini": ["...NNNN...", "ppYNNNNNNm"],
+      "miniHotspot": [5, 1]
+    },
+    {
+      "name": "lute-held",
+      "slot": "back",
+      "about": "The bard's lute brought round from the back and held low across the body to play. The strum swaps it in for the lute on the back.",
+      "posed": true,
+      "z": 1,
+      "art": [
+        "...............kW",
+        "..............kkW",
+        ".............kn..",
+        "............kn...",
+        "...........kn....",
+        "...........kn....",
+        "..........kn.....",
+        "..........kn.....",
+        ".........kn......",
+        ".........kn......",
+        "........kn.......",
+        "...kkkkkkn.......",
+        ".kkoooooonk......",
+        "koooookkooonk....",
+        "koooookkoooonk...",
+        ".kooooooooonk....",
+        "..kkkkkkkkkk....."
+      ],
+      "hotspot": [2, 7],
+      "mini": [
+        "........k",
+        ".......k.",
+        "......k..",
+        "......k..",
+        ".....k...",
+        ".....k...",
+        "kookoonk.",
+        ".kkkkkk.."
+      ],
+      "miniHotspot": [2, 4]
+    }
+  ],
+  "fabrics": {
+    "plate-gold": {
+      "about": "The knight's plate in gold: a steel rim at the chest over gold plates down to the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "g",
+            "b": "D"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [5, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "miniRows": [11, 11],
+          "columns": [5, 26],
+          "miniColumns": [1, 11]
+        }
+      ]
+    },
+    "plate-sky": {
+      "about": "The knight's plate in sky: a gold rim at the chest over sky-blue plates down to the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [5, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "miniRows": [11, 11],
+          "columns": [5, 26],
+          "miniColumns": [1, 11]
+        }
+      ]
+    },
+    "robe": {
+      "about": "The mage's lilac robe from the waist down, its hem in gold.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J",
+            "L": "Y",
+            "O": "J"
+          },
+          "rides": false,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "l",
+            "b": "v",
+            "L": "l",
+            "O": "v"
+          },
+          "rides": false,
+          "rows": [23, 27],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "robe-sky": {
+      "about": "The mage's robe in sky blue from the waist down, its hem in gold.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J",
+            "L": "Y",
+            "O": "J"
+          },
+          "rides": false,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": false,
+          "rows": [23, 27],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "robe-rose": {
+      "about": "The mage's robe in rose from the waist down, its hem in gold.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J",
+            "L": "Y",
+            "O": "J"
+          },
+          "rides": false,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": false,
+          "rows": [23, 27],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "tunic": {
+      "about": "The ranger's forest-green tunic from the chest to the hips, its hem cut in points.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "miniRows": [11, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [3, 4],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [11, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [19, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [27, 28],
+          "only": "hero"
+        }
+      ]
+    },
+    "tunic-leather": {
+      "about": "The ranger's tunic in brown leather from the chest to the hips, its hem cut in points.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "miniRows": [11, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [3, 4],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [11, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [19, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "j",
+            "L": "Z",
+            "O": "j"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [27, 28],
+          "only": "hero"
+        }
+      ]
+    },
+    "tunic-lime": {
+      "about": "The ranger's tunic in lime from the chest to the hips, its hem cut in points.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "miniRows": [11, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [3, 4],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [11, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [19, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "columns": [27, 28],
+          "only": "hero"
+        }
+      ]
+    },
+    "hood": {
+      "about": "The rogue's charcoal hood round the face and down the sides, with a crimson sash at the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [13, 18],
+          "miniRows": [6, 7]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "b",
+            "L": "b"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "miniRows": [8, 8],
+          "columns": [9, 22],
+          "miniColumns": [3, 9]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [19, 25],
+          "miniRows": [8, 10],
+          "columns": [0, 8],
+          "miniColumns": [0, 2]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [19, 25],
+          "miniRows": [8, 10],
+          "columns": [23, 31],
+          "miniColumns": [10, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        }
+      ]
+    },
+    "hood-gold": {
+      "about": "The rogue's charcoal hood round the face and down the sides, with a gold sash at the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [13, 18],
+          "miniRows": [6, 7]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "b",
+            "L": "b"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "miniRows": [8, 8],
+          "columns": [9, 22],
+          "miniColumns": [3, 9]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [19, 25],
+          "miniRows": [8, 10],
+          "columns": [0, 8],
+          "miniColumns": [0, 2]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [19, 25],
+          "miniRows": [8, 10],
+          "columns": [23, 31],
+          "miniColumns": [10, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J",
+            "L": "Y",
+            "O": "J"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        }
+      ]
+    },
+    "hood-sky": {
+      "about": "The rogue's charcoal hood round the face and down the sides, with a sky-blue sash at the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [13, 18],
+          "miniRows": [6, 7]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "b",
+            "L": "b"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "miniRows": [8, 8],
+          "columns": [9, 22],
+          "miniColumns": [3, 9]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [19, 25],
+          "miniRows": [8, 10],
+          "columns": [0, 8],
+          "miniColumns": [0, 2]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "D",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [19, 25],
+          "miniRows": [8, 10],
+          "columns": [23, 31],
+          "miniColumns": [10, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        }
+      ]
+    },
+    "gi": {
+      "about": "The monk's pearl gi: wide sleeves at the sides, a crossed collar under the face, and a crimson belt whose ends hang over the trousers.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13],
+          "columns": [13, 14],
+          "miniColumns": [5, 5]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13],
+          "columns": [17, 18],
+          "miniColumns": [7, 7]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [11, 11],
+          "miniColumns": [4, 4]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [20, 20],
+          "miniColumns": [8, 8]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [13, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [0, 10],
+          "miniColumns": [0, 3]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [21, 31],
+          "miniColumns": [9, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [0, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [19, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [22, 23],
+          "miniRows": [10, 10],
+          "columns": [0, 8],
+          "miniColumns": [0, 2]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [22, 23],
+          "miniRows": [10, 10],
+          "columns": [23, 31],
+          "miniColumns": [10, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [18, 21],
+          "miniRows": [8, 9],
+          "columns": [0, 6],
+          "miniColumns": [0, 1]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [18, 21],
+          "miniRows": [8, 9],
+          "columns": [25, 31],
+          "miniColumns": [11, 12]
+        }
+      ]
+    },
+    "gi-sky": {
+      "about": "The monk's gi in sky blue: wide sleeves at the sides, a crossed collar under the face, and a crimson belt whose ends hang over the trousers.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13],
+          "columns": [13, 14],
+          "miniColumns": [5, 5]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13],
+          "columns": [17, 18],
+          "miniColumns": [7, 7]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d",
+            "L": "d",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [11, 11],
+          "miniColumns": [4, 4]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d",
+            "L": "d",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [20, 20],
+          "miniColumns": [8, 8]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d",
+            "L": "d",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [13, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d",
+            "L": "d",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [0, 10],
+          "miniColumns": [0, 3]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [21, 31],
+          "miniColumns": [9, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [0, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [19, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [22, 23],
+          "miniRows": [10, 10],
+          "columns": [0, 8],
+          "miniColumns": [0, 2]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [22, 23],
+          "miniRows": [10, 10],
+          "columns": [23, 31],
+          "miniColumns": [10, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [18, 21],
+          "miniRows": [8, 9],
+          "columns": [0, 6],
+          "miniColumns": [0, 1]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [18, 21],
+          "miniRows": [8, 9],
+          "columns": [25, 31],
+          "miniColumns": [11, 12]
+        }
+      ]
+    },
+    "gi-black": {
+      "about": "The monk's gi in charcoal: wide sleeves at the sides, a crossed collar under the face, and a crimson belt whose ends hang over the trousers.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13],
+          "columns": [13, 14],
+          "miniColumns": [5, 5]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13],
+          "columns": [17, 18],
+          "miniColumns": [7, 7]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [11, 11],
+          "miniColumns": [4, 4]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [20, 20],
+          "miniColumns": [8, 8]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [13, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [0, 10],
+          "miniColumns": [0, 3]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "miniRows": [11, 11],
+          "columns": [21, 31],
+          "miniColumns": [9, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [0, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [19, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [22, 23],
+          "miniRows": [10, 10],
+          "columns": [0, 8],
+          "miniColumns": [0, 2]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [22, 23],
+          "miniRows": [10, 10],
+          "columns": [23, 31],
+          "miniColumns": [10, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [18, 21],
+          "miniRows": [8, 9],
+          "columns": [0, 6],
+          "miniColumns": [0, 1]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [18, 21],
+          "miniRows": [8, 9],
+          "columns": [25, 31],
+          "miniColumns": [11, 12]
+        }
+      ]
+    },
+    "doublet": {
+      "about": "The bard's doublet from the waist down, split down the middle in gold and crimson.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J",
+            "L": "Y",
+            "O": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13],
+          "columns": [0, 15],
+          "miniColumns": [0, 6]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13],
+          "columns": [16, 31],
+          "miniColumns": [7, 12]
+        }
+      ]
+    },
+    "doublet-sky": {
+      "about": "The bard's doublet from the waist down, split down the middle in sky blue and rose.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13],
+          "columns": [0, 15],
+          "miniColumns": [0, 6]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13],
+          "columns": [16, 31],
+          "miniColumns": [7, 12]
+        }
+      ]
+    },
+    "doublet-lime": {
+      "about": "The bard's doublet from the waist down, split down the middle in lime and teal.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13],
+          "columns": [0, 15],
+          "miniColumns": [0, 6]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Q",
+            "b": "x",
+            "L": "Q",
+            "O": "x"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13],
+          "columns": [16, 31],
+          "miniColumns": [7, 12]
+        }
+      ]
+    }
+  },
+  "outfits": [
+    {
+      "id": "knight",
+      "headwear": "helm",
+      "back": "classes/cape",
+      "outfit": "plate",
+      "colourways": [
+        {
+          "id": "gold",
+          "fabric": "classes/plate-gold"
+        },
+        {
+          "id": "sky",
+          "fabric": "classes/plate-sky"
+        }
+      ],
+      "cheer": "knight",
+      "silhouette": "helm",
+      "family": "steel"
+    },
+    {
+      "id": "mage",
+      "headwear": "wizard",
+      "fabric": "classes/robe",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "classes/robe-sky"
+        },
+        {
+          "id": "rose",
+          "fabric": "classes/robe-rose"
+        }
+      ],
+      "cheer": "classes/spark",
+      "silhouette": "cone",
+      "family": "lilac"
+    },
+    {
+      "id": "ranger",
+      "headwear": "classes/cap",
+      "back": "classes/quiver",
+      "fabric": "classes/tunic",
+      "colourways": [
+        {
+          "id": "leather",
+          "fabric": "classes/tunic-leather"
+        },
+        {
+          "id": "lime",
+          "fabric": "classes/tunic-lime"
+        }
+      ],
+      "cheer": "classes/arrow",
+      "silhouette": "cap",
+      "family": "forest"
+    },
+    {
+      "id": "rogue",
+      "back": "classes/cloak",
+      "fabric": "classes/hood",
+      "colourways": [
+        {
+          "id": "gold",
+          "fabric": "classes/hood-gold"
+        },
+        {
+          "id": "sky",
+          "fabric": "classes/hood-sky"
+        }
+      ],
+      "cheer": "classes/vanish",
+      "silhouette": "hood",
+      "family": "charcoal"
+    },
+    {
+      "id": "monk",
+      "headwear": "classes/headband",
+      "fabric": "classes/gi",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "classes/gi-sky"
+        },
+        {
+          "id": "black",
+          "fabric": "classes/gi-black"
+        }
+      ],
+      "cheer": "classes/palm",
+      "silhouette": "band",
+      "family": "pearl"
+    },
+    {
+      "id": "bard",
+      "headwear": "classes/beret",
+      "back": "classes/lute",
+      "fabric": "classes/doublet",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "classes/doublet-sky"
+        },
+        {
+          "id": "lime",
+          "fabric": "classes/doublet-lime"
+        }
+      ],
+      "cheer": "classes/strum",
+      "silhouette": "lute",
+      "family": "crimson"
+    }
+  ],
+  "cheers": {
+    "spark": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 4,
+      "lively": true,
+      "next": "idle",
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": -1
+              }
+            ],
+            "look": [1, -1]
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.75,
+                "dx": 2,
+                "dy": -3
+              }
+            ],
+            "look": [1, -1]
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ],
+            "look": [1, -1],
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ],
+            "look": [1, -1],
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            },
+            {
+              "art": ["..y..", ".G.G.", "y.*.y", ".G.G.", "..y.."],
+              "attach": "handR",
+              "hotspot": [0, 8],
+              "z": 5,
+              "mini": [".y.", "y*y", ".y."],
+              "miniHotspot": [2, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ],
+            "eyes": "happy",
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            },
+            {
+              "art": ["y...y", ".....", "..*..", ".....", "y...y"],
+              "attach": "handR",
+              "hotspot": [0, 8],
+              "z": 5,
+              "mini": ["y.y", ".*.", "y.y"],
+              "miniHotspot": [2, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ],
+            "eyes": "happy",
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            },
+            {
+              "art": ["..y..", ".G.G.", "y.*.y", ".G.G.", "..y.."],
+              "attach": "handR",
+              "hotspot": [0, 8],
+              "z": 5,
+              "mini": [".y.", "y*y", ".y."],
+              "miniHotspot": [2, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ],
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "handR",
+              "hotspot": [3, 9],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ],
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "handR",
+              "hotspot": [5, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [4, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.75,
+                "dx": 2,
+                "dy": -3
+              }
+            ],
+            "eyes": "happy",
+            "sy": 0.96
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": -1
+              }
+            ],
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": -1
+              }
+            ],
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": ["...G.", "..GGG", "...G.", "..k..", ".k...", ".k...", "k...."],
+              "attach": "handR",
+              "hotspot": [1, 6],
+              "z": 4,
+              "mini": [".G.", "GGG", "..k", "..k"],
+              "miniHotspot": [2, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "arrow": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 2,
+      "lively": true,
+      "next": "idle",
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": [
+                "......pp",
+                "......op",
+                ".....o..",
+                "....o...",
+                "...o....",
+                "..o.....",
+                "RR......",
+                ".R......"
+              ],
+              "attach": "handR",
+              "hotspot": [4, 4],
+              "z": 5,
+              "mini": ["...p", "..o.", ".o..", "R..."],
+              "miniHotspot": [2, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "focused",
+            "sy": 0.96
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": [
+                "......pp",
+                "......op",
+                ".....o..",
+                "....o...",
+                "...o....",
+                "..o.....",
+                "RR......",
+                ".R......"
+              ],
+              "attach": "handR",
+              "hotspot": [5, 3],
+              "z": 5,
+              "mini": ["...p", "..o.", ".o..", "R..."],
+              "miniHotspot": [2, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "focused",
+            "sy": 0.94
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": [
+                "......pp",
+                "......op",
+                ".....o..",
+                "....o...",
+                "...o....",
+                "..o.....",
+                "RR......",
+                ".R......"
+              ],
+              "attach": "handR",
+              "hotspot": [5, 3],
+              "z": 5,
+              "mini": ["...p", "..o.", ".o..", "R..."],
+              "miniHotspot": [2, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "wide",
+            "sy": 1.02
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "...n",
+                "W..n",
+                "...n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": [
+                "......pp",
+                "......op",
+                ".....o..",
+                "....o...",
+                "...o....",
+                "..o.....",
+                "RR......",
+                ".R......"
+              ],
+              "attach": "handR",
+              "hotspot": [0, 8],
+              "z": 5,
+              "mini": ["...p", "..o.", ".o..", "R..."],
+              "miniHotspot": [1, 3]
+            },
+            {
+              "art": ["....W", ".....", "..W..", ".....", "W...."],
+              "attach": "handR",
+              "hotspot": [2, 1],
+              "z": 3,
+              "mini": [".W", "W."],
+              "miniHotspot": [1, 0]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "wide"
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": ["....W", ".....", "..W..", ".....", "W...."],
+              "attach": "handR",
+              "hotspot": [2, 1],
+              "z": 3,
+              "mini": [".W", "W."],
+              "miniHotspot": [1, 0]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "wide"
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "wide"
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "handR",
+              "hotspot": [-2, 4],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [-1, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "happy",
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            },
+            {
+              "art": ["y.y", ".*.", "y.y"],
+              "attach": "handR",
+              "hotspot": [-2, 4],
+              "z": 5,
+              "mini": ["y"],
+              "miniHotspot": [-1, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "happy",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "happy",
+            "base": 27
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "happy",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.95,
+                "dx": 2,
+                "dy": -9
+              }
+            ],
+            "look": [1, -1],
+            "eyes": "happy",
+            "sy": 0.94
+          },
+          "layers": [
+            {
+              "art": [
+                "o...",
+                "Wo..",
+                "W.o.",
+                "W..o",
+                "W..n",
+                "W..n",
+                "W..n",
+                "W..o",
+                "W.o.",
+                "Wo..",
+                "o..."
+              ],
+              "attach": "handR",
+              "hotspot": [1, 5],
+              "z": 4,
+              "mini": ["o.", ".o", ".n", ".o", "o."],
+              "miniHotspot": [0, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": -1
+              }
+            ],
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "vanish": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 11,
+      "lively": true,
+      "next": "idle",
+      "frames": [
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [-1, 0]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.9,
+            "spread": 0.3
+          },
+          "layers": [
+            {
+              "art": [
+                ".....pppppppppppp.........",
+                "....ppuuuuuuuuuuuupppp....",
+                ".ppppuuuuuuuuuuuuuuuuuu...",
+                "ppuuuuuuuuuuuuuuuuuuuuuu..",
+                "puuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuquuuuuquuuuuquuuuuuuuqq",
+                ".qqqqqqqqqqqqqqqqquqqqqqqq",
+                "..................qqqq...."
+              ],
+              "attach": "ground",
+              "hotspot": [12, 7],
+              "z": 5,
+              "mini": ["...pp.pp.....", ".pppuupuupp..", "ppuuuuuuuuuuq", "qqqqqqqquqqqq"],
+              "miniHotspot": [6, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.9,
+            "spread": 0.3
+          },
+          "layers": [
+            {
+              "art": [
+                "..............pppppp...........",
+                ".............ppuuuuuu..........",
+                "............ppuuuuuuuu.........",
+                "......pppppppuuuuuuuuu.pppp....",
+                ".....ppuuuuuuuuuuuuuuuupuuuq...",
+                ".....puuuuuuuuuuuuuuuuuuuuuuq..",
+                ".....puuuuuuuuuuuuuuuuuuuuuqq..",
+                ".....puuuuuuuuuuuuuuuuuuuuuuq..",
+                "...pppuuuuuuuuuuuuuuuuuuuuuuu..",
+                "..ppuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                "..puuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                ".ppuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuu.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "ppuuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".uuuuuuuuuuuuuuuuuuuuuuuuuuuqqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuqqq.",
+                "..qquqquuuuuuuuuuuuuuuuqqqqqq..",
+                "....qqqqquuuuuqquuuuuqqqq......",
+                "..........qqqqqq.qqqqqq........"
+              ],
+              "attach": "ground",
+              "hotspot": [15, 24],
+              "z": 5,
+              "mini": [
+                ".....pppp....",
+                "..ppppuuuu...",
+                ".ppuupuuuuuqq",
+                ".puuuuuuuuuuq",
+                "ppuuuuuuuuuuq",
+                "puuuuuuuuuuuq",
+                "uuuuuuuuuuuuq",
+                "uuuuuuuuuuuuu",
+                "uuuuuuuuuuuuu",
+                "uuuuuuuuuuuuq",
+                "uuuuuuuuuuuqq",
+                "qquuuquuqqqqq"
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {},
+          "layers": [
+            {
+              "art": [
+                "..............pppppp...........",
+                ".............ppuuuuuu..........",
+                "............ppuuuuuuuu.........",
+                "......pppppppuuuuuuuuu.pppp....",
+                ".....ppuuuuuuuuuuuuuuuupuuuq...",
+                ".....puuuuuuuuuuuuuuuuuuuuuuq..",
+                ".....puuuuuuuuuuuuuuuuuuuuuqq..",
+                ".....puuuuuuuuuuuuuuuuuuuuuuq..",
+                "...pppuuuuuuuuuuuuuuuuuuuuuuu..",
+                "..ppuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                "..puuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                ".ppuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuu.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "ppuuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                ".uuuuuuuuuuuuuuuuuuuuuuuuuuuqqq",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuqqq.",
+                "..qquqquuuuuuuuuuuuuuuuqqqqqq..",
+                "....qqqqquuuuuqquuuuuqqqq......",
+                "..........qqqqqq.qqqqqq........"
+              ],
+              "attach": "ground",
+              "hotspot": [15, 24],
+              "z": 5,
+              "mini": [
+                ".....pppp....",
+                "..ppppuuuu...",
+                ".ppuupuuuuuqq",
+                ".puuuuuuuuuuq",
+                "ppuuuuuuuuuuq",
+                "puuuuuuuuuuuq",
+                "uuuuuuuuuuuuq",
+                "uuuuuuuuuuuuu",
+                "uuuuuuuuuuuuu",
+                "uuuuuuuuuuuuq",
+                "uuuuuuuuuuuqq",
+                "qquuuquuqqqqq"
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ],
+          "hidden": true
+        },
+        {
+          "pose": {},
+          "layers": [
+            {
+              "art": [
+                "................p.............",
+                ".............p.p.u............",
+                "............p.u.u.u...........",
+                ".......p.p...u.u.u.q..........",
+                "......p.u.p.p.u.u.u.u.p.p.....",
+                ".....p.u.u.u.u.u.u.u.u.u.u....",
+                "....p.u.u.u.u.u.u.q...u.u.q...",
+                ".....u.u.u.u.u.u.u.u.u.u.u....",
+                "....p.u.u.u.u.u.u.u...u.u.u...",
+                "...p.u.u.u.u.u.u.u.u.p.u.u.q..",
+                "..p.u.u.u.u.u.u.u.u.u.u.u.u...",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.u..",
+                "..u.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.q..",
+                "..u.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.u..",
+                "..u.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.u..",
+                "p.u.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                ".u.u.u.u.u.u.u.u.u.u.u.u.u.u.q",
+                "p.u.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                ".u.u.u.u.u.u.u.u.u.u.u.u.u.q..",
+                "..u.u.q.u.u.u.u.u.u.u.q.q.q...",
+                "...q.q...u.u.q.u.u.u.q...q....",
+                "..........q.q.q.q.q.q.........",
+                "...........q.......q.........."
+              ],
+              "attach": "ground",
+              "hotspot": [14, 25],
+              "z": 5,
+              "mini": [
+                "......p.p....",
+                "...p.p.u...q.",
+                "..p.u.u.u.p.q",
+                ".p.u.u.u.u.u.",
+                "p.u.u.u.u.u.q",
+                ".u.u.u.u.u.u.",
+                "p.u.u.u.u.u.q",
+                ".u.u.u.u.u.u.",
+                "p.u.u.u.u.u.q",
+                ".u.u.u.u.u.q.",
+                "q.u.u.u.q.q.q",
+                ".q.q.q.q.q..."
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ],
+          "hidden": true
+        },
+        {
+          "pose": {},
+          "layers": [
+            {
+              "art": [
+                "..............z............",
+                "...........................",
+                "............z.z.z..........",
+                "...........................",
+                "....z.z.z...z.z.z.z...z.z..",
+                "...........................",
+                "....z.z.z...z.z.z...z.z.z..",
+                "...........................",
+                "....z.z.z.z.z.z.z.....z.z..",
+                "...........................",
+                "..z.z.z.z.z.z.z.z.z.z.z.z.z",
+                "...........................",
+                "..z.z.z.z.z.z.z.z.z.z.z.z.z",
+                "...........................",
+                "..z.z.z.....z.z.z...z.z.z..",
+                "...........................",
+                "z.z.z.z.z.z.z...z.z.z.z.z.z",
+                "...........................",
+                "z.z.z.z.z.z.z.z.z.z.z.z.z.z",
+                "...........................",
+                "..z.z.z.z.z.z.z.z.z.z.z.z.z",
+                "...........................",
+                "..........z.z...z.z........"
+              ],
+              "attach": "ground",
+              "hotspot": [13, 26],
+              "z": 5,
+              "mini": [
+                "......z.z....",
+                ".............",
+                "..z...z...z..",
+                ".............",
+                "z.z.z.z.z.z.z",
+                ".............",
+                "z.z.z.z.z.z..",
+                ".............",
+                "z.z.z.z.z.z.z",
+                ".............",
+                "....z...z...."
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ],
+          "hidden": true
+        },
+        {
+          "pose": {},
+          "layers": [
+            {
+              "art": [
+                "............z.z........",
+                ".......................",
+                "..............z........",
+                ".......................",
+                "....z.z.............z.z",
+                ".......................",
+                "..........z............",
+                ".......................",
+                "..z.z.....z.z.z.....z.z",
+                ".......................",
+                "..z.......z...z...z...z",
+                ".......................",
+                "..z.................z..",
+                ".......................",
+                "..z.......z...z.......z",
+                ".......................",
+                "z.z.z.z.z.z...z.z.z.z.z",
+                ".......................",
+                "..z...z...z...z...z...."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 26],
+              "z": 5,
+              "mini": [
+                "..z...z...z..",
+                ".............",
+                "......z......",
+                ".............",
+                "..z...z...z..",
+                ".............",
+                "z.z.z...z.z.z"
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ],
+          "hidden": true
+        },
+        {
+          "pose": {},
+          "hidden": true
+        },
+        {
+          "pose": {},
+          "layers": [
+            {
+              "art": [
+                ".....pppppppppppp.........",
+                "....ppuuuuuuuuuuuupppp....",
+                ".ppppuuuuuuuuuuuuuuuuuu...",
+                "ppuuuuuuuuuuuuuuuuuuuuuu..",
+                "puuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuq",
+                "puuquuuuuquuuuuquuuuuuuuqq",
+                ".qqqqqqqqqqqqqqqqquqqqqqqq",
+                "..................qqqq...."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 7],
+              "z": 5,
+              "mini": ["...pp.pp.....", ".pppuupuupp..", "ppuuuuuuuuuuq", "qqqqqqqquqqqq"],
+              "miniHotspot": [5, 4]
+            }
+          ],
+          "hidden": true
+        },
+        {
+          "pose": {
+            "x": 17.5,
+            "eyes": "happy",
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": [
+                "..............pppp............",
+                "............pppuuuuq..........",
+                "............ppuuuuuq..........",
+                "......pppp.ppuuuuuuqu..pp.....",
+                ".....ppuuuupuuuuuuuuuuppppq...",
+                "....ppuuuuuuuuuuuuuuuupuuuq...",
+                "....puuuuuuuuuuuuuuuuuuuuuqq..",
+                "....puuuuuuuuuuuuuuuuuuuuuqq..",
+                "...ppuuuuuuuuuuuuuuuupuuuuu...",
+                "..ppuuuuuuuuuuuuuuuuuuuuuuuu..",
+                ".ppuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuqq.",
+                ".puuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                "ppuuuuuuuuuuuuuuuuuuuuuuuuuuq.",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuuqq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuuqqq",
+                "puuuuuuuuuuuuuuuuuuuuuuuuuqqq.",
+                ".uuuuuuuuuuuuuuuuuuuuuqqqqqqq.",
+                "..qqqqquuuuuuuuuuuuuuqqqqqq...",
+                "........qqqqqqqqqqqqqqq.......",
+                "..........qqqq...qqqq........."
+              ],
+              "attach": "ground",
+              "hotspot": [14, 24],
+              "z": 5,
+              "mini": [
+                "......pp.....",
+                ".....ppuu....",
+                ".pppppuuu.pq.",
+                ".puuuuuuuuuuq",
+                "ppuuuuuuuuuuq",
+                "puuuuuuuuuuuq",
+                "puuuuuuuuuuuq",
+                "uuuuuuuuuuuuq",
+                "puuuuuuuuuuuq",
+                "uuuuuuuuuuuuq",
+                "uuuuuuuuuqqqq",
+                "qqqqqqqqqqqqq"
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "x": 17.5,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                ".............p.p.p...........",
+                "............p.p.u.u..........",
+                ".......p.....p.u.u.q.........",
+                "......p.p.p.p.u.u.u...p.p....",
+                ".....p.u.u...u.u.u.u.p.u.u...",
+                "....p.u.u.u.p.u.u.q...u.u.q..",
+                ".....p.u.u.u.u.u.u.q.p.u.q...",
+                "....p.u.u.u.u.u.u.u...u.u.q..",
+                "...p.p.u.u.u.u.u.u.u.p.u.u...",
+                "..p.u.u.u.u.u.u.u.u.u.u.u.u..",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                "..p.u.u.u.u.u.u.u.u.u.u.u.u.q",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                "..u.u.u.u.u.u.u.u.u.u.u.u.u.q",
+                "...u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                "..p.u.u.u.u.u.u.u.u.u.u.u.u.q",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.u.u.",
+                "p.u.u.u.u.u.u.u.u.u.u.u.u.u.q",
+                ".u.u.u.u.u.u.u.u.u.u.u.u.u.q.",
+                "p.u.u.u.u.u.u.u.u.u.u.u.u.u.q",
+                ".p.u.u.u.u.u.u.u.u.u.u.u.q.q.",
+                "..q.q.q.u.u.u.u.u.u.u.q.q.q..",
+                "...q.q...u.u.q.q.u.q.q.......",
+                "..........q.q.q.q.q.q........"
+              ],
+              "attach": "ground",
+              "hotspot": [14, 24],
+              "z": 5,
+              "mini": [
+                "......p.p....",
+                "...p.p.q...q.",
+                "..p.u.u.u.p.q",
+                ".p.u.u.u.u.u.",
+                "p.u.u.u.u.p.q",
+                ".u.u.u.u.u.u.",
+                "p.u.u.u.u.u.q",
+                ".u.u.u.u.u.u.",
+                "p.u.u.u.u.u.q",
+                ".u.u.u.u.u.q.",
+                "q.q.q.u.q.q.q",
+                "...q.q.q.q..."
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "x": 17.5,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "............z.z.z..........",
+                "...........................",
+                "......z.z...z.z.z.....z.z..",
+                "...........................",
+                "....z.z.z.....z.z.....z.z..",
+                "...........................",
+                "....z.z...z.z.z.z.....z....",
+                "...........................",
+                "..z.z.z...z.z.z.z...z.z.z..",
+                "...........................",
+                "..z.z.z.z.z.z.z.z...z.z.z.z",
+                "...........................",
+                "..z.z.z.....z.z.z...z.z.z..",
+                "...........................",
+                "..z.z.z.z.z.z...z.z.z.z.z.z",
+                "...........................",
+                "z.z.z.z.z.z.z.z.z.z.z.z.z.z",
+                "...........................",
+                "..z.z.z.z.z.z.z.z.z.z.z.z..",
+                "...........................",
+                "..........z.z...z.z........"
+              ],
+              "attach": "ground",
+              "hotspot": [13, 24],
+              "z": 5,
+              "mini": [
+                "......z.z....",
+                ".............",
+                "..z...z...z..",
+                ".............",
+                "z.z.z.z.z.z.z",
+                ".............",
+                "..z...z...z..",
+                ".............",
+                "z.z.z.z.z.z.z"
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "x": 17.5,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "............z.z........",
+                ".......................",
+                "..............z........",
+                ".......................",
+                "....z.z.............z.z",
+                ".......................",
+                "..........z............",
+                ".......................",
+                "..z.z.....z.z.z.....z.z",
+                ".......................",
+                "..z.......z...z.......z",
+                ".......................",
+                ".......................",
+                ".......................",
+                "..z...................z",
+                ".......................",
+                "z.z...z.z.z...z.z.z.z.z",
+                ".......................",
+                "..........z...z........"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 26],
+              "z": 5,
+              "mini": [
+                "..z...z...z",
+                "...........",
+                "......z....",
+                "...........",
+                "..z...z...z",
+                "...........",
+                "z.z.z...z.."
+              ],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "x": 17.5,
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "x": 17.5,
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "x": 16.5,
+            "eyes": "happy",
+            "lean": -1,
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.96
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "palm": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 9,
+      "lively": true,
+      "next": "idle",
+      "frames": [
+        {
+          "pose": {
+            "eyes": "serene"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "serene",
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "eyes": "serene",
+            "sy": 1.06
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "sy": 0.92,
+            "spread": 0.2,
+            "lean": -1,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 1,
+                "dy": 0
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "sy": 0.86,
+            "spread": 0.4,
+            "lean": -1.5,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 1,
+                "dy": 0
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "sy": 0.86,
+            "spread": 0.4,
+            "lean": -1.5,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 1,
+                "dy": 0
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "angry",
+            "sy": 1.1,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ],
+            "look": [1, -1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "angry",
+            "sy": 1.1,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ],
+            "look": [1, -1]
+          },
+          "layers": [
+            {
+              "art": [
+                ".....W.....",
+                ".W...y...W.",
+                "..y..Y..y..",
+                "...yWWWy...",
+                "WyYWWWWWYyW",
+                "...yWWWy...",
+                "..y..Y..y..",
+                ".W...y...W.",
+                ".....W....."
+              ],
+              "attach": "handR",
+              "hotspot": [5, 5],
+              "z": 5,
+              "mini": ["..W..", ".yWy.", "WWWWW", ".yWy.", "..W.."],
+              "miniHotspot": [3, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.1,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                ".....W.....",
+                ".W...y...W.",
+                "..y..Y..y..",
+                "...yWWWy...",
+                "WyYWWWWWYyW",
+                "...yWWWy...",
+                "..y..Y..y..",
+                ".W...y...W.",
+                ".....W....."
+              ],
+              "attach": "handR",
+              "hotspot": [5, 5],
+              "z": 5,
+              "mini": ["..W..", ".yWy.", "WWWWW", ".yWy.", "..W.."],
+              "miniHotspot": [3, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.08,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                ".......y.......",
+                "...y.......y...",
+                "...............",
+                ".y...........y.",
+                "...............",
+                "y.............y",
+                "...............",
+                ".y...........y.",
+                "...............",
+                "...y.......y...",
+                ".......y......."
+              ],
+              "attach": "handR",
+              "hotspot": [7, 6],
+              "z": 5,
+              "mini": [".y.y.", "y...y", ".....", "y...y", ".y.y."],
+              "miniHotspot": [3, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.04,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.75,
+                "dx": 2,
+                "dy": -3
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.96
+          }
+        },
+        {
+          "pose": {
+            "eyes": "serene",
+            "look": [0, 1],
+            "sy": 0.94
+          }
+        },
+        {
+          "pose": {
+            "eyes": "serene",
+            "look": [0, 1],
+            "sy": 0.92
+          }
+        },
+        {
+          "pose": {
+            "eyes": "serene",
+            "sy": 0.96
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "strum": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 3,
+      "lively": true,
+      "next": "idle",
+      "frames": [
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": -1
+              }
+            ],
+            "eyes": "happy"
+          },
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-4, 4],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-2, 1]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": -1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle"
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-3, 8],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-2, 3]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-1, 9],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-1, 3]
+            },
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-8, 5],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-4, 2]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": -1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle"
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [0, 12],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [0, 5]
+            },
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-8, 9],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-4, 4]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-7, 10],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-3, 4]
+            },
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-4, 4],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-2, 1]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": -1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle"
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-6, 13],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-3, 6]
+            },
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-3, 8],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-2, 3]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 1
+              }
+            ],
+            "eyes": "serene",
+            "mouth": "whistle",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-1, 9],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-1, 3]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": -2
+              }
+            ],
+            "eyes": "happy",
+            "mouth": "grin",
+            "sy": 1.06
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [0, 12],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [0, 5]
+            },
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-8, 9],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-4, 4]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 2
+              }
+            ],
+            "eyes": "happy",
+            "mouth": "grin",
+            "base": 27
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-7, 9],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-3, 4]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 1
+              }
+            ],
+            "eyes": "happy",
+            "base": 28
+          },
+          "layers": [
+            {
+              "art": [".YY", ".Y.", "YY.", "YY."],
+              "attach": "headTop",
+              "hotspot": [-6, 12],
+              "z": 5,
+              "mini": [".Y", "Y."],
+              "miniHotspot": [-3, 5]
+            }
+          ],
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 0
+              }
+            ],
+            "eyes": "happy"
+          },
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": -4,
+                "dy": 0
+              }
+            ],
+            "eyes": "happy"
+          },
+          "swaps": {
+            "classes/lute": "classes/lute-held"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        },
+        {
+          "pose": {}
+        }
+      ]
+    }
+  }
+}
