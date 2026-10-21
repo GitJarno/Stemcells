@@ -6,10 +6,10 @@
 #   stemcells/lab/electron dev [args]       the dev app (pnpm dev:desktop)
 #   stemcells/lab/electron <main> [args]    a scratch app, on the repo's Electron
 #
-# It checks the helper took: an Electron main that starts under it and is
-# still without the helper's mark three seconds on (its environment lost
-# NODE_OPTIONS on the way) is killed with everything this started, and this
-# exits 1. The helper's own stop exits 86.
+# It checks the helper took: an Electron that starts under it (a main, or one
+# run as Node) and is still without the helper's mark three seconds on (its
+# environment lost NODE_OPTIONS on the way) is killed with everything this
+# started, and this exits 1. The helper's own stop exits 86.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
@@ -24,7 +24,9 @@ case "${1:?usage: stemcells/lab/electron dev|<main> [args]}" in
     pnpm dev:desktop "$@" &
     ;;
   *)
-    electron=$(cd apps/desktop && node -p 'require("electron")')
+    # Its first require in a fresh worktree downloads the binary and says so
+    # on stdout; the path is the last line.
+    electron=$(cd apps/desktop && node -p 'require("electron")' | tail -n 1)
     "$electron" "$@" &
     ;;
 esac
@@ -37,9 +39,9 @@ stop_all() {
 }
 trap stop_all INT TERM
 
-# The helper marks a main as it loads, before the app's code runs; a busy Mac
-# can take a second or two to get that far.
-unmarked="" # pid@second, for each main first seen without the mark
+# The helper marks an Electron as it loads, before the app's code runs; a
+# busy Mac can take a second or two to get that far.
+unmarked="" # pid@second, for each Electron first seen without the mark
 while kill -0 "$started" 2>/dev/null; do
   for pid in $started $(tree "$started"); do
     case "$(ps -o comm= -p "$pid" 2>/dev/null)" in

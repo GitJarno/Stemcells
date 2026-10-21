@@ -4,8 +4,12 @@
  * window it makes never shows or lands on a display, and one that does
  * anyway ends the lab.
  */
+import * as NodeChildProcess from "node:child_process";
 import * as NodeEvents from "node:events";
+import * as NodeFS from "node:fs";
 import * as NodeModule from "node:module";
+import * as NodeOS from "node:os";
+import * as NodePath from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 
 interface Bounds {
@@ -256,5 +260,38 @@ describe("the lab's guard", () => {
     lab.install(fake.electron, { ...fake.runtime, served: () => false });
     await fake.ready();
     expect(fake.electron.app.exitCode).toBe(lab.LAB_EXIT);
+  });
+});
+
+describe("Electron run as Node", () => {
+  // The desktop app's workers run so, and stemcells/lab/electron stopped the
+  // dev app when it found them without the mark.
+  const helper = NodeModule.createRequire(import.meta.url).resolve("./never-shown.cjs");
+  const run = (electron: boolean) => {
+    const profile = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "stemcells-lab-test-"));
+    const { NODE_OPTIONS: _, ...env } = process.env;
+    const script = [
+      electron ? `process.versions.electron = "44.0.0";` : "",
+      `require(${JSON.stringify(helper)});`,
+      `process.stdout.write(JSON.stringify({ pid: process.pid, guarded: Symbol.for("stemcells.lab") in globalThis }));`,
+    ].join("\n");
+    const out = NodeChildProcess.execFileSync(process.execPath, ["-e", script], {
+      env: { ...env, STEMCELLS_LAB_PROFILE: profile },
+      encoding: "utf8",
+    });
+    const { pid, guarded } = JSON.parse(out) as { pid: number; guarded: boolean };
+    const marks = NodeFS.readdirSync(profile);
+    NodeFS.rmSync(profile, { recursive: true, force: true });
+    return { pid, guarded, marks };
+  };
+
+  it("gets the mark the wrapper looks for, and no guard: it has no windows", () => {
+    const { pid, guarded, marks } = run(true);
+    expect(marks).toEqual([`.never-shown-${pid}`]);
+    expect(guarded).toBe(false);
+  });
+
+  it("is told apart from plain Node, which gets nothing", () => {
+    expect(run(false)).toMatchObject({ guarded: false, marks: [] });
   });
 });
