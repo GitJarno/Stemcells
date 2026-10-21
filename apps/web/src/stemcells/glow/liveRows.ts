@@ -22,7 +22,9 @@
  *
  * Upstream hands every box it lights to `observeVisibleAnimation` as it
  * starts and takes it back as it stops; our substitute for that module
- * (`upstream/substitutes/visibleAnimation.ts`) joins each one here.
+ * (`upstream/substitutes/visibleAnimation.ts`) joins each one here. A row
+ * no one can see holds, and one in a window beside another app steps on the
+ * Cells' sprite clock (`motion/sight.ts`).
  */
 import {
   crossing,
@@ -33,6 +35,7 @@ import {
   standing,
   sweep,
 } from "../motion/beat";
+import { type Sight, watchSight } from "../motion/sight";
 import { reducedMotion } from "../tokens/motion";
 
 const OVERLAY = "live-activity-focus";
@@ -79,20 +82,22 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
     for (const shine of crossings.values()) shine.cancel();
     crossings.clear();
   };
-  const slide = (element: HTMLElement, from: number, to: number) => {
+  const slide = (element: HTMLElement, from: number, to: number, stepped: boolean) => {
     const animation = playing.get(element);
-    if (animation) resweep(animation, from, to);
-    else playing.set(element, sweep(element, from, to));
+    if (animation) resweep(animation, from, to, "", stepped);
+    else playing.set(element, sweep(element, from, to, "", stepped));
   };
 
   const own = [box, ...shines];
+  let sight: Sight = "focused";
   const row: LiveRow = {
     pane,
     aim() {
-      if (reducedMotion()) {
+      if (reducedMotion() || sight === "hidden") {
         stop();
         return;
       }
+      const stepped = sight === "unfocused";
       for (const overlay of overlays) {
         const copy = overlay.querySelector<HTMLElement>(`.${COPY}`);
         const holder = overlay.offsetParent;
@@ -100,8 +105,8 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
         const band = (overlay.offsetWidth - holder.clientWidth) / 2;
         const { left, width } = standing(holder);
         const { from, to } = crossing(width, left + overlay.offsetLeft, band / 2);
-        slide(overlay, from, to);
-        slide(copy, -from, -to);
+        slide(overlay, from, to, stepped);
+        slide(copy, -from, -to, stepped);
       }
       for (const label of shines) {
         const band = Number.parseFloat(getComputedStyle(label).backgroundSize) || 0;
@@ -113,6 +118,7 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
           -band,
           label.clientWidth,
           shineAt,
+          stepped,
         );
         let shine = crossings.get(label);
         if (shine === undefined) crossings.set(label, (shine = eachBeat(label)));
@@ -131,7 +137,13 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
   }
   for (const element of [pane, ...own]) sized.observe(element);
   row.aim();
+  // A row no one can see holds; one beside another app steps.
+  const unwatch = watchSight(box, (now) => {
+    sight = now;
+    row.aim();
+  });
   return () => {
+    unwatch();
     stop();
     rows.delete(row);
     for (const element of own) sized?.unobserve(element);

@@ -10,7 +10,9 @@
  * And it costs frames only when it moves: what never rests (the drift, the
  * breath) steps on the Cells' sprite clock rather than drawing every frame
  * of a 120 Hz display, and a label's shine runs only while the crest
- * crosses it. Three working Cells held the GPU near 35% before.
+ * crosses it. In a window beside another app the crest steps too, and in one
+ * no one can see nothing loops. Three working Cells held the GPU near 35%
+ * before.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -25,6 +27,7 @@ import {
   paintedCrossing,
   sweepFrames,
 } from "../motion/beat";
+import { timing } from "../tokens/motion";
 import { GlassLight } from "./motion";
 
 /** What a compositor runs on its own. */
@@ -46,11 +49,20 @@ const TOKENS: Record<string, string> = {
 };
 
 interface Played {
-  readonly frames: Keyframe[];
+  frames: Keyframe[];
   readonly options: KeyframeAnimationOptions;
+  cancelled: boolean;
 }
 
 let played: Played[] = [];
+
+/** What a re-aim changes: the frames, never the timing or the phase. */
+class Effect {
+  constructor(private readonly entry: Played) {}
+  setKeyframes(frames: Keyframe[]) {
+    this.entry.frames = frames;
+  }
+}
 
 function part() {
   const attributes = new Set<string>();
@@ -60,12 +72,15 @@ function part() {
     removeAttribute: (name: string) => attributes.delete(name),
     hasAttribute: (name: string) => attributes.has(name),
     animate(frames: Keyframe[], options: KeyframeAnimationOptions) {
-      played.push({ frames, options });
+      const entry: Played = { frames, options, cancelled: false };
+      played.push(entry);
       return {
         startTime: null,
-        effect: null,
+        effect: new Effect(entry),
         finished: new Promise(() => undefined),
-        cancel: () => undefined,
+        cancel: () => {
+          entry.cancelled = true;
+        },
       };
     },
   } as unknown as HTMLElement;
@@ -97,13 +112,15 @@ const looping = () =>
     .flatMap(({ frames }) => frames.flatMap((frame) => Object.keys(frame)))
     .filter((key) => !TIMING.has(key));
 
-/** The endless animations. */
-const endless = () => played.filter(({ options }) => options.iterations === Infinity);
+/** The endless animations still running. */
+const endless = () =>
+  played.filter(({ options, cancelled }) => options.iterations === Infinity && !cancelled);
 
 const property = (frame: Keyframe) => Object.keys(frame).find((key) => !TIMING.has(key));
 
 beforeEach(() => {
   played = [];
+  vi.stubGlobal("KeyframeEffect", Effect);
   vi.stubGlobal("document", { documentElement: {} });
   vi.stubGlobal("getComputedStyle", () => ({
     opacity: "0",
@@ -272,18 +289,26 @@ describe("a stretch of every beat", () => {
   });
 });
 
+const STEP = 83.333;
+
+/**
+ * Frames that step on the Cells' sprite clock: each holds (`step-end`) for
+ * at least a beat of it under a linear easing, over `duration` ms. A sweep's
+ * held end, which never changes, needn't.
+ */
+function expectStepped(frames: Keyframe[], duration: number): void {
+  for (const [i, frame] of frames.slice(0, -1).entries()) {
+    const next = frames[i + 1]!;
+    if (property(frame) && frame[property(frame)!] === next[property(next)!]) continue;
+    expect(frame.easing).toBe("step-end");
+    expect(((next.offset ?? 0) - (frame.offset ?? 0)) * duration).toBeGreaterThanOrEqual(STEP - 1);
+  }
+}
+
 describe("what never rests steps on the Cells' sprite clock", () => {
-  const STEP = 83.333;
   const stepped = (entry: Played) => {
-    const duration = Number(entry.options.duration);
     expect(entry.options.easing ?? "linear").toBe("linear");
-    for (const [i, frame] of entry.frames.slice(0, -1).entries()) {
-      expect(frame.easing).toBe("step-end");
-      const next = entry.frames[i + 1]!;
-      expect(((next.offset ?? 0) - (frame.offset ?? 0)) * duration).toBeGreaterThanOrEqual(
-        STEP - 1,
-      );
-    }
+    expectStepped(entry.frames, Number(entry.options.duration));
   };
 
   it("the working glass's drift changes twelve times a second, on its curve and period", () => {
@@ -310,5 +335,129 @@ describe("what never rests steps on the Cells' sprite clock", () => {
     const breaths = endless();
     expect(breaths).toHaveLength(1);
     stepped(breaths[0]!);
+  });
+});
+
+describe("a glass beside another app keeps moving, stepped", () => {
+  const working = () => {
+    const light = glass();
+    light.layout({ width: 736, height: 98 }, { x: 704, y: 66 }, 32, { left: 240, width: 1216 });
+    return light;
+  };
+  const band = () => endless().find(({ frames }) => property(frames[0]!) === "transform")!;
+
+  it("crosses on the sprite clock, on the same beat, and glides again once in use", () => {
+    const light = working();
+    light.configure("working", INK, false, true);
+    const sweep = band();
+    expect(sweep.frames[0]!.easing).toContain("cubic-bezier");
+    light.see("unfocused");
+    // The same animation, re-aimed: its period and phase stay.
+    expect(band()).toBe(sweep);
+    expect(sweep.options).toMatchObject({ duration: 4200, iterations: Infinity });
+    expectStepped(sweep.frames, 4200);
+    expect(endless()).toHaveLength(3);
+    light.see("focused");
+    expect(band()).toBe(sweep);
+    expect(sweep.frames[0]!.easing).toContain("cubic-bezier");
+  });
+
+  it("keeps the breath of a glass that asks for you pulsing", () => {
+    const light = working();
+    light.configure("needsYou", INK, false, true);
+    light.see("unfocused");
+    expect(endless()).toHaveLength(1);
+  });
+
+  it("starts stepped when the Cell starts work beside another app", () => {
+    const light = working();
+    light.see("unfocused");
+    light.configure("working", INK, false, true);
+    expectStepped(band().frames, 4200);
+  });
+});
+
+describe("a stepped crest keeps to the gliding one", () => {
+  it("holds each place the glide passes, a sprite beat apart, and rests where it does", () => {
+    const share = 3200 / 4200;
+    const frames = sweepFrames(-300, 1500, share, "", true);
+    const at = (frame: Keyframe) =>
+      Number(/translateX\((-?[\d.]+)px\)/.exec(String(frame.transform))![1]);
+    expectStepped(frames, 4200);
+    for (const frame of frames) {
+      const time = (frame.offset ?? 0) / share;
+      if (time <= 1) expect(at(frame)).toBeCloseTo(-300 + 1800 * beatEase(time), 6);
+      expect(property(frame)).toBe("transform");
+    }
+    expect(frames.at(-2)).toMatchObject({ offset: share });
+    expect(at(frames.at(-1)!)).toBe(1500);
+  });
+
+  it("and so does a shining label's, over the same stretch of the beat", () => {
+    // A long label, which the crest takes several sprite beats to cross.
+    const shine = (stepped: boolean) =>
+      paintedCrossing(
+        -520,
+        1180,
+        -72,
+        640,
+        (x) => ({ backgroundPosition: `${x}px 0, 0 0` }),
+        stepped,
+      );
+    const smooth = shine(false);
+    const stepped = shine(true);
+    expect(stepped.start).toBe(smooth.start);
+    expect(stepped.span).toBe(smooth.span);
+    expect(stepped.frames.length).toBeGreaterThan(3);
+    expectStepped(stepped.frames, stepped.span);
+    expect(timing("formStep")).toBeCloseTo(STEP, 3);
+  });
+
+  it("lights a short label once, though the crest crosses it within a sprite beat", () => {
+    const place = (frame: Keyframe) => Number.parseFloat(String(frame.backgroundPosition));
+    const { frames, span } = paintedCrossing(
+      -520,
+      1180,
+      300,
+      330,
+      (x) => ({ backgroundPosition: `${x}px 0, 0 0` }),
+      true,
+    );
+    expect(span).toBeLessThan(STEP);
+    expect(frames).toHaveLength(2);
+    expect(place(frames[0]!)).toBeGreaterThan(300);
+    expect(place(frames[0]!)).toBeLessThan(330);
+  });
+});
+
+describe("a glass no one can see holds", () => {
+  const working = () => {
+    const light = glass();
+    light.layout({ width: 736, height: 98 }, { x: 704, y: 66 }, 32, { left: 240, width: 1216 });
+    return light;
+  };
+
+  it("stops every loop while hidden, and rejoins the beat when it can be seen again", () => {
+    const light = working();
+    light.configure("working", INK, false, true);
+    expect(endless().length).toBeGreaterThan(0);
+    light.see("hidden");
+    expect(endless()).toEqual([]);
+    light.see("focused");
+    expect(
+      endless()
+        .map(({ frames }) => property(frames[0]!))
+        .toSorted(),
+    ).toEqual(["opacity", "opacity", "transform"]);
+  });
+
+  it("starts no loop while hidden, whatever the Cell does meanwhile", () => {
+    const light = working();
+    light.see("hidden");
+    light.configure("working", INK, false, true);
+    light.configure("needsYou", INK, false);
+    expect(endless()).toEqual([]);
+    light.see("unfocused");
+    expect(endless()).toHaveLength(1);
   });
 });
