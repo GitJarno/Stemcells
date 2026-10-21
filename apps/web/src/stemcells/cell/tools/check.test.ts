@@ -33,7 +33,7 @@ vi.mock("../art.ts", () => {
             name: "hem",
             slot: "back",
             art: ["QQQQQQQQQQQQQQQQQQQQQQQQQQ"],
-            hotspot: [13, 0],
+            hotspot: [12, 0],
             mini: ["QQQQQQQQQ"],
             miniHotspot: [4, 4],
           }),
@@ -157,6 +157,15 @@ vi.mock("../art.ts", () => {
             hotspot: [1, 20],
             mini: Array.from({ length: 10 }, () => "Y"),
             miniHotspot: [0, 9],
+          }),
+          piece({
+            // On the hero's grid, but a cell past the box each side: only the original's pieces reach there.
+            name: "brim",
+            slot: "headwear",
+            art: ["YYYYYYYYYYYYYYYYYYYYYYYYYYYY"],
+            hotspot: [13, 0],
+            mini: ["YYYYYYYYYYYYY"],
+            miniHotspot: [6, 0],
           }),
           piece({
             name: "visor",
@@ -386,6 +395,8 @@ describe("art drawn beside the kit", () => {
       "outfit trial/masked",
     ])
       expect(rules(subject), subject).toEqual([]);
+    for (const subject of ["trial/cap", "trial/hem", "trial/mask"])
+      expect(rules(subject, "warn"), subject).toEqual([]);
     expect(rules("trial/0")).toEqual([]);
     expect(about("temperament steady")).toEqual([]);
   });
@@ -398,6 +409,9 @@ describe("art drawn beside the kit", () => {
 
   it("fails each broken rule, and names it", () => {
     expect(rules("faulty/spire")).toContain("box");
+    expect(about("faulty/brim").map((f) => `${f.level} ${f.rule} ${f.detail}`)).toContain(
+      "fail box hero at rest: 2 cells past the box, which a 2× display cuts off",
+    );
     expect(rules("faulty/visor")).toContain("eyes");
     expect(rules("faulty/soot")).toEqual(expect.arrayContaining(["void", "contrast"]));
     expect(rules("faulty/beard")).toContain("mouth");

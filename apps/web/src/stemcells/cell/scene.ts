@@ -181,8 +181,8 @@ const DETAIL = { x: 3, y: 2, width: 26, height: 28 } as const;
 const detailOf = (hero: readonly string[]) =>
   crop(hero, DETAIL.x, DETAIL.y, DETAIL.width, DETAIL.height);
 
-/** Cells of a hero frame past the miniature's footprint, which no display draws. */
-const pastDetail = (hero: readonly string[]): number =>
+/** Cells of a hero frame past the miniature's footprint: the Cell's box. */
+export const pastDetail = (hero: readonly string[]): number =>
   hero.reduce(
     (count, row, y) =>
       count +

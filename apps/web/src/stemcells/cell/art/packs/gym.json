@@ -38,12 +38,12 @@
       "slot": "wrap",
       "about": "A wide leather lifting belt with a steel buckle, worn round the middle.",
       "art": [
-        ".kkkkkkkkkkkggggkkkkkkkkkkk.",
-        "knnnnnnnnnnng44gnnnnnnnnnnnk",
-        "knnnnnnnnnnng44gnnnnnnnnnnnk",
-        "kkkkkkkkkkkkggggkkkkkkkkkkkk"
+        ".kkkkkkkkkkggggkkkkkkkkkk.",
+        "knnnnnnnnnng44gnnnnnnnnnnk",
+        "knnnnnnnnnng44gnnnnnnnnnnk",
+        "kkkkkkkkkkkggggkkkkkkkkkkk"
       ],
-      "hotspot": [13, 6],
+      "hotspot": [12, 6],
       "mini": ["kkkkkgkkkkkkk", "nnnnngnnnnnnn"],
       "miniHotspot": [6, 3]
     }

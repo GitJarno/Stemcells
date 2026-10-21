@@ -45,6 +45,7 @@ import {
   outfitLook,
   packLook,
   probesOf,
+  pastDetail,
   probeStill,
 } from "../scene.ts";
 
@@ -153,6 +154,8 @@ function lookFindings(
     mouth: boolean;
     eyesAllowed: boolean;
     scenes?: readonly string[] | undefined;
+    /** A piece drawn here, worn alone: at rest it keeps inside the box. */
+    boxed?: boolean;
   },
 ): Finding[] {
   const out: Finding[] = [];
@@ -173,6 +176,9 @@ function lookFindings(
           .filter((role) => luma(role) < MIN_LUMA),
       );
       if (dark.size > 0) say("void", `${size}: dark against the void (${[...dark].join(" ")})`);
+      const past = compact ? 0 : pastDetail(probe.worn) - pastDetail(probe.bare);
+      if (options.boxed && past > 0)
+        say("box", `hero at rest: ${past} cells past the box, which a 2× display cuts off`);
       if (options.mouth) {
         const zone = MOUTH_ZONE[size];
         const fabrics = fabricRoles(look);
@@ -429,9 +435,15 @@ export function check(options: { themes?: readonly string[]; original?: boolean 
   out.push(...temperamentFindings());
   for (const pack of PACKS) {
     if (!wanted(pack.theme) || (!pack.authored && !options.original)) continue;
-    for (const { label, look, mouth, eyesAllowed, scenes } of looksOfPack(pack.theme))
+    for (const { label, kind, look, mouth, eyesAllowed, scenes } of looksOfPack(pack.theme))
       out.push(
-        ...lookFindings(label, look, { original: !pack.authored, mouth, eyesAllowed, scenes }),
+        ...lookFindings(label, look, {
+          original: !pack.authored,
+          mouth,
+          eyesAllowed,
+          scenes,
+          boxed: pack.authored && kind === "piece" && scenes === undefined,
+        }),
       );
   }
   return folded(out);

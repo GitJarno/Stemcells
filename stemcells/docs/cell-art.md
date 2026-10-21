@@ -266,6 +266,10 @@ These hold on drawn art. On the original's art they are notes.
   - a drawn move has a `tell` that is one of its frames, keeps the beat
     (12, or 24 with `sound`), and hands back to a real scene;
   - a temperament's weight is above 0, and its fidget and beats are scenes.
+- **The box.** A piece drawn here, worn alone at rest, keeps inside the
+  miniature's footprint on the hero (26 × 28 from (3, 2)): a 2× display draws
+  no further, so anything past it is cut flush. The original's pieces reach
+  past it, drawn for its larger stage, and stay as ported.
 - **Warnings** (look, then decide):
   - art that falls off the canvas in some scene (the original's own hats do,
     in the plea's hop). A posed variant is probed only in the scenes it is
