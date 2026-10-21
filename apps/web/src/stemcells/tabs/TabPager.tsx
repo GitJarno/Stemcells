@@ -2,15 +2,9 @@ import { createContext, use, useLayoutEffect, useRef, useState, type ReactNode }
 
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { cssLinear, settledDuration } from "../tokens/spring.ts";
-import {
-  dragBy,
-  dragPosition,
-  releaseTarget,
-  releaseVelocity,
-  startDrag,
-  type Drag,
-} from "./pager";
-import { LIFT_GAP, SwipeLatch, WheelContact, type ContactSource } from "./swipe";
+import { SwipeHand, type HeldStrip } from "./hand";
+import { releaseVelocity } from "./pager";
+import { LIFT_GAP } from "./swipe";
 
 /**
  * The tabs' pages side by side on one strip across the slate, and the
@@ -90,8 +84,10 @@ function inputPending(): boolean {
   return scheduling?.isInputPending?.({ includeContinuous: true }) === true;
 }
 
-/** How far back (ms) the strip's moves count toward its speed when the fingers lift. */
-const SPEED_WINDOW = 60;
+/** How long (ms) after the last wheel event the page keeps watching the frames it draws, so the next event knows what it could hear. */
+const LISTEN_FOR = 600;
+/** No frame drawn for this long (ms): the page was busy, and couldn't hear wheel events. */
+const BUSY = 40;
 
 /**
  * Whether something under `target`, inside `boundary`, scrolls sideways in
@@ -143,13 +139,15 @@ class PageStrip {
     null;
   #turn: (tabId: string) => void = () => undefined;
 
-  readonly #source: ContactSource = new WheelContact();
-  #latch: SwipeLatch | null = null;
-  #drag: Drag | null = null;
-  /** The strip's recent positions while held, for its speed when let go. */
-  #trail: { readonly t: number; readonly position: number }[] = [];
+  readonly #hand = new SwipeHand(this.#held());
   #frame = 0;
   #idle: ReturnType<typeof setTimeout> | undefined;
+  /** The last frame drawn while wheel events come. */
+  #lastFrame: number | undefined;
+  /** Since the last wheel event: when the page first went `BUSY` without drawing, if it did. */
+  #busyFrom: number | undefined;
+  #beat = 0;
+  #listenUntil = 0;
 
   attach(viewport: HTMLElement, strip: HTMLElement): void {
     this.#viewport = viewport;
@@ -166,6 +164,8 @@ class PageStrip {
     this.#slide = null;
     cancelAnimationFrame(this.#frame);
     this.#frame = 0;
+    cancelAnimationFrame(this.#beat);
+    this.#beat = 0;
     clearTimeout(this.#idle);
     this.#viewport = null;
     this.#strip = null;
@@ -207,8 +207,7 @@ class PageStrip {
     const here = stageSlot < 0 ? null : stageSlot + offStage;
     if (turned && active !== this.#heading) {
       // A turn by other means. Fingers on the strip give it up.
-      this.#latch?.spend();
-      this.#drag = null;
+      this.#hand.spend();
       this.#travelTo(active, here, stage);
       return;
     }
@@ -223,7 +222,7 @@ class PageStrip {
       this.#slide?.cancel();
       this.#slide = null;
       this.#show(here);
-      if (this.#drag) this.#grab();
+      if (this.#hand.holding) this.#hand.regrab();
       else if (sliding) this.#travel(here, this.#slotOf(heading), 0);
       else this.#show(this.#slotOf(heading));
     }
@@ -347,26 +346,84 @@ class PageStrip {
     if (stage !== null) this.#show(this.#slotOf(stage));
   }
 
+  /** The strip as the hand holds it. */
+  #held(): HeldStrip {
+    return {
+      at: () => this.#onScreen(),
+      sliding: () => this.#slide !== null,
+      heading: () => {
+        const heading = this.#heading ?? this.#active;
+        const slot = heading === null ? -1 : this.#slotOf(heading);
+        return slot < 0 ? null : slot;
+      },
+      count: () => this.#order.length,
+      width: () => this.#strip?.clientWidth ?? 0,
+      grab: (at) => {
+        this.#slide?.cancel();
+        this.#slide = null;
+        this.#show(at);
+      },
+      hold: (position) => {
+        this.#position = position;
+        this.#schedule();
+      },
+      release: (from, to, pagesPerSecond) => this.#release(from, to, pagesPerSecond),
+    };
+  }
+
   readonly #onWheel = (event: WheelEvent): void => {
     // Pinches, and wheels that step by lines or pages, aren't swipes.
     if (event.ctrlKey || event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL) return;
     const viewport = this.#viewport;
     if (viewport === null) return;
-    const sample = { dx: event.deltaX, dy: event.deltaY, t: event.timeStamp };
-    const contact = this.#source.wheel(sample);
+    const sample = {
+      dx: event.deltaX,
+      dy: event.deltaY,
+      t: event.timeStamp,
+      heard: this.#heard(),
+      got: performance.now(),
+    };
+    this.#listen(event.timeStamp);
     clearTimeout(this.#idle);
     this.#idle = setTimeout(this.#onIdle, LIFT_GAP + 10);
-    if (contact.phase === "began") {
-      this.#release(0, sample.t);
-      const target = event.target;
-      this.#latch = new SwipeLatch((direction) => scrollerTakes(target, viewport, direction), {
-        catching: this.#slide !== null,
-      });
-      this.#trail = [];
+    const target = event.target;
+    const holds = this.#hand.wheel(sample, (direction) =>
+      scrollerTakes(target, viewport, direction),
+    );
+    if (holds && event.cancelable) event.preventDefault();
+  };
+
+  /**
+   * Until when the page could hear wheel events since the last one: the
+   * frame before it first went busy, if it did. A wheel event that comes
+   * after a busy stretch carries what came meanwhile, so the gap before it
+   * is a silence only up to there.
+   */
+  #heard(): number | undefined {
+    const last = this.#lastFrame;
+    if (this.#busyFrom === undefined && last !== undefined && performance.now() - last > BUSY) {
+      this.#busyFrom = last;
     }
-    if (contact.phase === "began" || contact.phase === "moved") this.#move(sample);
-    if (contact.phase === "lifted") this.#release(contact.coasted.dx, sample.t);
-    if (this.#latch?.holds && event.cancelable) event.preventDefault();
+    const heard = this.#busyFrom;
+    this.#busyFrom = undefined;
+    return heard;
+  }
+
+  /** Watches the frames drawn until a while after `now`. */
+  #listen(now: number): void {
+    this.#listenUntil = now + LISTEN_FOR;
+    if (this.#beat !== 0) return;
+    this.#lastFrame = undefined;
+    this.#beat = requestAnimationFrame(this.#onBeat);
+  }
+
+  readonly #onBeat = (time: number): void => {
+    const last = this.#lastFrame;
+    if (this.#busyFrom === undefined && last !== undefined && time - last > BUSY) {
+      this.#busyFrom = last;
+    }
+    this.#lastFrame = time;
+    this.#beat = time < this.#listenUntil ? requestAnimationFrame(this.#onBeat) : 0;
   };
 
   readonly #onIdle = (): void => {
@@ -375,64 +432,18 @@ class PageStrip {
       this.#idle = setTimeout(this.#onIdle, LIFT_GAP);
       return;
     }
-    const now = performance.now();
-    if (this.#source.idle(now)) this.#release(0, now);
+    this.#hand.idle(performance.now());
   };
 
-  #move(sample: { readonly dx: number; readonly dy: number; readonly t: number }): void {
-    const latch = this.#latch;
-    if (latch === null) return;
-    const held = latch.owner === "pager";
-    const dx = latch.move(sample.dx, sample.dy);
-    if (latch.owner !== "pager") return;
-    if (!held) this.#grab();
-    const drag = dragBy(this.#drag!, dx);
-    this.#drag = drag;
-    this.#position = dragPosition(drag);
-    this.#trail.push({ t: sample.t, position: this.#position });
-    while (this.#trail.length > 2 && this.#trail[0]!.t < sample.t - SPEED_WINDOW) {
-      this.#trail.shift();
-    }
-    this.#schedule();
-  }
-
-  /** The fingers take the strip where it is on screen: latest input wins. */
-  #grab(): void {
-    const at = this.#onScreen();
-    this.#slide?.cancel();
-    this.#slide = null;
-    this.#show(at);
-    const heading = this.#heading ?? this.#active;
-    const width = this.#strip?.clientWidth ?? 0;
-    this.#drag = startDrag(
-      at,
-      heading === null ? Math.round(at) : this.#slotOf(heading),
-      this.#order.length,
-      width,
-    );
-  }
-
-  /** The strip's speed (pages per second) as the fingers left it, by `now`. */
-  #speed(now: number): number {
-    const first = this.#trail[0];
-    const last = this.#trail.at(-1);
-    if (!first || !last || last.t <= first.t || now - last.t > SPEED_WINDOW) return 0;
-    return ((last.position - first.position) / (last.t - first.t)) * 1000;
-  }
-
   /**
-   * The fingers lifted, `coasted` px into the coast. The strip springs to
-   * the page the move earned, and the tab turns once that slide is under
-   * way, so its first frames are on the compositor before the turn renders.
+   * The fingers lifted: the strip springs from `from` to page `to`, and the
+   * tab turns once that slide is under way, so its first frames are on the
+   * compositor before the turn renders.
    */
-  #release(coasted: number, now: number): void {
-    const drag = this.#drag;
-    if (drag === null) return;
-    this.#drag = null;
-    const target = releaseTarget(drag, drag.travel - coasted);
-    const tabId = this.#tabAt(target) ?? this.#heading;
+  #release(from: number, to: number, pagesPerSecond: number): void {
+    const tabId = this.#tabAt(to) ?? this.#heading;
     this.#heading = tabId;
-    this.#travel(this.#position, target, this.#speed(now));
+    this.#travel(from, to, pagesPerSecond);
     if (tabId === null || tabId === this.#active) return;
     requestAnimationFrame(() =>
       setTimeout(() => {

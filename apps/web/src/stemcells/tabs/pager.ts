@@ -5,14 +5,11 @@
  * Swiping moves the strip with the fingers; letting go sends it to a page.
  */
 
-/** Past the first or last page (or the pages beside the one swiped from), the strip moves this share of the fingers' move. */
+/** Past the first or last page, the strip moves this share of the fingers' move. */
 export const RUBBER_BAND = 0.25;
 
 /** A swipe that has moved the fingers further than this (px) turns to the next page; a shorter one springs back. */
 export const COMMIT_DISTANCE = 110;
-
-/** Positions this close to a page are on it. */
-const ON_PAGE = 0.01;
 
 /** One swipe, from the moment it took the strip. */
 export interface Drag {
@@ -20,22 +17,32 @@ export interface Drag {
   readonly from: number;
   /** The page the strip was on, or on its way to, when they took it. */
   readonly heading: number;
-  /** The first and last page this swipe can reach: the pages either side of where it began. */
+  /** The first and last page this swipe can reach: the pages either side of `heading`. */
   readonly lo: number;
   readonly hi: number;
+  /** Where the strip follows the fingers one to one: those pages, and where it was taken. */
+  readonly low: number;
+  readonly high: number;
+  /** The strip's last page. */
+  readonly last: number;
   /** A page's width in px. */
   readonly width: number;
   /** How far the fingers have moved (px), in the wheel's sense: positive goes toward later pages. */
   readonly travel: number;
 }
 
-/** The pages a swipe from `at` can reach: one either side, within the strip's `count` pages. */
-export function reach(at: number, count: number): { lo: number; hi: number } {
+/**
+ * The pages a swipe can reach: one either side of `heading`, the page the
+ * strip is on or on its way to, within the strip's `count` pages. A second
+ * quick swipe while the first still settles goes on one more page; one back
+ * takes the strip back a page from where it was going, as the tabs count.
+ */
+export function reach(heading: number, count: number): { lo: number; hi: number } {
   const last = Math.max(0, count - 1);
-  const clamped = Math.min(Math.max(at, 0), last);
-  const nearest = Math.round(clamped);
-  const on = Math.abs(clamped - nearest) < ON_PAGE ? nearest : clamped;
-  return { lo: Math.max(0, Math.ceil(on) - 1), hi: Math.min(last, Math.floor(on) + 1) };
+  return {
+    lo: Math.max(0, Math.min(heading - 1, last)),
+    hi: Math.min(last, Math.max(heading + 1, 0)),
+  };
 }
 
 /** Where the strip shows `position`: past `lo` or `hi` it gives only a share of the move. */
@@ -57,12 +64,21 @@ export function unband(shown: number, lo: number, hi: number): number {
  * (`heading`): latest input wins, from where the eye sees it.
  */
 export function startDrag(at: number, heading: number, count: number, width: number): Drag {
-  const { lo, hi } = reach(at, count);
+  const { lo, hi } = reach(heading, count);
+  // A strip still on its way, more than a page short of where it goes
+  // (the page was too busy to keep up), follows the fingers from there;
+  // one in the rubber band past the first or last page stays in it.
+  const last = Math.max(0, count - 1);
+  const low = Math.min(lo, Math.max(at, 0));
+  const high = Math.max(hi, Math.min(at, last));
   return {
-    from: unband(at, lo, hi),
+    from: unband(at, low, high),
     heading: Math.min(Math.max(heading, lo), hi),
     lo,
     hi,
+    low,
+    high,
+    last,
     width: Math.max(1, width),
     travel: 0,
   };
@@ -72,9 +88,16 @@ export function dragBy(drag: Drag, dx: number): Drag {
   return { ...drag, travel: drag.travel + dx };
 }
 
-/** Where the strip is while the fingers hold it. */
+/**
+ * Where the strip is while the fingers hold it: one to one between `low`
+ * and `high`; past the first or last page, in the rubber band; at the page
+ * the swipe can reach, stopped, as a swipe turns one page and no further.
+ */
 export function dragPosition(drag: Drag): number {
-  return band(drag.from + drag.travel / drag.width, drag.lo, drag.hi);
+  const shown = band(drag.from + drag.travel / drag.width, drag.low, drag.high);
+  const floor = drag.low > 0 ? drag.low : -Infinity;
+  const ceiling = drag.high < drag.last ? drag.high : Infinity;
+  return Math.min(Math.max(shown, floor), ceiling);
 }
 
 /**
@@ -91,7 +114,9 @@ export function releaseTarget(drag: Drag, travel = drag.travel): number {
  * The speed a spring from `from` to `to` sets off with, as a share of its
  * move per second, when the strip was moving at `pagesPerSecond`: positive
  * toward `to`. Capped below the spring's own pace (`omega`, rad/s), so a
- * critically damped spring never overshoots.
+ * critically damped spring never overshoots. A strip moving away from `to`
+ * sets off from rest: carrying on first would take it past where the
+ * fingers left it, and back.
  */
 export function releaseVelocity(
   from: number,
@@ -103,7 +128,7 @@ export function releaseVelocity(
   if (Math.abs(move) < 1e-3) return 0;
   const share = pagesPerSecond / move;
   const cap = omega * 0.9;
-  return Math.min(Math.max(share, -cap), cap);
+  return Math.min(Math.max(share, 0), cap);
 }
 
 /** How many tabs, besides those beside the active one, stay mounted after a visit. */

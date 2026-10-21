@@ -190,6 +190,157 @@ describe("telling the fingers from the coast", () => {
     expect(contact.wheel(trace.samples[upTo]!).phase).toBe("coasting");
   });
 
+  it("takes a coast the page was too busy to hear, merged into one event, for the coast", () => {
+    const trace = flick(0.95, 12);
+    const contact = new WheelContact();
+    const upTo = trace.lift + 6;
+    expect(phases(trace.samples.slice(0, upTo), contact)).toContain("lifted");
+    // 150 ms without a frame: the browser hands over the coast's events
+    // from meanwhile as one, stamped with the last one's time.
+    const busyFrom = trace.samples[upTo - 1]!.t + 2;
+    const merged = trace.samples.slice(upTo, upTo + 9);
+    const last = merged.at(-1)!;
+    const sample = {
+      dx: merged.reduce((sum, s) => sum + s.dx, 0),
+      dy: 0,
+      t: last.t,
+      heard: busyFrom,
+    };
+    expect(contact.wheel(sample).phase).toBe("coasting");
+    // And it goes on being the coast after.
+    expect(
+      phases(trace.samples.slice(upTo + 9, upTo + 20), contact).every((p) => p === "coasting"),
+    ).toBe(true);
+  });
+
+  it("doesn't take a busy page's backlog of finger moves for a lift and a new touch", () => {
+    const drag = fingers([4, 6, 8, 9, 9, 8, 9, 10], { jitter: 0.1, seed: 13 });
+    const contact = new WheelContact();
+    phases(drag, contact);
+    const last = drag.at(-1)!;
+    // The page drew nothing for 140 ms; the fingers moved on meanwhile.
+    expect(contact.wheel({ dx: 120, dy: 0, t: last.t + 140, heard: last.t + 3 }).phase).toBe(
+      "moved",
+    );
+    expect(contact.wheel({ dx: 9, dy: 0, t: last.t + 148 }).phase).toBe("moved");
+  });
+
+  it("doesn't take the moves a busy browser held back behind a touch for a lift and a new touch", () => {
+    // The browser held the touch's first event back 180 ms, the page
+    // drawing all the while; the fingers' moves from meanwhile come merged.
+    const contact = new WheelContact();
+    expect(contact.wheel({ dx: 3, dy: 0, t: 1000, got: 1180 }).phase).toBe("began");
+    expect(contact.wheel({ dx: 158, dy: 0, t: 1058, got: 1181 }).phase).toBe("moved");
+    expect(contact.wheel({ dx: 80, dy: 0, t: 1083, got: 1182 }).phase).toBe("moved");
+    expect(contact.wheel({ dx: 403, dy: 0, t: 1183, got: 1190 }).phase).not.toBe("began");
+  });
+
+  it("takes the second merged event of a backlog for the coast, and the one before it too", () => {
+    // The browser held a touch back 180 ms. What came meanwhile arrives one
+    // kind at a time: the touch, the fingers' moves merged, the coast's
+    // first event alone, the rest of the coast merged.
+    const contact = new WheelContact();
+    expect(contact.wheel({ dx: 2, dy: 0, t: 1000, got: 1180 }).phase).toBe("began");
+    expect(contact.wheel({ dx: 67, dy: 0, t: 1042, got: 1188 }).phase).toBe("moved");
+    expect(contact.wheel({ dx: 44, dy: 0, t: 1067, got: 1196 }).phase).toBe("moved");
+    const lifted = contact.wheel({ dx: 226, dy: 0, t: 1183, got: 1204 });
+    expect(lifted).toEqual({ phase: "lifted", coasted: { dx: 44, dy: 0 } });
+    expect(contact.wheel({ dx: 17, dy: 0, t: 1200, got: 1212 }).phase).toBe("coasting");
+  });
+
+  it("follows a coast the browser held back, merged and stamped as late as its last step", () => {
+    const trace = flick(0.95, 18);
+    const contact = new WheelContact();
+    const upTo = trace.lift + 6;
+    expect(phases(trace.samples.slice(0, upTo), contact)).toContain("lifted");
+    // 130 ms of the coast held back while the page drew on, handed over as one.
+    const merged = trace.samples.slice(upTo, upTo + 8);
+    const last = merged.at(-1)!;
+    const sample = {
+      dx: merged.reduce((sum, s) => sum + s.dx, 0),
+      dy: 0,
+      t: last.t,
+      got: last.t + 4,
+    };
+    expect(contact.wheel(sample).phase).toBe("coasting");
+    expect(contact.wheel(trace.samples[upTo + 8]!).phase).toBe("coasting");
+  });
+
+  it("goes on with the fingers' moves the browser held back, merged after a silence", () => {
+    const drag = fingers([8, 9, 10, 11, 12, 13, 14, 14], { jitter: 0.05, seed: 19 });
+    const contact = new WheelContact();
+    phases(drag, contact);
+    const last = drag.at(-1)!;
+    expect(contact.idle(last.t + 90)).toBe(true);
+    // 120 ms of moves at their pace, stamped as late as the last of them.
+    expect(contact.wheel({ dx: 180, dy: 0, t: last.t + 120, got: last.t + 124 })).toEqual({
+      phase: "moved",
+      resumed: true,
+    });
+    // A touch after a silence starts small: that is a new gesture.
+    expect(contact.idle(last.t + 220)).toBe(true);
+    expect(contact.wheel({ dx: 3, dy: 0, t: last.t + 260, got: last.t + 270 }).phase).toBe("began");
+  });
+
+  it("starts a new gesture at once when fingers touch down the same way during a coast", () => {
+    const trace = flick(0.95, 14);
+    const contact = new WheelContact();
+    const upTo = trace.lift + 5;
+    expect(phases(trace.samples.slice(0, upTo), contact)).toContain("lifted");
+    // The touch stops the coast; the fingers' first events are slower than it.
+    const t = trace.samples[upTo - 1]!.t;
+    expect(contact.wheel({ dx: 3, dy: 0, t: t + 9 }).phase).toBe("began");
+    expect(contact.wheel({ dx: 7, dy: 0, t: t + 17 }).phase).toBe("moved");
+  });
+
+  it("ends a coast that went quiet while the page could hear", () => {
+    const trace = flick(0.95, 15);
+    const contact = new WheelContact();
+    const upTo = trace.lift + 6;
+    expect(phases(trace.samples.slice(0, upTo), contact)).toContain("lifted");
+    const next = trace.samples[upTo]!;
+    // The same speed the coast would have, but after a heard 60 ms pause: a touch.
+    expect(contact.wheel({ ...next, t: trace.samples[upTo - 1]!.t + 60 }).phase).toBe("began");
+  });
+
+  it("follows a long whole-pixel coast to its last pixel", () => {
+    // A coast as a Mac sends it on a 120 Hz display: whole pixels, a slow
+    // decay, and a long tail of single pixels.
+    const moving = fingers([4, 9, 15, 21, 26, 28], { jitter: 0.1, seed: 16 }).map((s) => ({
+      ...s,
+      dx: Math.round(s.dx),
+    }));
+    const coasting = coast(moving.at(-1)!, 0.95, 1000 / 120).map((s) => ({
+      ...s,
+      dx: Math.round(s.dx),
+    }));
+    const seen = phases([...moving, ...coasting]);
+    const lifted = seen.indexOf("lifted");
+    expect(lifted).toBeGreaterThanOrEqual(moving.length);
+    expect(seen.slice(lifted + 1).every((phase) => phase === "coasting")).toBe(true);
+  });
+
+  it("counts a coast's first event as the coast's when it comes at the coast's slower pace", () => {
+    // Fingers every 8 ms; the coast every 17 ms, its first step carrying the fingers' speed.
+    const moving = fingers([3, 7, 11, 16, 22, 28, 34, 40], { jitter: 0, seed: 17 }).map((s, i) => ({
+      ...s,
+      t: 1000 + i * 8.3,
+    }));
+    const end = moving.at(-1)!.t;
+    const coasting = Array.from({ length: 12 }, (_, i) => ({
+      dx: Math.round(80 * 0.95 ** i),
+      dy: 0,
+      t: end + 16.7 * (i + 1),
+    }));
+    const contact = new WheelContact();
+    const reports = [...moving, ...coasting].map((sample) => contact.wheel(sample));
+    const lifted = reports.find((report) => report.phase === "lifted");
+    if (lifted?.phase !== "lifted") throw new Error("never lifted");
+    // Every coast event the fingers' move was told before the lift is given back.
+    const told = coasting.slice(0, reports.indexOf(lifted) - moving.length);
+    expect(lifted.coasted.dx).toBe(told.reduce((sum, s) => sum + s.dx, 0));
+  });
+
   it("starts a new gesture after a silence", () => {
     const first = fingers([4, 6, 8], { jitter: 0, seed: 9 });
     const contact = new WheelContact();

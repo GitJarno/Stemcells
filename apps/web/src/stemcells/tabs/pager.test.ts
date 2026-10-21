@@ -34,10 +34,12 @@ describe("riding the fingers", () => {
     expect(dragPosition(drag)).toBeCloseTo(2 + (400 * RUBBER_BAND) / WIDTH);
   });
 
-  it("goes no further than the next page in one swipe, so it never shows one that isn't there", () => {
+  it("stops at the next page in one swipe, so it never goes past the page it turns to", () => {
     expect(reach(2, 6)).toEqual({ lo: 1, hi: 3 });
-    const drag = dragBy(startDrag(2, 2, 6, WIDTH), 2 * WIDTH);
-    expect(dragPosition(drag)).toBeCloseTo(3 + RUBBER_BAND);
+    expect(dragPosition(dragBy(startDrag(2, 2, 6, WIDTH), 2 * WIDTH))).toBeCloseTo(3);
+    expect(dragPosition(dragBy(startDrag(2, 2, 6, WIDTH), -2 * WIDTH))).toBeCloseTo(1);
+    // Caught sliding on to 3, a push back goes no further than 2.
+    expect(dragPosition(dragBy(startDrag(2.6, 3, 6, WIDTH), -WIDTH))).toBeCloseTo(2);
   });
 
   it("band and unband undo each other", () => {
@@ -78,9 +80,12 @@ describe("letting go", () => {
 
   it("sets off at the strip's speed, as a share of the move, toward the target", () => {
     expect(releaseVelocity(1.5, 2, 1, 100)).toBeCloseTo(2);
-    // Moving away from the target: the spring starts by carrying on, then turns.
-    expect(releaseVelocity(1.2, 1, 0.5, 100)).toBeCloseTo(-2.5);
     expect(releaseVelocity(1.2, 1, -0.5, 100)).toBeCloseTo(2.5);
+  });
+
+  it("sets off from rest when the strip was moving away from the target, so it never sails past where the fingers left it", () => {
+    expect(releaseVelocity(1.2, 1, 0.5, 100)).toBe(0);
+    expect(releaseVelocity(0.8, 1, -3, 100)).toBe(0);
   });
 
   it("caps that speed below the spring's own, so it never overshoots", () => {
@@ -101,12 +106,29 @@ describe("a hand catching the strip as it settles", () => {
     expect(releaseTarget(dragBy(startDrag(halfway, 2, 3, WIDTH), -60))).toBe(2);
   });
 
-  it("pushing on confirms the page it was going to", () => {
-    expect(releaseTarget(dragBy(startDrag(halfway, 2, 3, WIDTH), 200))).toBe(2);
+  it("pushing on goes one page past the one it was going to: a second quick swipe is a second turn", () => {
+    expect(reach(2, 4)).toEqual({ lo: 1, hi: 3 });
+    expect(releaseTarget(dragBy(startDrag(halfway, 2, 4, WIDTH), 200))).toBe(3);
+    // Short of the commit distance, it goes on to the page it was going to.
+    expect(releaseTarget(dragBy(startDrag(halfway, 2, 4, WIDTH), 60))).toBe(2);
+  });
+
+  it("caught going home, a push either way reaches the pages beside home", () => {
+    // A short swipe from 2 springs back from 2.3: the next swipe starts there.
+    expect(releaseTarget(dragBy(startDrag(2.3, 2, 5, WIDTH), -200))).toBe(1);
+    expect(releaseTarget(dragBy(startDrag(2.3, 2, 5, WIDTH), 200))).toBe(3);
   });
 
   it("pushing back takes it back", () => {
     expect(releaseTarget(dragBy(startDrag(halfway, 2, 3, WIDTH), -200))).toBe(1);
+  });
+
+  it("a page behind where it goes (the page was busy), one back is one tab back, and the strip follows from where it is", () => {
+    // Two quick swipes on from 2 headed to 4; the strip has only got to 2.7.
+    const drag = startDrag(2.7, 4, 5, WIDTH);
+    expect(dragPosition(drag)).toBeCloseTo(2.7);
+    expect(dragPosition(dragBy(drag, 120))).toBeCloseTo(2.7 + 120 / WIDTH);
+    expect(releaseTarget(dragBy(drag, -200))).toBe(3);
   });
 
   it("caught in the rubber band, it stays where it is", () => {
