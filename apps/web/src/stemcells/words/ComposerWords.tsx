@@ -16,6 +16,7 @@ import {
   startingModel,
   subscribeDraft,
 } from "../upstream/draftWords";
+import { readCarry } from "../upstream/carry";
 import { readDraftSetup, reportUnstarted, useStartCells, withSentModel } from "../upstream/launch";
 import { ProviderLogo } from "../upstream/providers";
 import { promptOf, useWordsCatalog, useWordsDraft, useWordsPlaces } from "../upstream/words";
@@ -269,6 +270,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
         const own = several ? partOf(facts, several.cells[0]!.part, text) : null;
         const besides = several ? driver.besides(siblingsOf(view, facts, text, several)) : null;
         const setup = several ? readDraftSetup(draftId) : null;
+        // Read now: upstream's send clears the draft's pictures and chips.
+        const carry = besides && besides.length > 0 ? readCarry(draftId) : null;
         const pane = cell ? paneShowing(readWorkspace(), cell)?.pane.id : undefined;
         const width = view.dom.closest("[data-stemcells-grid]")?.clientWidth ?? window.innerWidth;
         const before = view.state.doc;
@@ -290,7 +293,9 @@ export function ComposerWords(props: { readonly anchor: string }) {
               if (!gone && !view.isDestroyed && view.state.doc.eq(sent)) putBack(view, before);
               driver.hold(false);
               if (!gone || !besides || !setup || besides.length === 0 || !cell) return;
-              const started = await starting.current(await withSentModel(setup, cell), besides);
+              const started = await starting
+                .current(await withSentModel(setup, cell), besides, carry)
+                .finally(() => carry?.release());
               reportUnstarted(started);
               const cells = started.flatMap((s) => (s.ok ? [s.cell] : []));
               if (pane !== undefined && cells.length > 0)

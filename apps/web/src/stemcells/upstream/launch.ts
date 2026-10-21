@@ -36,6 +36,7 @@ import { environmentPresentations } from "../../state/presentation";
 import { threadEnvironment } from "../../state/threads";
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
 import type { CellRef } from "../tabs/layout";
+import type { Carry } from "./carry";
 import { projectRefOfKey, readDraftModel, startingModel } from "./draftWords";
 
 /** What the Cells beside a draft take from it. */
@@ -100,13 +101,17 @@ export type CellStarted =
   | { readonly ok: true; readonly cell: CellRef }
   | { readonly ok: false; readonly error: string };
 
-/** Starts Cells beside a draft; each settles on its own. */
+/**
+ * Starts Cells beside a draft; each settles on its own. Each takes what
+ * the draft's message carried besides its words (`carry.ts`).
+ */
 export function useStartCells(): (
   setup: DraftSetup,
   cells: ReadonlyArray<CellStart>,
+  carry: Carry | null,
 ) => Promise<CellStarted[]> {
   const startTurn = useOrchestrationCommand(threadEnvironment.startTurn, { reportFailure: false });
-  return (setup, cells) =>
+  return (setup, cells, carry) =>
     Promise.all(
       cells.map(async (cell): Promise<CellStarted> => {
         const projectRef = projectRefOfKey(cell.projectKey);
@@ -142,19 +147,30 @@ export function useStartCells(): (
             ?.map((option) => resolvePromptInjectedEffort(caps, String(option.value)))
             .find((effort) => effort !== null) ?? null;
         const text = applyClaudePromptEffortPrefix(cell.text, injected);
+        const carried = carry ? await carry.to(environmentId, text) : null;
+        if (carried && !carried.ok) return { ok: false, error: carried.error };
 
         // Only the draft's own project has the branch the draft names.
         const own = environmentId === setup.environmentId && projectId === setup.projectId;
         const branch = own ? setup.branch : null;
         const worktree = own && setup.worktree && branch !== null;
-        const title = deriveThreadTitleSeed({ text: cell.text, attachments: [] });
+        const title = deriveThreadTitleSeed({
+          text: cell.text,
+          attachments: carry?.attachments ?? [],
+        });
         const threadId = newThreadId();
         const createdAt = new Date().toISOString();
         const result = await startTurn({
           environmentId,
           input: {
             threadId,
-            message: { messageId: newMessageId(), role: "user", text, attachments: [] },
+            message: {
+              messageId: newMessageId(),
+              role: "user",
+              text: carried?.text ?? text,
+              attachments: carried?.attachments ?? [],
+              ...(carried?.context ? { context: carried.context } : {}),
+            },
             modelSelection: selection,
             titleSeed: title,
             runtimeMode: setup.runtimeMode,

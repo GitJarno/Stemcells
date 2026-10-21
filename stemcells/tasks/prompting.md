@@ -686,9 +686,16 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      yet, it takes the model the first Cell was sent on.
    - Placement as in decision 15. A Cell that fails to start says why in a
      toast, and the others still start.
+   - 4b, built: every Cell takes what the message carries, as every thread
+     of upstream's send to several models does: its pictures and files,
+     and the context its chips point at (`upstream/carry.ts`). Upstream
+     lets the draft's uploads go once its own Cell has started, so the
+     others upload their own copy, once per machine. A Cell on another
+     machine whose part points at a chat it can't read doesn't start, and
+     says why.
    - Left for 4b: the hero naming several places, the spawn (with Aski's
-     figure and the Cell kit), the narrow-pane fold, usage-limit notes in
-     the readout, and attachments for Cells after the first.
+     figure and the Cell kit), the narrow-pane fold, and usage-limit notes
+     in the readout.
 5. **The planner.**
    - The `TextGeneration` operation, run lean, with its arguments pinned
      by a test.
