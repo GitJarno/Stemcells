@@ -137,6 +137,11 @@ add cost and room for error. Prose is where the person loses time.
 
   Code checks every span. Aski may write the option's title and its
   consequence line, but never the words that reach the Cell.
+- **An option that is one of upstream's own buttons wears upstream's
+  label:** the provider's own, else Approve, Always allow this session,
+  Decline; Implement and Refine for a plan; Retry for a failed run. The
+  same choice reads the same on the card and in the chat. The headline
+  stays in Aski's voice, and the order stays recommended first.
 - **Recommended:**
   - Triaged options put the recommended one first.
   - A structured question keeps the Cell's order and tags the Cell's pick.
@@ -390,11 +395,11 @@ the options means none is recommended.
 
 | Kind (tag) | Signal | Brief | Options (recommended first) | Words can |
 |---|---|---|---|---|
-| Permission | `pendingRuntimeRequest.kind` ∈ command, file-read, file-change, permission | "Wants to run a command" / "edit 3 files" / "read outside the project"; the request whole (projection) | The provider's own `options` (`ProviderApprovalOption`: label, warning), in its order; "Deny…" takes a note | deny, deny with a note |
+| Permission | `pendingRuntimeRequest.kind` ∈ command, file-read, file-change, permission | "Wants to run a command" / "edit 3 files" / "read outside the project"; the request whole (projection) | The provider's own `options` (`ProviderApprovalOption`: label, warning), in its order, else upstream's own: Approve, Always allow this session, Decline; "Decline…" takes a note | decline, decline with a note |
 | Question | `pendingRuntimeRequest.kind = user_input` | The Cell's header and question verbatim; one block per question (1a, 1b) | The question's own options (label + description), "Other…" when `allowCustomAnswer` | pick, custom answer |
 | Question | Turn completed; the last reply asks or offers (pre-read, then Aski's read) | Aski's title (≤ 8 words) and context (≤ 25), the Cell's ask quoted on expand | 2–4 read options (reply span or "Go ahead."), Reply…, Nothing to do | everything |
 | Stopped | Turn completed mid-task ("next I'll…", "3 of 8 done") | Aski's: what's done, what's left | Go ahead (rec), Reply…, Nothing to do | everything |
-| Plan | `hasActionableProposedPlan`, plan mode, latest run settled | "Plan ready: {title}", the first three steps verbatim | Build it (rec), Build it in a new Cell, Revise… | everything |
+| Plan | `hasActionableProposedPlan`, plan mode, latest run settled | "Plan ready: {title}", the first three steps verbatim | Implement (rec), Implement in a new Cell, Refine… | everything |
 | Stuck | Running, and nothing heard from the Cell for 12 min, or 30 with a tool call in flight (server clock) | Aski's: what it's on ("`pnpm test:migrate`, no output for 14 min") | Read options from: Stop and reply…, Nudge…, Wait 15 min, Open chat | everything |
 | Limit | `status = failed`, `lastErrorClass = usage_limit`, and (no auto-resume, or the reset > 5 h away or unknown, or resume failed) | "Out of its weekly limit · resets Mon 09:00" (`usageLimitResetAt`) | — Wait for the reset, Switch account…, Open chat | wait, open |
 | Failed | `status = failed`, other `lastErrorClass`, unseen | By class in plain words; `unknown` is read by Aski | Retry (rec for transport and provider errors), Switch model…, Open chat, Dismiss | retry, dismiss |
@@ -545,8 +550,8 @@ anything else.
 2. **An option by title:** the part's content words all appear in exactly
    one option's title, or the part starts with a title's first two words.
 3. **Yes or no:**
-   - On a permission, "yes", "allow", "approve" or "ok" means Allow, which
-     needs a click. "no" or "deny" means Deny, and any words after it are
+   - On a permission, "yes", "allow", "approve" or "ok" means Approve, which
+     needs a click. "no", "deny" or "decline" means Decline, and any words after it are
      the note.
    - On an offer, "yes", "go ahead" or "do it" means Go ahead.
 4. **Fixed verbs:** "go ahead", "carry on", "continue", "retry", "try
@@ -572,7 +577,7 @@ Examples. The four cards are the prototype's:
 1. Floof, a question read from prose: Commit, then remove / Remove it
    first.
 2. Bongo, stuck: Stop and reply… / Wait 15 min.
-3. Pip, a permission: Allow once / Allow `git push` in this chat / Deny….
+3. Pip, a permission: Approve / Always allow this session / Decline / Decline….
 4. Otter, a limit: Wait for the reset / Switch account….
 
 | Typed or dictated | Preview |
@@ -582,9 +587,9 @@ Examples. The four cards are the prototype's:
 | 1: commit then remove | 1 Floof: Commit, then remove |
 | Floof, remove it first | 1 Floof: Remove it first |
 | for decision 1, let's go with 2; for decision 2, let's do use staging | 1 Floof: Remove it first · 2 Bongo: stop, then reply "let's do use staging" |
-| 3 yes | 3 Pip: Allow once — needs your click |
-| 3 no, use a normal push | 3 Pip: Deny, with "use a normal push" |
-| for 3 go with 2 | 3 Pip: Allow `git push` in this chat — needs your click |
+| 3 yes | 3 Pip: Approve — needs your click |
+| 3 no, use a normal push | 3 Pip: Decline, with "use a normal push" |
+| for 3 go with 2 | 3 Pip: Always allow this session — needs your click |
 | for 2 go with 1 | 2 Bongo: Stop and reply… — say what to reply |
 | for 4 wait | 4 Otter: Wait for the reset |
 | 1 and 2 later | 1 Floof: Later · 2 Bongo: Wait 15 min (its own way to wait) |

@@ -152,7 +152,7 @@ describe("a card says what the Cell asked, as it asked it", () => {
         NOW,
       );
     expect(failed("transport_error").options[0]).toMatchObject({
-      title: "Try again",
+      title: "Retry",
       recommended: true,
     });
     expect(failed("validation_error").options[0]?.recommended).toBe(false);
@@ -176,7 +176,7 @@ describe("a card says what the Cell asked, as it asked it", () => {
         NOW,
       );
     expect(plan("plan-1").headline).toBe("Plan ready: Move the header to tokens");
-    expect(plan("plan-1").options[0]).toMatchObject({ title: "Build it", recommended: true });
+    expect(plan("plan-1").options[0]).toMatchObject({ title: "Implement", recommended: true });
     expect(plan(null).options).toEqual([]);
   });
 

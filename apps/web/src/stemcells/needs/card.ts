@@ -363,7 +363,7 @@ export function cardOf(need: Need, now: number): Card {
         options: [
           option(
             "retry",
-            "Try again",
+            "Retry",
             { kind: "retry" },
             {
               consequence: `Sends “${PHRASES.retry}”`,
@@ -393,14 +393,14 @@ export function cardOf(need: Need, now: number): Card {
           ? [
               option(
                 "build",
-                "Build it",
+                "Implement",
                 { kind: "build" },
                 {
                   consequence: "Leaves plan mode and sends the plan back to build.",
                   recommended: true,
                 },
               ),
-              option("revise", "Revise…", { kind: "revise" }, { words: "What should change…" }),
+              option("revise", "Refine…", { kind: "revise" }, { words: "What should change…" }),
             ]
           : [],
         note: buildable ? null : "Couldn't read this plan. Its chat has it.",
