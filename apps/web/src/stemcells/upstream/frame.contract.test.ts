@@ -1,13 +1,16 @@
 /**
  * Upstream behaviour the frame relies on: on Stemcells' own theme,
  * workspace.css takes the line off the sidebar's edge by making
- * `[data-app-sidebar]`'s border transparent, and the grain off the panel
- * inside it. A failure here after a sync names the contract that moved,
- * and the line is likely back.
+ * `[data-app-sidebar]`'s border transparent; the sidebar and the inset the
+ * workspace is wear the same grain, so they read as one ground; and the
+ * slate is flat because upstream's chat is. A failure here after a sync
+ * names the contract that moved: a line or an edge is likely back, or the
+ * slate no longer matches upstream's chat.
  */
 import { describe, expect, it } from "vite-plus/test";
 
 import appSidebarLayout from "../../components/AppSidebarLayout.tsx?raw";
+import chatView from "../../components/ChatView.tsx?raw";
 import sidebar from "../../components/ui/sidebar.tsx?raw";
 import themePalette from "../../themePalette.ts?raw";
 
@@ -25,11 +28,21 @@ describe("the frame's contracts with upstream", () => {
     expect(sidebar).toMatch(/data-slot="sidebar-container"\s+\{\.\.\.props\}/);
   });
 
-  it("the sidebar's grain is a background image on the panel inside it", () => {
-    // workspace.css clears it there on Stemcells' theme: grain on the rail
-    // alone stands it apart from the black frame beside it, as an edge.
+  it("the sidebar and the inset wear the same grain, under their own colours", () => {
+    // workspace.css sets only the inset's colour, so its grain stays; were
+    // one of the two to lose it, the rail would stand apart from the frame
+    // beside it, as an edge.
     expect(sidebar).toMatch(
       /className="flex h-full w-full flex-col bg-sidebar surface-grain[^"]*"\s+data-sidebar="sidebar"\s+data-slot="sidebar-inner"/,
+    );
+    expect(sidebar).toContain(
+      '"relative flex min-w-0 w-full flex-1 flex-col bg-background surface-grain"',
+    );
+  });
+
+  it("upstream's chat is flat: its ground covers the inset's grain", () => {
+    expect(chatView).toContain(
+      'className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-background"',
     );
   });
 

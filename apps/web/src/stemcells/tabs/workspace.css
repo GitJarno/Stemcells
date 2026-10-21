@@ -13,11 +13,15 @@
    strip, gutters) is the theme's chrome; the slate is its canvas. Each tab
    is a page on one strip across it, which a swipe slides. Its corner is
    the sheet rung: a whole object on the frame, one rung above the cards it
-   holds. The tab strip starts its tabs `--stemcells-strip-lead` in. */
+   holds. The tab strip starts its tabs `--stemcells-strip-lead` in. The
+   frame keeps the grain upstream gives the inset this element is
+   (`surface-grain`), the same grain the sidebar beside it wears, so the
+   two are one ground with no edge between them; the slate is flat, as
+   upstream's chat is. */
 [data-stemcells-workspace] {
   --stemcells-slate-corner: var(--sc-radius-sheet);
   --stemcells-strip-lead: var(--sc-space-md);
-  background: var(--app-chrome-background);
+  background-color: var(--app-chrome-background);
 }
 [data-stemcells-tab-strip] {
   padding-inline-start: var(--stemcells-strip-lead);
@@ -46,19 +50,17 @@
 /* On Stemcells' own theme the frame is black and the slate reads by its
    gray alone, so the frame and the slate meet with no line, and nothing
    else draws on the frame: the slate drops its edge, and the sidebar its
-   border and its grain (upstream's, on `[data-app-sidebar]` and the panel
-   inside it; upstream/frame.contract.test.ts pins both, and these
-   selectors outrank upstream's). Grain on the sidebar alone would stand it
-   apart from the frame beside it, as an edge. Themes whose frame is the
-   canvas keep the edges, or the slate would vanish into the frame. */
+   border (upstream's, on `[data-app-sidebar]`). The border goes to no
+   width rather than no colour: a clear border would show the window behind
+   it, a 1 px strip without the grain the frame wears on both sides.
+   upstream/frame.contract.test.ts pins the border and the grain. Themes
+   whose frame is the canvas keep both, or the slate would vanish into the
+   frame. */
 :root.dark[data-theme-id="stemcells"] [data-stemcells-slate]::after {
   content: none;
 }
 :root.dark[data-theme-id="stemcells"] [data-app-sidebar] {
-  border-color: transparent;
-}
-:root.dark[data-theme-id="stemcells"] [data-app-sidebar] > [data-slot="sidebar-inner"] {
-  background-image: none;
+  border-width: 0;
 }
 /* There the tab on stage is cut from the slate, as a folder's tab is from
    its folder: the slate's gray, rounded at the top, reaching down through
