@@ -42,8 +42,8 @@ asked for by name), then W7, W4, W9, W11.
   - [x] W6b A one-tab window into another window's strip: its still folds
         into a chip, and the window closes once the host has the tab.
   - [x] W6c Undo Move (⌥⌘Z) for the moves between windows.
-  - [ ] W6d Closing a window as a move Undo Move takes back, and Undo
-        Move playing the move's own motion reversed.
+  - [x] W6d Closing a window as a move Undo Move takes back.
+  - [ ] W6e Undo Move playing the move's own motion reversed.
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
       the flights, full screen restored.
 - [ ] W7 Carry a chat: the Cell as the handle, pane halves, tabs, strips,
@@ -417,12 +417,17 @@ takes the latest back with `undo` from a fresh snapshot; one whose windows
 have changed shape since, or that would bring back a chat opened elsewhere
 since (a window closed, then one of its chats opened in another), is
 forgotten with a note, "Can't undo that move", that says which, and the
-next press tries the one before it. Every undo's result is checked whole in the tests: no tab,
-pane or chat in two places. The
-windows change at once, without motion yet (W6d). Closing a window isn't a
-move yet: it closes natively and the lead takes Aski home, so Undo Move
-can't reopen it (W6d makes the close a move, Aski's tab going home in the
-same transaction).
+next press tries the one before it. Every undo's result is checked whole
+in the tests: no tab, pane or chat in two places. The windows change at
+once, without motion yet (W6e).
+
+Closing a window (W6d): the red button or Close Window reaches main as
+the window's `close`, which main holds and hands to the window's page; the
+page closes it as a move (`closeWindow`), Aski's tab going home to the lead
+in the same transaction, so Undo Move reopens the window with its tabs. A
+page that doesn't within a second, the last window, and quitting close as
+before. A page's own `window.close()` bypasses `close` (checked in a
+scratch window); nothing of ours calls it.
 
 ### Displays
 
@@ -637,7 +642,8 @@ display; drop into another window's strip; carry a chat to a pane half in
 another window; Esc mid-carry; Gather, Put back, Gather; unplug and replug
 a display; relaunch with three windows; a browser pane moved; Reduce
 Motion on; a carry with View › Zoom at 125 %; a one-tab window carried
-by its chip while its chat streams; a chip rested on the strip of a window
+by its chip while its chat streams; the red button on one of two windows,
+then ⌥⌘Z; a chip rested on the strip of a window
 behind another coming forward; a quick tear and drop
 (under a second), watching for a wait before the new window answers.
 
@@ -746,3 +752,8 @@ behind another coming forward; a quick tear and drop
   reopens that window with its tab and takes the tab back out; with
   nothing kept it does nothing. After ⌥⌘T and a tab opened in the new
   window, ⌥⌘Z forgets that move and changes nothing.
+- W6d: proved in the lab: a window closed as its page does when main hands
+  it the close goes, and ⌥⌘Z reopens it with its tab. A scratch window
+  showed main's `close()` (the red button's path) can be held and a page's
+  own `window.close()` can't; the lab can't press the red button, so the
+  hand-off itself is for the hand check.

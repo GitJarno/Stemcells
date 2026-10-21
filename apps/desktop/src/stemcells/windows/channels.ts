@@ -67,6 +67,8 @@ export const WINDOWS_CHANNEL = {
   undos: "stemcells:windows:undos",
   /** Page → main: a kept move (by id) that can't be taken back any more. */
   dropUndo: "stemcells:windows:drop-undo",
+  /** Main → page: the person closed this window; close it as a move Undo Move can take back. */
+  closeRequest: "stemcells:windows:close-request",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */

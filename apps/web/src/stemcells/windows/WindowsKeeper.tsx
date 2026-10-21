@@ -1,10 +1,11 @@
 /**
  * The window's part in the app's windows: ⌥⌘T moves the active tab to a
- * new window, and ⌥⌘Z takes the latest move back; a workspace a move gave
- * this window routes to its focused chat; another window's request shows
- * one of this window's chats; the lead takes Aski's tab home from a window
- * the person closed; tabs a move sent to a window that couldn't open come
- * back. Renders nothing, and does nothing in a browser.
+ * new window, and ⌥⌘Z takes the latest move back; closing the window is a
+ * move too; a workspace a move gave this window routes to its focused chat;
+ * another window's request shows one of this window's chats; the lead takes
+ * Aski's tab home from a window that closed without a move; tabs a move sent
+ * to a window that couldn't open come back. Renders nothing, and does nothing
+ * in a browser.
  */
 import { useEffect, useEffectEvent, useLayoutEffect } from "react";
 
@@ -15,6 +16,7 @@ import { isCommandPaletteOpen, isTerminalFocused, shortcutMatcher } from "../ups
 import { toastManager } from "../upstream/ui";
 import { welcomeAskiHome } from "./askiHome";
 import { windowsBridge } from "./bridge";
+import { closeThisWindow } from "./closeAsMove";
 import type { Refusal } from "./moves";
 import { moveTabToNewWindow } from "./newWindow";
 import { takeTabsBack } from "./returned";
@@ -35,6 +37,12 @@ async function pressUndoMove(): Promise<void> {
   const undone = await undoMove();
   if (undone === "undone" || undone === "none") return;
   toastManager.add({ type: "info", title: "Can't undo that move", description: refusals[undone] });
+}
+
+const desktop = windowsBridge();
+if (desktop) {
+  // Heard before any view mounts, so a close the person asks for is never missed.
+  desktop.onCloseRequest(() => void closeThisWindow());
 }
 
 export function WindowsKeeper(props: {

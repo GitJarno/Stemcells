@@ -54,6 +54,8 @@ const FOCUS_SETTLE_MS = 50;
 const QUIT_CHECK_MS = 250;
 /** How long a carry waits at its pick-up for another window to measure its strip. */
 const MEASURE_WAIT_MS = 150;
+/** How long a window the person closed waits for its page to close it as a move. */
+const CLOSE_AS_MOVE_MS = 1000;
 
 /** One key per monitor at one size and scale, stable across launches. */
 export function displayKey(display: Electron.Display): string {
@@ -255,9 +257,33 @@ export const layer = Layer.effectDiscard(
       save();
     };
 
+    /** Windows that close now: a move closed them, or their page didn't close them as one. */
+    const letGo = new WeakSet<Electron.BrowserWindow>();
+    const letClose = (window: Electron.BrowserWindow) => {
+      letGo.add(window);
+      window.close();
+    };
+
+    /**
+     * The person closed a window: its page closes it as a move, so Aski's tab
+     * goes home in the same step and Undo Move can reopen it. A page that
+     * doesn't in time, or the last window, closes as it always has. So does
+     * every window as the app quits, an update's quit too, which closes them
+     * before `before-quit`.
+     */
+    const closeAsMove = (id: string, window: Electron.BrowserWindow) => (event: Electron.Event) => {
+      if (quittingNow() || letGo.has(window) || !book.get(id) || book.ids().length < 2) return;
+      event.preventDefault();
+      window.webContents.send(WINDOWS_CHANNEL.closeRequest);
+      setTimeout(() => {
+        if (!window.isDestroyed() && live.get(id) === window) letClose(window);
+      }, CLOSE_AS_MOVE_MS);
+    };
+
     const bind = (id: string, window: Electron.BrowserWindow) => {
       if (live.get(id) === window) return;
       live.set(id, window);
+      window.on("close", closeAsMove(id, window));
       const page = window.webContents.id;
       pages.set(page, id);
       const place = () => placeFromWindow(id, window);
@@ -559,7 +585,7 @@ export const layer = Layer.effectDiscard(
         if (!window || window.isDestroyed()) continue;
         // Its page flies the tab to where it went; the window goes once it has landed.
         if (flying !== null && window.webContents === flying) closeAfterFlight = window;
-        else window.close();
+        else letClose(window);
       }
       for (const record of committed.open) {
         open(record.id, record.frame, record.fullScreen, home);
@@ -652,7 +678,7 @@ export const layer = Layer.effectDiscard(
       leaveVisited();
       flight.end();
       coolWarm();
-      if (closing && !closing.isDestroyed()) closing.close();
+      if (closing && !closing.isDestroyed()) letClose(closing);
     };
 
     /**

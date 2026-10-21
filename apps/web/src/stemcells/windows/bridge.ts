@@ -202,6 +202,8 @@ export interface WindowsBridge {
   undos(): Promise<ReadonlyArray<KeptUndo>>;
   /** A kept move that can't be taken back any more. */
   dropUndo(id: number): void;
+  /** The person closed this window: close it as a move (`closeWindow`). */
+  onCloseRequest(listener: () => void): () => void;
 }
 
 declare global {
