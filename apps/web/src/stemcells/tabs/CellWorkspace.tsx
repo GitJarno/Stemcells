@@ -10,7 +10,7 @@ import {
 
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
-import { LineSlotHost } from "../composer/LineSlotHost";
+import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
 import type { AskiChat } from "../upstream/aski";
@@ -539,14 +539,16 @@ function PaneSlot(props: {
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
             {target ? (
               <PaneCellContext value={props.pane.cell}>
-                <LineSlotHost slot={ComposerStashSlot}>
-                  <ChatPaneView
-                    target={target}
-                    ownsWindowInput={props.ownsInput}
-                    focused={props.focused}
-                    panelHost={props.panelHost}
-                  />
-                </LineSlotHost>
+                <EnvSlotHost>
+                  <LineSlotHost slot={ComposerStashSlot}>
+                    <ChatPaneView
+                      target={target}
+                      ownsWindowInput={props.ownsInput}
+                      focused={props.focused}
+                      panelHost={props.panelHost}
+                    />
+                  </LineSlotHost>
+                </EnvSlotHost>
               </PaneCellContext>
             ) : props.pane.cell !== null && presence.liveness === "gone" ? (
               <Empty>

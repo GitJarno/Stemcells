@@ -9,6 +9,8 @@ export {
   useSidebar,
 } from "../../components/ui/sidebar";
 export { Tooltip, TooltipPopup, TooltipTrigger } from "../../components/ui/tooltip";
+export { MiddleTruncate } from "../../components/ui/middle-truncate";
+export { Popover, PopoverPopup, PopoverTrigger } from "../../components/ui/popover";
 export {
   Menu,
   MenuCheckboxItem,

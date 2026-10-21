@@ -13,6 +13,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
+import * as UpstreamBranchToolbar from "../../../components/BranchToolbar";
 import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerStashBadge";
@@ -32,6 +33,7 @@ import * as UpstreamProviderIconUtils from "../../../components/chat/providerIco
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
+import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurChatThreadActions from "./chatThreadActions";
@@ -257,6 +259,17 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/ChatComposer.tsx": [
         "./composerScrollGesture",
         ["recordComposerScrollGestureEvent", "shouldCollapseComposerForScrollKey"],
+      ],
+    },
+  },
+  "apps/web/src/components/BranchToolbar.tsx": {
+    upstream: UpstreamBranchToolbar,
+    substitute: OurBranchToolbar satisfies RendersOrNothing<typeof UpstreamBranchToolbar>,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": ["./BranchToolbar", ["BranchToolbar"]],
+      "apps/web/src/components/chat/ThreadDetailsPanel.tsx": [
+        "../BranchToolbar",
+        ["BranchToolbar"],
       ],
     },
   },

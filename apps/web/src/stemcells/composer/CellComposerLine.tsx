@@ -15,10 +15,12 @@ import {
   useCellThreadMenu,
 } from "../upstream/chatHeader";
 import { useNavigateToCell } from "../upstream/routes";
+import { useCellBranch } from "../upstream/checkout";
 import { useCellPlace } from "../upstream/thread";
 import { cn, ComposerBanner, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
+import { LineEnv } from "./LineEnv";
 import { oneLinerOf } from "./oneLiner";
-import { ComposerRoofSlot, ComposerStashSlot } from "./slot";
+import { ComposerEnvSlot, ComposerRoofSlot, ComposerStashSlot } from "./slot";
 import { CELL_STANDS_IN } from "./stand";
 import "../tokens/stemcells.css";
 import "./composer-line.css";
@@ -31,7 +33,10 @@ import "./composer-line.css";
  * upstream's own tab made solid (`composer-line.css`); the Cell stands on
  * it over its name, nothing it wears past where the name starts
  * (`stand.ts`), with room at its right for the buds of its subagents at
- * work. Nothing until the chat is sent, and nothing outside a Cell's pane.
+ * work. After the project, the branch the chat is on, whose ⌄ opens
+ * upstream's branch toolbar where upstream offers it (`LineEnv.tsx`).
+ * Before the chat is sent, only that branch and the stash, once git is
+ * known; nothing outside a Cell's pane.
  *
  * A pane has no header, so the line does the header's jobs, as upstream's
  * did them: the name and the one-liner open the chat's menu and a
@@ -51,8 +56,37 @@ export function CellComposerLine() {
   // A pane with no Cell may stand something else here: Aski, in Aski's pane.
   const roof = use(ComposerRoofSlot);
   const stash = use(ComposerStashSlot);
+  const env = use(ComposerEnvSlot);
+  const checkout = useCellBranch(cell);
+  const offered = env?.offered === true;
+  // Where the menu offers a choice, a checkout on no branch reads as
+  // upstream's picker reads it; elsewhere it names nothing.
+  const branch = checkout.branch ?? (offered ? "Select ref" : null);
+  const envLine =
+    !checkout.knownRepo || branch === null ? null : (
+      <LineEnv
+        branch={branch}
+        offered={offered}
+        open={env?.open === true}
+        onOpenChange={(open) => env?.setOpen(open)}
+        host={(element) => env?.setElement(element)}
+      />
+    );
   if (cell === null) return roof;
-  if (menu.title === null) return null;
+  if (menu.title === null) {
+    // A draft still chooses where it runs: its ledge holds only that.
+    if (cell.draftId === null || envLine === null || !offered) return null;
+    return (
+      <div data-stemcells-composer-line="" data-draft="">
+        <ComposerBanner.Surface className="composer-line-ledge">
+          <div className="composer-line-row flex min-w-0 items-center gap-1.5 text-xs/4">
+            {envLine}
+            <span ref={stash?.setElement} className="composer-line-stash-slot" />
+          </div>
+        </ComposerBanner.Surface>
+      </div>
+    );
+  }
   const name = cellNameOf(cell.threadId);
   const line = oneLinerOf(menu.title, place?.isProject ? [name, place.name] : [name]);
   const titleProps = {
@@ -102,6 +136,7 @@ export function CellComposerLine() {
               <TooltipPopup side="top">New Cell in {place.name}</TooltipPopup>
             </Tooltip>
           ) : null}
+          {envLine}
           {runsOn ? (
             <Tooltip>
               <TooltipTrigger

@@ -251,6 +251,22 @@
   [data-chat-composer-main-surface="true"]::after {
   border-block-start-width: 0;
 }
+/* Upstream shapes the box round a strip under it (the shell's glass cut to
+   a drawer, the box's bottom edge left open for the strip's). A Cell's
+   strip is on its line (`composer/slot.ts`), so where none is under the
+   box, the box is whole again. */
+[data-stemcells-pane]
+  [data-slot="composer-shell"][data-with-context]:not(
+    :has([data-slot="composer-context-strip"])
+  )::before {
+  clip-path: none;
+  border-radius: var(--radius-3xl);
+}
+[data-stemcells-pane]
+  [data-slot="composer-shell"][data-with-context]:not(:has([data-slot="composer-context-strip"]))
+  :is([data-slot="composer-host"], [data-chat-composer-main-surface="true"])::after {
+  clip-path: none;
+}
 /* A draft waits at the foot like every chat, so a tab's composers line up
    along the bottom. Upstream centres a draft's composer: the overlay fills
    the chat and centres its lane. In a pane the lane sits at the overlay's

@@ -43,6 +43,9 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // Settings has no "Collapse composer on scroll" to offer.
   "apps/web/src/components/chat/composerScrollGesture.ts": "composerScrollGesture.ts",
   "apps/web/src/components/settings/settingsSearch.ts": "settingsSearch.ts",
+  // Where a Cell runs: upstream's branch toolbar in the menu under the
+  // ledge's "branch ⌄", never under the box; git only once known.
+  "apps/web/src/components/BranchToolbar.tsx": "BranchToolbar.tsx",
   // The hero names every place the words start Cells in.
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
   // Stemcells' mark: where upstream draws T3's wordmark as an icon.

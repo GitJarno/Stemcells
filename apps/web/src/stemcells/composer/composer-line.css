@@ -108,6 +108,30 @@
   outline-offset: 1px;
   border-radius: calc(1cap * 1.95 * 0.3);
 }
+/* The branch after the project, "· branch", its ⌄ where it opens
+   upstream's branch toolbar (`LineEnv.tsx`). A long branch keeps its end
+   (upstream's middle truncation) within 18 characters. */
+[data-stemcells-composer-line] .composer-line-env {
+  display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+[data-stemcells-composer-line] .composer-line-branch-name {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 18ch;
+}
+[data-stemcells-composer-line] .composer-line-env svg {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+[data-stemcells-composer-line][data-draft] .composer-line-env-dot {
+  display: none;
+}
+
 [data-stemcells-composer-line] .composer-line-runs-on {
   display: inline-flex;
   flex: none;
@@ -120,27 +144,33 @@
 }
 
 /* The ladder, by the pane's width. Words become marks: the project its
-   mark, the stash its mark and count. Then what the chat is about, where it runs and its parent go, and
-   the model in the composer shows its mark alone (upstream folds its own
-   controls into its overflow before that). Last the project, the model's
-   chevron and the attach button go (dropping and pasting still attach).
-   The Cell, its name, the stash, the field and send or stop stay at every
-   width; at the last rung a long name ends in an ellipsis before it pushes
-   the stash off the ledge. */
-[data-stemcells-composer-line] .composer-line-project-mark {
+   mark, the branch its mark, the stash its mark and count. Then what the
+   chat is about, the branch, where it runs and its parent go (a draft
+   keeps its branch, all its ledge holds), and the model in the composer
+   shows its mark alone (upstream folds its own controls into its overflow
+   before that). Last the project, the model's chevron and the attach
+   button go (dropping and pasting still attach). The Cell, its name, the
+   stash, the field and send or stop stay at every width; at the last rung
+   a long name ends in an ellipsis before it pushes the stash off the
+   ledge. */
+[data-stemcells-composer-line] :is(.composer-line-project-mark, .composer-line-branch-mark) {
   display: none;
 }
 @container stemcells-pane (width <= 480px) {
-  [data-stemcells-composer-line] :is(.composer-line-project-name, .composer-line-stash-word) {
+  [data-stemcells-composer-line]
+    :is(.composer-line-project-name, .composer-line-branch-name, .composer-line-stash-word) {
     display: none;
   }
-  [data-stemcells-composer-line] .composer-line-project-mark {
+  [data-stemcells-composer-line] :is(.composer-line-project-mark, .composer-line-branch-mark) {
     display: inline-flex;
   }
 }
 @container stemcells-pane (width <= 240px) {
   [data-stemcells-composer-line]
     :is(.composer-line-one-liner, .composer-line-runs-on, .composer-line-parent) {
+    display: none;
+  }
+  [data-stemcells-composer-line]:not([data-draft]) .composer-line-env {
     display: none;
   }
   [data-chat-composer-footer="true"] [data-chat-provider-model-picker-label] {

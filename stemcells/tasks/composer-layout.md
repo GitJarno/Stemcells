@@ -79,24 +79,22 @@ The bottom-centre pill in the reported shots is not Stemcells': it is another ap
 5. **The halo** covers the whole dock, the Cell included: text running behind the Cell's head read as messy in #92's scrolled zoom. It is a plain fade in the page's colour at 60 %, with no blur.
 6. **The veil**, below the box only, as the Swift app's: what passes under the box and out through the pane's foot blurs, from clear at the box's middle to `--sc-veil-blur` at the foot. Only the box is glass; above it nothing is blurred.
 
-## Env on the line
+## Env on the ledge
 
-- **Which controls.** The env uses `BranchToolbar`'s own controls: the mode selector (current checkout or worktree) and the branch selector.
+- **One segment: "project · branch ⌄".** After the project comes the branch the chat is on, named by upstream's own rule for its branch picker (the thread's or draft's branch and the checkout's status).
+- **The ⌄ opens `BranchToolbar`'s own controls**, in upstream's panel layout (workspace and environment, then the branch), in a menu over the ledge. It is there wherever upstream offers the toolbar in the composer: a draft, or a chat whose person keeps the controls after it starts (upstream's "Keep branch and worktree controls"). Upstream's branch shortcut opens the menu.
 - **Shown only when it says something:**
 
-  | Chat                     | Line shows                                                                   |
+  | Chat                     | Ledge shows                                                                  |
   | ------------------------ | ---------------------------------------------------------------------------- |
-  | Git checkout             | The branch                                                                   |
-  | Worktree                 | Its mark and the branch                                                      |
-  | Draft                    | The mode selector and the branch, since a draft still chooses where to run   |
-  | Project without git      | Nothing                                                                      |
+  | Git checkout             | "· branch", with ⌄ where upstream offers the controls                        |
+  | Worktree                 | The same, plus the worktree mark among where it runs                         |
+  | Draft                    | Only "branch ⌄" and the stash, since a draft still chooses where to run      |
+  | Project without git      | No branch; a draft gets no ledge, and T3's stash tab stays on the box        |
   | Git status not known yet | Nothing; it never assumes git, and shows nothing while the status is pending |
 
-- **The row under the composer goes.** A substitute for `BranchToolbar` renders upstream's toolbar into the line's env slot when inside a pane, and renders nothing under the box. The substitute uses a portal into a slot that `CellComposerLine` registers through `PaneCellContext`.
-  - Outside a pane, upstream's toolbar is unchanged.
-  - CSS on `[data-stemcells-composer-line] [data-slot="composer-context-strip"]` removes the strip's outline, padding and negative margin, so the controls read as words on the line.
-- **The line's runs-on marks.** The machine mark stays. The worktree mark merges into env.
-- **Drafts.** A draft gets the line too, with no Cell or name yet: env only, where the Cell will stand once the draft is sent.
+- **The row under the composer goes.** A substitute for `BranchToolbar` portals upstream's toolbar into the menu's slot (`composer/slot.ts`, `ComposerEnvSlot`) inside a pane, and renders nothing under the box. The menu stays mounted, so the toolbar keeps its state. Outside a pane, and in the thread panel, upstream's toolbar is unchanged.
+- **Everything else T3 offers** for a sent chat stays in the pane's ≡ card.
 
 ## Squeeze, as the pane narrows
 
@@ -224,10 +222,10 @@ Today the two disagree. The composer shows T3's panel; Aski's needs cards say th
 - [x] Spec agreed: the effort call and the needs-card words
 - [x] `critters` made `peering` and `needsApproval` (#105)
 - [x] The acts: approvals play `needsApproval`, the rail and the Look frame count it through `asksYou`, and a Cell peers while its line is down
-- [ ] `BranchToolbar` substitute: portal into the line's env slot in a pane, known git only (a pending status shows nothing), nothing under the box
+- [x] `BranchToolbar` substitute: portal into the line's env slot in a pane, known git only (a pending status shows nothing), nothing under the box
 - [x] The ledge (#116): solid tab on the box, the Cell at its left end standing in, the stash at its right end, the veil below the box, the halo a plain fade at 60 %
   - [x] proof: widths 800 to 160, dark and light; banners; an approval; a draft; a folder without git; Aski's pane
-- [ ] The line: env as "project · branch ⌄" in the ledge, a draft's env-only line, and the 480 and 240 rungs for env
+- [x] The line: env as "project · branch ⌄" in the ledge, a draft's env-only line, and the 480 and 240 rungs for env
 - [x] The dock's outline: full-width attachments, one outline, tokens only
 - [x] The box keeps its height in the approval state
 - [x] Hide the dead "Collapse composer on scroll" setting
