@@ -1,5 +1,5 @@
 import { EllipsisIcon, X } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
 import { cellNameOf } from "../cell/name";
@@ -42,44 +42,7 @@ interface Rows {
  */
 export function PaneButtons(props: { cell: CellRef | null; onClose: (() => void) | null }) {
   const anchor = useRef<HTMLSpanElement>(null);
-  const [rows, setRows] = useState<Rows | null>(null);
-
-  useLayoutEffect(() => {
-    const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
-    if (!pane) return;
-    // The toggles move as the chat lays out (beside its header, or at its
-    // root once its right panel is there), and go with the chat: follow them.
-    let seen: HTMLElement[] = [];
-    const follow = () => {
-      const found = [...pane.querySelectorAll<HTMLElement>(TOGGLES)];
-      if (found.length === seen.length && found.every((row, index) => row === seen[index])) return;
-      seen = found;
-      const byHeader = found.find((row) => row.closest("[data-chat-header]"));
-      const atRoot = found.find((row) => !row.closest("[data-chat-header]"));
-      const first = byHeader ?? atRoot;
-      setRows(first ? { first, last: atRoot ?? first } : null);
-    };
-    follow();
-    const moved = new MutationObserver(follow);
-    moved.observe(pane, { childList: true, subtree: true });
-    return () => moved.disconnect();
-  }, []);
-
-  // A split row sits left of the root's row, at its width from the edge.
-  useLayoutEffect(() => {
-    const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
-    if (!pane || !rows || rows.first === rows.last) return;
-    const { last } = rows;
-    const place = () => pane.style.setProperty("--sc-pane-row", `${last.offsetWidth}px`);
-    place();
-    // oxlint-disable-next-line t3code/no-raw-resize-observer -- The width goes to a style property, never into React state.
-    const sized = new ResizeObserver(place);
-    sized.observe(last);
-    return () => {
-      sized.disconnect();
-      pane.style.removeProperty("--sc-pane-row");
-    };
-  }, [rows]);
+  const rows = usePaneRows(anchor);
 
   const chip = <LookChip cell={props.cell} />;
   const close = props.onClose ? (
@@ -121,6 +84,65 @@ export function PaneButtons(props: { cell: CellRef | null; onClose: (() => void)
       )}
     </>
   );
+}
+
+/**
+ * A pane that shows upstream's toggles but none of our buttons (Aski's):
+ * its split rows still sit side by side, so the thread details toggle never
+ * covers the right panel's.
+ */
+export function PaneRows() {
+  const anchor = useRef<HTMLSpanElement>(null);
+  usePaneRows(anchor);
+  return <span ref={anchor} hidden />;
+}
+
+/**
+ * The rows of upstream's toggles in the pane around `anchor`, followed as
+ * the chat lays out. While upstream splits them, the header's row sits left
+ * of the root's (`workspace.css`, at the root row's width from the edge).
+ */
+function usePaneRows(anchor: RefObject<HTMLElement | null>): Rows | null {
+  const [rows, setRows] = useState<Rows | null>(null);
+
+  useLayoutEffect(() => {
+    const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
+    if (!pane) return;
+    // The toggles move as the chat lays out (beside its header, or at its
+    // root once its right panel is there), and go with the chat: follow them.
+    let seen: HTMLElement[] = [];
+    const follow = () => {
+      const found = [...pane.querySelectorAll<HTMLElement>(TOGGLES)];
+      if (found.length === seen.length && found.every((row, index) => row === seen[index])) return;
+      seen = found;
+      const byHeader = found.find((row) => row.closest("[data-chat-header]"));
+      const atRoot = found.find((row) => !row.closest("[data-chat-header]"));
+      const first = byHeader ?? atRoot;
+      setRows(first ? { first, last: atRoot ?? first } : null);
+    };
+    follow();
+    const moved = new MutationObserver(follow);
+    moved.observe(pane, { childList: true, subtree: true });
+    return () => moved.disconnect();
+  }, [anchor]);
+
+  // A split row sits left of the root's row, at its width from the edge.
+  useLayoutEffect(() => {
+    const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
+    if (!pane || !rows || rows.first === rows.last) return;
+    const { last } = rows;
+    const place = () => pane.style.setProperty("--sc-pane-row", `${last.offsetWidth}px`);
+    place();
+    // oxlint-disable-next-line t3code/no-raw-resize-observer -- The width goes to a style property, never into React state.
+    const sized = new ResizeObserver(place);
+    sized.observe(last);
+    return () => {
+      sized.disconnect();
+      pane.style.removeProperty("--sc-pane-row");
+    };
+  }, [anchor, rows]);
+
+  return rows;
 }
 
 /** One of upstream's toggles, as the … menu lists it. */

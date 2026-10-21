@@ -57,6 +57,23 @@ export function endLook(
 }
 
 /**
+ * The Cell whose empty workbench the workbench's own × and Esc close: the
+ * focused Cell's, open beside its chat on upstream's picker ("Open a
+ * surface"), which has no way out of its own. Null in Look, whose × and
+ * Esc close it already, and whenever the workbench holds a surface.
+ */
+export function emptyWorkbenchCell(
+  tab: Tab | null,
+  facts: LookFacts & { readonly focusedPanelEmpty: boolean },
+): CellRef | null {
+  if (tab === null || !facts.inline || !facts.focusedPanelOpen || !facts.focusedPanelEmpty) {
+    return null;
+  }
+  if (lookPaneId(tab, facts) !== null) return null;
+  return panesOf(tab).find((pane) => pane.id === tab.focusedPaneId)?.cell ?? null;
+}
+
+/**
  * When the user last wrote in a chat: an ISO time, null while it holds
  * none of theirs, undefined while that isn't known yet.
  */

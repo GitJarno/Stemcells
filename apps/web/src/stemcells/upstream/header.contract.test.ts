@@ -16,6 +16,8 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import askiPane from "../aski/AskiPane.tsx?raw";
+import cellWorkspace from "../tabs/CellWorkspace.tsx?raw";
 
 /** CSS imports come in empty under test; the stylesheet is read as text. */
 const appStyles = NodeFS.readFileSync(new URL("../../index.css", import.meta.url), "utf8");
@@ -40,6 +42,18 @@ describe("the header-less pane's contracts with upstream", () => {
     // Maximize stays in the row while the right panel is closed, out of
     // reach; the … menu leaves out what is inert.
     expect(chatView).toContain("inert={!rightPanelOpen}");
+  });
+
+  it("with the right panel open the toggles split in two rows, which every pane spaces, Aski's too", () => {
+    // The thread details toggle stays by the header; the rest go to the root.
+    // A pane that doesn't measure the root's row (--sc-pane-row) lays the
+    // thread details toggle over the right panel's, the way out of an empty
+    // Surface in Aski's tab.
+    expect(chatView).toMatch(
+      /const threadPanelHeaderControl = \([\s\S]*?showTerminalControl=\{false\}\s*showRightPanelControl=\{false\}/,
+    );
+    expect(cellWorkspace).toMatch(/<PaneButtons\s/);
+    expect(askiPane).toContain("<PaneRows />");
   });
 
   it("the transcript opens below a spacer, and fades under it, both as tall as one height", () => {

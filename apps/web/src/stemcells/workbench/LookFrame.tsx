@@ -13,11 +13,20 @@ import {
   closeCellPanel,
   escapeHeldElsewhere,
   openCellPanel,
+  useCellPanelEmpty,
   useCellPanelOpen,
   useCellSurfaceName,
   useInlinePanels,
 } from "../upstream/workbench";
-import { endLook, escapeMayEndLook, lookPaneId, railPanes, sentSince, type LastSent } from "./look";
+import {
+  emptyWorkbenchCell,
+  endLook,
+  escapeMayEndLook,
+  lookPaneId,
+  railPanes,
+  sentSince,
+  type LastSent,
+} from "./look";
 import "../tokens/stemcells.css";
 import "./look.css";
 
@@ -33,6 +42,9 @@ import "./look.css";
  * them, every page in Look keeps a stand-in naming the surface, so a page
  * off stage lays out as Look too, and nothing jumps as a swipe brings it on
  * or takes it off: the surfaces arrive and leave inside a box already there.
+ *
+ * Outside Look, the workbench keeps its × for an empty one only
+ * (`EmptyWorkbenchClose`).
  */
 export function Look(props: {
   tab: Tab;
@@ -72,7 +84,14 @@ export function Look(props: {
       </nav>
       {/* Only the page on stage fills its workbench; the × stays out of an empty one. */}
       {props.onStage && props.workbench !== null
-        ? createPortal(<LookClose onClose={() => end()} />, props.workbench)
+        ? createPortal(
+            <WorkbenchClose
+              label="Back to watching"
+              tip="Back to watching (Esc)"
+              onClose={() => end()}
+            />,
+            props.workbench,
+          )
         : null}
     </>
   );
@@ -97,17 +116,45 @@ function LookStandIn(props: { cell: CellRef }) {
   );
 }
 
-/** The workbench's ×: back to watching. */
-function LookClose(props: { onClose: () => void }) {
+/**
+ * The workbench's × outside Look, while the focused Cell's workbench is
+ * open on upstream's picker ("Open a surface"), which has no way out of its
+ * own. The × and Esc close the Cell's panel, as Look's do in Look.
+ */
+export function EmptyWorkbenchClose(props: {
+  tab: Tab;
+  /** Whether this tab's page is the one on screen, which hears the keys. */
+  onStage: boolean;
+  workbench: HTMLElement | null;
+}) {
+  const { tab } = props;
+  const focused = panesOf(tab).find((pane) => pane.id === tab.focusedPaneId) ?? null;
+  const focusedPanelOpen = useCellPanelOpen(focused?.cell ?? null);
+  const focusedPanelEmpty = useCellPanelEmpty(focused?.cell ?? null);
+  const inline = useInlinePanels();
+  const cell = emptyWorkbenchCell(tab, { focusedPanelOpen, focusedPanelEmpty, inline });
+  const close = () => {
+    if (cell !== null) closeCellPanel(cell);
+  };
+  useEndOnEscape(props.onStage && cell !== null, close);
+  if (!props.onStage || props.workbench === null || cell === null) return null;
+  return createPortal(
+    <WorkbenchClose label="Close the Surface" tip="Close (Esc)" onClose={close} />,
+    props.workbench,
+  );
+}
+
+/** The workbench's ×, at its top right (`look.css`). */
+function WorkbenchClose(props: { label: string; tip: string; onClose: () => void }) {
   return (
-    <div data-stemcells-look-close="">
+    <div data-stemcells-workbench-close="">
       <Tooltip>
         <TooltipTrigger
-          render={<button type="button" aria-label="Back to watching" onClick={props.onClose} />}
+          render={<button type="button" aria-label={props.label} onClick={props.onClose} />}
         >
           <X aria-hidden />
         </TooltipTrigger>
-        <TooltipPopup side="bottom">Back to watching (Esc)</TooltipPopup>
+        <TooltipPopup side="bottom">{props.tip}</TooltipPopup>
       </Tooltip>
     </div>
   );
@@ -186,8 +233,9 @@ function useEndOnSend(cell: CellRef | null, end: () => void) {
 }
 
 /**
- * Esc ends Look when nothing else used it. What was open is read as the key
- * goes down (window, capture), before anyone answers it; the decision is
+ * Esc ends Look (or closes an empty workbench) when nothing else used it.
+ * What was open is read as the key goes down (window, capture), before
+ * anyone answers it; the decision is
  * made where the key comes back up (window, bubble), which a handler that
  * used the key stops it from reaching.
  */

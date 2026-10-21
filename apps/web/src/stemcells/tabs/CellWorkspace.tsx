@@ -16,7 +16,7 @@ import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
-import { Look } from "../workbench/LookFrame";
+import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import {
   addPaneOutsideAski,
   ASKI_TAB_ID,
@@ -424,6 +424,7 @@ function TabPage(props: {
     <>
       {/* Look: the focused Cell and its workbench take the page (stemcells/workbench). */}
       <Look tab={tab} onStage={props.onStage} workbench={workbench} onFocus={props.onFocus} />
+      <EmptyWorkbenchClose tab={tab} onStage={props.onStage} workbench={workbench} />
       <div ref={props.onStage ? props.gridRef : undefined} data-stemcells-grid="">
         {tab.rows.map((row, rowIndex) => (
           <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>

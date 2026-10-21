@@ -13,6 +13,7 @@ import {
   type Workspace,
 } from "../tabs/layout";
 import {
+  emptyWorkbenchCell,
   endLook,
   escapeMayEndLook,
   lookPaneId,
@@ -102,6 +103,34 @@ describe("ending Look", () => {
 
   it("ignores a mark for a pane that has left the tab", () => {
     expect(endLook(tab, "t1-c", "gone")).toEqual({ close: [cell("t1-c")], focus: null });
+  });
+});
+
+describe("an empty workbench's ×", () => {
+  const single = activeTab(
+    openTab(
+      { tabs: [], activeTabId: null },
+      { tab: "t", row: "r", column: "c", pane: "p" },
+      cell("x"),
+    ),
+  );
+  const picking = { ...open, focusedPanelEmpty: true };
+
+  it("closes the picker a Cell's panel opens on with nothing in it, which has no way out", () => {
+    expect(emptyWorkbenchCell(single, picking)).toEqual(cell("x"));
+  });
+
+  it("stays out of a workbench that holds a surface", () => {
+    expect(emptyWorkbenchCell(single, { ...picking, focusedPanelEmpty: false })).toBeNull();
+  });
+
+  it("leaves Look its own ×, which closes the panel too", () => {
+    expect(emptyWorkbenchCell(activeTab(threeCells()), picking)).toBeNull();
+  });
+
+  it("leaves upstream's sheet and a closed panel alone", () => {
+    expect(emptyWorkbenchCell(single, { ...picking, inline: false })).toBeNull();
+    expect(emptyWorkbenchCell(single, { ...picking, focusedPanelOpen: false })).toBeNull();
   });
 });
 

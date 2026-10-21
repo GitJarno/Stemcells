@@ -1,7 +1,8 @@
 /**
- * What Look needs of upstream: a Cell's right panel (open or not, the
- * surface it last showed), closing and reopening it through upstream's own
- * store, whether the window is wide enough for the panel to sit inline, and
+ * What Look needs of upstream: a Cell's right panel (open or not, empty or
+ * not, the surface it last showed), closing and reopening it through
+ * upstream's own store, whether the window is wide enough for the panel to
+ * sit inline, and
  * the focus facts that say an Esc is someone else's. When the user last
  * wrote in a Cell's chat is `useCellLastSent` (`chat.tsx`).
  */
@@ -15,6 +16,7 @@ import { isTerminalFocused } from "../../lib/terminalFocus";
 import { useThreadPreviewState } from "../../previewStateStore";
 import { RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY } from "../../rightPanelLayout";
 import {
+  selectActiveRightPanelSurface,
   selectSelectedRightPanelSurface,
   selectThreadRightPanelState,
   useRightPanelStore,
@@ -28,6 +30,21 @@ export function useCellPanelOpen(cell: CellRef | null): boolean {
   return useRightPanelStore((state) =>
     cell ? selectThreadRightPanelState(state.byThreadKey, threadRefOf(cell)).isOpen : false,
   );
+}
+
+/**
+ * Whether the Cell's right panel is open on no surface, where upstream
+ * shows its picker ("Open a surface").
+ */
+export function useCellPanelEmpty(cell: CellRef | null): boolean {
+  return useRightPanelStore((state) => {
+    if (!cell) return false;
+    const ref = threadRefOf(cell);
+    return (
+      selectThreadRightPanelState(state.byThreadKey, ref).isOpen &&
+      selectActiveRightPanelSurface(state.byThreadKey, ref) === null
+    );
+  });
 }
 
 /** Closes the Cell's right panel. Its surfaces stay, so reopening shows the same one. */

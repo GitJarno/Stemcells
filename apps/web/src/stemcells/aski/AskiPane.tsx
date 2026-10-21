@@ -5,6 +5,7 @@ import { ChatPaneView } from "../upstream/chat";
 import type { ThreadRouteTarget } from "../upstream/routes";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui";
 import { NeedsFrame } from "../needs/NeedsFrame";
+import { PaneRows } from "../tabs/PaneButtons";
 import { AskiFigure } from "./AskiFigure";
 import { AskiMoments } from "./moments/AskiMoments";
 
@@ -64,6 +65,8 @@ export function AskiPane(props: {
           </AskiMoments>
         </div>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
+          {/* With the Surface open, upstream's two rows of toggles sit side by side, as in any pane. */}
+          <PaneRows />
           {props.target ? (
             <ChatPaneView
               target={props.target}

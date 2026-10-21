@@ -24,6 +24,7 @@ import threadShell from "../../../../../packages/client-runtime/src/state/thread
 import { RESIZABLE_WIDTH_PROPERTY } from "../../hooks/useResizableWidth";
 import { RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY } from "../../rightPanelLayout";
 import {
+  selectActiveRightPanelSurface,
   selectSelectedRightPanelSurface,
   selectThreadRightPanelState,
   useRightPanelStore,
@@ -79,6 +80,23 @@ describe("Look's contracts with upstream's right panel", () => {
     const before = useRightPanelStore.getState().getUserActionRevision(ref);
     closeCellPanel(thread);
     expect(useRightPanelStore.getState().getUserActionRevision(ref)).toBe(before);
+  });
+
+  it("a panel opened with nothing in it shows the picker, which only closing the panel leaves", () => {
+    // The workbench's × and Esc close an empty one (EmptyWorkbenchClose):
+    // upstream's picker has no way out of its own.
+    const ref = threadRefOf(thread);
+    useRightPanelStore.getState().toggleVisibility(ref);
+    expect(panel(thread).isOpen).toBe(true);
+    expect(selectActiveRightPanelSurface(useRightPanelStore.getState().byThreadKey, ref)).toBe(
+      null,
+    );
+    expect(chatView).toContain("selectActiveRightPanelSurface(state.byThreadKey, activeThreadRef)");
+    expect(chatView).toContain("activeSurfaceId={renderedRightPanelSurface?.id ?? null}");
+    expect(rightPanelTabs).toMatch(/props\.activeSurfaceId === null \? \(\s*<RightPanelEmptyState/);
+
+    closeCellPanel(thread);
+    expect(panel(thread).isOpen).toBe(false);
   });
 
   it("the chip names a surface as the panel's tab does", () => {
@@ -140,7 +158,7 @@ describe("the DOM Look's stylesheet and Esc read", () => {
     expect(previewPanelShell).toMatch(/"relative flex [^"]*\bbg-background\b/);
   });
 
-  it("the inline panel's tab bar keeps room at its right end, where Look's × stands", () => {
+  it("the inline panel's tab bar keeps room at its right end, where the workbench's × stands", () => {
     // Only the sheet gets the chat's controls in its tab bar; inline, the room stays empty.
     expect(chatView.match(/\blayoutControls=\{/g)).toHaveLength(1);
     expect(chatView).toMatch(/<RightPanelSheet[\s\S]*?layoutControls=\{/);

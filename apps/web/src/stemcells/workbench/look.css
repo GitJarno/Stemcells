@@ -1,7 +1,7 @@
 /* Look (LookFrame.tsx): the Look Cell and its workbench take the page; the
-   tab's other Cells wait on a rail. Every rule here hangs off the rail, so
-   it holds only while the rail is there, and the page's layout itself
-   stays the tabs'. */
+   tab's other Cells wait on a rail. Every rule here but the workbench's ×
+   hangs off the rail, so it holds only while the rail is there, and the
+   page's layout itself stays the tabs'. */
 
 /* The rail: the other Cells' marks, in a slim column at the page's left. */
 [data-stemcells-look-rail] {
@@ -75,20 +75,25 @@
   border-inline-start: 1px solid var(--border);
 }
 
-/* The workbench's ×, at its top right: in the room the panel's tab bar
-   keeps at its right end, centred on the tabs. It is round glass like the
-   pane's buttons (PaneButtons.tsx), and always shown: it is the way back. */
-[data-stemcells-look-close] {
+/* The workbench's ×, at its top right, in the room the panel's tab bar
+   keeps at its right end. It is round glass like the pane's buttons
+   (PaneButtons.tsx), in their band: as far from the top and the edge, so
+   it reads as one row with them across the page. In Look it is always
+   shown: it is the way back. Outside Look it shows on an empty workbench,
+   upstream's picker ("Open a surface"), which has no way out of its own;
+   the workbench is then its frame, as in Look. */
+[data-stemcells-workbench]:has(> [data-stemcells-workbench-close]) {
+  position: relative;
+}
+[data-stemcells-workbench-close] {
   position: absolute;
-  inset-block-start: 0;
+  inset-block-start: var(--sc-space-md);
   inset-inline-end: var(--sc-space-md);
   z-index: 30;
   display: flex;
-  align-items: center;
-  height: var(--workspace-topbar-height);
   -webkit-app-region: no-drag;
 }
-[data-stemcells-look-close] button {
+[data-stemcells-workbench-close] button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,11 +106,11 @@
   box-shadow: var(--sc-glass-shadow);
   color: var(--muted-foreground);
 }
-[data-stemcells-look-close] button:hover {
+[data-stemcells-workbench-close] button:hover {
   background: var(--sc-pane-button-lit);
   color: var(--foreground);
 }
-[data-stemcells-look-close] svg {
+[data-stemcells-workbench-close] svg {
   width: 14px;
   height: 14px;
 }
