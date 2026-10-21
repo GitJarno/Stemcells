@@ -136,6 +136,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/stemcells/windows/storedFile.ts` | New: reads the windows' file, moving one the app can't read aside | Same |
 | `apps/desktop/src/stemcells/windows/storedFile.test.ts` | New: pins it | Same |
 | `apps/desktop/src/stemcells/windowsPreload.ts` | New: exposes `window.stemcellsWindows` | Same |
+| `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
 
 ### Substitutes
 
@@ -769,11 +770,14 @@ changes:
 - **Substitutes, on the web:**
   - `UsageLimitRecoveryBanner`: Continue first among the banner's actions,
     in a Cell's pane, then upstream's own, always (re-arm, cancel, snooze).
-    With the switch on, and the Cell not cancelled, a line under the
-    banner's row (the item's children, which nothing cuts short as the row
-    cuts its own line) says what will happen: "Carries on by itself once you
-    sign in again, or at the reset" (Codex: "at the reset"), since
-    upstream's switch speaks only of the reset. Its case in
+    A line under the banner's row (the item's children, which nothing cuts
+    short as the row cuts its own line) says "Carries on by itself at the
+    reset." for every provider, only while that holds: the switch on, the
+    Cell not cancelled, a reset named after the stop and still ahead.
+    Upstream's worker, which the switch arms, sends at the reset whatever a
+    draft or the server's refusals say (those hold only the server's
+    sends), so neither hides it. It never names signing in again: said at a
+    limit, that reads as a way round it. Its case in
     `substitutes.contract.test.ts` names `ChatView.tsx` as the importer, as
     every case names one: that is how the test proves the app resolves the
     substitute. The behaviour is pinned in `limitResume.contract.test.ts`.

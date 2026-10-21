@@ -32,6 +32,7 @@ import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimelin
 import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamTimelineSystemDivider from "../../../components/chat/TimelineSystemDivider";
+import * as UpstreamUsageLimitRecoveryBanner from "../../../components/chat/UsageLimitRecoveryBanner";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
@@ -64,6 +65,7 @@ import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
+import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 import * as OurUsageProviders from "./usageProviders";
 import * as OurVisibleAnimation from "./visibleAnimation";
@@ -376,7 +378,17 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/chat/MessagesTimeline.tsx": [
         "./MessagesTimeline.logic",
-        ["threadReadLabelPrefix"],
+        ["threadReadLabelPrefix", "deriveMessagesTimelineRowsWithState"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/UsageLimitRecoveryBanner.tsx": {
+    upstream: UpstreamUsageLimitRecoveryBanner,
+    substitute: OurUsageLimitRecoveryBanner satisfies typeof UpstreamUsageLimitRecoveryBanner,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": [
+        "./chat/UsageLimitRecoveryBanner",
+        ["usageLimitRecoveryBannerItem"],
       ],
     },
   },
