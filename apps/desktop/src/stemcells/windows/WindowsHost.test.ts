@@ -778,6 +778,24 @@ describe("a flight", () => {
     }).pipe(Effect.scoped),
   );
 
+  it.effect("closes the window a move gave away under it, when its page crashes", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      const b = yield* opened(page, "b");
+      // Its only tab carried into b's strip: the window goes once its still has landed there.
+      fly(page);
+      send(page, WINDOWS_CHANNEL.windowShown, false);
+      expect(invoke(page, WINDOWS_CHANNEL.commit, move(page, { close: a.id }))).toBe("done");
+      expect(a.window.isDestroyed()).toBe(false);
+
+      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+      expect(a.window.isDestroyed()).toBe(true);
+      expect(idsOf(b.webContents)).toEqual(["b"]);
+    }).pipe(Effect.scoped),
+  );
+
   it.effect("closes a warmed window a move opened and another closed before it was made", () =>
     Effect.gen(function* () {
       yield* startHost();
