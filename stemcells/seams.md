@@ -78,8 +78,11 @@ here. Keep each seam the smallest edit that hands control to our code
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
 | `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts`, `stemcells/words/cellTools.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, the Cell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the Cell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
+| `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/name.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
+| `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsAboutRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsMicrophoneRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsNotificationsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsEnvironmentDetailRouteScreen.tsx`, `apps/mobile/src/features/home/ThreadListToolbar.tsx`, `apps/mobile/src/features/pull-requests/PullRequestToolbar.android.tsx`, `apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx`, `apps/mobile/src/features/threads/ThreadComposer.tsx`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/agent-awareness/remoteRegistration.ts`, `apps/mobile/src/features/diagnostics/crash-log-model.ts`, `apps/mobile/src/lib/authClientMetadata.ts`, `apps/mobile/src/features/showcase/showcaseAgentActivity.ts` | Each imports `APP_NAME` from `stemcells/brand/name` and says it where it said "T3 Code": a title, a label, a prompt, the crash report's first line, the Live Activity's title, the name a Mac lists this phone by ("Stemcells Mobile") | Same: the phone's screens write the name as text, with no name of upstream's to follow |
+| `apps/mobile/src/lib/connection.test.ts`, `apps/mobile/src/features/diagnostics/crash-log-model.test.ts` | Expect "Stemcells Mobile" and "Stemcells 1.1.1 (56)", and nothing else changes in them | They pin the words the phone's name seams change |
 | `apps/mobile/plugins/withWidgetLogoAsset.cjs` | Copies the Live Activity's logo from `stemcells/brand/phone-widget-mark.svg`, where it took `assets/widget/T3Mark.svg` (one line; the image keeps its name, `T3Mark`) | Same: the Live Activity's logo |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
 | `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
@@ -210,12 +213,20 @@ welcome wizard, the auth and pairing screens, and Settings › Integrations.
 `appName.contract.test.ts` fails when a sync brings "T3 Code" back to the
 sidebar or a window's title.
 
-- **One name per app.** The web's is `APP_NAME` in
-  `apps/web/src/stemcells/brand/name.ts`; the desktop's is `APP_BASE_NAME`
-  in `DesktopEnvironment.ts` (above), which the desktop hands the web as
-  its branding, so in the app the web shows the desktop's. The contract
-  test keeps the two and `productName` equal; a rename changes those three
-  and `stemcells/scripts/install-app`'s `Stemcells.app`.
+- **One name per app.** The web's and the phone's is `APP_NAME`, written
+  once in `stemcells/brand/name.ts`; each app's `brand/name.ts` reads it.
+  The desktop's is `APP_BASE_NAME` in `DesktopEnvironment.ts` (above),
+  which the desktop hands the web as its branding, so in the app the web
+  shows the desktop's. The contract test keeps the two and `productName`
+  equal; a rename changes those three and `stemcells/scripts/install-app`'s
+  `Stemcells.app`.
+- **The phone.** Its build config runs through `withStemcellsName`, so its
+  name on the home screen (and "Stemcells Dev", "Stemcells Preview"), its
+  widgets' descriptions and its permission prompts say Stemcells; its
+  screens say `APP_NAME` where upstream wrote "T3 Code" (the seams above).
+  Bundle ids, URL schemes and storage keys stay upstream's, so an installed
+  app and its pairing keep working. The phone's `appName.contract.test.ts`
+  fails when a config string or a screen's text says "T3 Code".
 - **Already Stemcells, no seam:** the desktop's window title, app menu
   and About panel read the desktop's branding, and every web view that
   names the app through `APP_BASE_NAME` or `APP_DISPLAY_NAME` follows the
@@ -228,7 +239,12 @@ sidebar or a window's title.
 What keeps T3's name, on purpose:
 
 - What credits upstream: `LICENSE`, the notices, the docs.
-- T3's own theme, "T3 Code" in the theme picker.
+- T3's own theme, "T3 Code" in the theme picker, on the web and the phone.
+- The Android editor's clipboard label, which a person doesn't see.
+
+Still upstream's, for a later change: the messages the shared packages and
+the server write ("T3 Code on <host> did not answer", "T3 Code
+restarted and resumed this turn"), which the web and the phone both show.
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).
@@ -269,10 +285,6 @@ rendered from it by Apple's tools (`stemcells/brand/README.md`).
   for that isn't ours, a phone channel whose icon, splash or Android art
   isn't ours, or a view that draws T3's wordmark or shows a file from
   `assets/`.
-
-Left for the next change: the phone's name outside those lockups (the
-home screen's "T3 Code", Settings, the widgets' descriptions) is the app's
-name (above), not its mark.
 
 ### T3's tools in Cell words
 

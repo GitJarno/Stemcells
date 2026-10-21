@@ -37,6 +37,7 @@
     "../../scripts/lib/brand-assets.ts",
     "../../stemcells/brand/assets.ts",
     "../../stemcells/brand/mark.ts",
+    "../../stemcells/brand/name.ts",
     "../../stemcells/words/cellTools.ts"
   ]
 }

@@ -126,6 +126,7 @@ import {
   useThreadSettingsSheetPresentation,
   type NavigationWithFinishTransitioning,
 } from "./use-thread-settings-sheet-presentation";
+import { APP_NAME } from "../../stemcells/brand/name";
 
 export const COMPOSER_COLLAPSED_CHROME = 60;
 
@@ -623,7 +624,7 @@ export const ThreadComposer = function ThreadComposer(props: ThreadComposerProps
     armAgentAwarenessLiveActivityForLocalWork({
       environmentId: props.environmentId,
       threadTitle: props.selectedThread.title,
-      projectTitle: props.environmentLabel ?? "T3 Code",
+      projectTitle: props.environmentLabel ?? APP_NAME,
     });
   };
 

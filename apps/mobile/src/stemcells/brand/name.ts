@@ -1,6 +1,5 @@
 /**
- * The app's name where the phone sets it in type: the web's `APP_NAME`
- * (`apps/web/src/stemcells/brand/name.ts`); `brandMarks.contract.test.ts`
- * keeps the two equal.
+ * The app's name where the phone shows it (`stemcells/brand/name.ts`, the
+ * one place it's written, which the web reads too).
  */
-export const APP_NAME = "Stemcells";
+export { APP_NAME } from "../../../../../stemcells/brand/name.ts";

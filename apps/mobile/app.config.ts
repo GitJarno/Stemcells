@@ -2,6 +2,7 @@ import type { ExpoConfig } from "expo/config";
 
 import { BRAND_ASSET_PATHS } from "../../scripts/lib/brand-assets.ts";
 import { withStemcellsPhoneArt } from "../../stemcells/brand/assets.ts";
+import { withStemcellsName } from "../../stemcells/brand/name.ts";
 import { loadRepoEnv } from "../../scripts/lib/public-config.ts";
 
 type AppVariant = "development" | "preview" | "production";
@@ -498,4 +499,4 @@ const config: ExpoConfig = {
   },
 };
 
-export default config;
+export default withStemcellsName(config);

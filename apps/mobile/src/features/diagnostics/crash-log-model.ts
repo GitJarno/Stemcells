@@ -1,3 +1,5 @@
+import { APP_NAME } from "../../stemcells/brand/name";
+
 export interface UpdatesLogEntryLike {
   readonly timestamp: number;
   readonly message: string;
@@ -51,7 +53,7 @@ export function formatStartupCrashReport(
   records: ReadonlyArray<StartupCrashRecord>,
   app: { readonly version: string; readonly build: string },
 ): string {
-  const header = `T3 Code ${app.version} (${app.build})`;
+  const header = `${APP_NAME} ${app.version} (${app.build})`;
   if (records.length === 0) return `${header}\nNo startup crashes recorded.`;
   return [
     header,
