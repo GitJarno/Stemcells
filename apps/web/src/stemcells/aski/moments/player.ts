@@ -8,13 +8,15 @@ import { reducedMotion, timed } from "../../tokens/motion.ts";
 import { channels, inkOf } from "../stage/colour.ts";
 import type { SceneOrder } from "../stage/scene.worker.ts";
 import { type Placed, place, SCENE_CELL } from "../stage/stage-scene.ts";
-import type { MomentArgs, MomentId } from "./cards.ts";
+import type { SceneArgs } from "../scenes.ts";
+import type { MomentArgs } from "./cards.ts";
 
-/** A moment to play: which, from when (Unix milliseconds), with its numbers. */
+/** A moment to play: which, from when (Unix milliseconds), with its numbers; or an act, with its words. */
 export interface MomentPlay {
-  readonly id: MomentId;
+  /** A moment's id (`MOMENT_CARDS`) or a scene's (`SCENE_CARDS`). */
+  readonly id: string;
   readonly startedAt: number;
-  readonly args?: MomentArgs | undefined;
+  readonly args?: (MomentArgs & SceneArgs) | undefined;
 }
 
 /** The theater's width, the side of Aski's square, and how far down the theater the square stands, in CSS pixels. */

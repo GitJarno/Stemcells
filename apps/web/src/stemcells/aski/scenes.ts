@@ -5,6 +5,7 @@ import type { Script } from "./aski.ts";
 import type { SceneCard } from "./scene.ts";
 import { theBud } from "./scenes/the-bud.ts";
 import { thePond } from "./scenes/the-pond.ts";
+import { thePour } from "./scenes/the-pour.ts";
 import { theRain } from "./scenes/the-rain.ts";
 
 export const SCENES: Record<string, Script> = {
@@ -40,13 +41,17 @@ export const SCENES: Record<string, Script> = {
 };
 
 export interface SceneArgs {
-  readonly seed?: number;
+  readonly seed?: number | undefined;
   /** An act's task words, one per Cell it starts. */
-  readonly words?: readonly string[];
+  readonly words?: readonly string[] | undefined;
+  /** The message an act takes in. */
+  readonly text?: string | undefined;
 }
 
 export const SCENE_CARDS: Record<string, (args?: SceneArgs) => SceneCard> = {
   "the-rain": ({ seed }: SceneArgs = {}) => theRain(seed),
   "the-bud": ({ seed, words = ["tests", "docs", "fix"] }: SceneArgs = {}) => theBud(words, seed),
   "the-pond": ({ seed }: SceneArgs = {}) => thePond(seed),
+  "the-pour": ({ seed, text = "Plan the launch and write its notes" }: SceneArgs = {}) =>
+    thePour(text, seed),
 };

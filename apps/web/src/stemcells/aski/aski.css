@@ -172,6 +172,19 @@
   opacity: 0;
 }
 
+/* A spawn's theater (AskiSpawn.tsx): Aski's act at the rect the composer
+   gives, over the workspace and under its popovers. Its canvas fades in as
+   the act starts and out as it ends, as a moment's does. */
+.aski-spawn {
+  position: fixed;
+  z-index: 45;
+  pointer-events: none;
+}
+
+.aski-spawn[data-moment] .aski-moment {
+  opacity: 1;
+}
+
 .aski-moment-line {
   position: absolute;
   inset-block-start: 50%;

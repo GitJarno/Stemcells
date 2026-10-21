@@ -11,7 +11,7 @@ import { MOODS } from "../mood.ts";
 import { type Box, GridPainter, type Rgb } from "../paint.ts";
 import type { SceneCard } from "../scene.ts";
 import { homeFit } from "../scene.ts";
-import { SCENE_CARDS } from "../scenes.ts";
+import { SCENE_CARDS, type SceneArgs } from "../scenes.ts";
 
 /** What the page tells the worker. */
 export type SceneOrder =
@@ -32,8 +32,8 @@ export type SceneOrder =
       readonly still: boolean;
       /** Whether the stage is in sight. */
       readonly running: boolean;
-      /** A moment's numbers; a scene takes none. */
-      readonly args?: MomentArgs | undefined;
+      /** A moment's numbers, or an act's words. */
+      readonly args?: (MomentArgs & SceneArgs) | undefined;
     }
   | { readonly kind: "run"; readonly running: boolean }
   | { readonly kind: "stop" };
@@ -109,8 +109,11 @@ scope.addEventListener("message", (event) => {
   context?.clearRect(0, 0, canvas?.width ?? 0, canvas?.height ?? 0);
   if (order.kind === "stop" || canvas === undefined) return;
   const card =
-    SCENE_CARDS[order.id]?.({ seed: order.seed }) ??
-    momentCard(order.id, { ...order.args, seed: order.seed });
+    SCENE_CARDS[order.id]?.({
+      seed: order.seed,
+      words: order.args?.words,
+      text: order.args?.text,
+    }) ?? momentCard(order.id, { ...order.args, seed: order.seed });
   if (card === undefined) return;
   const painter = new GridPainter({ cols: order.cols, rows: order.rows }, order);
   canvas.width = painter.width;

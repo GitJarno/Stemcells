@@ -16,11 +16,10 @@ const LONGEST = 8;
 const BUDS = { first: 0.5, every: 0.45, flies: 0.8 } as const;
 
 /**
- * A Cell's bud: the longest word of its title that a bud holds whole, the
- * first of equals, between the parentheses a Cell's name wears; a title of
- * only longer words gives its longest, cut.
+ * A Cell's word: the longest word of its title that a bud holds whole, the
+ * first of equals; a title of only longer words gives its longest, cut.
  */
-export function budOf(title: string): string {
+export function taskWord(title: string): string {
   const words = title
     .toLowerCase()
     .split(/[^a-z0-9]+/)
@@ -31,8 +30,11 @@ export function budOf(title: string): string {
       undefined,
     );
   const word = longest(words.filter((w) => w.length <= LONGEST)) ?? longest(words) ?? "cell";
-  return `(${word.slice(0, LONGEST)})`;
+  return word.slice(0, LONGEST);
 }
+
+/** A Cell's bud: its word between the parentheses a Cell's name wears. */
+export const budOf = (title: string): string => `(${taskWord(title)})`;
 
 /** Where bud `k` of `n` settles: on an arc to Aski's left, no higher or lower than Aski, in cells. */
 function settle(stage: Stage, k: number, n: number): readonly [number, number] {
