@@ -66,8 +66,12 @@ export function Readout(props: {
   );
 }
 
-/** A group reads back where its words are, so its key is the first of them. */
+/**
+ * A group reads back where its words are, so its key is where they stand:
+ * a list's places share their model's words, so the place tells them apart.
+ */
 function keyOf(group: ReadoutData["groups"][number], index: number): string {
-  const first = [group.count, group.model, group.effort, group.place].find((w) => w?.mark);
-  return first?.mark ? `at-${first.mark.start}` : `default-${index}`;
+  const words = [group.count, group.model, group.effort, group.place];
+  if (!words.some((w) => w?.mark)) return `default-${index}`;
+  return `at-${words.map((w) => w?.mark?.start ?? "").join(":")}`;
 }

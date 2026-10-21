@@ -50,7 +50,11 @@ sent as written.
   does in the Atlas repo" starts in Harbor.
 - Two places pointed at with a cue in one sentence are two Cells, each with
   its own clause. "Fix the header in Harbor and the docs in Atlas" starts
-  one in each. The readout says "2 Cells: Harbor, Atlas" before Send, and
+  one in each.
+- A list of places is pointed out as its first place is, and each place
+  gets the whole task: "Harbor and Atlas: fix the header" and "fix the
+  header in Harbor and in Atlas" start a Cell in each, each sent "Fix the
+  header". The list's joining words go with the places. The readout says "2 Cells: Harbor, Atlas" before Send, and
   one click on a place token folds it back to one (decision 6).
 - Otherwise the ladder picks the winner: the address, then a cue, then the
   whole message, the earliest first.
@@ -104,8 +108,8 @@ it.
 
 - **Several Cells come only from typed words that ask for them**: a count,
   more than one model, a counted Cell noun ("3 Cells"; "Fable Cells" is two),
-  one project opening each line, or two places pointed at with cues in one
-  sentence (decision 1). A counted group shares itself out over its "one in
+  one project opening each line, two places pointed at with cues in one
+  sentence, or a list of places (decision 1). A counted group shares itself out over its "one in
   X" phrases: "2 Cells, one in Harbor and one in Atlas". A count before its
   model is that model's: "3 Cells on Sol" is three Sol Cells. A mentioned
   place never adds a Cell. The readout shows the count before Send.
@@ -259,8 +263,8 @@ was right. Its placeholder was "Tell Aski what you need…".
   projects?" past two, or "in projects Aski picks?".
 - The Send button carries the count, so Enter visibly starts 3.
 - The task line says how the work is shared: "one list item each", "each
-  its own part" (the words split it into clauses), or "Aski divides the
-  work". A Cell with its own clause gets the whole message, minus the setup
+  its own part" (the words split it into clauses), "the same task in each"
+  (a list of places), or "Aski divides the work". A Cell with its own clause gets the whole message, minus the setup
   words, with its clause named as its part. The clause alone can lose its
   verb ("the docs in Atlas"), and the Cell should see what its siblings do.
 - Past the most Cells per message (Settings, 6), the count wears the

@@ -139,6 +139,7 @@ const SHARE: Partial<Record<Share, string>> = {
   verbatims: "word for word",
   items: "one list item each",
   clauses: "each its own part",
+  each: "the same task in each",
 };
 
 /** The words read back as one sentence: "3 Cells: 2 Sol 6.1 in Harbor, Opus 5.5 at Max in Atlas". */

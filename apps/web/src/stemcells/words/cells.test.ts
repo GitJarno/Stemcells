@@ -5,6 +5,7 @@ import { launchOf, MOST_CELLS, partOf, readoutOf, withPart } from "./cells";
 import { testCatalog, testPlaces } from "./fixtures/catalog";
 import { roster } from "./places";
 import { readWords } from "./read";
+import { applyEdits, outgoingOf } from "./send";
 
 const ctx = {
   door: "draft" as const,
@@ -121,5 +122,53 @@ describe("the readout", () => {
     const items = Array.from({ length: MOST_CELLS + 2 }, (_, i) => `- fix bug ${i + 1}`).join("\n");
     const readout = read(`${MOST_CELLS + 2} Harbor:\n${items}`);
     expect([readout.total, readout.over]).toEqual([MOST_CELLS + 2, true]);
+  });
+});
+
+describe("a list of places with one task", () => {
+  // Listing places sent one Cell with the rest of the list in its text:
+  // "Harbor and Atlas: fix the header" went to Harbor as "And Atlas: fix
+  // the header", and "fix the header in Harbor and in Atlas" as "Fix the
+  // header and".
+  const sent = (text: string) => {
+    const facts = readWords(text, ctx);
+    const out = outgoingOf(facts, facts.cells[0]!.part, { code: new Set(), markers: new Set() });
+    return out === null ? text : applyEdits(text, out.edits);
+  };
+
+  it.each([
+    ["Harbor and Atlas: fix the header", ["Harbor", "Atlas"], "Fix the header"],
+    ["Fix the header in Harbor and in Atlas", ["Harbor", "Atlas"], "Fix the header"],
+    ["Fix the header in Harbor and Atlas", ["Harbor", "Atlas"], "Fix the header"],
+    [
+      "Harbor, Atlas and Kestrel: bump the shared client",
+      ["Harbor", "Atlas", "Kestrel"],
+      "Bump the shared client",
+    ],
+  ])("starts a Cell in each place of %j, each with the whole task", (text, places, task) => {
+    const cells = launch(text)!;
+    expect(cells.share).toBe("each");
+    expect(cells.cells.map((c) => c.group.place?.place.place.name)).toEqual(places);
+    expect(cells.cells.every((c) => c.part.kind === "whole")).toBe(true);
+    expect(sent(text)).toBe(task);
+    expect(readoutOf(cells, defaults).share).toBe("the same task in each");
+  });
+
+  it("gives every place the list's model and effort", () => {
+    const cells = launch("Fix the header in Harbor and Atlas with Opus 5.5 at max")!;
+    expect(
+      cells.cells.map((c) => [
+        c.group.model?.form.model?.name,
+        c.group.effort?.level,
+        c.group.place?.place.place.name,
+      ]),
+    ).toEqual([
+      ["Opus 5.5", "max", "Harbor"],
+      ["Opus 5.5", "max", "Atlas"],
+    ]);
+  });
+
+  it("leaves a place that only points at another to the planner", () => {
+    expect(launch("Fix the header in Harbor so it matches the one in Atlas")).toBeNull();
   });
 });

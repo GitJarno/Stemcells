@@ -135,6 +135,24 @@
     "why": "everyday words are not the Board or Holidays projects"
   },
   {
+    "text": "Harbor and Atlas: fix the header",
+    "groups": ["default in Harbor", "default in Atlas"],
+    "share": "each",
+    "why": "places listed at the address each get the task"
+  },
+  {
+    "text": "Fix the header in Harbor, Atlas and in Kestrel",
+    "groups": ["default in Harbor", "default in Atlas", "default in Kestrel"],
+    "share": "each",
+    "why": "places listed behind a cue each get the task"
+  },
+  {
+    "text": "Harbor fix the header so it looks as it does in Atlas and Kestrel",
+    "groups": ["default in Harbor"],
+    "quiet": ["Atlas", "Kestrel"],
+    "why": "a list after the address is still mentions"
+  },
+  {
     "text": "Harbor fix the header so it looks as it does in the Atlas repo",
     "groups": ["default in Harbor"],
     "quiet": ["Atlas"],

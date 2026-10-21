@@ -101,7 +101,13 @@ export interface PlaceHit extends Span {
   readonly first: number;
   readonly last: number;
   readonly anchor: PlaceAnchor;
+  /** Listed after the place before it, and pointed out as that one is: "Harbor and Atlas". */
+  readonly listed: boolean;
 }
+
+/** What joins two places in a list: "Harbor and Atlas", "in Harbor, in Atlas". */
+export const LIST_JOIN =
+  /^(?:[ \t]*,[ \t]*(?:(?:and|&)[ \t]+)?|[ \t]+(?:and|&)[ \t]+)(?:(?:in|into|inside|within)[ \t]+)?$/i;
 
 /**
  * Every project the words name, at most one per stretch of words, the
@@ -114,7 +120,7 @@ export function placeHits(
   blocked: (start: number, end: number) => boolean,
   isLead: (word: string) => boolean,
 ): PlaceHit[] {
-  type Raw = Omit<PlaceHit, "anchor">;
+  type Raw = Omit<PlaceHit, "anchor" | "listed">;
   const raw: Raw[] = [];
   for (let width = 1; width <= 3; width++) {
     for (let i = 0; i + width <= tokens.length; i++) {
@@ -146,9 +152,21 @@ export function placeHits(
   raw.sort((a, b) => b.end - b.start - (a.end - a.start) || a.start - b.start);
   const kept: Raw[] = [];
   for (const h of raw) if (!kept.some((k) => k.start < h.end && h.start < k.end)) kept.push(h);
-  return kept
+  const hits: PlaceHit[] = kept
     .sort((a, b) => a.start - b.start)
-    .map((h) => ({ ...h, anchor: anchorOf(text, h, isLead) }));
+    .map((h) => ({ ...h, anchor: anchorOf(text, h, isLead), listed: false }));
+  // A place listed after one the sentence points out is pointed out the
+  // same way: "Harbor and Atlas: …" are both the address, "in Harbor and
+  // Atlas" both behind the cue.
+  for (let k = 1; k < hits.length; k++) {
+    const before = hits[k - 1]!;
+    if (
+      (before.anchor === "address" || before.anchor === "cue") &&
+      LIST_JOIN.test(text.slice(before.end, hits[k]!.start))
+    )
+      hits[k] = { ...hits[k]!, anchor: before.anchor, listed: true };
+  }
+  return hits;
 }
 
 /** Where the sentence points a name: the anchor ladder. */

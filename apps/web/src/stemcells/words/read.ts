@@ -9,7 +9,7 @@
 
 import type { ModelLexicon } from "./catalog";
 import { type EffortHit, type ModelHit, effortHits, modelHits } from "./models";
-import { type PlaceHit, type Roster, type RosterPlace, placeHits } from "./places";
+import { LIST_JOIN, type PlaceHit, type Roster, type RosterPlace, placeHits } from "./places";
 import {
   DETERMINERS,
   FILLERS,
@@ -89,6 +89,8 @@ export type Share =
   | "items"
   /** Each Cell's words open a clause of their own. */
   | "clauses"
+  /** A list of places with one task: each Cell gets the whole of it. */
+  | "each"
   /** The words don't say: Aski's planner divides the work. */
   | "planner";
 
@@ -270,12 +272,23 @@ export function readWords(source: string, ctx: ReadContext): Facts {
   }
   groups.sort((a, b) => a.start - b.start);
 
+  // A list of places binds as its first place; the others join that
+  // place's Cells once they are bound: "Harbor and Atlas: …".
+  const lists = new Map<PlaceHit, PlaceHit[]>();
+  routing.forEach((h, i) => {
+    if (!h.listed || i === 0) return;
+    const prior = routing[i - 1]!;
+    const head = [...lists].find(([, members]) => members.includes(prior))?.[0] ?? prior;
+    lists.set(head, [...(lists.get(head) ?? []), h]);
+  });
+  const member = (h: PlaceHit) => [...lists.values()].some((m) => m.includes(h));
+
   // Bind each routing place to the Cells it points at.
   let address: PlaceHit | null = null;
   const extra: PlaceHit[] = [];
-  const perLine = routing.filter((h) => h.anchor === "address").length >= 2;
+  const perLine = routing.filter((h) => h.anchor === "address" && !member(h)).length >= 2;
   for (const h of routing) {
-    if (groups.some((g) => g.place === h)) continue;
+    if (member(h) || groups.some((g) => g.place === h)) continue;
     // Two or more lines that each open with a place: one Cell per line.
     if (perLine && h.anchor === "address") {
       const mine = groups.filter(
@@ -356,7 +369,7 @@ export function readWords(source: string, ctx: ReadContext): Facts {
   // One Cell takes one place, by the ladder: the address, then a cue, then
   // the whole message, the earliest first. The rest are mentions.
   const oneCell = !perLine && groups.length <= 1 && (groups.length === 0 || groups[0]!.count === 1);
-  const bound = routing.filter((h) => !extra.includes(h));
+  const bound = routing.filter((h) => !extra.includes(h) && !member(h));
   if (oneCell && bound.length > 1) {
     const win = bound
       .slice()
@@ -365,6 +378,8 @@ export function readWords(source: string, ctx: ReadContext): Facts {
     if (groups.length > 0) groups[0]!.place = win;
     else address = win;
   }
+  // A list whose first place is a mention is all mentions.
+  for (const [head, members] of lists) if (extra.includes(head)) extra.push(...members);
   routing = routing.filter((h) => !extra.includes(h));
   for (const g of groups) if (g.place && extra.includes(g.place)) g.place = null;
 
@@ -387,6 +402,12 @@ export function readWords(source: string, ctx: ReadContext): Facts {
     const g = before.length > 0 ? before[before.length - 1]! : groups[0]!;
     g.effort ??= e;
   }
+  // The Cells a list's first place has, again in each of the others.
+  for (const g of groups) if (!g.place && address) g.place = address;
+  groups = groups.flatMap((g) => [
+    g,
+    ...(g.place ? (lists.get(g.place) ?? []) : []).map((place) => ({ ...g, place })),
+  ]);
   const cellCount = groups.reduce((n, g) => n + g.count, 0);
   for (const g of groups) {
     if (!g.place && address) g.place = address;
@@ -418,7 +439,7 @@ export function readWords(source: string, ctx: ReadContext): Facts {
     for (let k = 0; k < g.count; k++) {
       const n = cells.length;
       const part: Part =
-        share === "one"
+        share === "one" || share === "each"
           ? { kind: "whole" }
           : share === "verbatims"
             ? { kind: "verbatim", index: g.verbatims[0]! }
@@ -546,6 +567,16 @@ function shareOf(
     const distinct = new Set(mine).size === mine.length;
     if (distinct && mine.every((c) => taskWords(text, c, grammar).length > 0)) return "clauses";
   }
+  // "Harbor and Atlas: bump the client", "fix the header in Harbor and in
+  // Atlas": one task, the same in each listed place.
+  const places = groups.map((g) => g.place);
+  if (
+    groups.length > 1 &&
+    groups.every((g) => g.count === 1) &&
+    places.every((p, i) => p !== null && (i === 0 || p.listed)) &&
+    new Set(places.map((p) => p!.place)).size === places.length
+  )
+    return "each";
   return "planner";
 }
 
@@ -572,7 +603,7 @@ function grammarSpans(
     out.push({ start, end });
   }
   for (const e of efforts) out.push({ start: e.cue ? e.cue.start : e.start, end: e.end });
-  for (const h of routing) {
+  routing.forEach((h, i) => {
     // "for" points the place out only after a Cell or a count ("a Cell for Atlas").
     const cue = (t: Token | undefined) =>
       t !== undefined && (IN_CUES.has(t.norm) || (t.norm === "for" && h.anchor === "cue"));
@@ -582,11 +613,14 @@ function grammarSpans(
       const pp = tokens[h.first - 2];
       if (cue(pp)) start = pp!.start;
     } else if (cue(p)) start = p!.start;
+    // A listed place takes the word that joins it: "Harbor and Atlas" goes whole.
+    const prior = routing[i - 1];
+    if (h.listed && prior && LIST_JOIN.test(text.slice(prior.end, h.start))) start = prior.end;
     let end = h.end;
     const n = tokens[h.last + 1];
     if (n && NOUNS.has(n.norm)) end = n.end;
     out.push({ start, end });
-  }
+  });
   for (const c of counts) out.push({ start: c.start, end: c.end });
   if (header) out.push({ start: header.start, end: header.end });
   tokens.slice(0, 3).forEach((t) => {
