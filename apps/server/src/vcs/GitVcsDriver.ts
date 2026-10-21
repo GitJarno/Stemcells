@@ -42,6 +42,7 @@ import {
 } from "./GitVcsDriverCore.ts";
 import * as VcsDriver from "./VcsDriver.ts";
 import * as VcsProcess from "./VcsProcess.ts";
+import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 export interface ExecuteGitInput {
   readonly operation: string;
@@ -847,9 +848,9 @@ export const makeVcsDriverShape = Effect.fn("makeGitVcsDriverShape")(function* (
       const commitEnv: NodeJS.ProcessEnv = {
         ...process.env,
         GIT_INDEX_FILE: tempIndexPath,
-        GIT_AUTHOR_NAME: "T3 Code",
+        GIT_AUTHOR_NAME: APP_NAME,
         GIT_AUTHOR_EMAIL: "t3code@users.noreply.github.com",
-        GIT_COMMITTER_NAME: "T3 Code",
+        GIT_COMMITTER_NAME: APP_NAME,
         GIT_COMMITTER_EMAIL: "t3code@users.noreply.github.com",
       };
 

@@ -94,16 +94,6 @@ const KEPT: ReadonlyArray<Kept> = [
     why: AN_ID,
   },
   {
-    file: /^apps\/server\/src\/vcs\/GitVcsDriver\.ts$/,
-    line: "GIT_",
-    why: `${AN_ID}: the author of the commits it makes`,
-  },
-  {
-    file: /^packages\/source-control-github\/src\/server\/githubStackRebase\.ts$/,
-    line: "GIT_CONFIG_VALUE",
-    why: AN_ID,
-  },
-  {
     file: /^apps\/server\/src\/device\/EasDeviceHost\.ts$/,
     line: "const name = `T3 Code",
     why: AN_ID,

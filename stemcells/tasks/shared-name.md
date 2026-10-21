@@ -12,6 +12,7 @@ files on disk and what only the model reads stay.
 - [x] Upstream's tests that pinned the old words, updated (13 files)
 - [x] `nameInMessages.contract.test.ts`: sweep for "T3 Code", with the kept lines listed and why; a check that the clients show the name
 - [x] seams.md
+- [x] The name on commits Stemcells makes (checkpoints, a rebased GitHub stack) says Stemcells; the email stays
 
 ## Review
 
