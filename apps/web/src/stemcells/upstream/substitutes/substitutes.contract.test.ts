@@ -5,7 +5,9 @@ import * as NodeURL from "node:url";
 
 import * as UpstreamUpdateNotice from "@t3tools/client-runtime/providerUpdateRequiredModels";
 import * as UpstreamSubagentDisplay from "@t3tools/client-runtime/state/subagent-display";
+import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
+import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
 import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } from "vite-plus";
 import { describe, expect, it } from "vite-plus/test";
 
@@ -19,6 +21,7 @@ import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
+import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
@@ -32,6 +35,7 @@ import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurFavicon from "./favicon";
+import * as OurTimelineLogic from "./MessagesTimeline.logic";
 import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
 import * as OurProviderIconUtils from "./providerIconUtils";
 import * as OurProviderSubagentBar from "./ProviderSubagentBar";
@@ -39,6 +43,8 @@ import * as OurUpdateNotice from "./providerUpdateRequiredModels";
 import * as OurRightPanelSheet from "./RightPanelSheet";
 import * as OurRightPanelTabs from "./RightPanelTabs";
 import * as OurSubagentDisplay from "./subagentDisplay";
+import * as OurT3McpTools from "./t3McpToolPresentation";
+import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 
@@ -267,6 +273,40 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "packages/shared/src/t3McpToolPresentation.ts": {
+    upstream: UpstreamT3McpTools,
+    substitute: OurT3McpTools satisfies typeof UpstreamT3McpTools,
+    importers: {
+      "apps/web/src/components/chat/MessagesTimeline.logic.ts": [
+        "@t3tools/shared/t3McpToolPresentation",
+        ["resolveT3McpToolDefinition", "resolveT3McpToolPresentation"],
+      ],
+      "packages/client-runtime/src/work-log/presentation.ts": [
+        "@t3tools/shared/t3McpToolPresentation",
+        ["resolveT3McpToolDefinition"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/t3ToolSummary.ts": {
+    upstream: UpstreamT3ToolSummary,
+    substitute: OurT3ToolSummary satisfies typeof UpstreamT3ToolSummary,
+    importers: {
+      "packages/client-runtime/src/work-log/presentation.ts": [
+        "@t3tools/client-runtime/t3ToolSummary",
+        ["summarizeT3ToolCalls"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/MessagesTimeline.logic.ts": {
+    upstream: UpstreamTimelineLogic,
+    substitute: OurTimelineLogic satisfies typeof UpstreamTimelineLogic,
+    importers: {
+      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+        "./MessagesTimeline.logic",
+        ["threadReadLabelPrefix"],
+      ],
+    },
+  },
 };
 
 const substitutePath = (upstream: string) => NodePath.join(here, SUBSTITUTES[upstream]!);
@@ -417,7 +457,8 @@ describe("Stemcells' substitutes for upstream modules", () => {
   it("server: imports none of the substituted modules, so needs no substitute", () => {
     // The server runs from source in dev (`node src/bin.ts`), with no bundler
     // to substitute through. A server import of one of these would get
-    // upstream's module: give the server a seam of its own instead.
+    // upstream's module: give the server a seam of its own instead. Its
+    // tests may read upstream's (the server's T3 tools are upstream's).
     const specifiers = Object.values(CASES).flatMap(({ importers }) =>
       Object.values(importers)
         .map(([specifier]) => specifier)
@@ -426,7 +467,8 @@ describe("Stemcells' substitutes for upstream modules", () => {
     const serverSource = NodePath.join(repoRoot, "apps/server/src");
     const offenders = NodeFS.readdirSync(serverSource, { recursive: true })
       .map(String)
-      .filter((file) => /\.tsx?$/.test(file) && !file.startsWith(`stemcells${NodePath.sep}`))
+      .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
+      .filter((file) => !file.startsWith(`stemcells${NodePath.sep}`))
       .filter((file) => {
         const source = NodeFS.readFileSync(NodePath.join(serverSource, file), "utf8");
         return specifiers.some((specifier) => source.includes(`"${specifier}"`));

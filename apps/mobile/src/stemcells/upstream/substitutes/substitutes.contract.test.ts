@@ -4,13 +4,17 @@ import * as NodeModule from "node:module";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
+import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
+import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
 import { createServer, type Plugin, type UserConfig } from "vite-plus";
 import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import phoneTestConfig from "../../../../vite.config";
 import * as OurFavicon from "./favicon";
 import { SUBSTITUTES } from "./substitutes.cjs";
+import * as OurT3McpTools from "./t3McpToolPresentation";
+import * as OurT3ToolSummary from "./t3ToolSummary";
 
 /**
  * Contract: the phone's builds (Metro, for the app; Vite, for its tests) hand
@@ -114,6 +118,34 @@ const CASES: Readonly<Record<string, Case>> = {
     exports: view("apps/mobile/src/components/brandAssets.ts", "brandAssets.ts"),
     importers: {
       "apps/mobile/src/components/BrandMark.tsx": ["./brandAssets", ["T3_CODE_BRAND_MARK_SOURCE"]],
+    },
+  },
+  "packages/shared/src/t3McpToolPresentation.ts": {
+    exports: [
+      Object.keys(UpstreamT3McpTools),
+      Object.keys(OurT3McpTools satisfies typeof UpstreamT3McpTools),
+    ],
+    importers: {
+      "apps/mobile/src/lib/threadActivity.ts": [
+        "@t3tools/shared/t3McpToolPresentation",
+        ["resolveT3McpToolDefinition", "resolveT3McpToolPresentation"],
+      ],
+      "packages/client-runtime/src/work-log/presentation.ts": [
+        "@t3tools/shared/t3McpToolPresentation",
+        ["resolveT3McpToolDefinition"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/t3ToolSummary.ts": {
+    exports: [
+      Object.keys(UpstreamT3ToolSummary),
+      Object.keys(OurT3ToolSummary satisfies typeof UpstreamT3ToolSummary),
+    ],
+    importers: {
+      "packages/client-runtime/src/work-log/presentation.ts": [
+        "@t3tools/client-runtime/t3ToolSummary",
+        ["summarizeT3ToolCalls"],
+      ],
     },
   },
 };

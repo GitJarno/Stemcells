@@ -46,6 +46,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
   // A new chat never starts on Aski's provider instance.
   "apps/web/src/lib/chatThreadActions.ts": "chatThreadActions.ts",
+  // T3's own tools in the work log say Cell, not thread.
+  "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",
+  "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
+  "apps/web/src/components/chat/MessagesTimeline.logic.ts": "MessagesTimeline.logic.ts",
 };
 
 /**

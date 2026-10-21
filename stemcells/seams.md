@@ -44,6 +44,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/verbs/WorkWord`; the rows' shared state carries `turnVerbs: turnVerbsOf(timelineEntries)`; the working row says `CellWorkingWord` where it said "Working", and the turn fold renders its label through `CellWorkedLabel` | The work verbs: "Noodling for 12s" while a Cell works, "Noodled for 3m 12s" once done. Upstream keeps its row, timer and layout, and screen readers its words (`workVerbs.contract.test.ts` pins what the verbs read). Upstream's hottest file; there is no cooler place for these words |
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/transcript/ToolRowLabel`; a tool row's label renders through `<ToolRowLabel label={previewText} command={workEntry.command} />` where it rendered `previewText` | In a narrow pane a row's end is cut, and a path showed only the start of its folder: the row names the file first and its folder after, quieter. A command's row and any label that isn't one path read as before; a row's accessible name, where it has one, stays upstream's |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx` | Its changed-file row reads `session-logic.ts t3code/apps/web/src` where it read the path | It pins the row `ToolRowLabel` (above) puts name first |
+| `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/MessagesTimeline.logic.test.ts`, `apps/mobile/src/lib/threadActivity.test.ts` | Expect T3's tools in Cell words ("Read a Cell", "Create Cells", "Waiting for a Cell", "sent messages to 3 Cells", "Read Cell" before a read Cell's title), and nothing else changes in them | They pin the words T3's tools in Cell words (below) change |
 | `apps/web/src/branding.ts` | Imports `stemcells/brand/name`; `APP_BASE_NAME` falls back to `APP_NAME` where it fell back to "T3 Code" | The app's name (below): a browser's window title, the auth and pairing screens and every other view that names the app through upstream's branding |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/brand/Wordmark` and renders `SidebarWordmark` where it rendered `SidebarBrandMark` (the T3 logo beside "Code"), in the link and in the width probe; `SidebarBrandMark` and its `T3Wordmark` import go | The sidebar's top-left reads Stemcells |
 | `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The header's title is `Set up ${APP_BASE_NAME}` and its identity `WizardWordmark`, where it drew the T3 logo beside "Code" | The first thing a person reads |
@@ -77,7 +78,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
 | `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts`, `stemcells/words/cellTools.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, the Cell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
 | `apps/mobile/plugins/withWidgetLogoAsset.cjs` | Copies the Live Activity's logo from `stemcells/brand/phone-widget-mark.svg`, where it took `assets/widget/T3Mark.svg` (one line; the image keeps its name, `T3Mark`) | Same: the Live Activity's logo |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
@@ -272,6 +273,28 @@ rendered from it by Apple's tools (`stemcells/brand/README.md`).
 Left for the next change: the phone's name outside those lockups (the
 home screen's "T3 Code", Settings, the widgets' descriptions) is the app's
 name (above), not its mark.
+
+### T3's tools in Cell words
+
+The work log names T3's own tools, the ones a Cell calls to start, read or
+message other Cells, in Cell words, never T3 or thread: "Looked over your
+Cells", "Read a Cell", "Updated a Cell's details", and for a run of calls,
+"Read 2 Cells".
+
+- `stemcells/words/cellTools.ts` holds the words: each tool whose upstream
+  label names T3 or a thread, and the swap of thread for Cell in the
+  sentence upstream builds for a run of calls.
+- Substitutes, on the web and the phone: `t3McpToolPresentation` (a call's
+  name) and `t3ToolSummary` (a run's sentence). On the web,
+  `MessagesTimeline.logic` too, for its `threadReadLabelPrefix` alone, so a
+  read of another Cell still names it, linked: "Read Cell “Title”".
+- The server reads only the tools' ids from those modules, never their
+  words, so it needs no substitute. The web's substitutes contract checks
+  that what the server runs imports no substituted module; it now skips the
+  server's tests, which may read upstream's.
+- `cellToolWords.contract.test.ts` (the web's and the phone's) fails when a
+  label for any of upstream's tools, at any state, or a run's sentence,
+  says T3, thread or agent.
 
 ### No telemetry
 

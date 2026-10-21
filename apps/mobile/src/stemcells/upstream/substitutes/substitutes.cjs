@@ -18,6 +18,9 @@ const SUBSTITUTES = {
   "apps/mobile/src/components/CompactBrandTitle.tsx": "CompactBrandTitle.tsx",
   "apps/mobile/src/components/BrandMark.tsx": "BrandMark.tsx",
   "apps/mobile/src/components/brandAssets.ts": "brandAssets.ts",
+  // T3's own tools in the work log say Cell, not thread.
+  "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",
+  "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

@@ -180,11 +180,11 @@ describe("work entry labels", () => {
   });
 
   it.each([
-    ["inProgress", true, "Reading thread"],
-    ["completed", false, "Read thread"],
-    ["failed", false, "Failed to read thread"],
-    ["declined", false, "Declined to read thread"],
-    ["stopped", false, "Stopped reading thread"],
+    ["inProgress", true, "Reading Cell"],
+    ["completed", false, "Read Cell"],
+    ["failed", false, "Failed to read Cell"],
+    ["declined", false, "Declined to read Cell"],
+    ["stopped", false, "Stopped reading Cell"],
   ] as const)("names the read thread in the %s label", (toolLifecycleStatus, active, prefix) => {
     const threadRead = {
       ...entry,
@@ -3762,14 +3762,14 @@ describe("computeStableMessagesTimelineRows", () => {
 describe("resolveTimelineToolPresentation", () => {
   it("pretty prints Claude and Cursor T3 MCP tool names", () => {
     expect(resolveTimelineToolPresentation("mcp__t3-code__t3_thread_read")).toEqual({
-      displayName: "Read a T3 thread",
+      displayName: "Read a Cell",
       logo: "t3-code",
     });
   });
 
   it("pretty prints Codex T3 MCP tool names", () => {
     expect(resolveTimelineToolPresentation("t3-code.create_threads")).toEqual({
-      displayName: "Create T3 threads",
+      displayName: "Create Cells",
       logo: "t3-code",
     });
   });

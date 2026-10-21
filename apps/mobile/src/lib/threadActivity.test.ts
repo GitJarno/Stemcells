@@ -1476,7 +1476,7 @@ describe("buildThreadFeed", () => {
           "message",
         ]);
         expect(rows[2]).toMatchObject({
-          activities: [{ canExpand: true, groupStandIn: { label: "Waited for a T3 thread" } }],
+          activities: [{ canExpand: true, groupStandIn: { label: "Waited for a Cell" } }],
         });
         expect(rows[2]).not.toMatchObject({ activities: [{ groupedToolDetail: true }] });
         // The group's own disclosure adds nothing while the call is alone.
@@ -1507,7 +1507,7 @@ describe("buildThreadFeed", () => {
         expect(rows.map((entry) => entry.type)).toEqual(["activity-group"]);
         expect(rows[0]).toMatchObject({
           id: "live-activity-row",
-          activities: [{ live: true, groupStandIn: { label: "Waiting for a T3 thread" } }],
+          activities: [{ live: true, groupStandIn: { label: "Waiting for a Cell" } }],
         });
       }
 
@@ -1519,7 +1519,7 @@ describe("buildThreadFeed", () => {
         groupId,
         hiddenCount: 2,
         expanded: true,
-        summary: "Reading a T3 thread",
+        summary: "Reading a Cell",
       });
       expect(grouped[1]).toMatchObject({
         activities: [
@@ -1556,9 +1556,9 @@ describe("buildThreadFeed", () => {
     const feed = buildThreadFeed([projected(toolItem, 0)]);
     const activity = feed[0]?.type === "activity-group" ? feed[0].activities[0] : null;
 
-    expect(activity?.summary).toBe("Read a T3 thread");
+    expect(activity?.summary).toBe("Read a Cell");
     expect(activity?.logo).toBe("t3-code");
-    expect(activity?.getCopyText().split("\n")[0]).toBe("Read a T3 thread");
+    expect(activity?.getCopyText().split("\n")[0]).toBe("Read a Cell");
   });
 
   it.each(["cua_repl.js", "node_repl.js", "js"])(
@@ -1646,7 +1646,7 @@ describe("buildThreadFeed", () => {
     expect(presented).toMatchObject([
       {
         type: "work-toggle",
-        summary: "Ran 2 commands and sent messages to 3 threads",
+        summary: "Ran 2 commands and sent messages to 3 Cells",
         hiddenCount: 5,
         hasFailure: false,
       },
