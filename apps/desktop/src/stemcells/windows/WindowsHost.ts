@@ -125,6 +125,8 @@ export const layer = Layer.effectDiscard(
     let hidden: Electron.BrowserWindow | null = null;
     /** The window making room in its strip for a carried tab, told when the flight ends. */
     let visited: Electron.BrowserWindow | null = null;
+    /** A window a move closed while it carried its last tab away: it closes when its flight ends. */
+    let closeAfterFlight: Electron.BrowserWindow | null = null;
     /** Strips asked of pages, by request, waiting for their answers. */
     const measuring = new Map<number, (answer: unknown) => void>();
     let lastMeasure = 0;
@@ -554,7 +556,10 @@ export const layer = Layer.effectDiscard(
       for (const id of committed.close) {
         const window = live.get(id);
         live.delete(id);
-        if (window && !window.isDestroyed()) window.close();
+        if (!window || window.isDestroyed()) continue;
+        // Its page flies the tab to where it went; the window goes once it has landed.
+        if (flying !== null && window.webContents === flying) closeAfterFlight = window;
+        else window.close();
       }
       for (const record of committed.open) {
         open(record.id, record.frame, record.fullScreen, home);
@@ -640,10 +645,14 @@ export const layer = Layer.effectDiscard(
       flying = null;
       unwatch();
       unwatch = () => {};
+      const closing = closeAfterFlight;
+      closeAfterFlight = null;
+      if (closing !== null && hidden === closing) hidden = null;
       showHidden();
       leaveVisited();
       flight.end();
       coolWarm();
+      if (closing && !closing.isDestroyed()) closing.close();
     };
 
     /**

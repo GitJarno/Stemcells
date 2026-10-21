@@ -140,6 +140,82 @@ export class TearFlight {
     );
   }
 
+  /**
+   * A one-tab window, carried live, comes onto the layer as itself: its still
+   * at its frame (`window`, screen points) with its chip (`chip`) on it, as an
+   * open preview hung from the chip. Resolves once the layer has painted it,
+   * so the window can hide under it.
+   */
+  async lift(window: Rect, chip: Rect): Promise<void> {
+    this.chip = { width: chip.width, height: chip.height };
+    const [chipStill, pageStill] = await Promise.all([
+      this.bridge.still(chip),
+      this.bridge.still(window),
+    ]);
+    this.page = pageStill ? { width: window.width, height: window.height } : null;
+    const open = at(window.x - chip.x, window.y - chip.y, window);
+    this.open = open;
+    const { band } = this.shape;
+    const commands: FlightCommand[] = [
+      { op: "box", id: HAND, rect: at(chip.x, chip.y, { width: 0, height: 0 }), ...group },
+      { op: "box", id: CATCH, rect: at(0, 0, { width: 0, height: 0 }), parent: HAND, ...group },
+      {
+        op: "box",
+        id: PREVIEW,
+        rect: open,
+        radius: this.look.windowRadius,
+        shadow: true,
+        color: this.look.chrome,
+        clip: true,
+        parent: CATCH,
+      },
+    ];
+    if (pageStill) {
+      commands.push({
+        op: "still",
+        id: PAGE,
+        still: pageStill,
+        rect: at(0, 0, window),
+        parent: PREVIEW,
+      });
+    }
+    commands.push({
+      op: "box",
+      id: BAND,
+      rect: band,
+      radius: 0,
+      shadow: false,
+      color: this.look.chrome,
+      clip: false,
+      parent: PREVIEW,
+    });
+    if (chipStill) {
+      commands.push({
+        op: "still",
+        id: CHIP,
+        still: chipStill,
+        rect: at(0, 0, chip),
+        radius: this.look.chipRadius,
+        parent: CATCH,
+      });
+    }
+    this.bridge.flight(commands);
+    await this.bridge.painted();
+  }
+
+  /**
+   * Flies home opening into the window at `frame` (screen points), its chip
+   * at `chipAt`, on `token`; resolves when it is there.
+   */
+  home(frame: Rect, chipAt: Point, token: string): Promise<void> {
+    const timing = this.timing(token);
+    this.bridge.flight([
+      { op: "animate", id: HAND, rect: origin({ ...frame, ...chipAt }), timing },
+    ]);
+    this.unfold(frame, chipAt, token);
+    return new Promise((resolve) => setTimeout(resolve, timing.duration + (timing.delay ?? 0)));
+  }
+
   /** The chip's top left, where the hand has it now. */
   follow(chipAt: Point): void {
     this.bridge.flight([

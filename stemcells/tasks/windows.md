@@ -39,7 +39,7 @@ asked for by name), then W7, W4, W9, W11.
       raise, landing; Undo Move (⌥⌘Z). In steps:
   - [x] W6a A tab carried into another window's strip: the strips measured
         at the pick-up, the host making room, spring-load, the landing.
-  - [ ] W6b A one-tab window into another window's strip: its still folds
+  - [x] W6b A one-tab window into another window's strip: its still folds
         into a chip, and the window closes once the host has the tab.
   - [ ] W6c Undo Move (⌥⌘Z).
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
@@ -712,3 +712,13 @@ behind another coming forward; a quick tear and drop
   content bounds and zoom, `strips.ts`); a page that doesn't answer in
   150 ms takes no drop. Spring-load's raise (`moveTop`, no focus) is a
   no-op under the lab helper: for the hand check, with the engine's tests.
+- W6b: proved in the lab. A one-tab window carried over another window's
+  strip comes onto the layer as its still, hides under it and folds into
+  its chip while the host makes room. Carried back out, the still unfolds
+  and the window, kept under the hand all along, shows again as the layer
+  goes. Let go in the strip, the tab joins the host at the slot and is on
+  stage there; the window that carried it closes as the layer goes, once
+  the host has drawn the chip (about 520 ms after the drop). Main holds the
+  close of a window whose page is flying the tab until its flight ends.
+  Esc over the strip flies the still home, opening into the window, which
+  shows there.
