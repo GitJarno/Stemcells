@@ -1,7 +1,8 @@
 /**
  * Stemcells' mark, SC█: the letters S and C and a block cursor, the paths of
- * the app icon's layers (`stemcells/brand/app-icon.icon/Assets`) as they are,
- * never redrawn. `mark.test.ts` holds them to the icon's files.
+ * the app icon's layers (`app-icon.icon/Assets`) as they are, never redrawn.
+ * The web and the phone draw their small mark from these;
+ * `apps/web/src/stemcells/brand/mark.test.ts` holds them to the icon's files.
  */
 
 /** The letters S and C, from `letters.svg`. */

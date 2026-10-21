@@ -6,7 +6,11 @@
  */
 import type { SVGProps } from "react";
 
-import { MARK_CURSOR, MARK_LETTERS, MARK_VIEW_BOX } from "../../brand/mark";
+import {
+  MARK_CURSOR,
+  MARK_LETTERS,
+  MARK_VIEW_BOX,
+} from "../../../../../../stemcells/brand/mark.ts";
 
 export function T3Wordmark(props: SVGProps<SVGSVGElement>) {
   return (

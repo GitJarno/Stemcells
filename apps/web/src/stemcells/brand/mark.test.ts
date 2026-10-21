@@ -5,7 +5,7 @@ import * as NodeURL from "node:url";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { MARK_CURSOR, MARK_LETTERS, MARK_VIEW_BOX } from "./mark";
+import { MARK_CURSOR, MARK_LETTERS, MARK_VIEW_BOX } from "../../../../../stemcells/brand/mark.ts";
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
 const layers = NodePath.resolve(here, "../../../../../stemcells/brand/app-icon.icon/Assets");

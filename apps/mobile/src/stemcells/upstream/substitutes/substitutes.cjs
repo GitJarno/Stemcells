@@ -12,6 +12,12 @@ const path = require("node:path");
 const SUBSTITUTES = {
   // No favicon fetched: a link or a page shows the app's own mark.
   "packages/shared/src/favicon.ts": "favicon.ts",
+  // Stemcells' mark where T3's showed: the work log's glyph, the header's
+  // name, the loading screen's icon and name.
+  "apps/mobile/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
+  "apps/mobile/src/components/CompactBrandTitle.tsx": "CompactBrandTitle.tsx",
+  "apps/mobile/src/components/BrandMark.tsx": "BrandMark.tsx",
+  "apps/mobile/src/components/brandAssets.ts": "brandAssets.ts",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

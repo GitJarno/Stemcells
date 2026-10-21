@@ -13,10 +13,12 @@ Apple's tools. None is drawn or edited by hand.
 | `universal-1024.png`                                                                           | The Linux icon                                                                                       | `vp run icons:export`                                                                            |
 | `web-favicon.ico`, `web-favicon-16x16.png`, `web-favicon-32x32.png`, `web-apple-touch-180.png` | The web's icons: the tab's favicon, and the touch icon the boot screen shows                         | `vp run icons:export`                                                                            |
 | `windows.ico`                                                                                  | The Windows icon                                                                                     | `vp run icons:export`                                                                            |
-| `assets.ts`                                                                                    | Which of these replaces each brand file upstream names                                               | —                                                                                                |
-
-`apps/web/src/stemcells/brand/mark.ts` holds the same two paths for the
-small mark in the chat (`mark.test.ts` keeps them equal to the layers).
+| `android-foreground.png`                                                                       | Android's launcher, monochrome and shortcut icon: the icon's canvas in the middle 72 of 108 dp       | `stemcells/scripts/render-phone-art`                                                             |
+| `android-splash.png`                                                                           | Android's splash: the same frame on black                                                            | `stemcells/scripts/render-phone-art`                                                             |
+| `android-notification.png`                                                                     | Android's status-bar icon                                                                            | `stemcells/scripts/render-phone-art`                                                             |
+| `phone-widget-mark.svg`                                                                        | The iPhone's Live Activity logo (a template image, tinted by the activity)                           | `stemcells/scripts/render-phone-art`                                                             |
+| `mark.ts`                                                                                      | The two layers' paths, for the small mark the web and the phone draw                                 | Copied from the layers; `mark.test.ts` on the web keeps them equal                               |
+| `assets.ts`                                                                                    | Which of these replaces each brand file upstream names, and the phone's Android art                  | —                                                                                                |
 
 ## Rendering them again
 
@@ -38,6 +40,13 @@ xcrun actool --compile /tmp/sc-icon/out --platform macosx --minimum-deployment-t
   --output-partial-info-plist /tmp/sc-icon/partial.plist /tmp/sc-icon/AppIcon.icon
 iconutil -c iconset /tmp/sc-icon/out/AppIcon.icns -o /tmp/sc-icon/AppIcon.iconset
 cp /tmp/sc-icon/AppIcon.iconset/icon_512x512@2x.png stemcells/brand/macos-1024.png
+```
+
+The phone's own art frames the same two layers and lets macOS's SVG
+renderer draw them (`sips`):
+
+```sh
+stemcells/scripts/render-phone-art
 ```
 
 Every channel (dev, nightly, prod) gets the same files: Stemcells has one

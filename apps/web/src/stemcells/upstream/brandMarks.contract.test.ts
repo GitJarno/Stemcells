@@ -176,7 +176,7 @@ describe("Stemcells' mark, in place of T3's", () => {
           minify: false,
           sourcemap: false,
           manifest: false,
-          rollupOptions: { input: NodePath.join(here, "../brand/mark.ts") },
+          rollupOptions: { input: NodePath.join(repoRoot, "stemcells/brand/mark.ts") },
         },
       });
       for (const [path, file] of Object.entries(PUBLIC_SUBSTITUTES)) {

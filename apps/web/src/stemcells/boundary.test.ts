@@ -13,6 +13,9 @@ import { describe, expect, it } from "vite-plus/test";
 const thisFile = NodeURL.fileURLToPath(import.meta.url);
 const ourRoot = NodePath.dirname(thisFile);
 const adapterRoot = NodePath.join(ourRoot, "upstream");
+/** Our folder at the repository's root (the brand, the docs), ours too. */
+const ourRepoRoot = NodePath.resolve(ourRoot, "../../../../stemcells");
+const isIn = (dir: string, path: string) => path === dir || path.startsWith(dir + NodePath.sep);
 
 const IMPORT_PATTERN =
   /\b(?:import|export)\b[^"'`;]*?\bfrom\s*["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)|\bimport\s+["']([^"']+)["']/g;
@@ -28,7 +31,7 @@ function upstreamReach(file: string, specifier: string): string | null {
   if (specifier.startsWith("@t3tools/")) return "an upstream package";
   if (specifier.startsWith(".")) {
     const resolved = NodePath.resolve(NodePath.dirname(file), specifier);
-    if (resolved !== ourRoot && !resolved.startsWith(ourRoot + NodePath.sep)) {
+    if (!isIn(ourRoot, resolved) && !isIn(ourRepoRoot, resolved)) {
       return "upstream app code (relative path)";
     }
   }
@@ -72,6 +75,7 @@ describe("Stemcells' boundary with upstream", () => {
       'import { create } from "zustand";',
       'import { panesOf } from "./layout";',
       'import { Button } from "../upstream/ui";',
+      'import { MARK_CURSOR } from "../../../../../stemcells/brand/mark.ts";',
     ].join("\n");
     const reached = importSpecifiers(source).filter((specifier) =>
       upstreamReach(tabFile, specifier),

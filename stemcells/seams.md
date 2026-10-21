@@ -77,7 +77,9 @@ here. Keep each seam the smallest edit that hands control to our code
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
 | `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web's reaches the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, and the brand list only in `brandMarks.contract.test.ts` |
+| `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
+| `apps/mobile/plugins/withWidgetLogoAsset.cjs` | Copies the Live Activity's logo from `stemcells/brand/phone-widget-mark.svg`, where it took `assets/widget/T3Mark.svg` (one line; the image keeps its name, `T3Mark`) | Same: the Live Activity's logo |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
 | `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
 | `vite.config.ts` | Imports `removeVitestTmpDir` from `apps/server/src/stemcells/testing/vitestTmpDir.ts` and adds `plugins: [removeVitestTmpDir()]` | Vitest never removes the temp folder it copies a run's modules into when the config has no `projects`, as the root's (and the server's, which extends it) hasn't: each run of the server's tests left about 40 MB in the system temp dir. The plugin removes it when Vitest closes; `vitestTmpDir.test.ts` fails once Vitest does that itself, and the seam goes |
@@ -105,7 +107,9 @@ re-exports it (`export * from …`) and replaces only the names it changes.
 - **The phone too.** `apps/mobile/src/stemcells/upstream/substitutes/`
   holds the phone's table and substitutes, in CommonJS for Metro's config;
   Metro (the app) and the phone's test config both read it, and its own
-  contract test proves both.
+  contract test proves both. Node can't load the phone's views, so for
+  those the test reads their exports, and the type check holds each to
+  upstream's types.
 - **Not the server.** It runs from source in dev, with no bundler to
   substitute through. The web's contract test fails when the server imports
   a substituted module.
@@ -247,18 +251,27 @@ rendered from it by Apple's tools (`stemcells/brand/README.md`).
   (`PUBLIC_SUBSTITUTES`). Upstream's files in `apps/web/public` and
   `assets/` stay as they are, so its icon updates never conflict, and `vp
   run icons:check` calls the web's public copies stale, on purpose.
-- **In the chat.** `T3Wordmark` has a substitute that draws SC█ in the same
-  box and colour: the work log's rows for T3's own tools, and a thread one
-  of them started.
-- `brandMarks.contract.test.ts` fails when a T3 mark ships again: a brand
-  file that isn't ours, an image upstream serves that we don't substitute,
-  an icon the boot page or the web manifest asks for that isn't ours, or a
-  view that draws T3's wordmark or shows a file from `assets/`.
+- **In the chat.** `T3Wordmark` has a substitute, on the web and the phone,
+  that draws SC█ in the same box and colour: the work log's rows for T3's
+  own tools, and (on the web) a thread one of them started. Both draw the
+  paths in `stemcells/brand/mark.ts`.
+- **The phone.** Its header sets "Stemcells" in type where upstream draws
+  the T3 logo beside "Code", as the web's sidebar does
+  (`CompactBrandTitle`), and the loading screen shows our icon and name
+  (`BrandMark`, `brandAssets`): substitutes, copies of upstream's views
+  with only that changed. Android's art and the Live Activity's logo come
+  from `stemcells/brand` through the two seams above;
+  `stemcells/scripts/render-phone-art` renders them from the icon's layers.
+- `brandMarks.contract.test.ts` (the web's and the phone's) fails when a T3
+  mark ships again: a brand file that isn't ours, an image upstream serves
+  that we don't substitute, an icon the boot page or the web manifest asks
+  for that isn't ours, a phone channel whose icon, splash or Android art
+  isn't ours, or a view that draws T3's wordmark or shows a file from
+  `assets/`.
 
-Left for the next change: the phone's own marks (its header's T3 logo
-beside "Code", the loading screen's icon and "T3 Code", the work log's
-glyph, the Live Activity's `T3Mark`) and Android's launcher, splash and
-notification art.
+Left for the next change: the phone's name outside those lockups (the
+home screen's "T3 Code", Settings, the widgets' descriptions) is the app's
+name (above), not its mark.
 
 ### No telemetry
 

@@ -6,7 +6,7 @@ import * as NodeURL from "node:url";
 
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import { createServer, type Plugin, type UserConfig } from "vite-plus";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import phoneTestConfig from "../../../../vite.config";
 import * as OurFavicon from "./favicon";
@@ -16,7 +16,7 @@ import { SUBSTITUTES } from "./substitutes.cjs";
  * Contract: the phone's builds (Metro, for the app; Vite, for its tests) hand
  * upstream's views our substitute for each module in `SUBSTITUTES`, and each
  * substitute still exports what its upstream module does. If this fails after
- * a sync, a phone view fetches favicons again.
+ * a sync, a phone view fetches favicons again or shows T3's mark.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -26,16 +26,34 @@ const fromRepo = (file: string) => NodePath.join(repoRoot, file);
 const substitutes: Readonly<Record<string, string>> = SUBSTITUTES;
 
 interface Case {
-  readonly upstream: object;
-  readonly substitute: object;
+  /** The names upstream's module exports, and the names the substitute does. */
+  readonly exports: readonly [upstream: ReadonlyArray<string>, substitute: ReadonlyArray<string>];
   /** Upstream files that import the module: by which specifier, and which names. */
   readonly importers: Readonly<Record<string, readonly [string, ReadonlyArray<string>]>>;
 }
 
+/**
+ * A view's exported names, from its source: Node can't load React Native, so
+ * the views' cases read their `export`s, and their types are checked below.
+ */
+function exportsOf(file: string): string[] {
+  const source = NodeFS.readFileSync(file, "utf8");
+  const declared = [...source.matchAll(/^export (?:async )?(?:function|const|let|class) (\w+)/gm)];
+  const listed = [...source.matchAll(/^export \{([^}]*)\}/gm)].flatMap((match) =>
+    match[1]!.split(",").map((name) => name.trim()),
+  );
+  return [...declared.map((match) => match[1]!), ...listed].filter((name) => name !== "");
+}
+
+const view = (upstream: string, ours: string) =>
+  [exportsOf(fromRepo(upstream)), exportsOf(NodePath.join(here, ours))] as const;
+
 const CASES: Readonly<Record<string, Case>> = {
   "packages/shared/src/favicon.ts": {
-    upstream: UpstreamFavicon,
-    substitute: OurFavicon satisfies typeof UpstreamFavicon,
+    exports: [
+      Object.keys(UpstreamFavicon),
+      Object.keys(OurFavicon satisfies typeof UpstreamFavicon),
+    ],
     importers: {
       "apps/mobile/src/features/threads/ThreadFeed.tsx": [
         "@t3tools/shared/favicon",
@@ -47,14 +65,72 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/components/T3Wordmark.tsx": {
+    exports: view("apps/mobile/src/components/T3Wordmark.tsx", "T3Wordmark.tsx"),
+    importers: {
+      "apps/mobile/src/features/threads/thread-work-log.tsx": [
+        "../../components/T3Wordmark",
+        ["T3Wordmark"],
+      ],
+      "apps/mobile/src/components/CompactBrandTitle.tsx": ["./T3Wordmark", ["T3Wordmark"]],
+    },
+  },
+  "apps/mobile/src/components/CompactBrandTitle.tsx": {
+    exports: view("apps/mobile/src/components/CompactBrandTitle.tsx", "CompactBrandTitle.tsx"),
+    importers: {
+      "apps/mobile/src/Stack.tsx": [
+        "./components/CompactBrandTitle",
+        ["getCompactBrandHeaderOptions"],
+      ],
+      "apps/mobile/src/features/home/WorkspaceConnectionTitle.tsx": [
+        "../../components/CompactBrandTitle",
+        ["brandTitleOffset", "CompactBrandTitle", "getCompactBrandHeaderOptions"],
+      ],
+      "apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx": [
+        "../../components/CompactBrandTitle",
+        ["CompactBrandTitle"],
+      ],
+      "apps/mobile/src/features/workspace/WorkspaceListToolbarRow.tsx": [
+        "../../components/CompactBrandTitle",
+        ["CompactBrandTitle"],
+      ],
+      "apps/mobile/src/features/threads/ThreadNavigationSidebar.tsx": [
+        "../../components/CompactBrandTitle",
+        ["CompactBrandTitle"],
+      ],
+      "apps/mobile/src/features/threads/sidebar-navigation-shell.tsx": [
+        "../../components/CompactBrandTitle",
+        ["getCompactBrandHeaderOptions"],
+      ],
+    },
+  },
+  "apps/mobile/src/components/BrandMark.tsx": {
+    exports: view("apps/mobile/src/components/BrandMark.tsx", "BrandMark.tsx"),
+    importers: {
+      "apps/mobile/src/components/LoadingScreen.tsx": ["./BrandMark", ["BrandMark"]],
+    },
+  },
+  "apps/mobile/src/components/brandAssets.ts": {
+    exports: view("apps/mobile/src/components/brandAssets.ts", "brandAssets.ts"),
+    importers: {
+      "apps/mobile/src/components/BrandMark.tsx": ["./brandAssets", ["T3_CODE_BRAND_MARK_SOURCE"]],
+    },
+  },
 };
 
 const substitutePath = (upstream: string) => NodePath.join(here, substitutes[upstream]!);
+
+/** How a file in our folder names the upstream module: a package as is, a file by its path. */
+const fromOurs = (specifier: string, upstream: string) =>
+  specifier.startsWith(".")
+    ? `./${NodePath.relative(here, fromRepo(upstream)).replace(/\.tsx?$/, "")}`
+    : specifier;
 
 const expectations = Object.entries(CASES).flatMap(([upstream, { importers }]) =>
   Object.entries(importers).map(([importer, [specifier]]) => ({
     key: `${specifier} from ${importer}`,
     specifier,
+    specifierFromOurs: fromOurs(specifier, upstream),
     importer: fromRepo(importer),
     upstream: fromRepo(upstream),
     substitute: substitutePath(upstream),
@@ -82,9 +158,31 @@ describe("the phone's substitutes for upstream modules", () => {
   });
 
   it("each substitute exports every name its upstream module does", () => {
-    for (const [upstream, { upstream: theirs, substitute: ours }] of Object.entries(CASES)) {
-      expect(Object.keys(ours).toSorted(), upstream).toEqual(Object.keys(theirs).toSorted());
+    for (const [
+      upstream,
+      {
+        exports: [theirs, ours],
+      },
+    ] of Object.entries(CASES)) {
+      expect(theirs.length, upstream).toBeGreaterThan(0);
+      expect(ours.toSorted(), upstream).toEqual(theirs.toSorted());
     }
+  });
+
+  it("the views' substitutes have their upstream modules' types", () => {
+    // Checked by the phone's typecheck: the views can't load in Node.
+    expectTypeOf<typeof import("./T3Wordmark")>().toEqualTypeOf<
+      typeof import("../../../components/T3Wordmark")
+    >();
+    expectTypeOf<typeof import("./CompactBrandTitle")>().toEqualTypeOf<
+      typeof import("../../../components/CompactBrandTitle")
+    >();
+    expectTypeOf<typeof import("./BrandMark")>().toEqualTypeOf<
+      typeof import("../../../components/BrandMark")
+    >();
+    expectTypeOf<typeof import("./brandAssets")>().toEqualTypeOf<
+      typeof import("../../../components/brandAssets")
+    >();
   });
 
   it("upstream's views still import what we replace from the substituted module", () => {
@@ -139,10 +237,17 @@ describe("the phone's substitutes for upstream modules", () => {
     });
     try {
       const container = server.environments.client.pluginContainer;
-      for (const { key, specifier, importer, upstream, substitute } of expectations) {
+      for (const {
+        key,
+        specifier,
+        specifierFromOurs,
+        importer,
+        upstream,
+        substitute,
+      } of expectations) {
         expect((await container.resolveId(specifier, importer))?.id, key).toBe(substitute);
         const ours = NodePath.join(here, "favicon.ts");
-        expect((await container.resolveId(specifier, ours))?.id, key).toBe(upstream);
+        expect((await container.resolveId(specifierFromOurs, ours))?.id, key).toBe(upstream);
       }
     } finally {
       await server.close();

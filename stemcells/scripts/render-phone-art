@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Renders the phone's own art from the app icon's layers (the S and C, and
+# the cursor): the Live Activity's vector mark and Android's launcher,
+# notification and splash images. Each frames the same two paths and lets
+# macOS's SVG renderer (sips) draw them; nothing is drawn by hand.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+brand=stemcells/brand
+layers=$(grep -h '<path' "$brand/app-icon.icon/Assets/letters.svg" "$brand/app-icon.icon/Assets/cursor.svg")
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+# frame <viewBox> <size> [background]: the layers on the icon's 1024 canvas, seen through viewBox.
+frame() {
+  local background=""
+  [[ -n "${3:-}" ]] && background="<rect x=\"-4096\" y=\"-4096\" width=\"8192\" height=\"8192\" fill=\"$3\"/>"
+  printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" width="%s" height="%s">\n%s\n%s\n</svg>\n' \
+    "$1" "$2" "$2" "$background" "$layers"
+}
+
+render() { # render <name> <viewBox> <size> [background]
+  frame "$2" "$3" "${4:-}" >"$work/$1.svg"
+  sips -s format png "$work/$1.svg" --out "$brand/$1.png" >/dev/null
+}
+
+# Android's adaptive icon is 108dp, of which the launcher shows the middle
+# 72dp: the icon's 1024 canvas fills those 72dp, so the mark sits where it
+# does on the iPhone's icon (1536 = 1024 × 108 / 72).
+render android-foreground "-256 -256 1536 1536" 432
+# Android 12's splash shows the launcher icon's frame on a 288dp canvas.
+render android-splash "-256 -256 1536 1536" 1152 "#000000"
+# A status-bar icon: the mark two thirds of its width, centred, as upstream's.
+render android-notification "-64 -64 1152 1152" 96
+
+# The Live Activity draws its logo in a 3:2 frame (`AgentActivity.tsx`), so
+# the vector keeps upstream's 111 × 74 box with the mark as wide in it as
+# T3's was (94.39 of 111), centred on the mark (512, 512).
+read -r width height x y < <(awk 'BEGIN {
+  w = 768 * 111 / 94.3941; h = w * 74 / 111
+  printf "%.2f %.2f %.2f %.2f\n", w, h, 512 - w / 2, 512 - h / 2 }')
+printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s %s %s %s" width="%s" height="%s">\n%s\n</svg>\n' \
+  "$x" "$y" "$width" "$height" "$width" "$height" "$layers" >"$brand/phone-widget-mark.svg"

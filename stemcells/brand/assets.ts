@@ -48,3 +48,35 @@ export function withStemcellsBrand<Paths extends Record<string, string>>(
     Object.entries(paths).map(([name, path]) => [name, stemcellsBrandAsset(path)]),
   ) as { readonly [Name in keyof Paths]: string };
 }
+
+/** The colour our mark sits on, the `.icon`'s fill. */
+const MARK_GROUND = "#000000";
+/** The mark's ink, the layers' fill. */
+const MARK_INK = "#EDE9E0";
+
+/**
+ * The phone's channel (`app.config.ts`) with our Android art, which upstream
+ * names there rather than in its list: the launcher, monochrome and shortcut
+ * icon, the splash and the notification icon, rendered by
+ * `stemcells/scripts/render-phone-art`, and the mark's own colours in place of
+ * each channel's. `fromRepoRoot` turns our path into one the config can use.
+ */
+export function withStemcellsPhoneArt<Channel extends { readonly assets: object }>(
+  channel: Channel,
+  fromRepoRoot: (path: string) => string,
+) {
+  const ours = (file: string) => fromRepoRoot(`${STEMCELLS_BRAND_DIR}/${file}`);
+  return {
+    ...channel,
+    assets: {
+      ...channel.assets,
+      androidAdaptiveForeground: ours("android-foreground.png"),
+      androidAdaptiveBackgroundColor: MARK_GROUND,
+      androidAdaptiveBackgroundImage: undefined,
+      androidMonochromeIcon: ours("android-foreground.png"),
+      androidSplashIcon: ours("android-splash.png"),
+      androidNotificationIcon: ours("android-notification.png"),
+      androidNotificationColor: MARK_INK,
+    },
+  };
+}
