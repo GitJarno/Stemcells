@@ -48,7 +48,7 @@ function parseRect(value: unknown): Rect | null {
   return { x: x as number, y: y as number, width: width as number, height: height as number };
 }
 
-function parseDisplay(value: unknown): Display | null {
+export function parseDisplay(value: unknown): Display | null {
   if (!isRecord(value) || !isNonEmptyString(value.key)) return null;
   const bounds = parseRect(value.bounds);
   const workArea = parseRect(value.workArea);
@@ -86,7 +86,7 @@ function parseRemembered(value: unknown): RememberedWindow | null {
   };
 }
 
-function parseMemory(value: unknown): Memory | null {
+export function parseMemory(value: unknown): Memory | null {
   if (!isRecord(value) || !isNonEmptyString(value.displays) || !isNonEmptyString(value.home)) {
     return null;
   }
@@ -101,7 +101,7 @@ function parseMemory(value: unknown): Memory | null {
   };
 }
 
-function parseAll<T>(value: unknown, parse: (item: unknown) => T | null): T[] {
+export function parseAll<T>(value: unknown, parse: (item: unknown) => T | null): T[] {
   return Array.isArray(value) ? value.flatMap((item) => parse(item) ?? []) : [];
 }
 

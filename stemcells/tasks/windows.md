@@ -13,7 +13,7 @@ asked for by name), then W7, W4, W9, W11.
 - [x] W1 The arrangement (web, pure): windows of tabs, every move and its
       inverse, Gather and Put back with their memory, display sets,
       invariants, the phone's flat order, persistence and migration.
-- [ ] W2 More than one window (desktop + web): our desktop layer, three
+- [x] W2 More than one window (desktop + web): our desktop layer, three
       seams, the boot handshake, the tab store reading its window's slice,
       Move Tab to New Window (⌥⌘T, no motion yet), closing a window, Aski
       going home, relaunch. Measured: memory, boot and server load per
@@ -177,7 +177,9 @@ memories), and an undo entry (the arrangement before and after).
 **The lead window** is upstream's main window. Notifications, Aski's
 keeper and, later, the phone's publishing run there only. When it closes,
 our layer promotes the frontmost window with upstream's `setMain`, so the
-menu, reload and dev tools keep a target.
+menu, reload and dev tools keep a target. A window leads, or counts as in
+front, only once its page has loaded: one still opening (or one that never
+will) can't take Aski home. With none loaded, the next page to load leads.
 
 **Persistence.** Main writes `stemcells-windows.json` in the desktop state
 folder (`windows/persist.ts`'s format: the windows, the lead, the memories
@@ -467,27 +469,27 @@ timer the hand can beat, and in tests the engine is fed recorded hands.
 
 ## Seams and drift
 
-Today: 69 upstream files changed, 670 lines, 8 hot (`drift`, 2026-10-21).
+When this was written: 69 upstream files changed, 670 lines, 8 hot
+(`drift`, 2026-10-21).
 
-| File                                                | Change                                                                                                                                                                | Heat (90 d) | Slice        |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------ |
-| `apps/desktop/src/main.ts`                          | Adds our windows layer to `layerDesktopApplication`                                                                                                                   | 28          | W2           |
-| `apps/desktop/src/preload.ts`                       | Imports `stemcells/preload.ts`, which exposes `stemcellsBridge`                                                                                                       | 40          | W2           |
-| `apps/desktop/src/window/DesktopWindow.ts`          | `createWindow` takes a frame and a role; an extra window skips the main window's bounds saving, preview registration and dev tools; the service exposes `createExtra` | 31          | W2           |
-| `apps/desktop/src/preview/Manager.ts`               | Accepts webviews hosted by any of the app's windows                                                                                                                   | 57          | W4           |
-| `apps/desktop/src/window/DesktopApplicationMenu.ts` | Window menu: Move Tab to New Window, Gather Windows / Put Windows Back, Undo Move                                                                                     | 11          | W8, optional |
+| File                                                | Change                                                                                                                                                                                                | Heat (90 d) | Slice        |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------ |
+| `apps/desktop/src/main.ts`                          | Imports our windows layer and adds it to `layerDesktopApplication` (already a seam: scroll phases)                                                                                                    | 28          | W2           |
+| `apps/desktop/src/preload.ts`                       | Imports `stemcells/windowsPreload.ts`, which exposes `window.stemcellsWindows` (already a seam: scroll phases)                                                                                        | 40          | W2           |
+| `apps/desktop/src/window/DesktopWindow.ts`          | `createWindow` takes an optional `{ bounds, show }`; such a window skips the main window's bounds saving, preview registration, maximizing and dev tools; the service gains an optional `createExtra` | 31          | W2           |
+| `apps/desktop/src/preview/Manager.ts`               | Accepts webviews hosted by any of the app's windows                                                                                                                                                   | 57          | W4           |
+| `apps/desktop/src/window/DesktopApplicationMenu.ts` | Window menu: Move Tab to New Window, Gather Windows / Put Windows Back, Undo Move                                                                                                                     | 11          | W8, optional |
 
-After: 74 files, about 715 lines, still 8 hot; every new seam is cold.
+W2 as built: one new upstream file (`DesktopWindow.ts`, 25 lines), and
+three lines in two files that were seams already. All five, at most:
+three new files, about 50 lines, still 8 hot; every seam is cold.
 Our IPC channels are our own strings in our files, so `packages/contracts`
-isn't touched. The web side needs no seam: notifications go through a
-substitute, the strip and keys are ours, the stores merge in our adapter.
-`createWindow` is reused, not copied, because it installs upstream's
-webview hardening, popup handling, navigation guard and renderer recovery,
-and a copy would drift silently.
-
-Before W2 adds the preload line, it tries `session.registerPreloadScript`,
-which would need no seam at all, if it reaches the app's window and nothing
-else.
+isn't touched. `createExtra` is optional, so upstream's test doubles of
+the window service need no change. The web side needs no seam:
+notifications go through a substitute, the strip and keys are ours, the
+stores merge in our adapter. `createWindow` is reused, not copied,
+because it installs upstream's webview hardening, popup handling,
+navigation guard and renderer recovery, and a copy would drift silently.
 
 **Upstream candidates:** "more than one app window" (the `createWindow`
 seam) and "browser previews in any window" (the preview manager's) are
@@ -525,15 +527,14 @@ validation, lead promotion on close, display events from a fake screen.
 **Browser (vitest browser, as `TabPager.browser.test.tsx`):** the strip
 lifting, banding, closing its gap and making room.
 
-**Frames in the dev app, off the person's screen.** A dev-only lab mode in
-main: every window and flight layer is created hidden, painting while
-hidden and never focused, on a virtual pair of displays. A driver feeds
-recorded hands to the source renderer's engine (the cursor never moves).
-Each frame, main captures every window and layer with `capturePage` while
-hidden and composites them at their virtual places into
-`/tmp/stemcells-windows-*.png`, with motion slowed. W2 first proves hidden
-windows paint and capture; if they don't, the lab uses offscreen windows on
-a virtual display layout instead.
+**Frames in the dev app, off the person's screen.** The dev app runs
+under the house lab helper (`stemcells/lab/never-shown.cjs`): every window
+and flight layer is hidden, off every display, painting while hidden and
+never focused. A driver sends input to the source page over the remote
+debugging port (the cursor never moves) and reads frames back with
+`capturePage`, with motion slowed. As the helper keeps every window off
+the displays, where a window opens is read from the frame it was asked
+for; its size is its own.
 
 What the frames must show: no frame without the carried thing; the
 preview's chip under the grab point; the drop landing on the preview's
@@ -553,3 +554,16 @@ Motion on.
   random arrangements and walks of 25 moves (every step whole, every step
   undoable). A transaction is whole values per window, not edits, so the
   desktop app needs no layout logic to route it.
+- W2: proved in the lab (a development build whose windows never show):
+  ⌥⌘T opens a window 24 pt down and right holding the tab and both of its
+  Cells, and the window it left keeps the rest. A quit and relaunch
+  reopens every window with its tabs, and the same lead. Closing a window
+  drops it from the book and tells the others; closing the window that
+  holds Aski's tab seats Aski first in the lead; closing the lead passes
+  the lead to the window left, which seats Aski. Measured in that build
+  (heavier than a release): each window adds a renderer of 0.3 to 0.5 GB
+  resident (110 MB of it JavaScript heap), about 35 MB in the main
+  process, 4 MB and two connections in the server, and no idle server
+  CPU; a new window draws its tab 1 to 1.5 s after ⌥⌘T. That is over
+  `dwell`, so W5's spare window is likely needed; W5 measures a release
+  build first.

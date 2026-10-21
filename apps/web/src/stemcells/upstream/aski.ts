@@ -80,7 +80,8 @@ const repinsAsked = new Set<string>();
  * it), else made in the most recent project and pinned. This browser
  * remembers it, to show it before the server's chats have loaded.
  */
-export function useAskiChat(): AskiChat {
+/** `setsUp`: whether this page may set Aski's chat up when there's none (one window does). */
+export function useAskiChat(setsUp = true): AskiChat {
   const catalogReady = useAtomValue(environmentCatalog.catalogValueAtom).isReady;
   const environmentId = usePrimaryEnvironmentId();
   const config = useAtomValue(primaryServerConfigAtom);
@@ -140,7 +141,7 @@ export function useAskiChat(): AskiChat {
   }, [environmentId, adopted, adoptedPinned, pinThread]);
 
   useEffect(() => {
-    if (environmentId === null || failed || stepInFlight !== null) return;
+    if (!setsUp || environmentId === null || failed || stepInFlight !== null) return;
     if (instanceKey === null) return;
     const instance = JSON.parse(instanceKey) as AskiInstance;
     const run = async (step: string, work: () => Promise<void>) => {

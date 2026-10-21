@@ -33,6 +33,7 @@ jobs:
         run: |
           pnpm --filter @t3tools/web typecheck
           pnpm --filter t3 typecheck
+          pnpm --filter @t3tools/desktop typecheck
       # Each app's tests run with its own config: it builds with our
       # substitutes for upstream modules (stemcells/seams.md, Substitutes).
       - name: Stemcells tests
@@ -40,6 +41,7 @@ jobs:
           pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells
           pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells
           pnpm exec vp test run apps/server/src/stemcells --passWithNoTests
+          pnpm --filter @t3tools/desktop exec vp test run src/stemcells --passWithNoTests
           pnpm exec vp test run --dir stemcells
           pnpm exec vp test run scripts/build-desktop-artifact.test.ts
 

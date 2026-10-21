@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent } from "react";
 
 import { useAskiChat, type AskiChat } from "../upstream/aski";
+import { useLeadWindow } from "../windows/lead";
 import { ChatPaneView } from "../upstream/chat";
 import type { ThreadRouteTarget } from "../upstream/routes";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui";
@@ -18,7 +19,8 @@ import { AskiMoments } from "./moments/AskiMoments";
  * workspace so the server's provider updates re-render only it.
  */
 export function AskiKeeper(props: { onChat: (chat: AskiChat) => void }) {
-  const chat = useAskiChat();
+  // Every window follows Aski's chat; only the lead window sets one up.
+  const chat = useAskiChat(useLeadWindow());
   // A new object for the same chat is no change.
   const key =
     chat.status === "ready"
