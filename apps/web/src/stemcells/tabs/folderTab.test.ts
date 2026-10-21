@@ -17,7 +17,7 @@ const frameCss = NodeFS.readFileSync(new URL("../pages/frame.css", import.meta.u
 
 describe("the tab on stage meets the slate", () => {
   it("reaches down by half the strip's row less the tab, at the heights TabStrip draws", () => {
-    expect(tabStrip).toMatch(/className="flex h-9 [^"]*" data-stemcells-tab-strip=""/);
+    expect(tabStrip).toMatch(/className="flex h-9 [^"]*"\s+data-stemcells-tab-strip=""/);
     // Both kinds of tab: the Cells' and Aski's.
     expect(tabStrip).toContain('"group/tab flex h-6 ');
     expect(tabStrip).toContain('"flex h-6 shrink-0 cursor-pointer');

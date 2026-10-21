@@ -29,9 +29,11 @@ asked for by name), then W7, W4, W9, W11.
   - [x] W5b The flight layer (desktop): one window per display, stills
         from `capturePage`, keyframes from the renderer; frames proved in
         the lab.
-  - [ ] W5c The strip carries: pick up, band, tear, the preview, the
-        warm window, the drop in open space, Esc.
+  - [x] W5c The strip carries: pick up, band, tear, the preview, the
+        drop in open space, Esc.
   - [ ] W5d The one-tab window carries itself.
+  - [ ] W5e The warm window: a dropped tab's window drawn before the
+        drop, so its still goes at once.
 - [ ] W6 Into another window's strip: geometry, making room, spring-load
       raise, landing; Undo Move (⌥⌘Z).
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
@@ -651,3 +653,15 @@ Motion on.
   so no message port yet (W5c measures it with a real hand). A motion
   reversed after 300 ms started from where the frame was. The flight's
   end closed the layer.
+- W5c: proved in the lab with mouse input sent to a hidden window. The
+  chip bands and tears at 24 px; the strip hides it only once the layer
+  has painted it, and closes up on `travel`. The preview unfolds from the
+  chip's 166 px to the window's 1100 px in about 400 ms on `unfold`, the
+  window's still held in place around the chip. Over its own strip it
+  folds back and the others make room; let go there, it lands at its
+  slot. Esc flies it home: the frame folds to the chip and the hand lands
+  on its old place in about 400 ms, the tab back on stage. Let go in the
+  open, a window opens on the preview's frame to the point, and the still
+  goes once that window says it has drawn: 1.25 s after the drop, which
+  W5e's warm window is for. `land` and `nudge` are springs with no
+  written-out timing, so the flight samples them (`motionTiming`).

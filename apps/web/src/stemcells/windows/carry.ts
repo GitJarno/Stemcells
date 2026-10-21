@@ -75,6 +75,8 @@ export interface PickUp {
   readonly at: number;
   /** The window's only tab: carrying it carries the window itself. */
   readonly onlyTab: boolean;
+  /** Whether it can leave its strip: not in a browser, which has one window. */
+  readonly tears: boolean;
   /** The window preview's size (`previewSize`). */
   readonly preview: Size;
   /** The `spring-load` timing, in milliseconds. */
@@ -120,8 +122,8 @@ export interface Carry {
 export type Landing =
   /** Never picked up: the strip's click. */
   | { readonly kind: "click" }
-  /** Back in its own strip, at `slot` among its other chips. */
-  | { readonly kind: "reorder"; readonly slot: number }
+  /** Back in its own strip, at `slot` among its other chips; `chip` is where it lands, if it was torn off. */
+  | { readonly kind: "reorder"; readonly slot: number; readonly chip: Rect | null }
   /** Into another window's strip, at `slot`; `chip` is where it lands. */
   | { readonly kind: "strip"; readonly window: string; readonly slot: number; readonly chip: Rect }
   /** In open space: a new window takes the preview's frame. */
@@ -181,11 +183,18 @@ const grown = (rect: Rect, by: number): Rect => ({
   height: rect.height + 2 * by,
 });
 
-/** A window's chips as a carry sees them: without the one it carries. */
+/**
+ * A window's chips as a carry sees them: without the one it carries, whose
+ * strip has closed the gap it left.
+ */
 function chipsOf(carry: Carry, window: WindowPlace): Rect[] {
-  return window.strip.chips
-    .filter((chip) => !(window.id === carry.pickUp.window && chip.tabId === carry.pickUp.tabId))
-    .map((chip) => chip.rect);
+  const { chips, gap } = window.strip;
+  if (window.id !== carry.pickUp.window) return chips.map((chip) => chip.rect);
+  const from = chips.findIndex((chip) => chip.tabId === carry.pickUp.tabId);
+  const shift = carry.chip.width + gap;
+  return chips
+    .filter((_, index) => index !== from)
+    .map((chip, index) => (index < from ? chip.rect : { ...chip.rect, x: chip.rect.x - shift }));
 }
 
 /** The top of a strip's chips, where a docked chip rides. */
@@ -314,7 +323,7 @@ function pastStrip(strip: StripPlace, hand: Point): number {
 function band(carry: Carry, hand: Point, at: number): Carry {
   const source = windowOf(carry, carry.pickUp.window)!;
   const past = pastStrip(source.strip, hand);
-  if (Math.abs(past) >= TEAR_BAND) return fly(carry, hand, at);
+  if (carry.pickUp.tears && Math.abs(past) >= TEAR_BAND) return fly(carry, hand, at);
   const chips = source.strip.chips;
   const geometry = {
     widths: chips.map((chip) => chip.rect.width),
@@ -382,11 +391,11 @@ export function release(carry: Carry): Landing {
     case "pressed":
       return { kind: "click" };
     case "banding":
-      return { kind: "reorder", slot: carried.slot };
+      return { kind: "reorder", slot: carried.slot, chip: null };
     case "docked": {
-      if (carried.window === start.window) return { kind: "reorder", slot: carried.slot };
       const window = windowOf(carry, carried.window)!;
       const chip = slotRect(window, chipsOf(carry, window), carried.slot, carry.chip);
+      if (carried.window === start.window) return { kind: "reorder", slot: carried.slot, chip };
       return { kind: "strip", window: carried.window, slot: carried.slot, chip };
     }
     case "open":
@@ -403,6 +412,11 @@ export function release(carry: Carry): Landing {
 /** Esc, or a carry the app gave up on: everything goes home. */
 export function cancel(): Landing {
   return { kind: "home" };
+}
+
+/** Where the carried chip sat at the press, which is where it goes home to. */
+export function homeOf(carry: Carry): Rect {
+  return carry.chip;
 }
 
 /**

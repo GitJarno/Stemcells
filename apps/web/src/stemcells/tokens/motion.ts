@@ -2,7 +2,7 @@
 // generate, so a move here and a transition in a style sheet share one
 // definition (`stemcells.css`).
 
-import type { Spring } from "./spring.ts";
+import { cssLinear, settledDuration, type Spring } from "./spring.ts";
 
 const style = (): CSSStyleDeclaration => getComputedStyle(document.documentElement);
 
@@ -35,6 +35,20 @@ export function timed(name: string): { readonly duration: number; readonly easin
   return {
     duration: ms(s.getPropertyValue(`--sc-motion-${name}-duration`)),
     easing: s.getPropertyValue(`--sc-motion-${name}-easing`).trim() || "linear",
+  };
+}
+
+/**
+ * Any motion token as a timed easing: its own duration and easing where the
+ * tokens write them out, else its spring sampled (`land`, `nudge`, `lift`
+ * are springs only).
+ */
+export function motionTiming(name: string): { readonly duration: number; readonly easing: string } {
+  if (style().getPropertyValue(`--sc-motion-${name}-duration`).trim() !== "") return timed(name);
+  const settling = spring(name);
+  return {
+    duration: Math.round(settledDuration(settling) * 1000),
+    easing: cssLinear(settling),
   };
 }
 

@@ -29,6 +29,7 @@ function Frame(props: { topbar?: string }) {
           aski={{ active: false, cell: null, chat: { status: "starting" } }}
           newCell={null}
           newTabRef={{ current: null }}
+          windowTabs={0}
           onActivate={() => undefined}
           onClose={() => undefined}
           onMove={() => undefined}

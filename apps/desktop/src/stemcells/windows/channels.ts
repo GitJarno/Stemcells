@@ -34,6 +34,10 @@ export const WINDOWS_CHANNEL = {
   flightPainted: "stemcells:windows:flight-painted",
   /** Page → main: the flight is over; the layer goes. */
   flightEnd: "stemcells:windows:flight-end",
+  /** Page → main: this window has drawn the workspace it started from. */
+  drawn: "stemcells:windows:drawn",
+  /** Main → the page carrying something: a window (by id) has drawn, so its still can go. */
+  landed: "stemcells:windows:landed",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */
@@ -64,6 +68,8 @@ export type FlightCommand =
       readonly radius: number;
       readonly shadow: boolean;
       readonly color: string;
+      /** Whether it clips what's in it, as a window does; a group that only moves things doesn't. */
+      readonly clip: boolean;
       readonly parent?: string;
     }
   | {
@@ -73,6 +79,8 @@ export type FlightCommand =
       readonly still: string;
       /** Where it's drawn, at this size: a still drawn at the size it was taken is shown 1:1. */
       readonly rect: FlightRect;
+      /** Rounds its corners, as the thing it is a still of is rounded. */
+      readonly radius?: number;
       readonly parent?: string;
     }
   | { readonly op: "place"; readonly id: string; readonly rect: FlightRect }
@@ -81,6 +89,7 @@ export type FlightCommand =
       readonly id: string;
       readonly rect?: FlightRect;
       readonly opacity?: number;
+      readonly radius?: number;
       readonly timing: FlightTiming;
     }
   | { readonly op: "remove"; readonly id: string };

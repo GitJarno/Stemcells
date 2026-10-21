@@ -80,5 +80,7 @@ if (boot !== null) {
     still: (rect: FlightRect) => ipcRenderer.invoke(WINDOWS_CHANNEL.flightStill, rect),
     painted: () => ipcRenderer.invoke(WINDOWS_CHANNEL.flightPainted),
     endFlight: () => ipcRenderer.send(WINDOWS_CHANNEL.flightEnd),
+    drawn: () => ipcRenderer.send(WINDOWS_CHANNEL.drawn),
+    onLanded: listen<string>(WINDOWS_CHANNEL.landed),
   });
 }

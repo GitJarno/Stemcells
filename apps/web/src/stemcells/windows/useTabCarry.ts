@@ -1,0 +1,420 @@
+/**
+ * A tab's chip carried from its strip (stemcells/tasks/windows.md, Tear a
+ * tab off): the strip's half of the carry engine (`carry.ts`). Along the
+ * strip a chip reorders as it always has, and bands past its edge; on the
+ * desktop it tears off there onto the flight layer (`tearFlight.ts`), and
+ * let go out in the open, it opens a window of its own. Esc sends it home.
+ *
+ * The strip draws what `view` says: the chip riding the hand, the others
+ * making room, or, with the chip off the strip, closing up after it.
+ */
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
+
+import type { Tab } from "../tabs/layout";
+import type { TabDragGeometry } from "../tabs/tabDrag";
+import { reducedMotion, timing } from "../tokens/motion";
+import { randomUUID } from "../upstream/ui";
+import type { Display, Rect } from "./arrangement";
+import { windowsBridge, type WindowsBridge } from "./bridge";
+import {
+  cancel,
+  homeOf,
+  landingMotion,
+  morphOf,
+  moveHand,
+  pickUp,
+  previewSize,
+  release,
+  type Carried,
+  type Carry,
+  type Landing,
+  type Point,
+} from "./carry";
+import { tearToNewWindow } from "./newWindow";
+import { TearFlight } from "./tearFlight";
+
+/** The tab list's `gap-1`, in pixels. */
+const TAB_GAP = 4;
+/** How long a new window may take to draw before its still goes anyway. */
+const LANDING_WAIT = 4000;
+
+export interface CarryView {
+  readonly tabId: string;
+  /** Moved far enough to be a carry, not a click. */
+  readonly picked: boolean;
+  /** Along the strip, and the pull it shows past the strip's edge. */
+  readonly offset: number;
+  readonly pulled: number;
+  /** The slot it holds among the others, where they make room for it. */
+  readonly slot: number;
+  /** Off the strip, on the flight layer: the others close up after it while it's out in the open. */
+  readonly away: "no" | "open" | "over";
+  /** The strip as it was at the press, which the others' places are worked out from. */
+  readonly geometry: TabDragGeometry;
+}
+
+interface Live {
+  carry: Carry;
+  readonly pointerId: number;
+  readonly element: HTMLElement;
+  /** The page's top left, in screen points. */
+  readonly origin: Point;
+  readonly geometry: TabDragGeometry;
+  flight: TearFlight | null;
+  /** The tear, until the layer has the chip and the strip can let go of it. */
+  tearing: Promise<void> | null;
+  /** The tab was on stage when it tore; the pager turned to `neighbour`. */
+  wasActive: boolean;
+  done: boolean;
+}
+
+const onScreen = (rect: DOMRect, origin: Point): Rect => ({
+  x: rect.left + origin.x,
+  y: rect.top + origin.y,
+  width: rect.width,
+  height: rect.height,
+});
+
+/** The displays as the page knows them before the desktop app answers: its own screen. */
+function ownScreen(): Display[] {
+  const s = window.screen as Screen & { availLeft?: number; availTop?: number };
+  const workArea = {
+    x: s.availLeft ?? 0,
+    y: s.availTop ?? 0,
+    width: s.availWidth,
+    height: s.availHeight,
+  };
+  return [{ key: "this", bounds: workArea, workArea }];
+}
+
+/** The colour the strip is drawn on: the window's chrome. */
+function chromeOf(element: HTMLElement): string {
+  for (let at: HTMLElement | null = element; at; at = at.parentElement) {
+    const color = getComputedStyle(at).backgroundColor;
+    if (color && color !== "transparent" && !/rgba\(.*,\s*0\)$/.test(color)) return color;
+  }
+  return "rgb(11, 11, 12)";
+}
+
+/** Where the chip's top left is while it's off the strip. */
+function chipAt(live: Live, carried: Carried): Point {
+  if (carried.kind === "docked") return { x: carried.chip.x, y: carried.chip.y };
+  const { press } = live.carry.pickUp;
+  const { chip, hand } = live.carry;
+  return { x: hand.x - (press.x - chip.x), y: hand.y - (press.y - chip.y) };
+}
+
+export function useTabCarry(options: {
+  readonly tabs: ReadonlyArray<Tab>;
+  readonly activeTabId: string | null;
+  readonly tabElements: RefObject<Map<string, HTMLElement>>;
+  readonly strip: RefObject<HTMLElement | null>;
+  /** How many tabs the window holds, Aski's among them. */
+  readonly windowTabs: number;
+  /** A tab that can't leave the strip (the new Cell's, unsent). */
+  readonly staysId: string | null;
+  readonly onActivate: (tabId: string) => void;
+  readonly onMove: (tabId: string, toIndex: number) => void;
+}) {
+  const [view, setView] = useState<CarryView | null>(null);
+  const live = useRef<Live | null>(null);
+  // What the handlers read, as of the last render.
+  const latest = useRef(options);
+  useLayoutEffect(() => {
+    latest.current = options;
+  });
+
+  const finish = (at: Live) => {
+    at.done = true;
+    if (live.current === at) live.current = null;
+    setView(null);
+  };
+
+  /** Shows on the layer and the strip where the carry is now. */
+  const show = (at: Live, was: Carried) => {
+    const now = at.carry.carried;
+    if (!at.flight || at.tearing) return;
+    const point = chipAt(at, now);
+    at.flight.follow(point);
+    const token = morphOf(was, now, reducedMotion());
+    if (now.kind === "open") at.flight.unfold(now.frame, point, token);
+    else if (now.kind === "docked") at.flight.fold(token);
+    setView(
+      (current) =>
+        current && {
+          ...current,
+          away: now.kind === "open" ? "open" : "over",
+          slot: now.kind === "docked" ? now.slot : current.slot,
+        },
+    );
+  };
+
+  const tear = (at: Live, bridge: WindowsBridge) => {
+    const { origin, element } = at;
+    const strip = latest.current.strip.current!;
+    const stripRect = onScreen(strip.getBoundingClientRect(), origin);
+    const source = at.carry.geometry.windows[0]!;
+    const content = source.frame;
+    const lifted = onScreen(element.getBoundingClientRect(), origin);
+    const { chip } = at.carry;
+    at.wasActive = latest.current.activeTabId === at.carry.pickUp.tabId;
+    const style = getComputedStyle(document.documentElement);
+    const flight = new TearFlight(
+      bridge,
+      {
+        chrome: chromeOf(strip),
+        chipRadius: Number.parseFloat(getComputedStyle(element).borderRadius) || 6,
+        windowRadius: Number.parseFloat(style.getPropertyValue("--sc-radius-sheet")) || 16,
+      },
+      {
+        firstChip: { x: source.strip.start - content.x, y: chip.y - content.y },
+        band: {
+          x: source.strip.start - content.x,
+          y: stripRect.y - content.y,
+          width: stripRect.x + stripRect.width - source.strip.start,
+          height: stripRect.height,
+        },
+      },
+    );
+    at.flight = flight;
+    const was = at.carry.carried;
+    at.tearing = flight
+      .tear(lifted, chip, at.wasActive ? content : null, chipAt(at, was))
+      .then(() => {
+        at.tearing = null;
+        if (at.done) return;
+        // The chip is on the layer: the strip lets go of it, and the window
+        // shows what it will be without the tab.
+        setView((current) => current && { ...current, away: "open" });
+        if (at.wasActive) {
+          const { tabs } = latest.current;
+          const index = tabs.findIndex((tab) => tab.id === at.carry.pickUp.tabId);
+          const neighbour = tabs[index + 1] ?? tabs[index - 1];
+          if (neighbour) latest.current.onActivate(neighbour.id);
+        }
+        show(at, { kind: "banding", offset: 0, slot: 0, pulled: 0 });
+      });
+  };
+
+  const goHome = async (at: Live) => {
+    const { flight } = at;
+    await at.tearing;
+    if (!flight) return finish(at);
+    const tabId = at.carry.pickUp.tabId;
+    setView((current) => current && { ...current, away: "over", slot: at.geometry.from });
+    if (at.wasActive) latest.current.onActivate(tabId);
+    await flight.land(homeOf(at.carry), landingMotion(cancel(), reducedMotion()) ?? "land");
+    finish(at);
+    requestAnimationFrame(() => flight.end());
+  };
+
+  const land = async (at: Live, landing: Landing) => {
+    const { tabId } = at.carry.pickUp;
+    const { onActivate, onMove } = latest.current;
+    if (!at.flight) {
+      finish(at);
+      if (landing.kind === "click") onActivate(tabId);
+      else if (landing.kind === "reorder" && landing.slot !== at.geometry.from)
+        onMove(tabId, landing.slot);
+      return;
+    }
+    await at.tearing;
+    const flight = at.flight;
+    switch (landing.kind) {
+      case "reorder": {
+        if (landing.slot !== at.geometry.from) onMove(tabId, landing.slot);
+        if (at.wasActive) onActivate(tabId);
+        await flight.land(
+          landing.chip ?? homeOf(at.carry),
+          landingMotion(landing, reducedMotion()) ?? "land",
+        );
+        finish(at);
+        requestAnimationFrame(() => flight.end());
+        return;
+      }
+      case "window": {
+        // The still stays until the new window has drawn under it.
+        const id = randomUUID();
+        const landed = new Promise<void>((resolve) => {
+          const stop = windowsBridge()?.onLanded((window) => {
+            if (window !== id) return;
+            stop?.();
+            resolve();
+          });
+          setTimeout(() => {
+            stop?.();
+            resolve();
+          }, LANDING_WAIT);
+        });
+        if ((await tearToNewWindow(tabId, landing.frame, id)) === null) return goHome(at);
+        await landed;
+        finish(at);
+        await flight.fadeOut(landingMotion(landing, reducedMotion()) ?? "flick");
+        flight.end();
+        return;
+      }
+      default:
+        return goHome(at);
+    }
+  };
+
+  // A strip that goes mid-carry (its window's view changed under it) takes
+  // the carry with it: the layer goes, and the tab is where it always was.
+  useEffect(
+    () => () => {
+      const at = live.current;
+      if (!at || at.done) return;
+      live.current = null;
+      at.done = true;
+      void (at.tearing ?? Promise.resolve()).then(() => at.flight?.end());
+    },
+    [],
+  );
+
+  // Esc sends a carry home.
+  const sendHome = useEffectEvent((at: Live) => void goHome(at));
+  useEffect(() => {
+    if (!view?.picked) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const at = live.current;
+      if (event.key !== "Escape" || !at || at.done) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      live.current = null;
+      if (at.element.hasPointerCapture(at.pointerId))
+        at.element.releasePointerCapture(at.pointerId);
+      sendHome(at);
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [view?.picked]);
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
+    // A press in the name being edited places the caret: it never carries.
+    if (event.button !== 0 || (event.target as Element).closest("button, input")) return;
+    const { tabs, tabElements, strip, windowTabs, staysId } = latest.current;
+    const element = event.currentTarget;
+    const stripElement = strip.current;
+    if (!stripElement) return;
+    element.setPointerCapture(event.pointerId);
+    const bridge = windowsBridge();
+    const origin = { x: event.screenX - event.clientX, y: event.screenY - event.clientY };
+    const chips = tabs.flatMap((tab) => {
+      const chip = tabElements.current.get(tab.id);
+      return chip ? [{ tabId: tab.id, rect: onScreen(chip.getBoundingClientRect(), origin) }] : [];
+    });
+    const frame = {
+      x: origin.x,
+      y: origin.y,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+    const displays = ownScreen();
+    const from = chips.findIndex((chip) => chip.tabId === tabId);
+    const carry = pickUp(
+      {
+        windows: [
+          {
+            id: bridge?.boot.id ?? "this",
+            frame,
+            strip: {
+              rect: onScreen(stripElement.getBoundingClientRect(), origin),
+              chips,
+              gap: TAB_GAP,
+              start: chips[0]?.rect.x ?? frame.x,
+            },
+          },
+        ],
+        displays,
+      },
+      {
+        window: bridge?.boot.id ?? "this",
+        tabId,
+        press: { x: event.screenX, y: event.screenY },
+        at: event.timeStamp,
+        onlyTab: false,
+        tears: bridge !== null && windowTabs > 1 && tabId !== staysId,
+        preview: previewSize(null, frame, displays[0]!.workArea),
+        springLoad: timing("springLoad"),
+      },
+    );
+    if (!carry || from < 0) return;
+    const geometry = { widths: chips.map((chip) => chip.rect.width), gap: TAB_GAP, from };
+    const at: Live = {
+      carry,
+      pointerId: event.pointerId,
+      element,
+      origin,
+      geometry,
+      flight: null,
+      tearing: null,
+      wasActive: false,
+      done: false,
+    };
+    live.current = at;
+    setView({ tabId, picked: false, offset: 0, pulled: 0, slot: from, away: "no", geometry });
+    // Every display, for where a window may open and how big: the desktop app knows them.
+    void bridge?.snapshot().then((snapshot) => {
+      if (live.current !== at || snapshot.displays.length === 0) return;
+      const own = snapshot.windows.find((window) => window.id === bridge.boot.id);
+      const display =
+        snapshot.displays.find((candidate) => candidate.key === own?.display) ??
+        snapshot.displays[0]!;
+      at.carry = {
+        ...at.carry,
+        geometry: { ...at.carry.geometry, displays: snapshot.displays },
+        pickUp: { ...at.carry.pickUp, preview: previewSize(null, frame, display.workArea) },
+      };
+    });
+  };
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
+    const at = live.current;
+    if (!at || at.done || event.pointerId !== at.pointerId) return;
+    const was = at.carry.carried;
+    at.carry = moveHand(at.carry, { x: event.screenX, y: event.screenY }, event.timeStamp);
+    const now = at.carry.carried;
+    if (now.kind === "pressed") return;
+    if (now.kind === "banding") {
+      setView(
+        (current) =>
+          current && {
+            ...current,
+            picked: true,
+            offset: now.offset,
+            pulled: now.pulled,
+            slot: now.slot,
+          },
+      );
+      return;
+    }
+    const bridge = windowsBridge();
+    if (!at.flight && bridge) tear(at, bridge);
+    else show(at, was);
+  };
+
+  const onPointerUp = (event: ReactPointerEvent<HTMLElement>) => {
+    const at = live.current;
+    if (!at || at.done || event.pointerId !== at.pointerId) return;
+    live.current = null;
+    void land(at, release(at.carry));
+  };
+
+  const onPointerCancel = (event: ReactPointerEvent<HTMLElement>) => {
+    const at = live.current;
+    if (!at || at.done || event.pointerId !== at.pointerId) return;
+    live.current = null;
+    if (at.flight) void goHome(at);
+    else finish(at);
+  };
+
+  return { view, onPointerDown, onPointerMove, onPointerUp, onPointerCancel };
+}
