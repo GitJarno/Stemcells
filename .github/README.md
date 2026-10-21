@@ -5,8 +5,9 @@ is a **Cell**, with a small creature that shows what it's doing and a "?" when
 it needs you. You talk to **Aski**, who finds, reads, starts and steers the
 Cells for you, across all your projects.
 
-- **Tabs and panes.** Keep many Cells open: ⌘T for a new tab, ⌘D to put a
-  Cell beside, ⌘⇧D to stack one below, drag tabs to reorder.
+- **Tabs and panes.** Keep many Cells open: ⌘T for a new Cell in the tab,
+  ⌘D to put one beside, ⌘⇧D to stack one below, + for a new tab, drag
+  tabs to reorder.
 - **Aski.** Ask "what did the design session in my web project decide?" or
   "tell the billing one to use the new tokens", and Aski reads the right
   Cell or passes your words to it unchanged.

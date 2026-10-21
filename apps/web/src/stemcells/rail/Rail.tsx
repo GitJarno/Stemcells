@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useLayoutEffect } from "react";
 
-import { openNewCellTab } from "../tabs/commands";
+import { openNewCellPane } from "../tabs/commands";
 import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
 import { cn } from "../upstream/ui";
 import { useColumnStore } from "./column";
@@ -50,7 +50,7 @@ export function Rail() {
         label="New Cell"
         detail="⌘T"
         onClick={() => {
-          if (!openNewCellTab()) void navigate({ to: "/" });
+          if (!openNewCellPane()) void navigate({ to: "/" });
         }}
       >
         <SquarePenIcon />

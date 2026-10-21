@@ -2,6 +2,8 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   activeTab,
+  addPane,
+  CELL_COLUMN_WIDTH,
   closePane,
   closeTab,
   EMPTY_WORKSPACE,
@@ -158,6 +160,47 @@ describe("panes", () => {
     workspace = focusPane(workspace, paneA);
     expect(workspace.activeTabId).toBe(workspace.tabs[0]!.id);
     expect(focusedPane(workspace)?.id).toBe(paneA);
+  });
+});
+
+describe("a new Cell in the tab (⌘T)", () => {
+  it("opens beside a lone pane, and focuses it", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = addPane(workspace, ids(), 1200);
+    expect(shape(workspace)).toEqual([[[["a"], ["∅"]]]]);
+    expect(focusedPane(workspace)?.cell).toBeNull();
+  });
+
+  it("opens beside the focused pane when the tab's panes are side by side", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = fill(addPane(workspace, ids(), 1200), thread("b"));
+    workspace = focusPane(workspace, panesOf(workspace.tabs[0]!)[0]!.id);
+    workspace = fill(addPane(workspace, ids(), 1200), thread("c"));
+    expect(shape(workspace)).toEqual([[[["a"], ["c"], ["b"]]]]);
+  });
+
+  it("stacks under the focused pane when its column is a stack", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = fill(splitDown(workspace, ids()), thread("b"));
+    workspace = fill(addPane(workspace, ids(), 1200), thread("c"));
+    expect(shape(workspace)).toEqual([[[["a", "b", "c"]]]]);
+  });
+
+  it("stacks rather than leave a column narrower than a chat reads at", () => {
+    const width = CELL_COLUMN_WIDTH * 2;
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = fill(addPane(workspace, ids(), width), thread("b"));
+    workspace = fill(addPane(workspace, ids(), width), thread("c"));
+    expect(shape(workspace)).toEqual([[[["a"], ["b", "c"]]]]);
+    expect(focusedPane(workspace)?.cell?.threadId).toBe("c");
+  });
+
+  it("stays in the tab it was pressed in", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = fill(openTab(workspace, ids(), null), thread("b"));
+    workspace = addPane(workspace, ids(), 1200);
+    expect(workspace.tabs).toHaveLength(2);
+    expect(shape(workspace)[1]).toEqual([[["b"], ["∅"]]]);
   });
 });
 

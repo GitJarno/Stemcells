@@ -8,6 +8,7 @@
  */
 
 import {
+  CELL_COLUMN_WIDTH,
   type CellRef,
   type Column,
   findPane,
@@ -17,8 +18,6 @@ import {
   type Workspace,
 } from "../tabs/layout";
 
-/** The narrowest a column gets when Cells open beside each other. */
-export const CELL_COLUMN_WIDTH = 300;
 /** The most panes a tab takes when Cells open into it. */
 export const CELLS_PER_TAB = 4;
 

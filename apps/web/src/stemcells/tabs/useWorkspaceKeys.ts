@@ -5,7 +5,7 @@ import { isCommandPaletteOpen, isTerminalFocused, shortcutMatcher } from "../ups
 
 export interface WorkspaceKeyHandlers {
   /** Each returns false when it had nothing to act on, letting the key through. */
-  readonly newTab: () => boolean;
+  readonly newCell: () => boolean;
   readonly closeTab: () => boolean;
   readonly splitRight: () => boolean;
   readonly splitDown: () => boolean;
@@ -13,12 +13,12 @@ export interface WorkspaceKeyHandlers {
 }
 
 /**
- * Keys that win over upstream's: ⌘T (upstream's "new right-panel tab"), ⌘D
- * (upstream's "toggle diff") and ⌘⇧D. Inside a terminal they stay the
- * terminal's (new tab there, split).
+ * Keys that win over upstream's: ⌘T, a new Cell in the tab (upstream's "new
+ * right-panel tab"), ⌘D (upstream's "toggle diff") and ⌘⇧D. Inside a
+ * terminal they stay the terminal's (new tab there, split).
  */
 const WINNING_KEYS = [
-  { matches: shortcutMatcher("mod+t"), run: "newTab" },
+  { matches: shortcutMatcher("mod+t"), run: "newCell" },
   { matches: shortcutMatcher("mod+shift+w"), run: "closeTab" },
   { matches: shortcutMatcher("mod+d"), run: "splitRight" },
   { matches: shortcutMatcher("mod+shift+d"), run: "splitDown" },

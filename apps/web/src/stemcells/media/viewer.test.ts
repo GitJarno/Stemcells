@@ -255,7 +255,7 @@ describe("the picture showing", () => {
 
 describe("keys while the viewer is up", () => {
   const handlers = () => ({
-    newTab: vi.fn(() => true),
+    newCell: vi.fn(() => true),
     closeTab: vi.fn(() => true),
     splitRight: vi.fn(() => true),
     splitDown: vi.fn(() => true),

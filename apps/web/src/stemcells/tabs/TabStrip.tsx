@@ -147,12 +147,12 @@ export function TabStrip(props: {
       <Tooltip>
         <TooltipTrigger
           render={
-            <Button variant="ghost" size="icon-xs" aria-label="New Cell" onClick={props.onNew} />
+            <Button variant="ghost" size="icon-xs" aria-label="New tab" onClick={props.onNew} />
           }
         >
           <Plus />
         </TooltipTrigger>
-        <TooltipPopup>New Cell (⌘T)</TooltipPopup>
+        <TooltipPopup>New tab</TooltipPopup>
       </Tooltip>
     </div>
   );

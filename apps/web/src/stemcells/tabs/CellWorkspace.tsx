@@ -17,6 +17,7 @@ import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import { Look } from "../workbench/LookFrame";
 import {
+  addPaneOutsideAski,
   ASKI_TAB_ID,
   closeTabUnlessAski,
   isAskiTab,
@@ -27,7 +28,7 @@ import {
   splitRightOutsideAski,
 } from "./askiTab";
 import { DropWash } from "./DropWash";
-import { provideNewCellTab } from "./commands";
+import { provideNewCellPane, provideNewCellTab } from "./commands";
 import {
   activateTab,
   activeTab,
@@ -181,9 +182,16 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
 
   const inAskiTab = () => isAskiTab(activeTab(readWorkspace()));
 
+  const gridWidth = () => gridRef.current?.clientWidth ?? window.innerWidth;
+
   const openNewTab = () => openCellInto((current) => openTab(current, newIds(), null));
   const provideNewTab = useEffectEvent(openNewTab);
   useEffect(() => provideNewCellTab(() => provideNewTab()), []);
+
+  const openNewPane = () =>
+    openCellInto((current) => addPaneOutsideAski(current, newIds(), gridWidth()));
+  const provideNewPane = useEffectEvent(openNewPane);
+  useEffect(() => provideNewCellPane(() => provideNewPane()), []);
 
   /** Aski's chat, once it exists, goes in Aski's tab; the first time, the app opens on it. */
   const onAskiChat = (chat: AskiChat) => {
@@ -206,8 +214,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   useWorkspaceKeys({
-    newTab: () => {
-      openNewTab();
+    newCell: () => {
+      openNewPane();
       return true;
     },
     closeTab: () => {
@@ -218,7 +226,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     },
     splitRight: () => {
       if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
-      const width = gridRef.current?.clientWidth ?? window.innerWidth;
+      const width = gridWidth();
       openCellInto((current) => splitRightOutsideAski(current, newIds(), width));
       return true;
     },

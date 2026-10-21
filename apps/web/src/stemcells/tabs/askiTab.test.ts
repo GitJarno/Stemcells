@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  addPaneOutsideAski,
   ASKI_TAB_ID,
   askiCellOf,
   closeTabUnlessAski,
@@ -89,6 +90,19 @@ describe("Aski's tab", () => {
     expect(splitDownOutsideAski(seated, ids())).toBe(seated);
     const onCell = { ...seated, activeTabId: seated.tabs[1]!.id };
     expect(panesOf(activeTab(splitDownOutsideAski(onCell, ids()))!)).toHaveLength(2);
+  });
+
+  it("gives a new Cell (⌘T) a tab of its own from Aski's tab, and a pane in a Cell's tab", () => {
+    const seated = seatAski(withCells("a"), aski, ids());
+    const fromAski = addPaneOutsideAski(seated, ids(), 2000);
+    expect(fromAski.tabs).toHaveLength(3);
+    expect(panesOf(fromAski.tabs[0]!)).toHaveLength(1);
+    expect(focusedPane(fromAski)?.cell).toBeNull();
+    const onCell = { ...seated, activeTabId: seated.tabs[1]!.id };
+    const fromCell = addPaneOutsideAski(onCell, ids(), 2000);
+    expect(fromCell.tabs).toHaveLength(2);
+    expect(panesOf(activeTab(fromCell)!)).toHaveLength(2);
+    expect(addPaneOutsideAski(EMPTY_WORKSPACE, ids(), 2000).tabs).toHaveLength(1);
   });
 
   it("keeps Aski's chat when another chat is routed to from it, in a tab of its own", () => {

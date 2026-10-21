@@ -5,6 +5,7 @@
  */
 import {
   activeTab,
+  addPane,
   closeTab,
   focusedPane,
   moveTab,
@@ -95,6 +96,15 @@ export function moveTabAfterAski(workspace: Workspace, tabId: string, toIndex: n
   if (tabId === ASKI_TAB_ID) return workspace;
   const floor = askiTabOf(workspace) ? 1 : 0;
   return moveTab(workspace, tabId, Math.max(floor, toIndex));
+}
+
+/**
+ * A new Cell's pane in the tab (⌘T). Aski's tab never splits, so from there,
+ * or with no tab yet, the new Cell gets a tab of its own.
+ */
+export function addPaneOutsideAski(workspace: Workspace, ids: NewIds, rowWidth: number): Workspace {
+  const tab = activeTab(workspace);
+  return tab && !isAskiTab(tab) ? addPane(workspace, ids, rowWidth) : openTab(workspace, ids, null);
 }
 
 export function splitRightOutsideAski(

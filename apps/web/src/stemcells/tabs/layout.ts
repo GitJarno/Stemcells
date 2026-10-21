@@ -44,6 +44,12 @@ export const EMPTY_WORKSPACE: Workspace = { tabs: [], activeTabId: null };
 /** Narrower than this, a new column starts a new row instead. */
 export const MIN_COLUMN_WIDTH = 160;
 
+/**
+ * The narrowest a column gets when Cells open beside each other: the narrow
+ * pane a chat is made to read at (stemcells/tasks/narrow-panes.md).
+ */
+export const CELL_COLUMN_WIDTH = 300;
+
 /** Fresh ids for whatever an action may create. */
 export interface NewIds {
   readonly tab: string;
@@ -197,6 +203,25 @@ export function splitDown(workspace: Workspace, ids: NewIds): Workspace {
     }),
   }));
   return replaceTab(workspace, { ...tab, rows, focusedPaneId: pane.id });
+}
+
+/**
+ * Adds an empty pane after the focused one, the way the tab holds its panes:
+ * under it when its column is a stack, else beside it. Where one more column
+ * would leave the row's columns narrower than CELL_COLUMN_WIDTH, it goes
+ * under instead.
+ */
+export function addPane(workspace: Workspace, ids: NewIds, rowWidth: number): Workspace {
+  const tab = activeTab(workspace);
+  if (!tab) return workspace;
+  const holdsFocus = (column: Column) => column.panes.some((pane) => pane.id === tab.focusedPaneId);
+  const row = tab.rows.find((candidate) => candidate.columns.some(holdsFocus));
+  const column = row?.columns.find(holdsFocus);
+  if (!row || !column) return workspace;
+  const fitsBeside = rowWidth / (row.columns.length + 1) >= CELL_COLUMN_WIDTH;
+  return column.panes.length > 1 || !fitsBeside
+    ? splitDown(workspace, ids)
+    : splitRight(workspace, ids, rowWidth);
 }
 
 /**
