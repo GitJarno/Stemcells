@@ -33,6 +33,7 @@ import {
   routeHttpBaseUrl,
   usableRoutes,
 } from "./routes.ts";
+import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 // A v1 host restarting into v2 runs migrations before its descriptor answers again.
 const OUTDATED_HOST_RESTART_TIMEOUT = Duration.minutes(4);
@@ -96,7 +97,7 @@ export const updateOutdatedHost = Effect.fn("clientRuntime.connection.updateOutd
     ) {
       return yield* new OutdatedHostUpdateError({
         environmentId,
-        message: `Update T3 Code on ${descriptor.label} manually; it cannot update itself.`,
+        message: `Update ${APP_NAME} on ${descriptor.label} manually; it cannot update itself.`,
       });
     }
 
@@ -206,7 +207,7 @@ export const updateOutdatedHost = Effect.fn("clientRuntime.connection.updateOutd
     if (Option.isNone(resumed)) {
       return yield* new OutdatedHostUpdateError({
         environmentId,
-        message: `${descriptor.label} did not come back on a compatible T3 Code version.`,
+        message: `${descriptor.label} did not come back on a compatible ${APP_NAME} version.`,
       });
     }
 

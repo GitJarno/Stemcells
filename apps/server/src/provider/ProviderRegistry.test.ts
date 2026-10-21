@@ -3975,7 +3975,7 @@ it.layer(
             ]);
             assert.strictEqual(cursorProvider?.enabled, false);
             assert.strictEqual(cursorProvider?.status, "disabled");
-            assert.strictEqual(cursorProvider?.message, "Cursor is disabled in T3 Code settings.");
+            assert.strictEqual(cursorProvider?.message, "Cursor is disabled in Stemcells settings.");
             const museProvider = providers.find((provider) => provider.driver === "muse");
             assert.strictEqual(museProvider?.enabled, false);
             assert.strictEqual(museProvider?.status, "disabled");
@@ -3992,7 +3992,7 @@ it.layer(
         assert.strictEqual(status.enabled, false);
         assert.strictEqual(status.status, "disabled");
         assert.strictEqual(status.installed, false);
-        assert.strictEqual(status.message, "Codex is disabled in T3 Code settings.");
+        assert.strictEqual(status.message, "Codex is disabled in Stemcells settings.");
       }),
     );
   });

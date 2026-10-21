@@ -7,6 +7,7 @@ import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
 import * as Stream from "effect/Stream";
+import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 export function subscribeCodexAuthCallback(input: CodexAuthCallbackInput) {
   const failure = (error: unknown) =>
@@ -23,7 +24,7 @@ export function subscribeCodexAuthCallback(input: CodexAuthCallbackInput) {
           codexAuthorizationRequest(input.authorizationUrl);
           const destination = providerAuthReturnUrl(input.returnUrl);
           if (!destination || !isLoopbackHost(new URL(destination).hostname))
-            throw new Error("The local sign-in receiver needs a local T3 Code return address.");
+            throw new Error(`The local sign-in receiver needs a local ${APP_NAME} return address.`);
           return destination;
         },
         catch: failure,

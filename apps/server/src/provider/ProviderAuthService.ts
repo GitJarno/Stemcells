@@ -20,6 +20,7 @@ import * as ProviderSessionManager from "../orchestration-v2/ProviderSessionMana
 import * as ProjectionStore from "../orchestration-v2/ProjectionStore.ts";
 import * as ProviderInstanceRegistry from "./ProviderInstanceRegistry.ts";
 import type { ProviderAuthController } from "@t3tools/provider-core/server/auth";
+import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 export type { ProviderAuthController } from "@t3tools/provider-core/server/auth";
 
@@ -81,7 +82,7 @@ export const makeProviderAuthService = Effect.gen(function* () {
         instanceId,
         operation,
         detail: instance
-          ? "This provider does not support sign-in in T3 Code."
+          ? `This provider does not support sign-in in ${APP_NAME}.`
           : "This provider instance is no longer available.",
       });
     }
