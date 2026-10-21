@@ -10,6 +10,7 @@ import type { Need } from "../wire";
 import { enterOf } from "./enter";
 import { giveBack, type Spoken, spokenOf } from "./giveBack";
 import { partLines } from "./line";
+import { readDoc } from "./plugin";
 import { type Addressee, readAnswers } from "./read";
 
 const addressee = (need: Need, who: string, gone = false): Addressee => ({
@@ -371,7 +372,12 @@ const schema = new Schema({
     paragraph: { group: "block", content: "inline*" },
     text: { group: "inline" },
     hardBreak: { group: "inline", inline: true },
-    chip: { group: "inline", inline: true, atom: true, attrs: { path: { default: "" } } },
+    "composer-mention": {
+      group: "inline",
+      inline: true,
+      atom: true,
+      attrs: { path: { default: "" }, source: { default: "" } },
+    },
   },
   marks: { code: { code: true } },
 });
@@ -393,10 +399,10 @@ const textOf = (state: EditorState) => docText(state.doc).text;
 /** The page's live list, as the cards above. */
 const HERE: Shown[] = NEEDS.map(([need]) => ({ need, goneAt: null }));
 
-/** What Enter keeps of the composer's words, an answer each. */
+/** What Enter keeps of the composer's words, an answer each, read as the composer reads them. */
 function said(state: EditorState, cards: ReadonlyArray<Addressee> = CARDS): Spoken[] {
-  const text = docText(state.doc);
-  const enter = enterOf(readAnswers(text.text, cards), text.raw);
+  const { text, answers } = readDoc(state.doc, cards);
+  const enter = enterOf(answers, text.raw);
   return (enter?.answers ?? []).map((answer) => {
     const [need, who] = NEEDS.find(([each]) => each.number === answer.number)!;
     return spokenOf(state.doc, text, answer, { key: need.key, who });
@@ -464,8 +470,12 @@ describe("giving back: the words read as the same answer again", () => {
   });
 
   it("gives back a chip as the chip, and code as code", () => {
-    const chip = schema.node("chip", { path: "src/app.ts" });
+    const chip = schema.node("composer-mention", { path: "src/App.tsx", source: "@src/App.tsx" });
     const words = said(composer(line("1 reply run ", code("pnpm test"), " in ", chip, " now")));
+    // The reply it re-checks is the one the Cell would be sent.
+    expect(words.map(({ chose }) => chose)).toEqual([
+      "option reply run `pnpm test` in @src/App.tsx now",
+    ]);
     const after = back(composer(), words);
     expect(after.doc.lastChild!.toJSON()).toEqual(
       line("for 1 reply run ", code("pnpm test"), " in ", chip, " now").toJSON(),

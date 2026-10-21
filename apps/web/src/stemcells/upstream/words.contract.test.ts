@@ -11,12 +11,15 @@ import * as NodeModule from "node:module";
 import { REASONING_EFFORT_OPTION_IDS } from "@t3tools/client-runtime/state/thread-execution";
 import type { ServerProvider } from "@t3tools/contracts";
 import { Editor } from "@tiptap/core";
+import { Schema } from "@tiptap/pm/model";
 import { describe, expect, it } from "vite-plus/test";
+
+import { buildDocJson } from "../../composer-rich-text-doc";
 
 import composerEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
-import { wordsCatalogOf } from "./words";
+import { promptBetween, wordsCatalogOf } from "./words";
 
 describe("the composer ink's contracts with upstream", () => {
   it("the editor's prompt is its document serialized, as the Cells beside it are sent", () => {
@@ -55,6 +58,61 @@ describe("the composer ink's contracts with upstream", () => {
 // provider is, so Enter never sends words that weren't read: not on a cold
 // start, a cached one, or with the projects in and the models still coming.
 // If either gate moves, the words need a wait of their own before a send.
+// A reply from Aski's room is sent as the composer would send its words
+// (`needs/answers/plugin.ts`). If this moves, a Cell is sent a chip as
+// "￼" or code without its backticks again.
+describe("part of the composer's document, as it sends it", () => {
+  /** Upstream's node and mark names, as its serializer reads them. */
+  const schema = new Schema({
+    nodes: {
+      doc: { content: "block+" },
+      paragraph: { group: "block", content: "inline*" },
+      text: { group: "inline" },
+      hardBreak: { group: "inline", inline: true },
+      "composer-mention": {
+        group: "inline",
+        inline: true,
+        atom: true,
+        attrs: { path: { default: "" }, source: { default: "" } },
+      },
+      "composer-skill": {
+        group: "inline",
+        inline: true,
+        atom: true,
+        attrs: {
+          skillName: { default: "" },
+          skillLabel: { default: "" },
+          skillDescription: { default: null },
+        },
+      },
+    },
+    marks: { code: { code: true } },
+  });
+
+  it("writes a file chip as its path, a skill as its $name and code in its backticks", () => {
+    // A chip forms once a space follows it, as it does while typing; a
+    // lowercase "@a/b" would read as a package, not a file.
+    const prompt = "1 reply run `pnpm test` in @src/App.tsx with $review now";
+    const doc = schema.nodeFromJSON(
+      buildDocJson(
+        prompt,
+        (name) => (name === "review" ? { label: "Review", description: null } : null),
+        { styling: true },
+      ),
+    );
+    const kinds: string[] = [];
+    doc.descendants(
+      (node) =>
+        void kinds.push(node.isText ? (node.marks[0]?.type.name ?? "text") : node.type.name),
+    );
+    expect(kinds).toEqual(expect.arrayContaining(["code", "composer-mention", "composer-skill"]));
+    // After "1 reply ", to the end: what a reply to card 1 is sent.
+    expect(promptBetween(doc, 9, doc.content.size - 1)).toBe(
+      "run `pnpm test` in @src/App.tsx with $review now",
+    );
+  });
+});
+
 describe("Enter can't send before the words are read", () => {
   it("a new chat's composer takes no typing until its project is known", () => {
     expect(chatView).toMatch(

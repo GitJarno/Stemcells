@@ -9,7 +9,7 @@ import { type EnvironmentId, isProviderAvailable, type ServerProvider } from "@t
 
 import type { Node as PmNode } from "@tiptap/pm/model";
 
-import { serializeEditorDoc } from "../../composer-rich-text-doc";
+import { serializeEditorDoc, serializeSelection } from "../../composer-rich-text-doc";
 import { useComposerDraftStore, type DraftId } from "../../composerDraftStore";
 import { measureRestingComposerControls } from "../../components/chat/restingComposerControlsMeasurement";
 import { resolveRestingComposerControlsLayout } from "../../components/composerFooterLayout";
@@ -70,6 +70,15 @@ export function rowHoldsWider(first: HTMLElement, wider: number): boolean {
 /** The prompt the composer sends for a document, as its editor writes it. */
 export function promptOf(doc: PmNode): string {
   return serializeEditorDoc(doc).value;
+}
+
+/**
+ * The prompt the composer would send for part of a document, `from` to
+ * `to`, as its editor writes a selection: a chip as what it stands for
+ * (a file's path, a skill's `$name`), code in its backticks.
+ */
+export function promptBetween(doc: PmNode, from: number, to: number): string {
+  return serializeSelection(doc, from, to);
 }
 
 /** An unsent draft: where its words will start a Cell. */

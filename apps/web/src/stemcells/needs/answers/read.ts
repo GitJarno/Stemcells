@@ -247,8 +247,15 @@ function trimmed(text: string, span: Span, afterPart = true): Span {
   return { start, end: Math.max(start, end) };
 }
 
-/** Reads the answers in `text` to the cards in `cards`. */
-export function readAnswers(text: string, cards: ReadonlyArray<Addressee>): Answers {
+/**
+ * Reads the answers in `text` to the cards in `cards`. `sent` writes a
+ * stretch of the text as a Cell is sent it; by default, as it stands.
+ */
+export function readAnswers(
+  text: string,
+  cards: ReadonlyArray<Addressee>,
+  sent: (span: Span) => string = (span) => text.slice(span.start, span.end),
+): Answers {
   // With no card open, every word is Aski's.
   if (cards.length === 0) {
     const all = trimmed(text, { start: 0, end: text.length }, false);
@@ -448,10 +455,9 @@ export function readAnswers(text: string, cards: ReadonlyArray<Addressee>): Answ
   /** The words from an offset to the part's limit, trimmed, without quotes around them. */
   const wordsIn = (from: number, limit: number): { text: string; end: number } => {
     const span = trimmed(text, { start: from, end: limit });
-    let said = text.slice(span.start, span.end);
-    const quoted = /^["“]([^"”]*)["”]$/.exec(said);
-    if (quoted) said = quoted[1]!;
-    return { text: said.trim(), end: span.end };
+    const quoted = /^["“][^"”]*["”]$/.test(text.slice(span.start, span.end));
+    const said = quoted ? { start: span.start + 1, end: span.end - 1 } : span;
+    return { text: sent(said).trim(), end: span.end };
   };
 
   /** Words in quotes from an offset: what's inside them, and where they close. */
@@ -459,7 +465,7 @@ export function readAnswers(text: string, cards: ReadonlyArray<Addressee>): Answ
     if (!/["“]/.test(text[open] ?? "")) return null;
     const close = text.slice(open + 1, limit).search(/["”]/);
     if (close === -1) return null;
-    return { text: text.slice(open + 1, open + 1 + close).trim(), end: open + close + 2 };
+    return { text: sent({ start: open + 1, end: open + 1 + close }).trim(), end: open + close + 2 };
   };
 
   const readAnswer = (card: Addressee, from: number, limit: number): Read => {

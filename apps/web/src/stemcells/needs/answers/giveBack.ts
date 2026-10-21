@@ -14,11 +14,12 @@
 import { Fragment, type Node as PmNode, type Schema } from "@tiptap/pm/model";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 
-import { type DocText, docText, offsetOf, rangeOf } from "../../words/docText";
+import { type DocText, offsetOf, rangeOf } from "../../words/docText";
 import type { Span } from "../../words/text";
 import type { Shown } from "../display";
 import type { Sent } from "./enter";
-import { type Addressee, readAnswers } from "./read";
+import { readDoc } from "./plugin";
+import type { Addressee } from "./read";
 
 /** A node as ProseMirror writes it out: data, so it comes back in whichever editor is there. */
 interface NodeJson {
@@ -143,9 +144,10 @@ function answersAgain(
   spoken: Spoken,
   cards: ReadonlyArray<Addressee>,
 ): boolean {
-  const text = docText(given.tr.doc);
+  // Read as the composer reads it, so a chip or code says what it said.
+  const { text, answers } = readDoc(given.tr.doc, cards);
   const start = offsetOf(text, given.at);
-  const part = readAnswers(text.text, cards).parts.find((each) => each.start === start);
+  const part = answers.parts.find((each) => each.start === start);
   const target = part?.targets.length === 1 ? part.targets[0]! : null;
   return (
     target !== null &&
