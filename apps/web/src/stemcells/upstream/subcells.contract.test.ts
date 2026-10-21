@@ -11,8 +11,10 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
-import chatView from "../../components/ChatView.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import activityBanners from "../../components/chat/ThreadActivityBanners.tsx?raw";
+import v2EventRow from "../../components/chat/TimelineV2EventRow.tsx?raw";
+import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import relationships from "../../components/chat/ThreadRelationshipsControl.tsx?raw";
 import inspector from "../../components/chat/V2ItemInspector.tsx?raw";
 import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
@@ -32,12 +34,13 @@ function body(source: string, name: string): string {
 describe("Subcells in upstream's views", () => {
   it("the hot files take their Subcell words from our one module, imported once each", () => {
     const from = /^import \{[^}]*\} from "(?:\.\.\/)+stemcells\/words\/subcells";$/gm;
-    expect(messagesTimeline.match(from)).toHaveLength(1);
-    expect(chatView.match(from)).toHaveLength(1);
+    for (const source of [v2EventRow, workEntryRow, activityBanners]) {
+      expect(source.match(from)).toHaveLength(1);
+    }
   });
 
   it("the card counts Subcells and hands each header avatar its Subcell, with its status", () => {
-    const card = body(messagesTimeline, "V2SubagentGroup");
+    const card = body(v2EventRow, "V2SubagentGroup");
     expect(card).toContain("const label = subcellCount(members.length);");
     expect(card).toMatch(
       /\.map\(\(\{ item, status \}\) => \(\s*<EnvironmentSubagentAvatar[^>]*subcell=\{\{ name: item\.childThreadId \?\? item\.subagentId, status \}\}/,
@@ -45,11 +48,11 @@ describe("Subcells in upstream's views", () => {
   });
 
   it("a notification row's button, and a spawn's screen-reader label, open a Subcell", () => {
-    expect(messagesTimeline).toMatch(
+    expect(workEntryRow).toMatch(
       /aria-label=\{SUBCELL\.open\}[\s\S]{0,240}\{SUBCELL\.open\}\s*<\/InlineButton>/,
     );
-    expect(messagesTimeline).not.toMatch(/Open subagent/);
-    expect(chatView).toContain(
+    expect(workEntryRow).not.toMatch(/Open subagent/);
+    expect(activityBanners).toContain(
       'aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${SUBCELL.one} ${item.label}`}',
     );
   });

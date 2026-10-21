@@ -193,6 +193,7 @@ type Page = InstanceType<typeof electron.Page>;
 class NoWindow extends Data.TaggedError("NoWindow") {}
 
 /** A turn of the event loop: a window the host asked for is made, a launch's rest open. */
+// oxlint-disable-next-line t3code/no-real-time-wait-in-tests -- a macrotask boundary, not a wait: the host hands upstream's maker its window through runPromise, whose answer lands after this macrotask, and nothing of the host's marks it.
 const tick = Effect.promise(() => new Promise((resolve) => setImmediate(resolve)));
 
 /**

@@ -111,11 +111,11 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamFavicon,
     substitute: OurFavicon satisfies typeof UpstreamFavicon,
     importers: {
-      "apps/web/src/components/ChatMarkdown.tsx": [
+      "apps/web/src/components/chat/MarkdownExternalLink.tsx": [
         "@t3tools/shared/favicon",
         ["faviconUrlForOrigin"],
       ],
-      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+      "apps/web/src/components/chat/TimelineToolActivityIcon.tsx": [
         "@t3tools/shared/favicon",
         ["toolActivityFaviconUrl"],
       ],
@@ -154,8 +154,8 @@ const CASES: Readonly<Record<string, Case>> = {
         "./chat/providerIconUtils",
         ["getTriggerDisplayModelName"],
       ],
-      "apps/web/src/components/Sidebar.tsx": [
-        "./chat/providerIconUtils",
+      "apps/web/src/components/sidebar/SidebarThreadRow.tsx": [
+        "../chat/providerIconUtils",
         ["getTriggerDisplayModelLabel"],
       ],
       "apps/web/src/components/chat/ModelListRow.tsx": [
@@ -200,7 +200,7 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamContextWindowMeter,
     substitute: OurContextWindowMeter satisfies typeof UpstreamContextWindowMeter,
     importers: {
-      "apps/web/src/components/chat/ChatComposer.tsx": [
+      "apps/web/src/components/chat/ComposerFooterControls.tsx": [
         "./ContextWindowMeter",
         ["ContextWindowMeter"],
       ],
@@ -210,27 +210,30 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamRightPanelTabs,
     substitute: OurRightPanelTabs satisfies RendersOrNothing<typeof UpstreamRightPanelTabs>,
     importers: {
-      "apps/web/src/components/ChatView.tsx": ["./RightPanelTabs", ["RightPanelTabs"]],
+      "apps/web/src/components/chat/ChatRightPanel.tsx": ["../RightPanelTabs", ["RightPanelTabs"]],
     },
   },
   "apps/web/src/components/RightPanelSheet.tsx": {
     upstream: UpstreamRightPanelSheet,
     substitute: OurRightPanelSheet satisfies RendersOrNothing<typeof UpstreamRightPanelSheet>,
     importers: {
-      "apps/web/src/components/ChatView.tsx": ["./RightPanelSheet", ["RightPanelSheet"]],
+      "apps/web/src/components/chat/ChatRightPanel.tsx": [
+        "../RightPanelSheet",
+        ["RightPanelSheet"],
+      ],
     },
   },
   "apps/web/src/hooks/usePreviewPanelInlineSize.ts": {
     upstream: UpstreamPanelInlineSize,
     substitute: OurPanelInlineSize satisfies typeof UpstreamPanelInlineSize,
     importers: {
-      "apps/web/src/components/ChatView.tsx": [
-        "../hooks/usePreviewPanelInlineSize",
+      "apps/web/src/components/chat/ChatRightPanel.tsx": [
+        "../../hooks/usePreviewPanelInlineSize",
         ["usePreviewPanelInlineSize"],
       ],
       "apps/web/src/components/preview/PreviewPanelShell.tsx": [
         "~/hooks/usePreviewPanelInlineSize",
-        ["getPreviewPanelMaxWidth", "usePreviewPanelInlineSize"],
+        ["usePreviewPanelInlineSize"],
       ],
     },
   },
@@ -334,7 +337,10 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamT3Wordmark,
     substitute: OurT3Wordmark satisfies typeof UpstreamT3Wordmark,
     importers: {
-      "apps/web/src/components/chat/MessagesTimeline.tsx": ["../T3Wordmark", ["T3Wordmark"]],
+      "apps/web/src/components/chat/TimelineToolActivityIcon.tsx": [
+        "../T3Wordmark",
+        ["T3Wordmark"],
+      ],
       "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
     },
   },
@@ -354,7 +360,7 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/chat/MessagesTimeline.logic.ts": [
         "@t3tools/shared/t3McpToolPresentation",
-        ["resolveT3McpToolDefinition", "resolveT3McpToolPresentation"],
+        ["resolveT3McpToolDefinition"],
       ],
       "packages/client-runtime/src/work-log/presentation.ts": [
         "@t3tools/shared/t3McpToolPresentation",
@@ -376,9 +382,14 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamTimelineLogic,
     substitute: OurTimelineLogic satisfies typeof UpstreamTimelineLogic,
     importers: {
-      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+      "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": [
         "./MessagesTimeline.logic",
-        ["threadReadLabelPrefix", "deriveMessagesTimelineRowsWithState"],
+        ["threadReadLabelPrefix"],
+      ],
+      // Upstream derives the transcript's rows in this hook now.
+      "apps/web/src/components/chat/useTimelineRows.ts": [
+        "./MessagesTimeline.logic",
+        ["deriveMessagesTimelineRowsWithState"],
       ],
     },
   },
@@ -398,7 +409,7 @@ const CASES: Readonly<Record<string, Case>> = {
       typeof UpstreamProviderModelPicker
     >,
     importers: {
-      "apps/web/src/components/chat/ChatComposer.tsx": [
+      "apps/web/src/components/chat/ComposerFooterControls.tsx": [
         "./ProviderModelPicker",
         ["ProviderModelPicker"],
       ],
@@ -475,7 +486,7 @@ const CASES: Readonly<Record<string, Case>> = {
         "@t3tools/shared/themePalettes",
         ["BUILT_IN_THEMES", "RESERVED_THEME_IDS"],
       ],
-      "apps/web/src/components/CommandPalette.tsx": [
+      "apps/web/src/components/CommandPaletteThemeItems.tsx": [
         "@t3tools/shared/themePalettes",
         ["BUILT_IN_THEMES"],
       ],
@@ -604,7 +615,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
     } finally {
       await server.close();
     }
-  }, 60_000);
+  });
 
   it("build: the production build (what the desktop app ships) bundles the substitutes", async () => {
     // The server's build copies the web's build into the bundle the desktop
@@ -648,7 +659,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
     const moduleIds = outputs.flatMap((chunk) => ("moduleIds" in chunk ? chunk.moduleIds : []));
     // The substitute only re-exports, so the bundle holds what it re-exports.
     expect(moduleIds).toContain(NodePath.join(here, "../favicon.ts"));
-  }, 120_000);
+  });
 
   it("server: imports none of the substituted modules, so needs no substitute", () => {
     // The server runs from source in dev (`node src/bin.ts`), with no bundler

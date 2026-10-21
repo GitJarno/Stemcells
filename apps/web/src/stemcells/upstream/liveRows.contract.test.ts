@@ -12,7 +12,9 @@ import * as NodeFS from "node:fs";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import timeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import rowParts from "../../components/chat/TimelineRowParts.tsx?raw";
+import workGroupRows from "../../components/chat/TimelineWorkGroupRows.tsx?raw";
 
 /** CSS imports come in empty under test; the stylesheet is read as text. */
 const indexCss = NodeFS.readFileSync(new URL("../../index.css", import.meta.url), "utf8");
@@ -31,20 +33,23 @@ function block(source: string, head: string): string {
 
 describe("upstream's live rows, as the wave reads them", () => {
   it("hands every box it lights to observeVisibleAnimation, from the module we substitute", () => {
-    expect(timeline).toContain(
-      'import { observeVisibleAnimation } from "../../lib/visibleAnimation";',
-    );
+    // The transcript's rows live in these modules; each that lights a box
+    // takes observeVisibleAnimation from the module we substitute.
+    for (const source of [messagesTimeline, workGroupRows]) {
+      expect(source).toContain('import { observeVisibleAnimation } from "../../lib/visibleAnimation";');
+    }
+    const timeline = [messagesTimeline, workGroupRows].join("\n");
     // The live rows' boxes, the working label's, a separator's and a work group's header.
     const refs = timeline.match(/ref=\{[^}]*\? observeVisibleAnimation : undefined\}/g) ?? [];
     expect(refs.length).toBeGreaterThanOrEqual(4);
   });
 
   it("an overlay is the box's own child: a copy of the row sliding the other way inside it", () => {
-    const overlay = timeline.slice(timeline.indexOf("function ActivityShimmerOverlay"));
+    const overlay = rowParts.slice(rowParts.indexOf("function ActivityShimmerOverlay"));
     expect(overlay).toMatch(
       /className="live-activity-focus [^"]*absolute[^"]*"[^]*?<span className="live-activity-focus-counter block">\s*<span className="live-activity-focus-aligned block text-foreground">\{children\}<\/span>/,
     );
-    expect(timeline).toContain(
+    expect(workGroupRows).toContain(
       "{shimmer ? <ActivityShimmerOverlay>{label}</ActivityShimmerOverlay> : null}",
     );
   });

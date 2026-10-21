@@ -193,7 +193,8 @@ export function AskiStage(props: AskiStageProps) {
       const settle = spring("settle");
       const fade = timed("fade");
 
-      for (const [key, { spot, entry }] of casting.spots) {
+      for (const [key, placed] of casting.spots) {
+        const { spot, entry } = placed;
         const row = rows.get(key);
         let actor = actors.get(key);
         if (actor === undefined) {

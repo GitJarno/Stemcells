@@ -52,6 +52,28 @@ export function diskBytes(bytes: number): string {
   return `${Math.trunc(value)} bytes`;
 }
 
+/** One reading of the disk (`again`: measure it anew), or null when the server gave none. */
+async function fetchDiskReading(again: boolean): Promise<DiskReading | null> {
+  try {
+    const response = await getFromPrimary(DISK_PATH, again ? { measure: "again" } : undefined);
+    if (!response.ok) return null;
+    return (await response.json()) as DiskReading;
+  } catch {
+    return null;
+  }
+}
+
+/** Free space alone, or null when the server gave none. */
+async function fetchDiskFree(): Promise<DiskReading["volume"] | null> {
+  try {
+    const response = await getFromPrimary(`${DISK_PATH}/volume`);
+    if (!response.ok) return null;
+    return (await response.json()) as DiskReading["volume"];
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The disk, read again every few seconds while the page is visible: free
  * space live, the measurement as soon as its walk ends.
@@ -68,20 +90,14 @@ export function useDiskReading() {
       clearTimeout(timer);
       let scanning = false;
       if (document.visibilityState === "visible" || again) {
-        try {
-          const response = await getFromPrimary(
-            DISK_PATH,
-            again ? { measure: "again" } : undefined,
-          );
-          if (!response.ok) throw new Error(`Disk reading failed: ${response.status}`);
-          const next = (await response.json()) as DiskReading;
-          scanning = next.scanning;
-          if (!stopped) {
+        const next = await fetchDiskReading(again);
+        if (next !== null) scanning = next.scanning;
+        if (!stopped) {
+          if (next === null) setFailed(true);
+          else {
             setReading(next);
             setFailed(false);
           }
-        } catch {
-          if (!stopped) setFailed(true);
         }
       }
       // Faster while a walk runs, so its progress and its end show promptly.
@@ -120,16 +136,10 @@ export function useDiskFree(): DiskReading["volume"] | null {
       if (stopped || inFlight || document.visibilityState !== "visible") return;
       inFlight = true;
       readAt = performance.now();
-      try {
-        const response = await getFromPrimary(`${DISK_PATH}/volume`);
-        if (!response.ok) return;
-        const next = (await response.json()) as DiskReading["volume"];
-        if (!stopped) setVolume(next);
-      } catch {
-        // The last reading stands until a read succeeds.
-      } finally {
-        inFlight = false;
-      }
+      const next = await fetchDiskFree();
+      inFlight = false;
+      // The last reading stands until a read succeeds.
+      if (!stopped && next !== null) setVolume(next);
     };
     const readIfStale = () => {
       if (performance.now() - readAt >= FREE_FOCUS_AFTER_MS) void read();

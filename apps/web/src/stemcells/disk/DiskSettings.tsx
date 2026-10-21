@@ -54,6 +54,21 @@ const Size = ({ bytes }: { readonly bytes: number }) => (
   <span className="text-sm text-foreground tabular-nums">{diskBytes(bytes)}</span>
 );
 
+/** Opens the cleanup Cell with its draft, or says it couldn't. */
+async function openCleanupCell(
+  openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
+): Promise<void> {
+  try {
+    if (!(await openCell(await readCleanupDraft()))) throw new Error("No Cell opened");
+  } catch {
+    toastManager.add({
+      type: "error",
+      title: "Couldn't start a Cell",
+      description: "Try Free space again in a moment.",
+    });
+  }
+}
+
 function FreeSpaceButton({
   openCell,
 }: {
@@ -63,17 +78,7 @@ function FreeSpaceButton({
   const freeSpace = async () => {
     if (openCell === null) return;
     setOpening(true);
-    try {
-      if (!(await openCell(await readCleanupDraft()))) throw new Error("No Cell opened");
-    } catch {
-      toastManager.add({
-        type: "error",
-        title: "Couldn't start a Cell",
-        description: "Try Free space again in a moment.",
-      });
-    } finally {
-      setOpening(false);
-    }
+    await openCleanupCell(openCell).finally(() => setOpening(false));
   };
   return (
     <Button size="sm" disabled={openCell === null || opening} onClick={() => void freeSpace()}>

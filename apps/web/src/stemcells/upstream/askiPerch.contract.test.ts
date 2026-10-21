@@ -13,6 +13,7 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 import chatView from "../../components/ChatView.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
 import timeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import minimap from "../../components/chat/TimelineMinimap.tsx?raw";
 
 describe("Aski's place in its chat, against upstream", () => {
   it("the empty transcript's hint is one paragraph in a centring box, which perch.css hides", () => {
@@ -27,7 +28,7 @@ describe("Aski's place in its chat, against upstream", () => {
   });
 
   it("the transcript's minimap lies at 40, which the needs sheet lies over", () => {
-    expect(timeline).toContain(
+    expect(minimap).toContain(
       '"group/minimap pointer-events-none absolute inset-y-0 left-0 z-40 ',
     );
   });

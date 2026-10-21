@@ -14,6 +14,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import footerControls from "../../components/chat/ComposerFooterControls.tsx?raw";
 import draftHeroHeadline from "../../components/chat/DraftHeroHeadline.tsx?raw";
 import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?raw";
 import controlsMeasurement from "../../components/chat/restingComposerControlsMeasurement.ts?raw";
@@ -84,8 +85,10 @@ describe("the words' contracts with upstream's drafts", () => {
     // The readout takes the picker's place (`substitutes/ProviderModelPicker.tsx`)
     // with a value other than "true", so the flights never land on it.
     expect(chatComposer).toMatch(
-      /<ProviderModelPicker\s+environmentId=\{environmentId\}\s+compact=\{false\}\s+isComposerOwned\b/,
+      /<ComposerModelPicker\s+environmentId=\{environmentId\}\s+compact=\{false\}\s+isComposerOwned\b/,
     );
+    expect(footerControls).toContain('import { ProviderModelPicker } from "./ProviderModelPicker";');
+    expect(footerControls).toMatch(/<ProviderModelPicker\s+\{\.\.\.pickerProps\}/);
     expect(controlsMeasurement).toContain(
       'controls.querySelector<HTMLElement>("[data-chat-provider-model-picker]")',
     );

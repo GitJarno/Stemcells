@@ -126,12 +126,14 @@ case, go back to the three costs and choose what keeps them lowest.
   merge into a future conflict.
 - **Take upstream's green commits.** Sync to the newest upstream commit
   whose CI passed, not blindly to the tip.
-- **The nightly pipeline:**
-  1. `sync-upstream` merges on a branch.
-  2. Run `drift`, the type check, our contract tests, and upstream's tests
-     for the areas the merge touched.
-  3. If green, merge it. If it conflicts or goes red, a Cell resolves it:
-     upstream's logic wins and our seam goes back on top.
+- **The nightly pipeline** (the runbook: `upstream-sync.md`):
+  1. `sync-upstream` merges on a branch, and resolves conflicts in
+     upstream's tests itself.
+  2. `sync-upstream --gates`: drift, nothing reporting on the person, types,
+     lint, our tests, upstream's suites, the builds and a headless boot.
+  3. If green, `sync-upstream --pr` opens the pull request, with a report.
+     If it conflicts or goes red, one issue says where, and a Cell resolves
+     it: upstream's logic wins and our seam goes back on top.
 - **A seam that conflicts twice is a signal.** Move more of it into our
   files, or make it upstream's extension point (rule 5 and rule 7).
 

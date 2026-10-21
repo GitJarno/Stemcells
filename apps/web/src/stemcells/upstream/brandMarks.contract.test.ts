@@ -159,7 +159,7 @@ describe("Stemcells' mark, in place of T3's", () => {
       await new Promise((resolve) => http.close(resolve));
       await server.close();
     }
-  }, 60_000);
+  });
 
   it("build: the production build (what the desktop app ships) writes ours over upstream's", async () => {
     const outDir = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "stemcells-brand-"));
@@ -186,5 +186,5 @@ describe("Stemcells' mark, in place of T3's", () => {
     } finally {
       NodeFS.rmSync(outDir, { recursive: true, force: true });
     }
-  }, 120_000);
+  });
 });

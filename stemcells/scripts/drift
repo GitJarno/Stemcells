@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Lists every upstream file this fork changes and fails on one that
-# stemcells/seams.md doesn't name. Our own folders are never drift.
+# stemcells/seams.md doesn't name, or on a seam row naming a file that no
+# longer differs from upstream. Our own folders are never drift.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
@@ -36,6 +37,18 @@ while IFS= read -r file; do
   fi
 done <<< "$changed"
 
+# The other way round: a file a seam row names (its first column) that no
+# longer differs from upstream. A sync makes these when upstream deletes a
+# file we edited, or rewrites the lines our edit was on: the row goes too.
+stale=0
+while IFS= read -r file; do
+  [ -z "$file" ] && continue
+  if ! grep -qxF "$file" <<< "$changed"; then
+    printf '  STALE       %s  (named in stemcells/seams.md, same as upstream: drop it there)\n' "$file"
+    stale=1
+  fi
+done < <(grep -E '^\| *`' stemcells/seams.md | cut -d'|' -f2 | grep -oE '`[^`]+`' | tr -d '`' | sort -u)
+
 lines=$(git diff --numstat "$base" -- $(echo "$changed") 2>/dev/null | awk '{s+=$1+$2} END {print s+0}')
 echo "$(echo "$changed" | grep -c . || true) upstream files changed, $lines lines; $hot hot"
-exit $unlisted
+[ "$unlisted" = 0 ] && [ "$stale" = 0 ]

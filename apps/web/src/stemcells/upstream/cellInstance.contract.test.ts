@@ -169,7 +169,9 @@ describe("the composer's contracts with upstream", () => {
     expect(chatView).toMatch(
       /const startPromise = startThreadTurn\(\{[\s\S]{0,2500}modelSelection: ctxSelectedModelSelection,\s*titleSeed: title,/,
     );
-    // The block on switching instances guards the picker only, never a send.
-    expect(chatView.match(/getStartedThreadModelChangeBlockReason\(/g)).toHaveLength(2);
+    // The block on switching instances guards the picker only, never a send:
+    // a pick, and the picker's disabled rows (`makeModelDisabledReason`).
+    expect(chatView.match(/getStartedThreadModelChangeBlockReason\(/g)).toHaveLength(1);
+    expect(chatView).toContain("const getModelDisabledReason = makeModelDisabledReason(");
   });
 });

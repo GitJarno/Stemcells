@@ -7,7 +7,8 @@ import * as NodeZlib from "node:zlib";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
 import { contrast, FRAMES, KEYLINE, keylined } from "../keyline.ts";
-import { paletteOf } from "../kit.ts";
+import { PACK_FILES, paletteOf } from "../kit.ts";
+import { check } from "./check.ts";
 import { apng, png } from "./png.ts";
 
 const SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
@@ -80,27 +81,40 @@ describe("cells, the command line", () => {
       { encoding: "utf8" },
     );
 
-  it("runs in plain node: renders a look's sheet and animations, checks a pack, and lays out a lookbook", () => {
+  // A test per command: each starts node on the TypeScript, seconds apiece on a CI runner.
+  it("runs in plain node: renders a look's sheet and animations", () => {
     const render = cells("render", "house/duck", "idle");
     expect(render.status, render.stderr).toBe(0);
     const sheet = NodeFS.readFileSync(NodePath.join(out, "house_duck", "sheet.png"));
     expect([...sheet.subarray(0, 8)]).toEqual(SIGNATURE);
     const animated = NodeFS.readFileSync(NodePath.join(out, "house_duck", "idle.mini.light.apng"));
     expect(chunks(animated).some((c) => c.type === "acTL")).toBe(true);
+  });
+
+  it("runs in plain node: checks a pack", () => {
     const check = cells("check", "house");
     expect(check.status, check.stdout).toBe(0);
+  });
+
+  it("runs in plain node: lays out a lookbook", () => {
     expect(cells("lookbook", "house").status).toBe(0);
     expect(NodeFS.readFileSync(NodePath.join(out, "lookbook.html"), "utf8")).toContain(
       "house/duck",
     );
   });
 
-  // The whole library's gate: every drawn pack keeps the rules. Its time grows with each pack
-  // (a second or two apiece), so it has a budget of its own rather than the default 15 s.
-  it("passes cells check over every drawn pack, the whole library's art gate", () => {
-    const check = cells("check");
-    expect(check.status, check.stdout).toBe(0);
-  }, 60_000);
+  // The whole library's gate, `cells check`, a drawn pack at a time, so the library grows
+  // without one test holding every pack. A pack takes a second or a few on a Mac and up to
+  // 20 s on a CI runner: it draws and checks every frame of every look.
+  // oxlint-disable-next-line t3code/no-test-timeout-or-unreasoned-skip -- CPU-bound check of every frame a pack draws, not a hidden wait.
+  it.each([...PACK_FILES.values()].map((pack) => pack.theme))(
+    "the drawn pack %s passes cells check, the library's art gate",
+    (theme) => {
+      const failures = check({ themes: [theme] }).filter((finding) => finding.level === "fail");
+      expect(failures).toEqual([]);
+    },
+    60_000,
+  );
 
   it("refuses a look it doesn't know", () => {
     const render = cells("render", "house/nothing");

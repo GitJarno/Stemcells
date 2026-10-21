@@ -263,7 +263,7 @@ describe("the phone's substitutes for upstream modules", () => {
       // Our own folder gets upstream's module, so a substitute can wrap it.
       expect(resolve(NodePath.join(here, "favicon.ts")).filePath, key).toBe(upstream);
     }
-  }, 60_000);
+  });
 
   it("the tests: the phone's test config resolves upstream's imports to the substitutes", async () => {
     const config = phoneTestConfig as UserConfig;
@@ -298,5 +298,5 @@ describe("the phone's substitutes for upstream modules", () => {
     } finally {
       await server.close();
     }
-  }, 60_000);
+  });
 });

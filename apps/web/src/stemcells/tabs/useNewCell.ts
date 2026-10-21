@@ -30,11 +30,11 @@ export function useNewCell(lastTabOnStage: boolean): { motion: (moving: boolean)
   const makeOne = useEffectEvent(async () => {
     if (making.current) return;
     making.current = true;
-    try {
-      await make().catch(() => null);
-    } finally {
-      making.current = false;
-    }
+    await make()
+      .catch(() => null)
+      .finally(() => {
+        making.current = false;
+      });
   });
 
   /** The new Cell as the draft store has its draft now: kept, found, replaced or still to make. */

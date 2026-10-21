@@ -9,6 +9,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import footerControls from "../../components/chat/ComposerFooterControls.tsx?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 import providerInstanceIcon from "../../components/chat/ProviderInstanceIcon.tsx?raw";
 import { toneTokenOf } from "../glow/light";
@@ -60,7 +61,7 @@ describe("the composer light's contracts with upstream", () => {
     const closes = actions.search(/\n {16}<\/div>/);
     const components = [...actions.slice(0, closes).matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
     expect(components.at(-1)).toBe("ComposerFooterPrimaryActions");
-    const footer = body(chatComposer, "ComposerFooterPrimaryActions");
+    const footer = body(footerControls, "ComposerFooterPrimaryActions");
     const drawn = [...footer.matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
     expect(drawn.at(-1)).toBe("ComposerPrimaryActions");
   });

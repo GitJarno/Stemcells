@@ -75,6 +75,113 @@ describe("no Stemcells build reports on the person", () => {
 });
 
 /**
+ * Nothing new leaves the machine unread. Every host the shipped code names,
+ * and every file naming an install, anonymous or analytics id, an update feed
+ * or a crash reporter, is listed in `stemcells/outbound.txt` with why it may
+ * stay, and no package that reports on the person is a dependency. A sync
+ * that brings a new one fails here until someone reads what the code does
+ * with it: turn off what reports on the person, list the rest
+ * (`stemcells/docs/upstream-sync.md`, Outbound).
+ */
+describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", () => {
+  const SHIPPED = [
+    "apps/server/src",
+    "apps/web/src",
+    "apps/desktop/src",
+    "apps/mobile/src",
+    "packages",
+    "apps/mobile/app.config.ts",
+  ];
+  const NOT_SHIPPED =
+    /(?:\.(?:test|spec|testkit)\.[cm]?[jt]sx?$|\/(?:test|tests|__tests__|testing|fixtures?|testUtils)\/|\/scripts\/)/;
+  // Loopback, an IP address and the names reserved for examples reach no one.
+  const NEVER_CONTACTED =
+    /(?:^|\.)(?:localhost|example|invalid|test|local)$|(?:^|\.)example\.(?:com|net|org)$|^(?:\d+\.){3}\d+$/;
+  const ID =
+    "anonymousId|anonymous_id|installationId|installation_id|installId|install_id|distinctId|distinct_id|machineId|telemetryId|analytics-device-id|crashReporter|setFeedURL|autoUpdater";
+  const REPORTS_ON_THE_PERSON =
+    /^(?:posthog.*|@posthog\/.*|@sentry\/.*|sentry-.*|@datadog\/.*|dd-trace|mixpanel.*|@amplitude\/.*|amplitude-js|@segment\/.*|analytics-node|@bugsnag\/.*|bugsnag.*|rollbar|logrocket.*|@vercel\/analytics|@vercel\/speed-insights|newrelic|@newrelic\/.*|@honeycombio\/.*|@opentelemetry\/.*|@effect\/opentelemetry|@grafana\/faro.*|@highlight-run\/.*|@axiomhq\/.*|applicationinsights|@microsoft\/applicationinsights.*|firebase|@react-native-firebase\/.*|expo-insights)$/;
+
+  /** Each match of `pattern` in the shipped code, as [file, match]. */
+  function grep(pattern: string, flags: string[]): Array<[string, string]> {
+    const run = NodeChildProcess.spawnSync(
+      "git",
+      ["grep", "-I", "-o", ...flags, "-E", pattern, "--", ...SHIPPED],
+      { cwd: repoRoot, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 },
+    );
+    if (run.status !== 0 && run.status !== 1) throw new Error(run.stderr);
+    return run.stdout
+      .split("\n")
+      .filter((line) => line !== "")
+      .map((line): [string, string] => {
+        const at = line.indexOf(":");
+        return [line.slice(0, at), line.slice(at + 1)];
+      })
+      .filter(([file]) => isShippedCode(file) && !NOT_SHIPPED.test(file));
+  }
+
+  const listed = { hosts: new Set<string>(), idFiles: [] as string[] };
+  for (const line of NodeFS.readFileSync(
+    NodePath.join(repoRoot, "stemcells/outbound.txt"),
+    "utf8",
+  ).split("\n")) {
+    const [kind, name, ...why] = line.trim().split(/\s+/);
+    if (!kind || kind.startsWith("#")) continue;
+    if (!name || why.length === 0) throw new Error(`stemcells/outbound.txt: "${line}" says no why`);
+    if (kind === "host") listed.hosts.add(name.toLowerCase());
+    else if (kind === "id") listed.idFiles.push(name);
+    else throw new Error(`stemcells/outbound.txt: unknown kind "${kind}"`);
+  }
+
+  it("names no host the list lacks, and the list names no host the code dropped", () => {
+    const named = new Map<string, string[]>();
+    for (const [file, match] of grep("(https?|wss?)://[a-z0-9-]+(\\.[a-z0-9-]+)+", ["-i"])) {
+      const host = match.replace(/^[a-z]+:\/\//i, "").toLowerCase();
+      if (NEVER_CONTACTED.test(host)) continue;
+      named.set(host, [...new Set([...(named.get(host) ?? []), file])]);
+    }
+    expect(named.size).toBeGreaterThan(20);
+    const unlisted = [...named]
+      .filter(([host]) => !listed.hosts.has(host))
+      .map(([host, files]) => `${host} (${files.join(", ")})`);
+    expect(unlisted).toEqual([]);
+    expect([...listed.hosts].filter((host) => !named.has(host))).toEqual([]);
+  });
+
+  it("names an install, anonymous or analytics id, a feed or a crash reporter only where listed", () => {
+    // An entry ending in `/` covers its folder.
+    const covers = (entry: string, file: string) =>
+      entry.endsWith("/") ? file.startsWith(entry) : file === entry;
+    const files = [...new Set(grep(ID, ["-w"]).map(([file]) => file))];
+    expect(files.filter((file) => !listed.idFiles.some((entry) => covers(entry, file)))).toEqual(
+      [],
+    );
+    expect(listed.idFiles.filter((entry) => !files.some((file) => covers(entry, file)))).toEqual(
+      [],
+    );
+  });
+
+  it("depends on no analytics, crash-reporting or tracing package", () => {
+    const manifests = NodeChildProcess.execFileSync(
+      "git",
+      ["ls-files", "--", "package.json", "**/package.json", ":!.repos/"],
+      { cwd: repoRoot, encoding: "utf8" },
+    )
+      .split("\n")
+      .filter((file) => file !== "");
+    expect(manifests.length).toBeGreaterThan(10);
+    const found = manifests.flatMap((file) => {
+      const manifest = JSON.parse(NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8"));
+      return ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]
+        .flatMap((field) => Object.keys(manifest[field] ?? {}))
+        .filter((name) => REPORTS_ON_THE_PERSON.test(name))
+        .map((name) => `${file}: ${name}`);
+    });
+    expect(found).toEqual([]);
+  });
+});
+
+/**
  * Nor does it tell anyone what the person reads or which build they run: a
  * link's or a page's icon is never fetched (a favicon service learns every
  * hostname in a chat), and Update Everything never asks npm about T3's

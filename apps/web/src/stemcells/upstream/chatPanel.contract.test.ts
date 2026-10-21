@@ -8,6 +8,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { SUBSTITUTES } from "./substitutes/plugin";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import chatRightPanel from "../../components/chat/ChatRightPanel.tsx?raw";
 import previewPanelShell from "../../components/preview/PreviewPanelShell.tsx?raw";
 import rightPanelTabs from "../../components/RightPanelTabs.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
@@ -22,7 +23,7 @@ describe("the workbench's contracts with upstream", () => {
       "apps/web/src/components/RightPanelTabs.tsx": "RightPanelTabs.tsx",
       "apps/web/src/components/RightPanelSheet.tsx": "RightPanelSheet.tsx",
     });
-    expect(chatView).toContain('mode="inline"');
+    expect(chatRightPanel).toContain('mode="inline"');
   });
 
   it("the panel marks its mode and its maximized state for the slate's stylesheet", () => {
@@ -35,8 +36,10 @@ describe("the workbench's contracts with upstream", () => {
   it("the thread view hands its panel whether it is maximized, and the panel draws it so", () => {
     // ChatPanelTabs tells the page from that prop (PanelMaximizedContext), and
     // workspace.css then gives the workbench the page, with no `:has()`.
-    expect(chatView).toMatch(
-      /<RightPanelTabs\s+mode="inline"[^>]{0,400}maximized=\{rightPanelMaximized\}/,
+    // Upstream draws the inline panel in ChatRightPanel, which the thread view hands it to.
+    expect(chatView).toMatch(/<ChatRightPanel\s[^>]{0,600}maximized=\{rightPanelMaximized\}/);
+    expect(chatRightPanel).toContain(
+      '<RightPanelTabs {...tabs} mode="inline" maximized={maximized}',
     );
     expect(rightPanelTabs).toContain(
       "{...(props.maximized !== undefined ? { maximized: props.maximized } : {})}",

@@ -109,7 +109,12 @@ const key = (name: string, more: Partial<KeyboardEvent> = {}) =>
     ...more,
   }) as KeyboardEvent;
 
-const wheel = (deltaX: number, deltaY: number, ctrlKey = false) => {
+/**
+ * A wheel event, sent at `at` ms on the viewer's clock. Fake timers start
+ * `performance.now()` at 0 and move it only as a test advances them, so `at`
+ * is what the clock reads when the test sends it.
+ */
+const wheel = (at: number, deltaX: number, deltaY: number, ctrlKey = false) => {
   const event = Object.assign(new Event("wheel", { cancelable: true }), {
     deltaX,
     deltaY,
@@ -118,7 +123,7 @@ const wheel = (deltaX: number, deltaY: number, ctrlKey = false) => {
     clientX: 600,
     clientY: 400,
   });
-  Object.defineProperty(event, "timeStamp", { value: performance.now() });
+  Object.defineProperty(event, "timeStamp", { value: at });
   return event;
 };
 
@@ -167,9 +172,9 @@ describe("a picture on its way home", () => {
 
   it("isn't turned back by a swipe let go after the close (its idle timer cut the landing short)", () => {
     const { viewer, parts } = open([picture("blob:a"), picture("blob:b")], SIZE);
-    parts.popup.dispatchEvent(wheel(-20, 0));
+    parts.popup.dispatchEvent(wheel(0, -20, 0));
     vi.advanceTimersByTime(16);
-    parts.popup.dispatchEvent(wheel(-20, 0));
+    parts.popup.dispatchEvent(wheel(16, -20, 0));
     viewer.close();
     vi.advanceTimersByTime(500);
     expect(sinceLanding()).toEqual(["land"]);
@@ -177,7 +182,7 @@ describe("a picture on its way home", () => {
 
   it("isn't settled by a pinch let go after the close", () => {
     const { viewer, parts } = open([picture("blob:a")], SIZE);
-    parts.popup.dispatchEvent(wheel(0, -20, true));
+    parts.popup.dispatchEvent(wheel(0, 0, -20, true));
     viewer.close();
     vi.advanceTimersByTime(500);
     expect(sinceLanding()).toEqual(["land"]);

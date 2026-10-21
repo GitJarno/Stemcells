@@ -1,7 +1,7 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the tokens' sheet, as the page's style does.
 import * as NodeFS from "node:fs";
 
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { clockSeconds } from "./blink.ts";
 import { BLOCKS, empty, formAt, formingOf, formingPart, HOP, inBlocks } from "./forming.ts";
@@ -52,13 +52,18 @@ describe("a Cell forming on its line as it starts", () => {
   });
 
   it("never leaves the box empty longer than a moment past what the stream needs", () => {
-    formAt("thread-far", performance.now() + 60_000);
+    // A call names its hand-off on the page's clock; the forming keeps it on the
+    // sprite clock. Both held at one moment, the hand-off reads exactly.
+    const wall = Date.parse("2026-10-21T09:00:00.000Z");
+    const page = 12_000;
+    using _wall = vi.spyOn(Date, "now").mockReturnValue(wall);
+    using _page = vi.spyOn(performance, "now").mockReturnValue(page);
+    formAt("thread-far", page + 60_000);
     const forming = formingOf("thread-far")!;
-    expect(forming.at - forming.asked).toBeLessThanOrEqual(3);
-    formAt("thread-soon", performance.now() + 500);
+    expect(forming.at - forming.asked).toBeCloseTo(3);
+    formAt("thread-soon", page + 500);
     const soon = formingOf("thread-soon")!;
-    expect(soon.at - clockSeconds()).toBeGreaterThan(0.3);
-    expect(soon.at - clockSeconds()).toBeLessThan(0.6);
+    expect(soon.at - clockSeconds(wall)).toBeCloseTo(0.5);
   });
 
   it("steps on the sprite clock's beat, the token the glyphs read", () => {

@@ -14,27 +14,21 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import composerBanner from "../../components/chat/ComposerBanner.tsx?raw";
-import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 
 /** CSS imports come in empty under test; the stylesheet is read as text. */
 const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import.meta.url), "utf8");
 
 describe("the composer's dock and upstream", () => {
-  it("an approval drops the controls row, so the box keeps that row's height itself", () => {
+  it("an approval keeps the controls row, so the box keeps its height with no help", () => {
+    // Only a collapsed phone composer drops the row; workspace.css no longer
+    // pads the field for a missing row while an approval waits.
     expect(chatComposer).toMatch(
-      /\{isComposerCollapsedMobile \|\| isComposerApprovalState \? null : \(\s*<div\s*data-chat-composer-footer="true"/,
+      /\{isComposerCollapsedMobile \? null : \(\s*<div\s*data-chat-composer-footer="true"/,
     );
-    // The row's height, which workspace.css adds under the field: send
-    // (size-8) over the row's pb-4, past the field's own pb-2.
-    expect(chatComposer).toContain(
-      '"flex min-w-0 flex-nowrap items-center justify-between gap-2 overflow-visible px-3 pb-3 sm:px-4 sm:pb-4"',
-    );
-    expect(chatComposer).toContain('"relative px-3 pb-2 sm:px-4"');
-    expect(primaryActions).toContain('"size-8 sm:h-8 sm:w-8"');
     expect(chatComposer).toMatch(/data-chat-composer-surface="true"/);
     expect(chatComposer).toMatch(/data-chat-composer-body="true"/);
-    expect(workspaceCss).toContain("padding-block-end: calc(var(--spacing) * (2 + 8 + 4));");
+    expect(workspaceCss).not.toContain('not(:has(> [data-chat-composer-footer="true"]))');
   });
 
   it("banners attach above the box inside the form, inset, in their own outline", () => {

@@ -1,31 +1,45 @@
 name: Stemcells upstream sync
 
+# Takes upstream's work every night with the same three commands a person or
+# a Cell runs by hand (stemcells/docs/upstream-sync.md): merge, gates, pull
+# request. When it stops, it keeps one issue up to date with why.
 on:
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
+    inputs:
+      gates:
+        description: "Only run the gates on the chosen branch: no merge, no pull request, no issue"
+        type: boolean
+        default: false
 
 concurrency:
-  group: stemcells-sync
+  group: stemcells-sync-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
     permissions:
       contents: write
       pull-requests: write
       issues: write
+      actions: read
     env:
-      GH_TOKEN: ${{ github.token }}
+      # Upstream's merges change its workflow files often, and Actions' own
+      # token may not push those: a token that may, when the repository has
+      # one (stemcells/docs/upstream-sync.md, The nightly).
+      GH_TOKEN: ${{ secrets.STEMCELLS_SYNC_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.STEMCELLS_SYNC_TOKEN || github.token }}
       - name: Add upstream
         run: |
           git remote add upstream https://github.com/pingdotgg/t3code.git
+          git fetch -q --no-tags upstream main
           git config user.name "stemcells-sync"
           git config user.email "stemcells-sync@users.noreply.github.com"
       - uses: pnpm/action-setup@v4
@@ -33,30 +47,106 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+
       - name: Merge upstream's newest green commit
-        id: sync
+        id: merge
+        if: ${{ !inputs.gates }}
+        env:
+          SYNC_SUMMARY: ${{ runner.temp }}/summary.md
         run: |
           set +e
-          stemcells/scripts/sync-upstream --check > sync.log 2>&1
-          code=$?
-          cat sync.log
+          stemcells/scripts/sync-upstream 2>&1 | tee -a "$RUNNER_TEMP/sync.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          case "$(git branch --show-current)" in
+            sync/upstream-*) echo "merged=true" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      # What upstream's CI installs for its suites and builds: libsecret for
+      # the desktop's browser secret helper, a C toolchain for the ACP
+      # process-tree fixtures, the browsers and Electron.
+      - name: Install, with the libraries, browsers and Electron upstream's suites use
+        if: ${{ inputs.gates || (steps.merge.outputs.code == '0' && steps.merge.outputs.merged == 'true') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsecret-1-dev pkg-config build-essential
+          pnpm install --frozen-lockfile
+          node apps/web/node_modules/playwright/cli.js install --with-deps --only-shell chromium
+          node apps/server/node_modules/playwright-core/cli.js install --with-deps --only-shell chromium
+          pnpm exec vp run --filter @t3tools/desktop ensure:electron
+
+      - name: Gates
+        id: gates
+        if: ${{ inputs.gates || (steps.merge.outputs.code == '0' && steps.merge.outputs.merged == 'true') }}
+        env:
+          SYNC_SUMMARY: ${{ runner.temp }}/summary.md
+        run: |
+          set +e
+          stemcells/scripts/sync-upstream --gates 2>&1 | tee -a "$RUNNER_TEMP/sync.log"
+          code=${PIPESTATUS[0]}
           echo "code=$code" >> "$GITHUB_OUTPUT"
-          exit 0
-      - name: Report a sync that needs a person
-        if: steps.sync.outputs.code != '0'
+          exit "$code"
+
+      - name: Pull request
+        id: pr
+        if: ${{ !inputs.gates && steps.gates.outputs.code == '0' }}
+        env:
+          SYNC_SUMMARY: ${{ runner.temp }}/summary.md
+          SYNC_GATES_PASSED: "every gate of `sync-upstream --gates`, in ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          set +e
+          stemcells/scripts/sync-upstream --pr 2>&1 | tee -a "$RUNNER_TEMP/sync.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      # One issue, kept up to date: opened or rewritten when a night stops,
+      # closed when one goes through.
+      - name: Keep the sync's issue up to date
+        if: ${{ always() && !inputs.gates }}
+        env:
+          MERGE: ${{ steps.merge.outputs.code }}
+          GATES: ${{ steps.gates.outputs.code }}
+          PR: ${{ steps.pr.outputs.code }}
+          JOB: ${{ job.status }}
         run: |
           title="Upstream sync needs a hand"
-          open=$(gh api "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" --jq "[.[] | select(.title == \"$title\")] | length")
-          if [ "$open" = "0" ]; then
-            {
-              echo "The nightly merge of upstream stopped (exit ${{ steps.sync.outputs.code }}: 3 = conflict, 4 = a check failed)."
-              echo
-              echo '```'
-              tail -60 sync.log
-              echo '```'
-              echo
-              echo "Resolve it with \`stemcells/scripts/sync-upstream\` locally: upstream's logic wins and our seam goes back on top (stemcells/docs/fork.md)."
-            } > issue.md
-            gh api "repos/$GITHUB_REPOSITORY/issues" -f title="$title" -F body=@issue.md --jq .html_url
+          code=${MERGE:-1}
+          [ "$code" = 0 ] && [ -n "$GATES" ] && code=$GATES
+          [ "$code" = 0 ] && [ -n "$PR" ] && code=$PR
+          [ "$code" = 0 ] && [ "$JOB" != success ] && code=1
+          runbook="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/stemcells/docs/upstream-sync.md"
+          run="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          today=$(date -u +%Y-%m-%d)
+          open=$(gh api "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
+            --jq "[.[] | select(.title == \"$title\" and (.pull_request | not))][0].number // \"\"")
+          if [ "$code" = 0 ]; then
+            if [ -n "$open" ]; then
+              gh api "repos/$GITHUB_REPOSITORY/issues/$open/comments" -f body="The sync of $today went through: $run" > /dev/null
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/$open" -f state=closed -f state_reason=completed > /dev/null
+            fi
+            exit 0
+          fi
+          case $code in
+            3) why="the merge conflicts where our seams are" ;;
+            4) why="a gate failed on the merged tree" ;;
+            5) why="every gate passed, but GitHub refused the push" ;;
+            *) why="the run failed before its gates finished" ;;
+          esac
+          {
+            echo "The nightly sync of $today stopped: $why ([the run]($run))."
+            echo
+            [ -s "$RUNNER_TEMP/summary.md" ] && cat "$RUNNER_TEMP/summary.md" && echo
+            echo "**How to take it from here:** [the runbook]($runbook). In short, in a worktree of your own: \`stemcells/scripts/sync-upstream\`, resolve what it leaves (upstream's logic wins, our seam goes back on top), \`git commit\`, then \`stemcells/scripts/sync-upstream --gates\` and \`--pr\`."
+            echo
+            echo "<details><summary>The run's last lines</summary>"
+            echo
+            echo '```'
+            sed -E 's/\x1b\[[0-9;]*m//g' "$RUNNER_TEMP/sync.log" 2>/dev/null | grep -v '^[[:space:]]*$' | tail -40
+            echo '```'
+            echo "</details>"
+          } > "$RUNNER_TEMP/issue.md"
+          if [ -n "$open" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/$open" -F body=@"$RUNNER_TEMP/issue.md" > /dev/null
+            gh api "repos/$GITHUB_REPOSITORY/issues/$open/comments" -f body="Stopped again on $today: $why. The issue above says where: $run" > /dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues" -f title="$title" -F body=@"$RUNNER_TEMP/issue.md" --jq .html_url
           fi
           exit 1

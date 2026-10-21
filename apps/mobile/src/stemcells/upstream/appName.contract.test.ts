@@ -23,11 +23,17 @@ const phoneRoot = NodePath.join(repoRoot, "apps/mobile");
 const UPSTREAM_NAME = "T3 Code";
 
 /** Upstream's name, kept on purpose: the theme T3 made is called T3 Code, as on the web. */
-const KEPT = new Set(['apps/mobile/src/lib/mobileTheme.ts: { id: DEFAULT_MOBILE_THEME_ID, label: "T3 Code" },']);
+const KEPT = new Set([
+  'apps/mobile/src/lib/mobileTheme.ts: { id: DEFAULT_MOBILE_THEME_ID, label: "T3 Code" },',
+]);
 
 const CHANNELS = {
   development: { name: `${APP_NAME} Dev`, scheme: "t3code-dev", id: "com.t3tools.t3code.dev" },
-  preview: { name: `${APP_NAME} Preview`, scheme: "t3code-preview", id: "com.t3tools.t3code.preview" },
+  preview: {
+    name: `${APP_NAME} Preview`,
+    scheme: "t3code-preview",
+    id: "com.t3tools.t3code.preview",
+  },
   production: { name: APP_NAME, scheme: "t3code", id: "com.t3tools.t3code" },
 } as const;
 
@@ -68,7 +74,6 @@ describe("the phone's name", () => {
       expect(config.ios.bundleIdentifier).toBe(expected.id);
       expect(config.android.package).toBe(expected.id);
     },
-    60_000,
   );
 
   it("no screen's text says T3 Code", () => {

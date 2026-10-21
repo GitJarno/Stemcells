@@ -63,8 +63,6 @@ function wait() {
   return { ready, settle: settle! };
 }
 
-const flushed = () => new Promise((resolve) => setTimeout(resolve, 0));
-
 // The composer froze: a send waiting on Aski's plan whose wait failed held
 // every later Enter, since nothing let go (#173's review).
 describe("a composer's sends, one at a time", () => {
@@ -83,7 +81,8 @@ describe("a composer's sends, one at a time", () => {
     queue.send(ready, () => sent++);
     expect(queue.waiting()).toBe(true);
     settle.resolve();
-    await flushed();
+    // The queue reacted to the wait before the test did, so it has gone by now.
+    await ready;
     expect(sent).toBe(1);
     expect(queue.waiting()).toBe(false);
   });
@@ -94,7 +93,7 @@ describe("a composer's sends, one at a time", () => {
     let sent = 0;
     queue.send(ready, () => sent++);
     settle.reject(new Error("the plan broke"));
-    await flushed();
+    await ready.catch(() => {});
     expect(sent).toBe(0);
     expect(queue.waiting()).toBe(false);
     queue.send(null, () => sent++);

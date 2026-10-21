@@ -143,7 +143,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
   useEffect(() => {
     const at = Date.now();
     if (!home.answers) {
-      seen.silentSince ??= at;
+      if (seen.silentSince === null) seen.silentSince = at;
       return;
     }
     const since = seen.silentSince;

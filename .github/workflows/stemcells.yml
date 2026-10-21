@@ -27,23 +27,12 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Drift
-        run: stemcells/scripts/drift
-      - name: Type check
-        run: |
-          pnpm --filter @t3tools/web typecheck
-          pnpm --filter t3 typecheck
-          pnpm --filter @t3tools/desktop typecheck
-      # Each app's tests run with its own config: it builds with our
-      # substitutes for upstream modules (stemcells/seams.md, Substitutes).
-      - name: Stemcells tests
-        run: |
-          pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells
-          pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells
-          pnpm exec vp test run apps/server/src/stemcells --passWithNoTests
-          pnpm --filter @t3tools/desktop exec vp test run src/stemcells --passWithNoTests
-          pnpm exec vp test run --dir stemcells
-          pnpm exec vp test run scripts/build-desktop-artifact.test.ts
+      # A sync's quick gates, the same commands a person runs
+      # (stemcells/docs/upstream-sync.md): drift, nothing reporting on the
+      # person, types, lint, and our tests, each app's with its own config,
+      # which carries our substitutes for upstream modules.
+      - name: Drift, outbound, types, lint and our tests
+        run: stemcells/scripts/sync-upstream --gates drift outbound typecheck lint ours
 
   # The tab swipe's scroll-phases addon builds with the Mac's own compiler,
   # so it is built and loaded on a Mac.
@@ -58,8 +47,9 @@ jobs:
   # Upstream's workflows need runners and secrets this repo doesn't have.
   # A merge from upstream can bring a new one, which GitHub turns on by
   # default: switch it off again and cancel anything it started.
+  # It runs on pull requests too: a sync's branch can bring a workflow
+  # GitHub hasn't seen, which would otherwise run on its pull request.
   upstream-workflows-off:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       actions: write

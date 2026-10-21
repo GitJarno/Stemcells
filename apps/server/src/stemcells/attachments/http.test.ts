@@ -6,7 +6,6 @@ import * as NodeHttp from "node:http";
 import type * as NodeNet from "node:net";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
-import * as NodeTimersPromises from "node:timers/promises";
 import { EnvironmentHttpApi, ThreadId } from "@t3tools/contracts";
 import { expect, it } from "@effect/vitest";
 import * as Crypto from "effect/Crypto";
@@ -151,11 +150,6 @@ afterAll(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
   for (const dir of [baseDir, shown]) NodeFS.rmSync(dir, { recursive: true, force: true });
 });
-
-const waitFor = async (check: () => boolean) => {
-  for (let tries = 0; tries < 100 && !check(); tries += 1) await NodeTimersPromises.setTimeout(20);
-  return check();
-};
 
 /** A string or a stream goes as it is; anything else as JSON. */
 type Bring = (
@@ -339,19 +333,17 @@ it.live("runs a few imports at once, and one whose caller went away stops, leavi
   signedIn(limits({ imports: 1 }), async ({ signedIn, attachmentsDir }) => {
     const away = new AbortController();
     const stalled = signedIn({ from: { url: `${web}/clips/stall.mp4` } }, { signal: away.signal });
-    expect(await waitFor(() => seen.includes("/clips/stall.mp4"))).toBe(true);
+    await expect.poll(() => seen.includes("/clips/stall.mp4")).toBe(true);
     expect(await refusalOf(await signedIn({ from: { url: `${web}/clips/rain.mp4` } }))).toEqual({
       status: 503,
       reason: "Busy, try again",
     });
     away.abort();
     await stalled.catch(() => null);
-    expect(await waitFor(() => closed.includes("/clips/stall.mp4"))).toBe(true);
-    expect(
-      await waitFor(
-        () => !NodeFS.readdirSync(attachmentsDir).some((entry) => entry.endsWith(".part")),
-      ),
-    ).toBe(true);
+    await expect.poll(() => closed.includes("/clips/stall.mp4")).toBe(true);
+    await expect
+      .poll(() => NodeFS.readdirSync(attachmentsDir).some((entry) => entry.endsWith(".part")))
+      .toBe(false);
     // Its place is given back.
     expect((await signedIn({ from: { url: `${web}/clips/rain.mp4` } })).status).toBe(200);
   }),

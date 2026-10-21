@@ -287,7 +287,7 @@ export function useSeparator(
         return;
       }
       held.at = along(axis, event);
-      held.frame ??= requestAnimationFrame(() => follow(held));
+      if (held.frame === null) held.frame = requestAnimationFrame(() => follow(held));
     },
     onPointerUp: (event) => {
       const held = hold.current;

@@ -26,15 +26,20 @@ test("every mood plays a scene of its own, and a Cell at work acts out each acti
   );
 });
 
-test("every piece a Cell can be dealt plays every mood", () => {
-  for (const piece of PACKS.flatMap((pack) => pack.pieces)) {
-    const look = packLook([`${piece.theme}/${piece.name}`]);
-    for (const mood of MOODS) {
-      const scene = sceneFor(look, mood, undefined, 0);
-      NodeAssert.ok(scene.mini.length > 0, `${piece.theme}/${piece.name} ${mood}`);
+// A test per pack: composing every piece's every mood is seconds of CPU, near the
+// project's timeout on a CI runner when it was one test.
+test.each(PACKS.map((pack) => [pack.theme, pack] as const))(
+  "every piece of %s a Cell can be dealt plays every mood",
+  (_, pack) => {
+    for (const piece of pack.pieces) {
+      const look = packLook([`${piece.theme}/${piece.name}`]);
+      for (const mood of MOODS) {
+        const scene = sceneFor(look, mood, undefined, 0);
+        NodeAssert.ok(scene.mini.length > 0, `${piece.theme}/${piece.name} ${mood}`);
+      }
     }
-  }
-});
+  },
+);
 
 test("a failed Cell holds its dazed face and a braced one its squeeze, still and unblinking", () => {
   for (const mood of ["crashed", "braced"] as const) {

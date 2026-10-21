@@ -4,11 +4,8 @@ import { substituteUpstreamModules } from "./src/stemcells/upstream/substitutes/
 
 const reactTests = [
   "src/components/ui/Dialog.android.test.tsx",
-  "src/features/home/home-route-visibility.test.tsx",
   "src/features/settings/SettingsServerControlsRouteScreen.test.tsx",
   "src/features/settings/components/BranchNamingSettings.test.tsx",
-  "src/features/threads/use-visible-second-clock.test.tsx",
-  "src/features/threads/useThreadHeaderOptions.test.tsx",
   "src/native/NativeHeaderToolbar.test.tsx",
   "src/state/use-selected-thread-git-actions.test.tsx",
 ];
@@ -16,6 +13,9 @@ const reactTests = [
 export default defineConfig({
   plugins: [substituteUpstreamModules()],
   test: {
+    // Stemcells' substitutes resolve a module by who imports it, which Vitest's
+    // on-disk transform cache doesn't key on: a warm run mixes them up.
+    fsModuleCache: false,
     hookTimeout: 60_000,
     testTimeout: 60_000,
     projects: [
@@ -25,7 +25,10 @@ export default defineConfig({
           name: "unit",
           include: ["**/*.test.{ts,tsx,mjs}"],
           exclude: ["**/node_modules/**", ...reactTests],
-          setupFiles: ["../../packages/shared/src/testing/longTempDir.ts"],
+          setupFiles: [
+            "../../packages/shared/src/testing/longTempDir.ts",
+            "../../packages/shared/src/testing/providerEnv.ts",
+          ],
         },
       },
       {
@@ -35,6 +38,7 @@ export default defineConfig({
           include: reactTests,
           // Native components mock React Native and render through react-dom in these tests.
           environment: "jsdom",
+          setupFiles: ["../../packages/shared/src/testing/providerEnv.ts"],
         },
       },
     ],

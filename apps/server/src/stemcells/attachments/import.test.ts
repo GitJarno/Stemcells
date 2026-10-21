@@ -121,10 +121,6 @@ const testServerToo: Resolve = async (host) =>
   host === "127.0.0.1" || host === "pinned.example" ? LOOPBACK : publicAddresses(host);
 const through = { resolve: testServerToo };
 
-const waitFor = async (check: () => boolean) => {
-  for (let tries = 0; tries < 100 && !check(); tries += 1) await NodeTimersPromises.setTimeout(20);
-  return check();
-};
 const UNFETCHED = { ok: false, status: 502, reason: "Couldn't fetch it" };
 
 describe("a file brought into a chat", () => {
@@ -164,11 +160,13 @@ describe("a file brought into a chat", () => {
     if ("ok" in stalled) throw new Error(stalled.reason);
     const path = NodePath.join(dir, "pending-3-mp4.mp4");
     const storing = store(stalled, { attachmentId: "pending-3-mp4", path }, 10_000, abort.signal);
-    await waitFor(() => NodeFS.readdirSync(dir).some((entry) => entry.endsWith(".part")));
+    await expect
+      .poll(() => NodeFS.readdirSync(dir).some((entry) => entry.endsWith(".part")))
+      .toBe(true);
     abort.abort();
     expect(await storing).toMatchObject({ ok: false });
     expect(NodeFS.readdirSync(dir)).toEqual([]);
-    expect(await waitFor(() => closed.includes("/stall.mp4"))).toBe(true);
+    await expect.poll(() => closed.includes("/stall.mp4")).toBe(true);
   });
 });
 
@@ -252,7 +250,7 @@ describe("a picture from the web", () => {
     expect(await picture("/shots/one.png")).toMatchObject({ ok: true, mimeType: "image/png" });
     expect(await picture("/page.svg")).toMatchObject({ ok: false, status: 415 });
     expect(await picture("/stall.svg")).toMatchObject({ ok: false, status: 415 });
-    expect(await waitFor(() => closed.includes("/stall.svg"))).toBe(true);
+    await expect.poll(() => closed.includes("/stall.svg")).toBe(true);
   });
 
   it("over the cap in chunks or once inflated is refused, and the server stays up", async () => {
@@ -262,8 +260,9 @@ describe("a picture from the web", () => {
       ok: false,
       status: 413,
     });
-    expect(await waitFor(() => closed.includes("/endless-stall.png"))).toBe(true);
+    await expect.poll(() => closed.includes("/endless-stall.png")).toBe(true);
     // Past its timeout: a body left unread would fail now, with no one listening.
+    // oxlint-disable-next-line t3code/no-real-time-wait-in-tests -- the check is that the fetch's own 300 ms timer fires and nothing breaks; no event marks a timer that should do nothing.
     await NodeTimersPromises.setTimeout(400);
   });
 

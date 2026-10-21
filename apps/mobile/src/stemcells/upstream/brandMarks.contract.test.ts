@@ -74,7 +74,6 @@ describe("the phone shows no T3 mark", () => {
       expect(android.adaptiveIcon.backgroundColor).toBe("#000000");
       expect(android.adaptiveIcon.backgroundImage).toBeUndefined();
     },
-    60_000,
   );
 
   it("the Live Activity's logo is ours", () => {

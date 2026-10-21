@@ -1,12 +1,10 @@
 import "../tokens/stemcells.css";
 import "./drop.css";
 
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { render } from "../upstream/testRender";
 import { DropWash } from "./DropWash";
-
-const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
 /** A slate of two panes; upstream's overlay shows in the one named by `over`. */
 function Slate(props: { over: "a" | "b" | null }) {
@@ -43,24 +41,24 @@ describe("the pane a carried file would land in", () => {
 
     slate.dispatchEvent(new DragEvent("dragenter", { bubbles: true }));
     await screen.rerender(<Slate over="a" />);
-    await nextFrame();
-    await nextFrame();
-    expect(pane("a").hasAttribute("data-landing")).toBe(true);
-    expect(pane("b").hasAttribute("data-landing")).toBe(false);
-    expect(scale("a")).toBe("1.01");
-    expect(scale("b")).toBe("none");
+    await vi.waitFor(() => {
+      expect(pane("a").hasAttribute("data-landing")).toBe(true);
+      expect(pane("b").hasAttribute("data-landing")).toBe(false);
+      expect(scale("a")).toBe("1.01");
+      expect(scale("b")).toBe("none");
+    });
 
     await screen.rerender(<Slate over="b" />);
-    await nextFrame();
-    await nextFrame();
-    expect(pane("a").hasAttribute("data-landing")).toBe(false);
-    expect(pane("b").hasAttribute("data-landing")).toBe(true);
+    await vi.waitFor(() => {
+      expect(pane("a").hasAttribute("data-landing")).toBe(false);
+      expect(pane("b").hasAttribute("data-landing")).toBe(true);
+    });
 
     await screen.rerender(<Slate over={null} />);
     window.dispatchEvent(new DragEvent("drop"));
-    await nextFrame();
-    await nextFrame();
-    expect(pane("b").hasAttribute("data-landing")).toBe(false);
-    expect(scale("b")).toBe("none");
+    await vi.waitFor(() => {
+      expect(pane("b").hasAttribute("data-landing")).toBe(false);
+      expect(scale("b")).toBe("none");
+    });
   });
 });

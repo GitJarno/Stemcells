@@ -11,7 +11,7 @@ import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
 import composerFooterLayout from "../../components/composerFooterLayout.ts?raw";
 import promptEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
-import chatMarkdown from "../../components/ChatMarkdown.tsx?raw";
+import markdownTable from "../../components/chat/MarkdownTable.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 import scrollArea from "../../components/ui/scroll-area.tsx?raw";
 
@@ -37,7 +37,7 @@ describe("a chat in a narrow pane, against upstream", () => {
   });
 
   it("a table scrolls sideways in an area with an edge fade sized by --fade-size", () => {
-    expect(chatMarkdown).toMatch(
+    expect(markdownTable).toMatch(
       /className="chat-markdown-table-container"[\s\S]*?<ScrollArea radius="none" chainVerticalScroll scrollFade/,
     );
     expect(scrollArea).toContain(

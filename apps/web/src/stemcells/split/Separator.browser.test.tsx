@@ -1,11 +1,9 @@
 import { describe, expect, it, onTestFinished, vi } from "vite-plus/test";
 
-import { render } from "../upstream/testRender";
+import { fakeTimers, render } from "../upstream/testRender";
 import { growSides } from "./grow";
 import { PASS_THROUGH_MS, Separator, type Sides } from "./Separator";
 import { HOLD, NUDGE } from "./split";
-
-const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
 /** Two Cells side by side, 400 px each, a border between them. */
 function Row(props: {
@@ -41,7 +39,10 @@ function setUp() {
   const even = vi.fn();
   const still = vi.fn();
   const sides: Sides = { ...growSides("x", [160, 160], keep, even), still };
-  return { keep, even, still, sides };
+  // The border follows a move on the next frame, and holds its Cells still as it does.
+  const followed = () =>
+    vi.waitFor(() => expect(still).toHaveBeenLastCalledWith(expect.any(HTMLElement), true, "pair"));
+  return { keep, even, still, sides, followed };
 }
 
 /** The border and its Cells, as a test drives them. */
@@ -102,9 +103,8 @@ describe("a border between Cells", () => {
     const { width, x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + 120);
-    await nextFrame();
+    await vi.waitFor(() => expect(width("before")).toBeCloseTo(520, 0));
     expect(document.documentElement.getAttribute("data-stemcells-splitting")).toBe("x");
-    expect(width("before")).toBeCloseTo(520, 0);
     expect(width("after")).toBeCloseTo(280, 0);
     pointer("pointerup", x + 120);
     expect(keep).toHaveBeenCalledWith({ before: 520, after: 280 });
@@ -112,16 +112,15 @@ describe("a border between Cells", () => {
   });
 
   it("holds at even near it, and stops at a Cell's floor", async () => {
-    const { keep, sides } = setUp();
+    const { keep, sides, followed } = setUp();
     await using screen = await render(<Row sides={sides} />);
     const { width, x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + HOLD);
-    await nextFrame();
+    await followed();
     expect(width("before")).toBeCloseTo(400, 0);
     pointer("pointermove", x + 1000);
-    await nextFrame();
-    expect(width("after")).toBeCloseTo(160, 0);
+    await vi.waitFor(() => expect(width("after")).toBeCloseTo(160, 0));
     pointer("pointerup", x + 1000);
     expect(keep).toHaveBeenLastCalledWith({ before: 640, after: 160 });
   });
@@ -136,19 +135,17 @@ describe("a border between Cells", () => {
   });
 
   it("holds what the Cells show still while it moves, and lets go once it rests", async () => {
-    const { still, sides } = setUp();
+    const { still, sides, followed } = setUp();
     await using screen = await render(<Row sides={sides} />);
     const { x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + 50);
-    await nextFrame();
-    expect(still).toHaveBeenLastCalledWith(expect.any(HTMLElement), true, "pair");
+    await followed();
     await vi.waitFor(() =>
       expect(still).toHaveBeenLastCalledWith(expect.any(HTMLElement), false, "pair"),
     );
     pointer("pointermove", x + 80);
-    await nextFrame();
-    expect(still).toHaveBeenLastCalledWith(expect.any(HTMLElement), true, "pair");
+    await followed();
     pointer("pointerup", x + 80);
     expect(still).toHaveBeenLastCalledWith(expect.any(HTMLElement), false, "pair");
   });
@@ -222,12 +219,10 @@ describe("a border between Cells", () => {
 
   it("leaves no click behind for a press passed on and held past its time", async () => {
     const { onClick, press, release } = await passingThrough();
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    try {
+    {
+      using _timers = fakeTimers();
       press();
       vi.advanceTimersByTime(PASS_THROUGH_MS);
-    } finally {
-      vi.useRealTimers();
     }
     release();
     expect(onClick).not.toHaveBeenCalled();
@@ -239,8 +234,7 @@ describe("a border between Cells", () => {
     const { separator, width, x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + 120);
-    await nextFrame();
-    expect(width("before")).toBeCloseTo(520, 0);
+    await vi.waitFor(() => expect(width("before")).toBeCloseTo(520, 0));
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     expect(width("before")).toBeCloseTo(400, 0);
     expect(separator.hasAttribute("data-held")).toBe(false);
@@ -249,12 +243,12 @@ describe("a border between Cells", () => {
   });
 
   it("lets go when its button is found up, and when the window goes", async () => {
-    const { keep, sides } = setUp();
+    const { keep, sides, followed } = setUp();
     await using screen = await render(<Row sides={sides} />);
     const { separator, x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + 40);
-    await nextFrame();
+    await followed();
     separator.dispatchEvent(
       new PointerEvent("pointermove", { pointerId: 1, buttons: 0, clientX: x + 80, bubbles: true }),
     );
@@ -268,12 +262,12 @@ describe("a border between Cells", () => {
   });
 
   it("a double-click whose press dragged the border isn't one", async () => {
-    const { even, sides } = setUp();
+    const { even, sides, followed } = setUp();
     await using screen = await render(<Row sides={sides} />);
     const { separator, x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + 60);
-    await nextFrame();
+    await followed();
     pointer("pointerup", x + 60);
     separator.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
     expect(even).not.toHaveBeenCalled();
@@ -287,8 +281,7 @@ describe("a border between Cells", () => {
     const { separator, x, pointer } = partsOf(screen.container);
     pointer("pointerdown", x);
     pointer("pointermove", x + 50);
-    await nextFrame();
-    expect(still).toHaveBeenLastCalledWith(separator, true, "pair");
+    await vi.waitFor(() => expect(still).toHaveBeenLastCalledWith(separator, true, "pair"));
     await screen.unmount();
     expect(still).toHaveBeenLastCalledWith(separator, false, "pair");
     expect(document.documentElement.hasAttribute("data-stemcells-splitting")).toBe(false);

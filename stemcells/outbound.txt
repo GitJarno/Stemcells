@@ -1,0 +1,107 @@
+# Every host the shipped code names, and every file that may name an install,
+# anonymous or analytics id, an update feed or a crash reporter, each with why
+# it may stay. `apps/server/src/stemcells/privacy/noTelemetry.test.ts` fails on
+# one this list lacks, and on a line here the code no longer needs, so a sync
+# that brings a new one stops until someone reads what it does
+# (`stemcells/docs/upstream-sync.md`, Outbound). No analytics, crash-reporting
+# or tracing package is allowed at all.
+#
+#   host <name> <why>
+#   id <file> <why>
+#
+# Loopback, an IP address and the reserved example names need no line.
+
+# Named, never contacted: doc links, schema ids, namespaces, demo rows.
+host agentclientprotocol.com doc links in the generated ACP schema
+host www.jsonrpc.org doc links in the generated ACP schema
+host platform.openai.com doc links in the generated Codex schema
+host developers.openai.com a comment citing image-cost docs
+host platform.claude.com a comment citing vision docs
+host www.w3.org XML and SVG namespaces
+host json-schema.org the $schema id of t3.json
+host www.apple.com the plist DTD id in a generated plist
+host tailwindcss.com the license comment in generated CSS
+host docs.github.com a comment in the GitHub GraphQL config
+host www.nayuki.io the QR code library's credit
+host hub.example.ts.net a placeholder in the usage-source dialog
+host moonbase.tail9f3a.ts.net made-up showcase rows on the phone
+host aurora-gpu.t3.sh made-up showcase rows on the phone
+host pocket-pi.t3.sh made-up showcase rows on the phone
+host suspense-vps.hel1.t3.sh made-up showcase rows on the phone
+host t3.chat an example url in the preview tool's description
+
+# Links a person opens in their own browser.
+host app.t3.codes T3's hosted app: T3 Connect's sign-in page and hosted pairing and prompt links, used only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
+host t3.codes legal and download links, a README credit line and t3.json's schema url; nothing fetches it
+host apps.apple.com the phone app's store link
+host play.google.com the phone app's store link
+host claude.ai sign-up link in onboarding
+host git-scm.com the install link when git is missing
+host cli.github.com the install link when gh is missing
+host login.tailscale.com the link `t3 pair` prints
+host chatgpt.com usage link, and the Codex usage limits read with the person's own sign-in
+
+# The person's own search, in the preview browser's address bar.
+host duckduckgo.com a search engine the person picks
+host kagi.com a search engine the person picks
+host search.brave.com a search engine the person picks
+host www.bing.com a search engine the person picks
+host www.ecosia.org a search engine the person picks
+host www.google.com a search engine the person picks; upstream's favicon url is substituted away (No favicon fetched, seams.md)
+host github.githubassets.com GitHub's icon in upstream's favicon module, substituted away (No favicon fetched, seams.md)
+host challenges.cloudflare.com sign-in pages' Turnstile, allowed in the desktop's page policy
+
+# Source control, through the person's own CLIs and tokens.
+host github.com repository links, clone urls and the person's GitHub
+host api.github.com the person's GitHub; also the LiteLLM price list and T3 release lists that only servers running T3's build use (No T3 build offered, seams.md)
+host raw.githubusercontent.com GitHub media in chats, the LiteLLM price list, the model list and triage playbook from upstream's public repository
+host gitlab.com the person's GitLab
+host codeberg.org the person's Forgejo
+host gitea.com the person's Forgejo
+host bitbucket.org the person's Bitbucket
+host api.bitbucket.org asked only when a Bitbucket token is configured
+host dev.azure.com the person's Azure DevOps
+host git.cafe the person's GitCafe
+
+# The providers the person signs in to, for their sign-in, models and limits.
+host api.anthropic.com Claude credits and usage limits
+host api.openai.com Codex models and sign-in claims
+host auth.openai.com Codex sign-in
+host accounts.google.com Antigravity sign-in
+host oauth2.googleapis.com Antigravity sign-in
+host www.googleapis.com Antigravity account
+host cloudcode-pa.googleapis.com Antigravity usage limits
+host daily-cloudcode-pa.googleapis.com Antigravity usage limits
+host dl.google.com Antigravity's CLI download
+host accounts.x.ai Grok sign-in
+host auth.x.ai Grok sign-in
+host cli-chat-proxy.grok.com Grok usage limits
+host api.meta.ai Muse's release channel
+host api2.cursor.sh Cursor usage limits
+host cursor.com Cursor account usage
+host opencode.ai OpenCode usage limits
+host cdn.agentclientprotocol.com the ACP agent registry, when the person browses it
+host registry.npmjs.org the provider CLIs' latest versions; T3's own release is never asked (noTelemetry.test.ts)
+
+# Tools the person starts.
+host storage.googleapis.com Chrome for Testing, downloaded for the preview browser
+host googlechromelabs.github.io a comment naming Chrome for Testing's version list
+host open-vsx.org theme search, when the person imports a VS Code theme
+host api.expo.dev the device hub's builds, with the person's Expo token
+
+# The phone app's config: off unless a build turns it on.
+host u.expo.dev T3's over-the-air updates, only with T3CODE_MOBILE_UPDATES_ENABLED=1 (outbound.contract.test.ts)
+host api.axiom.co the default trace url, unused unless a build sets a dataset and token
+
+# Files that may name an install, anonymous or analytics id, a feed or a crash reporter.
+id apps/server/src/telemetry/ upstream's analytics service, a no-op in Stemcells (No telemetry, seams.md; analytics.contract.test.ts)
+id apps/server/src/ws.ts reads the hashed owner ids a client sends, for upstream's analytics, which records nothing
+id apps/server/src/provider/CodexChatGptAuth.ts hashes the Codex account for upstream's analytics, which sends nothing
+id packages/client-runtime/src/authorization/remote.ts sends its own server hashed owner ids for that analytics; the web keeps no device id (analyticsDevice.ts)
+id packages/effect-codex-app-server/src/_generated/schema.gen.ts the Codex protocol's own field names
+id apps/web/src/stemcells/privacy/analyticsDevice.ts ours: deletes upstream's stored browser analytics id
+id apps/desktop/src/electron/ElectronApp.ts the desktop updater, whose feed comes only from a build's own app-update.yml; install-app's build writes none (install.md)
+id apps/desktop/src/electron/ElectronUpdater.ts same
+id apps/desktop/src/updates/DesktopUpdates.ts same; its own setFeedURL is the local mock server
+id apps/desktop/src/updates/updatesTestHarness.ts the updater's test harness, on a local mock feed
+id apps/desktop/src/stemcells/windows/WindowsHost.ts ours: listens for the updater's quit so every window closes with the app; it sets no feed
