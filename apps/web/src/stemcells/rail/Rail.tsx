@@ -14,7 +14,7 @@ import { cn } from "../upstream/ui";
 import { useColumnStore } from "./column";
 import { DiskGauge } from "./DiskGauge";
 import { PlanRing } from "./PlanRing";
-import { RailButton, RailRule } from "./RailParts";
+import { RailButton } from "./RailParts";
 import { RailProjects } from "./RailProjects";
 import "../tokens/stemcells.css";
 import "./rail.css";
@@ -55,13 +55,11 @@ export function Rail() {
       >
         <SquarePenIcon />
       </RailButton>
-      <RailRule />
       <RailProjects />
       <div data-stemcells-rail-foot="">
         <ul data-stemcells-rail-update="">
           <SidebarUpdatePill />
         </ul>
-        <RailRule />
         <RailButton label="Settings" onClick={() => void navigate({ to: "/settings" })}>
           <SettingsIcon />
         </RailButton>

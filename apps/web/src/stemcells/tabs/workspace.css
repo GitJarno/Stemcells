@@ -11,9 +11,16 @@
 /* The slate: one rounded panel on the window's frame, holding the tab's
    chats and, at its right edge, the workbench. The frame (sidebar, tab
    strip, gutters) is the theme's chrome; the slate is its canvas. Each tab
-   is a page on one strip across it, which a swipe slides. */
+   is a page on one strip across it, which a swipe slides. Its corner is
+   the sheet rung: a whole object on the frame, one rung above the cards it
+   holds. The tab strip starts its tabs `--stemcells-strip-lead` in. */
 [data-stemcells-workspace] {
+  --stemcells-slate-corner: var(--sc-radius-sheet);
+  --stemcells-strip-lead: var(--sc-space-md);
   background: var(--app-chrome-background);
+}
+[data-stemcells-tab-strip] {
+  padding-inline-start: var(--stemcells-strip-lead);
 }
 [data-stemcells-slate] {
   position: relative;
@@ -21,7 +28,7 @@
   flex: 1;
   min-height: 0;
   margin: 0 var(--sc-space-md) var(--sc-space-md);
-  border-radius: var(--sc-radius-card);
+  border-radius: var(--stemcells-slate-corner);
   background: var(--background);
   overflow: hidden;
   overscroll-behavior: none;
@@ -37,16 +44,68 @@
   pointer-events: none;
 }
 /* On Stemcells' own theme the frame is black and the slate reads by its
-   gray alone, so the frame and the slate meet with no line: the slate drops
-   its edge, and the sidebar its border (upstream's, on `[data-app-sidebar]`;
-   upstream/frame.contract.test.ts pins it, and this selector outranks
-   upstream's dark one). Themes whose frame is the canvas keep both, or the
-   slate would vanish into the frame. */
+   gray alone, so the frame and the slate meet with no line, and nothing
+   else draws on the frame: the slate drops its edge, and the sidebar its
+   border and its grain (upstream's, on `[data-app-sidebar]` and the panel
+   inside it; upstream/frame.contract.test.ts pins both, and these
+   selectors outrank upstream's). Grain on the sidebar alone would stand it
+   apart from the frame beside it, as an edge. Themes whose frame is the
+   canvas keep the edges, or the slate would vanish into the frame. */
 :root.dark[data-theme-id="stemcells"] [data-stemcells-slate]::after {
   content: none;
 }
 :root.dark[data-theme-id="stemcells"] [data-app-sidebar] {
   border-color: transparent;
+}
+:root.dark[data-theme-id="stemcells"] [data-app-sidebar] > [data-slot="sidebar-inner"] {
+  background-image: none;
+}
+/* There the tab on stage is cut from the slate, as a folder's tab is from
+   its folder: the slate's gray, rounded at the top, reaching down through
+   the strip's air under it (half the strip's row less the tab: TabStrip's
+   h-9 and h-6) and flaring into the slate's top edge with two concave
+   curves, its own corner turned inside out. The tabs start far enough in
+   that the first one's flare lands past the slate's corner. A tab lifted
+   in a drag is a chip again. Elsewhere the tab on stage stays a lit chip:
+   on a frame the slate's own colour, a tab cut from it would vanish. */
+:root.dark[data-theme-id="stemcells"] [data-stemcells-workspace] {
+  --stemcells-tab-flare: var(--sc-radius-chip);
+  --stemcells-tab-reach: calc(var(--spacing) * (9 - 6) / 2);
+  --stemcells-strip-lead: calc(
+    var(--sc-space-md) + var(--stemcells-slate-corner) + var(--stemcells-tab-flare)
+  );
+}
+:root.dark[data-theme-id="stemcells"]
+  [data-stemcells-tab][aria-selected="true"]:not([data-dragged]) {
+  border-radius: var(--sc-radius-chip) var(--sc-radius-chip) 0 0;
+  background: var(--background);
+}
+:root.dark[data-theme-id="stemcells"]
+  [data-stemcells-tab][aria-selected="true"]:not([data-dragged])::after {
+  --flare: var(--stemcells-tab-flare);
+  --ground: var(--background);
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: calc(-1 * var(--flare));
+  right: calc(-1 * var(--flare));
+  height: var(--stemcells-tab-reach);
+  background:
+    linear-gradient(var(--ground), var(--ground)) center / calc(100% - 2 * var(--flare)) 100%
+      no-repeat,
+    radial-gradient(
+        circle at 0 0,
+        transparent calc(var(--flare) - 0.5px),
+        var(--ground) var(--flare)
+      )
+      left bottom / var(--flare) var(--flare) no-repeat,
+    radial-gradient(
+        circle at 100% 0,
+        transparent calc(var(--flare) - 0.5px),
+        var(--ground) var(--flare)
+      )
+      right bottom / var(--flare) var(--flare) no-repeat;
+  pointer-events: none;
 }
 /* Clipped, not hidden: nothing can scroll the slate to bring a page that is
    off stage into view, as focusing a field in it would. */

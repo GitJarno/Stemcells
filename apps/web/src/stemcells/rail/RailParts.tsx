@@ -47,8 +47,3 @@ export function RailButton(props: {
     />
   );
 }
-
-/** A short rule between the rail's groups. */
-export function RailRule() {
-  return <div aria-hidden data-stemcells-rail-rule="" />;
-}

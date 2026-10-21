@@ -102,7 +102,7 @@ export function TabStrip(props: {
   const shownTabs = newCell && !newCell.taken ? [...tabs, newCell.tab] : tabs;
 
   return (
-    <div className="flex h-9 shrink-0 items-center gap-1 px-2" data-stemcells-tab-strip="">
+    <div className="flex h-9 shrink-0 items-center gap-1 pr-2" data-stemcells-tab-strip="">
       <div className="flex min-w-0 items-center gap-1" role="tablist">
         <AskiChip
           {...props.aski}
@@ -129,6 +129,7 @@ export function TabStrip(props: {
               data-stemcells-tab={tab.id}
               data-stemcells-new-tab={isNewCell ? "" : undefined}
               data-spring-lit={spring.lit === tab.id}
+              data-dragged={dragged || undefined}
               {...spring.handlers(tab.id)}
               onPointerDown={(event) => {
                 if (!untaken) onPointerDown(event, tab.id);

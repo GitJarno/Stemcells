@@ -1,8 +1,9 @@
 /**
  * Upstream behaviour the frame relies on: on Stemcells' own theme,
  * workspace.css takes the line off the sidebar's edge by making
- * `[data-app-sidebar]`'s border transparent. A failure here after a sync
- * names the contract that moved, and the line is likely back.
+ * `[data-app-sidebar]`'s border transparent, and the grain off the panel
+ * inside it. A failure here after a sync names the contract that moved,
+ * and the line is likely back.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -22,6 +23,14 @@ describe("the frame's contracts with upstream", () => {
       "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r",
     );
     expect(sidebar).toMatch(/data-slot="sidebar-container"\s+\{\.\.\.props\}/);
+  });
+
+  it("the sidebar's grain is a background image on the panel inside it", () => {
+    // workspace.css clears it there on Stemcells' theme: grain on the rail
+    // alone stands it apart from the black frame beside it, as an edge.
+    expect(sidebar).toMatch(
+      /className="flex h-full w-full flex-col bg-sidebar surface-grain[^"]*"\s+data-sidebar="sidebar"\s+data-slot="sidebar-inner"/,
+    );
   });
 
   it("the root names the theme in use, as the frame's selector reads it", () => {

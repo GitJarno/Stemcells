@@ -34,7 +34,7 @@
 }
 :root[data-stemcells-column="rail"] [data-sidebar-state="expanded"] [data-stemcells-tab-strip] {
   padding-inline-start: max(
-    var(--sc-space-md),
+    var(--stemcells-strip-lead, var(--sc-space-md)),
     calc(var(--workspace-titlebar-content-left) - var(--stemcells-rail-width))
   );
 }
@@ -56,15 +56,8 @@
   height: var(--workspace-topbar-height);
 }
 
-[data-stemcells-rail-rule] {
-  flex-shrink: 0;
-  width: 20px;
-  height: 1px;
-  margin-block: var(--sc-space-xs);
-  background: var(--sc-hairline);
-}
-
-/* The projects scroll between the top and the foot. */
+/* The projects scroll between the top and the foot, set off from the top's
+   buttons by air alone: nothing draws a line on the frame. */
 [data-stemcells-rail-projects] {
   display: flex;
   flex: 1;
@@ -72,6 +65,7 @@
   align-items: center;
   gap: var(--sc-space-xs);
   min-height: 0;
+  margin-block-start: var(--sc-space-md);
   overflow-y: auto;
   scrollbar-width: none;
 }
