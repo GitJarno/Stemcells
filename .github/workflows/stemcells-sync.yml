@@ -61,9 +61,14 @@ jobs:
             sync/upstream-*) echo "merged=true" >> "$GITHUB_OUTPUT" ;;
           esac
 
-      - name: Install, with the browsers and Electron upstream's suites use
+      # What upstream's CI installs for its suites and builds: libsecret for
+      # the desktop's browser secret helper, a C toolchain for the ACP
+      # process-tree fixtures, the browsers and Electron.
+      - name: Install, with the libraries, browsers and Electron upstream's suites use
         if: ${{ inputs.gates || (steps.merge.outputs.code == '0' && steps.merge.outputs.merged == 'true') }}
         run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsecret-1-dev pkg-config build-essential
           pnpm install --frozen-lockfile
           node apps/web/node_modules/playwright/cli.js install --with-deps --only-shell chromium
           node apps/server/node_modules/playwright-core/cli.js install --with-deps --only-shell chromium

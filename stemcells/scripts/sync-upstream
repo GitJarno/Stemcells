@@ -56,23 +56,29 @@ gate_ours() {
     pnpm exec vp test run --project root stemcells scripts/build-desktop-artifact.test.ts
 }
 # Upstream's suites, as its CI splits them: every package but the server and
-# the web, then the web (unit and browser), then the server. They run without
-# the person's own git config (hooks, signing), as on CI.
+# the web, then the web (unit and browser), then the server. They run as on
+# upstream's CI: without the person's own git config (hooks, signing), and
+# without a GitHub token in the environment, which its source-control tests
+# would take for a signed-in account (the nightly's job carries one).
+upstream_env() {
+  env -u GH_TOKEN -u GITHUB_TOKEN -u GH_ENTERPRISE_TOKEN -u GITHUB_ENTERPRISE_TOKEN \
+    GIT_CONFIG_GLOBAL=/dev/null "$@"
+}
 gate_upstream_packages() {
   if [ "$(uname)" = Darwin ]; then
     # DesktopLinuxUrlHandler.test.ts writes two Linux icon names that differ
     # only in case, which a Mac's disk folds into one file.
-    GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
+    upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' test &&
-      GIT_CONFIG_GLOBAL=/dev/null pnpm --filter @t3tools/desktop exec vp test run --passWithNoTests \
+      upstream_env pnpm --filter @t3tools/desktop exec vp test run --passWithNoTests \
         --exclude src/app/DesktopLinuxUrlHandler.test.ts
   else
-    GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
+    upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' test
   fi
 }
-gate_upstream_web() { GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --filter @t3tools/web test; }
-gate_upstream_server() { GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --filter t3 test; }
+gate_upstream_web() { upstream_env pnpm exec vp run --filter @t3tools/web test; }
+gate_upstream_server() { upstream_env pnpm exec vp run --filter t3 test; }
 # The web, server and desktop builds, and the check upstream's CI makes on them.
 gate_build() {
   pnpm build:desktop || return 1

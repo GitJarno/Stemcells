@@ -96,14 +96,17 @@ describe("cells, the command line", () => {
     );
   });
 
-  // The whole library's gate, `cells check`, a drawn pack at a time: a pack takes a second
-  // or a few, so the library grows without any one test nearing the project's timeout.
+  // The whole library's gate, `cells check`, a drawn pack at a time, so the library grows
+  // without one test holding every pack. A pack takes a second or a few on a Mac and up to
+  // 20 s on a CI runner: it draws and checks every frame of every look.
+  // oxlint-disable-next-line t3code/no-test-timeout-or-unreasoned-skip -- CPU-bound check of every frame a pack draws, not a hidden wait.
   it.each([...PACK_FILES.values()].map((pack) => pack.theme))(
     "the drawn pack %s passes cells check, the library's art gate",
     (theme) => {
       const failures = check({ themes: [theme] }).filter((finding) => finding.level === "fail");
       expect(failures).toEqual([]);
     },
+    60_000,
   );
 
   it("refuses a look it doesn't know", () => {
