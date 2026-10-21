@@ -3,11 +3,12 @@
  * a draft the way `moveDraft` does, the draft store keeps a model where
  * `restoreDraftModelState` puts it back, upstream's send reads the prompt
  * when it sends (so the words' edit lands), and the controls the words fly
- * to and mark carry the attributes they're found by, and the readout is
- * fitted where the model picker is. A failure here after a sync names the
- * contract that moved: the draft would land in the wrong project or model,
- * the setup words would be sent, the flights would land nowhere, or the
- * readout would never fold.
+ * to and mark carry the attributes they're found by, the readout is fitted
+ * where the model picker is, and a spawn finds the draft's headline. A
+ * failure here after a sync names the contract that moved: the draft would
+ * land in the wrong project or model, the setup words would be sent, the
+ * flights would land nowhere, the readout would never fold, or Aski would
+ * play no spawn.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -99,5 +100,12 @@ describe("the words' contracts with upstream's drafts", () => {
     expect(chatComposer).toContain('data-chat-composer-resting-controls="true"');
     // The effort picker that makes way for it is a block of its own.
     expect(chatComposer).toContain("data-resting-block={def.id}");
+  });
+
+  it("plays a spawn over the draft's headline, a child of the composer's stack", () => {
+    // draftHeroBox: the stack's child that holds the project trigger.
+    expect(chatView).toMatch(
+      /data-chat-composer-stack="true"[^>]*>\s*\{isDraftHeroState \? \(\s*<div className="absolute inset-x-0 bottom-full">[\s\S]{0,600}?<DraftHeroHeadline/,
+    );
   });
 });

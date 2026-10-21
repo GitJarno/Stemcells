@@ -19,9 +19,16 @@ import {
 import { readCarry } from "../upstream/carry";
 import { readDraftSetup, reportUnstarted, useStartCells, withSentModel } from "../upstream/launch";
 import { ProviderLogo } from "../upstream/providers";
-import { promptOf, useWordsCatalog, useWordsDraft, useWordsPlaces } from "../upstream/words";
+import {
+  draftHeroBox,
+  promptOf,
+  useWordsCatalog,
+  useWordsDraft,
+  useWordsPlaces,
+} from "../upstream/words";
 import { modelLexicon, type WordsCatalog } from "./catalog";
 import {
+  cellTitles,
   type Launch,
   type LaunchCell,
   heldOf,
@@ -31,6 +38,7 @@ import {
   partOf,
   placesOf,
   type Readout as ReadoutData,
+  type ReadoutDefaults,
   readoutOf,
   withPart,
 } from "./cells";
@@ -51,6 +59,7 @@ import {
   setupEdits,
   WordsSendSlot,
 } from "./send";
+import { playForming, playSpawn, type SpawnPlay } from "./spawn/play";
 import type { Span } from "./text";
 import { TokenMenu, type TokenMenuAt } from "./TokenMenu";
 import "../tokens/stemcells.css";
@@ -257,6 +266,25 @@ export function ComposerWords(props: { readonly anchor: string }) {
     };
   }, [menu]);
 
+  /** The spawn of a message that starts several Cells, from where its words stand now. */
+  const spawnFor = (
+    view: EditorView,
+    launch: Launch,
+    threadId: string,
+  ): { readonly play: SpawnPlay | null; readonly titles: readonly string[] } | null => {
+    const defaults = defaultsFor(driverSource.current);
+    const hero = draftHeroBox(view.dom);
+    if (defaults === null || hero === null) return null;
+    const titles = cellTitles(launch, defaults);
+    const play = playSpawn({
+      editor: view.dom,
+      hero,
+      first: { threadId, title: titles[0] ?? "" },
+      titles,
+    });
+    return { play, titles };
+  };
+
   // As the composer sends, the text becomes what the draft's Cell is sent;
   // it comes back if nothing went. When the words start several Cells, the
   // rest start once the draft's has, and land after its pane. Nothing is
@@ -278,7 +306,17 @@ export function ComposerWords(props: { readonly anchor: string }) {
       if (launch !== null && launch.cells.length > MOST_CELLS && intent !== "background")
         return held;
       if (out?.empty) return held;
-      if (out === null && launch === null) return null;
+      // A new chat sent as typed: its Cell forms on its line as it starts.
+      if (out === null && launch === null)
+        return {
+          hold: false,
+          ready: null,
+          foreground: false,
+          edit: () => {
+            if (cell) playForming(cell.threadId);
+            return null;
+          },
+        };
       // A word still at the caret acts now, and upstream's send has to see it.
       const ready = driver.settle() ? nextPaint() : null;
       const edit = () => {
@@ -297,6 +335,10 @@ export function ComposerWords(props: { readonly anchor: string }) {
         const pane = cell ? paneShowing(readWorkspace(), cell)?.pane.id : undefined;
         const width = view.dom.closest("[data-stemcells-grid]")?.clientWidth ?? window.innerWidth;
         const before = view.state.doc;
+        // Several Cells play the spawn from the words as they stand; a Cell
+        // with no spawn to come from forms on its line.
+        const spawn = several && cell ? spawnFor(view, several, cell.threadId) : null;
+        if (spawn === null && cell) playForming(cell.threadId);
         driver.hold(true);
         let tr = editDoc(view.state.tr, text, first?.edits ?? []);
         // A blank line, then its part, as the others are sent theirs (`withPart`).
@@ -314,11 +356,23 @@ export function ComposerWords(props: { readonly anchor: string }) {
               const gone = isDraftGone(draftId);
               if (!gone && !view.isDestroyed && view.state.doc.eq(sent)) putBack(view, before);
               driver.hold(false);
-              if (!gone || !besides || !setup || besides.length === 0 || !cell) return;
+              if (!gone) {
+                spawn?.play?.off();
+                return;
+              }
+              if (!besides || !setup || besides.length === 0 || !cell) {
+                spawn?.play?.started([]);
+                return;
+              }
               const started = await starting
                 .current(await withSentModel(setup, cell), besides, carry)
                 .finally(() => carry?.release());
               reportUnstarted(started);
+              const formed = started.flatMap((s, i) =>
+                s.ok ? [{ threadId: s.cell.threadId, title: spawn?.titles[i + 1] ?? "" }] : [],
+              );
+              if (spawn) spawn.play?.started(formed);
+              else for (const one of formed) playForming(one.threadId);
               const cells = started.flatMap((s) => (s.ok ? [s.cell] : []));
               if (pane !== undefined && cells.length > 0)
                 updateWorkspace((workspace) => placeCells(workspace, pane, cells, width, newIds));
@@ -381,20 +435,26 @@ export function ComposerWords(props: { readonly anchor: string }) {
  */
 function readoutFor(facts: Facts, source: DriverSource): ReadoutData | null {
   const launch = launchOf(facts) ?? heldOf(facts);
-  if (launch === null || source.draftId === null) return null;
+  const defaults = defaultsFor(source);
+  return launch === null || defaults === null ? null : readoutOf(launch, defaults);
+}
+
+/** What a readout fills in that the words don't say, for the draft's composer. */
+function defaultsFor(source: DriverSource): ReadoutDefaults | null {
+  if (source.draftId === null) return null;
   const draftProject = readDraftProjectKey(source.draftId);
   const own =
     draftProject === null
       ? null
       : ([...source.places.values()].find((p) => p.members.includes(draftProject)) ?? null);
-  return readoutOf(launch, {
+  return {
     model: (placeId) => {
       const selection = defaultModel(source, placeId);
       return selection ? nameOf(source.catalog, selection.instanceId, selection.model) : null;
     },
     place: own?.name ?? null,
     effortLabel,
-  });
+  };
 }
 
 /** The providers several Cells start on, as drivers: each one's model word's, or its default's. */

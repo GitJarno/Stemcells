@@ -26,6 +26,20 @@ import { useRailProjects } from "./rail";
 export { observeResize } from "~/lib/observeResize";
 
 /**
+ * A new chat's headline over its composer (`DraftHeroHeadline`), where Aski
+ * plays a spawn; null when the chat shows none.
+ */
+export function draftHeroBox(editor: HTMLElement): DOMRect | null {
+  const stack = '[data-chat-composer-stack="true"]';
+  const hero = editor
+    .closest(stack)
+    ?.querySelector("[data-draft-project-trigger]")
+    ?.closest(`${stack} > div`);
+  const box = hero?.getBoundingClientRect();
+  return box && box.width > 0 ? box : null;
+}
+
+/**
  * Whether the composer's controls row, fitted as upstream fits it, holds
  * its first control `wider` px wider with every other control at full
  * size. The readout in the model picker's place shows its whole sentence

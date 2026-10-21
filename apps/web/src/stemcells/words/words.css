@@ -356,3 +356,33 @@ button[type="submit"][data-stemcells-over] {
   color: var(--sc-content-strong-ink);
   font-weight: 500;
 }
+
+/* The spawn's layer over the page (`spawn/play.ts`): the sent words'
+   letters, each Cell's stream of readout words, and the glyphs they
+   condense into over the Cell's box. No pointer meets it. */
+.sc-spawn-layer {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sc-spawn-letter,
+.sc-spawn-stream {
+  position: absolute;
+  white-space: pre;
+  will-change: transform, opacity;
+}
+
+.sc-spawn-stream {
+  color: var(--sc-meta-ink);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+
+.sc-spawn-glyphs {
+  position: absolute;
+  overflow: visible;
+  fill: var(--sc-text);
+  font-family: var(--sc-font-mono);
+}

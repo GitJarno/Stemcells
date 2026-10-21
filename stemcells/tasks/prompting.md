@@ -467,33 +467,28 @@ the siblings follow right after it in birth order), with the column floor
 raised for this slate.
 
 ### 16. The spawn: in, around, out
-Several Cells play Aski's spawn. One Cell from a draft plays only the last
-beat (its figure forms on its line), so a single prompt never waits on a
-show.
+Several Cells play the spawn. One Cell from a draft plays only the last
+beats (its figure forms on its line), so a single prompt never waits on a
+show. The timeline, its owners and its tokens live in one place:
+`stemcells/docs/interaction.md`, "The spawn". The words' half is
+`words/spawn/`:
 
-1. **In.** The hero headline gives way to Aski (in Aski's tab, Aski is
-   already there). The sent words leave the composer as letters, staggered
-   `min(22 ms, 460 ms / n)` apart, up to 48 letters, and pour into Aski
-   along a curve (`travel`).
-2. **Around.** The letters orbit Aski while it plans: one turn when there's
-   nothing to plan, or until the plan passes its checks ("Thinking it over"
-   after 10 s). The panes open as soon as the plan is good: columns slide
-   in and the draft pane narrows (`settle`).
-3. **Out.** One stream per Cell leaves Aski, carrying that Cell's readout
-   words ("Sol 6.1 · Harbor"). The nearest pane goes first, each 90 ms
-   after the last, with at most 4 in flight, and paths never cross. In each
-   pane the stream condenses into the Cell's figure (`. : + # @`, then
-   `░▒▓█`), which hops onto its composer line, and the Cell's first message
-   appears as its own. Aski fades back into the hero spot, then the hero
-   leaves: the draft is now the first Cell.
+1. **In.** The sent words leave the composer as letters, from where they
+   stand, and pour into their places on an orbit round Aski, who appears
+   over the new chat's headline (`aski/spawn.ts`).
+2. **Around.** The letters ride the orbit, one `orbit-turn` at least,
+   until the Cells' panes are up (until the plan passes its checks, once
+   there is a planner).
+3. **Out.** The letters fade into Aski, and one stream per Cell leaves it
+   carrying that Cell's readout words ("Sol 6.1 · Harbor"): the nearest
+   pane first, at most 4 in flight, each straight, so no two cross. Over
+   each Cell's box the stream condenses through `. : + # @`, and the Cell
+   takes over (`cell/forming.ts`): its blocks, then its hop onto its line.
 
-When the plan needs a check, Enter doesn't play the spawn yet. The
-readout's task line becomes "Aski is planning", with the forming glyph
-cycling, the rows unfold (`unfold`), and the next Enter plays in, one turn
-around, and out. If the floor comes back during a spawn, the letters stop
-and the words return with the rows.
-
-Under reduced motion the panes appear and the figures stand.
+Nothing waits on it: the composer takes typing from the first frame, and a
+Cell whose box doesn't show in time just stands. When the plan needs a
+check, Enter doesn't play the spawn yet; if the send is called off, the
+letters stop and Aski goes. Under Reduce Motion none of it plays.
 
 ### 17. One safety floor for risky sentences
 This ports `RiskFloor`: six classes (history, deletion, access, outreach,
@@ -718,7 +713,9 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      model picker's place through a substitute for `ProviderModelPicker.tsx`
      (`words/readoutSlot.ts`), and asks upstream's own fitting whether the
      row holds the whole sentence (`rowHoldsWider` in `upstream/words.ts`).
-   - Left for 4b: the spawn (with Aski's figure and the Cell kit).
+   - 4b, built: the spawn's words half (decision 16, `words/spawn/`): the
+     letters, the orbit, the streams and the glyphs, handing each Cell to
+     its forming. A new chat sent as typed forms its Cell on its line too.
 5. **The planner.**
    - The `TextGeneration` operation, run lean, with its arguments pinned
      by a test.

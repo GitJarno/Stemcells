@@ -173,46 +173,7 @@ export function readoutOf(launch: Launch, defaults: ReadoutDefaults, most = MOST
   for (const { group } of launch.cells) {
     if (seen.has(group)) continue;
     seen.add(group);
-    const placeId = group.place?.place.place.id ?? null;
-    // "Codex" names its provider's default model.
-    const form = group.model?.form;
-    const named = form
-      ? (form.model?.name ??
-        form.provider.models.find((m) => m.id === form.provider.defaultModel)?.name ??
-        form.provider.name)
-      : null;
-    const fallback = named === null ? defaults.model(placeId) : null;
-    const countToken = group.countHit?.token ?? group.model?.countToken ?? null;
-    groups.push({
-      count:
-        group.count > 1
-          ? {
-              text: String(group.count),
-              mark: countToken
-                ? { kind: "count", start: countToken.start, end: countToken.end }
-                : null,
-            }
-          : null,
-      model: group.model
-        ? { text: named!, mark: { kind: "model", start: group.model.start, end: group.model.end } }
-        : fallback === null
-          ? null
-          : { text: fallback, mark: null },
-      effort: group.effort
-        ? {
-            text: defaults.effortLabel(group.effort.level),
-            mark: { kind: "effort", start: group.effort.start, end: group.effort.end },
-          }
-        : null,
-      place: group.place
-        ? {
-            text: group.place.place.place.name,
-            mark: { kind: "place", start: group.place.start, end: group.place.end },
-          }
-        : defaults.place === null
-          ? null
-          : { text: defaults.place, mark: null },
-    });
+    groups.push(wordsOf(group, defaults));
   }
   const total = launch.cells.length;
   return {
@@ -223,4 +184,58 @@ export function readoutOf(launch: Launch, defaults: ReadoutDefaults, most = MOST
     groups,
     share: SHARE[launch.share] ?? "",
   };
+}
+
+/** A Cell group's words read back: its count, model, effort and place, defaults dim. */
+function wordsOf(group: CellGroup, defaults: ReadoutDefaults): ReadoutGroup {
+  const placeId = group.place?.place.place.id ?? null;
+  // "Codex" names its provider's default model.
+  const form = group.model?.form;
+  const named = form
+    ? (form.model?.name ??
+      form.provider.models.find((m) => m.id === form.provider.defaultModel)?.name ??
+      form.provider.name)
+    : null;
+  const fallback = named === null ? defaults.model(placeId) : null;
+  const countToken = group.countHit?.token ?? group.model?.countToken ?? null;
+  return {
+    count:
+      group.count > 1
+        ? {
+            text: String(group.count),
+            mark: countToken
+              ? { kind: "count", start: countToken.start, end: countToken.end }
+              : null,
+          }
+        : null,
+    model: group.model
+      ? { text: named!, mark: { kind: "model", start: group.model.start, end: group.model.end } }
+      : fallback === null
+        ? null
+        : { text: fallback, mark: null },
+    effort: group.effort
+      ? {
+          text: defaults.effortLabel(group.effort.level),
+          mark: { kind: "effort", start: group.effort.start, end: group.effort.end },
+        }
+      : null,
+    place: group.place
+      ? {
+          text: group.place.place.place.name,
+          mark: { kind: "place", start: group.place.start, end: group.place.end },
+        }
+      : defaults.place === null
+        ? null
+        : { text: defaults.place, mark: null },
+  };
+}
+
+/** Each Cell's readout words, in the launch's order: "Sol 6.1 · Harbor". */
+export function cellTitles(launch: Launch, defaults: ReadoutDefaults): string[] {
+  const words = new Map<CellGroup, ReadoutGroup>();
+  return launch.cells.map(({ group }) => {
+    const read = words.get(group) ?? wordsOf(group, defaults);
+    words.set(group, read);
+    return [read.model?.text, read.place?.text].filter(Boolean).join(" · ");
+  });
 }

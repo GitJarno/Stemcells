@@ -348,12 +348,14 @@
   --sc-timing-glow-drift: 9000ms;
   --sc-timing-bob: 1300ms;
   /* The spawn (docs/interaction.md): the sent words' letters leave
-     `letter-stagger` apart, all of them within `letters-span`; the streams
-     leave Aski `spawn-stagger` apart; the glyphs and the Cell's blocks step
+     `letter-stagger` apart, all of them within `letters-span`, and go
+     round Aski once an `orbit-turn`; the streams leave Aski `spawn-stagger`
+     apart; the glyphs and the Cell's blocks step
      on `form-step`, one beat of the Cells' sprite clock (12 a second). */
   --sc-timing-letter-stagger: 22ms;
   --sc-timing-letters-span: 460ms;
   --sc-timing-spawn-stagger: 90ms;
+  --sc-timing-orbit-turn: 960ms;
   --sc-timing-form-step: 83.333ms;
   --sc-lean-travel: 14px;
   --sc-step-travel: 40px;
