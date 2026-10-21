@@ -22,6 +22,8 @@ const schema = new Schema({
   nodes: {
     doc: { content: "block+" },
     paragraph: { group: "block", content: "inline*" },
+    bulletList: { group: "block", content: "listItem+" },
+    listItem: { content: "paragraph block*" },
     code_block: { group: "block", content: "text*", code: true },
     text: { group: "inline" },
     chip: { group: "inline", inline: true, atom: true },
@@ -46,6 +48,25 @@ describe("the document as the reader reads it", () => {
       schema.node("code_block", null, [t("Atlas")]),
     );
     expect(docText(d).text).toBe("Harbor fix       now\nsee ￼ too\n     ");
+  });
+
+  it("reads a list as the list it was typed as", () => {
+    const item = (text: string) => schema.node("listItem", null, [p(t(text))]);
+    const d = doc(
+      p(t("2 Harbor:")),
+      schema.node("bulletList", null, [item("fix the header"), item("fix the cart")]),
+    );
+    const text = docText(d);
+    expect(text.text).toBe("2 Harbor:\n- fix the header\n- fix the cart");
+    expect(readWords(text.text, ctx).share).toBe("items");
+    const start = text.text.indexOf("cart");
+    expect(
+      d.textBetween(
+        rangeOf(text, { start, end: start + 4 }).from,
+        rangeOf(text, { start, end: start + 4 }).to,
+      ),
+    ).toBe("cart");
+    expect(text.markers.has(text.text.indexOf("- fix"))).toBe(true);
   });
 
   it("maps a word back to where it sits in the document", () => {

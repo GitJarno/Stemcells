@@ -12,6 +12,7 @@ import type {
   ModelSelection,
   ProjectId,
   ProviderInstanceId,
+  ScopedProjectRef,
 } from "@t3tools/contracts";
 import { createModelSelection } from "@t3tools/shared/model";
 import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
@@ -68,9 +69,9 @@ export function readDraftModelState(draftId: string): DraftModelState {
 }
 
 /**
- * The model the draft will run on: its own pick, else its project's
- * default, else the global default. What an effort the words name, with
- * no model, applies to.
+ * The model the draft will run on: its own pick, else what a new chat in
+ * its project starts on (`startingModel`). What an effort the words name,
+ * with no model, applies to.
  */
 export function readDraftModel(draftId: string): ModelSelection | null {
   const store = useComposerDraftStore.getState();
@@ -80,14 +81,33 @@ export function readDraftModel(draftId: string): ModelSelection | null {
   if (own) return own;
   const session = store.getDraftSession(draftId as DraftId);
   if (!session) return null;
-  const projectRef = scopeProjectRef(session.environmentId, session.projectId);
+  return startingModel(scopeProjectRef(session.environmentId, session.projectId));
+}
+
+/**
+ * What a new chat in a project starts on: the project's default, else the
+ * global default, else the model last used, as upstream's sticky state
+ * gives a new draft.
+ */
+export function startingModel(projectRef: ScopedProjectRef): ModelSelection | null {
+  const store = useComposerDraftStore.getState();
+  const sticky =
+    store.stickyActiveProvider === null
+      ? null
+      : (store.stickyModelSelectionByProvider[store.stickyActiveProvider] ?? null);
+  return projectDefaultModel(projectRef) ?? sticky;
+}
+
+/** A project's default model: its own setting, else the global default. */
+export function projectDefaultModel(projectRef: ScopedProjectRef): ModelSelection | null {
   const project = readProject(projectRef);
   const settings = appAtomRegistry
     .get(environmentServerConfigsAtom)
-    .get(session.environmentId)?.settings;
+    .get(projectRef.environmentId)?.settings;
   return (
     (settings
-      ? resolveProjectSettings(settings, session.projectId, project).settings.defaultModelSelection
+      ? resolveProjectSettings(settings, projectRef.projectId, project).settings
+          .defaultModelSelection
       : project?.defaultModelSelection) ?? null
   );
 }
@@ -141,6 +161,15 @@ export function setDraftModel(
   );
 }
 
+/** A project key, `environmentId:projectId`, as a ref. */
+export function projectRefOfKey(projectKey: string): ScopedProjectRef {
+  const at = projectKey.indexOf(":");
+  return scopeProjectRef(
+    projectKey.slice(0, at) as EnvironmentId,
+    projectKey.slice(at + 1) as ProjectId,
+  );
+}
+
 /** A rail key's project in the draft's environment, else its first. */
 export function projectRefOf(memberKeys: ReadonlyArray<string>, environmentId: string) {
   const key = memberKeys.find((k) => k.startsWith(`${environmentId}:`)) ?? memberKeys[0];
@@ -156,11 +185,7 @@ export function projectRefOf(memberKeys: ReadonlyArray<string>, environmentId: s
  * project's default model applies.
  */
 export function moveDraft(draftId: string, projectKey: string): void {
-  const at = projectKey.indexOf(":");
-  const projectRef = scopeProjectRef(
-    projectKey.slice(0, at) as EnvironmentId,
-    projectKey.slice(at + 1) as ProjectId,
-  );
+  const projectRef = projectRefOfKey(projectKey);
   const store = useComposerDraftStore.getState();
   const session = store.getDraftSession(draftId as DraftId);
   if (!session) return;
@@ -172,15 +197,7 @@ export function moveDraft(draftId: string, projectKey: string): void {
   store.setLogicalProjectDraftThreadId(session.logicalProjectKey, projectRef, draftId as DraftId);
   if (hasExplicitComposerModelSelection(store.getComposerDraft(draftId as DraftId))) return;
   store.applyStickyState(draftId as DraftId);
-  const project = readProject(projectRef);
-  const settings = appAtomRegistry
-    .get(environmentServerConfigsAtom)
-    .get(projectRef.environmentId)?.settings;
-  const defaultModelSelection =
-    settings && project
-      ? resolveProjectSettings(settings, projectRef.projectId, project).settings
-          .defaultModelSelection
-      : project?.defaultModelSelection;
+  const defaultModelSelection = projectDefaultModel(projectRef);
   if (defaultModelSelection)
     store.setModelSelection(draftId as DraftId, defaultModelSelection, { replaceOptions: true });
 }

@@ -645,11 +645,39 @@ From the TypeScript rebuild (`SC-legacy`), keep:
    - Token menus, "Just a word" and the flight; the control's new value
      waits for its word and settles in as it lands.
    - Send creates the thread in the destination with the words' model and
-     effort, minus the grammar words.
-4. **Several Cells from words alone.**
-   - The readout sentence, the count on Send and the Cells cap.
-   - A launch adapter over `orchestration.launchThread` (lists, clauses).
-   - Placement in the slate, and the spawn.
+     effort, minus the setup words (slice 4 narrowed what goes). A word
+     still at the caret acts before upstream's send reads the draft.
+4. **Several Cells from words alone.** Built: `words/cells.ts` (which
+   Cells, each one's part, the readout; pure), `words/placement.ts`,
+   `words/Readout.tsx` and `upstream/launch.ts`, sent from `words/send.ts`.
+   - The readout sentence under the words: its tokens open their menus,
+     defaults are dim, the model and effort pickers give way to it, and
+     Send carries the count. Past the most Cells (6), Enter holds and only
+     ⌘↵ sends.
+   - The first Cell is the draft, sent by upstream's own send. The others
+     start once it has, through T3's `startTurn` with `bootstrap.createThread`
+     (`orchestration.launchThread`), as upstream's send to several models
+     does. They take the
+     draft's runtime and interaction modes, so none runs with more access
+     than the draft. Only the draft's own project gets a worktree, when the
+     draft is set to one. The others start at their root.
+   - Each Cell gets the whole message minus its setup words, a blank line,
+     then "Your part: … Others are doing the rest.", with code in backticks
+     as written. A `[bracket]` goes word for word.
+   - Only setup is cut: the address, a cue and its place, model and effort
+     phrases, and the count. A mention stays ("make it match the one in
+     Atlas"), and so do quoted words and code. When cutting would leave
+     nothing, nothing is sent and the words stay. `follow.test.ts` pins
+     each case.
+   - Rich-text list items read as items.
+   - A Cell whose words name no model takes the draft's pick, else its
+     project's default, else the last one used. When none of those is known
+     yet, it takes the model the first Cell was sent on.
+   - Placement as in decision 15. A Cell that fails to start says why in a
+     toast, and the others still start.
+   - Left for 4b: the hero naming several places, the spawn (with Aski's
+     figure and the Cell kit), the narrow-pane fold, usage-limit notes in
+     the readout, and attachments for Cells after the first.
 5. **The planner.**
    - The `TextGeneration` operation, run lean, with its arguments pinned
      by a test.

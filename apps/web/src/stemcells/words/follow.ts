@@ -13,12 +13,17 @@
  * decisions 2, 5 and 14.
  */
 
+import { launchOf } from "./cells";
 import type { EffortHit, ModelHit } from "./models";
 import type { PlaceHit } from "./places";
 import type { Facts } from "./read";
 import type { Span } from "./text";
 
-/** What the words set for the one Cell they start; null when they start several. */
+/**
+ * What the words set for the Cell the draft becomes: the one Cell they
+ * start, or the first of several they start alone (`cells.ts`); null when
+ * Aski has to plan them.
+ */
 export interface Choice {
   readonly place: PlaceHit | null;
   readonly model: ModelHit | null;
@@ -26,7 +31,8 @@ export interface Choice {
 }
 
 export function choiceOf(facts: Facts): Choice | null {
-  if (facts.cell !== null || facts.open || facts.cells.length !== 1) return null;
+  if (facts.cell !== null || facts.open) return null;
+  if (facts.cells.length !== 1 && launchOf(facts) === null) return null;
   const group = facts.groups[facts.cells[0]!.group]!;
   return { place: group.place, model: group.model, effort: group.effort };
 }

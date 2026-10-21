@@ -11,6 +11,7 @@
    adjacent lines never touch. The edge is an outline round the plate.
    Neutral by default: colour is state. */
 [data-stemcells-words] .sc-word,
+.sc-readout .sc-word,
 .sc-word-flight {
   --token-share: 50%;
   --token-tone: var(--sc-text);
@@ -37,7 +38,8 @@
 }
 
 /* A place is a where you could open: it adds an underline. */
-[data-stemcells-words] .sc-word-place {
+[data-stemcells-words] .sc-word-place,
+.sc-readout .sc-word-place {
   text-decoration: underline 1px var(--sc-place);
   text-underline-offset: 0.2em;
 }
@@ -197,4 +199,75 @@
   display: inline-flex;
   flex: none;
   color: var(--sc-dim);
+}
+
+/* Several Cells: the words read back as one sentence (`Readout.tsx`), on
+   its own line above the footer, wrapping like prose. A typed word wears
+   its plate and opens its menu; a default is dim. */
+.sc-readout {
+  padding-top: var(--sc-space-xs);
+  color: var(--sc-soft);
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1.7;
+}
+
+.sc-readout .sc-word {
+  padding-inline: 0;
+  border: 0;
+  color: var(--sc-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.sc-readout-default,
+.sc-readout-share {
+  color: var(--sc-mute);
+}
+
+.sc-readout-total {
+  color: var(--sc-text);
+}
+
+/* Past the most Cells: the count wears the warning edge, and says so. */
+.sc-readout-total[data-over] {
+  border-radius: var(--sc-radius-chip);
+  outline: 1px solid var(--sc-warning);
+  outline-offset: 0.08em;
+}
+
+.sc-readout-warning {
+  color: var(--sc-warning);
+}
+
+/* The readout stands in for the model and effort pickers, and the rule
+   before the next control goes with them. */
+[data-chat-composer-stack][data-stemcells-cells] [data-chat-provider-model-picker],
+[data-chat-composer-stack][data-stemcells-cells]
+  [data-resting-block]:has([data-composer-shortcut="composer.effort"]),
+[data-chat-composer-stack][data-stemcells-cells]
+  [data-chat-provider-model-picker]
+  + [data-resting-block]
+  > [role="separator"]:first-child,
+[data-chat-composer-stack][data-stemcells-cells]
+  [data-resting-block]:has([data-composer-shortcut="composer.effort"])
+  + [data-resting-block]
+  > [role="separator"]:first-child {
+  display: none;
+}
+
+/* Send carries the count, so Enter visibly starts 3. */
+button[type="submit"][data-stemcells-cells] {
+  width: auto;
+  gap: var(--sc-space-xs);
+  padding-inline: var(--sc-space-sm);
+}
+
+button[type="submit"][data-stemcells-cells]::before {
+  content: attr(data-stemcells-cells);
+  font-size: var(--text-sm, 0.875rem);
+  font-variant-numeric: tabular-nums;
+}
+
+button[type="submit"][data-stemcells-over] {
+  box-shadow: 0 0 0 1.5px var(--sc-warning);
 }

@@ -567,12 +567,15 @@ function grammarSpans(
   }
   for (const e of efforts) out.push({ start: e.cue ? e.cue.start : e.start, end: e.end });
   for (const h of routing) {
+    // "for" points the place out only after a Cell or a count ("a Cell for Atlas").
+    const cue = (t: Token | undefined) =>
+      t !== undefined && (IN_CUES.has(t.norm) || (t.norm === "for" && h.anchor === "cue"));
     let start = h.start;
     const p = tokens[h.first - 1];
     if (p && DETERMINERS.has(p.norm)) {
       const pp = tokens[h.first - 2];
-      if (pp && IN_CUES.has(pp.norm)) start = pp.start;
-    } else if (p && IN_CUES.has(p.norm)) start = p.start;
+      if (cue(pp)) start = pp!.start;
+    } else if (cue(p)) start = p!.start;
     let end = h.end;
     const n = tokens[h.last + 1];
     if (n && NOUNS.has(n.norm)) end = n.end;

@@ -39,7 +39,8 @@ export interface MenuSource {
 const RECENT = 5;
 
 const EFFORT_LABEL: Readonly<Record<string, string>> = { xhigh: "Extra high" };
-const effortLabel = (level: string) =>
+/** An effort as a person reads it: "Max", "Extra high". */
+export const effortLabel = (level: string) =>
   EFFORT_LABEL[level] ?? level.slice(0, 1).toUpperCase() + level.slice(1);
 
 export function menuFor(mark: { readonly kind: InkKind } & Span, source: MenuSource): MenuEntry[] {

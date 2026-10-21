@@ -17,6 +17,12 @@ import composerEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw"
 import { wordsCatalogOf } from "./words";
 
 describe("the composer ink's contracts with upstream", () => {
+  it("the editor's prompt is its document serialized, as the Cells beside it are sent", () => {
+    expect(composerEditor).toMatch(
+      /const handleEditorChange = \(updated: TiptapEditor\) => \{\s*const map = serializeEditorDoc\(updated\.state\.doc\);[\s\S]{0,400}const nextValue = map\.value;/,
+    );
+  });
+
   it("upstream's editor wears the class its composer is given", () => {
     // The substitute gives the editor a class of its own, and finds it by it.
     expect(composerEditor).toMatch(

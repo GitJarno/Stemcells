@@ -12,13 +12,16 @@ import {
   type DraftModelState,
   moveDraft,
   projectRefOf,
+  projectRefOfKey,
   readDraftModel,
   readDraftModelState,
   readDraftProjectKey,
   restoreDraftModelState,
   setDraftModel,
+  startingModel,
   subscribeDraft,
 } from "../upstream/draftWords";
+import { type CellStart, readDraftSetup } from "../upstream/launch";
 import { type WordsCatalog, type WordsModel, type WordsProvider, clampEffort } from "./catalog";
 import { offsetOf, rangeOf } from "./docText";
 import { fly } from "./flight";
@@ -32,6 +35,7 @@ import {
   isDone,
 } from "./follow";
 import type { ModelHit } from "./models";
+import type { CellGroup } from "./read";
 import { wordsKey } from "./plugin";
 import type { Span } from "./text";
 
@@ -65,6 +69,8 @@ export class WordsDriver {
   private again = false;
   /** A send that settles after the composer let go wakes nothing. */
   private disposed = false;
+  /** This reading changed the draft (`settle`). */
+  private acted = false;
   /** The latest flight to each control. */
   private readonly flights = new WeakMap<Element, number>();
   private marked = new Set<HTMLElement>();
@@ -83,6 +89,73 @@ export class WordsDriver {
     this.unsubscribe();
     this.watching = draftId;
     this.unsubscribe = draftId === null ? () => {} : subscribeDraft(draftId, () => this.read());
+  }
+
+  /**
+   * Brings the draft in step with every word, done or not, as the composer
+   * sends; true when that changed the draft, which upstream's send then
+   * has to see before it reads it.
+   */
+  settle(): boolean {
+    this.acted = false;
+    this.read(true);
+    return this.acted;
+  }
+
+  /**
+   * What the Cells after the first start with: their project in the
+   * draft's environment (the draft's own for a Cell the words give none),
+   * and the model and effort the words name, clamped to the model's own.
+   * An effort with no model applies to the model the Cell would run on.
+   */
+  besides(
+    cells: ReadonlyArray<{ readonly group: CellGroup; readonly text: string }>,
+  ): CellStart[] | null {
+    const { draftId, catalog } = this.source();
+    if (draftId === null) return null;
+    const draftProject = readDraftProjectKey(draftId);
+    const setup = readDraftSetup(draftId);
+    if (draftProject === null || setup === null) return null;
+    const starts: CellStart[] = [];
+    for (const cell of cells) {
+      const placeId = cell.group.place?.place.place.id ?? null;
+      const projectKey = placeId === null ? draftProject : this.projectKeyOf(placeId, draftProject);
+      if (projectKey === null) return null;
+      const named = cell.group.model ? modelFor(cell.group.model, catalog) : null;
+      const effortWord = cell.group.effort;
+      const base =
+        named ??
+        (effortWord
+          ? keyOf(
+              setup.pick ?? startingModel(projectRefOfKey(projectKey)) ?? setup.current,
+              catalog,
+            )
+          : null);
+      const model = base && findModel(catalog, base.instanceId, base.model);
+      const level = effortWord && model ? clampEffort(effortWord.level, model.efforts) : null;
+      starts.push({
+        projectKey,
+        model: base
+          ? {
+              instanceId: base.instanceId,
+              model: base.model,
+              effort:
+                level !== null && model?.effortOption
+                  ? { option: model.effortOption, level }
+                  : null,
+            }
+          : null,
+        text: cell.text,
+      });
+    }
+    return starts;
+  }
+
+  /** A place's project as `environmentId:projectId`, in the draft's environment when it has one there. */
+  private projectKeyOf(placeId: string, draftProject: string | null): string | null {
+    const environment = draftProject?.slice(0, draftProject.indexOf(":")) ?? "";
+    const ref = projectRefOf(this.source().places.get(placeId)?.members ?? [], environment);
+    return ref ? `${ref.environmentId}:${ref.projectId}` : null;
   }
 
   hold(held: boolean): void {
@@ -127,15 +200,13 @@ export class WordsDriver {
     const { facts, text } = state;
     const caret = this.view.hasFocus() ? offsetOf(text, this.view.state.selection.from) : -1;
     const choice = choiceOf(facts);
+    // Several Cells read back in the readout; only one Cell's words fly.
+    const flies = facts.cells.length === 1;
     const done = (span: Span) => isDone(text.text, span, caret, paused);
     let waiting = false;
 
     const draftProject = readDraftProjectKey(draftId);
-    const environment = draftProject?.slice(0, draftProject.indexOf(":")) ?? "";
-    const projectKeyOf = (placeId: string) => {
-      const ref = projectRefOf(places.get(placeId)?.members ?? [], environment);
-      return ref ? `${ref.environmentId}:${ref.projectId}` : null;
-    };
+    const projectKeyOf = (placeId: string) => this.projectKeyOf(placeId, draftProject);
 
     let wantProject: Want["project"] = null;
     if (choice?.place) {
@@ -178,7 +249,8 @@ export class WordsDriver {
     for (const step of steps) {
       if (step.kind === "move") {
         moveDraft(draftId, step.to);
-        if (step.word) this.flyFrom(step.word, "project");
+        this.acted = true;
+        if (step.word && flies) this.flyFrom(step.word, "project");
       } else if (step.kind === "model") {
         const model = findModel(catalog, step.to.instanceId, step.to.model);
         setDraftModel(
@@ -189,10 +261,12 @@ export class WordsDriver {
             ? { option: model.effortOption, level: step.to.effort }
             : null,
         );
-        if (modelWord) this.flyFrom(modelWord, "model");
-        if (effortWord) this.flyFrom(effortWord, "effort");
+        this.acted = true;
+        if (modelWord && flies) this.flyFrom(modelWord, "model");
+        if (effortWord && flies) this.flyFrom(effortWord, "effort");
       } else if (step.kind === "restore-model") {
         restoreDraftModelState(draftId, step.own);
+        this.acted = true;
       } else if (step.kind === "rewrite-project") {
         const place = [...places].find(([, p]) => p.members.includes(step.to))?.[1];
         if (place) this.rewrite([{ span: step.word, text: place.name }]);

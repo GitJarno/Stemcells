@@ -6,7 +6,7 @@ import { choiceOf, follow, isDone, type ModelKey, type Taken, type Want } from "
 import { menuFor } from "./menu";
 import { roster } from "./places";
 import { readWords } from "./read";
-import { editsToward, applyEdits, outgoingOf } from "./send";
+import { applyEdits, outgoingOf } from "./send";
 
 const ctx = {
   door: "draft" as const,
@@ -115,34 +115,78 @@ describe("the draft follows its words", () => {
 });
 
 describe("what one Cell is sent", () => {
+  /** What the Cell gets: null for the text as written, "" for nothing at all. */
+  const sent = (text: string, code: ReadonlySet<number> = new Set(), raw = text) => {
+    const facts = read(text);
+    const out = outgoingOf(facts, facts.cells[0]!.part, { code, markers: new Set() });
+    return out === null ? null : out.empty ? "" : applyEdits(raw, out.edits);
+  };
+  /** Character `from` up to `to`, as a set. */
+  const run = (from: number, to: number) =>
+    new Set(Array.from({ length: to - from }, (_, k) => from + k));
+
   it("leaves the setup words out", () => {
-    const facts = read(
-      "Harbor fix the header so it matches the one in Atlas, with Opus 5.5 at max",
+    expect(sent("Harbor fix the header so it matches the one in Atlas, with Opus 5.5 at max")).toBe(
+      "Fix the header so it matches the one in Atlas",
     );
-    expect(outgoingOf(facts)).toBe("Fix the header so it matches the one in Atlas");
+    expect(sent("fix it in Harbor, now")).toBe("fix it, now");
+  });
+
+  it("keeps a project only mentioned", () => {
+    expect(sent("Harbor make it match the one in Atlas")).toBe("Make it match the one in Atlas");
+  });
+
+  it("keeps quoted words, even ones that would set something up", () => {
+    expect(sent('Harbor rename the "Opus 5.5 at max" label')).toBe(
+      'Rename the "Opus 5.5 at max" label',
+    );
+  });
+
+  it("never touches code, which reads as blank", () => {
+    // "Harbor fix `Atlas` now": the code reads as blank, and stays as written.
+    const raw = "Harbor fix Atlas now";
+    const blank = `Harbor fix ${" ".repeat(5)} now`;
+    expect(sent(blank, run(11, 16), raw)).toBe("Fix Atlas now");
+  });
+
+  it("sends code that is all the setup leaves", () => {
+    // "Harbor `cart.ts`": the code is something to send.
+    expect(sent(`Harbor ${" ".repeat(7)}`, run(7, 14), "Harbor cart.ts")).toBe("cart.ts");
+  });
+
+  it("sends code that is all a [bracket] holds", () => {
+    // Its inside reads blank, so it isn't a bracket the reader takes: the
+    // text goes without its setup words.
+    const blank = `Fable Cell for Harbor [${" ".repeat(7)}]`;
+    expect(sent(blank, run(23, 30), "Fable Cell for Harbor [cart.ts]")).toBe("[cart.ts]");
+  });
+
+  it('leaves out the "for" that points a Cell at its place', () => {
+    expect(sent("Fable Cell for Harbor fix the header")).toBe("Fix the header");
+    expect(sent("release notes for Harbor")).toBeNull();
+  });
+
+  it("never touches a chip", () => {
+    const text = "Harbor fix the ￼ header with Opus 5.5";
+    const facts = read(text);
+    const out = outgoingOf(facts, facts.cells[0]!.part, { code: new Set(), markers: new Set() })!;
+    expect(applyEdits(text, out.edits)).toBe("Fix the ￼ header");
+    expect(out.edits.every((e) => !text.slice(e.start, e.end).includes("￼"))).toBe(true);
   });
 
   it("sends a [bracket] word for word", () => {
-    expect(
-      outgoingOf(read("Fable Cell for Harbor [work on the dismiss animaiton. make it smooth.]")),
-    ).toBe("work on the dismiss animaiton. make it smooth.");
+    expect(sent("Fable Cell for Harbor [work on the dismiss animaiton. make it smooth.]")).toBe(
+      "work on the dismiss animaiton. make it smooth.",
+    );
   });
 
   it("sends what was written when no word set anything", () => {
-    expect(outgoingOf(read("fix the header"))).toBeNull();
+    expect(sent("fix the header")).toBeNull();
   });
 
-  it("edits the text toward it in place, so chips and formatting keep their words", () => {
-    const from = "Harbor fix the ￼ header with Opus 5.5";
-    const to = "Fix the ￼ header";
-    const edits = editsToward(from, to)!;
-    expect(applyEdits(from, edits)).toBe(to);
-    expect(edits.every((e) => !from.slice(e.start, e.end).includes("￼"))).toBe(true);
-  });
-
-  it("adds a space the tidying put in, and refuses what isn't a reading of the text", () => {
-    expect(applyEdits("fix,now", editsToward("fix,now", "fix, now")!)).toBe("fix, now");
-    expect(editsToward("fix it", "mend it")).toBeNull();
+  it("sends nothing when the words were only setup", () => {
+    expect(sent("Harbor")).toBe("");
+    expect(sent("Harbor with Opus 5.5 at max")).toBe("");
   });
 });
 
@@ -225,7 +269,12 @@ describe("the choice the words make for one Cell", () => {
     expect(choice.model?.form.model?.name).toBe("Opus 5.5");
     expect(choice.effort?.level).toBe("max");
   });
-  it("is none when the words start several Cells", () => {
-    expect(choiceOf(read("Fix the header in Harbor and the docs in Atlas"))).toBeNull();
+  it("is the first Cell's when the words start several alone", () => {
+    expect(
+      choiceOf(read("Fix the header in Harbor and the docs in Atlas"))?.place?.place.place.name,
+    ).toBe("Harbor");
+  });
+  it("is none when Aski has to plan the Cells", () => {
+    expect(choiceOf(read("2 Sol in Harbor fix the header"))).toBeNull();
   });
 });

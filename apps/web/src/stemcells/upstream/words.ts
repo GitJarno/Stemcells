@@ -1,12 +1,15 @@
 /**
  * What the composer's reader reads from upstream: the unsent draft a pane
- * holds, the projects as the sidebar lists them, and each provider's own
- * model list with its effort levels. `words.contract.test.ts` pins what
- * this relies on.
+ * holds, the projects as the sidebar lists them, each provider's own model
+ * list with its effort levels, and the prompt a document makes.
+ * `words.contract.test.ts` pins what this relies on.
  */
 import { REASONING_EFFORT_OPTION_IDS } from "@t3tools/client-runtime/state/thread-execution";
 import { type EnvironmentId, isProviderAvailable, type ServerProvider } from "@t3tools/contracts";
 
+import type { Node as PmNode } from "@tiptap/pm/model";
+
+import { serializeEditorDoc } from "../../composer-rich-text-doc";
 import { useComposerDraftStore, type DraftId } from "../../composerDraftStore";
 import { PROVIDER_PRESENTATION } from "../../components/usage/usageProviders";
 import { useEnvironmentProviders } from "../../state/environments";
@@ -16,6 +19,11 @@ import type { CellRef } from "../tabs/layout";
 import type { WordsCatalog, WordsProvider } from "../words/catalog";
 import type { WordsPlace } from "../words/places";
 import { useRailProjects } from "./rail";
+
+/** The prompt the composer sends for a document, as its editor writes it. */
+export function promptOf(doc: PmNode): string {
+  return serializeEditorDoc(doc).value;
+}
 
 /** An unsent draft: where its words will start a Cell. */
 export interface WordsDraft {
