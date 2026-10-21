@@ -241,7 +241,7 @@ EOF
   echo "${hosts:-No new host, id, feed or crash reporter: \`stemcells/outbound.txt\` is unchanged, and the outbound gate passed.}"
   local workflows
   workflows=$(git diff --name-only --diff-filter=A origin/main -- .github/workflows | grep -v '/stemcells' || true)
-  [ -n "$workflows" ] && echo && echo "New upstream workflows (switched off on their first run): $(echo $workflows)"
+  [ -n "$workflows" ] && echo && echo "New upstream workflows (switched off on their first run): ${workflows//$'\n'/, }"
   echo
   echo "### Tests"
   echo
@@ -254,13 +254,14 @@ EOF
 # ---------------------------------------------------------------- landing
 
 open_pr() {
-  local repo branch title body open target taken
+  local repo branch title body open target taken err
   repo=$(repo_slug)
   branch=$(git rev-parse --abbrev-ref HEAD)
   target=$(git merge-base HEAD upstream/main)
   taken=$(git rev-list --count "$(git merge-base origin/main upstream/main)..$target")
   title="Take upstream at $(git rev-parse --short=9 "$target") ($taken commits)"
   body=$(mktemp)
+  err=$(mktemp)
   report > "$body"
   if [ -n "${SYNC_GATES_PASSED:-}" ]; then
     printf '\n### Gates\n\nPassed on the merged tree: %s.\n' "$SYNC_GATES_PASSED" >> "$body"
@@ -272,19 +273,19 @@ open_pr() {
   push+=(push -q -u origin "HEAD:refs/heads/$branch")
   # The nightly's own branch starts again from main each night.
   case $branch in sync/upstream-*) push+=(--force) ;; esac
-  if ! "${push[@]}" 2> push.err; then
-    cat push.err
+  if ! "${push[@]}" 2> "$err"; then
+    cat "$err"
     {
       echo "Every gate passed on upstream at \`$(git rev-parse --short=9 "$target")\`, but GitHub refused the push:"
       echo '```'
-      cat push.err
+      cat "$err"
       echo '```'
       echo "Upstream changed a workflow file, and this run's token may not push one. Run \`stemcells/scripts/sync-upstream --check\` on a Mac (gh's credential may), or give the nightly a token that may (\`stemcells/docs/upstream-sync.md\`, The nightly)."
     } > "$summary"
-    rm -f push.err
+    rm -f "$err" "$body"
     return 5
   fi
-  rm -f push.err
+  rm -f "$err"
   # REST rather than `gh pr`: Actions' token may not use the GraphQL calls.
   open=$(gh api "repos/$repo/pulls?state=open&head=${repo%%/*}:$branch" --jq '.[0].number // ""')
   if [ -z "$open" ]; then
