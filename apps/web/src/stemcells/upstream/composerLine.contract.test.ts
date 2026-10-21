@@ -7,12 +7,13 @@
  * own layers, its ::after free, with room kept under it, so the veil lies
  * under its glass and reaches the pane's foot; that the composer rests into
  * one line only through its scroll gesture, which a substitute turns off;
- * that its field's height is one class `workspace.css` can lower; and that a
- * wheel over the composer reaches it. A failure here after a sync names the
+ * that its field's height is one class `workspace.css` can lower; that a
+ * wheel over the composer reaches it; and that the chat's column, which the
+ * halo reaches past, scrolls unless clipped. A failure here after a sync names the
  * contract that moved; the line likely covers the transcript's last row or
  * sits in a box of its own, the halo covers the plate or misses the Cell,
- * the veil covers the plate or stops short of the foot, the composer shrinks on a scroll or opens tall, or a wheel over it stops
- * at the plate.
+ * the veil covers the plate or stops short of the foot, the composer shrinks on a scroll or opens tall, a wheel over it stops
+ * at the plate, or one scrolls the whole chat up.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -97,6 +98,12 @@ describe("the composer line's contracts with upstream", () => {
     );
     expect(chatView).toMatch(
       /data-chat-composer-stack="true"\s+className="[^"]*\bpointer-events-auto\b/,
+    );
+  });
+
+  it("the chat's column scrolls unless clipped, which glow.css does in a pane, past which the halo reaches", () => {
+    expect(chatView).toContain(
+      '"flex min-h-0 min-w-0 flex-col overflow-x-hidden",\n          rightPanelMaximized ? "w-0 flex-none" : "flex-1",\n        )}\n        data-chat-column-maximized-away={rightPanelMaximized ? "true" : "false"}\n        data-chat-column',
     );
   });
 });

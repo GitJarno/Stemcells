@@ -18,9 +18,7 @@
   min-height: 0;
   padding-block: var(--sc-space-md);
 }
-/* The panel holds its scroll rail at its right edge (ScrollRail). */
 [data-stemcells-settings-panel] {
-  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;

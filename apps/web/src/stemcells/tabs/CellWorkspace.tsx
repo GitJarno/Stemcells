@@ -14,7 +14,7 @@ import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
 import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
-import { ScrollRail } from "../scrollRail/ScrollRail";
+import { showMarksWhileScrolling } from "../scrollIndicator/scrollIndicator";
 import { raiseSlate } from "../surfaces/awake";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
@@ -494,9 +494,19 @@ function TabPage(props: {
   );
 }
 
-/** A pane keeps a chat read to its end at its end as the pane's width changes. */
-function holdEndAcrossWidth(pane: HTMLDivElement | null) {
-  return pane ? keepEndAcrossWidth(pane) : undefined;
+/**
+ * A pane keeps a chat read to its end at its end as the pane's width
+ * changes, and shows the chat's scroll indicator while it scrolls: in
+ * Aski's pane too.
+ */
+function attachPane(pane: HTMLDivElement | null) {
+  if (!pane) return undefined;
+  const stopKeepingEnd = keepEndAcrossWidth(pane);
+  const stopShowingMarks = showMarksWhileScrolling(pane);
+  return () => {
+    stopKeepingEnd();
+    stopShowingMarks();
+  };
 }
 
 function PaneSlot(props: {
@@ -525,7 +535,7 @@ function PaneSlot(props: {
   useDetailsClosedAtFirst(target);
   return (
     <div
-      ref={holdEndAcrossWidth}
+      ref={attachPane}
       data-stemcells-pane={props.pane.id}
       data-focused={props.focused}
       onPointerDownCapture={() => {
@@ -576,8 +586,6 @@ function PaneSlot(props: {
           </div>
         </>
       )}
-      {/* The chat's own scroll bar, at its right edge: in Aski's pane too. */}
-      <ScrollRail kind="chat" />
     </div>
   );
 }

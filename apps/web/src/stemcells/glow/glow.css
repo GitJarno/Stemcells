@@ -67,6 +67,13 @@
   pointer-events: none;
 }
 
+/* The halo reaches past the pane's foot, and upstream lets the chat's
+   column scroll, so a wheel over the composer scrolled the whole chat up by
+   that much. Clipped, the column shows the same and never scrolls. */
+[data-stemcells-pane] [data-chat-column] {
+  overflow: clip;
+}
+
 /* In a grid of panes, the focused pane's plate steps its outline up to
    upstream's input border, so you can tell where your words will go. A lone
    pane needs no cue and keeps upstream's outline. */

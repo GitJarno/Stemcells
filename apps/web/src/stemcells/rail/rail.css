@@ -67,7 +67,6 @@
   min-height: 0;
   margin-block-start: var(--sc-space-md);
   overflow-y: auto;
-  scrollbar-width: none;
 }
 
 [data-stemcells-rail-foot] {

@@ -1,26 +1,34 @@
-/* Scrollbars show only while scrolling, as the system's do on a Mac
-   (upstream/scrollbars.contract.test.ts pins what this leans on).
+/* No scroll bar draws anywhere in the app. Every scroller still scrolls, by
+   wheel, finger, keys or script, and the chat's one indicator is T3's ask
+   marks (scrollIndicator/). upstream/scrollbars.contract.test.ts pins what
+   this leans on in upstream.
 
-   Upstream's index.css styles ::-webkit-scrollbar for every element, and
-   Chromium draws a classic bar wherever such a rule applies: always shown,
-   and 6 px wide out of the content. Chromium ignores those rules where
-   scrollbar-color is set, and draws the system's own bar there: an overlay
-   that takes no width, fades in on scroll and out about 0.8 s after (or a
-   classic one, when the Mac is set to show scroll bars always).
-   scrollbar-color inherits, so the root sets it for every scroller. Half
-   of CanvasText is the system's own knob, measured pixel for pixel against
-   an unstyled bar in light and dark. */
-:root {
-  scrollbar-color: color-mix(in srgb, CanvasText 50%, transparent) transparent;
+   scrollbar-width isn't inherited, so every element gets it. Important,
+   because upstream asks some scrollers for a thin bar in rules that outrank
+   this one (`.chat-markdown pre`). A width set here also turns Chromium's
+   ::-webkit-scrollbar rules off for the element, upstream's included. */
+* {
+  scrollbar-width: none !important;
 }
 
-/* Upstream's ScrollArea draws its own bar and also shows it while the
-   pointer is anywhere over the area. Here the bar shows while scrolling, or
-   while the pointer is on the bar itself to grab it, and fades 300 ms after
-   the scroll ends (Base UI ends it 500 ms after the last scroll event), as
-   the system's does. */
-[data-slot="scroll-area-scrollbar"]:not([data-scrolling], :hover, :active) {
+/* Upstream's ScrollArea draws a bar of its own (Base UI's), and a corner. */
+[data-slot="scroll-area-scrollbar"],
+[data-slot="scroll-area-corner"] {
+  display: none;
+}
+
+/* A bar drawn as an ARIA scrollbar (the terminal's, over its canvas) is
+   seen only while it holds the keyboard's focus: it still scrolls by keys,
+   and focus must show. The hand passes through it to what it covers. */
+[role="scrollbar"]:not(:focus-visible) {
   opacity: 0;
-  transition-delay: 0ms;
-  transition-duration: 300ms;
+  pointer-events: none;
+}
+
+/* The diff and file-tree views draw in shadow roots this sheet doesn't
+   reach. Their bars' size is a property they read from the page, which
+   inherits into them: no size, no bar, and no gutter kept for one. */
+:root {
+  --diffs-scrollbar-gutter-override: 0px;
+  --trees-scrollbar-gutter-override: 0px;
 }

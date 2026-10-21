@@ -609,11 +609,6 @@
   --sc-syntax-type: rgba(238, 196, 105, 1);
   --sc-syntax-number: rgba(86, 210, 223, 1);
   --sc-syntax-property: rgba(230, 232, 236, 1);
-  --sc-scrollbar-thumb: rgba(115, 113, 111, 0.58);
-  --sc-scrollbar-thumb-active: rgba(203, 202, 201, 1);
-  --sc-scrollbar-track: rgba(115, 113, 111, 0.25);
-  --sc-scrollbar-tick: rgba(203, 202, 201, 1);
-  --sc-scrollbar-tick-active: rgba(245, 244, 243, 1);
   --sc-content-ink: var(--sc-reading);
   --sc-content-strong-ink: var(--sc-text);
   --sc-interface-ink: var(--sc-soft);
@@ -675,8 +670,6 @@
   --sc-peek: rgba(22, 22, 22, 0.94);
   --sc-frame-edge: rgba(233, 232, 230, 0.06);
   --sc-heat-0: rgba(234, 233, 232, 0.05);
-  --sc-scrollbar-tick: rgba(194, 193, 192, 1);
-  --sc-scrollbar-tick-active: rgba(234, 233, 232, 1);
   --sc-content-strong-ink: rgba(234, 233, 232, 1);
   --sc-interface-ink: rgba(194, 193, 192, 1);
 }
@@ -780,11 +773,6 @@
   --sc-syntax-type: rgba(238, 196, 105, 1);
   --sc-syntax-number: rgba(86, 210, 223, 1);
   --sc-syntax-property: rgba(230, 232, 236, 1);
-  --sc-scrollbar-thumb: rgba(115, 113, 111, 0.58);
-  --sc-scrollbar-thumb-active: rgba(203, 202, 201, 1);
-  --sc-scrollbar-track: rgba(115, 113, 111, 0.25);
-  --sc-scrollbar-tick: rgba(203, 202, 201, 1);
-  --sc-scrollbar-tick-active: rgba(245, 244, 243, 1);
   --sc-content-ink: rgba(181, 180, 178, 1);
   --sc-content-strong-ink: rgba(245, 244, 243, 1);
   --sc-interface-ink: rgba(203, 202, 201, 1);
@@ -844,8 +832,6 @@
   --sc-peek: rgba(13, 13, 12, 0.94);
   --sc-frame-edge: rgba(233, 232, 230, 0);
   --sc-heat-0: rgba(233, 232, 231, 0.05);
-  --sc-scrollbar-tick: rgba(194, 193, 192, 1);
-  --sc-scrollbar-tick-active: rgba(233, 232, 231, 1);
   --sc-content-strong-ink: rgba(233, 232, 231, 1);
   --sc-interface-ink: rgba(194, 193, 192, 1);
 }
@@ -949,11 +935,6 @@
   --sc-syntax-type: rgba(226, 200, 138, 1);
   --sc-syntax-number: rgba(238, 178, 179, 1);
   --sc-syntax-property: rgba(235, 231, 226, 1);
-  --sc-scrollbar-thumb: rgba(117, 113, 108, 0.58);
-  --sc-scrollbar-thumb-active: rgba(205, 202, 197, 1);
-  --sc-scrollbar-track: rgba(117, 113, 108, 0.25);
-  --sc-scrollbar-tick: rgba(205, 202, 197, 1);
-  --sc-scrollbar-tick-active: rgba(247, 244, 239, 1);
   --sc-content-ink: rgba(183, 180, 174, 1);
   --sc-content-strong-ink: rgba(247, 244, 239, 1);
   --sc-interface-ink: rgba(205, 202, 197, 1);
@@ -1013,8 +994,6 @@
   --sc-peek: rgba(14, 13, 11, 0.94);
   --sc-frame-edge: rgba(234, 231, 227, 0);
   --sc-heat-0: rgba(235, 232, 228, 0.05);
-  --sc-scrollbar-tick: rgba(195, 193, 188, 1);
-  --sc-scrollbar-tick-active: rgba(235, 232, 228, 1);
   --sc-content-strong-ink: rgba(235, 232, 228, 1);
   --sc-interface-ink: rgba(195, 193, 188, 1);
 }
@@ -1118,11 +1097,6 @@
   --sc-syntax-type: rgba(232, 199, 115, 1);
   --sc-syntax-number: rgba(234, 155, 114, 1);
   --sc-syntax-property: rgba(227, 233, 236, 1);
-  --sc-scrollbar-thumb: rgba(109, 114, 119, 0.58);
-  --sc-scrollbar-thumb-active: rgba(199, 203, 207, 1);
-  --sc-scrollbar-track: rgba(109, 114, 119, 0.25);
-  --sc-scrollbar-tick: rgba(199, 203, 207, 1);
-  --sc-scrollbar-tick-active: rgba(241, 245, 248, 1);
   --sc-content-ink: rgba(177, 181, 185, 1);
   --sc-content-strong-ink: rgba(241, 245, 248, 1);
   --sc-interface-ink: rgba(199, 203, 207, 1);
@@ -1182,8 +1156,6 @@
   --sc-peek: rgba(12, 13, 15, 0.94);
   --sc-frame-edge: rgba(229, 232, 236, 0);
   --sc-heat-0: rgba(230, 233, 236, 0.05);
-  --sc-scrollbar-tick: rgba(190, 194, 197, 1);
-  --sc-scrollbar-tick-active: rgba(230, 233, 236, 1);
   --sc-content-strong-ink: rgba(230, 233, 236, 1);
   --sc-interface-ink: rgba(190, 194, 197, 1);
 }
@@ -1287,11 +1259,6 @@
   --sc-syntax-type: rgba(238, 196, 105, 1);
   --sc-syntax-number: rgba(86, 210, 223, 1);
   --sc-syntax-property: rgba(230, 232, 236, 1);
-  --sc-scrollbar-thumb: rgba(118, 112, 108, 0.58);
-  --sc-scrollbar-thumb-active: rgba(207, 201, 196, 1);
-  --sc-scrollbar-track: rgba(118, 112, 108, 0.25);
-  --sc-scrollbar-tick: rgba(207, 201, 196, 1);
-  --sc-scrollbar-tick-active: rgba(236, 231, 227, 1);
   --sc-content-ink: rgba(185, 179, 174, 1);
   --sc-content-strong-ink: rgba(236, 231, 227, 1);
   --sc-interface-ink: rgba(207, 201, 196, 1);
@@ -1359,8 +1326,6 @@
   --sc-code: rgba(30, 28, 26, 1);
   --sc-cooled: rgba(37, 37, 37, 1);
   --sc-heat-0: rgba(225, 220, 216, 0.05);
-  --sc-scrollbar-tick: rgba(197, 192, 187, 1);
-  --sc-scrollbar-tick-active: rgba(225, 220, 216, 1);
   --sc-content-strong-ink: rgba(225, 220, 216, 1);
   --sc-interface-ink: rgba(197, 192, 187, 1);
 }
@@ -1464,11 +1429,6 @@
   --sc-syntax-type: rgba(238, 196, 105, 1);
   --sc-syntax-number: rgba(86, 210, 223, 1);
   --sc-syntax-property: rgba(230, 232, 236, 1);
-  --sc-scrollbar-thumb: rgba(111, 114, 117, 0.58);
-  --sc-scrollbar-thumb-active: rgba(200, 202, 206, 1);
-  --sc-scrollbar-track: rgba(111, 114, 117, 0.25);
-  --sc-scrollbar-tick: rgba(200, 202, 206, 1);
-  --sc-scrollbar-tick-active: rgba(243, 244, 248, 1);
   --sc-content-ink: rgba(178, 180, 184, 1);
   --sc-content-strong-ink: rgba(243, 244, 248, 1);
   --sc-interface-ink: rgba(200, 202, 206, 1);
@@ -1536,8 +1496,6 @@
   --sc-code: rgba(27, 28, 29, 1);
   --sc-cooled: rgba(34, 38, 39, 1);
   --sc-heat-0: rgba(231, 232, 237, 0.05);
-  --sc-scrollbar-tick: rgba(190, 192, 197, 1);
-  --sc-scrollbar-tick-active: rgba(231, 232, 237, 1);
   --sc-content-strong-ink: rgba(231, 232, 237, 1);
   --sc-interface-ink: rgba(190, 192, 197, 1);
 }
@@ -1603,18 +1561,6 @@
   --sc-pane-button-ground: color-mix(in srgb, var(--popover) 72%, transparent);
   --sc-pane-button-lit: color-mix(in srgb, var(--foreground) 12%, var(--popover));
   --sc-pane-button-edge: color-mix(in srgb, var(--foreground) 10%, transparent);
-}
-
-/* The chat's scroll rail (stemcells/scrollRail): the thumb at rest is a mark
-   of where you are; under the hand it widens to the track's width over a
-   track that shows only then. It is never drawn shorter than the least. */
-:root {
-  --sc-scrollbar-width: 3px;
-  --sc-scrollbar-width-lit: var(--sc-space-sm);
-  --sc-scrollbar-least: 24px;
-  --sc-scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
-  --sc-scrollbar-thumb-active: color-mix(in srgb, var(--foreground) 60%, transparent);
-  --sc-scrollbar-track: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
 /* Glass for our own floating pieces (a pane's buttons, its Cell's pill,

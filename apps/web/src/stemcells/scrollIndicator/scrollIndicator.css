@@ -1,0 +1,40 @@
+/* T3's ask marks (its timeline minimap: a dash per ask, a preview under the
+   hand) are a chat's one scroll indicator, hidden at rest. They show while
+   the reader scrolls the chat (scrollIndicator.ts marks them shown), while
+   the hand is on them and while they hold the focus. Hidden, no part of
+   them takes the hand: the chat under them does. Upstream shows them
+   always where the lane has room, and under the hand where it hasn't. */
+[data-stemcells-pane] [data-testid="timeline-minimap"] {
+  opacity: 0;
+  transition: opacity var(--sc-motion-recede-duration) var(--sc-motion-recede-easing);
+}
+[data-stemcells-pane]
+  [data-testid="timeline-minimap"]:is([data-stemcells-shown], :hover, :focus-within) {
+  opacity: 1;
+  transition-duration: var(--sc-motion-fade-duration);
+  transition-timing-function: var(--sc-motion-fade-easing);
+}
+[data-stemcells-pane]
+  [data-testid="timeline-minimap"]:not([data-stemcells-shown], :hover, :focus-within)
+  * {
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-pane] [data-testid="timeline-minimap"],
+  [data-stemcells-pane]
+    [data-testid="timeline-minimap"]:is([data-stemcells-shown], :hover, :focus-within) {
+    transition: none;
+  }
+}
+
+/* They stand at the chat's right edge: upstream's left, mirrored, at
+   upstream's own distances, so the dashes hang from the right and the
+   preview opens leftward. The preview turns back to read. */
+[data-stemcells-pane] [data-testid="timeline-minimap"] {
+  left: auto;
+  right: 0;
+  scale: -1 1;
+}
+[data-stemcells-pane] [data-minimap-preview] {
+  scale: -1 1;
+}

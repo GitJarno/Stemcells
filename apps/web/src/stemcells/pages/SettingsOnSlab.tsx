@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDownIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { ScrollRail } from "../scrollRail/ScrollRail";
 import { SettingsSidebarNav, useSettingsSections } from "../upstream/settings";
 import {
   Button,
@@ -38,7 +37,6 @@ export function SettingsOnSlab(props: {
           {props.actions ? <div data-stemcells-settings-actions="">{props.actions}</div> : null}
         </div>
         {props.children}
-        <ScrollRail kind="settings" />
       </div>
     </div>
   );

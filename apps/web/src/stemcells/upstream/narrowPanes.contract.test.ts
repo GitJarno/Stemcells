@@ -36,14 +36,13 @@ describe("a chat in a narrow pane, against upstream", () => {
     expect(chatComposer).toContain('data-chat-composer-body="true"');
   });
 
-  it("a table scrolls sideways in an area with an edge fade sized by --fade-size and a horizontal scrollbar", () => {
+  it("a table scrolls sideways in an area with an edge fade sized by --fade-size", () => {
     expect(chatMarkdown).toMatch(
       /className="chat-markdown-table-container"[\s\S]*?<ScrollArea radius="none" chainVerticalScroll scrollFade/,
     );
     expect(scrollArea).toContain(
       "mask-r-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-x-end)))]",
     );
-    expect(scrollArea).toContain('<ScrollBar orientation="horizontal" />');
-    expect(scrollArea).toContain('data-slot="scroll-area-scrollbar"');
+    expect(scrollArea).toContain('data-slot="scroll-area-viewport"');
   });
 });
