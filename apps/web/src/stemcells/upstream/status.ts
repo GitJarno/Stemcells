@@ -1,6 +1,7 @@
 /** A chat's live status as upstream's sidebar names it, for the Cell that shows it. */
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/models";
+import type { ScopedThreadRef } from "@t3tools/contracts";
 
 import {
   resolveThreadLastVisitedAt,
@@ -36,6 +37,12 @@ export function useCellStatus(cell: CellRef | null): CellStatus | null {
     ref ? state.threadLastVisitedAtById[scopedThreadKey(ref)] : undefined,
   );
   return shell === null ? null : statusOfShell(shell, localLastVisitedAt);
+}
+
+/** Whether the chat is working now, as upstream's sidebar shows it. */
+export function useChatWorking(ref: ScopedThreadRef | null): boolean {
+  const shell = useQuietThreadShell(ref);
+  return shell !== null && statusOfShell(shell, undefined) === "Working";
 }
 
 /** One thread's status from its shell and the last visit this browser saw. */

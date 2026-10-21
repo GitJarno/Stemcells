@@ -47,6 +47,18 @@ export function useCellPanelEmpty(cell: CellRef | null): boolean {
   });
 }
 
+/** Whether the Cell's right panel is open on a browser. */
+export function useCellPanelOnBrowser(cell: CellRef | null): boolean {
+  return useRightPanelStore((state) => {
+    if (!cell) return false;
+    const ref = threadRefOf(cell);
+    return (
+      selectThreadRightPanelState(state.byThreadKey, ref).isOpen &&
+      selectActiveRightPanelSurface(state.byThreadKey, ref)?.kind === "preview"
+    );
+  });
+}
+
 /** Closes the Cell's right panel. Its surfaces stay, so reopening shows the same one. */
 export function closeCellPanel(cell: CellRef): void {
   const ref = threadRefOf(cell);

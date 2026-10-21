@@ -14,6 +14,7 @@ import { describe, expect, it } from "vite-plus/test";
 import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
 import * as UpstreamBranchToolbar from "../../../components/BranchToolbar";
+import * as UpstreamHostedBrowserWebview from "../../../browser/HostedBrowserWebview";
 import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerStashBadge";
@@ -36,6 +37,7 @@ import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
+import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurChatThreadActions from "./chatThreadActions";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
@@ -235,6 +237,18 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/preview/ThreadPreviewMiniPlayer.tsx": [
         "~/browser/BrowserSurfaceSlot",
         ["BrowserSurfaceSlot"],
+      ],
+    },
+  },
+  "apps/web/src/browser/HostedBrowserWebview.tsx": {
+    upstream: UpstreamHostedBrowserWebview,
+    substitute: OurHostedBrowserWebview satisfies RendersOrNothing<
+      typeof UpstreamHostedBrowserWebview
+    >,
+    importers: {
+      "apps/web/src/browser/ElectronBrowserHost.tsx": [
+        "./HostedBrowserWebview",
+        ["HostedBrowserWebview"],
       ],
     },
   },

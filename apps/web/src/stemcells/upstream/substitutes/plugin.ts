@@ -35,6 +35,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/hooks/usePreviewPanelInlineSize.ts": "usePreviewPanelInlineSize.ts",
   // The desktop browser rides its page through swipes and tab turns.
   "apps/web/src/browser/BrowserSurfaceSlot.tsx": "BrowserSurfaceSlot.tsx",
+  // A desktop browser no one has wanted this run sleeps, with no webview.
+  "apps/web/src/browser/HostedBrowserWebview.tsx": "HostedBrowserWebview.tsx",
   // Smart prompting: the composer inks the words that set a new chat up,
   // and sends the Cell its message without them.
   "apps/web/src/components/ComposerPromptEditor.tsx": "ComposerPromptEditor.tsx",

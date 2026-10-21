@@ -2,6 +2,7 @@ import {
   useDeferredValue,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -14,6 +15,7 @@ import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
 import { ScrollRail } from "../scrollRail/ScrollRail";
+import { raiseSlate } from "../surfaces/awake";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
@@ -116,6 +118,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const lastTabOnStage =
     workspace.tabs.length > 0 && workspace.tabs.at(-1)?.id === workspace.activeTabId;
   const newCellMotion = useNewCell(lastTabOnStage && !newCellIsTaken).motion;
+  // From here on, a browser off stage sleeps until it is wanted (`awake.ts`).
+  useLayoutEffect(raiseSlate, []);
 
   const routeToFocused = () => {
     const cell = focusedPane(readWorkspace())?.cell;

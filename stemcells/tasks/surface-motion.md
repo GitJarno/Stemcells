@@ -115,3 +115,24 @@ repo). The CDP screencast draws the browser guest.
   page's composer keeps one rect from start to end (before: the arriving
   chat jumped narrower at the turn). Reduced motion: the same, the browser
   fading in where it lands.
+
+### Follow-up: a browser no one wanted sleeps (2026-10-21)
+
+- Upstream mounts a live webview for every preview session of every chat.
+  Ours mounts one only once its browser is wanted this run (`awake.ts`):
+  a slot claims it (the Surface on stage, the mini player), upstream keeps
+  it busy in the background, its Cell's Surface on stage is on a browser
+  (an empty one waits there for the first URL), or its Cell is working
+  (the server waits 10 s for the desktop's webview before it browses
+  headless). Once woken it stays awake for the run. Until the workspace
+  first mounts, every browser is awake, so upstream's views and tests are
+  unchanged.
+- Proof, hidden dev app under the lab helper: after a reload with two
+  Cells' browsers open on the server, only the one on stage has a webview.
+  Turning to the other mounts it and it paints its page. In a
+  left-right-left swipe onto a sleeping browser, it wakes as its page comes
+  on stage and loads in about 150 ms. In all 735 frames, every browser shown
+  sits within 0.1 px of its slot, no frame draws a browser over the rail,
+  and each page's composer keeps one rect.
+- Not shown in the app: a working Cell waking its browser (the lab has no
+  model to run). It is the hook upstream's status already reads.
