@@ -384,7 +384,12 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": [
         "./MessagesTimeline.logic",
-        ["threadReadLabelPrefix", "deriveMessagesTimelineRowsWithState"],
+        ["threadReadLabelPrefix"],
+      ],
+      // Upstream derives the transcript's rows in this hook now.
+      "apps/web/src/components/chat/useTimelineRows.ts": [
+        "./MessagesTimeline.logic",
+        ["deriveMessagesTimelineRowsWithState"],
       ],
     },
   },
