@@ -647,6 +647,10 @@ From the TypeScript rebuild (`SC-legacy`), keep:
    - Send creates the thread in the destination with the words' model and
      effort, minus the setup words (slice 4 narrowed what goes). A word
      still at the caret acts before upstream's send reads the draft.
+   - Enter never sends words that weren't read. Upstream opens a new
+     chat's composer only once its project is known, and sends only once
+     a provider is. The words read the same projects and models in the
+     same render (`words.contract.test.ts` pins both gates).
 4. **Several Cells from words alone.** Built: `words/cells.ts` (which
    Cells, each one's part, the readout; pure), `words/placement.ts`,
    `words/Readout.tsx` and `upstream/launch.ts`, sent from `words/send.ts`.

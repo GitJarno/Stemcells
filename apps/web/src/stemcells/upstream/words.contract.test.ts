@@ -14,6 +14,8 @@ import { Editor } from "@tiptap/core";
 import { describe, expect, it } from "vite-plus/test";
 
 import composerEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
+import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import chatView from "../../components/ChatView.tsx?raw";
 import { wordsCatalogOf } from "./words";
 
 describe("the composer ink's contracts with upstream", () => {
@@ -43,6 +45,32 @@ describe("the composer ink's contracts with upstream", () => {
   it("names a model's effort levels by the option ids the ink reads", () => {
     expect(REASONING_EFFORT_OPTION_IDS).toEqual(
       expect.arrayContaining(["effort", "reasoningEffort"]),
+    );
+  });
+});
+
+// The words are read from the projects and the providers' models that
+// upstream's composer reads too, in the same render. Upstream opens a new
+// chat's composer only once its project is known, and sends only once a
+// provider is, so Enter never sends words that weren't read: not on a cold
+// start, a cached one, or with the projects in and the models still coming.
+// If either gate moves, the words need a wait of their own before a send.
+describe("Enter can't send before the words are read", () => {
+  it("a new chat's composer takes no typing until its project is known", () => {
+    expect(chatView).toMatch(
+      /projectSelectionRequired=\{\s*isLocalDraftThread && activeProject === null\s*\}/,
+    );
+    expect(chatComposer).toMatch(
+      /<ComposerPromptEditor\b[\s\S]{0,4000}?\bdisabled=\{\s*isConnecting \|\|\s*isComposerApprovalState \|\|\s*projectSelectionRequired \|\|/,
+    );
+  });
+
+  it("a send waits for a provider to be known", () => {
+    expect(chatComposer).toMatch(
+      /const noProviderAvailable =\s*selectedProviderEntry === undefined && multipleModelSelections === null;/,
+    );
+    expect(chatComposer).toMatch(
+      /const submitComposer = \([\s\S]{0,200}?\) => \{\s*if \(\s*noProviderAvailable \|\|/,
     );
   });
 });
