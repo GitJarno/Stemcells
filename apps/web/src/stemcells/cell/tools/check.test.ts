@@ -241,6 +241,28 @@ vi.mock("../art.ts", () => {
             next: "nowhere",
             frames: [{ pose: {} }, { pose: {} }],
           },
+          // A mark on the hero's grid but past the miniature's footprint, which every surface crops to.
+          "trial/2": {
+            fps: 6,
+            facing: "right",
+            kind: "loop",
+            tell: 0,
+            frames: [
+              {
+                pose: {},
+                layers: [
+                  {
+                    art: ["!"],
+                    attach: "headTop",
+                    hotspot: [-14, 0],
+                    z: 5,
+                    mini: ["!"],
+                    miniHotspot: [0, 0],
+                  },
+                ],
+              },
+            ],
+          },
         },
         meta: { idle: { tell: 0, kind: "loop" } },
       },
@@ -385,6 +407,10 @@ describe("art drawn beside the kit", () => {
     expect(rules("faulty/two")).toContain("apart");
     expect(rules("faulty")).toContain("season");
     expect(rules("trial/1")).toEqual(["beat", "next", "tell"]);
+    expect(about("trial/2").map((f) => `${f.level} ${f.rule} ${f.detail}`)).toEqual([
+      "warn box its marks fall off the canvas (hero)",
+    ]);
+    expect(rules("trial/0", "warn")).toEqual([]);
     expect(rules("temperament jumpy")).toEqual(["temperament"]);
   });
 

@@ -174,8 +174,28 @@ function fold(
 const same = (a: readonly (readonly string[])[], b: readonly (readonly string[])[]) =>
   a.length === b.length && a.every((frame, i) => frame.join("\n") === b[i]!.join("\n"));
 
-/** The hero art a miniature stands for: the hero cropped to the miniature's footprint, cell for cell. */
-const detailOf = (hero: readonly string[]) => crop(hero, 3, 2, 26, 28);
+/** Where the miniature's footprint lies on the hero's grid, cell for cell. */
+const DETAIL = { x: 3, y: 2, width: 26, height: 28 } as const;
+
+/** The hero art a miniature stands for: the hero cropped to the miniature's footprint. */
+const detailOf = (hero: readonly string[]) =>
+  crop(hero, DETAIL.x, DETAIL.y, DETAIL.width, DETAIL.height);
+
+/** Cells of a hero frame past the miniature's footprint, which no display draws. */
+const pastDetail = (hero: readonly string[]): number =>
+  hero.reduce(
+    (count, row, y) =>
+      count +
+      [...row].filter(
+        (cell, x) =>
+          cell !== "." &&
+          (x < DETAIL.x ||
+            x >= DETAIL.x + DETAIL.width ||
+            y < DETAIL.y ||
+            y >= DETAIL.y + DETAIL.height),
+      ).length,
+    0,
+  );
 
 /** The frames `move` shows worn in `wardrobe`: each one's pose and the clock its pieces read. */
 function folding(move: Move, wardrobe: Wardrobe, pieces: "loop" | "once" | "still") {
@@ -380,8 +400,31 @@ export interface FrameProbe {
   readonly eyes: string;
   /** Worn cells that fell off the grid. */
   readonly spilt: number;
-  /** Cells of the move's marks and the tool in hand that fell off the grid. */
+  /**
+   * Cells of the move's marks and the tool in hand that fell off the grid,
+   * or, at the hero, past the miniature's footprint: the detail every
+   * surface draws is cropped to it. The original's pieces spill past it on
+   * purpose, being drawn for its larger stage; a mark drawn here has no
+   * other stage.
+   */
   readonly effects: number;
+}
+
+/** A frame measured: `frame` composed worn, bare and eyeless. */
+function measured(frame: (probe: Probe) => string[], compact: boolean, eyes: string): FrameProbe {
+  const worn = { count: 0 };
+  const bare = { count: 0 };
+  const wornRows = frame({ spill: worn });
+  const bareRows = frame({ bare: true, spill: bare });
+  const past = (rows: readonly string[]) => (compact ? 0 : pastDetail(rows));
+  return {
+    worn: wornRows,
+    bare: bareRows,
+    eyeless: frame({ bare: true, eyeless: true }),
+    eyes,
+    spilt: worn.count - bare.count,
+    effects: bare.count + past(bareRows),
+  };
 }
 
 /** `pose` held still in `look` as it rests (worn as for `idle`), at the miniature (`compact`) or the hero, as the tools measure it. */
@@ -393,17 +436,11 @@ export function probeStill(look: CellLook, pose: Pose, compact: boolean): FrameP
     meta: {},
   };
   const wardrobe = posedIn(look.wardrobe, "idle");
-  const worn = { count: 0 };
-  const bare = { count: 0 };
-  const frame = (probe: Probe) => composeFrame(still, 0, wardrobe, compact, false, STILL, probe);
-  return {
-    worn: frame({ spill: worn }),
-    bare: frame({ bare: true, spill: bare }),
-    eyeless: frame({ bare: true, eyeless: true }),
-    eyes: pose.eyes,
-    spilt: worn.count - bare.count,
-    effects: bare.count,
-  };
+  return measured(
+    (probe) => composeFrame(still, 0, wardrobe, compact, false, STILL, probe),
+    compact,
+    pose.eyes,
+  );
 }
 
 /** Every frame scene `key` shows in `look`, at the miniature (`compact`) or the hero, as the tools measure it. */
@@ -412,19 +449,11 @@ export function probesOf(look: CellLook, key: string, compact: boolean): FramePr
   if (play === undefined) return [];
   const { move, wardrobe } = play;
   const folded = folding(move, wardrobe, play.pieces);
-  return folded.poses.map((index, i) => {
-    const beat = folded.beats[i]!;
-    const worn = { count: 0 };
-    const bare = { count: 0 };
-    const frame = (probe: Probe) =>
-      composeFrame(move, index, wardrobe, compact, false, beat, probe);
-    return {
-      worn: frame({ spill: worn }),
-      bare: frame({ bare: true, spill: bare }),
-      eyeless: frame({ bare: true, eyeless: true }),
-      eyes: move.frames[index]!.pose.eyes,
-      spilt: worn.count - bare.count,
-      effects: bare.count,
-    };
-  });
+  return folded.poses.map((index, i) =>
+    measured(
+      (probe) => composeFrame(move, index, wardrobe, compact, false, folded.beats[i]!, probe),
+      compact,
+      move.frames[index]!.pose.eyes,
+    ),
+  );
 }

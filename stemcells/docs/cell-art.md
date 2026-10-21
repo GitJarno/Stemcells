@@ -43,8 +43,9 @@ people: open it in a browser.
 - **Draw for the miniature first, and judge it on both frames.** The 13 × 14
   miniature is the size people see most: tabs, pane headers, the phone.
 - The hero is 32 × 32. The app draws the miniature's footprint of it, 26 × 28
-  cells from (3, 2), at twice the density beside the composer. Keep anything
-  that tells the piece inside that footprint.
+  cells from (3, 2), at twice the density on a 2× display, in tabs and beside
+  the composer alike. Keep anything that tells the piece inside that
+  footprint.
 - **Letters are roles, not colours.**
   - `B b L O` are the body (fill, shade, highlight, contour), painted in the
     provider's colours. Never use them for a piece unless it is the body,
@@ -262,7 +263,8 @@ These hold on drawn art. On the original's art they are notes.
   - art that falls off the canvas in some scene (the original's own hats do,
     in the plea's hop). A posed variant is probed only in the scenes it is
     worn in: its states' scenes, and `happy` when a cheer swaps it in;
-  - a drawn scene whose marks leave the canvas.
+  - a drawn scene whose marks leave the canvas or, at the hero, the
+    miniature's footprint: the app has no larger stage that would show them.
 
 Before a pack's pull request:
 1. `cells check <theme>` passes.
