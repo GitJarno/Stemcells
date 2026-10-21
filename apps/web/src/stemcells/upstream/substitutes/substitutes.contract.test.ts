@@ -10,6 +10,7 @@ import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } fro
 import { describe, expect, it } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
+import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
 import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
@@ -20,6 +21,7 @@ import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderS
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
+import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurComposerScrollGesture from "./composerScrollGesture";
@@ -179,6 +181,20 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/preview/PreviewPanelShell.tsx": [
         "~/hooks/usePreviewPanelInlineSize",
         ["getPreviewPanelMaxWidth", "usePreviewPanelInlineSize"],
+      ],
+    },
+  },
+  "apps/web/src/browser/BrowserSurfaceSlot.tsx": {
+    upstream: UpstreamBrowserSurfaceSlot,
+    substitute: OurBrowserSurfaceSlot satisfies RendersOrNothing<typeof UpstreamBrowserSurfaceSlot>,
+    importers: {
+      "apps/web/src/components/preview/PreviewView.tsx": [
+        "~/browser/BrowserSurfaceSlot",
+        ["BrowserSurfaceSlot"],
+      ],
+      "apps/web/src/components/preview/ThreadPreviewMiniPlayer.tsx": [
+        "~/browser/BrowserSurfaceSlot",
+        ["BrowserSurfaceSlot"],
       ],
     },
   },

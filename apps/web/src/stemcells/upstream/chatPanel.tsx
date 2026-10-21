@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 
 import { RightPanelSheet } from "../../components/RightPanelSheet";
 import { RightPanelTabs } from "../../components/RightPanelTabs";
+import { useOwnedUntilRest } from "../surfaces/keep";
 
 export interface ChatPanelHost {
   /** The workbench's node; null until it mounts. */
@@ -31,9 +32,11 @@ export const ChatPanelHostContext = createContext<ChatPanelHost | null>(null);
  */
 export function ChatPanelTabs(props: ComponentProps<typeof RightPanelTabs>) {
   const host = use(ChatPanelHostContext);
+  // The page a turn leaves keeps its surfaces until the pages rest.
+  const shows = useOwnedUntilRest(host?.owns ?? false, host?.node ?? null);
   const panel = <RightPanelTabs {...props} />;
   if (host === null || props.mode !== "inline") return panel;
-  if (!host.owns || host.node === null) return null;
+  if (!shows || host.node === null) return null;
   return createPortal(panel, host.node);
 }
 
