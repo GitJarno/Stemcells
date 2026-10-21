@@ -8,6 +8,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { SUBSTITUTES } from "./substitutes/plugin";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import chatRightPanel from "../../components/chat/ChatRightPanel.tsx?raw";
 import previewPanelShell from "../../components/preview/PreviewPanelShell.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
@@ -21,7 +22,7 @@ describe("the workbench's contracts with upstream", () => {
       "apps/web/src/components/RightPanelTabs.tsx": "RightPanelTabs.tsx",
       "apps/web/src/components/RightPanelSheet.tsx": "RightPanelSheet.tsx",
     });
-    expect(chatView).toContain('mode="inline"');
+    expect(chatRightPanel).toContain('mode="inline"');
   });
 
   it("the panel marks its mode and its maximized state for the slate's stylesheet", () => {

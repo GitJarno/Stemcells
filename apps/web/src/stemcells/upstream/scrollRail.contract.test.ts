@@ -9,6 +9,8 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import minimap from "../../components/chat/TimelineMinimap.tsx?raw";
+import timelineFollow from "../../components/chat/useTimelineFollow.ts?raw";
 import minimapWheel from "../../components/chat/timelineMinimapWheel.ts?raw";
 import settingsLayout from "../../components/settings/settingsLayout.tsx?raw";
 
@@ -40,11 +42,11 @@ describe("the scroll rail, against upstream", () => {
   it("a press whose target is the transcript itself is a scroll bar's, and stops the follow", () => {
     // ScrollRail.tsx sends one when the rail is pressed, as a press on a
     // native bar would, so a reply streaming in doesn't pull the hand down.
-    expect(chatView).toContain("Scrollbar drags produce no wheel/touch events");
-    expect(chatView).toMatch(
+    expect(timelineFollow).toContain("Scrollbar drags produce no wheel/touch events");
+    expect(timelineFollow).toMatch(
       /const handlePointerDown = \(event: PointerEvent\) => \{\n\s+if \(event\.target === scrollNode\) \{\n\s+if \(contentScrollsUp\(\)\) \{\n\s+handleManualNavigation\(\);/,
     );
-    expect(chatView).toContain('scrollNode.addEventListener("pointerdown", handlePointerDown');
+    expect(timelineFollow).toContain('scrollNode.addEventListener("pointerdown", handlePointerDown');
   });
 
   it("a wheel over the minimap is handed to the transcript, as the rail hands its own", () => {
@@ -54,26 +56,22 @@ describe("the scroll rail, against upstream", () => {
   });
 
   it("the minimap's pieces stand left by these classes, which scrollRail.css mirrors", () => {
-    expect(messagesTimeline).toContain('data-testid="timeline-minimap"');
-    expect(messagesTimeline).toContain(
+    expect(minimap).toContain('data-testid="timeline-minimap"');
+    expect(minimap).toContain(
       '"group/minimap pointer-events-none absolute inset-y-0 left-0 z-40 hidden w-18',
     );
-    expect(messagesTimeline).toContain('"absolute top-1/2 left-3 -translate-y-1/2"');
-    expect(messagesTimeline).toContain('className="absolute top-0 left-3 h-full w-px');
-    expect(messagesTimeline).toContain('"absolute left-1 z-10 inline-flex -translate-x-1/2');
-    expect(messagesTimeline).toContain(
+    expect(minimap).toContain('"absolute top-1/2 left-3 -translate-y-1/2"');
+    expect(minimap).toContain('className="absolute top-0 left-3 h-full w-px');
+    expect(minimap).toContain('"absolute left-1 z-10 inline-flex -translate-x-1/2');
+    expect(minimap).toContain(
       '"group/strip pointer-events-none absolute left-0 h-0.5 w-6 origin-left',
     );
-    expect(messagesTimeline).toContain("data-minimap-strip");
-    expect(messagesTimeline).toContain('"pointer-events-auto absolute left-8 w-80');
-    expect(messagesTimeline).toContain("data-minimap-preview");
+    expect(minimap).toContain("data-minimap-strip");
+    expect(minimap).toContain('"pointer-events-auto absolute left-8 w-80');
+    expect(minimap).toContain("data-minimap-preview");
   });
 
   it("no other piece of the minimap stands by a left-3 or left-1 the mirror would move", () => {
-    const minimap = messagesTimeline.slice(
-      messagesTimeline.indexOf("function TimelineMinimap("),
-      messagesTimeline.indexOf("type TimelineWorkEntry"),
-    );
     expect(minimap.match(/\bleft-3\b/g)).toHaveLength(2);
     expect(minimap.match(/\bleft-1\b/g)).toHaveLength(1);
   });

@@ -82,7 +82,7 @@ function uncheckedTerminalFontFamily(family?: string): string {
     : `${custom}, ${TERMINAL_GLYPH_FALLBACKS}`;
 }
 
-function terminalFontFamily(family?: string): string {
+export function terminalFontFamily(family?: string): string {
   // Quote non-ident names ("3270 Nerd Font", "M+ 1m"): an unquoted one makes
   // the whole canvas font string invalid and the assignment silently no-ops.
   const custom = family === undefined ? "" : quoteTerminalFontFamilies(family);
@@ -112,7 +112,7 @@ async function loadTerminalFontFamily(
   return (environment?.resolve ?? terminalFontFamily)(family);
 }
 
-function terminalFontSize(size?: number): number {
+export function terminalFontSize(size?: number): number {
   if (size === undefined || !Number.isFinite(size)) return DEFAULT_TERMINAL_FONT_SIZE;
   return Math.max(MIN_TERMINAL_FONT_SIZE, Math.min(MAX_TERMINAL_FONT_SIZE, Math.round(size)));
 }

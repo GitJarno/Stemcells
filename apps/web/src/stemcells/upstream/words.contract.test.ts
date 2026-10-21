@@ -61,7 +61,7 @@ describe("Enter can't send before the words are read", () => {
       /projectSelectionRequired=\{\s*isLocalDraftThread && activeProject === null\s*\}/,
     );
     expect(chatComposer).toMatch(
-      /<ComposerPromptEditor\b[\s\S]{0,4000}?\bdisabled=\{\s*isConnecting \|\|\s*isComposerApprovalState \|\|\s*projectSelectionRequired \|\|/,
+      /<ComposerPromptEditor\b[\s\S]{0,4000}?\bdisabled=\{\s*isConnecting \|\|\s*projectSelectionRequired \|\|/,
     );
   });
 

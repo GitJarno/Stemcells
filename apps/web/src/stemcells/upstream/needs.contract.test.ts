@@ -12,7 +12,7 @@ import { COMPOSER_SURFACE_SELECTOR, minuteMs } from "./needs";
 import approvalActions from "../../components/chat/ComposerPendingApprovalActions.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
-import timeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
 import nowMinute from "../../hooks/useNowMinute.ts?raw";
 
@@ -30,7 +30,7 @@ describe("the column's contracts with upstream", () => {
     // card.ts: "Implement", "Refine…" and "Retry".
     expect(primaryActions).toContain(': "Implement"}');
     expect(primaryActions).toContain(': "Refine"}');
-    expect(timeline).toMatch(/<RotateCcwIcon aria-hidden \/>\s*Retry\s*<\/Button>/);
+    expect(workEntryRow).toMatch(/<RotateCcwIcon aria-hidden \/>\s*Retry\s*<\/Button>/);
   });
 
   it("builds a plan with the words upstream's Implement sends", () => {

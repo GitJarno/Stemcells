@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import systemBanners from "../../components/chat/useSystemComposerBanners.tsx?raw";
 import { lineDownOf } from "./lineDown";
 
 describe("a Cell's line is down while upstream's banners say so", () => {
@@ -30,13 +31,13 @@ describe("a Cell's line is down while upstream's banners say so", () => {
     // Unavailable whenever the phase isn't "connected"; the banner holds back
     // for connecting and reconnecting until the grace has passed.
     expect(chatView).toContain(
-      'activeEnvironment !== null && activeEnvironmentConnectionPhase !== "connected";',
+      'activeEnvironment !== null && activeEnvironment.connection.phase !== "connected";',
     );
-    expect(chatView).toMatch(
+    expect(systemBanners).toMatch(
       /const environmentReconnecting =\s*unavailableConnection !== null &&\s*\(unavailableConnection\.phase === "connecting" \|\|\s*unavailableConnection\.phase === "reconnecting"\);/,
     );
-    expect(chatView).toContain("scheduleEnvironmentReconnectWarning(");
-    expect(chatView).toContain("id: `environment-unavailable:");
+    expect(systemBanners).toContain("scheduleEnvironmentReconnectWarning(");
+    expect(systemBanners).toContain("id: `environment-unavailable:");
     // The provider's banner shows from the key `lineDownOf` reads.
     expect(chatView).toContain(
       "const providerStatusBannerKey = getProviderStatusBannerKey(activeProviderStatus);",

@@ -13,6 +13,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import chatViewLogic from "../../components/ChatView.logic.ts?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
 import composerLogic from "../../composer-logic.ts?raw";
@@ -31,7 +32,7 @@ describe("starting Cells beside a draft, as upstream starts its threads", () => 
   });
 
   it("an effort the provider reads from the prompt goes at its head", () => {
-    expect(chatView).toMatch(
+    expect(chatViewLogic).toMatch(
       /function formatOutgoingPrompt[\s\S]{0,300}getProviderModelCapabilities\(params\.models, params\.model, params\.provider\);\s*const promptEffort = resolvePromptInjectedEffort\(caps, params\.effort\);\s*return applyClaudePromptEffortPrefix\(params\.text, promptEffort\);/,
     );
   });
@@ -60,7 +61,12 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
   it("every thread of a multiple-model send gets the same attachments and context", () => {
     const fanout = chatView.slice(chatView.indexOf("const starts = Promise.all("));
     expect(fanout).toMatch(
-      /message: \{\s*messageId: newMessageId\(\),\s*role: "user",[\s\S]{0,400}?\s*attachments,\s*\.\.\.\(context && supportsInlineMessageContext \? \{ context \} : \{\}\),/,
+      /message: \{\s*messageId: newMessageId\(\),\s*role: "user",\s*attachments,\s*\.\.\.withMessageContext\(\{\s*text: target\.text,\s*context,\s*supportsInlineMessageContext,\s*\}\),/,
+    );
+    // A machine that can't take the context apart gets it written into the
+    // text, as `carry.ts` does for the Cells beside.
+    expect(chatViewLogic).toMatch(
+      /if \(!input\.supportsInlineMessageContext\) \{\s*return \{ text: serializeLegacyContextMessage\(\{ text, records: context\.records \}\) \};/,
     );
   });
 

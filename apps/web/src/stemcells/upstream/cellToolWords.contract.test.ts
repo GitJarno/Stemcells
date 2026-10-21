@@ -9,7 +9,6 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   liveWorkEntryLabel,
-  resolveTimelineToolPresentation,
   workEntryDisplayLabel,
 } from "../../components/chat/MessagesTimeline.logic";
 import { threadReadLabelPrefix } from "./substitutes/MessagesTimeline.logic";
@@ -59,12 +58,9 @@ describe("T3's own tools in the work log", () => {
   });
 
   it.each(tools)("%s: a call says Cell, never T3, thread or agent", (tool) => {
-    const labels = [
-      resolveTimelineToolPresentation(`mcp__t3-code__${tool}`)?.displayName,
-      ...STATUSES.map(
-        (status) => resolveWorkEntryToolPresentation(call(tool, status))?.displayName,
-      ),
-    ];
+    const labels = STATUSES.map(
+      (status) => resolveWorkEntryToolPresentation(call(tool, status))?.displayName,
+    );
     for (const label of labels) {
       expect(label, tool).toBeTypeOf("string");
       expect(label, tool).not.toMatch(NOT_OUR_WORDS);

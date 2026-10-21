@@ -7,6 +7,7 @@ import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell
 import { beforeEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import chatRightPanel from "../../components/chat/ChatRightPanel.tsx?raw";
 import mcpAppFrame from "../../components/chat/McpAppFrame.tsx?raw";
 import threadFindBar from "../../components/chat/ThreadFindBar.tsx?raw";
 import serverBrowser from "../../browser/ServerBrowserSurface.tsx?raw";
@@ -160,8 +161,8 @@ describe("the DOM Look's stylesheet and Esc read", () => {
 
   it("the inline panel's tab bar keeps room at its right end, where the workbench's × stands", () => {
     // Only the sheet gets the chat's controls in its tab bar; inline, the room stays empty.
-    expect(chatView.match(/\blayoutControls=\{/g)).toHaveLength(1);
-    expect(chatView).toMatch(/<RightPanelSheet[\s\S]*?layoutControls=\{/);
+    expect(chatRightPanel.match(/\blayoutControls=\{/g)).toHaveLength(1);
+    expect(chatRightPanel).toMatch(/<RightPanelSheet[\s\S]*?layoutControls=\{/);
     expect(rightPanelTabs).toContain(
       'props.mode === "inline" && !props.layoutControls ? "pr-28" : "pr-3"',
     );
