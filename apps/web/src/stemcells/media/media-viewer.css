@@ -10,6 +10,9 @@
   overscroll-behavior: contain;
   touch-action: none;
   user-select: none;
+  /* It holds the whole window, the band over the slate included, which
+     would drag the window from under it (pages/frame.css). */
+  -webkit-app-region: no-drag;
 }
 
 [data-stemcells-media-scrim] {

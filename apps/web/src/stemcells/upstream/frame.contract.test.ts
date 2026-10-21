@@ -47,6 +47,17 @@ describe("the frame's contracts with upstream", () => {
     );
   });
 
+  it("the column and the page stand inside the wrapper, after the band", () => {
+    // The band is the wrapper's first box, and Electron reads app regions
+    // in document order, the later over the earlier: what stands in the
+    // band (the rail's top, the column's header, upstream's sidebar button,
+    // the tab strip) keeps its own region only while it comes after.
+    expect(sidebar).toMatch(/data-slot="sidebar-wrapper"[\s\S]*?>\s*\{children\}\s*<\/div>/);
+    expect(appSidebarLayout).toMatch(
+      /<SidebarProvider[\s\S]*?<Sidebar\s[\s\S]*?\{children\}[\s\S]*?<\/SidebarProvider>/,
+    );
+  });
+
   it("the root names the theme in use, as the frame's selector reads it", () => {
     expect(themePalette).toContain("root.dataset.themeId = palette.id;");
   });

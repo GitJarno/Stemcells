@@ -7,6 +7,8 @@
    sidebar wears it, from the window's corner as the sidebar's is, so the
    two run on with no edge. The workspace paints the same over it. */
 [data-slot="sidebar-wrapper"] {
+  /* The band over the slate: the tab strip's row (TabStrip's h-9). */
+  --stemcells-band: calc(var(--spacing) * 9);
   background-color: var(--app-chrome-background);
   background-image: var(--surface-grain);
   background-repeat: repeat;
@@ -20,16 +22,33 @@
 :root.dark[data-theme-id="stemcells"] [data-app-sidebar] {
   border-width: 0;
 }
+/* The band drags the window on every page, where upstream's header bars
+   did: a box across the window's top, the frame's first. Electron reads
+   app regions in document order, a later one over an earlier whatever
+   their stacking, so what stands in the band after it keeps its own
+   region: the rail's top, the column's header, upstream's sidebar button,
+   and the tab strip's tabs and button, which are the strip's controls.
+   The strip's bare end drags. A browser reads none of it. */
+[data-slot="sidebar-wrapper"]::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--stemcells-band);
+  -webkit-app-region: drag;
+}
+[data-stemcells-tab-strip] > * {
+  -webkit-app-region: no-drag;
+}
 
 /* Every page stands on the slate. The workspace draws its own slate
    (tabs/workspace.css); any other page is upstream's inset, and here the
-   inset is the slate itself: below the tab strip's band (TabStrip's h-9)
-   and inside the frame's gutters, where the workspace's slate stands, so
-   going from a chat to a page moves nothing but what is on the slate. Flat,
-   as upstream's chat is: the inset's grain is for chrome. */
+   inset is the slate itself: below the band and inside the frame's
+   gutters, where the workspace's slate stands, so going from a chat to a
+   page moves nothing but what is on the slate. Flat, as upstream's chat
+   is: the inset's grain is for chrome. */
 [data-slot="sidebar-inset"]:not([data-stemcells-workspace]) {
   height: auto;
-  margin: calc(var(--spacing) * 9) var(--sc-space-md) var(--sc-space-md);
+  margin: var(--stemcells-band) var(--sc-space-md) var(--sc-space-md);
   border-radius: var(--sc-radius-sheet);
   background-color: var(--background);
   background-image: none;
