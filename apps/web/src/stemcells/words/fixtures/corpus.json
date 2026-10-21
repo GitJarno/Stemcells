@@ -141,6 +141,12 @@
     "why": "places listed at the address each get the task"
   },
   {
+    "text": "Fix the header in Harbor and in Atlas",
+    "groups": ["default in Harbor", "default in Atlas"],
+    "share": "each",
+    "why": "a cue list, each place with its own cue, each gets the task"
+  },
+  {
     "text": "Fix the header in Harbor, Atlas and in Kestrel",
     "groups": ["default in Harbor", "default in Atlas", "default in Kestrel"],
     "share": "each",

@@ -25,6 +25,8 @@ export interface LaunchCell {
 export interface Launch {
   readonly share: Share;
   readonly cells: readonly LaunchCell[];
+  /** Only Aski's planner could share the work out: nothing is sent yet. */
+  readonly held?: boolean;
 }
 
 /** The Cells the words start alone; null when they start one, or Aski must plan. */
@@ -33,6 +35,21 @@ export function launchOf(facts: Facts): Launch | null {
   return {
     share: facts.share,
     cells: facts.cells.map((cell) => ({ group: facts.groups[cell.group]!, part: cell.part })),
+  };
+}
+
+/**
+ * Cells the words start that only Aski's planner could share the work out
+ * to: "Sol and Opus: fix the header", "fix the header in Harbor so it
+ * matches the one in Atlas". Until the planner is in, the message holds
+ * and loses no word; the readout says what the words still need.
+ */
+export function heldOf(facts: Facts): Launch | null {
+  if (facts.cell !== null || facts.cells.length < 2 || launchOf(facts) !== null) return null;
+  return {
+    share: facts.share,
+    cells: facts.cells.map((cell) => ({ group: facts.groups[cell.group]!, part: cell.part })),
+    held: true,
   };
 }
 
@@ -122,6 +139,8 @@ export interface Readout {
   readonly total: number;
   /** Past the most Cells: the count wears the warning edge, and only ⌘↵ sends. */
   readonly over: boolean;
+  /** The words don't say what each Cell does: nothing is sent (`heldOf`). */
+  readonly held: boolean;
   readonly most: number;
   readonly groups: readonly ReadoutGroup[];
   /** How the work is shared, in a few words. */
@@ -196,5 +215,12 @@ export function readoutOf(launch: Launch, defaults: ReadoutDefaults, most = MOST
     });
   }
   const total = launch.cells.length;
-  return { total, over: total > most, most, groups, share: SHARE[launch.share] ?? "" };
+  return {
+    total,
+    over: total > most,
+    held: launch.held === true,
+    most,
+    groups,
+    share: SHARE[launch.share] ?? "",
+  };
 }

@@ -35,6 +35,8 @@ const PROSE = [
   "Look for the error in server logs and explain it.",
   "The bug shows in serve mode only.",
   "Fix it in place without moving the file.",
+  "Do it for real this time.",
+  "Handle the migration with care.",
   "Write tests for plain inputs.",
   "Size the pool for server load.",
   "Fill the form with place names.",

@@ -24,6 +24,7 @@ import { modelLexicon, type WordsCatalog } from "./catalog";
 import {
   type Launch,
   type LaunchCell,
+  heldOf,
   launchOf,
   MOST_CELLS,
   partLine,
@@ -269,6 +270,9 @@ export function ComposerWords(props: { readonly anchor: string }) {
       const launch = launchOf(state.facts);
       const out = outgoingFor(state.facts, state.text);
       const held = { hold: true, ready: null, foreground: false, edit: () => null };
+      // Cells only the planner could share the work out to wait for it,
+      // with every word kept.
+      if (heldOf(state.facts) !== null) return held;
       // Past the most Cells, only ⌘↵ sends.
       if (launch !== null && launch.cells.length > MOST_CELLS && intent !== "background")
         return held;
@@ -365,7 +369,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
  * don't say filled in: the model each would run on, the draft's project.
  */
 function readoutFor(facts: Facts, source: DriverSource): ReadoutData | null {
-  const launch = launchOf(facts);
+  const launch = launchOf(facts) ?? heldOf(facts);
   if (launch === null || source.draftId === null) return null;
   const draftProject = readDraftProjectKey(source.draftId);
   const own =
@@ -384,7 +388,7 @@ function readoutFor(facts: Facts, source: DriverSource): ReadoutData | null {
 
 /** The providers several Cells start on, as drivers: each one's model word's, or its default's. */
 function driversFor(facts: Facts, source: DriverSource): string[] {
-  const launch = launchOf(facts);
+  const launch = launchOf(facts) ?? heldOf(facts);
   if (launch === null) return [];
   return launch.cells.flatMap(({ group }) => {
     const id = group.model
@@ -514,7 +518,7 @@ function markComposer(editor: HTMLElement, readout: ReadoutData | null): void {
     if (readout) element.setAttribute("data-stemcells-cells", String(readout.total));
     else element.removeAttribute("data-stemcells-cells");
   }
-  if (readout?.over) send?.setAttribute("data-stemcells-over", "");
+  if (readout?.over || readout?.held) send?.setAttribute("data-stemcells-over", "");
   else send?.removeAttribute("data-stemcells-over");
 }
 

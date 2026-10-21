@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { modelLexicon } from "./catalog";
-import { launchOf, MOST_CELLS, partOf, placesOf, readoutOf, withPart } from "./cells";
+import { heldOf, launchOf, MOST_CELLS, partOf, placesOf, readoutOf, withPart } from "./cells";
 import { testCatalog, testPlaces } from "./fixtures/catalog";
 import { roster } from "./places";
 import { readWords } from "./read";
@@ -183,5 +183,27 @@ describe("a list of places with one task", () => {
 
   it("leaves a place that only points at another to the planner", () => {
     expect(launch("Fix the header in Harbor so it matches the one in Atlas")).toBeNull();
+  });
+});
+
+describe("Cells only the planner could share the work out to", () => {
+  // Until the planner is in, these must not go as one Cell with the places
+  // cut out of the text: they hold, and the readout says what's missing.
+  it.each([
+    "Sol and Opus: fix the header",
+    "Fix the header in Harbor so it matches the one in Atlas",
+  ])("holds %j, with every word kept", (text) => {
+    const facts = readWords(text, ctx);
+    expect(launchOf(facts)).toBeNull();
+    const held = heldOf(facts)!;
+    expect(held.cells).toHaveLength(2);
+    expect(readoutOf(held, defaults).held).toBe(true);
+  });
+
+  it("holds nothing the words share out alone, or one Cell", () => {
+    expect(heldOf(readWords("Fix the header in Harbor and the docs in Atlas", ctx))).toBeNull();
+    expect(heldOf(readWords("Harbor and Atlas: fix the header", ctx))).toBeNull();
+    expect(heldOf(readWords("Harbor fix the header", ctx))).toBeNull();
+    expect(readoutOf(launch("Harbor and Atlas: fix the header")!, defaults).held).toBe(false);
   });
 });

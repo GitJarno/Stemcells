@@ -10,7 +10,9 @@ import type { Span } from "./text";
  * sentence of tokens, the words read back, in place of the model and
  * effort pickers. A word you typed wears its plate and opens its menu; a
  * default is dim. Past the most Cells, the count wears the warning edge
- * and says so, and a provider whose plan runs short says that too.
+ * and says so; so does a message whose Cells only the planner could share
+ * the work out to, which holds. A provider whose plan runs short says so
+ * too.
  */
 export function Readout(props: {
   readonly readout: ReadoutData;
@@ -70,7 +72,9 @@ export function Readout(props: {
         </span>
       ))}
       {readout.share ? <span className="sc-readout-share"> · {readout.share}</span> : null}
-      {readout.over ? (
+      {readout.held ? (
+        <span className="sc-readout-warning"> · say what each Cell does</span>
+      ) : readout.over ? (
         <span className="sc-readout-warning">
           {" "}
           · {readout.total} is over your {readout.most} · ⌘↵ sends

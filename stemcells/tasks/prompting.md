@@ -691,6 +691,10 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      yet, it takes the model the first Cell was sent on.
    - Placement as in decision 15. A Cell that fails to start says why in a
      toast, and the others still start.
+   - Until the planner is in (slice 5), Cells that only it could share the
+     work out to hold: "Sol and Opus: fix the header", or "fix the header
+     in Harbor so it matches the one in Atlas". Enter and ⌘↵ send nothing,
+     no word is cut, and the readout says "say what each Cell does".
    - 4b, built: every Cell takes what the message carries, as every thread
      of upstream's send to several models does: its pictures and files,
      and the context its chips point at (`upstream/carry.ts`). Upstream
