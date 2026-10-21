@@ -1621,3 +1621,12 @@
 :root {
   --sc-veil-blur: 3.4px;
 }
+
+/* Strong words: the ink of the words round them at full strength. A reply's
+   body is upstream's ink at 80 % and its headings, code, links and quotes
+   are at full, so bold steps up from the body to the headings' ink and
+   keeps its own colour everywhere else. It follows Appearance › Contrast
+   with the rest. */
+:root {
+  --sc-strong-ink: oklch(from currentcolor l c h / 1);
+}

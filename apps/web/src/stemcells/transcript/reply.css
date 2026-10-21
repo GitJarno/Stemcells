@@ -1,0 +1,5 @@
+/* Bold in a reply reads at a skim: a step brighter than the words round it
+   (upstream/replyBold.contract.test.ts pins the body ink it steps up from). */
+.chat-markdown :is(strong, b) {
+  color: var(--sc-strong-ink);
+}

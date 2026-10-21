@@ -17,6 +17,8 @@ import "../scrollbars/scrollbars.css";
 // The frame and the slate every page stands on, loaded with the column for
 // the same reason.
 import "../pages/frame.css";
+// How a reply reads, in every chat.
+import "../transcript/reply.css";
 
 /**
  * Upstream's sidebar slot: the rail, or upstream's wide sidebar (`wide`)
