@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { displaySetKey } from "./arrangement";
 import { windowsBridge } from "./bridge";
+import { carrying, carryStarts } from "./carrying";
 import { gatherButton, pressGather } from "./gather";
 import { commitMove, readSnapshot } from "./wire";
 
@@ -14,14 +15,22 @@ export const GATHER_SHORTCUT = "mod+alt+g";
 
 export type GatherOffer = "gather" | "putBack";
 
-/** Every window into this one, or the windows back where they were: whichever is on offer. */
+/**
+ * Every window into this one, or the windows back where they were: whichever
+ * is on offer. Not while a carry is in the hand or a press is on its way.
+ */
 export async function gatherOrPutBack(): Promise<boolean> {
   const bridge = windowsBridge();
-  if (!bridge) return false;
-  const moved = await commitMove((seen) =>
-    pressGather(seen.arrangement, bridge.boot.id, displaySetKey(seen.displays)),
-  );
-  return moved !== null;
+  if (!bridge || carrying()) return false;
+  const ends = carryStarts();
+  try {
+    const moved = await commitMove((seen) =>
+      pressGather(seen.arrangement, bridge.boot.id, displaySetKey(seen.displays)),
+    );
+    return moved !== null;
+  } finally {
+    ends();
+  }
 }
 
 /** What the button offers now, read again whenever a window opens or closes or a display changes. */
