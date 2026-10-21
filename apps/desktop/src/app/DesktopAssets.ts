@@ -6,6 +6,7 @@ import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 
 import * as DesktopEnvironment from "./DesktopEnvironment.ts";
+import { stemcellsBrandAsset } from "../../../../stemcells/brand/assets.ts";
 
 export interface DesktopIconPaths {
   readonly ico: Option.Option<string>;
@@ -87,7 +88,7 @@ function resolveSourceTreeIconPath(
       : environment.platform === "darwin"
         ? fileNames.macPng
         : fileNames.universalPng;
-  return environment.path.join(environment.rootDir, "assets", brand, fileName);
+  return environment.path.join(environment.rootDir, stemcellsBrandAsset(fileName));
 }
 
 const resolveIconPath = Effect.fn("desktop.assets.resolveIconPath")(function* (

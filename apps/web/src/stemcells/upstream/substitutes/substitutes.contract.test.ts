@@ -15,6 +15,7 @@ import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromp
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
+import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
@@ -36,6 +37,7 @@ import * as OurUpdateNotice from "./providerUpdateRequiredModels";
 import * as OurRightPanelSheet from "./RightPanelSheet";
 import * as OurRightPanelTabs from "./RightPanelTabs";
 import * as OurSubagentDisplay from "./subagentDisplay";
+import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 
 /**
@@ -243,6 +245,14 @@ const CASES: Readonly<Record<string, Case>> = {
         "./DraftHeroProjectHeading",
         ["DraftHeroProjectHeading"],
       ],
+    },
+  },
+  "apps/web/src/components/T3Wordmark.tsx": {
+    upstream: UpstreamT3Wordmark,
+    substitute: OurT3Wordmark satisfies typeof UpstreamT3Wordmark,
+    importers: {
+      "apps/web/src/components/chat/MessagesTimeline.tsx": ["../T3Wordmark", ["T3Wordmark"]],
+      "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
     },
   },
 };

@@ -74,6 +74,10 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
+| `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
+| `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
+| `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web's reaches the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
 | `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
 | `vite.config.ts` | Imports `removeVitestTmpDir` from `apps/server/src/stemcells/testing/vitestTmpDir.ts` and adds `plugins: [removeVitestTmpDir()]` | Vitest never removes the temp folder it copies a run's modules into when the config has no `projects`, as the root's (and the server's, which extends it) hasn't: each run of the server's tests left about 40 MB in the system temp dir. The plugin removes it when Vitest closes; `vitestTmpDir.test.ts` fails once Vitest does that itself, and the seam goes |
@@ -213,19 +217,47 @@ sidebar or a window's title.
   page, the error report. Notifications name no app: their titles are a
   thread's state, and macOS shows the bundle's name.
 - **The name in type, no logo,** in the size and weight upstream gives the
-  T3 logo and "Code" (`brand/Wordmark.tsx`). The brand mark comes later.
+  T3 logo and "Code" (`brand/Wordmark.tsx`).
 
 What keeps T3's name, on purpose:
 
 - What credits upstream: `LICENSE`, the notices, the docs.
 - T3's own theme, "T3 Code" in the theme picker.
-- The T3 logo as the icon of T3's own tools: the work log's `t3-code` icon
-  (`MessagesTimeline`) marks upstream's orchestration tools, and
-  `V2LifecycleRow`'s "Created thread" row is one of them at work. They
-  name the infrastructure, not the app; revisit with the brand mark.
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).
+
+### Stemcells' mark
+
+No T3 mark ships as Stemcells'. The mark is SC█, the Swift app's icon,
+copied into `stemcells/brand/app-icon.icon`; every other brand file there is
+rendered from it by Apple's tools (`stemcells/brand/README.md`).
+
+- **Every build's brand files.** Upstream's builds read their icons from
+  `BRAND_ASSET_PATHS`, which now names ours: the desktop app's icon (the
+  build makes its `.icns` from `macos-1024.png`), the favicon and touch icon
+  the server and desktop builds copy into the web client, and the phone's
+  icon and splash. Each channel gets the same file. A brand file upstream
+  adds has no file of ours yet, so `stemcellsBrandAsset` throws and every
+  build stops until it has one.
+- **The web.** The substitutes plugin also serves ours at `/favicon.ico`,
+  the two favicon PNGs and `/apple-touch-icon.png` (the boot screen's
+  logo), and the production build writes ours over its copies of them
+  (`PUBLIC_SUBSTITUTES`). Upstream's files in `apps/web/public` and
+  `assets/` stay as they are, so its icon updates never conflict, and `vp
+  run icons:check` calls the web's public copies stale, on purpose.
+- **In the chat.** `T3Wordmark` has a substitute that draws SC█ in the same
+  box and colour: the work log's rows for T3's own tools, and a thread one
+  of them started.
+- `brandMarks.contract.test.ts` fails when a T3 mark ships again: a brand
+  file that isn't ours, an image upstream serves that we don't substitute,
+  an icon the boot page or the web manifest asks for that isn't ours, or a
+  view that draws T3's wordmark or shows a file from `assets/`.
+
+Left for the next change: the phone's own marks (its header's T3 logo
+beside "Code", the loading screen's icon and "T3 Code", the work log's
+glyph, the Live Activity's `T3Mark`) and Android's launcher, splash and
+notification art.
 
 ### No telemetry
 

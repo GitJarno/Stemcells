@@ -1,4 +1,5 @@
 // @effect-diagnostics nodeBuiltinImport:off - a build plugin: it maps files on disk.
+import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import type { Plugin } from "vite-plus";
@@ -41,6 +42,25 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/composerScrollGesture.ts": "composerScrollGesture.ts",
   // The hero names every place the words start Cells in.
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
+  // Stemcells' mark: where upstream draws T3's wordmark as an icon.
+  "apps/web/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
+};
+
+/**
+ * Upstream's public files Stemcells serves its own in place of, by the path
+ * a page asks for, each with our file (from the repository's root). These
+ * are the web icons, which carry T3's mark: the tab's favicon, and the
+ * touch icon the boot screen shows. Upstream's files in `apps/web/public`
+ * stay as they are: the dev server answers these paths with ours, and the
+ * production build writes ours over its copies of them.
+ * `brandMarks.contract.test.ts` holds this to upstream's own list of web
+ * icons and to the files its builds copy in.
+ */
+export const PUBLIC_SUBSTITUTES: Readonly<Record<string, string>> = {
+  "/favicon.ico": "stemcells/brand/web-favicon.ico",
+  "/favicon-16x16.png": "stemcells/brand/web-favicon-16x16.png",
+  "/favicon-32x32.png": "stemcells/brand/web-favicon-32x32.png",
+  "/apple-touch-icon.png": "stemcells/brand/web-apple-touch-180.png",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -56,7 +76,19 @@ const substituteOf: ReadonlyMap<string, string> = new Map(
 
 const isOurs = (id: string) => id.startsWith(ourRoot + NodePath.sep);
 
-/** Resolves upstream's imports of a substituted module to ours. */
+const publicSubstituteOf: ReadonlyMap<string, string> = new Map(
+  Object.entries(PUBLIC_SUBSTITUTES).map(([path, ours]) => [path, NodePath.join(repoRoot, ours)]),
+);
+
+const CONTENT_TYPES: Readonly<Record<string, string>> = {
+  ".ico": "image/x-icon",
+  ".png": "image/png",
+};
+
+/**
+ * Resolves upstream's imports of a substituted module to ours, and serves
+ * and builds our public files in place of upstream's.
+ */
 export function substituteUpstreamModules(): Plugin {
   return {
     name: "stemcells:substitute-upstream-modules",
@@ -66,6 +98,24 @@ export function substituteUpstreamModules(): Plugin {
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (resolved === null || resolved.external) return resolved;
       return substituteOf.get(resolved.id) ?? resolved;
+    },
+    configureServer(server) {
+      // Added here, ahead of Vite's own middleware, which serves `public/`.
+      server.middlewares.use((request, response, next) => {
+        const ours = publicSubstituteOf.get((request.url ?? "").split("?")[0]!);
+        if (ours === undefined) return next();
+        response.setHeader("Content-Type", CONTENT_TYPES[NodePath.extname(ours)] ?? "");
+        response.setHeader("Cache-Control", "no-cache");
+        response.end(NodeFS.readFileSync(ours));
+      });
+    },
+    writeBundle(options) {
+      // The build has copied `public/` into the output by now.
+      if (options.dir === undefined) return;
+      for (const [path, ours] of publicSubstituteOf) {
+        const copied = NodePath.join(options.dir, path);
+        if (NodeFS.existsSync(copied)) NodeFS.copyFileSync(ours, copied);
+      }
     },
   };
 }

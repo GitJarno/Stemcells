@@ -50,7 +50,7 @@ describe("DesktopAssets", () => {
         ),
       );
       const layerFileSystem = FileSystem.layerNoop({
-        exists: (path) => Effect.succeed(String(path).includes("/assets/dev/")),
+        exists: (path) => Effect.succeed(String(path).includes("/stemcells/brand/")),
       });
       const assets = yield* DesktopAssets.DesktopAssets.pipe(
         Effect.provide(
@@ -62,8 +62,8 @@ describe("DesktopAssets", () => {
 
       const icons = yield* assets.iconPaths;
 
-      assert.match(Option.getOrThrow(icons.ico), /assets\/dev\/blueprint-windows\.ico$/);
-      assert.match(Option.getOrThrow(icons.png), /assets\/dev\/blueprint-universal-1024\.png$/);
+      assert.match(Option.getOrThrow(icons.ico), /stemcells\/brand\/windows\.ico$/);
+      assert.match(Option.getOrThrow(icons.png), /stemcells\/brand\/universal-1024\.png$/);
       assert.isTrue(Option.isNone(icons.icns));
     }),
   );
