@@ -22,9 +22,12 @@
 // display, is destroyed with every other window and the app exits with
 // LAB_EXIT, as does an app whose main reads electron as an ES module (it
 // would get windows the helper can't make hidden; the desktop app's main is
-// CommonJS). A lab script checks `globalThis[Symbol.for("stemcells.lab")]`
-// first, and stops if it isn't there. Electron run as Node only gets the
-// mark; in any other process (Node, a renderer) the file does nothing.
+// CommonJS). Its main also stops before the app's code runs unless the home
+// it was given is a lab's, where every provider runs a fake (fakes-only.cjs).
+// A lab script checks `globalThis[Symbol.for("stemcells.lab")]` first, and
+// stops if it isn't there. Electron run as Node gets the mark; it and plain
+// Node in a lab start no provider CLI that isn't a fake; a renderer is left
+// alone.
 "use strict";
 
 const LAB_EXIT = 86;
@@ -282,12 +285,13 @@ if (process.versions.electron && process.type === "browser") {
   // A fresh profile per run, so labs never share a single-instance lock.
   // Chromium writes into it as the app ends, so a run clears those a day old.
   const temp = NodeOS.tmpdir();
+  // Another lab may be clearing the same folders: one gone already is fine.
   for (const name of NodeFS.readdirSync(temp)) {
     const old = NodePath.join(temp, name);
-    if (
-      name.startsWith("stemcells-lab-") &&
-      Date.now() - NodeFS.statSync(old).mtimeMs > 86_400_000
-    ) {
+    const made = name.startsWith("stemcells-lab-")
+      ? NodeFS.statSync(old, { throwIfNoEntry: false })
+      : undefined;
+    if (made !== undefined && Date.now() - made.mtimeMs > 86_400_000) {
       NodeFS.rmSync(old, { recursive: true, force: true });
     }
   }
@@ -298,6 +302,18 @@ if (process.versions.electron && process.type === "browser") {
   // A lab script checks this before it does anything: no helper, no lab.
   globalThis[Symbol.for("stemcells.lab")] = { profile, exitCode: LAB_EXIT };
   const log = (line) => process.stderr.write(`${line}\n`);
+  // The home the app was given, which its server runs on, before the app's
+  // code runs: every provider in it is a fake (fakes-only.cjs), and it is
+  // the home stemcells/lab/electron checked, which it is told of here.
+  const fakes = require("./fakes-only.cjs");
+  const refused = fakes.homeRefusal(process.env);
+  if (refused !== null) {
+    NodeFS.writeFileSync(NodePath.join(profile, `.refused-${process.pid}`), refused);
+    log(`[stemcells lab] STOPPED: ${refused}`);
+    process.exit(LAB_EXIT);
+  }
+  fakes.fakesFirst(process.env);
+  fakes.guardSpawns(log);
   const load = NodeModule._load;
   let lab = null;
   let served = false;
@@ -322,12 +338,19 @@ if (process.versions.electron && process.type === "browser") {
   });
 }
 
-// Electron run as Node (ELECTRON_RUN_AS_NODE, as the desktop app's workers
-// are) inherits NODE_OPTIONS too. It can't make a window, so it gets only the
-// mark stemcells/lab/electron looks for on every Electron it starts.
-if (process.versions.electron && process.type === undefined && process.env.STEMCELLS_LAB_PROFILE) {
-  require("node:fs").writeFileSync(
-    require("node:path").join(process.env.STEMCELLS_LAB_PROFILE, `.never-shown-${process.pid}`),
-    "",
-  );
+// Electron run as Node (ELECTRON_RUN_AS_NODE, as the desktop app's server
+// and workers are) inherits NODE_OPTIONS too. It can't make a window, so it
+// gets the mark stemcells/lab/electron looks for on every Electron it
+// starts. It, and plain Node in a lab, find the lab's fakes first on the
+// PATH and start no provider CLI that isn't a fake (fakes-only.cjs).
+if (process.type === undefined && process.env.STEMCELLS_LAB_PROFILE) {
+  if (process.versions.electron) {
+    require("node:fs").writeFileSync(
+      require("node:path").join(process.env.STEMCELLS_LAB_PROFILE, `.never-shown-${process.pid}`),
+      "",
+    );
+  }
+  const fakes = require("./fakes-only.cjs");
+  fakes.fakesFirst(process.env);
+  fakes.guardSpawns((line) => process.stderr.write(`${line}\n`));
 }

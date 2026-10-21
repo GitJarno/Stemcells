@@ -3,8 +3,14 @@
 # of it reaches the screen of the person at the Mac. A lab starts Electron
 # only through this (launches.test.ts fails on any other way in the repo).
 #
-#   stemcells/lab/electron dev [args]       the dev app (pnpm dev:desktop)
-#   stemcells/lab/electron <main> [args]    a scratch app, on the repo's Electron
+#   stemcells/lab/electron dev --home-dir <folder> [args]          the dev app (pnpm dev:desktop)
+#   T3CODE_HOME=<folder> stemcells/lab/electron <main> [args]      a scratch app, on the repo's Electron
+#
+# Either runs on a home of its own, and starts only once every provider in
+# it runs a fake inside that folder (fakes-only.cjs): a real CLI would spend
+# the person's plan. Electron's main checks again that the home it was
+# given is the one checked here, and the lab's processes start no provider
+# CLI that isn't a fake.
 #
 # It checks the helper took: an Electron that starts under it (a main, or one
 # run as Node) and is still without the helper's mark three seconds on (its
@@ -13,12 +19,57 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+refuse() {
+  echo "stemcells/lab/electron: $1 (stemcells/lab/fakes-only.cjs)" >&2
+  exit 1
+}
+
+# The lab's home, checked before anything starts. The dev runner takes the
+# first --home-dir before `--` and passes what comes after it on, so the dev
+# app is given one, once, before `--`.
+home=""
+if [ "${1:-}" = dev ]; then
+  given=0
+  previous=""
+  after=0
+  for arg in "${@:2}"; do
+    if [ "$after" = 1 ]; then
+      case "$arg" in --home-dir | --home-dir=*) refuse "--home-dir after -- is not the dev app's; give it before --" ;; esac
+      continue
+    fi
+    if [ "$previous" = "--home-dir" ]; then home="$arg"; fi
+    case "$arg" in
+      --) after=1 ;;
+      --home-dir) given=$((given + 1)) ;;
+      --home-dir=*) given=$((given + 1)) && home="${arg#--home-dir=}" ;;
+    esac
+    previous="$arg"
+  done
+  if [ "$given" -gt 1 ]; then refuse "give --home-dir once"; fi
+  if [ -z "${home// /}" ]; then
+    refuse "a dev lab runs on a home of its own, with a fake for every provider in it: dev --home-dir <folder>"
+  fi
+elif [ -n "${1:-}" ]; then
+  home="${T3CODE_HOME:-}"
+  if [ -z "${home// /}" ]; then
+    refuse "a scratch app runs on a home of its own, with a fake for every provider in it: T3CODE_HOME=<folder> stemcells/lab/electron <main>"
+  fi
+fi
+if [ -n "$home" ]; then
+  # As the dev runner reads it: trimmed, from here.
+  STEMCELLS_LAB_HOME=$(node -p 'require("node:path").resolve(process.argv[1].trim())' "$home")
+  export STEMCELLS_LAB_HOME
+  node stemcells/lab/fakes-only.cjs "$STEMCELLS_LAB_HOME"
+  # A scratch app is given the home as checked; the dev runner gives the dev app its own reading.
+  if [ "$1" != dev ]; then export T3CODE_HOME="$STEMCELLS_LAB_HOME"; fi
+fi
+
 helper="$PWD/stemcells/lab/never-shown.cjs"
 temp="${TMPDIR:-/tmp}"
 export STEMCELLS_LAB_PROFILE="${STEMCELLS_LAB_PROFILE:-$(mktemp -d "${temp%/}/stemcells-lab-XXXXXX")}"
 export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require \"$helper\""
 
-case "${1:?usage: stemcells/lab/electron dev|<main> [args]}" in
+case "${1:?usage: stemcells/lab/electron dev --home-dir <folder>|<main> [args]}" in
   dev)
     shift
     pnpm dev:desktop "$@" &
@@ -43,6 +94,13 @@ trap stop_all INT TERM
 # busy Mac can take a second or two to get that far.
 unmarked="" # pid@second, for each Electron first seen without the mark
 while kill -0 "$started" 2>/dev/null; do
+  # Electron's main refused the home it was given (never-shown.cjs said why).
+  for refused in "$STEMCELLS_LAB_PROFILE"/.refused-*; do
+    [ -e "$refused" ] || continue
+    echo "stemcells/lab/electron: Electron's main refused its home; stopped the lab." >&2
+    stop_all
+    exit 1
+  done
   for pid in $started $(tree "$started"); do
     case "$(ps -o comm= -p "$pid" 2>/dev/null)" in
       */Contents/MacOS/Electron) ;;

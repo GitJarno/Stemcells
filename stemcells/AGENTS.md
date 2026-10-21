@@ -73,7 +73,8 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Dev loop
 Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
-`pnpm install`, `stemcells/lab/electron dev` (the desktop dev app, below),
+`pnpm install`, `stemcells/lab/electron dev --home-dir <folder>` (the
+desktop dev app, below),
 `pnpm exec vp test run <files>` (the web's from `apps/web`, whose config has
 our substitutes), `pnpm exec vp run --filter @t3tools/web typecheck`,
 `pnpm lint`, and before a push the checks CI runs:
@@ -85,3 +86,11 @@ Electron starts only through `stemcells/lab/electron`: `dev` for the dev
 app, or a scratch app's main. It loads `stemcells/lab/never-shown.cjs`, so
 no window reaches the screen of the person at the Mac, and one that does
 ends the lab. `stemcells/lab/launches.test.ts` fails on any other way in.
+Either runs on a home of its own (`dev --home-dir <folder>`, or
+`T3CODE_HOME=<folder>` for a scratch app), and starts only once every
+provider there names a fake inside that folder, by its driver's own name:
+a file with `stemcells-lab-fake` in its first 4 KB
+(`stemcells/lab/fakes-only.cjs`). A real `claude` or `codex` spends the
+person's plan, and the lab's processes start none that isn't a fake. The
+mark is the fake's own say-so: a fake never runs a real CLI. The in-app
+terminal isn't guarded; the lab only puts its fakes first on its PATH.
