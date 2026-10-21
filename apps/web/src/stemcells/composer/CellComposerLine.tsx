@@ -1,11 +1,11 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (composer-line.css), outside upstream's Tailwind entry. */
 import { CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
-import { type CSSProperties, type KeyboardEvent, use, useRef } from "react";
+import { type CSSProperties, type KeyboardEvent, use, useLayoutEffect, useRef } from "react";
 
 import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
 import { CellMark } from "../tabs/CellMark";
-import { PaneCellContext } from "../tabs/paneCell";
+import { PaneCellContext, PaneComposerContext } from "../tabs/paneCell";
 import {
   EnvironmentMachineIcon,
   ProjectFavicon,
@@ -47,6 +47,7 @@ import "./composer-line.css";
  */
 export function CellComposerLine() {
   const cell = use(PaneCellContext);
+  useTellComposerDrawn();
   const menu = useCellThreadMenu(cell);
   const place = useCellPlace(cell);
   const project = useCellProject(cell);
@@ -202,6 +203,16 @@ export function CellComposerLine() {
       </ComposerBanner.Surface>
     </div>
   );
+}
+
+/** The line stands over a composer: drawn, it tells its pane one is (`PaneComposerContext`). */
+function useTellComposerDrawn() {
+  const tell = use(PaneComposerContext);
+  useLayoutEffect(() => {
+    if (tell === null) return;
+    tell(true);
+    return () => tell(false);
+  }, [tell]);
 }
 
 /**

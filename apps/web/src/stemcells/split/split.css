@@ -1,0 +1,108 @@
+/* A border that resizes (Separator.tsx). It takes no room between its
+   neighbours: it reaches --sc-split-reach across their hairline, half into
+   each, over them. At rest only the hairline shows. A beat after the
+   pointer comes, a grip fades in under it; held or focused, the grip
+   brightens. */
+[data-stemcells-split] {
+  position: relative;
+  z-index: 20;
+  flex: none;
+  outline: none;
+  touch-action: none;
+  -webkit-app-region: no-drag;
+}
+[data-stemcells-split="x"] {
+  width: var(--sc-split-reach);
+  margin-inline: calc(var(--sc-split-reach) / -2);
+  cursor: col-resize;
+}
+[data-stemcells-split="y"] {
+  height: var(--sc-split-reach);
+  margin-block: calc(var(--sc-split-reach) / -2);
+  cursor: row-resize;
+}
+[data-stemcells-split]::after {
+  content: "";
+  position: absolute;
+  border-radius: calc(var(--sc-split-grip-width) / 2);
+  background: var(--sc-grip);
+  opacity: 0;
+  translate: -50% -50%;
+  pointer-events: none;
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
+/* The grip stands where the pointer is along the border, all of it on the
+   border; focused from the keyboard, at its middle. */
+[data-stemcells-split="x"]::after {
+  inset-inline-start: 50%;
+  inset-block-start: clamp(
+    var(--sc-split-grip-length) / 2,
+    var(--sc-split-at, 50%),
+    100% - var(--sc-split-grip-length) / 2
+  );
+  width: var(--sc-split-grip-width);
+  height: var(--sc-split-grip-length);
+}
+[data-stemcells-split="y"]::after {
+  inset-block-start: 50%;
+  inset-inline-start: clamp(
+    var(--sc-split-grip-length) / 2,
+    var(--sc-split-at, 50%),
+    100% - var(--sc-split-grip-length) / 2
+  );
+  width: var(--sc-split-grip-length);
+  height: var(--sc-split-grip-width);
+}
+[data-stemcells-split]:hover::after {
+  opacity: 1;
+  transition-delay: var(--sc-timing-beat);
+}
+[data-stemcells-split][data-held]::after,
+[data-stemcells-split]:focus-visible::after {
+  opacity: 1;
+  background: var(--sc-grip-active);
+  transition-delay: 0s;
+}
+
+/* While a border is held, a veil over the page wears its cursor, wherever
+   the pointer goes: one element to style, where a rule over the whole page
+   restyled every element in it at the press (35 ms on a long chat). */
+[data-stemcells-split-veil] {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+}
+[data-stemcells-split-veil="x"] {
+  cursor: col-resize;
+}
+[data-stemcells-split-veil="y"] {
+  cursor: row-resize;
+}
+
+/* Evened out, the neighbours glide there (Reduce Motion: they snap). The
+   rule names what grows by a share (`tabs/CellWorkspace.tsx`): with `> *`,
+   marking the row restyled everything in it, 2,839 elements and 17 ms at
+   the glide's start and again at its end. */
+[data-stemcells-split-glide] > [data-stemcells-share] {
+  transition: flex-grow var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+
+/* Gliding away from under a pointer that rests, the border reaches over
+   its row, so the pointer stays on it until it moves (`keepPointer` in
+   Separator.tsx). */
+[data-stemcells-split][data-gliding]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+[data-stemcells-split="x"][data-gliding]::before {
+  inset-inline: calc(-1 * var(--sc-split-cover));
+}
+[data-stemcells-split="y"][data-gliding]::before {
+  inset-block: calc(-1 * var(--sc-split-cover));
+}
+
+/* Look: one Cell takes the page, and no border between Cells shows. */
+[data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-split] {
+  display: none;
+}

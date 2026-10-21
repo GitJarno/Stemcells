@@ -9,6 +9,7 @@ import { SUBSTITUTES } from "./substitutes/plugin";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import previewPanelShell from "../../components/preview/PreviewPanelShell.tsx?raw";
+import rightPanelTabs from "../../components/RightPanelTabs.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 
@@ -29,6 +30,17 @@ describe("the workbench's contracts with upstream", () => {
     // keeps a chat's column whose panel is maximized elsewhere.
     expect(previewPanelShell).toContain("data-preview-panel-maximized");
     expect(chatView).toContain("data-chat-column-maximized-away");
+  });
+
+  it("the thread view hands its panel whether it is maximized, and the panel draws it so", () => {
+    // ChatPanelTabs tells the page from that prop (PanelMaximizedContext), and
+    // workspace.css then gives the workbench the page, with no `:has()`.
+    expect(chatView).toMatch(
+      /<RightPanelTabs\s+mode="inline"[^>]{0,400}maximized=\{rightPanelMaximized\}/,
+    );
+    expect(rightPanelTabs).toContain(
+      "{...(props.maximized !== undefined ? { maximized: props.maximized } : {})}",
+    );
   });
 
   it("the panel toggles carry the attribute the slate hides in unfocused panes", () => {

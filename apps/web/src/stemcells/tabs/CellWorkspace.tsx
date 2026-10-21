@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useDeferredValue,
   useEffect,
   useEffectEvent,
@@ -15,9 +16,12 @@ import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
 import { showMarksWhileScrolling } from "../scrollIndicator/scrollIndicator";
+import { growSides } from "../split/grow";
+import { Separator, type Axis } from "../split/Separator";
 import { raiseSlate } from "../surfaces/awake";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
+import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
@@ -42,24 +46,31 @@ import {
   activateTab,
   activeTab,
   closePane,
+  evenOut,
   findPane,
   focusedPane,
   focusPane,
+  MIN_COLUMN_WIDTH,
+  MIN_PANE_HEIGHT,
   openTab,
   panesOf,
   paneShowing,
+  resizePair,
+  rowFloor,
   sameChat,
   setCell,
+  sharesOf,
   type CellRef,
   type Pane,
   type Tab,
   type Workspace,
 } from "./layout";
 import { keepEndAcrossWidth } from "./keepEnd";
+import { holdTranscriptsStill } from "./stillTranscripts";
 import { newCellTab, newCellTaken, takeNewCell, type NewCell } from "./newCell";
 import { mountedTabs } from "./pager";
 import { CellPill, PaneButtons } from "./PaneButtons";
-import { PaneCellContext } from "./paneCell";
+import { PaneCellContext, PaneComposerContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { PagerPage, TabPager } from "./TabPager";
 import { TabStrip } from "./TabStrip";
@@ -456,41 +467,140 @@ function TabPage(props: {
 }) {
   const { tab } = props;
   const [workbench, setWorkbench] = useState<HTMLDivElement | null>(null);
+  // How many of the page's chats have their panel maximized: one at most,
+  // counted so that a hand-over from one chat to another never drops it.
+  const [maximized, setMaximized] = useState(0);
+  const rowShares = sharesOf(tab.rows);
   return (
-    <>
+    <PanelMaximizedContext value={(on) => setMaximized((count) => count + (on ? 1 : -1))}>
       {/* Look: the focused Cell and its workbench take the page (stemcells/workbench). */}
       <Look tab={tab} onStage={props.onStage} workbench={workbench} onFocus={props.onFocus} />
       <EmptyWorkbenchClose tab={tab} onStage={props.onStage} workbench={workbench} />
-      <div ref={props.onStage ? props.gridRef : undefined} data-stemcells-grid="">
-        {tab.rows.map((row, rowIndex) => (
-          <div key={row.id} className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}>
-            {row.columns.map((column, columnIndex) => (
+      {/* Each row, column and pane grows by its share; between each two, a border resizes them.
+          Its attributes say what `:has()` would find, which restyled it all (`workspace.css`). */}
+      <div
+        ref={props.onStage ? props.gridRef : undefined}
+        data-stemcells-grid=""
+        data-many={panesOf(tab).length > 1 ? "" : undefined}
+        data-maximized-away={maximized > 0 ? "" : undefined}
+      >
+        {tab.rows.map((row, rowIndex) => {
+          const columnShares = sharesOf(row.columns);
+          return (
+            <Fragment key={row.id}>
+              {rowIndex > 0 ? (
+                <Border
+                  axis="y"
+                  parentId={tab.id}
+                  index={rowIndex - 1}
+                  shares={rowShares}
+                  floors={[rowFloor(tab.rows[rowIndex - 1]!), rowFloor(row)]}
+                />
+              ) : null}
               <div
-                key={column.id}
-                className={cn("flex min-w-0 flex-1 flex-col", columnIndex > 0 && "border-l")}
+                data-stemcells-share=""
+                className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}
+                style={{ flexGrow: rowShares[rowIndex] }}
               >
-                {column.panes.map((pane, paneIndex) => (
-                  <PaneSlot
-                    key={pane.id}
-                    pane={pane}
-                    aski={props.aski}
-                    stacked={paneIndex > 0}
-                    focused={pane.id === tab.focusedPaneId}
-                    ownsInput={props.onStage && pane.id === tab.focusedPaneId}
-                    routeTarget={pane.id === props.routeOwnerId ? props.routeTarget : null}
-                    panelHost={workbench}
-                    onFocus={props.onFocus}
-                    onClose={props.onClose}
-                  />
-                ))}
+                {row.columns.map((column, columnIndex) => {
+                  const paneShares = sharesOf(column.panes);
+                  return (
+                    <Fragment key={column.id}>
+                      {columnIndex > 0 ? (
+                        <Border
+                          axis="x"
+                          parentId={row.id}
+                          index={columnIndex - 1}
+                          shares={columnShares}
+                          floors={[MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH]}
+                        />
+                      ) : null}
+                      <div
+                        data-stemcells-share=""
+                        className={cn(
+                          "flex min-w-0 flex-1 flex-col",
+                          columnIndex > 0 && "border-l",
+                        )}
+                        style={{ flexGrow: columnShares[columnIndex] }}
+                      >
+                        {column.panes.map((pane, paneIndex) => (
+                          <Fragment key={pane.id}>
+                            {paneIndex > 0 ? (
+                              <Border
+                                axis="y"
+                                parentId={column.id}
+                                index={paneIndex - 1}
+                                shares={paneShares}
+                                floors={[MIN_PANE_HEIGHT, MIN_PANE_HEIGHT]}
+                              />
+                            ) : null}
+                            <PaneSlot
+                              pane={pane}
+                              share={paneShares[paneIndex]!}
+                              aski={props.aski}
+                              stacked={paneIndex > 0}
+                              focused={pane.id === tab.focusedPaneId}
+                              ownsInput={props.onStage && pane.id === tab.focusedPaneId}
+                              routeTarget={
+                                pane.id === props.routeOwnerId ? props.routeTarget : null
+                              }
+                              panelHost={workbench}
+                              onFocus={props.onFocus}
+                              onClose={props.onClose}
+                            />
+                          </Fragment>
+                        ))}
+                      </div>
+                    </Fragment>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        ))}
+            </Fragment>
+          );
+        })}
       </div>
       {/* The tab's workbench: the focused chat's surfaces (stemcells/upstream/chatPanel). */}
-      <div ref={setWorkbench} data-stemcells-workbench="" />
-    </>
+      <div
+        ref={setWorkbench}
+        data-stemcells-workbench=""
+        data-maximized={maximized > 0 ? "" : undefined}
+      />
+    </PanelMaximizedContext>
+  );
+}
+
+/**
+ * The border before a parent's child at `index + 1`: dragged, it shares out
+ * what the two beside it had; double-clicked, it evens out the parent.
+ */
+function Border(props: {
+  axis: Axis;
+  /** The tab (for its rows), the row (its columns) or the column (its panes). */
+  parentId: string;
+  index: number;
+  shares: number[];
+  floors: [number, number];
+}) {
+  const { parentId, index } = props;
+  return (
+    <Separator
+      axis={props.axis}
+      label={props.axis === "x" ? "Cell width" : "Cell height"}
+      shares={[props.shares[index]!, props.shares[index + 1]!]}
+      sides={{
+        ...growSides(
+          props.axis,
+          props.floors,
+          (lengths) =>
+            updateWorkspace((current) =>
+              resizePair(current, parentId, index, lengths.before, lengths.after),
+            ),
+          () => updateWorkspace((current) => evenOut(current, parentId)),
+        ),
+        // Only a sideways move re-wraps what the Cells show.
+        ...(props.axis === "x" ? { still: holdTranscriptsStill } : {}),
+      }}
+    />
   );
 }
 
@@ -511,6 +621,8 @@ function attachPane(pane: HTMLDivElement | null) {
 
 function PaneSlot(props: {
   pane: Pane;
+  /** Its share of its column's height. */
+  share: number;
   /** Set on Aski's pane: Aski's chat as it stands. */
   aski: AskiChat | null;
   stacked: boolean;
@@ -533,15 +645,19 @@ function PaneSlot(props: {
     props.routeTarget ??
     (presence.liveness === "alive" && props.pane.cell ? presence.target : null);
   useDetailsClosedAtFirst(target);
+  // How many composers are drawn in the pane (`PaneComposerContext`).
+  const [composers, setComposers] = useState(0);
   return (
     <div
       ref={attachPane}
       data-stemcells-pane={props.pane.id}
+      data-stemcells-share=""
       data-focused={props.focused}
       onPointerDownCapture={() => {
         if (!props.focused) props.onFocus(props.pane.id);
       }}
       className={cn("relative flex min-h-0 min-w-0 flex-1 flex-col", props.stacked && "border-t")}
+      style={{ flexGrow: props.share }}
     >
       {props.aski ? (
         <AskiPane
@@ -559,21 +675,26 @@ function PaneSlot(props: {
             cell={props.pane.cell}
             onClose={onClose ? () => onClose(props.pane.id) : null}
           />
-          {props.pane.cell ? <CellPill cell={props.pane.cell} /> : null}
+          {/* With no composer drawn, no composer's line names the Cell: a pill does. */}
+          {props.pane.cell && composers === 0 ? <CellPill cell={props.pane.cell} /> : null}
           {/* Upstream's thread view sizes itself to the window; a pane sizes it to the pane. */}
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
             {target ? (
               <PaneCellContext value={props.pane.cell}>
-                <EnvSlotHost>
-                  <LineSlotHost slot={ComposerStashSlot}>
-                    <ChatPaneView
-                      target={target}
-                      ownsWindowInput={props.ownsInput}
-                      focused={props.focused}
-                      panelHost={props.panelHost}
-                    />
-                  </LineSlotHost>
-                </EnvSlotHost>
+                <PaneComposerContext
+                  value={(drawn) => setComposers((count) => count + (drawn ? 1 : -1))}
+                >
+                  <EnvSlotHost>
+                    <LineSlotHost slot={ComposerStashSlot}>
+                      <ChatPaneView
+                        target={target}
+                        ownsWindowInput={props.ownsInput}
+                        focused={props.focused}
+                        panelHost={props.panelHost}
+                      />
+                    </LineSlotHost>
+                  </EnvSlotHost>
+                </PaneComposerContext>
               </PaneCellContext>
             ) : props.pane.cell !== null && presence.liveness === "gone" ? (
               <Empty>

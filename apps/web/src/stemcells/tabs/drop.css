@@ -48,11 +48,12 @@
   transform-origin: bottom center;
   transition: scale var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
 }
-[data-stemcells-pane]:has([data-chat-workspace-drop-overlay]) [data-chat-composer-stack="true"] {
+/* The wash marks the pane the file would land in (`DropWash.tsx`). */
+[data-stemcells-pane][data-landing] [data-chat-composer-stack="true"] {
   scale: 1.01;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-stemcells-pane]:has([data-chat-workspace-drop-overlay]) [data-chat-composer-stack="true"] {
+  [data-stemcells-pane][data-landing] [data-chat-composer-stack="true"] {
     scale: none;
   }
 }

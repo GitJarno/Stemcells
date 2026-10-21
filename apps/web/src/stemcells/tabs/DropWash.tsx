@@ -73,6 +73,8 @@ class WashLight {
   private lit = false;
   /** The pane the wash stands over, lit or fading. */
   private pane: HTMLElement | null = null;
+  /** The pane a drop would land in now, marked so its composer rises (`drop.css`). */
+  private landing: HTMLElement | null = null;
   /** The style last written, so a drag held still writes nothing. */
   private placed = "";
   /** A drag is over the slate. */
@@ -100,6 +102,7 @@ class WashLight {
     window.removeEventListener("dragend", this.onEnd, true);
     this.watch.disconnect();
     if (this.frame !== null) cancelAnimationFrame(this.frame);
+    this.land(null);
   }
 
   private readonly onOver = (): void => {
@@ -133,6 +136,7 @@ class WashLight {
 
   private update(): void {
     const pane = landingPane(this.slate);
+    this.land(pane);
     const { dataset } = this.wash;
     if (pane === null) {
       if (this.lit) {
@@ -162,6 +166,18 @@ class WashLight {
     }
     this.lit = true;
     this.pane = pane;
+  }
+
+  /**
+   * Marks the pane a drop would land in. Its composer finds the mark on the
+   * pane, where a `:has()` on the pane looking for upstream's overlay
+   * restyled the pane whenever anything in its chat changed.
+   */
+  private land(pane: HTMLElement | null): void {
+    if (pane === this.landing) return;
+    this.landing?.removeAttribute("data-landing");
+    pane?.setAttribute("data-landing", "");
+    this.landing = pane;
   }
 
   private place(pane: HTMLElement): void {

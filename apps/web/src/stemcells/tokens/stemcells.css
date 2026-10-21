@@ -1605,3 +1605,11 @@
 :root {
   --sc-strong-ink: oklch(from currentcolor l c h / 1);
 }
+
+/* A border that resizes (`split/split.css`): how far across its hairline
+   the pointer finds it, and the grip that shows on it. */
+:root {
+  --sc-split-reach: var(--sc-space-md);
+  --sc-split-grip-width: var(--sc-space-xs);
+  --sc-split-grip-length: calc(var(--sc-space-xxl) * 2);
+}
