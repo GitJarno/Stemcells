@@ -102,6 +102,7 @@ const electron = vi.hoisted(() => {
     readonly guests: Page[] = [];
     destroyed = false;
     focused = false;
+    opacity = 1;
     bounds: { x: number; y: number; width: number; height: number };
     constructor(bounds = { x: 100, y: 100, width: 900, height: 700 }) {
       super();
@@ -127,6 +128,9 @@ const electron = vi.hoisted(() => {
       this.bounds = bounds;
     }
     setFullScreen() {}
+    setOpacity(opacity: number) {
+      this.opacity = opacity;
+    }
     isFocused() {
       return this.focused;
     }
@@ -715,6 +719,20 @@ describe("a flight", () => {
       page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
       expect(warm.isDestroyed()).toBe(true);
       expect(idsOf(page)).toEqual([a.id]);
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect("shows the window hidden under it again, when its page crashes", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      // Its only tab carried, the window hides under its still on the layer.
+      send(page, WINDOWS_CHANNEL.windowShown, false);
+      expect(a.window.opacity).toBe(0);
+
+      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+      expect(a.window.opacity).toBe(1);
     }).pipe(Effect.scoped),
   );
 
