@@ -51,6 +51,16 @@ export interface Transaction {
   readonly memories: unknown;
   /** The version of every window it changes or closes, as the snapshot it was made from had them. */
   readonly basis: Readonly<Record<string, number>>;
+  /** How to take the move back (the page's undo entry), kept for Undo Move. */
+  readonly undo?: unknown;
+  /** The kept undo entry this move takes back. */
+  readonly undoes?: number;
+}
+
+/** A move's undo entry, as Undo Move finds it: the latest first. */
+export interface KeptUndo {
+  readonly id: number;
+  readonly entry: unknown;
 }
 
 /** What the windows must do once a transaction is in the book. */
@@ -73,6 +83,8 @@ export interface Removed {
 }
 
 const STORAGE_VERSION = 1;
+/** How many moves Undo Move can take back, latest first. */
+const UNDO_DEPTH = 20;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -128,6 +140,9 @@ export class WindowBook {
   private leadOnceLoaded: string | null = null;
   /** The app is quitting: its windows close to open again at the next launch. */
   private quitting = false;
+  /** The moves Undo Move can take back, oldest first; not kept between launches. */
+  private undoStack: KeptUndo[] = [];
+  private lastUndo = 0;
 
   /** Whether `stored` is a book this app wrote: anything else starts an empty one. */
   static understands(stored: unknown): stored is Record<string, unknown> {
@@ -230,6 +245,16 @@ export class WindowBook {
   /** The page took the workspace it was sent. */
   adopted(id: string): void {
     this.adopting.delete(id);
+  }
+
+  /** The moves Undo Move can take back, the latest first. */
+  undos(): ReadonlyArray<KeptUndo> {
+    return this.undoStack.toReversed();
+  }
+
+  /** A kept move that can't be taken back any more. */
+  dropUndo(id: number): void {
+    this.undoStack = this.undoStack.filter((kept) => kept.id !== id);
   }
 
   /** A page's own workspace. False when it was made before the one it was sent. */
@@ -372,6 +397,13 @@ export class WindowBook {
         ? waiting
         : null;
     this.memories = transaction.memories;
+    if (typeof transaction.undoes === "number") this.dropUndo(transaction.undoes);
+    else if (transaction.undo !== undefined) {
+      this.lastUndo += 1;
+      this.undoStack = [...this.undoStack, { id: this.lastUndo, entry: transaction.undo }].slice(
+        -UNDO_DEPTH,
+      );
+    }
     return {
       open,
       adopt,

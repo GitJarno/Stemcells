@@ -1,10 +1,10 @@
 /**
  * The window's part in the app's windows: ⌥⌘T moves the active tab to a
- * new window; a workspace a move gave this window routes to its focused
- * chat; another window's request shows one of this window's chats; the lead
- * takes Aski's tab home from a window the person closed; tabs a move sent to
- * a window that couldn't open come back.
- * Renders nothing, and does nothing in a browser.
+ * new window, and ⌥⌘Z takes the latest move back; a workspace a move gave
+ * this window routes to its focused chat; another window's request shows
+ * one of this window's chats; the lead takes Aski's tab home from a window
+ * the person closed; tabs a move sent to a window that couldn't open come
+ * back. Renders nothing, and does nothing in a browser.
  */
 import { useEffect, useEffectEvent, useLayoutEffect } from "react";
 
@@ -16,8 +16,11 @@ import { welcomeAskiHome } from "./askiHome";
 import { windowsBridge } from "./bridge";
 import { moveTabToNewWindow } from "./newWindow";
 import { takeTabsBack } from "./returned";
+import { undoMove } from "./undoMove";
 
 const matchesMoveToNewWindow = shortcutMatcher("mod+alt+t");
+// ⌘Z stays the composer's.
+const matchesUndoMove = shortcutMatcher("mod+alt+z");
 
 export function WindowsKeeper(props: {
   /** A move changed this window's workspace. */
@@ -33,7 +36,14 @@ export function WindowsKeeper(props: {
     if (!bridge) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (viewerHearsFirst(event) || event.defaultPrevented || event.repeat) return;
-      if (isCommandPaletteOpen() || isTerminalFocused() || !matchesMoveToNewWindow(event)) return;
+      if (isCommandPaletteOpen() || isTerminalFocused()) return;
+      if (matchesUndoMove(event)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void undoMove();
+        return;
+      }
+      if (!matchesMoveToNewWindow(event)) return;
       const tabId = readWorkspace().activeTabId;
       if (!tabId || readWorkspace().tabs.length < 2) return;
       event.preventDefault();

@@ -106,5 +106,7 @@ if (boot !== null) {
       ipcRenderer.send(WINDOWS_CHANNEL.room, { window, visit }),
     onRoom: listen<Visit | null>(WINDOWS_CHANNEL.room),
     raise: (window: string) => ipcRenderer.send(WINDOWS_CHANNEL.raise, window),
+    undos: () => ipcRenderer.invoke(WINDOWS_CHANNEL.undos),
+    dropUndo: (id: number) => ipcRenderer.send(WINDOWS_CHANNEL.dropUndo, id),
   });
 }

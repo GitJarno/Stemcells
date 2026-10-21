@@ -76,6 +76,18 @@ describe("WindowBook", () => {
     expect(book.get("a")!.workspace).toBe("a-tabs-2");
   });
 
+  it("keeps each move's undo, latest first, and forgets one once it's taken back", () => {
+    const book = twoWindows();
+    book.commit(move(book, { change: [placed("a", "a-less")], undo: "first" }));
+    book.commit(move(book, { change: [placed("a", "a-lesser")], undo: "second" }));
+    expect(book.undos().map((kept) => kept.entry)).toEqual(["second", "first"]);
+    const latest = book.undos()[0]!;
+    book.commit(move(book, { change: [placed("a", "a-less")], undoes: latest.id }));
+    expect(book.undos().map((kept) => kept.entry)).toEqual(["first"]);
+    expect(book.commit(move(book, { open: [placed("a", "again")], undo: "refused" }))).toBeNull();
+    expect(book.undos().map((kept) => kept.entry)).toEqual(["first"]);
+  });
+
   it("refuses a move that opens a window it already has", () => {
     const book = twoWindows();
     expect(book.commit(move(book, { open: [placed("a", "again")] }))).toBeNull();

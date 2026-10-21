@@ -63,6 +63,10 @@ export const WINDOWS_CHANNEL = {
   room: "stemcells:windows:room",
   /** Page → main: bring another window forward without focusing it (spring-load). */
   raise: "stemcells:windows:raise",
+  /** Page → main, invoked: the moves Undo Move can take back (`KeptUndo`s), the latest first. */
+  undos: "stemcells:windows:undos",
+  /** Page → main: a kept move (by id) that can't be taken back any more. */
+  dropUndo: "stemcells:windows:drop-undo",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */
