@@ -99,9 +99,10 @@
 /* A pane lays its chat out by its own width, not the window's: upstream
    widens the lanes' padding at a 640 px window; a narrow pane keeps the
    narrow padding. Containment also keeps a chat's window-fixed controls
-   (panel toggles) inside its own pane. */
+   (panel toggles) inside its own pane. The line over a Cell's composer
+   steps down by its pane's width (`composer-line.css`). */
 [data-stemcells-pane] {
-  container-type: inline-size;
+  container: stemcells-pane / inline-size;
 }
 @container (max-width: 639px) {
   [data-stemcells-pane] .chat-composer-lane {
@@ -161,13 +162,15 @@
 /* The pane's buttons (PaneButtons.tsx): the Look chip, upstream's panel
    toggles for the chat, and ×, in one row of round glass at the pane's
    top-right, while the pointer or focus is in the pane. The toggles are
-   upstream's own, moved from the window's corner to the pane's. */
+   upstream's own, moved from the window's corner to the pane's. The row
+   never wraps: a narrow pane folds the toggles into … (below). */
 [data-stemcells-pane] :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons]) {
   position: absolute;
   top: var(--sc-space-md);
   right: var(--sc-space-md);
   z-index: 30;
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--sc-space-xs);
   height: auto;
@@ -186,24 +189,29 @@
 }
 /* With the chat's right panel open, upstream splits its toggles: the
    thread details toggle stays by the header, the rest go to the chat's
-   root. The second row sits under the first. */
+   root. The header's row sits left of the root's, in the same line
+   (PaneButtons measures the root's row into --sc-pane-row). */
 [data-stemcells-pane]
   [data-workspace-titlebar-controls]
   ~ [data-chat-column]
   [data-chat-header]
   > [data-workspace-titlebar-controls] {
-  top: calc(var(--sc-space-md) + var(--sc-pane-button) + var(--sc-space-xs));
+  right: calc(var(--sc-space-md) + var(--sc-pane-row, 0px) + var(--sc-space-xs));
 }
 [data-stemcells-pane] [data-workspace-titlebar-controls] > * {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--sc-space-xs);
 }
 [data-stemcells-pane] [data-stemcells-look-chip] {
   order: -1;
 }
-[data-stemcells-pane] [data-stemcells-pane-close] {
+[data-stemcells-pane] [data-stemcells-pane-more] {
   order: 1;
+}
+[data-stemcells-pane] [data-stemcells-pane-close] {
+  order: 2;
 }
 [data-stemcells-pane]
   :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons])
@@ -231,9 +239,44 @@
   max-width: 12rem;
   padding-inline: var(--sc-space-lg);
 }
-[data-stemcells-pane] [data-stemcells-pane-close] svg {
+[data-stemcells-pane] :is([data-stemcells-pane-close], [data-stemcells-pane-more]) svg {
   width: 14px;
   height: 14px;
+}
+
+/* The ladder for the pane's buttons: in a narrow pane upstream's toggles
+   fold into …, which lists them; narrower still the Look chip shows only
+   its mark. The Look chip, … and × stay in one row. */
+[data-stemcells-pane] [data-stemcells-pane-more] {
+  display: none;
+}
+@container stemcells-pane (width <= 360px) {
+  [data-stemcells-pane]
+    [data-workspace-titlebar-controls]
+    > :not([data-stemcells-pane-close], [data-stemcells-pane-more], [data-stemcells-look-chip]) {
+    display: none;
+  }
+  [data-stemcells-pane] [data-stemcells-pane-more] {
+    display: flex;
+  }
+  [data-stemcells-pane] [data-stemcells-look-chip] {
+    max-width: 8rem;
+  }
+}
+@container stemcells-pane (width <= 200px) {
+  [data-stemcells-pane] [data-stemcells-look-chip] {
+    padding-inline: 0;
+  }
+  [data-stemcells-pane] [data-stemcells-look-chip] > span {
+    display: none;
+  }
+}
+
+/* Nothing sits under the pane's buttons at the top of a chat: the
+   transcript's top room, which upstream keeps for its own top fade, is the
+   buttons' band, and scrolled, upstream's fade runs under them. */
+[data-stemcells-pane] .messages-timeline-scroll {
+  --workspace-titlebar-scroll-fade-height: var(--sc-pane-band);
 }
 
 /* A pane with no composer names its Cell in a pill at its top-left, where

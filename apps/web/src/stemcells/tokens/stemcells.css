@@ -1568,6 +1568,8 @@
 /* A pane's buttons and its Cell's pill: round glass over the chat's top. */
 :root {
   --sc-pane-button: 28px;
+  /* The band the buttons float in at a pane's top: the transcript keeps it clear. */
+  --sc-pane-band: calc(var(--sc-pane-button) + 2 * var(--sc-space-md));
   --sc-pane-button-ground: color-mix(in srgb, var(--popover) 72%, transparent);
   --sc-pane-button-lit: color-mix(in srgb, var(--foreground) 12%, var(--popover));
   --sc-pane-button-edge: color-mix(in srgb, var(--foreground) 10%, transparent);

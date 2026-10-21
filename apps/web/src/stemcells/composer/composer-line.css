@@ -39,6 +39,81 @@
   white-space: nowrap;
 }
 
+/* What the line does, it does from its words: they are buttons that look
+   like the words they are, and brighten under the pointer. Its marks are
+   upstream's context strip's size. */
+[data-stemcells-composer-line] :is(.composer-line-name, .composer-line-act) {
+  cursor: pointer;
+}
+[data-stemcells-composer-line] .composer-line-act {
+  transition: color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-composer-line] :is(.composer-line-project, .composer-line-parent) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+[data-stemcells-composer-line] .composer-line-act:hover {
+  color: var(--foreground);
+}
+[data-stemcells-composer-line] button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  border-radius: calc(1cap * 1.95 * 0.3);
+}
+[data-stemcells-composer-line] .composer-line-runs-on {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+[data-stemcells-composer-line] :is(.composer-line-runs-on, .composer-line-parent) svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* The ladder, by the pane's width. Words become marks: the project its
+   mark. Then what the chat is about, where it runs and its parent go, and
+   the model in the composer shows its mark alone (upstream folds its own
+   controls into its overflow before that). Last the project, the model's
+   chevron and the attach button go: dropping and pasting still attach.
+   The Cell, its name, the field and send or stop stay at every width. */
+[data-stemcells-composer-line] .composer-line-project-mark {
+  display: none;
+}
+@container stemcells-pane (width <= 480px) {
+  [data-stemcells-composer-line] .composer-line-project-name {
+    display: none;
+  }
+  [data-stemcells-composer-line] .composer-line-project-mark {
+    display: inline-flex;
+  }
+}
+@container stemcells-pane (width <= 240px) {
+  [data-stemcells-composer-line]
+    :is(.composer-line-one-liner, .composer-line-runs-on, .composer-line-parent) {
+    display: none;
+  }
+  [data-chat-composer-footer="true"] [data-chat-provider-model-picker-label] {
+    display: none;
+  }
+}
+@container stemcells-pane (width <= 200px) {
+  [data-stemcells-composer-line] .composer-line-project {
+    display: none;
+  }
+  [data-chat-composer-footer="true"]
+    :is(
+      [aria-label="Attach files"],
+      [data-chat-provider-model-picker] [data-composer-control-chevron]
+    ) {
+    display: none;
+  }
+  [data-chat-composer-footer="true"] [data-chat-provider-model-picker] {
+    min-width: 0;
+  }
+}
+
 /* The ground the Cell and its line stand on: the transcript fades out across
    the band from the Cell's head down to the plate (`dropOff.ts` measures it
    up from the transcript's foot), so nothing reads through them; it shows
