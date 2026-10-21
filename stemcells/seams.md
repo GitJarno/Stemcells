@@ -730,3 +730,82 @@ on them (`scrollIndicator/`). `scrollbars.contract.test.ts` and
 `scrollIndicator.contract.test.ts` pin what they rely on; the latter finds
 the marks in whichever file draws them, as upstream moved them out of
 `MessagesTimeline.tsx` into `TimelineMinimap.tsx`.
+
+### A Cell carries on after a usage limit
+
+With Settings' "Auto-resume limited threads" on (upstream's
+`autoResumeLimitedThreads`, off by default), a Cell a usage limit stopped
+carries on by itself when the limit's reset passes, or when the person
+signs in again (`/login`, `claude auth login`), with upstream's own line,
+"Continue where you left off." (`stemcells/tasks/limit-resume.md`). A
+resume is a model call the person didn't start, so it is that switch's to
+allow: one switch, upstream's, already in Settings. No upstream file
+changes:
+
+- **The server** (`apps/server/src/stemcells/limitResume/`, mounted through
+  `stemcells/layer.ts`) follows the thread shells as Aski's needs list does
+  and sends upstream's manual continuation (`manualContinuationOfRunId`),
+  which the orchestrator refuses once anything ran after the stop: Claude
+  Code itself, upstream's worker, or the person
+  (`limitResumeGuard.contract.test.ts`). One Cell at a time; never over a
+  draft or a snooze; a sign-in only within 12 h of the stop, a reset only
+  within 12 h of the reset; at most 3 refusals in a row. Upstream's
+  worker, which the switch arms, keeps the reset for itself; "Cancel
+  auto-resume" stops ours too, snoozed or not. Every send has fresh ids.
+- **After a start or a wake**, nothing goes for 30 s, nor before the
+  screens that had drafts standing have reported again (90 s at most: a
+  hidden window's timers run once a minute). A wake is a gap of over 30 s
+  from one look's end to the next one's start, as no timer fires while the
+  Mac sleeps; the wall clock and `process.hrtime` both run through a sleep
+  on a Mac, so neither tells it alone. The lists lapse in wall time, which
+  a sleep spends, so a list that lapsed asleep says nothing.
+- **Substitutes, on the web:**
+  - `UsageLimitRecoveryBanner`: Continue first among the banner's actions,
+    in a Cell's pane, then upstream's own, always (re-arm, cancel, snooze).
+    With the switch on, and the Cell not cancelled, a line under the
+    banner's row (the item's children, which nothing cuts short as the row
+    cuts its own line) says what will happen: "Carries on by itself once you
+    sign in again, or at the reset" (Codex: "at the reset"), since
+    upstream's switch speaks only of the reset. Its case in
+    `substitutes.contract.test.ts` names `ChatView.tsx` as the importer, as
+    every case names one: that is how the test proves the app resolves the
+    substitute. The behaviour is pinned in `limitResume.contract.test.ts`.
+  - `MessagesTimeline.logic` (`deriveMessagesTimelineRowsWithState`): a
+    continuation's message is drawn as a notice, "Continued after you
+    signed in again" or "Continued after the limit reset", ours or
+    upstream's worker's. Why the row derivation, a busy module: nothing
+    smaller can turn a message into a notice. No command writes a notice
+    into a thread; the user bubble is drawn inside `MessagesTimeline.tsx`;
+    and `resolveUserMessagePresentation` (`client-runtime`'s
+    `userMessage.ts`) can only relabel the bubble. The module is already
+    our substitute (Cell reads), so this adds a name, not a module, and
+    the wrapper reads only the row union's message and work shapes. The
+    contract test pins it by behaviour: a continuation draws as a notice,
+    any other message as it was, and upstream's stable-rows step keeps the
+    notice it drew. The phone shows the line as upstream sends it.
+- **Drafts:** each screen reports its chats with words in a composer to
+  `POST /api/stemcells/limit-resume/drafts`, from `AppSidebarLayout`
+  beside the sidebar (a seam row above), so every page, a narrow window
+  with its sidebar closed, and the legacy sidebar all hold a draft as the
+  chat does. It reports whole lists, every 20 s while any stand; the
+  server forgets a screen's list 150 s after it last heard, which outlasts
+  the minute a hidden window's timers are held to. A report can only hold
+  a resume back, so reading access is enough.
+- **The login, read without the secret.** Only while the switch is on and
+  a sign-in could still carry a Claude Cell on (not cancelled, under the
+  refusal cap, within 12 h of the stop), at most every 30 s: the keychain
+  item's attributes (`security find-generic-password -s <item>`, no `-w`
+  or `-g`, so its modification date and never its data) and
+  `.credentials.json`'s mtime. When either moves, or every 5 minutes,
+  `claude auth status --json` says who is signed in; the server keeps a
+  hash of it, never the email, and logs neither. Each read ends within
+  30 s, a stuck child killed, and none starts while one is under way. The item's name follows Claude Code's own
+  (2.1.306): one per `CLAUDE_CONFIG_DIR`, suffixed with its SHA-256's start.
+- **Within the plans' terms.** Nothing picks, ranks or suggests an account,
+  or words a limit's way round: the person's own sign-in or the reset is
+  the only cause. Codex resumes only at its stated reset.
+- `limitResume.contract.test.ts` (server and web) pins the switch and its
+  default, the shell fields, the continuation command, upstream's worker's
+  ids and line, the banner, how a notice row reads and stays, and the
+  pages the drafts are reported from; `limitResumeGuard.contract.test.ts`
+  pins the orchestrator's refusal of a second continuation.
