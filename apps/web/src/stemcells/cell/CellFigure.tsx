@@ -14,7 +14,7 @@ import { bodyOf, frameShown, sceneFor } from "./cast.ts";
 import { onStage } from "./clock.ts";
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
-import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
+import { asksYou, BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
 import { type Diff, withMarks } from "./marks.ts";
 import { paint } from "./paint.ts";
@@ -82,7 +82,7 @@ export function CellFigure(props: {
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
       const scene = sceneFor(look, mood, activity, seconds ?? 0);
-      const played = frameShown(scene, name, seconds, mood === "needsYou");
+      const played = frameShown(scene, name, seconds, asksYou(mood));
       const frame =
         from === undefined
           ? played
@@ -130,7 +130,7 @@ export function CellFigure(props: {
         }}
         aria-hidden="true"
       />
-      <AskMark active={mood === "needsYou"} pixel={points} />
+      <AskMark active={asksYou(mood)} pixel={points} />
     </span>
   );
 }

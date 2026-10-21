@@ -18,7 +18,9 @@ test("the Cell as a mark wears a face of its own in every mood the product names
     "braced",
     "crashed",
     "meditating",
+    "needsApproval",
     "needsYou",
+    "peering",
     "pleased",
   ]);
   const faces = new Set<string>();

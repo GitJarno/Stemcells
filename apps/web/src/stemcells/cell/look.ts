@@ -5,11 +5,18 @@ import { sceneFor } from "./cast.ts";
 import { MINI } from "./kit.ts";
 import { packLook } from "./scene.ts";
 
-/** The faces a character wears. */
+/**
+ * The faces a character wears. Two wait on you: `needsYou` (a question, a
+ * plan) and `needsApproval` (leave to run or change something), each the
+ * original's own act for it. `peering` waits on a line that's down: its
+ * machine reconnecting, its provider out.
+ */
 export type Mood =
   | "awake"
   | "meditating"
   | "needsYou"
+  | "needsApproval"
+  | "peering"
   | "asleep"
   | "pleased"
   | "crashed"
@@ -19,11 +26,18 @@ export const MOODS: readonly Mood[] = [
   "awake",
   "meditating",
   "needsYou",
+  "needsApproval",
+  "peering",
   "asleep",
   "pleased",
   "crashed",
   "braced",
 ];
+
+/** Whether a Cell in `mood` waits on the person: it asks, with the "?" over it. */
+export function asksYou(mood: Mood): boolean {
+  return mood === "needsYou" || mood === "needsApproval";
+}
 
 /** CSS pixels a cell of a Cell's miniature is drawn where it stands large: on a 2× display, its hero art at one device pixel a cell. */
 export const POINTS_PER_PIXEL = 2;

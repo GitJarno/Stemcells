@@ -1,0 +1,111 @@
+{
+  "scenes": {
+    "peering": {
+      "fps": 3,
+      "facing": "right",
+      "kind": "loop",
+      "tell": 0,
+      "pieces": "loop",
+      "frames": [
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "sleepy",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1,
+            "sy": 1.12
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1,
+            "sy": 1.12
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "open",
+            "look": [1, 1],
+            "lean": 0.9,
+            "face": 1
+          }
+        }
+      ]
+    }
+  }
+}

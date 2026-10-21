@@ -41,11 +41,16 @@ const HELD: Partial<Readonly<Record<Mood, Pose>>> = {
 /** A long think shows the calm ponder and the head scratch in turn, this long each. */
 const PONDER_SECONDS = 20;
 
-/** The scene in the kit a mood plays: at work, what it is doing, else listening; the plea, asleep, the cheer. */
+/** The scene in the kit a mood plays: at work, what it is doing, else listening; the pleas, the peer, asleep, the cheer. */
 function sceneKey(mood: Mood, activity: Activity | undefined, seconds: number): string {
   switch (mood) {
     case "needsYou":
       return "waiting";
+    case "needsApproval":
+      // The original's act for a pending permission, as a question has `waiting`.
+      return "alert";
+    case "peering":
+      return "peering";
     case "asleep":
       return "asleep";
     case "pleased":
