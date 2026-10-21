@@ -74,7 +74,7 @@ export function ThreadAgentsSheet({ route }: StaticScreenProps<AgentsTarget>) {
     >
       {subagents.length === 0 ? (
         <Text className="pt-6 text-center text-sm text-foreground-muted">
-          No agents in this turn.
+          No Subcells in this turn.
         </Text>
       ) : (
         subagents.map((subagent) => (
@@ -110,7 +110,7 @@ export function ThreadAgentsSheet({ route }: StaticScreenProps<AgentsTarget>) {
               tintColorClassName="accent-foreground"
               hideBackButton
               hideShadow={false}
-              title="Agents"
+              title="Subcells"
               titleColorClassName="accent-foreground"
               titleFontSize={18}
               titleFontWeight="800"
@@ -125,7 +125,7 @@ export function ThreadAgentsSheet({ route }: StaticScreenProps<AgentsTarget>) {
   return (
     <View collapsable={false} className="flex-1 bg-sheet">
       <NativeStackScreenOptions options={{ sheetCornerRadius: 28 }} />
-      <AndroidSheetHeader title="Agents" onBack={() => navigation.goBack()} />
+      <AndroidSheetHeader title="Subcells" onBack={() => navigation.goBack()} />
       <ScreenContent insetHorizontal={layout.usesSplitView}>{content}</ScreenContent>
     </View>
   );
@@ -154,7 +154,7 @@ function AgentRow(props: {
     return (
       <View
         accessible
-        accessibilityHint="Provider-managed agent. Its work appears in the transcript."
+        accessibilityHint="Provider-managed Subcell. Its work appears in the transcript."
       >
         {row}
       </View>
@@ -164,7 +164,7 @@ function AgentRow(props: {
   return (
     <Pressable
       accessibilityRole="link"
-      accessibilityHint="Opens this agent's thread"
+      accessibilityHint="Opens this Subcell"
       onPress={() => props.onOpen(childThreadId)}
       className="active:opacity-70"
     >

@@ -1072,7 +1072,7 @@ describe("MessagesTimeline history and thread links", () => {
       onOpenThread,
       parentThreadLink: { threadId: ThreadId.make("thread-parent"), title: "Architecture audit" },
     });
-    expect(screen.text()).toContain("Subagent of");
+    expect(screen.text()).toContain("Subcell of");
     expect(screen.text()).toContain("Architecture audit");
     expect(screen.text()).not.toContain("Send a message to start the conversation");
     await click(screen.button("Open parent thread"));
@@ -1348,9 +1348,9 @@ describe("MessagesTimeline subagents", () => {
       if (fold) await click(fold);
       if (count > 1) {
         expect(children()).toHaveLength(0);
-        await click(screen.button(`${count} subagents`));
+        await click(screen.button(`${count} Subcells`));
       } else {
-        expect(screen.buttons(`${count} subagents`)).toHaveLength(0);
+        expect(screen.buttons(`${count} Subcells`)).toHaveLength(0);
       }
       expect(children()).toHaveLength(count);
       expect(screen.text()).toContain(preview);
@@ -1360,7 +1360,7 @@ describe("MessagesTimeline subagents", () => {
       await click(children()[0]!);
       expect(onOpenThread).toHaveBeenCalledWith("thread-subagent-1");
       if (count > 1) {
-        await click(screen.button(`${count} subagents`));
+        await click(screen.button(`${count} Subcells`));
         await vi.waitFor(() => expect(children()).toHaveLength(0));
       }
     },

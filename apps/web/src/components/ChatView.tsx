@@ -574,6 +574,7 @@ import {
   threadContextsOutsideEnvironment,
 } from "@t3tools/shared/composerContextReferences";
 import { recallableComposerPrompt } from "./chat/composerPromptHistory";
+import { SUBCELL } from "../../../../stemcells/words/subcells";
 import { observeResize } from "~/lib/observeResize";
 
 const EMPTY_PROVIDERS: ServerProvider[] = [];
@@ -5480,7 +5481,7 @@ export default function ChatView(props: ChatViewProps) {
                     <span className="whitespace-nowrap">
                       <InlineButton
                         tone="muted"
-                        aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} subagent ${item.label}`}
+                        aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${SUBCELL.one} ${item.label}`}
                         onClick={() => onOpenRelatedThreadStable(childThreadId)}
                       >
                         {presentation.items.length === 1 ? "Show" : item.label}

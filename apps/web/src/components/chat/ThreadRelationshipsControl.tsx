@@ -163,7 +163,7 @@ function ThreadLineageGroup(props: {
 function relationshipLabel(edge: ThreadRelationshipEdge, currentThreadId: ThreadId) {
   if (edge.kind === "transfer") return "Context transfer";
   if (edge.kind === "subagent") {
-    return edge.sourceThreadId === currentThreadId ? "Subagent" : "Parent agent";
+    return edge.sourceThreadId === currentThreadId ? "Subcell" : "Parent Cell";
   }
   return edge.sourceThreadId === currentThreadId ? "Fork" : "Parent thread";
 }
@@ -321,7 +321,7 @@ export function ThreadRelationshipsPanel(props: {
   const groups = [
     { id: "related", label: null, rows: related, expanded: true },
     { id: "active", label: null, rows: active, expanded: true },
-    { id: "previous", label: "Previous agents", rows: previous, expanded: false },
+    { id: "previous", label: "Previous Subcells", rows: previous, expanded: false },
   ];
   const runningCount =
     (projection?.subagents.filter(
@@ -379,7 +379,7 @@ export function ThreadRelationshipsPanel(props: {
     });
     setStoppingId(null);
     if (result._tag === "Failure") {
-      toastManager.add({ type: "error", title: "Could not stop subagent" });
+      toastManager.add({ type: "error", title: "Could not stop Subcell" });
     }
   };
 
@@ -670,7 +670,7 @@ export function ThreadRelationshipsPanel(props: {
                               variant="ghost"
                               part="icon"
                               tone="destructive"
-                              aria-label={`Stop subagent ${threadTitle}`}
+                              aria-label={`Stop Subcell ${threadTitle}`}
                               disabled={stoppingId !== null}
                               onClick={() => void stopSubagent(threadId, agent)}
                             />
@@ -682,7 +682,7 @@ export function ThreadRelationshipsPanel(props: {
                             <SquareIcon aria-hidden className="size-3 fill-current" />
                           )}
                         </TooltipTrigger>
-                        <TooltipPopup side="left">Stop subagent</TooltipPopup>
+                        <TooltipPopup side="left">Stop Subcell</TooltipPopup>
                       </Tooltip>
                     </div>
                   ) : null}

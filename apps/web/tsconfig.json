@@ -38,6 +38,7 @@
     "../../stemcells/brand/assets.ts",
     "../../stemcells/brand/mark.ts",
     "../../stemcells/brand/name.ts",
-    "../../stemcells/words/cellTools.ts"
+    "../../stemcells/words/cellTools.ts",
+    "../../stemcells/words/subcells.ts"
   ]
 }

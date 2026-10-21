@@ -4,6 +4,7 @@ import { projectedSubagentsToRuntime } from "@t3tools/client-runtime/state/subag
 import type { ReactNode } from "react";
 import { useThreadShell, useProject } from "../../state/entities";
 import { SubagentTooltipContent } from "./SubagentTooltipContent";
+import { SubcellMark } from "../../stemcells/cell/SubcellMark";
 import { useAtomValue } from "@effect/atom-react";
 import { scopeThreadRef, scopeProjectRef } from "@t3tools/client-runtime/environment";
 import { environmentThreadDetails } from "../../state/threads";
@@ -307,12 +308,15 @@ function SubagentAvatar({
 export function EnvironmentSubagentAvatar({
   environmentId,
   providerInstanceId,
+  subcell,
   ...props
 }: {
   environmentId: EnvironmentId;
   providerInstanceId: ProviderInstanceId;
   driver?: ProviderDriverKind | undefined;
   status?: OrchestrationV2TurnItem["status"] | undefined;
+  /** Stemcells: the subagent's thread id, else its id, to draw it as its Subcell. */
+  subcell?: string | undefined;
 }) {
   const providersAtom = serverEnvironment.providersValueAtom(environmentId);
   const displayName = useAtomValue(
@@ -325,6 +329,10 @@ export function EnvironmentSubagentAvatar({
     (providers) =>
       providers?.find((provider) => provider.instanceId === providerInstanceId)?.iconUrl,
   );
+  if (subcell !== undefined) {
+    const dot = props.status ? subagentStatusVisual(props.status).dotClass : undefined;
+    return <SubcellMark name={subcell} provider={props.driver} status={props.status} dot={dot} />;
+  }
   return <SubagentAvatar {...props} displayName={displayName} iconUrl={iconUrl} />;
 }
 
@@ -442,6 +450,7 @@ function SubagentTimelineLink(props: {
         providerInstanceId={props.providerInstanceId}
         driver={props.driver}
         status={status ?? undefined}
+        subcell={props.threadId ?? props.subagentId}
       />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">

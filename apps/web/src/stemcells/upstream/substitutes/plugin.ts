@@ -25,6 +25,7 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // Concise model names: the naming helpers, and the subagent bar's own.
   "apps/web/src/components/chat/providerIconUtils.ts": "providerIconUtils.ts",
   "apps/web/src/components/chat/ProviderSubagentBar.tsx": "ProviderSubagentBar.tsx",
+  "apps/web/src/components/chat/TimelineSystemDivider.tsx": "TimelineSystemDivider.tsx",
   // The auto-compact window: the context meter fills toward where it compacts.
   "apps/web/src/components/chat/ContextWindowMeter.tsx": "ContextWindowMeter.tsx",
   // The workbench: a pane's chat draws its panel and sheet at the tab's edge.

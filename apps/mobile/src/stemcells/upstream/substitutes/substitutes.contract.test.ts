@@ -4,6 +4,7 @@ import * as NodeModule from "node:module";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
+import * as UpstreamSubagentDisplay from "@t3tools/client-runtime/state/subagent-display";
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
@@ -12,6 +13,7 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import phoneTestConfig from "../../../../vite.config";
 import * as OurFavicon from "./favicon";
+import * as OurSubagentDisplay from "./subagentDisplay";
 import { SUBSTITUTES } from "./substitutes.cjs";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
@@ -145,6 +147,18 @@ const CASES: Readonly<Record<string, Case>> = {
       "packages/client-runtime/src/work-log/presentation.ts": [
         "@t3tools/client-runtime/t3ToolSummary",
         ["summarizeT3ToolCalls"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/subagentDisplay.ts": {
+    exports: [
+      Object.keys(UpstreamSubagentDisplay),
+      Object.keys(OurSubagentDisplay satisfies typeof UpstreamSubagentDisplay),
+    ],
+    importers: {
+      "apps/mobile/src/lib/threadActivity.ts": [
+        "@t3tools/client-runtime/state/subagent-display",
+        ["formatSubagentDisplayTitle"],
       ],
     },
   },

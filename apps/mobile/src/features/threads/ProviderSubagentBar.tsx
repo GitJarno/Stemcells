@@ -28,7 +28,7 @@ export function ProviderSubagentBar(props: {
       {}
       <View
         accessible
-        accessibilityLabel={`${modelDescription} subagent, ${statusLabel}. It runs on its own and cannot take messages.`}
+        accessibilityLabel={`${modelDescription} Subcell, ${statusLabel}. It runs on its own and cannot take messages.`}
         className="min-w-0 flex-1 gap-0.5"
       >
         <View className="min-w-0 flex-row items-center gap-1.5">

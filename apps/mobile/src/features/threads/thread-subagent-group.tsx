@@ -92,7 +92,7 @@ export function ThreadSubagentGroup(props: {
     };
   });
   const grouped = agents.length > 1;
-  const label = `${agents.length} subagents`;
+  const label = `${agents.length} Subcells`;
   const summary = summarizeSubagentStatuses(agents.map((agent) => agent.status));
   const expanded = props.expandedRows[props.anchorKey] ?? false;
   const iconUrl = (item: SubagentItem) =>
@@ -154,7 +154,7 @@ export function ThreadSubagentGroup(props: {
                 accessible
                 accessibilityRole={threadId === null ? undefined : "link"}
                 accessibilityHint={
-                  threadId === null ? "Provider-managed agent" : "Opens this agent's thread"
+                  threadId === null ? "Provider-managed Subcell" : "Opens this Subcell"
                 }
                 disabled={threadId === null}
                 onPress={() => {

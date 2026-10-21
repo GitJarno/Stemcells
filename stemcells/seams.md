@@ -45,6 +45,13 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `stemcells/transcript/ToolRowLabel`; a tool row's label renders through `<ToolRowLabel label={previewText} command={workEntry.command} />` where it rendered `previewText` | In a narrow pane a row's end is cut, and a path showed only the start of its folder: the row names the file first and its folder after, quieter. A command's row and any label that isn't one path read as before; a row's accessible name, where it has one, stays upstream's |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx` | Its changed-file row reads `session-logic.ts t3code/apps/web/src` where it read the path | It pins the row `ToolRowLabel` (above) puts name first |
 | `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/MessagesTimeline.logic.test.ts`, `apps/mobile/src/lib/threadActivity.test.ts` | Expect T3's tools in Cell words ("Read a Cell", "Create Cells", "Waiting for a Cell", "sent messages to 3 Cells", "Read Cell" before a read Cell's title), and nothing else changes in them | They pin the words T3's tools in Cell words (below) change |
+| `apps/web/src/components/chat/V2LifecycleRow.tsx` | Imports `stemcells/cell/SubcellMark`; `EnvironmentSubagentAvatar` takes `subcell` and, given it, renders `SubcellMark` (the id, the driver, the status and upstream's status dot) where it rendered the provider's logo; a subagent's row hands it `subcell={props.threadId ?? props.subagentId}` | Subcells (below): each is drawn as a Cell of its own |
+| `apps/web/src/components/chat/MessagesTimeline.tsx` | Imports `SUBCELL` and `subcellCount` from `stemcells/words/subcells`; the subagent card's label is `subcellCount(members.length)`, its header avatars get `subcell={item.childThreadId ?? item.subagentId}`, and a notification row's button says `SUBCELL.open` where it said "Open subagent" (and "Open subagent thread" to a screen reader) | Same, for the card and the row. A hot file, but no substitute reaches these: the words are written inline, and the header's avatars aren't told which subagent they draw. One import, so the words live in our module |
+| `apps/web/src/components/ChatView.tsx` | Imports `SUBCELL` from `stemcells/words/subcells`; the screen-reader label of a spawn's link to a Subcell says `SUBCELL.one` where it said "subagent" | Same: a hot file, one import and its one label |
+| `apps/web/src/components/chat/WorkflowOpeningBlock.tsx` | A member's avatar gets `subcell={threadId ?? member.id}` | Same, for a workflow's members |
+| `apps/web/src/components/chat/ThreadRelationshipsControl.tsx`, `apps/web/src/components/chat/V2ItemInspector.tsx` | Say Subcell where they said subagent or agent: the relation ("Subcell", "Parent Cell"), "Previous Subcells", the stop button's label, tooltip and error, "Open Subcell" | Same: the words a person reads about them |
+| `apps/web/src/components/chat/MessagesTimeline.browser.test.tsx`, `apps/web/src/components/chat/ThreadRelationshipsControl.agents.browser.test.tsx` | Expect "2 Subcells", "Subcell of", "Stop Subcell Worker" and "Previous Subcells", and no "Open Subcell" where they expected no "Open subagent"; nothing else changes in them | They pin the words these seams and the substitutes change |
+| `apps/mobile/src/features/threads/thread-subagent-group.tsx`, `apps/mobile/src/features/threads/ThreadAgentsSheet.tsx`, `apps/mobile/src/features/threads/threadAgentsPresentation.ts`, `apps/mobile/src/features/threads/floating-working-control.tsx`, `apps/mobile/src/features/threads/thread-work-log.tsx`, `apps/mobile/src/features/threads/ProviderSubagentBar.tsx` | Say Subcell where they said subagent or agent: the card's label, the sheet's title, empty line and hints, an untitled one's title, and the words read aloud for them | Same, on the phone |
 | `apps/web/src/branding.ts` | Imports `stemcells/brand/name`; `APP_BASE_NAME` falls back to `APP_NAME` where it fell back to "T3 Code" | The app's name (below): a browser's window title, the auth and pairing screens and every other view that names the app through upstream's branding |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/brand/Wordmark` and renders `SidebarWordmark` where it rendered `SidebarBrandMark` (the T3 logo beside "Code"), in the link and in the width probe; `SidebarBrandMark` and its `T3Wordmark` import go | The sidebar's top-left reads Stemcells |
 | `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The header's title is `Set up ${APP_BASE_NAME}` and its identity `WizardWordmark`, where it drew the T3 logo beside "Code" | The first thing a person reads |
@@ -81,7 +88,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
 | `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the Cell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/name.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
 | `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsAboutRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsMicrophoneRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsNotificationsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsEnvironmentDetailRouteScreen.tsx`, `apps/mobile/src/features/home/ThreadListToolbar.tsx`, `apps/mobile/src/features/pull-requests/PullRequestToolbar.android.tsx`, `apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx`, `apps/mobile/src/features/threads/ThreadComposer.tsx`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/agent-awareness/remoteRegistration.ts`, `apps/mobile/src/features/diagnostics/crash-log-model.ts`, `apps/mobile/src/lib/authClientMetadata.ts`, `apps/mobile/src/features/showcase/showcaseAgentActivity.ts` | Each imports `APP_NAME` from `stemcells/brand/name` and says it where it said "T3 Code": a title, a label, a prompt, the crash report's first line, the Live Activity's title, the name a Mac lists this phone by ("Stemcells Mobile") | Same: the phone's screens write the name as text, with no name of upstream's to follow |
@@ -326,6 +333,31 @@ Cells", "Read a Cell", "Updated a Cell's details", and for a run of calls,
 - `cellToolWords.contract.test.ts` (the web's and the phone's) fails when a
   label for any of upstream's tools, at any state, or a run's sentence,
   says T3, thread or agent.
+
+### Subcells
+
+A subagent is a Subcell: a Cell another Cell starts for a piece of its
+work. The transcript's card for a turn's subagents says "2 Subcells", and
+each Subcell, in the card's header and rows and among a workflow's members,
+is a Cell of its own where upstream drew its provider's logo.
+
+- `apps/web/src/stemcells/cell/SubcellMark.tsx` draws it with the tab's
+  figure (`CellFigure`), dealt by its thread's id (its subagent id while it
+  has none): the crew's look while that thread is open in a tab, else the
+  look its id is dealt alone, the same on every reload that day. Its face
+  comes from its status (`cell/subcell.ts`), in its provider's colours, and
+  upstream's status dot stays on it.
+- `stemcells/words/subcells.ts` holds the word. The substitutes say it:
+  `subagentDisplay` on the web and the phone (an untitled subagent's title)
+  and `TimelineSystemDivider` on the web ("Subcell of" over a Subcell's
+  thread). The hot files that write it inline, `MessagesTimeline.tsx` and
+  `ChatView.tsx`, import it from there once each, so a sync's conflict there
+  is one import and the lines that use it; cold files say it in place.
+- Left as upstream's: the subagent bar's screen-reader announcement, inside
+  the component the bar's substitute wraps. The phone draws no Cells yet, so
+  its card keeps the provider's logos: drawing them there is a follow-up.
+- `subcells.contract.test.ts` (the web's) and `subcellWords.contract.test.ts`
+  (the phone's) pin each seam and the substitutes' words.
 
 ### No telemetry
 

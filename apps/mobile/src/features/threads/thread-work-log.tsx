@@ -1388,7 +1388,7 @@ export const ThreadAgentSpawnCard = function ThreadAgentSpawnCard(props: {
         accessibilityLabel={`${summary.title}, ${summary.status}`}
         accessibilityHint={
           canExpand
-            ? `Double tap to ${expanded ? "hide" : "show"} ${memberCount} ${memberCount === 1 ? "subagent" : "subagents"}. Long press to copy.`
+            ? `Double tap to ${expanded ? "hide" : "show"} ${memberCount} ${memberCount === 1 ? "Subcell" : "Subcells"}. Long press to copy.`
             : "Long press to copy."
         }
         hitSlop={4}

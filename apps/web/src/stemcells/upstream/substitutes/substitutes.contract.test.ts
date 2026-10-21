@@ -26,6 +26,7 @@ import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/Draft
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
+import * as UpstreamTimelineSystemDivider from "../../../components/chat/TimelineSystemDivider";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
@@ -52,6 +53,7 @@ import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
+import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 
 /**
@@ -122,6 +124,10 @@ const CASES: Readonly<Record<string, Case>> = {
         "@t3tools/client-runtime/state/subagent-display",
         ["resolveSubagentMetadata"],
       ],
+      "apps/web/src/components/chat/V2LifecycleRow.tsx": [
+        "@t3tools/client-runtime/state/subagent-display",
+        ["formatSubagentDisplayTitle"],
+      ],
     },
   },
   "apps/web/src/components/chat/providerIconUtils.ts": {
@@ -161,6 +167,16 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/ChatView.tsx": [
         "./chat/ProviderSubagentBar",
         ["ProviderSubagentBar"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/TimelineSystemDivider.tsx": {
+    upstream: UpstreamTimelineSystemDivider,
+    substitute: OurTimelineSystemDivider satisfies typeof UpstreamTimelineSystemDivider,
+    importers: {
+      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+        "./TimelineSystemDivider",
+        ["TimelineSystemDivider"],
       ],
     },
   },

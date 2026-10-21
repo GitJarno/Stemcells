@@ -69,6 +69,7 @@ const NOOP_OPEN_ATTACHMENT = (_attachment: ChatFileAttachment) => {};
 import { resolveChatListAnchoredEndSpace } from "@t3tools/shared/chatList";
 import { toolActivityFaviconUrl } from "@t3tools/shared/favicon";
 import { ToolRowLabel } from "../../stemcells/transcript/ToolRowLabel";
+import { SUBCELL, subcellCount } from "../../../../../stemcells/words/subcells";
 import { formatDuration } from "@t3tools/shared/orchestrationTiming";
 import { getProjectFaviconCacheKey } from "@t3tools/shared/projectFavicon";
 import { claudeSkillInvocation, isJavaScriptReplTool } from "@t3tools/shared/toolActivity";
@@ -3255,7 +3256,7 @@ const V2SubagentGroup = memo(function V2SubagentGroup({
     };
   });
   const summary = subagentGroupSummary(agents);
-  const label = `${members.length} ${members.length === 1 ? "subagent" : "subagents"}`;
+  const label = subcellCount(members.length);
   const statusSummary = summarizeSubagentStatuses(agents.map(({ status }) => status));
   const toggleExpanded = (open: boolean) => {
     ctx.onToggleWorkEntry(row.id, expanded);
@@ -3284,6 +3285,7 @@ const V2SubagentGroup = memo(function V2SubagentGroup({
                 providerInstanceId={item.providerInstanceId}
                 driver={item.driver}
                 status={agents.length === 1 ? status : undefined}
+                subcell={item.childThreadId ?? item.subagentId}
               />
             ))}
             {agents.length > 3 ? (
@@ -5635,14 +5637,14 @@ function WorkEntryLogRow(props: WorkEntryRowProps) {
           ) : null}
           {notifiedSubagentThreadId ? (
             <InlineButton
-              aria-label="Open subagent thread"
+              aria-label={SUBCELL.open}
               onClick={(event) => {
                 event.stopPropagation();
                 ctx.onOpenThread(notifiedSubagentThreadId);
               }}
               onKeyDown={stopRowToggle}
             >
-              Open subagent
+              {SUBCELL.open}
             </InlineButton>
           ) : null}
           {showFailedIndicator &&

@@ -21,6 +21,8 @@ const SUBSTITUTES = {
   // T3's own tools in the work log say Cell, not thread.
   "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
+  // A subagent with no title of its own is a Subcell.
+  "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

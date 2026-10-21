@@ -246,7 +246,7 @@ it("stops the entire native workflow through its parent without changing state b
   expect(state.command).not.toHaveBeenCalled();
   expect(state.navigate).not.toHaveBeenCalled();
   expect(stopButton().disabled).toBe(true);
-  expect(byLabel("Stop subagent Worker").disabled).toBe(true);
+  expect(byLabel("Stop Subcell Worker").disabled).toBe(true);
   expect(byLabel("Open Checker chat")).toBeDefined();
   expect(heading()).toBe("Lineage · 2 running");
   await act(async () => {
@@ -511,7 +511,7 @@ it("groups and counts a workflow by its run status instead of its coordinator ch
   };
   await update();
   expect(heading()).toBe("Lineage");
-  expect(text()).toContain("Previous agents");
+  expect(text()).toContain("Previous Subcells");
   expect(allByLabel("Open Checker chat")).toHaveLength(0);
   await click(sectionToggle(false));
   expect(byLabel("Expand Checkout review")).toBeDefined();
@@ -576,10 +576,10 @@ it.each([
     );
     await render(panel);
     if (!canStop) {
-      expect(allByLabel("Stop subagent Worker")).toHaveLength(0);
+      expect(allByLabel("Stop Subcell Worker")).toHaveLength(0);
       return;
     }
-    const stopButton = () => byLabel("Stop subagent Worker");
+    const stopButton = () => byLabel("Stop Subcell Worker");
     await click(stopButton());
     expect(state.command).toHaveBeenCalledWith({
       environmentId: "test",
@@ -607,11 +607,11 @@ it.each([
         subagents: [{ ...agent, origin: "provider_native", status: "completed" }],
       };
       await update();
-      expect(allByLabel("Stop subagent Worker")).toHaveLength(0);
+      expect(allByLabel("Stop Subcell Worker")).toHaveLength(0);
       state.projection = { ...projection, subagents: [{ ...agent, status: "completed" }] };
       await update();
       if (origin === "provider_native") {
-        expect(allByLabel("Stop subagent Worker")).toHaveLength(0);
+        expect(allByLabel("Stop Subcell Worker")).toHaveLength(0);
         continue;
       }
       await click(stopButton());
@@ -625,17 +625,17 @@ it.each([
     for (const status of ["completed", "failed", "interrupted"]) {
       state.projection = { ...projection, subagents: [{ ...agent, status }] };
       await update();
-      expect(allByLabel("Stop subagent Worker")).toHaveLength(0);
+      expect(allByLabel("Stop Subcell Worker")).toHaveLength(0);
     }
     state.projection = { ...projection, subagents: [{ ...agent, startedAt: null }] };
     await update();
-    expect(allByLabel("Stop subagent Worker")).toHaveLength(0);
+    expect(allByLabel("Stop Subcell Worker")).toHaveLength(0);
     state.projection = {
       ...projection,
       subagents: [{ ...agent, origin: "provider_native", driver: "codex" }],
     };
     await update();
-    expect(allByLabel("Stop subagent Worker")).toHaveLength(0);
+    expect(allByLabel("Stop Subcell Worker")).toHaveLength(0);
   },
 );
 
@@ -707,7 +707,7 @@ it("shows the matching child agent details and refreshes them when the agent set
   };
   await update();
   expect(heading()).toBe("Lineage");
-  expect(text()).toContain("Previous agents (1)");
+  expect(text()).toContain("Previous Subcells (1)");
   expect(text()).not.toContain("Checker");
   await click(sectionToggle(false));
   expect(text()).toContain("Checker");
@@ -718,7 +718,7 @@ it("shows the matching child agent details and refreshes them when the agent set
   expect(text()).not.toContain("Worker");
   await click(sectionToggle(true));
   expect(text()).not.toContain("Checker");
-  expect(text()).toContain("Previous agents (1)");
+  expect(text()).toContain("Previous Subcells (1)");
   await click(sectionToggle(false));
   expect(text()).toContain("Checker");
 
@@ -824,7 +824,7 @@ it("keeps active supervisor status, progress, and task timing after its child tu
     );
 
     expect(heading()).toBe(status === "running" ? "Lineage · 1 running" : "Lineage");
-    expect(textNodes(" ")).not.toContain("Previous agents");
+    expect(textNodes(" ")).not.toContain("Previous Subcells");
     expect(buttons().some((button) => button.textContent?.includes("Supervisor"))).toBe(true);
     const tooltip = container.querySelector('[role="tooltip"]')?.textContent;
     expect.soft(tooltip).toContain(status);
@@ -936,7 +936,7 @@ it("shows readable models and only differing workspace details in agent tooltips
   state.projection = projection;
   await update();
   expect(text()).not.toContain("Tokens");
-  expect(text()).not.toContain("Open subagent");
+  expect(text()).not.toContain("Open Subcell");
   expect(text()).not.toContain("Project");
   expect(text()).not.toContain("Worktree");
   expect(text()).not.toContain("Workspace");
