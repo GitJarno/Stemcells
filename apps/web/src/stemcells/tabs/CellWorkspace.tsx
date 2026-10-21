@@ -27,6 +27,7 @@ import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../u
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import { seatAskiHere } from "../windows/askiHome";
+import { ChatCarry, useCarriedPane } from "../windows/ChatCarry";
 import { revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
@@ -456,6 +457,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
           </TabPager>
         )}
         <DropWash />
+        <ChatCarry />
       </div>
     </SidebarInset>
   );
@@ -653,6 +655,7 @@ function PaneSlot(props: {
   onClose: ((paneId: string) => void) | null;
 }) {
   const presence = useCellPresence(props.pane.cell);
+  const carried = useCarriedPane() === props.pane.id;
   const { onClose } = props;
   // Other panes render only a chat that still exists, so upstream's view never
   // leaves the route on their behalf (it does for a chat that is gone).
@@ -668,6 +671,7 @@ function PaneSlot(props: {
       data-stemcells-pane={props.pane.id}
       data-stemcells-share=""
       data-focused={props.focused}
+      data-carried={carried || undefined}
       onPointerDownCapture={() => {
         if (!props.focused) props.onFocus(props.pane.id);
       }}

@@ -1,0 +1,25 @@
+/* A chat carried by its Cell (ChatCarry.tsx). */
+
+/* The Cell over the composer is the chat's handle. */
+[data-stemcells-chat-handle] {
+  pointer-events: auto;
+  cursor: grab;
+}
+[data-stemcells-chat-handle][data-carrying="true"] {
+  cursor: grabbing;
+}
+
+/* Its place in the grid stays, empty, until the chat lands: nothing in it
+   shows, the buttons a pane under the pointer shows (workspace.css) too. */
+[data-stemcells-pane][data-carried="true"] > * {
+  opacity: 0 !important;
+}
+
+/* The card in the hand, over everything in the window. */
+[data-stemcells-chat-card] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  pointer-events: none;
+}
