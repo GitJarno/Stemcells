@@ -38,25 +38,19 @@ export function askiCellOf(workspace: Workspace): CellRef | null {
   return tab ? (panesOf(tab)[0]?.cell ?? null) : null;
 }
 
-/** What the person has done since the app opened, as Aski's chat arrives. */
-export interface SinceOpen {
-  /** The tab that was active when the app opened. */
-  readonly openedOn: string | null;
-  /** Whether they have clicked or typed in the app. */
-  readonly touched: boolean;
-}
-
 /**
  * Puts Aski's chat in Aski's tab, first in the strip. A tab that is new
- * becomes the active one while the person is still where the app opened:
- * Aski is where the app opens the first time. It never takes the front from
- * a Cell they went to or are typing in, or what they wrote would go to Aski.
+ * becomes the active one unless the person has `acted` since the app opened
+ * (clicked, typed or swiped): Aski is where the app opens the first time,
+ * even over a draft the app opened while Aski's chat was on its way, but it
+ * never takes the front from a Cell the person went to or is typing in, or
+ * what they wrote would go to Aski.
  */
 export function seatAski(
   workspace: Workspace,
   cell: CellRef,
   ids: NewIds,
-  since: SinceOpen = { openedOn: workspace.activeTabId, touched: false },
+  acted = false,
 ): Workspace {
   const existing = askiTabOf(workspace);
   const panes = existing ? panesOf(existing) : [];
@@ -82,10 +76,9 @@ export function seatAski(
     focusedPaneId: paneId,
   };
   const others = workspace.tabs.filter((candidate) => !isAskiTab(candidate));
-  const front = !existing && !since.touched && workspace.activeTabId === since.openedOn;
   return {
     tabs: [tab, ...others],
-    activeTabId: front ? ASKI_TAB_ID : workspace.activeTabId,
+    activeTabId: existing || acted ? workspace.activeTabId : ASKI_TAB_ID,
   };
 }
 

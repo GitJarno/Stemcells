@@ -61,26 +61,24 @@ describe("Aski's tab", () => {
   // person who opened a new Cell meanwhile typed into Aski's chat once it
   // took the front, and their words went to Aski as written.
   it("never takes the front from a new Cell opened before it arrived", () => {
-    const opened = EMPTY_WORKSPACE;
-    const since = { openedOn: opened.activeTabId, touched: true };
-    const blank = openTab(opened, ids(), null);
+    const blank = openTab(EMPTY_WORKSPACE, ids(), null);
     const draft: CellRef = { environmentId: "env", threadId: "new", draftId: "draft-1" };
     const withDraft = setCell(blank, focusedPane(blank)!.id, draft);
-    const seated = seatAski(withDraft, aski, ids(), since);
+    const seated = seatAski(withDraft, aski, ids(), true);
     expect(seated.tabs[0]!.id).toBe(ASKI_TAB_ID);
     expect(seated.activeTabId).toBe(withDraft.activeTabId);
     expect(focusedPane(seated)?.cell).toEqual(draft);
   });
 
-  it("takes the front on a cold open only while the person is where it opened", () => {
-    const fresh = seatAski(EMPTY_WORKSPACE, aski, ids(), { openedOn: null, touched: false });
-    expect(fresh.activeTabId).toBe(ASKI_TAB_ID);
+  // On a first-ever open the app can start a draft of its own while Aski's
+  // chat is still being made; that is no choice of the person's.
+  it("takes the front the first time over what the app opened, never once the person acted", () => {
+    expect(seatAski(EMPTY_WORKSPACE, aski, ids()).activeTabId).toBe(ASKI_TAB_ID);
+    const index: CellRef = { environmentId: "env", threadId: "index", draftId: "draft-0" };
+    const opened = openTab(EMPTY_WORKSPACE, ids(), index);
+    expect(seatAski(opened, aski, ids()).activeTabId).toBe(ASKI_TAB_ID);
     const stored = withCells("a", "b");
-    const typed = seatAski(stored, aski, ids(), { openedOn: stored.activeTabId, touched: true });
-    expect(typed.activeTabId).toBe(stored.activeTabId);
-    const swiped = { ...stored, activeTabId: stored.tabs[0]!.id };
-    const away = seatAski(swiped, aski, ids(), { openedOn: stored.activeTabId, touched: false });
-    expect(away.activeTabId).toBe(swiped.activeTabId);
+    expect(seatAski(stored, aski, ids(), true).activeTabId).toBe(stored.activeTabId);
   });
 
   it("keeps the tab the person was on once it exists", () => {

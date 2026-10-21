@@ -98,7 +98,16 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
   const [askiChat, setAskiChat] = useState<AskiChat>({ status: "starting" });
-  const [openedOn] = useState(() => readWorkspace().activeTabId);
+  // A swipe grants no user activation the way a click or a key does, so it
+  // is counted here: either means the person has acted since the app opened.
+  const swiped = useRef(false);
+  useEffect(() => {
+    const onWheel = () => {
+      swiped.current = true;
+    };
+    window.addEventListener("wheel", onWheel, { passive: true, once: true });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, []);
   const newTabRef = useRef<HTMLDivElement>(null);
   const newCellIsTaken = newCellTaken(workspace, newCell);
   const lastTabOnStage =
@@ -235,8 +244,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     setAskiChat(chat);
     if (chat.status !== "ready") return;
     const before = readWorkspace();
-    const since = { openedOn, touched: navigator.userActivation?.hasBeenActive ?? false };
-    updateWorkspace((current) => seatAski(current, chat.cell, newIds(), since));
+    const acted = swiped.current || (navigator.userActivation?.hasBeenActive ?? false);
+    updateWorkspace((current) => seatAski(current, chat.cell, newIds(), acted));
     if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
   };
 
