@@ -4,6 +4,7 @@ import { use, useLayoutEffect, useRef } from "react";
 import { channels } from "../aski/stage/colour";
 import { PaneCellContext } from "../tabs/paneCell";
 import { crossing, paneOf, resweep, standing, sweep } from "../motion/beat";
+import { type Sight, watchSight } from "../motion/sight";
 import { reducedMotion } from "../tokens/motion";
 import { useCellDriver } from "../upstream/providers";
 import { rgba, SHEEN_BAND, SHEEN_CORE, sheenTone, toneTokenOf } from "./light";
@@ -18,7 +19,9 @@ import "./glow.css";
  * pane and nothing else in the row moves (`motion/beat.ts`). The band is
  * the chat's provider's colour, as the glass's light is, lifted to at least
  * the interface ink's lightness so it is always a light over the word,
- * never a shade. Under reduced motion the word holds its ink.
+ * never a shade. Under reduced motion, and while no one can see the word
+ * (`motion/sight.ts`), it holds its ink; in a window beside another app
+ * the band crosses on the Cells' sprite clock, twelve steps a second.
  *
  * The light is a copy of the word seen through a moving window: the window
  * slides and the copy slides back under it, so the glyphs stay put and only
@@ -36,6 +39,7 @@ export function WorkingSheen(props: { readonly children: string }) {
     const glyphs = word.querySelector<HTMLElement>(".sheen-glyphs")!;
     lens.style.width = `${SHEEN_BAND}px`;
     let crossings: Animation[] = [];
+    let sight: Sight = "focused";
     const recolour = () => {
       const style = getComputedStyle(word);
       const lifted = sheenTone(
@@ -45,7 +49,7 @@ export function WorkingSheen(props: { readonly children: string }) {
       glyphs.style.color = rgba(lifted, SHEEN_CORE);
     };
     const aim = () => {
-      if (reducedMotion()) {
+      if (reducedMotion() || sight === "hidden") {
         for (const animation of crossings) animation.cancel();
         crossings = [];
         return;
@@ -53,12 +57,13 @@ export function WorkingSheen(props: { readonly children: string }) {
       // The window's middle rides the pane's crest; the copy slides against it.
       const { left, width } = standing(word);
       const { from, to } = crossing(width, left, SHEEN_BAND / 2);
+      const stepped = sight === "unfocused";
       const [sliding, copy] = crossings;
       if (sliding && copy) {
-        resweep(sliding, from, to);
-        resweep(copy, -from, -to);
+        resweep(sliding, from, to, "", stepped);
+        resweep(copy, -from, -to, "", stepped);
       } else {
-        crossings = [sweep(lens, from, to), sweep(glyphs, -from, -to)];
+        crossings = [sweep(lens, from, to, "", stepped), sweep(glyphs, -from, -to, "", stepped)];
       }
     };
     recolour();
@@ -74,10 +79,15 @@ export function WorkingSheen(props: { readonly children: string }) {
     });
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
     motion.addEventListener("change", aim);
+    const unwatch = watchSight(word, (now) => {
+      sight = now;
+      aim();
+    });
     return () => {
       sized.disconnect();
       skinned.disconnect();
       motion.removeEventListener("change", aim);
+      unwatch();
       for (const animation of crossings) animation.cancel();
     };
   }, [tone]);

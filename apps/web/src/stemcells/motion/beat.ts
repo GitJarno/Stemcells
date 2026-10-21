@@ -90,12 +90,19 @@ export function crossing(
 /**
  * One working sweep: `element` slides along x from `from` to `to` pixels in
  * the beat's pass, rests, and goes again, on the beat. `lean` follows the
- * slide in the transform (a shear, say).
+ * slide in the transform (a shear, say). `stepped` crosses on the Cells'
+ * sprite clock instead of gliding (`sweepFrames`).
  */
-export function sweep(element: Element, from: number, to: number, lean = ""): Animation {
+export function sweep(
+  element: Element,
+  from: number,
+  to: number,
+  lean = "",
+  stepped = false,
+): Animation {
   const { pass, period } = beat();
   return onBeat(
-    element.animate(sweepFrames(from, to, pass / period, lean), {
+    element.animate(sweepFrames(from, to, pass / period, lean, stepped), {
       duration: period,
       iterations: Infinity,
     }),
@@ -103,23 +110,72 @@ export function sweep(element: Element, from: number, to: number, lean = ""): An
   );
 }
 
-/** Re-aims a sweep in flight, on the same clock: its timing and phase stay. */
-export function resweep(animation: Animation, from: number, to: number, lean = ""): void {
+/**
+ * Re-aims a sweep in flight, on the same clock: its timing and phase stay,
+ * so one that turns stepped or smooth goes on from where the crest is.
+ */
+export function resweep(
+  animation: Animation,
+  from: number,
+  to: number,
+  lean = "",
+  stepped = false,
+): void {
   const { pass, period } = beat();
   const effect = animation.effect;
   if (effect instanceof KeyframeEffect) {
-    effect.setKeyframes(sweepFrames(from, to, pass / period, lean));
+    effect.setKeyframes(sweepFrames(from, to, pass / period, lean, stepped));
   }
 }
 
-/** A sweep's frames: across in the first `share` of the beat, then held at its end. */
-export function sweepFrames(from: number, to: number, share: number, lean = ""): Keyframe[] {
+/**
+ * A sweep's frames: across in the first `share` of the beat, then held at
+ * its end. Stepped, the crossing holds each place for a beat of the Cells'
+ * sprite clock, on the same curve, so the compositor draws twelve frames a
+ * second rather than one per refresh of the display.
+ */
+export function sweepFrames(
+  from: number,
+  to: number,
+  share: number,
+  lean = "",
+  stepped = false,
+): Keyframe[] {
   const at = (x: number) => `translateX(${x}px)${lean ? ` ${lean}` : ""}`;
-  return [
-    { offset: 0, transform: at(from), easing: BEAT_CURVE },
+  const held = [
     { offset: share, transform: at(to) },
     { offset: 1, transform: at(to) },
   ];
+  if (!stepped) return [{ offset: 0, transform: at(from), easing: BEAT_CURVE }, ...held];
+  const across = steppedFrames(beat().pass, timing("formStep"), beatEase, (progress) => ({
+    transform: at(from + (to - from) * progress),
+  }));
+  return [
+    ...across.slice(0, -1).map((frame) => ({ ...frame, offset: (frame.offset ?? 0) * share })),
+    ...held,
+  ];
+}
+
+/**
+ * Frames for a loop that never rests (a drift, a breath), stepping `step`
+ * ms apart instead of gliding: the compositor still runs it, but draws only
+ * when a step lands, where a glide that never rests drew every frame the
+ * display shows, 120 a second on a fast one. `frame` takes how far along the
+ * loop is, 0 to 1, already eased by `ease`; play the frames with a linear
+ * easing, on the beat.
+ */
+export function steppedFrames(
+  duration: number,
+  step: number,
+  ease: (time: number) => number,
+  frame: (progress: number) => Keyframe,
+): Keyframe[] {
+  const steps = Math.max(1, Math.round(duration / step));
+  return Array.from({ length: steps + 1 }, (_, i) => ({
+    ...frame(ease(i / steps)),
+    offset: i / steps,
+    easing: "step-end",
+  }));
 }
 
 /** One coordinate of the beat's curve at parameter `s`, from its two control values. */
@@ -140,10 +196,15 @@ function solve(value: number, a: number, b: number): number {
   return (low + high) / 2;
 }
 
+/** A `cubic-bezier(x1, y1, x2, y2)` easing at `time`, both 0 to 1. */
+export function cubicEase(points: readonly [number, number, number, number], time: number): number {
+  const [x1, y1, x2, y2] = points;
+  return bezier(solve(time, x1, x2), y1, y2);
+}
+
 /** How far across the crossing is at `time`, both 0 to 1, as `BEAT_CURVE` eases it. */
 export function beatEase(time: number): number {
-  const [x1, y1, x2, y2] = BEAT_POINTS;
-  return bezier(solve(time, x1, x2), y1, y2);
+  return cubicEase(BEAT_POINTS, time);
 }
 
 /** When the crossing is `progress` across, 0 to 1: `beatEase` run backwards. */
@@ -154,32 +215,87 @@ export function beatWhen(progress: number): number {
 
 /**
  * A crossing for a band drawn by repainting (a background's place, not a
- * transform): its value runs `from` to `to` as a sweep's does, but holds at
- * `low` until it reaches it and at `high` once past, the places where the
- * band is just off the box it lights. Held, nothing repaints: the box
- * repaints only while the crest passes over it. Between, `steps` straight
- * pieces follow the curve.
+ * transform): only the stretch of the beat the crest spends over the box it
+ * lights, when its band leaves `low` and reaches `high`, the places where it
+ * is just off the box. Its value runs `from` to `to` as a sweep's does, in
+ * twelve straight pieces along the curve, or `stepped`, holding each place
+ * for a beat of the Cells' sprite clock; `start` is how far into the beat
+ * the stretch begins and `span` how long it lasts, in milliseconds. Play it
+ * with `eachBeat`: outside the stretch nothing runs, where an endless
+ * animation holding still for the rest of the beat still woke the page on
+ * every frame.
  */
-export function paintedFrames(
+export function paintedCrossing(
   from: number,
   to: number,
   low: number,
   high: number,
-  share: number,
   frame: (x: number) => Keyframe,
-  steps = 12,
-): Keyframe[] {
+  stepped = false,
+): { readonly frames: Keyframe[]; readonly start: number; readonly span: number } {
+  const { pass } = beat();
   const at = (x: number) => beatWhen(Math.min(1, Math.max(0, (x - from) / (to - from))));
   const enter = at(low);
   const leave = at(high);
-  const frames: Keyframe[] = [
-    { ...frame(low), offset: 0 },
-    { ...frame(low), offset: enter * share },
-  ];
-  for (let i = 1; i < steps; i++) {
-    const time = enter + ((leave - enter) * i) / steps;
-    frames.push({ ...frame(from + (to - from) * beatEase(time)), offset: time * share });
+  const span = Math.max(1, (leave - enter) * pass);
+  const steps = stepped ? Math.max(1, Math.floor(span / timing("formStep"))) : 12;
+  const easing = stepped ? "step-end" : "linear";
+  const frames: Keyframe[] = [];
+  for (let i = 0; i < steps; i++) {
+    // A step shows where the crest is halfway through it, so a label the
+    // crest crosses within one step still lights once.
+    const time = enter + ((leave - enter) * (stepped ? i + 0.5 : i)) / steps;
+    const x = i === 0 && !stepped ? low : from + (to - from) * beatEase(time);
+    frames.push({ ...frame(x), offset: i / steps, easing });
   }
-  frames.push({ ...frame(high), offset: leave * share }, { ...frame(high), offset: 1 });
-  return frames;
+  frames.push({ ...frame(high), offset: 1 });
+  return { frames, start: enter * pass, span };
+}
+
+/** A stretch of every beat that `element` animates through, and nothing between. */
+export interface EachBeat {
+  /** Plays `frames` over `span` ms, `start` ms into every beat, from this beat's if it is still to come or under way. */
+  aim(frames: Keyframe[], start: number, span: number): void;
+  cancel(): void;
+}
+
+/**
+ * Plays a stretch of every beat on `element`, on the beat's wall clock: one
+ * animation, which as it finishes is set to start again a beat on. Before
+ * and after its stretch it neither shows nor runs.
+ */
+export function eachBeat(element: Element): EachBeat {
+  let start = 0;
+  let span = 1;
+  let animation: Animation | null = null;
+  const arm = () => {
+    if (animation === null) return;
+    const { period } = beat();
+    const now = Number(document.timeline.currentTime ?? 0);
+    const origin = beatStart(period);
+    const at = origin + Math.floor((now - origin) / period) * period + start;
+    animation.startTime = at + span <= now ? at + period : at;
+  };
+  return {
+    aim(frames, nextStart, nextSpan) {
+      start = nextStart;
+      span = nextSpan;
+      if (animation === null) {
+        animation = element.animate(frames, { duration: span });
+        animation.addEventListener("finish", arm);
+      } else {
+        const effect = animation.effect;
+        if (effect instanceof KeyframeEffect) {
+          effect.setKeyframes(frames);
+          effect.updateTiming({ duration: span });
+        }
+      }
+      arm();
+    },
+    cancel() {
+      animation?.removeEventListener("finish", arm);
+      animation?.cancel();
+      animation = null;
+    },
+  };
 }

@@ -2,14 +2,18 @@
  * The light in a Cell's composer, moving: the Swift app's glow layer on the
  * Web Animations API. Each change is set once and left to the browser, and
  * what loops while a Cell works is a transform or an opacity, so a working
- * chat costs no script per frame.
+ * chat costs no script per frame. What never rests (the drift, the breath)
+ * steps on the Cells' sprite clock, so it draws twelve frames a second, not
+ * one per refresh of the display; in a window beside another app the band's
+ * crossing does too, and in one no one can see nothing loops.
  *
  * `light` holds it all and hides once the glass is plain; `lit` is the
  * colour, the wash and the band, and is what the iris opens and gathers at
  * the anchor; `bloom` is the small flare where the light drains, outside the
  * iris so it is the last thing seen.
  */
-import { crossing, onBeat, resweep, sweep } from "../motion/beat";
+import { crossing, cubicEase, onBeat, resweep, steppedFrames, sweep } from "../motion/beat";
+import type { Sight } from "../motion/sight";
 import { timing } from "../tokens/motion";
 import {
   axial,
@@ -56,7 +60,8 @@ export interface GlassInk {
 const ARRIVE_CURVE = "cubic-bezier(0.2, 0, 0.4, 1)";
 const EXHALE_CURVE = "cubic-bezier(0.3, 0, 0.5, 1)";
 const EASE_OUT = "cubic-bezier(0, 0, 0.58, 1)";
-const EASE_IN_OUT = "cubic-bezier(0.42, 0, 0.58, 1)";
+/** CSS `ease-in-out`, as control points. */
+const EASE_IN_OUT = [0.42, 0, 0.58, 1] as const;
 /** A shear, not a rotation: the band's ends stay on the glass's edges, its top ahead. */
 const LEAN = `skewX(${-BAND_LEAN}rad)`;
 const WASH_COLOURS = WASH.map((_, i) => `--sc-glass-wash-${i}`);
@@ -81,7 +86,10 @@ export class GlassLight {
   private transition = 0;
   /** What the move under way plays; the next move stops it where it is. */
   private playing: Animation[] = [];
+  /** The standing motion, which loops on the beat; the sweep is one of them. */
+  private loops: Animation[] = [];
   private sweeping: Animation | null = null;
+  private sight: Sight = "focused";
 
   constructor(private readonly parts: GlassParts) {
     parts.light.style.visibility = "hidden";
@@ -152,10 +160,7 @@ export class GlassLight {
     bloom.style.left = `${anchor.x - reach}px`;
     bloom.style.top = `${anchor.y - reach}px`;
     // A glass that changed size or place re-aims the sweep in flight, on the same clock.
-    if (this.sweeping !== null) {
-      const { from, to } = this.reach();
-      resweep(this.sweeping, from, to, LEAN);
-    }
+    this.resweep();
   }
 
   /** Off the page: everything stops, and nothing under way finishes. */
@@ -164,10 +169,26 @@ export class GlassLight {
     this.halt();
   }
 
+  /**
+   * How the glass can be seen (`motion/sight.ts`). Hidden, it holds: it keeps
+   * its tint and its band waits off it, as at the beat's rest, and it
+   * rejoins the beat where the beat is once seen. Beside another app its
+   * band crosses on the Cells' sprite clock; the drift and the breath always
+   * do.
+   */
+  see(sight: Sight): void {
+    if (sight === this.sight) return;
+    const was = this.sight;
+    this.sight = sight;
+    if (sight === "hidden") this.unloop();
+    else if (was === "hidden") this.loop();
+    else this.resweep();
+  }
+
   private halt(): void {
     for (const animation of this.playing) animation.cancel();
     this.playing = [];
-    this.sweeping = null;
+    this.unloop();
   }
 
   // MARK: - Colour
@@ -205,6 +226,13 @@ export class GlassLight {
     return crossing(this.pane.width, this.pane.left, bandWidth(this.size) / 2);
   }
 
+  /** Re-aims the sweep in flight to the glass's place and the sight's pace, on the same clock. */
+  private resweep(): void {
+    if (this.sweeping === null) return;
+    const { from, to } = this.reach();
+    resweep(this.sweeping, from, to, LEAN, this.sight === "unfocused");
+  }
+
   private play(element: HTMLElement, frames: Keyframe[], options: KeyframeAnimationOptions) {
     const animation = element.animate(frames, options);
     this.playing.push(animation);
@@ -218,7 +246,7 @@ export class GlassLight {
   private move(from: Glow, arriving = true): void {
     this.transition += 1;
     const id = this.transition;
-    const { light, lit, wash, near, far, band, bloom } = this.parts;
+    const { light, lit, band, bloom } = this.parts;
     // Whatever was under way stops where it is; the new motion starts there.
     const shown = getComputedStyle(lit);
     const litNow = Number(shown.opacity);
@@ -302,36 +330,69 @@ export class GlassLight {
       this.play(lit, [{ opacity: litNow }, { opacity: 1 }], { duration: fade });
     }
 
-    if (this.glow === "working") {
-      // Less motion: a still glow, the tint held.
-      if (this.still) return;
-      const { from, to } = this.reach();
-      this.sweeping = sweep(band, from, to, LEAN);
-      this.playing.push(this.sweeping);
-      // The stained glass drifts: its far end wanders, so the light through
-      // it is never quite still.
-      const drift = timing("glowDrift");
-      const wander: KeyframeAnimationOptions = {
-        duration: drift / 2,
-        iterations: Infinity,
-        direction: "alternate",
-        easing: EASE_IN_OUT,
-      };
-      onBeat(this.play(near, [{ opacity: 1 }, { opacity: 0 }], wander), drift);
-      onBeat(this.play(far, [{ opacity: 0 }, { opacity: 1 }], wander), drift);
-      return;
-    }
-    // Blocked on you: the tint breathes in place; with less motion it holds.
-    if (from === "working") {
+    // Blocked on you: the band leaves with the work.
+    if (from === "working" && this.glow !== "working") {
       this.play(band, [{ opacity: 1 }, { opacity: 0 }], { duration: fade, fill: "forwards" });
     }
-    if (this.still) return;
-    const breath = timing("glowBreath");
-    const breathing = this.play(
-      wash,
-      [{ opacity: this.glow === "needsYou" ? 0.7 : 0.8 }, { opacity: 1 }],
-      { duration: breath / 2, iterations: Infinity, direction: "alternate", easing: EASE_IN_OUT },
-    );
-    onBeat(breathing, breath);
+    this.loop();
   }
+
+  /**
+   * The state's standing motion, on the beat: while working the band
+   * sweeps and the glass drifts; blocked on you the tint breathes. None
+   * under less motion (a still glow, the tint held), and none while no one
+   * can see the glass.
+   */
+  private loop(): void {
+    this.unloop();
+    if (this.still || this.sight === "hidden" || this.glow === "quiet") return;
+    const { wash, near, far, band } = this.parts;
+    const keep = (animation: Animation) => {
+      this.loops.push(animation);
+      return animation;
+    };
+    if (this.glow === "working") {
+      const { from, to } = this.reach();
+      this.sweeping = keep(sweep(band, from, to, LEAN, this.sight === "unfocused"));
+      // The stained glass drifts: its far end wanders, so the light through
+      // it is never quite still. It never rests either, so it steps on the
+      // Cells' sprite clock rather than every frame (`steppedFrames`).
+      const drift = timing("glowDrift");
+      const half = drift / 2;
+      const wander: KeyframeAnimationOptions = {
+        duration: half,
+        iterations: Infinity,
+        direction: "alternate",
+      };
+      const nearEnd = near.animate(
+        unhurried(half, (p) => ({ opacity: 1 - p })),
+        wander,
+      );
+      const farEnd = far.animate(
+        unhurried(half, (p) => ({ opacity: p })),
+        wander,
+      );
+      onBeat(keep(nearEnd), drift);
+      onBeat(keep(farEnd), drift);
+      return;
+    }
+    const breath = timing("glowBreath");
+    const low = this.glow === "needsYou" ? 0.7 : 0.8;
+    const breathing = wash.animate(
+      unhurried(breath / 2, (p) => ({ opacity: low + (1 - low) * p })),
+      { duration: breath / 2, iterations: Infinity, direction: "alternate" },
+    );
+    onBeat(keep(breathing), breath);
+  }
+
+  private unloop(): void {
+    for (const animation of this.loops) animation.cancel();
+    this.loops = [];
+    this.sweeping = null;
+  }
+}
+
+/** A half of a loop that never rests, eased in and out, stepping on the Cells' sprite clock. */
+function unhurried(duration: number, frame: (progress: number) => Keyframe): Keyframe[] {
+  return steppedFrames(duration, timing("formStep"), (time) => cubicEase(EASE_IN_OUT, time), frame);
 }

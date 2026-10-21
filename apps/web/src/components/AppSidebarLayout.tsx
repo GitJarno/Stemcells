@@ -63,6 +63,7 @@ import {
 import { Tooltip, TooltipPopup, TooltipTrigger } from "./ui/tooltip";
 import { useThreadRouteRef } from "../hooks/useThreadRouteTarget";
 import { LeftColumn } from "../stemcells/rail/LeftColumn";
+import { DraftReport } from "../stemcells/limitResume/DraftReport";
 
 const MACOS_TRAFFIC_LIGHTS_LEFT_INSET = "var(--desktop-window-controls-inset, 90px)";
 
@@ -422,6 +423,7 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
         <NavigationHistoryShortcuts />
         {isOnSettings ? null : <ThreadUndoShortcut />}
         <MainAppLocationTracker />
+        <DraftReport />
       </SidebarProvider>
     </PanelAnimationSuppressionProvider>
   );

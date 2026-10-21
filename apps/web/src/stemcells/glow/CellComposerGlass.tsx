@@ -5,6 +5,7 @@ import { channels, groundOf, inkOf } from "../aski/stage/colour";
 import { path, SIZE } from "../cell/look";
 import { scrollThrough } from "../composer/scrollThrough";
 import { paneOf, standing } from "../motion/beat";
+import { watchSight } from "../motion/sight";
 import { PaneCellContext } from "../tabs/paneCell";
 import { reducedMotion } from "../tokens/motion";
 import { ProviderLogo } from "../upstream/providers";
@@ -44,7 +45,9 @@ const SEND_REACH = 48;
  * Behind the composer's words and over its glass. The words keep their ink:
  * the band's strength is set by them (`light.ts`). Under reduced motion
  * nothing sweeps, drifts or breathes: the tint holds still and leaves on a
- * fade. The plate itself is upstream's (`glow.css`); the light and the
+ * fade. While no one can see the glass (`motion/sight.ts`) it holds as at
+ * the beat's rest, and beside another app its band steps twelve times a
+ * second. The plate itself is upstream's (`glow.css`); the light and the
  * mark are a Cell's only. Nothing outside our panes.
  */
 export function CellComposerGlass(props: { readonly provider: string }) {
@@ -102,10 +105,13 @@ export function CellComposerGlass(props: { readonly provider: string }) {
     });
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
     motion.addEventListener("change", restyle);
+    // A glass no one can see holds; one beside another app steps.
+    const unwatch = watchSight(root, (sight) => light.see(sight));
     return () => {
       sized.disconnect();
       skinned.disconnect();
       motion.removeEventListener("change", restyle);
+      unwatch();
       light.stop();
       lightRef.current = null;
     };

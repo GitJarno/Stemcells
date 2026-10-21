@@ -51,6 +51,8 @@ app's `LimitLift`.
   sleep), and draft lists are heard again after it; single-flight login
   reads; the banner says what will happen; drafts reported beside the
   sidebar, for every layout; upstream's banner actions always shown
+- [x] The banner names the reset only, "Carries on by itself at the reset.",
+  and only while it will: switch on, not cancelled, a reset still ahead
 
 ## Decisions
 
@@ -140,3 +142,14 @@ app's `LimitLift`.
   on at 19:55:57, once: "Continued after you signed in again". In the
   normal and the legacy sidebar, typing in a composer reported that chat's
   id, and clearing it an empty list.
+- **The banner's line, third review.** "Carries on by itself once you sign
+  in again, or at the reset." tied signing in again to carrying on, the
+  first thing a person reads at a limit: an invitation to switch accounts
+  (the rule of 2026-10-14). It now reads "Carries on by itself at the
+  reset." for every provider; the sign-in trigger stays, unsaid. It shows
+  only while the reset will carry the Cell on: the switch on, not
+  cancelled, a reset named after the stop and not yet passed. A draft and
+  the server's refusal cap don't hide it: they hold the server's sends,
+  but upstream's worker, armed by the switch, sends at the reset regardless
+  (`limitRecoveryCommand` reads no drafts). Whether a draft should hold
+  the reset too is a server question, left open.
