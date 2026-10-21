@@ -9,8 +9,8 @@ here. Keep each seam the smallest edit that hands control to our code
 |---|---|---|
 | `CLAUDE.md` | Adds `@stemcells/AGENTS.md` | Agents read our house rules beside upstream's |
 | `.github/README.md` | New: Stemcells' front page | GitHub shows `.github/README.md` before the root one, so upstream's `README.md` stays untouched and never conflicts |
-| `.github/workflows/stemcells.yml` | New: drift, type check, our tests; on `main`, switches off any upstream workflow a merge brought in | Upstream's workflows run on runners and secrets this repo doesn't have, so they stay switched off in the repository settings (which survive merges), and this one runs instead |
-| `.github/workflows/stemcells-sync.yml` | New: nightly `stemcells/scripts/sync-upstream --check`; opens an issue when it needs a person | Takes upstream's work every night (`stemcells/docs/fork.md`, rule 6) |
+| `.github/workflows/stemcells.yml` | New: a sync's quick gates (`stemcells/scripts/sync-upstream --gates drift outbound typecheck lint ours`); on `main` and on pull requests, switches off any upstream workflow a merge brought in | Upstream's workflows run on runners and secrets this repo doesn't have, so they stay switched off in the repository settings (which survive merges), and this one runs instead |
+| `.github/workflows/stemcells-sync.yml` | New: nightly `stemcells/scripts/sync-upstream`, then `--gates`, then `--pr`; keeps one issue up to date when a night stops, and closes it when one goes through; by hand, `--gates` alone on any branch | Takes upstream's work every night (`stemcells/docs/fork.md`, rule 6; `stemcells/docs/upstream-sync.md`) |
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
 | `apps/desktop/src/app/DesktopEnvironment.ts` | `APP_BASE_NAME` is "Stemcells" | Window and menu name, keychain entry |
 | `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app`, exported for its test; `artifactName` and the Mac's four permission prompts say `APP_NAME` | Own bundle id; people read the release files' names in Finder and the prompts in macOS's dialogs (The app's name, below) |

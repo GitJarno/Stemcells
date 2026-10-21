@@ -1,15 +1,333 @@
 #!/usr/bin/env bash
-# Merges upstream's newest green commit into a sync branch and opens a
-# pull request. With --check it first runs drift, the type checks and our
-# tests, so a pull request it opens has already passed them.
+# Takes upstream's work into Stemcells the same way every time, on a Mac and
+# in the nightly (.github/workflows/stemcells-sync.yml). The runbook is
+# stemcells/docs/upstream-sync.md.
 #
-# Exits 0 when done or already up to date, 3 on a merge conflict (the
-# conflicted files are printed), 4 when the merged tree fails a check.
+#   sync-upstream               merge upstream's newest green commit on
+#                               sync/upstream-<sha>; conflicts in upstream's
+#                               tests resolve themselves (resolve-test-seams.mjs)
+#   sync-upstream --check       the same, then every gate, then --pr (the nightly)
+#   sync-upstream --gates [G…]  run the gates on this tree: all, or only G…
+#   sync-upstream --pr          push this branch and open or refresh its pull
+#                               request, with --report as the body
+#   sync-upstream --report      print the sync's report: commits, seams,
+#                               dependencies, outbound hosts, tests
+#
+# Exits 0 when done or already up to date, 3 on a conflict that needs a
+# person or a Cell (each file is printed with the seams it touches), 4 when a
+# gate fails, 5 when GitHub refuses the push. With SYNC_SUMMARY set to a file,
+# it writes there what stopped it, for the nightly's issue.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-check=0
-[ "${1:-}" = "--check" ] && check=1
+GATES=(drift outbound typecheck lint ours upstream-packages upstream-web upstream-server build boot workflows)
+summary=${SYNC_SUMMARY:-/dev/null}
+mode=${1:-}
+
+repo_slug() {
+  echo "${GITHUB_REPOSITORY:-$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')}"
+}
+
+# The seams.md rows that name a file: their change, cut short.
+seams_of() {
+  grep -F "\`$1\`" stemcells/seams.md | awk -F' [|] ' '{print "    seam: " substr($2, 1, 140)}' || true
+}
+
+# ---------------------------------------------------------------- the gates
+# Each runs on the merged tree. CI's Linux runner is the authority for
+# upstream's suites; on a Mac, gate_upstream_packages leaves out the one test
+# a Mac's disk can't run (see there).
+
+gate_drift() { stemcells/scripts/drift; }
+# Nothing reports on the person, no new host or id unread (stemcells/outbound.txt).
+gate_outbound() {
+  pnpm exec vp test run apps/server/src/stemcells/privacy \
+    apps/server/src/stemcells/upstream/outbound.contract.test.ts \
+    apps/server/src/stemcells/upstream/analytics.contract.test.ts
+}
+gate_typecheck() { pnpm exec vp run -r --concurrency-limit 4 typecheck; }
+gate_lint() { pnpm lint; }
+# Our layer: each app's tests run with its own config, which carries our
+# substitutes for upstream modules.
+gate_ours() {
+  pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells &&
+    pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells &&
+    pnpm exec vp test run apps/server/src/stemcells &&
+    pnpm exec vp test run --project root stemcells scripts/build-desktop-artifact.test.ts
+}
+# Upstream's suites, as its CI splits them: every package but the server and
+# the web, then the web (unit and browser), then the server. They run without
+# the person's own git config (hooks, signing), as on CI.
+gate_upstream_packages() {
+  if [ "$(uname)" = Darwin ]; then
+    # DesktopLinuxUrlHandler.test.ts writes two Linux icon names that differ
+    # only in case, which a Mac's disk folds into one file.
+    GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
+      --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' test &&
+      GIT_CONFIG_GLOBAL=/dev/null pnpm --filter @t3tools/desktop exec vp test run --passWithNoTests \
+        --exclude src/app/DesktopLinuxUrlHandler.test.ts
+  else
+    GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
+      --filter '!@t3tools/monorepo' --filter '!@t3tools/web' test
+  fi
+}
+gate_upstream_web() { GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --filter @t3tools/web test; }
+gate_upstream_server() { GIT_CONFIG_GLOBAL=/dev/null pnpm exec vp run --filter t3 test; }
+# The web, server and desktop builds, and the check upstream's CI makes on them.
+gate_build() {
+  pnpm build:desktop || return 1
+  if [ "$(uname)" = Darwin ]; then
+    # Upstream's CI checks the preload on Linux; on a Mac its own darwin-only
+    # window code wants a page the check doesn't give it.
+    node --input-type=module -e "Object.defineProperty(process, 'platform', { value: 'linux' });
+      await import('./apps/desktop/scripts/verify-preload-bundle.mjs');"
+  else
+    node apps/desktop/scripts/verify-preload-bundle.mjs
+  fi
+}
+# The built server starts headless, its page wears Stemcells' look, and a chat opens.
+gate_boot() { node stemcells/scripts/boot-smoke.mjs; }
+# Upstream's workflows stay switched off on this repository.
+gate_workflows() {
+  local repo known active new=""
+  repo=$(repo_slug)
+  known=$(gh api "repos/$repo/actions/workflows" --paginate --jq '.workflows[] | "\(.state) \(.path)"')
+  active=$(awk '$1 == "active" && $2 !~ /\/stemcells[^\/]*\.yml$/ {print $2}' <<< "$known")
+  for file in .github/workflows/*.yml; do
+    case $file in */stemcells*.yml) continue ;; esac
+    awk '{print $2}' <<< "$known" | grep -qxF "$file" || new="$new $file"
+  done
+  # A workflow GitHub hasn't seen yet is switched off the first time it runs
+  # (stemcells.yml, upstream-workflows-off); the report names it.
+  [ -n "$new" ] && echo "new upstream workflows, switched off on their first run:$new"
+  if [ -n "$active" ]; then
+    echo "switched on: $active (stemcells.yml, upstream-workflows-off, switches them off on main)"
+    return 1
+  fi
+  echo "every upstream workflow is off"
+}
+
+run_gates() {
+  local names=("$@") failed=() logs
+  [ ${#names[@]} -eq 0 ] && names=("${GATES[@]}")
+  logs=$(mktemp -d)
+  # A Mac's temp folder is a symlink (/var -> /private/var), which upstream's
+  # tests compare against real paths; Linux's isn't.
+  TMPDIR="$(cd "${TMPDIR:-/tmp}" && pwd -P)/"
+  export TMPDIR
+  # Upstream's suites are written for its Node (package.json's engines).
+  local want have
+  want=$(node -p 'require("./package.json").engines.node.replace(/^\D*/, "").split(".")[0]')
+  have=$(node -p 'process.versions.node.split(".")[0]')
+  [ "$want" = "$have" ] ||
+    echo "sync: upstream's suites expect Node $want, and this is Node $have: a few of its tests fail for that alone (CI runs $want)"
+  for name in "${names[@]}"; do
+    declare -F "gate_${name//-/_}" >/dev/null || { echo "sync: no gate named $name (gates: ${GATES[*]})" >&2; return 2; }
+    echo "::group::gate $name"
+    local start=$SECONDS
+    if "gate_${name//-/_}" 2>&1 | tee "$logs/$name.log"; [ "${PIPESTATUS[0]}" = 0 ]; then
+      echo "::endgroup::"
+      echo "gate $name: passed ($((SECONDS - start)) s)"
+    else
+      echo "::endgroup::"
+      echo "gate $name: FAILED ($((SECONDS - start)) s)"
+      failed+=("$name")
+    fi
+  done
+  if [ ${#failed[@]} -gt 0 ]; then
+    {
+      echo "These gates failed on the merged tree: ${failed[*]}."
+      for name in "${failed[@]}"; do
+        echo
+        echo "\`$name\`: what failed, then its last lines"
+        echo '```'
+        sed -E 's/\x1b\[[0-9;]*m//g' "$logs/$name.log" |
+          grep -E '^ *(DRIFT|STALE) | FAIL |×|error TS|: error |Error:|AssertionError|^boot:|^\+ +"' | sort -u | head -30 || true
+        echo '…'
+        sed -E 's/\x1b\[[0-9;]*m//g' "$logs/$name.log" | grep -v '^[[:space:]]*$' | tail -8
+        echo '```'
+      done
+    } > "$summary"
+    echo "sync: gates failed: ${failed[*]}"
+    return 4
+  fi
+  echo "sync: every gate passed: ${names[*]}"
+}
+
+# ---------------------------------------------------------------- the report
+
+# Test files and test cases in a tree, counted from the source.
+count_tests() {
+  local files cases
+  files=$(git ls-tree -r --name-only "$1" | grep -v '^\.repos/' | grep -cE '\.(test|spec)\.[cm]?[jt]sx?$' || true)
+  cases=$(git grep -c -E '^[[:space:]]*(it|test)(\.[A-Za-z]+)*[(.]' "$1" -- '*.test.ts' '*.test.tsx' '*.test.mjs' \
+    '*.test.cjs' '*.spec.ts' ':!.repos' | awk -F: '{s += $NF} END {print s + 0}')
+  echo "$files $cases"
+}
+
+report() {
+  local target before taken
+  target=$(git merge-base HEAD upstream/main)
+  before=$(git merge-base origin/main upstream/main)
+  taken=$(git rev-list --count "$before..$target")
+  echo "Takes upstream at \`$(git rev-parse --short=9 "$target")\`: $taken commits since \`$(git rev-parse --short=9 "$before")\`, merged, never rebased. The runbook: \`stemcells/docs/upstream-sync.md\`."
+  echo
+  echo "### Commits, by kind"
+  echo
+  # Upstream titles its commits by kind: "feat(web): …", "fix: …".
+  git log --format=%s "$before..$target" --no-merges |
+    awk '{ if (match($0, /^[a-z]+(\([^)]*\))?!?:/)) { kind = substr($0, 1, RLENGTH); sub(/[(!:].*/, "", kind); print kind } else print "other" }' |
+    sort | uniq -c | sort -rn | awk '{print $2 " " $1}' | paste -sd, - | sed 's/,/, /g'
+  echo
+  echo "<details><summary>Every commit (upstream's pull requests, by number)</summary>"
+  echo
+  echo '```'
+  git log --format='%h %s' "$before..$target" --no-merges
+  echo '```'
+  echo "</details>"
+  echo
+  echo "### Seams upstream touched"
+  echo
+  local touched=0
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    grep -qF "\`$file\`" stemcells/seams.md || continue
+    echo "- \`$file\`"
+    touched=$((touched + 1))
+  done < <(git diff --name-only "$before" "$target")
+  [ "$touched" = 0 ] && echo "None."
+  echo
+  echo "### Conflicts"
+  echo
+  local conflicts
+  conflicts=$(git merge-tree --write-tree --no-messages --name-only origin/main "$target" | sed 1d || true)
+  if [ -z "$conflicts" ]; then
+    echo "None: the merge was clean."
+  else
+    echo "Merging into main conflicts in these; tests resolve themselves (\`resolve-test-seams.mjs\`), the rest were resolved by hand, upstream's logic first:"
+    echo
+    echo '```'
+    node stemcells/scripts/resolve-test-seams.mjs --preview origin/main "$target" || true
+    echo '```'
+  fi
+  echo
+  echo "### New dependencies"
+  echo
+  node --input-type=module - "$before" "$target" <<'EOF'
+import { execFileSync } from "node:child_process";
+const [before, after] = process.argv.slice(2);
+const git = (...args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 64 << 20 });
+const manifests = (ref) => git("ls-tree", "-r", "--name-only", ref).split("\n").filter((f) => f.endsWith("package.json") && !f.startsWith(".repos/"));
+const deps = (ref, file) => {
+  try {
+    const json = JSON.parse(git("show", `${ref}:${file}`));
+    return { ...json.dependencies, ...json.devDependencies, ...json.optionalDependencies, ...json.peerDependencies };
+  } catch { return {}; }
+};
+const lines = [];
+for (const file of manifests(after)) {
+  const old = deps(before, file);
+  for (const [name, version] of Object.entries(deps(after, file))) {
+    if (!(name in old)) lines.push(`- \`${name}\` ${version} in \`${file}\``);
+  }
+}
+console.log(lines.length ? lines.join("\n") : "None.");
+EOF
+  echo
+  echo "### Outbound"
+  echo
+  local hosts
+  hosts=$(git diff origin/main -- stemcells/outbound.txt | grep -E '^\+(host|id) ' | sed -E 's/^\+/- /' || true)
+  echo "${hosts:-No new host, id, feed or crash reporter: \`stemcells/outbound.txt\` is unchanged, and the outbound gate passed.}"
+  local workflows
+  workflows=$(git diff --name-only --diff-filter=A origin/main -- .github/workflows | grep -v '/stemcells' || true)
+  [ -n "$workflows" ] && echo && echo "New upstream workflows (switched off on their first run): $(echo $workflows)"
+  echo
+  echo "### Tests"
+  echo
+  local mf mc tf tc
+  read -r mf mc <<< "$(count_tests origin/main)"
+  read -r tf tc <<< "$(count_tests HEAD)"
+  echo "Test files $mf → $tf ($((tf - mf))), test cases about $mc → $tc ($((tc - mc))), counted in the source."
+}
+
+# ---------------------------------------------------------------- landing
+
+open_pr() {
+  local repo branch title body open target taken
+  repo=$(repo_slug)
+  branch=$(git rev-parse --abbrev-ref HEAD)
+  target=$(git merge-base HEAD upstream/main)
+  taken=$(git rev-list --count "$(git merge-base origin/main upstream/main)..$target")
+  title="Take upstream at $(git rev-parse --short=9 "$target") ($taken commits)"
+  body=$(mktemp)
+  report > "$body"
+  if [ -n "${SYNC_GATES_PASSED:-}" ]; then
+    printf '\n### Gates\n\nPassed on the merged tree: %s.\n' "$SYNC_GATES_PASSED" >> "$body"
+  fi
+  # Upstream changes its workflow files often, and pushing one takes a
+  # credential allowed to: on a Mac, gh's; in the nightly, the token it's given.
+  local push=(git)
+  [ -z "${GITHUB_ACTIONS:-}" ] && push+=(-c credential.helper= -c 'credential.helper=!gh auth git-credential')
+  push+=(push -q -u origin "HEAD:refs/heads/$branch")
+  # The nightly's own branch starts again from main each night.
+  case $branch in sync/upstream-*) push+=(--force) ;; esac
+  if ! "${push[@]}" 2> push.err; then
+    cat push.err
+    {
+      echo "Every gate passed on upstream at \`$(git rev-parse --short=9 "$target")\`, but GitHub refused the push:"
+      echo '```'
+      cat push.err
+      echo '```'
+      echo "Upstream changed a workflow file, and this run's token may not push one. Run \`stemcells/scripts/sync-upstream --check\` on a Mac (gh's credential may), or give the nightly a token that may (\`stemcells/docs/upstream-sync.md\`, The nightly)."
+    } > "$summary"
+    rm -f push.err
+    return 5
+  fi
+  rm -f push.err
+  # REST rather than `gh pr`: Actions' token may not use the GraphQL calls.
+  open=$(gh api "repos/$repo/pulls?state=open&head=${repo%%/*}:$branch" --jq '.[0].number // ""')
+  if [ -z "$open" ]; then
+    gh api "repos/$repo/pulls" -f base=main -f head="$branch" -f title="$title" -F body=@"$body" --jq .html_url
+  else
+    gh api -X PATCH "repos/$repo/pulls/$open" -f title="$title" -F body=@"$body" --jq .html_url
+  fi
+  rm -f "$body"
+}
+
+case "$mode" in
+  --gates)
+    shift
+    run_gates "$@"
+    exit $?
+    ;;
+  --report)
+    git fetch -q --no-tags upstream main
+    git fetch -q --no-tags origin main
+    report
+    exit 0
+    ;;
+  --pr)
+    git fetch -q --no-tags upstream main
+    git fetch -q --no-tags origin main
+    open_pr
+    exit $?
+    ;;
+  "" | --check) ;;
+  *)
+    sed -n '2,21p' "$0"
+    exit 2
+    ;;
+esac
+
+# ---------------------------------------------------------------- the merge
+
+# Never in the main checkout, which other work stands on: in a worktree of
+# your own (stemcells/AGENTS.md), or in CI.
+if [ -z "${CI:-}" ] && [ "$(git rev-parse --git-dir)" = "$(git rev-parse --git-common-dir)" ]; then
+  echo "sync: this is the main checkout; run it in your own worktree (stemcells/docs/upstream-sync.md)" >&2
+  exit 2
+fi
 
 git fetch -q --no-tags upstream main
 git fetch -q --no-tags origin main
@@ -17,7 +335,8 @@ git fetch -q --no-tags origin main
 # Upstream's tip can be red. Take the newest of its last 30 commits on
 # which upstream's own CI workflow passed, so a sync never imports a break
 # upstream is mid-fix on. (Other check runs on a commit are previews, bots
-# and optional jobs; their failures say nothing about the code.)
+# and optional jobs; their failures say nothing about the code.) Reading
+# upstream's run list is the only call this makes to upstream.
 target=""
 for sha in $(git rev-list --first-parent -n 30 upstream/main); do
   ci=$(gh api "repos/pingdotgg/t3code/actions/runs?head_sha=$sha&event=push&per_page=50" \
@@ -39,40 +358,38 @@ if [ "$behind" -eq 0 ]; then
   exit 0
 fi
 
-short=$(git rev-parse --short "$target")
+short=$(git rev-parse --short=9 "$target")
 branch="sync/upstream-$short"
 git switch -q -C "$branch" origin/main
 if ! git merge -q --no-edit -m "Take upstream at $short" "$target"; then
-  echo "sync: conflicts in:"
-  git diff --name-only --diff-filter=U
-  exit 3
-fi
-
-if [ "$check" = 1 ]; then
-  pnpm install --frozen-lockfile
-  # The same checks as stemcells.yml. Each app's tests run with its own
-  # config, which carries our substitutes for upstream modules.
-  if ! { stemcells/scripts/drift &&
-    pnpm --filter @t3tools/web typecheck &&
-    pnpm --filter t3 typecheck &&
-    pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells &&
-    pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells &&
-    pnpm exec vp test run apps/server/src/stemcells --passWithNoTests; }; then
-    echo "sync: the merged tree fails a check"
-    exit 4
+  echo "sync: the merge conflicts; resolving upstream's tests"
+  if node stemcells/scripts/resolve-test-seams.mjs; then
+    git commit -q --no-edit
+    echo "sync: every conflict was in upstream's tests, and each resolved"
+  else
+    echo "sync: conflicts in:"
+    {
+      echo "Merging upstream at \`$short\` ($behind commits) conflicts where our seams are. Upstream's tests resolved themselves; these need a person or a Cell:"
+      echo
+      for file in $(git diff --name-only --diff-filter=U); do
+        echo "- \`$file\`"
+        seams_of "$file" | sed 's/^    /  - /'
+      done
+    } > "$summary"
+    for file in $(git diff --name-only --diff-filter=U); do
+      echo "  $file"
+      seams_of "$file"
+    done
+    echo "sync: resolve them by hand: upstream's logic wins and our seam goes back on top (stemcells/docs/upstream-sync.md)"
+    exit 3
   fi
 fi
 
-git push -q -f -u origin "$branch"
+[ "$mode" = --check ] || {
+  echo "sync: merged upstream at $short on $branch; next: stemcells/scripts/sync-upstream --gates, then --pr"
+  exit 0
+}
 
-# REST rather than `gh pr`: Actions' token may not use the GraphQL calls.
-repo=${GITHUB_REPOSITORY:-$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')}
-open=$(gh api "repos/$repo/pulls?state=open&head=${repo%%/*}:$branch" --jq length)
-if [ "$open" = "0" ]; then
-  checked=""
-  [ "$check" = 1 ] && checked=" Drift, the type checks and the Stemcells tests passed on the merged tree."
-  gh api "repos/$repo/pulls" -f base=main -f head="$branch" \
-    -f title="Take upstream at $short ($behind commits)" \
-    -f body="Merges upstream's newest commit on which its CI passed, $short ($behind commits).$checked" \
-    --jq .html_url
-fi
+pnpm install --frozen-lockfile
+run_gates || exit 4
+SYNC_GATES_PASSED="${GATES[*]}" open_pr

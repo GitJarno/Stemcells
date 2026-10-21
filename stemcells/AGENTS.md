@@ -43,8 +43,10 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   lands, it's a seam that names the pull request.
 
 ## Taking upstream's work
-- `stemcells/scripts/sync-upstream` merges `upstream/main` on a branch and
-  opens a pull request. Merge, never rebase or squash upstream history.
+- `stemcells/scripts/sync-upstream` merges `upstream/main` on a branch,
+  runs the gates and opens a pull request; the nightly runs it, and
+  `stemcells/docs/upstream-sync.md` is the runbook when it stops. Merge,
+  never rebase or squash upstream history.
 - In a conflict, upstream's logic wins and our seam goes back on top. The
   pull request says how many minutes resolving took;
   `stemcells/scripts/sync-stats` lists each sync's conflicts.
@@ -73,8 +75,10 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
 `pnpm install`, `stemcells/lab/electron dev` (the desktop dev app, below),
 `pnpm exec vp test run <files>` (the web's from `apps/web`, whose config has
-our substitutes), `pnpm --filter @t3tools/web typecheck`,
-`pnpm exec vp lint`. To build and install the app:
+our substitutes), `pnpm exec vp run --filter @t3tools/web typecheck`,
+`pnpm lint`, and before a push the checks CI runs:
+`stemcells/scripts/sync-upstream --gates drift outbound typecheck lint ours`.
+To build and install the app:
 `stemcells/scripts/install-app` (`stemcells/docs/install.md`).
 
 Electron starts only through `stemcells/lab/electron`: `dev` for the dev
