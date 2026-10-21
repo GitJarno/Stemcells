@@ -18,6 +18,7 @@ import {
 } from "./dress.ts";
 import {
   animates,
+  type Arm,
   CHEERS,
   LOOKS,
   MOUTHS,
@@ -29,6 +30,8 @@ import {
   type Scene,
   SCENES,
   type Slot,
+  type Strength,
+  STRENGTH_ARMS,
   TOOLS,
   type Wardrobe,
 } from "./kit.ts";
@@ -282,11 +285,51 @@ function composed(move: Move, wardrobe: Wardrobe, pieces: "loop" | "once" | "sti
   };
 }
 
-/** A look a Cell wears: its name (its scenes' identity), what it wears, and whose cheer it plays. */
+/** A look a Cell wears: its name (its scenes' identity), what it wears, whose cheer it plays, and how strong it has grown. */
 export interface CellLook {
   readonly name: string;
   readonly wardrobe: Wardrobe;
   readonly cheer?: string | undefined;
+  readonly strength?: Strength | undefined;
+}
+
+/** The flex, the gym's cheer: a landing that earned it plays it in place of the look's own (`growth.ts`). */
+export const FLEX = "gym/flex";
+
+/** `look` on a Cell grown to `strength`, flexing for its cheer when `flexes`. */
+export function grown(look: CellLook, strength: Strength | undefined, flexes = false): CellLook {
+  if (strength === undefined && !flexes) return look;
+  return {
+    ...look,
+    name: `${look.name}@${strength ?? ""}${flexes ? `:${FLEX}` : ""}`,
+    cheer: flexes ? FLEX : look.cheer,
+    strength,
+  };
+}
+
+/**
+ * `move` played by a Cell grown to `strength`: in each frame, the strength's
+ * arm on each side the frame leaves free and the tool in hand (`held`)
+ * doesn't take; with biceps, every arm bulges. A frame of a move that
+ * draws its own arms (the flex) plays as drawn where it draws them.
+ */
+function strong(move: Move, strength: Strength | undefined, held: string | undefined): Move {
+  const rest = strength === undefined ? undefined : STRENGTH_ARMS.get(strength);
+  if (rest === undefined) return move;
+  const holding = held === undefined ? undefined : TOOLS.get(held)?.attach;
+  const bulge = strength === "biceps" ? rest.bulge : undefined;
+  return {
+    ...move,
+    frames: move.frames.map((frame) => {
+      if (move.meta.ownArms && frame.layers.length > 0) return frame;
+      const arms: Arm[] = frame.pose.arms.map((arm) => ({ ...arm, bulge }));
+      for (const side of [-1, 1]) {
+        const free = !arms.some((arm) => (arm.side < 0 ? -1 : 1) === side);
+        if (free && holding !== (side < 0 ? "handL" : "handR")) arms.push({ ...rest, side });
+      }
+      return { ...frame, pose: { ...frame.pose, arms } };
+    }),
+  };
 }
 
 /** A curated look by name, with its own cheer when it has one. */
@@ -397,7 +440,11 @@ function playOf(
   const cheer = key === "happy" && look.cheer !== undefined ? CHEERS.get(look.cheer) : undefined;
   const dressed = posedIn(look.wardrobe, key.split("/")[0]!);
   const wardrobe = scene.holds ? { ...dressed, held: scene.held } : dressed;
-  return { move: cheer ?? scene, wardrobe, pieces: scene.pieces };
+  return {
+    move: strong(cheer ?? scene, look.strength, wardrobe.held),
+    wardrobe,
+    pieces: scene.pieces,
+  };
 }
 
 /**
@@ -426,7 +473,8 @@ export function stillOf(look: CellLook, name: string, pose: Pose): CellScene {
     frames: [{ pose, layers: [], swaps: {} }],
     meta: {},
   };
-  const made = composed(still, posedIn(look.wardrobe, name), "still");
+  const wardrobe = posedIn(look.wardrobe, name);
+  const made = composed(strong(still, look.strength, wardrobe.held), wardrobe, "still");
   scenes.set(`${look.name}|${name}`, made);
   return made;
 }
@@ -475,8 +523,9 @@ export function probeStill(look: CellLook, pose: Pose, compact: boolean): FrameP
     meta: {},
   };
   const wardrobe = posedIn(look.wardrobe, "idle");
+  const move = strong(still, look.strength, wardrobe.held);
   return measured(
-    (probe) => composeFrame(still, 0, wardrobe, compact, false, STILL, probe),
+    (probe) => composeFrame(move, 0, wardrobe, compact, false, STILL, probe),
     compact,
     pose.eyes,
   );

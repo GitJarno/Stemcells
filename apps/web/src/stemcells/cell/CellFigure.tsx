@@ -12,10 +12,11 @@ import { AskMark } from "./AskMark.tsx";
 import { bodyOf, frameShown, sceneFor } from "./cast.ts";
 import { onStage } from "./clock.ts";
 import type { Ground } from "./keyline.ts";
+import type { Strength } from "./kit.ts";
 import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
 import { paint } from "./paint.ts";
-import { MARGIN, type MiniFrame, wornLook } from "./scene.ts";
+import { grown, MARGIN, type MiniFrame, wornLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
@@ -28,7 +29,8 @@ export function lookOf(name: string, day: string): readonly string[] {
  * A Cell's character in its mood. It wears `look` (ids `looks.ts` deals over
  * the crew in view, so no two look alike) when given; otherwise the
  * look its name is dealt alone, on the day it was first drawn, kept while it
- * stays on screen. Its name also picks when it blinks.
+ * stays on screen. Its name also picks when it blinks. Grown strong, it holds
+ * its arms at rest; a landing that earned it flexes.
  */
 export function CellFigure(props: {
   readonly name: string;
@@ -41,8 +43,13 @@ export function CellFigure(props: {
   readonly ground?: Ground | undefined;
   /** CSS pixels a cell of the miniature is drawn; 1 or 2 draw the hero art on a 2× display. */
   readonly points?: number | undefined;
+  /** How strong it has grown from working alone (`growth.ts`); bare unless told. */
+  readonly strength?: Strength | undefined;
+  /** Its landing earned the flex, which it plays in place of its cheer. */
+  readonly flexes?: boolean | undefined;
 }) {
-  const { name, activity } = props;
+  const { name, activity, strength } = props;
+  const flexes = props.flexes ?? false;
   const [day] = useState(() => dayOf(new Date()));
   const mood = moodOf(props.mood);
   const worn = (props.look ?? lookOf(name, day)).join("+");
@@ -53,7 +60,7 @@ export function CellFigure(props: {
   useLayoutEffect(() => {
     const element = canvas.current;
     if (element === null) return;
-    const look = wornLook(worn.split("+"));
+    const look = grown(wornLook(worn.split("+")), strength, flexes);
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
       const scene = sceneFor(look, mood, activity, seconds ?? 0);
@@ -63,12 +70,13 @@ export function CellFigure(props: {
       shown = { frame, dpr };
       paint(element, frame, body, points, dpr, ground);
     });
-  }, [worn, mood, activity, name, body, points, ground]);
+  }, [worn, strength, flexes, mood, activity, name, body, points, ground]);
   return (
     <span
       className="cell-figure"
       data-mood={mood}
       data-activity={activity}
+      data-strength={strength}
       style={{ width: BOX.width * points, height: BOX.height * points }}
     >
       <canvas

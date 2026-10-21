@@ -1,12 +1,16 @@
 /**
  * What a Cell's acting relies on in upstream: the turn items a run's tool
  * calls become, the run a shell names, the desktop keeping running threads
- * live, and the prompt cache's expiry Claude's turns carry. A failure here after a sync names the contract that moved;
- * the fix goes in `cellWork.ts`, not in the views.
+ * live, the prompt cache's expiry Claude's turns carry, and the runs and
+ * requests its growth is read from. A failure here after a sync names the
+ * contract that moved; the fix goes in `cellWork.ts`, not in the views.
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import {
+  OrchestrationV2ExecutionNode,
   OrchestrationV2PendingBackgroundTask,
+  OrchestrationV2Run,
+  OrchestrationV2RuntimeRequest,
   OrchestrationV2TurnItem,
   type OrchestrationV2ProviderTurn,
   type OrchestrationV2ThreadProjection,
@@ -17,6 +21,7 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import rootSource from "../../routes/__root.tsx?raw";
 import claudeAdapterSource from "../../../../server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts?raw";
+import projectionStoreSource from "../../../../server/src/orchestration-v2/ProjectionStore.ts?raw";
 import { budsOf, currentActivity } from "../cell/activity";
 import {
   beatOf,
@@ -24,6 +29,7 @@ import {
   CODEX_CACHE_MS,
   coldAtFor,
   coldAtOf,
+  growthOf,
   newsOf,
   subagentsAwayOf,
 } from "./cellWork";
@@ -250,5 +256,109 @@ describe("what is news in a run: the original's silence before thought goes deep
     expect(
       newsOf([projected(item("compaction", { driver: null }, "completed"))], "run-1").compacting,
     ).toBe(false);
+  });
+});
+
+/** The fields growth reads, decoded by upstream's own schemas for them. */
+const decodeRuns = Schema.decodeUnknownSync(
+  Schema.Array(
+    Schema.Struct({
+      id: OrchestrationV2Run.fields.id,
+      status: OrchestrationV2Run.fields.status,
+      startedAt: OrchestrationV2Run.fields.startedAt,
+      completedAt: OrchestrationV2Run.fields.completedAt,
+    }),
+  ),
+);
+const decodeRequests = Schema.decodeUnknownSync(
+  Schema.Array(
+    Schema.Struct({
+      nodeId: OrchestrationV2RuntimeRequest.fields.nodeId,
+      responseCapability: OrchestrationV2RuntimeRequest.fields.responseCapability,
+      createdAt: OrchestrationV2RuntimeRequest.fields.createdAt,
+      resolvedAt: OrchestrationV2RuntimeRequest.fields.resolvedAt,
+    }),
+  ),
+);
+const decodeNodes = Schema.decodeUnknownSync(
+  Schema.Array(
+    Schema.Struct({
+      id: OrchestrationV2ExecutionNode.fields.id,
+      runId: OrchestrationV2ExecutionNode.fields.runId,
+    }),
+  ),
+);
+
+describe("how long a chat's Cell has worked alone, from its thread's detail", () => {
+  const minutes = (n: number) => n * 60_000;
+  const utc = (iso: string) => DateTime.makeUnsafe(iso);
+  const live = { type: "live", providerSessionId: "session-1" };
+  const thread = {
+    runs: decodeRuns([
+      // 40 min, 10 of them waiting on an approval: 30 alone.
+      {
+        id: "run-1",
+        status: "completed",
+        startedAt: utc("2026-10-21T08:00:00Z"),
+        completedAt: utc("2026-10-21T08:40:00Z"),
+      },
+      // Stopped: it never landed.
+      {
+        id: "run-2",
+        status: "interrupted",
+        startedAt: utc("2026-10-21T09:00:00Z"),
+        completedAt: utc("2026-10-21T10:00:00Z"),
+      },
+      {
+        id: "run-3",
+        status: "completed",
+        startedAt: utc("2026-10-21T10:00:00Z"),
+        completedAt: utc("2026-10-21T10:15:00Z"),
+      },
+      { id: "run-4", status: "running", startedAt: utc("2026-10-21T11:00:00Z"), completedAt: null },
+    ]),
+    runtimeRequests: decodeRequests([
+      {
+        nodeId: "node-approval",
+        responseCapability: live,
+        createdAt: utc("2026-10-21T08:10:00Z"),
+        resolvedAt: utc("2026-10-21T08:20:00Z"),
+      },
+      // An async question the run worked on past: no wait.
+      {
+        nodeId: "node-question",
+        responseCapability: { type: "message" },
+        createdAt: utc("2026-10-21T08:30:00Z"),
+        resolvedAt: utc("2026-10-21T08:35:00Z"),
+      },
+      {
+        nodeId: "node-later",
+        responseCapability: live,
+        createdAt: utc("2026-10-21T11:05:00Z"),
+        resolvedAt: null,
+      },
+    ]),
+    nodes: decodeNodes([
+      { id: "node-approval", runId: "run-1" },
+      { id: "node-question", runId: "run-1" },
+      { id: "node-later", runId: "run-4" },
+    ]),
+  };
+
+  it("sums its landed runs, each less the time a blocking request held it", () => {
+    expect(growthOf(thread, null)).toEqual({ alone: minutes(45), run: 0 });
+    expect(growthOf(thread, "run-1")).toEqual({ alone: minutes(45), run: minutes(30) });
+    expect(growthOf(thread, "run-3")).toEqual({ alone: minutes(45), run: minutes(15) });
+  });
+
+  it("waits until the detail has seen the run land", () => {
+    expect(growthOf(thread, "run-4")).toBeNull();
+    expect(growthOf(thread, "run-2")).toBeNull();
+  });
+
+  it("calls a request blocking by upstream's own test, as the shell's needs-you does", () => {
+    expect(projectionStoreSource).toContain(
+      'blocking: request.responseCapability.type !== "message",',
+    );
   });
 });

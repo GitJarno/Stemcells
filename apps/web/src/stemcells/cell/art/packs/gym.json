@@ -448,6 +448,7 @@
       "facing": "right",
       "kind": "once",
       "lively": true,
+      "ownArms": true,
       "tell": 6,
       "frames": [
         {

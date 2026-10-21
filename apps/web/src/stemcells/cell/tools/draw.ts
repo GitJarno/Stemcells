@@ -2,8 +2,16 @@
 // strips and animations at both sizes on both frames, and sheets of many.
 
 import { FRAMES, type Ground } from "../keyline.ts";
-import { paletteOf, pieceOf, SCENES } from "../kit.ts";
-import { type CellLook, type CellScene, curated, outfitLook, packLook, sceneOf } from "../scene.ts";
+import { paletteOf, pieceOf, SCENES, STRENGTHS } from "../kit.ts";
+import {
+  type CellLook,
+  type CellScene,
+  curated,
+  grown,
+  outfitLook,
+  packLook,
+  sceneOf,
+} from "../scene.ts";
 import { apng, png } from "./png.ts";
 import { picture, Sheet, textWidth } from "./picture.ts";
 
@@ -18,9 +26,20 @@ export const GROUNDS: readonly Ground[] = ["black", "light"];
 /**
  * A look by what the command line says: `bare`, a curated look (`builder`),
  * pack pieces (`gym/towel+gym/sweatband`), or a pack's outfit
- * (`outfit:gym/athlete`, `outfit:gym/athlete~sky` in a colourway).
+ * (`outfit:gym/athlete`, `outfit:gym/athlete~sky` in a colourway); grown to
+ * a strength after `@` (`bare@arms`), flexing for its cheer with `:flex`
+ * (`bare@biceps:flex`).
  */
 export function lookOf(spec: string): CellLook {
+  const [worn = "", growth] = spec.split("@");
+  if (growth === undefined) return wornOf(worn);
+  const [strength, flex] = growth.split(":");
+  const known = STRENGTHS.find((s) => s === strength);
+  if (strength !== "" && known === undefined) throw new Error(`no strength "${strength}"`);
+  return grown(wornOf(worn), known, flex === "flex");
+}
+
+function wornOf(spec: string): CellLook {
   if (spec === "bare") return packLook([]);
   if (spec.startsWith("outfit:")) {
     const [id = "", colourway] = spec.slice("outfit:".length).split("~");

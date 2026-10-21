@@ -121,8 +121,9 @@ export function hero(rigged: Pose, w = 32, h = 32): Body {
       grid.put(x, rigged.base, RIG.shadow);
   }
 
-  // Arms grow out of the sides in the body's colour, shaded beneath. The
-  // arms and the face are marked: they come forward again over a wrap.
+  // Arms grow out of the sides in the body's colour, shaded beneath; a
+  // strong one bulges over its upper arm, lit on top. The arms and the face
+  // are marked: they come forward again over a wrap.
   const marks = new Grid(w, h);
   const draw = (x: number, y: number, role: string) => {
     grid.put(x, y, role);
@@ -141,6 +142,9 @@ export function hero(rigged: Pose, w = 32, h = 32): Body {
       hand = { x: round(rootX + side * arm.dx * f), y: round(rootY + arm.dy * f) };
       draw(hand.x, hand.y, "B");
       draw(hand.x, hand.y + 1, "b");
+      if (k > 0 && k < round(reach))
+        for (let up = 1; up <= (arm.bulge ?? 0); up++)
+          draw(hand.x, hand.y - up, up === arm.bulge ? "L" : "B");
     }
     draw(hand.x + side, hand.y, "B");
     draw(hand.x + side, hand.y + 1, "b");

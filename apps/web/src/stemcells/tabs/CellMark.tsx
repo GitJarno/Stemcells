@@ -9,6 +9,7 @@ import {
   useCellBuds,
   useCellCalls,
   useCellDeep,
+  useCellGrowth,
   useCellRest,
   useCellSubagentsAway,
 } from "../upstream/cellWork";
@@ -27,7 +28,8 @@ const POINTS = 1;
  * status, the "?" over it while it waits on you, in its provider's colours.
  * While the chat works it acts out the call in flight, and meditates once its
  * thought goes deep; when a turn lands it cheers, then rests, and sleeps once
- * the chat's prompt cache has gone cold.
+ * the chat's prompt cache has gone cold. It grows from the time it has worked
+ * alone, and flexes for a landing after a long run alone.
  * Its box holds all of it, hats too, so centring the box centres the whole
  * Cell. Drawn `points` a sprite pixel; small beside a label unless told.
  * Given a `stage` (room at its right, as on the composer), the buds of its
@@ -47,6 +49,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const deep = useCellDeep(props.cell, working, thinkingQuietly(raw, shown));
   const buds = useCellBuds(props.cell, working);
   const { landedAt, coldAt } = useCellRest(props.cell, provider);
+  const { strength, flexes } = useCellGrowth(props.cell);
   const look = useRosterLook(props.cell?.threadId);
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
@@ -75,6 +78,8 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
         provider={provider}
         look={look}
         points={props.points ?? POINTS}
+        strength={strength}
+        flexes={flexes}
       />
     </span>
   );

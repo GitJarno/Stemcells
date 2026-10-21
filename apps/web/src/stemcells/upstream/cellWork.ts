@@ -1,15 +1,19 @@
 /**
  * What a chat's Cell acts out, read from upstream's thread: the tool calls of
  * the run in progress, newest last, when anything last came into it, when its
- * last turn landed, and when its prompt cache goes cold. A Cell reads the turn
- * items only while its chat works, and the thread's detail once per landing. On the desktop app every
- * running thread's items are live already (upstream's
+ * last turn landed, when its prompt cache goes cold, and how long it has
+ * worked alone. A Cell reads the turn items only while its chat works, and
+ * the thread's detail as it is drawn and as a run starts or lands. On the
+ * desktop app every running thread's items are live already (upstream's
  * `RunningThreadKeepAlive`); in a browser this keeps a working chat's live
  * while its Cell is mounted.
  */
 import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-label";
 import type {
+  OrchestrationV2ExecutionNode,
   OrchestrationV2ProjectedTurnItem,
+  OrchestrationV2Run,
+  OrchestrationV2RuntimeRequest,
   OrchestrationV2ThreadProjection,
   OrchestrationV2TurnItem,
 } from "@t3tools/contracts";
@@ -23,6 +27,8 @@ import {
   useThreadVisibleTurnItems,
 } from "../../state/entities";
 import { ACTIVITY_HOLD, budsOf, type ToolBeat } from "../cell/activity";
+import { aloneIn, FLEX_MS, type Span, strengthOf } from "../cell/growth";
+import type { Strength } from "../cell/kit";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
 
@@ -244,4 +250,86 @@ export function useCellRest(
   if (landedAt === null) return { landedAt, coldAt: undefined };
   const claude = read !== null && read.landing === landing ? read.coldAt : undefined;
   return { landedAt, coldAt: coldAtFor(driver, landedAt, claude) };
+}
+
+/**
+ * How long a chat's Cell has worked alone (`cell/growth.ts`), from its
+ * thread's detail: each landed run from its start to its landing, less the
+ * time a blocking request of the run waited on you, summed (`alone`); and
+ * run `runId`'s own (`run`). Null while the detail hasn't seen `runId` land.
+ */
+export function growthOf(
+  projection: {
+    readonly runs: ReadonlyArray<
+      Pick<OrchestrationV2Run, "id" | "status" | "startedAt" | "completedAt">
+    >;
+    readonly runtimeRequests: ReadonlyArray<
+      Pick<
+        OrchestrationV2RuntimeRequest,
+        "nodeId" | "responseCapability" | "createdAt" | "resolvedAt"
+      >
+    >;
+    readonly nodes: ReadonlyArray<Pick<OrchestrationV2ExecutionNode, "id" | "runId">>;
+  },
+  runId: string | null,
+): { readonly alone: number; readonly run: number } | null {
+  const runOf = new Map(projection.nodes.map((node) => [node.id, node.runId]));
+  const waits = new Map<string, Span[]>();
+  for (const request of projection.runtimeRequests) {
+    // Upstream's own test for a request that holds the run (its shell's `blocking`).
+    if (request.responseCapability.type === "message") continue;
+    const run = runOf.get(request.nodeId);
+    if (run == null) continue;
+    const to = request.resolvedAt === null ? Infinity : DateTime.toEpochMillis(request.resolvedAt);
+    waits.set(run, [
+      ...(waits.get(run) ?? []),
+      { from: DateTime.toEpochMillis(request.createdAt), to },
+    ]);
+  }
+  let alone = 0;
+  let last: number | null = runId === null ? 0 : null;
+  for (const run of projection.runs) {
+    if (run.status !== "completed" || run.startedAt === null || run.completedAt === null) continue;
+    const worked = aloneIn({
+      from: DateTime.toEpochMillis(run.startedAt),
+      to: DateTime.toEpochMillis(run.completedAt),
+      waits: waits.get(run.id) ?? [],
+    });
+    alone += worked;
+    if (run.id === runId) last = worked;
+  }
+  return last === null ? null : { alone, run: last };
+}
+
+/**
+ * How strong the chat's Cell has grown, and whether its landing flexes (its
+ * run worked alone `FLEX_MS` or more): read from the thread's detail as the
+ * Cell is drawn, again as a run starts, and as it lands.
+ */
+export function useCellGrowth(cell: CellRef | null): {
+  readonly strength: Strength | undefined;
+  readonly flexes: boolean;
+} {
+  const ref = cell ? threadRefOf(cell) : null;
+  const run = useQuietThreadShell(ref)?.latestRun;
+  const landed = run?.status === "completed" ? run.runId : null;
+  const key = cell === null ? null : `${cell.threadId}|${run?.runId ?? ""}|${landed !== null}`;
+  const [read, setRead] = useState<{
+    key: string;
+    thread: string;
+    alone: number;
+    run: number;
+  } | null>(null);
+  const reading = key !== null && read?.key !== key;
+  const thread = useThreadProjection(reading ? ref : null);
+  if (reading && cell !== null && thread !== null) {
+    const growth = growthOf(thread.projection, landed);
+    if (growth !== null) setRead({ key, thread: cell.threadId, ...growth });
+  }
+  // Until the next read, the last one of this chat's stands: growth only comes as a run lands.
+  const mine = read !== null && read.thread === cell?.threadId ? read : null;
+  return {
+    strength: strengthOf(mine?.alone ?? 0),
+    flexes: landed !== null && mine?.key === key && mine.run >= FLEX_MS,
+  };
 }

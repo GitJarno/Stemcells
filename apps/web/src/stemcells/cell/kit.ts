@@ -346,7 +346,13 @@ export interface Arm {
   readonly at: number;
   readonly dx: number;
   readonly dy: number;
+  /** Rows of biceps over the upper arm, light on top: a strong Cell's (`STRENGTH_ARMS`). */
+  readonly bulge?: number | undefined;
 }
+
+/** How strong a Cell has grown from the time it worked alone (`growth.ts`), weakest first. */
+export const STRENGTHS = ["nubs", "arms", "biceps"] as const;
+export type Strength = (typeof STRENGTHS)[number];
 
 /** One frame of the body, as the rig draws it. Lengths are hero cells. */
 export interface Pose {
@@ -413,6 +419,8 @@ export interface MoveMeta {
   readonly stage?: number | undefined;
   /** Timed to sound: it may run at 24 frames a second. */
   readonly sound?: boolean | undefined;
+  /** The layers of its frames draw the Cell's arms (the flex): a strong Cell's arms stand aside in those frames. */
+  readonly ownArms?: boolean | undefined;
 }
 
 export interface Move {
@@ -452,10 +460,11 @@ interface SceneData extends MoveData {
   readonly pieces?: string;
 }
 
-/** A move set as its file in `art/moves/` holds it: new scenes, and meta for the export's. */
+/** A move set as its file in `art/moves/` holds it: new scenes, meta for the export's, and the arms a strength holds at rest. */
 export interface MoveFile {
   readonly scenes?: Readonly<Record<string, SceneData>>;
   readonly meta?: Readonly<Record<string, MoveMeta>>;
+  readonly strength?: Readonly<Partial<Record<Strength, Omit<Arm, "side">>>>;
 }
 
 const MOVE_LAYERS = (movesData.layers as readonly LayerData[]).map(layer);
@@ -470,6 +479,7 @@ const META_KEYS = [
   "land",
   "stage",
   "sound",
+  "ownArms",
 ] as const satisfies readonly (keyof MoveMeta)[];
 
 /** A move file's meta, and nothing else it holds. */
@@ -512,6 +522,16 @@ export const MOVE_FILES: ReadonlyMap<string, MoveFile> = new Map(
 const DRAWN_META: Readonly<Record<string, MoveMeta>> = Object.assign(
   {},
   ...[...MOVE_FILES.values()].map((file) => file.meta ?? {}),
+);
+
+/** The arm a Cell of each strength holds at either side while a move leaves that side free. */
+export const STRENGTH_ARMS: ReadonlyMap<Strength, Omit<Arm, "side">> = new Map(
+  [...MOVE_FILES.values()].flatMap((file) =>
+    STRENGTHS.flatMap((strength) => {
+      const arm = file.strength?.[strength];
+      return arm === undefined ? [] : [[strength, arm] as const];
+    }),
+  ),
 );
 
 /** The scenes drawn for Stemcells, by name. */

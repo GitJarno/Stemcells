@@ -32,6 +32,9 @@ A `<look>` is one of:
 - pack pieces (`gym/towel+gym/sweatband`);
 - an outfit (`outfit:gym/athlete`), optionally in a colourway (`outfit:gym/athlete~sky`).
 
+Any of them can be grown to a strength (`bare@arms`) and flex for its cheer
+(`bare@biceps:flex`).
+
 Options: `--body claude|codex|gemini|kimi|frost` and `--out <dir>`. Output
 goes to `$TMPDIR/cells` by default, never into the repo.
 
@@ -194,7 +197,8 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
                                     "mini": ["…"], "miniHotspot": [0, 1] }] }
                    ] }
   },
-  "meta": { "idle": { "tell": 0, "kind": "loop" } }
+  "meta": { "idle": { "tell": 0, "kind": "loop" } },
+  "strength": { "arms": { "at": 0.5, "dx": 3, "dy": 2 } }
 }
 ```
 
@@ -217,7 +221,10 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   - `next`: the scene it hands back to;
   - `land`: frames to wait before a cut while in the air;
   - `stage`: how far a travelling move goes past the box;
-  - `sound`: timed to sound, so it may run at 24 fps.
+  - `sound`: timed to sound, so it may run at 24 fps;
+  - `ownArms`: the layers of its frames draw the Cell's arms (the gym's
+    flex), so a strong Cell's arms stand aside in the frames that have
+    layers.
 - **Holding a tool.** A scene that holds a tool sets `"holds": true` and
   `"held": "<tool>"`.
 - **A second body** (a bud, a vesicle) is a layer drawn in the body's letters,
@@ -231,6 +238,12 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   leaves the box on purpose, so `check` warns on those two.
 - **`meta`** adds meta to the original's scenes by name. Their frames stay as
   exported.
+- **`strength`** (`growth.json`) is the arm a Cell holds at rest once it has
+  grown (`stemcells/tasks/cell-growth.md`): `nubs`, `arms` and `biceps`, each
+  a rig arm with no `side`. The arm stands on each side a frame leaves free
+  and no tool in hand takes. `bulge` gives an arm rows of biceps, lit on top;
+  a Cell with biceps bulges in every arm a move shows. The arms reach past
+  the box into the margin a display draws, as the original's own arms do.
 
 ### A temperament: `art/temperaments/<id>.json`
 
