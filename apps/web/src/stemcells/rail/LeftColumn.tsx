@@ -11,6 +11,8 @@ import {
 } from "../upstream/ui";
 import { useColumnStore } from "./column";
 import { Rail } from "./Rail";
+// App-wide: the root layout renders this column on every page.
+import "../scrollbars/scrollbars.css";
 
 /**
  * Upstream's sidebar slot: the rail, or upstream's wide sidebar (`wide`)

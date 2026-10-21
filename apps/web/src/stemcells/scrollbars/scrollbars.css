@@ -1,0 +1,26 @@
+/* Scrollbars show only while scrolling, as the system's do on a Mac
+   (upstream/scrollbars.contract.test.ts pins what this leans on).
+
+   Upstream's index.css styles ::-webkit-scrollbar for every element, and
+   Chromium draws a classic bar wherever such a rule applies: always shown,
+   and 6 px wide out of the content. Chromium ignores those rules where
+   scrollbar-color is set, and draws the system's own bar there: an overlay
+   that takes no width, fades in on scroll and out about 0.8 s after (or a
+   classic one, when the Mac is set to show scroll bars always).
+   scrollbar-color inherits, so the root sets it for every scroller. Half
+   of CanvasText is the system's own knob, measured pixel for pixel against
+   an unstyled bar in light and dark. */
+:root {
+  scrollbar-color: color-mix(in srgb, CanvasText 50%, transparent) transparent;
+}
+
+/* Upstream's ScrollArea draws its own bar and also shows it while the
+   pointer is anywhere over the area. Here the bar shows while scrolling, or
+   while the pointer is on the bar itself to grab it, and fades 300 ms after
+   the scroll ends (Base UI ends it 500 ms after the last scroll event), as
+   the system's does. */
+[data-slot="scroll-area-scrollbar"]:not([data-scrolling], :hover, :active) {
+  opacity: 0;
+  transition-delay: 0ms;
+  transition-duration: 300ms;
+}
