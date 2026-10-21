@@ -9,7 +9,7 @@ import { displaySetKey } from "./arrangement";
 import { windowsBridge } from "./bridge";
 import { carrying, carryStarts } from "./carrying";
 import { gatherButton, pressGather } from "./gather";
-import { flyGather } from "./gatherFlight";
+import { flyGather, flyPutBack } from "./gatherFlight";
 import { commitMove, readSnapshot } from "./wire";
 
 export const GATHER_SHORTCUT = "mod+alt+g";
@@ -29,10 +29,12 @@ export async function gatherOrPutBack(): Promise<boolean> {
     const press = () =>
       commitMove((seen) => pressGather(seen.arrangement, here, displaySetKey(seen.displays)));
     const { arrangement, displays } = readSnapshot(await bridge.snapshot());
-    if (gatherButton(arrangement, displaySetKey(displays)) === "gather") {
+    const key = displaySetKey(displays);
+    if (gatherButton(arrangement, key) === "gather") {
       return await flyGather(bridge, arrangement, here, press);
     }
-    return (await press()) !== null;
+    const planned = pressGather(arrangement, here, key);
+    return planned !== null && (await flyPutBack(bridge, arrangement, here, planned, press));
   } finally {
     ends();
   }

@@ -19,7 +19,7 @@ import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
 import { GatherButton } from "../windows/GatherButton";
-import { useArriving } from "../windows/gatherFlight";
+import { useFlownChips } from "../windows/gatherFlight";
 import { useHosting, useStripMeasure } from "../windows/hostStrip";
 import { useTabCarry } from "../windows/useTabCarry";
 import { useSpringTabs, type SpringHandlers } from "./springTab";
@@ -79,8 +79,8 @@ export function TabStrip(props: {
   const shownTabs = newCell && !newCell.taken ? [...tabs, newCell.tab] : tabs;
   // A tab carried from another window: this strip makes room for it, then takes it.
   const hosting = useHosting(shownTabs);
-  // Tabs Gather brought here, hidden until their window's still lands on them.
-  const arriving = useArriving();
+  // Tabs Gather brought here or Put back takes away, while their chips are on the flight layer.
+  const flown = useFlownChips();
   useStripMeasure(stripRef, tabElements, tabs, newCell && !newCell.taken ? newCell.tab.id : null);
 
   return (
@@ -135,7 +135,7 @@ export function TabStrip(props: {
                 }
               }}
               style={
-                away || tab.id === hosting.hiddenId || arriving.has(tab.id)
+                away || tab.id === hosting.hiddenId || flown.has(tab.id)
                   ? { visibility: "hidden" }
                   : dragged
                     ? { transform: `translate(${offset}px, ${view.pulled}px) scale(1.04)` }

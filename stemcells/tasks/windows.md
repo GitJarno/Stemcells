@@ -44,13 +44,13 @@ asked for by name), then W7, W4, W9, W11.
   - [x] W6c Undo Move (⌥⌘Z) for the moves between windows.
   - [x] W6d Closing a window as a move Undo Move takes back.
   - [ ] W6e Undo Move playing the move's own motion reversed.
-- [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
+- [x] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
       the flights, full screen restored.
   - [x] W8a The button and ⌥⌘G, read from the windows as they are, each
         press a move Undo Move takes back.
   - [x] W8b Gather's flight: each other window's still shrinks into its
         place in the home strip.
-  - [ ] W8c Put back's flight: chips lift and unfold into stills, and
+  - [x] W8c Put back's flight: chips lift and unfold into stills, and
         each window lands under its still.
 - [ ] W7 Carry a chat: the Cell as the handle, pane halves, tabs, strips,
       windows and open space.
@@ -425,6 +425,19 @@ flight and its chips show at once. The gathered tabs join the end of the
 strip, so the home's own chips only move when the strip runs out of room,
 and then they jump.
 
+As built (W8c): no stills are kept from the gather (the memory is
+written to disk and holds ids and frames), so Put back unfolds each
+window's chips into a frame of the window's chrome with the chips at the
+window's first chip, farthest window first, one `beat` apart: the chips
+on `lift`, the frame on `unfold`. The move is made once the last frame
+has unfolded, so every window opens under its frame wherever it shows,
+and each frame fades on `fade` once its window has drawn. In the dev
+build that wait is 1.8 s after the frames are in place. If a release
+build's wait shows in the hand check, the windows can start hidden at the
+press (as the warm window does) and show on their frames. A full-screen
+window opens and goes full screen without a flight. The home window goes
+back to its own frame at once. Under Reduce Motion the windows just open.
+
 ### Undo Move (⌥⌘Z)
 
 Every move above, and closing a window, pushes its inverse. Undo Move
@@ -798,3 +811,11 @@ watching for a wait before the new window answers.
   chips' screen rects. Each chip showed as its still began to fade, and
   the layer went 890 ms after the press. Under Reduce Motion the stills
   faded where they were, 120 ms apart, gone at 560 ms.
+- W8c: proved in the lab the same way. Pressed, the chips were on the
+  layer at 200 ms and hidden in the strip; the farther window's frame
+  unfolded from its two chips to its old frame, the other 120 ms later,
+  each ending on its frame with its chips on the window's first chip
+  place. The two windows opened under their frames at 950 ms, drew, and
+  their frames faded; the layer went at 3 s (the dev build's boot). Under
+  Reduce Motion the windows opened with no layer. ⌥⌘G, ⌥⌘Z and the
+  button's offer behaved as in W8a around both flights.

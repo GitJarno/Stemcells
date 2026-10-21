@@ -307,10 +307,22 @@ export class TearFlight {
   }
 }
 
+/** How long a new window may take to draw before its still goes anyway. */
+export const LANDING_WAIT = 4000;
+
 export const group = { radius: 0, shadow: false, color: "transparent", clip: false } as const;
 
 export const wait = (timing: FlightTiming) =>
   new Promise((resolve) => setTimeout(resolve, timing.duration + (timing.delay ?? 0)));
+
+/** The colour the strip is drawn on: the window's chrome. */
+export function chromeOf(element: HTMLElement): string {
+  for (let at: HTMLElement | null = element; at; at = at.parentElement) {
+    const color = getComputedStyle(at).backgroundColor;
+    if (color && color !== "transparent" && !/rgba\(.*,\s*0\)$/.test(color)) return color;
+  }
+  return "rgb(11, 11, 12)";
+}
 
 /** The corners of a window, which its preview and its still are drawn with. */
 export function windowRadius(): number {
