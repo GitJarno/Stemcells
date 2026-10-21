@@ -1,0 +1,14 @@
+/* With Reduce Motion, the zoom level's toast fades in and out where it
+   stands: upstream's toasts slide in from the edge. The level's mark
+   (`upstream/zoomNotice.tsx`) finds its toast. */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="toast-viewport"] [data-position]:has([data-stemcells-zoom-level]) {
+    transition-property: opacity;
+  }
+  [data-slot="toast-viewport"]
+    [data-position]:has([data-stemcells-zoom-level])[data-starting-style],
+  [data-slot="toast-viewport"] [data-position]:has([data-stemcells-zoom-level])[data-ending-style] {
+    opacity: 0;
+    transform: none;
+  }
+}

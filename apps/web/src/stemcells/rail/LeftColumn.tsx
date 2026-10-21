@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
   useSidebar,
 } from "../upstream/ui";
+import { useZoomNotice } from "../zoom/useZoomNotice";
 import { useColumnStore } from "./column";
 import { Rail } from "./Rail";
 // App-wide: the root layout renders this column on every page.
@@ -23,6 +24,8 @@ import "../pages/frame.css";
  * sheet there.
  */
 export function LeftColumn(props: { wide: ReactNode }) {
+  // App-wide, as the column is: the zoom level shows on every page.
+  useZoomNotice();
   const width = useColumnStore((store) => store.width);
   const { isMobile } = useSidebar();
   return isMobile || width === "wide" ? props.wide : <Rail />;
