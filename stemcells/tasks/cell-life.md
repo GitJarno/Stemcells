@@ -282,9 +282,11 @@ Read on main on 21 October.
   provider's, which is how you tell a Claude Cell from a Codex one. Each
   outfit lists two or three fabric colourways from the fabric pairs (the
   mage's robe in lilac, sky or rose).
-- **Seasons add, never replace.** A season's piece takes a slot the theme
-  leaves free (the Swift app let the season win, which cost four of eight
-  Cells their house piece on 21 October). Decided; see below.
+- **Seasons first.** A season's item is dealt first, because it is the
+  day's. The theme's item takes the slots the season leaves free, so a season
+  outfit that leaves a slot free lets a Cell's own theme show beside it. The
+  rule as it stands is in `stemcells/docs/cell-art.md`, "A season's item is
+  dealt first". Decided; see below.
 - **Growth: the flex.**
   - Time worked alone is a turn's running time with no needs-you, summed over
     the thread.
@@ -460,8 +462,11 @@ These are additions to the formats in `cell/kit/`, for the critters owner:
 These were decided on 21 October, and the owner can still override any of
 them.
 
-1. **Seasons add to the outfit.** A season's piece takes a slot the theme
-   leaves free. This changes a Swift behaviour.
+1. **Seasons first.** A season's item is dealt first, and the theme's item
+   takes the slots it leaves free (#51). This replaced the first call,
+   "seasons add", which took only the slots the theme left free. Under that
+   rule, season packs with outfits were barely dealt: November reached 3 of
+   12 Cells, and the lamplighter 9 of 12.
 2. **A keyline on light frames only.** No piece is redrawn: the art stays
    the Swift art.
 3. **A temperament is named only on the Cell's card.**
