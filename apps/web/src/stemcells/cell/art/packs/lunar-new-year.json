@@ -1,0 +1,611 @@
+{
+  "theme": "lunar-new-year",
+  "season": {
+    "years": {
+      "2027": ["02-06", "02-20"],
+      "2028": ["01-26", "02-09"],
+      "2029": ["02-13", "02-27"],
+      "2030": ["02-03", "02-17"]
+    }
+  },
+  "about": "Lunar New Year, from New Year's Day to the Lantern Festival on the fifteenth day: red and gold, a lantern, the lion dance and firecrackers.",
+  "pieces": [
+    {
+      "name": "lionhead",
+      "slot": "headwear",
+      "poses": {
+        "asleep": "lionhead-asleep"
+      },
+      "about": "A lion-dance head, worn on the crown: the lion that dances through the streets at New Year, with its big eyes, horn, mirror and fur trim.",
+      "art": [
+        "............Go............",
+        ".......WWWRRRRRRWqq.......",
+        ".....WWRRRRRRRRRRRRqq.....",
+        "...WWRRRRRRRppRRRRRRRqq...",
+        "..WRRRRRRRRppppRRRRRRRrq..",
+        "..WRRGGGGRRRRRRRRGGGGRrq..",
+        ".WRGGGGGGGRRRRRRGGGGGGGrq.",
+        ".WRGWWWWWWGRRRRGWWWWWWGrq.",
+        ".WRWWWWKKWWRRRRWWKKWWWWrq.",
+        ".WRWWWWKKWWRRRRWWKKWWWWrq.",
+        ".WRRWWWWWWRRNNRRWWWWWWRrq.",
+        "WRGRRRRRRRRNNNNRRRRRRRRGrq",
+        "WRRGRRRRRRRRRRRRRRRRRRGRrq",
+        "WqWWqWWqWWqWWWWqWWqWWqWWqq",
+        "WWWq..................qWqq",
+        ".WWq..................qWW.",
+        "..Wq..................qW.."
+      ],
+      "hotspot": [12, 12],
+      "mini": [
+        "......G......",
+        "..WRRRRRRRW..",
+        ".WRGGRpRGGrW.",
+        ".RWWWRRRWWWr.",
+        ".RWKWRRRWKWr.",
+        "WRRRRRRRRRrrW",
+        "WWWWWWWWWWWWW",
+        "W...........W"
+      ],
+      "miniHotspot": [6, 6]
+    },
+    {
+      "name": "lionhead-asleep",
+      "slot": "headwear",
+      "posed": true,
+      "about": "The lion-dance head with its eyelids down, worn while the Cell sleeps.",
+      "art": [
+        "............Go............",
+        ".......WWWRRRRRRWqq.......",
+        ".....WWRRRRRRRRRRRRqq.....",
+        "...WWRRRRRRRppRRRRRRRqq...",
+        "..WRRRRRRRRppppRRRRRRRrq..",
+        "..WRRGGGGRRRRRRRRGGGGRrq..",
+        ".WRGGGGGGGRRRRRRGGGGGGGrq.",
+        ".WRGGGGGGGGRRRRGGGGGGGGrq.",
+        ".WRGGGGGGGGRRRRGGGGGGGGrq.",
+        ".WRRKKKKKKRRRRRRKKKKKKRrq.",
+        ".WRRRRRRRRRRNNRRRRRRRRRrq.",
+        "WRGRRRRRRRRNNNNRRRRRRRRGrq",
+        "WRRGRRRRRRRRRRRRRRRRRRGRrq",
+        "WqWWqWWqWWqWWWWqWWqWWqWWqq",
+        "WWWq..................qWqq",
+        ".WWq..................qWW.",
+        "..Wq..................qW.."
+      ],
+      "hotspot": [12, 12],
+      "mini": [
+        "......G......",
+        "..WRRRRRRRW..",
+        ".WRGGRpRGGrW.",
+        ".RGGGRRRGGGr.",
+        ".RKKKRRRKKKr.",
+        "WRRRRRRRRRrrW",
+        "WWWWWWWWWWWWW",
+        "W...........W"
+      ],
+      "miniHotspot": [6, 6]
+    },
+    {
+      "name": "lantern",
+      "slot": "back",
+      "about": "A red paper lantern with gold caps and a tassel, carried on a stick over the shoulder, as at the Lantern Festival.",
+      "art": [
+        "...kk............",
+        "...k.k...........",
+        "..GGo.k..........",
+        ".RRRNr.k.........",
+        "RRWRRNr.k........",
+        "R!!RRNr..k.......",
+        "R!!RRNr...k......",
+        "RRWRRNr....k.....",
+        ".RRRNr......k....",
+        "..GGo........k...",
+        "...Y..........k..",
+        "...J...........k.",
+        "...Y............k"
+      ],
+      "hotspot": [11, 17],
+      "mini": [".kk....", ".G.k...", "RNr.k..", "R!r..k.", "RNr...k", ".G.....", ".J....."],
+      "miniHotspot": [6, 9]
+    }
+  ],
+  "fabrics": {
+    "redgold": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "b": "m"
+        },
+        "rides": false,
+        "rows": [25, 27],
+        "miniRows": [12, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "G",
+          "b": "G"
+        },
+        "rides": false,
+        "rows": [28, 29],
+        "miniRows": [13, 13]
+      }
+    ],
+    "goldred": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "b": "J"
+        },
+        "rides": false,
+        "rows": [25, 27],
+        "miniRows": [12, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "N",
+          "b": "N"
+        },
+        "rides": false,
+        "rows": [28, 29],
+        "miniRows": [13, 13]
+      }
+    ],
+    "blackgold": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "4",
+          "b": "4"
+        },
+        "rides": false,
+        "rows": [25, 27],
+        "miniRows": [12, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "G",
+          "b": "G"
+        },
+        "rides": false,
+        "rows": [28, 29],
+        "miniRows": [13, 13]
+      }
+    ],
+    "pinkgold": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "b": "i"
+        },
+        "rides": false,
+        "rows": [25, 27],
+        "miniRows": [12, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "G",
+          "b": "G"
+        },
+        "rides": false,
+        "rows": [28, 29],
+        "miniRows": [13, 13]
+      }
+    ]
+  },
+  "outfits": [
+    {
+      "id": "lion",
+      "headwear": "lunar-new-year/lionhead",
+      "face": "blush",
+      "fabric": "lunar-new-year/redgold",
+      "colourways": [
+        {
+          "id": "gold",
+          "fabric": "lunar-new-year/goldred"
+        },
+        {
+          "id": "black",
+          "fabric": "lunar-new-year/blackgold"
+        }
+      ],
+      "cheer": "lunar-new-year/firecrackers",
+      "silhouette": "lion",
+      "family": "red"
+    },
+    {
+      "id": "lantern",
+      "back": "lunar-new-year/lantern",
+      "face": "space/sparkle",
+      "fabric": "lunar-new-year/goldred",
+      "colourways": [
+        {
+          "id": "red",
+          "fabric": "lunar-new-year/redgold"
+        },
+        {
+          "id": "pink",
+          "fabric": "lunar-new-year/pinkgold"
+        }
+      ],
+      "cheer": "lunar-new-year/firecrackers",
+      "silhouette": "lantern",
+      "family": "gold"
+    }
+  ],
+  "cheers": {
+    "firecrackers": {
+      "fps": 6,
+      "facing": "right",
+      "kind": "once",
+      "tell": 3,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {
+            "look": [1, 0]
+          },
+          "layers": [
+            {
+              "art": [
+                "..G..",
+                "..k..",
+                "YNk..",
+                "..kNY",
+                "YNk..",
+                "..kNY",
+                "YNk..",
+                "..kNY",
+                "..*.."
+              ],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".G", "N.", ".N", "N.", ".N", "N.", ".N", ".*"],
+              "miniHotspot": [-5, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.9375,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": 0
+              },
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": ["..G..", "..k..", "YNk..", "..kNY", "YNk..", "..kNY", "YNk.."],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".G", "N.", ".N", "N.", ".N", "N."],
+              "miniHotspot": [-5, 12]
+            },
+            {
+              "art": ["!...!", ".!W!.", ".WWW.", ".!W!.", "!...!"],
+              "attach": "ground",
+              "hotspot": [-9, 19],
+              "z": 5,
+              "mini": [".!.", "!W!", ".!."],
+              "miniHotspot": [-4, 7]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              },
+              {
+                "side": 1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": ["..G..", "..k..", "YNk..", "..kNY", "YNk..", "..kNY"],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".G", "N.", ".N", "N.", ".N"],
+              "miniHotspot": [-5, 12]
+            },
+            {
+              "art": ["!...!", ".!W!.", ".WWW.", ".!W!.", "!...!"],
+              "attach": "ground",
+              "hotspot": [-9, 20],
+              "z": 5,
+              "mini": [".!.", "!W!", ".!."],
+              "miniHotspot": [-4, 8]
+            },
+            {
+              "art": ["R...", "..N.", ".R.."],
+              "attach": "ground",
+              "hotspot": [-10, 17],
+              "z": 5,
+              "mini": ["R"],
+              "miniHotspot": [-6, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              },
+              {
+                "side": 1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": ["..G..", "..k..", "YNk..", "..kNY", "YNk.."],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".G", "N.", ".N", "N."],
+              "miniHotspot": [-5, 12]
+            },
+            {
+              "art": ["!...!", ".!W!.", ".WWW.", ".!W!.", "!...!"],
+              "attach": "ground",
+              "hotspot": [-9, 21],
+              "z": 5,
+              "mini": [".!.", "!W!", ".!."],
+              "miniHotspot": [-4, 9]
+            },
+            {
+              "art": [".ug.", "uuug", ".uu."],
+              "attach": "ground",
+              "hotspot": [-10, 17],
+              "z": 5,
+              "mini": ["u"],
+              "miniHotspot": [-6, 6]
+            },
+            {
+              "art": ["R...", "..N.", ".R.."],
+              "attach": "ground",
+              "hotspot": [-11, 18],
+              "z": 5,
+              "mini": ["R"],
+              "miniHotspot": [-6, 7]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              },
+              {
+                "side": 1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              }
+            ],
+            "sy": 0.9375
+          },
+          "layers": [
+            {
+              "art": ["..G..", "..k..", "YNk..", "..kNY"],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".G", "N.", ".N"],
+              "miniHotspot": [-5, 12]
+            },
+            {
+              "art": ["!...!", ".!W!.", ".WWW.", ".!W!.", "!...!"],
+              "attach": "ground",
+              "hotspot": [-9, 22],
+              "z": 5,
+              "mini": [".!.", "!W!", ".!."],
+              "miniHotspot": [-4, 10]
+            },
+            {
+              "art": [".ug.", "uuug", ".uu."],
+              "attach": "ground",
+              "hotspot": [-10, 19],
+              "z": 5,
+              "mini": ["u"],
+              "miniHotspot": [-6, 8]
+            },
+            {
+              "art": ["R...", "..N.", ".R.."],
+              "attach": "ground",
+              "hotspot": [-10, 19],
+              "z": 5,
+              "mini": ["R"],
+              "miniHotspot": [-5, 8]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              },
+              {
+                "side": 1,
+                "at": 0.8,
+                "dx": 3,
+                "dy": -3
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": ["..G..", "..k..", "YNk.."],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".G", "N."],
+              "miniHotspot": [-5, 12]
+            },
+            {
+              "art": ["!...!", ".!W!.", ".WWW.", ".!W!.", "!...!"],
+              "attach": "ground",
+              "hotspot": [-9, 23],
+              "z": 5,
+              "mini": [".!.", "!W!", ".!."],
+              "miniHotspot": [-4, 11]
+            },
+            {
+              "art": [".ug.", "uuug", ".uu."],
+              "attach": "ground",
+              "hotspot": [-11, 20],
+              "z": 5,
+              "mini": ["u"],
+              "miniHotspot": [-6, 9]
+            },
+            {
+              "art": ["R...", "..N.", ".R.."],
+              "attach": "ground",
+              "hotspot": [-10, 20],
+              "z": 5,
+              "mini": ["R"],
+              "miniHotspot": [-6, 9]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "mouth": "grin",
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": 0
+              },
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": ["!...!", ".!W!.", ".WWW.", ".!W!.", "!...!"],
+              "attach": "ground",
+              "hotspot": [-9, 24],
+              "z": 5,
+              "mini": [".!.", "!W!", ".!."],
+              "miniHotspot": [-4, 12]
+            },
+            {
+              "art": [".ug.", "uuug", ".uu."],
+              "attach": "ground",
+              "hotspot": [-10, 21],
+              "z": 5,
+              "mini": ["u"],
+              "miniHotspot": [-6, 10]
+            },
+            {
+              "art": ["R...", "..N.", ".R.."],
+              "attach": "ground",
+              "hotspot": [-10, 19],
+              "z": 5,
+              "mini": ["R"],
+              "miniHotspot": [-6, 9]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.9375
+          },
+          "layers": [
+            {
+              "art": [".ug.", "uuug", ".uu."],
+              "attach": "ground",
+              "hotspot": [-10, 24],
+              "z": 5,
+              "mini": ["u"],
+              "miniHotspot": [-6, 12]
+            },
+            {
+              "art": ["R...", "..N.", ".R.."],
+              "attach": "ground",
+              "hotspot": [-11, 17],
+              "z": 5,
+              "mini": ["R"],
+              "miniHotspot": [-5, 7]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [".ug.", "uuug", ".uu."],
+              "attach": "ground",
+              "hotspot": [-11, 26],
+              "z": 5,
+              "mini": ["u"],
+              "miniHotspot": [-6, 13]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
