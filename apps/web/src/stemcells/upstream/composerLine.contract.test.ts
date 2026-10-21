@@ -2,14 +2,17 @@
  * What the line over a Cell's composer, the composer's halo and its one
  * height rely on in upstream: that the line stands right before the
  * composer's plate, inside the overlay whose height the transcript keeps
- * clear at its foot; that the plate stacks its own layers, so the halo lies
- * under its glass; that the composer rests into one line only through its
- * scroll gesture, which a substitute turns off; that its field's height is
- * one class `workspace.css` can lower; and that a wheel over the composer
- * reaches it. A failure here after a sync names the contract that moved; the
- * line likely covers the transcript's last row or sits in a box of its own,
- * the halo covers the plate, the composer shrinks on a scroll or opens tall,
- * or a wheel over it stops at the plate.
+ * clear at its foot; that the line and the plate share a block that stacks
+ * its own layers, so the halo lies under both; that the plate stacks its
+ * own layers, its ::after free, with room kept under it, so the veil lies
+ * under its glass and reaches the pane's foot; that the composer rests into
+ * one line only through its scroll gesture, which a substitute turns off;
+ * that its field's height is one class `workspace.css` can lower; and that a
+ * wheel over the composer reaches it. A failure here after a sync names the
+ * contract that moved; the line likely covers the transcript's last row or
+ * sits in a box of its own, the halo covers the plate or misses the Cell,
+ * the veil covers the plate or stops short of the foot, the composer shrinks on a scroll or opens tall, or a wheel over it stops
+ * at the plate.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -38,10 +41,21 @@ describe("the composer line's contracts with upstream", () => {
     expect(chatView).toMatch(/const nextInset = resolveComposerTimelineInset\(\{/);
   });
 
-  it("the plate stacks its own layers, so the halo lies under its glass", () => {
-    // glow.css draws the halo as the plate's ::after at z-index -1: under the
+  it("the line and the plate share a block that stacks its own layers, so the halo lies under both", () => {
+    // glow.css draws the halo as that block's ::before at z-index -1: under
+    // the line and the plate only while the block is a stacking context, and
+    // the ::before is free only while upstream draws nothing there.
+    const block = chatView.slice(chatView.indexOf("ref={draftHeroComposerAnchorRef}"));
+    expect(block).toMatch(
+      /^ref=\{draftHeroComposerAnchorRef\}\s*className="relative z-10"[\s\S]{0,400}?>\s*<CellComposerLine \/>\s*<ComposerSurface\.Shell\b/,
+    );
+  });
+
+  it("the plate stacks its own layers with its ::after free, and keeps room under it, so the veil lies under its glass and reaches the pane's foot", () => {
+    // veil.css draws the veil as the plate's ::after at z-index -1: under the
     // glass (its ::before, at 0) only while the plate is a stacking context,
-    // and the ::after is free only while upstream draws nothing there.
+    // and the ::after is free only while upstream draws nothing there. Its
+    // foot is the spacer's height, which veil.css repeats.
     const shell = composerSurface.slice(
       composerSurface.indexOf("function Shell("),
       composerSurface.indexOf("const outlineClasses"),
@@ -50,6 +64,9 @@ describe("the composer line's contracts with upstream", () => {
     expect(shell).toContain("group/composer-surface relative isolate ");
     expect(shell).toContain("before:z-0");
     expect(shell).not.toMatch(/\bafter:/);
+    expect(chatView).toMatch(
+      /<\/ComposerSurface\.Shell>\s*<div\s+aria-hidden\s+className="h-\[calc\(env\(safe-area-inset-bottom\)\+1rem\)\] sm:h-\[calc\(env\(safe-area-inset-bottom\)\+1\.25rem\)\]"/,
+    );
   });
 
   it("the composer rests into one line only when its scroll gesture says so", () => {

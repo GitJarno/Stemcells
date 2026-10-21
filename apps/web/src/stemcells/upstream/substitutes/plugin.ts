@@ -54,6 +54,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/ProviderModelPicker.tsx": "ProviderModelPicker.tsx",
   // The terminal drawer opens at about ten rows, its buttons in a row of their own.
   "apps/web/src/components/ThreadTerminalDrawer.tsx": "ThreadTerminalDrawer.tsx",
+  // The stash sits on the Cell's line, on the row with its name.
+  "apps/web/src/components/chat/ComposerStashBadge.tsx": "ComposerStashBadge.tsx",
 };
 
 /**

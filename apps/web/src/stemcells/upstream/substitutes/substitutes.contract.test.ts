@@ -15,6 +15,7 @@ import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
 import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
+import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerStashBadge";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
@@ -34,6 +35,7 @@ import * as OurChatComposer from "./ChatComposer";
 import * as OurChatThreadActions from "./chatThreadActions";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurComposerScrollGesture from "./composerScrollGesture";
+import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
@@ -350,6 +352,16 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/settings/ProviderAuthTerminal.tsx": [
         "../ThreadTerminalDrawer",
         ["terminalThemeFromApp"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/ComposerStashBadge.tsx": {
+    upstream: UpstreamComposerStashBadge,
+    substitute: OurComposerStashBadge satisfies RendersOrNothing<typeof UpstreamComposerStashBadge>,
+    importers: {
+      "apps/web/src/components/chat/ChatComposer.tsx": [
+        "./ComposerStashBadge",
+        ["ComposerStashBadge"],
       ],
     },
   },

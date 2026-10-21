@@ -30,44 +30,40 @@
 
 /* The plate is upstream's composer with upstream's glass, as T3 draws it (asked for on 2026-10-21): don't brighten it. */
 
-/* A halo round the composer in a pane of ours, so it always reads clearly
-   and what scrolls under it passes quietly: the page's own colour over the
-   transcript, frosted as upstream's glass frosts, under the box and a
-   little past it, fading to nothing. The transcript runs on behind it and
-   out through the pane's foot (asked for on 2026-10-21). It lies under the
-   plate's glass, and reaches up under a Cell's line. */
-[data-stemcells-pane] [data-slot="composer-shell"]::after {
-  /* The frost reads past its own edge, so the layer runs a blur's width
-     past what shows, and fades in only inside that. */
-  --halo-edge: calc(var(--glass-blur) * 2);
-  --halo-out: calc(-1 * (var(--sc-halo-reach) + var(--sc-halo-fade) + var(--halo-edge)));
-  --halo-in: calc(var(--halo-edge) + var(--sc-halo-fade));
+/* A halo round the composer's dock in a pane of ours, so it always reads
+   clearly and what scrolls under it passes quietly: the page's own colour
+   over the transcript, under the box, the Cell's ledge and the Cell, and a
+   little past them, fading to nothing. A plain fade, never frosted: only
+   the box is glass (asked for on 2026-10-21); the ledge is solid and keeps
+   the line's words clear. The transcript runs on behind it and out through
+   the pane's foot. It is the ::before of the block upstream holds the line
+   and the box in, which stacks its own layers, so the halo lies under
+   both. */
+[data-stemcells-pane]
+  [data-chat-composer-stack="true"]
+  > :has(> [data-slot="composer-shell"])::before {
   content: "";
   position: absolute;
-  inset: var(--halo-out);
+  inset: calc(-1 * (var(--sc-halo-reach) + var(--sc-halo-fade)));
   z-index: -1;
   background: color-mix(in srgb, var(--background) var(--sc-halo-strength), transparent);
-  backdrop-filter: blur(var(--glass-blur));
   mask-image:
     linear-gradient(
       to right,
-      transparent var(--halo-edge),
-      black var(--halo-in),
-      black calc(100% - var(--halo-in)),
-      transparent calc(100% - var(--halo-edge))
+      transparent,
+      black var(--sc-halo-fade),
+      black calc(100% - var(--sc-halo-fade)),
+      transparent
     ),
     linear-gradient(
       to bottom,
-      transparent var(--halo-edge),
-      black var(--halo-in),
-      black calc(100% - var(--halo-in)),
-      transparent calc(100% - var(--halo-edge))
+      transparent,
+      black var(--sc-halo-fade),
+      black calc(100% - var(--sc-halo-fade)),
+      transparent
     );
   mask-composite: intersect;
   pointer-events: none;
-}
-[data-stemcells-pane] [data-stemcells-composer-line] + [data-slot="composer-shell"]::after {
-  top: calc(var(--halo-out) - var(--sc-composer-line) - var(--sc-composer-line-gap));
 }
 
 /* In a grid of panes, the focused pane's plate steps its outline up to

@@ -1601,14 +1601,23 @@
   --sc-glass-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.55);
 }
 
-/* The halo round a composer in a pane: the page's own colour at
-   --sc-halo-strength under it and --sc-halo-reach past its edge, fading to
-   nothing over --sc-halo-fade. The line over a Cell's composer stands in it,
-   --sc-composer-line tall and --sc-composer-line-gap over the box. */
+/* The halo round a composer's dock in a pane: the page's own colour at
+   --sc-halo-strength under the box, the Cell's ledge and the Cell, and
+   --sc-halo-reach past them, fading to nothing over --sc-halo-fade. The
+   line over a Cell's composer is a ledge on the box's top edge, its row
+   --sc-composer-line tall; Aski's perch stands --sc-composer-line-gap over
+   the box. */
 :root {
   --sc-halo-strength: 60%;
   --sc-halo-reach: var(--sc-space-md);
   --sc-halo-fade: var(--sc-space-xxl);
   --sc-composer-line: 20px;
   --sc-composer-line-gap: var(--sc-space-sm);
+}
+
+/* The veil under a composer (`glow/veil.css`): how far the page passing
+   under the box and out through the pane's foot is blurred at the foot,
+   where the Swift phone's veil was (3.4 pt). */
+:root {
+  --sc-veil-blur: 3.4px;
 }

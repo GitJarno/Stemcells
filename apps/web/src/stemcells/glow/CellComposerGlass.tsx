@@ -21,6 +21,7 @@ import {
 import { type GlassInk, GlassLight } from "./motion";
 import "../tokens/stemcells.css";
 import "./glow.css";
+import "./veil.css";
 
 /**
  * Where upstream's send button stands when the composer shows none: its

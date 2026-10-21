@@ -69,11 +69,15 @@ The bottom-centre pill in the reported shots is not Stemcells': it is another ap
    - An attachment spans the box's full width, not a drawer inset.
    - The box drops its top edge where an attachment sits, and the two share one rounded outline.
    - The banner's tone (warning, error) fills only its own band.
-3. **The Cell's line**, on the topmost edge: `[Cell] name · project · env · title`.
-   - The Cell is inline at the start of the line, its feet on the text baseline. It no longer stands on a roof above the name, so the dock is one line shorter.
+3. **The Cell's ledge**, on the topmost edge, ported from the Swift app's shelf (asked for on 2026-10-21): `[Cell] name · project · env · title … Stash`, one row.
+   - It is T3's own tab (`ComposerBanner.Surface`, the stash tab's edge and corners, its foot tucked under the box's top edge), filled solid: the page's colour with the tab's surface over it, never glass and never blurred.
+   - It stands in from the box's sides as far as the field's words do; its own words start one rung further in.
+   - The Cell stands on its top edge at its left end. Its farthest pixel, whatever it wears, lands where the name starts and never past it (`stand.ts`, `stand.test.ts`).
+   - The stash sits at its right end, T3's stash tab's mark, word and count; it never truncates. Where no ledge shows (a draft, Aski's pane) T3's own tab stands on the box.
    - The buds stand beside the Cell, in the box the Cell's size already reserves.
 4. **The transcript's end padding** follows the whole dock's height. This is the measured overlay; `composerLine.contract.test.ts` pins it.
-5. **The halo** covers the whole dock, the Cell included: text running behind the Cell's head read as messy in #92's scrolled zoom. It is a plain fade in the page's colour, with no blur (no `backdrop-filter`); only the text field's box is glass, and the line is plain text on the ground.
+5. **The halo** covers the whole dock, the Cell included: text running behind the Cell's head read as messy in #92's scrolled zoom. It is a plain fade in the page's colour at 60 %, with no blur.
+6. **The veil**, below the box only, as the Swift app's: what passes under the box and out through the pane's foot blurs, from clear at the box's middle to `--sc-veil-blur` at the foot. Only the box is glass; above it nothing is blurred.
 
 ## Env on the line
 
@@ -221,9 +225,10 @@ Today the two disagree. The composer shows T3's panel; Aski's needs cards say th
 - [x] `critters` made `peering` and `needsApproval` (#105)
 - [x] The acts: approvals play `needsApproval`, the rail and the Look frame count it through `asksYou`, and a Cell peers while its line is down
 - [ ] `BranchToolbar` substitute: portal into the line's env slot in a pane, known git only (a pending status shows nothing), nothing under the box
-- [ ] The line: the Cell inline, env slot, buds beside, a draft's env-only line, and the 480 and 240 rungs for env
+- [ ] The ledge (#116): solid tab on the box, the Cell at its left end standing in, the stash at its right end, the veil below the box, the halo a plain fade at 60 %
+  - [ ] proof: widths 800 to 160, dark and light; banners; an approval; a draft; a folder without git; Aski's pane
+- [ ] The line: env as "project · branch ⌄" in the ledge, a draft's env-only line, and the 480 and 240 rungs for env
 - [ ] The dock's outline: full-width attachments, one outline, tokens only
-- [ ] The halo covers the whole dock, the Cell included: a plain fade, no blur; checked in the scrolled shots
 - [ ] The box keeps its height in the approval state
 - [ ] Hide the dead "Collapse composer on scroll" setting
 - [ ] Contracts as above

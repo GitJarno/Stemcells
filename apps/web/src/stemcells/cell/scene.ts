@@ -194,6 +194,14 @@ const detailOf = (hero: readonly string[]) =>
  */
 export const MARGIN = { x: 2, y: 1 } as const;
 
+/**
+ * How far a Cell's picture can reach past its box's side, in cells of the
+ * miniature: to the hero grid's edge, `DETAIL.x` hero cells of half a cell
+ * each. The margin's outer half cell is never drawn. A Cell standing this
+ * far in from an edge has nothing it wears hanging past it.
+ */
+export const SIDE_REACH = DETAIL.x / 2;
+
 /** A frame with the margin: the miniature padded with nothing, the hero uncropped. */
 const drawnOf = (rows: readonly string[], hero: readonly string[]): MiniFrame["drawn"] => ({
   rows: crop(

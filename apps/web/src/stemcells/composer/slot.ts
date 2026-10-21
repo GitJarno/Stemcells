@@ -5,3 +5,17 @@ import { createContext, type ReactNode } from "react";
  * would (CellComposerLine): Aski, in Aski's pane. Nothing anywhere else.
  */
 export const ComposerRoofSlot = createContext<ReactNode>(null);
+
+/** An element our line draws, which upstream's composer can portal into. */
+export interface LineSlot {
+  readonly element: HTMLElement | null;
+  readonly setElement: (element: HTMLElement | null) => void;
+}
+
+/**
+ * Where the Cell's line takes the composer's stash: the ledge's right end
+ * (`upstream/substitutes/ComposerStashBadge.tsx`). Null outside a Cell's
+ * pane; its element is null while the pane shows no line (a draft), and
+ * upstream's own tab stands on the box instead.
+ */
+export const ComposerStashSlot = createContext<LineSlot | null>(null);

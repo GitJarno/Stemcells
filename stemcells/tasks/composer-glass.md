@@ -122,14 +122,18 @@ behind the composer and out through the pane's foot; a slim halo in the
 page's colour, about 60%, fading, keeps the composer clear; one box, as T3's
 is; the line just above it, on the ground.
 
-- [x] The band mask is gone (`dropOff.ts` with it). The halo is the plate's
-      `::after` in `glow.css`: the page's colour at 60%, frosted with
-      upstream's glass blur so text under the line goes soft, reaching
-      `--sc-space-md` past the box and fading out over `--sc-space-xxl`.
-      Without the frost, text at 40% under the line's words still clashed
+- [x] The band mask is gone (`dropOff.ts` with it). The halo is the
+      `::before` of the block that holds the line and the box, in
+      `glow.css`: the page's colour at 60%, reaching `--sc-space-md` past
+      them and fading out over `--sc-space-xxl`. It was frosted with
+      upstream's glass blur at first, so text under the line went soft;
+      that read as glass round the line, with a blur under it
+      (2026-10-21). Now a plain fade, and only what passes under the box
+      blurs (`glow/veil.css`, `glow/halo.test.ts`)
 - [x] The line is no longer an attached banner (which gives the plate a
-      second surface): it stands just above the box, its words where the
-      field's start, the Cell on its name. Seam moves to `ChatView.tsx`
+      second surface): it stands just above the box. Seam moves to
+      `ChatView.tsx`. Since 2026-10-21 it is a solid ledge on the box,
+      upstream's tab filled solid (`composer-layout.md`, the dock)
 - [x] One box, one height: the composer never rests into one line on a
       scroll (`substitutes/composerScrollGesture.ts` answers upstream's
       wheel and key gestures with "no"), so model, effort and access stay
@@ -142,11 +146,10 @@ is; the line just above it, on the ground.
       drag. A pane ramps it over its own width, 480 to 800 px
       (`tabs/workspace.css`). A 1 px drag from 1100 to 180 and back moves
       the box at most 1 px a step, never vertically, the same both ways
-- [ ] The small outlined pill at the window's bottom centre in the person's
-      shots: no element of that shape in the source or the built bundle,
-      and the dev app never shows it. Open, for the composer layout
-      (`composer-layout.md`): likely upstream's branch strip, empty, for a
-      project without git
+- [x] The small outlined pill at the window's bottom centre in the
+      reported shots: no element of that shape in the source or the built
+      bundle, and the dev app never shows it. It is another app's
+      dictation bar over the window, not Stemcells
 - [x] Contracts: the line before the plate, the plate a stacking context
       with its `::after` free, the composer resting only through the
       gesture the substitute answers, the field's one height class

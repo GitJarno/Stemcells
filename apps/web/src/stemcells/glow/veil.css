@@ -1,0 +1,37 @@
+/* The veil under a composer in a pane of ours, as the Swift app's chrome
+   veil: the page passing under the box and out through the pane's foot
+   softens, so the lines below the box stop asking to be read. A blur from
+   clear at the box's middle to --sc-veil-blur at the pane's foot, eased as
+   the Swift veil's ramp, with a fade toward the page's colour riding it.
+   The one blur in the dock besides the box's own glass: above the box the
+   ledge is solid and the halo a plain fade. It is the plate's ::after, under
+   its glass (the plate stacks its own layers), and runs past the pane's
+   sides, which clip it. It reaches the pane's foot through the room
+   upstream keeps under the box: a spacer of 1rem, 1.25rem from a 40rem
+   window, over the safe area (both pinned in
+   `composerLine.contract.test.ts`). */
+[data-stemcells-pane] [data-slot="composer-shell"] {
+  --veil-foot: calc(env(safe-area-inset-bottom) + 1rem);
+}
+@media (width >= 40rem) {
+  [data-stemcells-pane] [data-slot="composer-shell"] {
+    --veil-foot: calc(env(safe-area-inset-bottom) + 1.25rem);
+  }
+}
+[data-stemcells-pane] [data-slot="composer-shell"]::after {
+  --veil-ramp: transparent, rgb(0 0 0 / 16%) 25%, rgb(0 0 0 / 50%) 50%, rgb(0 0 0 / 84%) 75%, black;
+  content: "";
+  position: absolute;
+  top: 50%;
+  bottom: calc(-1 * var(--veil-foot));
+  inset-inline: -100vw;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--background) var(--sc-halo-strength), transparent)
+  );
+  backdrop-filter: blur(var(--sc-veil-blur));
+  mask-image: linear-gradient(to bottom, var(--veil-ramp));
+  pointer-events: none;
+}

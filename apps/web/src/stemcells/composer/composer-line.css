@@ -1,30 +1,57 @@
 /* The line over a Cell's composer: its own touches, scoped to it, so
    loading this sheet never restyles upstream's banners. */
 
-/* The line stands on the ground just above the composer's box, never in a
-   box of its own: its words start where the field's do (upstream's field
-   is inset four spacing steps, past the plate's one-pixel edge), and it
-   sits in the composer's halo (`glow.css`), painted over it. */
+/* The line is a ledge on the composer's box, as the Swift app's shelf was:
+   upstream's own tab (`ComposerBanner.Surface`, the stash's: its edge, its
+   corners, and its foot tucked under the box's top edge, cut off past the
+   seam), solid: its surface laid over the page, never glass, so nothing
+   scrolling behind reads through its words. It stands in from the box's
+   sides where upstream's tabs, banners and menus do (the shell's
+   --chat-composer-drawer-inset, which the line, outside the shell, doesn't
+   inherit: `composerStash.contract.test.ts`), so the stash's menu opens
+   over it edge to edge. The Cell stands on its top edge at its left end,
+   its farthest pixel where the name starts (`stand.ts`). */
 [data-stemcells-composer-line] {
-  position: relative;
-  z-index: 1;
-  margin-block-end: var(--sc-composer-line-gap);
-  padding-inline: calc(var(--spacing) * 4 + 1px);
+  --ledge-inset: 1.375rem;
+  --ledge-pad: var(--sc-space-md);
+}
+[data-stemcells-composer-line] .composer-line-roof {
+  padding-inline-start: calc(var(--ledge-inset) + var(--ledge-pad) + var(--cell-stands-in));
+}
+[data-stemcells-composer-line] .composer-line-ledge {
+  margin-inline: var(--ledge-inset);
+  margin-block-end: calc(-1 * var(--chat-composer-attachment-overlap));
+  padding: var(--sc-space-sm) var(--ledge-pad)
+    calc(var(--sc-space-sm) + var(--chat-composer-attachment-overlap));
+}
+[data-stemcells-composer-line] .composer-line-ledge::before {
+  background:
+    linear-gradient(var(--chat-composer-attached-surface), var(--chat-composer-attached-surface)),
+    var(--background);
+  backdrop-filter: none;
 }
 [data-stemcells-composer-line] .composer-line-row {
   height: var(--sc-composer-line);
 }
 
-/* The Cell stands on its name and wears a rim in the page's own
-   colour, two of its pixels wide round its sides and top, so it reads over
-   whatever scrolls under it; its feet stay bare on the name. Each shadow
-   steps one pixel (--cell) and carries the ones before it. */
-[data-stemcells-composer-line] .composer-line-roof {
-  --rim: var(--background);
-  filter: drop-shadow(var(--cell) 0 0 var(--rim)) drop-shadow(calc(var(--cell) * -1) 0 0 var(--rim))
-    drop-shadow(var(--cell) 0 0 var(--rim)) drop-shadow(calc(var(--cell) * -1) 0 0 var(--rim))
-    drop-shadow(0 calc(var(--cell) * -1) 0 var(--rim))
-    drop-shadow(0 calc(var(--cell) * -1) 0 var(--rim));
+/* The stash at the ledge's right end (`LineStash.tsx`): it never truncates.
+   What the chat is about gives way first, then the project. */
+[data-stemcells-composer-line] .composer-line-stash-slot {
+  display: contents;
+}
+[data-stemcells-composer-line] .composer-line-stash {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  margin-inline-start: auto;
+}
+[data-stemcells-composer-line] .composer-line-stash svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+[data-stemcells-composer-line] .composer-line-stash-word {
+  margin-inline-end: var(--sc-space-xs);
 }
 
 /* The Cell's name as a token in the Cell tone (--sc-peer), in the shape
@@ -51,6 +78,12 @@
   color: color-mix(in oklch, var(--sc-peer) 70%, var(--foreground));
   font-weight: 500;
   white-space: nowrap;
+}
+
+[data-stemcells-composer-line] .composer-line-name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* What the line does, it does from its words: they are buttons that look
@@ -87,16 +120,18 @@
 }
 
 /* The ladder, by the pane's width. Words become marks: the project its
-   mark. Then what the chat is about, where it runs and its parent go, and
+   mark, the stash its mark and count. Then what the chat is about, where it runs and its parent go, and
    the model in the composer shows its mark alone (upstream folds its own
    controls into its overflow before that). Last the project, the model's
    chevron and the attach button go (dropping and pasting still attach).
-   The Cell, its name, the field and send or stop stay at every width. */
+   The Cell, its name, the stash, the field and send or stop stay at every
+   width; at the last rung a long name ends in an ellipsis before it pushes
+   the stash off the ledge. */
 [data-stemcells-composer-line] .composer-line-project-mark {
   display: none;
 }
 @container stemcells-pane (width <= 480px) {
-  [data-stemcells-composer-line] .composer-line-project-name {
+  [data-stemcells-composer-line] :is(.composer-line-project-name, .composer-line-stash-word) {
     display: none;
   }
   [data-stemcells-composer-line] .composer-line-project-mark {
@@ -115,6 +150,10 @@
 @container stemcells-pane (width <= 200px) {
   [data-stemcells-composer-line] .composer-line-project {
     display: none;
+  }
+  [data-stemcells-composer-line] .composer-line-name {
+    flex-shrink: 1;
+    min-width: 0;
   }
   [data-chat-composer-footer="true"]
     :is(
