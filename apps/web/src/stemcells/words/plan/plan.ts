@@ -117,10 +117,25 @@ export function startable(plan: Plan): boolean {
 }
 
 /**
- * A plan waiting for a second Enter, read back: each Cell on its own once
- * Aski picked places, the place it picked in the accent (decision 12).
+ * Whether a send starts a plan waiting for it: Enter does once every Cell
+ * has its place; a risky act Aski wrote starts only with ⌘↵, `anyway`
+ * (decision 17).
  */
-export function readoutOfPlan(plan: Plan, launch: Launch, defaults: ReadoutDefaults): Readout {
+export function startsOn(plan: Plan, risky: boolean, anyway: boolean): boolean {
+  return startable(plan) && (!risky || anyway);
+}
+
+/**
+ * A plan waiting for a second Enter, read back: each Cell on its own once
+ * Aski picked places, the place it picked in the accent (decision 12), and
+ * the risky act it holds for, if any (decision 17).
+ */
+export function readoutOfPlan(
+  plan: Plan,
+  launch: Launch,
+  defaults: ReadoutDefaults,
+  risk?: string,
+): Readout {
   const base = readoutOf({ ...launch, held: false }, defaults);
   const words = cellWords(launch, defaults);
   const picked = plan.cells.some((cell) => cell.picked !== null);
@@ -134,7 +149,12 @@ export function readoutOfPlan(plan: Plan, launch: Launch, defaults: ReadoutDefau
         }))
       : base.groups,
     share: "",
-    plan: { state: "check", why: plan.why ?? null, startable: startable(plan) },
+    plan: {
+      state: "check",
+      why: plan.why ?? null,
+      startable: startable(plan),
+      ...(risk === undefined ? {} : { risk }),
+    },
   };
 }
 

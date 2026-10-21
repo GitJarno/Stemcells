@@ -160,7 +160,13 @@ export interface Readout {
  */
 export type ReadoutPlan =
   | { readonly state: "thinking" }
-  | { readonly state: "check"; readonly why: string | null; readonly startable: boolean };
+  | {
+      readonly state: "check";
+      readonly why: string | null;
+      readonly startable: boolean;
+      /** A risky act Aski wrote that the words don't ask for: only ⌘↵ starts it (decision 17). */
+      readonly risk?: string;
+    };
 
 /** What a readout fills in that the words don't say: the defaults, by place (null: the draft's). */
 export interface ReadoutDefaults {

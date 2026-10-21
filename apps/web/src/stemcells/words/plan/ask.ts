@@ -68,9 +68,13 @@ export function markedText(ask: Pick<PlanAsk, "text" | "verbatims" | "chips">): 
       out += `${ask.text.slice(at, verbatim.start)}⟦P${i + 1}⟧${verbatim.text}⟦/P${i + 1}⟧`;
       at = verbatim.end;
     });
-  out += ask.text.slice(at);
+  return withChips(out + ask.text.slice(at), ask.chips ?? []);
+}
+
+/** `text` with each chip in its words, in the order they stand. */
+export function withChips(text: string, chips: readonly string[]): string {
   let chip = 0;
-  return out.replaceAll(CHIP, () => ask.chips?.[chip++] ?? "");
+  return text.replaceAll(CHIP, () => chips[chip++] ?? "");
 }
 
 /** The whole prompt the planner gets; `failed` lists what its last answer got wrong, for the one retry. */

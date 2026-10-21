@@ -26,7 +26,8 @@ interface Pop {
  * count wears the warning edge and says so; so does a message whose Cells
  * only a planner could share the work out to, when there's none to ask.
  * While Aski thinks, and once its plan waits for a second Enter, it says
- * so, and a place Aski picked wears the accent. A provider whose plan runs
+ * so, and a place Aski picked wears the accent; a risky act Aski wrote
+ * asks "Is this what you meant?", and only ⌘↵ starts it. A provider whose plan runs
  * short says so too.
  *
  * Upstream's fitting measures it as it measures the picker. The whole
@@ -138,6 +139,12 @@ export function Readout(props: {
   const warning =
     plan?.state === "thinking" ? (
       <span className="sc-readout-share"> · Aski is dividing the work</span>
+    ) : plan?.state === "check" && plan.risk !== undefined ? (
+      <span className="sc-readout-share">
+        {" · Is this what you meant? "}
+        <span className="sc-readout-warning">“{plan.risk}”</span>
+        {" · ⌘↵ starts them anyway"}
+      </span>
     ) : plan?.state === "check" ? (
       <span className={plan.why === null ? "sc-readout-share" : "sc-readout-warning"}>
         {plan.why === null ? "" : ` · ${plan.why}`}

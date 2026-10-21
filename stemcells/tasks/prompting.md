@@ -752,7 +752,15 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      413). Settings › Aski has its first row: "Aski divides the work", on
      by default; off, the words alone set the Cells up, as with no
      planner to ask, and no call goes.
-   - To come: the risk floor with its hold (5c), and the plan history (5d).
+   - 5c, built: the risk floor (`apps/web/src/stemcells/risk/`), the
+     Swift `RiskFloor` ported with its match and miss fixtures, and its
+     hold. A plan whose prompts ask for a risky act the person's words
+     don't (not in these words, or not without their "don't") waits:
+     "Is this what you meant?" with the trigger in `--sc-warning`, Enter
+     does nothing, ⌘↵ starts it anyway, and Esc drops the plan with the
+     words as they were. The floor sends the person's own words, so it
+     never holds for this.
+   - To come: the plan history (5d).
 6. **Checking a plan, and Settings.**
    - The plan rows: sources, edits, Enter and Esc, and keep-or-drop on text
      edits.

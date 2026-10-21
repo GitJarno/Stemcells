@@ -5,6 +5,7 @@ import type { EditorView } from "@tiptap/pm/view";
 import { use, useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { useAskiPlans } from "../aski/planning";
+import { type HoldLine, holdLines } from "../risk/hold";
 import { paneShowing } from "../tabs/layout";
 import { PaneCellContext } from "../tabs/paneCell";
 import { newIds, readWorkspace, updateWorkspace } from "../tabs/store";
@@ -66,8 +67,9 @@ import {
   planTitles,
   readoutOfPlan,
   shortlistOf,
-  startable,
+  startsOn,
 } from "./plan/plan";
+import { withChips } from "./plan/ask";
 import { escDropsPlan } from "./plan/esc";
 import { planKeyOf } from "./plan/key";
 import { type PlannerModel, plannerModel, thinkThrough } from "./plan/think";
@@ -116,6 +118,8 @@ interface Planning {
   /** Settles once Aski has thought it through, or the words changed. */
   done: Promise<void>;
   plan: Plan | null;
+  /** The risky acts the plan's prompts ask for that the words don't: only ⌘↵ starts it. */
+  risk: readonly HoldLine[];
 }
 
 /** What Aski plans with: its model, the plans' limits, and the projects' order and machines. */
@@ -462,6 +466,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
       abort,
       done: Promise.resolve(),
       plan: null,
+      risk: [],
     };
     known.done = (async () => {
       // A spent plan makes no call: the floor says why.
@@ -493,7 +498,13 @@ export function ComposerWords(props: { readonly anchor: string }) {
       });
       if (plan === null || planning.current !== known) return;
       known.plan = ownFirst(plan, ownPlace(driverSource.current));
-      if (needsCheck(plan) && !view.isDestroyed) readBack(view);
+      // The floor sends the person's own words; Aski's are asked about (decision 17).
+      if (plan.kind === "planned")
+        known.risk = holdLines(
+          [withChips(written.text, written.chips)],
+          plan.cells.map((cell) => cell.prompt),
+        );
+      if (waits(known) && !view.isDestroyed) readBack(view);
     })().catch(() => {
       // Thinking broke in a way nothing expected: the plan goes, the words
       // read as before, and the send waiting on it sends nothing.
@@ -558,7 +569,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const madeFrom = planKeyNow(view);
     const known = madeFrom !== null && planning.current?.key === madeFrom ? planning.current : null;
     if (known?.plan) {
-      if (!startable(known.plan)) return hold;
+      if (!startsOn(known.plan, known.risk.length > 0, intent === "background")) return hold;
       const first = known.plan.cells[0]?.picked ?? null;
       const key = first === null ? null : driver.placeKey(first.id);
       if (first !== null && key === null) return hold;
@@ -579,7 +590,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
       ready: started.done,
       foreground: true,
       edit: () =>
-        planning.current === started && started.plan !== null && !needsCheck(started.plan)
+        planning.current === started && started.plan !== null && !waits(started)
           ? sendPlan(view, driver, draftId, started)
           : false,
     };
@@ -708,8 +719,11 @@ function readoutFor(
   const launch = launchOf(facts) ?? heldOf(facts);
   const defaults = defaultsFor(source);
   if (launch === null || defaults === null) return null;
-  if (planning?.plan && needsCheck(planning.plan))
-    return readoutOfPlan(planning.plan, planning.launch, defaults);
+  if (planning?.plan && waits(planning)) {
+    const line = planning.risk[0];
+    const risk = line ? line.sentence.slice(line.trigger.start, line.trigger.end) : undefined;
+    return readoutOfPlan(planning.plan, planning.launch, defaults, risk);
+  }
   const readout = readoutOf(launch.held ? { ...launch, held: !canPlan } : launch, defaults);
   return planning ? { ...readout, share: "", plan: { state: "thinking" } } : readout;
 }
@@ -718,6 +732,11 @@ function readoutFor(
 function planKeyNow(view: EditorView): string | null {
   const text = wordsKey.getState(view.state)?.text;
   return text ? planKeyOf(view.state.doc, text) : null;
+}
+
+/** Whether a plan waits for the person: Aski picked a place, it's the floor, or it holds a risky act. */
+function waits(planning: Planning): boolean {
+  return planning.plan !== null && (needsCheck(planning.plan) || planning.risk.length > 0);
 }
 
 /** The place the draft stands in. */

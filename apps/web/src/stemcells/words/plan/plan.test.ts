@@ -14,6 +14,7 @@ import {
   readoutOfPlan,
   shortlistOf,
   startable,
+  startsOn,
 } from "./plan";
 
 const ctx = {
@@ -148,6 +149,33 @@ describe("a plan", () => {
       picked.map((project) => [null, "Opus 5.5", { text: project.name, mark: null, aski: true }]),
     );
     expect(readout.plan).toEqual({ state: "check", why: null, startable: true });
+  });
+
+  it("starts a risky act Aski wrote only with ⌘↵, and asks it as a question", () => {
+    const { launch } = held(
+      "spawn 2 Sol in Harbor and an Opus 5.5 at max in Atlas: move sign-in to passkeys, same API on both sides",
+    );
+    const plan = joined(
+      launch,
+      launch.cells.map((_, i) => ({
+        title: `Part ${i + 1}`,
+        prompt: "Move sign-in.",
+        project: null,
+      })),
+    );
+    expect([
+      startsOn(plan, false, false),
+      startsOn(plan, true, false),
+      startsOn(plan, true, true),
+    ]).toEqual([true, false, true]);
+    expect(readoutOfPlan(plan, launch, defaults, "force push").plan).toEqual({
+      state: "check",
+      why: null,
+      startable: true,
+      risk: "force push",
+    });
+    const open = held("Spawn 3 Opus Cells: fix sign-in across Harbor, Atlas and Kestrel");
+    expect(startsOn(floorOf(open.launch, "", ""), false, true)).toBe(false);
   });
 
   it("shortlists the projects the words mention, then the recent ones, at most twelve", () => {
