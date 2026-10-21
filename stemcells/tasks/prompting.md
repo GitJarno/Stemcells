@@ -10,8 +10,8 @@ starts them all from one message. The words fix what they say. One model
 call fills only what they leave open, code checks its answer, and the
 person sees any place Aski chose before anything runs.
 
-This is the design. Nothing is built yet; the prototype is a page outside the
-repo. The PR slices are at the end.
+This is the design; the prototype is a page outside the repo. The PR
+slices are at the end, with what each built.
 
 ## Decisions
 
@@ -111,12 +111,15 @@ it.
   address, in the Cell tone (`--sc-peer`).
 
 ### 4. How a word the composer read looks
-- **One shape for every token**: the house token plate (1.95 caps, corner
-  0.3 of the height, a wash at half the skin's tint, edge at half the tint
-  edge). It's drawn outside the glyphs, as a `box-shadow` behind the
-  editor's own text, never padding or weight, so a word never moves when
-  it's read and the caret never drifts. This is the Swift rule ("colour and
-  an underline only, never weight or a glyph") with a plate added.
+- **One shape for every token**: the house token plate (corner 0.3 of 1.95
+  caps, a wash at half the skin's tint, edge at half the tint edge). It's
+  drawn round the editor's own text with what never moves a word: block
+  padding (an inline box's doesn't change the line) and a `box-shadow`
+  reaching a third of a space past the word, never inline padding or
+  weight. So a word never moves when it's read, the caret never drifts,
+  and a plate never meets the next word. This is the Swift rule ("colour
+  and an underline only, never weight or a glyph") with a plate added.
+  A read word gets no spelling marks.
 - **Neutral by default.** Places, models, efforts and counts share one
   neutral wash; a place adds an underline (a where you could open). Colour
   is state: the accent blooms once when a word is first read (the "heard
@@ -380,6 +383,12 @@ words never named.
 ### 13. Aski's chat uses the same reading and the same path
 - Aski's composer inks the same words, plus the names of live Cells ("Otter,
   rebase"), in the Cell tone (`--sc-peer`).
+- Aski's page reads its own words first (`tasks/aski-room.md`, decision 14):
+  a card's answer ("#2 yes", "for 1"). The reader takes the spans it
+  claimed as blank. A bare leading number stays a count unless ":", ",",
+  "." or an answer word follows, so "2 Sol in Harbor …" is two Cells. A
+  live Cell's name at the head ("Otter, …") is the address: the message
+  goes to that Cell (or answers its card) and starts nothing.
 - A message that starts Cells (a model, a counted Cell, a spawn word, or a
   place at the address) takes the path in decision 9. Its places are open
   unless the words point at one, since Aski's chat has no project of its
@@ -558,8 +567,10 @@ From the TypeScript rebuild (`SC-legacy`), keep:
 - **Composer**: Tiptap (`ComposerPromptEditorTiptap.tsx`), with inline chips
   re-derived from the text (`composerInlineTokens.ts`). Our ink is a
   ProseMirror decoration plugin. It never touches the doc, so undo,
-  selection and serialisation stay upstream's. It takes one seam to
-  register the extension.
+  selection and serialisation stay upstream's. It needs no seam: a
+  substitute for `ComposerPromptEditor.tsx` (a 12-line wrapper) gives the
+  editor a class of its own, finds it, and joins it through Tiptap's own
+  `registerPlugin`.
 - **Triggers**: `detectComposerTrigger` (paths, skills, `/model`). Our reader
   skips their spans.
 - **Draft hero**: `DraftHeroHeadline` / `DraftHeroProjectHeading` already
@@ -604,9 +615,15 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      rule turns a case red.
    - No UI. A 2,100-character message reads in about 10 ms against 200
      projects; a typical one in a fraction of a millisecond.
-2. **Ink and completion.** The decoration plugin (one seam in the Tiptap
-   editor), the token plate, quiet mentions, the caught bloom, and Tab
-   completion.
+2. **Ink and completion.** Built: `words/plugin.ts`, `words/words.css`,
+   `words/ComposerWords.tsx`, joined to the editor by a substitute
+   (no seam), reading through `upstream/words.ts`.
+   - The token plate, quiet mentions, the caught bloom (a word that only
+     moves keeps its bloom's age), and Tab completion as one undo step.
+   - A new chat's composer reads; a sent chat's doesn't. The document is
+     read as text with code blank and a chip one character.
+   - The reader takes spans Aski's cards claimed, and a live Cell's name at
+     the head of a message to Aski (fixtures for both).
 3. **One Cell from words.**
    - The hero shows the destination (a seam).
    - The pickers follow the words, edits go back into the words, and

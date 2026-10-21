@@ -1,0 +1,92 @@
+/* The composer's ink (`plugin.ts`): the words it read, on the editor's own
+   text. Scoped to editors the plugin joined, so loading this sheet never
+   restyles another composer. */
+
+/* A word the composer read wears the house token plate (`composer-line.css`
+   has its shape and tint share), drawn round the glyphs without moving
+   them: an inline box's block padding and its box-shadow never change the
+   line, so a word never moves when it is read and the caret never drifts.
+   The plate reaches past the word by a third of a space, so it never meets
+   the next word, and rises within the line's leading, so plates on
+   adjacent lines never touch. The edge is an outline round the plate.
+   Neutral by default: colour is state. */
+[data-stemcells-words] .sc-word {
+  --token-share: 50%;
+  --token-tone: var(--sc-text);
+  --token-reach: 0.08em;
+  --token-rise: 0.08em;
+  --token-wash: color-mix(
+    in srgb,
+    var(--token-tone) calc(var(--sc-tint-fill) * var(--token-share)),
+    transparent
+  );
+  --token-edge: color-mix(
+    in srgb,
+    var(--token-tone) calc(var(--sc-tint-edge) * var(--token-share)),
+    transparent
+  );
+  padding-block: var(--token-rise);
+  border-radius: calc(1cap * 1.95 * 0.3);
+  background-color: var(--token-wash);
+  box-shadow: 0 0 0 var(--token-reach) var(--token-wash);
+  outline: 0.5px solid var(--token-edge);
+  outline-offset: var(--token-reach);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* A place is a where you could open: it adds an underline. */
+[data-stemcells-words] .sc-word-place {
+  text-decoration: underline 1px var(--sc-place);
+  text-underline-offset: 0.2em;
+}
+
+/* A live Cell's name, in Aski's chat, in the Cell tone. */
+[data-stemcells-words] .sc-word-cell {
+  --token-tone: var(--sc-peer);
+  color: color-mix(in oklch, var(--sc-peer) 70%, var(--foreground));
+}
+
+/* A model whose provider can't start a Cell now. */
+[data-stemcells-words] .sc-word-warn {
+  outline-color: var(--sc-warning);
+}
+
+/* A project only mentioned: a quiet dotted underline, no plate. */
+[data-stemcells-words] .sc-word-quiet {
+  text-decoration: underline dotted 1px var(--sc-mute);
+  text-underline-offset: 0.22em;
+}
+
+/* "Heard you": the accent blooms once when a word is first read (the wash
+   at the tint's edge strength, the edge in full) and goes back to neutral. The plugin keeps a moving word's bloom at its age. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-stemcells-words] .sc-word-caught {
+    animation: sc-word-caught 600ms var(--sc-motion-fade-easing) both;
+  }
+}
+
+@keyframes sc-word-caught {
+  from {
+    --bloom-wash: color-mix(
+      in srgb,
+      var(--sc-accent) calc(var(--sc-tint-edge) * 100%),
+      transparent
+    );
+    background-color: var(--bloom-wash);
+    box-shadow: 0 0 0 var(--token-reach) var(--bloom-wash);
+    outline-color: var(--sc-accent);
+  }
+}
+
+/* The rest of a name Tab would write, and the key that writes it. */
+[data-stemcells-words] .sc-word-ghost {
+  color: var(--sc-mute);
+  pointer-events: none;
+  user-select: none;
+}
+
+[data-stemcells-words] .sc-word-ghost-key {
+  margin-inline-start: 0.5em;
+  color: var(--sc-faint);
+}

@@ -38,6 +38,18 @@ export interface ReadContext {
   readonly door: Door;
   readonly roster: Roster;
   readonly models: ModelLexicon;
+  /** Live Cells' names, in Aski's chat: "Otter, rebase" speaks to Otter. */
+  readonly cells?: readonly string[];
+  /**
+   * Spans another reader has taken, read as if blank: Aski's card answers
+   * ("#2", "for 1: yes") are its own, and never a count or a place here.
+   */
+  readonly skip?: readonly Span[];
+}
+
+/** A live Cell named at the head of a message to Aski: "Otter, rebase onto main". */
+export interface CellAddress extends Span {
+  readonly name: string;
 }
 
 /** A count that asks for Cells without naming a model: "3 Cells", "3 Harbor:", "Harbor ×3". */
@@ -93,7 +105,10 @@ export interface CellFact {
 }
 
 export interface Facts {
+  /** The text as read: what `ReadContext.skip` and a Cell's address take read as blank. */
   readonly text: string;
+  /** The live Cell the message speaks to, its name as typed; then it starts no Cells. */
+  readonly cell: CellAddress | null;
   readonly tokens: readonly Token[];
   readonly groups: readonly CellGroup[];
   readonly cells: readonly CellFact[];
@@ -137,10 +152,23 @@ const RANK = { address: 3, cue: 2, whole: 1, weak: 0, none: 0 } as const;
 const LIST_ITEM = /^\s*(?:[-*•]|\d+[.)])\s+\S/;
 const CLAUSE_CUT = /[.!?;](?=\s)|\n|,?\s+and\s+/g;
 
-export function readWords(text: string, ctx: ReadContext): Facts {
+/**
+ * Words that may stand before the address without taking it: a count, a
+ * spawn verb, a model, "hey", "please". "3 Opus Harbor: …" is addressed to
+ * Harbor.
+ */
+export function leadOf(models: ModelLexicon): (word: string) => boolean {
+  return (w) =>
+    LEADS.has(w) || models.words.has(w) || countOf(w) > 0 || isVersion(w) || timesOf(w) > 0;
+}
+
+export function readWords(source: string, ctx: ReadContext): Facts {
+  const head =
+    ctx.door === "aski" ? cellAddress(blank(source, ctx.skip ?? []), ctx.cells ?? []) : null;
+  const cell = head?.cell ?? null;
+  const text = blank(source, head ? [...(ctx.skip ?? []), head] : (ctx.skip ?? []));
   const tokens = tokenize(text);
-  const isLead = (w: string) =>
-    LEADS.has(w) || ctx.models.words.has(w) || countOf(w) > 0 || isVersion(w) || timesOf(w) > 0;
+  const isLead = leadOf(ctx.models);
   const placeWords = new Set(
     ctx.roster.places.filter((p) => !/\s/.test(p.place.name)).map((p) => p.joined),
   );
@@ -401,15 +429,17 @@ export function readWords(text: string, ctx: ReadContext): Facts {
   // spawn word or a place at the address. "What's new in Harbor?" and "how
   // many cells are free?" ask Aski, not for a Cell.
   const launch =
-    models.length > 0 ||
-    counts.length > 0 ||
-    header !== null ||
-    verbatims.length > 0 ||
-    routing.some((h) => h.anchor === "address" || h.anchor === "whole") ||
-    tokens.slice(0, 2).some((t) => t.norm === "spawn" || t.norm === "launch");
+    cell === null &&
+    (models.length > 0 ||
+      counts.length > 0 ||
+      header !== null ||
+      verbatims.length > 0 ||
+      routing.some((h) => h.anchor === "address" || h.anchor === "whole") ||
+      tokens.slice(0, 2).some((t) => t.norm === "spawn" || t.norm === "launch"));
 
   return {
     text,
+    cell,
     tokens,
     groups: groups.map((g) => ({
       start: g.start,
@@ -436,6 +466,30 @@ export function readWords(text: string, ctx: ReadContext): Facts {
     grammar,
     task: cleanTask(text, grammar),
   };
+}
+
+/** The text with each span turned to spaces, so every offset still points where it did. */
+function blank(text: string, spans: readonly Span[]): string {
+  let out = text;
+  for (const s of spans)
+    out = out.slice(0, s.start) + " ".repeat(Math.max(0, s.end - s.start)) + out.slice(s.end);
+  return out;
+}
+
+/**
+ * "Otter, …" or "Otter: …" at the head of the message, for a live Cell
+ * called Otter: the name, and the head the reader reads as blank.
+ */
+function cellAddress(
+  text: string,
+  cells: readonly string[],
+): ({ readonly cell: CellAddress } & Span) | null {
+  const m = /^(\s*@?)(\p{L}[\p{L}\p{N}-]*)\s*[,:]/u.exec(text);
+  if (!m) return null;
+  const name = cells.find((c) => c.toLowerCase() === m[2]!.toLowerCase());
+  if (name === undefined) return null;
+  const start = m[1]!.length;
+  return { start: 0, end: m[0].length, cell: { start, end: start + m[2]!.length, name } };
 }
 
 function listItems(text: string): Span[] {

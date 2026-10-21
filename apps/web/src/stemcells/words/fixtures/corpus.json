@@ -359,5 +359,54 @@
     "groups": ["default in Harbor"],
     "launch": false,
     "why": "a cue'd place alone doesn't ask for a Cell in Aski's tab"
+  },
+  {
+    "door": "aski",
+    "text": "2 Sol in Harbor: fix the header",
+    "groups": ["2 × Sol 6.1 in Harbor"],
+    "launch": true,
+    "why": "a bare leading number before a model stays a count: Aski's cards take it only before \":\", \",\", \".\" or an answer word",
+    "share": "planner"
+  },
+  {
+    "door": "aski",
+    "text": "#2 yes, and spawn 2 Sol in Harbor: fix the header",
+    "skip": ["#2 yes,"],
+    "groups": ["2 × Sol 6.1 in Harbor"],
+    "launch": true,
+    "why": "a card's answer is the cards' own: the reader reads the rest as if it were blank",
+    "share": "planner"
+  },
+  {
+    "door": "aski",
+    "text": "for 3 Harbor: approve it",
+    "skip": ["for 3"],
+    "groups": ["default in Harbor"],
+    "why": "\"for N\" names a card, never a count: \"3 Harbor\" is not three Cells"
+  },
+  {
+    "door": "aski",
+    "text": "Otter, rebase onto main",
+    "cells": ["Otter"],
+    "cell": "Otter",
+    "groups": ["default in ?"],
+    "launch": false,
+    "why": "a live Cell named at the head speaks to that Cell: it answers its card or gets the message, and starts nothing"
+  },
+  {
+    "door": "aski",
+    "text": "Relay: spawn 2 Sol on the flaky test",
+    "cells": ["Relay"],
+    "cell": "Relay",
+    "groups": ["2 × Sol 6.1 in ?"],
+    "launch": false,
+    "why": "a live Cell's name beats a project's at the head of a message to Aski",
+    "share": "planner"
+  },
+  {
+    "text": "Otter, rebase onto main",
+    "cells": ["Otter"],
+    "groups": ["default in draft"],
+    "why": "a new chat speaks to no Cell: only Aski's chat reads Cell names"
   }
 ]

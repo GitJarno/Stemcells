@@ -5,13 +5,14 @@ import corpus from "./fixtures/corpus.json";
 import { testCatalog, testPlaces } from "./fixtures/catalog";
 import { jaroWinkler, phoneticKey } from "./phonetic";
 import { roster } from "./places";
-import { type Door, type Facts, readWords } from "./read";
+import { type Door, type Facts, type ReadContext, readWords } from "./read";
 import { bracketSpans, literalSpans } from "./text";
 
-const ctx = (door: Door = "draft") => ({
+const ctx = (door: Door = "draft", extra: Partial<ReadContext> = {}): ReadContext => ({
   door,
   roster: roster(testPlaces),
   models: modelLexicon(testCatalog),
+  ...extra,
 });
 
 /** Each group as one line: "2 × Sol 6.1 at max in Harbor"; "draft" is the draft's own project, "?" an open place. */
@@ -33,6 +34,12 @@ function summary(f: Facts) {
 interface Case {
   readonly text: string;
   readonly door?: Door;
+  /** Live Cells' names, for Aski's chat. */
+  readonly cells?: readonly string[];
+  /** Stretches of the text another reader has taken (Aski's card answers). */
+  readonly skip?: readonly string[];
+  /** The Cell the message speaks to. */
+  readonly cell?: string;
   readonly groups: readonly string[];
   readonly share?: string;
   readonly quiet?: readonly string[];
@@ -44,7 +51,13 @@ interface Case {
 
 describe("readWords over the corpus", () => {
   it.each((corpus as Case[]).map((c) => [c.why, c] as const))("%s", (_why, c) => {
-    const got = summary(readWords(c.text, ctx(c.door)));
+    const skip = (c.skip ?? []).map((s) => {
+      const start = c.text.indexOf(s);
+      return { start, end: start + s.length };
+    });
+    const facts = readWords(c.text, ctx(c.door, { skip, cells: c.cells ?? [] }));
+    const got = summary(facts);
+    expect(facts.cell?.name).toBe(c.cell);
     expect({ text: c.text, groups: got.groups, share: got.share, quiet: got.quiet }).toEqual({
       text: c.text,
       groups: c.groups,

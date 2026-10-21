@@ -10,12 +10,14 @@ import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } fro
 import { describe, expect, it } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
+import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
+import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurFavicon from "./favicon";
 import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
@@ -158,6 +160,22 @@ const CASES: Readonly<Record<string, Case>> = {
     substitute: OurRightPanelSheet satisfies RendersOrNothing<typeof UpstreamRightPanelSheet>,
     importers: {
       "apps/web/src/components/ChatView.tsx": ["./RightPanelSheet", ["RightPanelSheet"]],
+    },
+  },
+  "apps/web/src/components/ComposerPromptEditor.tsx": {
+    upstream: UpstreamComposerPromptEditor,
+    substitute: OurComposerPromptEditor satisfies RendersOrNothing<
+      typeof UpstreamComposerPromptEditor
+    >,
+    importers: {
+      "apps/web/src/components/chat/ChatComposer.tsx": [
+        "../ComposerPromptEditor",
+        ["ComposerPromptEditor"],
+      ],
+      "apps/web/src/components/settings/SettingsFontPreviews.tsx": [
+        "../ComposerPromptEditor",
+        ["ComposerPromptEditor"],
+      ],
     },
   },
 };
