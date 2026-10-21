@@ -76,6 +76,7 @@ const electron = vi.hoisted(() => {
     isDestroyed() {
       return false;
     }
+    setBackgroundThrottling() {}
   }
 
   const display = {
@@ -673,6 +674,63 @@ describe("a flight", () => {
         lose();
         expect(layer.drawing, how).toBe(false);
       }
+    }).pipe(Effect.scoped),
+  );
+
+  /** A move from `page` that opens window `id`, or closes it. */
+  const move = (page: Page, change: { open?: string; close?: string }) => {
+    const book = snapshot(page)!;
+    return {
+      open: change.open
+        ? [
+            {
+              id: change.open,
+              frame: { x: 200, y: 200, width: 900, height: 700 },
+              display: "1:1440x900@2",
+              fullScreen: false,
+              workspace: `${change.open}-tabs`,
+            },
+          ]
+        : [],
+      change: [],
+      close: change.close ? [change.close] : [],
+      front: change.open ?? null,
+      lead: book.lead,
+      memories: [],
+      basis: Object.fromEntries(book.windows.map((window) => [window.id, window.version])),
+    };
+  };
+
+  it.effect("ends with the window warmed for its drop gone, when its page crashes", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      send(page, WINDOWS_CHANNEL.warm, move(page, { open: "w" }));
+      yield* tick;
+      yield* tick;
+      const warm = electron.windows.at(-1)!;
+      expect(warm).not.toBe(a.window);
+
+      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+      expect(warm.isDestroyed()).toBe(true);
+      expect(idsOf(page)).toEqual([a.id]);
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect("closes a warmed window a move opened and another closed before it was made", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      send(page, WINDOWS_CHANNEL.warm, move(page, { open: "w" }));
+      expect(invoke(page, WINDOWS_CHANNEL.commit, move(page, { open: "w" }))).toBe("done");
+      expect(invoke(page, WINDOWS_CHANNEL.commit, move(page, { close: "w" }))).toBe("done");
+      yield* tick;
+      yield* tick;
+
+      expect(electron.windows.filter((window) => !window.isDestroyed())).toEqual([a.window]);
+      expect(idsOf(page)).toEqual([a.id]);
     }).pipe(Effect.scoped),
   );
 

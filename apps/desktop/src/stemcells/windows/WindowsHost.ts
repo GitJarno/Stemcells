@@ -290,6 +290,11 @@ export const layer = Layer.effectDiscard(
         failed(id, home);
         return;
       }
+      // A move closed it again before it was made: it goes as it arrives.
+      if (!book.get(id)) {
+        window.destroy();
+        return;
+      }
       bind(id, window);
       window.setBounds(frame);
       const page = window.webContents;
