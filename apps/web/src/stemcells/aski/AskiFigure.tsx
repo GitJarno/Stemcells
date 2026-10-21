@@ -17,6 +17,7 @@ import { eyesMood, homeMood, watchField } from "./attention";
 import { type Aim, blinking, cursoring, type Looking, looking } from "./eyes";
 import type { Mood } from "./mood";
 import { usePresent } from "./presence";
+import { useShown } from "./useShown";
 import { groundOf, inkOf } from "./stage/colour.ts";
 import type { FigureAsk, FigureDrawn } from "./stage/figure.ts";
 import "../tokens/stemcells.css";
@@ -80,28 +81,6 @@ function paint(
   canvas
     .getContext("2d")
     ?.putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
-}
-
-/** Whether `element` is on screen and its page in sight. */
-function useShown(element: { readonly current: Element | null }): boolean {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const target = element.current;
-    if (target === null) return;
-    let inView = false;
-    const decide = (): void => setShown(inView && !document.hidden);
-    const seen = new IntersectionObserver((entries) => {
-      inView = entries.at(-1)?.isIntersecting ?? inView;
-      decide();
-    });
-    seen.observe(target);
-    document.addEventListener("visibilitychange", decide);
-    return () => {
-      seen.disconnect();
-      document.removeEventListener("visibilitychange", decide);
-    };
-  }, [element]);
-  return shown;
 }
 
 /**

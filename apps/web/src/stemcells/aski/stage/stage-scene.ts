@@ -17,7 +17,7 @@ import type { Metrics } from "./stage.ts";
  * A scene's cell, in device pixels across, so every dot of Aski's font is a
  * whole pixel. Theater: hand-set for the scenes.
  */
-const SCENE_CELL = 8;
+export const SCENE_CELL = 8;
 /** No stage is this many rows tall. */
 const MAX_ROWS = 400;
 
@@ -31,7 +31,7 @@ export interface StageSceneOptions {
 }
 
 /** The scene's grid on this stage, and where its canvas stands, in CSS pixels from the theater's corner. */
-interface Placed {
+export interface Placed {
   readonly cols: number;
   readonly rows: number;
   readonly x: number;
@@ -45,7 +45,7 @@ interface Placed {
  * ground line: the figure fits Aski's ink box into its square, and the
  * grid's own fit stands the cloud on a stage of these rows.
  */
-function place(m: Metrics, dpr: number): Placed {
+export function place(m: Pick<Metrics, "width" | "aski">, dpr: number): Placed {
   const cw = SCENE_CELL / dpr;
   const ch = cw / CELL_ASPECT;
   const cols = Math.max(1, Math.floor(m.width / cw));

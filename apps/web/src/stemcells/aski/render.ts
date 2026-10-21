@@ -213,7 +213,13 @@ export interface GridLook {
   /** Pixels per cell across; a cell is 1 / CELL_ASPECT times as tall. A multiple of 8 keeps every dot whole. */
   readonly cell: number;
   /** Aski's eyes over the grid: how open, how Aski lies on the grid, and where they are when they are away from home. */
-  readonly eyes?: { readonly open: number; readonly fit: Fit; readonly at?: EyePlace | null };
+  readonly eyes?: {
+    readonly open: number;
+    readonly fit: Fit;
+    readonly at?: EyePlace | null;
+    /** The characters typed into the eyes, left then right, in place of the blocks. */
+    readonly glyphs?: readonly [string, string] | undefined;
+  };
 }
 
 /** The glyph's ink at (fx, fy) inside a grid cell, both 0..1: dots half again as tall as wide, the glyph centred on its line. */
@@ -223,20 +229,29 @@ export function glyphInCell(ch: string, fx: number, fy: number): number {
   return glyphBit(ch, Math.floor(fx * (FONT_W + 3) - 1.5), Math.floor((fy - top) / dotH));
 }
 
-/** Aski's eyes over a grid, in canon units: none while shut; away from home, where the scene says, in cells. */
+/** Aski's eyes over a grid, in canon units: none while shut; away from home, where the scene says, in cells; a mood typed into them when it gives one. */
 export function gridEyes(eyes: GridLook["eyes"]): EyePose[] {
   if (!eyes || !(eyes.open > 0)) return [];
-  const { fit, at: away, open } = eyes;
+  const { fit, at: away, open, glyphs } = eyes;
   return away
-    ? away.at.map(([ci, cj]) => ({
+    ? away.at.map(([ci, cj], n) => ({
         x: (ci - fit.cx) / fit.kx,
         y: (cj - fit.ground) / fit.ky,
         height: away.rows / fit.ky,
         open,
         rot: 0,
         facing: 1,
+        glyph: glyphs?.[n],
       }))
-    : EYES.centers.map(([x, y]) => ({ x, y, height: EYES.height, open, rot: 0, facing: 1 }));
+    : EYES.centers.map(([x, y], n) => ({
+        x,
+        y,
+        height: EYES.height,
+        open,
+        rot: 0,
+        facing: 1,
+        glyph: glyphs?.[n],
+      }));
 }
 
 /**

@@ -11,6 +11,7 @@ import { BODY_HEIGHT, LOBES } from "./canon.ts";
 import { RAMP } from "./font.ts";
 import { type Grid, isPrintable, makeGrid, put, type Stage } from "./grid.ts";
 import { clamp } from "./math.ts";
+import type { Mood } from "./mood.ts";
 import { restDistance } from "./particles.ts";
 
 export interface SceneCard {
@@ -39,6 +40,8 @@ export interface SceneCard {
    * still says how open, and 0 still draws none.
    */
   eyesAt?(t: number, stage: Stage): EyePlace | null;
+  /** The mood typed into the eyes at t, as the figure types one; none, or no such function, draws the blocks. */
+  mood?(t: number): Mood | undefined;
   frame(t: number, stage: Stage): Grid;
 }
 

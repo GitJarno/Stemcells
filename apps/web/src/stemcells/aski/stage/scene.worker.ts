@@ -1,10 +1,13 @@
-// Draws Aski's scenes off the main thread (work that can take more than a
-// frame moves to a web worker), into the stage's canvas handed over once.
+// Draws Aski's scenes and moments off the main thread (work that can take
+// more than a frame moves to a web worker), into the stage's canvas handed
+// over once.
 // Each frame is the scene at the moment the clock says, painted where it
 // changed (GridPainter), at the rate the worker's animation frames come;
 // under Reduce Motion the scene's still is painted once. Nothing runs while
 // no scene plays or the stage is out of sight.
 
+import { type MomentArgs, momentCard } from "../moments/cards.ts";
+import { MOODS } from "../mood.ts";
 import { type Box, GridPainter, type Rgb } from "../paint.ts";
 import type { SceneCard } from "../scene.ts";
 import { homeFit } from "../scene.ts";
@@ -29,6 +32,8 @@ export type SceneOrder =
       readonly still: boolean;
       /** Whether the stage is in sight. */
       readonly running: boolean;
+      /** A moment's numbers; a scene takes none. */
+      readonly args?: MomentArgs | undefined;
     }
   | { readonly kind: "run"; readonly running: boolean }
   | { readonly kind: "stop" };
@@ -62,7 +67,13 @@ function draw(t: number): void {
   if (playing === undefined) return;
   const { card, painter, order } = playing;
   const stage = { cols: order.cols, rows: order.rows };
-  const eyes = { open: card.eyes(t), fit: homeFit(stage), at: card.eyesAt?.(t, stage) ?? null };
+  const mood = card.mood?.(t);
+  const eyes = {
+    open: card.eyes(t),
+    fit: homeFit(stage),
+    at: card.eyesAt?.(t, stage) ?? null,
+    glyphs: mood === undefined ? undefined : MOODS[mood],
+  };
   paint(painter.paint(card.frame(t, stage), eyes));
 }
 
@@ -97,14 +108,16 @@ scope.addEventListener("message", (event) => {
   playing = undefined;
   context?.clearRect(0, 0, canvas?.width ?? 0, canvas?.height ?? 0);
   if (order.kind === "stop" || canvas === undefined) return;
-  const make = SCENE_CARDS[order.id];
-  if (make === undefined) return;
+  const card =
+    SCENE_CARDS[order.id]?.({ seed: order.seed }) ??
+    momentCard(order.id, { ...order.args, seed: order.seed });
+  if (card === undefined) return;
   const painter = new GridPainter({ cols: order.cols, rows: order.rows }, order);
   canvas.width = painter.width;
   canvas.height = painter.height;
   playing = {
     order,
-    card: make({ seed: order.seed }),
+    card,
     painter,
     image: new ImageData(
       painter.pixels as Uint8ClampedArray<ArrayBuffer>,

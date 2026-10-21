@@ -135,3 +135,64 @@
 .aski-theater[data-scene] .stage-near {
   opacity: 0;
 }
+
+/* Aski's moments (moments/AskiMoments.tsx): the theater fills the band Aski
+   stands in. A moment's canvas lies over it, placed by moments/player.ts so
+   its cloud stands where the figure does, and its line sits to Aski's
+   right. While one plays the figure fades away under it and comes back as
+   it ends: one fade, each way, on opacity alone. */
+.aski-moments {
+  --aski-size: calc(var(--sc-body) * (var(--sc-natural-line) + var(--sc-leading)) * 6);
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-inline-size: 0;
+}
+
+.aski-moment {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  color: var(--sc-content-strong-ink);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.aski-moment,
+.aski-moments .aski-figure {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
+
+.aski-moments[data-moment] .aski-moment {
+  opacity: 1;
+}
+
+.aski-moments[data-moment] .aski-figure {
+  opacity: 0;
+}
+
+.aski-moment-line {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: calc(50% + var(--aski-size) / 2 + var(--sc-space-xl)) var(--sc-space-xl);
+  margin: 0;
+  translate: 0 -50%;
+  color: var(--sc-content-strong-ink);
+  font-family: var(--sc-font-mono);
+  font-size: calc(var(--sc-body) + var(--sc-content-size));
+  pointer-events: none;
+}
+
+/* The line's cursor is Aski's eye: a block as wide as the eyes are. */
+.aski-moment-cursor {
+  display: inline-block;
+  inline-size: 0.55em;
+  block-size: 1.1em;
+  vertical-align: text-bottom;
+  background: currentColor;
+}
+
+.aski-moment-cursor[hidden] {
+  display: none;
+}

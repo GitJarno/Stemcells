@@ -5,6 +5,7 @@ import { ChatPaneView } from "../upstream/chat";
 import type { ThreadRouteTarget } from "../upstream/routes";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui";
 import { AskiFigure } from "./AskiFigure";
+import { AskiMoments } from "./moments/AskiMoments";
 
 /**
  * Keeps Aski's chat: sets it up through upstream and hands it to the
@@ -54,7 +55,9 @@ export function AskiPane(props: {
         data-stemcells-aski-stage=""
         className="flex shrink-0 justify-center border-b border-border py-3"
       >
-        <AskiFigure aski={props.chat.status === "ready" ? props.chat.cell : null} />
+        <AskiMoments aski={props.chat.status === "ready" ? props.chat.cell : null}>
+          <AskiFigure aski={props.chat.status === "ready" ? props.chat.cell : null} />
+        </AskiMoments>
       </div>
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
         {props.target ? (
