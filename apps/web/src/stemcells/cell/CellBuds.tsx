@@ -1,73 +1,84 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
-// The stage at a Cell's right where its buds stand while its subagents work
-// (`buds.ts`): a box the size of the Cell's, just past it, painted in the
-// Cell's colours on the Cell's clock, with the same margin past its box
-// (`MARGIN`). It takes no room, so the Cell's own box still centres the
-// Cell. Its parent places it: positioned, with the Cell's box at its start.
+// The stage at a Cell's right where its buds stand while its Subcells work
+// (`buds.ts`): a box the size of the Cell's, just past it, on the Cell's
+// clock. Each bud is its Subcell as the transcript draws it (`SubcellMark`),
+// dealt by its thread id, with its status for a face, at half the Cell's
+// size and with no dot. The stage takes no room, so the Cell's own box
+// still centres the Cell. Its parent places it: positioned, with the Cell's
+// box at its start.
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 
-import { BudRow } from "./buds.ts";
-import { bodyOf } from "./cast.ts";
+import { type Bud, type BudPlace, BudRow } from "./buds.ts";
 import { onStage } from "./clock.ts";
-import type { Ground } from "./keyline.ts";
 import { BOX } from "./look.ts";
-import { paint } from "./paint.ts";
-import { MARGIN, type MiniFrame, packLook, sceneOf } from "./scene.ts";
+import { SubcellMark } from "./SubcellMark.tsx";
 import "./cell.css";
 
-const clear = (width: number, height: number) =>
-  Array.from({ length: height }, () => ".".repeat(width));
+/** A bud's figure, drawn again only when its Subcell changes, not as it moves. */
+const BudFigure = memo(SubcellMark);
 
-/** The stage with no bud on it. */
-const EMPTY: MiniFrame = {
-  rows: clear(BOX.width, BOX.height),
-  detail: clear(BOX.width * 2, BOX.height * 2),
-  drawn: {
-    rows: clear(BOX.width + MARGIN.x * 2, BOX.height + MARGIN.y * 2),
-    detail: clear((BOX.width + MARGIN.x * 2) * 2, (BOX.height + MARGIN.y * 2) * 2),
-  },
-};
-
-/** Buds wear nothing: the Cell's body, small. */
-const BARE = packLook([]);
+const same = (a: readonly BudPlace[], b: readonly BudPlace[]) =>
+  a.length === b.length &&
+  a.every(
+    (place, i) =>
+      place.bud.name === b[i]!.bud.name &&
+      place.bud.status === b[i]!.bud.status &&
+      place.bud.provider === b[i]!.bud.provider &&
+      place.x === b[i]!.x &&
+      place.lift === b[i]!.lift,
+  );
 
 export function CellBuds(props: {
-  /** Buds wanted: the subagents at work (`budsOf`). */
-  readonly count: number;
-  /** The Cell's provider, whose colours the buds wear. */
+  /** The Cell's Subcells, at work or done (`useCellBuds`); a bud stands for each at work, two at most. */
+  readonly subcells: readonly Bud[];
+  /** The Cell's provider, whose colours a bud wears when its Subcell names none. */
   readonly provider?: string | null | undefined;
-  readonly ground: Ground;
   /** Points a cell is drawn, the Cell's own. */
   readonly points: number;
 }) {
-  const { count, ground, points } = props;
-  const body = bodyOf(props.provider);
-  const [row] = useState(() => new BudRow((key) => sceneOf(BARE, key)));
-  const canvas = useRef<HTMLCanvasElement>(null);
+  const { subcells, points } = props;
+  const [row] = useState(() => new BudRow());
+  const [places, setPlaces] = useState<readonly BudPlace[]>([]);
+  const stage = useRef<HTMLSpanElement>(null);
+  // The Subcells as text: the stage looks again when one of them changes, not as each item streams in.
+  const heard = JSON.stringify(subcells);
   useLayoutEffect(() => {
-    const element = canvas.current;
+    const element = stage.current;
     if (element === null) return;
-    let shown: { frame: MiniFrame; dpr: number } | undefined;
+    const told = JSON.parse(heard) as Bud[];
     return onStage(element, (seconds) => {
-      const frame = row.at(count, seconds) ?? EMPTY;
-      const dpr = devicePixelRatio || 1;
-      if (shown?.frame === frame && shown.dpr === dpr) return;
-      shown = { frame, dpr };
-      paint(element, frame, body, points, dpr, ground);
+      const next = row.at(told, seconds);
+      setPlaces((was) => (same(was, next) ? was : next));
     });
-  }, [row, count, body, points, ground]);
+  }, [row, heard]);
+  const unit = points / 2;
   return (
-    <canvas
-      ref={canvas}
-      className="character cell-buds"
+    <span
+      ref={stage}
+      className="cell-buds"
       style={{
-        width: (BOX.width + MARGIN.x * 2) * points,
-        height: (BOX.height + MARGIN.y * 2) * points,
-        insetInlineStart: (BOX.width - MARGIN.x) * points,
-        insetBlockEnd: -MARGIN.y * points,
+        width: BOX.width * points,
+        height: BOX.height * points,
+        insetInlineStart: BOX.width * points,
+        insetBlockEnd: 0,
       }}
       aria-hidden="true"
-    />
+    >
+      {places.map(({ bud, x, lift }, depth) => (
+        <span
+          key={bud.name}
+          className="cell-bud"
+          style={{ insetInlineStart: x * unit, insetBlockEnd: lift * unit, zIndex: depth }}
+        >
+          <BudFigure
+            name={bud.name}
+            provider={bud.provider ?? props.provider}
+            status={bud.status}
+            points={unit}
+          />
+        </span>
+      ))}
+    </span>
   );
 }

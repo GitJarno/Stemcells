@@ -235,7 +235,12 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   layers on its `ground`: `bud/1` and `bud/2` stand one or two, and
   `bud/out/1` and `bud/out/2` step the next one out of the Cell's side, the
   step home being the same frames backwards (`cell/buds.ts`). Stepping out
-  leaves the box on purpose, so `check` warns on those two.
+  leaves the box on purpose, so `check` warns on those two. The app draws
+  none of the bud art. It reads only where each layer stands, then draws
+  that bud's Subcell there at half the Cell's size (`SubcellMark`). So a
+  bud layer's centre and feet are what count, and a layer's place in a
+  frame is matched to a bud by how near the Cell it stands in the first
+  frame.
 - **`meta`** adds meta to the original's scenes by name. Their frames stay as
   exported.
 - **`strength`** (`growth.json`) is the arm a Cell holds at rest once it has

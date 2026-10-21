@@ -13,6 +13,7 @@ import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-lab
 import type {
   OrchestrationV2Checkpoint,
   OrchestrationV2ExecutionNode,
+  OrchestrationV2PendingBackgroundTask,
   OrchestrationV2ProjectedTurnItem,
   OrchestrationV2Run,
   OrchestrationV2RuntimeRequest,
@@ -28,7 +29,8 @@ import {
   useThreadProjection,
   useThreadVisibleTurnItems,
 } from "../../state/entities";
-import { ACTIVITY_HOLD, budsOf, type ToolBeat } from "../cell/activity";
+import { ACTIVITY_HOLD, activityOf, type ToolBeat } from "../cell/activity";
+import type { Bud } from "../cell/buds";
 import { aloneIn, FLEX_MS, type Span, strengthOf } from "../cell/growth";
 import type { Strength } from "../cell/kit";
 import type { Diff } from "../cell/marks";
@@ -118,20 +120,60 @@ export function useCellSubagentsAway(cell: CellRef | null): number {
 }
 
 /**
- * The buds a chat's Cell stands beside it (`budsOf`): its subagents at work.
- * While it works, those are its subagent items still running, in any run: a
- * subagent sent to the background keeps its item running past the turn that
- * started it. Its upstream lists them as pending background work too, which
- * is all there is to read once the chat stops working.
+ * A turn item as the Subcell a bud of its Cell stands for (`cell/buds.ts`):
+ * a subagent named by its Subcell's thread id, else its own, as its mark in
+ * the transcript is (`SubcellMark`); a delegating call by its item's id.
+ * Undefined for anything else.
  */
-export function useCellBuds(cell: CellRef | null, working: boolean): number {
+export function budOf(item: OrchestrationV2TurnItem): Bud | undefined {
+  if (item.type === "subagent")
+    return {
+      name: item.childThreadId ?? item.subagentId,
+      provider: item.driver,
+      status: item.status,
+    };
+  const beat = beatOf(item);
+  return beat !== undefined && activityOf(beat.name, beat.brief) === "delegating"
+    ? { name: item.id, status: item.status }
+    : undefined;
+}
+
+/**
+ * The Subcells a chat's Cell stands its buds for, oldest first: those its
+ * items name, at work or done (`budOf`), then those its upstream lists as
+ * pending background work once its turn is over, at work. Both name a
+ * Subcell by its thread's id, so a subagent handed to the background stays
+ * the same bud.
+ */
+export function budsIn(
+  items: ReadonlyArray<OrchestrationV2ProjectedTurnItem>,
+  tasks: ReadonlyArray<OrchestrationV2PendingBackgroundTask> | undefined,
+): Bud[] {
+  const buds = new Map<string, Bud>();
+  for (const { item } of items) {
+    const bud = budOf(item);
+    if (bud !== undefined) buds.set(bud.name, bud);
+  }
+  for (const task of tasks ?? []) {
+    if (task.kind !== "subagent") continue;
+    const name = task.childThreadId ?? task.taskId;
+    if (!buds.has(name)) buds.set(name, { name, status: "running" });
+  }
+  return [...buds.values()];
+}
+
+/**
+ * The Subcells a chat's Cell stands its buds for (`budsIn`). While it
+ * works, those are its subagent items, in any run: a subagent sent to the
+ * background keeps its item running past the turn that started it. Its
+ * upstream lists them as pending background work too, which is all there
+ * is to read once the chat stops working.
+ */
+export function useCellBuds(cell: CellRef | null, working: boolean): readonly Bud[] {
   const ref = cell ? threadRefOf(cell) : null;
   const shell = useQuietThreadShell(ref);
   const items = useThreadVisibleTurnItems(working ? ref : null);
-  return budsOf(
-    working ? beatsOf(items, null) : [],
-    subagentsAwayOf(shell?.pendingBackgroundTasks),
-  );
+  return budsIn(working ? items : [], shell?.pendingBackgroundTasks);
 }
 
 /** What a run's items say, as a key that turns with each new item, change and word; and whether a compaction is running. */

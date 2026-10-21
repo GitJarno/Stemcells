@@ -36,9 +36,10 @@ const POINTS = 1;
  * starts, the lines its run added and removed rise as a + and a −.
  * Its box holds all of it, hats too, so centring the box centres the whole
  * Cell. Drawn `points` a sprite pixel; small beside a label unless told.
- * Given a `stage` (room at its right, as on the composer), the buds of its
- * subagents at work stand there, those in the background too; the box stays
- * its own, and a Cell starting there forms in it (`cell/forming.ts`).
+ * Given a `stage` (room at its right, as on the composer), its Subcells at
+ * work stand there as its buds, those in the background too, each its own
+ * Cell; the box stays its own, and a Cell starting there forms in it
+ * (`cell/forming.ts`).
  */
 export function CellMark(props: { cell: CellRef | null; points?: number; stage?: boolean }) {
   const status = useCellStatus(props.cell);
@@ -72,12 +73,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
     >
       {/* First, so the Cell is drawn over its buds: one steps out from behind it. */}
       {props.stage ? (
-        <CellBuds
-          count={buds}
-          provider={provider}
-          ground={ground}
-          points={props.points ?? POINTS}
-        />
+        <CellBuds subcells={buds} provider={provider} points={props.points ?? POINTS} />
       ) : null}
       <CellFigure
         name={props.cell?.threadId ?? ""}

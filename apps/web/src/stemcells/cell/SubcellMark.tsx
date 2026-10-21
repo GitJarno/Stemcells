@@ -5,7 +5,9 @@
 // crew's look while its thread is open in a tab, else the look its name is
 // dealt alone, so it wears the same one wherever it shows, reload after
 // reload. Its face comes from its status (`subcell.ts`), in its provider's
-// colours; upstream's status dot stays on it, as upstream draws it.
+// colours; upstream's status dot stays on it, as upstream draws it. Beside
+// its Cell on the composer's line it stands as a bud (`CellBuds`), half
+// the Cell's size, with no dot.
 
 import { useCellGround } from "../upstream/appearance";
 import { useRosterLook } from "../tabs/roster";
@@ -20,6 +22,8 @@ export function SubcellMark(props: {
   readonly status?: string | undefined;
   /** Upstream's status dot, its colour's classes; none draws no dot. */
   readonly dot?: string | undefined;
+  /** CSS pixels a cell of its miniature is drawn; the composer's line's Cell's unless told. */
+  readonly points?: number | undefined;
 }) {
   const ground = useCellGround();
   const look = useRosterLook(props.name);
@@ -33,7 +37,7 @@ export function SubcellMark(props: {
         ground={ground}
         mood={mood}
         activity={activity}
-        points={POINTS_PER_PIXEL}
+        points={props.points ?? POINTS_PER_PIXEL}
       />
       {props.dot === undefined ? null : (
         <span

@@ -26,10 +26,11 @@ import rootSource from "../../routes/__root.tsx?raw";
 import { resolveThreadDetailRef } from "../../state/entities";
 import claudeAdapterSource from "../../../../server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts?raw";
 import projectionStoreSource from "../../../../server/src/orchestration-v2/ProjectionStore.ts?raw";
-import { budsOf, currentActivity } from "../cell/activity";
+import { currentActivity } from "../cell/activity";
 import {
   beatOf,
   beatsOf,
+  budsIn,
   CODEX_CACHE_MS,
   coldAtFor,
   coldAtOf,
@@ -98,10 +99,28 @@ describe("what a working Cell acts out, from its run's turn items", () => {
     expect(acting("subagent", subagent)).toBe("delegating");
   });
 
-  it("stands a bud beside the Cell for each subagent still at work", () => {
-    const running = projected(item("subagent", subagent));
+  it("names each Subcell a bud stands for as its mark in the transcript is, with its status", () => {
+    const running = projected(item("subagent", { ...subagent, childThreadId: "thread-child" }));
     const done = projected(item("subagent", subagent, "completed"));
-    expect(budsOf(beatsOf([running, done], "run-1"))).toBe(1);
+    expect(budsIn([running, done], undefined)).toEqual([
+      { name: "thread-child", provider: "claudeAgent", status: "running" },
+      { name: "node-subagent", provider: "claudeAgent", status: "completed" },
+    ]);
+    const call = projected(item("dynamic_tool", { toolName: "Task", input: { prompt: "a" } }));
+    expect(budsIn([call], undefined)).toEqual([{ name: "item-dynamic_tool", status: "running" }]);
+    expect(budsIn([projected(item("command_execution", { input: "ls" }))], undefined)).toEqual([]);
+  });
+
+  it("a subagent handed to the background stays the same Subcell", () => {
+    const running = projected(item("subagent", { ...subagent, childThreadId: "thread-child" }));
+    const away = decodePending([
+      { taskId: "bg-1", kind: "subagent", childThreadId: "thread-child" },
+      { taskId: "bg-2", kind: "monitor" },
+    ]);
+    expect(budsIn([running], undefined).map((bud) => bud.name)).toEqual(
+      budsIn([], away).map((bud) => bud.name),
+    );
+    expect(budsIn([running], away)).toHaveLength(1);
   });
 
   it("thinks again once its call has returned, and reads only the run in progress", () => {

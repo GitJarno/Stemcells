@@ -20,10 +20,18 @@
 
 /* The stage at a Cell's right where its buds stand (CellBuds), on the
    Cell's floor, its start where the Cell's box ends. It takes no room: the
-   box holds only the Cell. */
+   box holds only the Cell. Its buds stack among themselves, all of them
+   under the Cell, which a bud steps out from behind. */
 .cell-buds {
   position: absolute;
   pointer-events: none;
+  isolation: isolate;
+}
+
+/* A bud, placed on the stage each beat (buds.ts). */
+.cell-buds > .cell-bud {
+  position: absolute;
+  display: flex;
 }
 
 /* The "?" a Cell wears while it waits on you: the glyph heavy and
