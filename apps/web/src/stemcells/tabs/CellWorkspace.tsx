@@ -98,6 +98,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
   const [askiChat, setAskiChat] = useState<AskiChat>({ status: "starting" });
+  const [openedOn] = useState(() => readWorkspace().activeTabId);
   const newTabRef = useRef<HTMLDivElement>(null);
   const newCellIsTaken = newCellTaken(workspace, newCell);
   const lastTabOnStage =
@@ -234,7 +235,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     setAskiChat(chat);
     if (chat.status !== "ready") return;
     const before = readWorkspace();
-    updateWorkspace((current) => seatAski(current, chat.cell, newIds()));
+    const since = { openedOn, touched: navigator.userActivation?.hasBeenActive ?? false };
+    updateWorkspace((current) => seatAski(current, chat.cell, newIds(), since));
     if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
   };
 
