@@ -15,6 +15,11 @@ import { LIFT_GAP } from "./swipe";
  *
  * The page on stage is the active tab's. The others are inert: only the
  * page on stage takes the pointer, the keyboard and focus.
+ *
+ * While the pages move, from the moment the fingers take the strip or a
+ * slide sets off until it rests on a page, `[data-stemcells-pages]` carries
+ * `data-moving`. Whatever can't move with them (a native view over a page)
+ * watches it.
  */
 export function TabPager(props: {
   /** Every tab, in the strip's order: a tab's place is its index. */
@@ -160,6 +165,7 @@ class PageStrip {
 
   detach(): void {
     this.#viewport?.removeEventListener("wheel", this.#onWheel);
+    this.#viewport?.removeAttribute("data-moving");
     this.#slide?.cancel();
     this.#slide = null;
     cancelAnimationFrame(this.#frame);
@@ -280,6 +286,7 @@ class PageStrip {
     this.#standIn = null;
     this.#placeAll();
     this.#show(slot);
+    this.#moved();
   }
 
   /** Slides from `here` to `tabId`'s page; a far one comes in as the next page. */
@@ -311,6 +318,7 @@ class PageStrip {
     this.#show(to);
     if (strip === null || Math.abs(to - from) < 1e-3) {
       this.#settle();
+      this.#moved();
       return;
     }
     let slide: Animation;
@@ -330,10 +338,12 @@ class PageStrip {
       });
     }
     this.#slide = slide;
+    this.#moved();
     slide.onfinish = () => {
       if (this.#slide !== slide) return;
       this.#slide = null;
       this.#settle();
+      this.#moved();
     };
   }
 
@@ -344,6 +354,11 @@ class PageStrip {
     this.#standIn = null;
     this.#placeAll();
     if (stage !== null) this.#show(this.#slotOf(stage));
+  }
+
+  /** Marks the pages moving while the fingers hold the strip or a slide runs, and at rest once neither does. */
+  #moved(): void {
+    this.#viewport?.toggleAttribute("data-moving", this.#hand.holding || this.#slide !== null);
   }
 
   /** The strip as the hand holds it. */
@@ -391,6 +406,7 @@ class PageStrip {
       scrollerTakes(target, viewport, direction),
     );
     if (holds && event.cancelable) event.preventDefault();
+    this.#moved();
   };
 
   /**
@@ -433,6 +449,7 @@ class PageStrip {
       return;
     }
     this.#hand.idle(performance.now());
+    this.#moved();
   };
 
   /**
