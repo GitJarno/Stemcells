@@ -22,6 +22,7 @@ import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
+import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
@@ -48,6 +49,7 @@ import * as OurProviderSubagentBar from "./ProviderSubagentBar";
 import * as OurUpdateNotice from "./providerUpdateRequiredModels";
 import * as OurRightPanelSheet from "./RightPanelSheet";
 import * as OurRightPanelTabs from "./RightPanelTabs";
+import * as OurSettingsSearch from "./settingsSearch";
 import * as OurSubagentDisplay from "./subagentDisplay";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
@@ -255,6 +257,20 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/ChatComposer.tsx": [
         "./composerScrollGesture",
         ["recordComposerScrollGestureEvent", "shouldCollapseComposerForScrollKey"],
+      ],
+    },
+  },
+  "apps/web/src/components/settings/settingsSearch.ts": {
+    upstream: UpstreamSettingsSearch,
+    substitute: OurSettingsSearch satisfies typeof UpstreamSettingsSearch,
+    importers: {
+      "apps/web/src/components/CommandPalette.tsx": [
+        "./settings/settingsSearch",
+        ["searchSettings"],
+      ],
+      "apps/web/src/components/settings/SettingsSidebarNav.tsx": [
+        "./settingsSearch",
+        ["searchSettings"],
       ],
     },
   },

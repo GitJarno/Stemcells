@@ -225,12 +225,12 @@ Today the two disagree. The composer shows T3's panel; Aski's needs cards say th
 - [x] `critters` made `peering` and `needsApproval` (#105)
 - [x] The acts: approvals play `needsApproval`, the rail and the Look frame count it through `asksYou`, and a Cell peers while its line is down
 - [ ] `BranchToolbar` substitute: portal into the line's env slot in a pane, known git only (a pending status shows nothing), nothing under the box
-- [ ] The ledge (#116): solid tab on the box, the Cell at its left end standing in, the stash at its right end, the veil below the box, the halo a plain fade at 60 %
-  - [ ] proof: widths 800 to 160, dark and light; banners; an approval; a draft; a folder without git; Aski's pane
+- [x] The ledge (#116): solid tab on the box, the Cell at its left end standing in, the stash at its right end, the veil below the box, the halo a plain fade at 60 %
+  - [x] proof: widths 800 to 160, dark and light; banners; an approval; a draft; a folder without git; Aski's pane
 - [ ] The line: env as "project · branch ⌄" in the ledge, a draft's env-only line, and the 480 and 240 rungs for env
-- [ ] The dock's outline: full-width attachments, one outline, tokens only
-- [ ] The box keeps its height in the approval state
-- [ ] Hide the dead "Collapse composer on scroll" setting
+- [x] The dock's outline: full-width attachments, one outline, tokens only
+- [x] The box keeps its height in the approval state
+- [x] Hide the dead "Collapse composer on scroll" setting
 - [ ] Contracts as above
 - [ ] Proof: every width in the table, dark and light, side by side with T3
   - a 1 px drag trace of the dock's rect, as #92's;

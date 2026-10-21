@@ -1,0 +1,69 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
+/**
+ * What the dock's CSS (`tabs/workspace.css`) relies on in upstream's
+ * composer: that an approval drops the controls row, whose height the box
+ * keeps; and that T3's banners attach above the box inside the form, as
+ * insets with their own outline colour, over a box with a rounded outline
+ * of its own. A failure here after a sync names the contract that moved;
+ * the box likely shrinks under an approval again, or a banner and the box
+ * read as two pieces.
+ */
+import * as NodeFS from "node:fs";
+
+import { describe, expect, it } from "vite-plus/test";
+
+import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import composerBanner from "../../components/chat/ComposerBanner.tsx?raw";
+import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
+import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
+
+/** CSS imports come in empty under test; the stylesheet is read as text. */
+const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import.meta.url), "utf8");
+
+describe("the composer's dock and upstream", () => {
+  it("an approval drops the controls row, so the box keeps that row's height itself", () => {
+    expect(chatComposer).toMatch(
+      /\{isComposerCollapsedMobile \|\| isComposerApprovalState \? null : \(\s*<div\s*data-chat-composer-footer="true"/,
+    );
+    // The row's height, which workspace.css adds under the field: send
+    // (size-8) over the row's pb-4, past the field's own pb-2.
+    expect(chatComposer).toContain(
+      '"flex min-w-0 flex-nowrap items-center justify-between gap-2 overflow-visible px-3 pb-3 sm:px-4 sm:pb-4"',
+    );
+    expect(chatComposer).toContain('"relative px-3 pb-2 sm:px-4"');
+    expect(primaryActions).toContain('"size-8 sm:h-8 sm:w-8"');
+    expect(chatComposer).toMatch(/data-chat-composer-surface="true"/);
+    expect(chatComposer).toMatch(/data-chat-composer-body="true"/);
+    expect(workspaceCss).toContain("padding-block-end: calc(var(--spacing) * (2 + 8 + 4));");
+  });
+
+  it("banners attach above the box inside the form, inset, in their own outline", () => {
+    // The dock is the form's first child: an attachment inset by the drawer.
+    expect(chatComposer).toMatch(
+      /data-chat-composer-form="true"[\s\S]{0,1200}?<ComposerBanner\.Dock>/,
+    );
+    expect(composerBanner).toContain('data-slot="composer-banner-attachment"');
+    expect(composerBanner).toContain("w-[calc(100%-2*var(--chat-composer-drawer-inset))]");
+    expect(composerBanner).toContain(
+      "[data-chat-composer-form]>[data-slot=composer-banner-attachment]",
+    );
+    // A banner's outline is one variable, its tone another.
+    expect(composerBanner).toContain("data-composer-banner-surface={placement}");
+    expect(composerBanner).toContain(
+      "before:border before:border-(--chat-composer-attached-outline)",
+    );
+    expect(composerBanner).toContain("--chat-composer-attached-tint:");
+    // A tab as wide as its words says so, and leaves the box whole.
+    expect(composerBanner).toContain("data-composer-banner-width={width}");
+    expect(composerBanner).toContain('width === "content" ? "w-fit max-w-full flex-none"');
+  });
+
+  it("the box draws its outline round its own corners, from the outline colour", () => {
+    expect(composerSurface).toContain('data-chat-composer-main-surface="true"');
+    expect(composerSurface).toContain(
+      "after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-(--chat-composer-outline)",
+    );
+    expect(composerSurface).toMatch(/"group relative z-10 rounded-3xl p-px"/);
+    expect(chatComposer).toMatch(/data-chat-composer-surface="true"[\s\S]{0,200}?"rounded-3xl /);
+  });
+});

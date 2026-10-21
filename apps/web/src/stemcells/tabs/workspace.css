@@ -213,6 +213,44 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* While an approval waits upstream drops the controls row, and the box
+   would shrink under the panel. It keeps its height: the field's row over
+   an empty one, the controls row's own (send, size-8, over its pb-4) past
+   the field's usual pb-2. */
+[data-stemcells-pane]
+  [data-chat-composer-surface="true"]:not(:has(> [data-chat-composer-footer="true"]))
+  > [data-chat-composer-body="true"] {
+  padding-block-end: calc(var(--spacing) * (2 + 8 + 4));
+}
+/* T3's banners attach on top of the box as one piece with it: as wide as
+   the box, never a drawer inset into it, and one outline round both, in
+   the box's own colour. A banner's tone fills only its own band. Where a
+   banner sits, the box drops its top edge and squares its top corners, so
+   the banner's sides run on into the box's. A tab only as wide as its
+   words (T3's stash, where no Cell's ledge takes it) leaves the box whole,
+   as the Cell's ledge does, which stands over the banners outside the
+   form. */
+[data-stemcells-pane] [data-chat-composer-form] > [data-slot="composer-banner-attachment"] {
+  width: 100%;
+}
+[data-stemcells-pane] [data-chat-composer-form] [data-composer-banner-surface="attached"] {
+  --chat-composer-attached-outline: var(--chat-composer-outline);
+}
+[data-stemcells-pane]
+  [data-slot="composer-shell"]:has(
+    [data-composer-banner-surface="attached"]:not([data-composer-banner-width="content"])
+  )
+  :is([data-chat-composer-main-surface="true"], [data-chat-composer-surface="true"]) {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+[data-stemcells-pane]
+  [data-slot="composer-shell"]:has(
+    [data-composer-banner-surface="attached"]:not([data-composer-banner-width="content"])
+  )
+  [data-chat-composer-main-surface="true"]::after {
+  border-block-start-width: 0;
+}
 /* A draft waits at the foot like every chat, so a tab's composers line up
    along the bottom. Upstream centres a draft's composer: the overlay fills
    the chat and centres its lane. In a pane the lane sits at the overlay's

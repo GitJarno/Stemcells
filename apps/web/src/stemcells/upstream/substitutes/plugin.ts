@@ -39,8 +39,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // and sends the Cell its message without them.
   "apps/web/src/components/ComposerPromptEditor.tsx": "ComposerPromptEditor.tsx",
   "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
-  // One composer height: it never rests into one line on a scroll.
+  // One composer height: it never rests into one line on a scroll, and
+  // Settings has no "Collapse composer on scroll" to offer.
   "apps/web/src/components/chat/composerScrollGesture.ts": "composerScrollGesture.ts",
+  "apps/web/src/components/settings/settingsSearch.ts": "settingsSearch.ts",
   // The hero names every place the words start Cells in.
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
   // Stemcells' mark: where upstream draws T3's wordmark as an icon.
