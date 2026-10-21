@@ -46,6 +46,10 @@ export const WINDOWS_CHANNEL = {
   warm: "stemcells:windows:warm",
   /** Main → page: the window was hidden until now, and shows. */
   shown: "stemcells:windows:shown",
+  /** Page → main: this window's content to a frame (screen points): a one-tab window carried. */
+  moveWindow: "stemcells:windows:move-window",
+  /** Page → main: this window shows, or hides under the flight; it shows again when the flight ends. */
+  windowShown: "stemcells:windows:window-shown",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */

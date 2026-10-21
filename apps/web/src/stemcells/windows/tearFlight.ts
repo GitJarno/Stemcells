@@ -232,3 +232,47 @@ export class TearFlight {
 }
 
 const group = { radius: 0, shadow: false, color: "transparent", clip: false } as const;
+
+const wait = (timing: FlightTiming) =>
+  new Promise((resolve) => setTimeout(resolve, timing.duration + (timing.delay ?? 0)));
+
+/**
+ * A one-tab window carried and sent home (stemcells/tasks/windows.md, A
+ * one-tab window): its still flies from `from` back to `to` on `token` while
+ * the window, hidden, already waits there, then it shows under the still and
+ * the still goes. With Reduce Motion (`fade`) the window shows at home at
+ * once and the still fades where it was. Resolves when the window is home.
+ */
+export async function flyWindowHome(
+  bridge: WindowsBridge,
+  from: Rect,
+  to: Rect,
+  radius: number,
+  token: string,
+): Promise<void> {
+  const still = await bridge.still(from);
+  if (!still) {
+    bridge.moveWindow(to);
+    return;
+  }
+  bridge.flight([
+    { op: "box", id: HAND, rect: from, radius, shadow: true, color: "transparent", clip: true },
+    { op: "still", id: PAGE, still, rect: at(0, 0, from), parent: HAND },
+  ]);
+  await bridge.painted();
+  bridge.windowShown(false);
+  bridge.moveWindow(to);
+  const timing = motionTiming(token);
+  if (token === "fade") {
+    bridge.windowShown(true);
+    bridge.flight([{ op: "animate", id: HAND, opacity: 0, timing }]);
+    await wait(timing);
+  } else {
+    bridge.flight([{ op: "animate", id: HAND, rect: to, timing }]);
+    await wait(timing);
+    bridge.windowShown(true);
+    // The window draws at home under the still before the still goes.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  }
+  bridge.endFlight();
+}

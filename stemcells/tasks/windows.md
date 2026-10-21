@@ -31,7 +31,8 @@ asked for by name), then W7, W4, W9, W11.
         the lab.
   - [x] W5c The strip carries: pick up, band, tear, the preview, the
         drop in open space, Esc.
-  - [ ] W5d The one-tab window carries itself.
+  - [x] W5d The one-tab window carries itself (docking it into another
+        window's strip comes with W6).
   - [x] W5e The warm window: a dropped tab's window drawn before the
         drop, so its still goes at once.
 - [ ] W6 Into another window's strip: geometry, making room, spring-load
@@ -313,8 +314,11 @@ layer paints a still of the whole window over it, the window goes to
 opacity 0 under the still, and the still folds into a chip on `settle`.
 Leaving the zone reverses it: unfold, the window back to opacity 1 under
 the still, the still gone. Dropped in a strip, the window closes after the
-host has painted the tab. Esc flies it home on `land` as a still, then sets
-the window there and shows it.
+host has painted the tab. Esc flies it home on `land` as a still: the
+window, hidden, already waits there, and shows under the still before it
+goes; with Reduce Motion the window is home at once and the still fades
+where it was. A window hidden under a flight shows again whenever the
+flight ends.
 
 macOS tiling (dragging a window to a screen edge) works only for the
 system's own title-bar drags, which this isn't; the strip's empty space
@@ -608,7 +612,8 @@ slot; the warm window under the still before the fade; Gather's stagger.
 display; drop into another window's strip; carry a chat to a pane half in
 another window; Esc mid-carry; Gather, Put back, Gather; unplug and replug
 a display; relaunch with three windows; a browser pane moved; Reduce
-Motion on; a carry with View › Zoom at 125 %; a quick tear and drop
+Motion on; a carry with View › Zoom at 125 %; a one-tab window carried
+by its chip while its chat streams; a quick tear and drop
 (under a second), watching for a wait before the new window answers.
 
 ## Review
@@ -681,3 +686,10 @@ Motion on; a carry with View › Zoom at 125 %; a quick tear and drop
   drop hands off then: 0.8 s after a drop 0.24 s into the carry, 0.18 s
   after one at 0.8 s. A release build's boot is unmeasured; the hand
   check (below) says whether a quick drop's wait shows.
+- W5d: proved in the lab. Carried by its only chip, a window moves with the
+  hand: the chip lifts and no layer opens. Let go, it stays. On Esc its
+  still starts where the hand had it and lands on its old frame in about
+  475 ms on `land`, then the layer goes; under Reduce Motion the still
+  fades in place. The lab helper keeps windows off the screen, so the
+  window's own moves are read from the still's frames; that the chat keeps
+  drawing in the hand is for the hand check.

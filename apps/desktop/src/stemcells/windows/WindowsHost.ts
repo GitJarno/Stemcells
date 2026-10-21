@@ -22,7 +22,14 @@ import * as DesktopState from "../../app/DesktopState.ts";
 import * as ElectronWindow from "../../electron/ElectronWindow.ts";
 import * as PreviewManager from "../../preview/Manager.ts";
 import * as DesktopWindow from "../../window/DesktopWindow.ts";
-import { readPlaced, WindowBook, type DisplayInfo, type Rect, type Transaction } from "./book.ts";
+import {
+  readPlaced,
+  readRect,
+  WindowBook,
+  type DisplayInfo,
+  type Rect,
+  type Transaction,
+} from "./book.ts";
 import {
   WINDOWS_CHANNEL,
   type FlightCommand,
@@ -110,6 +117,8 @@ export const layer = Layer.effectDiscard(
     let flying: Electron.WebContents | null = null;
     /** Stops hearing the flying page. */
     let unwatch = () => {};
+    /** A window hidden under the flight (its still flies for it), shown again when the flight ends. */
+    let hidden: Electron.BrowserWindow | null = null;
     /**
      * The window a carry's drop in open space would open, started hidden at
      * the tear (stemcells/tasks/windows.md, The warm window). It stays out of
@@ -571,14 +580,21 @@ export const layer = Layer.effectDiscard(
         ),
     };
 
+    const showHidden = () => {
+      if (hidden && !hidden.isDestroyed()) hidden.setOpacity(1);
+      hidden = null;
+    };
+
     /**
-     * The flight is over: the layer goes, its page is no longer heard, and
-     * the window warmed for a drop that didn't come goes.
+     * The flight is over: the layer goes, its page is no longer heard, a
+     * window hidden under it shows, and the window warmed for a drop that
+     * didn't come goes.
      */
     const endFlight = () => {
       flying = null;
       unwatch();
       unwatch = () => {};
+      showHidden();
       flight.end();
       coolWarm();
     };
@@ -661,6 +677,29 @@ export const layer = Layer.effectDiscard(
           return window ? flight.still(window, rect) : null;
         });
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
+        ipc.on(WINDOWS_CHANNEL.moveWindow, (event, raw: unknown) => {
+          const window = Electron.BrowserWindow.fromWebContents(event.sender);
+          const frame = readRect(raw);
+          if (!window || window.isDestroyed() || window.isFullScreen() || !frame) return;
+          window.setContentBounds({
+            x: Math.round(frame.x),
+            y: Math.round(frame.y),
+            width: Math.round(frame.width),
+            height: Math.round(frame.height),
+          });
+        });
+        ipc.on(WINDOWS_CHANNEL.windowShown, (event, shown: unknown) => {
+          const window = Electron.BrowserWindow.fromWebContents(event.sender);
+          if (!window || window.isDestroyed()) return;
+          if (shown === true) {
+            if (hidden === window) showHidden();
+            return;
+          }
+          fly(event.sender);
+          showHidden();
+          hidden = window;
+          window.setOpacity(0);
+        });
         ipc.on(WINDOWS_CHANNEL.drawn, (event) => {
           const id = pages.get(event.sender.id);
           // A warm window draws hidden: it has landed once it shows and draws.
@@ -683,6 +722,8 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.flightEnd,
             WINDOWS_CHANNEL.drawn,
             WINDOWS_CHANNEL.warm,
+            WINDOWS_CHANNEL.moveWindow,
+            WINDOWS_CHANNEL.windowShown,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }

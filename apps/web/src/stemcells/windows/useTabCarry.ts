@@ -3,7 +3,8 @@
  * tab off): the strip's half of the carry engine (`carry.ts`). Along the
  * strip a chip reorders as it always has, and bands past its edge; on the
  * desktop it tears off there onto the flight layer (`tearFlight.ts`), and
- * let go out in the open, it opens a window of its own. Esc sends it home.
+ * let go out in the open, it opens a window of its own. A window's only
+ * tab carries the window itself. Esc sends it home.
  *
  * The strip draws what `view` says: the chip riding the hand, the others
  * making room, or, with the chip off the strip, closing up after it.
@@ -42,7 +43,7 @@ import {
   type Point,
 } from "./carry";
 import { tearToNewWindow, warmNewWindow } from "./newWindow";
-import { TearFlight } from "./tearFlight";
+import { flyWindowHome, TearFlight } from "./tearFlight";
 
 /** The tab list's `gap-1`, in CSS pixels. */
 const TAB_GAP = 4;
@@ -82,6 +83,8 @@ interface Live {
   readonly ends: () => void;
   /** Stops hearing the pointer's capture lost. */
   unhear: () => void;
+  /** A one-tab window carried has moved: it's picked up. */
+  moved: boolean;
   /** The window a drop in open space opens, started hidden at the tear. */
   readonly windowId: string;
   done: boolean;
@@ -110,6 +113,12 @@ function chromeOf(element: HTMLElement): string {
     if (color && color !== "transparent" && !/rgba\(.*,\s*0\)$/.test(color)) return color;
   }
   return "rgb(11, 11, 12)";
+}
+
+/** The corners of a window, which its preview and its still are drawn with. */
+function windowRadius(): number {
+  const style = getComputedStyle(document.documentElement);
+  return Number.parseFloat(style.getPropertyValue("--sc-radius-sheet")) || 16;
 }
 
 /** Where the chip's top left is while it's off the strip. */
@@ -176,13 +185,12 @@ export function useTabCarry(options: {
     const lifted = onScreen(element.getBoundingClientRect(), origin, zoom);
     const { chip } = at.carry;
     at.wasActive = latest.current.activeTabId === at.carry.pickUp.tabId;
-    const style = getComputedStyle(document.documentElement);
     const flight = new TearFlight(
       bridge,
       {
         chrome: chromeOf(strip),
         chipRadius: (Number.parseFloat(getComputedStyle(element).borderRadius) || 6) * zoom,
-        windowRadius: Number.parseFloat(style.getPropertyValue("--sc-radius-sheet")) || 16,
+        windowRadius: windowRadius(),
       },
       {
         firstChip: { x: source.strip.start - content.x, y: chip.y - content.y },
@@ -218,7 +226,33 @@ export function useTabCarry(options: {
       });
   };
 
+  /** A one-tab window carries itself, live: the chat keeps going in the hand. */
+  const carryWindow = (at: Live, bridge: WindowsBridge) => {
+    const now = at.carry.carried;
+    // Docking in another window's strip comes with W6; until then it's in the open.
+    if (now.kind !== "open") return;
+    bridge.moveWindow(now.frame);
+    if (!at.moved) {
+      at.moved = true;
+      setView((current) => current && { ...current, picked: true });
+    }
+  };
+
+  /** Esc: a one-tab window carried goes back where it was picked up. */
+  const sendWindowHome = async (at: Live, bridge: WindowsBridge) => {
+    const now = at.carry.carried;
+    finish(at);
+    if (now.kind !== "open") return;
+    // Its still is taken once the strip has put the chip down.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const home = at.carry.geometry.windows[0]!.frame;
+    const token = landingMotion(cancel(), reducedMotion()) ?? "land";
+    await flyWindowHome(bridge, now.frame, home, windowRadius(), token);
+  };
+
   const goHome = async (at: Live) => {
+    const bridge = windowsBridge();
+    if (at.carry.pickUp.onlyTab && bridge) return sendWindowHome(at, bridge);
     const { flight } = at;
     await at.tearing;
     if (!flight) return finish(at);
@@ -233,6 +267,11 @@ export function useTabCarry(options: {
   const land = async (at: Live, landing: Landing) => {
     const { tabId } = at.carry.pickUp;
     const { onActivate, onMove } = latest.current;
+    if (landing.kind === "moved") {
+      // Let go where it is: the window stays there.
+      windowsBridge()?.moveWindow(landing.frame);
+      return finish(at);
+    }
     if (!at.flight) {
       finish(at);
       if (landing.kind === "click") onActivate(tabId);
@@ -316,7 +355,7 @@ export function useTabCarry(options: {
   /** The hand is gone mid-carry (the system took the pointer, or the window lost focus): it goes home. */
   const lose = (at: Live) => {
     live.current = null;
-    if (at.flight) void goHome(at);
+    if (at.flight || at.moved) void goHome(at);
     else finish(at);
   };
   const loseLive = useEffectEvent(() => {
@@ -342,6 +381,8 @@ export function useTabCarry(options: {
     if (!stripElement) return;
     element.setPointerCapture(event.pointerId);
     const bridge = windowsBridge();
+    // On the desktop, a tab can leave its strip; the new Cell's, unsent, can't.
+    const leaves = bridge !== null && tabId !== staysId;
     const zoom = bridge?.zoom() ?? 1;
     const hand = handOf(event);
     const origin = pageOrigin(hand, { x: event.clientX, y: event.clientY }, zoom);
@@ -380,8 +421,9 @@ export function useTabCarry(options: {
         tabId,
         press: hand,
         at: event.timeStamp,
-        onlyTab: false,
-        tears: bridge !== null && windowTabs > 1 && tabId !== staysId,
+        // Its only tab carries the window itself; any other leaves its strip.
+        onlyTab: leaves && windowTabs === 1,
+        tears: leaves && windowTabs > 1,
         preview: previewSize(null, frame, displays[0]!.workArea),
         springLoad: timing("springLoad"),
       },
@@ -401,6 +443,7 @@ export function useTabCarry(options: {
       wasActive: false,
       ends: carryStarts(),
       unhear: () => undefined,
+      moved: false,
       windowId: randomUUID(),
       done: false,
     };
@@ -457,7 +500,8 @@ export function useTabCarry(options: {
       return;
     }
     const bridge = windowsBridge();
-    if (!at.flight && bridge) tear(at, bridge);
+    if (at.carry.pickUp.onlyTab && bridge) carryWindow(at, bridge);
+    else if (!at.flight && bridge) tear(at, bridge);
     else show(at, was);
   };
 

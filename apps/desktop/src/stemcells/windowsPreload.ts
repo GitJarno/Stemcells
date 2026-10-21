@@ -85,5 +85,7 @@ if (boot !== null) {
     onLanded: listen<string>(WINDOWS_CHANNEL.landed),
     warm: (transaction: unknown) => ipcRenderer.send(WINDOWS_CHANNEL.warm, transaction),
     onShown: listen<void>(WINDOWS_CHANNEL.shown),
+    moveWindow: (frame: FlightRect) => ipcRenderer.send(WINDOWS_CHANNEL.moveWindow, frame),
+    windowShown: (shown: boolean) => ipcRenderer.send(WINDOWS_CHANNEL.windowShown, shown),
   });
 }

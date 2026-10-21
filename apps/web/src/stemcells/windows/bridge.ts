@@ -132,6 +132,10 @@ export interface WindowsBridge {
   warm(transaction: WireTransaction): void;
   /** This window was hidden until now, and shows. */
   onShown(listener: () => void): () => void;
+  /** Moves this window's content to `frame` (screen points): a one-tab window carried. */
+  moveWindow(frame: Rect): void;
+  /** Shows this window, or hides it under the flight; it shows again when the flight ends. */
+  windowShown(shown: boolean): void;
 }
 
 declare global {

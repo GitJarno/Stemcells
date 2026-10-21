@@ -44,6 +44,8 @@ async function loadStore(
     onLanded: () => () => {},
     warm: () => {},
     onShown: () => () => {},
+    moveWindow: () => {},
+    windowShown: () => {},
   } satisfies WindowsBridge;
   const storage = new Map<string, string>();
   if (stored) storage.set("stemcells.tabs", JSON.stringify(serializeWorkspace(stored)));
