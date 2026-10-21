@@ -36,34 +36,33 @@ function hashes(scene: CellScene): string[] {
   ];
 }
 
-test("every scene the original composed, the port composes frame for frame", () => {
-  const parts = ["hero", "mini", "detail", "shut"];
-  const misses: string[] = [];
-  for (const row of parity.rows) {
-    const [name, key, fps, count, ...expected] = row as [
-      string,
-      string,
-      number,
-      number,
-      ...string[],
-    ];
+type Row = [name: string, key: string, fps: number, count: number, ...expected: string[]];
+
+// A test per look: composing every scene of the whole matrix is seconds of CPU, more
+// than the project's timeout on a CI runner, and a look is the unit a miss names.
+const byLook = new Map<string, Row[]>();
+for (const row of parity.rows as Row[]) byLook.set(row[0], [...(byLook.get(row[0]) ?? []), row]);
+
+test.each([...byLook.keys()])(
+  "every scene the original composed of %s, the port composes frame for frame",
+  (name) => {
+    const parts = ["hero", "mini", "detail", "shut"];
     const look = curated(name) ?? packLook(name.split("+"));
-    const scene = sceneOf(look, key);
-    if (scene === undefined) {
-      misses.push(`${name} ${key}: no such scene`);
-      continue;
+    const misses: string[] = [];
+    for (const [, key, fps, count, ...expected] of byLook.get(name)!) {
+      const scene = sceneOf(look, key);
+      if (scene === undefined) {
+        misses.push(`${key}: no such scene`);
+        continue;
+      }
+      const got = hashes(scene);
+      const wrong = parts.filter((_, i) => got[i] !== expected[i]);
+      if (scene.fps !== fps || scene.hero.length !== count || wrong.length > 0) {
+        misses.push(
+          `${key}: fps ${scene.fps}/${fps}, frames ${scene.hero.length}/${count}, differs: ${wrong.join(" ") || "none"}`,
+        );
+      }
     }
-    const got = hashes(scene);
-    const wrong = parts.filter((_, i) => got[i] !== expected[i]);
-    if (scene.fps !== fps || scene.hero.length !== count || wrong.length > 0) {
-      misses.push(
-        `${name} ${key}: fps ${scene.fps}/${fps}, frames ${scene.hero.length}/${count}, differs: ${wrong.join(" ") || "none"}`,
-      );
-    }
-  }
-  NodeAssert.deepEqual(
-    misses.slice(0, 25),
-    [],
-    `${misses.length} of ${parity.rows.length} scenes differ`,
-  );
-});
+    NodeAssert.deepEqual(misses, [], `${misses.length} scenes of ${name} differ`);
+  },
+);

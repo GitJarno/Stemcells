@@ -81,15 +81,22 @@ describe("cells, the command line", () => {
       { encoding: "utf8" },
     );
 
-  it("runs in plain node: renders a look's sheet and animations, checks a pack, and lays out a lookbook", () => {
+  // A test per command: each starts node on the TypeScript, seconds apiece on a CI runner.
+  it("runs in plain node: renders a look's sheet and animations", () => {
     const render = cells("render", "house/duck", "idle");
     expect(render.status, render.stderr).toBe(0);
     const sheet = NodeFS.readFileSync(NodePath.join(out, "house_duck", "sheet.png"));
     expect([...sheet.subarray(0, 8)]).toEqual(SIGNATURE);
     const animated = NodeFS.readFileSync(NodePath.join(out, "house_duck", "idle.mini.light.apng"));
     expect(chunks(animated).some((c) => c.type === "acTL")).toBe(true);
+  });
+
+  it("runs in plain node: checks a pack", () => {
     const check = cells("check", "house");
     expect(check.status, check.stdout).toBe(0);
+  });
+
+  it("runs in plain node: lays out a lookbook", () => {
     expect(cells("lookbook", "house").status).toBe(0);
     expect(NodeFS.readFileSync(NodePath.join(out, "lookbook.html"), "utf8")).toContain(
       "house/duck",
