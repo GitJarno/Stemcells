@@ -33,6 +33,7 @@ function Frame(props: { topbar?: string }) {
           onClose={() => undefined}
           onMove={() => undefined}
           onNew={() => undefined}
+          onRename={() => undefined}
         />
         <div data-stemcells-slate="" />
       </div>

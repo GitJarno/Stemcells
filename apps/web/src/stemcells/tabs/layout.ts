@@ -4,6 +4,7 @@
  * change is a pure function from one workspace to the next.
  */
 
+import { NAME_MAX_LENGTH } from "../rename/limits";
 import { sharePair } from "../split/split";
 
 /** The chat a pane shows. A draft and the thread it becomes share `threadId`. */
@@ -43,6 +44,11 @@ export interface Tab {
   readonly id: string;
   readonly rows: ReadonlyArray<Row>;
   readonly focusedPaneId: string;
+  /**
+   * The name a person gave the tab, shown while it holds more than one Cell.
+   * Without one, or holding one Cell, the tab is named by its focused chat.
+   */
+  readonly name?: string;
 }
 
 export interface Workspace {
@@ -251,6 +257,25 @@ export function closeTab(workspace: Workspace, tabId: string): Workspace {
   if (workspace.activeTabId !== tabId) return { ...workspace, tabs };
   const next = tabs[index] ?? tabs[index - 1] ?? null;
   return { tabs, activeTabId: next?.id ?? null };
+}
+
+/** A name as a tab keeps it: trimmed, and no longer than NAME_MAX_LENGTH. */
+function tabName(name: string): string {
+  return name.trim().slice(0, NAME_MAX_LENGTH).trim();
+}
+
+/** Names a tab; a blank name gives it back the name of its focused chat. */
+export function nameTab(workspace: Workspace, tabId: string, name: string | null): Workspace {
+  const given = tabName(name ?? "");
+  return {
+    ...workspace,
+    tabs: workspace.tabs.map((tab) => {
+      if (tab.id !== tabId) return tab;
+      if (given.length > 0) return { ...tab, name: given };
+      const { name: _given, ...unnamed } = tab;
+      return unnamed;
+    }),
+  };
 }
 
 export function moveTab(workspace: Workspace, tabId: string, toIndex: number): Workspace {
@@ -527,7 +552,8 @@ function parseTab(value: unknown): Tab | null {
   const focusedPaneId = panes.some((pane) => pane.id === value.focusedPaneId)
     ? (value.focusedPaneId as string)
     : panes[0]!.id;
-  return { ...tab, focusedPaneId };
+  const name = typeof value.name === "string" ? tabName(value.name) : "";
+  return name.length > 0 ? { ...tab, focusedPaneId, name } : { ...tab, focusedPaneId };
 }
 
 /** Reads what `serializeWorkspace` wrote; anything else is an empty workspace. */

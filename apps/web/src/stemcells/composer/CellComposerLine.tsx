@@ -1,9 +1,10 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (composer-line.css), outside upstream's Tailwind entry. */
 import { CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
-import { type CSSProperties, type KeyboardEvent, use, useLayoutEffect, useRef } from "react";
+import { type CSSProperties, use, useLayoutEffect } from "react";
 
 import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
+import { RenameField } from "../rename/RenameField";
 import { CellMark } from "../tabs/CellMark";
 import { PaneCellContext, PaneComposerContext } from "../tabs/paneCell";
 import {
@@ -178,7 +179,9 @@ export function CellComposerLine() {
           ) : null}
           {menu.renaming ? (
             <RenameField
-              title={menu.title}
+              value={menu.title}
+              label="Title"
+              className="composer-line-rename flex-[1_1_0]"
               onCommit={menu.commitRename}
               onCancel={menu.cancelRename}
             />
@@ -213,48 +216,4 @@ function useTellComposerDrawn() {
     tell(true);
     return () => tell(false);
   }, [tell]);
-}
-
-/**
- * The chat's title, open for a new one where the one-liner was: Enter or
- * leaving keeps it, Escape doesn't, as in upstream's header.
- */
-function RenameField(props: {
-  title: string;
-  onCommit: (title: string) => void;
-  onCancel: () => void;
-}) {
-  const settled = useRef(false);
-  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
-    if (event.key === "Enter") {
-      event.preventDefault();
-      settled.current = true;
-      props.onCommit(event.currentTarget.value);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      settled.current = true;
-      props.onCancel();
-    }
-  };
-  return (
-    <input
-      autoFocus
-      aria-label="Title"
-      className="composer-line-rename min-w-0 flex-[1_1_0] rounded-sm bg-transparent text-foreground outline-none ring-1 ring-inset ring-ring/50 focus:ring-ring"
-      defaultValue={props.title}
-      onFocus={(event) => event.currentTarget.select()}
-      onKeyDown={onKeyDown}
-      onBlur={(event) => {
-        if (settled.current) return;
-        // Leaving for a button lets the button act, and keeps the old title.
-        if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest("button")) {
-          props.onCancel();
-          return;
-        }
-        props.onCommit(event.currentTarget.value);
-      }}
-    />
-  );
 }
