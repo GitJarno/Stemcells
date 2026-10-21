@@ -61,4 +61,34 @@ describe("a choice as upstream's commands", () => {
       { type: "visit", visitedAt: "2026-10-21T12:00:00.000Z" },
     ]);
   });
+
+  it("goes ahead with the fixed phrase, and settles the Cell for nothing to do", () => {
+    const prose = needFixture({
+      kind: "prose",
+      request: null,
+      prose: { runId: "run-1", cue: "offer", text: "Want me to push it?" },
+    });
+    expect(commandsFor(prose, { kind: "goAhead" }, {}, NOW)).toEqual([
+      { type: "message", text: "Go ahead." },
+    ]);
+    expect(commandsFor(prose, { kind: "nothingToDo" }, {}, NOW)).toEqual([{ type: "settle" }]);
+  });
+
+  it("nudges a stuck run without stopping it, or stops it to start again from the person's words", () => {
+    const stuck = needFixture({
+      kind: "stuck",
+      request: null,
+      stuck: { runId: "run-2", quietSince: "2026-10-21T11:46:00.000Z", tool: null },
+    });
+    expect(commandsFor(stuck, { kind: "nudge" }, { words: "Still there?" }, NOW)).toEqual([
+      { type: "message", text: "Still there?", delivery: "steer" },
+    ]);
+    expect(commandsFor(stuck, { kind: "stopAndReply" }, { words: "Skip it" }, NOW)).toEqual([
+      { type: "message", text: "Skip it", delivery: "restart" },
+    ]);
+    expect(commandsFor(stuck, { kind: "nudge" }, { words: " " }, NOW)).toEqual([]);
+    expect(commandsFor(stuck, { kind: "wait" }, {}, NOW)).toEqual([
+      { type: "snooze", until: "2026-10-21T12:15:00.000Z" },
+    ]);
+  });
 });

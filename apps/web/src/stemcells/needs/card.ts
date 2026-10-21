@@ -21,7 +21,12 @@ export type Choice =
   | { readonly kind: "retry" }
   | { readonly kind: "reply" }
   | { readonly kind: "dismiss" }
-  | { readonly kind: "later" };
+  | { readonly kind: "later" }
+  | { readonly kind: "goAhead" }
+  | { readonly kind: "nothingToDo" }
+  | { readonly kind: "nudge" }
+  | { readonly kind: "stopAndReply" }
+  | { readonly kind: "wait" };
 
 export interface CardOption {
   readonly id: string;
@@ -69,6 +74,9 @@ export interface Card {
   readonly later: boolean;
 }
 
+/** How long "Wait 15 min" holds a stuck card back. */
+export const WAIT_MS = 15 * 60 * 1000;
+
 const TAGS: Record<Need["kind"], string> = {
   permission: "Permission",
   question: "Question",
@@ -77,6 +85,8 @@ const TAGS: Record<Need["kind"], string> = {
   limit: "Limit",
   failed: "Failed",
   plan: "Plan",
+  prose: "Question",
+  stuck: "Stuck",
 };
 
 const ASKS: Partial<Record<NonNullable<Need["request"]>["kind"], string>> = {
@@ -115,6 +125,7 @@ export const PHRASES = {
   retry: "Try that again.",
   // Upstream's own words when it resumes a run stopped by a limit (ChatView).
   continueNow: "Continue where you left off.",
+  goAhead: "Go ahead.",
 } as const;
 
 const RECOMMENDED = /\s*\(recommended\)\s*/i;
@@ -137,6 +148,29 @@ const option = (
 
 /** Snoozes the Cell for an hour, through upstream's snooze. */
 export const LATER: CardOption = option("later", "Later", { kind: "later" });
+
+/** "Go ahead" and "Nothing to do", the fixed ways out of a reply that asks or stops short. */
+const goAhead = (recommended: boolean) =>
+  option(
+    "go-ahead",
+    "Go ahead",
+    { kind: "goAhead" },
+    { consequence: `Sends “${PHRASES.goAhead}”`, recommended },
+  );
+const nothingToDo = option(
+  "nothing-to-do",
+  "Nothing to do",
+  { kind: "nothingToDo" },
+  { consequence: "Settles the Cell. Nothing is sent." },
+);
+const reply = (placeholder: string) =>
+  option("reply", "Reply…", { kind: "reply" }, { words: placeholder });
+
+const PROSE: Record<NonNullable<Need["prose"]>["cue"], { tag: string; headline: string }> = {
+  question: { tag: "Question", headline: "Has a question" },
+  offer: { tag: "Question", headline: "Offers to go on" },
+  stopped: { tag: "Stopped", headline: "Stopped short of done" },
+};
 
 function questionOf(question: AskedQuestion): CardQuestion {
   return {
@@ -336,7 +370,7 @@ export function cardOf(need: Need, now: number): Card {
               recommended: errorClass === "transport_error" || errorClass === "provider_error",
             },
           ),
-          option("reply", "Reply…", { kind: "reply" }, { words: "Tell it what to do…" }),
+          reply("Tell it what to do…"),
           option(
             "dismiss",
             "Dismiss",
@@ -370,6 +404,59 @@ export function cardOf(need: Need, now: number): Card {
             ]
           : [],
         note: buildable ? null : "Couldn't read this plan. Its chat has it.",
+      };
+    }
+    case "prose": {
+      // With no read of its own, the card quotes the Cell and offers the kind's fixed ways out.
+      const cue = need.prose?.cue ?? "question";
+      return {
+        ...base(need),
+        ...PROSE[cue],
+        quote: need.prose?.text ?? null,
+        options:
+          cue === "question"
+            ? [reply("Your answer…"), nothingToDo]
+            : [goAhead(cue === "stopped"), reply("Tell it what to do…"), nothingToDo],
+      };
+    }
+    case "stuck": {
+      const since = Date.parse(need.stuck?.quietSince ?? need.since);
+      const minutes = Math.max(1, Math.floor((now - since) / 60_000));
+      const tool = need.stuck?.tool ?? null;
+      return {
+        ...base(need),
+        headline:
+          tool === null ? `Quiet for ${minutes} min` : `Quiet for ${minutes} min in a tool call`,
+        request: tool?.command ?? null,
+        quote: tool !== null && tool.command === null ? tool.title : null,
+        options: [
+          option(
+            "nudge",
+            "Nudge…",
+            { kind: "nudge" },
+            {
+              consequence: "It reads this without stopping.",
+              words: "A word it reads as it goes…",
+            },
+          ),
+          option(
+            "stop-and-reply",
+            "Stop and reply…",
+            { kind: "stopAndReply" },
+            {
+              consequence: "Stops its turn and starts again from your words.",
+              words: "What to do instead…",
+            },
+          ),
+          option(
+            "wait",
+            "Wait 15 min",
+            { kind: "wait" },
+            { consequence: "Back here then, if it is still quiet." },
+          ),
+        ],
+        // "Wait 15 min" is this card's later.
+        later: false,
       };
     }
   }

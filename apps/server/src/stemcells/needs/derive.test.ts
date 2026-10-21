@@ -12,7 +12,15 @@ import {
   shellFixture,
   threadId,
 } from "../upstream/needs.fixture.ts";
-import { ASKI_INSTANCE_ID, needOf, planOutline, signalOf } from "./derive.ts";
+import {
+  ASKI_INSTANCE_ID,
+  askiThreadOf,
+  needOf,
+  planOutline,
+  signalOf,
+  signalsOf,
+  stuckFor,
+} from "./derive.ts";
 
 const kindOf = (...args: Parameters<typeof shellFixture>) =>
   signalOf(shellFixture(...args), NOW)?.kind ?? null;
@@ -69,11 +77,31 @@ describe("what needs the person, from a Cell's shell", () => {
     expect(async?.blocks).toBe(false);
   });
 
-  it("never makes a card for Aski's own chat, an archived or a deleted Cell", () => {
+  it("never makes a card for an archived or a deleted Cell", () => {
     const asking = { pendingRuntimeRequest: pendingRequest("command") };
-    expect(kindOf({ ...asking, providerInstanceId: instanceId(ASKI_INSTANCE_ID) })).toBeNull();
     expect(kindOf({ ...asking, archivedAt: at(-MINUTE) })).toBeNull();
     expect(kindOf({ ...asking, deletedAt: at(-MINUTE) })).toBeNull();
+  });
+
+  it("leaves out Aski's own chat and its subagents, not another chat on Aski's instance", () => {
+    const asking = { pendingRuntimeRequest: pendingRequest("command") };
+    const onAski = { ...asking, providerInstanceId: instanceId(ASKI_INSTANCE_ID) };
+    const askiChat = shellFixture({ ...onAski, id: "aski-chat", createdAt: at(-2 * HOUR) });
+    const later = shellFixture({ ...onAski, id: "aski-later", createdAt: at(-HOUR) });
+    const helper = shellFixture({
+      ...asking,
+      id: "aski-helper",
+      lineage: {
+        rootThreadId: threadId("aski-chat"),
+        parentThreadId: threadId("aski-chat"),
+        relationshipToParent: "subagent",
+      },
+    });
+    expect(signalsOf([askiChat, later, helper], NOW).map((signal) => signal.shell.id)).toEqual([
+      "aski-later",
+    ]);
+    // The pinned one is Aski's, as on the web.
+    expect(askiThreadOf([askiChat, { ...later, pinnedAt: at(-MINUTE) }])).toBe("aski-later");
   });
 
   it("holds a snoozed Cell back until its time, unless it asks or fails after the snooze", () => {
@@ -115,18 +143,77 @@ describe("what needs the person, from a Cell's shell", () => {
     const plan = { hasActionableProposedPlan: true, interactionMode: "plan" } as const;
     expect(kindOf(plan)).toBe("plan");
     expect(kindOf({ ...plan, status: "running", activeRunId: runId("run-1") })).toBeNull();
-    expect(kindOf({ ...plan, interactionMode: "default" })).toBeNull();
+    // Out of plan mode, the plan is only words: the reply's pre-read decides.
+    expect(kindOf({ ...plan, interactionMode: "default" })).toBe("prose");
   });
 
-  it("makes no card for a finished report or a working Cell", () => {
-    expect(kindOf()).toBeNull();
-    expect(kindOf({ status: "running", activeRunId: runId("run-1") })).toBeNull();
+  it("puts a finished run's reply to the pre-read, which a report fails", () => {
+    expect(signalOf(shellFixture(), NOW)).toMatchObject({
+      kind: "prose",
+      key: "thread-floof:prose:run-1",
+      since: NOW - 10 * MINUTE,
+    });
+    expect(kindOf({ status: "interrupted" })).toBeNull();
+  });
+
+  it("reads no prose of a settled Cell, a subagent, or one waiting on its own work", () => {
+    expect(kindOf({ settledOverride: "settled", settledAt: at(-MINUTE) })).toBeNull();
+    expect(
+      kindOf({
+        lineage: {
+          rootThreadId: threadId("thread-parent"),
+          parentThreadId: threadId("thread-parent"),
+          relationshipToParent: "subagent",
+        },
+      }),
+    ).toBeNull();
+    expect(kindOf({ blockedOnThreadWait: true })).toBeNull();
   });
 
   it("keeps a structured ask on a settled Cell: settling hides only what was read from prose", () => {
     expect(
-      kindOf({ settledAt: at(-MINUTE), pendingRuntimeRequest: pendingRequest("command") }),
+      kindOf({
+        settledOverride: "settled",
+        settledAt: at(-MINUTE),
+        pendingRuntimeRequest: pendingRequest("command"),
+      }),
     ).toBe("permission");
+  });
+});
+
+describe("a stuck run", () => {
+  const working = {
+    status: "running",
+    activeRunId: runId("run-2"),
+    latestRunId: runId("run-2"),
+  } as const;
+  const quietFor = (ms: number, overrides: NonNullable<Parameters<typeof shellFixture>[0]> = {}) =>
+    signalOf(shellFixture({ ...working, ...overrides }), NOW, NOW - ms);
+
+  it("is a candidate once it has been quiet 12 minutes, keyed by when it was last heard", () => {
+    expect(quietFor(11 * MINUTE)).toBeNull();
+    expect(quietFor(12 * MINUTE)).toMatchObject({
+      kind: "stuck",
+      key: `thread-floof:stuck:run-2:${NOW - 12 * MINUTE}`,
+      since: NOW - 12 * MINUTE,
+      blocks: false,
+    });
+  });
+
+  it("is never one while it waits on its own background work or another Cell", () => {
+    expect(quietFor(HOUR, { blockedOnThreadWait: true })).toBeNull();
+    expect(quietFor(HOUR, { status: "waiting" })).toBeNull();
+  });
+
+  it("waits 30 minutes with a tool call in flight or unknown, 12 with the model at work", () => {
+    const signal = quietFor(20 * MINUTE);
+    if (signal === null) throw new Error("expected a candidate");
+    expect(stuckFor(signal, { tool: null }, NOW)).toBe(20 * MINUTE);
+    expect(
+      stuckFor(signal, { tool: { title: "Run tests", command: "pnpm test" } }, NOW),
+    ).toBeNull();
+    expect(stuckFor(signal, null, NOW)).toBeNull();
+    expect(stuckFor(signal, null, NOW + 10 * MINUTE)).toBe(30 * MINUTE);
   });
 });
 

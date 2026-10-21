@@ -10,8 +10,9 @@ import * as Stream from "effect/Stream";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 
 import * as UpstreamNeeds from "../upstream/needs.ts";
-import { needOf, signalOf, type Need, type NeedDetail, type Signal } from "./derive.ts";
+import { needOf, signalsOf, stuckFor, type Need, type NeedDetail, type Signal } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
+import { preRead } from "./preread.ts";
 
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
@@ -21,8 +22,9 @@ export interface NeedsList {
  * What needs the person, derived on the server from T3's thread shells each
  * time a thread changes, so every screen shows one list with one numbering
  * (stemcells/tasks/aski-room.md, decision 1). Holds no thread state of its
- * own beyond the shells it last read, the numbers it gave and the details
- * it read per card.
+ * own beyond the shells it last read, the numbers it gave, the details it
+ * read per card, and when it last heard from each Cell: the activity clock
+ * a stuck run is timed on.
  */
 export class Needs extends Context.Service<
   Needs,
@@ -39,11 +41,20 @@ const TIME_CHECK = Duration.seconds(60);
 /** After a failed read the list starts over from a fresh snapshot. */
 const RESTART_AFTER = Duration.seconds(5);
 const READS = 4;
+/**
+ * A look this long after the last means the server wasn't running (the Mac
+ * slept, or the server was down), and the Cells weren't either: every
+ * activity clock starts again rather than count time nobody saw.
+ */
+const ABSENCE_MS = 3 * 60 * 1000;
 
 export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.NeedsSource) {
   const latest = yield* SubscriptionRef.make<NeedsList | null>(null);
   const shells = new Map<string, UpstreamNeeds.Shell>();
   const details = new Map<string, NeedDetail>();
+  /** When each Cell last showed life: any event of its own work. */
+  const heard = new Map<string, number>();
+  let lookedAt: number | null = null;
   let numbering = EMPTY_NUMBERING;
   let sent: NeedsList | null = null;
 
@@ -54,33 +65,57 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     if (cached !== undefined) return Effect.succeed(cached);
     const { shell } = signal;
     const pending = shell.pendingRuntimeRequest;
+    const runId = shell.activeRunId ?? shell.latestRunId ?? "";
     const read: Effect.Effect<NeedDetail> =
       pending !== null
         ? Effect.map(source.request(shell.id, pending.id), (request) => ({ request }))
         : signal.kind === "plan"
           ? Effect.map(source.plan(shell.id), (plan) => ({ plan }))
-          : Effect.succeed({});
+          : signal.kind === "prose"
+            ? Effect.map(source.reply(shell.id, runId), (reply) => ({
+                prose: reply === null ? null : preRead(reply),
+              }))
+            : signal.kind === "stuck"
+              ? Effect.map(source.inFlight(shell.id, runId), (inFlight) => ({ inFlight }))
+              : Effect.succeed({});
     return Effect.tap(read, (detail) =>
       Effect.sync(() => {
-        const missed = detail.request === null || detail.plan === null;
+        // A report's verdict is kept like any read: the key changes with the next run.
+        const missed = detail.request === null || detail.plan === null || detail.inFlight === null;
         if (!missed) details.set(signal.key, detail);
       }),
     );
   };
 
+  /** A candidate read from prose or timed on the clock is a card only once its read says so. */
+  const isNeed = (signal: Signal, detail: NeedDetail, now: number) =>
+    signal.kind === "prose"
+      ? detail.prose != null
+      : signal.kind === "stuck"
+        ? stuckFor(signal, detail.inFlight ?? null, now) !== null
+        : true;
+
   const publish = Effect.gen(function* () {
     const now = yield* Clock.currentTimeMillis;
-    const signals = [...shells.values()].flatMap((shell) => signalOf(shell, now) ?? []);
-    numbering = renumber(numbering, signals);
-    const live = new Set(signals.map((signal) => signal.key));
+    if (lookedAt !== null && now - lookedAt > ABSENCE_MS) {
+      for (const id of heard.keys()) heard.set(id, now);
+    }
+    lookedAt = now;
+    const candidates = signalsOf([...shells.values()], now, heard);
+    const live = new Set(candidates.map((signal) => signal.key));
     for (const key of details.keys()) if (!live.has(key)) details.delete(key);
-    const needs = yield* Effect.forEach(
-      signals,
-      (signal) =>
-        Effect.map(detailOf(signal), (detail) =>
-          needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0),
-        ),
+    const read = yield* Effect.forEach(
+      candidates,
+      (signal) => Effect.map(detailOf(signal), (detail) => ({ signal, detail })),
       { concurrency: READS },
+    );
+    const kept = read.filter(({ signal, detail }) => isNeed(signal, detail, now));
+    numbering = renumber(
+      numbering,
+      kept.map(({ signal }) => signal),
+    );
+    const needs = kept.map(({ signal, detail }) =>
+      needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0),
     );
     const list = { needs: needs.toSorted((a, b) => a.number - b.number) };
     if (sent !== null && Equal.equals(list, sent)) return;
@@ -91,23 +126,36 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
   const follow = Effect.gen(function* () {
     yield* source.ready;
     const snapshot = yield* source.snapshot;
+    const readAt = yield* Clock.currentTimeMillis;
     shells.clear();
-    for (const shell of snapshot.shells) shells.set(shell.id, shell);
+    for (const shell of snapshot.shells) {
+      shells.set(shell.id, shell);
+      if (!heard.has(shell.id)) heard.set(shell.id, readAt);
+    }
     yield* publish;
     yield* Stream.merge(
       source.changedThreads(snapshot.sequence),
       Stream.map(Stream.tick(TIME_CHECK), () => []),
     ).pipe(
       Stream.runForEach((changed) =>
-        Effect.forEach(
-          changed,
-          (threadId) =>
-            Effect.map(source.shell(threadId), (shell) => {
-              if (shell === null || shell.archivedAt !== null) shells.delete(threadId);
-              else shells.set(threadId, shell);
-            }),
-          { concurrency: READS, discard: true },
-        ).pipe(Effect.andThen(publish)),
+        Effect.gen(function* () {
+          const heardAt = yield* Clock.currentTimeMillis;
+          for (const { threadId, lively } of changed) if (lively) heard.set(threadId, heardAt);
+          yield* Effect.forEach(
+            changed,
+            ({ threadId }) =>
+              Effect.map(source.shell(threadId), (shell) => {
+                if (shell !== null && shell.archivedAt === null) {
+                  shells.set(threadId, shell);
+                  return;
+                }
+                shells.delete(threadId);
+                heard.delete(threadId);
+              }),
+            { concurrency: READS, discard: true },
+          );
+          yield* publish;
+        }),
       ),
     );
   });

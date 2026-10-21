@@ -70,7 +70,10 @@ Why the server:
 - A subagent's thread gets its own card, under its parent's name
   ("Floof › reviewer").
 - These never get a card:
-  - Aski's own chat: its asks show inline in it;
+  - Aski's own chat and its subagents: their asks show inline in it. Aski's
+    chat is the one the web picks (the top-level chat on Aski's instance,
+    the pinned one first, else the first made); another chat on Aski's
+    instance is a Cell like any;
   - a snoozed, archived or deleted Cell;
   - a settled Cell, for prose kinds only;
   - a Cell that is working, connecting or waiting on its own background
@@ -113,10 +116,12 @@ preview names its Cell ("2 → Bongo"), so a stale number shows before Enter.
   and two to four options, which code then validates (see "Aski's read").
 - **When the read is off, down, slow or over budget:**
   - the card shows the Cell's last paragraph word for word;
-  - it offers the kind's fixed options (Reply…, Go ahead, Nothing to do,
-    Open chat);
+  - it offers the kind's fixed options: Go ahead (for an offer or a stop
+    short; a plain question can't take it), Reply…, Nothing to do, Later
+    and Open chat;
   - one dim line says "Aski couldn't read this one". Nothing waits on the
-    model.
+    model. Until the read exists (slice 4) the line stays away: nothing
+    failed to read.
 
 Why: a structured ask is already as clear as it gets, so a model would only
 add cost and room for error. Prose is where the person loses time.
@@ -375,7 +380,7 @@ the options means none is recommended.
 | Question | Turn completed; the last reply asks or offers (pre-read, then Aski's read) | Aski's title (≤ 8 words) and context (≤ 25), the Cell's ask quoted on expand | 2–4 read options (reply span or "Go ahead."), Reply…, Nothing to do | everything |
 | Stopped | Turn completed mid-task ("next I'll…", "3 of 8 done") | Aski's: what's done, what's left | Go ahead (rec), Reply…, Nothing to do | everything |
 | Plan | `hasActionableProposedPlan`, plan mode, latest run settled | "Plan ready: {title}", the first three steps verbatim | Build it (rec), Build it in a new Cell, Revise… | everything |
-| Stuck | Running, no new turn item for 12 min (server clock) | Aski's: what it's on ("`pnpm test:migrate`, no output for 14 min") | Read options from: Stop and reply…, Nudge…, Wait 15 min, Open chat | everything |
+| Stuck | Running, and nothing heard from the Cell for 12 min, or 30 with a tool call in flight (server clock) | Aski's: what it's on ("`pnpm test:migrate`, no output for 14 min") | Read options from: Stop and reply…, Nudge…, Wait 15 min, Open chat | everything |
 | Limit | `status = failed`, `lastErrorClass = usage_limit`, and (no auto-resume, or the reset > 5 h away or unknown, or resume failed) | "Out of its weekly limit · resets Mon 09:00" (`usageLimitResetAt`) | — Wait for the reset, Switch account…, Open chat | wait, open |
 | Failed | `status = failed`, other `lastErrorClass`, unseen | By class in plain words; `unknown` is read by Aski | Retry (rec for transport and provider errors), Switch model…, Open chat, Dismiss | retry, dismiss |
 | Sign-in | `pendingRuntimeRequest.kind = auth_refresh` | "Needs you to sign in to {provider} again" | Sign in (opens the provider's sign-in), Open chat | open |
@@ -384,13 +389,24 @@ the options means none is recommended.
 - A prose question appears once Aski has read it, which is 20 s after the
   turn ends, if the person hasn't answered by then. With the read off, it
   appears at once from the pre-read.
-- The pre-read is free code. It catches:
-  - a "?" in the last paragraph;
-  - an offer phrase ("Want me to", "Should I", "Shall I", "Do you want",
-    "Let me know");
-  - a stop-short phrase.
+- The pre-read is free code (`needs/preread.ts`). It reads the reply's
+  last paragraph, with a list that ends the reply kept with the question
+  that leads into it, and leaves out code and links. It catches:
+  - a "?" ending a sentence;
+  - an offer ("Want me to", "Should I", "Shall I", "Would you like me
+    to"), which Go ahead answers unless it has an "or" in it;
+  - an ask with no "?" ("Let me know…", "your call"), but not a report's
+    closing courtesy ("Let me know if you have any questions");
+  - a stop-short phrase ("Next, I'll…", "3 of 8 done", "still to do").
 
   Everything else is a report.
+- The activity clock: the server notes when it last heard any event from
+  each Cell. A run quiet for 12 min with the model itself at work is stuck;
+  with a tool call in flight, or before that is read, 30 min (a build or a
+  test says nothing until it ends; the Swift app measured both). A Cell
+  waiting on its own background work or on another Cell is never stuck.
+  Time the server didn't see (the Mac asleep, the server down) restarts
+  every clock.
 - One account switch, unranked, with no suggestion of which account. A
   limit card that pointed at accounts read as dodging a plan's limits.
 
@@ -719,5 +735,5 @@ answering by voice.
 - **Other environments.** Aski lives on this Mac's server, and so does the
   list. Cells on another environment are out of its reach (and of Aski's
   tools) until there is one list per environment, with its own numbers.
-- **Stall threshold.** 12 min is the Swift app's mark. The harness's time
-  to unblock decides whether it moves.
+- **Stall threshold.** 12 min (30 with a tool call in flight) are the Swift
+  app's marks. The harness's time to unblock decides whether they move.

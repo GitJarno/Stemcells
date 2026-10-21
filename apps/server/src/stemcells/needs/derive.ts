@@ -3,8 +3,10 @@
  * at most, the most blocking one (stemcells/tasks/aski-room.md, decision 2
  * and "Item types"). Pure: the service hands it shells and the time.
  *
- * This slice derives the kinds T3 states outright. A question or a stop
- * read from a Cell's prose, and a quiet run, come in later slices.
+ * The kinds T3 states outright come from the shell alone. A finished run
+ * is a prose candidate, which the pre-read of its last reply keeps or drops,
+ * and a running one that has been quiet too long is a stuck candidate,
+ * which what it is in the middle of keeps or drops (`stuckFor`).
  */
 import * as DateTime from "effect/DateTime";
 
@@ -12,14 +14,40 @@ import type {
   ApprovalOption,
   AskedQuestion,
   FailureClass,
+  InFlight,
   PlanDetail,
   RequestDetail,
   RequestKind,
   Shell,
 } from "../upstream/needs.ts";
+import type { Cue, PreRead } from "./preread.ts";
 
-/** Aski's own chat: its asks show inline there. The web's `aski/setup.ts` names the same instance. */
+/** The provider instance Aski's chat runs on; the web's `aski/setup.ts` names the same. */
 export const ASKI_INSTANCE_ID = "aski";
+
+/**
+ * Aski's own chat among the Cells, whose asks show inline there: the
+ * top-level chat on Aski's instance, the pinned one first, else the first
+ * made, as the web's `askiChatAmong` picks it. Another chat on Aski's
+ * instance (a new chat opened from Aski's page) is a Cell like any.
+ */
+export function askiThreadOf(shells: Iterable<Shell>): string | null {
+  const rank = (shell: Shell) =>
+    [shell.pinnedAt == null ? 1 : 0, DateTime.toEpochMillis(shell.createdAt)] as const;
+  let aski: Shell | null = null;
+  for (const shell of shells) {
+    if (shell.providerInstanceId !== ASKI_INSTANCE_ID) continue;
+    if (shell.lineage.parentThreadId !== null || shell.deletedAt !== null) continue;
+    if (aski === null) {
+      aski = shell;
+      continue;
+    }
+    const [pinned, made] = rank(shell);
+    const [askiPinned, askiMade] = rank(aski);
+    if (pinned < askiPinned || (pinned === askiPinned && made < askiMade)) aski = shell;
+  }
+  return aski?.id ?? null;
+}
 
 export type NeedKind =
   | "permission"
@@ -28,7 +56,9 @@ export type NeedKind =
   | "input"
   | "limit"
   | "failed"
-  | "plan";
+  | "plan"
+  | "prose"
+  | "stuck";
 
 /** Every kind of runtime request T3 has, and the card it makes. */
 export const REQUEST_KINDS: Readonly<Record<RequestKind, NeedKind>> = {
@@ -49,6 +79,19 @@ export const REQUEST_KINDS: Readonly<Record<RequestKind, NeedKind>> = {
 export const CARRY_ON_WITHIN_MS = 5 * 60 * 60 * 1000;
 /** A carry-on still not under way this long after the reset has failed. */
 export const CARRY_ON_GRACE_MS = 15 * 60 * 1000;
+
+/**
+ * A run quiet this long with the model itself at work is stuck. Measured on
+ * the Swift app's working transcripts: of 83,439 such gaps the longest
+ * benign one was 9.4 min, and every gap past 12 min fell in an outage.
+ */
+export const QUIET_MS = 12 * 60 * 1000;
+/**
+ * With a tool call in flight, or not yet known: a build or a test runs long
+ * and says nothing until it ends. Three times the 10 min a CLI gives a
+ * foreground command.
+ */
+export const TOOL_QUIET_MS = 30 * 60 * 1000;
 
 export interface Signal {
   /** Changes whenever what is asked changes, so an answer meant for the old ask is never sent. */
@@ -125,10 +168,28 @@ function runEnded(shell: Shell): number {
   return millis(shell.latestRunCompletedAt) ?? DateTime.toEpochMillis(shell.updatedAt);
 }
 
-/** The one thing this Cell needs from the person now, or null. */
-export function signalOf(shell: Shell, now: number): Signal | null {
+/** Waits on what finishes without the person: its own background work, or another Cell. */
+const waitsOnItsOwn = (shell: Shell) =>
+  shell.blockedOnThreadWait === true || (shell.pendingBackgroundTasks ?? []).length > 0;
+
+/**
+ * How long a stuck candidate has been quiet, once that is past its bound:
+ * 12 min with the model at work, 30 with a tool call in flight or before
+ * that is known. Null while it is still inside its bound.
+ */
+export function stuckFor(signal: Signal, inFlight: InFlight | null, now: number): number | null {
+  const quiet = now - signal.since;
+  const bound = inFlight === null || inFlight.tool !== null ? TOOL_QUIET_MS : QUIET_MS;
+  return quiet >= bound ? quiet : null;
+}
+
+/**
+ * The one thing this Cell needs from the person now, or null. `heardAt` is
+ * the last time the Cell showed life: an event of its own work, as the
+ * service hears them.
+ */
+export function signalOf(shell: Shell, now: number, heardAt: number = now): Signal | null {
   if (shell.deletedAt !== null || shell.archivedAt !== null) return null;
-  if (shell.providerInstanceId === ASKI_INSTANCE_ID) return null;
   if (isSnoozed(shell, now)) return null;
 
   const request = shell.pendingRuntimeRequest;
@@ -140,6 +201,19 @@ export function signalOf(shell: Shell, now: number): Signal | null {
       since: DateTime.toEpochMillis(request.createdAt),
       blocks: request.blocking !== false,
     };
+  }
+
+  const activeRunId = shell.activeRunId;
+  if (activeRunId !== null && shell.status === "running") {
+    return !waitsOnItsOwn(shell) && now - heardAt >= QUIET_MS
+      ? {
+          key: `${shell.id}:stuck:${activeRunId}:${heardAt}`,
+          kind: "stuck",
+          shell,
+          since: heardAt,
+          blocks: false,
+        }
+      : null;
   }
 
   const runId = shell.latestRunId;
@@ -157,7 +231,34 @@ export function signalOf(shell: Shell, now: number): Signal | null {
   if (shell.hasActionableProposedPlan && shell.interactionMode === "plan" && runSettled(shell)) {
     return { ...ended, key: `${shell.id}:plan:${runId}`, kind: "plan" };
   }
+  // A subagent's reply is its parent's to read, and a settled Cell is done.
+  if (
+    shell.status === "completed" &&
+    runSettled(shell) &&
+    shell.settledOverride !== "settled" &&
+    shell.lineage.parentThreadId === null &&
+    !waitsOnItsOwn(shell)
+  ) {
+    return { ...ended, key: `${shell.id}:prose:${runId}`, kind: "prose" };
+  }
   return null;
+}
+
+/**
+ * Every Cell's signal, Aski's own chat and its subagents left out. `heard`
+ * is when each Cell last showed life.
+ */
+export function signalsOf(
+  shells: ReadonlyArray<Shell>,
+  now: number,
+  heard: ReadonlyMap<string, number> = new Map(),
+): ReadonlyArray<Signal> {
+  const aski = askiThreadOf(shells);
+  return shells.flatMap((shell) =>
+    shell.id === aski || shell.lineage.rootThreadId === aski
+      ? []
+      : (signalOf(shell, now, heard.get(shell.id) ?? now) ?? []),
+  );
 }
 
 /** A plan's title and its first three steps, as the Cell wrote them. */
@@ -223,6 +324,22 @@ export interface NeedFailure {
   readonly message: string | null;
 }
 
+export interface NeedProse {
+  readonly runId: string;
+  /** What the pre-read found: a question, an offer to go on, or a stop short of done. */
+  readonly cue: Cue;
+  /** The reply's last paragraph, word for word. */
+  readonly text: string;
+}
+
+export interface NeedStuck {
+  readonly runId: string;
+  /** The last time the Cell showed life. */
+  readonly quietSince: string;
+  /** The tool call it is in the middle of; null with the model itself at work. */
+  readonly tool: InFlight["tool"];
+}
+
 export interface Need {
   readonly key: string;
   /** Given by arrival, kept for the card's life (decision 3). */
@@ -241,11 +358,16 @@ export interface Need {
   readonly plan: NeedPlan | null;
   readonly limit: NeedLimit | null;
   readonly failure: NeedFailure | null;
+  readonly prose: NeedProse | null;
+  readonly stuck: NeedStuck | null;
 }
 
 export interface NeedDetail {
   readonly request?: RequestDetail | null;
   readonly plan?: PlanDetail | null;
+  /** Null: the reply was a report, or couldn't be read. */
+  readonly prose?: PreRead | null;
+  readonly inFlight?: InFlight | null;
 }
 
 /** The card's data: the signal, the detail read for it, and its number. */
@@ -300,6 +422,18 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
     failure:
       signal.kind === "failed"
         ? { runId, errorClass: shell.lastErrorClass ?? null, message: shell.lastError ?? null }
+        : null,
+    prose:
+      signal.kind === "prose" && detail.prose != null
+        ? { runId, cue: detail.prose.cue, text: detail.prose.text }
+        : null,
+    stuck:
+      signal.kind === "stuck"
+        ? {
+            runId: shell.activeRunId ?? runId,
+            quietSince: DateTime.formatIso(DateTime.makeUnsafe(signal.since)),
+            tool: detail.inFlight?.tool ?? null,
+          }
         : null,
   };
 }

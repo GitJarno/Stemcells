@@ -4,7 +4,7 @@
  * its fuse ends and the need is still there.
  */
 import type { ThreadCommand } from "../upstream/needs";
-import { PHRASES, type Choice } from "./card";
+import { PHRASES, WAIT_MS, type Choice } from "./card";
 import type { Need } from "./wire";
 
 const LATER_MS = 60 * 60 * 1000;
@@ -69,5 +69,15 @@ export function commandsFor(
       return [{ type: "visit", visitedAt: new Date(now).toISOString() }];
     case "later":
       return [{ type: "snooze", until: new Date(now + LATER_MS).toISOString() }];
+    case "goAhead":
+      return [{ type: "message", text: PHRASES.goAhead }];
+    case "nothingToDo":
+      return [{ type: "settle" }];
+    case "nudge":
+      return words === "" ? [] : [{ type: "message", text: words, delivery: "steer" }];
+    case "stopAndReply":
+      return words === "" ? [] : [{ type: "message", text: words, delivery: "restart" }];
+    case "wait":
+      return [{ type: "snooze", until: new Date(now + WAIT_MS).toISOString() }];
   }
 }

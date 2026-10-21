@@ -19,6 +19,8 @@ export function needFixture(overrides: Partial<Need> = {}): Need {
     plan: null,
     limit: null,
     failure: null,
+    prose: null,
+    stuck: null,
     ...overrides,
   };
 }

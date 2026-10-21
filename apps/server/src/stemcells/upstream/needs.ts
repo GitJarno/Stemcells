@@ -5,8 +5,11 @@
  * own shell stream and its MCP request tools read them.
  */
 import type {
+  OrchestrationV2DomainEvent,
   OrchestrationV2ThreadShell,
+  OrchestrationV2TurnItem,
   ProviderApprovalOption,
+  RunId,
   RuntimeRequestId,
   ThreadId,
 } from "@t3tools/contracts";
@@ -15,10 +18,7 @@ import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 import * as SqlClient from "effect/sql/SqlClient";
 
-import {
-  loadShellSnapshotParts,
-  toShellApplicationEvent,
-} from "../../orchestration-v2/ShellStream.ts";
+import { loadShellSnapshotParts } from "../../orchestration-v2/ShellStream.ts";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";
 import * as OrchestrationEventStore from "../../persistence/OrchestrationEventStore.ts";
 import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
@@ -65,6 +65,39 @@ export interface PlanDetail {
   readonly markdown: string;
 }
 
+/** What a quiet run is in the middle of: a tool call, or nothing (the model itself). */
+export interface InFlight {
+  readonly tool: {
+    readonly title: string | null;
+    /** The command, for a shell call: shown whole. */
+    readonly command: string | null;
+  } | null;
+}
+
+/**
+ * A thread that changed in a batch. `lively` when the Cell itself did
+ * something: wrote, asked, planned, or moved a run or a tool call along.
+ * The person's hand on the thread (a visit, a snooze, a rename) isn't the
+ * Cell's life, and nor is a provider's beat: Codex polls a running command
+ * about once a minute and reports the tokens, with nothing new to show.
+ */
+export interface Changed {
+  readonly threadId: ThreadId;
+  readonly lively: boolean;
+}
+
+/** The events of a Cell's own work. */
+const LIVELY: ReadonlySet<OrchestrationV2DomainEvent["type"]> = new Set([
+  "run.created",
+  "run.updated",
+  "node.updated",
+  "subagent.updated",
+  "message.updated",
+  "turn-item.updated",
+  "runtime-request.updated",
+  "plan.updated",
+]);
+
 export interface NeedsSource {
   /** Done once the server takes commands; its HTTP routes wait for the same. */
   readonly ready: Effect.Effect<void>;
@@ -74,14 +107,25 @@ export interface NeedsSource {
     readonly sequence: number;
   }>;
   /** The threads that changed after `afterSequence`, a batch at a time. */
-  readonly changedThreads: (afterSequence: number) => Stream.Stream<ReadonlyArray<ThreadId>>;
+  readonly changedThreads: (afterSequence: number) => Stream.Stream<ReadonlyArray<Changed>>;
   /** One thread's shell now; null once it is gone. A failed read dies. */
   readonly shell: (threadId: ThreadId) => Effect.Effect<Shell | null>;
   /** The pending request in full; null when it was answered meanwhile or can't be read. */
   readonly request: (threadId: ThreadId, requestId: string) => Effect.Effect<RequestDetail | null>;
   /** The active proposed plan; null when there is none. */
   readonly plan: (threadId: ThreadId) => Effect.Effect<PlanDetail | null>;
+  /** The Cell's last reply in a run, whole; null when it wrote none or it can't be read. */
+  readonly reply: (threadId: ThreadId, runId: string) => Effect.Effect<string | null>;
+  /** What a running run is in the middle of; null when it can't be read. */
+  readonly inFlight: (threadId: ThreadId, runId: string) => Effect.Effect<InFlight | null>;
 }
+
+/** Items a run is in the middle of that are the model's own words, not a tool call. */
+const OWN_WORDS: ReadonlySet<OrchestrationV2TurnItem["type"]> = new Set([
+  "assistant_message",
+  "reasoning",
+  "user_message",
+]);
 
 /** Shells and events arrive in bursts while a Cell streams; one read per thread per beat. */
 const CHANGE_BEAT = Duration.millis(250);
@@ -106,12 +150,30 @@ export const makeNeedsSource = Effect.gen(function* () {
 
   const changedThreads = (afterSequence: number) =>
     events
-      .streamProjectedApplicationEvents({ afterSequence, project: toShellApplicationEvent })
+      .streamProjectedApplicationEvents({
+        afterSequence,
+        project: (stored) =>
+          "aggregateKind" in stored
+            ? { sequence: stored.sequence, changed: null }
+            : {
+                sequence: stored.sequence,
+                changed: {
+                  threadId: stored.event.threadId,
+                  lively: LIVELY.has(stored.event.type),
+                },
+              },
+      })
       .pipe(
-        Stream.map((event) => ("event" in event ? event.event.threadId : null)),
-        Stream.filter((threadId): threadId is ThreadId => threadId !== null),
+        Stream.map((event) => event.changed),
+        Stream.filter((changed): changed is Changed => changed !== null),
         Stream.groupedWithin(512, CHANGE_BEAT),
-        Stream.map((batch) => [...new Set(batch)]),
+        Stream.map((batch) => {
+          const byThread = new Map<ThreadId, boolean>();
+          for (const { threadId, lively } of batch) {
+            byThread.set(threadId, lively || byThread.get(threadId) === true);
+          }
+          return [...byThread].map(([threadId, lively]) => ({ threadId, lively }));
+        }),
         Stream.orDie,
       );
 
@@ -185,5 +247,50 @@ export const makeNeedsSource = Effect.gen(function* () {
       Effect.catchCause(() => Effect.succeed(null)),
     );
 
-  return { ready, snapshot, changedThreads, shell, request, plan } satisfies NeedsSource;
+  const reply = (threadId: ThreadId, runId: string) =>
+    threads
+      .getThreadRecords(threadId, ["messages"], {
+        messageRoles: ["assistant"],
+        messageRunIds: [runId as RunId],
+      })
+      .pipe(
+        Effect.map(
+          (records) =>
+            records.messages.findLast((message) => message.text.trim() !== "")?.text ?? null,
+        ),
+        Effect.catchCause(() => Effect.succeed(null)),
+      );
+
+  const inFlight = (threadId: ThreadId, runId: string) =>
+    threads
+      .getThreadRecords(threadId, ["turnItems"], {
+        turnItemRunIds: [runId as RunId],
+        turnItemStatuses: ["pending", "running", "waiting"],
+      })
+      .pipe(
+        Effect.map((records): InFlight => {
+          const item = records.turnItems.findLast((candidate) => !OWN_WORDS.has(candidate.type));
+          return {
+            tool:
+              item === undefined
+                ? null
+                : {
+                    title: item.title,
+                    command: item.type === "command_execution" ? item.input : null,
+                  },
+          };
+        }),
+        Effect.catchCause(() => Effect.succeed(null)),
+      );
+
+  return {
+    ready,
+    snapshot,
+    changedThreads,
+    shell,
+    request,
+    plan,
+    reply,
+    inFlight,
+  } satisfies NeedsSource;
 });

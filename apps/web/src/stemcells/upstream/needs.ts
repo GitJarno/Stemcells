@@ -25,6 +25,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 
 import { composerDraftHasUserContent, useComposerDraftStore } from "~/composerDraftStore";
+import { useNowMinute } from "~/hooks/useNowMinute";
 import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
 import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAuth";
 import { newMessageId } from "~/lib/utils";
@@ -37,7 +38,15 @@ import { threadEnvironment } from "~/state/threads";
 
 export type ApprovalDecision = ProviderApprovalDecision;
 export { usePrimaryEnvironmentId } from "~/state/environments";
-export { useNowMinute } from "~/hooks/useNowMinute";
+/**
+ * A minute of upstream's clock in ms. It names the minute in UTC without
+ * the zone ("2026-10-21T09:17"), which `Date.parse` alone would read as
+ * local time, hours off anywhere but UTC.
+ */
+export const minuteMs = (minute: string): number => Date.parse(`${minute}:00Z`);
+
+/** The current minute in ms, ticking each minute, on upstream's clock. */
+export const useNowMinuteMs = (): number => minuteMs(useNowMinute());
 export { observeResize } from "~/lib/observeResize";
 
 /** Upstream's composer, inside a chat pane: the sheet over Aski's chat stops above it. */
@@ -88,12 +97,16 @@ export type ThreadCommand =
       readonly interactionMode?: "default" | "plan";
       /** Picks up a run stopped by a limit, as upstream's "Resume thread" does. */
       readonly continuationOfRunId?: string;
+      /** Into the running turn ("steer"), or stopping it to start again ("restart"). */
+      readonly delivery?: "steer" | "restart";
     }
   /** Upstream's "Implement": out of plan mode, and the plan sent back to build. */
   | { readonly type: "build"; readonly planId: string; readonly markdown: string }
   | { readonly type: "carryOnAtReset"; readonly runId: string; readonly resetAt: string }
   | { readonly type: "snooze"; readonly until: string }
-  | { readonly type: "visit"; readonly visitedAt: string };
+  | { readonly type: "visit"; readonly visitedAt: string }
+  /** Done with: the Cell moves to settled, as the sidebar's own Settle does. */
+  | { readonly type: "settle" };
 
 export type CommandOutcome = { readonly ok: true } | { readonly ok: false; readonly why: string };
 
@@ -152,8 +165,9 @@ export async function sendThreadCommand(
           runtimeMode: shell.runtimeMode,
           interactionMode: command.interactionMode ?? shell.interactionMode,
           // A continuation must start now; anything else steers or queues
-          // as the Cell's own composer would.
-          dispatchMode: command.continuationOfRunId !== undefined ? "start" : "auto",
+          // as the Cell's own composer would, unless the card chose which.
+          dispatchMode:
+            command.continuationOfRunId !== undefined ? "start" : (command.delivery ?? "auto"),
           ...(command.continuationOfRunId === undefined
             ? {}
             : { manualContinuationOfRunId: RunId.make(command.continuationOfRunId) }),
@@ -207,6 +221,8 @@ export async function sendThreadCommand(
         environmentId,
         input: { threadId, visitedAt: command.visitedAt },
       });
+    case "settle":
+      return run(threadEnvironment.settle, { environmentId, input: { threadId } });
   }
 }
 

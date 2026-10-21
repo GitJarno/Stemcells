@@ -2,7 +2,7 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 
 import { cellNameOf } from "../cell/name";
 import { timing } from "../tokens/motion";
-import { useNowMinute, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import { useCellPlace } from "../upstream/thread";
 import { commandsFor, type Given } from "./actions";
 import { cardOf, LATER, type CardOption, type CardQuestion } from "./card";
@@ -20,6 +20,12 @@ export function whoOf(need: Shown["need"]): string {
 const pick = (option: CardOption, given: Given): string =>
   given.words ? `${option.title.replace(/…$/, "")}: “${given.words.trim()}”` : option.title;
 
+/** Why a held answer wasn't sent: the need changed under it. */
+const staleLine = (need: Shown["need"], who: string): string =>
+  need.kind === "stuck"
+    ? `${who} moved again before yours went. Yours wasn't sent.`
+    : `${who} already had an answer. Yours wasn't sent.`;
+
 /**
  * One need: who and where, what is asked, and the options, each one app
  * action. A choice folds the card to it for the undo window; a need that is
@@ -33,7 +39,7 @@ export function NeedCard(props: {
 }) {
   const { need, goneAt } = props.shown;
   const hold = props.hold;
-  const card = cardOf(need, Date.parse(useNowMinute()));
+  const card = cardOf(need, useNowMinuteMs());
   const who = whoOf(need);
   const environmentId = usePrimaryEnvironmentId();
   const place = useCellPlace(
@@ -93,10 +99,12 @@ export function NeedCard(props: {
           {hold?.state === "sent"
             ? "Sent."
             : hold?.state === "stale"
-              ? `${who} already had an answer. Yours wasn't sent.`
-              : need.request !== null
-                ? "Answered elsewhere."
-                : "Taken care of elsewhere."}
+              ? staleLine(need, who)
+              : need.kind === "stuck"
+                ? "It's moving again."
+                : need.request !== null
+                  ? "Answered elsewhere."
+                  : "Taken care of elsewhere."}
         </p>
       ) : folded ? (
         <HeldAnswer hold={hold} />
@@ -106,9 +114,7 @@ export function NeedCard(props: {
         <>
           {hold?.state === "failed" || hold?.state === "stale" ? (
             <p data-need-receipt="" data-warn="">
-              {hold.state === "stale"
-                ? `${who} already had an answer. Yours wasn't sent.`
-                : hold.why}
+              {hold.state === "stale" ? staleLine(need, who) : hold.why}
             </p>
           ) : null}
           {card.questions.length > 0 ? (

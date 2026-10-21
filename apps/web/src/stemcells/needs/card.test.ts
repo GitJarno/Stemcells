@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { cardOf, whenOf } from "./card";
+import type { Need } from "./wire";
 import { NOW, needFixture, requestFixture } from "./fixtures";
 
 const titles = (card: ReturnType<typeof cardOf>) => card.options.map((option) => option.title);
@@ -191,6 +192,72 @@ describe("a card says what the Cell asked, as it asked it", () => {
         NOW,
       ).later,
     ).toBe(true);
+  });
+});
+
+describe("cards read from a Cell's prose, with no model", () => {
+  const prose = (cue: "question" | "offer" | "stopped", text = "Want me to push it?") =>
+    cardOf(
+      needFixture({
+        kind: "prose",
+        request: null,
+        blocks: false,
+        prose: { runId: "run-1", cue, text },
+      }),
+      NOW,
+    );
+
+  it("quotes the Cell's last paragraph word for word", () => {
+    expect(prose("offer").quote).toBe("Want me to push it?");
+    expect(prose("offer")).toMatchObject({ tag: "Question", headline: "Offers to go on" });
+  });
+
+  it("offers Go ahead to an offer and a stop, recommending it only for the stop", () => {
+    const titles = (card: ReturnType<typeof prose>) => card.options.map((each) => each.title);
+    expect(titles(prose("offer"))).toEqual(["Go ahead", "Reply…", "Nothing to do"]);
+    expect(prose("offer").options[0]?.recommended).toBe(false);
+    expect(prose("stopped").options[0]).toMatchObject({ title: "Go ahead", recommended: true });
+    expect(prose("stopped").tag).toBe("Stopped");
+  });
+
+  it("answers a question only in the person's words: Go ahead can't answer one", () => {
+    expect(prose("question", "Staging or local?").options.map((each) => each.title)).toEqual([
+      "Reply…",
+      "Nothing to do",
+    ]);
+    expect(prose("question").later).toBe(true);
+  });
+});
+
+describe("a stuck card", () => {
+  const stuck = (tool: NonNullable<Need["stuck"]>["tool"]) =>
+    cardOf(
+      needFixture({
+        kind: "stuck",
+        request: null,
+        blocks: false,
+        stuck: { runId: "run-2", quietSince: "2026-10-21T11:46:00.000Z", tool },
+      }),
+      NOW,
+    );
+
+  it("says how long it has been quiet, and shows a command it is in whole", () => {
+    expect(stuck(null).headline).toBe("Quiet for 14 min");
+    const card = stuck({ title: "Run tests", command: "pnpm test:migrate" });
+    expect(card.headline).toBe("Quiet for 14 min in a tool call");
+    expect(card.request).toBe("pnpm test:migrate");
+    expect(stuck({ title: "Search the web", command: null }).quote).toBe("Search the web");
+  });
+
+  it("offers a nudge, a restart in the person's words, or a wait, and no second Later", () => {
+    const card = stuck(null);
+    expect(card.options.map((each) => each.title)).toEqual([
+      "Nudge…",
+      "Stop and reply…",
+      "Wait 15 min",
+    ]);
+    expect(card.options.some((each) => each.recommended)).toBe(false);
+    expect(card.later).toBe(false);
   });
 });
 

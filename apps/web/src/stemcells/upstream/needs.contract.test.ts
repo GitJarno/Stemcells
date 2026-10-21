@@ -7,11 +7,12 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { buildPlanImplementationPrompt } from "../../proposedPlan";
 import { PHRASES } from "../needs/card";
-import { COMPOSER_SURFACE_SELECTOR } from "./needs";
+import { COMPOSER_SURFACE_SELECTOR, minuteMs } from "./needs";
 
 import approvalActions from "../../components/chat/ComposerPendingApprovalActions.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
+import nowMinute from "../../hooks/useNowMinute.ts?raw";
 
 describe("the column's contracts with upstream", () => {
   it("offers a permission upstream's own buttons when the provider names none", () => {
@@ -35,5 +36,11 @@ describe("the column's contracts with upstream", () => {
   it("marks the composer, so the narrow sheet stops above it", () => {
     expect(COMPOSER_SURFACE_SELECTOR).toBe('[data-chat-composer-surface="true"]');
     expect(chatComposer).toContain('data-chat-composer-surface="true"');
+  });
+
+  it("reads upstream's minute clock as the UTC minute it names, wherever the Mac is", () => {
+    // A card's "now": read as local time, a limit's reset looked hours away.
+    expect(nowMinute).toContain("new Date().toISOString().slice(0, 16)");
+    expect(minuteMs("2026-10-21T09:17")).toBe(Date.parse("2026-10-21T09:17:00.000Z"));
   });
 });

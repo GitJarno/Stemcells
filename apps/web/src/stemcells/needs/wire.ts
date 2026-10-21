@@ -11,7 +11,9 @@ export type NeedKind =
   | "input"
   | "limit"
   | "failed"
-  | "plan";
+  | "plan"
+  | "prose"
+  | "stuck";
 
 export type RequestKind =
   | "command"
@@ -81,6 +83,20 @@ export interface Need {
     readonly runId: string;
     readonly resetAt: string | null;
     readonly autoResume: boolean;
+  } | null;
+  readonly prose: {
+    readonly runId: string;
+    /** What the pre-read found: a question, an offer to go on, or a stop short of done. */
+    readonly cue: "question" | "offer" | "stopped";
+    /** The reply's last paragraph, word for word. */
+    readonly text: string;
+  } | null;
+  readonly stuck: {
+    readonly runId: string;
+    /** The last time the Cell showed life. */
+    readonly quietSince: string;
+    /** The tool call it is in the middle of; null with the model itself at work. */
+    readonly tool: { readonly title: string | null; readonly command: string | null } | null;
   } | null;
   readonly failure: {
     readonly runId: string;
