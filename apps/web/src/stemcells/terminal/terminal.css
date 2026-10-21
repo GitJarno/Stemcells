@@ -1,0 +1,20 @@
+/* A chat's terminal drawer (`upstream/substitutes/ThreadTerminalDrawer.tsx`).
+   Upstream floats the terminal's buttons (split, stack, new, close) over its
+   top-right, where a long prompt or line of output runs under them. Here
+   they get a row of their own over the terminal, on the terminal's ground,
+   as tall as a pane's button. The drawer's opening height counts the row
+   (upstream/terminal.contract.test.ts pins the buttons' markup). */
+[data-stemcells-terminal] {
+  --sc-terminal-band: var(--sc-pane-button);
+}
+[data-stemcells-terminal] [data-thread-terminal-drawer]:has(> div > div > button[aria-label]) {
+  padding-top: var(--sc-terminal-band);
+  background-color: var(--terminal-background);
+}
+[data-stemcells-terminal] [data-thread-terminal-drawer] > div:has(> div > button[aria-label]) {
+  top: 0;
+  right: var(--sc-space-md);
+  display: flex;
+  align-items: center;
+  height: var(--sc-terminal-band);
+}

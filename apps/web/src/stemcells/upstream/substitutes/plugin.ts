@@ -52,6 +52,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/MessagesTimeline.logic.ts": "MessagesTimeline.logic.ts",
   // Several Cells' readout stands in the composer's model picker's place.
   "apps/web/src/components/chat/ProviderModelPicker.tsx": "ProviderModelPicker.tsx",
+  // The terminal drawer opens at about ten rows, its buttons in a row of their own.
+  "apps/web/src/components/ThreadTerminalDrawer.tsx": "ThreadTerminalDrawer.tsx",
 };
 
 /**

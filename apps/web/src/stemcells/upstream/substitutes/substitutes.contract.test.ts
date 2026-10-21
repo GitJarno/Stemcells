@@ -18,6 +18,7 @@ import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
+import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
@@ -48,6 +49,7 @@ import * as OurSubagentDisplay from "./subagentDisplay";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
+import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 
 /**
@@ -334,6 +336,20 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/settings/ScheduledTasksSettings.tsx": [
         "../chat/ProviderModelPicker",
         ["ProviderModelPicker"],
+      ],
+    },
+  },
+  "apps/web/src/components/ThreadTerminalDrawer.tsx": {
+    upstream: UpstreamThreadTerminalDrawer,
+    substitute: OurThreadTerminalDrawer satisfies RendersOrNothing<
+      typeof UpstreamThreadTerminalDrawer
+    >,
+    importers: {
+      // The drawer is its default export (terminal.contract.test.ts).
+      "apps/web/src/components/PersistentThreadTerminals.tsx": ["./ThreadTerminalDrawer", []],
+      "apps/web/src/components/settings/ProviderAuthTerminal.tsx": [
+        "../ThreadTerminalDrawer",
+        ["terminalThemeFromApp"],
       ],
     },
   },
