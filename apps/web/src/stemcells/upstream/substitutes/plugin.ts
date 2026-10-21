@@ -39,6 +39,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
   // One composer height: it never rests into one line on a scroll.
   "apps/web/src/components/chat/composerScrollGesture.ts": "composerScrollGesture.ts",
+  // The hero names every place the words start Cells in.
+  "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

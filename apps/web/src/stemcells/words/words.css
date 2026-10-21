@@ -271,3 +271,10 @@ button[type="submit"][data-stemcells-cells]::before {
 button[type="submit"][data-stemcells-over] {
   box-shadow: 0 0 0 1.5px var(--sc-warning);
 }
+
+/* The hero names every place the words start Cells in (heroPlaces.ts), in
+   the page's ink, as the draft's own project shows in its picker. */
+[data-stemcells-hero-place] {
+  color: var(--sc-content-strong-ink);
+  font-weight: 500;
+}

@@ -259,8 +259,9 @@ was right. Its placeholder was "Tell Aski what you need…".
   either the chat has no project of its own (Aski's tab) or several Cells
   start from a message that mentions projects without pointing at them. One
   Cell never gets an open place: the mention stays quiet (decision 1).
-- The hero follows: "What should we build in Harbor and Atlas?", "in 3
-  projects?" past two, or "in projects Aski picks?".
+- The hero follows: "What should we build in Harbor and Atlas?", "Harbor
+  and 2 more" past two, or "in projects Aski picks?". The draft's own
+  project stays its picker, since the draft is the first Cell.
 - The Send button carries the count, so Enter visibly starts 3.
 - The task line says how the work is shared: "one list item each", "each
   its own part" (the words split it into clauses), "the same task in each"
@@ -697,9 +698,10 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      others upload their own copy, once per machine. A Cell on another
      machine whose part points at a chat it can't read doesn't start, and
      says why.
-   - Left for 4b: the hero naming several places, the spawn (with Aski's
-     figure and the Cell kit), the narrow-pane fold, and usage-limit notes
-     in the readout.
+   - 4b, built: the hero names the places (`words/heroPlaces.ts`, and a
+     substitute for `DraftHeroProjectHeading.tsx`).
+   - Left for 4b: the spawn (with Aski's figure and the Cell kit), the
+     narrow-pane fold, and usage-limit notes in the readout.
 5. **The planner.**
    - The `TextGeneration` operation, run lean, with its arguments pinned
      by a test.

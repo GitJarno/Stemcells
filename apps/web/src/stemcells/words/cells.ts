@@ -142,6 +142,11 @@ const SHARE: Partial<Record<Share, string>> = {
   each: "the same task in each",
 };
 
+/** The places a readout starts Cells in, each once, in the words' order: what the hero names. */
+export function placesOf(readout: Readout): string[] {
+  return [...new Set(readout.groups.flatMap((g) => (g.place ? [g.place.text] : [])))];
+}
+
 /** The words read back as one sentence: "3 Cells: 2 Sol 6.1 in Harbor, Opus 5.5 at Max in Atlas". */
 export function readoutOf(launch: Launch, defaults: ReadoutDefaults, most = MOST_CELLS): Readout {
   const groups: ReadoutGroup[] = [];

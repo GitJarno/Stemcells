@@ -28,12 +28,14 @@ import {
   MOST_CELLS,
   partLine,
   partOf,
+  placesOf,
   type Readout as ReadoutData,
   readoutOf,
   withPart,
 } from "./cells";
 import { type DocText, rangeOf } from "./docText";
 import { type DriverSource, WordsDriver } from "./driver";
+import { showPlaces } from "./heroPlaces";
 import { effortLabel, type MenuAction, type MenuEntry, menuFor } from "./menu";
 import { placeCells } from "./placement";
 import { roster, type WordsPlace } from "./places";
@@ -100,6 +102,14 @@ export function ComposerWords(props: { readonly anchor: string }) {
   const driverSource = useRef<DriverSource>({ draftId, catalog, places: new Map() });
   const joined = useRef<Joined | null>(null);
   const starting = useRef(startCells);
+  // The draft the hero names places for, so they go when the draft does.
+  const named = useRef<string | null>(null);
+
+  const nameInHero = (draftId: string | null, places: readonly string[] | null) => {
+    if (named.current !== null && named.current !== draftId) showPlaces(named.current, null);
+    named.current = draftId;
+    if (draftId !== null) showPlaces(draftId, places);
+  };
 
   useLayoutEffect(() => {
     current.current = setting;
@@ -115,11 +125,12 @@ export function ComposerWords(props: { readonly anchor: string }) {
     if (editor && !editor.isDestroyed) refreshWords(editor.view);
   }, [setting, startCells, draftId, catalog, places, members]);
 
-  /** Several Cells read back; one Cell, or none, reads nothing back. */
+  /** Several Cells read back, and the hero names their places; one Cell, or none, reads nothing back. */
   const readBack = (view: EditorView) => {
     const facts = wordsKey.getState(view.state)?.facts ?? null;
     const next = facts === null ? null : readoutFor(facts, driverSource.current);
     setReadout((last) => (JSON.stringify(last) === JSON.stringify(next) ? last : next));
+    nameInHero(driverSource.current.draftId, next === null ? null : placesOf(next));
   };
 
   const openMenu = (view: EditorView, mark: Placed, at: TokenMenuAt) => {
@@ -171,6 +182,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     leave(joined.current);
     joined.current = null;
     setReadout(null);
+    nameInHero(null, null);
     if (editor === null || editor.isDestroyed) return;
     const driver = new WordsDriver(editor.view, () => driverSource.current);
     editor.registerPlugin(
@@ -198,6 +210,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
     () => () => {
       leave(joined.current);
       joined.current = null;
+      if (named.current !== null) showPlaces(named.current, null);
+      named.current = null;
     },
     [],
   );

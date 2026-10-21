@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { modelLexicon } from "./catalog";
-import { launchOf, MOST_CELLS, partOf, readoutOf, withPart } from "./cells";
+import { launchOf, MOST_CELLS, partOf, placesOf, readoutOf, withPart } from "./cells";
 import { testCatalog, testPlaces } from "./fixtures/catalog";
 import { roster } from "./places";
 import { readWords } from "./read";
@@ -116,6 +116,19 @@ describe("the readout", () => {
     const readout = read("3 Harbor:\n- fix the header\n- fix the footer\n- fix the cart");
     expect(readout.groups).toHaveLength(1);
     expect(readout.groups[0]!.count).toMatchObject({ text: "3", mark: { kind: "count" } });
+  });
+
+  it("names each place once, for the hero", () => {
+    expect(
+      placesOf(read("Sol in Harbor fix the export; Opus 5.5 in Atlas update the docs")),
+    ).toEqual(["Harbor", "Atlas"]);
+    expect(
+      placesOf(read("Sol in Harbor fix the export; Opus 5.5 in Harbor update the docs")),
+    ).toEqual(["Harbor"]);
+    // A default is the draft's own place.
+    expect(placesOf(read("Fable Cell [fix the modal], another Cell [fix hover]"))).toEqual([
+      "Kestrel",
+    ]);
   });
 
   it("says when the count is past the most", () => {

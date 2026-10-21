@@ -17,6 +17,7 @@ import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
+import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
@@ -26,6 +27,7 @@ import * as OurChatComposer from "./ChatComposer";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
+import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurFavicon from "./favicon";
 import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
 import * as OurProviderIconUtils from "./providerIconUtils";
@@ -229,6 +231,18 @@ const CASES: Readonly<Record<string, Case>> = {
     substitute: OurChatComposer satisfies RendersOrNothing<typeof UpstreamChatComposer>,
     importers: {
       "apps/web/src/components/ChatView.tsx": ["./chat/ChatComposer", ["ChatComposer"]],
+    },
+  },
+  "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": {
+    upstream: UpstreamDraftHeroProjectHeading,
+    substitute: OurDraftHeroProjectHeading satisfies RendersOrNothing<
+      typeof UpstreamDraftHeroProjectHeading
+    >,
+    importers: {
+      "apps/web/src/components/chat/DraftHeroHeadline.tsx": [
+        "./DraftHeroProjectHeading",
+        ["DraftHeroProjectHeading"],
+      ],
     },
   },
 };
