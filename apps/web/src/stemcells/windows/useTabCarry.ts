@@ -24,6 +24,7 @@ import { reducedMotion, timing } from "../tokens/motion";
 import { randomUUID } from "../upstream/ui";
 import type { Display } from "./arrangement";
 import { windowsBridge, type WindowsBridge } from "./bridge";
+import { carryStarts } from "./carrying";
 import {
   cancel,
   homeOf,
@@ -77,6 +78,8 @@ interface Live {
   tearing: Promise<void> | null;
   /** The tab was on stage when it tore; the pager turned to `neighbour`. */
   wasActive: boolean;
+  /** Puts the carry down for the keys that wait on one (`carrying.ts`). */
+  readonly ends: () => void;
   done: boolean;
 }
 
@@ -135,6 +138,7 @@ export function useTabCarry(options: {
 
   const finish = (at: Live) => {
     at.done = true;
+    at.ends();
     if (live.current === at) live.current = null;
     setView(null);
   };
@@ -275,6 +279,7 @@ export function useTabCarry(options: {
       if (!at || at.done) return;
       live.current = null;
       at.done = true;
+      at.ends();
       void (at.tearing ?? Promise.resolve()).then(() => at.flight?.end());
     },
     [],
@@ -297,6 +302,24 @@ export function useTabCarry(options: {
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [view?.picked]);
+
+  /** The hand is gone mid-carry (the system took the pointer, or the window lost focus): it goes home. */
+  const lose = (at: Live) => {
+    live.current = null;
+    if (at.flight) void goHome(at);
+    else finish(at);
+  };
+  const loseLive = useEffectEvent(() => {
+    const at = live.current;
+    if (at && !at.done) lose(at);
+  });
+  const held = view !== null;
+  useEffect(() => {
+    if (!held) return;
+    const onBlur = () => loseLive();
+    window.addEventListener("blur", onBlur);
+    return () => window.removeEventListener("blur", onBlur);
+  }, [held]);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
     // A press in the name being edited places the caret: it never carries.
@@ -364,9 +387,18 @@ export function useTabCarry(options: {
       flight: null,
       tearing: null,
       wasActive: false,
+      ends: carryStarts(),
       done: false,
     };
     live.current = at;
+    // Let go, the pointer goes back too; lost before that, the carry goes home.
+    element.addEventListener(
+      "lostpointercapture",
+      (lost: PointerEvent) => {
+        if (lost.pointerId === at.pointerId && live.current === at && !at.done) lose(at);
+      },
+      { once: true },
+    );
     setView({ tabId, picked: false, offset: 0, pulled: 0, slot: from, away: "no", geometry });
     // Every display, for where a window may open and how big: the desktop app knows them.
     void bridge?.snapshot().then((snapshot) => {
@@ -390,6 +422,8 @@ export function useTabCarry(options: {
     at.carry = moveHand(at.carry, handOf(event), event.timeStamp);
     const now = at.carry.carried;
     if (now.kind === "pressed") return;
+    // Out of the press, however far its first move went: a carry, which Esc sends home.
+    if (was.kind === "pressed") setView((current) => current && { ...current, picked: true });
     if (now.kind === "banding") {
       setView(
         (current) =>
@@ -418,9 +452,7 @@ export function useTabCarry(options: {
   const onPointerCancel = (event: ReactPointerEvent<HTMLElement>) => {
     const at = live.current;
     if (!at || at.done || event.pointerId !== at.pointerId) return;
-    live.current = null;
-    if (at.flight) void goHome(at);
-    else finish(at);
+    lose(at);
   };
 
   return { view, onPointerDown, onPointerMove, onPointerUp, onPointerCancel };
