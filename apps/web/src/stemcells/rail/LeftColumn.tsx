@@ -13,6 +13,9 @@ import { useColumnStore } from "./column";
 import { Rail } from "./Rail";
 // App-wide: the root layout renders this column on every page.
 import "../scrollbars/scrollbars.css";
+// The frame and the slate every page stands on, loaded with the column for
+// the same reason.
+import "../pages/frame.css";
 
 /**
  * Upstream's sidebar slot: the rail, or upstream's wide sidebar (`wide`)

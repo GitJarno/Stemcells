@@ -1,0 +1,61 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads upstream's stylesheet on disk.
+/**
+ * Upstream behaviour every page on the slate relies on (pages/frame.css,
+ * pages/SettingsOnSlab.tsx). A failure here after a sync names the contract
+ * that moved: a page likely fills the window again, its frame lost its
+ * ground, or Settings took the left column back.
+ */
+import * as NodeFS from "node:fs";
+
+import { describe, expect, it } from "vite-plus/test";
+
+import appSidebarLayout from "../../components/AppSidebarLayout.tsx?raw";
+import settingsSidebarNav from "../../components/settings/SettingsSidebarNav.tsx?raw";
+import sidebar from "../../components/ui/sidebar.tsx?raw";
+import settingsRoute from "../../routes/settings.tsx?raw";
+
+/** CSS imports come in empty under test; the stylesheet is read as text. */
+const appStyles = NodeFS.readFileSync(new URL("../../index.css", import.meta.url), "utf8");
+
+describe("a page is upstream's inset, which frame.css makes the slate", () => {
+  it("the inset names itself, and stands positioned for the slate's edge", () => {
+    expect(sidebar).toMatch(
+      /"relative flex min-w-0 w-full flex-1 flex-col bg-background surface-grain",[\s\S]*?data-slot="sidebar-inset"/,
+    );
+  });
+
+  it("it is a flex item of the wrapper, which is the window's height", () => {
+    // frame.css gives it back its natural height, so it stretches to the
+    // wrapper's less its margins.
+    expect(sidebar).toContain('"group/sidebar-wrapper flex min-h-svh w-full"');
+    expect(appSidebarLayout).toContain('className="h-dvh! min-h-0!"');
+  });
+
+  it("the frame behind it is upstream's wrapper, painted with upstream's grain token", () => {
+    expect(sidebar).toMatch(
+      /"group\/sidebar-wrapper flex[^"]*",[\s\S]*?data-slot="sidebar-wrapper"/,
+    );
+    expect(appStyles).toContain("--surface-grain: url(");
+    expect(appStyles).toContain("--surface-grain-size:");
+  });
+});
+
+describe("Settings on the slate", () => {
+  it("the app's sidebar keeps the left column on every page", () => {
+    expect(appSidebarLayout).toContain(
+      "{legacySidebarEnabled ? <LegacyThreadSidebar /> : <LeftColumn wide={<ThreadSidebar />} />}",
+    );
+    expect(appSidebarLayout).not.toContain("<SettingsSidebarNav");
+  });
+
+  it("the settings route lays its panel out on the slate, its outlet inside", () => {
+    expect(settingsRoute).toMatch(/<SettingsOnSlab[\s\S]*?<Outlet \/>[\s\S]*?<\/SettingsOnSlab>/);
+    expect(settingsRoute).not.toContain("<WorkspacePageHeader");
+  });
+
+  it("upstream's section list takes the page it lights", () => {
+    expect(settingsSidebarNav).toContain(
+      "export function SettingsSidebarNav({ pathname }: { pathname: string })",
+    );
+  });
+});

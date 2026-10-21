@@ -1,6 +1,5 @@
 /* The workspace's own touches, each scoped to one of its parts, so loading
-   this sheet never restyles upstream's screens; the one exception, the
-   sidebar's edge on Stemcells' own theme, is marked below. */
+   this sheet never restyles upstream's screens. */
 
 /* The slate: one rounded panel on the window's frame, holding the tab's
    chats and, at its right edge, the workbench. The frame (sidebar, tab
@@ -42,19 +41,11 @@
   pointer-events: none;
 }
 /* On Stemcells' own theme the frame is black and the slate reads by its
-   gray alone, so the frame and the slate meet with no line, and nothing
-   else draws on the frame: the slate drops its edge, and the sidebar its
-   border (upstream's, on `[data-app-sidebar]`). The border goes to no
-   width rather than no colour: a clear border would show the window behind
-   it, a 1 px strip without the grain the frame wears on both sides.
-   upstream/frame.contract.test.ts pins the border and the grain. Themes
-   whose frame is the canvas keep both, or the slate would vanish into the
-   frame. */
+   gray alone, so the frame and the slate meet with no line: the slate drops
+   its edge, as the sidebar drops its border (pages/frame.css). Themes whose
+   frame is the canvas keep it, or the slate would vanish into the frame. */
 :root.dark[data-theme-id="stemcells"] [data-stemcells-slate]::after {
   content: none;
-}
-:root.dark[data-theme-id="stemcells"] [data-app-sidebar] {
-  border-width: 0;
 }
 /* There the tab on stage is cut from the slate, as a folder's tab is from
    its folder: the slate's gray, rounded at the top, reaching down through

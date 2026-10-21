@@ -1,11 +1,11 @@
 /**
  * Upstream behaviour the frame relies on: on Stemcells' own theme,
- * workspace.css takes the line off the sidebar's edge by making
- * `[data-app-sidebar]`'s border transparent; the sidebar and the inset the
- * workspace is wear the same grain, so they read as one ground; and the
- * slate is flat because upstream's chat is. A failure here after a sync
- * names the contract that moved: a line or an edge is likely back, or the
- * slate no longer matches upstream's chat.
+ * pages/frame.css takes the line off the sidebar's edge by giving
+ * `[data-app-sidebar]`'s border no width; the sidebar, the inset the
+ * workspace is and the frame behind them wear the same grain, so they read
+ * as one ground; and the slate is flat because upstream's chat is. A
+ * failure here after a sync names the contract that moved: a line or an
+ * edge is likely back, or the slate no longer matches upstream's chat.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -15,7 +15,7 @@ import sidebar from "../../components/ui/sidebar.tsx?raw";
 import themePalette from "../../themePalette.ts?raw";
 
 describe("the frame's contracts with upstream", () => {
-  it("the app's sidebar carries the attribute workspace.css names", () => {
+  it("the app's sidebar carries the attribute frame.css names", () => {
     expect(appSidebarLayout).toMatch(/<Sidebar\s[^>]*data-app-sidebar=""/);
   });
 
@@ -29,9 +29,10 @@ describe("the frame's contracts with upstream", () => {
   });
 
   it("the sidebar and the inset wear the same grain, under their own colours", () => {
-    // workspace.css sets only the inset's colour, so its grain stays; were
-    // one of the two to lose it, the rail would stand apart from the frame
-    // beside it, as an edge.
+    // workspace.css sets only the inset's colour, so its grain stays, and
+    // frame.css paints the frame behind with the same token; were one to
+    // lose it, the rail would stand apart from the frame beside it, as an
+    // edge.
     expect(sidebar).toMatch(
       /className="flex h-full w-full flex-col bg-sidebar surface-grain[^"]*"\s+data-sidebar="sidebar"\s+data-slot="sidebar-inner"/,
     );

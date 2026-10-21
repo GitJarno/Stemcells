@@ -4,11 +4,8 @@ import { RotateCcwIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { useSettingsRestore } from "../components/settings/SettingsPanels";
 
-import { SettingsBreadcrumb } from "../components/settings/SettingsBreadcrumb";
 import { SidebarInset } from "../components/ui/sidebar";
 import { useNavigateToMainApp } from "../components/sidebar/mainAppLocation";
-import { WorkspacePageHeader } from "../components/WorkspacePageHeader";
-import { isElectron } from "../env";
 import { useEscapeToGoBack } from "../hooks/useNavigateBack";
 import {
   SettingsScopeProvider,
@@ -18,6 +15,7 @@ import { useEnvironments } from "../state/environments";
 import { SettingsScopeNotice } from "../components/settings/SettingsScopeNotice";
 import { SETTINGS_DEVICE_ONLY_PATHS } from "../components/settings/SettingsScopeSentence";
 import { SettingsPageContainer } from "../components/settings/settingsLayout";
+import { SettingsOnSlab } from "../stemcells/pages/SettingsOnSlab";
 import {
   retainSettingsScope,
   validateSettingsRouteSearch,
@@ -120,26 +118,22 @@ function SettingsContentLayout() {
 
   return (
     <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none isolate">
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background text-foreground">
-        <WorkspacePageHeader electron={isElectron}>
-          <div className="flex w-full items-center gap-3">
-            <SettingsBreadcrumb pathname={location.pathname} />
-            {location.pathname === "/settings/general" ? (
-              <div className="ms-auto flex shrink-0 items-center">
-                <RestoreDeviceDefaultsButton
-                  onRestored={() => setRestoreSignal((value) => value + 1)}
-                />
-              </div>
-            ) : null}
-          </div>
-        </WorkspacePageHeader>
-
+      <SettingsOnSlab
+        pathname={location.pathname}
+        actions={
+          location.pathname === "/settings/general" ? (
+            <RestoreDeviceDefaultsButton
+              onRestored={() => setRestoreSignal((value) => value + 1)}
+            />
+          ) : null
+        }
+      >
         <div key={`${contentScopeKey}:${restoreSignal}`} className="min-h-0 flex flex-1 flex-col">
           <SettingsScopeBoundary pathname={location.pathname}>
             <Outlet />
           </SettingsScopeBoundary>
         </div>
-      </div>
+      </SettingsOnSlab>
     </SidebarInset>
   );
 }

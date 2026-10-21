@@ -61,6 +61,10 @@ vi.mock(import("./SettingsBreadcrumb"), async (original) => ({
   ...(await original()),
   SettingsBreadcrumb: (() => null) as never,
 }));
+vi.mock(import("../../stemcells/pages/SettingsOnSlab"), async (original) => ({
+  ...(await original()),
+  SettingsOnSlab: (({ children }: { children?: ReactNode }) => <div>{children}</div>) as never,
+}));
 vi.mock(import("../sidebar/mainAppLocation"), async (original) => ({
   ...(await original()),
   useNavigateToMainApp: () => vi.fn(),

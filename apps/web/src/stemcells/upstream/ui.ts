@@ -9,6 +9,13 @@ export {
   useSidebar,
 } from "../../components/ui/sidebar";
 export { Tooltip, TooltipPopup, TooltipTrigger } from "../../components/ui/tooltip";
-export { Menu, MenuCheckboxItem, MenuPopup, MenuTrigger } from "../../components/ui/menu";
+export {
+  Menu,
+  MenuCheckboxItem,
+  MenuPopup,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuTrigger,
+} from "../../components/ui/menu";
 export { cn, randomUUID } from "../../lib/utils";
 export { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../../components/ui/empty";

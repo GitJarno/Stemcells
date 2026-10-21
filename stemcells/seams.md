@@ -92,6 +92,9 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/stemcells/scrollPhases.ts` | New: loads the scroll-phases addon and sends each phased scroll event to its window's page, with clock ticks after a page loads; says once a start whether the phases are live (stdout, and `stemcells-scroll-phases.log` in the user data folder) | Same: the main process's side |
 | `apps/desktop/src/stemcells/scrollPhasesPreload.ts` | New: exposes `window.stemcellsScrollPhases` and puts the phases on the page's clock | Same: the preload's side |
 | `apps/web/src/composerDraftStore.ts` | Imports `isAskisInstance` from `stemcells/aski/setup`; `applyStickyState` gives a new draft no active provider where the last pick was on Aski's instance | Aski's instance is Aski's (below): a model picked in Aski's chat became every new chat's |
+| `apps/web/src/components/AppSidebarLayout.tsx` (settings) | Renders the left column on `/settings/*` as on every page, where it swapped it for `SidebarChromeHeader` and `SettingsSidebarNav`, so its label is always Threads; those two imports and `isOnSettings` go | Every page on the slate (below): the rail never goes away; Settings' section list moves onto the slate |
+| `apps/web/src/routes/settings.tsx` | Renders `stemcells/pages/SettingsOnSlab` (the pathname, General's restore button as `actions`, the outlet inside) where it rendered the breadcrumb header over the outlet; the `SettingsBreadcrumb`, `WorkspacePageHeader` and `isElectron` imports go | Same: upstream's section list at the slate's left edge and the panel beside it, folding into one row on a narrow slate, with no breadcrumb bar (`pages.contract.test.ts` pins both seams) |
+| `apps/web/src/components/settings/settingsScopeRetention.browser.test.tsx` | Mocks `SettingsOnSlab` to its children, as it mocks the header that went; nothing else changes in it | It renders the settings layout round a stub page |
 
 ### Substitutes
 
@@ -505,3 +508,17 @@ server's `askiInstanceMove.contract.test.ts` pins the carry-over.
   To offer upstream: every sentence that names
   the app reads `APP_BASE_NAME` (web), the desktop's branding, and one
   server constant. Then a fork's name is the branding seams alone.
+
+### Every page on the slate
+
+The rail and the slate never go away; a page is painted on the slate. The
+workspace draws its own frame and slate. Every other page is upstream's
+`SidebarInset`, and our sheet (`pages/frame.css`, loaded with the left
+column) makes that inset the slate itself, in the workspace's place under
+the strip's band and inside the frame's gutters, with no edit to the
+pages: Usage, Pull Requests, the empty states and Settings come as they
+are. Settings is the one page with seams, because upstream gave its section
+list the left column: the column stays, and the route lays the list out at
+the slate's left edge beside the panel (`SettingsOnSlab`), where the
+breadcrumb bar was. Not a substitute of `AppSidebarLayout` or the route:
+each seam is a few lines, and the rest is ours.

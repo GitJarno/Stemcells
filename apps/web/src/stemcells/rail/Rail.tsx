@@ -10,9 +10,11 @@ import { useLayoutEffect } from "react";
 
 import { openNewCellPane } from "../tabs/commands";
 import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
+import { useNavigateToMainApp } from "../upstream/settings";
 import { cn } from "../upstream/ui";
 import { useColumnStore } from "./column";
 import { DiskGauge } from "./DiskGauge";
+import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { RailProjects } from "./RailProjects";
@@ -27,7 +29,10 @@ import "./rail.css";
  */
 export function Rail() {
   const navigate = useNavigate();
-  const onUsage = useLocation({ select: (location) => location.pathname === "/usage" });
+  const lit = useLocation({ select: (location) => litFor(location.pathname) });
+  const onSettings = lit === "settings";
+  const onUsage = lit === "usage";
+  const backToWork = useNavigateToMainApp();
   const searchKeys = useShortcutLabel("commandPalette.toggle");
   const setWidth = useColumnStore((store) => store.setWidth);
 
@@ -60,14 +65,18 @@ export function Rail() {
         <ul data-stemcells-rail-update="">
           <SidebarUpdatePill />
         </ul>
-        <RailButton label="Settings" onClick={() => void navigate({ to: "/settings" })}>
+        <RailButton
+          label="Settings"
+          on={onSettings}
+          onClick={() => void (onSettings ? backToWork() : navigate({ to: "/settings" }))}
+        >
           <SettingsIcon />
         </RailButton>
         <RailButton label="Usage" on={onUsage} onClick={() => void navigate({ to: "/usage" })}>
           <ChartNoAxesColumnIcon />
         </RailButton>
         <PlanRing on={onUsage} />
-        <DiskGauge />
+        <DiskGauge on={lit === "disk"} />
         <RailButton label="Widen the column" onClick={() => setWidth("wide")}>
           <ChevronsRightIcon />
         </RailButton>

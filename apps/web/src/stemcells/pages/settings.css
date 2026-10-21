@@ -1,0 +1,52 @@
+/* Settings on the slate (SettingsOnSlab): upstream's section list at the
+   slate's left edge, the panel beside it; the list folds into the top row
+   when the slate is too narrow for both. */
+[data-stemcells-settings] {
+  --stemcells-settings-list-width: 13rem;
+  container: stemcells-settings / inline-size;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  color: var(--foreground);
+}
+[data-stemcells-settings-list] {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--stemcells-settings-list-width);
+  min-height: 0;
+  padding-block: var(--sc-space-md);
+}
+[data-stemcells-settings-panel] {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+[data-stemcells-settings-row] {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--sc-space-md);
+  padding: var(--sc-space-md) var(--sc-space-xl) 0;
+}
+[data-stemcells-settings-row][data-actions] {
+  display: flex;
+}
+[data-stemcells-settings-menu] {
+  display: none;
+}
+[data-stemcells-settings-actions] {
+  margin-inline-start: auto;
+}
+@container stemcells-settings (width < 48rem) {
+  [data-stemcells-settings-list] {
+    display: none;
+  }
+  [data-stemcells-settings-row],
+  [data-stemcells-settings-menu] {
+    display: flex;
+  }
+}

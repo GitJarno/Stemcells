@@ -1,0 +1,51 @@
+/* The window's frame, and the slate every page stands on. Loaded with the
+   left column, which is on every page. upstream/frame.contract.test.ts and
+   upstream/pages.contract.test.ts pin what this reads. */
+
+/* The frame's one ground, behind the rail, the band over the slate and the
+   gutters round it: the chrome's colour under T3's grain, as upstream's
+   sidebar wears it, from the window's corner as the sidebar's is, so the
+   two run on with no edge. The workspace paints the same over it. */
+[data-slot="sidebar-wrapper"] {
+  background-color: var(--app-chrome-background);
+  background-image: var(--surface-grain);
+  background-repeat: repeat;
+  background-size: var(--surface-grain-size);
+}
+/* On Stemcells' own theme nothing draws on the frame: the sidebar drops its
+   border (upstream's, on `[data-app-sidebar]`; this selector outranks
+   upstream's dark one). To no width rather than no colour: a clear border
+   would show a 1 px strip of the window behind it, without the grain the
+   frame wears on both sides. Themes whose frame is the canvas keep it. */
+:root.dark[data-theme-id="stemcells"] [data-app-sidebar] {
+  border-width: 0;
+}
+
+/* Every page stands on the slate. The workspace draws its own slate
+   (tabs/workspace.css); any other page is upstream's inset, and here the
+   inset is the slate itself: below the tab strip's band (TabStrip's h-9)
+   and inside the frame's gutters, where the workspace's slate stands, so
+   going from a chat to a page moves nothing but what is on the slate. Flat,
+   as upstream's chat is: the inset's grain is for chrome. */
+[data-slot="sidebar-inset"]:not([data-stemcells-workspace]) {
+  height: auto;
+  margin: calc(var(--spacing) * 9) var(--sc-space-md) var(--sc-space-md);
+  border-radius: var(--sc-radius-sheet);
+  background-color: var(--background);
+  background-image: none;
+}
+/* The slate's one quiet edge, as the workspace draws it; none on Stemcells'
+   own theme, whose frame is black. */
+[data-slot="sidebar-inset"]:not([data-stemcells-workspace])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sc-edge) 50%, transparent);
+  pointer-events: none;
+}
+:root.dark[data-theme-id="stemcells"]
+  [data-slot="sidebar-inset"]:not([data-stemcells-workspace])::after {
+  content: none;
+}

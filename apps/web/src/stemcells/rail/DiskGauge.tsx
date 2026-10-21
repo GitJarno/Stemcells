@@ -17,9 +17,9 @@ export function gaugeFigure(free: number): string {
 /**
  * The disk on the rail: an arc of how full it is, the gigabytes left in it,
  * in the wide foot's green, yellow or red. Same reading as the wide foot's
- * (`DiskFoot`); a click opens Settings › Disk.
+ * (`DiskFoot`); a click opens Settings › Disk, and it is lit while there.
  */
-export function DiskGauge() {
+export function DiskGauge(props: { on: boolean }) {
   const volume = useDiskFree();
   const navigate = useNavigate();
   if (volume === null) return null;
@@ -34,7 +34,9 @@ export function DiskGauge() {
         <button
           type="button"
           aria-label={`Disk: ${label}`}
+          aria-current={props.on ? "page" : undefined}
           data-stemcells-rail-plate=""
+          data-on={props.on ? "true" : "false"}
           onClick={() => void navigate({ to: "/settings/disk" })}
         >
           <span data-stemcells-gauge="" className={cn(FOOT_TONE[diskPressure(volume.free)])}>
