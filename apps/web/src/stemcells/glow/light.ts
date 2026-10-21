@@ -4,6 +4,7 @@
  * the iris opens, and the beat every lit surface keeps. Ported from the
  * Swift app's glow; the DOM side is `motion.ts`.
  */
+import { CREST_REACH } from "../motion/beat";
 import type { CellStatus } from "../upstream/status";
 
 /**
@@ -192,15 +193,24 @@ export function bloomStops(tone: Rgb): string[] {
 export type Point = { readonly x: number; readonly y: number };
 export type Size = { readonly width: number; readonly height: number };
 
-/** The band's width on glass `width` wide. */
-export function bandWidth(width: number): number {
-  return Math.max(BAND_LEAST, width * BAND_SPAN);
+/** How far the band's lean carries its top and foot past its middle, on glass `height` tall. */
+function leanOf(height: number): number {
+  return (height / 2) * Math.tan(BAND_LEAN);
 }
 
-/** Where the band's centre waits and where its pass ends: just clear of each end of the glass, its lean included. */
-export function bandReach(size: Size): { readonly from: number; readonly to: number } {
-  const half = bandWidth(size.width) / 2 + (size.height / 2) * Math.tan(BAND_LEAN) + 1;
-  return { from: -half, to: size.width + half };
+/**
+ * The band's width on glass of `size`: half the glass, no narrower than a
+ * folded pill's, and narrow enough that, lean included, it waits clear of
+ * the glass anywhere in its pane while the crest is `CREST_REACH` out.
+ */
+export function bandWidth(size: Size): number {
+  const fits = 2 * (CREST_REACH - leanOf(size.height) - 1);
+  return Math.max(BAND_LEAST, Math.min(size.width * BAND_SPAN, fits));
+}
+
+/** How far the band reaches either side of its crest, its lean included. */
+export function bandReach(size: Size): number {
+  return bandWidth(size) / 2 + leanOf(size.height) + 1;
 }
 
 /** The iris's radius fully open: past the glass's far corner from the anchor, rim included. */

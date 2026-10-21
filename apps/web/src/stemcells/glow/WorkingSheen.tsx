@@ -3,7 +3,7 @@ import { use, useLayoutEffect, useRef } from "react";
 
 import { channels } from "../aski/stage/colour";
 import { PaneCellContext } from "../tabs/paneCell";
-import { sweep } from "../motion/beat";
+import { crossing, paneOf, resweep, standing, sweep } from "../motion/beat";
 import { reducedMotion } from "../tokens/motion";
 import { useCellDriver } from "../upstream/providers";
 import { rgba, SHEEN_BAND, SHEEN_CORE, sheenTone, toneTokenOf } from "./light";
@@ -11,18 +11,19 @@ import "../tokens/stemcells.css";
 import "./glow.css";
 
 /**
- * The working row's word, lit by the chat's own wave: a soft band of
- * brighter ink crosses it on the composer's beat, the same pass, rest,
- * curve and wall clock as the band crossing the glass, so the word and the
- * glass light up as one wave and nothing else in the row moves. One band
- * crosses the whole window; each word shows the stretch of it over itself.
- * The band is the chat's provider's colour, as the glass's light is, lifted
- * to at least the interface ink's lightness so it is always a light over the
- * word, never a shade. Under reduced motion the word holds its ink.
+ * The working row's word, lit by the pane's one wave: a soft band of
+ * brighter ink crosses it as the wave's crest passes over it, on the same
+ * pass, rest, curve and wall clock as the band crossing the composer's
+ * glass, so the word and the glass light up as one wave passing over the
+ * pane and nothing else in the row moves (`motion/beat.ts`). The band is
+ * the chat's provider's colour, as the glass's light is, lifted to at least
+ * the interface ink's lightness so it is always a light over the word,
+ * never a shade. Under reduced motion the word holds its ink.
  *
  * The light is a copy of the word seen through a moving window: the window
  * slides and the copy slides back under it, so the glyphs stay put and only
- * transforms move.
+ * transforms move. A resize re-aims the slide in flight, and a recolour
+ * only repaints the copy: neither restarts it.
  */
 export function WorkingSheen(props: { readonly children: string }) {
   const tone = toneTokenOf(useCellDriver(use(PaneCellContext)));
@@ -33,43 +34,51 @@ export function WorkingSheen(props: { readonly children: string }) {
     if (word === null) return;
     const lens = word.querySelector<HTMLElement>(".sheen-window")!;
     const glyphs = word.querySelector<HTMLElement>(".sheen-glyphs")!;
-    let crossing: Animation[] = [];
-    const cross = () => {
-      for (const animation of crossing) animation.cancel();
-      crossing = [];
+    lens.style.width = `${SHEEN_BAND}px`;
+    let crossings: Animation[] = [];
+    const recolour = () => {
       const style = getComputedStyle(word);
       const lifted = sheenTone(
         channels(style.getPropertyValue(tone)).rgb,
         channels(style.getPropertyValue("--sc-soft")).rgb,
       );
       glyphs.style.color = rgba(lifted, SHEEN_CORE);
-      lens.style.width = `${SHEEN_BAND}px`;
-      if (reducedMotion()) return;
-      // One band crosses the window, from clear of its left edge to clear
-      // of its right; the window slides with it, the copy against it.
-      const x = word.getBoundingClientRect().left;
-      const from = -SHEEN_BAND - x;
-      const to = document.documentElement.clientWidth - x;
-      crossing = [sweep(lens, from, to), sweep(glyphs, -from, -to)];
     };
-    cross();
+    const aim = () => {
+      if (reducedMotion()) {
+        for (const animation of crossings) animation.cancel();
+        crossings = [];
+        return;
+      }
+      // The window's middle rides the pane's crest; the copy slides against it.
+      const { left, width } = standing(word);
+      const { from, to } = crossing(width, left, SHEEN_BAND / 2);
+      const [sliding, copy] = crossings;
+      if (sliding && copy) {
+        resweep(sliding, from, to);
+        resweep(copy, -from, -to);
+      } else {
+        crossings = [sweep(lens, from, to), sweep(glyphs, -from, -to)];
+      }
+    };
+    recolour();
+    aim();
     // oxlint-disable-next-line t3code/no-raw-resize-observer -- The place goes to the sheen's animations, never into React state.
-    const sized = new ResizeObserver(cross);
+    const sized = new ResizeObserver(aim);
     sized.observe(word);
-    addEventListener("resize", cross);
-    const skinned = new MutationObserver(cross);
+    sized.observe(paneOf(word));
+    const skinned = new MutationObserver(recolour);
     skinned.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-skin", "data-device", "data-theme-id", "class", "style"],
     });
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
-    motion.addEventListener("change", cross);
+    motion.addEventListener("change", aim);
     return () => {
       sized.disconnect();
-      removeEventListener("resize", cross);
       skinned.disconnect();
-      motion.removeEventListener("change", cross);
-      for (const animation of crossing) animation.cancel();
+      motion.removeEventListener("change", aim);
+      for (const animation of crossings) animation.cancel();
     };
   }, [tone]);
 

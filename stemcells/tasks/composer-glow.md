@@ -58,3 +58,44 @@ the same numbers, curves and beats.
   provider without a mark wears the Cell's silhouette.
 - Not ported: "news" (a glass lit once by good news) has no surface here
   yet, and the Swift app's "motion rests" (low power) has no web signal.
+
+## Follow-up: a readable mark, one wave (2026-10-21)
+
+Asked for: the provider's mark "almost invisible", make it readable at a
+glance, quieter than the placeholder (the Swift app's reference: large,
+faint, cropped at the bottom right); the composer's wave smoother; and the
+work word's sheen, upstream's "Thinking" shimmer and the composer's wave
+one wave.
+
+- [x] Measure first (headless Chrome, a real Codex turn): frame timing,
+      what is composited, what repaints, what restarts on a re-render
+- [x] The mark's strength is a token by role, relative to the composer's
+      own glass; crops at three strengths, dark and light, both marks
+- [x] One clock and one sweep: the crest crosses the same x of the pane at
+      the same moment in every lit surface, on the beat's wall clock
+- [x] Upstream's Thinking shimmer joins the wave from our side (CSS in our
+      panes, its overlay swept by us); a contract test pins its shape
+- [x] Reduced motion: every wave still
+- [x] Tests: the token, and no endless animation of a paint-heavy property
+- [x] Prove it: frame timings before and after, a frame strip with each
+      surface's crest, a re-mount mid-period
+
+### Review
+
+- The jerk was upstream's, beside ours. The glass band and the work word
+  were already transforms on the compositor, on the wall clock, and no
+  re-render restarted them. Upstream's live rows ran `steps(30)` over
+  2.2 s on their own clock from mount: the overlay's crest stood still on
+  200 of 259 frames, and a shining "Thinking" label moved its background
+  on the main thread (paints 9.3/s, 2 dropped frames in one period).
+- Now one crest crosses the pane on the beat. The glass, the word and
+  upstream's overlays slide by transform from it (worst gap 0.00 px over a
+  period, and for a row mounted mid-beat). A shining label holds off its
+  words and repaints only the ~12 frames the crest is over it. Upstream's
+  own animations are off inside our panes, through the
+  `visibleAnimation` substitute and `glow.css`; a contract test pins the
+  shapes the wave measures.
+- The mark is the words' ink at `--sc-composer-mark` (12%) over the
+  composer's glass: 1.36:1 dark, 1.26:1 light (was 1.01 and 1.05; the
+  placeholder is 3.24 and 2.99). Stronger than the Swift app's 8%, which
+  read faint on this glass, and still well under the placeholder.

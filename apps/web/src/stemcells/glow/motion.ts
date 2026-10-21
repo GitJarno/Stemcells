@@ -9,12 +9,11 @@
  * the anchor; `bloom` is the small flare where the light drains, outside the
  * iris so it is the last thing seen.
  */
-import { beat, onBeat, sweep, sweepFrames } from "../motion/beat";
+import { crossing, onBeat, resweep, sweep } from "../motion/beat";
 import { timing } from "../tokens/motion";
 import {
   axial,
   BAND_LEAN,
-  bandReach,
   bandStops,
   bandWidth,
   BLOOM_REACH,
@@ -76,6 +75,8 @@ export class GlassLight {
   private size: Size = { width: 0, height: 0 };
   private anchor: Point = { x: 0, y: 0 };
   private inset = 0;
+  /** Where the glass stands in its pane, and the pane's width: the wave crosses the pane. */
+  private pane = { left: 0, width: 0 };
   /** One more than the move before it: a finish that finds a newer move under way leaves things alone. */
   private transition = 0;
   /** What the move under way plays; the next move stops it where it is. */
@@ -111,20 +112,26 @@ export class GlassLight {
     }
   }
 
-  /** The glass's size, and where the send button's centre stands in it and how far in from the corner. */
-  layout(size: Size, anchor: Point, inset: number): void {
+  /**
+   * The glass's size, where the send button's centre stands in it and how
+   * far in from the corner, and where the glass stands in its pane.
+   */
+  layout(size: Size, anchor: Point, inset: number, pane: { left: number; width: number }): void {
     if (
       size.width === this.size.width &&
       size.height === this.size.height &&
       anchor.x === this.anchor.x &&
       anchor.y === this.anchor.y &&
-      inset === this.inset
+      inset === this.inset &&
+      pane.left === this.pane.left &&
+      pane.width === this.pane.width
     ) {
       return;
     }
     this.size = size;
     this.anchor = anchor;
     this.inset = inset;
+    this.pane = pane;
     if (size.width <= 0 || size.height <= 0) return;
     const { lit, near, far, band, bloom } = this.parts;
     lit.style.setProperty("--iris-x", `${anchor.x}px`);
@@ -137,19 +144,17 @@ export class GlassLight {
     const stops = WASH.map((stop, i) => [`var(${WASH_COLOURS[i]})`, stop.at] as const);
     near.style.backgroundImage = axial(size, anchor, ends.far, stops);
     far.style.backgroundImage = axial(size, anchor, ends.drift, stops);
-    band.style.width = `${bandWidth(size.width)}px`;
+    band.style.width = `${bandWidth(size)}px`;
     band.style.transform = `translateX(${this.reach().from}px) ${LEAN}`;
     const reach = inset * BLOOM_REACH;
     bloom.style.width = `${reach * 2}px`;
     bloom.style.height = `${reach * 2}px`;
     bloom.style.left = `${anchor.x - reach}px`;
     bloom.style.top = `${anchor.y - reach}px`;
-    // A glass that changed size re-aims the sweep in flight, on the same clock.
-    const passing = this.sweeping?.effect;
-    if (passing instanceof KeyframeEffect) {
+    // A glass that changed size or place re-aims the sweep in flight, on the same clock.
+    if (this.sweeping !== null) {
       const { from, to } = this.reach();
-      const { pass, period } = beat();
-      passing.setKeyframes(sweepFrames(from, to, pass / period, LEAN));
+      resweep(this.sweeping, from, to, LEAN);
     }
   }
 
@@ -191,15 +196,13 @@ export class GlassLight {
 
   // MARK: - Motion
 
-  /** Where the band's left edge stands with its centre at `centre`. */
-  private bandAt(centre: number): number {
-    return centre - bandWidth(this.size.width) / 2;
-  }
-
-  /** The band's pass over this glass: from clear of one end to clear of the other. */
+  /**
+   * The band's pass: its crest, at its middle, rides the pane's crest, so
+   * it crosses this glass as the one wave crosses the pane, and waits clear
+   * of the glass through the rest.
+   */
   private reach(): { from: number; to: number } {
-    const { from, to } = bandReach(this.size);
-    return { from: this.bandAt(from), to: this.bandAt(to) };
+    return crossing(this.pane.width, this.pane.left, bandWidth(this.size) / 2);
   }
 
   private play(element: HTMLElement, frames: Keyframe[], options: KeyframeAnimationOptions) {
@@ -299,7 +302,9 @@ export class GlassLight {
       this.play(lit, [{ opacity: litNow }, { opacity: 1 }], { duration: fade });
     }
 
-    if (this.glow === "working" && !this.still) {
+    if (this.glow === "working") {
+      // Less motion: a still glow, the tint held.
+      if (this.still) return;
       const { from, to } = this.reach();
       this.sweeping = sweep(band, from, to, LEAN);
       this.playing.push(this.sweeping);
@@ -316,10 +321,11 @@ export class GlassLight {
       onBeat(this.play(far, [{ opacity: 0 }, { opacity: 1 }], wander), drift);
       return;
     }
-    // Blocked on you, or less motion: the tint breathes in place.
+    // Blocked on you: the tint breathes in place; with less motion it holds.
     if (from === "working") {
       this.play(band, [{ opacity: 1 }, { opacity: 0 }], { duration: fade, fill: "forwards" });
     }
+    if (this.still) return;
     const breath = timing("glowBreath");
     const breathing = this.play(
       wash,

@@ -4,6 +4,7 @@ import { use, useLayoutEffect, useRef } from "react";
 import { channels, groundOf, inkOf } from "../aski/stage/colour";
 import { path, SIZE } from "../cell/look";
 import { scrollThrough } from "../composer/scrollThrough";
+import { paneOf, standing } from "../motion/beat";
 import { PaneCellContext } from "../tabs/paneCell";
 import { reducedMotion } from "../tokens/motion";
 import { ProviderLogo } from "../upstream/providers";
@@ -33,15 +34,16 @@ const SEND_REACH = 48;
 /**
  * A Cell's composer says what the Cell is doing on its own glass. While it
  * works the glass fills with its provider's colour, washing out from the
- * send button, and a band of light crosses it on the room's beat; when it
- * is your turn the light gathers back into the send button and blooms there
- * once. Blocked on you, the tint turns warm and breathes. The provider's
- * mark sits faded in the corner it shares with the send button, when the
- * glass is tall enough to hold it clear of the button.
+ * send button, and the pane's one wave of light crosses it on the room's
+ * beat (`motion/beat.ts`); when it is your turn the light gathers back into
+ * the send button and blooms there once. Blocked on you, the tint turns
+ * warm and breathes. The provider's mark sits faint in the corner it shares
+ * with the send button, when the glass is tall enough to hold it clear of
+ * the button.
  *
  * Behind the composer's words and over its glass. The words keep their ink:
  * the band's strength is set by them (`light.ts`). Under reduced motion
- * nothing sweeps or drifts: the tint holds, breathes slowly and leaves on a
+ * nothing sweeps, drifts or breathes: the tint holds still and leaves on a
  * fade. The plate itself is upstream's (`glow.css`); the light and the
  * mark are a Cell's only. Nothing outside our panes.
  */
@@ -89,6 +91,8 @@ export function CellComposerGlass(props: { readonly provider: string }) {
     // oxlint-disable-next-line t3code/no-raw-resize-observer -- The size goes to the light's animations, never into React state.
     const sized = new ResizeObserver(() => place(root, light));
     sized.observe(root);
+    // The wave crosses the pane: a pane that changes width moves its crest's path.
+    sized.observe(paneOf(root));
     // A skin or theme change re-colours the light; the root's attributes
     // say when (a theme sets its id, the dark class and its palette).
     const skinned = new MutationObserver(restyle);
@@ -170,7 +174,7 @@ function place(root: HTMLElement, light: GlassLight) {
     clearing = Math.max(box.right - send.left, box.bottom - send.top);
   }
   const inset = (size.width - anchor.x + size.height - anchor.y) / 2;
-  light.layout(size, anchor, inset);
+  light.layout(size, anchor, inset, standing(root));
   const side = imprintSide(size);
   root.style.setProperty("--imprint-side", `${side}px`);
   root.style.setProperty("--imprint-overhang", `${-side * IMPRINT_OVERHANG}px`);

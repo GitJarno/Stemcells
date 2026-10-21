@@ -62,6 +62,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/ThreadTerminalDrawer.tsx": "ThreadTerminalDrawer.tsx",
   // The stash sits on the Cell's line, on the row with its name.
   "apps/web/src/components/chat/ComposerStashBadge.tsx": "ComposerStashBadge.tsx",
+  // Upstream's live rows ride the pane's one wave of light.
+  "apps/web/src/lib/visibleAnimation.ts": "visibleAnimation.ts",
 };
 
 /**

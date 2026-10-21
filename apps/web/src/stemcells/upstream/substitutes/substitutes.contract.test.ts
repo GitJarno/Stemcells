@@ -33,6 +33,7 @@ import * as UpstreamProviderIconUtils from "../../../components/chat/providerIco
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
+import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurChatComposer from "./ChatComposer";
@@ -59,6 +60,7 @@ import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
+import * as OurVisibleAnimation from "./visibleAnimation";
 
 /**
  * Contract: every build of the web app hands upstream's code our substitute
@@ -407,6 +409,29 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/ChatComposer.tsx": [
         "./ComposerStashBadge",
         ["ComposerStashBadge"],
+      ],
+    },
+  },
+  "apps/web/src/lib/visibleAnimation.ts": {
+    upstream: UpstreamVisibleAnimation,
+    substitute: OurVisibleAnimation satisfies typeof UpstreamVisibleAnimation,
+    importers: {
+      // The live rows: the one wave of light rides in on this.
+      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+        "../../lib/visibleAnimation",
+        ["observeVisibleAnimation"],
+      ],
+      "apps/web/src/components/chat/WorktreeSetupCard.tsx": [
+        "~/lib/visibleAnimation",
+        ["observeVisibleAnimation"],
+      ],
+      "apps/web/src/components/ui/spinner.tsx": [
+        "~/lib/visibleAnimation",
+        ["observeVisibleAnimation"],
+      ],
+      "apps/web/src/components/ui/refresh-icon.tsx": [
+        "~/lib/visibleAnimation",
+        ["observeVisibleAnimation"],
       ],
     },
   },

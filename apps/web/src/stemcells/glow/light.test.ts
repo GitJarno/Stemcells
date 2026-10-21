@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
+import { crossing } from "../motion/beat";
 import { CELL_STATUSES } from "../upstream/status";
 import {
   axial,
@@ -118,15 +119,18 @@ describe("the light's geometry", () => {
   const anchor = { x: 568, y: 88 };
 
   it("makes the band half the glass, and no narrower than a folded pill's", () => {
-    expect(bandWidth(600)).toBe(300);
-    expect(bandWidth(40)).toBe(36);
+    expect(bandWidth(size)).toBe(300);
+    expect(bandWidth({ width: 40, height: 30 })).toBe(36);
   });
 
-  it("starts and ends the band clear of the glass, its lean included", () => {
-    const { from, to } = bandReach(size);
-    const lean = (size.height / 2) * Math.tan((24 * Math.PI) / 180);
-    expect(from + bandWidth(600) / 2 + lean).toBeLessThan(0);
-    expect(to - bandWidth(600) / 2 - lean).toBeGreaterThan(size.width);
+  it("waits clear of the glass, its lean included, while the pane's crest is out past either edge", () => {
+    // The worst case: glass flush with both edges of its pane.
+    for (const glass of [size, { width: 2000, height: 120 }, { width: 900, height: 600 }]) {
+      const { from, to } = crossing(glass.width, 0, bandWidth(glass) / 2);
+      const middle = (x: number) => x + bandWidth(glass) / 2;
+      expect(middle(from) + bandReach(glass)).toBeLessThanOrEqual(1e-9);
+      expect(middle(to) - bandReach(glass)).toBeGreaterThanOrEqual(glass.width - 1e-9);
+    }
   });
 
   it("opens the iris solid past the glass's far corner", () => {

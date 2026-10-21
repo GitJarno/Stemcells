@@ -1575,6 +1575,13 @@
   --sc-provider-codex: rgba(16, 163, 127, 1);
 }
 
+/* The provider's mark in a Cell's composer: the words' ink at this share
+   over the composer's own glass, so it reads at a glance whatever greys the
+   glass wears, and stays quieter than the placeholder (`glow/glow.css`). */
+:root {
+  --sc-composer-mark: 12%;
+}
+
 /* How far a wide table's edge fades in a pane, to say it scrolls sideways. */
 :root {
   --sc-table-fade: 3.5rem;

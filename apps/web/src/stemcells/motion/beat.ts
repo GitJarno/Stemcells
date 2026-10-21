@@ -1,18 +1,34 @@
 /**
- * The room's working beat: a wave's crossing and the rest after it, on one
- * wall clock. Everything lit by a working Cell crosses on it: the band over
- * its composer's glass, the sheen over its working word, and anything else
- * that wants to light up in step. Every pane keeps the same beat, and one
- * mounted later lands mid-beat instead of restarting.
+ * The room's working beat: one wave of light, its crossing and the rest
+ * after it, on one wall clock. Everything lit by a working Cell crosses on
+ * it: the band over its composer's glass, the sheen over its working word,
+ * upstream's live rows ("Thinking"), and anything else that wants to light
+ * up in step. Every pane keeps the same beat, and one mounted later lands
+ * mid-beat instead of restarting.
+ *
+ * One wave, not several in time: the crest crosses its pane once per beat,
+ * and every lit surface in the pane shows it as it passes over that
+ * surface (`crossing`), as if one light passed over the pane.
  *
  * On the web the wall clock is the document timeline: an endless animation
  * whose start sits on the shared phase (`onBeat`) is in step with every
- * other one, set once and then the browser's.
+ * other one, set once and then the browser's. What moves is a transform,
+ * so the compositor runs it and no script or paint runs per frame.
  */
 import { timing } from "../tokens/motion";
 
-/** Nearly even across, softened where the light meets and leaves: it glides, never lunges. */
-export const BEAT_CURVE = "cubic-bezier(0.3, 0.1, 0.7, 0.9)";
+/** The crossing's curve's control points: nearly even across, softened where the light meets and leaves. */
+const BEAT_POINTS = [0.3, 0.1, 0.7, 0.9] as const;
+
+/** The crossing's curve: it glides, never lunges. */
+export const BEAT_CURVE = `cubic-bezier(${BEAT_POINTS.join(", ")})`;
+
+/**
+ * How far clear of its pane's edges the crest waits and ends, in pixels:
+ * past the widest band any lit surface draws (the glass narrows its band to
+ * fit, `light.ts`), so through the rest nothing shows.
+ */
+export const CREST_REACH = 240;
 
 /** A crossing and the rest after it, in milliseconds, from the timing tokens. */
 export function beat(): { readonly pass: number; readonly rest: number; readonly period: number } {
@@ -35,6 +51,42 @@ export function onBeat<A extends Animation>(animation: A, cycle: number): A {
   return animation;
 }
 
+/** The pane a lit surface stands in, whose width the wave crosses; the window outside one. */
+export function paneOf(element: Element): Element {
+  return element.closest("[data-stemcells-pane]") ?? document.documentElement;
+}
+
+/**
+ * Where `element` stands in its pane, from the pane's left edge, and the
+ * pane's width. `element` is one that never moves itself (the box a band
+ * slides in), so this is its place at rest; a pane mid-zoom counts in its
+ * own pixels.
+ */
+export function standing(element: Element): { readonly left: number; readonly width: number } {
+  const pane = paneOf(element);
+  const frame = pane.getBoundingClientRect();
+  const laid = pane instanceof HTMLElement ? pane.offsetWidth : 0;
+  const scale = laid > 0 && frame.width > 0 ? frame.width / laid : 1;
+  return {
+    left: (element.getBoundingClientRect().left - frame.left) / scale - pane.clientLeft,
+    width: pane.clientWidth,
+  };
+}
+
+/**
+ * Where a band's transform runs so its crest rides the pane's crest: the
+ * crest goes from `CREST_REACH` clear of the pane's left edge to as far
+ * past its right. `left` is where the sliding element stands in the pane
+ * with no transform, `crest` where the band's crest stands in it.
+ */
+export function crossing(
+  paneWidth: number,
+  left: number,
+  crest: number,
+): { readonly from: number; readonly to: number } {
+  return { from: -CREST_REACH - left - crest, to: paneWidth + CREST_REACH - left - crest };
+}
+
 /**
  * One working sweep: `element` slides along x from `from` to `to` pixels in
  * the beat's pass, rests, and goes again, on the beat. `lean` follows the
@@ -51,6 +103,15 @@ export function sweep(element: Element, from: number, to: number, lean = ""): An
   );
 }
 
+/** Re-aims a sweep in flight, on the same clock: its timing and phase stay. */
+export function resweep(animation: Animation, from: number, to: number, lean = ""): void {
+  const { pass, period } = beat();
+  const effect = animation.effect;
+  if (effect instanceof KeyframeEffect) {
+    effect.setKeyframes(sweepFrames(from, to, pass / period, lean));
+  }
+}
+
 /** A sweep's frames: across in the first `share` of the beat, then held at its end. */
 export function sweepFrames(from: number, to: number, share: number, lean = ""): Keyframe[] {
   const at = (x: number) => `translateX(${x}px)${lean ? ` ${lean}` : ""}`;
@@ -59,4 +120,66 @@ export function sweepFrames(from: number, to: number, share: number, lean = ""):
     { offset: share, transform: at(to) },
     { offset: 1, transform: at(to) },
   ];
+}
+
+/** One coordinate of the beat's curve at parameter `s`, from its two control values. */
+function bezier(s: number, a: number, b: number): number {
+  const r = 1 - s;
+  return 3 * r * r * s * a + 3 * r * s * s * b + s * s * s;
+}
+
+/** The curve's parameter where `coordinate` reaches `value` (both rise monotonically from 0 to 1). */
+function solve(value: number, a: number, b: number): number {
+  let low = 0;
+  let high = 1;
+  for (let i = 0; i < 40; i++) {
+    const mid = (low + high) / 2;
+    if (bezier(mid, a, b) < value) low = mid;
+    else high = mid;
+  }
+  return (low + high) / 2;
+}
+
+/** How far across the crossing is at `time`, both 0 to 1, as `BEAT_CURVE` eases it. */
+export function beatEase(time: number): number {
+  const [x1, y1, x2, y2] = BEAT_POINTS;
+  return bezier(solve(time, x1, x2), y1, y2);
+}
+
+/** When the crossing is `progress` across, 0 to 1: `beatEase` run backwards. */
+export function beatWhen(progress: number): number {
+  const [x1, y1, x2, y2] = BEAT_POINTS;
+  return bezier(solve(progress, y1, y2), x1, x2);
+}
+
+/**
+ * A crossing for a band drawn by repainting (a background's place, not a
+ * transform): its value runs `from` to `to` as a sweep's does, but holds at
+ * `low` until it reaches it and at `high` once past, the places where the
+ * band is just off the box it lights. Held, nothing repaints: the box
+ * repaints only while the crest passes over it. Between, `steps` straight
+ * pieces follow the curve.
+ */
+export function paintedFrames(
+  from: number,
+  to: number,
+  low: number,
+  high: number,
+  share: number,
+  frame: (x: number) => Keyframe,
+  steps = 12,
+): Keyframe[] {
+  const at = (x: number) => beatWhen(Math.min(1, Math.max(0, (x - from) / (to - from))));
+  const enter = at(low);
+  const leave = at(high);
+  const frames: Keyframe[] = [
+    { ...frame(low), offset: 0 },
+    { ...frame(low), offset: enter * share },
+  ];
+  for (let i = 1; i < steps; i++) {
+    const time = enter + ((leave - enter) * i) / steps;
+    frames.push({ ...frame(from + (to - from) * beatEase(time)), offset: time * share });
+  }
+  frames.push({ ...frame(high), offset: leave * share }, { ...frame(high), offset: 1 });
+  return frames;
 }

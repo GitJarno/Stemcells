@@ -1,6 +1,7 @@
 /* The light in a Cell's composer and on its working word, scoped to them,
-   so loading this sheet never restyles upstream's views. What moves is set
-   by `motion.ts` and `WorkingSheen.tsx`; this is where it stands. */
+   so loading this sheet never restyles upstream's views (its live rows
+   only in a pane of ours). What moves is set by `motion.ts`,
+   `WorkingSheen.tsx` and `liveRows.ts`; this is where it stands. */
 
 /* How far open the iris is, 0 to 1, and the wash's three colours: typed,
    so the iris opens and a recolour fades rather than jumping. */
@@ -125,16 +126,22 @@
   );
 }
 
-/* The provider's mark, a barely-there watermark in the glass: halfway
-   between the plate and upstream's accent surface, fading in from its
-   top-left and hanging past the glass's trailing and bottom edges. */
+/* The provider's mark, faint in the glass: the words' ink at
+   --sc-composer-mark over the composer's own glass, so it reads at a glance
+   on whatever the glass is and stays quieter than the placeholder. It fades
+   in from its top-left and hangs past the glass's trailing and bottom
+   edges, as the Swift app's does. */
 [data-stemcells-composer-glass] .glass-imprint {
   position: absolute;
   right: var(--imprint-overhang);
   bottom: var(--imprint-overhang);
   display: none;
   height: var(--imprint-side);
-  color: color-mix(in oklab, var(--accent), var(--chat-composer-glass-surface));
+  color: color-mix(
+    in srgb,
+    var(--sc-text) var(--sc-composer-mark),
+    var(--chat-composer-glass-surface)
+  );
   mask-image: linear-gradient(to bottom right, transparent, rgb(0 0 0 / 65%), black);
 }
 
@@ -178,4 +185,22 @@
   top: 0;
   left: 0;
   white-space: nowrap;
+}
+
+/* Upstream's live rows in a pane of ours shine on the pane's beat, driven
+   by `liveRows.ts`, so upstream's own stepped shine stops here: an
+   overlay rests with its band off the row, and a shining label with its
+   band far off the label, until the wave reaches them. Under reduced
+   motion upstream's rules stand: nothing shines. */
+@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  [data-stemcells-pane] :is(.live-activity-focus, .live-activity-focus-counter) {
+    animation: none;
+  }
+
+  [data-stemcells-pane] .live-tool-shine {
+    animation: none;
+    background-position:
+      -100vw 0,
+      0 0;
+  }
 }
