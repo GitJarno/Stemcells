@@ -85,6 +85,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/preload.ts` | Imports `./stemcells/scrollPhasesPreload.ts` (for its side effect) after its own imports | Same: hands the phases to the page |
 | `apps/desktop/src/stemcells/scrollPhases.ts` | New: loads the scroll-phases addon and sends each phased scroll event to its window's page, with clock ticks after a page loads; says once a start whether the phases are live (stdout, and `stemcells-scroll-phases.log` in the user data folder) | Same: the main process's side |
 | `apps/desktop/src/stemcells/scrollPhasesPreload.ts` | New: exposes `window.stemcellsScrollPhases` and puts the phases on the page's clock | Same: the preload's side |
+| `apps/web/src/composerDraftStore.ts` | Imports `isAskisInstance` from `stemcells/aski/setup`; `applyStickyState` gives a new draft no active provider where the last pick was on Aski's instance | Aski's instance is Aski's (below): a model picked in Aski's chat became every new chat's |
 
 ### Substitutes
 
@@ -400,6 +401,28 @@ over several events. On the Mac the app reads the system's own phases:
 - Without the addon (not built, a dev run that skipped it, or another
   platform) nothing is sent, and the swipe reads wheel events alone, as
   before.
+
+### Aski's instance is Aski's
+
+Aski's chat runs on a provider instance of its own (`aski`), which carries
+Aski's persona. Upstream's new chat takes its model from the chat on screen,
+else from the model last picked anywhere, so a Cell opened from Aski's tab
+(+, ⌘T there, the sidebar's new chat) ran as Aski, and so did every new chat
+after a model was picked in Aski's chat. No new chat starts there now:
+
+- The carried model: `lib/chatThreadActions.ts` has a substitute (no seam)
+  whose `resolveNewThreadModelSelectionOverride` carries nothing from Aski's
+  instance. A new chat then starts on the project's default, else the last
+  pick, as upstream's does with nothing to carry.
+- The last pick: the seam above, where a draft takes it, so a pick stored
+  before this fix is passed over too. With nothing picked, the composer
+  falls back to the default instance, as on a first launch.
+  `stemcells/upstream/draftWords.ts`'s `startingModel`, which reads the
+  last pick for the Cells a message starts, passes it over the same way.
+
+`newChatInstance.test.ts` pins both. A Cell Aski starts itself
+(`t3_thread_launch`) is told in Aski's persona where it runs; the server
+doesn't check it.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

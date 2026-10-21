@@ -22,9 +22,11 @@ import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/Draft
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
+import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurChatComposer from "./ChatComposer";
+import * as OurChatThreadActions from "./chatThreadActions";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
@@ -253,6 +255,16 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/chat/MessagesTimeline.tsx": ["../T3Wordmark", ["T3Wordmark"]],
       "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
+    },
+  },
+  "apps/web/src/lib/chatThreadActions.ts": {
+    upstream: UpstreamChatThreadActions,
+    substitute: OurChatThreadActions satisfies typeof UpstreamChatThreadActions,
+    importers: {
+      "apps/web/src/hooks/useHandleNewThread.ts": [
+        "../lib/chatThreadActions",
+        ["resolveNewThreadModelSelectionOverride"],
+      ],
     },
   },
 };

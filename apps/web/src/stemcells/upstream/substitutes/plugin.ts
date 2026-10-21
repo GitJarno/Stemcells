@@ -44,6 +44,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
   // Stemcells' mark: where upstream draws T3's wordmark as an icon.
   "apps/web/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
+  // A new chat never starts on Aski's provider instance.
+  "apps/web/src/lib/chatThreadActions.ts": "chatThreadActions.ts",
 };
 
 /**

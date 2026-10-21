@@ -27,6 +27,7 @@ import { hasExplicitComposerModelSelection } from "../../lib/chatThreadActions";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProject } from "../../state/entities";
 import { environmentServerConfigsAtom } from "../../state/server";
+import { isAskisInstance } from "../aski/setup";
 
 /** A draft's model as its store keeps it, to put back exactly. */
 export interface DraftModelState {
@@ -87,12 +88,12 @@ export function readDraftModel(draftId: string): ModelSelection | null {
 /**
  * What a new chat in a project starts on: the project's default, else the
  * global default, else the model last used, as upstream's sticky state
- * gives a new draft.
+ * gives a new draft (never Aski's instance, as there).
  */
 export function startingModel(projectRef: ScopedProjectRef): ModelSelection | null {
   const store = useComposerDraftStore.getState();
   const sticky =
-    store.stickyActiveProvider === null
+    store.stickyActiveProvider === null || isAskisInstance(store.stickyActiveProvider)
       ? null
       : (store.stickyModelSelectionByProvider[store.stickyActiveProvider] ?? null);
   return projectDefaultModel(projectRef) ?? sticky;

@@ -7,6 +7,16 @@ import persona from "./persona.md?raw";
 /** The provider instance Aski's chat runs on. */
 export const ASKI_INSTANCE_ID = "aski";
 
+/**
+ * Whether a provider instance is Aski's own. It carries Aski's persona, so
+ * no new chat starts on it: not one opened from Aski's chat (upstream's new
+ * chat carries the model of the chat on screen), nor one after a model was
+ * picked in Aski's chat (upstream's new chat starts on the last pick).
+ */
+export function isAskisInstance(instanceId: string | null | undefined): boolean {
+  return instanceId === ASKI_INSTANCE_ID;
+}
+
 /** Aski's chat's title. */
 export const ASKI_TITLE = "Aski";
 
