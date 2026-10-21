@@ -5,7 +5,10 @@
 /* The perch stands over the composer's box as a Cell's line does, in the
    composer's flow, so the transcript keeps its foot clear of it, and over
    the composer's halo (`glow.css`), as the line is painted. It holds half
-   of Aski's height; Aski stands on its foot. */
+   of Aski's height; Aski stands on its foot. The halo stops at the box, so
+   Aski stands over the transcript and wears the Cells' glow round its
+   shape: on the perch, not the scaled stage, so the glow keeps its size
+   whatever the pose. */
 [data-stemcells-aski-perch] {
   --aski-whole: calc(var(--sc-body) * (var(--sc-natural-line) + var(--sc-leading)) * 6);
   --aski-perched: 0.5;
@@ -15,6 +18,8 @@
   block-size: calc(var(--aski-whole) * var(--aski-perched));
   margin-block-end: var(--sc-composer-line-gap);
   pointer-events: none;
+  filter: drop-shadow(0 0 var(--sc-figure-glow) var(--background))
+    drop-shadow(0 0 var(--sc-figure-glow) var(--background));
 }
 
 /* One stage, Aski whole on it; a pose is its transform alone. */

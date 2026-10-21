@@ -76,7 +76,7 @@ The bottom-centre pill in the reported shots is not Stemcells': it is another ap
    - The stash sits at its right end, T3's stash tab's mark, word and count; it never truncates. Where no ledge shows (a draft, Aski's pane) T3's own tab stands on the box.
    - The buds stand beside the Cell, in the box the Cell's size already reserves.
 4. **The transcript's end padding** follows the whole dock's height. This is the measured overlay; `composerLine.contract.test.ts` pins it.
-5. **The halo** covers the whole dock, the Cell included: text running behind the Cell's head read as messy in #92's scrolled zoom. It is a plain fade in the page's colour at 60 %, with no blur.
+5. **The halo** covers the box and the ledge, a plain fade in the page's colour at 60 %, with no blur. It stops a short fade above the ledge's top (the box's, where no ledge shows): over the Cell's height too it dimmed a band of text the pane's width, which distracted (2026-10-21, `dock-halo.md`). The Cell, its buds and Aski stay clear of the text behind them by a glow in the page's colour round their own shape.
 6. **The veil**, below the box only, as the Swift app's: what passes under the box and out through the pane's foot blurs, from clear at the box's middle to `--sc-veil-blur` at the foot. Only the box is glass; above it nothing is blurred.
 
 ## Env on the ledge
