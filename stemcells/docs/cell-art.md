@@ -145,7 +145,8 @@ people: open it in a browser.
 - **Fabrics** dye the body's own roles (`map`) in row bands. Hero rows count
   from the top of the 32-row grid, mini rows from the top of the 14-row grid.
   `rides: true` moves the band with the breath; otherwise it counts from the
-  ground.
+  ground. A fabric is its list of bands, or `{"about": "…", "bands": […]}`
+  to say what it is.
 - **An outfit** is dealt as one. It fills the slots `headwear`, `face`,
   `wrap` and `back`, plus a `fabric`.
   - A slot names a pack piece by id (`theme/piece`), from any pack.
@@ -195,8 +196,14 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
 
 - **A frame** is a pose (the rig's fields; anything left out stays at rest)
   plus the marks and props it adds (`layers`, drawn inline). It may also
-  carry `swaps` (a worn piece shown as its posed variant) and `dx` (for a
-  move that travels: how far the Cell stands from its place, in hero cells).
+  carry:
+  - `swaps`: a worn piece, in any slot, shown as its posed variant;
+  - `hidden: true`: the Cell is gone for the frame (a vanish). Its body and
+    what it wears aren't drawn; the frame's layers are, on the anchors it
+    would stand on;
+  - `dx`, for a move that travels: how far the Cell stands from its place,
+    in hero cells. The tools draw it; the app holds the Cell in its place
+    until a stage gives it room to travel.
 - **The move's meta:**
   - `kind`: `loop`, `once` or `hold`;
   - `priority`: its rung on the ladder;
@@ -253,7 +260,8 @@ These hold on drawn art. On the original's art they are notes.
   - a temperament's weight is above 0, and its fidget and beats are scenes.
 - **Warnings** (look, then decide):
   - art that falls off the canvas in some scene (the original's own hats do,
-    in the plea's hop);
+    in the plea's hop). A posed variant is probed only in the scenes it is
+    worn in: its states' scenes, and `happy` when a cheer swaps it in;
   - a drawn scene whose marks leave the canvas.
 
 Before a pack's pull request:

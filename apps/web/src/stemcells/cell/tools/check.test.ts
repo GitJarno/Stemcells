@@ -38,6 +38,16 @@ vi.mock("../art.ts", () => {
             miniHotspot: [4, 4],
           }),
           piece({
+            // Wide enough that a lean pushes it off the canvas: it is worn only in the wave.
+            name: "hem-up",
+            slot: "back",
+            posed: true,
+            art: ["NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"],
+            hotspot: [15, 0],
+            mini: ["NNNNNNNNNNNNN"],
+            miniHotspot: [6, 4],
+          }),
+          piece({
             name: "mask",
             slot: "face",
             eyes: true,
@@ -68,15 +78,18 @@ vi.mock("../art.ts", () => {
               miniRows: [11, 13],
             },
           ],
-          "denim-rose": [
-            {
-              parts: ["torso"],
-              map: { B: "I", b: "i" },
-              rides: false,
-              rows: [26, 29],
-              miniRows: [11, 13],
-            },
-          ],
+          "denim-rose": {
+            about: "Rose denim from the waist down.",
+            bands: [
+              {
+                parts: ["torso"],
+                map: { B: "I", b: "i" },
+                rides: false,
+                rows: [26, 29],
+                miniRows: [11, 13],
+              },
+            ],
+          },
         },
         outfits: [
           {
@@ -90,6 +103,13 @@ vi.mock("../art.ts", () => {
             family: "blue",
           },
           { id: "masked", face: "trial/mask", silhouette: "mask", family: "sky" },
+          {
+            id: "rogue",
+            back: "trial/hem",
+            cheer: "trial/vanish",
+            silhouette: "hem",
+            family: "grey",
+          },
           {
             id: "knight",
             headwear: "helm",
@@ -105,7 +125,24 @@ vi.mock("../art.ts", () => {
             facing: "right",
             kind: "once",
             tell: 1,
-            frames: [{ pose: { eyes: "happy" } }, { pose: { eyes: "happy", base: 28 } }],
+            frames: [
+              { pose: { eyes: "happy" } },
+              { pose: { eyes: "happy", base: 28 }, swaps: { "trial/hem": "trial/hem-up" } },
+            ],
+          },
+          vanish: {
+            fps: 6,
+            facing: "right",
+            kind: "once",
+            tell: 1,
+            frames: [
+              { pose: {} },
+              {
+                pose: {},
+                hidden: true,
+                layers: [{ art: ["!!!"], attach: "ground", hotspot: [1, 1], z: 5 }],
+              },
+            ],
           },
         },
       },
@@ -285,6 +322,20 @@ describe("art drawn beside the kit", () => {
     expect(eyesRow("building/0")).not.toContain("E");
   });
 
+  it("lets a cheer's frame swap any worn piece, the one on the back too", () => {
+    const frames = sceneOf(outfitLook("trial/worker")!, "happy")!.hero;
+    expect(frames[0]!.join("")).not.toContain("N");
+    expect(frames[1]!.join("")).toContain("N");
+  });
+
+  it("draws a frame the Cell is gone from as its layers alone, where the Cell stood", () => {
+    const [here, gone] = sceneOf(outfitLook("trial/rogue")!, "happy")!.hero;
+    expect(here!.join("")).toMatch(/[BbLO]/);
+    expect(gone!.join("")).not.toMatch(/[BbLOQE]/);
+    const row = gone!.findIndex((r) => r.includes("!!!"));
+    expect(row).toBeGreaterThan(20);
+  });
+
   it("wears the original's library in an outfit: the knight's helm, plate and sword", () => {
     const knight = outfitLook("trial/knight")!;
     expect(sceneOf(knight, "idle")!.hero).toEqual(sceneOf(curated("knight")!, "idle")!.hero);
@@ -307,6 +358,7 @@ describe("art drawn beside the kit", () => {
       "trial/hem",
       "trial/mask",
       "trial/mask-down",
+      "outfit trial/rogue",
       "outfit trial/worker",
       "trial/worker~rose",
       "outfit trial/masked",
@@ -314,6 +366,12 @@ describe("art drawn beside the kit", () => {
       expect(rules(subject), subject).toEqual([]);
     expect(rules("trial/0")).toEqual([]);
     expect(about("temperament steady")).toEqual([]);
+  });
+
+  it("probes a posed variant only in the scenes it is worn in", () => {
+    // The wide hem leaves the canvas when busy/9 leans; it is only worn in the wave.
+    expect(rules("trial/hem-up", "warn")).toEqual([]);
+    expect(rules("trial/hem-up")).toEqual([]);
   });
 
   it("fails each broken rule, and names it", () => {

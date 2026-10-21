@@ -148,7 +148,12 @@ function fabricRoles(look: CellLook): Set<string> {
 function lookFindings(
   subject: string,
   look: CellLook,
-  options: { original: boolean; mouth: boolean; eyesAllowed: boolean },
+  options: {
+    original: boolean;
+    mouth: boolean;
+    eyesAllowed: boolean;
+    scenes?: readonly string[] | undefined;
+  },
 ): Finding[] {
   const out: Finding[] = [];
   const say = (rule: string, detail: string, level: Level = "fail") =>
@@ -191,7 +196,7 @@ function lookFindings(
           );
       }
     }
-    const spilt = [...SCENES.keys()].filter((key) =>
+    const spilt = (options.scenes ?? [...SCENES.keys()]).filter((key) =>
       probesOf(look, key, compact).some((probe) => probe.spilt > 0),
     );
     if (spilt.length > 0)
@@ -297,6 +302,8 @@ export interface PackLook {
   readonly mouth: boolean;
   /** A posed variant worn only at work, when the face carries no state: it may cover both eyes. */
   readonly eyesAllowed: boolean;
+  /** The scenes a posed variant is worn in; every scene for anything else. */
+  readonly scenes?: readonly string[] | undefined;
 }
 
 /** Every look a pack's art makes: each piece worn alone (its posed variants too), and each outfit in each colourway. */
@@ -309,6 +316,17 @@ export function looksOfPack(theme: string): PackLook[] {
         .filter(([, variant]) => variant === name)
         .map(([state]) => state),
     );
+  // A cheer swaps a piece in for `happy`, the state a cheer plays for.
+  const swappedIn = new Set(
+    [...CHEERS.values()].flatMap((cheer) =>
+      cheer.frames.flatMap((frame) => Object.values(frame.swaps)),
+    ),
+  );
+  const scenesOf = (name: string) => {
+    const states = new Set(statesOf(name));
+    if (swappedIn.has(`${theme}/${name}`)) states.add("happy");
+    return [...SCENES.keys()].filter((key) => states.has(key.split("/")[0]!));
+  };
   const pieces = pack.pieces.map((piece): PackLook => {
     const id = `${theme}/${piece.name}`;
     return {
@@ -317,6 +335,7 @@ export function looksOfPack(theme: string): PackLook[] {
       look: packLook([id]),
       mouth: piece.slot === "headwear" || piece.slot === "back",
       eyesAllowed: piece.posed && !statesOf(piece.name).some((s) => STATE_SCENES.includes(s)),
+      scenes: piece.posed ? scenesOf(piece.name) : undefined,
     };
   });
   const outfits = pack.outfits.flatMap((outfit) => {
@@ -410,8 +429,10 @@ export function check(options: { themes?: readonly string[]; original?: boolean 
   out.push(...temperamentFindings());
   for (const pack of PACKS) {
     if (!wanted(pack.theme) || (!pack.authored && !options.original)) continue;
-    for (const { label, look, mouth, eyesAllowed } of looksOfPack(pack.theme))
-      out.push(...lookFindings(label, look, { original: !pack.authored, mouth, eyesAllowed }));
+    for (const { label, look, mouth, eyesAllowed, scenes } of looksOfPack(pack.theme))
+      out.push(
+        ...lookFindings(label, look, { original: !pack.authored, mouth, eyesAllowed, scenes }),
+      );
   }
   return folded(out);
 }

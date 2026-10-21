@@ -53,7 +53,7 @@ interface Probe {
   readonly spill?: { count: number };
 }
 
-/** Pose `index` of `move` as worn: the face blinked, a hop held under the hat, fabric, the tool, marks. */
+/** Pose `index` of `move` as worn: its swaps, the face blinked, a hop held under the hat, fabric, the tool, marks. */
 function composeFrame(
   move: Move,
   index: number,
@@ -65,8 +65,10 @@ function composeFrame(
 ): string[] {
   const frame = move.frames[index]!;
   const look: { -readonly [K in keyof Wardrobe]: Wardrobe[K] } = { ...wardrobe };
-  if (look.headwear !== undefined) look.headwear = frame.swaps[look.headwear] ?? look.headwear;
-  if (look.accessory !== undefined) look.accessory = frame.swaps[look.accessory] ?? look.accessory;
+  for (const field of ["headwear", "accessory", "wrap", "back"] as const) {
+    const worn = look[field];
+    if (worn !== undefined) look[field] = frame.swaps[worn] ?? worn;
+  }
   let pose = frame.pose;
   if (blinking && SHUTS.has(pose.eyes)) pose = { ...pose, eyes: LIDS };
   if (probe.eyeless) pose = { ...pose, eyes: "none" };
@@ -81,10 +83,16 @@ function composeFrame(
   const effects = compact ? frame.layers.map(miniOf) : [...frame.layers];
   if (pose.mouth === "whistle" && PUCKER !== undefined)
     effects.push(compact ? miniOf(PUCKER) : PUCKER);
-  const worn = probe.bare
-    ? layersOf({ held: look.held }, compact, beat)
-    : layersOf(look, compact, beat);
-  const rows = compose(body, [...worn, ...effects], probe.spill);
+  const worn = frame.hidden
+    ? []
+    : probe.bare
+      ? layersOf({ held: look.held }, compact, beat)
+      : layersOf(look, compact, beat);
+  // A Cell gone this frame keeps its anchors, so what the frame adds stands where it stood.
+  const shown = frame.hidden
+    ? { ...body, rows: body.rows.map((row) => ".".repeat(row.length)), front: [], features: [] }
+    : body;
+  const rows = compose(shown, [...worn, ...effects], probe.spill);
   return move.facing === "left" ? rows.map((row) => [...row].toReversed().join("")) : rows;
 }
 

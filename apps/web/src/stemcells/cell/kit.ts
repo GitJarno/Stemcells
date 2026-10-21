@@ -235,13 +235,19 @@ interface OutfitData {
   readonly family: string;
 }
 
+/** A drawn fabric that says what it is: its bands, and its `about`. */
+export interface FabricData {
+  readonly about: string;
+  readonly bands: readonly Band[];
+}
+
 /** A pack as its file holds it: the export's, or one drawn in `art/packs/`. */
 export interface PackData {
   readonly theme: string;
   readonly season: Season | null;
   readonly about?: string;
   readonly pieces: readonly PieceData[];
-  readonly fabrics?: Readonly<Record<string, readonly Band[]>>;
+  readonly fabrics?: Readonly<Record<string, readonly Band[] | FabricData>>;
   readonly outfits?: readonly OutfitData[];
   readonly cheers?: Readonly<Record<string, MoveData>>;
 }
@@ -318,7 +324,10 @@ export const animates = (piece: Piece): boolean => piece.frames.length > 1 && pi
 /** The packs' fabrics by id (`theme/fabric`). */
 export const FABRICS: ReadonlyMap<string, readonly Band[]> = new Map(
   [...PACK_FILES.values()].flatMap((pack) =>
-    Object.entries(pack.fabrics ?? {}).map(([name, bands]) => [`${pack.theme}/${name}`, bands]),
+    Object.entries(pack.fabrics ?? {}).map(([name, fabric]) => [
+      `${pack.theme}/${name}`,
+      "bands" in fabric ? fabric.bands : fabric,
+    ]),
   ),
 );
 
@@ -381,6 +390,8 @@ export interface Frame {
   readonly swaps: Readonly<Record<string, string>>;
   /** For a move that travels: how far the Cell stands from its place, in hero cells. */
   readonly dx?: number | undefined;
+  /** The Cell is gone this frame: its body and what it wears aren't drawn, the frame's layers are. */
+  readonly hidden?: boolean | undefined;
 }
 
 /** How a move plays among the others: what Reduce Motion holds, what it hands back to, what it costs. */
@@ -431,6 +442,7 @@ export interface MoveData extends MoveMeta {
     readonly layers?: readonly (number | LayerData)[];
     readonly swaps?: Readonly<Record<string, string>>;
     readonly dx?: number;
+    readonly hidden?: boolean;
   }[];
 }
 
@@ -480,6 +492,7 @@ const move = (data: MoveData, meta: MoveMeta = {}): Move => ({
     ),
     swaps: frame.swaps ?? {},
     ...(frame.dx === undefined ? {} : { dx: frame.dx }),
+    ...(frame.hidden === true ? { hidden: true } : {}),
   })),
   meta: { ...metaOf(data), ...meta },
 });
