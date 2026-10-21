@@ -5,5 +5,5 @@
     "types": ["node"],
     "lib": ["ESNext", "esnext.disposable"]
   },
-  "include": ["**/*.ts", "../stemcells/brand/assets.ts"]
+  "include": ["**/*.ts", "../stemcells/brand/assets.ts", "../stemcells/brand/name.ts"]
 }

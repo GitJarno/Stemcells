@@ -303,6 +303,41 @@
   font-weight: 600;
 }
 
+/* What the words in Aski's composer do to the card (answers/lit.ts): the
+   option they choose wears the accent's ring; one only a click may choose,
+   or one waiting for words, wears the needs-you ring and says so. A reply
+   shows before it goes. */
+[data-need-option][data-lit] {
+  border-color: var(--sc-accent);
+  box-shadow: 0 0 0 1px var(--sc-accent);
+}
+[data-need-option][data-lit="click"],
+[data-need-option][data-lit="words"] {
+  border-color: var(--sc-needs-you);
+  box-shadow: 0 0 0 1px var(--sc-needs-you);
+}
+[data-need-foot] button[data-lit] {
+  box-shadow: 0 0 0 1px var(--sc-accent);
+  color: var(--sc-text);
+}
+[data-need-option-lit] {
+  grid-column: 1 / -1;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-need-option][data-lit="click"] [data-need-option-lit],
+[data-need-option][data-lit="words"] [data-need-option-lit] {
+  color: var(--sc-needs-you);
+}
+[data-need-pending] {
+  align-self: flex-end;
+  max-inline-size: 85%;
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  border: 1px solid var(--sc-accent);
+  border-radius: var(--sc-radius-card);
+  color: var(--sc-text);
+}
+
 [data-need-words] {
   display: flex;
   gap: var(--sc-space-sm);

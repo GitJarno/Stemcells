@@ -7,7 +7,8 @@
 //   stemcells/lab/electron main.cjs        a scratch app, on the repo's Electron
 //
 // The app gets a fresh profile each run, or STEMCELLS_LAB_PROFILE's folder,
-// where the helper leaves `.never-shown-<pid>` for each main it guards.
+// where the helper leaves `.never-shown-<pid>` for each main it guards, and
+// for each Electron run as Node, which has no windows to guard.
 //
 // Every window is created hidden, off every display, and is never shown,
 // focused or raised; it keeps rendering hidden, so a lab drives and captures
@@ -22,8 +23,8 @@
 // LAB_EXIT, as does an app whose main reads electron as an ES module (it
 // would get windows the helper can't make hidden; the desktop app's main is
 // CommonJS). A lab script checks `globalThis[Symbol.for("stemcells.lab")]`
-// first, and stops if it isn't there. In any other process (Node, a
-// renderer) the file does nothing.
+// first, and stops if it isn't there. Electron run as Node only gets the
+// mark; in any other process (Node, a renderer) the file does nothing.
 "use strict";
 
 const LAB_EXIT = 86;
@@ -319,4 +320,14 @@ if (process.versions.electron && process.type === "browser") {
     log(`[stemcells lab] uncaught: ${error?.stack ?? error}`);
     process.exit(1);
   });
+}
+
+// Electron run as Node (ELECTRON_RUN_AS_NODE, as the desktop app's workers
+// are) inherits NODE_OPTIONS too. It can't make a window, so it gets only the
+// mark stemcells/lab/electron looks for on every Electron it starts.
+if (process.versions.electron && process.type === undefined && process.env.STEMCELLS_LAB_PROFILE) {
+  require("node:fs").writeFileSync(
+    require("node:path").join(process.env.STEMCELLS_LAB_PROFILE, `.never-shown-${process.pid}`),
+    "",
+  );
 }

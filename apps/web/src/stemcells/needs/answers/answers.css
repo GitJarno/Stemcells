@@ -1,0 +1,44 @@
+/* Answers by words (stemcells/tasks/aski-room.md, decision 8). The ink and
+   the readout wear the composer's words' own styles (`words/words.css`);
+   this sheet adds what only answers have. */
+
+/* Words that answer nothing stay in the composer, dotted in the warning tone. */
+[data-stemcells-answers] .sc-answer-kept {
+  text-decoration: underline dotted 1px var(--sc-warning);
+  text-underline-offset: 0.22em;
+}
+
+/* The readout in the model picker's place: a button that opens the whole
+   line when the row cuts it short. */
+.sc-answers-readout {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+}
+.sc-answers-readout .sc-readout-sentence {
+  text-overflow: ellipsis;
+}
+.sc-answers-pop {
+  white-space: normal;
+}
+
+/* A card's number and Cell, in the Cell tone. */
+.sc-answers-who {
+  color: color-mix(in oklch, var(--sc-peer) 70%, var(--foreground));
+}
+.sc-answers-what[data-tone="answer"] {
+  color: var(--sc-text);
+}
+.sc-answers-what[data-tone="click"],
+.sc-answers-what[data-tone="kept"] {
+  color: var(--sc-warning);
+}
+.sc-answers-sep {
+  color: var(--sc-mute);
+}
+.sc-answers-aski {
+  color: var(--sc-text);
+}

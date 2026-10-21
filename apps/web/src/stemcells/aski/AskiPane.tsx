@@ -5,6 +5,7 @@ import { ChatPaneView } from "../upstream/chat";
 import type { ThreadRouteTarget } from "../upstream/routes";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui";
 import { ComposerRoofSlot } from "../composer/slot";
+import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
 import { PaneRows } from "../tabs/PaneButtons";
 import { AskiFigure } from "./AskiFigure";
@@ -67,12 +68,15 @@ export function AskiPane(props: {
           <PaneRows />
           {props.target ? (
             <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
-              <ChatPaneView
-                target={props.target}
-                ownsWindowInput={props.ownsWindowInput}
-                focused={props.focused}
-                panelHost={props.panelHost}
-              />
+              {/* Words in its composer answer the cards beside it. */}
+              <AnswersProvider>
+                <ChatPaneView
+                  target={props.target}
+                  ownsWindowInput={props.ownsWindowInput}
+                  focused={props.focused}
+                  panelHost={props.panelHost}
+                />
+              </AnswersProvider>
             </ComposerRoofSlot>
           ) : (
             <Empty>

@@ -9,8 +9,22 @@
 import type { PlacedView } from "../surfaces/ride";
 
 import { BrowserSurfaceSlot } from "../../browser/BrowserSurfaceSlot";
+import { useBrowserSurfaceStore } from "../../browser/browserSurfaceStore";
+import { HostedBrowserWebview } from "../../browser/HostedBrowserWebview";
 
 export { BrowserSurfaceSlot as UpstreamBrowserSurfaceSlot };
+export { HostedBrowserWebview as UpstreamHostedBrowserWebview };
+
+/**
+ * Whether something wants a browser now: a slot shows it (its Surface on
+ * stage, or the mini player), or upstream keeps it busy in the background.
+ */
+export function useBrowserWanted(runtimeTabId: string): boolean {
+  return useBrowserSurfaceStore(
+    (state) =>
+      state.byTabId[runtimeTabId]?.owner != null || (state.activityByTabId[runtimeTabId] ?? 0) > 0,
+  );
+}
 
 /** Where upstream keeps the browsers' views, shown or not (`ElectronBrowserHost`); null on the web. */
 export function browserViews(): HTMLElement | null {

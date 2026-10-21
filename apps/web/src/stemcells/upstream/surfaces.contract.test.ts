@@ -5,6 +5,11 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
+import {
+  acquireBrowserSurface,
+  acquireBrowserSurfaceActivity,
+  useBrowserSurfaceStore,
+} from "../../browser/browserSurfaceStore";
 import { resolveBrowserViewportLayout } from "../../browser/browserViewportLayout";
 import { resolveHostedBrowserWebviewWrapperStyle } from "../../browser/hostedBrowserWebviewStyle";
 
@@ -71,6 +76,20 @@ describe("native surfaces' contracts with upstream", () => {
         canvasHeight: 900,
       });
     }
+  });
+
+  it("a slot claims its browser while it is mounted, and background work holds it", () => {
+    // useBrowserWanted reads both: a browser wakes when either wants it.
+    const owner = () => useBrowserSurfaceStore.getState().byTabId["wanted-tab"]?.owner ?? null;
+    const lease = acquireBrowserSurface("wanted-tab");
+    expect(owner()).not.toBeNull();
+    lease.release();
+    expect(owner()).toBeNull();
+    const release = acquireBrowserSurfaceActivity("wanted-tab");
+    expect(useBrowserSurfaceStore.getState().activityByTabId["wanted-tab"]).toBe(1);
+    release();
+    expect(useBrowserSurfaceStore.getState().activityByTabId["wanted-tab"]).toBeUndefined();
+    expect(slot).toContain("let lease = acquireBrowserSurface(tabId, fitSourceContent);");
   });
 
   it("the views live in one host, shown or not", () => {

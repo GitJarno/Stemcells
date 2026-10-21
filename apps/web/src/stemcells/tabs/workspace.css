@@ -47,6 +47,16 @@
 :root.dark[data-theme-id="stemcells"] [data-stemcells-slate]::after {
   content: none;
 }
+/* A chat paints nothing over the slate: what a chat reads on is the slate
+   itself, whatever colour it is given. Upstream's chat is an inset
+   (`bg-background` under its grain) holding ChatView's root and its
+   timeline's wrapper, each `bg-background` again, all three the slate's
+   size. upstream/slateGround.contract.test.ts pins the three. */
+[data-stemcells-pane] [data-slot="sidebar-inset"],
+[data-stemcells-pane] [data-slot="sidebar-inset"] > .bg-background,
+[data-stemcells-pane] [data-chat-canvas] > .bg-background {
+  background: none;
+}
 /* There the tab on stage is cut from the slate, as a folder's tab is from
    its folder: the slate's gray, rounded at the top, reaching down through
    the strip's air under it (half the strip's row less the tab: TabStrip's

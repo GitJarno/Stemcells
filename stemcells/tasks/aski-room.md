@@ -207,7 +207,9 @@ twice). Nothing new can approve.
 - **Each part shows in two places at once:**
   - in the cards: the chosen option gets a ring and "from your words", and
     a reply shows as a pending bubble in its card;
-  - in the readout line above the composer's foot:
+  - in the readout line, which stands in the model picker's place in the
+    composer's controls row, as a new chat's readout does; cut short, a
+    click opens it whole:
 
     > **1 Floof** Remove it first · **2 Bongo** stop, then reply "use staging"
 - **One readout line for everything Enter will do.** It is a single line
@@ -524,7 +526,8 @@ anything else.
 **Anchors** (each must name an open card):
 - **By number:**
   - "for N", "#N", "number N", "item N", "decision N", "card N", with or
-    without a "for" before them;
+    without a "for" before them, but not before a unit ("for 5 minutes",
+    "for 2 more tests");
   - a bare "N" only when ":", ",", "." or an answer word follows it ("1:
     go with 2", "3 yes"). Otherwise a number at the start is a count for the
     composer ("2 Sol in Harbor …", `tasks/prompting.md`). The composer's

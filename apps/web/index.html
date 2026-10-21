@@ -121,6 +121,16 @@
               chrome: "oklch(0.225975 0.031062 293.741)",
             },
           },
+          // Stemcells' own look, built in (stemcells/upstream/look.ts): dark only,
+          // and what a launch with no stored preference opens on.
+          stemcells: {
+            dark: {
+              background: "oklch(0.159066 0 0)",
+              foreground: "oklch(0.970151 0 0)",
+              accent: "oklch(0.570912 0.210134 263.99)",
+              chrome: "oklch(0 0 0)",
+            },
+          },
         };
         // Keep the built-in mode list in sync with the runtime so the selected
         // T3 Chat palette is visible before React has mounted.
@@ -139,6 +149,7 @@
           "ocean",
           "ember",
           "iris",
+          "stemcells",
           "t3-chat-dark",
           "t3-grove",
           "t3-ocean",
@@ -217,7 +228,7 @@
         };
 
         try {
-          const storedTheme = window.localStorage.getItem("t3code:theme");
+          const storedTheme = window.localStorage.getItem("t3code:theme") ?? "stemcells";
           const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
           // Older builds stored the dark T3 Chat palette as its own theme id
           // and every maintainer theme under a t3- prefix; keep those
@@ -250,7 +261,11 @@
             themeModes !== null;
           const theme = isKnownTheme && storedTheme ? storedTheme : "system";
           const isThemed = isKnownTheme && themeModes !== null;
-          const baseAppearance = customTheme ? customTheme.appearance : "light";
+          const baseAppearance = customTheme
+            ? customTheme.appearance
+            : builtInModes?.length === 1
+              ? builtInModes[0]
+              : "light";
           const systemMode = prefersDark ? "dark" : "light";
           const storedAppearanceMode = window.localStorage.getItem(
             THEME_APPEARANCE_MODE_STORAGE_KEY,

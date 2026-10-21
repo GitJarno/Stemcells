@@ -9,6 +9,7 @@ import { cardOf, LATER, type CardOption, type CardQuestion } from "./card";
 import type { Shown } from "./display";
 import type { Hold } from "./holds";
 import { holds } from "./live";
+import { type Lit, lit, useLit } from "./answers/lit";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
 export function whoOf(need: Shown["need"]): string {
@@ -17,7 +18,8 @@ export function whoOf(need: Shown["need"]): string {
     : `${cellNameOf(need.parentThreadId)} › ${need.title}`;
 }
 
-const pick = (option: CardOption, given: Given): string =>
+/** What a held answer says it chose. */
+export const pickLabel = (option: CardOption, given: Given): string =>
   given.words ? `${option.title.replace(/…$/, "")}: “${given.words.trim()}”` : option.title;
 
 /** Why a held answer wasn't sent: the need changed under it. */
@@ -46,6 +48,10 @@ export function NeedCard(props: {
     environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null },
   );
   const open = useOpenFromNeeds();
+  // What the words in Aski's composer do to this card (answers/lit.ts).
+  const lights = useLit();
+  const fromWords = lights.reading.get(need.key) ?? null;
+  const asked = lights.asked.get(need.key) ?? null;
 
   // An allow can't land in the card's first moment: a card arriving under
   // the pointer is read before it is clicked.
@@ -57,10 +63,11 @@ export function NeedCard(props: {
   }, [props.seenAt]);
 
   const choose = (option: CardOption, given: Given = {}) => {
+    lit.answered(need.key);
     holds.hold({
       key: need.key,
       threadId: need.threadId,
-      label: pick(option, given),
+      label: pickLabel(option, given),
       commands: commandsFor(need, option.choice, given, Date.now()),
     });
   };
@@ -117,28 +124,43 @@ export function NeedCard(props: {
               {hold.state === "stale" ? staleLine(need, who) : hold.why}
             </p>
           ) : null}
+          {fromWords?.kind === "chosen" && fromWords.words !== null ? (
+            <p data-need-pending="">“{fromWords.words}”</p>
+          ) : null}
           {card.questions.length > 0 ? (
             <Questions
               questions={card.questions}
-              onAnswer={(answers, label) =>
+              lit={fromWords}
+              onAnswer={(answers, label) => {
+                lit.answered(need.key);
                 holds.hold({
                   key: need.key,
                   threadId: need.threadId,
                   label,
                   commands: commandsFor(need, { kind: "answer" }, { answers }, Date.now()),
-                })
-              }
+                });
+              }}
             />
           ) : null}
           {card.options.length > 0 ? (
-            <Options options={card.options} allowReady={allowReady} onChoose={choose} />
+            <Options
+              options={card.options}
+              allowReady={allowReady}
+              lit={fromWords}
+              asked={asked}
+              onChoose={choose}
+            />
           ) : null}
         </>
       )}
 
       <footer data-need-foot="">
         {card.later && answerable ? (
-          <button type="button" onClick={() => choose(LATER)}>
+          <button
+            type="button"
+            data-lit={lightOf(LATER.id, fromWords, asked)}
+            onClick={() => choose(LATER)}
+          >
             Later
           </button>
         ) : null}
@@ -178,9 +200,23 @@ function HeldAnswer(props: { hold: Hold }) {
   );
 }
 
+/** How the words in Aski's composer light an option: chosen, waiting for a click, or for words. */
+function lightOf(id: string, lit: Lit | null, asked: string | null) {
+  if (lit?.id === id) return lit.kind;
+  return asked === id ? "click" : undefined;
+}
+
+const LIGHT_LINES = {
+  chosen: "from your words",
+  click: "needs your click",
+  words: "say what, or click",
+} as const;
+
 function Options(props: {
   options: ReadonlyArray<CardOption>;
   allowReady: boolean;
+  lit: Lit | null;
+  asked: string | null;
   onChoose: (option: CardOption, given?: Given) => void;
 }) {
   const [writing, setWriting] = useState<string | null>(null);
@@ -201,11 +237,13 @@ function Options(props: {
             data-need-option=""
             data-recommended={option.recommended || undefined}
             data-warn={option.warn || undefined}
+            data-lit={lightOf(option.id, props.lit, props.asked)}
             disabled={option.allows && !props.allowReady}
             onClick={() => (option.words ? setWriting(option.id) : props.onChoose(option))}
           >
             <span data-need-option-title="">{option.title}</span>
             {option.recommended ? <span data-need-option-mark="">Recommended</span> : null}
+            <LightLine light={lightOf(option.id, props.lit, props.asked)} />
             {option.consequence ? (
               <span data-need-option-consequence="">{option.consequence}</span>
             ) : null}
@@ -213,6 +251,12 @@ function Options(props: {
         ),
       )}
     </div>
+  );
+}
+
+function LightLine(props: { light: keyof typeof LIGHT_LINES | undefined }) {
+  return props.light === undefined ? null : (
+    <span data-need-option-lit="">{LIGHT_LINES[props.light]}</span>
   );
 }
 
@@ -257,6 +301,7 @@ function Words(props: {
  */
 function Questions(props: {
   questions: ReadonlyArray<CardQuestion>;
+  lit: Lit | null;
   onAnswer: (answers: Record<string, string | string[]>, label: string) => void;
 }) {
   const [picked, setPicked] = useState<Record<string, string[]>>({});
@@ -310,6 +355,7 @@ function Questions(props: {
                   type="button"
                   data-need-option=""
                   data-recommended={choice.recommended || undefined}
+                  data-lit={lightOf(`answer:${choice.answer}`, props.lit, null)}
                   aria-pressed={single ? undefined : chosen}
                   onClick={() => {
                     if (single)
@@ -328,6 +374,7 @@ function Questions(props: {
                 >
                   <span data-need-option-title="">{choice.label}</span>
                   {choice.recommended ? <span data-need-option-mark="">Recommended</span> : null}
+                  <LightLine light={lightOf(`answer:${choice.answer}`, props.lit, null)} />
                   {choice.description ? (
                     <span data-need-option-consequence="">{choice.description}</span>
                   ) : null}
