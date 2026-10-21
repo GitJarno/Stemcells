@@ -4,6 +4,7 @@ import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { cssLinear, settledDuration } from "../tokens/spring.ts";
 import { SwipeHand, type HeldStrip } from "./hand";
 import { releaseVelocity } from "./pager";
+import { PhasedContact, type ScrollPhases } from "./phases";
 import { LIFT_GAP } from "./swipe";
 
 /**
@@ -144,7 +145,10 @@ class PageStrip {
     null;
   #turn: (tabId: string) => void = () => undefined;
 
-  readonly #hand = new SwipeHand(this.#held());
+  readonly #contact = new PhasedContact();
+  readonly #hand = new SwipeHand(this.#held(), this.#contact);
+  /** Stops the desktop app's scroll phases coming, where it sends them. */
+  #unphase: (() => void) | undefined;
   #frame = 0;
   #idle: ReturnType<typeof setTimeout> | undefined;
   /** The last frame drawn while wheel events come. */
@@ -161,10 +165,13 @@ class PageStrip {
     this.#placeAll();
     // Not passive: a swipe the pager owns must not also scroll the chat under it.
     viewport.addEventListener("wheel", this.#onWheel, { passive: false });
+    this.#unphase = window.stemcellsScrollPhases?.subscribe(this.#onScroll);
   }
 
   detach(): void {
     this.#viewport?.removeEventListener("wheel", this.#onWheel);
+    this.#unphase?.();
+    this.#unphase = undefined;
     this.#viewport?.removeAttribute("data-moving");
     this.#slide?.cancel();
     this.#slide = null;
@@ -440,6 +447,14 @@ class PageStrip {
     }
     this.#lastFrame = time;
     this.#beat = time < this.#listenUntil ? requestAnimationFrame(this.#onBeat) : 0;
+  };
+
+  /** The system's phases of a scroll: when they say the fingers lifted, the strip lets go at once. */
+  readonly #onScroll = (scroll: ScrollPhases): void => {
+    const lift = this.#contact.scroll(scroll);
+    if (lift === null) return;
+    this.#hand.lift(lift.coasted.dx, scroll.t);
+    this.#moved();
   };
 
   readonly #onIdle = (): void => {

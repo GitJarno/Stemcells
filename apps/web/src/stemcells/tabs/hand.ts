@@ -63,7 +63,10 @@ export class SwipeHand {
     if (contact.phase === "moved" && contact.resumed === true && this.#letGoOf !== null) {
       this.#resume(this.#letGoOf);
     }
-    if (contact.phase === "began" || contact.phase === "moved") this.#move(sample);
+    if (contact.phase === "began" || contact.phase === "moved") {
+      this.#move(sample);
+      if (contact.lifts === true) this.#letGo(0, sample.t);
+    }
     if (contact.phase === "lifted") this.#letGo(contact.coasted.dx, sample.t);
     if (contact.phase !== "coasting") this.#letGoOf = null;
     return this.#latch?.holds === true;
@@ -80,6 +83,16 @@ export class SwipeHand {
     const drag = this.#drag;
     this.#letGo(0, now);
     this.#letGoOf = drag;
+  }
+
+  /**
+   * The fingers lifted at `at`, as the system said (`PhasedContact`):
+   * the strip springs to the page the move earned. `coasted`: px of what
+   * the hand took as their moves that was the coast's.
+   */
+  lift(coasted: number, at: number): void {
+    this.#letGo(coasted, at);
+    this.#letGoOf = null;
   }
 
   /** The tabs turned by other means while the fingers were down: the rest of this gesture goes nowhere. */

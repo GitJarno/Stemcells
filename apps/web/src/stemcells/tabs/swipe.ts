@@ -35,14 +35,18 @@ export interface WheelSample {
 
 /** Where a wheel event falls in its gesture. */
 export type Contact =
-  /** The fingers touched down: the first event of a new gesture. */
-  | { readonly phase: "began" }
+  /**
+   * The fingers touched down: the first event of a new gesture. `lifts`:
+   * it was their last move as well, and they have lifted since.
+   */
+  | { readonly phase: "began"; readonly lifts?: boolean }
   /**
    * The fingers are moving. `resumed`: they never lifted after all, where
    * a silence was told a lift (`ContactSource.idle`); the events in it had
-   * been held back.
+   * been held back. `lifts`: this was their last move, and they have
+   * lifted since (a source that knows, `PhasedContact`).
    */
-  | { readonly phase: "moved"; readonly resumed?: boolean }
+  | { readonly phase: "moved"; readonly resumed?: boolean; readonly lifts?: boolean }
   /**
    * The fingers have lifted: this event is the coast's. `coasted` is what
    * the events just before it reported as the fingers' move but was the

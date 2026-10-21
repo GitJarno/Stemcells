@@ -30,7 +30,9 @@ finds with your own accounts.
 1. Checks the list above.
 2. With `--pull`, updates the checkout to the latest `main` first.
 3. Installs dependencies exactly as locked (`pnpm install --frozen-lockfile`).
-4. Builds the app for your Mac's processor.
+4. Builds the app for your Mac's processor, with the small addon that
+   reads the trackpad's own phases for the tab swipe
+   (`stemcells/scripts/build-scroll-phases`).
 5. Quits a running Stemcells, moves the old copy to the Trash, and puts the
    new one in `/Applications` (or the folder given with `--to`).
 6. Opens it.

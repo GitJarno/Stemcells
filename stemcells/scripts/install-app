@@ -66,6 +66,7 @@ fi
 step "Installing dependencies"
 pnpm install --frozen-lockfile
 step "Building Stemcells for $arch (a few minutes)"
+stemcells/scripts/build-scroll-phases --force
 rm -rf release
 pnpm exec node scripts/build-desktop-artifact.ts --platform mac --target dmg --arch "$arch"
 zip=$(ls -t release/*-"$arch".zip 2>/dev/null | head -1)

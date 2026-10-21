@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Builds the scroll-phases addon (stemcells/native/scroll-phases.m), for
+# both Mac processors, where the desktop app loads it from:
+# apps/desktop/resources/build/stemcells-scroll-phases.node. Off macOS
+# there's nothing to build; the app reads swipes from wheel events alone.
+#
+#   stemcells/scripts/build-scroll-phases [--force] [--check]
+#
+#   --force    build even if the addon is newer than its source
+#   --check    build, then load it in Node and call what the app calls
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+[ "$(uname -s)" = "Darwin" ] || exit 0
+
+force=0
+check=0
+for arg in "$@"; do
+  case "$arg" in
+    --force) force=1 ;;
+    --check) force=1 check=1 ;;
+    *) echo "build-scroll-phases: unknown option $arg" >&2; exit 2 ;;
+  esac
+done
+
+src=stemcells/native/scroll-phases.m
+out=apps/desktop/resources/build/stemcells-scroll-phases.node
+if [ "$force" = 1 ] || [ ! -f "$out" ] || [ "$src" -nt "$out" ] || [ "$0" -nt "$out" ]; then
+  mkdir -p "$(dirname "$out")"
+  tmp="$out.$$.tmp"
+  trap 'rm -f "$tmp"' EXIT
+  xcrun clang -fobjc-arc -O2 -Wall -Wextra -Werror -mmacosx-version-min=11.0 \
+    -arch arm64 -arch x86_64 -dynamiclib -undefined dynamic_lookup \
+    -framework AppKit -o "$tmp" "$src"
+  mv "$tmp" "$out"
+fi
+
+if [ "$check" = 1 ]; then
+  node -e '
+    const addon = require(process.argv[1]);
+    for (const name of ["start", "stop", "now"]) {
+      if (typeof addon[name] !== "function") throw new Error(`no ${name}()`);
+    }
+    addon.start(() => {});
+    addon.stop();
+    if (!(addon.now() > 0)) throw new Error("now() is no time");
+    console.log("build-scroll-phases: the addon loads and runs");
+  ' "$PWD/$out"
+fi

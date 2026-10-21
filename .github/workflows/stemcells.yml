@@ -41,6 +41,16 @@ jobs:
           pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells
           pnpm exec vp test run apps/server/src/stemcells --passWithNoTests
 
+  # The tab swipe's scroll-phases addon builds with the Mac's own compiler,
+  # so it is built and loaded on a Mac.
+  scroll-phases:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and load the scroll-phases addon
+        run: stemcells/scripts/build-scroll-phases --check
+
   # Upstream's workflows need runners and secrets this repo doesn't have.
   # A merge from upstream can bring a new one, which GitHub turns on by
   # default: switch it off again and cancel anything it started.

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { settledDuration, springAt, type Spring } from "../tokens/spring";
 import { SwipeHand, type HeldStrip } from "./hand";
 import { releaseVelocity } from "./pager";
+import { PhasedContact, type ScrollPhases } from "./phases";
 import { LIFT_GAP, type WheelSample } from "./swipe";
 
 // Swipes replayed through the hand the pager uses, against a strip that
@@ -286,81 +287,213 @@ function lifts(pads: readonly Pad[], after: number): number[] {
     .map((pad) => pad.t + after);
 }
 
-describe("swipes shaped like a trackpad's, on a page or browser that is sometimes busy", () => {
-  const ways = (...turns: number[]) => turns;
-  const cases: { name: string; pads: Pad[]; turns: number[] }[] = [
-    { name: "one flick on", pads: flick(0, 1), turns: ways(1) },
-    { name: "one flick back", pads: flick(0, -1), turns: ways(-1) },
-    {
-      name: "left, right, left, right, 300 ms apart",
-      pads: together(flick(0, 1), flick(300, -1), flick(600, 1), flick(900, -1)),
-      turns: ways(1, -1, 1, -1),
-    },
-    {
-      name: "left, right, left, right, 200 ms apart",
-      pads: together(flick(0, 1), flick(200, -1), flick(400, 1), flick(600, -1)),
-      turns: ways(1, -1, 1, -1),
-    },
-    {
-      name: "on, on, back, back, into the coast of the one before",
-      pads: together(flick(0, 1), flick(350, 1), flick(700, -1), flick(1050, -1)),
-      turns: ways(1, 1, -1, -1),
-    },
-    {
-      name: "a slow drag, then one back",
-      pads: together(drag(0, 1), drag(600, -1)),
-      turns: ways(1, -1),
-    },
-    {
-      name: "a long slow drag, then one back",
-      pads: together(drag(0, 1, 400), drag(700, -1, 400)),
-      turns: ways(1, -1),
-    },
-    {
-      name: "a short flick springs home, and one back after it",
-      pads: together(flick(0, 1, 70), flick(450, -1, 70)),
-      turns: ways(0, 0),
-    },
-    {
-      name: "a coast's tail, then a fresh swipe the same way",
-      pads: together(flick(0, 1, 200), flick(1400, 1)),
-      turns: ways(1, 1),
-    },
+const ways = (...turns: number[]) => turns;
+const cases: { name: string; pads: Pad[]; turns: number[] }[] = [
+  { name: "one flick on", pads: flick(0, 1), turns: ways(1) },
+  { name: "one flick back", pads: flick(0, -1), turns: ways(-1) },
+  {
+    name: "left, right, left, right, 300 ms apart",
+    pads: together(flick(0, 1), flick(300, -1), flick(600, 1), flick(900, -1)),
+    turns: ways(1, -1, 1, -1),
+  },
+  {
+    name: "left, right, left, right, 200 ms apart",
+    pads: together(flick(0, 1), flick(200, -1), flick(400, 1), flick(600, -1)),
+    turns: ways(1, -1, 1, -1),
+  },
+  {
+    name: "on, on, back, back, into the coast of the one before",
+    pads: together(flick(0, 1), flick(350, 1), flick(700, -1), flick(1050, -1)),
+    turns: ways(1, 1, -1, -1),
+  },
+  {
+    name: "a slow drag, then one back",
+    pads: together(drag(0, 1), drag(600, -1)),
+    turns: ways(1, -1),
+  },
+  {
+    name: "a long slow drag, then one back",
+    pads: together(drag(0, 1, 400), drag(700, -1, 400)),
+    turns: ways(1, -1),
+  },
+  {
+    name: "a short flick springs home, and one back after it",
+    pads: together(flick(0, 1, 70), flick(450, -1, 70)),
+    turns: ways(0, 0),
+  },
+  {
+    name: "a coast's tail, then a fresh swipe the same way",
+    pads: together(flick(0, 1, 200), flick(1400, 1)),
+    turns: ways(1, 1),
+  },
+];
+
+/** Each case, with the page or the browser busy in the ways a real one is. */
+const runs = cases.flatMap(({ name, pads, turns }) => {
+  // A wait longer than the time between two swipes hears them as one.
+  const starts = pads.filter((pad) => pad.first && !pad.coast).map((pad) => pad.t);
+  const between = Math.min(...starts.slice(1).map((t, i) => t - starts[i]!));
+  const waits: { what: string; delivery: Parameters<typeof delivered>[1] }[] = [
+    { what: "", delivery: {} },
+    ...[60, 120, 250].map((ms) => ({
+      what: `, the page busy ${ms} ms at each turn`,
+      delivery: { page: { at: lifts(pads, 60), ms } },
+    })),
+    ...[100, 180].map((ms) => ({
+      what: `, the browser holding each swipe's first event ${ms} ms`,
+      delivery: { browser: { at: starts, ms } },
+    })),
+    ...[20, 150].map((after) => ({
+      what: `, the browser holding what comes ${after} ms into each swipe 120 ms`,
+      delivery: { browser: { at: starts.map((t) => t + after), ms: 120 } },
+    })),
   ];
-  const runs = cases.flatMap(({ name, pads, turns }) => {
-    // A wait longer than the time between two swipes hears them as one.
-    const starts = pads.filter((pad) => pad.first && !pad.coast).map((pad) => pad.t);
-    const between = Math.min(...starts.slice(1).map((t, i) => t - starts[i]!));
-    const waits: { what: string; delivery: Parameters<typeof delivered>[1] }[] = [
-      { what: "", delivery: {} },
-      ...[60, 120, 250].map((ms) => ({
-        what: `, the page busy ${ms} ms at each turn`,
-        delivery: { page: { at: lifts(pads, 60), ms } },
-      })),
-      ...[100, 180].map((ms) => ({
-        what: `, the browser holding each swipe's first event ${ms} ms`,
-        delivery: { browser: { at: starts, ms } },
-      })),
-      ...[20, 150].map((after) => ({
-        what: `, the browser holding what comes ${after} ms into each swipe 120 ms`,
-        delivery: { browser: { at: starts.map((t) => t + after), ms: 120 } },
-      })),
-    ];
-    return waits
-      .filter(
-        ({ delivery }) => Math.max(delivery.page?.ms ?? 0, delivery.browser?.ms ?? 0) < between,
-      )
-      .map(({ what, delivery }) => [`${name}${what}`, pads, turns, delivery] as const);
-  });
+  return waits
+    .filter(({ delivery }) => Math.max(delivery.page?.ms ?? 0, delivery.browser?.ms ?? 0) < between)
+    .map(({ what, delivery }) => [`${name}${what}`, pads, turns, delivery] as const);
+});
+
+/** The pages `turns` (each swipe's way) lead to from page 2. */
+function expectedTurns(turns: readonly number[]): number[] {
+  let page = 2;
+  const expected: number[] = [];
+  for (const way of turns) {
+    if (way !== 0) expected.push((page += way));
+  }
+  return expected;
+}
+
+describe("swipes shaped like a trackpad's, on a page or browser that is sometimes busy", () => {
   it.each(runs)("%s: one page a swipe", (_, pads, turns, delivery) => {
     const strip = new ReplayStrip(2, 5, 1200);
     replay(delivered(pads, delivery), strip);
-    let page = 2;
-    const expected: number[] = [];
-    for (const way of turns) {
-      if (way !== 0) expected.push((page += way));
-    }
-    expect(strip.turns).toEqual(expected);
+    expect(strip.turns).toEqual(expectedTurns(turns));
     expect(strip.overshoot * 1200).toBeLessThan(1);
+  });
+});
+
+// The same swipes with macOS's own phases, as the desktop app hands them
+// to the page. The strip must let go as the fingers lift and follow none
+// of the coast after. The phases reach the page about a millisecond after
+// each event. While the page or the browser is busy they wait like the
+// wheel events, and come before those held back (as measured) or after
+// them.
+
+/** The phases of `pads`' scroll events, as the system reports them, on the page's clock. */
+function phasesOf(pads: readonly Pad[]): ScrollPhases[] {
+  const scrolls: ScrollPhases[] = [];
+  pads.forEach((pad, i) => {
+    const next = pads[i + 1];
+    if (pad.coast) {
+      scrolls.push({ t: pad.t, phase: 0, momentum: pad.first ? 1 : 4, moved: true });
+      // A touch stops the coast first.
+      if (next === undefined || !next.coast) {
+        scrolls.push({
+          t: Math.min(pad.t + 16.7, (next?.t ?? Infinity) - 1.5),
+          phase: 0,
+          momentum: 8,
+          moved: false,
+        });
+      }
+      return;
+    }
+    if (pad.first) scrolls.push({ t: pad.t - 1, phase: 32, momentum: 0, moved: false });
+    scrolls.push({ t: pad.t, phase: pad.first ? 1 : 4, momentum: 0, moved: true });
+    if (next === undefined || next.coast || next.first) {
+      scrolls.push({ t: pad.t + 8, phase: 8, momentum: 0, moved: false });
+    }
+  });
+  return scrolls;
+}
+
+/**
+ * When the page gets each of `scrolls`: a millisecond after it happened,
+ * or, if the page or the browser was busy then, once both are free again:
+ * `first`, just before the wheel events held back meanwhile, or just after
+ * the first of them (both measured).
+ */
+function phasesDelivered(
+  scrolls: readonly ScrollPhases[],
+  { page = { at: [], ms: 0 }, browser = { at: [], ms: 0 } }: { page?: Busy; browser?: Busy },
+  first: boolean,
+): { scroll: ScrollPhases; got: number }[] {
+  const windows = [
+    ...page.at.map((at) => [at, at + page.ms] as const),
+    ...browser.at.map((at) => [at, at + browser.ms] as const),
+  ];
+  // They come one after another, in order, over one channel.
+  let previous = -Infinity;
+  return scrolls.map((scroll) => {
+    const busy = windows.find(([from, until]) => scroll.t >= from && scroll.t < until);
+    const got = Math.max(
+      previous,
+      busy === undefined ? scroll.t + 1 : first ? busy[1] - 0.001 : busy[1] + 0.5,
+    );
+    previous = got;
+    return { scroll, got };
+  });
+}
+
+/**
+ * Replays `samples` and the phases in the order the page gets them,
+ * through a hand reading the phases. Returns how far (px) the strip
+ * followed the coast: the moves it made for wheel events at `coast` times.
+ */
+function replayPhased(
+  samples: readonly WheelSample[],
+  scrolls: readonly { scroll: ScrollPhases; got: number }[],
+  coast: ReadonlySet<number>,
+  strip: ReplayStrip,
+): number {
+  const contact = new PhasedContact();
+  const hand = new SwipeHand(strip, contact);
+  const arrivals = [
+    ...samples.map((sample) => ({ got: sample.got ?? sample.t, sample, scroll: null })),
+    ...scrolls.map(({ scroll, got }) => ({ got, sample: null, scroll })),
+  ].toSorted((a, b) => a.got - b.got);
+  let timer: number | null = null;
+  let followed = 0;
+  for (const { got, sample, scroll } of arrivals) {
+    if (timer !== null && got > timer) {
+      strip.now = timer;
+      hand.idle(timer);
+      timer = null;
+    }
+    strip.now = got;
+    if (scroll !== null) {
+      const lift = contact.scroll(scroll);
+      if (lift !== null) hand.lift(lift.coasted.dx, scroll.t);
+      continue;
+    }
+    const before = strip.at();
+    hand.wheel(sample!, () => false);
+    if (coast.has(sample!.t)) followed += Math.abs(strip.at() - before) * strip.pageWidth;
+    timer = got + LIFT_GAP + 10;
+  }
+  return followed;
+}
+
+describe("swipes with macOS's phases: the strip lets go as the fingers lift", () => {
+  const phased = runs.flatMap(([name, pads, turns, delivery]) =>
+    [true, false].map(
+      (first) =>
+        [
+          `${name}${first ? "" : ", the phases just behind the held-back wheel events"}`,
+          pads,
+          turns,
+          delivery,
+          first,
+        ] as const,
+    ),
+  );
+  it.each(phased)("%s", (_, pads, turns, delivery, first) => {
+    const strip = new ReplayStrip(2, 5, 1200);
+    const samples = delivered(pads, delivery);
+    const coast = new Set(pads.filter((pad) => pad.coast).map((pad) => pad.t));
+    const scrolls = phasesDelivered(phasesOf(pads), delivery, first);
+    const followed = replayPhased(samples, scrolls, coast, strip);
+    expect(strip.turns).toEqual(expectedTurns(turns));
+    expect(strip.overshoot * 1200).toBeLessThan(1);
+    expect(followed).toBe(0);
   });
 });
