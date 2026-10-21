@@ -35,6 +35,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // and sends the Cell its message without them.
   "apps/web/src/components/ComposerPromptEditor.tsx": "ComposerPromptEditor.tsx",
   "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
+  // One composer height: it never rests into one line on a scroll.
+  "apps/web/src/components/chat/composerScrollGesture.ts": "composerScrollGesture.ts",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

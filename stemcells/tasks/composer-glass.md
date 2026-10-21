@@ -111,3 +111,51 @@ page and plate are the same pixels (dark 10/16, light 252/254) and so is
 the edge (dark 28); what differs is the faint mark and our light while
 a Cell works. In Stemcells' theme the plate follows upstream's rule for a
 themed app.
+
+## Follow-up: one box, a halo (2026-10-21)
+
+The band that hid the transcript from the Cell's head to the pane's foot
+read as an opaque black bar. The plate overlapped the line's tray and the
+model strip under it: a top border cut off where it met the tray, a stray
+white line over the strip, three layers. Asked for: the transcript runs on
+behind the composer and out through the pane's foot; a slim halo in the
+page's colour, about 60%, fading, keeps the composer clear; one box, as T3's
+is; the line just above it, on the ground.
+
+- [x] The band mask is gone (`dropOff.ts` with it). The halo is the plate's
+      `::after` in `glow.css`: the page's colour at 60%, frosted with
+      upstream's glass blur so text under the line goes soft, reaching
+      `--sc-space-md` past the box and fading out over `--sc-space-xxl`.
+      Without the frost, text at 40% under the line's words still clashed
+- [x] The line is no longer an attached banner (which gives the plate a
+      second surface): it stands just above the box, its words where the
+      field's start, the Cell on its name. Seam moves to `ChatView.tsx`
+- [x] One box, one height: the composer never rests into one line on a
+      scroll (`substitutes/composerScrollGesture.ts` answers upstream's
+      wheel and key gestures with "no"), so model, effort and access stay
+      in the plate. The field opens one row high, lower than upstream's
+      open field, grows with what is typed up to upstream's cap and comes
+      back when cleared; its placeholder keeps to that row at every width.
+      Upstream's "Collapse composer on scroll" setting now does nothing
+- [x] No sideways jump: upstream widens the lanes' padding from 0.75rem to
+      3rem in one step at 640 px, which jumped a pane's composer 36 px on a
+      drag. A pane ramps it over its own width, 480 to 800 px
+      (`tabs/workspace.css`). A 1 px drag from 1100 to 180 and back moves
+      the box at most 1 px a step, never vertically, the same both ways
+- [ ] The small outlined pill at the window's bottom centre in the person's
+      shots: no element of that shape in the source or the built bundle,
+      and the dev app never shows it. Open, for the composer layout
+      (`composer-layout.md`): likely upstream's branch strip, empty, for a
+      project without git
+- [x] Contracts: the line before the plate, the plate a stacking context
+      with its `::after` free, the composer resting only through the
+      gesture the substitute answers, the field's one height class
+
+Review: ours next to a plain upstream checkout, dark and light: a new
+chat, focused, working, scrolled and at the end. Scrolled, upstream's
+composer shrinks to one line over a strip that lets the text read through
+it; ours keeps its height, one box with the text going soft round it. At
+the end the last message clears the Cell's head. Every edge and corner
+checked in 2x crops of 2x shots: one outline, nothing cut off, no seam.
+Where the halo starts fading, an 8-bit rounding step of one level shows
+only amplified, or faintly at 3x zoom on a plain light page.

@@ -15,12 +15,14 @@ import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
+import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
+import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurFavicon from "./favicon";
 import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
@@ -193,6 +195,16 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/settings/SettingsFontPreviews.tsx": [
         "../ComposerPromptEditor",
         ["ComposerPromptEditor"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/composerScrollGesture.ts": {
+    upstream: UpstreamComposerScrollGesture,
+    substitute: OurComposerScrollGesture satisfies typeof UpstreamComposerScrollGesture,
+    importers: {
+      "apps/web/src/components/chat/ChatComposer.tsx": [
+        "./composerScrollGesture",
+        ["recordComposerScrollGestureEvent", "shouldCollapseComposerForScrollKey"],
       ],
     },
   },

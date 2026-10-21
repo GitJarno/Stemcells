@@ -47,7 +47,7 @@ describe("the composer light's contracts with upstream", () => {
     const shell = body(composerSurface, "Shell");
     expect(shell).toContain('data-slot="composer-shell"');
     expect(shell).toContain("[--chat-composer-outline:");
-    // The plate draws it, and so does the main surface under an attached line.
+    // The plate draws it, and so does the main surface under an upstream banner.
     expect(composerSurface).toContain("after:border-(--chat-composer-outline)");
     expect(body(composerSurface, "Host")).toContain("outlineClasses");
     expect(body(composerSurface, "Main")).toContain("outlineClasses");

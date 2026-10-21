@@ -1593,12 +1593,14 @@
   --sc-glass-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.55);
 }
 
-/* The ground under a Cell's line: the transcript fades out over
-   --sc-drop-fade at the band's top, and shows behind the plate only between
-   its rounded corners (--sc-drop-return, the plate's radius), softened over
-   --sc-drop-soft, which the glass then blurs. */
+/* The halo round a composer in a pane: the page's own colour at
+   --sc-halo-strength under it and --sc-halo-reach past its edge, fading to
+   nothing over --sc-halo-fade. The line over a Cell's composer stands in it,
+   --sc-composer-line tall and --sc-composer-line-gap over the box. */
 :root {
-  --sc-drop-fade: 16px;
-  --sc-drop-return: var(--radius-3xl, 24px);
-  --sc-drop-soft: 6px;
+  --sc-halo-strength: 60%;
+  --sc-halo-reach: var(--sc-space-md);
+  --sc-halo-fade: var(--sc-space-xxl);
+  --sc-composer-line: 20px;
+  --sc-composer-line-gap: var(--sc-space-sm);
 }

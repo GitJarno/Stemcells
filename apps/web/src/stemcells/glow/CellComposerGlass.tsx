@@ -3,7 +3,6 @@ import { use, useLayoutEffect, useRef } from "react";
 
 import { channels, groundOf, inkOf } from "../aski/stage/colour";
 import { path, SIZE } from "../cell/look";
-import { dropOff } from "../composer/dropOff";
 import { scrollThrough } from "../composer/scrollThrough";
 import { PaneCellContext } from "../tabs/paneCell";
 import { reducedMotion } from "../tokens/motion";
@@ -63,17 +62,12 @@ export function CellComposerGlass(props: { readonly provider: string }) {
   }, [glow, tone]);
 
   // The composer floats over the transcript, in every pane of ours: a wheel
-  // over it scrolls the chat (`scrollThrough`), and the chat fades out under
-  // the Cell and its line (`dropOff`).
+  // over it scrolls the chat (`scrollThrough`).
   useLayoutEffect(() => {
     const root = rootRef.current;
-    const pane = root?.closest<HTMLElement>("[data-stemcells-pane]");
     const composer = root?.closest<HTMLElement>('[data-chat-composer-stack="true"]');
-    if (!pane || !composer) return;
-    const undo = [scrollThrough(composer), dropOff(composer, pane)];
-    return () => {
-      for (const done of undo) done();
-    };
+    if (!root?.closest("[data-stemcells-pane]") || !composer) return;
+    return scrollThrough(composer);
   }, []);
 
   const hasCell = cell !== null;
@@ -113,8 +107,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
   }, [hasCell]);
 
   // Every composer in a pane of ours holds the layer (it anchors the
-  // scroll-through and the drop-off); a Cell's also holds its light and its
-  // provider's mark.
+  // scroll-through); a Cell's also holds its light and its provider's mark.
   if (!hasCell) return <div ref={rootRef} data-stemcells-composer-glass="" aria-hidden="true" />;
   return (
     <div ref={rootRef} data-stemcells-composer-glass="" aria-hidden="true">

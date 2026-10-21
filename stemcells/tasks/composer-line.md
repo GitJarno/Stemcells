@@ -5,6 +5,7 @@ tone, its project, and a one-liner on what the chat is about. The Cell's
 figure stands on the line's left end, its feet on the line's top edge.
 
 ## Plan
+
 - [x] A Cell's name: none existed, so one is dealt from its thread id
       (FNV-1a over the id, into a pool of names), as data in `cell/`.
 - [x] The one-liner: upstream's thread title. Upstream asks a model for a
@@ -18,6 +19,8 @@ figure stands on the line's left end, its feet on the line's top edge.
 - [x] The line is an attached banner on upstream's banner dock, so it
       stacks with upstream's own (approvals, questions, tasks) and wears
       their surface on a light page and a dark one.
+      (Since 2026-10-21 it stands on the ground above the composer's box
+      instead: `composer-glass.md`, "One box, a halo".)
 - [x] Seam: one line in `ChatComposer.tsx`'s banner column. The pane says
       which Cell it holds through a context; Aski's pane and upstream's own
       routes give none, and the line draws nothing there.
@@ -26,6 +29,7 @@ figure stands on the line's left end, its feet on the line's top edge.
 - [x] drift, typecheck, our tests; PR.
 
 ## Review
+
 - Checked in the dev web app, dark and light: the Cell stands on the
   line's edge past its corner, the title upstream generated shows beside
   the project, and at 320 px the one-liner ellipsizes first. Aski's pane

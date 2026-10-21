@@ -410,6 +410,7 @@ import { createUpwardScrollDetector, isTimelineScrollTarget } from "./chat/timel
 import { DraftHeroHeadline } from "./chat/DraftHeroHeadline";
 import { openExpandedImagePreview } from "./chat/ExpandedImageDialog";
 import { ChatMediaViewerHost } from "../stemcells/media/ChatMediaViewerHost";
+import { CellComposerLine } from "../stemcells/composer/CellComposerLine";
 import {
   BranchRestoreConfirmHost,
   DeviceSetupDialogHost,
@@ -8417,6 +8418,7 @@ export default function ChatView(props: ChatViewProps) {
                         : undefined
                     }
                   >
+                    <CellComposerLine />
                     <ComposerSurface.Shell
                       contextStrip={showComposerContextStrip || showComposerModelStrip}
                     >

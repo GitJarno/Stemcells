@@ -1,9 +1,23 @@
 /* The line over a Cell's composer: its own touches, scoped to it, so
    loading this sheet never restyles upstream's banners. */
 
-/* The Cell stands on the line's top edge and wears a rim in the page's own
+/* The line stands on the ground just above the composer's box, never in a
+   box of its own: its words start where the field's do (upstream's field
+   is inset four spacing steps, past the plate's one-pixel edge), and it
+   sits in the composer's halo (`glow.css`), painted over it. */
+[data-stemcells-composer-line] {
+  position: relative;
+  z-index: 1;
+  margin-block-end: var(--sc-composer-line-gap);
+  padding-inline: calc(var(--spacing) * 4 + 1px);
+}
+[data-stemcells-composer-line] .composer-line-row {
+  height: var(--sc-composer-line);
+}
+
+/* The Cell stands on its name and wears a rim in the page's own
    colour, two of its pixels wide round its sides and top, so it reads over
-   whatever scrolls under it; its feet stay bare on the edge. Each shadow
+   whatever scrolls under it; its feet stay bare on the name. Each shadow
    steps one pixel (--cell) and carries the ones before it. */
 [data-stemcells-composer-line] .composer-line-roof {
   --rim: var(--background);
@@ -76,9 +90,8 @@
    mark. Then what the chat is about, where it runs and its parent go, and
    the model in the composer shows its mark alone (upstream folds its own
    controls into its overflow before that). Last the project, the model's
-   chevron and the attach button go (dropping and pasting still attach),
-   and the field's placeholder keeps to one line. The Cell, its name, the
-   field and send or stop stay at every width. */
+   chevron and the attach button go (dropping and pasting still attach).
+   The Cell, its name, the field and send or stop stay at every width. */
 [data-stemcells-composer-line] .composer-line-project-mark {
   display: none;
 }
@@ -113,42 +126,4 @@
   [data-chat-composer-footer="true"] [data-chat-provider-model-picker] {
     min-width: 0;
   }
-  /* The field's placeholder keeps one line, so it never runs under send. */
-  [data-chat-composer-body="true"] .text-placeholder\/75 {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-/* The ground the Cell and its line stand on: the transcript fades out across
-   the band from the Cell's head down to the plate (`dropOff.ts` measures it
-   up from the transcript's foot), so nothing reads through them; it shows
-   again only behind the plate's straight sides, between its rounded
-   corners, for the glass to blur, so no corner ever shows it; below the
-   plate, down to the pane's foot, it stays out. The fade begins no higher than the room the
-   transcript keeps clear above the band (--sc-drop-lead), so at the end the
-   last row is never faded. A mask, not a tint: the slate itself shows
-   through. The scrollbar's lane stays, as in upstream's own fades. */
-[data-stemcells-pane][data-drop-off] [data-assistant-citation-viewport="true"] {
-  --drop-off-from: calc(var(--sc-drop-top) + min(var(--sc-drop-lead), var(--sc-drop-fade)));
-  --drop-off-corner: min(
-    var(--sc-drop-return),
-    calc((var(--sc-drop-plate) - var(--sc-drop-under)) / 2)
-  );
-  --drop-off: linear-gradient(
-    to top,
-    transparent calc(var(--sc-drop-under) + var(--drop-off-corner)),
-    black calc(var(--sc-drop-under) + var(--drop-off-corner) + var(--sc-drop-soft)),
-    black calc(var(--sc-drop-plate) - var(--drop-off-corner) - var(--sc-drop-soft)),
-    transparent calc(var(--sc-drop-plate) - var(--drop-off-corner)),
-    transparent calc(var(--drop-off-from) - var(--sc-drop-fade)),
-    black var(--drop-off-from)
-  );
-  mask-image: var(--drop-off), linear-gradient(black, black);
-  mask-position: left, right;
-  mask-repeat: no-repeat;
-  mask-size:
-    calc(100% - var(--app-scrollbar-width)) 100%,
-    var(--app-scrollbar-width) 100%;
 }

@@ -1,33 +1,36 @@
 /**
- * What the line over a Cell's composer relies on in upstream: that it rides
- * in the composer's flow, inside the overlay whose height the transcript
- * keeps clear at its foot, that the transcript's viewport can be faded under
- * it alone, and that a wheel over the composer reaches it. A failure here
- * after a sync names the contract that moved; the line likely covers the
- * transcript's last row, stands on bare text, or a wheel over it stops at
- * the plate.
+ * What the line over a Cell's composer, the composer's halo and its one
+ * height rely on in upstream: that the line stands right before the
+ * composer's plate, inside the overlay whose height the transcript keeps
+ * clear at its foot; that the plate stacks its own layers, so the halo lies
+ * under its glass; that the composer rests into one line only through its
+ * scroll gesture, which a substitute turns off; that its field's height is
+ * one class `workspace.css` can lower; and that a wheel over the composer
+ * reaches it. A failure here after a sync names the contract that moved; the
+ * line likely covers the transcript's last row or sits in a box of its own,
+ * the halo covers the plate, the composer shrinks on a scroll or opens tall,
+ * or a wheel over it stops at the plate.
  */
 import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
-import composerBanner from "../../components/chat/ComposerBanner.tsx?raw";
-import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
+import promptEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
 
 describe("the composer line's contracts with upstream", () => {
-  it("is the first thing in the composer's banner column, in its flow", () => {
-    expect(chatComposer).toMatch(
-      /<ComposerBanner\.Dock>\s*<ComposerBanner\.Column>\s*<CellComposerLine \/>/,
-    );
-    // The column stacks its attachments; nothing in it floats out of the flow.
-    expect(composerBanner).toMatch(/function Column\b[\s\S]*?"flex min-w-0 flex-1 flex-col /);
+  it("stands right before the composer's plate, outside its glass", () => {
+    expect(chatView).toMatch(/<CellComposerLine \/>\s*<ComposerSurface\.Shell\b/);
+    // Not one of upstream's attached banners: an attached banner gives the
+    // plate a second surface, and the three read as overlapping layers.
+    expect(chatComposer).not.toContain("<CellComposerLine");
   });
 
   it("the transcript keeps the height of the overlay the line is in clear at its foot", () => {
     // ChatView measures the overlay holding the composer, line and all, and
     // reserves that height under the transcript's last row.
     expect(chatView).toMatch(
-      /ref=\{setComposerOverlayElement\}[\s\S]*?data-chat-composer-overlay="true"[\s\S]*?<ChatComposer\b/,
+      /ref=\{setComposerOverlayElement\}[\s\S]*?data-chat-composer-overlay="true"[\s\S]*?<CellComposerLine \/>/,
     );
     expect(chatView).toContain(
       "publishComposerOverlayHeightStable(composerOverlayElement.getBoundingClientRect().height);",
@@ -35,15 +38,37 @@ describe("the composer line's contracts with upstream", () => {
     expect(chatView).toMatch(/const nextInset = resolveComposerTimelineInset\(\{/);
   });
 
-  it("the transcript's viewport holds the list alone, its foot at the overlay's", () => {
-    // `composer-line.css` masks this viewport under the line, measured up from
-    // the overlay's foot: the scroll-to-end pill and the composer sit outside
-    // it, so the mask never fades them.
-    expect(messagesTimeline).toMatch(
-      /<TooltipScrollDismissArea\s+ref=\{setTimelineViewportElement\}\s+className="relative h-full min-h-0"\s+data-assistant-citation-viewport="true"\s*>[\s\S]*?<LegendList</,
+  it("the plate stacks its own layers, so the halo lies under its glass", () => {
+    // glow.css draws the halo as the plate's ::after at z-index -1: under the
+    // glass (its ::before, at 0) only while the plate is a stacking context,
+    // and the ::after is free only while upstream draws nothing there.
+    const shell = composerSurface.slice(
+      composerSurface.indexOf("function Shell("),
+      composerSurface.indexOf("const outlineClasses"),
     );
-    expect(chatView).toMatch(
-      /<div className="relative flex min-h-0 flex-1 flex-col bg-background">\s*<MessagesTimeline\b[\s\S]*?aria-label="Scroll to end"[\s\S]*?<\/div>\s*\)\}\s*<\/div>\s*<div\s+ref=\{setComposerOverlayElement\}/,
+    expect(shell).toContain('data-slot="composer-shell"');
+    expect(shell).toContain("group/composer-surface relative isolate ");
+    expect(shell).toContain("before:z-0");
+    expect(shell).not.toMatch(/\bafter:/);
+  });
+
+  it("the composer rests into one line only when its scroll gesture says so", () => {
+    // substitutes/composerScrollGesture.ts answers both gestures with "no";
+    // a third way to rest would bring the shrinking back.
+    expect(chatComposer.match(/setIsComposerScrollCollapsed\(true\)/g)).toHaveLength(2);
+    expect(chatComposer).toMatch(
+      /const shouldCollapse = recordComposerScrollGestureEvent\([\s\S]{0,500}?if \(!shouldCollapse\) \{\s*return;\s*\}\s*setIsComposerScrollCollapsed\(true\);/,
+    );
+    expect(chatComposer).toMatch(
+      /shouldCollapseComposerForScrollKey\(\{[\s\S]{0,300}?\}\)\s*\)\s*\{\s*setIsComposerScrollCollapsed\(true\);/,
+    );
+  });
+
+  it("the field's height is one class, and it grows to a cap as text is typed", () => {
+    // workspace.css lowers the field to one row; upstream's cap and scroll
+    // still let it grow with what is typed.
+    expect(promptEditor).toContain(
+      '"composer-tiptap -m-1 block max-h-52 min-h-19.5 overflow-y-auto p-1 ',
     );
   });
 

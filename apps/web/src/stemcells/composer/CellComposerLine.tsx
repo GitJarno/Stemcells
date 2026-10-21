@@ -16,7 +16,7 @@ import {
 } from "../upstream/chatHeader";
 import { useNavigateToCell } from "../upstream/routes";
 import { useCellPlace } from "../upstream/thread";
-import { cn, ComposerBanner, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
+import { cn, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { oneLinerOf } from "./oneLiner";
 import "../tokens/stemcells.css";
 import "./composer-line.css";
@@ -24,11 +24,11 @@ import "./composer-line.css";
 /**
  * The line over a Cell's composer: who, where and on what. The Cell's name
  * in its tone, its project, where it runs when that is news, the chat it
- * came from, and what the chat is about, quiet. The Cell stands on the
- * line's top edge at its left end, past the rounded corner, with room at its
- * right for the buds of its subagents at work. The line is one
- * of upstream's attached banners, so it stacks with theirs and wears their
- * surface. Nothing until the chat is sent, and nothing outside a Cell's pane.
+ * came from, and what the chat is about, quiet. It stands on the ground just
+ * above the composer's box, in the composer's halo, never in a box of its
+ * own; the Cell stands on its name, with room at its right for the buds of
+ * its subagents at work. Nothing until the chat is sent, and nothing outside
+ * a Cell's pane.
  *
  * A pane has no header, so the line does the header's jobs, as upstream's
  * did them: the name and the one-liner open the chat's menu and a
@@ -55,112 +55,112 @@ export function CellComposerLine() {
     onBlur: menu.onBlur,
   } as const;
   return (
-    <ComposerBanner.Attachment data-stemcells-composer-line="">
+    <div data-stemcells-composer-line="">
       <div
-        className="composer-line-roof pointer-events-none ps-(--radius-2xl) text-foreground"
+        className="composer-line-roof pointer-events-none text-foreground"
         style={{ "--cell": `${POINTS_PER_PIXEL}px` } as CSSProperties}
       >
         <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />
       </div>
-      <ComposerBanner.Root>
-        <div className="flex min-w-0 items-center gap-1.5 px-1" onContextMenu={menu.onContextMenu}>
-          <button {...titleProps} className="composer-line-name" aria-label={`Actions for ${name}`}>
-            {name}
-          </button>
-          {place && project ? (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    className={cn(
-                      "composer-line-project composer-line-act min-w-0 font-medium",
-                      place.isProject ? "text-foreground" : "text-muted-foreground",
-                    )}
-                    aria-label={`New Cell in ${place.name}`}
-                    onClick={project.startNewChat}
-                  />
-                }
-              >
-                <ProjectFavicon
-                  project={project.record}
-                  className="composer-line-project-mark size-3.5 shrink-0"
+      <div
+        className="composer-line-row flex min-w-0 items-center gap-1.5 text-xs/4"
+        onContextMenu={menu.onContextMenu}
+      >
+        <button {...titleProps} className="composer-line-name" aria-label={`Actions for ${name}`}>
+          {name}
+        </button>
+        {place && project ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  className={cn(
+                    "composer-line-project composer-line-act min-w-0 font-medium",
+                    place.isProject ? "text-foreground" : "text-muted-foreground",
+                  )}
+                  aria-label={`New Cell in ${place.name}`}
+                  onClick={project.startNewChat}
                 />
-                <span className="composer-line-project-name min-w-0 truncate">{place.name}</span>
-              </TooltipTrigger>
-              <TooltipPopup side="top">New Cell in {place.name}</TooltipPopup>
-            </Tooltip>
-          ) : null}
-          {runsOn ? (
-            <Tooltip>
-              <TooltipTrigger
-                render={<span className="composer-line-runs-on text-muted-foreground" />}
-              >
-                {runsOn.machine ? (
-                  <EnvironmentMachineIcon kind={runsOn.machine.kind} aria-hidden />
-                ) : null}
-                {runsOn.worktree ? <FolderGit2Icon aria-hidden /> : null}
-              </TooltipTrigger>
-              <TooltipPopup side="top">
-                {[
-                  runsOn.machine?.label,
-                  runsOn.worktree &&
-                    [runsOn.worktree.label, runsOn.worktree.branch].filter(Boolean).join(" · "),
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-              </TooltipPopup>
-            </Tooltip>
-          ) : null}
-          {parent ? (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    className="composer-line-parent composer-line-act text-muted-foreground"
-                    aria-label={`Open ${parent.title}`}
-                    onClick={() => navigateToCell(parent.cell)}
-                  />
-                }
-              >
-                <CornerLeftUpIcon aria-hidden />
-              </TooltipTrigger>
-              <TooltipPopup side="top">{parent.title}</TooltipPopup>
-            </Tooltip>
-          ) : null}
-          {menu.renaming ? (
-            <RenameField
-              title={menu.title}
-              onCommit={menu.commitRename}
-              onCancel={menu.cancelRename}
-            />
-          ) : line ? (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    {...titleProps}
-                    className="composer-line-one-liner composer-line-act min-w-0 flex-[1_1_0] truncate text-start text-muted-foreground"
-                    aria-label={`Actions for ${menu.title}`}
-                  />
-                }
-              >
-                {line}
-              </TooltipTrigger>
-              <TooltipPopup side="top">{line}</TooltipPopup>
-            </Tooltip>
-          ) : null}
-        </div>
-      </ComposerBanner.Root>
-    </ComposerBanner.Attachment>
+              }
+            >
+              <ProjectFavicon
+                project={project.record}
+                className="composer-line-project-mark size-3.5 shrink-0"
+              />
+              <span className="composer-line-project-name min-w-0 truncate">{place.name}</span>
+            </TooltipTrigger>
+            <TooltipPopup side="top">New Cell in {place.name}</TooltipPopup>
+          </Tooltip>
+        ) : null}
+        {runsOn ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={<span className="composer-line-runs-on text-muted-foreground" />}
+            >
+              {runsOn.machine ? (
+                <EnvironmentMachineIcon kind={runsOn.machine.kind} aria-hidden />
+              ) : null}
+              {runsOn.worktree ? <FolderGit2Icon aria-hidden /> : null}
+            </TooltipTrigger>
+            <TooltipPopup side="top">
+              {[
+                runsOn.machine?.label,
+                runsOn.worktree &&
+                  [runsOn.worktree.label, runsOn.worktree.branch].filter(Boolean).join(" · "),
+              ]
+                .filter(Boolean)
+                .join(", ")}
+            </TooltipPopup>
+          </Tooltip>
+        ) : null}
+        {parent ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  className="composer-line-parent composer-line-act text-muted-foreground"
+                  aria-label={`Open ${parent.title}`}
+                  onClick={() => navigateToCell(parent.cell)}
+                />
+              }
+            >
+              <CornerLeftUpIcon aria-hidden />
+            </TooltipTrigger>
+            <TooltipPopup side="top">{parent.title}</TooltipPopup>
+          </Tooltip>
+        ) : null}
+        {menu.renaming ? (
+          <RenameField
+            title={menu.title}
+            onCommit={menu.commitRename}
+            onCancel={menu.cancelRename}
+          />
+        ) : line ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  {...titleProps}
+                  className="composer-line-one-liner composer-line-act min-w-0 flex-[1_1_0] truncate text-start text-muted-foreground"
+                  aria-label={`Actions for ${menu.title}`}
+                />
+              }
+            >
+              {line}
+            </TooltipTrigger>
+            <TooltipPopup side="top">{line}</TooltipPopup>
+          </Tooltip>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
 /**
  * The chat's title, open for a new one where the one-liner was: Enter or
- * leaving keeps it, Escape doesn't, as in upstream's header. The line sits in
- * the composer's form, so Enter keeps the title rather than sending.
+ * leaving keeps it, Escape doesn't, as in upstream's header.
  */
 function RenameField(props: {
   title: string;

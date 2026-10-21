@@ -2,8 +2,8 @@
  * What a chat in a narrow pane relies on in upstream. A failure here after a
  * sync names the contract that moved: a chat may lose its end when its pane
  * narrows, the Scroll-to-end pill may sit on the Cell and its line, the
- * placeholder may run under send at 160, or a wide table may stop saying it
- * scrolls sideways.
+ * placeholder may run down over the controls, or a wide table may stop
+ * saying it scrolls sideways.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -29,7 +29,7 @@ describe("a chat in a narrow pane, against upstream", () => {
     );
   });
 
-  it("the placeholder is one element the narrowest rung can keep to a line", () => {
+  it("the placeholder is one element the composer can keep to its one row", () => {
     expect(promptEditor).toMatch(
       /\{isEmpty && contextRecords\.size === 0 && placeholder \? \(\s*<div\s*className=\{cn\(\s*"pointer-events-none absolute inset-0 leading-relaxed text-placeholder\/75",/,
     );
