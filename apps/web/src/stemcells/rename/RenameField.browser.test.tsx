@@ -5,8 +5,6 @@ import { render } from "../upstream/testRender";
 import { NAME_MAX_LENGTH } from "./limits";
 import { RenameField } from "./RenameField";
 
-const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 20));
-
 function Field(props: { onCommit: (value: string) => string | void; onCancel: () => void }) {
   return (
     <div>
@@ -47,14 +45,12 @@ describe("a name open for a new one", () => {
     await using screen = await render(<Field onCommit={onCommit} onCancel={() => undefined} />);
     const { input, composer } = partsOf(screen.container);
     composer.focus();
-    await tick();
-    expect(document.activeElement).toBe(input);
+    await vi.waitFor(() => expect(document.activeElement).toBe(input));
     expect(onCommit).not.toHaveBeenCalled();
 
     await userEvent.keyboard("Hello");
     composer.focus();
-    await tick();
-    expect(onCommit).toHaveBeenCalledWith("Hello");
+    await vi.waitFor(() => expect(onCommit).toHaveBeenCalledWith("Hello"));
     expect(document.activeElement).toBe(composer);
   });
 
@@ -75,8 +71,7 @@ describe("a name open for a new one", () => {
     try {
       expect(document.activeElement).toBe(input);
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "t", metaKey: true }));
-      await tick();
-      expect(document.activeElement).toBe(composer);
+      await vi.waitFor(() => expect(document.activeElement).toBe(composer));
       expect(onCommit).toHaveBeenCalledWith("Say hi");
     } finally {
       window.removeEventListener("keydown", newCell, true);

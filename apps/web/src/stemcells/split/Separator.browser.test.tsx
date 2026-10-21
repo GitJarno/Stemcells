@@ -1,6 +1,6 @@
 import { describe, expect, it, onTestFinished, vi } from "vite-plus/test";
 
-import { render } from "../upstream/testRender";
+import { fakeTimers, render } from "../upstream/testRender";
 import { growSides } from "./grow";
 import { PASS_THROUGH_MS, Separator, type Sides } from "./Separator";
 import { HOLD, NUDGE } from "./split";
@@ -219,12 +219,10 @@ describe("a border between Cells", () => {
 
   it("leaves no click behind for a press passed on and held past its time", async () => {
     const { onClick, press, release } = await passingThrough();
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    try {
+    {
+      using _timers = fakeTimers();
       press();
       vi.advanceTimersByTime(PASS_THROUGH_MS);
-    } finally {
-      vi.useRealTimers();
     }
     release();
     expect(onClick).not.toHaveBeenCalled();

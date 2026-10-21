@@ -143,9 +143,10 @@ describe("renaming a tab by its name", () => {
       await userEvent.dblClick(chip(screen.container, "t1").querySelector("span.truncate")!);
       expect(document.activeElement).toBe(field(screen.container));
       await userEvent.keyboard("{Meta>}t{/Meta}");
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(document.activeElement).toBe(away);
-      expect(field(screen.container)).toBeNull();
+      await vi.waitFor(() => {
+        expect(document.activeElement).toBe(away);
+        expect(field(screen.container)).toBeNull();
+      });
       await userEvent.keyboard("Fix the build");
       expect(onRename).not.toHaveBeenCalled();
     } finally {
