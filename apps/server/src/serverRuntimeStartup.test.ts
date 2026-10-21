@@ -6,7 +6,6 @@ import {
   ProjectId,
   ProviderInstanceId,
   ProviderDriverKind,
-  CommandId,
   EnvironmentId,
   type ServerLifecycleStreamEvent,
 } from "@t3tools/contracts";
@@ -183,34 +182,12 @@ it.effect.each([
                   },
                 }),
         }),
+        // Stemcells launches no starter thread and looks for none (stemcells/upstream/welcome.ts).
         Layer.mock(ThreadManagement.ThreadManagementService)({
-          getShellSnapshot: () =>
-            Effect.succeed({
-              threads: [],
-              archivedThreads: [],
-              schemaVersion: 1,
-              snapshotSequence: 0,
-            }),
+          getShellSnapshot: () => Effect.die("looked for a starter thread"),
         }),
         Layer.mock(ThreadLaunch.ThreadLaunchService)({
-          launch: (input) => {
-            assert.equal(input.modelSelection.instanceId, instanceId);
-            return scenario === "launch-failure"
-              ? Effect.fail(
-                  new ThreadLaunch.ThreadLaunchError({
-                    operation: "create-thread",
-                    commandId: CommandId.make("bootstrap-command"),
-                    projectId,
-                    cause: "test launch failure",
-                  }),
-                )
-              : Effect.fail(
-                  new ThreadManagement.ThreadManagementProviderInstanceDisabledError({
-                    projectId,
-                    instanceId,
-                  }),
-                );
-          },
+          launch: () => Effect.die("launched a starter thread"),
         }),
         Layer.mock(ServiceLauncherClient.ServiceLauncherClient)({
           managed: false,
