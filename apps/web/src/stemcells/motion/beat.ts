@@ -181,32 +181,80 @@ export function beatWhen(progress: number): number {
 
 /**
  * A crossing for a band drawn by repainting (a background's place, not a
- * transform): its value runs `from` to `to` as a sweep's does, but holds at
- * `low` until it reaches it and at `high` once past, the places where the
- * band is just off the box it lights. Held, nothing repaints: the box
- * repaints only while the crest passes over it. Between, `steps` straight
- * pieces follow the curve.
+ * transform): only the stretch of the beat the crest spends over the box it
+ * lights, when its band leaves `low` and reaches `high`, the places where it
+ * is just off the box. Its value runs `from` to `to` as a sweep's does, in
+ * `steps` straight pieces along the curve; `start` is how far into the beat
+ * the stretch begins and `span` how long it lasts, in milliseconds. Play it
+ * with `eachBeat`: outside the stretch nothing runs, where an endless
+ * animation holding still for the rest of the beat still woke the page on
+ * every frame.
  */
-export function paintedFrames(
+export function paintedCrossing(
   from: number,
   to: number,
   low: number,
   high: number,
-  share: number,
   frame: (x: number) => Keyframe,
   steps = 12,
-): Keyframe[] {
+): { readonly frames: Keyframe[]; readonly start: number; readonly span: number } {
+  const { pass } = beat();
   const at = (x: number) => beatWhen(Math.min(1, Math.max(0, (x - from) / (to - from))));
   const enter = at(low);
   const leave = at(high);
-  const frames: Keyframe[] = [
-    { ...frame(low), offset: 0 },
-    { ...frame(low), offset: enter * share },
-  ];
+  const frames: Keyframe[] = [{ ...frame(low), offset: 0 }];
   for (let i = 1; i < steps; i++) {
     const time = enter + ((leave - enter) * i) / steps;
-    frames.push({ ...frame(from + (to - from) * beatEase(time)), offset: time * share });
+    frames.push({ ...frame(from + (to - from) * beatEase(time)), offset: i / steps });
   }
-  frames.push({ ...frame(high), offset: leave * share }, { ...frame(high), offset: 1 });
-  return frames;
+  frames.push({ ...frame(high), offset: 1 });
+  return { frames, start: enter * pass, span: Math.max(1, (leave - enter) * pass) };
+}
+
+/** A stretch of every beat that `element` animates through, and nothing between. */
+export interface EachBeat {
+  /** Plays `frames` over `span` ms, `start` ms into every beat, from this beat's if it is still to come or under way. */
+  aim(frames: Keyframe[], start: number, span: number): void;
+  cancel(): void;
+}
+
+/**
+ * Plays a stretch of every beat on `element`, on the beat's wall clock: one
+ * animation, which as it finishes is set to start again a beat on. Before
+ * and after its stretch it neither shows nor runs.
+ */
+export function eachBeat(element: Element): EachBeat {
+  let start = 0;
+  let span = 1;
+  let animation: Animation | null = null;
+  const arm = () => {
+    if (animation === null) return;
+    const { period } = beat();
+    const now = Number(document.timeline.currentTime ?? 0);
+    const origin = beatStart(period);
+    const at = origin + Math.floor((now - origin) / period) * period + start;
+    animation.startTime = at + span <= now ? at + period : at;
+  };
+  return {
+    aim(frames, nextStart, nextSpan) {
+      start = nextStart;
+      span = nextSpan;
+      if (animation === null) {
+        animation = element.animate(frames, { duration: span });
+        animation.addEventListener("finish", arm);
+      } else {
+        const effect = animation.effect;
+        if (effect instanceof KeyframeEffect) {
+          effect.setKeyframes(frames);
+          effect.updateTiming({ duration: span });
+        }
+      }
+      arm();
+    },
+    cancel() {
+      animation?.removeEventListener("finish", arm);
+      animation?.cancel();
+      animation = null;
+    },
+  };
 }

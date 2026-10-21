@@ -15,7 +15,7 @@ crossed it.
       Cells, idle and working, each of our loops turned off in turn
 - [x] The drift and the breath step on the Cells' sprite clock (`form-step`,
       12 a second), on the same wall clock, period and curve
-- [ ] A shining label animates only while the crest crosses it; through the
+- [x] A shining label animates only while the crest crosses it; through the
       rest of the beat nothing runs for it
 - [ ] The light holds while no one can see it: the window hidden or not
       focused, or the surface off screen (the tab pager keeps its neighbours

@@ -17,14 +17,22 @@
  * - **A shining label** (a running tool, a reasoning step's "Thinking"):
  *   the text's own background, a band over its ink, clipped to the glyphs.
  *   It has no copy to slide, so its band's place is repainted, but only
- *   while the crest passes over the label (`paintedFrames`); the rest of
- *   the beat it holds still off the label.
+ *   while the crest passes over the label (`paintedCrossing`): the rest of
+ *   the beat no animation runs for it, and the band waits off the label.
  *
  * Upstream hands every box it lights to `observeVisibleAnimation` as it
  * starts and takes it back as it stops; our substitute for that module
  * (`upstream/substitutes/visibleAnimation.ts`) joins each one here.
  */
-import { beat, crossing, onBeat, paintedFrames, resweep, standing, sweep } from "../motion/beat";
+import {
+  crossing,
+  eachBeat,
+  type EachBeat,
+  paintedCrossing,
+  resweep,
+  standing,
+  sweep,
+} from "../motion/beat";
 import { reducedMotion } from "../tokens/motion";
 
 const OVERLAY = "live-activity-focus";
@@ -64,9 +72,12 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
   if (overlays.length === 0 && shines.length === 0) return undefined;
 
   const playing = new Map<HTMLElement, Animation>();
+  const crossings = new Map<HTMLElement, EachBeat>();
   const stop = () => {
     for (const animation of playing.values()) animation.cancel();
     playing.clear();
+    for (const shine of crossings.values()) shine.cancel();
+    crossings.clear();
   };
   const slide = (element: HTMLElement, from: number, to: number) => {
     const animation = playing.get(element);
@@ -92,20 +103,20 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
         slide(overlay, from, to);
         slide(copy, -from, -to);
       }
-      const { pass, period } = beat();
       for (const label of shines) {
         const band = Number.parseFloat(getComputedStyle(label).backgroundSize) || 0;
         const { left, width } = standing(label);
         const { from, to } = crossing(width, left, band / 2);
-        const frames = paintedFrames(from, to, -band, label.clientWidth, pass / period, shineAt);
-        const animation = playing.get(label);
-        const effect = animation?.effect;
-        if (effect instanceof KeyframeEffect) effect.setKeyframes(frames);
-        else
-          playing.set(
-            label,
-            onBeat(label.animate(frames, { duration: period, iterations: Infinity }), period),
-          );
+        const { frames, start, span } = paintedCrossing(
+          from,
+          to,
+          -band,
+          label.clientWidth,
+          shineAt,
+        );
+        let shine = crossings.get(label);
+        if (shine === undefined) crossings.set(label, (shine = eachBeat(label)));
+        shine.aim(frames, start, span);
       }
     },
   };

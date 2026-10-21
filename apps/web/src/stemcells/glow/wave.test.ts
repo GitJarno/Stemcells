@@ -7,19 +7,22 @@
  * from coming back. The one thing that must repaint, a shining label with
  * no copy of its words, repaints only while the crest passes over it.
  *
- * And what never rests (the drift, the breath) steps on the Cells' sprite
- * clock rather than drawing every frame of a 120 Hz display: three working
- * Cells held the GPU near 35% before.
+ * And it costs frames only when it moves: what never rests (the drift, the
+ * breath) steps on the Cells' sprite clock rather than drawing every frame
+ * of a 120 Hz display, and a label's shine runs only while the crest
+ * crosses it. Three working Cells held the GPU near 35% before.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   beat,
   beatEase,
+  beatStart,
   beatWhen,
   CREST_REACH,
   crossing,
-  paintedFrames,
+  eachBeat,
+  paintedCrossing,
   sweepFrames,
 } from "../motion/beat";
 import { GlassLight } from "./motion";
@@ -175,33 +178,97 @@ describe("one wave over the pane", () => {
 });
 
 describe("a shining label, which can only repaint", () => {
-  const share = 3200 / 4200;
   const place = (frame: Keyframe) => Number.parseFloat(String(frame.backgroundPosition));
-  const frames = paintedFrames(-520, 1180, -72, 126, share, (x) => ({
-    backgroundPosition: `${x}px 0, 0 0`,
-  }));
+  const label = () =>
+    paintedCrossing(-520, 1180, -72, 126, (x) => ({ backgroundPosition: `${x}px 0, 0 0` }));
 
-  it("holds off the label until the crest arrives, and past it once the crest has gone", () => {
+  it("starts with its band just off the label and ends just past it", () => {
+    const { frames } = label();
     expect(place(frames[0]!)).toBe(-72);
-    expect(place(frames[1]!)).toBe(-72);
-    expect(place(frames.at(-2)!)).toBe(126);
     expect(place(frames.at(-1)!)).toBe(126);
     for (const frame of frames) {
       expect(Object.keys(frame).filter((key) => !TIMING.has(key))).toEqual(["backgroundPosition"]);
     }
   });
 
-  it("repaints only for the stretch of the beat the crest spends over it", () => {
-    const moving = (frames.at(-2)!.offset ?? 0) - (frames[1]!.offset ?? 0);
-    expect(moving).toBeGreaterThan(0);
-    expect(moving).toBeLessThan(0.15);
+  it("runs only for the stretch of the beat the crest spends over it", () => {
+    const { start, span } = label();
+    expect(start).toBeGreaterThan(0);
+    expect(start + span).toBeLessThanOrEqual(3200);
+    expect(span / 4200).toBeGreaterThan(0);
+    expect(span / 4200).toBeLessThan(0.15);
   });
 
   it("keeps to the crest while it crosses", () => {
-    for (const frame of frames.slice(2, -2)) {
-      const time = (frame.offset ?? 0) / share;
+    const { frames, start, span } = label();
+    for (const frame of frames.slice(1, -1)) {
+      const time = (start + (frame.offset ?? 0) * span) / 3200;
       expect(place(frame)).toBeCloseTo(-520 + 1700 * beatEase(time), 6);
     }
+  });
+});
+
+describe("a stretch of every beat", () => {
+  const PERIOD = 4200;
+  const beatAt = beatStart(PERIOD) + PERIOD * 1000;
+  let now = 0;
+  class Effect {
+    duration = 0;
+    setKeyframes() {}
+    updateTiming({ duration }: { duration: number }) {
+      this.duration = duration;
+    }
+  }
+  let animation: { startTime: number | null; effect: Effect; finish?: () => void };
+  const element = {
+    animate(_frames: Keyframe[], { duration }: { duration: number }) {
+      const effect = new Effect();
+      effect.duration = duration;
+      animation = {
+        startTime: null,
+        effect,
+        addEventListener: (_type: string, finish: () => void) => {
+          animation.finish = finish;
+        },
+      } as typeof animation;
+      return animation;
+    },
+  } as unknown as Element;
+
+  beforeEach(() => {
+    vi.stubGlobal("KeyframeEffect", Effect);
+    vi.stubGlobal("document", {
+      documentElement: {},
+      timeline: {
+        get currentTime() {
+          return now;
+        },
+      },
+    });
+  });
+
+  it("starts at this beat's stretch while it is to come or under way, else the next beat's", () => {
+    const shine = eachBeat(element);
+    now = beatAt + 1000;
+    shine.aim([], 1500, 200);
+    expect(animation.startTime).toBeCloseTo(beatAt + 1500, 6);
+    expect(animation.effect.duration).toBe(200);
+    now = beatAt + 1600;
+    shine.aim([], 1500, 200);
+    expect(animation.startTime).toBeCloseTo(beatAt + 1500, 6);
+    now = beatAt + 1800;
+    shine.aim([], 1500, 250);
+    expect(animation.startTime).toBeCloseTo(beatAt + PERIOD + 1500, 6);
+    expect(animation.effect.duration).toBe(250);
+  });
+
+  it("runs once a beat: as it finishes it is set to start a beat on", () => {
+    const shine = eachBeat(element);
+    now = beatAt + 1000;
+    shine.aim([], 1500, 200);
+    now = beatAt + 1700;
+    animation.finish?.();
+    expect(animation.startTime).toBeCloseTo(beatAt + PERIOD + 1500, 6);
   });
 });
 
