@@ -1,5 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (words.css), outside upstream's Tailwind entry. */
+import { useMinute } from "../rail/clock";
+import { useLimitPools } from "../upstream/rail";
 import type { Readout as ReadoutData, ReadoutWord } from "./cells";
+import { limitNotes } from "./limits";
 import type { Span } from "./text";
 
 /**
@@ -7,14 +10,25 @@ import type { Span } from "./text";
  * sentence of tokens, the words read back, in place of the model and
  * effort pickers. A word you typed wears its plate and opens its menu; a
  * default is dim. Past the most Cells, the count wears the warning edge
- * and says so.
+ * and says so, and a provider whose plan runs short says that too.
  */
 export function Readout(props: {
   readonly readout: ReadoutData;
+  /** The providers the Cells start on, as drivers. */
+  readonly drivers: readonly string[];
   /** A token was clicked: the word it reads back, and where it is on screen. */
   readonly onWord: (mark: Span, at: DOMRect) => void;
 }) {
   const { readout, onWord } = props;
+  const now = useMinute();
+  const notes = limitNotes(props.drivers, useLimitPools(now), now).map((note) => (
+    <span key={note.text}>
+      {" · "}
+      <span className="sc-readout-limit" data-tone={note.tone}>
+        {note.text}
+      </span>
+    </span>
+  ));
   const word = (part: ReadoutWord) =>
     part.mark === null ? (
       <span className="sc-readout-default">{part.text}</span>
@@ -62,6 +76,7 @@ export function Readout(props: {
           · {readout.total} is over your {readout.most} · ⌘↵ sends
         </span>
       ) : null}
+      {notes}
     </div>
   );
 }

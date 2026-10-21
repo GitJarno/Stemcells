@@ -700,8 +700,11 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      says why.
    - 4b, built: the hero names the places (`words/heroPlaces.ts`, and a
      substitute for `DraftHeroProjectHeading.tsx`).
-   - Left for 4b: the spawn (with Aski's figure and the Cell kit), the
-     narrow-pane fold, and usage-limit notes in the readout.
+   - 4b, built: a provider the Cells start on whose plan runs short says so
+     in the readout, as the rail's ring words it ("Claude Code Weekly: 6%
+     left", `words/limits.ts`).
+   - Left for 4b: the spawn (with Aski's figure and the Cell kit) and the
+     narrow-pane fold.
 5. **The planner.**
    - The `TextGeneration` operation, run lean, with its arguments pinned
      by a test.

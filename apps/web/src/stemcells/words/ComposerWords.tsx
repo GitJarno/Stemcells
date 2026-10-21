@@ -96,6 +96,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
         };
   const [menu, setMenu] = useState<OpenMenu | null>(null);
   const [readout, setReadout] = useState<ReadoutData | null>(null);
+  const [drivers, setDrivers] = useState<readonly string[]>([]);
   const startCells = useStartCells();
 
   const current = useRef<WordsSetting | null>(setting);
@@ -131,6 +132,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const next = facts === null ? null : readoutFor(facts, driverSource.current);
     setReadout((last) => (JSON.stringify(last) === JSON.stringify(next) ? last : next));
     nameInHero(driverSource.current.draftId, next === null ? null : placesOf(next));
+    const on = next === null || facts === null ? [] : driversFor(facts, driverSource.current);
+    setDrivers((last) => (JSON.stringify(last) === JSON.stringify(on) ? last : on));
   };
 
   const openMenu = (view: EditorView, mark: Placed, at: TokenMenuAt) => {
@@ -335,7 +338,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
 
   return (
     <>
-      {readout ? <Readout readout={readout} onWord={openFromReadout} /> : null}
+      {readout ? <Readout readout={readout} drivers={drivers} onWord={openFromReadout} /> : null}
       {menu ? (
         <TokenMenu
           key={`${menu.mark.kind}:${menu.mark.from}`}
@@ -365,30 +368,57 @@ function readoutFor(facts: Facts, source: DriverSource): ReadoutData | null {
   const launch = launchOf(facts);
   if (launch === null || source.draftId === null) return null;
   const draftProject = readDraftProjectKey(source.draftId);
-  const setup = readDraftSetup(source.draftId);
-  const environment = draftProject?.slice(0, draftProject.indexOf(":")) ?? "";
-  const keyOfPlace = (placeId: string | null) => {
-    if (placeId === null) return draftProject;
-    const members = source.places.get(placeId)?.members ?? [];
-    return members.find((k) => k.startsWith(`${environment}:`)) ?? members[0] ?? null;
-  };
   const own =
     draftProject === null
       ? null
       : ([...source.places.values()].find((p) => p.members.includes(draftProject)) ?? null);
   return readoutOf(launch, {
     model: (placeId) => {
-      const key = keyOfPlace(placeId);
-      const selection =
-        setup?.pick ??
-        (key === null ? null : startingModel(projectRefOfKey(key))) ??
-        setup?.current ??
-        null;
+      const selection = defaultModel(source, placeId);
       return selection ? nameOf(source.catalog, selection.instanceId, selection.model) : null;
     },
     place: own?.name ?? null,
     effortLabel,
   });
+}
+
+/** The providers several Cells start on, as drivers: each one's model word's, or its default's. */
+function driversFor(facts: Facts, source: DriverSource): string[] {
+  const launch = launchOf(facts);
+  if (launch === null) return [];
+  return launch.cells.flatMap(({ group }) => {
+    const id = group.model
+      ? group.model.form.provider.id
+      : defaultModel(source, group.place?.place.place.id ?? null)?.instanceId;
+    const driver = source.catalog.providers.find((p) => p.id === id)?.driver;
+    return driver === undefined ? [] : [driver];
+  });
+}
+
+/**
+ * The model a Cell starts on when its words name none: the draft's pick,
+ * else its place's project default, else the last one used, else the
+ * draft's own (decision 14).
+ */
+function defaultModel(
+  source: DriverSource,
+  placeId: string | null,
+): { readonly instanceId: string; readonly model: string } | null {
+  if (source.draftId === null) return null;
+  const draftProject = readDraftProjectKey(source.draftId);
+  const setup = readDraftSetup(source.draftId);
+  const environment = draftProject?.slice(0, draftProject.indexOf(":")) ?? "";
+  const members = placeId === null ? [] : (source.places.get(placeId)?.members ?? []);
+  const key =
+    placeId === null
+      ? draftProject
+      : (members.find((k) => k.startsWith(`${environment}:`)) ?? members[0] ?? null);
+  return (
+    setup?.pick ??
+    (key === null ? null : startingModel(projectRefOfKey(key))) ??
+    setup?.current ??
+    null
+  );
 }
 
 function nameOf(catalog: WordsCatalog, instanceId: string, model: string): string {

@@ -239,6 +239,14 @@
   color: var(--sc-warning);
 }
 
+/* A plan running short, in the rail ring's tones (rail/PlanRing.tsx). */
+.sc-readout-limit[data-tone="low"] {
+  color: var(--sc-needs-you);
+}
+.sc-readout-limit[data-tone="out"] {
+  color: var(--sc-error);
+}
+
 /* The readout stands in for the model and effort pickers, and the rule
    before the next control goes with them. */
 [data-chat-composer-stack][data-stemcells-cells] [data-chat-provider-model-picker],
