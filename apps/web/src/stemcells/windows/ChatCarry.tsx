@@ -29,6 +29,7 @@ import { randomUUID } from "../upstream/ui";
 import type { Placed, Rect } from "./arrangement";
 import { windowsBridge } from "./bridge";
 import { PICK_UP_DISTANCE, type Point } from "./carry";
+import { carryStarts } from "./carrying";
 import { paneLandingAt, type PaneLanding, type PanePlace } from "./paneLanding";
 import { carry, type CarryTarget } from "./moves";
 import { commitMove } from "./wire";
@@ -94,7 +95,9 @@ const twoFrames = () =>
 
 /**
  * The handle pressed: the chat in `cell`'s pane goes with the hand once it
- * has moved 4 px. Keeps the pointer, so the carry hears the hand anywhere.
+ * has moved 4 px. Keeps the pointer, so the carry hears the hand anywhere;
+ * the pointer lost to the system, or the window's focus lost, sends it back
+ * as Esc does.
  */
 export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: CellRef): void {
   const handle = event.currentTarget;
@@ -120,7 +123,9 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
     handle.removeEventListener("pointermove", onMove);
     handle.removeEventListener("pointerup", onUp);
     handle.removeEventListener("pointercancel", onCancel);
+    handle.removeEventListener("lostpointercapture", onCancel);
     window.removeEventListener("keydown", onKey, true);
+    window.removeEventListener("blur", onCancel);
     delete handle.dataset.carrying;
     if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
   };
@@ -141,7 +146,9 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
   handle.addEventListener("pointermove", onMove);
   handle.addEventListener("pointerup", onUp);
   handle.addEventListener("pointercancel", onCancel);
+  handle.addEventListener("lostpointercapture", onCancel);
   window.addEventListener("keydown", onKey, true);
+  window.addEventListener("blur", onCancel);
 }
 
 /**
@@ -198,6 +205,8 @@ interface CarryElements {
 class WindowCarrier implements Carrier {
   private live: Live | null = null;
   private lit = false;
+  /** Puts the carry down for the keys that wait on one (`carrying.ts`). */
+  private ends = () => {};
 
   constructor(
     private readonly elements: CarryElements,
@@ -209,6 +218,7 @@ class WindowCarrier implements Carrier {
       .filter((pane) => pane.closest("[inert]") === null)
       .map((pane) => ({ paneId: pane.dataset.stemcellsPane ?? "", rect: rectOf(pane) }));
     this.live = { held, from, panes, hand, landing: null, landingNow: false };
+    this.ends = carryStarts();
     setCarried(held.paneId);
     this.show(held);
   }
@@ -239,11 +249,12 @@ class WindowCarrier implements Carrier {
     const now = this.live;
     if (!now || now.landingNow) return;
     now.hand = hand;
-    this.follow(hand);
     const landing = paneLandingAt(now.panes, now.held.paneId, hand);
     const changed = landing?.anchor !== now.landing?.anchor || landing?.side !== now.landing?.side;
     now.landing = landing;
     if (changed) this.light(landing?.half ?? null);
+    // Written last, so what was measured above read a page this move hadn't changed.
+    this.follow(hand);
   }
 
   letGo(): void {
@@ -335,6 +346,7 @@ class WindowCarrier implements Carrier {
         .finished.catch(() => undefined);
     }
     this.live = null;
+    this.ends();
     setCarried(null);
     this.show(null);
   }
