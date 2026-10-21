@@ -71,11 +71,13 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Dev loop
 Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
-`pnpm install`, `pnpm dev:desktop`, `pnpm exec vp test run <files>` (the
-web's from `apps/web`, whose config has our substitutes),
-`pnpm --filter @t3tools/web typecheck`, `pnpm exec vp lint`. To build and
-install the app: `stemcells/scripts/install-app` (`stemcells/docs/install.md`).
+`pnpm install`, `stemcells/lab/electron dev` (the desktop dev app, below),
+`pnpm exec vp test run <files>` (the web's from `apps/web`, whose config has
+our substitutes), `pnpm --filter @t3tools/web typecheck`,
+`pnpm exec vp lint`. To build and install the app:
+`stemcells/scripts/install-app` (`stemcells/docs/install.md`).
 
-A desktop lab (anything that starts Electron on a Mac someone is using)
-preloads `stemcells/lab/never-shown.cjs`: no window of it ever reaches the
-screen, and one that does ends the lab. Its header says how to load it.
+Electron starts only through `stemcells/lab/electron`: `dev` for the dev
+app, or a scratch app's main. It loads `stemcells/lab/never-shown.cjs`, so
+no window reaches the screen of the person at the Mac, and one that does
+ends the lab. `stemcells/lab/launches.test.ts` fails on any other way in.

@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Starts Electron for a lab under stemcells/lab/never-shown.cjs, so no window
+# of it reaches the screen of the person at the Mac. A lab starts Electron
+# only through this (launches.test.ts fails on any other way in the repo).
+#
+#   stemcells/lab/electron dev [args]       the dev app (pnpm dev:desktop)
+#   stemcells/lab/electron <main> [args]    a scratch app, on the repo's Electron
+#
+# It checks the helper took: an Electron main that starts under it and is
+# still without the helper's mark three seconds on (its environment lost
+# NODE_OPTIONS on the way) is killed with everything this started, and this
+# exits 1. The helper's own stop exits 86.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+helper="$PWD/stemcells/lab/never-shown.cjs"
+temp="${TMPDIR:-/tmp}"
+export STEMCELLS_LAB_PROFILE="${STEMCELLS_LAB_PROFILE:-$(mktemp -d "${temp%/}/stemcells-lab-XXXXXX")}"
+export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require \"$helper\""
+
+case "${1:?usage: stemcells/lab/electron dev|<main> [args]}" in
+  dev)
+    shift
+    pnpm dev:desktop "$@" &
+    ;;
+  *)
+    electron=$(cd apps/desktop && node -p 'require("electron")')
+    "$electron" "$@" &
+    ;;
+esac
+started=$!
+
+tree() { for pid in $(pgrep -P "$1"); do echo "$pid"; tree "$pid"; done; }
+stop_all() {
+  # shellcheck disable=SC2046
+  kill $(tree "$started") "$started" 2>/dev/null || true
+}
+trap stop_all INT TERM
+
+# The helper marks a main as it loads, before the app's code runs; a busy Mac
+# can take a second or two to get that far.
+unmarked="" # pid@second, for each main first seen without the mark
+while kill -0 "$started" 2>/dev/null; do
+  for pid in $started $(tree "$started"); do
+    case "$(ps -o comm= -p "$pid" 2>/dev/null)" in
+      */Contents/MacOS/Electron) ;;
+      *) continue ;;
+    esac
+    [ -e "$STEMCELLS_LAB_PROFILE/.never-shown-$pid" ] && continue
+    since=""
+    for entry in $unmarked; do [ "${entry%@*}" = "$pid" ] && since="${entry#*@}"; done
+    if [ -z "$since" ]; then
+      unmarked="$unmarked $pid@$(date +%s)"
+    elif [ $(($(date +%s) - since)) -ge 3 ]; then
+      echo "stemcells/lab/electron: Electron $pid started without the lab helper; stopped the lab." >&2
+      stop_all
+      exit 1
+    fi
+  done
+  sleep 0.5
+done
+wait "$started"

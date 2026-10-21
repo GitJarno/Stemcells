@@ -1,11 +1,13 @@
 // A desktop lab that never reaches the screen of the person at the Mac.
 //
-// Preload it into Electron's main process, before the app's own code:
+// stemcells/lab/electron preloads it into Electron's main process, before
+// the app's own code, and checks that it did:
 //
-//   electron -r stemcells/lab/never-shown.cjs main.cjs        (a scratch app)
-//   NODE_OPTIONS="--require \"$PWD/stemcells/lab/never-shown.cjs\"" pnpm dev:desktop
+//   stemcells/lab/electron dev             the dev app (pnpm dev:desktop)
+//   stemcells/lab/electron main.cjs        a scratch app, on the repo's Electron
 //
-// The app gets a fresh profile each run, or STEMCELLS_LAB_PROFILE's folder.
+// The app gets a fresh profile each run, or STEMCELLS_LAB_PROFILE's folder,
+// where the helper leaves `.never-shown-<pid>` for each main it guards.
 //
 // Every window is created hidden, off every display, and is never shown,
 // focused or raised; it keeps rendering hidden, so a lab drives and captures
@@ -290,6 +292,8 @@ if (process.versions.electron && process.type === "browser") {
   }
   const profile =
     process.env.STEMCELLS_LAB_PROFILE ?? NodeFS.mkdtempSync(NodePath.join(temp, "stemcells-lab-"));
+  NodeFS.mkdirSync(profile, { recursive: true });
+  NodeFS.writeFileSync(NodePath.join(profile, `.never-shown-${process.pid}`), "");
   // A lab script checks this before it does anything: no helper, no lab.
   globalThis[Symbol.for("stemcells.lab")] = { profile, exitCode: LAB_EXIT };
   const log = (line) => process.stderr.write(`${line}\n`);
