@@ -20,6 +20,8 @@ import {
 
 const MB = 1_000_000;
 const volume = { total: 1_000_000_000_000, free: 100_000_000_000 };
+/** When the walk ran: the map only carries it, so any fixed moment does. */
+const MEASURED_AT = Date.parse("2026-10-01T09:00:00.000Z");
 
 function write(path: string, bytes: number) {
   NodeFS.mkdirSync(NodePath.dirname(path), { recursive: true });
@@ -106,7 +108,7 @@ beforeAll(async () => {
   };
   const walk = await walkDisk(plan, { fs });
   if (walk === null) throw new Error("the walk returns a map");
-  map = diskMap(walk, volume, { measuredAt: Date.now(), worthALook: 1 });
+  map = diskMap(walk, volume, { measuredAt: MEASURED_AT, worthALook: 1 });
 });
 
 afterAll(() => {

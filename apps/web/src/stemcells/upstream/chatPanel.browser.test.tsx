@@ -91,7 +91,7 @@ describe("what a Surface shows, coming with the stage", () => {
     const { workbench } = stage;
     await using screen = await render(<Panel workbench={workbench} shows={false} focused />);
     await screen.rerender(<Panel workbench={workbench} shows focused />);
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    // `getAnimations()` resolves style first, so a fade the rerender started is already listed.
     expect(fades(workbench)).toBe(false);
   });
 });

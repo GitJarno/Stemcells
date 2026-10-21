@@ -74,6 +74,18 @@ let stepInFlight: string | null = null;
 const instancesWritten = new Set<string>();
 const repinsAsked = new Set<string>();
 
+/** Runs one setup step as the page's step in flight; `fail` when it throws. */
+async function runStep(step: string, work: () => Promise<void>, fail: () => void): Promise<void> {
+  stepInFlight = step;
+  try {
+    await work();
+  } catch {
+    fail();
+  } finally {
+    stepInFlight = null;
+  }
+}
+
 /**
  * Aski's chat on the primary server: its instance kept current, and its one
  * thread found among the server's chats (pinned again if someone unpinned
@@ -143,16 +155,8 @@ export function useAskiChat(): AskiChat {
     if (environmentId === null || failed || stepInFlight !== null) return;
     if (instanceKey === null) return;
     const instance = JSON.parse(instanceKey) as AskiInstance;
-    const run = async (step: string, work: () => Promise<void>) => {
-      stepInFlight = step;
-      try {
-        await work();
-      } catch {
-        setFailed(true);
-      } finally {
-        stepInFlight = null;
-      }
-    };
+    const run = (step: string, work: () => Promise<void>) =>
+      runStep(step, work, () => setFailed(true));
 
     if (!instanceStored) {
       // Written once per page: a server that keeps another value wins.

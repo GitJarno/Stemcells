@@ -20,7 +20,8 @@ function setup(outcomes: CommandOutcome[] = []) {
     },
     needs: () => state,
     keepLive: () => (kept++, () => void kept--),
-    now: () => Date.now(),
+    // The fake timers' clock (each test installs them), so time moves only as a test advances it.
+    now: () => vi.getMockedSystemTime()!.getTime(),
     window: () => WINDOW,
   });
   const hold = (commands: ThreadCommand[] = [decline]) =>

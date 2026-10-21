@@ -8,7 +8,8 @@ import {
   detailZoom,
   drawnRect,
   fadedPose,
-  fit,
+  // Called bare, `fit` reads as Jasmine's focused `it` to the test lint.
+  fit as fitIn,
   mostZoom,
   onThumbnail,
   pinchRelease,
@@ -34,14 +35,14 @@ describe("where a picture rests", () => {
 
   it("fits a large screenshot with its shape kept, centred in the room", () => {
     const space = room(window, 0);
-    const rest = fit({ width: 2880, height: 1800 }, space);
+    const rest = fitIn({ width: 2880, height: 1800 }, space);
     expect(rest.height).toBeCloseTo(space.height);
     expect(rest.width / rest.height).toBeCloseTo(2880 / 1800);
     expect(rest.x + rest.width / 2).toBeCloseTo(space.x + space.width / 2);
   });
 
   it("never blows a small picture up past its own pixels", () => {
-    const rest = fit({ width: 320, height: 200 }, room(window, 0));
+    const rest = fitIn({ width: 320, height: 200 }, room(window, 0));
     expect(rest.width).toBe(320);
     expect(rest.height).toBe(200);
   });

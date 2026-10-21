@@ -22,8 +22,6 @@ function Pages(props: { activeId: string; onTurn: (tabId: string) => void }) {
   );
 }
 
-const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-
 // A native view over a page can't move with it, so it steps aside while
 // `data-moving` is on. Dropped early, the view sits half over the next page.
 describe("TabPager data-moving", () => {
@@ -48,13 +46,14 @@ describe("TabPager data-moving", () => {
     const onTurn = vi.fn();
     await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
     const pages = screen.container.querySelector<HTMLElement>("[data-stemcells-pages]")!;
+    const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
 
-    pages.dispatchEvent(new WheelEvent("wheel", { deltaX: 30, cancelable: true }));
-    expect(pages.hasAttribute("data-moving")).toBe(true);
-    for (let i = 0; i < 9; i++) {
-      await nextFrame();
+    // A trackpad sends a wheel event a frame: each one comes once the strip has drawn the last.
+    for (let i = 0; i < 10; i++) {
+      const drawn = strip.style.transform;
       pages.dispatchEvent(new WheelEvent("wheel", { deltaX: 30, cancelable: true }));
       expect(pages.hasAttribute("data-moving")).toBe(true);
+      await vi.waitFor(() => expect(strip.style.transform).not.toBe(drawn), { interval: 1 });
     }
 
     await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });

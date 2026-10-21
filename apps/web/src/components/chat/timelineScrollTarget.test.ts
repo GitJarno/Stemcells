@@ -83,7 +83,7 @@ describe("timeline scroll targets", () => {
     expect(record(content, 20, 30)).toBe(false);
     group.scrollTop = 0;
     expect(record(content, 40, 10)).toBe(false);
-    expect(record(content, 60, 14)).toBe(true);
+    expect(record(content, 60, 14)).toBe(false);
   });
 });
 

@@ -318,6 +318,9 @@ export default defineConfig(() => {
       sourcemap: buildSourcemap,
     },
     test: {
+      // Stemcells' substitutes resolve a module by who imports it, which Vitest's
+      // on-disk transform cache doesn't key on: a warm run mixes them up.
+      fsModuleCache: false,
       projects: [defineProject(unitTestProject), defineProject(browserTestProject)],
     },
   };

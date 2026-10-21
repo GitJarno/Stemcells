@@ -15,7 +15,8 @@ function setup() {
   const page = createPage({
     needs: () => state,
     subscribeNeeds: (listener) => ((notify = listener), () => {}),
-    now: () => Date.now(),
+    // The fake timers' clock (each test installs them), so time moves only as a test advances it.
+    now: () => vi.getMockedSystemTime()!.getTime(),
     linger: () => LINGER,
     clearedFor: () => CLEARED_FOR,
     typingPause: () => TYPING_PAUSE,

@@ -213,7 +213,10 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamRightPanelSheet,
     substitute: OurRightPanelSheet satisfies RendersOrNothing<typeof UpstreamRightPanelSheet>,
     importers: {
-      "apps/web/src/components/chat/ChatRightPanel.tsx": ["../RightPanelSheet", ["RightPanelSheet"]],
+      "apps/web/src/components/chat/ChatRightPanel.tsx": [
+        "../RightPanelSheet",
+        ["RightPanelSheet"],
+      ],
     },
   },
   "apps/web/src/hooks/usePreviewPanelInlineSize.ts": {
@@ -330,8 +333,10 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamT3Wordmark,
     substitute: OurT3Wordmark satisfies typeof UpstreamT3Wordmark,
     importers: {
-      "apps/web/src/components/chat/TimelineToolActivityIcon.tsx": ["../T3Wordmark", ["T3Wordmark"]],
-      "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
+      "apps/web/src/components/chat/TimelineToolActivityIcon.tsx": [
+        "../T3Wordmark",
+        ["T3Wordmark"],
+      ],
       "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
     },
   },
@@ -462,7 +467,7 @@ const CASES: Readonly<Record<string, Case>> = {
         "@t3tools/shared/themePalettes",
         ["BUILT_IN_THEMES", "RESERVED_THEME_IDS"],
       ],
-      "apps/web/src/components/CommandPalette.tsx": [
+      "apps/web/src/components/CommandPaletteThemeItems.tsx": [
         "@t3tools/shared/themePalettes",
         ["BUILT_IN_THEMES"],
       ],
@@ -571,7 +576,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
     } finally {
       await server.close();
     }
-  }, 60_000);
+  });
 
   it("build: the production build (what the desktop app ships) bundles the substitutes", async () => {
     // The server's build copies the web's build into the bundle the desktop
@@ -615,7 +620,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
     const moduleIds = outputs.flatMap((chunk) => ("moduleIds" in chunk ? chunk.moduleIds : []));
     // The substitute only re-exports, so the bundle holds what it re-exports.
     expect(moduleIds).toContain(NodePath.join(here, "../favicon.ts"));
-  }, 120_000);
+  });
 
   it("server: imports none of the substituted modules, so needs no substitute", () => {
     // The server runs from source in dev (`node src/bin.ts`), with no bundler

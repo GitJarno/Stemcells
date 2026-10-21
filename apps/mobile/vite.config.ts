@@ -13,6 +13,9 @@ const reactTests = [
 export default defineConfig({
   plugins: [substituteUpstreamModules()],
   test: {
+    // Stemcells' substitutes resolve a module by who imports it, which Vitest's
+    // on-disk transform cache doesn't key on: a warm run mixes them up.
+    fsModuleCache: false,
     hookTimeout: 60_000,
     testTimeout: 60_000,
     projects: [

@@ -7,7 +7,8 @@ import * as NodeZlib from "node:zlib";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
 import { contrast, FRAMES, KEYLINE, keylined } from "../keyline.ts";
-import { paletteOf } from "../kit.ts";
+import { PACK_FILES, paletteOf } from "../kit.ts";
+import { check } from "./check.ts";
 import { apng, png } from "./png.ts";
 
 const SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
@@ -95,12 +96,15 @@ describe("cells, the command line", () => {
     );
   });
 
-  // The whole library's gate: every drawn pack keeps the rules. Its time grows with each pack
-  // (a second or two apiece), so it has a budget of its own rather than the default 15 s.
-  it("passes cells check over every drawn pack, the whole library's art gate", () => {
-    const check = cells("check");
-    expect(check.status, check.stdout).toBe(0);
-  }, 60_000);
+  // The whole library's gate, `cells check`, a drawn pack at a time: a pack takes a second
+  // or a few, so the library grows without any one test nearing the project's timeout.
+  it.each([...PACK_FILES.values()].map((pack) => pack.theme))(
+    "the drawn pack %s passes cells check, the library's art gate",
+    (theme) => {
+      const failures = check({ themes: [theme] }).filter((finding) => finding.level === "fail");
+      expect(failures).toEqual([]);
+    },
+  );
 
   it("refuses a look it doesn't know", () => {
     const render = cells("render", "house/nothing");
