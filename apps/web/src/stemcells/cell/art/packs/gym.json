@@ -1,0 +1,1759 @@
+{
+  "theme": "gym",
+  "season": null,
+  "about": "The gym: a terry sweatband, a towel over the shoulder and a leather lifting belt. The athlete flexes, the lifter presses a bar overhead, the boxer taps gloves.",
+  "pieces": [
+    {
+      "name": "sweatband",
+      "slot": "headwear",
+      "about": "A white terry sweatband with a red stripe, worn round the forehead, above the eyes.",
+      "art": ["..WWWWWWWWWWWWWWWWpp..", ".RRRRRRRRRRRRRRRRRRrr.", "WWWWWWWWWWWWWWWWWWWWpp"],
+      "hotspot": [10, -1],
+      "mini": ["WWWWWWWWWWp"],
+      "miniHotspot": [5, -1]
+    },
+    {
+      "name": "towel",
+      "slot": "back",
+      "about": "A white gym towel with red stripes, slung over the right shoulder from behind: its fold shows above the shoulder and its striped end hangs beside it.",
+      "art": [
+        "...WWWW....",
+        "..WWWWWWWp.",
+        ".pWWWWWWWWp",
+        "..ppWWWWWWp",
+        "......WWRRr",
+        ".......WWWp",
+        "........RRr",
+        "........WWp",
+        ".........Wp",
+        ".........WW",
+        "..........W"
+      ],
+      "hotspot": [-3, 9],
+      "mini": ["WWW..", ".WWWp", "...Rr", "....W"],
+      "miniHotspot": [-2, 5]
+    },
+    {
+      "name": "belt",
+      "slot": "wrap",
+      "about": "A wide leather lifting belt with a steel buckle, worn round the middle.",
+      "art": [
+        ".kkkkkkkkkkkggggkkkkkkkkkkk.",
+        "knnnnnnnnnnng44gnnnnnnnnnnnk",
+        "knnnnnnnnnnng44gnnnnnnnnnnnk",
+        "kkkkkkkkkkkkggggkkkkkkkkkkkk"
+      ],
+      "hotspot": [13, 6],
+      "mini": ["kkkkkgkkkkkkk", "nnnnngnnnnnnn"],
+      "miniHotspot": [6, 3]
+    }
+  ],
+  "fabrics": {
+    "tank": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Q",
+          "b": "x",
+          "L": "Q",
+          "O": "x"
+        },
+        "rides": true,
+        "rows": [17, 23],
+        "miniRows": [8, 10],
+        "columns": [0, 7],
+        "miniColumns": [0, 1]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Q",
+          "b": "x",
+          "L": "Q",
+          "O": "x"
+        },
+        "rides": true,
+        "rows": [17, 23],
+        "miniRows": [8, 10],
+        "columns": [24, 31],
+        "miniColumns": [11, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Q",
+          "b": "x",
+          "L": "Q",
+          "O": "x"
+        },
+        "rides": true,
+        "rows": [24, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "tank-lime": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "b": "a",
+          "L": "A",
+          "O": "a"
+        },
+        "rides": true,
+        "rows": [17, 23],
+        "miniRows": [8, 10],
+        "columns": [0, 7],
+        "miniColumns": [0, 1]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "b": "a",
+          "L": "A",
+          "O": "a"
+        },
+        "rides": true,
+        "rows": [17, 23],
+        "miniRows": [8, 10],
+        "columns": [24, 31],
+        "miniColumns": [11, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "b": "a",
+          "L": "A",
+          "O": "a"
+        },
+        "rides": true,
+        "rows": [24, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "tank-lilac": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "l",
+          "b": "v",
+          "L": "l",
+          "O": "v"
+        },
+        "rides": true,
+        "rows": [17, 23],
+        "miniRows": [8, 10],
+        "columns": [0, 7],
+        "miniColumns": [0, 1]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "l",
+          "b": "v",
+          "L": "l",
+          "O": "v"
+        },
+        "rides": true,
+        "rows": [17, 23],
+        "miniRows": [8, 10],
+        "columns": [24, 31],
+        "miniColumns": [11, 12]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "l",
+          "b": "v",
+          "L": "l",
+          "O": "v"
+        },
+        "rides": true,
+        "rows": [24, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "singlet": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "b": "J",
+          "L": "Y",
+          "O": "J"
+        },
+        "rides": true,
+        "rows": [15, 21],
+        "miniRows": [7, 10],
+        "columns": [7, 8],
+        "miniColumns": [2, 2]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "b": "J",
+          "L": "Y",
+          "O": "J"
+        },
+        "rides": true,
+        "rows": [15, 21],
+        "miniRows": [7, 10],
+        "columns": [23, 24],
+        "miniColumns": [10, 10]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "b": "J",
+          "L": "Y",
+          "O": "J"
+        },
+        "rides": true,
+        "rows": [22, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "singlet-lime": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "b": "a",
+          "L": "A",
+          "O": "a"
+        },
+        "rides": true,
+        "rows": [15, 21],
+        "miniRows": [7, 10],
+        "columns": [7, 8],
+        "miniColumns": [2, 2]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "b": "a",
+          "L": "A",
+          "O": "a"
+        },
+        "rides": true,
+        "rows": [15, 21],
+        "miniRows": [7, 10],
+        "columns": [23, 24],
+        "miniColumns": [10, 10]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "A",
+          "b": "a",
+          "L": "A",
+          "O": "a"
+        },
+        "rides": true,
+        "rows": [22, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "singlet-bubblegum": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "b": "i",
+          "L": "I",
+          "O": "i"
+        },
+        "rides": true,
+        "rows": [15, 21],
+        "miniRows": [7, 10],
+        "columns": [7, 8],
+        "miniColumns": [2, 2]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "b": "i",
+          "L": "I",
+          "O": "i"
+        },
+        "rides": true,
+        "rows": [15, 21],
+        "miniRows": [7, 10],
+        "columns": [23, 24],
+        "miniColumns": [10, 10]
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "I",
+          "b": "i",
+          "L": "I",
+          "O": "i"
+        },
+        "rides": true,
+        "rows": [22, 29],
+        "miniRows": [11, 13]
+      }
+    ],
+    "trunks": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "W",
+          "b": "p",
+          "L": "W",
+          "O": "p"
+        },
+        "rides": true,
+        "rows": [25, 25],
+        "miniRows": [11, 11],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "S",
+          "b": "d",
+          "L": "S",
+          "O": "d"
+        },
+        "rides": true,
+        "rows": [26, 29],
+        "miniRows": [12, 13]
+      }
+    ],
+    "trunks-sunflower": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "W",
+          "b": "p",
+          "L": "W",
+          "O": "p"
+        },
+        "rides": true,
+        "rows": [25, 25],
+        "miniRows": [11, 11],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "Y",
+          "b": "J",
+          "L": "Y",
+          "O": "J"
+        },
+        "rides": true,
+        "rows": [26, 29],
+        "miniRows": [12, 13]
+      }
+    ],
+    "trunks-lilac": [
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "W",
+          "b": "p",
+          "L": "W",
+          "O": "p"
+        },
+        "rides": true,
+        "rows": [25, 25],
+        "miniRows": [11, 11],
+        "only": "hero"
+      },
+      {
+        "parts": ["torso"],
+        "map": {
+          "B": "l",
+          "b": "v",
+          "L": "l",
+          "O": "v"
+        },
+        "rides": true,
+        "rows": [26, 29],
+        "miniRows": [12, 13]
+      }
+    ]
+  },
+  "outfits": [
+    {
+      "id": "athlete",
+      "headwear": "gym/sweatband",
+      "back": "gym/towel",
+      "fabric": "gym/tank",
+      "colourways": [
+        {
+          "id": "lime",
+          "fabric": "gym/tank-lime"
+        },
+        {
+          "id": "lilac",
+          "fabric": "gym/tank-lilac"
+        }
+      ],
+      "cheer": "gym/flex",
+      "silhouette": "sweatband",
+      "family": "aqua"
+    },
+    {
+      "id": "lifter",
+      "headwear": "bandana",
+      "wrap": "gym/belt",
+      "fabric": "gym/singlet",
+      "colourways": [
+        {
+          "id": "lime",
+          "fabric": "gym/singlet-lime"
+        },
+        {
+          "id": "bubblegum",
+          "fabric": "gym/singlet-bubblegum"
+        }
+      ],
+      "cheer": "gym/press",
+      "silhouette": "bandana",
+      "family": "sunflower"
+    },
+    {
+      "id": "boxer",
+      "face": "blush",
+      "back": "gym/towel",
+      "fabric": "gym/trunks",
+      "colourways": [
+        {
+          "id": "sunflower",
+          "fabric": "gym/trunks-sunflower"
+        },
+        {
+          "id": "lilac",
+          "fabric": "gym/trunks-lilac"
+        }
+      ],
+      "cheer": "gym/gloves",
+      "silhouette": "towel",
+      "family": "sky"
+    }
+  ],
+  "cheers": {
+    "flex": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "lively": true,
+      "tell": 6,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "sy": 0.92,
+            "spread": 0.2,
+            "eyes": "focused"
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.98,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": ["BB.......", "bBB......", ".bBB.....", "..bBB....", "...bBBB..", "....bbBBB"],
+              "attach": "headTop",
+              "hotspot": [12, 5],
+              "z": 4,
+              "mini": ["B...", "bB..", ".bBB"],
+              "miniHotspot": [6, 2]
+            },
+            {
+              "art": [".......BB", "......BBb", ".....BBb.", "....BBb..", "..BBBb...", "BBBbb...."],
+              "attach": "headTop",
+              "hotspot": [-5, 5],
+              "z": 4,
+              "mini": ["...B", "..Bb", "BBb."],
+              "miniHotspot": [-3, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B...", "B.L.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", "...B", ".L.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B.L.", "B.B.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", ".L.B", ".B.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B.L.", "B.B.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", ".L.B", ".B.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B.L.", "B.B.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", ".L.B", ".B.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "headTop",
+              "hotspot": [-10, 12],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [-5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B...", "B.L.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", "...B", ".L.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B.L.", "B.B.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", ".L.B", ".B.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B...", "B.L.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", "...B", ".L.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".BB......",
+                "bBBB.....",
+                "bBB......",
+                "bB.......",
+                "bB.......",
+                "bB..LL...",
+                "bB.BBBL..",
+                "bBBBBBB..",
+                "bBBBBBB..",
+                "bBBBBBBB.",
+                ".bbbbbbBB"
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": ["BB..", "B...", "B.L.", "B.B.", "bBBB"],
+              "miniHotspot": [6, 4]
+            },
+            {
+              "art": [
+                "......BB.",
+                ".....BBBb",
+                "......BBb",
+                ".......Bb",
+                ".......Bb",
+                "...LL..Bb",
+                "..LBBB.Bb",
+                "..BBBBBBb",
+                "..BBBBBBb",
+                ".BBBBBBBb",
+                "BBbbbbbb."
+              ],
+              "attach": "headTop",
+              "hotspot": [-5, 9],
+              "z": 4,
+              "mini": ["..BB", "...B", ".L.B", ".B.B", "BBBb"],
+              "miniHotspot": [-3, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.0,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": ["BB.......", "bBB......", ".bBB.....", "..bBB....", "...bBBB..", "....bbBBB"],
+              "attach": "headTop",
+              "hotspot": [12, 5],
+              "z": 4,
+              "mini": ["B...", "bB..", ".bBB"],
+              "miniHotspot": [6, 2]
+            },
+            {
+              "art": [".......BB", "......BBb", ".....BBb.", "....BBb..", "..BBBb...", "BBBbb...."],
+              "attach": "headTop",
+              "hotspot": [-5, 5],
+              "z": 4,
+              "mini": ["...B", "..Bb", "BBb."],
+              "miniHotspot": [-3, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 0.96,
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "press": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "lively": true,
+      "tell": 5,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "sy": 0.9,
+            "spread": 0.3,
+            "eyes": "focused",
+            "look": [0, -1]
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 7],
+              "z": 4,
+              "mini": ["hU.........hU", "hUBgggggggBhU", "hUB.......BhU", "..B.......B.."],
+              "miniHotspot": [6, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 0.88,
+            "spread": 0.35,
+            "eyes": "squeeze"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 7],
+              "z": 4,
+              "mini": ["hU.........hU", "hUBgggggggBhU", "hUB.......BhU", "..B.......B.."],
+              "miniHotspot": [6, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "focused",
+            "look": [0, -1]
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.02,
+            "eyes": "focused",
+            "look": [0, -1]
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 11],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.02,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 11],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 5]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "headTop",
+              "hotspot": [-3, 12],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [-2, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.0,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 11],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 5]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "headTop",
+              "hotspot": [4, 12],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [2, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.02,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 11],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.0,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 11],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.02,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 9],
+              "z": 4,
+              "mini": [
+                "hU.........hU",
+                "hUBgggggggBhU",
+                "hUB.......BhU",
+                "..B.......B..",
+                "..B.......B.."
+              ],
+              "miniHotspot": [6, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 0.94,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "..h....................h..",
+                ".hhU..................hhU.",
+                ".hhU.BB............BB.hhU.",
+                "ghhUDBBggggggggggggBBDhhUg",
+                ".hhU.Bb............Bb.hhU.",
+                ".hhU.Bb............Bb.hhU.",
+                "..h..Bb............Bb..h..",
+                ".....Bb............Bb.....",
+                ".....Bb............Bb....."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 7],
+              "z": 4,
+              "mini": ["hU.........hU", "hUBgggggggBhU", "hUB.......BhU", "..B.......B.."],
+              "miniHotspot": [6, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 0.96,
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    },
+    "gloves": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "lively": true,
+      "tell": 7,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "sy": 0.94,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR................RRRR.",
+                "RWRRRr..............RWRRRr",
+                "RRRRRr..............RRRRRr",
+                "RRRRRr..............RRRRRr",
+                ".rrrr................rrrr."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 1],
+              "z": 4,
+              "mini": ["RR.........RR"],
+              "miniHotspot": [6, -1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.0,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                "......W.W........",
+                ".......W.........",
+                "......W.W........",
+                ".................",
+                "...RRRR..RRRR....",
+                "..RWRRRrRWRRRr...",
+                "..RRRRRrRRRRRr...",
+                "..RRRRRrRRRRRr...",
+                "...rrrr..rrrr....",
+                "..BpWWq..pWWqBb..",
+                ".Bb..........Bb..",
+                ".Bb...........Bb.",
+                "Bb............Bb.",
+                "Bb.............Bb"
+              ],
+              "attach": "headTop",
+              "hotspot": [7, 12],
+              "z": 4,
+              "mini": [
+                "....W....",
+                ".........",
+                "..RR.RR..",
+                "..rr.rr..",
+                ".B.....B.",
+                ".B.....B.",
+                "B.......B"
+              ],
+              "miniHotspot": [4, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "focused"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.0,
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "......W.W........",
+                ".......W.........",
+                "......W.W........",
+                ".................",
+                "...RRRR..RRRR....",
+                "..RWRRRrRWRRRr...",
+                "..RRRRRrRRRRRr...",
+                "..RRRRRrRRRRRr...",
+                "...rrrr..rrrr....",
+                "..BpWWq..pWWqBb..",
+                ".Bb..........Bb..",
+                ".Bb...........Bb.",
+                "Bb............Bb.",
+                "Bb.............Bb"
+              ],
+              "attach": "headTop",
+              "hotspot": [7, 12],
+              "z": 4,
+              "mini": [
+                "....W....",
+                ".........",
+                "..RR.RR..",
+                "..rr.rr..",
+                ".B.....B.",
+                ".B.....B.",
+                "B.......B"
+              ],
+              "miniHotspot": [4, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "headTop",
+              "hotspot": [4, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [2, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "base": 28,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            },
+            {
+              "art": [".*.", "*W*", ".*."],
+              "attach": "headTop",
+              "hotspot": [-3, 11],
+              "z": 5,
+              "mini": ["*"],
+              "miniHotspot": [-2, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.04,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "base": 28,
+            "eyes": "happy",
+            "mouth": "grin"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR..............RRRR.",
+                "RWRRRr............RWRRRr",
+                "RRRRRr............RRRRRr",
+                "RRRRRr............RRRRRr",
+                ".rrrr..............rrrr.",
+                ".pWWq..............pWWq.",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "..Bb................Bb..",
+                "....................Bb.."
+              ],
+              "attach": "headTop",
+              "hotspot": [11, 12],
+              "z": 4,
+              "mini": [
+                "RR.......RR",
+                "rr.......rr",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B.",
+                ".B.......B."
+              ],
+              "miniHotspot": [5, 6]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                ".RRRR................RRRR.",
+                "RWRRRr..............RWRRRr",
+                "RRRRRr..............RRRRRr",
+                "RRRRRr..............RRRRRr",
+                ".rrrr................rrrr."
+              ],
+              "attach": "headTop",
+              "hotspot": [12, 1],
+              "z": 4,
+              "mini": ["RR.........RR"],
+              "miniHotspot": [6, -1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {}
+        }
+      ]
+    }
+  }
+}
