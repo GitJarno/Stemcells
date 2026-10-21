@@ -279,6 +279,38 @@
   --workspace-titlebar-scroll-fade-height: var(--sc-pane-band);
 }
 
+/* What upstream floats at the chat's top-right, the find bar and the thread
+   details card, hangs from the band's foot too, lined up with the buttons'
+   right edge. Upstream sets the card's place inline: 12px from the top, or
+   below the find bar while that is open. The card shrinks in its column to
+   the room left (upstream/threadDetails.contract.test.ts). */
+[data-stemcells-pane] [data-thread-find-bar] {
+  top: var(--sc-pane-band);
+  right: var(--sc-space-md);
+}
+[data-stemcells-pane] [data-thread-details-panel="inline"] {
+  right: var(--sc-space-md) !important;
+  display: flex;
+  flex-direction: column;
+}
+[data-stemcells-pane]
+  [data-chat-canvas]:not(:has([data-thread-find-bar]))
+  [data-thread-details-panel="inline"] {
+  top: var(--sc-pane-band) !important;
+  max-height: calc(100% - var(--sc-pane-band) - var(--sc-space-md)) !important;
+}
+/* In a pane too narrow for the card, upstream hangs it in a popover from the
+   header's foot, 12px in from the header's right. The header, at no height,
+   sits at the band's foot for it and reaches past the pane's right edge, so
+   the card lands where the inline one does. It no longer places its toggles:
+   they float from the chat's corner, as the root's do. */
+[data-stemcells-pane] [data-chat-header] {
+  position: static;
+  margin-top: calc(var(--sc-pane-band) - var(--sc-space-md));
+  margin-right: calc(var(--sc-space-md) - 12px);
+  margin-bottom: calc(var(--sc-space-md) - var(--sc-pane-band));
+}
+
 /* A pane with no composer names its Cell in a pill at its top-left, where
    the line over the composer would otherwise say it. */
 [data-stemcells-cell-pill] {

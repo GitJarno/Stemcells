@@ -13,6 +13,7 @@ import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
+import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import { Look } from "../workbench/LookFrame";
 import {
@@ -421,6 +422,7 @@ function PaneSlot(props: {
   const target =
     props.routeTarget ??
     (presence.liveness === "alive" && props.pane.cell ? presence.target : null);
+  useDetailsClosedAtFirst(target);
   return (
     <div
       ref={holdEndAcrossWidth}
