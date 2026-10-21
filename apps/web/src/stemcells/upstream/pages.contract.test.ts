@@ -10,12 +10,14 @@ import * as NodeFS from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
 import appSidebarLayout from "../../components/AppSidebarLayout.tsx?raw";
+import threadRouteView from "../../components/ThreadRouteView.tsx?raw";
 import settingsSidebarNav from "../../components/settings/SettingsSidebarNav.tsx?raw";
 import sidebar from "../../components/ui/sidebar.tsx?raw";
 import settingsRoute from "../../routes/settings.tsx?raw";
 
 /** CSS imports come in empty under test; the stylesheet is read as text. */
 const appStyles = NodeFS.readFileSync(new URL("../../index.css", import.meta.url), "utf8");
+const frameStyles = NodeFS.readFileSync(new URL("../pages/frame.css", import.meta.url), "utf8");
 
 describe("a page is upstream's inset, which frame.css makes the slate", () => {
   it("the inset names itself, and stands positioned for the slate's edge", () => {
@@ -37,6 +39,21 @@ describe("a page is upstream's inset, which frame.css makes the slate", () => {
     );
     expect(appStyles).toContain("--surface-grain: url(");
     expect(appStyles).toContain("--surface-grain-size:");
+  });
+});
+
+describe("a pane's chat inside the workspace's slate", () => {
+  it("is an inset of its own, which the slate's rules leave to fill its pane", () => {
+    // Matched, it took the slate's margins and kept upstream's w-full: every
+    // pane's chat sat 8px right of centre and 36px down.
+    expect(threadRouteView).toContain(
+      '<SidebarInset className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh">',
+    );
+    const slateRules = frameStyles.match(/\[data-slot="sidebar-inset"\][^{]*\{/g) ?? [];
+    expect(slateRules).toHaveLength(3);
+    for (const rule of slateRules) {
+      expect(rule).toContain(":not([data-stemcells-workspace], [data-stemcells-workspace] *)");
+    }
   });
 });
 

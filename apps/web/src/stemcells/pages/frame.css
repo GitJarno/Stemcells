@@ -45,8 +45,10 @@
    inset is the slate itself: below the band and inside the frame's
    gutters, where the workspace's slate stands, so going from a chat to a
    page moves nothing but what is on the slate. Flat, as upstream's chat
-   is: the inset's grain is for chrome. */
-[data-slot="sidebar-inset"]:not([data-stemcells-workspace]) {
+   is: the inset's grain is for chrome. A pane's own chat is an inset too,
+   inside the workspace's, and fills its pane: the slate's margins on it,
+   with upstream's full width kept, put it 8px right of centre. */
+[data-slot="sidebar-inset"]:not([data-stemcells-workspace], [data-stemcells-workspace] *) {
   height: auto;
   margin: var(--stemcells-band) var(--sc-space-md) var(--sc-space-md);
   border-radius: var(--sc-radius-sheet);
@@ -55,7 +57,7 @@
 }
 /* The slate's one quiet edge, as the workspace draws it; none on Stemcells'
    own theme, whose frame is black. */
-[data-slot="sidebar-inset"]:not([data-stemcells-workspace])::after {
+[data-slot="sidebar-inset"]:not([data-stemcells-workspace], [data-stemcells-workspace] *)::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -65,6 +67,6 @@
   pointer-events: none;
 }
 :root.dark[data-theme-id="stemcells"]
-  [data-slot="sidebar-inset"]:not([data-stemcells-workspace])::after {
+  [data-slot="sidebar-inset"]:not([data-stemcells-workspace], [data-stemcells-workspace] *)::after {
   content: none;
 }
