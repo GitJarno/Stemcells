@@ -80,20 +80,27 @@ describe("cells, the command line", () => {
       { encoding: "utf8" },
     );
 
-  it("runs in plain node: renders a look's sheet and animations, checks, and lays out a lookbook", () => {
+  it("runs in plain node: renders a look's sheet and animations, checks a pack, and lays out a lookbook", () => {
     const render = cells("render", "house/duck", "idle");
     expect(render.status, render.stderr).toBe(0);
     const sheet = NodeFS.readFileSync(NodePath.join(out, "house_duck", "sheet.png"));
     expect([...sheet.subarray(0, 8)]).toEqual(SIGNATURE);
     const animated = NodeFS.readFileSync(NodePath.join(out, "house_duck", "idle.mini.light.apng"));
     expect(chunks(animated).some((c) => c.type === "acTL")).toBe(true);
-    const check = cells("check");
+    const check = cells("check", "house");
     expect(check.status, check.stdout).toBe(0);
     expect(cells("lookbook", "house").status).toBe(0);
     expect(NodeFS.readFileSync(NodePath.join(out, "lookbook.html"), "utf8")).toContain(
       "house/duck",
     );
   });
+
+  // The whole library's gate: every drawn pack keeps the rules. Its time grows with each pack
+  // (a second or two apiece), so it has a budget of its own rather than the default 15 s.
+  it("passes cells check over every drawn pack, the whole library's art gate", () => {
+    const check = cells("check");
+    expect(check.status, check.stdout).toBe(0);
+  }, 60_000);
 
   it("refuses a look it doesn't know", () => {
     const render = cells("render", "house/nothing");
