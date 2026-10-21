@@ -24,6 +24,7 @@ import {
   cleanWords,
   countOf,
   crosses,
+  goesOn,
   lineStart,
   sentenceStart,
   timesOf,
@@ -88,7 +89,15 @@ export function modelHits(
     const before = cleanWords(text.slice(sentenceStart(text, m.start), m.start));
     let anchor: ModelAnchor | null = null;
     let countToken: Token | null = null;
-    if (prev && !prev.literal && MODEL_CUES.has(prev.norm) && unbroken(prev.end, m.start))
+    // Behind a cue, the model has to end the phrase: "with Opus at max", not
+    // "with haiku structure".
+    if (
+      prev &&
+      !prev.literal &&
+      MODEL_CUES.has(prev.norm) &&
+      unbroken(prev.end, m.start) &&
+      goesOn(next, placeWords)
+    )
       anchor = "cue";
     if (!anchor && next.word && SPAWN_NOUNS.has(next.word)) anchor = "noun";
     if (prev && !prev.literal && countOf(prev.norm) > 0 && unbroken(prev.end, m.start)) {

@@ -33,8 +33,15 @@ mentioned inside a sentence gets a quiet dotted underline; clicking it
 offers "Start in Atlas", which points the draft there (decision 2). The
 name must be written as the project writes it, capital and all: "the board"
 isn't the Board project. A sentence's first word says nothing by its
-capital ("Resume the session"), and sound-alikes and the other number
-("Lantern" for Lanterns) never get the underline.
+capital ("Resume the session").
+
+**A place is read only from its exact name.** The name as the sidebar
+writes it, or an alias the person gave it, in whole words, case aside:
+"harbor-design" and "HarborDesign" are Harbor Design. Anything less is no
+name at all: a prefix or a part ("in plain prose" is not plain-project), a
+near spelling ("harbour"), a sound-alike ("at less") or the other number
+("Lantern" for Lanterns). Such words ink nothing, route nothing and are
+sent as written.
 
 **One Cell takes one place, and a Cell has one folder.**
 
@@ -48,11 +55,12 @@ capital ("Resume the session"), and sound-alikes and the other number
 - Otherwise the ladder picks the winner: the address, then a cue, then the
   whole message, the earliest first.
 
-The other number routes only behind a cue or alone ("a Cell for Lantern" is
-Lanterns): at the address, "Review notes" is a verb, not Reviews. Each word
-of a heard (sound-alike) name must be part of the name, and it never ends
-with a cue or a determiner: in the prototype, "review the" read as Reviews
-until that rule went in. A fixture pins it.
+Why exact only: the reader first heard names by ear, as the Swift app did
+(a Metaphone key or a near spelling). In a moss project's draft, "write an
+800-word essay about moss in plain prose" read "plain prose" as the project
+plain-project: the chat started there and was sent without "in plain
+prose". An ordinary sentence moved the chat and lost words. `prose.test.ts`
+holds a corpus of such sentences; none may route, ink or lose a word.
 
 Why: replaying 263 real births in the Swift app showed that every route from
 an unanchored mention was wrong ("Review this Mac's disk" went to Reviews 20
@@ -89,9 +97,9 @@ it.
 | Kind | Examples | Anchored by |
 |---|---|---|
 | Place | "Harbor …", "in Atlas", "a Cell for Ledger" | address, cue, whole message |
-| Model | "with Opus 5.5", "using Codex", "2 Sol", "Fable Cells", "Opus: …" | a cue (with, using, use, via, on, run, be, meant); a following Cell noun; a count after a launch word or at the address; plural; at the address when followed by ":", a connector, a place or an effort |
+| Model | "with Opus 5.5", "using Codex", "2 Sol", "Fable Cells", "Opus: …" | a cue (with, using, use, via, on, run, be, meant) when the model ends the phrase ("with Opus at max", not "with haiku structure"); a following Cell noun; a count after a launch word or at the address; plural; at the address when followed by ":", a connector, a place or an effort |
 | Effort | "at max", "max effort", "xhigh", "extra high", "Opus 5.5 high" | the unambiguous words (xhigh, ultracode) anywhere; everyday words (low, medium, high, max) only with a qualifier ("effort", "reasoning", "thinking"), after "at/with" in a message that routes, or right after a model |
-| Count | "2 Sol", "3 Harbor: …", "Harbor ×3", "spawn 3 Cells" | joined to a model, a Cell noun or an address place |
+| Count | "2 Sol", "3 Harbor: …", "Harbor ×3", "spawn 3 Cells" | joined to a model, a Cell noun or an address place; a counted Cell noun at the head of a sentence, after a launch word or a cue, or joined to Cells before it ("Opus and 2 Cells"), never mid-sentence prose ("explain how two cells divide") |
 | Plan mode | "plan first", "just plan" | the address or the end |
 
 - **Several Cells come only from typed words that ask for them**: a count,
@@ -171,9 +179,8 @@ typing closes it, and it opens on what the word says now.
 - **Count**: 1 to 6.
 - **Quiet mention**: "Start in Atlas".
 
-Picking replaces the word. An alias is learned only when the person picks a
-different place for a sound-alike reading (typed "harber", read as Harbor,
-picked Harbor Web). A guess never teaches itself.
+Picking replaces the word. An alias is a name the person gives a
+project; the reader never learns one from a guess.
 
 ### 7. Tab completes a project at the address
 Port of the Swift `PlaceCompletion`. After 3 letters at the address with the
@@ -290,7 +297,7 @@ has a 20 s time limit.
 - The facts as numbered Cells. Each Cell carries its model, its effort, and
   its place or "open".
 - A shortlist of projects, each with one line:
-  - the mentioned ones (exact and sound-alike) first, then the recent ones;
+  - the mentioned ones first, then the recent ones;
   - at most 12;
   - each line is the first paragraph of the project's AGENTS.md, CLAUDE.md
     or README, read by the server and cached by the file's date.
@@ -544,7 +551,7 @@ money, release), each a verb and its object, with match and miss fixtures
 ## Ported from the Swift app, and what's new
 | Swift | Here |
 |---|---|
-| `PlaceResolver` anchor ladder (address > cue > whole), determiner veto, Metaphone + Jaro-Winkler, no gram across a sentence | Ported. The weak "for/on/at X" tier no longer routes (a quiet underline); one Cell takes one place by the ladder; a heard name never spans a cue or determiner |
+| `PlaceResolver` anchor ladder (address > cue > whole), determiner veto, Metaphone + Jaro-Winkler, no gram across a sentence | Ported without the ear: only exact names and aliases, whole words (decision 1). The weak "for/on/at X" tier no longer routes (a quiet underline); one Cell takes one place by the ladder |
 | `Places` roster, labels for shared names, `lastBirth` ranking, blurbs | The projects store (T3's projects, sidebar names), ranked by last thread; a project's line from its AGENTS.md, CLAUDE.md or README |
 | `ModelRouter.facts`: anchors, counts, `[brackets]` → ⟦Pn⟧, literal spans, list items, `newProjectName`, effort anchors and mends | Ported. Model keywords come from the catalog, not provider aliases kept by hand |
 | `SpawnKeywords` + `SpawnInk`: one detector, one style on every screen | Ported, with a plate drawn outside the glyphs |
@@ -724,6 +731,6 @@ the address of "review the showtime parser". From reading the code:
 
 It's unconfirmed: nothing ran the Swift app on this sentence, and its
 corpus has no case for it. It showed in this design's prototype, which
-ported the same check. Here a heard name never ends with a cue or a
-determiner, and `read.test.ts` pins it. Nothing is changed in the Swift
+ported the same check. Here no name is heard at all (decision 1), and
+`read.test.ts` pins this case. Nothing is changed in the Swift
 app.

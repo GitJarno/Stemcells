@@ -139,20 +139,6 @@ export const EFFORT_CUES = set(["at", "with", "on", "using", "by"]);
 /** Everyday words that are also effort levels: read only with a qualifier or a cue. */
 export const AMBIGUOUS_EFFORTS = set(["minimal", "low", "medium", "high", "max"]);
 export const UNAMBIGUOUS_EFFORTS = set(["xhigh", "ultracode"]);
-/** Words a heard (sound-alike) name may never begin or end with. */
-export const CUE_WORDS = set([
-  "for",
-  "in",
-  "into",
-  "on",
-  "at",
-  "to",
-  "of",
-  "under",
-  "inside",
-  "within",
-  "from",
-]);
 /** Weak pointers: "release notes for Atlas" may be about Atlas, not in it. */
 export const WEAK_CUES = set(["for", "on", "at"]);
 /** Words that say nothing about the task: a place alone among them is the whole message. */
@@ -333,6 +319,29 @@ export interface Next {
   readonly ch: string | null;
   /** The next word, cleaned, when a word follows first. */
   readonly word: string | null;
+}
+
+/**
+ * Whether the words after a model behind a cue go on as setup: the end
+ * or punctuation, a joining word, an effort, a count, a place, a Cell noun
+ * or "please". "with Opus at max" does; "with haiku structure" and "with
+ * flash cards" are prose.
+ */
+export function goesOn(next: Next, placeWords: ReadonlySet<string>): boolean {
+  if (next.punct) return true;
+  const w = next.word;
+  return (
+    w !== null &&
+    (CONNECT.has(w) ||
+      w === "please" ||
+      AMBIGUOUS_EFFORTS.has(w) ||
+      UNAMBIGUOUS_EFFORTS.has(w) ||
+      w === "extra" ||
+      w === "x-high" ||
+      timesOf(w) > 0 ||
+      placeWords.has(w) ||
+      SPAWN_NOUNS.has(w))
+  );
 }
 
 /** What follows a position: the end, punctuation, or a word. */

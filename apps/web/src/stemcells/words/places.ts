@@ -1,18 +1,19 @@
 /**
  * Projects named in a message, and where the sentence points them. Ported
- * from the Swift app's `PlaceResolver`: a name is found exactly, by a
- * learned alias, or by ear (a Metaphone key or a near spelling), and then
- * graded by its anchor. Only an anchored name routes; see `anchorOf`.
+ * from the Swift app's `PlaceResolver`, without its ear: a name is found
+ * only as the project is named (the sidebar's name, or an alias learned
+ * from the person's own pick), whole words, case aside. Anything less
+ * (a prefix, a part, a near spelling, a sound-alike, the other number)
+ * is no name at all: "in plain prose" never reads as plain-project. Then
+ * the name is graded by its anchor, and only an anchored name routes; see
+ * `anchorOf`.
  */
 
-import { jaroWinkler, phoneticKey } from "./phonetic";
 import {
-  CUE_WORDS,
   DETERMINERS,
   FILLERS,
   IN_CUES,
   NOUNS,
-  SPAWN_NOUNS,
   WEAK_CUES,
   type Span,
   type Token,
@@ -35,7 +36,9 @@ export interface RosterPlace {
   readonly place: WordsPlace;
   /** The name's words joined, lowercased: "Harbor Design" → "harbordesign". */
   readonly joined: string;
-  readonly key: string;
+  /** The name's words, as the words must say them: "harbor design". */
+  readonly said: string;
+  /** The aliases' words, the same way. */
   readonly aliases: readonly string[];
   /** The name starts with a capital: a mention must be written that way too. */
   readonly capital: boolean;
@@ -63,13 +66,13 @@ export function nameWords(name: string): string[] {
 export function roster(places: readonly WordsPlace[]): Roster {
   return {
     places: places.map((place) => {
-      const joined = nameWords(place.name).join("");
+      const words = nameWords(place.name);
       return {
         place,
-        joined,
-        key: phoneticKey(joined),
+        joined: words.join(""),
+        said: words.join(" "),
         aliases: (place.aliases ?? [])
-          .map((a) => nameWords(a).join(""))
+          .map((a) => nameWords(a).join(" "))
           .filter((a) => a.length > 0),
         capital: /^\p{Lu}/u.test(place.name.trim()),
       };
@@ -90,10 +93,8 @@ export type PlaceAnchor =
 
 export interface PlaceHit extends Span {
   readonly place: RosterPlace;
-  /** "plural": the singular of a plural folder or the other way round ("Lantern", Lanterns). */
-  readonly kind: "exact" | "plural" | "alias" | "sound";
-  /** 1 for exact; how close the ear's reading is otherwise. */
-  readonly score: number;
+  /** "alias": a name the person taught by their own pick. */
+  readonly kind: "exact" | "alias";
   /** The words as typed. */
   readonly heard: string;
   /** Token indexes, first and last. */
@@ -102,14 +103,9 @@ export interface PlaceHit extends Span {
   readonly anchor: PlaceAnchor;
 }
 
-/** The same name in the other number: "lantern" ↔ "lanterns". */
-const otherNumber = (joined: string): string =>
-  joined.endsWith("s") ? joined.slice(0, -1) : `${joined}s`;
-
 /**
- * Every name the words could mean, at most one per stretch of words, the
- * strongest first: exact over heard, a confident hearing over a weak one,
- * a longer name over a shorter one at the same place.
+ * Every project the words name, at most one per stretch of words, the
+ * longer name first at the same place ("Harbor Design" over Harbor).
  */
 export function placeHits(
   text: string,
@@ -128,68 +124,26 @@ export function placeHits(
       const start = gram[0]!.start;
       const end = gram[width - 1]!.end;
       if (blocked(start, end)) continue;
-      const joined = gram.map((t) => t.bare).join("");
-      if (joined.length < 2) continue;
-      // A heard name never ends with a cue or a determiner ("review the" is
-      // not Reviews) nor opens with a determiner, and the Cells are never a
-      // folder's sound-alike. It may open with a cue: "at less" is Atlas.
-      const last = gram[width - 1]!.bare;
-      const edgy =
-        width > 1 &&
-        (CUE_WORDS.has(last) || DETERMINERS.has(last) || DETERMINERS.has(gram[0]!.bare));
-      const cells = gram.some((t) => SPAWN_NOUNS.has(t.norm));
-      const key = edgy || cells ? "" : phoneticKey(joined);
+      // Whole words, as the name has them: "harbor-design" and
+      // "HarborDesign" are Harbor Design, "bright lane" isn't Brightlane.
+      const said = gram.flatMap((t) => nameWords(t.raw)).join(" ");
+      if (said.length < 2) continue;
       for (const p of places.places) {
-        let kind: Raw["kind"] | null = null;
-        let score = 0;
-        if (joined === p.joined) {
-          kind = "exact";
-          score = 1;
-        } else if (otherNumber(joined) === p.joined) {
-          kind = "plural";
-          score = 1;
-        } else if (p.aliases.includes(joined)) {
-          kind = "alias";
-          score = 1;
-        } else if (!edgy && !cells) {
-          if (p.key.length > 0 && key === p.key) {
-            kind = "sound";
-            score = 0.9 + 0.1 * jaroWinkler(joined, p.joined);
-          } else if (
-            Math.abs(p.joined.length - joined.length) <= 2 &&
-            p.joined.slice(0, 2) === joined.slice(0, 2)
-          ) {
-            const jw = jaroWinkler(joined, p.joined);
-            if (jw >= 0.7) {
-              kind = "sound";
-              score = jw * 0.95;
-            }
-          }
-        }
-        if (kind) {
+        const kind = said === p.said ? "exact" : p.aliases.includes(said) ? "alias" : null;
+        if (kind)
           raw.push({
             start,
             end,
             place: p,
             kind,
-            score,
             heard: text.slice(start, end),
             first: i,
             last: i + width - 1,
           });
-        }
       }
     }
   }
-  const strong = (h: Raw) => h.kind !== "sound" || h.score >= 0.85;
-  raw.sort(
-    (a, b) =>
-      Number(b.kind !== "sound") - Number(a.kind !== "sound") ||
-      Number(strong(b)) - Number(strong(a)) ||
-      b.end - b.start - (a.end - a.start) ||
-      b.score - a.score ||
-      a.start - b.start,
-  );
+  raw.sort((a, b) => b.end - b.start - (a.end - a.start) || a.start - b.start);
   const kept: Raw[] = [];
   for (const h of raw) if (!kept.some((k) => k.start < h.end && h.start < k.end)) kept.push(h);
   return kept

@@ -14,6 +14,7 @@ import {
   DETERMINERS,
   FILLERS,
   IN_CUES,
+  LAUNCH,
   LEADS,
   MODEL_CUES,
   NOUNS,
@@ -177,15 +178,7 @@ export function readWords(source: string, ctx: ReadContext): Facts {
   const inModel = (s: number, e: number) => models.some((m) => m.start < e && s < m.end);
   const places = placeHits(text, tokens, ctx.roster, inModel, isLead);
   let routing = places.filter(
-    (h) =>
-      (h.kind !== "sound" || h.score >= 0.85) &&
-      (h.kind !== "sound" ||
-        h.anchor === "whole" ||
-        h.heard.replace(/[^\p{L}\p{N}]/gu, "").length >= 4) &&
-      // The other number routes only behind a cue or alone: at the address,
-      // "Review notes" is a verb, not the Reviews project.
-      (h.kind !== "plural" || h.anchor === "cue" || h.anchor === "whole") &&
-      (h.anchor === "address" || h.anchor === "cue" || h.anchor === "whole"),
+    (h) => h.anchor === "address" || h.anchor === "cue" || h.anchor === "whole",
   );
 
   // Counts that ask for Cells without naming a model: "3 Cells". When a
@@ -197,6 +190,25 @@ export function readWords(source: string, ctx: ReadContext): Facts {
     const p = tokens[i - 1]!;
     if (models.some((m) => m.last === i - 1)) return;
     if (countOf(p.norm) === 0 || p.literal || /[.!?;:\n]/.test(text.slice(p.end, t.start))) return;
+    // Cells are asked for at the head of a sentence, after a launch word or
+    // a cue, or joined to Cells asked for before: "3 Cells fix …", "spawn 2
+    // Cells", "Opus and 2 Cells", "Fable Cell […], another Cell […]", never
+    // "explain how two cells divide".
+    const said = cleanWords(text.slice(sentenceStart(text, p.start), p.start));
+    const w0 = said[said.length - 1];
+    const joined =
+      (w0 === "and" ||
+        w0 === "plus" ||
+        /,\s*$/.test(text.slice(lineStart(text, p.start), p.start))) &&
+      [...models, ...counts].some(
+        (h) => h.start < p.start && lineStart(text, h.start) === lineStart(text, p.start),
+      );
+    if (
+      !said.every(isLead) &&
+      !(w0 !== undefined && (LAUNCH.has(w0) || MODEL_CUES.has(w0))) &&
+      !joined
+    )
+      return;
     const hit: CountHit = { start: p.start, end: t.end, count: countOf(p.norm), token: p };
     const cue = tokens[i + 1];
     const model = models.findIndex((m) => m.first === i + 2);
@@ -361,13 +373,7 @@ export function readWords(source: string, ctx: ReadContext): Facts {
   // Board project, and a sentence's capitalised first word ("Resume the
   // session") says nothing.
   const quiet = places.filter((h) => {
-    if (
-      h.kind === "sound" ||
-      h.kind === "plural" ||
-      routing.includes(h) ||
-      h.place.joined.length < 4
-    )
-      return false;
+    if (routing.includes(h) || h.place.joined.length < 4) return false;
     if (cleanWords(text.slice(sentenceStart(text, h.start), h.start)).every(isLead)) return false;
     return !h.place.capital || /^\p{Lu}/u.test(h.heard);
   });

@@ -3,7 +3,6 @@ import { describe, expect, it } from "vite-plus/test";
 import { clampEffort, modelLexicon } from "./catalog";
 import corpus from "./fixtures/corpus.json";
 import { testCatalog, testPlaces } from "./fixtures/catalog";
-import { jaroWinkler, phoneticKey } from "./phonetic";
 import { roster } from "./places";
 import { type Door, type Facts, type ReadContext, readWords } from "./read";
 import { bracketSpans, literalSpans } from "./text";
@@ -177,30 +176,6 @@ describe("clampEffort", () => {
   });
   it("has nothing to give a model without levels", () => {
     expect(clampEffort("high", [])).toBeNull();
-  });
-});
-
-describe("phonetics", () => {
-  it.each([
-    ["atlas", "at less"],
-    ["harbor", "harbour"],
-    ["brightlane", "bright lane"],
-    ["tidepool", "tide pool"],
-    ["kestrel", "kess trell"],
-  ])("hears %s in %s", (a, b) => {
-    expect(phoneticKey(a)).toBe(phoneticKey(b.replace(/ /g, "")));
-  });
-
-  it("survives the prefixes its exception table consumes whole", () => {
-    // The Swift app crashed on the second keystroke of "wh…".
-    for (const w of ["wh", "kn", "gn", "pn", "ae", "wr", "x", "w", "h"])
-      expect(() => phoneticKey(w)).not.toThrow();
-    expect(phoneticKey("wh")).toBe("W");
-  });
-
-  it("keeps unrelated names apart", () => {
-    expect(jaroWinkler("atlas", "harbor")).toBeLessThan(0.6);
-    expect(jaroWinkler("lantern", "lanterns")).toBeGreaterThan(0.95);
   });
 });
 

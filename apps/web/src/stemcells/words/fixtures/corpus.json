@@ -59,13 +59,13 @@
   },
   {
     "text": "spawn a Cell in at less",
-    "groups": ["default in Atlas"],
-    "why": "a name heard by ear routes where it's pointed at"
+    "groups": ["default in draft"],
+    "why": "a sound-alike is no name: only a project's exact name routes"
   },
   {
     "text": "a Cell for bright lane",
-    "groups": ["default in Brightlane"],
-    "why": "two spoken words are one name"
+    "groups": ["default in draft"],
+    "why": "a name's letters split into other words are not its name"
   },
   {
     "text": "fix the harbour page header",
@@ -74,8 +74,8 @@
   },
   {
     "text": "a Cell for harbour",
-    "groups": ["default in Harbor"],
-    "why": "a near spelling routes behind a cue"
+    "groups": ["default in draft"],
+    "why": "a near spelling is no name, even behind a cue"
   },
   {
     "text": "an agent for the importer in harbor, then atlas",
@@ -95,8 +95,8 @@
   },
   {
     "text": "a Cell for Lantern",
-    "groups": ["default in Lanterns"],
-    "why": "the singular of a plural folder routes behind a cue"
+    "groups": ["default in draft"],
+    "why": "the other number is no name, even behind a cue"
   },
   {
     "text": "Review notes for Atlas",
