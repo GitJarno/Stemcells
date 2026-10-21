@@ -40,6 +40,7 @@ async function loadStore(
     painted: () => Promise.resolve(),
     endFlight: () => {},
     drawn: () => {},
+    zoom: () => 1,
     onLanded: () => () => {},
   } satisfies WindowsBridge;
   const storage = new Map<string, string>();

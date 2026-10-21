@@ -22,7 +22,7 @@ import type { Tab } from "../tabs/layout";
 import type { TabDragGeometry } from "../tabs/tabDrag";
 import { reducedMotion, timing } from "../tokens/motion";
 import { randomUUID } from "../upstream/ui";
-import type { Display, Rect } from "./arrangement";
+import type { Display } from "./arrangement";
 import { windowsBridge, type WindowsBridge } from "./bridge";
 import {
   cancel,
@@ -30,6 +30,8 @@ import {
   landingMotion,
   morphOf,
   moveHand,
+  onScreen,
+  pageOrigin,
   pickUp,
   previewSize,
   release,
@@ -41,7 +43,7 @@ import {
 import { tearToNewWindow } from "./newWindow";
 import { TearFlight } from "./tearFlight";
 
-/** The tab list's `gap-1`, in pixels. */
+/** The tab list's `gap-1`, in CSS pixels. */
 const TAB_GAP = 4;
 /** How long a new window may take to draw before its still goes anyway. */
 const LANDING_WAIT = 4000;
@@ -67,6 +69,8 @@ interface Live {
   readonly element: HTMLElement;
   /** The page's top left, in screen points. */
   readonly origin: Point;
+  /** Screen points per CSS pixel: the page's zoom. */
+  readonly zoom: number;
   readonly geometry: TabDragGeometry;
   flight: TearFlight | null;
   /** The tear, until the layer has the chip and the strip can let go of it. */
@@ -76,12 +80,9 @@ interface Live {
   done: boolean;
 }
 
-const onScreen = (rect: DOMRect, origin: Point): Rect => ({
-  x: rect.left + origin.x,
-  y: rect.top + origin.y,
-  width: rect.width,
-  height: rect.height,
-});
+/** The hand: on the desktop, on the screen; in a browser, whose page never moves, in the page. */
+const handOf = (event: { screenX: number; screenY: number; clientX: number; clientY: number }) =>
+  windowsBridge() ? { x: event.screenX, y: event.screenY } : { x: event.clientX, y: event.clientY };
 
 /** The displays as the page knows them before the desktop app answers: its own screen. */
 function ownScreen(): Display[] {
@@ -158,12 +159,12 @@ export function useTabCarry(options: {
   };
 
   const tear = (at: Live, bridge: WindowsBridge) => {
-    const { origin, element } = at;
+    const { origin, zoom, element } = at;
     const strip = latest.current.strip.current!;
-    const stripRect = onScreen(strip.getBoundingClientRect(), origin);
+    const stripRect = onScreen(strip.getBoundingClientRect(), origin, zoom);
     const source = at.carry.geometry.windows[0]!;
     const content = source.frame;
-    const lifted = onScreen(element.getBoundingClientRect(), origin);
+    const lifted = onScreen(element.getBoundingClientRect(), origin, zoom);
     const { chip } = at.carry;
     at.wasActive = latest.current.activeTabId === at.carry.pickUp.tabId;
     const style = getComputedStyle(document.documentElement);
@@ -171,7 +172,7 @@ export function useTabCarry(options: {
       bridge,
       {
         chrome: chromeOf(strip),
-        chipRadius: Number.parseFloat(getComputedStyle(element).borderRadius) || 6,
+        chipRadius: (Number.parseFloat(getComputedStyle(element).borderRadius) || 6) * zoom,
         windowRadius: Number.parseFloat(style.getPropertyValue("--sc-radius-sheet")) || 16,
       },
       {
@@ -306,16 +307,20 @@ export function useTabCarry(options: {
     if (!stripElement) return;
     element.setPointerCapture(event.pointerId);
     const bridge = windowsBridge();
-    const origin = { x: event.screenX - event.clientX, y: event.screenY - event.clientY };
+    const zoom = bridge?.zoom() ?? 1;
+    const hand = handOf(event);
+    const origin = pageOrigin(hand, { x: event.clientX, y: event.clientY }, zoom);
     const chips = tabs.flatMap((tab) => {
       const chip = tabElements.current.get(tab.id);
-      return chip ? [{ tabId: tab.id, rect: onScreen(chip.getBoundingClientRect(), origin) }] : [];
+      return chip
+        ? [{ tabId: tab.id, rect: onScreen(chip.getBoundingClientRect(), origin, zoom) }]
+        : [];
     });
     const frame = {
       x: origin.x,
       y: origin.y,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: window.innerWidth * zoom,
+      height: window.innerHeight * zoom,
     };
     const displays = ownScreen();
     const from = chips.findIndex((chip) => chip.tabId === tabId);
@@ -326,9 +331,9 @@ export function useTabCarry(options: {
             id: bridge?.boot.id ?? "this",
             frame,
             strip: {
-              rect: onScreen(stripElement.getBoundingClientRect(), origin),
+              rect: onScreen(stripElement.getBoundingClientRect(), origin, zoom),
               chips,
-              gap: TAB_GAP,
+              gap: TAB_GAP * zoom,
               start: chips[0]?.rect.x ?? frame.x,
             },
           },
@@ -338,7 +343,7 @@ export function useTabCarry(options: {
       {
         window: bridge?.boot.id ?? "this",
         tabId,
-        press: { x: event.screenX, y: event.screenY },
+        press: hand,
         at: event.timeStamp,
         onlyTab: false,
         tears: bridge !== null && windowTabs > 1 && tabId !== staysId,
@@ -347,12 +352,14 @@ export function useTabCarry(options: {
       },
     );
     if (!carry || from < 0) return;
-    const geometry = { widths: chips.map((chip) => chip.rect.width), gap: TAB_GAP, from };
+    // The strip's own view of it, in its CSS pixels.
+    const geometry = { widths: chips.map((chip) => chip.rect.width / zoom), gap: TAB_GAP, from };
     const at: Live = {
       carry,
       pointerId: event.pointerId,
       element,
       origin,
+      zoom,
       geometry,
       flight: null,
       tearing: null,
@@ -380,7 +387,7 @@ export function useTabCarry(options: {
     const at = live.current;
     if (!at || at.done || event.pointerId !== at.pointerId) return;
     const was = at.carry.carried;
-    at.carry = moveHand(at.carry, { x: event.screenX, y: event.screenY }, event.timeStamp);
+    at.carry = moveHand(at.carry, handOf(event), event.timeStamp);
     const now = at.carry.carried;
     if (now.kind === "pressed") return;
     if (now.kind === "banding") {
@@ -389,8 +396,8 @@ export function useTabCarry(options: {
           current && {
             ...current,
             picked: true,
-            offset: now.offset,
-            pulled: now.pulled,
+            offset: now.offset / at.zoom,
+            pulled: now.pulled / at.zoom,
             slot: now.slot,
           },
       );

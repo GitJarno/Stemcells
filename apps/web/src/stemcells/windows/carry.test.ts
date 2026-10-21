@@ -7,6 +7,8 @@ import {
   landingMotion,
   morphOf,
   moveHand,
+  onScreen,
+  pageOrigin,
   pickUp,
   previewSize,
   release,
@@ -352,5 +354,19 @@ describe("slotAt", () => {
     expect(slotAt(chips, 53, 1)).toBe(1);
     expect(slotAt(chips, 51, 1)).toBe(0);
     expect(slotAt(chips, 400, 0)).toBe(3);
+  });
+});
+
+describe("a zoomed page", () => {
+  it("measures its chips in screen points, not its CSS pixels", () => {
+    // View › Zoom at 125 %: the pointer at CSS (200, 100) is 250 and 125 points into the page.
+    const origin = pageOrigin({ x: -10550, y: 157 }, { x: 200, y: 100 }, 1.25);
+    expect(origin).toEqual({ x: -10800, y: 32 });
+    expect(onScreen({ left: 100, top: 8, width: 160, height: 24 }, origin, 1.25)).toEqual({
+      x: -10675,
+      y: 42,
+      width: 200,
+      height: 30,
+    });
   });
 });

@@ -121,6 +121,8 @@ export interface WindowsBridge {
   endFlight(): void;
   /** This window has drawn the workspace it started from. */
   drawn(): void;
+  /** Screen points per CSS pixel: the page's zoom (View › Zoom). */
+  zoom(): number;
   /** Heard by the page carrying something: a window (by id) has drawn. */
   onLanded(listener: (window: string) => void): () => void;
 }

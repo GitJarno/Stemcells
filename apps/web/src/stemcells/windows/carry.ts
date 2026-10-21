@@ -134,6 +134,35 @@ export type Landing =
   | { readonly kind: "home" };
 
 /**
+ * The page's top left in screen points, from where the hand is on the screen
+ * and in the page. The carry works in screen points, as the desktop app and
+ * the pointer's screen position do; the page lays out in CSS pixels, which
+ * its zoom (screen points per CSS pixel) scales.
+ */
+export function pageOrigin(screen: Point, client: Point, zoom: number): Point {
+  return { x: screen.x - client.x * zoom, y: screen.y - client.y * zoom };
+}
+
+/** A rect the page measured (CSS pixels from its top left), in screen points. */
+export function onScreen(
+  rect: {
+    readonly left: number;
+    readonly top: number;
+    readonly width: number;
+    readonly height: number;
+  },
+  origin: Point,
+  zoom: number,
+): Rect {
+  return {
+    x: origin.x + rect.left * zoom,
+    y: origin.y + rect.top * zoom,
+    width: rect.width * zoom,
+    height: rect.height * zoom,
+  };
+}
+
+/**
  * The preview's size: the tab's last window size if it had one; else the
  * source window's, while that is under 85 % of its display each way; else
  * three quarters of the display's work area. The page shows 1:1, never

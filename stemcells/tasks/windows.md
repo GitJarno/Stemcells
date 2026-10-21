@@ -603,7 +603,7 @@ slot; the warm window under the still before the fade; Gather's stagger.
 display; drop into another window's strip; carry a chat to a pane half in
 another window; Esc mid-carry; Gather, Put back, Gather; unplug and replug
 a display; relaunch with three windows; a browser pane moved; Reduce
-Motion on.
+Motion on; a carry with View › Zoom at 125 %.
 
 ## Review
 
