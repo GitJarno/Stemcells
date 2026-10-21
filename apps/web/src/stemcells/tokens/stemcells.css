@@ -1597,6 +1597,18 @@
   --sc-pane-button-edge: color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
+/* The chat's scroll rail (stemcells/scrollRail): the thumb at rest is a mark
+   of where you are; under the hand it widens to the track's width over a
+   track that shows only then. It is never drawn shorter than the least. */
+:root {
+  --sc-scrollbar-width: 3px;
+  --sc-scrollbar-width-lit: var(--sc-space-sm);
+  --sc-scrollbar-least: 24px;
+  --sc-scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
+  --sc-scrollbar-thumb-active: color-mix(in srgb, var(--foreground) 60%, transparent);
+  --sc-scrollbar-track: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
 /* Glass for our own floating pieces (a pane's buttons, its Cell's pill,
    Look's frame): frosted, a little more colourful than what is under it,
    with a quiet shadow. The composer's plate is upstream's own (`glow.css`). */

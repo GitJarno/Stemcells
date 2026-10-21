@@ -1,0 +1,117 @@
+/* The scroll rail (ScrollRail.tsx). Where it stands, the system's bar never
+   draws: set to show always, the Mac drew it as a gray track the chat's
+   whole height, and kept its width out of both edges. */
+[data-stemcells-pane] .messages-timeline-scroll,
+[data-stemcells-settings] [data-settings-page-scroll] {
+  scrollbar-width: none;
+}
+/* Nor does a bar draw for the chat's column, which upstream lets scroll:
+   the halo round the composer (glow.css) reaches past the pane's foot, so
+   the column scrolled by that much, with a full-height bar beside the
+   chat on that setting. Clipped, it shows the same and never scrolls. */
+[data-stemcells-pane] [data-chat-column] {
+  overflow: clip;
+}
+
+/* The rail is the strip a hand finds: the narrowest pane's lane room at
+   the right edge, from a gap under the scroller's top (in a pane, under the
+   buttons' band) to a gap above its foot, or above the composer and the line
+   over it. The script tells it where those stand. It lies under what
+   floats at the chat's top-right (the thread details card, z 20; the find
+   bar, z 40) and under T3's ask marks (z 40). */
+[data-stemcells-scroll-rail] {
+  position: absolute;
+  z-index: 10;
+  top: calc(var(--sc-scroll-rail-head, 0px) + var(--sc-space-sm));
+  bottom: calc(var(--sc-scroll-rail-foot, 0px) + var(--sc-space-sm));
+  right: 0;
+  width: var(--sc-space-xl);
+  opacity: 0;
+  pointer-events: none;
+  touch-action: none;
+  transition: opacity var(--sc-motion-recede-duration) var(--sc-motion-recede-easing);
+}
+[data-stemcells-scroll-rail="chat"] {
+  top: max(var(--sc-pane-band), calc(var(--sc-scroll-rail-head, 0px) + var(--sc-space-sm)));
+}
+/* The settings page runs the slab's height: the track clears its corners. */
+[data-stemcells-scroll-rail="settings"] {
+  top: max(var(--sc-radius-sheet), calc(var(--sc-scroll-rail-head, 0px) + var(--sc-space-sm)));
+  bottom: max(var(--sc-radius-sheet), calc(var(--sc-scroll-rail-foot, 0px) + var(--sc-space-sm)));
+}
+[data-stemcells-scroll-rail][data-scrolls] {
+  pointer-events: auto;
+}
+[data-stemcells-scroll-rail][data-shown] {
+  opacity: 1;
+  transition-duration: var(--sc-motion-fade-duration);
+  transition-timing-function: var(--sc-motion-fade-easing);
+}
+
+/* The track shows only under the hand. */
+[data-stemcells-scroll-rail]::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  right: var(--sc-space-xs);
+  width: var(--sc-scrollbar-width-lit);
+  border-radius: calc(var(--sc-scrollbar-width-lit) / 2);
+  background: var(--sc-scrollbar-track);
+  opacity: 0;
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-scroll-rail][data-lit]::before {
+  opacity: 1;
+}
+
+/* At rest the thumb is a mark of where you are; under the hand it widens
+   about its middle to the track's width, something to take hold of. */
+[data-stemcells-scroll-rail-thumb] {
+  position: absolute;
+  top: 0;
+  right: calc(var(--sc-space-xs) + (var(--sc-scrollbar-width-lit) - var(--sc-scrollbar-width)) / 2);
+  width: var(--sc-scrollbar-width);
+  min-height: var(--sc-scrollbar-least);
+  border-radius: calc(var(--sc-scrollbar-width-lit) / 2);
+  background: var(--sc-scrollbar-thumb);
+  transition-property: right, width, background-color;
+  transition-duration: var(--sc-motion-flick-duration);
+  transition-timing-function: var(--sc-motion-flick-easing);
+}
+[data-stemcells-scroll-rail][data-lit] > [data-stemcells-scroll-rail-thumb] {
+  right: var(--sc-space-xs);
+  width: var(--sc-scrollbar-width-lit);
+  background: var(--sc-scrollbar-thumb-active);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-scroll-rail-thumb] {
+    transition: none;
+  }
+}
+
+/* T3's ask marks (its timeline minimap: a dash per ask, a preview on
+   hover) stand at the right beside the thumb, mirrored from upstream's
+   left at upstream's own distances: the dashes hang from the column's
+   right, and the preview opens leftward. */
+[data-stemcells-pane] [data-testid="timeline-minimap"] {
+  left: auto;
+  right: 0;
+}
+[data-stemcells-pane] [data-testid="timeline-minimap"] .left-3 {
+  left: auto;
+  right: 0.75rem;
+}
+[data-stemcells-pane] [data-testid="timeline-minimap"] .left-1 {
+  left: auto;
+  right: 0.25rem;
+  --tw-translate-x: 50%;
+}
+[data-stemcells-pane] [data-minimap-strip] {
+  left: auto;
+  right: 0;
+  transform-origin: right;
+}
+[data-stemcells-pane] [data-minimap-preview] {
+  left: auto;
+  right: 2rem;
+}

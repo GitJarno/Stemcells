@@ -13,6 +13,7 @@ import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
 import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
+import { ScrollRail } from "../scrollRail/ScrollRail";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
@@ -561,6 +562,8 @@ function PaneSlot(props: {
           </div>
         </>
       )}
+      {/* The chat's own scroll bar, at its right edge: in Aski's pane too. */}
+      <ScrollRail kind="chat" />
     </div>
   );
 }
