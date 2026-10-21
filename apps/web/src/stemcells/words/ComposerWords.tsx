@@ -327,8 +327,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
       };
       return { hold: false, ready, foreground: launch !== null, edit };
     };
-    sendSlot(beforeSend);
-    return () => sendSlot(null);
+    return sendSlot("words", beforeSend);
   });
 
   // The readout stands in the model picker's place (`readoutSlot.ts`), and

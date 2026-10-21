@@ -35,8 +35,47 @@ export interface Sending {
 /** Called as the composer sends; null when the words change nothing. */
 export type BeforeSend = (intent: SendIntent) => Sending | null;
 
-/** How the composer's words hand the composer their `BeforeSend` (null to take it back). */
-export const WordsSendSlot = createContext<((beforeSend: BeforeSend | null) => void) | null>(null);
+/**
+ * Who reads a message's words as it sends, in the order they're asked:
+ * answers to Aski's open cards first, then the Cells the words start.
+ */
+export type SendTurn = "answers" | "words";
+const TURNS: readonly SendTurn[] = ["answers", "words"];
+
+/**
+ * How what reads the words hands the composer its `BeforeSend`, under its
+ * turn; what it returns takes that one back, and only that one.
+ */
+export type SendRegister = (turn: SendTurn, beforeSend: BeforeSend) => () => void;
+
+export const WordsSendSlot = createContext<SendRegister | null>(null);
+
+/**
+ * A composer's `BeforeSend`s, one per turn. Asked as it sends, the first
+ * that changes the send decides it, so each reader can register in the
+ * same composer without taking another's place.
+ */
+export function sendSlots(): {
+  readonly register: SendRegister;
+  readonly ask: (intent: SendIntent) => Sending | null;
+} {
+  const held = new Map<SendTurn, BeforeSend>();
+  return {
+    register: (turn, beforeSend) => {
+      held.set(turn, beforeSend);
+      return () => {
+        if (held.get(turn) === beforeSend) held.delete(turn);
+      };
+    },
+    ask: (intent) => {
+      for (const turn of TURNS) {
+        const sending = held.get(turn)?.(intent) ?? null;
+        if (sending !== null) return sending;
+      }
+      return null;
+    },
+  };
+}
 
 /** Replace `[start, end)` with `insert`. */
 export interface Edit extends Span {

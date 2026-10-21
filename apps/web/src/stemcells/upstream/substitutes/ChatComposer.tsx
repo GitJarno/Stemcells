@@ -2,8 +2,9 @@
 // whose words set up a new Cell is sent without its setup words, and one
 // that starts several waits past the most for ⌘↵ (`stemcells/words/send.ts`),
 // and their readout stands in the model picker's place
-// (`stemcells/words/readoutSlot.ts`). The composer's words hand it both
-// through slots; upstream's composer and its send stay as they are. Only
+// (`stemcells/words/readoutSlot.ts`). What reads the words hands it both
+// through slots, each reader under its turn; upstream's composer and its
+// send stay as they are. Only
 // Aski's own chat offers Aski's instance (`../cellInstance.ts`).
 import { memo, type ReactNode, useRef, useState } from "react";
 
@@ -12,23 +13,20 @@ import {
   type ChatComposerProps,
 } from "../../../components/chat/ChatComposer";
 import { type ShownReadout, WordsReadoutShown, WordsReadoutSlot } from "../../words/readoutSlot";
-import { type BeforeSend, WordsSendSlot } from "../../words/send";
+import { sendSlots, WordsSendSlot } from "../../words/send";
 import { useComposerInstances } from "../cellInstance";
 
 export * from "../../../components/chat/ChatComposer";
 
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
-  const slot = useRef<BeforeSend | null>(null);
+  const [slots] = useState(sendSlots);
   const instances = useComposerInstances(props);
   // A send waiting for the draft to show what a last word set takes no other.
   const waiting = useRef(false);
-  const register = (beforeSend: BeforeSend | null) => {
-    slot.current = beforeSend;
-  };
   const { onSend } = props;
   const send: ChatComposerProps["onSend"] = (event, dispatchMode, submissionIntent) => {
     if (waiting.current) return;
-    const sending = slot.current?.(submissionIntent) ?? null;
+    const sending = slots.ask(submissionIntent);
     if (sending?.hold) return;
     const go = () => {
       waiting.current = false;
@@ -48,7 +46,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     } else go();
   };
   return (
-    <WordsSendSlot value={register}>
+    <WordsSendSlot value={slots.register}>
       <ReadoutSlot>
         <UpstreamChatComposer {...props} {...instances} onSend={send} />
       </ReadoutSlot>
