@@ -379,3 +379,55 @@ export function parseWorkspace(value: unknown): Workspace {
     : tabs[0]!.id;
   return { tabs, activeTabId };
 }
+
+// Moves between windows (stemcells/windows): a tab or a pane arriving from
+// another window keeps its ids, because upstream files a draft under its
+// pane's id.
+
+/** Puts a tab at `index` in the strip, clamped; the first tab becomes the active one. */
+export function insertTab(workspace: Workspace, tab: Tab, index: number): Workspace {
+  const tabs = workspace.tabs.filter((candidate) => candidate.id !== tab.id);
+  tabs.splice(Math.max(0, Math.min(index, tabs.length)), 0, tab);
+  return { tabs, activeTabId: workspace.activeTabId ?? tab.id };
+}
+
+/** Where a pane lands on another: the half of it the hand is over. */
+export type PaneSide = "left" | "right" | "above" | "below";
+
+/**
+ * Puts a pane on one side of `anchorId`: beside it in a new column of its
+ * row (left, right), or in its column (above, below). The pane takes focus
+ * and its tab becomes active.
+ */
+export function placePane(
+  workspace: Workspace,
+  pane: Pane,
+  anchorId: string,
+  side: PaneSide,
+  columnId: string,
+): Workspace {
+  const found = findPane(workspace, (candidate) => candidate.id === anchorId);
+  if (!found || findPane(workspace, (candidate) => candidate.id === pane.id)) return workspace;
+  const holdsAnchor = (column: Column) => column.panes.some((p) => p.id === anchorId);
+  const rows = found.tab.rows.map((row) => {
+    const columnIndex = row.columns.findIndex(holdsAnchor);
+    if (columnIndex < 0) return row;
+    if (side === "left" || side === "right") {
+      const columns = [...row.columns];
+      columns.splice(columnIndex + (side === "right" ? 1 : 0), 0, { id: columnId, panes: [pane] });
+      return { ...row, columns };
+    }
+    return {
+      ...row,
+      columns: row.columns.map((column) => {
+        const index = column.panes.findIndex((p) => p.id === anchorId);
+        if (index < 0) return column;
+        const panes = [...column.panes];
+        panes.splice(index + (side === "below" ? 1 : 0), 0, pane);
+        return { ...column, panes };
+      }),
+    };
+  });
+  const placed = replaceTab(workspace, { ...found.tab, rows, focusedPaneId: pane.id });
+  return { ...placed, activeTabId: found.tab.id };
+}
