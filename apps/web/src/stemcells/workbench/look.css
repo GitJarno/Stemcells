@@ -13,7 +13,6 @@
   padding: var(--sc-space-md) var(--sc-space-xs);
   border-inline-end: 1px solid var(--border);
   overflow-y: auto;
-  scrollbar-width: none;
 }
 /* A Cell that asks wears a dot. */
 [data-stemcells-look-asking] {

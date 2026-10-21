@@ -710,3 +710,18 @@ T3's stock theme until the server's default theme is adopted. Settings'
 one of upstream's hottest files, so not a seam for this). The seams are
 Settings' card, the boot script and the default.
 `builtInTheme.contract.test.ts` pins the parts.
+
+### No scroll bars; T3's ask marks are the chat's indicator
+
+No upstream file changes for this; our sheets find upstream's markup by
+attributes upstream's own code and tests use. `scrollbars/scrollbars.css`
+draws no bar anywhere: `scrollbar-width: none` on every element, Base UI's
+bars by their `data-slot`, the terminal's ARIA `role="scrollbar"` (seen only
+in keyboard focus), and the diff and file-tree views' shadow roots through
+their `--*-scrollbar-gutter-override` properties. In a pane, T3's ask marks
+(`data-testid="timeline-minimap"`) stand mirrored at the right edge, hidden
+at rest, shown while the reader scrolls and while the hand or the focus is
+on them (`scrollIndicator/`). `scrollbars.contract.test.ts` and
+`scrollIndicator.contract.test.ts` pin what they rely on; the latter finds
+the marks in whichever file draws them, as upstream moved them out of
+`MessagesTimeline.tsx` into `TimelineMinimap.tsx`.
