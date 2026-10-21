@@ -38,6 +38,7 @@ async function loadStore(
     flight: () => {},
     still: () => Promise.resolve(null),
     painted: () => Promise.resolve(),
+    shownFrame: () => Promise.resolve(null),
     endFlight: () => {},
     drawn: () => {},
     zoom: () => 1,

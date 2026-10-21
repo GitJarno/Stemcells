@@ -15,6 +15,9 @@ import type { FlightCommand, WindowsBridge } from "./bridge";
 import { onScreen, type Point } from "./carry";
 import { group, wait, windowRadius } from "./tearFlight";
 
+/** How many flights this page has flown, for ids no other flight on the layer has. */
+let flown = 0;
+
 let arriving: ReadonlySet<string> = new Set();
 const listeners = new Set<() => void>();
 
@@ -92,11 +95,19 @@ export async function flyGather(
   commit: () => Promise<Moved | null>,
 ): Promise<boolean> {
   const home = before.windows.find((window) => window.id === homeId);
-  const leaving = home ? leavingOrder(before.windows, home) : [];
+  // Each where it shows now: a maximized window's frame is the one it goes back to.
+  const leaving = await Promise.all(
+    (home ? leavingOrder(before.windows, home) : []).map(async (window) => ({
+      ...window,
+      frame: (await bridge.shownFrame(window.id)) ?? window.frame,
+    })),
+  );
   const stills = await Promise.all(leaving.map((window) => bridge.still(window.frame, window.id)));
+  // Ids no other flight on the layer has.
+  const flight = `gather-${homeId}-${(flown += 1)}`;
   const flights = leaving.flatMap((window, index) => {
     const still = stills[index];
-    return still ? [{ window, still, id: `gather-${index}` }] : [];
+    return still ? [{ window, still, id: `${flight}-${index}` }] : [];
   });
   if (flights.length === 0) return (await commit()) !== null;
 

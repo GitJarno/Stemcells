@@ -172,6 +172,8 @@ export interface WindowsBridge {
   still(rect: Rect, window?: string): Promise<string | null>;
   /** Resolves once the layer has painted everything sent before. */
   painted(): Promise<void>;
+  /** Where window `window` is on screen now (maximized, bigger than its frame); null if it's gone. */
+  shownFrame(window: string): Promise<Rect | null>;
   /** The flight is over: the layer goes. */
   endFlight(): void;
   /** This window has drawn the workspace it started from. */

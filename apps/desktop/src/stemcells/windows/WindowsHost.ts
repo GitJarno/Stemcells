@@ -700,8 +700,9 @@ export const layer = Layer.effectDiscard(
     };
 
     /**
-     * The layer is another page's while its flight lasts: one window's own
-     * window carried while another's flight waits to land can't take it.
+     * The layer is another page's while its flight lasts: one window's Gather
+     * pressed while another's flies draws nothing and can't end that flight,
+     * and its only tab carried can't take it.
      */
     const flownByOther = (page: Electron.WebContents) =>
       flying !== null && flying !== page && !flying.isDestroyed();
@@ -771,15 +772,17 @@ export const layer = Layer.effectDiscard(
           void runPromise(electronWindow.reveal(window));
         });
         ipc.on(WINDOWS_CHANNEL.flight, (event, commands: unknown) => {
-          if (!Array.isArray(commands)) return;
+          if (!Array.isArray(commands) || flownByOther(event.sender)) return;
           fly(event.sender);
           flight.run(commands as FlightCommand[]);
         });
         ipc.on(WINDOWS_CHANNEL.warm, (event, raw: unknown) => {
+          if (flownByOther(event.sender)) return;
           fly(event.sender);
           startWarm(raw);
         });
         ipc.handle(WINDOWS_CHANNEL.flightStill, (event, rect: FlightRect, id: unknown) => {
+          if (flownByOther(event.sender)) return null;
           const window =
             typeof id === "string"
               ? live.get(id)
@@ -787,6 +790,10 @@ export const layer = Layer.effectDiscard(
           return window && !window.isDestroyed() ? flight.still(window, rect) : null;
         });
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
+        ipc.handle(WINDOWS_CHANNEL.shownFrame, (_event, id: unknown) => {
+          const window = typeof id === "string" ? live.get(id) : undefined;
+          return window && !window.isDestroyed() ? window.getBounds() : null;
+        });
         ipc.handle(WINDOWS_CHANNEL.geometry, (event) => geometry(event.sender));
         ipc.handle(WINDOWS_CHANNEL.undos, () => book.undos());
         ipc.on(WINDOWS_CHANNEL.dropUndo, (_event, id: unknown) => {
@@ -838,7 +845,9 @@ export const layer = Layer.effectDiscard(
           if (!id || !live.has(id) || !flying || flying.isDestroyed()) return;
           flying.send(WINDOWS_CHANNEL.landed, id);
         });
-        ipc.on(WINDOWS_CHANNEL.flightEnd, endFlight);
+        ipc.on(WINDOWS_CHANNEL.flightEnd, (event) => {
+          if (!flownByOther(event.sender)) endFlight();
+        });
         Electron.app.on("before-quit", beforeQuit);
         Electron.app.on("browser-window-focus", tellNotifier);
         Electron.app.on("browser-window-blur", blurred);
@@ -872,6 +881,7 @@ export const layer = Layer.effectDiscard(
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightStill);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightPainted);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.geometry);
+          Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.shownFrame);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.undos);
           if (watchingDisplays) {
             Electron.screen.removeListener("display-added", tellArranged);
