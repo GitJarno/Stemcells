@@ -47,6 +47,7 @@ async function loadStore(boot: WindowsBridge["boot"], stored: Workspace | null =
 
 // The first load transforms the store's whole module graph, seconds on a busy
 // machine; each test then loads it fresh from that cache.
+// oxlint-disable-next-line t3code/no-test-timeout-or-unreasoned-skip -- CPU-bound transform of the store's module graph, not a hidden wait.
 beforeAll(async () => {
   await loadStore({ id: "w0", lead: false, workspace: null });
   vi.unstubAllGlobals();
