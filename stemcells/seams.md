@@ -13,7 +13,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `.github/workflows/stemcells-sync.yml` | New: nightly `stemcells/scripts/sync-upstream --check`; opens an issue when it needs a person | Takes upstream's work every night (`stemcells/docs/fork.md`, rule 6) |
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
 | `apps/desktop/src/app/DesktopEnvironment.ts` | `APP_BASE_NAME` is "Stemcells" | Window and menu name, keychain entry |
-| `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app` | Own bundle id |
+| `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app`; `artifactName` and the Mac's four permission prompts say `APP_NAME` | Own bundle id; people read the release files' names in Finder and the prompts in macOS's dialogs (The app's name, below) |
 | `apps/desktop/src/app/DesktopUserData.ts` | Profile folder `sh.stemcells.app(.dev)` | Never opens T3 Code's Electron profile |
 | `apps/desktop/src/app/DesktopStatePaths.ts` | State in `~/.stemcells` | Own database, never `~/.t3` |
 | `apps/server/src/os-jank.ts` | Server base dir `~/.stemcells` | Same, for the server and CLI |
@@ -88,7 +88,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
 | `apps/desktop/src/app/DesktopAssets.test.ts` | Expects our icon files, and nothing else changes in it | It pins the paths this seam changes |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the web's also adds `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the web's also adds `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/name.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
 | `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsAboutRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsMicrophoneRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsNotificationsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsEnvironmentDetailRouteScreen.tsx`, `apps/mobile/src/features/home/ThreadListToolbar.tsx`, `apps/mobile/src/features/pull-requests/PullRequestToolbar.android.tsx`, `apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx`, `apps/mobile/src/features/threads/ThreadComposer.tsx`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/agent-awareness/remoteRegistration.ts`, `apps/mobile/src/features/diagnostics/crash-log-model.ts`, `apps/mobile/src/lib/authClientMetadata.ts`, `apps/mobile/src/features/showcase/showcaseAgentActivity.ts` | Each imports `APP_NAME` from `stemcells/brand/name` and says it where it said "T3 Code": a title, a label, a prompt, the crash report's first line, the Live Activity's title, the name a Mac lists this phone by ("Stemcells Mobile") | Same: the phone's screens write the name as text, with no name of upstream's to follow |
@@ -255,6 +255,12 @@ sidebar or a window's title.
   names, API key and session names), logs, and files written to disk. The
   name on commits Stemcells makes says Stemcells (people read it in their
   git log); its email stays upstream's.
+- **The desktop's release files and permission prompts.** The build names
+  its files `Stemcells-<version>-<arch>.dmg` and `.zip` (`artifactName`
+  from `APP_NAME`), and the Mac's camera, microphone, screen capture and
+  local network prompts open with `APP_NAME`. `install-app` picks the zip
+  by `-<arch>.zip`, and the update feed lists the names the build wrote.
+  `stemcells/brand/releaseNames.test.ts` fails when either says T3's name.
 - **Already Stemcells, no seam:** the desktop's window title, app menu
   and About panel read the desktop's branding, and every web view that
   names the app through `APP_BASE_NAME` or `APP_DISPLAY_NAME` follows the
@@ -274,6 +280,10 @@ What keeps T3's name, on purpose:
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).
+- In the desktop build: the nightly build's product name (Stemcells builds
+  no nightly), the URL types' names (identifiers the `t3code` links are
+  registered under), and the package's description, author and homepage,
+  which only Linux package managers show.
 
 ### Stemcells' mark
 
