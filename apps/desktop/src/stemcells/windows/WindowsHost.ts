@@ -22,7 +22,7 @@ import * as DesktopState from "../../app/DesktopState.ts";
 import * as ElectronWindow from "../../electron/ElectronWindow.ts";
 import * as PreviewManager from "../../preview/Manager.ts";
 import * as DesktopWindow from "../../window/DesktopWindow.ts";
-import { WindowBook, type DisplayInfo, type Rect, type Transaction } from "./book.ts";
+import { readPlaced, WindowBook, type DisplayInfo, type Rect, type Transaction } from "./book.ts";
 import {
   WINDOWS_CHANNEL,
   type FlightCommand,
@@ -110,6 +110,25 @@ export const layer = Layer.effectDiscard(
     let flying: Electron.WebContents | null = null;
     /** Stops hearing the flying page. */
     let unwatch = () => {};
+    /**
+     * The window a carry's drop in open space would open, started hidden at
+     * the tear (stemcells/tasks/windows.md, The warm window). It stays out of
+     * the book and the other windows' news until the move opens it, and goes
+     * with the flight otherwise.
+     */
+    let warm: {
+      readonly id: string;
+      readonly boot: WindowBoot;
+      window: Electron.BrowserWindow | null;
+      /** Its page has booted, hidden, into the windows as the move leaves them. */
+      booted: boolean;
+      /** The move opened it before its window was made: where it goes then, and whose tabs it holds. */
+      kept: {
+        readonly frame: Rect;
+        readonly fullScreen: boolean;
+        readonly home: string | null;
+      } | null;
+    } | null = null;
 
     /**
      * Whether the app is quitting, as the app's own flag says: the windows
@@ -146,45 +165,6 @@ export const layer = Layer.effectDiscard(
     const save = () => {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(saveNow, SAVE_AFTER_MS);
-    };
-    /** The flight is over: the layer goes, and its page is no longer heard. */
-    const endFlight = () => {
-      flying = null;
-      unwatch();
-      unwatch = () => {};
-      flight.end();
-    };
-
-    /**
-     * The page carrying something now. If it goes, its renderer dies, or it
-     * loads afresh (upstream reloads a crashed page in place) mid-carry, the
-     * flight ends: nothing is left drawn over the screen for a carry no page
-     * is making any more.
-     */
-    const fly = (page: Electron.WebContents) => {
-      if (flying === page) return;
-      unwatch();
-      flying = page;
-      const lost = () => {
-        if (flying === page) endFlight();
-      };
-      const navigating = (details: { isMainFrame: boolean; isSameDocument: boolean }) => {
-        if (details.isMainFrame && !details.isSameDocument) lost();
-      };
-      page.on("destroyed", lost);
-      page.on("render-process-gone", lost);
-      page.on("did-start-navigation", navigating);
-      unwatch = () => {
-        page.removeListener("destroyed", lost);
-        page.removeListener("render-process-gone", lost);
-        page.removeListener("did-start-navigation", navigating);
-      };
-    };
-
-    /** The app quits: a flight in the air ends, and the windows are saved as they are. */
-    const beforeQuit = () => {
-      endFlight();
-      saveNow();
     };
 
     const readDisplays = () => {
@@ -292,7 +272,57 @@ export const layer = Layer.effectDiscard(
       save();
     };
 
+    /**
+     * The warm window, which a move just opened: it joins the book's windows
+     * where the move put it, takes the move as made (it started from the move
+     * as planned at the tear), hears the others now, and shows. One gone by
+     * then couldn't open, and gives `home` its tabs back.
+     */
+    const keep = (
+      window: Electron.BrowserWindow,
+      id: string,
+      frame: Rect,
+      fullScreen: boolean,
+      home: string | null,
+      booted: boolean,
+    ) => {
+      if (window.isDestroyed()) {
+        failed(id, home);
+        return;
+      }
+      bind(id, window);
+      window.setBounds(frame);
+      const page = window.webContents;
+      // Its page loaded hidden at the tear: now it can lead, and come to the front as it shows.
+      if (booted && book.booted(id)) promote(id);
+      const record = book.get(id);
+      if (record) {
+        book.sending(id);
+        page.send(WINDOWS_CHANNEL.adopt, record.workspace);
+      }
+      for (const [other] of live) {
+        const workspace = book.get(other)?.workspace;
+        if (other !== id && workspace !== undefined) {
+          page.send(WINDOWS_CHANNEL.elsewhere, { id: other, workspace });
+        }
+      }
+      if (fullScreen) window.setFullScreen(true);
+      void runPromise(electronWindow.reveal(window)).then(() => {
+        if (window.isDestroyed()) return;
+        // Cheap again once hidden or minimized, as upstream has a window after it first shows.
+        page.setBackgroundThrottling(true);
+        page.send(WINDOWS_CHANNEL.shown);
+      });
+    };
+
     const open = (id: string, frame: Rect, fullScreen: boolean, home: string | null) => {
+      if (warm?.id === id) {
+        const kept = warm;
+        warm = null;
+        if (kept.window) keep(kept.window, id, frame, fullScreen, home, kept.booted);
+        else kept.kept = { frame, fullScreen, home };
+        return;
+      }
       const create = desktopWindow.createExtra;
       if (!create) {
         failed(id, home);
@@ -315,6 +345,79 @@ export const layer = Layer.effectDiscard(
           const waiting = opening.indexOf(id);
           if (waiting >= 0) opening.splice(waiting, 1);
           if (!live.has(id)) failed(id, home);
+        },
+      );
+    };
+
+    const coolWarm = () => {
+      const window = warm?.window;
+      warm = null;
+      if (window && !window.isDestroyed()) window.destroy();
+    };
+
+    /**
+     * Starts the window `raw` (a move opening one window, as planned at a
+     * tear) would open: hidden, drawing, and booting into the windows as the
+     * move leaves them, so none of its chats is anywhere else.
+     */
+    const startWarm = (raw: unknown) => {
+      coolWarm();
+      const create = desktopWindow.createExtra;
+      const record = isTransaction(raw) && raw.open.length === 1 ? readPlaced(raw.open[0]) : null;
+      if (!create || !record || book.get(record.id) || live.has(record.id)) return;
+      const { change, close } = raw as Transaction;
+      const entry: NonNullable<typeof warm> = {
+        id: record.id,
+        boot: {
+          id: record.id,
+          lead: false,
+          notifies: false,
+          workspace: record.workspace,
+          others: book
+            .snapshot()
+            .windows.filter((other) => !close.includes(other.id))
+            .map((other) => ({
+              id: other.id,
+              workspace: (change.find((changed) => changed.id === other.id) ?? other).workspace,
+            })),
+        },
+        window: null,
+        booted: false,
+        kept: null,
+      };
+      warm = entry;
+      opening.push(entry.id);
+      const made = () => {
+        const waiting = opening.indexOf(entry.id);
+        if (waiting >= 0) opening.splice(waiting, 1);
+      };
+      void runPromise(create(record.frame, false)).then(
+        (window) => {
+          made();
+          if (entry.kept) {
+            const { frame, fullScreen, home } = entry.kept;
+            return keep(window, entry.id, frame, fullScreen, home, entry.booted);
+          }
+          if (warm !== entry) return window.destroy();
+          entry.window = window;
+          const page = window.webContents;
+          pages.set(page.id, entry.id);
+          window.once("closed", () => {
+            pages.delete(page.id);
+            if (warm === entry) warm = null;
+          });
+          // Upstream throttles a page once it's ready to show; this one draws
+          // hidden until it shows.
+          const unthrottled = () => {
+            if (warm === entry && !page.isDestroyed()) page.setBackgroundThrottling(false);
+          };
+          unthrottled();
+          window.once("ready-to-show", unthrottled);
+        },
+        () => {
+          made();
+          if (entry.kept) open(entry.id, entry.kept.frame, entry.kept.fullScreen, entry.kept.home);
+          else if (warm === entry) warm = null;
         },
       );
     };
@@ -358,6 +461,14 @@ export const layer = Layer.effectDiscard(
       const window = Electron.BrowserWindow.fromWebContents(sender);
       if (!window || window.webContents !== sender) return null;
       let id = pages.get(sender.id);
+      if (!id && warm !== null && opening[0] === warm.id) {
+        id = opening.shift()!;
+        pages.set(sender.id, id);
+      }
+      if (warm !== null && id === warm.id) {
+        warm.booted = true;
+        return warm.boot;
+      }
       if (!id) {
         const waiting = opening.shift();
         // Its window was closed by a move while it was being made: it goes, unbooted.
@@ -455,6 +566,50 @@ export const layer = Layer.effectDiscard(
         ),
     };
 
+    /**
+     * The flight is over: the layer goes, its page is no longer heard, and
+     * the window warmed for a drop that didn't come goes.
+     */
+    const endFlight = () => {
+      flying = null;
+      unwatch();
+      unwatch = () => {};
+      flight.end();
+      coolWarm();
+    };
+
+    /** The app quits: a flight in the air ends, and the windows are saved as they are. */
+    const beforeQuit = () => {
+      endFlight();
+      saveNow();
+    };
+
+    /**
+     * The page carrying something now. If it goes, its renderer dies, or it
+     * loads afresh (upstream reloads a crashed page in place) mid-carry, the
+     * flight ends: nothing is left drawn over the screen for a carry no page
+     * is making any more.
+     */
+    const fly = (page: Electron.WebContents) => {
+      if (flying === page) return;
+      unwatch();
+      flying = page;
+      const lost = () => {
+        if (flying === page) endFlight();
+      };
+      const navigating = (details: { isMainFrame: boolean; isSameDocument: boolean }) => {
+        if (details.isMainFrame && !details.isSameDocument) lost();
+      };
+      page.on("destroyed", lost);
+      page.on("render-process-gone", lost);
+      page.on("did-start-navigation", navigating);
+      unwatch = () => {
+        page.removeListener("destroyed", lost);
+        page.removeListener("render-process-gone", lost);
+        page.removeListener("did-start-navigation", navigating);
+      };
+    };
+
     yield* Effect.acquireRelease(
       Effect.sync(() => {
         ipc.on(
@@ -492,6 +647,10 @@ export const layer = Layer.effectDiscard(
           fly(event.sender);
           flight.run(commands as FlightCommand[]);
         });
+        ipc.on(WINDOWS_CHANNEL.warm, (event, raw: unknown) => {
+          fly(event.sender);
+          startWarm(raw);
+        });
         ipc.handle(WINDOWS_CHANNEL.flightStill, (event, rect: FlightRect) => {
           const window = Electron.BrowserWindow.fromWebContents(event.sender);
           return window ? flight.still(window, rect) : null;
@@ -499,7 +658,9 @@ export const layer = Layer.effectDiscard(
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
         ipc.on(WINDOWS_CHANNEL.drawn, (event) => {
           const id = pages.get(event.sender.id);
-          if (id && flying && !flying.isDestroyed()) flying.send(WINDOWS_CHANNEL.landed, id);
+          // A warm window draws hidden: it has landed once it shows and draws.
+          if (!id || !live.has(id) || !flying || flying.isDestroyed()) return;
+          flying.send(WINDOWS_CHANNEL.landed, id);
         });
         ipc.on(WINDOWS_CHANNEL.flightEnd, endFlight);
         Electron.app.on("before-quit", beforeQuit);
@@ -516,6 +677,7 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.flight,
             WINDOWS_CHANNEL.flightEnd,
             WINDOWS_CHANNEL.drawn,
+            WINDOWS_CHANNEL.warm,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }

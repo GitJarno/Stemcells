@@ -32,7 +32,7 @@ asked for by name), then W7, W4, W9, W11.
   - [x] W5c The strip carries: pick up, band, tear, the preview, the
         drop in open space, Esc.
   - [ ] W5d The one-tab window carries itself.
-  - [ ] W5e The warm window: a dropped tab's window drawn before the
+  - [x] W5e The warm window: a dropped tab's window drawn before the
         drop, so its still goes at once.
 - [ ] W6 Into another window's strip: geometry, making room, spring-load
       raise, landing; Undo Move (⌥⌘Z).
@@ -264,10 +264,15 @@ beside the functions that use them, as `LATCH_DISTANCE` does.
 5. **Carry.** The preview tracks the hand 1:1, no spring, across displays,
    its top kept below the menu bar.
 6. **The warm window.** At the tear, main starts the window the drop would
-   make: hidden, holding the tab, provisional (it writes no drafts, raises
-   no notifications, takes no focus). If the carry ends anywhere else, it
-   closes. W5 measures its boot; if a warm boot is over `dwell` (400 ms),
-   one blank spare stays booted after the first tear.
+   make: hidden, holding the tab, drawing while hidden. It boots into the
+   windows as the move would leave them, so none of its chats is anywhere
+   else, and it stays out of the book and the others' news until the drop:
+   it isn't the lead (no notifications), takes no focus, and no one can
+   type in it. If the carry ends anywhere else, it is destroyed with the
+   flight, without its unload writes. No blank spare is kept booted for
+   quick drops: it would hold a renderer (0.3 to 0.5 GB) at all times,
+   while a quick drop already shows the window in place as its still
+   (W5e's review note has the times).
 7. **Drop in open space.** The transaction commits; the warm window takes
    the preview's frame exactly and shows, under the still. When it has
    painted, the still fades on `flick`. The window takes focus. If it
@@ -603,7 +608,8 @@ slot; the warm window under the still before the fade; Gather's stagger.
 display; drop into another window's strip; carry a chat to a pane half in
 another window; Esc mid-carry; Gather, Put back, Gather; unplug and replug
 a display; relaunch with three windows; a browser pane moved; Reduce
-Motion on; a carry with View › Zoom at 125 %.
+Motion on; a carry with View › Zoom at 125 %; a quick tear and drop
+(under a second), watching for a wait before the new window answers.
 
 ## Review
 
@@ -665,3 +671,13 @@ Motion on; a carry with View › Zoom at 125 %.
   goes once that window says it has drawn: 1.25 s after the drop, which
   W5e's warm window is for. `land` and `nudge` are springs with no
   written-out timing, so the flight samples them (`motionTiming`).
+- W5e: proved in the lab under the lab helper. The warm window's page
+  starts 40 ms after the tear, as a page of its own outside the book,
+  with the carried tab, not leading, and the source without the tab among
+  its others. Esc destroys it with the layer. On a drop the same page
+  becomes the new window, at the asked frame, and the source's still goes
+  30 ms after the drop when the warm window has drawn (1.25 s before). In
+  the dev build it draws its tab 1.05 to 1.4 s after the tear, so a quick
+  drop hands off then: 0.8 s after a drop 0.24 s into the carry, 0.18 s
+  after one at 0.8 s. A release build's boot is unmeasured; the hand
+  check (below) says whether a quick drop's wait shows.

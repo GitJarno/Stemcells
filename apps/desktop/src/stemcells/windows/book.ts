@@ -87,7 +87,8 @@ function readRect(value: unknown): Rect | null {
   return { x: x as number, y: y as number, width: width as number, height: height as number };
 }
 
-function readPlaced(value: unknown): Placed | null {
+/** A window as a page wrote it, or null when it isn't one. */
+export function readPlaced(value: unknown): Placed | null {
   if (!isRecord(value)) return null;
   const { id, display } = value;
   const frame = readRect(value.frame);
@@ -218,6 +219,11 @@ export class WindowBook {
     if (!leads) return false;
     this.lead = id;
     return true;
+  }
+
+  /** The window's page is sent its workspace: what it publishes before it takes it is ignored. */
+  sending(id: string): void {
+    if (this.get(id)) this.adopting.add(id);
   }
 
   /** The page took the workspace it was sent. */

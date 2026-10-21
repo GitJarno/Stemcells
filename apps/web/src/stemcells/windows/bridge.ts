@@ -125,6 +125,13 @@ export interface WindowsBridge {
   zoom(): number;
   /** Heard by the page carrying something: a window (by id) has drawn. */
   onLanded(listener: (window: string) => void): () => void;
+  /**
+   * Starts, hidden, the window this move (opening one window) would open, so
+   * a drop shows it drawn. It goes with the flight unless the move is committed.
+   */
+  warm(transaction: WireTransaction): void;
+  /** This window was hidden until now, and shows. */
+  onShown(listener: () => void): () => void;
 }
 
 declare global {

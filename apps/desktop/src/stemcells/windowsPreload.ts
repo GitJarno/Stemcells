@@ -83,5 +83,7 @@ if (boot !== null) {
     drawn: () => ipcRenderer.send(WINDOWS_CHANNEL.drawn),
     zoom: () => webFrame.getZoomFactor(),
     onLanded: listen<string>(WINDOWS_CHANNEL.landed),
+    warm: (transaction: unknown) => ipcRenderer.send(WINDOWS_CHANNEL.warm, transaction),
+    onShown: listen<void>(WINDOWS_CHANNEL.shown),
   });
 }

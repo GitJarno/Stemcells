@@ -38,6 +38,14 @@ export const WINDOWS_CHANNEL = {
   drawn: "stemcells:windows:drawn",
   /** Main → the page carrying something: a window (by id) has drawn, so its still can go. */
   landed: "stemcells:windows:landed",
+  /**
+   * Page → main, the page carrying a tab: start, hidden, the window this
+   * move (a transaction opening one window) would open, so a drop shows it
+   * drawn. It goes with the flight unless the move is committed.
+   */
+  warm: "stemcells:windows:warm",
+  /** Main → page: the window was hidden until now, and shows. */
+  shown: "stemcells:windows:shown",
 } as const;
 
 /** A rectangle in screen points, or, inside a parent, in points from the parent's top left. */
