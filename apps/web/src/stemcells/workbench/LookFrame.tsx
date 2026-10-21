@@ -2,6 +2,7 @@ import { PanelRight, X } from "lucide-react";
 import { useEffect, useEffectEvent, useRef } from "react";
 import { createPortal } from "react-dom";
 
+import { asksYou } from "../cell/look";
 import { CellMark } from "../tabs/CellMark";
 import { moodOfStatus } from "../tabs/cellMood";
 import { panesOf, type CellRef, type Tab } from "../tabs/layout";
@@ -163,7 +164,7 @@ function WorkbenchClose(props: { label: string; tip: string; onClose: () => void
 /** Another Cell of the tab, on the rail: its mark, and a dot while it asks. Choosing it goes there. */
 function RailMark(props: { cell: CellRef; onSelect: () => void }) {
   const title = useCellTitle(props.cell) ?? "New Cell";
-  const asking = moodOfStatus(useCellStatus(props.cell)) === "needsYou";
+  const asking = asksYou(moodOfStatus(useCellStatus(props.cell)));
   return (
     <Tooltip>
       <TooltipTrigger

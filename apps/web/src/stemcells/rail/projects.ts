@@ -2,6 +2,7 @@
  * The rail's projects, as plain data: which get a badge, what the badge's
  * dot says, which chat a click opens, and the words its tooltip reads.
  */
+import { asksYou } from "../cell/look";
 import { moodOfStatus } from "../tabs/cellMood";
 import { sameChat, type CellRef } from "../tabs/layout";
 import type { RailChat, RailProject } from "../upstream/rail";
@@ -11,7 +12,7 @@ import type { CellStatus } from "../upstream/status";
 export type Standing = "needsYou" | "working" | "done";
 
 export function standingOf(status: CellStatus | null): Standing {
-  if (moodOfStatus(status) === "needsYou") return "needsYou";
+  if (asksYou(moodOfStatus(status))) return "needsYou";
   return status === "Working" || status === "Connecting" || status === "Waiting"
     ? "working"
     : "done";

@@ -13,6 +13,7 @@ import {
   useCellRest,
   useCellSubagentsAway,
 } from "../upstream/cellWork";
+import { useCellLineDown } from "../upstream/lineDown";
 import { useCellDriver } from "../upstream/providers";
 import { useCellStatus } from "../upstream/status";
 import { activityOfStatus, moodAt, moodTurnsAt, thinkingQuietly } from "./cellMood";
@@ -25,7 +26,8 @@ const POINTS = 1;
 /**
  * A chat's Cell, small: its look dealt by the chat's thread id with the crew
  * in view (`roster.ts`; a draft keeps it once sent), its face from the chat's
- * status, the "?" over it while it waits on you, in its provider's colours.
+ * status, the "?" over it while it waits on you, peering while its line is
+ * down, in its provider's colours.
  * While the chat works it acts out the call in flight, and meditates once its
  * thought goes deep; when a turn lands it cheers, then rests, and sleeps once
  * the chat's prompt cache has gone cold. It grows from the time it has worked
@@ -54,7 +56,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const look = useRosterLook(props.cell?.threadId);
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
-  const mood = moodAt(status, landedAt, coldAt, now);
+  const mood = moodAt(status, landedAt, coldAt, now, useCellLineDown(props.cell));
   useEffect(() => {
     if (turnsAt === undefined) return;
     const timer = setTimeout(() => setNow(Date.now()), Math.max(0, turnsAt - Date.now()));

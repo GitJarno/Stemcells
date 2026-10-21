@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { MOODS } from "../cell/look";
+import { asksYou, MOODS } from "../cell/look";
 import { CELL_STATUSES } from "../upstream/status";
 import { activityOfStatus, CHEER_MS, moodAt, moodTurnsAt, thinkingQuietly } from "./cellMood";
 
@@ -12,11 +12,18 @@ describe("a Cell's face from its chat's status", () => {
     }
   });
 
-  it("needs you exactly while the chat waits on you", () => {
-    const needsYou = CELL_STATUSES.filter(
-      (status) => moodAt(status, 0, undefined, 0) === "needsYou",
-    );
-    expect(needsYou).toEqual(["Pending Approval", "Awaiting Input", "Plan Ready"]);
+  it("asks exactly while the chat waits on you, an approval with the original's own act", () => {
+    const asking = CELL_STATUSES.filter((status) => asksYou(moodAt(status, 0, undefined, 0)));
+    expect(asking).toEqual(["Pending Approval", "Awaiting Input", "Plan Ready"]);
+    expect(moodAt("Pending Approval", null, undefined, 0)).toBe("needsApproval");
+    expect(moodAt("Awaiting Input", null, undefined, 0)).toBe("needsYou");
+    expect(moodAt("Plan Ready", null, undefined, 0)).toBe("needsYou");
+  });
+
+  it("peers while its line is down, whatever the chat last said", () => {
+    for (const status of [...CELL_STATUSES, null]) {
+      expect(moodAt(status, 0, 1, 2, true)).toBe("peering");
+    }
   });
 
   it("crashes on a failed run, and is awake while it works", () => {
