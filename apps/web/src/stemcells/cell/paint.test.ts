@@ -1,7 +1,7 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { BODIES, INKS } from "./kit.ts";
-import { pixelsOf } from "./paint.ts";
+import { pixelsOf, rowsOn } from "./paint.ts";
 
 const rgba = (hex: string) =>
   [1, 3, 5, 7].map((at) => (at < hex.length ? Number.parseInt(hex.slice(at, at + 2), 16) : 255));
@@ -18,4 +18,11 @@ test("a frame paints in its provider's body and the shared inks, a pixel a cell,
     rgba(INKS["-"]!),
     "an ink's own alpha",
   );
+});
+
+test("on the light frame a pale piece is keylined where it meets the void, the body never; on black nothing is", () => {
+  const pale = ["...", ".p.", "..."];
+  NodeAssert.deepEqual(rowsOn(pale, "claude", "light"), [".4.", "4p4", ".4."]);
+  NodeAssert.deepEqual(rowsOn(pale, "claude", "black"), pale);
+  NodeAssert.deepEqual(rowsOn([".B."], "claude", "light"), [".B."]);
 });

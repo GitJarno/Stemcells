@@ -10,6 +10,7 @@ import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
 import { bodyOf, frameShown, sceneFor } from "./cast.ts";
 import { onStage } from "./clock.ts";
+import type { Ground } from "./keyline.ts";
 import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, looksOf } from "./looks.ts";
 import { paint } from "./paint.ts";
@@ -35,6 +36,8 @@ export function CellFigure(props: {
   /** Its provider (`claudeAgent`, `codex`, …), whose colours it wears; absent, the coral Cell's. */
   readonly provider?: string | null | undefined;
   readonly look?: readonly string[] | undefined;
+  /** The frame behind it: on the light one its pale pieces are keylined (`keyline.ts`); black unless told. */
+  readonly ground?: Ground | undefined;
   /** CSS pixels a cell of the miniature is drawn; 1 or 2 draw the hero art on a 2× display. */
   readonly points?: number | undefined;
 }) {
@@ -44,6 +47,7 @@ export function CellFigure(props: {
   const worn = (props.look ?? lookOf(name, day)).join("+");
   const body = bodyOf(props.provider);
   const points = props.points ?? POINTS_PER_PIXEL;
+  const ground = props.ground ?? "black";
   const canvas = useRef<HTMLCanvasElement>(null);
   useLayoutEffect(() => {
     const element = canvas.current;
@@ -56,9 +60,9 @@ export function CellFigure(props: {
       const dpr = devicePixelRatio || 1;
       if (shown?.frame === frame && shown.dpr === dpr) return;
       shown = { frame, dpr };
-      paint(element, frame, body, points, dpr);
+      paint(element, frame, body, points, dpr, ground);
     });
-  }, [worn, mood, activity, name, body, points]);
+  }, [worn, mood, activity, name, body, points, ground]);
   return (
     <span className="cell-figure" data-mood={mood} data-activity={activity}>
       <canvas

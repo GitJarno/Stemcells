@@ -73,8 +73,9 @@ people: open it in a browser.
 - **Identity lives in width, shape and colour, not height.** The miniature has
   only rows 0–3 above the crown.
 - **The light frame.** The light frame draws a one-cell charcoal keyline
-  outside every pale piece cell that faces the void. Don't redraw a piece
-  for the light frame. Do check the keylined render reads.
+  outside every pale piece cell that faces the void, in the tools and in the
+  app while it is drawn light. Don't redraw a piece for the light frame. Do
+  check the keylined render reads.
 - **Cultural packs.** Use only the objects of the celebration: flowers,
   lanterns, food, kites. Nothing sacred, and no costume of a people. A pack
   is one event, named plainly and dated from its own calendar. Each piece's

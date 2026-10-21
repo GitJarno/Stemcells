@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { currentActivity } from "../cell/activity";
 import { CellFigure } from "../cell/CellFigure";
 import { useShownActivity } from "../cell/useShownActivity";
+import { useCellGround } from "../upstream/appearance";
 import { useCellCalls, useCellRest } from "../upstream/cellWork";
 import { useCellDriver } from "../upstream/providers";
 import { useCellStatus } from "../upstream/status";
@@ -25,6 +26,7 @@ const POINTS = 1;
 export function CellMark(props: { cell: CellRef | null; points?: number }) {
   const status = useCellStatus(props.cell);
   const provider = useCellDriver(props.cell);
+  const ground = useCellGround();
   const working = status === "Working";
   const calls = useCellCalls(props.cell, working);
   const activity = useShownActivity(currentActivity(working, calls)) ?? activityOfStatus(status);
@@ -41,6 +43,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number }) {
     <span className="flex shrink-0" data-stemcells-cell-status={status ?? "idle"}>
       <CellFigure
         name={props.cell?.threadId ?? ""}
+        ground={ground}
         mood={moodAt(status, landedAt, coldAt, now)}
         activity={activity}
         provider={provider}

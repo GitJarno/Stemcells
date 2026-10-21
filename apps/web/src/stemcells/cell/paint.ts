@@ -3,6 +3,7 @@
 // their edges.
 
 import { pictureOf } from "./cast.ts";
+import { type Ground, keylined } from "./keyline.ts";
 import { paletteOf } from "./kit.ts";
 import type { MiniFrame } from "./scene.ts";
 
@@ -37,14 +38,20 @@ export function pixelsOf(rows: readonly string[], body: string): Uint8ClampedArr
   return out;
 }
 
-/** Rasters kept, by body and rows; let go together once this many have gathered. */
+/** `rows` as the frame `ground` draws them: on the light one, pale pieces keylined (`keyline.ts`). */
+export function rowsOn(rows: readonly string[], body: string, ground: Ground): readonly string[] {
+  return ground === "light" ? keylined(rows, paletteOf(body)) : rows;
+}
+
+/** Rasters kept, by body, frame and rows; let go together once this many have gathered. */
 const KEPT = 2048;
 const rasters = new Map<string, HTMLCanvasElement>();
 
-function raster(rows: readonly string[], body: string): HTMLCanvasElement {
-  const key = `${body}\n${rows.join("\n")}`;
+function raster(art: readonly string[], body: string, ground: Ground): HTMLCanvasElement {
+  const key = `${body}\n${ground}\n${art.join("\n")}`;
   const known = rasters.get(key);
   if (known !== undefined) return known;
+  const rows = rowsOn(art, body, ground);
   const canvas = document.createElement("canvas");
   canvas.width = rows[0]?.length ?? 0;
   canvas.height = rows.length;
@@ -59,8 +66,9 @@ function raster(rows: readonly string[], body: string): HTMLCanvasElement {
 
 /**
  * Paints `frame` on `canvas` in `body`'s colours, `points` CSS pixels a
- * cell on a display of `dpr`: the hero detail where it lands on whole device
- * pixels, else the miniature. The canvas's CSS size is the caller's.
+ * cell on a display of `dpr`, as the frame `ground` behind it draws it: the
+ * hero detail where it lands on whole device pixels, else the miniature. The
+ * canvas's CSS size is the caller's.
  */
 export function paint(
   canvas: HTMLCanvasElement,
@@ -68,6 +76,7 @@ export function paint(
   body: string,
   points: number,
   dpr: number,
+  ground: Ground = "black",
 ): void {
   const width = Math.round((frame.rows[0]?.length ?? 0) * points * dpr);
   const height = Math.round(frame.rows.length * points * dpr);
@@ -77,5 +86,5 @@ export function paint(
   if (context === null) return;
   context.clearRect(0, 0, width, height);
   context.imageSmoothingEnabled = false;
-  context.drawImage(raster(pictureOf(frame, points, dpr).rows, body), 0, 0, width, height);
+  context.drawImage(raster(pictureOf(frame, points, dpr).rows, body, ground), 0, 0, width, height);
 }
