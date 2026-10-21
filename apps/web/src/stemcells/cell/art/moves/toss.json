@@ -1,0 +1,52 @@
+{
+  "scenes": {
+    "toss/walk": {
+      "fps": 6,
+      "facing": "left",
+      "kind": "loop",
+      "tell": 5,
+      "pieces": "loop",
+      "frames": [
+        {
+          "pose": {
+            "sy": 1.04,
+            "lean": 1
+          }
+        },
+        {
+          "pose": {
+            "sy": 1.1,
+            "lean": 2.5,
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "sy": 1.06,
+            "lean": 3,
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.96,
+            "lean": 1.5,
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "sy": 0.94,
+            "lean": -0.5
+          }
+        },
+        {
+          "pose": {
+            "sy": 1,
+            "lean": 0
+          }
+        }
+      ]
+    }
+  }
+}
