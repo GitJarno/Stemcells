@@ -159,6 +159,19 @@
 [data-stemcells-workbench]:has([data-preview-panel-maximized="true"]) {
   flex: 1;
 }
+/* Off stage, the focused Cell's panel keeps its frame and tabs in the
+   workbench and holds nothing (`chatPanel.tsx`), so its page comes in at
+   the width it lands at. What the panel shows comes with the stage: if the
+   pages are moving then, it fades in over the panel's ground, as the
+   browser over it does (`ride.ts`), rather than popping in mid-slide. */
+[data-stemcells-surface-body] {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
+@starting-style {
+  [data-stemcells-pages][data-moving] [data-stemcells-surface-body] {
+    opacity: 0;
+  }
+}
 
 /* A pane lays its chat out by its own width, not the window's.
    Containment also keeps a chat's window-fixed controls (panel toggles)

@@ -103,11 +103,14 @@ export function useOpenNewCell(): () => Promise<CellRef | null> {
  * the app's, so the palette and window shortcuts reach the focused chat.
  *
  * The pane that owns input also owns the tab's workbench (`panelHost`): its
- * thread's surfaces show there, and the other panes show none.
+ * thread's surfaces show there, and the other panes show none. Off stage, the
+ * focused pane keeps its Surface's frame there (`chatPanel.tsx`).
  */
 export function ChatPaneView(props: {
   target: ThreadRouteTarget;
   ownsWindowInput: boolean;
+  /** Whether the pane is its tab's focused one (on stage or not). */
+  focused: boolean;
   panelHost: HTMLElement | null;
 }) {
   const appComposerRef = useComposerHandleContext();
@@ -117,7 +120,9 @@ export function ChatPaneView(props: {
       value={props.ownsWindowInput && appComposerRef ? appComposerRef : paneComposerRef}
     >
       <ChatWindowInputContext value={props.ownsWindowInput}>
-        <ChatPanelHostContext value={{ node: props.panelHost, owns: props.ownsWindowInput }}>
+        <ChatPanelHostContext
+          value={{ node: props.panelHost, owns: props.ownsWindowInput, focused: props.focused }}
+        >
           <ThreadRouteView target={props.target} />
         </ChatPanelHostContext>
       </ChatWindowInputContext>

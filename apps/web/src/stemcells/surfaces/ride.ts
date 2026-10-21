@@ -14,12 +14,17 @@
  * The fingers move the pages from the main thread, frame by frame, and the
  * page follows each frame there. A slide runs on the compositor, on through
  * a main thread busy with the turn it sets off, so the page gets a copy of
- * it: the same timing and start, moving it as the slide moves the slot.
+ * it: the same timing and start, moving it as the slide moves the slot. The
+ * slide is the pager's, on its strip: what moves or fades inside a page (a
+ * surface fading in as it arrives) is no slide.
  *
  * The cut to the pages' frame doesn't move: the view keeps still and is cut
  * to the frame, and only the box inside it, which holds the page, moves. A
  * cut that moved with the page ran a frame behind it on the compositor, and
  * the page showed over the rail while it sped past.
+ *
+ * A view that comes while the pages move, on the page arriving, fades in
+ * on `fade`, over its page's ground, rather than popping in mid-slide.
  */
 
 /** A shown view, and the point upstream placed it at. */
@@ -37,8 +42,12 @@ export interface Rider {
   readonly anchor: HTMLElement;
   /** The view, while it is shown; null while it isn't. */
   readonly view: () => PlacedView | null;
+  /** Where the views are, shown or not; null if nowhere yet. */
+  readonly views: () => Node | null;
   /** The pages rest: the slot presents again, where it is now. */
   readonly rest: () => void;
+  /** The `fade` token's timing, that a view coming while the pages move fades in on. */
+  readonly fade: () => KeyframeAnimationOptions;
 }
 
 interface Box {
@@ -66,6 +75,8 @@ export function ride(rider: Rider): () => void {
   let held: PlacedView | null = null;
   /** The slide the page has a copy of, the copy, and where the view was placed for it. */
   let mirrored: { slide: Animation; copy: Animation; placed: PlacedView } | null = null;
+  /** The view shown as the pages set off, or the last that came since: none of them fades in. */
+  let came: HTMLElement | null = null;
   let frame = 0;
 
   const unmirror = () => {
@@ -93,6 +104,10 @@ export function ride(rider: Rider): () => void {
     const placed = rider.view();
     if (placed?.element !== held?.element || placed?.content !== held?.content) letGo();
     if (placed === null) return;
+    if (placed.element !== came) {
+      came = placed.element;
+      placed.element.animate([{ opacity: 0 }, { opacity: 1 }], rider.fade());
+    }
     held = placed;
     const size = { width: placed.element.offsetWidth, height: placed.element.offsetHeight };
     // The page moves out of the view's box, so the view shows past it, up to
@@ -126,18 +141,23 @@ export function ride(rider: Rider): () => void {
     follow();
   };
   // A finger's stroke is written to the strip in the pager's own frame
-  // callback, which may run after ours: following each write as it lands
-  // keeps the page on the frame it is drawn in.
-  const strokes = new MutationObserver(follow);
+  // callback, and a view is shown by a render, either of which may land
+  // after ours: following each write as it lands keeps the page on the frame
+  // it is drawn in, and a view that comes is cut and faded before it paints.
+  const writes = new MutationObserver(follow);
   const watch = () => {
     if (pages.hasAttribute("data-moving")) {
       if (frame !== 0) return;
-      strokes.observe(pages, { attributes: true, attributeFilter: ["style"], subtree: true });
+      came = rider.view()?.element ?? null;
+      const style = { attributes: true, attributeFilter: ["style"], subtree: true };
+      writes.observe(pages, style);
+      const views = rider.views();
+      if (views !== null) writes.observe(views, { ...style, childList: true });
       loop();
     } else if (frame !== 0) {
       cancelAnimationFrame(frame);
       frame = 0;
-      strokes.disconnect();
+      writes.disconnect();
       unmirror();
       // The slot presents where it is now, at once: the view is in place
       // before anything paints, and the move and the cut go.
@@ -151,25 +171,24 @@ export function ride(rider: Rider): () => void {
 
   return () => {
     moving.disconnect();
-    strokes.disconnect();
+    writes.disconnect();
     cancelAnimationFrame(frame);
     frame = 0;
     letGo();
   };
 }
 
-/** The running animation that moves the slot with an ancestor inside the pages, if one does. */
+/** The pager's slide, running on its strip (the pages' child that holds the slot), if one is. */
 function slideOf(anchor: HTMLElement, pages: HTMLElement): Animation | null {
-  for (let element = anchor.parentElement; element !== null; element = element.parentElement) {
-    for (const animation of element.getAnimations()) {
-      if (animation.playState !== "running" || !(animation.effect instanceof KeyframeEffect)) {
-        continue;
-      }
-      if (animation.effect.getKeyframes().some((key) => key.transform || key.opacity)) {
-        return animation;
-      }
+  let strip: HTMLElement | null = anchor;
+  while (strip !== null && strip.parentElement !== pages) strip = strip.parentElement;
+  for (const animation of strip?.getAnimations() ?? []) {
+    if (animation.playState !== "running" || !(animation.effect instanceof KeyframeEffect)) {
+      continue;
     }
-    if (element === pages) break;
+    if (animation.effect.getKeyframes().some((key) => key.transform || key.opacity)) {
+      return animation;
+    }
   }
   return null;
 }
@@ -260,17 +279,20 @@ function mirror(
   if (!(effect instanceof KeyframeEffect) || !(effect.target instanceof HTMLElement)) return null;
   const target = effect.target;
   const box = { width: target.offsetWidth, height: target.offsetHeight };
+  const computed = getComputedStyle(target).transform;
+  const matrix = computed === "none" ? new DOMMatrixReadOnly() : new DOMMatrixReadOnly(computed);
+  const now = { x: matrix.m41, y: matrix.m42 };
   const keys: SlideKey[] = [];
   for (const key of effect.getKeyframes()) {
     // Between keys the page must move as the slot does: in a straight line.
     if (key.easing !== undefined && key.easing !== "linear") return null;
-    const move = translation(key.transform as string | undefined, box);
+    // A key that doesn't move the strip (a fade, under reduced motion) leaves it where it is.
+    const move =
+      key.transform === undefined ? now : translation(key.transform as string | undefined, box);
     if (move === null) return null;
     keys.push({ offset: key.computedOffset, transform: move, opacity: key.opacity ?? undefined });
   }
-  const computed = getComputedStyle(target).transform;
-  const matrix = computed === "none" ? new DOMMatrixReadOnly() : new DOMMatrixReadOnly(computed);
-  const mirrored = mirroredKeys(keys, slot, { x: matrix.m41, y: matrix.m42 }, placed);
+  const mirrored = mirroredKeys(keys, slot, now, placed);
   const animation = placed.content.animate(
     mirrored.map((key) => ({ ...key })),
     effect.getTiming(),

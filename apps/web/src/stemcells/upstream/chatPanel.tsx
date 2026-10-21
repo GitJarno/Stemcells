@@ -9,7 +9,7 @@
  * Upstream keeps each thread's surfaces apart, so focusing another chat shows
  * that chat's, as switching threads does upstream.
  */
-import { createContext, use, type ComponentProps } from "react";
+import { createContext, use, type ComponentProps, type ComponentType, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { RightPanelSheet } from "../../components/RightPanelSheet";
@@ -21,6 +21,8 @@ export interface ChatPanelHost {
   readonly node: HTMLElement | null;
   /** Whether this chat's panel is the one the workbench shows. */
   readonly owns: boolean;
+  /** Whether this chat is its page's focused one, whose panel the workbench shows on stage. */
+  readonly focused: boolean;
 }
 
 /** Null (the default): the panel stays beside its chat, as upstream draws it. */
@@ -34,10 +36,55 @@ export function ChatPanelTabs(props: ComponentProps<typeof RightPanelTabs>) {
   const host = use(ChatPanelHostContext);
   // The page a turn leaves keeps its surfaces until the pages rest.
   const shows = useOwnedUntilRest(host?.owns ?? false, host?.node ?? null);
-  const panel = <RightPanelTabs {...props} />;
-  if (host === null || props.mode !== "inline") return panel;
-  if (!shows || host.node === null) return null;
-  return createPortal(panel, host.node);
+  if (host === null || props.mode !== "inline") return <RightPanelTabs {...props} />;
+  return (
+    <WorkbenchPanel
+      workbench={host.node}
+      shows={shows}
+      focused={host.focused}
+      Frame={RightPanelTabs}
+      frameProps={props}
+    >
+      {props.children}
+    </WorkbenchPanel>
+  );
+}
+
+/**
+ * A chat's panel in its page's workbench. On stage it holds the chat's
+ * surfaces. Off stage, the focused chat's panel keeps its frame and tabs
+ * there, inert and holding nothing: the page lays out at its real width and
+ * slides in with its Surface, and what the Surface shows, a live browser
+ * above all, comes only with the stage, where it fades in (`workspace.css`).
+ */
+export function WorkbenchPanel<P extends { children?: ReactNode }>(props: {
+  workbench: HTMLElement | null;
+  /** Whether the panel holds its surfaces: its chat owns the workbench, or just did. */
+  shows: boolean;
+  /** Whether its chat is its page's focused one. */
+  focused: boolean;
+  /** Upstream's panel, the frame around what it holds, and its props. */
+  Frame: ComponentType<P>;
+  frameProps: P;
+  children: ReactNode;
+}) {
+  const { Frame } = props;
+  if (props.workbench === null || (!props.shows && !props.focused)) return null;
+  return createPortal(
+    // One tree on and off stage, so the frame and tabs stay as the stage comes.
+    <div inert={!props.shows} style={{ display: "contents" }}>
+      <Frame {...props.frameProps}>
+        {props.shows ? (
+          <div key="shown" data-stemcells-surface-body="" className="flex min-h-0 flex-1 flex-col">
+            {props.children}
+          </div>
+        ) : (
+          <div key="waiting" className="flex min-h-0 flex-1 flex-col" />
+        )}
+      </Frame>
+    </div>,
+    props.workbench,
+  );
 }
 
 /** Upstream's narrow-window sheet: a window overlay, so only the owning chat's opens. */

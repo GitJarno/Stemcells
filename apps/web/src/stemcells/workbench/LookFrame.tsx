@@ -39,10 +39,11 @@ import "./look.css";
  * rail of the other Cells and, in the workbench, its ×, and ends Look when
  * the user sends from the Cell or presses Esc.
  *
- * Only the page on stage fills its workbench with the Cell's surfaces. Under
- * them, every page in Look keeps a stand-in naming the surface, so a page
- * off stage lays out as Look too, and nothing jumps as a swipe brings it on
- * or takes it off: the surfaces arrive and leave inside a box already there.
+ * Only the page on stage fills its workbench with the Cell's surfaces. Off
+ * stage the workbench keeps the panel's frame (`upstream/chatPanel.tsx`), so
+ * a page off stage lays out as Look too, and nothing jumps as a swipe brings
+ * it on or takes it off: the surfaces arrive and leave inside a box already
+ * there.
  *
  * Outside Look, the workbench keeps its × for an empty one only
  * (`EmptyWorkbenchClose`).
@@ -75,9 +76,6 @@ export function Look(props: {
   if (lookId === null) return null;
   return (
     <>
-      {props.workbench !== null && lookCell !== null
-        ? createPortal(<LookStandIn cell={lookCell} />, props.workbench)
-        : null}
       <nav data-stemcells-look-rail="" aria-label="Other Cells">
         {railPanes(tab, lookId).map((pane) => (
           <RailMark key={pane.id} cell={pane.cell} onSelect={() => end(pane.id)} />
@@ -95,25 +93,6 @@ export function Look(props: {
           )
         : null}
     </>
-  );
-}
-
-/** The workbench's stand-in, under the surfaces: the name of the one it shows. */
-function LookStandIn(props: { cell: CellRef }) {
-  const name = useCellSurfaceName(props.cell);
-  return (
-    <div
-      data-stemcells-look-stand-in=""
-      aria-hidden="true"
-      className="bg-background text-xs text-muted-foreground"
-    >
-      {name === null ? null : (
-        <>
-          <PanelRight className="size-3.5 shrink-0" />
-          <span className="min-w-0 truncate">{name}</span>
-        </>
-      )}
-    </div>
   );
 }
 

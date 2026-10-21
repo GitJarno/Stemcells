@@ -356,7 +356,13 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         {tab === null ? (
           <div data-stemcells-page="">
             <div data-stemcells-grid="">
-              <AskiPane chat={askiChat} target={null} ownsWindowInput={false} panelHost={null} />
+              <AskiPane
+                chat={askiChat}
+                target={null}
+                ownsWindowInput={false}
+                focused={false}
+                panelHost={null}
+              />
             </div>
           </div>
         ) : (
@@ -504,6 +510,7 @@ function PaneSlot(props: {
           chat={props.aski}
           target={target}
           ownsWindowInput={props.ownsInput}
+          focused={props.focused}
           panelHost={props.panelHost}
         />
       ) : (
@@ -522,6 +529,7 @@ function PaneSlot(props: {
                 <ChatPaneView
                   target={target}
                   ownsWindowInput={props.ownsInput}
+                  focused={props.focused}
                   panelHost={props.panelHost}
                 />
               </PaneCellContext>

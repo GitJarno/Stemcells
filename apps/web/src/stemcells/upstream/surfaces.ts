@@ -12,6 +12,11 @@ import { BrowserSurfaceSlot } from "../../browser/BrowserSurfaceSlot";
 
 export { BrowserSurfaceSlot as UpstreamBrowserSurfaceSlot };
 
+/** Where upstream keeps the browsers' views, shown or not (`ElectronBrowserHost`); null on the web. */
+export function browserViews(): HTMLElement | null {
+  return document.querySelector<HTMLElement>("[data-electron-browser-host]");
+}
+
 /** A browser tab's view, its page's box, and where upstream placed it; null while it isn't shown. */
 export function shownBrowserView(tabId: string): PlacedView | null {
   const element = document.querySelector<HTMLElement>(

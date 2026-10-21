@@ -53,6 +53,14 @@ A browser in a Cell's workbench misbehaves when the slate moves:
   where a slot crosses the frame's edge went with it.
 - The tabs code doesn't name surfaces: the ride watches `data-moving` on
   `[data-stemcells-pages]`, as the pager documents.
+- The arriving page brings its Surface's frame, not its surfaces. Off
+  stage, the focused Cell's panel keeps its frame and tabs in its page's
+  workbench, inert, holding nothing: the page comes in at the width it
+  lands at, its chat doesn't jump at the turn, and no live browser runs off
+  stage (the launch rule). What the panel shows comes with the stage and,
+  while the pages move, fades in on `fade`: the DOM by `@starting-style`,
+  the browser by a fade on its view. Look's stand-in went with it: every
+  page has the frame now.
 
 ## Review
 
@@ -86,3 +94,24 @@ repo). The CDP screencast draws the browser guest.
   and two where the edge finder misread.
 - Still open: the arriving page shows its browser only once the turn mounts
   its Surface (about 250 ms with no browser on the page). Next PR.
+
+### Follow-up: the arriving page brings its Surface (2026-10-21)
+
+- Off stage, the focused Cell's panel keeps its frame and tabs, inert and
+  empty, so the arriving page slides in at the width it lands at. Its
+  surfaces come with the turn and fade in on `fade`: the DOM by
+  `@starting-style` while `data-moving` is on, the browser by a fade on its
+  view, started the moment upstream shows it (the ride watches the views'
+  host as well as the pages), so it never paints once whole first.
+- Two ride bugs the fade brought out, both fixed: the ride took any running
+  animation above the slot for the slide, and copied the surface's fade
+  instead, holding the browser still beside its page for 200 ms; it now
+  takes only the strip's. And a slide that only fades (reduced motion) was
+  copied as a move to no offset, throwing the browser a page off its slot;
+  a key without a transform now leaves the strip where it is.
+- Proof, hidden dev app, left-right-left between two Cells with live
+  browsers: in all 813 main-thread frames with a browser shown, it sits
+  within 0.5 px of its slot; no frame draws a browser over the rail; every
+  page's composer keeps one rect from start to end (before: the arriving
+  chat jumped narrower at the turn). Reduced motion: the same, the browser
+  fading in where it lands.

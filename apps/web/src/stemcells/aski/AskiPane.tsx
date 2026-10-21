@@ -53,6 +53,8 @@ export function AskiPane(props: {
   chat: AskiChat;
   target: ThreadRouteTarget | null;
   ownsWindowInput: boolean;
+  /** Whether Aski's pane is its tab's focused one. */
+  focused: boolean;
   /** The tab's workbench, where Aski's surfaces show while its chat is focused. */
   panelHost: HTMLElement | null;
 }) {
@@ -68,6 +70,7 @@ export function AskiPane(props: {
               <ChatPaneView
                 target={props.target}
                 ownsWindowInput={props.ownsWindowInput}
+                focused={props.focused}
                 panelHost={props.panelHost}
               />
             </ComposerRoofSlot>

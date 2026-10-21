@@ -9,6 +9,7 @@ import { resolveBrowserViewportLayout } from "../../browser/browserViewportLayou
 import { resolveHostedBrowserWebviewWrapperStyle } from "../../browser/hostedBrowserWebviewStyle";
 
 import slot from "../../browser/BrowserSurfaceSlot.tsx?raw";
+import host from "../../browser/ElectronBrowserHost.tsx?raw";
 import hosted from "../../browser/HostedBrowserWebview.tsx?raw";
 import previewView from "../../components/preview/PreviewView.tsx?raw";
 
@@ -47,7 +48,7 @@ describe("native surfaces' contracts with upstream", () => {
       rect: { x: 0, y: 0, width: 10, height: 10 },
       hiddenSize: hidden,
     });
-    for (const property of ["transform", "clipPath", "overflow", "backgroundColor"]) {
+    for (const property of ["transform", "clipPath", "overflow", "backgroundColor", "opacity"]) {
       expect(shown).not.toHaveProperty(property);
     }
     expect(hosted).toContain('style={{ ...wrapperStyle, overscrollBehavior: "contain" }}');
@@ -70,6 +71,12 @@ describe("native surfaces' contracts with upstream", () => {
         canvasHeight: 900,
       });
     }
+  });
+
+  it("the views live in one host, shown or not", () => {
+    // The ride watches it while the pages move, to catch a view as it comes.
+    expect(host).toContain('<div className="contents" data-electron-browser-host>');
+    expect(host).toContain("<HostedBrowserWebview {...props} profileId={profileId} />");
   });
 
   it("the view and its slot are named by the same browser tab", () => {

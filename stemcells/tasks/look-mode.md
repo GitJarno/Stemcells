@@ -66,7 +66,9 @@ again.
   holds its Cell's surfaces (one browser, one terminal per thread). Every
   page in Look keeps a quiet stand-in under them naming the surface, so a
   page off stage keeps Look's geometry and the surfaces arrive and leave
-  inside a box already there.
+  inside a box already there. (2026-10-21: every page off stage now keeps
+  the panel's own frame, in Look or not, and the stand-in went:
+  `surface-motion.md`.)
 
 ## Later
 

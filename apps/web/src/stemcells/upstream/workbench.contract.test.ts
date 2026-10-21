@@ -153,8 +153,8 @@ describe("the DOM Look's stylesheet and Esc read", () => {
     expect(resizeHandle).toContain('role="separator"');
   });
 
-  it("the panel paints its own background, over Look's stand-in", () => {
-    // look.css lays the stand-in at the bottom of the workbench's own layer.
+  it("the panel paints its own ground, which what it shows fades in over", () => {
+    // workspace.css fades a surface arriving with its page in over the frame.
     expect(previewPanelShell).toMatch(/"relative flex [^"]*\bbg-background\b/);
   });
 

@@ -56,25 +56,6 @@
   display: none;
 }
 
-/* The workbench's stand-in lies under the surfaces (LookFrame.tsx): the
-   workbench is a layer of its own, the stand-in at its bottom, and the
-   panel paints its own background over it. */
-[data-stemcells-look-rail] ~ [data-stemcells-workbench] {
-  position: relative;
-  isolation: isolate;
-}
-[data-stemcells-look-stand-in] {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sc-space-sm);
-  padding: var(--sc-space-xl);
-  border-inline-start: 1px solid var(--border);
-}
-
 /* The workbench's ×, at its top right, in the room the panel's tab bar
    keeps at its right end. It is round glass like the pane's buttons
    (PaneButtons.tsx), in their band: as far from the top and the edge, so

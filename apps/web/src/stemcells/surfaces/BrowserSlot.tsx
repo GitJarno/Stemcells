@@ -1,7 +1,8 @@
 import { type ComponentProps, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
-import { shownBrowserView, UpstreamBrowserSurfaceSlot } from "../upstream/surfaces";
+import { timed } from "../tokens/motion.ts";
+import { browserViews, shownBrowserView, UpstreamBrowserSurfaceSlot } from "../upstream/surfaces";
 import { ride } from "./ride";
 
 /**
@@ -21,8 +22,10 @@ export function BrowserSurfaceSlot(props: ComponentProps<typeof UpstreamBrowserS
     return ride({
       anchor,
       view: () => shownBrowserView(tabId),
+      views: browserViews,
       // Placed before the move and the cut go, in the same frame.
       rest: () => flushSync(() => setRests((count) => count + 1)),
+      fade: () => timed("fade"),
     });
   }, [tabId]);
 

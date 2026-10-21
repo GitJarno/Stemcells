@@ -21,7 +21,7 @@ class KeyframeEffectStub {
 }
 
 let frames: (() => void)[] = [];
-let observers: { callback: () => void; filter: string[] }[] = [];
+let observers: { callback: () => void; filter: string[]; targets: unknown[] }[] = [];
 
 function frame(): void {
   const due = frames;
@@ -29,9 +29,11 @@ function frame(): void {
   for (const callback of due) callback();
 }
 
-/** Every observer watching `attribute` hears a change. */
-function changed(attribute: string): void {
-  for (const observer of observers.filter((o) => o.filter.includes(attribute))) {
+/** Every observer watching `attribute` (on `target`, if given) hears a change. */
+function changed(attribute: string, target?: unknown): void {
+  for (const observer of observers.filter(
+    (o) => o.filter.includes(attribute) && (target === undefined || o.targets.includes(target)),
+  )) {
     observer.callback();
   }
 }
@@ -47,7 +49,11 @@ const rect = (left: number, top: number, width: number, height: number) => ({
   height,
 });
 
-function world() {
+/** The `fade` token, as the rider is handed it. */
+const FADE = { duration: 200, easing: "cubic-bezier(0, 0, 0.58, 1)" };
+
+function world(options: { shown?: boolean } = {}) {
+  let shown = options.shown ?? true;
   const pages = Object.assign(new HTMLElementStub(), {
     moving: false,
     hasAttribute: (name: string) => name === "data-moving" && pages.moving,
@@ -63,10 +69,16 @@ function world() {
     offsetHeight: 936,
     parentElement: pages,
   });
+  /** The slot's page, on the strip: what animates in it is the page's own. */
+  const page = Object.assign(new HTMLElementStub(), {
+    animations: [] as unknown[],
+    getAnimations: () => page.animations,
+    parentElement: strip,
+  });
   const slot = { left: 1000, top: 36, width: 500, height: 936 };
   const anchor = {
     closest: () => pages,
-    parentElement: strip,
+    parentElement: page,
     getBoundingClientRect: () => rect(slot.left + strip.x, slot.top, slot.width, slot.height),
   };
   const box = (width: number, height: number) => {
@@ -87,6 +99,8 @@ function world() {
       },
     };
   };
+  /** Where the views are kept, shown or not. */
+  const views = {};
   const view = box(500, 936);
   const content = box(500, 936);
   const placed = { x: 1000, y: 36 };
@@ -96,14 +110,22 @@ function world() {
   });
   const stop = ride({
     anchor: anchor as unknown as HTMLElement,
-    view: () => ({
-      element: view as unknown as HTMLElement,
-      content: content as unknown as HTMLElement,
-      ...placed,
-    }),
+    view: () =>
+      shown
+        ? {
+            element: view as unknown as HTMLElement,
+            content: content as unknown as HTMLElement,
+            ...placed,
+          }
+        : null,
+    views: () => views as Node,
     rest,
+    fade: () => FADE,
   });
-  return { pages, strip, view, content, rest, stop };
+  const show = () => {
+    shown = true;
+  };
+  return { pages, strip, page, views, view, content, rest, stop, show };
 }
 
 beforeEach(() => {
@@ -116,13 +138,14 @@ beforeEach(() => {
   vi.stubGlobal(
     "MutationObserver",
     class {
-      readonly entry: { callback: () => void; filter: string[] };
+      readonly entry: { callback: () => void; filter: string[]; targets: unknown[] };
       constructor(callback: () => void) {
-        this.entry = { callback, filter: [] };
+        this.entry = { callback, filter: [], targets: [] };
       }
-      observe(_: unknown, options: { attributeFilter: string[] }) {
+      observe(target: unknown, options: { attributeFilter: string[] }) {
         this.entry.filter = options.attributeFilter;
-        observers.push(this.entry);
+        this.entry.targets.push(target);
+        if (!observers.includes(this.entry)) observers.push(this.entry);
       }
       disconnect() {
         observers = observers.filter((o) => o !== this.entry);
@@ -223,6 +246,94 @@ describe("a browser rides the page it sits on", () => {
     // Frames while the slide runs leave the copy alone.
     frame();
     expect(content.animated).toHaveLength(1);
+  });
+
+  it("rides a slide that only fades (reduced motion) where its page is", () => {
+    // Read as a move to no offset, a fade threw the page a page's width
+    // off its slot until the pages rested.
+    const { pages, strip, content } = world();
+    strip.x = -1496;
+    pages.moving = true;
+    changed("data-moving");
+    const keys = [
+      { offset: 0, computedOffset: 0, easing: "linear", opacity: "0" },
+      { offset: 1, computedOffset: 1, easing: "linear", opacity: "1" },
+    ];
+    strip.animations = [
+      { playState: "running", startTime: 1234, effect: new KeyframeEffectStub(strip, keys, {}) },
+    ];
+    frame();
+    expect(content.animated[0]?.frames).toEqual([
+      { offset: 0, transform: "translate3d(-1496px, 0px, 0)", opacity: "0" },
+      { offset: 1, transform: "translate3d(-1496px, 0px, 0)", opacity: "1" },
+    ]);
+  });
+
+  it("doesn't take what animates inside its page for the slide", () => {
+    // A surface fading in as its page arrives, taken for the slide, held
+    // the browser still beside its page until the fade was done.
+    const { pages, strip, page, content } = world();
+    pages.moving = true;
+    changed("data-moving");
+    page.animations = [
+      {
+        playState: "running",
+        startTime: 1234,
+        effect: new KeyframeEffectStub(
+          page,
+          [
+            { offset: 0, computedOffset: 0, easing: "linear", opacity: "0" },
+            { offset: 1, computedOffset: 1, easing: "linear", opacity: "1" },
+          ],
+          { duration: 200 },
+        ),
+      },
+    ];
+    strip.x = -300;
+    frame();
+    expect(content.animated).toHaveLength(0);
+    expect(content.style.transform).toBe("translate3d(-300px, 0px, 0)");
+  });
+
+  it("fades in when it comes while the pages move, as its page arrives", () => {
+    // It used to pop in, a moment after its page and its chat were there.
+    const { pages, strip, view, content, show } = world({ shown: false });
+    pages.moving = true;
+    changed("data-moving");
+    frame();
+    expect(view.animated).toHaveLength(0);
+    show();
+    strip.x = -600;
+    frame();
+    expect(view.animated).toHaveLength(1);
+    expect(view.animated[0]?.frames).toEqual([{ opacity: 0 }, { opacity: 1 }]);
+    expect(view.animated[0]?.options).toEqual(FADE);
+    expect(content.style.transform).toBe("translate3d(-600px, 0px, 0)");
+    // Once.
+    strip.x = -700;
+    frame();
+    expect(view.animated).toHaveLength(1);
+  });
+
+  it("is cut and faded the moment it is shown, before it paints", () => {
+    // Shown by a render after our frame callback, it painted once whole,
+    // uncut and a few pixels off, before it began to fade in.
+    const { pages, views, view, show } = world({ shown: false });
+    pages.moving = true;
+    changed("data-moving");
+    show();
+    changed("style", views);
+    expect(view.style.clipPath).toBe(FRAME);
+    expect(view.animated).toHaveLength(1);
+  });
+
+  it("doesn't fade a view that was shown as the pages set off", () => {
+    const { pages, strip, view } = world();
+    pages.moving = true;
+    changed("data-moving");
+    strip.x = -300;
+    frame();
+    expect(view.animated).toHaveLength(0);
   });
 
   it("when the pages rest, its slot presents again and the move and the cut go", () => {
