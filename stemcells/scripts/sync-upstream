@@ -48,9 +48,11 @@ gate_outbound() {
 gate_typecheck() { pnpm exec vp run -r --concurrency-limit 4 typecheck; }
 gate_lint() { pnpm lint; }
 # Our layer: each app's tests run with its own config, which carries our
-# substitutes for upstream modules.
+# substitutes for upstream modules. Upstream's React Compiler coverage holds
+# our components too, beyond what lint sees, so it runs here, on every pull
+# request, rather than first in a night's upstream suites.
 gate_ours() {
-  pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells &&
+  pnpm --filter @t3tools/web exec vp test run --project unit src/stemcells src/reactCompilerCoverage.test.ts &&
     pnpm --filter @t3tools/mobile exec vp test run --project unit src/stemcells &&
     pnpm exec vp test run apps/server/src/stemcells &&
     pnpm --filter @t3tools/desktop exec vp test run src/stemcells &&
