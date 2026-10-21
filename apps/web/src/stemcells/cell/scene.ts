@@ -487,6 +487,26 @@ export function stillOf(look: CellLook, name: string, pose: Pose): CellScene {
   return made;
 }
 
+/**
+ * `pose` worn in `look` as one frame, its pieces posed for `state`, composed
+ * each time it is asked for: for a caller that keeps the frames it uses
+ * (`toss.ts`, whose poses come from springs and are many).
+ */
+export function frameIn(look: CellLook, state: string, pose: Pose): MiniFrame {
+  const still: Move = {
+    fps: 0,
+    facing: "right",
+    frames: [{ pose, layers: [], swaps: {} }],
+    meta: {},
+  };
+  const wardrobe = posedIn(look.wardrobe, state);
+  const move = strong(still, look.strength, wardrobe.held);
+  return frameOf(
+    composeFrame(move, 0, wardrobe, true, false),
+    composeFrame(move, 0, wardrobe, false, false),
+  );
+}
+
 /** A frame as the tools measure it: worn, and the same pose bare, and bare with no eyes. */
 export interface FrameProbe {
   readonly worn: readonly string[];

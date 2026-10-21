@@ -41,3 +41,32 @@ owners play one sequence: the words and the streams (`words/`), Aski
   appear and each Cell stands.
 - `form-step` is one beat of the sprite clock (12 a second), so the glyphs,
   the blocks and the Cell's own frames keep one rhythm.
+
+## The toss
+
+A carried Cell let go with speed is thrown: it flies, bonks off the
+chat's sides and top, lands, and goes home. Two owners: the carry engine
+moves it and judges its hits; the Cell draws it (`cell/toss.ts`). It flies
+as the original's soft Cell: it never tumbles, an off-centre throw rolls its
+face round, its body is springs a hit sets going, and its face is what the
+body goes through.
+
+- **The handshake** is the flight's facts, read every frame: `Toss` (held,
+  its velocity, grounded, the roll, the flight's hits, its dizzy beat, its
+  walk home). `CellToss` draws the live Cell from them, `tossFrame(look,
+  toss, now)` is the same as a pure function, and `BonkWord` says the word.
+- **Held** hangs stretched, braced `> <` with an `o`. **In the air** it
+  stretches along its speed and leans into it, the hat trailing: `^ ^`
+  going up, `> <` and `o` coming down. **A wall** flattens it the other
+  way and throws its crown off it; **the top** presses it down; **a
+  landing** pancakes and rebounds. A hit braces its face; **sliding** it
+  grins, tipped over its braking.
+- **"BONK!"** on a real hit only, one word under the Cell, in from the
+  edge it hit and clear of the body: it lands a touch large on `beat`,
+  stands `knock-stand`, fades on `recede`. A tap says nothing; a wham is a
+  touch larger and bolder.
+- **Dizzy**, only after a big flight: `x x` and a wavy mouth for `dizzy`,
+  three stars circling its head. Then it stands `bearings` and **walks
+  home** in its scoot, facing home, four box widths a second.
+- **Reduce Motion:** the body holds still and keeps its faces, the word
+  fades in and out, and there is no dizzy beat or walk: it is home.

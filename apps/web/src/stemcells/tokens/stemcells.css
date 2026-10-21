@@ -357,6 +357,12 @@
   --sc-timing-spawn-stagger: 90ms;
   --sc-timing-orbit-turn: 960ms;
   --sc-timing-form-step: 83.333ms;
+  /* The toss (cell/toss.ts): "BONK!" lands on `beat`, stands `knock-stand`
+     and fades on `recede`; a big flight's dizzy beat lasts `dizzy`; a Cell
+     set down stands `bearings` before it walks home. */
+  --sc-timing-knock-stand: 250ms;
+  --sc-timing-dizzy: 1150ms;
+  --sc-timing-bearings: 350ms;
   --sc-lean-travel: 14px;
   --sc-step-travel: 40px;
   --sc-chrome-ink: 0.72;

@@ -261,6 +261,12 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
   it forms (`stemcells/docs/interaction.md`, the spawn). Its first frame,
   the crouch, is also the outline its blocks fill; every frame stays inside
   the box. One frame a beat of the sprite clock.
+- **`toss/walk`** (`toss.json`) is the scoot a thrown Cell walks home in
+  (`stemcells/docs/interaction.md`, the toss): the original's gait, its
+  crown reaching ahead and its base sliding under it, facing left and
+  mirrored to go right. A gait leans past the box on purpose, so `check`
+  warns on it. Its other poses come from springs, not frames
+  (`cell/toss.ts`).
 
 ### A temperament: `art/temperaments/<id>.json`
 

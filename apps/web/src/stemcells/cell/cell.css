@@ -84,3 +84,70 @@
     animation: none;
   }
 }
+
+/* A thrown Cell's dizzy stars (CellToss): a canvas round its head, behind
+   it, taking no room. */
+.cell-toss-stars {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* "BONK!" (BonkWord): plain type in full ink, ringed in the page's colour
+   so it reads over whatever is under it, centred on its capitals where it
+   was said. It lands a touch large on `beat`, stands `knock-stand`, and
+   fades in place on `recede`; under Reduce Motion it fades in instead of
+   landing. A wham is a touch larger and bolder, never louder. */
+.bonk-word {
+  position: absolute;
+  translate: -50% -50%;
+  color: var(--sc-text);
+  font-family: var(--sc-font-ui);
+  font-size: var(--sc-body-compact);
+  font-weight: 600;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  white-space: nowrap;
+  text-shadow:
+    1.5px 0 var(--sc-surface),
+    1.06px 1.06px var(--sc-surface),
+    0 1.5px var(--sc-surface),
+    -1.06px 1.06px var(--sc-surface),
+    -1.5px 0 var(--sc-surface),
+    -1.06px -1.06px var(--sc-surface),
+    0 -1.5px var(--sc-surface),
+    1.06px -1.06px var(--sc-surface);
+  pointer-events: none;
+  animation:
+    bonk-land var(--sc-timing-beat) var(--sc-motion-recede-easing) both,
+    bonk-fade var(--sc-motion-recede-duration) var(--sc-motion-recede-easing)
+      calc(var(--sc-timing-beat) + var(--sc-timing-knock-stand)) forwards;
+}
+
+.bonk-word[data-tier="wham"] {
+  font-size: var(--sc-size);
+  font-weight: 700;
+}
+
+@keyframes bonk-land {
+  from {
+    scale: 1.1;
+  }
+}
+
+@keyframes bonk-appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes bonk-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bonk-word {
+    animation-name: bonk-appear, bonk-fade;
+  }
+}
