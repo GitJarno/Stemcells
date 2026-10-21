@@ -56,11 +56,14 @@ export function canRenameCell(cell: CellRef | null): boolean {
   );
 }
 
+/** Why a chat's new title wasn't applied: it isn't loaded here, or this window may not change it. */
+export const CANT_RENAME_CELL = "Can't rename this Cell here";
+
 /**
  * Renames the chat, as upstream's header does: an empty title is refused
  * with a word, the same title does nothing, a failure says so. Whatever
  * shows the chat's title takes the new one from the thread, in every window.
- * `commitRename` answers false when it couldn't apply the title at all (the
+ * `commitRename` answers why when it couldn't apply the title at all (the
  * chat isn't loaded here, or this window may not change it), so what was
  * typed isn't dropped unsaid.
  */
@@ -74,16 +77,16 @@ export function useCellRename(cell: CellRef | null) {
   const updateThreadMetadata = useOrchestrationCommand(threadEnvironment.updateMetadata, {
     reportFailure: false,
   });
-  const commitRename = (title: string): boolean => {
+  const commitRename = (title: string): string | undefined => {
     if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) {
-      return false;
+      return CANT_RENAME_CELL;
     }
     const resolution = resolveRenameCommit({ title, originalTitle: shell.title });
     if (resolution.action === "reject-empty") {
       toastManager.add({ type: "warning", title: "Thread title cannot be empty" });
-      return true;
+      return undefined;
     }
-    if (resolution.action === "noop") return true;
+    if (resolution.action === "noop") return undefined;
     void updateThreadMetadata({
       environmentId: shell.environmentId,
       input: { threadId: shell.id, title: resolution.title },
@@ -97,7 +100,7 @@ export function useCellRename(cell: CellRef | null) {
         });
       }
     });
-    return true;
+    return undefined;
   };
   return { shell, canRename: canOperate && shell !== null, commitRename };
 }
@@ -120,10 +123,10 @@ export function useCellThreadMenu(cell: CellRef | null) {
     setRenamingKey(`${shell.environmentId}:${shell.id}`);
   };
   const cancelRename = () => setRenamingKey(null);
-  const commitRename = (title: string): boolean => {
-    if (!rename(title)) return false;
-    setRenamingKey(null);
-    return true;
+  const commitRename = (title: string): string | undefined => {
+    const refused = rename(title);
+    if (refused === undefined) setRenamingKey(null);
+    return refused;
   };
 
   const { openMenu, closeMenu } = useThreadActionMenu({

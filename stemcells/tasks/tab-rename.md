@@ -14,6 +14,7 @@ new Cell's are never renamed.
 - [x] The field keeps the focus the app takes: a double-click whose first click opened a tab lost it to the composer
 - [x] Proof in the desktop lab: wide and narrow strips, a reload keeping the names
 - [x] Review fixes: any key or press of the person's, anywhere, ends the taking back (⌘T while the field was new sent the next prompt into the old tab's name); a name that can't be applied yet keeps the field open; tab names and titles stop at 100 characters
+- [x] Re-review: a rename that can't apply says why under the field ("Can't rename this Cell here") until it changes; Escape still closes it
 
 ## Review
 

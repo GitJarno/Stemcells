@@ -7,7 +7,7 @@ import { RenameField } from "./RenameField";
 
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 20));
 
-function Field(props: { onCommit: (value: string) => boolean | void; onCancel: () => void }) {
+function Field(props: { onCommit: (value: string) => string | void; onCancel: () => void }) {
   return (
     <div>
       <RenameField value="Say hi" label="Title" {...props} />
@@ -83,16 +83,33 @@ describe("a name open for a new one", () => {
     }
   });
 
-  it("stays open with what was typed when the name can't be applied yet", async () => {
-    const onCommit = vi.fn(() => false);
-    await using screen = await render(<Field onCommit={onCommit} onCancel={() => undefined} />);
+  // A rename that couldn't apply left the field open with no word why.
+  it("stays open with what was typed when the name can't be applied, saying why until it changes", async () => {
+    const why = "Can't rename this Cell here";
+    const onCommit = vi.fn((): string | void => why);
+    const onCancel = vi.fn();
+    await using screen = await render(<Field onCommit={onCommit} onCancel={onCancel} />);
+    const { input } = partsOf(screen.container);
     await userEvent.keyboard("Later{Enter}");
     expect(onCommit).toHaveBeenCalledWith("Later");
-    const { input } = partsOf(screen.container);
     expect(input.isConnected).toBe(true);
     expect(input.value).toBe("Later");
-    onCommit.mockReturnValue(true as never);
-    await userEvent.keyboard("{Enter}");
-    expect(onCommit).toHaveBeenLastCalledWith("Later");
+    const note = await vi.waitFor(() => {
+      const popup = document.querySelector<HTMLElement>('[data-slot="tooltip-popup"]');
+      expect(popup?.textContent).toBe(why);
+      return popup!;
+    });
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(input.getAttribute("aria-describedby")).toBe(note.id);
+
+    await userEvent.keyboard("r");
+    await vi.waitFor(() =>
+      expect(document.querySelector('[data-slot="tooltip-popup"]')).toBeNull(),
+    );
+    expect(input.hasAttribute("aria-invalid")).toBe(false);
+
+    onCommit.mockReturnValue(why);
+    await userEvent.keyboard("{Enter}{Escape}");
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 });

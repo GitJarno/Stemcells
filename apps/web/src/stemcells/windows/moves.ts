@@ -128,6 +128,8 @@ export type CarryTarget =
       readonly anchor: string;
       readonly side: PaneSide;
       readonly column: string;
+      /** How wide the anchor's row shows (its grid's width), for room beside it. */
+      readonly rowWidth: number;
     }
   | {
       readonly kind: "strip";
@@ -169,7 +171,7 @@ export function carry(arrangement: Arrangement, paneId: string, to: CarryTarget)
   if (!anchor || to.anchor === paneId || isAskiTab(anchor.tab)) return null;
   workspaces.set(
     anchor.window.id,
-    placePane(workspaceOf(anchor.window), found.pane, to.anchor, to.side, to.column),
+    placePane(workspaceOf(anchor.window), found.pane, to.anchor, to.side, to.column, to.rowWidth),
   );
   return change(arrangement, workspaces, [], anchor.window.id);
 }

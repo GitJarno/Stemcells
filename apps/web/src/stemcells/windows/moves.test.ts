@@ -105,6 +105,7 @@ describe("carry", () => {
       anchor: "b1.p",
       side: "left",
       column: "c-new",
+      rowWidth: 1200,
     })!;
     const b1 = windowById(result.next, "b")!.workspace.tabs[0]!;
     expect(b1.rows[0]!.columns.map((column) => column.panes.map((pane) => pane.id))).toEqual([
@@ -123,6 +124,7 @@ describe("carry", () => {
       anchor: "b1.p",
       side: "above",
       column: "c-new",
+      rowWidth: 1200,
     })!;
     const column = windowById(result.next, "b")!.workspace.tabs[0]!.rows[0]!.columns[0]!;
     expect(column.panes.map((pane) => pane.id)).toEqual(["a2.z", "b1.p"]);
@@ -146,6 +148,7 @@ describe("carry", () => {
       anchor: "b1.y",
       side: "right",
       column: "c",
+      rowWidth: 1200,
     })!;
     expect(result.transaction.close).toEqual(["a"]);
     expect(problemsOf(result.next)).toEqual([]);
@@ -161,6 +164,7 @@ describe("carry", () => {
         anchor: "aski-tab.aski",
         side: "left",
         column: "c",
+        rowWidth: 1200,
       }),
     ).toBeNull();
   });

@@ -1,6 +1,6 @@
-import { type KeyboardEvent, useLayoutEffect, useRef } from "react";
+import { type KeyboardEvent, useId, useLayoutEffect, useRef, useState } from "react";
 
-import { cn } from "../upstream/ui";
+import { cn, Tooltip, TooltipPopup } from "../upstream/ui";
 import { lastActedAt } from "./acts";
 import { NAME_MAX_LENGTH } from "./limits";
 
@@ -19,8 +19,9 @@ import { NAME_MAX_LENGTH } from "./limits";
  * opening a Cell, a click elsewhere) ends that: the focus goes where they
  * sent it, and the name is kept as it stands.
  *
- * A name that can't be applied yet (`onCommit` answers false: its chat
- * isn't loaded) keeps the field open rather than dropping what was typed.
+ * A name that can't be applied (`onCommit` answers why: its chat isn't
+ * loaded here) keeps the field open with what was typed, and the field says
+ * why under itself, as a tooltip would, until it is changed. Escape closes it.
  */
 /** How long after it opens a focus taken from the field may be the app's. */
 const APP_FOCUS_WINDOW_MS = 500;
@@ -30,13 +31,16 @@ export function RenameField(props: {
   /** What a screen reader calls the field. */
   label: string;
   className?: string;
-  /** False: it couldn't be applied, and the field stays. */
-  onCommit: (value: string) => boolean | void;
+  /** Words back: it couldn't be applied, why, and the field stays. */
+  onCommit: (value: string) => string | void;
   onCancel: () => void;
 }) {
   const settled = useRef(false);
   const opened = useRef(Number.POSITIVE_INFINITY);
   const selected = useRef(false);
+  const field = useRef<HTMLInputElement>(null);
+  const [refused, setRefused] = useState<string | null>(null);
+  const noteId = useId();
   useLayoutEffect(() => {
     opened.current = performance.now();
   }, []);
@@ -44,7 +48,9 @@ export function RenameField(props: {
   const appTakes = () =>
     lastActedAt() < opened.current && performance.now() - opened.current < APP_FOCUS_WINDOW_MS;
   const commit = (value: string) => {
-    settled.current = props.onCommit(value) !== false;
+    const why = props.onCommit(value);
+    settled.current = typeof why !== "string";
+    setRefused(typeof why === "string" ? why : null);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.nativeEvent.isComposing || event.keyCode === 229) return;
@@ -59,39 +65,50 @@ export function RenameField(props: {
     }
   };
   return (
-    <input
-      autoFocus
-      maxLength={NAME_MAX_LENGTH}
-      aria-label={props.label}
-      className={cn(
-        "min-w-0 select-text rounded-sm bg-transparent text-foreground outline-none ring-1 ring-inset ring-ring/50 focus:ring-ring",
-        props.className,
-      )}
-      defaultValue={props.value}
-      onFocus={(event) => {
-        // Once: focus taken back keeps what was typed.
-        if (selected.current) return;
-        selected.current = true;
-        event.currentTarget.select();
-      }}
-      onKeyDown={onKeyDown}
-      onBlur={(event) => {
-        if (settled.current) return;
-        if (appTakes()) {
-          const input = event.currentTarget;
-          // Taken by the app, or by leaving the window: the field stays, focused.
-          setTimeout(() => {
-            if (!settled.current && input.isConnected) input.focus();
-          });
-          return;
-        }
-        // Leaving for a button lets the button act, and keeps the old name.
-        if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest("button")) {
-          props.onCancel();
-          return;
-        }
-        commit(event.currentTarget.value);
-      }}
-    />
+    <>
+      <input
+        ref={field}
+        autoFocus
+        maxLength={NAME_MAX_LENGTH}
+        aria-label={props.label}
+        aria-invalid={refused !== null || undefined}
+        aria-describedby={refused !== null ? noteId : undefined}
+        onInput={() => setRefused(null)}
+        className={cn(
+          "min-w-0 select-text rounded-sm bg-transparent text-foreground outline-none ring-1 ring-inset ring-ring/50 focus:ring-ring",
+          props.className,
+        )}
+        defaultValue={props.value}
+        onFocus={(event) => {
+          // Once: focus taken back keeps what was typed.
+          if (selected.current) return;
+          selected.current = true;
+          event.currentTarget.select();
+        }}
+        onKeyDown={onKeyDown}
+        onBlur={(event) => {
+          if (settled.current) return;
+          if (appTakes()) {
+            const input = event.currentTarget;
+            // Taken by the app, or by leaving the window: the field stays, focused.
+            setTimeout(() => {
+              if (!settled.current && input.isConnected) input.focus();
+            });
+            return;
+          }
+          // Leaving for a button lets the button act, and keeps the old name.
+          if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest("button")) {
+            props.onCancel();
+            return;
+          }
+          commit(event.currentTarget.value);
+        }}
+      />
+      <Tooltip open={refused !== null}>
+        <TooltipPopup anchor={field} side="bottom" id={noteId}>
+          {refused}
+        </TooltipPopup>
+      </Tooltip>
+    </>
   );
 }

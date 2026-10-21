@@ -268,10 +268,10 @@ function ChatRename(props: { cell: CellRef | null; title: string; onDone: () => 
       label="Title"
       className={TAB_RENAME}
       onCommit={(value) => {
-        // Not applied (its chat not loaded here yet): the field stays, with what was typed.
-        if (!commitRename(value)) return false;
-        props.onDone();
-        return true;
+        // Not applied (its chat not loaded here yet): the field stays, with what was typed, saying why.
+        const refused = commitRename(value);
+        if (refused === undefined) props.onDone();
+        return refused;
       }}
       onCancel={props.onDone}
     />

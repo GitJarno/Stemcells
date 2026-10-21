@@ -309,7 +309,7 @@ export function setCell(workspace: Workspace, paneId: string, cell: CellRef | nu
 
 /**
  * The row's columns' shares with a newcomer `width` wide after the column at
- * `index`, as the row lays them out `rowWidth` wide: the others give it
+ * `index` (-1: first), as the row lays them out `rowWidth` wide: the others give it
  * room in proportion to what each has over MIN_COLUMN_WIDTH, so none goes
  * under it; null when they haven't that much room between them.
  */
@@ -583,8 +583,11 @@ export type PaneSide = "left" | "right" | "above" | "below";
 
 /**
  * Puts a pane on one side of `anchorId`: beside it in a new column of its
- * row (left, right), or in its column (above, below). The pane takes focus
- * and its tab becomes active.
+ * row (left, right), or in its column (above, below). A new column is as
+ * wide as an even share of the row, `rowWidth` wide as it shows, and the
+ * others give it room as ⌘D's do (`sharesBeside`); where they haven't the
+ * room, the pane stacks in the anchor's column instead, over it for left
+ * and under it for right. The pane takes focus and its tab becomes active.
  */
 export function placePane(
   workspace: Workspace,
@@ -592,31 +595,32 @@ export function placePane(
   anchorId: string,
   side: PaneSide,
   columnId: string,
+  rowWidth: number,
 ): Workspace {
   const found = findPane(workspace, (candidate) => candidate.id === anchorId);
   if (!found || findPane(workspace, (candidate) => candidate.id === pane.id)) return workspace;
   const holdsAnchor = (column: Column) => column.panes.some((p) => p.id === anchorId);
+  const stack = (row: Row, before: boolean): Row => ({
+    ...row,
+    columns: row.columns.map((column) => {
+      const index = column.panes.findIndex((p) => p.id === anchorId);
+      if (index < 0) return column;
+      const panes = [...column.panes];
+      panes.splice(index + (before ? 0 : 1), 0, arriving(pane));
+      return { ...column, panes };
+    }),
+  });
   const rows = found.tab.rows.map((row) => {
     const columnIndex = row.columns.findIndex(holdsAnchor);
     if (columnIndex < 0) return row;
-    if (side === "left" || side === "right") {
-      const columns = [...row.columns];
-      columns.splice(columnIndex + (side === "right" ? 1 : 0), 0, {
-        id: columnId,
-        panes: [arriving(pane)],
-      });
-      return { ...row, columns };
-    }
-    return {
-      ...row,
-      columns: row.columns.map((column) => {
-        const index = column.panes.findIndex((p) => p.id === anchorId);
-        if (index < 0) return column;
-        const panes = [...column.panes];
-        panes.splice(index + (side === "below" ? 1 : 0), 0, arriving(pane));
-        return { ...column, panes };
-      }),
-    };
+    if (side === "above" || side === "below") return stack(row, side === "above");
+    const at = columnIndex + (side === "right" ? 1 : 0);
+    const width = rowWidth / (row.columns.length + 1);
+    const shares = sharesBeside(row.columns, at - 1, rowWidth, width);
+    if (shares === null) return stack(row, side === "left");
+    const columns = [...row.columns];
+    columns.splice(at, 0, { id: columnId, panes: [arriving(pane)] });
+    return { ...row, columns: withShares(columns, shares) };
   });
   const placed = replaceTab(workspace, { ...found.tab, rows, focusedPaneId: pane.id });
   return { ...placed, activeTabId: found.tab.id };
