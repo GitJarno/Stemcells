@@ -1,0 +1,5 @@
+/* dragThrough.ts: while a drag is under way, or about to start on a
+   separator, a browser lets the pointer through. */
+[data-stemcells-drag] webview {
+  pointer-events: none;
+}

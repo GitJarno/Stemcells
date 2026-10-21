@@ -17,6 +17,7 @@ import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
+import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurComposerPromptEditor from "./ComposerPromptEditor";
@@ -29,6 +30,7 @@ import * as OurUpdateNotice from "./providerUpdateRequiredModels";
 import * as OurRightPanelSheet from "./RightPanelSheet";
 import * as OurRightPanelTabs from "./RightPanelTabs";
 import * as OurSubagentDisplay from "./subagentDisplay";
+import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 
 /**
  * Contract: every build of the web app hands upstream's code our substitute
@@ -162,6 +164,20 @@ const CASES: Readonly<Record<string, Case>> = {
     substitute: OurRightPanelSheet satisfies RendersOrNothing<typeof UpstreamRightPanelSheet>,
     importers: {
       "apps/web/src/components/ChatView.tsx": ["./RightPanelSheet", ["RightPanelSheet"]],
+    },
+  },
+  "apps/web/src/hooks/usePreviewPanelInlineSize.ts": {
+    upstream: UpstreamPanelInlineSize,
+    substitute: OurPanelInlineSize satisfies typeof UpstreamPanelInlineSize,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": [
+        "../hooks/usePreviewPanelInlineSize",
+        ["usePreviewPanelInlineSize"],
+      ],
+      "apps/web/src/components/preview/PreviewPanelShell.tsx": [
+        "~/hooks/usePreviewPanelInlineSize",
+        ["getPreviewPanelMaxWidth", "usePreviewPanelInlineSize"],
+      ],
     },
   },
   "apps/web/src/components/ComposerPromptEditor.tsx": {
