@@ -175,5 +175,6 @@ export function fromRunner(name: string, run: Runner): ProviderTextGeneration {
     generateBranchName,
     generateThreadTitle,
     generateReviewGuide,
+    runLean: run,
   } satisfies ProviderTextGeneration;
 }

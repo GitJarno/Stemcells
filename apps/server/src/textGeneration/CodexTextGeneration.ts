@@ -296,6 +296,8 @@ export const makeCodexTextGeneration = Effect.fn("makeCodexTextGeneration")(func
           ...CODEX_NO_PLUGIN_ARGS,
           ...(mcpServersOff ? ["--config", mcpServersOff] : []),
           "--ephemeral",
+          // Stemcells: a lean call loads no config.toml and no rules files.
+          ...(operation === "runLean" ? ["--ignore-user-config", "--ignore-rules"] : []),
           "--skip-git-repo-check",
           "-s",
           "read-only",

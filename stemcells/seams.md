@@ -71,6 +71,13 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/serverRuntimeStartup.ts` | The boot heartbeat no longer records the install's owners, and drops the `getServerOwners` import | Same: naming them read the Codex and Claude login files and the T3 Connect account on every start |
 | `apps/server/src/serverRuntimeStartup.ts` (welcome) | Imports `launchesStarterThread` from `stemcells/upstream/welcome.ts`; while it is false, the cwd's project is bootstrapped and the welcome names it alone, without launching a starter thread or looking for one | A server started in a folder (web mode, `pnpm dev`) sent the page to an empty thread that looked like a new Cell, but as a thread its composer read no words: a message naming places went into the folder as written. The app opens on Aski and a new Cell instead |
 | `apps/server/src/serverRuntimeStartup.test.ts` | The bootstrap test's thread service and launcher die if called, and the unused `CommandId` import goes | It pins that seam: a starter thread looked for or launched fails it |
+| `packages/provider-core/src/server/textGeneration.ts`, `packages/provider-core/src/server/textGenerationOperations.ts` | `ProviderTextGeneration` has an optional `runLean` (a `Runner`), and `fromRunner` hands its runner out as it | Aski's planner (below) makes one structured call of its own on any runner-based provider, with that provider's flags, timeouts and decoding, and no new operation threaded through upstream's service, RPC and fakes |
+| `apps/server/src/textGeneration/ClaudeTextGeneration.ts` | A `runLean` call also passes `--setting-sources ""` and `--no-session-persistence` | The planner runs lean, as the Swift app's split did: no settings files, no session saved for each plan; upstream's own operations are unchanged |
+| `packages/provider-opencode/src/server/textGeneration.ts` | Its operation names include `runLean` | Its errors name the operation, which may now be the planner's |
+| `apps/server/src/textGeneration/ClaudeTextGeneration.test.ts` | Two cases: a `runLean` call carries the lean flags, a title call doesn't | They pin that seam |
+| `apps/server/src/textGeneration/CodexTextGeneration.ts` | A `runLean` call also passes `--ignore-user-config` and `--ignore-rules` | The closest Codex has to Claude's lean call: no `config.toml` and no rules files (it already runs `--ephemeral`, saving no session). It still reads its login from `CODEX_HOME` and the global `AGENTS.md` there, which no flag turns off (checked on codex-cli 0.163.0). A CLI too old for these flags fails the call, and the planner falls back to the words |
+| `apps/server/src/textGeneration/CodexTextGeneration.test.ts` | Two cases: a `runLean` call carries those flags, a title call doesn't | They pin that seam |
+| `packages/provider-core/src/server/textGenerationOperations.runLean.test.ts`, `packages/provider-opencode/src/server/textGeneration.runLean.test.ts` | New: `fromRunner` hands its runner out as `runLean`, and OpenCode's error names that operation | They pin those two seams |
 | `apps/web/src/components/ChatMarkdown.browser.test.tsx` | Its favicon test expects no image for any link | It pinned the Google favicon URL |
 | `apps/web/src/components/sidebar/useUpdateEverything.ts` | The servers to update come from `stemcells/upstream/updates`'s `offeredServerUpdates`, in place of the npm lookup | No T3 build offered (below) |
 | `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
@@ -580,6 +587,40 @@ Aski's instance shares its driver's home, else handed off. Nothing refuses
 that, so the composer needs no "Move" action. `cellInstance.contract.test.ts`
 runs upstream's composer on a chat seeded on Aski's instance, and the
 server's `askiInstanceMove.contract.test.ts` pins the carry-over.
+
+### Aski's planner
+
+When a message's words leave something open (whose project, or how the
+work is shared out), the web asks Aski's planner for one structured answer
+(`stemcells/tasks/prompting.md`, decision 11). The server's half is
+`apps/server/src/stemcells/planner/`:
+
+- `POST /api/stemcells/planner` takes the web's prompt and a model, and
+  runs one lean call on that model's provider instance through `runLean`
+  (the provider-core seam above), in a fresh private temporary folder
+  removed after the call, for at most 20 s. It answers `PlanAnswer` or
+  says why not (unavailable, timeout, failed). It spends, so it takes the
+  operate scope, and it reads at most 256 KB of request.
+- `GET /api/stemcells/planner/lines?project=…` gives each project's one
+  line: the first paragraph of prose in its AGENTS.md, CLAUDE.md or README,
+  kept until the file changes. A file that resolves outside the project is
+  skipped, and so is an id that isn't one.
+
+Nothing joins `TextGeneration`'s service, RPC or fakes: a provider without a
+runner (ACP, Muse, Codex's managed one) has no `runLean`, and the planner
+says it's unavailable there.
+
+What a lean call still loads, checked on 2026-10-21 against the installed
+CLIs:
+
+- **Claude Code 2.1.306** takes `--setting-sources ""`. With upstream's
+  `--tools ""`, `--disable-slash-commands` and `--strict-mcp-config` beside
+  it, the call's init lists no MCP server, tool, slash command or skill;
+  without it, the same call loaded the person's MCP servers, plugins and
+  skills. Plugins that managed policy turns on, which no setting source
+  holds, still load.
+- **Codex 0.163.0** still reads its login and the global `AGENTS.md` from
+  `CODEX_HOME` (the `CodexTextGeneration.ts` row above).
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

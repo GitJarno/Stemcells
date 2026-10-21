@@ -8,6 +8,7 @@ import type {
 import type * as Effect from "effect/Effect";
 
 import type { TextGenerationPolicy } from "./textGenerationPolicy.ts";
+import type { Runner } from "./textGenerationOperations.ts";
 
 export interface CommitMessageGenerationInput {
   cwd: string;
@@ -114,4 +115,7 @@ export interface ProviderTextGeneration {
   readonly generateReviewGuide: (
     input: ReviewGuideGenerationInput,
   ) => Effect.Effect<ReviewGuideGenerationResult, TextGenerationError>;
+
+  /** Stemcells: any structured one-shot call, run lean (stemcells/seams.md). */
+  readonly runLean?: Runner;
 }
