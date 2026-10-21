@@ -39,10 +39,14 @@ work brings the payloads, what accepts them, and how they land.
 - [x] Server: `POST /api/stemcells/attachments/import` (an asset URL or a
       remote URL in, a pending attachment out), with its caps, and a
       contract test pinning upstream's pending ids, claims and sweep.
-- [ ] Web: payloads, `accepts`, landing by reference into a draft, stash
-      move and copy, media references from what a chat shows; the edge
-      tests that don't need the engine (own chat, a working chat, Aski, a
-      Surface, "+").
+- [x] Web: payloads, `accepts` with its edges (own chat, a working chat,
+      Aski, a Surface, "+", room, caps, machines), landing by reference
+      into a draft, a stash copy whose files are copies of their own, and
+      media references from what a chat shows (`stemcells/payloads/`).
+      Copying a file needs the primary machine on both ends; a picture
+      lands anywhere, as a File.
+- [ ] A stash dropped in a chat lands through upstream's own restore: a
+      seam lets the composer register it.
 - [ ] Keyboard: "Send to…" on each source, listing the tabs.
 - [ ] With the payload API: the sources and targets wired, spring-load,
       "+", Esc home, ⌥⌘Z, Reduce Motion, the OS drag when leaving the
