@@ -3,6 +3,14 @@
 How Stemcells takes T3 Code's work, step by step, for a person or a Cell.
 Why it works this way is in `fork.md`; this is what to type.
 
+A Cell runs the whole of it as one playbook: `/t3-sync`
+(`.agents/skills/t3-sync/SKILL.md`, which Claude Code finds through
+`.claude/skills/`). It holds the outbound gate first (nothing reports on the
+person), then merges, runs the gates, and sorts upstream's commits into what
+comes free, what we adopt, what of ours we retire and what we skip. The sync
+pull request carries that report, and each adopt or retire item gets a small
+pull request of its own.
+
 Every night a Mac that opted in (`stemcells/scripts/install-nightly-sync`)
 runs the same commands you run by hand. GitHub Actions is off for
 Stemcells, so nothing runs them in the cloud. When a night goes through, a
