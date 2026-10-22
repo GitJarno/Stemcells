@@ -54,6 +54,13 @@ asked for by name), then W7, W4, W9, W11.
         each window lands under its still.
 - [ ] W7 Carry a chat: the Cell as the handle, pane halves, tabs, strips,
       windows and open space.
+  - [x] W7a In its own window, onto a half of another pane in the tab on
+        stage: the card, the wash, the landing, Esc.
+  - [ ] W7b The strip in its own window: a chip spring-loads its tab, the
+        strip makes room for a new tab.
+  - [ ] W7c Other windows: the card on the flight layer, their panes and
+        strips answering, spring-load raising them.
+  - [ ] W7d Open space: the card unfolds into a one-pane window.
 - [ ] W4 The browser in any window: one seam in the preview manager; a
       moved browser pane shows its last frame until its new guest paints.
 - [ ] W9 Displays: unplugging gathers that display's windows, plugging it
@@ -363,6 +370,16 @@ picking up the Cell to carry the chat reads as what it is.
 Before the source lets go of a pane, its pending draft write is flushed,
 and the carry is marked so upstream's drop-left-draft cleanup doesn't
 delete a draft that is only moving.
+
+As built (W7a): the handle is the Cell over the composer, so a chat is
+carried once it has been sent (an unsent one has no line yet). The card
+is the Cell and its name, in the shape of a dragged tab. A carry is a move
+like the rest (`carry`): through the desktop app, so Undo Move takes it
+back, and in a browser straight into the tabs. Both keep the draft: the
+desktop app's moves come back as adoptions, which the drop-left-draft
+cleanup leaves alone, and a chat carried within a window never leaves the
+workspace; `commitMove` flushes the pending draft write first. The empty
+place keeps the grid's hairlines.
 
 ### Move Tab to New Window (⌥⌘T)
 
@@ -676,14 +693,15 @@ frame to the pixel; the host making room and the chip landing in its
 slot; the warm window under the still before the fade; Gather's stagger.
 
 **By hand, once merged and installed:** tear off and drop on another
-display; drop into another window's strip; carry a chat to a pane half in
-another window; Esc mid-carry; Gather, Put back, Gather, with one window
-full screen; unplug and replug a display; relaunch with three windows; a
-browser pane moved; Reduce Motion on; a carry with View › Zoom at 125 %; a
-one-tab window carried by its chip while its chat streams; the red button
-on one of two windows, then ⌥⌘Z; a chip rested on the strip of a window
-behind another coming forward; a quick tear and drop (under a second),
-watching for a wait before the new window answers.
+display; drop into another window's strip; carry a chat by its Cell to a
+pane half, in its own window and in another; Esc mid-carry; Gather, Put
+back, Gather, with one window full screen; unplug and replug a display;
+relaunch with three windows; a browser pane moved; Reduce Motion on; a
+carry with View › Zoom at 125 %; a one-tab window carried by its chip
+while its chat streams; the red button on one of two windows, then ⌥⌘Z; a
+chip rested on the strip of a window behind another coming forward; a
+quick tear and drop (under a second), watching for a wait before the new
+window answers.
 
 ## Review
 
@@ -819,3 +837,12 @@ watching for a wait before the new window answers.
   their frames faded; the layer went at 3 s (the dev build's boot). Under
   Reduce Motion the windows opened with no layer. ⌥⌘G, ⌥⌘Z and the
   button's offer behaved as in W8a around both flights.
+- W7a: proved in the lab with a stand-in handle in a pane (the lab's
+  chats are made up, so none has a line over its composer) pressed by
+  mouse input. Past 4 px the card was under the hand and the pane's place
+  empty; over the other pane the wash lit the half nearest the hand (left,
+  right, above, below). Let go, the chat took that half and the card
+  landed on its new place in about 500 ms on `land`, then the pane showed.
+  Esc, or letting go over its own place, flew the card back. ⌥⌘Z put the
+  chat back. Under Reduce Motion the card faded where it was. The Cell as
+  the handle in a sent chat is for the hand check.

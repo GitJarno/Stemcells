@@ -19,6 +19,7 @@ import { useNavigateToCell } from "../upstream/routes";
 import { useCellBranch } from "../upstream/checkout";
 import { useCellPlace } from "../upstream/thread";
 import { cn, ComposerBanner, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
+import { startChatCarry } from "../windows/ChatCarry";
 import { LineEnv } from "./LineEnv";
 import { oneLinerOf } from "./oneLiner";
 import { ComposerEnvSlot, ComposerRoofSlot, ComposerStashSlot } from "./slot";
@@ -104,7 +105,14 @@ export function CellComposerLine() {
         className="composer-line-roof pointer-events-none text-foreground"
         style={{ "--cell-stands-in": `${CELL_STANDS_IN}px` } as CSSProperties}
       >
-        <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />
+        {/* The Cell is the chat's handle: carried, the chat goes with it. */}
+        <span
+          data-stemcells-chat-handle=""
+          className="flex w-fit"
+          onPointerDown={(event) => startChatCarry(event, cell)}
+        >
+          <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />
+        </span>
       </div>
       <ComposerBanner.Surface className="composer-line-ledge">
         <div
