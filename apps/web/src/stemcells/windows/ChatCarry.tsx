@@ -123,7 +123,8 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
     handle.removeEventListener("pointermove", onMove);
     handle.removeEventListener("pointerup", onUp);
     handle.removeEventListener("pointercancel", onCancel);
-    handle.removeEventListener("lostpointercapture", onCancel);
+    handle.removeEventListener("lostpointercapture", onLost);
+    document.removeEventListener("lostpointercapture", onLost);
     window.removeEventListener("keydown", onKey, true);
     window.removeEventListener("blur", onCancel);
     delete handle.dataset.carrying;
@@ -137,6 +138,10 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
     stop();
     if (picked) carrier?.cancel();
   };
+  // The Cell may go mid-carry (its pane closed), and then the document hears it.
+  const onLost = (lost: PointerEvent) => {
+    if (lost.pointerId === event.pointerId) onCancel();
+  };
   const onKey = (key: KeyboardEvent) => {
     if (key.key !== "Escape" || !picked) return;
     key.preventDefault();
@@ -146,7 +151,8 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
   handle.addEventListener("pointermove", onMove);
   handle.addEventListener("pointerup", onUp);
   handle.addEventListener("pointercancel", onCancel);
-  handle.addEventListener("lostpointercapture", onCancel);
+  handle.addEventListener("lostpointercapture", onLost);
+  document.addEventListener("lostpointercapture", onLost);
   window.addEventListener("keydown", onKey, true);
   window.addEventListener("blur", onCancel);
 }

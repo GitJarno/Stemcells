@@ -9,15 +9,17 @@ import { ChatCarry, startChatCarry } from "./ChatCarry";
 
 const cell = { environmentId: "env", threadId: "t1", draftId: null };
 
-/** A slate holding one pane, whose Cell is the handle a chat is carried by. */
-function Slate() {
+/** A slate holding one pane, whose Cell is the handle a chat is carried by, unless it's gone. */
+function Slate(props: { cellGone?: boolean }) {
   return (
     <div style={{ position: "relative", width: 600, height: 400 }}>
       <ChatCarry />
       <div data-stemcells-pane="p1" style={{ width: 300, height: 400 }}>
-        <button type="button" onPointerDown={(event) => startChatCarry(event, cell)}>
-          Cell
-        </button>
+        {props.cellGone ? null : (
+          <button type="button" onPointerDown={(event) => startChatCarry(event, cell)}>
+            Cell
+          </button>
+        )}
       </div>
     </div>
   );
@@ -55,5 +57,16 @@ describe("a chat carried by its Cell", () => {
     await expect.poll(card, { timeout: 3000 }).toBeNull();
     expect(carrying()).toBe(false);
     expect(handle.dataset.carrying).toBeUndefined();
+  });
+
+  it("goes back when its Cell goes mid-carry, and the document hears the pointer lost", async () => {
+    await using screen = await render(<Slate />);
+    lift(screen.container);
+    await expect.poll(card).not.toBeNull();
+
+    await screen.rerender(<Slate cellGone />);
+    document.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 }));
+    await expect.poll(card, { timeout: 3000 }).toBeNull();
+    expect(carrying()).toBe(false);
   });
 });
