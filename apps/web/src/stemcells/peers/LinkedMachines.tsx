@@ -145,7 +145,7 @@ export function LinkedMachinesPanel() {
             link === undefined && !("url" in address)
               ? `Can't be linked: ${address.reason}.`
               : link === undefined && kind === "not-stemcells"
-                ? "Runs T3 Code, not Stemcells: there are no Cells to link."
+                ? "Doesn't run Stemcells: there are no Cells to link."
                 : stateOf(link, nowMs);
           const linkable = link !== undefined || ("url" in address && kind !== "not-stemcells");
           return (
