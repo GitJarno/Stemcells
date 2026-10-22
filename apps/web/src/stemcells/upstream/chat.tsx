@@ -2,8 +2,9 @@
  * The tabs' view of upstream's chats: how to open one, whether it still
  * exists, and the view that renders it. Its title is in `thread.ts`.
  */
+import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId } from "@t3tools/contracts";
-import { useRef } from "react";
+import { use, useRef } from "react";
 
 import type { ChatComposerHandle } from "../../components/chat/ChatComposer";
 import { ChatWindowInputContext } from "../../components/chat/chatWindowInput";
@@ -16,6 +17,7 @@ import { useQuietThreadShell } from "../../state/entities";
 import { useEnvironmentShellStatus } from "../../state/shell";
 import { isThreadRouteSnapshotAuthoritative } from "../../threadRoutes";
 import type { CellRef } from "../tabs/layout";
+import { PaneCellContext } from "../tabs/paneCell";
 import { ChatPanelHostContext } from "./chatPanel";
 import { routeTargetForCell, threadRefOf, type ThreadRouteTarget } from "./routes";
 
@@ -115,13 +117,19 @@ export function ChatPaneView(props: {
 }) {
   const appComposerRef = useComposerHandleContext();
   const paneComposerRef = useRef<ChatComposerHandle | null>(null);
+  const cell = use(PaneCellContext);
   return (
     <ComposerHandleContext
       value={props.ownsWindowInput && appComposerRef ? appComposerRef : paneComposerRef}
     >
       <ChatWindowInputContext value={props.ownsWindowInput}>
         <ChatPanelHostContext
-          value={{ node: props.panelHost, owns: props.ownsWindowInput, focused: props.focused }}
+          value={{
+            node: props.panelHost,
+            owns: props.ownsWindowInput,
+            focused: props.focused,
+            threadKey: cell === null ? null : scopedThreadKey(threadRefOf(cell)),
+          }}
         >
           <ThreadRouteView target={props.target} />
         </ChatPanelHostContext>

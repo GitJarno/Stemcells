@@ -9,32 +9,105 @@ import {
 } from "react";
 
 import {
+  browserViewOf,
   closeFloater,
   FaviconImage,
   observeResize,
   openFloaterInPanel,
+  threadKeyOf,
   UpstreamThreadPreviewMiniPlayer,
   useBrowserMark,
-  useFloaterHasNoRoom,
   useFloaterFace,
+  useFloaterFrame,
+  useFloaterHasNoRoom,
   type FloaterSource,
 } from "../upstream/floater";
 import "../tokens/stemcells.css";
-import "./tuck.css";
+import "./floater.css";
 
 /**
- * A chat's floating browser or device (upstream's mini player). It floats
- * only where it leaves the chat its lane. Where upstream would lay it over
- * the chat's words, which is most panes, it tucks instead: a card at the
- * chat's right edge, most of it behind the edge (`Tucked`).
+ * A chat's floating browser or device (upstream's mini player), as a card.
+ * Where the chat has room beside its lane, it is upstream's live floater,
+ * which lifts under the pointer and opens on a click. Where upstream would
+ * lay it over the chat's words, which is most panes, it tucks instead: a
+ * card at the chat's right edge, most of it behind the edge (`Tucked`). Either
+ * way a click opens it in the workbench, and it flies there and back
+ * (`flight.ts`).
  */
 export function ThreadPreviewMiniPlayer(
   props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>,
 ) {
   const noRoom = useFloaterHasNoRoom(props.miniPlayer.source);
   if (noRoom === null) return null;
-  if (!noRoom) return <UpstreamThreadPreviewMiniPlayer {...props} />;
-  return <Tucked threadRef={props.threadRef} source={props.miniPlayer.source} />;
+  return (
+    <div data-stemcells-floater={threadKeyOf(props.threadRef)}>
+      {noRoom ? (
+        <Tucked threadRef={props.threadRef} source={props.miniPlayer.source} />
+      ) : (
+        <Card {...props} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Upstream's floater, a live page beside the chat, made a card: a click on
+ * the page opens it in the workbench rather than reaching the page (there it
+ * is the whole Surface to work in), and pointed at, it lifts. Upstream's own
+ * grip, edges and buttons stay above, to move it, size it, pop it out or
+ * close it. The desktop browser's page is drawn at the app's root, over its
+ * slot, so it is lifted with the card by name.
+ */
+function Card(props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>) {
+  const { threadRef, miniPlayer } = props;
+  const { source } = miniPlayer;
+  const frame = useFloaterFrame(source);
+  const face = useFloaterFace(threadRef, source);
+  const threadKey = threadKeyOf(threadRef);
+  // The desktop page lifts with the card, as its style does: pointed at or
+  // focused within (upstream's buttons included).
+  const hovered = useRef(false);
+  const focused = useRef(false);
+  const lift = () => {
+    const up = hovered.current || focused.current;
+    browserViewOf(threadKey, source)?.toggleAttribute("data-stemcells-lifted", up);
+  };
+  useEffect(
+    () => () => browserViewOf(threadKey, source)?.removeAttribute("data-stemcells-lifted"),
+    [threadKey, source],
+  );
+  return (
+    <div
+      data-stemcells-card=""
+      onPointerEnter={() => {
+        hovered.current = true;
+        lift();
+      }}
+      onPointerLeave={() => {
+        hovered.current = false;
+        lift();
+      }}
+      onFocus={() => {
+        focused.current = true;
+        lift();
+      }}
+      onBlur={(event) => {
+        focused.current = event.currentTarget.contains(event.relatedTarget);
+        lift();
+      }}
+    >
+      {frame ? (
+        <button
+          type="button"
+          data-stemcells-card-open=""
+          aria-label={`Look at ${face.name}`}
+          style={{ left: frame.x, top: frame.y, width: frame.width, height: frame.height }}
+          onClick={() => openFloaterInPanel(threadRef, source)}
+        />
+      ) : null}
+      <UpstreamThreadPreviewMiniPlayer {...props} />
+    </div>
+  );
 }
 
 /**

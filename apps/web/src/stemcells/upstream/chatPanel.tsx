@@ -30,6 +30,8 @@ export interface ChatPanelHost {
   readonly owns: boolean;
   /** Whether this chat is its page's focused one, whose panel the workbench shows on stage. */
   readonly focused: boolean;
+  /** The chat's thread (a draft's is its thread), which the panel names while it holds its surfaces. */
+  readonly threadKey: string | null;
 }
 
 /** Null (the default): the panel stays beside its chat, as upstream draws it. */
@@ -57,6 +59,7 @@ export function ChatPanelTabs(props: ComponentProps<typeof RightPanelTabs>) {
       workbench={host.node}
       shows={shows}
       focused={host.focused}
+      threadKey={host.threadKey}
       maximized={props.maximized === true}
       Frame={RightPanelTabs}
       frameProps={props}
@@ -79,6 +82,8 @@ export function WorkbenchPanel<P extends { children?: ReactNode }>(props: {
   shows: boolean;
   /** Whether its chat is its page's focused one. */
   focused: boolean;
+  /** Its chat's thread, named on the panel while it holds the surfaces (`surfaces/flight.ts`). */
+  threadKey?: string | null;
   /** Whether upstream's panel is maximized: drawn, it tells the page (PanelMaximizedContext). */
   maximized?: boolean;
   /** Upstream's panel, the frame around what it holds, and its props. */
@@ -92,7 +97,11 @@ export function WorkbenchPanel<P extends { children?: ReactNode }>(props: {
   if (workbench === null) return null;
   return createPortal(
     // One tree on and off stage, so the frame and tabs stay as the stage comes.
-    <div inert={!props.shows} style={{ display: "contents" }}>
+    <div
+      inert={!props.shows}
+      data-stemcells-panel-of={props.shows ? (props.threadKey ?? undefined) : undefined}
+      style={{ display: "contents" }}
+    >
       <Frame {...props.frameProps}>
         {props.shows ? (
           <div key="shown" data-stemcells-surface-body="" className="flex min-h-0 flex-1 flex-col">

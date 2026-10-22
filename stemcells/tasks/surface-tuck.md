@@ -56,6 +56,17 @@ sits in the pane's buttons at the same time.
 - [x] The chip stays away while its surface floats or is tucked
 - [x] Prove it: card → Look → its × → card
 
+### PR 4: cards beside a wide chat
+
+- [x] The floater beside the chat is a card: pointed at, it lifts; a click
+  on its page opens it in the workbench (upstream's grip and buttons keep
+  theirs)
+- [x] Opened or put away, a surface flies between its card and the
+  workbench, read once from upstream's floater store so every way in or
+  out flies (`surfaces/flight.ts`)
+- [x] Prove it: rest, lift, open, back, narrowed past the room (no motion),
+  less motion (no flight), and the tucked card both ways
+
 ## Review
 
 ### PR 1
@@ -101,3 +112,33 @@ no chip; a click, Look; the workbench's ×, the card back and still no
 chip; × on the card, the card gone and the chip naming the browser back.
 Esc didn't end Look there, with or without the card: a closed popover
 the Cell's line keeps mounted counted as open (its own fix).
+
+### PR 4
+
+A wide chat's floater stays upstream's player, made a card: pointed at, it
+and the desktop browser's page lift 4 px together; a click on the page
+opens it in the workbench. The flight is a stand-in of the card's ground,
+cut by a rounded clip that moves on the compositor; the live page waits
+hidden where it lands and fades in over the spring's last pixels, not
+after them (the last 300 ms of `lift` move under a pixel). Headless, one
+pane at 1600 px: the card at rest beside the chat, lifted on hover; a
+click flies it into the workbench in 0.7 s, the page fading in from
+0.5 s; upstream's close flies it back into the card, the card fading in as
+the stand-in fades out; narrowed to 900 px the card is tucked on the next
+frame with no animation; with less motion, no flight. Seven panes: the
+tucked card flies into Look's workbench and back into its peek. Not
+proven: the desktop browser's page (Electron) under the flight.
+
+Review fixes (an independent read of the change):
+- A floater ended by its × or an agent no longer hides the workbench for a
+  frame: a flight hides where it goes only once the panel shows the
+  surface. With the panel on Files, × it: the workbench at opacity 1 every
+  frame, no flight.
+- A flight ended by a newer one of the same chat (opened, then closed at
+  once) ends where it is and shows what it hid; nothing stays hidden.
+- The desktop page lifts with the card whenever the card does, pointed at
+  or focused within (upstream's buttons included).
+- Not a defect: upstream's browser slot is not lifted with the card's
+  layers; its direct parent there is our slot's `display: contents`
+  wrapper, which has no box to move.
+

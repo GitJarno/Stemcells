@@ -76,6 +76,7 @@ import { CellPill, PaneButtons, PaneGrip } from "./PaneButtons";
 import { PaneCellContext, PaneComposerContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { PagerPage, TabPager } from "./TabPager";
+import { watchFlights } from "../surfaces/flight";
 import { TabStrip } from "./TabStrip";
 import { useNewCell } from "./useNewCell";
 import { useWorkspaceKeys } from "./useWorkspaceKeys";
@@ -129,6 +130,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     window.addEventListener("wheel", onWheel, { passive: true, once: true });
     return () => window.removeEventListener("wheel", onWheel);
   }, []);
+  // A surface flies between its card and the workbench (stemcells/surfaces).
+  useEffect(() => watchFlights(), []);
   const newTabRef = useRef<HTMLDivElement>(null);
   const newCellIsTaken = newCellTaken(workspace, newCell);
   const lastTabOnStage =

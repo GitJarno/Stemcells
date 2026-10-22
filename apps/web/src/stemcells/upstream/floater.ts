@@ -6,6 +6,7 @@
  * tuck needs of it (`stemcells/surfaces/Floater.tsx`): whether a chat has
  * room for it, its face, and upstream's own two ways out of it.
  */
+import { parseScopedThreadKey, scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { ScopedThreadRef } from "@t3tools/contracts";
 
 import {
@@ -17,14 +18,18 @@ import { useFaviconForThreadUrl } from "../../browserFaviconStore";
 import { useChatCanvas } from "../../components/chat/ChatCanvasContext";
 import { resolveChatCanvasLayout } from "../../components/chat/chatCanvasLayout";
 import { FaviconImage } from "../../components/preview/PreviewFaviconIcon";
-import { resolveDeviceMiniPlayerSourceSize } from "../../components/preview/previewMiniPlayerLayout";
+import {
+  resolveDeviceMiniPlayerSourceSize,
+  type PreviewMiniPlayerFrame,
+} from "../../components/preview/previewMiniPlayerLayout";
 import { ThreadPreviewMiniPlayer } from "../../components/preview/ThreadPreviewMiniPlayer";
 import {
+  previewMiniPlayerSourceKey,
   usePreviewMiniPlayerStore,
   type PreviewMiniPlayerSource,
 } from "../../previewMiniPlayerStore";
-import { useThreadPreviewState } from "../../previewStateStore";
-import { useRightPanelStore } from "../../rightPanelStore";
+import { readThreadPreviewState, useThreadPreviewState } from "../../previewStateStore";
+import { selectActiveRightPanelSurface, useRightPanelStore } from "../../rightPanelStore";
 import { browserName } from "./workbench";
 
 export { ThreadPreviewMiniPlayer as UpstreamThreadPreviewMiniPlayer, FaviconImage };
@@ -123,4 +128,64 @@ export function openFloaterInPanel(threadRef: ScopedThreadRef, source: FloaterSo
 /** Upstream's "Close floating preview": the floater ends; its browser stays among the panel's tabs. */
 export function closeFloater(threadRef: ScopedThreadRef): void {
   usePreviewMiniPlayerStore.getState().close(threadRef);
+}
+
+/** A chat's thread as upstream's stores key it. */
+export function threadKeyOf(threadRef: ScopedThreadRef): string {
+  return scopedThreadKey(threadRef);
+}
+
+/** Where upstream draws a floater in the canvas it's drawn in, once laid out; null before. */
+export function useFloaterFrame(source: FloaterSource): PreviewMiniPlayerFrame | null {
+  const canvas = useChatCanvas();
+  const frame = canvas?.layout.frame ?? null;
+  return canvas?.previewKey === previewMiniPlayerSourceKey(source) ? frame : null;
+}
+
+/** Every chat's floater, as upstream's store holds them, by thread. */
+export type Floaters = Readonly<Record<string, { readonly source: FloaterSource }>>;
+
+/** Hears each change to the floaters, as it is made: before React draws it. */
+export function subscribeToFloaters(listener: (next: Floaters, previous: Floaters) => void) {
+  return usePreviewMiniPlayerStore.subscribe((next, previous) =>
+    listener(next.byThreadKey, previous.byThreadKey),
+  );
+}
+
+/** Whether two floaters are the same browser or device. */
+export function sameFloater(a: FloaterSource, b: FloaterSource): boolean {
+  return previewMiniPlayerSourceKey(a) === previewMiniPlayerSourceKey(b);
+}
+
+/** Whether the thread's right panel is open on the floater's browser or device, now. */
+export function panelShowsFloater(threadKey: string, source: FloaterSource): boolean {
+  const ref = parseScopedThreadKey(threadKey);
+  if (ref === null) return false;
+  const surface = selectActiveRightPanelSurface(useRightPanelStore.getState().byThreadKey, ref);
+  if (source.kind === "browser") {
+    return surface?.kind === "preview" && surface.resourceId === source.tabId;
+  }
+  return (
+    surface?.kind === "device" &&
+    surface.target?.hostId === source.hostId &&
+    surface.target.deviceId === source.deviceId
+  );
+}
+
+/**
+ * The desktop browser's view for a floater's browser (upstream hosts it once,
+ * at the app's root, wherever its slot is); null for a device, on the web, or
+ * while it isn't hosted.
+ */
+export function browserViewOf(threadKey: string, source: FloaterSource): HTMLElement | null {
+  const ref = parseScopedThreadKey(threadKey);
+  if (ref === null || source.kind !== "browser") return null;
+  const runtimeTabId = previewRuntimeTabId(
+    ref,
+    readThreadPreviewState(ref).serverEpoch,
+    source.tabId,
+  );
+  return document.querySelector<HTMLElement>(
+    `[data-preview-viewport="${CSS.escape(runtimeTabId)}"]`,
+  );
 }

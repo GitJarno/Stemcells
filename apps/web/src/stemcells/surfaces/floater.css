@@ -1,6 +1,66 @@
-/* The tuck (Floater.tsx): a floating browser or device with no room beside
-   the chat, as a card at the chat's right edge. Its room is the chat's
-   canvas, which cuts the card where it goes behind the edge, over the
+/* A chat's floater (Floater.tsx): a browser or device out of the
+   workbench, as a card. Its room is the chat's canvas; nothing of it takes
+   the pointer but the card. */
+[data-stemcells-floater] {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Beside the chat: upstream's live floater, a card. A click on the page
+   opens it; upstream's grip, edges and buttons stay above (drawn after, at
+   the same 49). */
+[data-stemcells-card] {
+  display: contents;
+}
+[data-stemcells-card-open] {
+  position: absolute;
+  z-index: 49;
+  border-radius: 12px;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+}
+[data-stemcells-card-open]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* Pointed at or focused, the card lifts. Each of upstream's layers lifts by
+   itself, so each keeps its place among the desktop browser's (47 to 49),
+   which is drawn at the app's root and lifted by name. */
+:is(
+  [data-stemcells-card] [data-preview-mini-player] > *,
+  [data-stemcells-card-open],
+  [data-preview-viewport]
+) {
+  transition: translate var(--sc-motion-icon-hover-duration) var(--sc-motion-icon-hover-easing);
+}
+[data-stemcells-card]:is(:hover, :focus-within)
+  :is([data-preview-mini-player] > *, [data-stemcells-card-open]),
+[data-preview-viewport][data-stemcells-lifted] {
+  translate: 0 calc(-1 * var(--sc-space-xs));
+}
+
+/* A surface flying between its card and the workbench (flight.ts): the
+   card's ground, cut to where it is. Where it goes waits hidden, laid out
+   at once: the workbench while a card opens, with its panel's own width
+   animation off. */
+[data-stemcells-flight] {
+  position: fixed;
+  z-index: 46;
+  background: var(--muted);
+  pointer-events: none;
+  will-change: clip-path;
+}
+:root[data-stemcells-flying="opening"] [data-stemcells-workbench] {
+  opacity: 0;
+}
+:root[data-stemcells-flying] [data-preview-panel-mode] {
+  transition: none !important;
+}
+
+/* Tucked: with no room beside the chat, a card at the chat's right edge.
+   The canvas cuts it where it goes behind the edge; it stands over the
    composer's overlay so the composer never takes its pointer. */
 [data-stemcells-tuck] {
   position: absolute;
@@ -118,9 +178,14 @@
   outline-offset: -2px;
 }
 
-/* Less motion: it comes out and goes back in place. */
+/* Less motion: cards come out, lift and go back in place. */
 @media (prefers-reduced-motion: reduce) {
-  [data-stemcells-tuck-card] {
+  :is(
+    [data-stemcells-tuck-card],
+    [data-stemcells-card] [data-preview-mini-player] > *,
+    [data-stemcells-card-open],
+    [data-preview-viewport]
+  ) {
     transition: none;
   }
 }
