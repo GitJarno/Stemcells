@@ -62,6 +62,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/index.html` | The boot page's title, the splash's label and its logo's alt text say Stemcells | Before the app loads; `__root.tsx` titles it from `APP_DISPLAY_NAME` after |
 | `apps/web/public/manifest.webmanifest` | `name` and `short_name` are "Stemcells" | The name a browser installs the web app under |
 | `apps/server/src/server.ts` (analytics) | Provides `Stemcells.analytics` where it provided `AnalyticsService.layer`, and drops that import | No telemetry (below): the server records through a service that keeps nothing |
+| `apps/server/src/server.ts` (model list) | Provides `Stemcells.modelList` where it provided `ModelManifest.layerModelCatalog` over `ModelManifest.layer`, and drops that import | No model list from T3 (below): the server runs the list bundled at build time and never asks T3's GitHub repository for one |
 | `apps/server/src/telemetry/AnalyticsService.ts` | No default PostHog key or host, and telemetry off unless `T3CODE_TELEMETRY_ENABLED` turns it on | Same: no build carries T3's endpoint or key, and upstream's service, if a sync wired it back, has nowhere to send |
 | `packages/ssh/src/tunnel.ts` | The remote launch sets `T3CODE_TELEMETRY_ENABLED=false`; `buildRemoteLaunchScript` stays exported for `analytics.contract.test.ts` to read the launch it builds | Same: an SSH environment runs upstream's released server on the remote machine |
 | `apps/web/src/connection/platform.ts` | `AnalyticsDevice` is `stemcells/privacy/analyticsDevice`'s `noAnalyticsDevice`; upstream's stored id and its `randomUUID` import are gone | Same: the client keeps no analytics id, and removes one an earlier build left |
@@ -413,6 +414,23 @@ calls, and hashes of the Codex, Claude and T3 Connect accounts it finds.
   upstream's service provided anywhere, its endpoint or a PostHog key or
   client in the tree, an analytics id in the web client, the usage-data
   words, or the owners read again.
+
+### No model list from T3
+
+Upstream's server asks T3's GitHub repository
+(`raw.githubusercontent.com/pingdotgg/…/model-manifest.json`) for a newer
+model list whenever its copy is an hour old. Stemcells never does: the
+server runs the list bundled at build time, and each upstream sync brings
+the newer bundled one.
+
+- server.ts provides `apps/server/src/stemcells/upstream/modelList.ts` in
+  place of upstream's model list: the bundled manifest however it's asked,
+  and upstream's catalog over it. It needs no HTTP client.
+- `modelList.contract.test.ts` fails when a sync wires upstream's fetching
+  list back, or when upstream's list stops being the request this cuts.
+- `stemcells/outbound.txt` forbids T3's repository read raw: a shipped file
+  that names it fails `privacy/noTelemetry.test.ts` unless it's listed as
+  cut, with why it's never fetched.
 
 ### No favicon fetched, no T3 build offered
 

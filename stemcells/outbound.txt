@@ -8,6 +8,9 @@
 #
 #   host <name> <why>
 #   id <file> <why>
+#   forbid <address prefix> <why>   no shipped code fetches from it
+#   cut <file> <why>                a file that still names a forbidden
+#                                   address, and why it's never fetched
 #
 # Loopback, an IP address and the reserved example names need no line.
 
@@ -54,7 +57,7 @@ host challenges.cloudflare.com sign-in pages' Turnstile, allowed in the desktop'
 # Source control, through the person's own CLIs and tokens.
 host github.com repository links, clone urls and the person's GitHub
 host api.github.com the person's GitHub; also the LiteLLM price list and T3 release lists that only servers running T3's build use (No T3 build offered, seams.md)
-host raw.githubusercontent.com GitHub media in chats, the LiteLLM price list, the model list and triage playbook from upstream's public repository
+host raw.githubusercontent.com GitHub media in chats and the LiteLLM price list; T3's repository there is forbidden (below)
 host gitlab.com the person's GitLab
 host codeberg.org the person's Forgejo
 host gitea.com the person's Forgejo
@@ -105,3 +108,9 @@ id apps/desktop/src/electron/ElectronUpdater.ts same
 id apps/desktop/src/updates/DesktopUpdates.ts same; its own setFeedURL is the local mock server
 id apps/desktop/src/updates/updatesTestHarness.ts the updater's test harness, on a local mock feed
 id apps/desktop/src/stemcells/windows/WindowsHost.ts ours: listens for the updater's quit so every window closes with the app; it sets no feed
+
+# Forbidden: nothing fetches from these. The model list is the one bundled at
+# build time, which each upstream sync refreshes (seams.md, No model list from T3).
+forbid raw.githubusercontent.com/pingdotgg/ T3's repository on GitHub, read raw: upstream's server fetched its model list from it every hour
+cut apps/server/src/provider/ModelManifest.ts upstream's fetching model list; server.ts provides Stemcells' bundled one instead (modelList.contract.test.ts)
+cut apps/server/src/cli/triagePrompt.ts the instructions `t3 triage` hands the person's own agent; the app fetches nothing

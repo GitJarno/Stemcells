@@ -120,7 +120,12 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
       .filter(([file]) => isShippedCode(file) && !NOT_SHIPPED.test(file));
   }
 
-  const listed = { hosts: new Set<string>(), idFiles: [] as string[] };
+  const listed = {
+    hosts: new Set<string>(),
+    idFiles: [] as string[],
+    forbidden: [] as string[],
+    cutFiles: [] as string[],
+  };
   for (const line of NodeFS.readFileSync(
     NodePath.join(repoRoot, "stemcells/outbound.txt"),
     "utf8",
@@ -130,8 +135,24 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
     if (!name || why.length === 0) throw new Error(`stemcells/outbound.txt: "${line}" says no why`);
     if (kind === "host") listed.hosts.add(name.toLowerCase());
     else if (kind === "id") listed.idFiles.push(name);
+    else if (kind === "forbid") listed.forbidden.push(name.toLowerCase());
+    else if (kind === "cut") listed.cutFiles.push(name);
     else throw new Error(`stemcells/outbound.txt: unknown kind "${kind}"`);
   }
+
+  // A forbidden address may stay named only in a file whose fetch Stemcells
+  // cut, each listed with how: a sync that adds a fetch from one fails here.
+  it("names a forbidden address only where its fetch is cut, and lists no cut the code dropped", () => {
+    expect(listed.forbidden.length).toBeGreaterThan(0);
+    const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const naming = [
+      ...new Set(
+        listed.forbidden.flatMap((prefix) => grep(escape(prefix), ["-i"]).map(([file]) => file)),
+      ),
+    ];
+    expect(naming.filter((file) => !listed.cutFiles.includes(file))).toEqual([]);
+    expect(listed.cutFiles.filter((file) => !naming.includes(file))).toEqual([]);
+  });
 
   it("names no host the list lacks, and the list names no host the code dropped", () => {
     const named = new Map<string, string[]>();

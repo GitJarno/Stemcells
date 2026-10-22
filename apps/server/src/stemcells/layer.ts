@@ -8,6 +8,7 @@ import * as NeedsHttp from "./needs/http.ts";
 import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
+import * as ModelList from "./upstream/modelList.ts";
 
 // Everything Stemcells adds to the server, mounted by one line in server.ts:
 // a file one chat shows brought into another's draft, Settings › Disk's
@@ -29,3 +30,6 @@ export const layer = Layer.mergeAll(
 
 /** The analytics service server.ts provides in place of upstream's: records nothing. */
 export const analytics = Privacy.analytics;
+
+/** The model list server.ts provides in place of upstream's: the bundled one, never fetched. */
+export const modelList = ModelList.bundledModelList;
