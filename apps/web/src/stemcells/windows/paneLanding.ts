@@ -67,3 +67,31 @@ export function paneLandingAt(
   const side = sideAt(pane.rect, at);
   return { anchor: pane.paneId, side, half: halfOf(pane.rect, side) };
 }
+
+/** A chip a chat can rest on to open its tab. */
+export interface ChipPlace {
+  readonly tabId: string;
+  readonly rect: Rect;
+}
+
+/** On the strip: a chip to spring open, or the strip's end, where a new tab goes. */
+export type StripLanding =
+  | { readonly kind: "chip"; readonly tabId: string }
+  | { readonly kind: "end" };
+
+/**
+ * What the strip offers a carried chat with the hand at `at`: the chip
+ * under it, or past the last chip, a new tab. Between chips, or off the
+ * strip, nothing.
+ */
+export function stripLandingAt(
+  strip: Rect,
+  chips: ReadonlyArray<ChipPlace>,
+  at: Point,
+): StripLanding | null {
+  if (!inside(strip, at)) return null;
+  const chip = chips.find(({ rect }) => at.x >= rect.x && at.x < rect.x + rect.width);
+  if (chip) return { kind: "chip", tabId: chip.tabId };
+  const end = Math.max(strip.x, ...chips.map(({ rect }) => rect.x + rect.width));
+  return at.x >= end ? { kind: "end" } : null;
+}

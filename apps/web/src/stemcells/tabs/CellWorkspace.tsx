@@ -457,7 +457,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
           </TabPager>
         )}
         <DropWash />
-        <ChatCarry />
+        <ChatCarry onOpenTab={activateTabAndRoute} />
       </div>
     </SidebarInset>
   );

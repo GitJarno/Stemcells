@@ -3,10 +3,13 @@
  * its own window. The Cell over the composer is the handle: past 4 px the
  * pane gathers into a card under the hand on `lift`, its place left empty.
  * The half of another pane the hand is nearest lights with the wash,
- * gliding on `travel`; let go there, the chat takes that half (a move Undo
- * Move takes back) and the card lands into it on `land`. Let go anywhere
- * else, or Esc, and the card flies back into its place. Under Reduce Motion
- * the card fades where it is.
+ * gliding on `travel`. A chip the hand rests on lights and opens its tab
+ * after `spring-load`; past the last chip the strip makes room for a new
+ * tab. Let go on a half or in the room, the chat goes there (a move Undo
+ * Move takes back) and the card lands into its place on `land`. Let go
+ * anywhere else, or Esc, and the card flies back to where it was picked
+ * up, its tab on stage again. Under Reduce Motion the card fades where it
+ * is.
  */
 import {
   useEffect,
@@ -21,17 +24,26 @@ import { createPortal } from "react-dom";
 
 import { cellNameOf } from "../cell/name";
 import { CellMark } from "../tabs/CellMark";
+import { ASKI_TAB_ID } from "../tabs/askiTab";
 import type { CellRef } from "../tabs/layout";
-import { readWorkspace, updateWorkspace } from "../tabs/store";
+import { SpringTab } from "../tabs/springTab";
+import { newIds, readWorkspace, updateWorkspace } from "../tabs/store";
 import { washBox, washCorners, type Box } from "../tabs/washShape";
-import { motionTiming, reducedMotion } from "../tokens/motion";
+import { motionTiming, reducedMotion, timing } from "../tokens/motion";
 import { randomUUID } from "../upstream/ui";
 import type { Placed, Rect } from "./arrangement";
 import { windowsBridge } from "./bridge";
 import { PICK_UP_DISTANCE, type Point } from "./carry";
 import { carryStarts } from "./carrying";
-import { paneLandingAt, type PaneLanding, type PanePlace } from "./paneLanding";
-import { carry, type CarryTarget } from "./moves";
+import { hostRoom } from "./hostStrip";
+import { carry, type CarryTarget, type NewTabIds } from "./moves";
+import {
+  paneLandingAt,
+  stripLandingAt,
+  type ChipPlace,
+  type PaneLanding,
+  type PanePlace,
+} from "./paneLanding";
 import { commitMove } from "./wire";
 import "./carry.css";
 
@@ -74,6 +86,26 @@ export function useCarriedPane(): string | null {
   return useSyncExternalStore(subscribe, read, read);
 }
 
+let springLit: string | null = null;
+const springListeners = new Set<() => void>();
+const spring = new SpringTab({
+  onLit: (tabId) => {
+    springLit = tabId;
+    for (const listener of springListeners) listener();
+  },
+  rest: () => timing("springLoad"),
+});
+const subscribeSpring = (listener: () => void) => {
+  springListeners.add(listener);
+  return () => void springListeners.delete(listener);
+};
+const readSpring = () => springLit;
+
+/** The chip a carried chat rests on, lit as one a file rests on is. */
+export function useCarrySpringLit(): string | null {
+  return useSyncExternalStore(subscribeSpring, readSpring, readSpring);
+}
+
 const rectOf = (element: Element): Rect => {
   const { left, top, width, height } = element.getBoundingClientRect();
   return { x: left, y: top, width, height };
@@ -90,6 +122,10 @@ const paneElement = (paneId: string) =>
 const rowWidthOf = (paneId: string) =>
   paneElement(paneId)?.closest<HTMLElement>("[data-stemcells-grid]")?.clientWidth ??
   window.innerWidth;
+const chipElement = (tabId: string) =>
+  document.querySelector<HTMLElement>(
+    `[data-stemcells-tab-strip] [data-stemcells-tab="${CSS.escape(tabId)}"]`,
+  );
 const twoFrames = () =>
   new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
@@ -158,20 +194,15 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
 }
 
 /**
- * The chat in `paneId` to a half of the pane `landing` names, in this
- * window: through the desktop app as a move Undo Move takes back, or
- * straight into the tabs in a browser. True when it moved.
+ * The chat in `paneId` to `to` in this window (named by its id): through
+ * the desktop app as a move Undo Move takes back, or straight into the
+ * tabs in a browser. True when it moved.
  */
-async function carryHere(paneId: string, landing: PaneLanding): Promise<boolean> {
-  const to: CarryTarget = {
-    kind: "pane",
-    anchor: landing.anchor,
-    side: landing.side,
-    column: randomUUID(),
-    rowWidth: rowWidthOf(landing.anchor),
-  };
-  if (windowsBridge()) {
-    return (await commitMove((seen) => carry(seen.arrangement, paneId, to))) !== null;
+async function carryHere(paneId: string, to: (here: string) => CarryTarget): Promise<boolean> {
+  const bridge = windowsBridge();
+  if (bridge) {
+    const target = to(bridge.boot.id);
+    return (await commitMove((seen) => carry(seen.arrangement, paneId, target))) !== null;
   }
   const here: Placed = {
     id: "here",
@@ -180,24 +211,56 @@ async function carryHere(paneId: string, landing: PaneLanding): Promise<boolean>
     fullScreen: false,
     workspace: readWorkspace(),
   };
-  const next = carry({ windows: [here], lead: here.id, memories: [] }, paneId, to)?.next;
+  const next = carry({ windows: [here], lead: here.id, memories: [] }, paneId, to(here.id))?.next;
   const workspace = next?.windows[0]?.workspace;
   if (!workspace) return false;
   updateWorkspace(() => workspace);
   return true;
 }
 
+/** Where a carried chat would go now. */
+type Landing =
+  | { readonly kind: "pane"; readonly pane: PaneLanding }
+  | { readonly kind: "chip"; readonly tabId: string }
+  | { readonly kind: "end" };
+
+const sameLanding = (a: Landing | null, b: Landing | null) =>
+  a?.kind === b?.kind &&
+  (a?.kind !== "pane" ||
+    (b?.kind === "pane" && a.pane.anchor === b.pane.anchor && a.pane.side === b.pane.side)) &&
+  (a?.kind !== "chip" || (b?.kind === "chip" && a.tabId === b.tabId));
+
 interface Live {
   readonly held: Held;
   /** Where the pane was when it was picked up, which the card gathers from. */
   readonly from: Rect;
-  /** The panes the chat can land beside. */
-  readonly panes: ReadonlyArray<PanePlace>;
+  /** The tab it was picked up in, which comes back on stage if it goes back. */
+  readonly tabId: string | null;
+  /** The new tab's ids, should it go into one: the strip's room keeps them. */
+  readonly newTab: NewTabIds;
   hand: Point;
-  landing: PaneLanding | null;
+  landing: Landing | null;
   /** The card is on its way to where it lands: the hand no longer moves it. */
   landingNow: boolean;
 }
+
+/** The panes on stage, which a chat can land beside. */
+function panesOnStage(): PanePlace[] {
+  return [...document.querySelectorAll<HTMLElement>("[data-stemcells-pane]")]
+    .filter((pane) => pane.closest("[inert]") === null)
+    .map((pane) => ({ paneId: pane.dataset.stemcellsPane ?? "", rect: rectOf(pane) }));
+}
+
+/** The Cells' tabs' chips: never Aski's, which takes no other chat, nor the new Cell's page. */
+function cellChips(strip: Element): ChipPlace[] {
+  const tabs = new Set(readWorkspace().tabs.map((tab) => tab.id));
+  return [...strip.querySelectorAll<HTMLElement>("[data-stemcells-tab]")]
+    .map((chip) => ({ tabId: chip.dataset.stemcellsTab ?? "", rect: rectOf(chip) }))
+    .filter(({ tabId }) => tabId !== ASKI_TAB_ID && tabs.has(tabId));
+}
+
+/** Screen points per CSS pixel. */
+const zoom = () => windowsBridge()?.zoom() ?? 1;
 
 interface CarryElements {
   /** Follows the hand. */
@@ -205,6 +268,8 @@ interface CarryElements {
   /** The card, which gathers from the pane and lands where the chat goes. */
   readonly card: RefObject<HTMLDivElement | null>;
   readonly wash: RefObject<HTMLDivElement | null>;
+  /** Opens a tab as its chip does. */
+  readonly openTab: RefObject<(tabId: string) => void>;
 }
 
 /** One window's carry, drawing on the elements `ChatCarry` renders. */
@@ -220,10 +285,15 @@ class WindowCarrier implements Carrier {
   ) {}
 
   pickUp(held: Held, from: Rect, hand: Point): void {
-    const panes = [...document.querySelectorAll<HTMLElement>("[data-stemcells-pane]")]
-      .filter((pane) => pane.closest("[inert]") === null)
-      .map((pane) => ({ paneId: pane.dataset.stemcellsPane ?? "", rect: rectOf(pane) }));
-    this.live = { held, from, panes, hand, landing: null, landingNow: false };
+    this.live = {
+      held,
+      from,
+      tabId: readWorkspace().activeTabId,
+      newTab: newIds(),
+      hand,
+      landing: null,
+      landingNow: false,
+    };
     this.ends = carryStarts();
     setCarried(held.paneId);
     this.show(held);
@@ -255,11 +325,32 @@ class WindowCarrier implements Carrier {
     const now = this.live;
     if (!now || now.landingNow) return;
     now.hand = hand;
-    const landing = paneLandingAt(now.panes, now.held.paneId, hand);
-    const changed = landing?.anchor !== now.landing?.anchor || landing?.side !== now.landing?.side;
+    // Measured as the hand goes, before the card moves: a tab sprung open puts other panes on stage.
+    const strip = document.querySelector("[data-stemcells-tab-strip]");
+    const onStrip = strip ? stripLandingAt(rectOf(strip), cellChips(strip), hand) : null;
+    const onPane = onStrip ? null : paneLandingAt(panesOnStage(), now.held.paneId, hand);
+    const landing: Landing | null = onStrip ?? (onPane ? { kind: "pane", pane: onPane } : null);
+    if (sameLanding(landing, now.landing)) {
+      this.follow(hand);
+      return;
+    }
+    const was = now.landing;
     now.landing = landing;
-    if (changed) this.light(landing?.half ?? null);
-    // Written last, so what was measured above read a page this move hadn't changed.
+    this.light(landing?.kind === "pane" ? landing.pane.half : null);
+    if (landing?.kind === "chip") {
+      spring.over(landing.tabId, readWorkspace().activeTabId, (tabId) =>
+        this.elements.openTab.current(tabId),
+      );
+    } else {
+      spring.out();
+    }
+    if (landing?.kind === "end" && strip) {
+      const chips = cellChips(strip);
+      const width = chips[0]?.rect.width ?? 160;
+      hostRoom({ tabId: now.newTab.tab, width: width * zoom(), slot: chips.length });
+    } else if (was?.kind === "end") {
+      hostRoom(null);
+    }
     this.follow(hand);
   }
 
@@ -267,23 +358,60 @@ class WindowCarrier implements Carrier {
     const now = this.live;
     if (!now || now.landingNow) return;
     const { landing } = now;
-    if (!landing) return this.cancel();
+    if (landing?.kind !== "pane" && landing?.kind !== "end") return this.cancel();
     now.landingNow = true;
     this.light(null);
+    spring.out();
     void (async () => {
-      await carryHere(now.held.paneId, landing);
-      // Its place, new or as it was, is drawn (still empty) before the card lands there.
+      if (landing.kind === "pane") {
+        const { anchor, side } = landing.pane;
+        await carryHere(now.held.paneId, () => ({
+          kind: "pane",
+          anchor,
+          side,
+          column: randomUUID(),
+          rowWidth: rowWidthOf(anchor),
+        }));
+        // Its place, new or as it was, is drawn (still empty) before the card lands there.
+        await twoFrames();
+        const pane = paneElement(now.held.paneId);
+        return this.land(pane ? rectOf(pane) : now.from);
+      }
+      const { newTab } = now;
+      const moved = await carryHere(now.held.paneId, (here) => ({
+        kind: "strip",
+        window: here,
+        index: readWorkspace().tabs.length,
+        ids: newTab,
+      }));
       await twoFrames();
-      const pane = paneElement(now.held.paneId);
-      await this.land(pane ? rectOf(pane) : now.from);
+      const chip = moved ? chipElement(newTab.tab) : null;
+      if (!chip) {
+        hostRoom(null);
+        const pane = paneElement(now.held.paneId);
+        return this.land(pane ? rectOf(pane) : now.from);
+      }
+      // The new tab's chip waits, hidden in the room, for the card to land on it.
+      await this.land(rectOf(chip));
+      hostRoom({ tabId: newTab.tab, arrived: true });
     })();
   }
 
   cancel(): void {
     const now = this.live;
     if (!now || now.landingNow) return;
-    const pane = paneElement(now.held.paneId);
-    void this.land(pane ? rectOf(pane) : null);
+    now.landingNow = true;
+    spring.out();
+    if (now.landing?.kind === "end") hostRoom(null);
+    void (async () => {
+      // A tab sprung open on the way gives the stage back to the one the chat is in.
+      if (now.tabId !== null && readWorkspace().activeTabId !== now.tabId) {
+        this.elements.openTab.current(now.tabId);
+        await new Promise((resolve) => setTimeout(resolve, motionTiming("travel").duration));
+      }
+      const pane = paneElement(now.held.paneId);
+      await this.land(pane ? rectOf(pane) : null);
+    })();
   }
 
   private follow(hand: Point): void {
@@ -359,12 +487,19 @@ class WindowCarrier implements Carrier {
 }
 
 /** The carry's card and the wash that says where it would land. Renders in the slate. */
-export function ChatCarry() {
+export function ChatCarry(props: {
+  /** Opens a tab as its chip does: a chip a carried chat rests on springs open. */
+  onOpenTab: (tabId: string) => void;
+}) {
   const [held, setHeld] = useState<Held | null>(null);
   const outer = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const wash = useRef<HTMLDivElement>(null);
-  const [own] = useState(() => new WindowCarrier({ outer, card, wash }, setHeld));
+  const openTab = useRef(props.onOpenTab);
+  useEffect(() => {
+    openTab.current = props.onOpenTab;
+  });
+  const [own] = useState(() => new WindowCarrier({ outer, card, wash, openTab }, setHeld));
   useEffect(() => {
     carrier = own;
     return () => {
