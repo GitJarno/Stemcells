@@ -9,6 +9,8 @@ import {
   OrchestrationV2RunStatus,
   OrchestrationV2RuntimeRequest,
   OrchestrationV2ThreadShell,
+  OrchestrationV2TurnItem,
+  ProviderApprovalFullAccessOverride,
 } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Schema from "effect/Schema";
@@ -38,6 +40,16 @@ describe("upstream's thread shell, as the needs list reads it", () => {
       "cancelled",
       "rolled_back",
     ]);
+  });
+
+  it("gives an approval the provider's reason and why full access still asks, as the cards say", () => {
+    const approval = OrchestrationV2TurnItem.members.find(
+      (member) => member.fields.type.literal === "approval_request",
+    );
+    expect(approval?.fields).toHaveProperty("reason");
+    expect(approval?.fields).toHaveProperty("fullAccessOverride");
+    // The web's wire names these two, each with its own words (needs/card.ts).
+    expect(ProviderApprovalFullAccessOverride.literals).toEqual(["ask_rule", "provider_check"]);
   });
 
   it("still names a usage limit as its own failure class", () => {

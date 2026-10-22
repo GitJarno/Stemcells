@@ -8,6 +8,7 @@ import type {
   OrchestrationV2DomainEvent,
   OrchestrationV2ThreadShell,
   OrchestrationV2TurnItem,
+  ProviderApprovalFullAccessOverride,
   ProviderApprovalOption,
   RunId,
   RuntimeRequestId,
@@ -45,12 +46,19 @@ export interface AskedQuestion {
   readonly allowCustomAnswer: boolean;
 }
 
+/** Why a request reached the person although the thread runs with full access. */
+export type FullAccessOverride = ProviderApprovalFullAccessOverride;
+
 /** The pending request a shell's `pendingRuntimeRequest` summarises, in full. */
 export interface RequestDetail {
   readonly id: string;
   /** The command or file the Cell wants, as its provider worded the request. */
   readonly prompt: string | null;
   readonly appName: string | null;
+  /** The provider's own words for why it asks, when it gives them. */
+  readonly reason: string | null;
+  /** Why it asks although the thread runs with full access (upstream #22546). */
+  readonly fullAccessOverride: FullAccessOverride | null;
   readonly options: ReadonlyArray<ApprovalOption>;
   readonly questions: ReadonlyArray<AskedQuestion>;
   /** "message": the answer goes as a message, and the question can be dismissed. */
@@ -204,6 +212,8 @@ export const makeNeedsSource = Effect.gen(function* () {
               id: requestId,
               prompt: null,
               appName: null,
+              reason: null,
+              fullAccessOverride: null,
               options: [],
               questions: item.questions.map((question) => ({
                 id: question.id,
@@ -225,6 +235,9 @@ export const makeNeedsSource = Effect.gen(function* () {
             id: requestId,
             prompt: item?.type === "approval_request" ? (item.prompt ?? null) : null,
             appName: item?.type === "approval_request" ? (item.appName ?? null) : null,
+            reason: item?.type === "approval_request" ? (item.reason ?? null) : null,
+            fullAccessOverride:
+              item?.type === "approval_request" ? (item.fullAccessOverride ?? null) : null,
             options: item?.type === "approval_request" ? (item.options ?? []) : [],
             questions: [],
             responseMode: message ? "message" : null,

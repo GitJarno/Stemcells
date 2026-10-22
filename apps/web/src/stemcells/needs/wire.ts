@@ -50,6 +50,10 @@ export interface NeedRequest {
   readonly kind: RequestKind;
   readonly prompt: string | null;
   readonly appName: string | null;
+  /** The provider's own words for why it asks, when it gives them. */
+  readonly reason: string | null;
+  /** Why it asks although the Cell runs with full access: the person's ask rule, or the provider's own check. */
+  readonly fullAccessOverride: "ask_rule" | "provider_check" | null;
   readonly options: ReadonlyArray<{
     readonly decision: ApprovalDecision;
     readonly label: string;

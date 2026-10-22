@@ -6,7 +6,7 @@
  * reaches the Cell is the Cell's own words, a fixed phrase shown on the
  * option, or the person's own words.
  */
-import type { ApprovalDecision, AskedQuestion, Need } from "./wire";
+import type { ApprovalDecision, AskedQuestion, Need, NeedRequest } from "./wire";
 
 /** What choosing an option does; `actions.ts` turns it into upstream's commands. */
 export type Choice =
@@ -70,6 +70,8 @@ export interface Card {
   readonly options: ReadonlyArray<CardOption>;
   /** Why the card offers no answer of its own, when it doesn't. */
   readonly note: string | null;
+  /** Why a Cell with full access asks at all, when it still does. */
+  readonly why: string | null;
   /** "Later" snoozes the Cell for an hour; upstream refuses it while a request waits. */
   readonly later: boolean;
 }
@@ -147,6 +149,12 @@ const option = (
 });
 
 /** Snoozes the Cell for an hour, through upstream's snooze. */
+/** Why a Cell with full access still asks, by the kind upstream reports (#22546). */
+const FULL_ACCESS_WHY: Record<NonNullable<NeedRequest["fullAccessOverride"]>, string> = {
+  ask_rule: "Asked despite full access: an ask rule in the provider's settings matches this.",
+  provider_check: "Asked despite full access: the provider checks this itself, and no setting skips it.",
+};
+
 export const LATER: CardOption = option("later", "Later", { kind: "later" });
 
 /** "Go ahead" and "Nothing to do", the fixed ways out of a reply that asks or stops short. */
@@ -228,6 +236,7 @@ const base = (need: Need) => ({
   questions: [],
   options: [],
   note: null,
+  why: null,
   later: need.request === null,
 });
 
@@ -254,6 +263,8 @@ export function cardOf(need: Need, now: number): Card {
         ...base(need),
         headline,
         request: request.prompt,
+        quote: request.reason,
+        why: request.fullAccessOverride === null ? null : FULL_ACCESS_WHY[request.fullAccessOverride],
         options: [
           ...decisions.map((choice, index) =>
             option(

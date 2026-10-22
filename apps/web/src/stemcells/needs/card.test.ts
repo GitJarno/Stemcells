@@ -42,6 +42,28 @@ describe("a card says what the Cell asked, as it asked it", () => {
     expect(titles(card)).toEqual(["Approve", "Always allow this session", "Decline", "Decline…"]);
   });
 
+  // Without these, a Cell in full access that still asks reads like a bug in full access.
+  it("says why a Cell with full access still asks, and the provider's own reason", () => {
+    const plain = cardOf(needFixture({ request: requestFixture() }), NOW);
+    expect([plain.quote, plain.why]).toEqual([null, null]);
+    const ruled = cardOf(
+      needFixture({
+        request: requestFixture({
+          reason: "Deletes a folder outside the project",
+          fullAccessOverride: "ask_rule",
+        }),
+      }),
+      NOW,
+    );
+    expect(ruled.quote).toBe("Deletes a folder outside the project");
+    expect(ruled.why).toMatch(/ask rule/);
+    const checked = cardOf(
+      needFixture({ request: requestFixture({ fullAccessOverride: "provider_check" }) }),
+      NOW,
+    );
+    expect(checked.why).toMatch(/no setting skips it/);
+  });
+
   it("offers no answer to an ask that can't take one, and says why", () => {
     for (const capability of ["not_resumable", null] as const) {
       const card = cardOf(needFixture({ request: requestFixture({ capability }) }), NOW);

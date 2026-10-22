@@ -31,6 +31,8 @@ const fakeSource = Effect.gen(function* () {
     id,
     prompt: "pnpm test",
     appName: null,
+    reason: null,
+    fullAccessOverride: null,
     options: [],
     questions: [],
     responseMode: null,

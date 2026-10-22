@@ -14,6 +14,7 @@ import type {
   ApprovalOption,
   AskedQuestion,
   FailureClass,
+  FullAccessOverride,
   InFlight,
   PlanDetail,
   RequestDetail,
@@ -293,6 +294,10 @@ export interface NeedRequest {
   /** The command or file as the provider worded it; shown whole, never summarised. */
   readonly prompt: string | null;
   readonly appName: string | null;
+  /** The provider's own words for why it asks, quoted on the card. */
+  readonly reason: string | null;
+  /** Why a Cell with full access still asks: the person's ask rule, or the provider's own check. */
+  readonly fullAccessOverride: FullAccessOverride | null;
   /** The provider's own choices, in its order; empty when it offers none. */
   readonly options: ReadonlyArray<ApprovalOption>;
   readonly questions: ReadonlyArray<AskedQuestion>;
@@ -396,6 +401,8 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             kind: pending.kind,
             prompt: read?.prompt ?? null,
             appName: read?.appName ?? null,
+            reason: read?.reason ?? null,
+            fullAccessOverride: read?.fullAccessOverride ?? null,
             options: read?.options ?? [],
             questions: read?.questions ?? [],
             responseMode: read?.responseMode ?? null,

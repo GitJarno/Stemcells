@@ -262,6 +262,8 @@ describe("a card's data", () => {
           id: "request-2",
           prompt: command,
           appName: null,
+          reason: "Rewrites the remote branch",
+          fullAccessOverride: "provider_check",
           options: [{ decision: "accept", label: "Allow once" }],
           questions: [],
           responseMode: null,
@@ -275,7 +277,14 @@ describe("a card's data", () => {
       kind: "permission",
       parentThreadId: "thread-parent",
       blocks: true,
-      request: { id: "request-2", kind: "command", prompt: command, capability: "live" },
+      request: {
+        id: "request-2",
+        kind: "command",
+        prompt: command,
+        reason: "Rewrites the remote branch",
+        fullAccessOverride: "provider_check",
+        capability: "live",
+      },
     });
     expect(read.request?.options).toHaveLength(1);
     expect(needOf(signal, { request: null }, 2).request).toEqual({
@@ -283,6 +292,8 @@ describe("a card's data", () => {
       kind: "command",
       prompt: null,
       appName: null,
+      reason: null,
+      fullAccessOverride: null,
       options: [],
       questions: [],
       responseMode: null,

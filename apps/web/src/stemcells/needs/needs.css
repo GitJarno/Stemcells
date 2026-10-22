@@ -235,6 +235,7 @@
   list-style: decimal;
 }
 [data-need-note],
+[data-need-why],
 [data-need-receipt] {
   color: var(--sc-dim);
 }

@@ -103,6 +103,7 @@ export function NeedCard(props: {
           ))}
         </ol>
       ) : null}
+      {card.why ? <p data-need-why="">{card.why}</p> : null}
       {card.note ? <p data-need-note="">{card.note}</p> : null}
 
       {gone ? (

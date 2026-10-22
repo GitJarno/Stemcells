@@ -31,6 +31,8 @@ export function requestFixture(overrides: Partial<NeedRequest> = {}): NeedReques
     kind: "command",
     prompt: "git push --force-with-lease origin header-tokens",
     appName: null,
+    reason: null,
+    fullAccessOverride: null,
     options: [],
     questions: [],
     responseMode: null,
