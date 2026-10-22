@@ -12,6 +12,9 @@ export const HostResourcesSnapshot = Schema.Struct({
   cpuCount: NonNegativeInt,
   availableMemoryBytes: NonNegativeInt,
   totalMemoryBytes: NonNegativeInt,
+  // The home volume's; absent from servers that don't read it.
+  diskFreeBytes: Schema.optionalKey(NonNegativeInt),
+  diskTotalBytes: Schema.optionalKey(NonNegativeInt),
 });
 export type HostResourcesSnapshot = typeof HostResourcesSnapshot.Type;
 

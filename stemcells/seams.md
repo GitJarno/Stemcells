@@ -118,6 +118,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/window/DesktopWindow.ts` | `createWindow` takes an optional `{ bounds, show }`; such a window skips the main window's bounds saving, preview registration, maximizing and dev tools, and shows only when `show`. The service gains an optional `createExtra` | Same: every window is made by upstream's own maker, with its webview hardening, popup handling, navigation guard and renderer recovery, rather than a copy that would drift |
 | `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
 | `apps/web/src/main.tsx` (windows) | Imports `./stemcells/windows/startSharing` after `AppRoot` | Windows (below): each window starts merging the others' writes to the shared stores in the turn the stores read localStorage, so none is missed while the chat route loads |
+| `packages/contracts/src/resourceTelemetry.ts`, `apps/server/src/resourceTelemetry/HostResources.ts` | `HostResourcesSnapshot` gains optional `diskFreeBytes` and `diskTotalBytes`; `HostResources` fills them from one `statfs` of the home folder, and leaves them out when it can't read it | Upstream first: "Disk on every machine" (below) |
 
 ### One import per hot file
 
@@ -221,6 +222,19 @@ To offer upstream: publish a theme and set it as the default from server
 code. `t3 theme set`'s guarded publish and settings write take explicit
 paths but aren't exported; exporting them (or a small module both the CLI
 and a server feature call) would retire the `cli/theme.ts` seam.
+
+### Upstream first: "Disk on every machine"
+
+Settings › Disk shows the free space of every connected machine, not only
+this one, and starts a cleanup Cell on the machine it frees. The web client
+reaches another environment only through its WebSocket, so the figure rides
+on upstream's `server.getHostResources`, which every environment already
+answers (local, SSH, tunnel), rather than an HTTP route of ours a remote
+browser can't authenticate. The fields are optional both ways: an older
+server leaves them out and the row says so; an older client ignores them.
+An SSH environment runs upstream's released server, so its row shows a
+figure only once upstream ships the fields. Upstream not asked yet;
+`stemcells/upstream/hostResources.contract.test.ts` pins them.
 
 ### Concise model names
 

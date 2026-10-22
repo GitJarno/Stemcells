@@ -4,12 +4,13 @@ import * as Option from "effect/Option";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 
 import * as UpstreamDisk from "../upstream/disk.ts";
+import { cleanupAsk } from "./report.ts";
 import {
   DISK_KIND_TITLES,
   FINDING_NOTES,
   FINDING_TITLES,
   findingCount,
-  findingGrade,
+  findingRisk,
   isMeasuredKind,
 } from "./rules.ts";
 import * as StemcellsDisk from "./StemcellsDisk.ts";
@@ -19,7 +20,9 @@ import type { DiskItem, DiskVolume } from "./walk.ts";
 // while Settings › Disk is open (`?measure=again` measures anew).
 // GET /api/stemcells/disk/volume: free space alone, one statfs, for the
 // sidebar's foot; it never starts a walk.
-// GET /api/stemcells/disk/cleanup-draft: the cleanup Cell's first message.
+// GET /api/stemcells/disk/cleanup-draft: the cleanup Cell's first message
+// (`?machine=other`: the ask alone, for a Cell on a machine this server
+// didn't measure).
 
 const DISK_PATH = "/api/stemcells/disk";
 const NO_STORE = { "cache-control": "private, no-store" };
@@ -60,7 +63,7 @@ function toWire(look: StemcellsDisk.DiskLook) {
               kind: finding.kind,
               title: FINDING_TITLES[finding.kind],
               note: FINDING_NOTES[finding.kind],
-              grade: findingGrade(finding.kind),
+              risk: findingRisk(finding.kind),
               bytes: finding.bytes,
               countLabel: findingCount(finding.kind, finding.count),
               paths: finding.paths.map(wireItem),
@@ -97,6 +100,17 @@ const volumeRoute = Effect.gen(function* () {
 });
 
 const draftRoute = Effect.gen(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const elsewhere = Option.exists(
+    HttpServerRequest.toURL(request),
+    (url) => url.searchParams.get("machine") === "other",
+  );
+  if (elsewhere) {
+    return HttpServerResponse.jsonUnsafe(
+      { draft: cleanupAsk("the machine you run on") },
+      { headers: NO_STORE },
+    );
+  }
   const disk = yield* StemcellsDisk.StemcellsDisk;
   return yield* disk.cleanupDraft().pipe(
     Effect.map((draft) => HttpServerResponse.jsonUnsafe({ draft }, { headers: NO_STORE })),

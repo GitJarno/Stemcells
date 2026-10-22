@@ -27,7 +27,7 @@ export interface DiskReading {
       readonly kind: string;
       readonly title: string;
       readonly note: string;
-      readonly grade: "Safe" | "Careful";
+      readonly risk: "low" | "medium";
       readonly bytes: number;
       readonly countLabel: string | null;
       readonly paths: ReadonlyArray<DiskItem>;
@@ -159,9 +159,16 @@ export function useDiskFree(): DiskReading["volume"] | null {
   return volume;
 }
 
-/** The cleanup Cell's first message: the ask, and the last measurement for it to start from. */
-export async function readCleanupDraft(): Promise<string> {
-  const response = await getFromPrimary(`${DISK_PATH}/cleanup-draft`);
+/**
+ * The cleanup Cell's first message: the ask, and the last measurement for
+ * it to start from; for another machine, which this one didn't measure,
+ * the ask alone.
+ */
+export async function readCleanupDraft(machine: "this" | "other"): Promise<string> {
+  const response = await getFromPrimary(
+    `${DISK_PATH}/cleanup-draft`,
+    machine === "other" ? { machine: "other" } : undefined,
+  );
   if (!response.ok) throw new Error(`Cleanup draft failed: ${response.status}`);
   const body = (await response.json()) as { readonly draft: string };
   return body.draft;

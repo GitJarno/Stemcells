@@ -86,20 +86,12 @@ export function findingRisk(kind: FindingKind): FindingRisk {
     case "simulators":
     case "oldDownloads":
     case "temporary":
+    case "trash":
       return "medium";
     default:
       return "low";
   }
 }
-
-/**
- * The cleanup Cell's verdicts: Safe comes back by itself or with one command,
- * Careful only with time, a download or a rebuild. Low risk is Safe.
- */
-export type FindingGrade = "Safe" | "Careful";
-
-export const findingGrade = (kind: FindingKind): FindingGrade =>
-  findingRisk(kind) === "low" ? "Safe" : "Careful";
 
 /** "12 worktrees", "in 9 projects", "340 files"; null where a count says nothing. */
 export function findingCount(kind: FindingKind, n: number): string | null {

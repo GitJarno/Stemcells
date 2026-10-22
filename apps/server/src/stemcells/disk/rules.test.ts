@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   classify,
   findingCount,
-  findingGrade,
+  findingRisk,
   gitMarkOf,
   guardedFolders,
   itemKey,
@@ -138,17 +138,20 @@ describe("disk classification, rule for rule", () => {
 });
 
 describe("findings", () => {
-  it("are graded Safe when they come back on their own, Careful otherwise", () => {
-    expect(findingGrade("caches")).toBe("Safe");
-    expect(findingGrade("buildData")).toBe("Safe");
-    expect(findingGrade("buildOutput")).toBe("Safe");
-    expect(findingGrade("dependencies")).toBe("Safe");
-    expect(findingGrade("deviceSupport")).toBe("Safe");
-    expect(findingGrade("trash")).toBe("Safe");
-    expect(findingGrade("worktrees")).toBe("Careful");
-    expect(findingGrade("simulators")).toBe("Careful");
-    expect(findingGrade("oldDownloads")).toBe("Careful");
-    expect(findingGrade("temporary")).toBe("Careful");
+  it("are low risk when they come back on their own, medium otherwise", () => {
+    expect(findingRisk("caches")).toBe("low");
+    expect(findingRisk("buildData")).toBe("low");
+    expect(findingRisk("buildOutput")).toBe("low");
+    expect(findingRisk("dependencies")).toBe("low");
+    expect(findingRisk("deviceSupport")).toBe("low");
+    expect(findingRisk("worktrees")).toBe("medium");
+    expect(findingRisk("simulators")).toBe("medium");
+    expect(findingRisk("oldDownloads")).toBe("medium");
+    expect(findingRisk("temporary")).toBe("medium");
+  });
+
+  it("put the Trash at medium risk: emptying it is for good", () => {
+    expect(findingRisk("trash")).toBe("medium");
   });
 
   it("count in the thing a person counts", () => {

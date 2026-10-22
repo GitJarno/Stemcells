@@ -10,15 +10,20 @@ import {
   SettingsSection,
   Spinner,
   toastManager,
+  useMachineDisk,
   useOpenCellWithDraft,
+  useOtherMachines,
+  usePrimaryEnvironmentId,
   useRelativeTimeTick,
+  type EnvironmentId,
 } from "../upstream/disk";
 import { diskBytes, readCleanupDraft, useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure } from "./pressure";
 
-// Settings › Disk: how full the disk is, what is large, and a Cell to free
-// space with. The app deletes nothing itself: "Free space" opens a new Cell
-// with the measurement in its composer, for the person to send.
+// Settings › Disk: how full each machine's disk is, what is large on this
+// one, and a Cell to free space with. The app deletes nothing itself: "Free
+// space" opens a new Cell on that machine with the ask (and, here, the
+// measurement) in its composer, for the person to send.
 
 const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
   calm: "bg-primary",
@@ -26,8 +31,9 @@ const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
   now: "bg-destructive",
 };
 
-function DiskGauge({ volume }: { readonly volume: DiskReading["volume"] }) {
-  const share = volume.total > 0 ? Math.min(1, volume.used / volume.total) : 0;
+function DiskGauge({ volume }: { readonly volume: Pick<DiskReading["volume"], "free" | "total"> }) {
+  const used = Math.max(0, volume.total - volume.free);
+  const share = volume.total > 0 ? Math.min(1, used / volume.total) : 0;
   const tone = GAUGE_TONE[diskPressure(volume.free)];
   return (
     <div className="space-y-1.5 pb-3">
@@ -36,14 +42,14 @@ function DiskGauge({ volume }: { readonly volume: DiskReading["volume"] }) {
         aria-label="Disk used"
         aria-valuemin={0}
         aria-valuemax={volume.total}
-        aria-valuenow={volume.used}
-        aria-valuetext={`${diskBytes(volume.used)} used of ${diskBytes(volume.total)}`}
+        aria-valuenow={used}
+        aria-valuetext={`${diskBytes(used)} used of ${diskBytes(volume.total)}`}
         className="h-2 w-full overflow-hidden rounded-full bg-muted"
       >
         <div className={`h-full rounded-full ${tone}`} style={{ width: `${share * 100}%` }} />
       </div>
       <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-        <span>{diskBytes(volume.used)} used</span>
+        <span>{diskBytes(used)} used</span>
         <span>{diskBytes(volume.free)} free</span>
       </div>
     </div>
@@ -57,9 +63,10 @@ const Size = ({ bytes }: { readonly bytes: number }) => (
 /** Opens the cleanup Cell with its draft, or says it couldn't. */
 async function openCleanupCell(
   openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
+  machine: "this" | "other",
 ): Promise<void> {
   try {
-    if (!(await openCell(await readCleanupDraft()))) throw new Error("No Cell opened");
+    if (!(await openCell(await readCleanupDraft(machine)))) throw new Error("No Cell opened");
   } catch {
     toastManager.add({
       type: "error",
@@ -71,14 +78,16 @@ async function openCleanupCell(
 
 function FreeSpaceButton({
   openCell,
+  machine,
 }: {
   readonly openCell: ReturnType<typeof useOpenCellWithDraft>;
+  readonly machine: "this" | "other";
 }) {
   const [opening, setOpening] = useState(false);
   const freeSpace = async () => {
     if (openCell === null) return;
     setOpening(true);
-    await openCleanupCell(openCell).finally(() => setOpening(false));
+    await openCleanupCell(openCell, machine).finally(() => setOpening(false));
   };
   return (
     <Button size="sm" disabled={openCell === null || opening} onClick={() => void freeSpace()}>
@@ -88,9 +97,37 @@ function FreeSpaceButton({
   );
 }
 
+/** Another machine's free space, and a Cell there to free some. */
+function OtherMachineRow({
+  environmentId,
+  label,
+}: {
+  readonly environmentId: EnvironmentId;
+  readonly label: string;
+}) {
+  const disk = useMachineDisk(environmentId);
+  const openCell = useOpenCellWithDraft(environmentId);
+  const space =
+    disk === undefined
+      ? "Reading the disk…"
+      : disk === null
+        ? "Free space unknown"
+        : `${diskBytes(disk.free)} free of ${diskBytes(disk.total)}`;
+  return (
+    <SettingsRow
+      title={label}
+      description={openCell ? space : `${space} · Add a project there to start a Cell on it.`}
+      control={<FreeSpaceButton openCell={openCell} machine="other" />}
+    >
+      {disk ? <DiskGauge volume={disk} /> : null}
+    </SettingsRow>
+  );
+}
+
 export function DiskSettingsPanel() {
   const { reading, failed, measureAgain } = useDiskReading();
-  const openCell = useOpenCellWithDraft();
+  const openCell = useOpenCellWithDraft(usePrimaryEnvironmentId());
+  const otherMachines = useOtherMachines();
   const nowMs = useRelativeTimeTick(30_000);
   const map = reading?.map ?? null;
   const scanning = reading?.scanning ?? false;
@@ -108,14 +145,26 @@ export function DiskSettingsPanel() {
           }
           description={
             openCell
-              ? "A Cell looks for what can go safely, shows you, and removes only what you approve."
+              ? "A Cell lists what can go as Low, Medium and High risk, and removes only what you name: “delete L1, L3 and M5”."
               : "Add a project to start a Cell that frees space."
           }
-          control={<FreeSpaceButton openCell={openCell} />}
+          control={<FreeSpaceButton openCell={openCell} machine="this" />}
         >
           {reading ? <DiskGauge volume={reading.volume} /> : null}
         </SettingsRow>
       </SettingsSection>
+
+      {otherMachines.length > 0 ? (
+        <SettingsSection id="disk-other-machines" title="Other machines">
+          {otherMachines.map((machine) => (
+            <OtherMachineRow
+              key={machine.environmentId}
+              environmentId={machine.environmentId}
+              label={machine.label}
+            />
+          ))}
+        </SettingsSection>
+      ) : null}
 
       <SettingsSection
         id="disk-large"
@@ -178,8 +227,8 @@ export function DiskSettingsPanel() {
               title={
                 <span className="flex items-center gap-1.5">
                   {finding.title}
-                  <Badge size="sm" variant={finding.grade === "Safe" ? "success" : "warning"}>
-                    {finding.grade}
+                  <Badge size="sm" variant={finding.risk === "low" ? "success" : "warning"}>
+                    {finding.risk === "low" ? "Low risk" : "Medium risk"}
                   </Badge>
                 </span>
               }
