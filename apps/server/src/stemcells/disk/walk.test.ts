@@ -6,7 +6,8 @@ import * as NodePath from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 
-import { cleanupDraft, code, diskBytes, diskReport } from "./report.ts";
+import { diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { cleanupDraft, code, diskReport } from "./report.ts";
 import { guardedFolders, isWithin } from "./rules.ts";
 import {
   diskMap,

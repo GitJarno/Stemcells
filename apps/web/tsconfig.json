@@ -43,6 +43,7 @@
     "../../stemcells/brand/upstreamName.ts",
     "../../stemcells/words/cellNames.ts",
     "../../stemcells/words/cellTools.ts",
+    "../../stemcells/words/disk.ts",
     "../../stemcells/words/subcells.ts"
   ]
 }

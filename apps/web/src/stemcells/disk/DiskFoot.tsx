@@ -9,7 +9,8 @@ import {
   TooltipTrigger,
   useSidebar,
 } from "../upstream/ui";
-import { diskBytes, useDiskFree } from "./diskReading";
+import { diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { useDiskFree } from "./diskReading";
 import { diskPressure, FOOT_TONE, freeFigure } from "./pressure";
 
 // The disk at the sidebar's foot, beside Settings and Usage: the space left

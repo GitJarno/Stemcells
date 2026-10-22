@@ -81,7 +81,13 @@ export function useOpenCellWithDraft(
   const projectRef = projectRefOn(environmentId, defaultProjectRef, useProjects());
   if (projectRef === null) return null;
   return async (text) => {
-    const opened = await handleNewThread(projectRef).catch(() => null);
+    // In the project folder itself: a new worktree on a full disk copies the
+    // checkout and runs its setup, an install, before the Cell frees a byte.
+    const opened = await handleNewThread(projectRef, {
+      envMode: "local",
+      branch: null,
+      worktreePath: null,
+    }).catch(() => null);
     if (opened === null) return false;
     useComposerDraftStore.getState().setPrompt(opened.draftId, text);
     return true;

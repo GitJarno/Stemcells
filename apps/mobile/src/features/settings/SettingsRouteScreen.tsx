@@ -18,6 +18,7 @@ import {
   SettingsEnvironmentFilterHeader,
 } from "./components/SettingsEnvironmentFilterHeader";
 import { useSettingsEnvironmentFilter } from "./settings-environment-filter";
+import { StemcellsServerRows } from "../../stemcells/pages";
 
 export function SettingsRouteScreen() {
   const navigation = useNavigation();
@@ -212,6 +213,7 @@ function SettingsIndexSections() {
           target="SettingsEnvironmentMaintenance"
           disabled={noServerTargets}
         />
+        <StemcellsServerRows />
       </SettingsSection>
 
       <SettingsSection title="App">

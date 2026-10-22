@@ -6,7 +6,8 @@ import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 
 import * as UpstreamDisk from "../upstream/disk.ts";
-import { cleanupAsk, cleanupDraft } from "./report.ts";
+import { cleanupAsk } from "../../../../../stemcells/words/disk.ts";
+import { cleanupDraft } from "./report.ts";
 import {
   diskMap,
   machineFolders,

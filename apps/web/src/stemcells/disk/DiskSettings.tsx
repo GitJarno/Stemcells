@@ -17,7 +17,13 @@ import {
   useRelativeTimeTick,
   type EnvironmentId,
 } from "../upstream/disk";
-import { diskBytes, readCleanupDraft, useDiskReading, type DiskReading } from "./diskReading";
+import {
+  cleanupAsk,
+  CLEANUP_PROMISE,
+  diskBytes,
+  ITS_OWN_MACHINE,
+} from "../../../../../stemcells/words/disk.ts";
+import { readCleanupDraft, useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure } from "./pressure";
 
 // Settings › Disk: how full each machine's disk is, what is large on this
@@ -60,13 +66,18 @@ const Size = ({ bytes }: { readonly bytes: number }) => (
   <span className="text-sm text-foreground tabular-nums">{diskBytes(bytes)}</span>
 );
 
-/** Opens the cleanup Cell with its draft, or says it couldn't. */
+/**
+ * Opens the cleanup Cell with its draft, or says it couldn't: here, the ask
+ * and this server's measurement; elsewhere, which this one didn't measure,
+ * the ask alone.
+ */
 async function openCleanupCell(
   openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
   machine: "this" | "other",
 ): Promise<void> {
   try {
-    if (!(await openCell(await readCleanupDraft(machine)))) throw new Error("No Cell opened");
+    const draft = machine === "this" ? await readCleanupDraft() : cleanupAsk(ITS_OWN_MACHINE);
+    if (!(await openCell(draft))) throw new Error("No Cell opened");
   } catch {
     toastManager.add({
       type: "error",
@@ -144,9 +155,7 @@ export function DiskSettingsPanel() {
                 : "Reading the disk…"
           }
           description={
-            openCell
-              ? "A Cell lists what can go as Low, Medium and High risk, and removes only what you name: “delete L1, L3 and M5”."
-              : "Add a project to start a Cell that frees space."
+            openCell ? CLEANUP_PROMISE : "Add a project to start a Cell that frees space."
           }
           control={<FreeSpaceButton openCell={openCell} machine="this" />}
         >

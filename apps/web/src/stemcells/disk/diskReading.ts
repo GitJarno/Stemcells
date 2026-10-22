@@ -38,20 +38,6 @@ export interface DiskReading {
 
 const DISK_PATH = "/api/stemcells/disk";
 
-/** "107 GB", "940 MB", "1.2 TB": decimal units, as Finder and the cleanup report count. */
-export function diskBytes(bytes: number): string {
-  const value = Math.max(0, bytes);
-  const format = (scaled: number, unit: string) => {
-    const text = scaled.toFixed(scaled < 10 ? 1 : 0);
-    return `${text.endsWith(".0") ? text.slice(0, -2) : text} ${unit}`;
-  };
-  if (value >= 1e12) return format(value / 1e12, "TB");
-  if (value >= 1e9) return format(value / 1e9, "GB");
-  if (value >= 1e6) return format(value / 1e6, "MB");
-  if (value >= 1e3) return format(value / 1e3, "KB");
-  return `${Math.trunc(value)} bytes`;
-}
-
 /** One reading of the disk (`again`: measure it anew), or null when the server gave none. */
 async function fetchDiskReading(again: boolean): Promise<DiskReading | null> {
   try {
@@ -159,16 +145,9 @@ export function useDiskFree(): DiskReading["volume"] | null {
   return volume;
 }
 
-/**
- * The cleanup Cell's first message: the ask, and the last measurement for
- * it to start from; for another machine, which this one didn't measure,
- * the ask alone.
- */
-export async function readCleanupDraft(machine: "this" | "other"): Promise<string> {
-  const response = await getFromPrimary(
-    `${DISK_PATH}/cleanup-draft`,
-    machine === "other" ? { machine: "other" } : undefined,
-  );
+/** This machine's cleanup Cell's first message: the ask, and the last measurement to start from. */
+export async function readCleanupDraft(): Promise<string> {
+  const response = await getFromPrimary(`${DISK_PATH}/cleanup-draft`);
   if (!response.ok) throw new Error(`Cleanup draft failed: ${response.status}`);
   const body = (await response.json()) as { readonly draft: string };
   return body.draft;

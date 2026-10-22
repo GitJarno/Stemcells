@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 
-import { diskBytes, useDiskFree } from "../disk/diskReading";
+import { diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { useDiskFree } from "../disk/diskReading";
 import { diskPressure, FOOT_TONE, freeFigure } from "../disk/pressure";
 import { cn } from "../upstream/ui";
 import { RailTip } from "./RailParts";
