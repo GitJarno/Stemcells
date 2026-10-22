@@ -105,16 +105,19 @@ export function surfaceName(
       return "Pull requests";
     case "device":
       return surface.title ?? surface.target?.name ?? "Device";
-    case "preview": {
-      const status = surface.resourceId ? navStatusOf(surface.resourceId) : null;
-      if (status === null || status._tag === "Idle") return "Browser";
-      if (status.title.trim().length > 0) return status.title;
-      try {
-        return new URL(status.url).host || "Browser";
-      } catch {
-        return "Browser";
-      }
-    }
+    case "preview":
+      return browserName(surface.resourceId ? navStatusOf(surface.resourceId) : null);
+  }
+}
+
+/** Upstream's tab title for a browser: its page's title, else its host. */
+export function browserName(status: PreviewNavStatus | null): string {
+  if (status === null || status._tag === "Idle") return "Browser";
+  if (status.title.trim().length > 0) return status.title;
+  try {
+    return new URL(status.url).host || "Browser";
+  } catch {
+    return "Browser";
   }
 }
 

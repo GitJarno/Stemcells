@@ -1,0 +1,126 @@
+/* The tuck (Floater.tsx): a floating browser or device with no room beside
+   the chat, as a card at the chat's right edge. Its room is the chat's
+   canvas, which cuts the card where it goes behind the edge, over the
+   composer's overlay so the composer never takes its pointer. */
+[data-stemcells-tuck] {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* At rest only its mark shows, padded alike on both sides, the rest
+   behind the edge; pointed at or focused, it slides out whole. It moves by
+   transform alone. It comes and goes with no motion of its own: a chat
+   narrowing past the room for a floater swaps one for the other at once. */
+[data-stemcells-tuck-card] {
+  --tuck-peek: calc(var(--tuck-mark) + 2 * var(--tuck-pad));
+  --tuck-mark: 16px;
+  --tuck-pad: var(--sc-space-lg);
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--sc-tuck-floor, 0px) + var(--sc-space-xs));
+  display: flex;
+  align-items: center;
+  max-width: min(16rem, calc(100% - 2 * var(--sc-space-md)));
+  height: 36px;
+  padding-inline-end: var(--sc-space-xs);
+  border: 1px solid var(--sc-pane-button-edge);
+  border-radius: var(--sc-radius-card);
+  background: var(--sc-pane-button-ground);
+  backdrop-filter: blur(var(--sc-glass-blur)) saturate(var(--sc-glass-saturation));
+  box-shadow: var(--sc-glass-shadow);
+  color: var(--muted-foreground);
+  pointer-events: auto;
+  translate: calc(100% - var(--tuck-peek)) 0;
+  transition: translate var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+  -webkit-app-region: no-drag;
+}
+[data-stemcells-tuck-card]:is(:hover, :focus-within, [data-out]) {
+  translate: calc(-1 * var(--sc-space-md)) 0;
+  color: var(--foreground);
+}
+/* Out, it stands clear of the edge; the gap still counts as the card, so a
+   pointer resting at the very edge doesn't send it back and forth. */
+[data-stemcells-tuck-card]::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 100%;
+  width: var(--sc-space-md);
+}
+
+[data-stemcells-tuck-open] {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--tuck-pad);
+  min-width: 0;
+  height: 100%;
+  padding-inline: var(--tuck-pad) var(--sc-space-xs);
+  border-radius: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+[data-stemcells-tuck-mark] {
+  position: relative;
+  display: flex;
+  flex: none;
+  width: var(--tuck-mark);
+  height: var(--tuck-mark);
+}
+[data-stemcells-tuck-mark] > :is(img, svg) {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  object-fit: contain;
+}
+/* A recording, as upstream's floater marks one: a still dot, not its pulse. */
+[data-stemcells-tuck-recording] {
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-end: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--destructive);
+  box-shadow: 0 0 0 1.5px var(--background);
+}
+[data-stemcells-tuck-name] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-stemcells-tuck-hide] {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+[data-stemcells-tuck-hide]:hover {
+  background: var(--sc-pane-button-lit);
+  color: var(--foreground);
+}
+[data-stemcells-tuck-hide] svg {
+  width: 14px;
+  height: 14px;
+}
+[data-stemcells-tuck] button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* Less motion: it comes out and goes back in place. */
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-tuck-card] {
+    transition: none;
+  }
+}

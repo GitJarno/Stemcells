@@ -24,6 +24,7 @@ import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
+import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/ThreadPreviewMiniPlayer";
 import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
@@ -72,6 +73,7 @@ import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadNotificationCoordinator from "./ThreadNotificationCoordinator";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
+import * as OurThreadPreviewMiniPlayer from "./ThreadPreviewMiniPlayer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
@@ -278,6 +280,18 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/preview/ThreadPreviewMiniPlayer.tsx": [
         "~/browser/BrowserSurfaceSlot",
         ["BrowserSurfaceSlot"],
+      ],
+    },
+  },
+  "apps/web/src/components/preview/ThreadPreviewMiniPlayer.tsx": {
+    upstream: UpstreamThreadPreviewMiniPlayer,
+    substitute: OurThreadPreviewMiniPlayer satisfies RendersOrNothing<
+      typeof UpstreamThreadPreviewMiniPlayer
+    >,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": [
+        "./preview/ThreadPreviewMiniPlayer",
+        ["ThreadPreviewMiniPlayer"],
       ],
     },
   },
@@ -591,10 +605,7 @@ const CASES: Readonly<Record<string, Case>> = {
     substitute: OurComposerStash satisfies typeof UpstreamComposerStash,
     importers: {
       // The stash and its shortcut, gated by the window's input.
-      "apps/web/src/components/chat/ChatComposer.tsx": [
-        "./useComposerStash",
-        ["useComposerStash"],
-      ],
+      "apps/web/src/components/chat/ChatComposer.tsx": ["./useComposerStash", ["useComposerStash"]],
     },
   },
   "apps/web/src/components/chat/TimelineUserMessageRow.tsx": {
