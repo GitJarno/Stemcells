@@ -316,6 +316,16 @@ const CASES: Readonly<Record<string, Case>> = {
         "./settingsSearch",
         ["searchSettings"],
       ],
+      // The list both searches above search in.
+      "apps/web/src/components/settings/useAvailableSettingsSearchItems.ts": [
+        "./settingsSearch",
+        ["filterAvailableSettingsSearchItems"],
+      ],
+      // Its rows' anchors: the privacy row is hidden through its own.
+      "apps/web/src/components/settings/SettingsPanels.tsx": [
+        "./settingsSearch",
+        ["searchableSetting"],
+      ],
     },
   },
   "apps/web/src/components/chat/ChatComposer.tsx": {

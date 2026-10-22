@@ -70,7 +70,17 @@ describe("no Stemcells build reports on the person", () => {
     const web = code.filter((file) => file.startsWith("apps/web/src/") && !file.startsWith(ours));
     expect(filesMatching(web, /t3code:analytics-device-id/)).toEqual([]);
     const words = code.filter((file) => /^apps\/(?:web|desktop)\/src\//.test(file));
-    expect(filesMatching(words, /anonymous usage data/i)).toEqual([]);
+    // Upstream's privacy row keeps its words in its own panel, drawn hidden
+    // and never searched (the web's settingsSearch substitute,
+    // privacyRow.browser.test.tsx): a person never reads them.
+    const privacyRow = "apps/web/src/components/settings/SettingsPanels.tsx";
+    expect(filesMatching(words, /anonymous usage data/i)).toEqual([privacyRow]);
+    const panels = NodeFS.readFileSync(NodePath.join(repoRoot, privacyRow), "utf8");
+    const rows = panels
+      .split(/(?=<SettingsRow\b)/)
+      .filter((row) => /anonymous usage data/i.test(row));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatch(/^<SettingsRow\s*\{\.\.\.searchableSetting\("privacy-policy"\)\}/);
   });
 });
 

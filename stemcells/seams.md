@@ -67,7 +67,6 @@ here. Keep each seam the smallest edit that hands control to our code
 | `packages/ssh/src/tunnel.ts` | The remote launch sets `T3CODE_TELEMETRY_ENABLED=false`; `buildRemoteLaunchScript` stays exported for `analytics.contract.test.ts` to read the launch it builds | Same: an SSH environment runs upstream's released server on the remote machine |
 | `apps/web/src/connection/platform.ts` | `AnalyticsDevice` is `stemcells/privacy/analyticsDevice`'s `noAnalyticsDevice`; upstream's stored id and its `randomUUID` import are gone | Same: the client keeps no analytics id, and removes one an earlier build left |
 | `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The usage-data note says "Stemcells sends no usage data.", without T3's privacy policy link | Same: T3's note said usage data goes to T3 |
-| `apps/web/src/components/settings/SettingsPanels.tsx`, `apps/web/src/components/settings/settingsSearch.ts` | About's "Privacy policy" row and its search entry are gone | Same: the row linked T3's policy as the account of "the anonymous usage data T3 Code collects" |
 | `apps/server/src/serverRuntimeStartup.ts` | The boot heartbeat no longer records the install's owners, and drops the `getServerOwners` import | Same: naming them read the Codex and Claude login files and the T3 Connect account on every start |
 | `apps/server/src/serverRuntimeStartup.ts` (welcome) | Imports `launchesStarterThread` from `stemcells/upstream/welcome.ts`; while it is false, the cwd's project is bootstrapped and the welcome names it alone, without launching a starter thread or looking for one | A server started in a folder (web mode, `pnpm dev`) sent the page to an empty thread that looked like a new Cell, but as a thread its composer read no words: a message naming places went into the folder as written. The app opens on Aski and a new Cell instead |
 | `apps/server/src/serverRuntimeStartup.test.ts` | The bootstrap test's thread service and launcher die if called, and the unused `CommandId` import goes | It pins that seam: a starter thread looked for or launched fails it |
@@ -427,11 +426,19 @@ calls, and hashes of the Codex, Claude and T3 Connect accounts it finds.
   upstream's telemetry left (`<state dir>/anonymous-id`).
 - The boot heartbeat no longer names the install's owners, so the server
   never reads the provider logins for telemetry.
+- Settings' "Privacy policy" row, which links T3's policy as the account of
+  "the anonymous usage data T3 Code collects", is never offered, with no
+  seam: `upstream/substitutes/settingsSearch.ts` draws it `hidden` (no
+  space, no focus) and search and the command palette skip it. It links out
+  only; the no-op analytics above is what keeps the person's data at home.
+  Until 2026-10-21 it was a deletion in `SettingsPanels.tsx`, one of
+  upstream's hottest files, and it conflicted in that day's sync.
 - `analytics.contract.test.ts`, `outbound.contract.test.ts` and
   `privacy/noTelemetry.test.ts` fail when a sync brings any of it back:
   upstream's service provided anywhere, its endpoint or a PostHog key or
   client in the tree, an analytics id in the web client, the usage-data
-  words, or the owners read again.
+  words anywhere but the hidden privacy row (`privacyRow.browser.test.tsx`
+  holds it hidden), or the owners read again.
 
 ### No model list from T3
 

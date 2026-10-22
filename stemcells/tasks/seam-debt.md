@@ -111,9 +111,15 @@ What the numbers say:
      launch passes the local telemetry opt-out on; `cli/theme.ts` exports its
      guarded writes; the image dialog's atom or host is exported.
 6. **Not recommended.**
-   - Hiding the privacy row with CSS (`#privacy-policy[data-slot="settings-row"]`):
+   - ~~Hiding the privacy row with CSS (`#privacy-policy[data-slot="settings-row"]`):
      it saves `SettingsPanels.tsx` (86) but leaves upstream's usage-data
-     claim in the bundle, and loosens the privacy test.
+     claim in the bundle, and loosens the privacy test.~~ Done on 2026-10-21,
+     with the person's OK, as `hidden` through the settings search substitute
+     rather than CSS: zero diff in a hot file beats a visible deletion (the
+     deletion conflicted in that day's sync), and the server's no-op
+     analytics, not the missing row, is what protects the person's data.
+     The privacy test now allows the words in that one row, which a browser
+     test holds hidden and out of the keyboard's reach.
    - Skipping upstream tests that pin what we changed, instead of editing
      them: it drops their other cases, and for `ClaudeAdapterV2.test.ts`
      that's thousands of lines of coverage.
