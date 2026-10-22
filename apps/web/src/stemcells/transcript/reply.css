@@ -3,3 +3,10 @@
 .chat-markdown :is(strong, b) {
   color: var(--sc-strong-ink);
 }
+
+/* A diagram in a reply (```mermaid, drawn by pele) has a chip's corners, as
+   the other chips there do. Its colours and type already come from the
+   theme and the page (upstream/mermaid.contract.test.ts). */
+.pele {
+  --pele-radius: var(--sc-radius-chip);
+}

@@ -7,7 +7,13 @@
  */
 import { contextBridge, ipcRenderer } from "electron";
 
-import { WINDOWS_CHANNEL, type WindowBoot, type WindowElsewhere } from "./windows/channels.ts";
+import {
+  WINDOWS_CHANNEL,
+  type FlightCommand,
+  type FlightRect,
+  type WindowBoot,
+  type WindowElsewhere,
+} from "./windows/channels.ts";
 
 function readBoot(): WindowBoot | null {
   try {
@@ -69,5 +75,10 @@ if (boot !== null) {
     onNotifies: listen<boolean>(WINDOWS_CHANNEL.notifies),
     reveal: (window: string, pane: string) =>
       ipcRenderer.send(WINDOWS_CHANNEL.reveal, { window, pane }),
+    flight: (commands: ReadonlyArray<FlightCommand>) =>
+      ipcRenderer.send(WINDOWS_CHANNEL.flight, commands),
+    still: (rect: FlightRect) => ipcRenderer.invoke(WINDOWS_CHANNEL.flightStill, rect),
+    painted: () => ipcRenderer.invoke(WINDOWS_CHANNEL.flightPainted),
+    endFlight: () => ipcRenderer.send(WINDOWS_CHANNEL.flightEnd),
   });
 }

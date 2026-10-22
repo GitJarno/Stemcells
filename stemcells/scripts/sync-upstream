@@ -14,7 +14,8 @@
 #   sync-upstream --pr          push this branch and open or refresh its pull
 #                               request, with --report as the body
 #   sync-upstream --report      print the sync's report: commits, seams,
-#                               dependencies, outbound hosts, tests
+#                               drift before and after, dependencies,
+#                               outbound hosts, tests
 #   sync-upstream --issue CODE LOG   keep the issue for a run that ended with
 #                               CODE, quoting LOG's last lines
 #
@@ -234,6 +235,12 @@ report() {
     node stemcells/scripts/resolve-test-seams.mjs --preview origin/main "$target" || true
     echo '```'
   fi
+  echo
+  echo "### Drift"
+  echo
+  echo "What we change in upstream's files, before this sync and after it (\`stemcells/scripts/drift\`; hot files are held to \`seams.md\`'s Hot-file budget):"
+  echo
+  stemcells/scripts/drift --summary --base origin/main || true
   echo
   echo "### New dependencies"
   echo

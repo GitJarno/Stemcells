@@ -30,6 +30,7 @@ case, go back to the three costs and choose what keeps them lowest.
   - `apps/web/src/stemcells/`
   - `apps/server/src/stemcells/`
   - `apps/mobile/src/stemcells/`
+  - `apps/desktop/src/stemcells/`
   - `packages/stemcells-*`
   - `stemcells/` for docs, plans and scripts.
 
@@ -165,6 +166,14 @@ case, go back to the three costs and choose what keeps them lowest.
 - **The rule:** a seam in a hot file, or one that has conflicted twice,
   gets a substitute or an extension point (rule 5) before a new feature
   touches that file.
+- **The guard: a budget per hot file.** `seams.md`'s Hot-file budget gives
+  each hot file the lines and hunks we may change in it, and why. `drift`
+  fails when a file passes its row, when a row gives no reason, and when a
+  hot file with no row grows. A row only goes down: when `drift` says a
+  file is under its budget, lower the row in the same pull request. Raising
+  one is a decision a reviewer sees, with its reason beside it. Every sync
+  report and drift pull request carries `drift --summary`, the totals and
+  hot files before and after.
 
 Why 90: on 2026-10-21, seam heat over 60 days ran from 78 to 310 for the
 eleven hottest files and 50 or less for the rest, with nothing in between.
@@ -180,8 +189,8 @@ every week. A seam on each of them made the name the fork's largest family
 of conflicts: the sync of 2026-10-21 conflicted in 29 files, 12 of them
 only or mostly over lines where we had swapped the name, most in upstream's
 tests that pin those messages.
-So the builds rename it instead (the web app, the server, the phone, and
-the packages the desktop app bundles), and their sources stay upstream's
+So the builds rename it instead (the web app, the server, the phone and
+the desktop app), and their sources stay upstream's
 (`stemcells/brand/nameTransform.ts`).
 
 - **Not a patch stack.** A patch is keyed on positions: it says which lines
@@ -190,25 +199,33 @@ the packages the desktop app bundles), and their sources stay upstream's
   the exact words "T3 Code" wherever they stand, so upstream can move,
   rewrite or add them and there's nothing to re-apply. Nothing is written
   back to the sources; git merges upstream's files as upstream wrote them.
-- **What it never touches** is listed, not guessed: `KEPT` names each line
-  that keeps T3's name and why (T3's command line, what only the model
-  reads, names another program keys on, files written to disk, T3's own
-  product). It renames whole words only, never inside a path, an id or a
-  longer word, and never in our folders, tests, `LICENSE` or the notices.
-- **It can't drift silently.** A Vite or `pack` build fails when it renamed
-  nothing, when a line says the name somewhere it can't rename that `KEPT`
-  doesn't name, and when its output says "T3 Code" where no kept line does
-  (Metro, the phone's, fails on the line it can't rename).
-  `check-app-name.ts` checks an install's archive the same way, and
-  `nameTransform.test.ts` fails on a kept line upstream removed.
+- **What it never touches** is listed, not guessed: `KEPT` names each
+  place that keeps T3's name, by its file and words only that place says,
+  and why: what only the model reads,
+  names another program keys on, what's written to disk (the desktop app's
+  old profile folders and its `t3` launcher's marker), and T3's own
+  product, files and releases. It keeps places, never files, so a name
+  upstream adds to a kept file says Stemcells like any other, and words
+  upstream says again fail `nameTransform.test.ts`. It renames
+  whole words only, never inside a path, an id or a longer word, and never
+  in our folders, tests, `LICENSE` or the notices.
+- **It can't drift silently.** A Vite or `pack` build, and the phone's
+  Metro build, fail when a line says the name somewhere it can't rename
+  that `KEPT` doesn't name, and when a module they bundle says "T3 Code"
+  outside its own file's kept words. The words are matched whole, however
+  the build prints them (no spaces, another quote, an escape), and only for
+  their file: a bare "T3 Code", the name in other words, or a kept place's
+  words in another file, a dependency or our own folders, fails. A Vite or
+  `pack` build also fails when it renamed nothing. `check-app-name.ts`
+  checks an install's archive against every entry's words, and
+  `nameTransform.test.ts` fails on kept words upstream removed or said
+  again.
 - **Tests and source runs see upstream's words.** Tests run upstream's
   code as written, so upstream's tests pass unedited. The server run from
   source (`pnpm dev:server`) isn't built and says T3 Code; that's
   accepted.
-- **Where it doesn't run:** the desktop app's own code. It writes T3's
-  name into its profile folders and its command-line shim's marker, so it
-  needs a list of its own before it can be renamed; until then it says
-  what it said. Source maps carry upstream's source, words and all.
+- **Source maps** carry upstream's source, words and all; the output check
+  reads code, not maps.
 
 ## What we don't do, and why
 

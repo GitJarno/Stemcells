@@ -28,7 +28,8 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Where code goes
 - Ours lives in `apps/web/src/stemcells/`, `apps/server/src/stemcells/`,
-  `apps/mobile/src/stemcells/`, and `stemcells/` for docs, plans
+  `apps/mobile/src/stemcells/`, `apps/desktop/src/stemcells/`, and
+  `stemcells/` for docs, plans
   (`stemcells/tasks/`) and scripts. A `packages/stemcells-*` package only
   once two apps share the code: every new package rewrites upstream's
   `pnpm-lock.yaml`, the file every sync touches.
@@ -38,9 +39,11 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   is a substitute instead (`seams.md`, Substitutes).
 - `drift` marks a seam file upstream edits about daily as `hot`. Before a
   feature touches a hot file, its seam gets a substitute or an extension
-  point (`stemcells/docs/fork.md`, rule 7).
+  point (`stemcells/docs/fork.md`, rule 7). A hot file has a row in
+  `seams.md`'s Hot-file budget; our lines and hunks in it never pass that
+  row.
 - `stemcells/scripts/drift` before every push: it fails on an upstream
-  change `seams.md` doesn't name.
+  change `seams.md` doesn't name, and on a hot file past its budget.
 - Only the `stemcells/upstream/` adapters import upstream modules. Every
   upstream behaviour we rely on gets a contract test in our tree.
 - Our state lives in our own store, our endpoints under `/api/stemcells/`.

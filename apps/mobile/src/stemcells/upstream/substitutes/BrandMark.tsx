@@ -1,6 +1,6 @@
 // Replaces `components/BrandMark.tsx` (`substitutes.cjs`): upstream's lockup
 // on the loading screen, with Stemcells' icon (`brandAssets.ts` here) and the
-// app's name where upstream shows T3's icon and "T3 Code".
+// app's name where upstream shows T3's icon and its name.
 import Constants from "expo-constants";
 import { Image } from "expo-image";
 import { View } from "react-native";

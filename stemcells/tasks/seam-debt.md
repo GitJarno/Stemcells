@@ -92,8 +92,10 @@ What the numbers say:
    #60, which saves no file: the phone's test config needs the plugin too
    (heat 2). The heat still goes from 143 to 8, and an `expo export` showed
    the bundle using the substitute.
-5. **Upstream extension points (rule 5).** Listed only; none is offered yet.
-   Ranked by what each retires:
+5. **Upstream extension points (rule 5): carried, upstream not asked.**
+   the person (2026-10-21): nothing is posted upstream. Each stays a seam the
+   fork carries, listed here, until he decides to offer one. Ranked by what
+   each would retire:
    - "`ChatView` safe to render twice" (the window-input context): 6 files,
      including `ChatView.tsx` and `ChatComposer.tsx`.
    - One app-identity module (names, app id, profile and state folders, link

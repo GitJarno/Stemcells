@@ -11,6 +11,7 @@
     "../../scripts/lib",
     "../../stemcells/brand/assets.ts",
     "../../stemcells/brand/name.ts",
+    "../../stemcells/brand/upstreamName.ts",
     "../../stemcells/brand/nameTransform.ts"
   ]
 }
