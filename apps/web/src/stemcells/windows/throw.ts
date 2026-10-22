@@ -1,7 +1,7 @@
 /**
  * A Cell thrown (stemcells/docs/interaction.md, The toss): the carry
  * engine's other way to let go. A carried Cell let go with speed flies in
- * its own world (`throwWorld.ts`), bonks off the window's sides and top,
+ * its own world (`throwWorld.ts`), bonks off its chat's sides and top,
  * lands on its line, and walks home; its chat stays where it was. As pure
  * functions, fed recorded hands and times, in the original's model and
  * numbers (the original app's `CritterToss.swift`, `CritterBonk.swift` and
@@ -80,26 +80,26 @@ export function handVelocity(hand: ReadonlyArray<Sample>, at: number): Point {
 /**
  * A carried Cell let go this fast or faster, CSS px a second, is thrown:
  * the original's slowest contact that counts as a hit at all
- * (CritterBonk.swift:32). The original threw a critter let go anywhere in
- * its own chat; here a slower let-go drops the chat or sends it home.
+ * (CritterBonk.swift:32). As the original, a critter is thrown only in its
+ * own chat; here a slower let-go drops the chat or sends it home.
  */
 export const TOSS_SPEED = IMPACT_SPEED;
 
 /**
  * What letting go of a carried chat does: thrown when the hand let go fast
- * enough in the chat's own tab, else dropped where it is over, else home.
- * Over another tab, sprung open on the way, it is never thrown: a fast
- * let-go there drops the chat as a slow one does. With Reduce Motion
- * nothing is thrown.
+ * enough inside the chat's own pane, else dropped where it is over, else
+ * home. Anywhere else (another pane, a tab sprung open on the way) it is
+ * never thrown: a fast let-go there drops the chat as a slow one does. With
+ * Reduce Motion nothing is thrown.
  */
 export function letGoOf(
   over: boolean,
   velocity: Point,
   reduce: boolean,
-  ownTab: boolean,
+  inOwnChat: boolean,
 ): "drop" | "toss" | "home" {
   const v = limited(velocity);
-  if (ownTab && !reduce && Math.hypot(v.x, v.y) >= TOSS_SPEED) return "toss";
+  if (inOwnChat && !reduce && Math.hypot(v.x, v.y) >= TOSS_SPEED) return "toss";
   return over ? "drop" : "home";
 }
 
@@ -196,7 +196,7 @@ function judged(
 
 /** Where a thrown Cell plays, CSS px. */
 export interface Arena {
-  /** The window's content, from its top down to the line the Cell stands on at home. */
+  /** Its chat's pane, from its top down to the line the Cell stands on at home. */
   readonly bounds: Rect;
   /** The Cell's box's middle at home, along that line. */
   readonly home: number;
@@ -260,8 +260,8 @@ export function throwCell(
 }
 
 /**
- * The longest walk home, ms. The original's floor was its chat's; a
- * window's is far wider, so a longer way quickens the pace to fit.
+ * The longest walk home, ms. The original's chat was narrow; a pane can
+ * take the window's width, so a longer way quickens the pace to fit.
  */
 export const WALK_MOST = 3000;
 

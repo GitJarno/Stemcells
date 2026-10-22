@@ -21,7 +21,8 @@ export interface PaneLanding {
   readonly half: Rect;
 }
 
-const inside = (rect: Rect, at: Point) =>
+/** Whether `at` is in `rect`. */
+export const contains = (rect: Rect, at: Point) =>
   at.x >= rect.x && at.x < rect.x + rect.width && at.y >= rect.y && at.y < rect.y + rect.height;
 
 /**
@@ -63,7 +64,7 @@ export function paneLandingAt(
   carried: string,
   at: Point,
 ): PaneLanding | null {
-  const pane = panes.find((place) => inside(place.rect, at));
+  const pane = panes.find((place) => contains(place.rect, at));
   if (!pane || pane.paneId === carried) return null;
   const side = sideAt(pane.rect, at);
   return { anchor: pane.paneId, side, half: halfOf(pane.rect, side) };
@@ -90,7 +91,7 @@ export function stripLandingAt(
   chips: ReadonlyArray<ChipPlace>,
   at: Point,
 ): StripLanding | null {
-  if (!inside(strip, at)) return null;
+  if (!contains(strip, at)) return null;
   const chip = chips.find(({ rect }) => at.x >= rect.x && at.x < rect.x + rect.width);
   if (chip) return { kind: "chip", tabId: chip.tabId };
   const end = Math.max(strip.x, ...chips.map(({ rect }) => rect.x + rect.width));
@@ -116,7 +117,7 @@ export function chipElsewhereAt(
   places: ReadonlyArray<StripPlace>,
   at: Point,
 ): ChipElsewhere | null {
-  const place = places.find(({ frame }) => inside(frame, at));
+  const place = places.find(({ frame }) => contains(frame, at));
   if (!place) return null;
   const landing = stripLandingAt(place.strip.rect, place.strip.chips, at);
   if (landing?.kind !== "chip") return null;

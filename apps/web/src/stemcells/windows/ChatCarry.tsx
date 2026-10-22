@@ -12,8 +12,8 @@
  * the window onto the flight layer, and another window's chips light and
  * take it as this window's do. Let go anywhere else, or Esc, and the card
  * flies back to where it was picked up, its tab on stage again. Let go with
- * speed, the chat stays and its Cell is thrown from the hand
- * (`CellThrow.tsx`). Under Reduce Motion the card fades where it is.
+ * speed inside its own pane, the chat stays and its Cell is thrown from the
+ * hand, to fly in that pane (`CellThrow.tsx`). Under Reduce Motion the card fades where it is.
  */
 import {
   useEffect,
@@ -45,6 +45,7 @@ import { hostRoom, tabRowWidth } from "./hostStrip";
 import { carry, type CarryTarget, type NewTabIds } from "./moves";
 import {
   chipElsewhereAt,
+  contains,
   paneLandingAt,
   stripLandingAt,
   type ChipElsewhere,
@@ -471,13 +472,12 @@ class WindowCarrier implements Carrier {
     const { landing } = now;
     const velocity = handVelocity(now.samples, at);
     const over = landing !== null && !(landing.kind === "chip" && landing.tabId === now.tabId);
-    // Thrown only in its own tab, inside the window, and never from a chip, which a let-go aims at.
-    const throws =
-      readWorkspace().activeTabId === now.tabId &&
-      inWindow({ ...hand, width: 1, height: 1 }) &&
-      landing?.kind !== "chip";
-    const then = letGoOf(over, velocity, reducedMotion(), throws);
-    // Thrown in its own tab: the chat stays, and its Cell flies from the hand.
+    // Thrown only from inside its own chat, which it then flies in: anywhere else a let-go aims at a place.
+    const pane = paneElement(now.held.paneId);
+    const inOwnChat =
+      readWorkspace().activeTabId === now.tabId && pane !== null && contains(rectOf(pane), hand);
+    const then = letGoOf(over, velocity, reducedMotion(), inOwnChat);
+    // Thrown in its own chat: the chat stays, and its Cell flies from the hand.
     if (then === "toss") return this.toss(now, hand, velocity);
     if (then !== "drop" || landing === null || !over) return this.cancel();
     now.landingNow = true;

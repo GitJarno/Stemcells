@@ -16,9 +16,13 @@ function blanketEsc(element: HTMLDivElement | null) {
   });
 }
 
+/** The Cell's chat: the left half of the window's content. */
+const PANE = { width: 400, height: 500 };
+
 /**
- * A window's content with the Cell's place on its line, a field, the
- * composer's text, and a popover kept mounted (closed unless `popover`).
+ * A window's content with the Cell's place on its line in its chat's pane,
+ * a field, the composer's text, and a popover kept mounted (closed unless
+ * `popover`).
  */
 function Window(props: { readonly throws?: boolean; readonly popover?: boolean }) {
   const away = useCellAway(THREAD);
@@ -28,10 +32,12 @@ function Window(props: { readonly throws?: boolean; readonly popover?: boolean }
         data-stemcells-slate=""
         style={{ position: "fixed", left: 0, top: 0, width: 800, height: 500 }}
       >
-        <span
-          data-stemcells-cell-box={THREAD}
-          style={{ position: "absolute", left: 40, top: 440, width: 26, height: 28 }}
-        />
+        <div data-stemcells-pane="pane" style={{ position: "absolute", left: 0, top: 0, ...PANE }}>
+          <span
+            data-stemcells-cell-box={THREAD}
+            style={{ position: "absolute", left: 40, top: 440, width: 26, height: 28 }}
+          />
+        </div>
         <input data-testid="field" />
         <div
           ref={blanketEsc}
@@ -54,8 +60,8 @@ function Window(props: { readonly throws?: boolean; readonly popover?: boolean }
 }
 
 /**
- * Thrown up and right from the middle of the window, hard, under fake
- * timers: the page's clock starts at 0 and moves only as a test moves it.
+ * Thrown up and right from inside its chat, hard, under fake timers: the
+ * page's clock starts at 0 and moves only as a test moves it.
  */
 async function toss() {
   throwFromCarry({
@@ -160,6 +166,23 @@ describe("a thrown Cell and Esc", () => {
     decided();
     await expect.poll(() => awayIn(screen)).toBe("home");
     expect(find.open).toBe(true);
+  });
+});
+
+describe("a thrown Cell's flight", () => {
+  // It flew over the whole window's content, out of its chat and over the others.
+  it("stays in its own chat: thrown hard at its side, it bonks off the pane's edge", async () => {
+    await using _screen = await render(<Window />);
+    using _timers = fakeTimers();
+    await toss();
+    let right = 0;
+    for (let frame = 0; frame < 60; frame++) {
+      vi.advanceTimersToNextFrame();
+      right = Math.max(right, thrownBox()?.getBoundingClientRect().right ?? 0);
+    }
+    expect(right).toBeGreaterThan(PANE.width - 10);
+    // Its world's walls are whole world pixels: up to one past the edge.
+    expect(right).toBeLessThanOrEqual(PANE.width + 2);
   });
 });
 

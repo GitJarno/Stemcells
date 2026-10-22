@@ -598,9 +598,8 @@ describe("letting go of a carried chat", () => {
     expect(letGoOf(true, slow, false, true)).toBe("drop");
   });
 
-  it(`let go at ${TOSS_SPEED} CSS px a second or faster, its Cell is thrown, over a place or not`, () => {
+  it(`let go at ${TOSS_SPEED} CSS px a second or faster in its own chat, its Cell is thrown`, () => {
     expect(letGoOf(false, fast, false, true)).toBe("toss");
-    expect(letGoOf(true, fast, false, true)).toBe("toss");
     expect(letGoOf(false, { x: TOSS_SPEED, y: 0 }, false, true)).toBe("toss");
     expect(letGoOf(false, { x: TOSS_SPEED - 0.01, y: 0 }, false, true)).toBe("home");
   });
@@ -610,9 +609,9 @@ describe("letting go of a carried chat", () => {
     expect(letGoOf(false, { x: Number.NaN, y: 0 }, false, true)).toBe("home");
   });
 
-  // A fast drop onto a tab sprung open on the way flew the chat home: the
-  // throw only belongs to the chat's own tab.
-  it("over a tab sprung open on the way, a fast let-go drops the chat on its pane, never throws", () => {
+  // A Cell thrown from over another chat flew outside its own; a fast drop
+  // onto a tab sprung open on the way flew the chat home.
+  it("outside its own chat, a fast let-go drops the chat on a place, never throws", () => {
     expect(letGoOf(true, fast, false, false)).toBe("drop");
     expect(letGoOf(true, slow, false, false)).toBe("drop");
     expect(letGoOf(false, fast, false, false)).toBe("home");
@@ -620,6 +619,6 @@ describe("letting go of a carried chat", () => {
 
   it("with Reduce Motion nothing is thrown: it drops or goes home", () => {
     expect(letGoOf(false, fast, true, true)).toBe("home");
-    expect(letGoOf(true, fast, true, true)).toBe("drop");
+    expect(letGoOf(true, fast, true, false)).toBe("drop");
   });
 });

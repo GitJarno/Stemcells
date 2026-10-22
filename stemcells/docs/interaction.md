@@ -44,29 +44,30 @@ owners play one sequence: the words and the streams (`words/`), Aski
 
 ## The toss
 
-A carried Cell let go with speed is thrown: it flies, bonks off the
-window's sides and top, lands on its line, and goes home. Two owners: the
+A carried Cell let go with speed is thrown: it flies, bonks off its
+chat's sides and top, lands on its line, and goes home. Two owners: the
 carry engine moves it and judges its hits (`windows/throw.ts`, its world
 `windows/throwWorld.ts`); the Cell draws it (`cell/toss.ts`). It flies as
 the original's soft Cell: it never tumbles, an off-centre throw rolls its
 face round, its body is springs a hit sets going, and its face is what the
 body goes through.
 
-- **Letting go** of a carried chat in its own tab: at 100 CSS px a second
-  or faster (after the hand's speed is scaled by 0.55), its Cell is thrown,
-  over a place that takes the chat or not; slower over such a place, the
-  chat drops there; otherwise it goes home. Over another tab, sprung open
-  on the way, nothing is thrown: the chat drops on a place there however
-  fast it is let go, or goes home. Thrown, the card goes, the chat shows
-  where it was, and the Cell flies from the hand; its place on the
-  composer's line stands empty until it is back.
+- **Letting go** of a carried chat with the hand inside its own pane: at
+  100 CSS px a second or faster (after the hand's speed is scaled by
+  0.55), its Cell is thrown; slower, it goes home. Anywhere else nothing
+  is thrown: over another pane, a chip, or a tab sprung open on the way,
+  the chat drops there however fast it is let go; elsewhere it goes home.
+  Thrown, the card goes, the chat shows where it was, and the Cell flies
+  from the hand; its place on the composer's line stands empty until it
+  is back.
 - **The flight** is the original's, model and numbers: the hand's speed
   over its last 0.12 s, cut to 1100 CSS px a second; a fall of 1400 CSS
   px a second²; a wall gives back 0.35, the top 0.38, the floor less the
   harder it lands, and a slide brakes on its grip. The world steps whole
   frames and the Cell glides between them, so a throw lands in the same
-  place at 60 Hz, at 120 Hz and under load. Its arena is the window's
-  content, from its top down to the line the Cell stands on at home. All
+  place at 60 Hz, at 120 Hz and under load. Its arena is its chat's pane,
+  from its top down to the line the Cell stands on at home: it never
+  leaves its chat, caught and held included. All
   of it is in CSS px, so under the page's zoom the Cell, its world and the
   hand scale together, as the original's critter did at its scale.
 - **Caught** mid-air, down or on its way home, it hangs from the hand and

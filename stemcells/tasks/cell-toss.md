@@ -116,7 +116,8 @@ held about 50 ms: a scurry, so no hop was needed. That throw, home 5.7 s
 after the let-go, drew 686 frames at 120 Hz with none dropped.
 
 Decided (2026-10-21): the arena stays the window's content, more room to
-throw; a toss is a let-go faster than the original's lightest hit (100
+throw (changed 2026-10-23: the arena is the Cell's own pane, and only a
+let-go inside it throws; `chat-carry-polish.md`); a toss is a let-go faster than the original's lightest hit (100
 px/s), as Swift's release goes by place; no haptics. Named W7c, as
 `windows.md` already has a W9 for displays.
 

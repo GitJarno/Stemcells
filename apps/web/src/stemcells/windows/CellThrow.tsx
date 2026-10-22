@@ -1,8 +1,8 @@
 /**
- * A Cell thrown (stemcells/docs/interaction.md, The toss), in flight over its
- * window. Its chat stayed where it was and its place on the composer's line
- * stands empty; the Cell flies in a layer over the window's content, moved by
- * its transform alone. The flight is `throw.ts`, the Cell draws its facts
+ * A Cell thrown (stemcells/docs/interaction.md, The toss), in flight inside
+ * its chat. Its chat stayed where it was and its place on the composer's line
+ * stands empty; the Cell flies in a layer over the window's content, kept to
+ * its chat's pane and moved by its transform alone. The flight is `throw.ts`, the Cell draws its facts
  * (`CellToss`), and a real hit says BONK! under it (`BonkWord`). Caught
  * mid-air it hangs from the hand and is thrown again; Esc sends it home.
  * Home, the layer goes and nothing of it runs; so does leaving the page it
@@ -23,7 +23,7 @@ import { createPortal } from "react-dom";
 
 import { BonkWord } from "../cell/BonkWord";
 import { CellToss, type TossDraw } from "../cell/CellToss";
-import { cellBoxOf } from "../cell/forming";
+import { drawnCellBoxOf } from "../cell/forming";
 import { BOX, POINTS_PER_PIXEL } from "../cell/look";
 import type { Toss } from "../cell/toss";
 import type { CellRef } from "../tabs/layout";
@@ -172,22 +172,22 @@ const SIZE = { width: BOX.width * POINTS_PER_PIXEL, height: BOX.height * POINTS_
 const REMEASURE = 250;
 
 /**
- * Where it plays: the window's content (the slate) from its top down to the
- * line the Cell stands on at home, and its place along that line. Null
- * when its place isn't drawn.
+ * Where it plays: its chat's pane, from its top down to the line the Cell
+ * stands on at home, and its place along that line. Null when its place
+ * isn't drawn.
  */
 function arenaOf(threadId: string): Arena | null {
-  const slate = document.querySelector("[data-stemcells-slate]")?.getBoundingClientRect();
-  const home = cellBoxOf(threadId);
-  if (!slate || !home || home.bottom <= slate.top) return null;
+  const home = drawnCellBoxOf(threadId);
+  const pane = home?.element.closest("[data-stemcells-pane]")?.getBoundingClientRect();
+  if (!home || !pane || home.rect.bottom <= pane.top) return null;
   return {
     bounds: {
-      x: slate.left,
-      y: slate.top,
-      width: slate.width,
-      height: Math.min(home.bottom, slate.bottom) - slate.top,
+      x: pane.left,
+      y: pane.top,
+      width: pane.width,
+      height: Math.min(home.rect.bottom, pane.bottom) - pane.top,
     },
-    home: home.left + home.width / 2,
+    home: home.rect.left + home.rect.width / 2,
   };
 }
 
@@ -315,7 +315,7 @@ class Flight {
     if (isHome(this.thrown, this.arena, now)) this.finish();
   }
 
-  /** The window's content and the Cell's place, measured again: gone, it is home. */
+  /** Its chat's pane and the Cell's place, measured again: gone, it is home. */
   measure(now = performance.now()): void {
     this.measured = now;
     const arena = arenaOf(this.launch.cell.threadId);

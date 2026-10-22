@@ -61,11 +61,16 @@ export function useForming(threadId: string | undefined): Forming | undefined {
 
 /** Where the Cell of `threadId` stands on its pane's composer line, for the glyphs to condense into; null until it is drawn there. */
 export function cellBoxOf(threadId: string): DOMRect | null {
-  for (const box of document.querySelectorAll(
+  return drawnCellBoxOf(threadId)?.rect ?? null;
+}
+
+/** The Cell of `threadId`'s box on its pane's composer line and where it stands; null until it is drawn there. */
+export function drawnCellBoxOf(threadId: string): { element: Element; rect: DOMRect } | null {
+  for (const element of document.querySelectorAll(
     `[data-stemcells-cell-box="${CSS.escape(threadId)}"]`,
   )) {
-    const rect = box.getBoundingClientRect();
-    if (rect.width > 0) return rect;
+    const rect = element.getBoundingClientRect();
+    if (rect.width > 0) return { element, rect };
   }
   return null;
 }
