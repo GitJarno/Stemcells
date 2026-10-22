@@ -1,54 +1,205 @@
 #!/usr/bin/env bash
-# Lists every upstream file this fork changes and fails on one that
-# stemcells/seams.md doesn't name, or on a seam row naming a file that no
-# longer differs from upstream. Our own folders are never drift.
+# Lists every upstream file this fork changes, with upstream's heat and our
+# lines and hunks in it, and fails on:
+#   - an upstream change stemcells/seams.md doesn't name;
+#   - a seam row naming a file that no longer differs from upstream;
+#   - a file with a row in seams.md's "Hot-file budget" whose lines or hunks
+#     pass the row, or whose row gives no reason or isn't two whole numbers;
+#   - a hot file with no row there that grew past the base.
+# Our own folders are never drift (stemcells/docs/fork.md, rules 1 and 7).
+#
+# Usage: stemcells/scripts/drift [--base <ref>] [--summary]
+#   --base <ref>  what "grew" is measured against (default origin/main)
+#   --summary     print the totals and hot files at the base and here, as
+#                 Markdown for a pull request's body, and exit 0
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
+
+base_ref=origin/main
+summary=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --base) base_ref=$2; shift 2 ;;
+    --summary) summary=1; shift ;;
+    *) echo "drift: unknown argument $1" >&2; exit 2 ;;
+  esac
+done
 
 git rev-parse -q --verify upstream/main >/dev/null || {
   echo "drift: no upstream/main; run: git remote add upstream https://github.com/pingdotgg/t3code.git && git fetch upstream" >&2
   exit 2
 }
-base=$(git merge-base HEAD upstream/main)
-ours='^(stemcells/|apps/(web|server|mobile)/src/stemcells/|packages/stemcells-)'
+git rev-parse -q --verify "$base_ref^{commit}" >/dev/null || base_ref=""
 
-changed=$({ git diff --name-only "$base"; git ls-files --others --exclude-standard; } \
-  | sort -u | grep -Ev "$ours" || true)
+ours='^(stemcells/|apps/(web|server|mobile|desktop)/src/stemcells/|packages/stemcells-)'
+seams=stemcells/seams.md
 
 # Over this, upstream edits the file about every day: its seams get a
 # substitute or an extension point before a feature touches the file again
-# (stemcells/docs/fork.md, rule 7).
-HOT=90
+# (stemcells/docs/fork.md, rule 7). Tests lower it (DRIFT_HOT).
+HOT=${DRIFT_HOT:-90}
 
-echo "        heat = upstream commits in 90 days; hot = over $HOT"
+# Upstream commits touching a file in 90 days: a hot file is a poor seam.
+heat_of() { git log --since=90.days --format=%h upstream/main -- "$1" | wc -l | tr -d ' '; }
+
+# "<lines> <hunks>" we change in a file, at a commit or (with none) in the
+# working tree, against the given merge-base with upstream.
+size_of() {
+  local file=$1 at=$2 mb=$3
+  if [ -z "$at" ] && ! git ls-files --error-unmatch -- "$file" >/dev/null 2>&1 &&
+    ! git cat-file -e "$mb:$file" 2>/dev/null; then
+    # Not yet added, and new: every line is ours, in one hunk.
+    echo "$(wc -l < "$file" | tr -d ' ') 1"
+    return
+  fi
+  # shellcheck disable=SC2086 # $at is a commit or nothing (the working tree)
+  git diff -U0 "$mb" $at -- "$file" | awk '
+    /^@@/ { hunks++ }
+    /^[+-]/ && !/^(\+\+\+|---) / { lines++ }
+    END { print lines + 0, hunks + 0 }'
+}
+
+# Upstream files changed, at a commit or (with none) in the working tree.
+changed_at() {
+  local at=$1 mb=$2
+  if [ -z "$at" ]; then
+    { git diff --name-only "$mb"; git ls-files --others --exclude-standard; }
+  else
+    git diff --name-only "$mb" "$at"
+  fi | sort -u | grep -Ev "$ours" || true
+}
+
+# A file's row in the Hot-file budget: "<lines>|<hunks>|<why>", each cell as
+# written (edges trimmed, a missing one empty), or nothing. A cell can't hold
+# "|", so splitting on it keeps an empty cell in its place.
+budget_of() {
+  awk -v file="\`$1\`" -F'|' '
+    function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    /^## / { on = ($0 ~ /^## Hot-file budget/); next }
+    on && trim($2) == file {
+      print trim($3) "|" trim($4) "|" trim($5)
+      exit
+    }' "$seams"
+}
+
+# Totals and hot files at a commit (or the working tree): "total <files>
+# <lines> <hunks> <hot>", then "hot <heat> <lines> <hunks> <file>" for each
+# file over the line or with a budget row.
+measure() {
+  local at=$1 mb files=0 lines=0 hunks=0 hot=0 heat size rows=""
+  mb=$(git merge-base "${at:-HEAD}" upstream/main)
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    size=$(size_of "$file" "$at" "$mb")
+    files=$((files + 1))
+    lines=$((lines + ${size% *}))
+    hunks=$((hunks + ${size#* }))
+    heat=$(heat_of "$file")
+    if [ "$heat" -gt "$HOT" ] || [ -n "$(budget_of "$file")" ]; then
+      hot=$((hot + 1))
+      rows+="hot $heat $size $file"$'\n'
+    fi
+  done <<< "$(changed_at "$at" "$mb")"
+  echo "total $files $lines $hunks $hot"
+  printf '%s' "$rows"
+}
+
+if [ "$summary" = 1 ]; then
+  here=$(measure "")
+  there=""
+  [ -n "$base_ref" ] && there=$(measure "$base_ref")
+  read -r _ f1 l1 h1 t1 <<< "$(head -1 <<< "$here")"
+  if [ -n "$there" ]; then read -r _ f0 l0 h0 t0 <<< "$(head -1 <<< "$there")"; else f0=-; l0=-; h0=-; t0=-; fi
+  echo "| Upstream files we change | ${base_ref:-base} | here |"
+  echo "|---|---|---|"
+  echo "| Files | $f0 | $f1 |"
+  echo "| Lines | $l0 | $l1 |"
+  echo "| Hunks | $h0 | $h1 |"
+  echo "| Hot files (over $HOT upstream commits in 90 days, or budgeted) | $t0 | $t1 |"
+  echo
+  echo "| Hot file | Heat | Lines, hunks (${base_ref:-base}) | Lines, hunks (here) |"
+  echo "|---|---|---|---|"
+  { grep '^hot ' <<< "$here" || true; grep '^hot ' <<< "$there" || true; } | awk '{print $5}' | sort -u |
+    while IFS= read -r file; do
+      [ -z "$file" ] && continue
+      now=$(awk -v f="$file" '$1 == "hot" && $5 == f { print $3 ", " $4 }' <<< "$here")
+      was=$(awk -v f="$file" '$1 == "hot" && $5 == f { print $3 ", " $4 }' <<< "$there")
+      printf '| `%s` | %s | %s | %s |\n' "$file" "$(heat_of "$file")" "${was:-none}" "${now:-none}"
+    done
+  exit 0
+fi
+
+here_mb=$(git merge-base HEAD upstream/main)
+base_mb=""
+[ -n "$base_ref" ] && base_mb=$(git merge-base "$base_ref" upstream/main)
+changed=$(changed_at "" "$here_mb")
+
+echo "        heat = upstream commits in 90 days; hot = over $HOT, or budgeted; lines and hunks are ours"
 unlisted=0
+over=0
+total_lines=0
+total_hunks=0
 hot=0
 while IFS= read -r file; do
   [ -z "$file" ] && continue
-  # Upstream commits touching the file in 90 days: a hot file is a poor seam.
-  heat=$(git log --since=90.days --format=%h upstream/main -- "$file" | wc -l | tr -d ' ')
-  if grep -qF "\`$file\`" stemcells/seams.md; then
-    label=seam
-    [ "$heat" -gt "$HOT" ] && label=hot && hot=$((hot + 1))
-    printf '  %-4s  %4s  %s\n' "$label" "$heat" "$file"
-  else
-    printf '  DRIFT %4s  %s  (not in stemcells/seams.md)\n' "$heat" "$file"
+  heat=$(heat_of "$file")
+  size=$(size_of "$file" "" "$here_mb")
+  lines=${size% *}
+  hunks=${size#* }
+  total_lines=$((total_lines + lines))
+  total_hunks=$((total_hunks + hunks))
+  if ! grep -qF "\`$file\`" "$seams"; then
+    printf '  DRIFT %4s  %4s %3s  %s  (not in %s)\n' "$heat" "$lines" "$hunks" "$file" "$seams"
     unlisted=1
+    continue
   fi
+  label=seam
+  note=""
+  budget=$(budget_of "$file")
+  if [ -n "$budget" ]; then
+    label=hot
+    IFS='|' read -r budget_lines budget_hunks why <<< "$budget"
+    if ! [[ $budget_lines =~ ^[0-9]+$ && $budget_hunks =~ ^[0-9]+$ ]]; then
+      note="  OVER: its budget row's lines and hunks must be whole numbers (has '$budget_lines', '$budget_hunks')"
+      over=1
+    elif [ -z "${why:-}" ]; then
+      note="  OVER: its budget row gives no reason"
+      over=1
+    elif [ "$lines" -gt "$budget_lines" ] || [ "$hunks" -gt "$budget_hunks" ]; then
+      note="  OVER its budget of $budget_lines lines, $budget_hunks hunks: shrink it, or raise its row with why"
+      over=1
+    elif [ "$lines" -lt "$budget_lines" ] || [ "$hunks" -lt "$budget_hunks" ]; then
+      note="  under its budget of $budget_lines, $budget_hunks: lower its row to $lines, $hunks"
+    fi
+  elif [ "$heat" -gt "$HOT" ]; then
+    label=hot
+    was="0 0"
+    [ -n "$base_mb" ] && was=$(size_of "$file" "$base_ref" "$base_mb")
+    if [ "$lines" -gt "${was% *}" ] || [ "$hunks" -gt "${was#* }" ]; then
+      note="  OVER: grew from ${was% *} lines, ${was#* } hunks, with no row in the Hot-file budget"
+      over=1
+    else
+      note="  no row in the Hot-file budget: add one"
+    fi
+  fi
+  [ "$label" = hot ] && hot=$((hot + 1))
+  printf '  %-4s  %4s  %4s %3s  %s%s\n' "$label" "$heat" "$lines" "$hunks" "$file" "$note"
 done <<< "$changed"
 
-# The other way round: a file a seam row names (its first column) that no
-# longer differs from upstream. A sync makes these when upstream deletes a
-# file we edited, or rewrites the lines our edit was on: the row goes too.
+# The other way round: a file a row names (its first column) that no longer
+# differs from upstream. A sync makes these when upstream deletes a file we
+# edited, or rewrites the lines our edit was on: the row goes too.
 stale=0
 while IFS= read -r file; do
   [ -z "$file" ] && continue
   if ! grep -qxF "$file" <<< "$changed"; then
-    printf '  STALE       %s  (named in stemcells/seams.md, same as upstream: drop it there)\n' "$file"
+    printf '  STALE       %s  (named in %s, same as upstream: drop it there)\n' "$file" "$seams"
     stale=1
   fi
-done < <(grep -E '^\| *`' stemcells/seams.md | cut -d'|' -f2 | grep -oE '`[^`]+`' | tr -d '`' | sort -u)
+done < <(grep -E '^\| *`' "$seams" | cut -d'|' -f2 | grep -oE '`[^`]+`' | tr -d '`' | sort -u)
 
-lines=$(git diff --numstat "$base" -- $(echo "$changed") 2>/dev/null | awk '{s+=$1+$2} END {print s+0}')
-echo "$(echo "$changed" | grep -c . || true) upstream files changed, $lines lines; $hot hot"
-[ "$unlisted" = 0 ] && [ "$stale" = 0 ]
+echo "$(grep -c . <<< "$changed" || true) upstream files changed, $total_lines lines in $total_hunks hunks; $hot hot"
+if [ "$over" = 1 ]; then
+  echo "drift: a hot file grew past its budget, or its row is malformed; see $seams, Hot-file budget (stemcells/docs/fork.md, rule 7)" >&2
+fi
+[ "$unlisted" = 0 ] && [ "$stale" = 0 ] && [ "$over" = 0 ]

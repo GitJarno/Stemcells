@@ -103,8 +103,6 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/vite.config.ts`, `apps/mobile/vite.config.ts` (cache) | `test.fsModuleCache: false` | A substitute resolves a module by who imports it, which Vitest 5's on-disk transform cache (on by default) doesn't key on: a second run handed a substitute itself as upstream's module and failed (sync of 2026-10-21) |
 | `apps/desktop/src/main.ts` | Imports `./stemcells/scrollPhases.ts` (for its side effect) after its own imports | Scroll phases (below): the tab swipe reads macOS's own phases for trackpad scrolls, which wheel events lack |
 | `apps/desktop/src/preload.ts` | Imports `./stemcells/scrollPhasesPreload.ts` (for its side effect) after its own imports | Same: hands the phases to the page |
-| `apps/desktop/src/stemcells/scrollPhases.ts` | New: loads the scroll-phases addon and sends each phased scroll event to its window's page, with clock ticks after a page loads; says once a start whether the phases are live (stdout, and `stemcells-scroll-phases.log` in the user data folder) | Same: the main process's side |
-| `apps/desktop/src/stemcells/scrollPhasesPreload.ts` | New: exposes `window.stemcellsScrollPhases` and puts the phases on the page's clock | Same: the preload's side |
 | `apps/web/src/composerDraftStore.ts` | Imports `isAskisInstance` from `stemcells/aski/setup`; `applyStickyState` gives a new draft no active provider where the last pick was on Aski's instance | Aski's instance is Aski's (below): a model picked in Aski's chat became every new chat's |
 | `apps/web/src/components/AppSidebarLayout.tsx` (settings) | Renders the left column on `/settings/*` as on every page, where it swapped it for `SidebarChromeHeader` and `SettingsSidebarNav`, so its label is always Threads; those two imports go (`isOnSettings` stays: upstream's undo shortcut reads it) | Every page on the slate (below): the rail never goes away; Settings' section list moves onto the slate |
 | `apps/web/src/routes/settings.tsx` | Renders `stemcells/pages/SettingsOnSlab` (the pathname, General's restore button as `actions`, the outlet inside) where it rendered the breadcrumb header over the outlet; the `SettingsBreadcrumb`, `WorkspacePageHeader` and `isElectron` imports go | Same: upstream's section list at the slate's left edge and the panel beside it, folding into one row on a narrow slate, with no breadcrumb bar (`pages.contract.test.ts` pins both seams) |
@@ -115,16 +113,6 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/main.ts` (windows) | Imports `./stemcells/windows/WindowsHost.ts` and adds its `layer` to `layerDesktopApplication` | Windows (below): more than one app window, kept by the main process |
 | `apps/desktop/src/preload.ts` (windows) | Imports `./stemcells/windowsPreload.ts` (for its side effect) after its own imports | Same: hands the page its window as `window.stemcellsWindows` |
 | `apps/desktop/src/window/DesktopWindow.ts` | `createWindow` takes an optional `{ bounds, show }`; such a window skips the main window's bounds saving, preview registration, maximizing and dev tools, and shows only when `show`. The service gains an optional `createExtra` | Same: every window is made by upstream's own maker, with its webview hardening, popup handling, navigation guard and renderer recovery, rather than a copy that would drift |
-| `apps/desktop/src/stemcells/windows/WindowsHost.ts` | New: the main process's side of the windows: the book kept on disk, each page's boot, publishes and moves, windows opened and closed through upstream's maker, the lead passed on | Same |
-| `apps/desktop/src/stemcells/windows/book.ts` | New: the book of windows, and the check that refuses a move made from a stale view | Same |
-| `apps/desktop/src/stemcells/windows/book.test.ts` | New: pins the book | Same |
-| `apps/desktop/src/stemcells/windows/WindowsHost.test.ts` | New: pins the host against a stand-in for Electron: an update's quit, who may speak on the channels, an unreadable windows' file, a window that couldn't open, who leads, who notifies | Same |
-| `apps/desktop/src/stemcells/windows/channels.ts` | New: the windows' IPC channel names and messages | Same |
-| `apps/desktop/src/stemcells/windows/senders.ts` | New: who may speak on the windows' channels: a window's own page from its top frame, never a preview's guest | Same |
-| `apps/desktop/src/stemcells/windows/senders.test.ts` | New: pins it | Same |
-| `apps/desktop/src/stemcells/windows/storedFile.ts` | New: reads the windows' file, moving one the app can't read aside | Same |
-| `apps/desktop/src/stemcells/windows/storedFile.test.ts` | New: pins it | Same |
-| `apps/desktop/src/stemcells/windowsPreload.ts` | New: exposes `window.stemcellsWindows` | Same |
 | `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
 | `apps/web/src/main.tsx` (windows) | Imports `./stemcells/windows/startSharing` after `AppRoot` | Windows (below): each window starts merging the others' writes to the shared stores in the turn the stores read localStorage, so none is missed while the chat route loads |
 
@@ -886,3 +874,31 @@ changes:
   ids and line, the banner, how a notice row reads and stays, and the
   pages the drafts are reported from; `limitResumeGuard.contract.test.ts`
   pins the orchestrator's refusal of a second continuation.
+## Hot-file budget
+
+Upstream edits these files about every day, so each of our lines and hunks
+there can conflict on any night's sync. `drift` holds each to its row: it
+fails when a file's lines or hunks (`git diff -U0` against our merge-base
+with upstream) pass its row, or when a row gives no reason, and it asks for
+a lower row once a file shrinks. A file over 90 upstream commits in 90 days
+with no row fails only if it grew past `origin/main`. Raise a row by hand,
+in the change that needs it, and say why; lower it in the change that
+earns it. Never `vp fmt` this file.
+
+Files upstream split out of a hot file are budgeted here too: they start
+with no history, but carry their old file's churn.
+
+| File | Lines | Hunks | Why |
+|---|---|---|---|
+| `apps/web/src/components/ChatView.tsx` | 46 | 15 | ChatView safe to render twice (window input), the media viewer, the composer line; upstream not asked |
+| `apps/web/src/components/chat/ChatComposer.tsx` | 9 | 7 | Window input (the stash shortcut, paste as text) and the composer's light |
+| `apps/web/src/components/chat/MessagesTimeline.tsx` | 5 | 2 | The work verbs, on the turn fold |
+| `apps/web/src/components/settings/settingsSearch.ts` | 10 | 5 | Settings › Disk and the compaction row in upstream's lists (a type, so no substitute reaches them) |
+| `apps/server/src/server.ts` | 8 | 6 | Mounts Stemcells' server layer, its no-op analytics in place of upstream's, and the model list bundled at build time in place of upstream's fetched one |
+| `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | 9 | 2 | Where Claude compacts; upstream not asked |
+| `packages/contracts/src/settings.ts` | 1 | 1 | The auto-compact window's field is hidden: one annotation |
+| `apps/web/src/components/chat/TimelineWorkGroupRows.tsx` | 8 | 3 | Split out of `MessagesTimeline.tsx`: the work verbs on the working row |
+| `apps/web/src/components/chat/TimelineWorkEntryRow.tsx` | 7 | 4 | Split out of `MessagesTimeline.tsx`: a tool row's label, the Subcell words |
+| `apps/web/src/components/chat/TimelineV2EventRow.tsx` | 4 | 3 | Split out of `MessagesTimeline.tsx`: the Subcell card |
+| `apps/web/src/components/chat/useTimelineFollow.ts` | 7 | 4 | Split out of `ChatView.tsx`: window input for the transcript's scroll keys |
+| `apps/web/src/components/chat/ThreadActivityBanners.tsx` | 3 | 2 | Split out of `ChatView.tsx`: the Subcell word |

@@ -30,6 +30,7 @@ case, go back to the three costs and choose what keeps them lowest.
   - `apps/web/src/stemcells/`
   - `apps/server/src/stemcells/`
   - `apps/mobile/src/stemcells/`
+  - `apps/desktop/src/stemcells/`
   - `packages/stemcells-*`
   - `stemcells/` for docs, plans and scripts.
 
@@ -165,6 +166,14 @@ case, go back to the three costs and choose what keeps them lowest.
 - **The rule:** a seam in a hot file, or one that has conflicted twice,
   gets a substitute or an extension point (rule 5) before a new feature
   touches that file.
+- **The guard: a budget per hot file.** `seams.md`'s Hot-file budget gives
+  each hot file the lines and hunks we may change in it, and why. `drift`
+  fails when a file passes its row, when a row gives no reason, and when a
+  hot file with no row grows. A row only goes down: when `drift` says a
+  file is under its budget, lower the row in the same pull request. Raising
+  one is a decision a reviewer sees, with its reason beside it. Every sync
+  report and drift pull request carries `drift --summary`, the totals and
+  hot files before and after.
 
 Why 90: on 2026-10-21, seam heat over 60 days ran from 78 to 310 for the
 eleven hottest files and 50 or less for the rest, with nothing in between.
