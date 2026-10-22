@@ -44,7 +44,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent
 const origin=${JSON.stringify({ x: origin.x, y: origin.y })},items=new Map();
 const at=(command,rect)=>command.parent||items.get(command.id)?.dataset.parent?rect:{...rect,x:rect.x-origin.x,y:rect.y-origin.y};
 const setRect=(el,rect)=>Object.assign(el.style,{left:rect.x+"px",top:rect.y+"px",width:rect.width+"px",height:rect.height+"px"});
-const now=el=>{const s=getComputedStyle(el);return{left:s.left,top:s.top,width:s.width,height:s.height,opacity:s.opacity}};
+const now=el=>{const s=getComputedStyle(el);return{left:s.left,top:s.top,width:s.width,height:s.height,opacity:s.opacity,borderRadius:s.borderRadius}};
 const make=(tag,command)=>{
   let el=items.get(command.id);
   if(!el){
@@ -60,11 +60,11 @@ const run=command=>{
   switch(command.op){
     case "box":{
       const box=make("div",command);
-      Object.assign(box.style,{background:command.color,borderRadius:command.radius+"px",overflow:"hidden",boxShadow:command.shadow?"0 22px 70px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.6)":"none"});
+      Object.assign(box.style,{background:command.color,borderRadius:command.radius+"px",overflow:command.clip?"hidden":"visible",boxShadow:command.shadow?"0 22px 70px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.6)":"none"});
       setRect(box,at(command,command.rect));return;
     }
     case "still":{
-      const still=make("img",command);still.src=command.still;setRect(still,at(command,command.rect));
+      const still=make("img",command);still.src=command.still;still.style.borderRadius=(command.radius??0)+"px";setRect(still,at(command,command.rect));
       decoding.push(still.decode().catch(()=>undefined));return;
     }
     case "place":{
@@ -76,6 +76,7 @@ const run=command=>{
       for(const animation of el.getAnimations())animation.cancel();
       if(command.rect)setRect(el,at(command,command.rect));
       if(command.opacity!==undefined)el.style.opacity=String(command.opacity);
+      if(command.radius!==undefined)el.style.borderRadius=command.radius+"px";
       const to=now(el);
       el.animate([from,to],{duration:command.timing.duration,easing:command.timing.easing,delay:command.timing.delay??0,fill:"backwards"});
       return;

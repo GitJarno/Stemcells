@@ -55,6 +55,7 @@ export type FlightCommand =
       readonly radius: number;
       readonly shadow: boolean;
       readonly color: string;
+      readonly clip: boolean;
       readonly parent?: string;
     }
   | {
@@ -62,6 +63,8 @@ export type FlightCommand =
       readonly id: string;
       readonly still: string;
       readonly rect: Rect;
+      /** Rounds its corners, as the thing it is a still of is rounded. */
+      readonly radius?: number;
       readonly parent?: string;
     }
   | { readonly op: "place"; readonly id: string; readonly rect: Rect }
@@ -70,6 +73,7 @@ export type FlightCommand =
       readonly id: string;
       readonly rect?: Rect;
       readonly opacity?: number;
+      readonly radius?: number;
       readonly timing: FlightTiming;
     }
   | { readonly op: "remove"; readonly id: string };
@@ -115,6 +119,12 @@ export interface WindowsBridge {
   painted(): Promise<void>;
   /** The flight is over: the layer goes. */
   endFlight(): void;
+  /** This window has drawn the workspace it started from. */
+  drawn(): void;
+  /** Screen points per CSS pixel: the page's zoom (View › Zoom). */
+  zoom(): number;
+  /** Heard by the page carrying something: a window (by id) has drawn. */
+  onLanded(listener: (window: string) => void): () => void;
 }
 
 declare global {

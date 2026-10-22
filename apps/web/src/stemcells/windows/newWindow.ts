@@ -15,16 +15,28 @@ export function cascaded(frame: Rect, displays: ReadonlyArray<Display>): Rect {
   return display ? clampFrame(moved, display.workArea) : moved;
 }
 
-/** Tears `tabId` off this window into a new one. False when it can't (its only tab). */
-export async function moveTabToNewWindow(tabId: string): Promise<boolean> {
+/**
+ * Tears `tabId` off this window into a new one at `frame`, or cascaded from
+ * this one. The new window's id; null when it can't (its only tab).
+ */
+export async function tearToNewWindow(
+  tabId: string,
+  frame: Rect | null,
+  id: string = randomUUID(),
+): Promise<string | null> {
   const bridge = windowsBridge();
-  if (!bridge) return false;
+  if (!bridge) return null;
   const moved = await commitMove(({ arrangement, displays }) => {
     const source = windowById(arrangement, bridge.boot.id);
     if (!source) return null;
-    const frame = cascaded(source.frame, displays);
-    const display = displayOf(frame, displays)?.key ?? source.display;
-    return tear(arrangement, tabId, { id: randomUUID(), frame, display });
+    const at = frame ?? cascaded(source.frame, displays);
+    const display = displayOf(at, displays)?.key ?? source.display;
+    return tear(arrangement, tabId, { id, frame: at, display });
   });
-  return moved !== null;
+  return moved ? id : null;
+}
+
+/** Tears `tabId` off this window into a new one. False when it can't (its only tab). */
+export async function moveTabToNewWindow(tabId: string): Promise<boolean> {
+  return (await tearToNewWindow(tabId, null)) !== null;
 }

@@ -497,6 +497,10 @@ export const layer = Layer.effectDiscard(
           return window ? flight.still(window, rect) : null;
         });
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
+        ipc.on(WINDOWS_CHANNEL.drawn, (event) => {
+          const id = pages.get(event.sender.id);
+          if (id && flying && !flying.isDestroyed()) flying.send(WINDOWS_CHANNEL.landed, id);
+        });
         ipc.on(WINDOWS_CHANNEL.flightEnd, endFlight);
         Electron.app.on("before-quit", beforeQuit);
         Electron.app.on("browser-window-focus", tellNotifier);
@@ -511,6 +515,7 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.reveal,
             WINDOWS_CHANNEL.flight,
             WINDOWS_CHANNEL.flightEnd,
+            WINDOWS_CHANNEL.drawn,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }

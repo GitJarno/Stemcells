@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { useRef, useState, type RefObject } from "react";
 
 import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
 import { NeedsTabCount } from "../needs/NeedsTabCount";
@@ -18,23 +18,10 @@ import {
 import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
+import { useTabCarry } from "../windows/useTabCarry";
 import { useSpringTabs, type SpringHandlers } from "./springTab";
-import { clampOffset, nearestSlot, restingOffsets, type TabDragGeometry } from "./tabDrag";
+import { restingOffsets } from "./tabDrag";
 import "./drop.css";
-
-/** A press that moves less than this is a click, not a drag. */
-const DRAG_START_DISTANCE = 4;
-/** The tab list's `gap-1`, which the drag geometry needs in pixels. */
-const TAB_GAP = 4;
-
-interface Drag {
-  readonly tabId: string;
-  readonly pointerId: number;
-  readonly startX: number;
-  readonly geometry: TabDragGeometry | null;
-  readonly offset: number;
-  readonly slot: number;
-}
 
 export function TabStrip(props: {
   /** The Cells' tabs; Aski's is drawn on its own, before them. */
@@ -49,6 +36,8 @@ export function TabStrip(props: {
    */
   newCell: { readonly tab: Tab; readonly taken: boolean } | null;
   newTabRef: RefObject<HTMLDivElement | null>;
+  /** How many tabs the window holds, Aski's among them: its only tab doesn't tear off. */
+  windowTabs: number;
   onActivate: (tabId: string) => void;
   onClose: (tabId: string) => void;
   onMove: (tabId: string, toIndex: number) => void;
@@ -57,58 +46,41 @@ export function TabStrip(props: {
   onRename: (tabId: string, name: string | null) => void;
 }) {
   const tabElements = useRef(new Map<string, HTMLElement>());
-  const [drag, setDrag] = useState<Drag | null>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const { tabs, onActivate, onMove } = props;
   // A tab a drag rests on opens, so a file can be carried to another tab's chat.
   const spring = useSpringTabs(props.activeTabId, onActivate);
-
-  const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
-    // A press in the name being edited places the caret: it never drags.
-    if (event.button !== 0 || (event.target as Element).closest("button, input")) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    const from = tabs.findIndex((tab) => tab.id === tabId);
-    setDrag({
-      tabId,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      geometry: null,
-      offset: 0,
-      slot: from,
-    });
-  };
-
-  const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (!drag || event.pointerId !== drag.pointerId) return;
-    const rawOffset = event.clientX - drag.startX;
-    let geometry = drag.geometry;
-    if (!geometry) {
-      if (Math.abs(rawOffset) < DRAG_START_DISTANCE) return;
-      // Measured once: the strip holds still while a tab rides the pointer.
-      geometry = {
-        widths: tabs.map((tab) => tabElements.current.get(tab.id)?.offsetWidth ?? 0),
-        gap: TAB_GAP,
-        from: tabs.findIndex((tab) => tab.id === drag.tabId),
-      };
-    }
-    const offset = clampOffset(geometry, rawOffset);
-    setDrag({ ...drag, geometry, offset, slot: nearestSlot(geometry, offset, drag.slot) });
-  };
-
-  const onPointerUp = (event: ReactPointerEvent<HTMLElement>) => {
-    if (!drag || event.pointerId !== drag.pointerId) return;
-    setDrag(null);
-    if (!drag.geometry) onActivate(drag.tabId);
-    else if (drag.slot !== drag.geometry.from) onMove(drag.tabId, drag.slot);
-  };
-
-  const offsets = drag?.geometry ? restingOffsets(drag.geometry, drag.slot) : null;
+  const carry = useTabCarry({
+    tabs,
+    activeTabId: props.activeTabId,
+    tabElements,
+    strip: stripRef,
+    windowTabs: props.windowTabs,
+    // Unsent, the new Cell's tab is no tab of the workspace's to carry off.
+    staysId: props.newCell?.taken ? props.newCell.tab.id : null,
+    onActivate,
+    onMove,
+  });
+  const { view } = carry;
+  // Where the others sit: making room for the carried tab's slot, or closed
+  // up after it while it's off the strip in the open.
+  const offsets = view?.picked
+    ? restingOffsets(
+        view.geometry,
+        view.away === "open" ? view.geometry.widths.length - 1 : view.slot,
+      )
+    : null;
   const { newCell, newTabRef } = props;
   // In one list with the tabs, so taking or leaving the new Cell keeps its tab's element.
   const shownTabs = newCell && !newCell.taken ? [...tabs, newCell.tab] : tabs;
 
   return (
-    <div className="flex h-9 shrink-0 items-center gap-1 pr-2" data-stemcells-tab-strip="">
+    <div
+      ref={stripRef}
+      className="flex h-9 shrink-0 items-center gap-1 pr-2"
+      data-stemcells-tab-strip=""
+    >
       <div className="flex min-w-0 items-center gap-1" role="tablist">
         <AskiChip
           {...props.aski}
@@ -117,8 +89,10 @@ export function TabStrip(props: {
           springHandlers={spring.handlers(ASKI_TAB_ID)}
         />
         {shownTabs.map((tab, index) => {
-          const dragged = drag?.geometry != null && drag.tabId === tab.id;
-          const offset = dragged ? drag.offset : (offsets?.[index] ?? 0);
+          const dragged = view?.picked === true && view.tabId === tab.id;
+          // Off the strip, its chip is on the flight layer and its place here is empty.
+          const away = dragged && view.away !== "no";
+          const offset = dragged && !away ? view.offset : (offsets?.[index] ?? 0);
           const isNewCell = tab.id === newCell?.tab.id;
           // Not yet taken, the new Cell's tab only opens: there is no tab to drag or close.
           const untaken = isNewCell && !newCell.taken;
@@ -138,12 +112,12 @@ export function TabStrip(props: {
               data-dragged={dragged || undefined}
               {...spring.handlers(tab.id)}
               onPointerDown={(event) => {
-                if (!untaken) onPointerDown(event, tab.id);
+                if (!untaken) carry.onPointerDown(event, tab.id);
                 else if (event.button === 0) onActivate(tab.id);
               }}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={() => setDrag(null)}
+              onPointerMove={carry.onPointerMove}
+              onPointerUp={carry.onPointerUp}
+              onPointerCancel={carry.onPointerCancel}
               onDoubleClick={(event) => {
                 // Its first click opened the tab; Aski's tab and the new Cell's are never renamed.
                 if (untaken || (event.target as Element).closest("button, input")) return;
@@ -152,9 +126,18 @@ export function TabStrip(props: {
                 }
               }}
               style={
-                offset !== 0 || dragged
-                  ? { transform: `translateX(${offset}px)${dragged ? " scale(1.04)" : ""}` }
-                  : undefined
+                away
+                  ? { visibility: "hidden" }
+                  : dragged
+                    ? { transform: `translate(${offset}px, ${view.pulled}px) scale(1.04)` }
+                    : offset !== 0 || view?.picked
+                      ? {
+                          transform: `translateX(${offset}px)`,
+                          // The others make room and close up on `travel`.
+                          transition:
+                            "transform var(--sc-motion-travel-duration) var(--sc-motion-travel-easing)",
+                        }
+                      : undefined
               }
               className={cn(
                 "group/tab flex h-6 w-40 min-w-0 shrink cursor-pointer select-none items-center gap-1.5 rounded-md pr-1 pl-1.5 text-xs",
@@ -164,7 +147,6 @@ export function TabStrip(props: {
                   : tab.id === props.activeTabId
                     ? "bg-accent text-foreground"
                     : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-                drag?.geometry && !dragged && "transition-transform",
               )}
             >
               <TabTitle

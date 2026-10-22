@@ -43,6 +43,7 @@ function Strip(props: {
         aski={{ active: false, cell: cell("aski"), chat: { status: "starting" } }}
         newCell={null}
         newTabRef={{ current: null }}
+        windowTabs={props.tabs.length + 1}
         onActivate={props.onActivate ?? (() => undefined)}
         onClose={() => undefined}
         onMove={props.onMove ?? (() => undefined)}

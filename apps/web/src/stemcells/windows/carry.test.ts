@@ -7,6 +7,8 @@ import {
   landingMotion,
   morphOf,
   moveHand,
+  onScreen,
+  pageOrigin,
   pickUp,
   previewSize,
   release,
@@ -50,6 +52,7 @@ const START: PickUp = {
   press: { x: 364, y: 118 },
   at: 0,
   onlyTab: false,
+  tears: true,
   preview: { width: 900, height: 700 },
   springLoad: 350,
 };
@@ -98,7 +101,7 @@ describe("a chip along its own strip", () => {
       [494, 118],
     ]);
     expect(along.carried).toMatchObject({ kind: "banding", slot: 2, pulled: 0 });
-    expect(release(along)).toEqual({ kind: "reorder", slot: 2 });
+    expect(release(along)).toEqual({ kind: "reorder", slot: 2, chip: null });
   });
 
   it("bands past the strip's bottom or top, and tears 24 px past it", () => {
@@ -116,6 +119,17 @@ describe("a chip along its own strip", () => {
     ]);
     expect(up.carried).toMatchObject({ kind: "banding", pulled: -bandShown(12) });
     expect(play(up, [[364, 76]]).carried.kind).toBe("open");
+  });
+});
+
+describe("in a browser, which has one window", () => {
+  it("bands past the strip and never tears", () => {
+    const held = play(carried({ tears: false }), [
+      [364, 160],
+      [364, 400],
+    ]);
+    expect(held.carried).toMatchObject({ kind: "banding", pulled: bandShown(264) });
+    expect(release(held)).toEqual({ kind: "reorder", slot: 1, chip: null });
   });
 });
 
@@ -196,13 +210,19 @@ describe("a tab torn off", () => {
   });
 
   it("back in its own strip, reorders among the others", () => {
-    // Without t2, a's chips' middles are at 240 and 488.
+    // Without t2 the strip closes up: t1's middle is at 240, t3's at 364.
     const home = play(torn(), [
-      [500, 140],
-      [500, 118],
+      [380, 140],
+      [380, 118],
     ]);
     expect(home.carried).toMatchObject({ kind: "docked", window: "a", slot: 2 });
-    expect(release(home)).toEqual({ kind: "reorder", slot: 2 });
+    expect(play(home, [[350, 118]]).carried).toMatchObject({ slot: 1 });
+    // It lands after t3, where t2 was before.
+    expect(release(home)).toEqual({
+      kind: "reorder",
+      slot: 2,
+      chip: { x: 428, y: 106, width: 120, height: 24 },
+    });
   });
 
   it("goes home on Esc", () => {
@@ -334,5 +354,19 @@ describe("slotAt", () => {
     expect(slotAt(chips, 53, 1)).toBe(1);
     expect(slotAt(chips, 51, 1)).toBe(0);
     expect(slotAt(chips, 400, 0)).toBe(3);
+  });
+});
+
+describe("a zoomed page", () => {
+  it("measures its chips in screen points, not its CSS pixels", () => {
+    // View › Zoom at 125 %: the pointer at CSS (200, 100) is 250 and 125 points into the page.
+    const origin = pageOrigin({ x: -10550, y: 157 }, { x: 200, y: 100 }, 1.25);
+    expect(origin).toEqual({ x: -10800, y: 32 });
+    expect(onScreen({ left: 100, top: 8, width: 160, height: 24 }, origin, 1.25)).toEqual({
+      x: -10675,
+      y: 42,
+      width: 200,
+      height: 30,
+    });
   });
 });

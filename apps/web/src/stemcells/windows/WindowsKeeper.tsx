@@ -6,7 +6,7 @@
  * a window that couldn't open come back.
  * Renders nothing, and does nothing in a browser.
  */
-import { useEffectEvent, useLayoutEffect } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect } from "react";
 
 import { viewerHearsFirst } from "../media/viewer";
 import { parseWorkspace } from "../tabs/layout";
@@ -56,6 +56,15 @@ export function WindowsKeeper(props: {
       stopClosed();
       stopReturned();
     };
+  }, []);
+  // Drawn: a window a tab was carried out to has its still taken away now.
+  useEffect(() => {
+    const bridge = windowsBridge();
+    if (!bridge) return;
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => bridge.drawn());
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
   return null;
 }

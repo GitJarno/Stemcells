@@ -5,7 +5,7 @@
  * way to publish its workspace, take one a move gave it, and make moves
  * (stemcells/tasks/windows.md).
  */
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webFrame } from "electron";
 
 import {
   WINDOWS_CHANNEL,
@@ -80,5 +80,8 @@ if (boot !== null) {
     still: (rect: FlightRect) => ipcRenderer.invoke(WINDOWS_CHANNEL.flightStill, rect),
     painted: () => ipcRenderer.invoke(WINDOWS_CHANNEL.flightPainted),
     endFlight: () => ipcRenderer.send(WINDOWS_CHANNEL.flightEnd),
+    drawn: () => ipcRenderer.send(WINDOWS_CHANNEL.drawn),
+    zoom: () => webFrame.getZoomFactor(),
+    onLanded: listen<string>(WINDOWS_CHANNEL.landed),
   });
 }

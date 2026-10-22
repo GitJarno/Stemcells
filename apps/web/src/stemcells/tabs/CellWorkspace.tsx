@@ -392,6 +392,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         }}
         newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}
         newTabRef={newTabRef}
+        windowTabs={workspace.tabs.length}
         onActivate={activateTabAndRoute}
         onClose={(tabId) => {
           if (readWorkspace().tabs.length > 1) closeTabAndRoute(tabId);
