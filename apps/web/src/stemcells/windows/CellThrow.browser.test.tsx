@@ -1,9 +1,9 @@
 import "../tokens/stemcells.css";
 
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { readWorkspace } from "../tabs/store";
-import { render } from "../upstream/testRender";
+import { fakeTimers, render } from "../upstream/testRender";
 import { CellThrows, throwFromCarry, useCellAway } from "./CellThrow";
 
 const THREAD = "thrown-chat";
@@ -53,17 +53,24 @@ function Window(props: { readonly throws?: boolean; readonly popover?: boolean }
   );
 }
 
-/** Thrown up and right from the middle of the window, hard. */
-function toss() {
+/**
+ * Thrown up and right from the middle of the window, hard, under fake
+ * timers: the page's clock starts at 0 and moves only as a test moves it.
+ */
+async function toss() {
   throwFromCarry({
     cell,
     centre: { x: 300, y: 300 },
     velocity: { x: 500, y: -900 },
     grip: { x: 0, y: 0 },
-    at: performance.now(),
+    at: 0,
     tabId: readWorkspace().activeTabId,
   });
+  await expect.poll(thrownBox).not.toBeNull();
 }
+
+/** An Esc is decided once every handler has had it, on a timer of its own: that timer runs. */
+const decided = () => void vi.advanceTimersByTime(0);
 
 /**
  * Find in the chat, as upstream closes it on Esc (`useChatShortcuts`): on
@@ -79,13 +86,6 @@ function openFind() {
   window.addEventListener("keydown", dismiss);
   return Object.assign(find, { [Symbol.dispose]: () => removeEventListener("keydown", dismiss) });
 }
-
-const frames = (n: number) =>
-  new Promise<void>((resolve) => {
-    const next = (left: number) =>
-      left === 0 ? resolve() : requestAnimationFrame(() => next(left - 1));
-    next(n);
-  });
 
 const escape = (target: EventTarget) =>
   target.dispatchEvent(
@@ -103,22 +103,23 @@ describe("a thrown Cell and Esc", () => {
   // dialog: counting it as open, Esc never sent a Cell home.
   it("one Esc sends a Cell in the air home, past a closed popover kept on the page", async () => {
     await using screen = await render(<Window />);
-    toss();
-    await frames(3);
-    expect(thrownBox()).not.toBeNull();
-    expect(awayIn(screen)).toBe("away");
+    using _timers = fakeTimers();
+    await toss();
+    await expect.poll(() => awayIn(screen)).toBe("away");
     escape(document.body);
+    decided();
     await expect.poll(() => awayIn(screen)).toBe("home");
     expect(thrownBox()).toBeNull();
   });
 
   it("is still the Cell's with the composer's text focused, whose editor marks every Esc handled", async () => {
     await using screen = await render(<Window />);
-    toss();
-    await frames(3);
+    using _timers = fakeTimers();
+    await toss();
     const composer = screen.container.querySelector<HTMLElement>("[data-testid='composer']")!;
     composer.focus();
     escape(composer);
+    decided();
     await expect.poll(() => awayIn(screen)).toBe("home");
   });
 
@@ -126,17 +127,17 @@ describe("a thrown Cell and Esc", () => {
   // menu or the palette never got it while a Cell flew.
   it("leaves Esc to a field with focus, and to a layer that is open", async () => {
     await using screen = await render(<Window />);
-    toss();
-    await frames(3);
+    using _timers = fakeTimers();
+    await toss();
     const field = screen.container.querySelector<HTMLInputElement>("[data-testid='field']")!;
     field.focus();
     escape(field);
-    await frames(2);
+    decided();
     expect(stillFlying()).toBe(true);
     field.blur();
     await screen.rerender(<Window popover />);
     escape(document.body);
-    await frames(2);
+    decided();
     expect(stillFlying()).toBe(true);
     expect(awayIn(screen)).toBe("away");
   });
@@ -144,11 +145,11 @@ describe("a thrown Cell and Esc", () => {
   // Find open: Esc closed find and sent the Cell home too.
   it("does one thing per Esc with find open: find closes, or with the composer focused the Cell goes home", async () => {
     await using screen = await render(<Window />);
-    toss();
-    await frames(3);
+    using _timers = fakeTimers();
+    await toss();
     using find = openFind();
     escape(document.body);
-    await frames(2);
+    decided();
     expect(find.open).toBe(false);
     expect(stillFlying()).toBe(true);
     // In the composer, upstream's find leaves an Esc the editor marked: the Cell has it.
@@ -156,6 +157,7 @@ describe("a thrown Cell and Esc", () => {
     const composer = screen.container.querySelector<HTMLElement>("[data-testid='composer']")!;
     composer.focus();
     escape(composer);
+    decided();
     await expect.poll(() => awayIn(screen)).toBe("home");
     expect(find.open).toBe(true);
   });
@@ -166,13 +168,13 @@ describe("a thrown Cell whose page goes", () => {
   // started a stale flight, and its place stood empty meanwhile.
   it("is home at once: its place shows it and nothing of it is left", async () => {
     await using screen = await render(<Window />);
-    toss();
-    await frames(3);
-    expect(awayIn(screen)).toBe("away");
+    using _timers = fakeTimers();
+    await toss();
+    await expect.poll(() => awayIn(screen)).toBe("away");
     await screen.rerender(<Window throws={false} />);
     await expect.poll(() => awayIn(screen)).toBe("home");
     await screen.rerender(<Window />);
-    await frames(2);
+    vi.advanceTimersToNextFrame();
     expect(thrownBox()).toBeNull();
   });
 });
