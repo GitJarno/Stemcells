@@ -30,6 +30,7 @@ import {
   type RightPanelSurface,
 } from "../../rightPanelStore";
 import type { CellRef } from "../tabs/layout";
+import { layerOpen } from "./layers";
 import { threadRefOf } from "./routes";
 
 /** Whether the Cell's right panel is open. Upstream keeps it per thread, a draft's under its thread. */
@@ -173,20 +174,19 @@ export function useInlinePanels(): boolean {
 }
 
 /**
- * What answers Esc itself while it is on screen: upstream's dialogs, sheets,
- * popovers, menus and selects (base-ui popups, mounted only while open), a
- * chat's find bar, and a chat's full-screen app view.
+ * What answers Esc itself beside upstream's layers (`layers.ts`): the right
+ * panel's sheet while it is open or still leaving (it stays mounted closed),
+ * a chat's find bar, and a chat's full-screen app view.
  */
-const OPEN_OVERLAY = [
-  ...["dialog-popup", "sheet-popup", "popover-popup", "menu-popup", "select-popup"].map(
-    (slot) => `[data-slot="${slot}"]`,
-  ),
+const ESCAPE_HOLDERS = [
+  '[data-slot="sheet-popup"]:is([data-open],[data-ending-style])',
   "[data-thread-find-bar]",
   "[data-mcp-app-fullscreen]",
 ].join(", ");
 
 /**
- * Whether something of upstream's holds Esc right now: an open overlay,
+ * Whether something of upstream's holds Esc right now: an open layer (a
+ * closed one kept mounted, as the Cell's line keeps its popover, doesn't),
  * the command palette or a context menu, or focus in a terminal or in the
  * desktop browser's page, which take the key for the shell or the page.
  * (The server browser's page is a text field and stops the keys it sends.)
@@ -197,6 +197,7 @@ export function escapeHeldElsewhere(): boolean {
     isContextMenuOpen() ||
     isTerminalFocused() ||
     document.activeElement?.tagName === "WEBVIEW" ||
-    document.querySelector(OPEN_OVERLAY) !== null
+    layerOpen() ||
+    document.querySelector(ESCAPE_HOLDERS) !== null
   );
 }
