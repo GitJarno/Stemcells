@@ -357,11 +357,13 @@ header, the Cell is the chat's identity, and picking up the Cell to carry
 the chat reads as what it is; the grip is where a hand looks for a pane's
 own handle.
 
-1. **Pick up** (4 px). A card, the Cell's mark and name, appears under
-   the hand on `flick`. The pane stays in its place and recedes (its
-   contents dim), so nothing grows or shrinks out of it, and a cancel has
-   nothing to undo but the dimming. (Until 2026-10-23 the pane gathered
-   into the card on `lift`, its place left empty: it read as a minimize.)
+1. **Pick up** (4 px). Taken by its Cell, the Cell itself hangs from the
+   hand, and the pane recedes (its contents dim) once the hand is over a
+   place the chat would go. Taken by the grip, a card, the Cell's mark and
+   name, appears under the hand on `flick`, and the pane recedes at once.
+   Nothing grows or shrinks out of the pane, and a cancel has nothing to
+   undo but the dimming. (Until 2026-10-23 the pane gathered into a card
+   on `lift`, its place left empty: it read as a minimize.)
 2. **In its own window**, today's drop machinery answers: a pane's half
    lights with the wash (`DropWash`, gliding on `travel`); a chip lights and
    opens after `spring-load`; the strip makes room for a new tab (`travel`).
@@ -372,10 +374,12 @@ own handle.
 4. **Open space**: the card unfolds into a window preview holding one pane
    (`unfold`), then lands like a torn tab.
 5. **Drop**: on a half, the card fades from the hand as the chat takes its
-   place; into a chip, slot or window it lands on `land`. The source grid
+   place, or the Cell goes home to its line there on `land`; into a chip,
+   slot or window the card lands on `land`, the Cell going in after it. The source grid
    reflows. A tab whose last pane left closes (`leave`); a window whose
    last tab left closes.
-6. **Cancel**: the card fades from the hand and the pane comes back.
+6. **Cancel**: the card fades from the hand, or the Cell goes home, and
+   the pane comes back.
 
 Before the source lets go of a pane, its pending draft write is flushed,
 and the carry is marked so upstream's drop-left-draft cleanup doesn't

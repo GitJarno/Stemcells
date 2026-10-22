@@ -20,13 +20,13 @@ import {
   throwCell,
   type Thrown,
   tierOf,
-  TOSS_SPEED,
   tossOf,
 } from "./throw";
 import golden from "./throw.golden.json" with { type: "json" };
 import {
   groundedOf,
   hasLanded,
+  IMPACT_SPEED,
   type Impact,
   type Motion,
   stepMotion,
@@ -508,7 +508,7 @@ describe("in the hand, the press lost", () => {
     }
     const thrown = letGo(held, { x: 480, y: 160, at: air.at + 72 }, ARENA);
     expect(Math.hypot(velocityOf(thrown.motion).x, velocityOf(thrown.motion).y)).toBeGreaterThan(
-      TOSS_SPEED,
+      IMPACT_SPEED,
     );
     const set = setDown(held, air.at + 72);
     expect(set.motion.held).toBe(false);
@@ -591,34 +591,19 @@ describe("the same flight at any frame rate", () => {
 });
 
 describe("letting go of a carried chat", () => {
-  const slow = { x: 60, y: 30 };
-  const fast = { x: 300, y: -200 };
-
-  it("let go slowly over a place that takes the chat, it drops there", () => {
-    expect(letGoOf(true, slow, false, true)).toBe("drop");
-  });
-
-  it(`let go at ${TOSS_SPEED} CSS px a second or faster in its own chat, its Cell is thrown`, () => {
-    expect(letGoOf(false, fast, false, true)).toBe("toss");
-    expect(letGoOf(false, { x: TOSS_SPEED, y: 0 }, false, true)).toBe("toss");
-    expect(letGoOf(false, { x: TOSS_SPEED - 0.01, y: 0 }, false, true)).toBe("home");
-  });
-
-  it("otherwise it goes home", () => {
-    expect(letGoOf(false, slow, false, true)).toBe("home");
-    expect(letGoOf(false, { x: Number.NaN, y: 0 }, false, true)).toBe("home");
-  });
-
   // A Cell thrown from over another chat flew outside its own; a fast drop
   // onto a tab sprung open on the way flew the chat home.
-  it("outside its own chat, a fast let-go drops the chat on a place, never throws", () => {
-    expect(letGoOf(true, fast, false, false)).toBe("drop");
-    expect(letGoOf(true, slow, false, false)).toBe("drop");
-    expect(letGoOf(false, fast, false, false)).toBe("home");
+  it("held by its Cell in its own chat, it is thrown, however slowly: a slow one is set down", () => {
+    expect(letGoOf(false, false, true)).toBe("toss");
+  });
+
+  it("anywhere else nothing is thrown: the chat drops on a place, or goes home", () => {
+    expect(letGoOf(true, false, false)).toBe("drop");
+    expect(letGoOf(false, false, false)).toBe("home");
   });
 
   it("with Reduce Motion nothing is thrown: it drops or goes home", () => {
-    expect(letGoOf(false, fast, true, true)).toBe("home");
-    expect(letGoOf(true, fast, true, false)).toBe("drop");
+    expect(letGoOf(false, true, true)).toBe("home");
+    expect(letGoOf(true, true, false)).toBe("drop");
   });
 });

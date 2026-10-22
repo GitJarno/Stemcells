@@ -52,14 +52,16 @@ the original's soft Cell: it never tumbles, an off-centre throw rolls its
 face round, its body is springs a hit sets going, and its face is what the
 body goes through.
 
-- **Letting go** of a carried chat with the hand inside its own pane: at
-  100 CSS px a second or faster (after the hand's speed is scaled by
-  0.55), its Cell is thrown; slower, it goes home. Anywhere else nothing
-  is thrown: over another pane, a chip, or a tab sprung open on the way,
-  the chat drops there however fast it is let go; elsewhere it goes home.
-  Thrown, the card goes, the chat shows where it was, and the Cell flies
-  from the hand; its place on the composer's line stands empty until it
-  is back.
+- **In the hand**: a chat taken by its Cell hangs the Cell itself from
+  the hand, held; its place on the composer's line stands empty until it
+  is back. (Taken by the grip at its pane's top, a card of the chat is in
+  the hand instead, and nothing is ever thrown.)
+- **Letting go** with the hand inside its own pane, the Cell is thrown as
+  fast as the hand went (its speed scaled by 0.55): a slow let-go sets it
+  down, to land and walk home. Anywhere else nothing is thrown: over
+  another pane, a chip, or a tab sprung open on the way, the chat drops
+  there and the Cell goes home to its line in the chat's new place, or
+  into the chip; elsewhere it goes home.
 - **The flight** is the original's, model and numbers: the hand's speed
   over its last 0.12 s, cut to 1100 CSS px a second; a fall of 1400 CSS
   px a second²; a wall gives back 0.35, the top 0.38, the floor less the
@@ -103,5 +105,5 @@ body goes through.
   scoot, facing home, four box widths a second; a longer way than 3 s at
   that pace quickens it, the scoot's beat with it, so no walk home takes
   longer. Home, nothing of the flight runs.
-- **Reduce Motion:** nothing is thrown. Let go fast, the card fades where
-  it is and the chat is home, as any carry let go elsewhere.
+- **Reduce Motion:** nothing is thrown. Let go in its own pane, the Cell
+  fades where it is and is home, as any carry let go elsewhere.

@@ -70,3 +70,8 @@
   z-index: 60;
   pointer-events: none;
 }
+
+/* A Cell in the hand, as its box. */
+[data-stemcells-cell-in-hand] {
+  display: flex;
+}

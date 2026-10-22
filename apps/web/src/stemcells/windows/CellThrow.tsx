@@ -88,6 +88,16 @@ export function throwFromCarry(launch: Launch): void {
   setFlying(new Map(flying).set(launch.cell.threadId, launch));
 }
 
+/** The Cell of the thread whose chat is carried by its Cell: it hangs from the hand (`ChatCarry.tsx`). */
+let inHand: string | null = null;
+
+/** The Cell of `threadId` is in the hand, or (null) none is: its place stands empty meanwhile. */
+export function holdInHand(threadId: string | null): void {
+  if (inHand === threadId) return;
+  inHand = threadId;
+  for (const listener of listeners) listener();
+}
+
 /** It's home: its place shows it again. */
 function landed(launch: Launch): void {
   if (flying.get(launch.cell.threadId) !== launch) return;
@@ -96,9 +106,9 @@ function landed(launch: Launch): void {
   setFlying(next);
 }
 
-/** Whether the Cell of `threadId` is away from its place, thrown. */
+/** Whether the Cell of `threadId` is away from its place: thrown, or in the hand. */
 export function useCellAway(threadId: string | undefined): boolean {
-  const read = () => threadId !== undefined && flying.has(threadId);
+  const read = () => threadId !== undefined && (flying.has(threadId) || inHand === threadId);
   return useSyncExternalStore(subscribe, read, read);
 }
 
@@ -166,7 +176,10 @@ function rest(flight: Flight): void {
 }
 
 /** The Cell's box, CSS px, as it stands on the composer's line. */
-const SIZE = { width: BOX.width * POINTS_PER_PIXEL, height: BOX.height * POINTS_PER_PIXEL };
+export const CELL_SIZE = {
+  width: BOX.width * POINTS_PER_PIXEL,
+  height: BOX.height * POINTS_PER_PIXEL,
+};
 
 /** How often the Cell's place is measured again while it is away, ms: a composer that grows moves it. */
 const REMEASURE = 250;
@@ -197,7 +210,8 @@ const sampleOf = (event: PointerEvent | ReactPointerEvent): Sample => ({
   at: event.timeStamp,
 });
 
-const STILL: Toss = { held: false, vx: 0, vy: 0, grounded: true };
+/** A Cell at rest: standing, as it stands at home. */
+export const STILL: Toss = { held: false, vx: 0, vy: 0, grounded: true };
 
 /** One Cell's flight: its clock, its hand, the box it moves, and the one loop that runs its frames. */
 class Flight {
@@ -234,7 +248,7 @@ class Flight {
     };
     this.nowhere = arena === null;
     this.measured = launch.at;
-    this.thrown = throwCell(launch.centre, launch.velocity, SIZE, launch.grip, launch.at);
+    this.thrown = throwCell(launch.centre, launch.velocity, CELL_SIZE, launch.grip, launch.at);
   }
 
   /** The box's place now, for the first frame. */
@@ -296,7 +310,7 @@ class Flight {
   }
 
   private transformAt(centre: Point): string {
-    return `translate3d(${centre.x - SIZE.width / 2}px, ${centre.y - SIZE.height / 2}px, 0)`;
+    return `translate3d(${centre.x - CELL_SIZE.width / 2}px, ${centre.y - CELL_SIZE.height / 2}px, 0)`;
   }
 
   /** The flight on to `now`: its place measured when due, the box moved, its words said, and home once it is. */
@@ -367,7 +381,7 @@ class Flight {
     if (this.done || !box || reducedMotion()) return this.finish();
     this.goingHome = true;
     const { bounds, home } = this.arena;
-    const to = this.transformAt({ x: home, y: bounds.y + bounds.height - SIZE.height / 2 });
+    const to = this.transformAt({ x: home, y: bounds.y + bounds.height - CELL_SIZE.height / 2 });
     const { duration, easing } = motionTiming("land");
     void box
       .animate([{ transform: box.style.transform }, { transform: to }], {
@@ -390,16 +404,37 @@ class Flight {
   }
 }
 
+/**
+ * A Cell off its line, in the air or in the hand: the live figure in what it
+ * wears, drawn from the facts `frames` gives it (`CellToss`).
+ */
+export function LooseCell(props: {
+  readonly cell: CellRef;
+  readonly frames: (draw: TossDraw) => () => void;
+}) {
+  const look = useRosterLook(props.cell.threadId);
+  const provider = useCellDriver(props.cell);
+  const ground = useCellGround();
+  const { strength } = useCellLanding(props.cell);
+  return (
+    <CellToss
+      name={props.cell.threadId}
+      look={look}
+      provider={provider}
+      ground={ground}
+      points={POINTS_PER_PIXEL}
+      strength={strength}
+      frames={props.frames}
+    />
+  );
+}
+
 /** A thrown Cell in its layer, drawn every frame from its flight's facts. */
 function FlyingCell(props: { readonly launch: Launch }) {
   const { launch } = props;
   const box = useRef<HTMLDivElement>(null);
   const [words, setWords] = useState<ReadonlyArray<Word>>([]);
   const [flight] = useState(() => new Flight(launch, box, setWords));
-  const look = useRosterLook(launch.cell.threadId);
-  const provider = useCellDriver(launch.cell);
-  const ground = useCellGround();
-  const { strength } = useCellLanding(launch.cell);
 
   useLayoutEffect(() => {
     flight.start();
@@ -448,15 +483,7 @@ function FlyingCell(props: { readonly launch: Launch }) {
         onPointerCancel={flight.lost}
         onLostPointerCapture={flight.lost}
       >
-        <CellToss
-          name={launch.cell.threadId}
-          look={look}
-          provider={provider}
-          ground={ground}
-          points={POINTS_PER_PIXEL}
-          strength={strength}
-          frames={flight.frames}
-        />
+        <LooseCell cell={launch.cell} frames={flight.frames} />
       </div>
     </div>,
     document.body,

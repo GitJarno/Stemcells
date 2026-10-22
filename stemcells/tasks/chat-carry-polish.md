@@ -17,7 +17,7 @@ cheap to draw, and it just works.
       the card appears at the hand instead of gathering out of the pane,
       and leaves at the hand instead of growing back into it. A chat is
       also carried by a grip at its pane's top.
-- [ ] **The Cell in the hand.** Grabbed by its Cell, the Cell itself hangs
+- [x] **The Cell in the hand.** Grabbed by its Cell, the Cell itself hangs
       from the hand (the toss's held pose), not a card; let go in its own
       chat it is thrown or set down, on a place the chat goes there and
       the Cell goes home.

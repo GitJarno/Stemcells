@@ -17,7 +17,6 @@ import {
   type Frame,
   groundedOf,
   IMPACT_SPEED,
-  limited,
   type Motion,
   release,
   rollOf,
@@ -78,28 +77,19 @@ export function handVelocity(hand: ReadonlyArray<Sample>, at: number): Point {
 // ── Letting go of a carried chat
 
 /**
- * A carried Cell let go this fast or faster, CSS px a second, is thrown:
- * the original's slowest contact that counts as a hit at all
- * (CritterBonk.swift:32). As the original, a critter is thrown only in its
- * own chat; here a slower let-go drops the chat or sends it home.
- */
-export const TOSS_SPEED = IMPACT_SPEED;
-
-/**
- * What letting go of a carried chat does: thrown when the hand let go fast
- * enough inside the chat's own pane, else dropped where it is over, else
- * home. Anywhere else (another pane, a tab sprung open on the way) it is
- * never thrown: a fast let-go there drops the chat as a slow one does. With
- * Reduce Motion nothing is thrown.
+ * What letting go of a carried chat does. Held by its Cell inside its own
+ * pane, the Cell is thrown as fast as the hand let go: a slow let-go sets
+ * it down, to land and walk home, as the original's critter did let go
+ * anywhere in its chat. Anywhere else (another pane, a chip, a tab sprung
+ * open on the way) nothing is thrown: the chat drops where it is over, or
+ * goes home. With Reduce Motion nothing is thrown.
  */
 export function letGoOf(
   over: boolean,
-  velocity: Point,
   reduce: boolean,
   inOwnChat: boolean,
 ): "drop" | "toss" | "home" {
-  const v = limited(velocity);
-  if (inOwnChat && !reduce && Math.hypot(v.x, v.y) >= TOSS_SPEED) return "toss";
+  if (inOwnChat && !reduce) return "toss";
   return over ? "drop" : "home";
 }
 
