@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# The checks a pull request must pass before it merges, run on this Mac, as
+# GitHub Actions stays off for Stemcells. It checks out the exact commit in a
+# worktree of its own, runs the `check` gates there (the one list, in
+# stemcells/scripts/sync-upstream), removes the worktree, and records the
+# verdict on the commit as the status `local-check`. A pull request merges
+# only when its head has `local-check` = success (stemcells/AGENTS.md).
+#
+#   stemcells/scripts/check-local <pull request number | commit>
+#
+# One run at a time: a second waits for the first. It runs at low priority
+# (nice) and with few test workers, as the Mac is busy with other work.
+# VITEST_MAX_WORKERS sets the workers (2 by default).
+set -euo pipefail
+
+[ $# -eq 1 ] || { sed -n '2,14p' "$0" >&2; exit 2; }
+cd "$(git rev-parse --show-toplevel)"
+repo=$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')
+
+# The exact commit: a pull request's head as GitHub has it, or a commit.
+if [[ $1 =~ ^[0-9]+$ ]]; then
+  sha=$(gh api "repos/$repo/pulls/$1" --jq .head.sha)
+  git fetch -q --no-tags origin "pull/$1/head"
+else
+  git fetch -q --no-tags origin
+  sha=$(git rev-parse --verify "$1^{commit}")
+fi
+git cat-file -e "$sha^{commit}"
+short=$(git rev-parse --short=9 "$sha")
+
+# One at a time: the lock is a folder in the repository's git folder, so
+# every worktree of it shares the queue. A lock whose run is gone is taken over.
+lock="$(git rev-parse --path-format=absolute --git-common-dir)/stemcells-check-local.lock"
+waited=0
+until mkdir "$lock" 2> /dev/null; do
+  holder=$(cat "$lock/pid" 2> /dev/null || true)
+  if [ -n "$holder" ] && ! kill -0 "$holder" 2> /dev/null; then
+    rm -rf "$lock"
+    continue
+  fi
+  [ "$waited" = 0 ] && echo "check-local: another check is running (pid ${holder:-?}); waiting"
+  waited=1
+  sleep 15
+done
+echo $$ > "$lock/pid"
+
+tree=""
+# shellcheck disable=SC2329 # the EXIT trap runs it
+cleanup() {
+  if [ -n "$tree" ]; then
+    git worktree remove --force "$tree" 2> /dev/null || rm -rf "$tree"
+    git worktree prune
+  fi
+  rm -rf "$lock"
+}
+trap cleanup EXIT
+tree=$(mktemp -d "${TMPDIR:-/tmp}/stemcells-check-XXXXXX")
+git worktree add -q --detach "$tree" "$sha"
+
+status() {
+  gh api "repos/$repo/statuses/$sha" -f state="$1" -f context=local-check \
+    -f description="$2" > /dev/null
+}
+
+echo "check-local: $short in $tree"
+started=$SECONDS
+export VITEST_MAX_WORKERS=${VITEST_MAX_WORKERS:-2}
+set +e
+(
+  cd "$tree" &&
+    nice -n 15 pnpm install --frozen-lockfile --prefer-offline > /dev/null &&
+    nice -n 15 stemcells/scripts/sync-upstream --gates check
+)
+code=$?
+set -e
+minutes=$(((SECONDS - started + 59) / 60))
+if [ "$code" = 0 ]; then
+  status success "sync-upstream --gates check passed on a Mac (${minutes} min)"
+  echo "check-local: $short passed; recorded local-check = success"
+else
+  status failure "a check failed on a Mac; run stemcells/scripts/check-local $short to see it"
+  echo "check-local: $short failed; recorded local-check = failure"
+fi
+exit "$code"

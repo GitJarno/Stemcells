@@ -126,7 +126,9 @@ case, go back to the three costs and choose what keeps them lowest.
   merge into a future conflict.
 - **Take upstream's green commits.** Sync to the newest upstream commit
   whose CI passed, not blindly to the tip.
-- **The nightly pipeline** (the runbook: `upstream-sync.md`):
+- **The nightly pipeline** (the runbook: `upstream-sync.md`), on a Mac,
+  as GitHub Actions is off for Stemcells: `install-nightly-sync` (opt in)
+  has launchd run it at 03:00, on AC power and when the Mac isn't busy.
   1. `sync-upstream` merges on a branch, and resolves conflicts in
      upstream's tests itself.
   2. `sync-upstream --gates`: drift, nothing reporting on the person, types,
@@ -134,6 +136,9 @@ case, go back to the three costs and choose what keeps them lowest.
   3. If green, `sync-upstream --pr` opens the pull request, with a report.
      If it conflicts or goes red, one issue says where, and a Cell resolves
      it: upstream's logic wins and our seam goes back on top.
+- **Nothing merges unchecked.** A pull request merges once its exact head
+  carries `local-check` = success, which `check-local` records after
+  running the `check` gates (`stemcells/AGENTS.md`, Landing).
 - **A seam that conflicts twice is a signal.** Move more of it into our
   files, or make it upstream's extension point (rule 5 and rule 7).
 

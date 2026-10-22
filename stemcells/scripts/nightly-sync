@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# The nightly sync on a Mac, as GitHub Actions stays off for Stemcells.
+# launchd runs it at 03:00 once stemcells/scripts/install-nightly-sync has
+# installed it (nothing does by default). It takes upstream's work only when
+# the Mac is on AC power, isn't busy, and no other sync runs; then
+# `sync-upstream --nightly` (merge, gates, pull request, and the one issue
+# kept up to date) runs in a worktree of a clone of its own, at low priority.
+#
+#   nightly-sync [--dry-run]
+#
+# --dry-run says whether a run now would go ahead, and why not.
+#
+# It never reads the checkout you work in. That one sits under ~/Documents,
+# and a launchd job that reads there raises a privacy prompt that holds every
+# Documents read on the Mac until someone answers it. So the installer copies
+# this script, and the job keeps its own clone, under
+# ~/Library/Application Support/sh.stemcells.nightly-sync.
+#
+# STEMCELLS_SYNC_MAX_LOAD: the load average over which the Mac counts as busy
+# (its number of cores by default: every core taken). VITEST_MAX_WORKERS: test
+# workers (2).
+set -euo pipefail
+
+home="$HOME/Library/Application Support/sh.stemcells.nightly-sync"
+repo="$home/repo"
+origin=https://github.com/GitJarno/Stemcells.git
+upstream=https://github.com/pingdotgg/t3code.git
+dry=0
+[ "${1:-}" = --dry-run ] && dry=1
+
+say() { echo "nightly-sync $(date '+%F %T'): $*"; }
+skip() {
+  say "skipped: $1"
+  exit 0
+}
+
+pmset -g ps | head -1 | grep -q "AC Power" || skip "the Mac is on battery"
+cores=$(sysctl -n hw.ncpu)
+max=${STEMCELLS_SYNC_MAX_LOAD:-$cores}
+load=$(sysctl -n vm.loadavg | awk '{print $2}')
+if awk -v l="$load" -v m="$max" 'BEGIN { exit !(l > m) }'; then
+  skip "the Mac is busy (load $load, over $max)"
+fi
+if pgrep -qf 'stemcells/scripts/sync-upstream'; then
+  skip "sync-upstream is running here already (a sync, or its gates)"
+fi
+lock="$home/lock"
+holder=$(cat "$lock/pid" 2> /dev/null || true)
+if [ -n "$holder" ] && kill -0 "$holder" 2> /dev/null; then
+  skip "another sync is running (pid $holder)"
+fi
+if [ "$dry" = 1 ]; then
+  say "would run: on AC power, load $load (busy over $max), no other sync"
+  exit 0
+fi
+mkdir -p "$home"
+rm -rf "$lock"
+mkdir "$lock"
+echo $$ > "$lock/pid"
+tree=""
+# shellcheck disable=SC2329 # the EXIT trap runs it
+cleanup() {
+  if [ -n "$tree" ]; then
+    git -C "$repo" worktree remove --force "$tree" 2> /dev/null || rm -rf "$tree"
+    git -C "$repo" worktree prune
+  fi
+  rm -rf "$lock"
+}
+trap cleanup EXIT
+
+# Its own clone, through gh's credential; upstream is only ever read.
+git_gh=(git -c credential.helper= -c 'credential.helper=!gh auth git-credential')
+if [ ! -d "$repo/.git" ]; then
+  "${git_gh[@]}" clone -q "$origin" "$repo"
+  git -C "$repo" remote add upstream "$upstream"
+fi
+"${git_gh[@]}" -C "$repo" fetch -q --no-tags origin main
+tree=$(mktemp -d "${TMPDIR:-/tmp}/stemcells-nightly-XXXXXX")
+git -C "$repo" worktree add -q --detach "$tree" origin/main
+
+say "syncing in $tree"
+export VITEST_MAX_WORKERS=${VITEST_MAX_WORKERS:-2}
+set +e
+(cd "$tree" && nice -n 15 stemcells/scripts/sync-upstream --nightly)
+code=$?
+set -e
+say "done (exit $code)"
+exit "$code"

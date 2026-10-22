@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# Installs the nightly sync as this user's launchd job: at 03:00,
+# stemcells/scripts/nightly-sync takes upstream's work when the Mac is on AC
+# power and not busy (stemcells/docs/upstream-sync.md, The nightly). Opt in:
+# nothing installs it by default.
+#
+#   stemcells/scripts/install-nightly-sync            install, or refresh
+#   stemcells/scripts/install-nightly-sync --print    print the job, install nothing
+#   stemcells/scripts/install-nightly-sync --remove   uninstall
+#
+# The job never reads this checkout (nightly-sync says why): the script is
+# copied to ~/Library/Application Support/sh.stemcells.nightly-sync, and the
+# job runs it from there, with this shell's PATH minus any folder under
+# ~/Documents, ~/Desktop or ~/Downloads, and STEMCELLS_SYNC_MAX_LOAD when
+# it's set. It logs to ~/Library/Logs/stemcells-nightly-sync.log.
+set -euo pipefail
+
+label=sh.stemcells.nightly-sync
+home="$HOME/Library/Application Support/$label"
+plist="$HOME/Library/LaunchAgents/$label.plist"
+log="$HOME/Library/Logs/stemcells-nightly-sync.log"
+here=$(cd "$(dirname "$0")" && pwd)
+domain="gui/$(id -u)"
+
+if [ "${1:-}" = --remove ]; then
+  launchctl bootout "$domain/$label" 2> /dev/null || true
+  rm -f "$plist"
+  rm -rf "$home"
+  echo "install-nightly-sync: removed"
+  exit 0
+fi
+
+for tool in node pnpm gh git; do
+  command -v "$tool" > /dev/null || { echo "install-nightly-sync: $tool isn't on PATH" >&2; exit 1; }
+done
+# Upstream's suites are written for its Node (package.json's engines): the
+# job runs the node this shell finds first.
+want=$(node -p 'require(process.argv[1]).engines.node.replace(/^\D*/, "").split(".")[0]' "$here/../../package.json")
+have=$(node -p 'process.versions.node.split(".")[0]')
+if [ "$want" != "$have" ]; then
+  echo "install-nightly-sync: the first node on PATH is $have; upstream's suites want $want. Put Node $want first, then install." >&2
+  exit 1
+fi
+path=$(tr ':' '\n' <<< "$PATH" |
+  grep -vE "^$HOME/(Documents|Desktop|Downloads)(/|$)" | awk 'NF && !seen[$0]++' | paste -sd: -)
+
+job() {
+  cat << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>$label</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>$home/nightly-sync</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>3</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>$path</string>$(
+    [ -n "${STEMCELLS_SYNC_MAX_LOAD:-}" ] &&
+      printf '\n    <key>STEMCELLS_SYNC_MAX_LOAD</key>\n    <string>%s</string>' "$STEMCELLS_SYNC_MAX_LOAD"
+  )
+  </dict>
+  <key>WorkingDirectory</key>
+  <string>$home</string>
+  <key>Nice</key>
+  <integer>15</integer>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>$log</string>
+  <key>StandardErrorPath</key>
+  <string>$log</string>
+</dict>
+</plist>
+EOF
+}
+
+if [ "${1:-}" = --print ]; then
+  job
+  exit 0
+fi
+[ $# -eq 0 ] || { sed -n '2,16p' "$0" >&2; exit 2; }
+
+mkdir -p "$home" "$(dirname "$plist")" "$(dirname "$log")"
+install -m 0755 "$here/nightly-sync" "$home/nightly-sync"
+job > "$plist"
+plutil -lint -s "$plist"
+launchctl bootout "$domain/$label" 2> /dev/null || true
+launchctl bootstrap "$domain" "$plist"
+echo "install-nightly-sync: installed; it runs at 03:00 and logs to $log"
+echo "  check tonight's conditions now: \"$home/nightly-sync\" --dry-run"

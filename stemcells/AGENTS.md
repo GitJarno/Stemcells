@@ -19,6 +19,13 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   inside it.
 - Remove your worktree once its pull request merges.
 
+## Landing
+- GitHub Actions is off for Stemcells; checks run on the Mac. A pull request
+  merges only when its exact head carries the commit status `local-check` =
+  success. `stemcells/scripts/check-local <pull request>` records it: the
+  `check` gates on a clean checkout of that head, one run at a time, at low
+  priority. A push after it needs a new run.
+
 ## Where code goes
 - Ours lives in `apps/web/src/stemcells/`, `apps/server/src/stemcells/`,
   `apps/mobile/src/stemcells/`, and `stemcells/` for docs, plans
@@ -44,7 +51,8 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Taking upstream's work
 - `stemcells/scripts/sync-upstream` merges `upstream/main` on a branch,
-  runs the gates and opens a pull request; the nightly runs it, and
+  runs the gates and opens a pull request; a Mac's nightly runs it, once
+  someone opts in (`stemcells/scripts/install-nightly-sync`), and
   `stemcells/docs/upstream-sync.md` is the runbook when it stops. Merge,
   never rebase or squash upstream history.
 - In a conflict, upstream's logic wins and our seam goes back on top. The
@@ -77,8 +85,9 @@ Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
 desktop dev app, below),
 `pnpm exec vp test run <files>` (the web's from `apps/web`, whose config has
 our substitutes), `pnpm exec vp run --filter @t3tools/web typecheck`,
-`pnpm lint`, and before a push the checks CI runs:
-`stemcells/scripts/sync-upstream --gates drift outbound typecheck lint ours`.
+`pnpm lint`, and before a push the checks a pull request must pass:
+`stemcells/scripts/sync-upstream --gates check` (on a busy Mac, with
+`VITEST_MAX_WORKERS=2` before it).
 To build and install the app:
 `stemcells/scripts/install-app` (`stemcells/docs/install.md`).
 

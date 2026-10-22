@@ -1,26 +1,35 @@
 #!/usr/bin/env bash
-# Takes upstream's work into Stemcells the same way every time, on a Mac and
-# in the nightly (.github/workflows/stemcells-sync.yml). The runbook is
+# Takes upstream's work into Stemcells the same way every time, by hand and
+# in the nightly (stemcells/scripts/nightly-sync). The runbook is
 # stemcells/docs/upstream-sync.md.
 #
 #   sync-upstream               merge upstream's newest green commit on
 #                               sync/upstream-<sha>; conflicts in upstream's
 #                               tests resolve themselves (resolve-test-seams.mjs)
-#   sync-upstream --check       the same, then every gate, then --pr (the nightly)
-#   sync-upstream --gates [G…]  run the gates on this tree: all, or only G…
+#   sync-upstream --check       the same, then every gate, then --pr
+#   sync-upstream --nightly     --check, then keep the sync's one issue up to
+#                               date: rewritten when it stops, closed when not
+#   sync-upstream --gates [G…]  run the gates on this tree: all, or only G…;
+#                               `check` names the ones a pull request must pass
 #   sync-upstream --pr          push this branch and open or refresh its pull
 #                               request, with --report as the body
 #   sync-upstream --report      print the sync's report: commits, seams,
 #                               dependencies, outbound hosts, tests
+#   sync-upstream --issue CODE LOG   keep the issue for a run that ended with
+#                               CODE, quoting LOG's last lines
 #
 # Exits 0 when done or already up to date, 3 on a conflict that needs a
 # person or a Cell (each file is printed with the seams it touches), 4 when a
 # gate fails, 5 when GitHub refuses the push. With SYNC_SUMMARY set to a file,
-# it writes there what stopped it, for the nightly's issue.
+# it writes there what stopped it, for the issue. VITEST_MAX_WORKERS caps the
+# test workers (Vitest reads it): a busy Mac times tests out otherwise.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 GATES=(drift outbound typecheck lint ours upstream-packages upstream-web upstream-server build boot workflows)
+# What a pull request must pass before it merges (stemcells/scripts/check-local):
+# the one list, for check-local and the check workflow alike.
+CHECK=(drift outbound typecheck lint ours)
 summary=${SYNC_SUMMARY:-/dev/null}
 mode=${1:-}
 
@@ -117,7 +126,10 @@ gate_workflows() {
 }
 
 run_gates() {
-  local names=("$@") failed=() logs
+  local names=() failed=() logs name
+  for name in "$@"; do
+    if [ "$name" = check ]; then names+=("${CHECK[@]}"); else names+=("$name"); fi
+  done
   [ ${#names[@]} -eq 0 ] && names=("${GATES[@]}")
   logs=$(mktemp -d)
   # A Mac's temp folder is a symlink (/var -> /private/var), which upstream's
@@ -131,7 +143,7 @@ run_gates() {
   [ "$want" = "$have" ] ||
     echo "sync: upstream's suites expect Node $want, and this is Node $have: a few of its tests fail for that alone (CI runs $want)"
   for name in "${names[@]}"; do
-    declare -F "gate_${name//-/_}" >/dev/null || { echo "sync: no gate named $name (gates: ${GATES[*]})" >&2; return 2; }
+    declare -F "gate_${name//-/_}" >/dev/null || { echo "sync: no gate named $name (gates: ${GATES[*]}, or check)" >&2; return 2; }
     echo "::group::gate $name"
     local start=$SECONDS
     if "gate_${name//-/_}" 2>&1 | tee "$logs/$name.log"; [ "${PIPESTATUS[0]}" = 0 ]; then
@@ -305,7 +317,71 @@ open_pr() {
   rm -f "$body"
 }
 
+# ---------------------------------------------------------------- the issue
+
+# One issue says why the sync stopped: opened or rewritten when a run stops,
+# closed when one goes through or finds nothing new.
+keep_issue() {
+  local code=$1 log=$2 repo title="Upstream sync needs a hand" open why today body run=""
+  repo=$(repo_slug)
+  today=$(date -u +%Y-%m-%d)
+  [ -n "${GITHUB_RUN_ID:-}" ] && run=" ([the run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID))"
+  open=$(gh api "repos/$repo/issues?state=open&per_page=100" \
+    --jq "[.[] | select(.title == \"$title\" and (.pull_request | not))][0].number // \"\"")
+  if [ "$code" = 0 ]; then
+    if [ -n "$open" ]; then
+      gh api "repos/$repo/issues/$open/comments" -f body="The sync of $today went through." > /dev/null
+      gh api -X PATCH "repos/$repo/issues/$open" -f state=closed -f state_reason=completed > /dev/null
+    fi
+    return 0
+  fi
+  case $code in
+    3) why="the merge conflicts where our seams are" ;;
+    4) why="a gate failed on the merged tree" ;;
+    5) why="every gate passed, but GitHub refused the push" ;;
+    *) why="the run failed before its gates finished" ;;
+  esac
+  body=$(mktemp)
+  {
+    echo "The sync of $today stopped: $why$run."
+    echo
+    [ -s "$summary" ] && cat "$summary" && echo
+    echo "**How to take it from here:** \`stemcells/docs/upstream-sync.md\`. In short, in a worktree of your own: \`stemcells/scripts/sync-upstream\`, resolve what it leaves (upstream's logic wins, our seam goes back on top), \`git commit\`, then \`stemcells/scripts/sync-upstream --gates\` and \`--pr\`."
+    echo
+    echo "<details><summary>The run's last lines</summary>"
+    echo
+    echo '```'
+    sed -E 's/\x1b\[[0-9;]*m//g' "$log" 2>/dev/null | grep -v '^[[:space:]]*$' | tail -40
+    echo '```'
+    echo "</details>"
+  } > "$body"
+  if [ -n "$open" ]; then
+    gh api -X PATCH "repos/$repo/issues/$open" -F body=@"$body" > /dev/null
+    gh api "repos/$repo/issues/$open/comments" -f body="Stopped again on $today: $why. The issue above says where." > /dev/null
+  else
+    gh api "repos/$repo/issues" -f title="$title" -F body=@"$body" --jq .html_url
+  fi
+  rm -f "$body"
+}
+
 case "$mode" in
+  --issue)
+    [ $# -eq 3 ] || { echo "usage: sync-upstream --issue CODE LOG" >&2; exit 2; }
+    keep_issue "$2" "$3"
+    exit 0
+    ;;
+  --nightly)
+    # Every step's output goes to the log the issue quotes, and to the caller.
+    log=$(mktemp)
+    if [ "$summary" = /dev/null ]; then summary=$(mktemp); export SYNC_SUMMARY=$summary; fi
+    set +e
+    "$0" --check 2>&1 | tee "$log"
+    code=${PIPESTATUS[0]}
+    set -e
+    keep_issue "$code" "$log"
+    rm -f "$log"
+    exit "$code"
+    ;;
   --gates)
     shift
     run_gates "$@"
@@ -401,5 +477,7 @@ fi
 }
 
 pnpm install --frozen-lockfile
+# Electron's binary, which upstream's desktop suite starts, as its CI fetches it.
+pnpm exec vp run --filter @t3tools/desktop ensure:electron
 run_gates || exit 4
 SYNC_GATES_PASSED="${GATES[*]}" open_pr

@@ -1,0 +1,36 @@
+name: Stemcells scroll-phases
+
+# The tab swipe's scroll-phases addon builds with the Mac's own compiler, so
+# it is built and loaded on a Mac, and only when the addon, its build or its
+# loader changes. Switched off, as GitHub Actions is for Stemcells; on a Mac:
+# stemcells/scripts/build-scroll-phases --check.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - stemcells/native/**
+      - stemcells/scripts/build-scroll-phases
+      - apps/desktop/src/stemcells/scrollPhases.ts
+      - apps/desktop/src/stemcells/scrollPhasesPreload.ts
+      - .github/workflows/stemcells-scroll-phases.yml
+  push:
+    branches: [main]
+    paths:
+      - stemcells/native/**
+      - stemcells/scripts/build-scroll-phases
+      - apps/desktop/src/stemcells/scrollPhases.ts
+      - apps/desktop/src/stemcells/scrollPhasesPreload.ts
+      - .github/workflows/stemcells-scroll-phases.yml
+
+concurrency:
+  group: stemcells-scroll-phases-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scroll-phases:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and load the scroll-phases addon
+        run: stemcells/scripts/build-scroll-phases --check

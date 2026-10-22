@@ -3,10 +3,12 @@
 How Stemcells takes T3 Code's work, step by step, for a person or a Cell.
 Why it works this way is in `fork.md`; this is what to type.
 
-Every night `.github/workflows/stemcells-sync.yml` runs the same three
-commands you run by hand. When a night goes through, a pull request "Take
-upstream at <sha> (N commits)" waits for its merge. When it stops, the issue
-"Upstream sync needs a hand" says where, and this page says what to do.
+Every night a Mac that opted in (`stemcells/scripts/install-nightly-sync`)
+runs the same commands you run by hand. GitHub Actions is off for
+Stemcells, so nothing runs them in the cloud. When a night goes through, a
+pull request "Take upstream at <sha> (N commits)" waits for its merge. When
+it stops, the issue "Upstream sync needs a hand" says where, and this page
+says what to do.
 
 | Command | What it does |
 |---|---|
@@ -15,6 +17,11 @@ upstream at <sha> (N commits)" waits for its merge. When it stops, the issue
 | `stemcells/scripts/sync-upstream --pr` | Pushes this branch and opens its pull request, or refreshes it, with the report as its body |
 | `stemcells/scripts/sync-upstream --report` | Prints the report: commits by kind, seams upstream touched, conflicts, new dependencies, outbound hosts, the test count |
 | `stemcells/scripts/sync-upstream --check` | All of it in one go: merge, gates, pull request |
+| `stemcells/scripts/sync-upstream --nightly` | `--check`, then the issue kept up to date: rewritten when it stops, closed when it goes through or finds nothing new |
+| `stemcells/scripts/check-local <pull request>` | The `check` gates on a clean checkout of the pull request's head, recorded on it as `local-check`, which a merge needs (`stemcells/AGENTS.md`, Landing) |
+
+On a busy Mac, `VITEST_MAX_WORKERS=2` before any of them keeps tests from
+timing out under the load; `check-local` and the nightly set it themselves.
 
 ## When the nightly stops
 
@@ -58,14 +65,14 @@ upstream at <sha> (N commits)" waits for its merge. When it stops, the issue
    | `typecheck` | Every package's types | Usually inside `stemcells/upstream/`, our one place that imports upstream: fix the adapter |
    | `lint` | Upstream's lint rules, which hold our code too | Follow the rule as upstream does in its own code. A disable comment only where upstream would use one too: nothing can mark the moment, and the comment says why |
    | `ours` | Our tests and contract tests, each app's with its own config | A contract test names the upstream behaviour that moved: follow it in the adapter, the seam or the substitute, then in the test |
-   | `upstream-packages`, `upstream-web`, `upstream-server` | Upstream's own suites, as its CI splits them, on our tree | Mostly a test pinning a name our seam changes: give it our expectation as a seam row ("Expects …"). Upstream's suites need Node 24 (its `engines`); a Mac's Node 25 fails a few of its tests on `localStorage`. On a busy Mac some time out at 15 s: run the file alone before reading a timeout as a break |
+   | `upstream-packages`, `upstream-web`, `upstream-server` | Upstream's own suites, as its CI splits them, on our tree | Mostly a test pinning a name our seam changes: give it our expectation as a seam row ("Expects …"). Upstream's suites need Node 24 (its `engines`); a Mac's Node 25 fails a few of its tests on `localStorage`. On a busy Mac some time out at 15 s: run with `VITEST_MAX_WORKERS=2`, or the file alone, before reading a timeout as a break |
    | `build` | The web, server and desktop builds, and upstream's preload check | |
    | `boot` | The built server starts on a scratch home, and in headless Chromium its page wears Stemcells' look, a chat opens on its composer, and nothing is asked of any host but the server (`stemcells/scripts/boot-smoke.mjs`) | Run it alone after `--gates build`; it prints what the server said and saves the page as it was |
    | `workflows` | Upstream's workflows stay switched off on this repository | `stemcells.yml` switches them off on `main` and on pull requests; switch one off by hand in Actions if it's on |
 
-   The nightly runs every gate on Linux, which is the authority for
-   upstream's suites. To run them in CI on any branch:
-   `gh workflow run stemcells-sync.yml --ref <branch> -f gates=true`.
+   Upstream's own CI runs its suites on Linux. On a Mac, the gates leave
+   out the one test that needs a case-sensitive disk, and run the preload
+   check as Linux would.
 
 5. **Pull request.** `stemcells/scripts/sync-upstream --pr`. Add how many
    minutes resolving took (`fork.md`, rule 7), and anything upstream shipped
@@ -76,26 +83,37 @@ upstream at <sha> (N commits)" waits for its merge. When it stops, the issue
    main.
 
 6. **Merge it with a merge commit** (`gh pr merge --merge`), never squash or
-   rebase, then remove your worktree. The nightly closes the issue the next
-   time it goes through.
+   rebase, once its head carries `local-check` = success
+   (`stemcells/scripts/check-local <pull request>`). Then remove your
+   worktree. The nightly closes the issue the next time it goes through.
 
 ## The nightly
 
-- It runs at 03:00 UTC, and by hand from Actions ("Stemcells upstream
-  sync", Run workflow).
-- Upstream changes its own workflow files often, and Actions' own token may
-  not push a commit that does. The nightly uses the repository secret
-  `STEMCELLS_SYNC_TOKEN` when there is one: a fine-grained token for this
-  repository only, with read and write on Contents, Pull requests, Issues and
-  Workflows. Without it, a night whose merge changes a workflow ends after
-  its gates with "GitHub refused the push" (exit 5); run
-  `stemcells/scripts/sync-upstream --check` on a Mac, where gh's credential
-  may push it.
-- A pull request opened with Actions' own token runs no checks of its own;
-  the gates already ran on its tree, and its body says where.
+- Opt in on one Mac: `stemcells/scripts/install-nightly-sync` (with Node 24
+  first on PATH). It installs a launchd job, `sh.stemcells.nightly-sync`,
+  that runs `nightly-sync` at 03:00. `--print` shows the job without
+  installing it, and `--remove` takes it away.
+- `nightly-sync` goes ahead only on AC power, when the load average is
+  under the Mac's number of cores (`STEMCELLS_SYNC_MAX_LOAD` at install
+  sets another), and when no other `sync-upstream` runs. Then, at low
+  priority, `sync-upstream --nightly` runs in a fresh worktree of a clone
+  of its own. `nightly-sync --dry-run` says whether a run now would go
+  ahead. It logs to `~/Library/Logs/stemcells-nightly-sync.log`.
+- The job never reads the checkout you work in. That checkout sits under
+  `~/Documents`, and a launchd job reading there raises a privacy prompt
+  that holds every Documents read on the Mac until someone answers it. The
+  script and its clone live in
+  `~/Library/Application Support/sh.stemcells.nightly-sync`.
+- It pushes with gh's credential, which may push upstream's workflow-file
+  changes.
 - It keeps one issue: opened or rewritten each night it stops (with the
   files, their seams and the failing gates' last lines), closed the night a
   sync goes through or finds nothing new.
+- `.github/workflows/stemcells-sync.yml` does the same on Linux if Actions
+  is ever switched back on. It needs the repository secret
+  `STEMCELLS_SYNC_TOKEN` to push upstream's workflow changes: a
+  fine-grained token for this repository only, with read and write on
+  Contents, Pull requests, Issues and Workflows.
 
 ## What never happens
 
