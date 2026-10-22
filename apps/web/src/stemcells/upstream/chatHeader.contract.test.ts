@@ -14,6 +14,7 @@ import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import attachmentStrip from "../../components/chat/ComposerAttachmentStrip.tsx?raw";
 import chatHeader from "../../components/chat/ChatHeader.tsx?raw";
 import composerControl from "../../components/chat/ComposerControl.tsx?raw";
+import composerControlsBar from "../../components/chat/ComposerControlsBar.tsx?raw";
 import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
 
@@ -85,6 +86,6 @@ describe("the composer controls the ladder steps down", () => {
     expect(chatComposer).toContain('data-chat-composer-footer="true"');
     expect(attachmentStrip).toContain('aria-label="Attach files"');
     // The collapsed picker keeps a minimum width the narrowest rung lets go.
-    expect(chatComposer).toContain('"min-w-13 shrink text-xs!",');
+    expect(composerControlsBar).toContain('"min-w-13 shrink text-xs!",');
   });
 });

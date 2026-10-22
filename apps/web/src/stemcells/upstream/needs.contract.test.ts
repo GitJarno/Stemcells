@@ -13,7 +13,7 @@ import approvalActions from "../../components/chat/ComposerPendingApprovalAction
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
 import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
-import chatView from "../../components/ChatView.tsx?raw";
+import composerResume from "../../components/chat/useComposerResume.ts?raw";
 import nowMinute from "../../hooks/useNowMinute.ts?raw";
 
 describe("the column's contracts with upstream", () => {
@@ -38,8 +38,8 @@ describe("the column's contracts with upstream", () => {
   });
 
   it("resumes a limited run with upstream's own words", () => {
-    expect(chatView).toContain(`text: "${PHRASES.continueNow}"`);
-    expect(chatView).toContain("manualContinuationOfRunId");
+    expect(composerResume).toContain(`text: "${PHRASES.continueNow}"`);
+    expect(composerResume).toContain("manualContinuationOfRunId");
   });
 
   it("marks the composer, so the narrow sheet stops above it", () => {

@@ -12,10 +12,11 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
-import chatView from "../../components/ChatView.tsx?raw";
 import chatViewLogic from "../../components/ChatView.logic.ts?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
+import composerSend from "../../components/chat/useComposerSend.ts?raw";
+import multipleModelSend from "../../components/chat/useMultipleModelSend.ts?raw";
 import composerLogic from "../../composer-logic.ts?raw";
 import keybindings from "../../../../../packages/shared/src/keybindings.ts?raw";
 import attachmentClaims from "../../../../server/src/orchestration-v2/AttachmentClaims.ts?raw";
@@ -24,9 +25,9 @@ import contextReferences from "../../../../../packages/shared/src/composerContex
 
 describe("starting Cells beside a draft, as upstream starts its threads", () => {
   it("each thread of a multiple-model send is created in one call, as ours are", () => {
-    const fanout = chatView.slice(chatView.indexOf("const starts = Promise.all("));
+    const fanout = multipleModelSend.slice(multipleModelSend.indexOf("const starts = Promise.all("));
     expect(fanout).toMatch(
-      /bootstrap: \{\s*createThread: \{\s*projectId: activeProject\.id,\s*title,\s*modelSelection: target\.selection,\s*runtimeMode,\s*interactionMode: target\.interactionMode,\s*branch: activeThreadBranch,\s*worktreePath: null,\s*createdAt: messageCreatedAt,\s*\},\s*prepareWorktree: \{\s*projectCwd: activeProject\.workspaceRoot,\s*baseBranch: activeThreadBranch!,/,
+      /bootstrap: \{\s*createThread: \{\s*projectId: project\.id,\s*title,\s*modelSelection: target\.selection,\s*runtimeMode,\s*interactionMode: target\.interactionMode,\s*branch,\s*worktreePath: null,\s*createdAt: createdAt,\s*\},\s*prepareWorktree: \{\s*projectCwd: project\.workspaceRoot,\s*baseBranch: branch,/,
     );
     expect(fanout).toMatch(/runSetupScript: true,/);
   });
@@ -59,7 +60,7 @@ describe("the send the words hold and count", () => {
 
 describe("what a message carries, taken to the Cells beside the draft's", () => {
   it("every thread of a multiple-model send gets the same attachments and context", () => {
-    const fanout = chatView.slice(chatView.indexOf("const starts = Promise.all("));
+    const fanout = multipleModelSend.slice(multipleModelSend.indexOf("const starts = Promise.all("));
     expect(fanout).toMatch(
       /message: \{\s*messageId: newMessageId\(\),\s*role: "user",\s*attachments,\s*\.\.\.withMessageContext\(\{\s*text: target\.text,\s*context,\s*supportsInlineMessageContext,\s*\}\),/,
     );
@@ -71,7 +72,7 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
   });
 
   it("the draft's own uploads go once its Cell has started, so the Cells beside take their own", () => {
-    expect(chatView).toMatch(
+    expect(composerSend).toMatch(
       /turnStartSucceeded = true;[\s\S]{0,200}?if \(turnUsesAttachmentUploads\) \{\s*releaseDraftAttachments\(composerAttachmentsSnapshot\);/,
     );
   });

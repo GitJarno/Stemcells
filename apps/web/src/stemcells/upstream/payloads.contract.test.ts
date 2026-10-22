@@ -9,6 +9,7 @@ import * as NodeFS from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import composerStash from "../../components/chat/useComposerStash.ts?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
 import uploadQueue from "../../lib/attachmentUploadQueue.ts?raw";
 import { IMPORT_PATH } from "../payloads/land";
@@ -45,7 +46,7 @@ describe("carried pictures' and files' contracts with upstream", () => {
   });
 
   it("restoring a stash refuses files stashed on another machine, as `accepts` says first", () => {
-    expect(chatComposer).toMatch(
+    expect(composerStash).toMatch(
       /const restoreStashEntry = async \(menuEntry: PromptStashEntry\) => \{\s*const filesToVerify = menuEntry\.files \?\? \[\];\s*if \(filesToVerify\.some\(\(file\) => file\.environmentId !== environmentId\)\)/,
     );
   });

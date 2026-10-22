@@ -20,6 +20,7 @@ import { describe, expect, it } from "vite-plus/test";
 import branchToolbar from "../../components/BranchToolbar.tsx?raw";
 import branchSelector from "../../components/BranchToolbarBranchSelector.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
+import composerShortcuts from "../../components/chat/composerShortcuts.ts?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 import { knownRepoOf } from "./checkout";
 
@@ -64,7 +65,7 @@ describe("a Cell's env on its ledge", () => {
     expect(branchToolbar).toMatch(
       /export interface BranchToolbarHandle \{\s*openBranchPicker: \(\) => void;\s*usePreviousWorktree: \(\) => void;\s*\}/,
     );
-    expect(chatView).toMatch(
+    expect(composerShortcuts).toMatch(
       /"composer\.branch": \(\{ event \}\) => \{\s*if \(!event\.repeat\) branchToolbarRef\.current\?\.openBranchPicker\(\);/,
     );
   });

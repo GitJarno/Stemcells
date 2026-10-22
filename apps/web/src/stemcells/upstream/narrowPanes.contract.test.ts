@@ -14,6 +14,7 @@ import promptEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
 import markdownTable from "../../components/chat/MarkdownTable.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 import scrollArea from "../../components/ui/scroll-area.tsx?raw";
+import timelineOverlays from "../../components/chat/TimelineOverlays.tsx?raw";
 
 describe("a chat in a narrow pane, against upstream", () => {
   it("the transcript holds its end only through growth within a screen, so the pane holds it across a width change", () => {
@@ -22,7 +23,8 @@ describe("a chat in a narrow pane, against upstream", () => {
   });
 
   it("the Scroll-to-end pill clears the whole composer overlay, the Cell and its line included", () => {
-    expect(chatView).toContain("style={{ bottom: scrollToEndClearance + 4 }}");
+    expect(chatView).toMatch(/<ScrollToEndButton\s+bottom=\{scrollToEndClearance \+ 4\}/);
+    expect(timelineOverlays).toContain("style={{ bottom: props.bottom }}");
     expect(chatView).toContain("overlayHeight: nextHeight,");
     expect(composerFooterLayout).toContain(
       "return Math.ceil(input.overlayHeight - (top - contentTop));",
