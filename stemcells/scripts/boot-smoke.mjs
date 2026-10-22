@@ -183,5 +183,7 @@ try {
       });
     });
   }
-  NodeFS.rmSync(scratch, { recursive: true, force: true });
+  // The server's own children can still be writing into the scratch home as
+  // it goes (ENOTEMPTY mid-removal), so the removal tries again before failing.
+  NodeFS.rmSync(scratch, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 }

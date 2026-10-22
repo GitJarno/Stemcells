@@ -903,8 +903,8 @@ with no history, but carry their old file's churn.
 
 | File | Lines | Hunks | Why |
 |---|---|---|---|
-| `apps/web/src/components/ChatView.tsx` | 46 | 15 | ChatView safe to render twice (window input), the media viewer, the composer line; upstream not asked |
-| `apps/web/src/components/chat/ChatComposer.tsx` | 9 | 7 | Window input (the stash shortcut, paste as text) and the composer's light |
+| `apps/web/src/components/ChatView.tsx` | 33 | 12 | ChatView safe to render twice (window input), the media viewer, the composer line; upstream not asked |
+| `apps/web/src/components/chat/ChatComposer.tsx` | 7 | 5 | Window input (the stash shortcut, paste as text) and the composer's light |
 | `apps/web/src/components/chat/MessagesTimeline.tsx` | 5 | 2 | The work verbs, on the turn fold |
 | `apps/web/src/components/settings/settingsSearch.ts` | 10 | 5 | Settings › Disk and the compaction row in upstream's lists (a type, so no substitute reaches them) |
 | `apps/server/src/server.ts` | 8 | 6 | Mounts Stemcells' server layer, its no-op analytics in place of upstream's, and the model list bundled at build time in place of upstream's fetched one |
