@@ -15,6 +15,7 @@ import { isCommandPaletteOpen, isTerminalFocused, shortcutMatcher } from "../ups
 import { toastManager } from "../upstream/ui";
 import { welcomeAskiHome } from "./askiHome";
 import { windowsBridge } from "./bridge";
+import type { Refusal } from "./moves";
 import { moveTabToNewWindow } from "./newWindow";
 import { takeTabsBack } from "./returned";
 import { undoMove } from "./undoMove";
@@ -23,14 +24,17 @@ const matchesMoveToNewWindow = shortcutMatcher("mod+alt+t");
 // ⌘Z stays the composer's.
 const matchesUndoMove = shortcutMatcher("mod+alt+z");
 
-/** ⌥⌘Z: the latest move back, or a quiet note that it can't go back any more. */
+/** Why a move couldn't go back, as the note says it. */
+const refusals: Record<Refusal, string> = {
+  changed: "Its windows have changed since.",
+  elsewhere: "A chat it would bring back is open elsewhere now.",
+};
+
+/** ⌥⌘Z: the latest move back, or a quiet note that it can't go back any more, and why. */
 async function pressUndoMove(): Promise<void> {
-  if ((await undoMove()) !== "forgotten") return;
-  toastManager.add({
-    type: "info",
-    title: "Can't undo that move",
-    description: "Its windows have changed since.",
-  });
+  const undone = await undoMove();
+  if (undone === "undone" || undone === "none") return;
+  toastManager.add({ type: "info", title: "Can't undo that move", description: refusals[undone] });
 }
 
 export function WindowsKeeper(props: {

@@ -8,11 +8,11 @@
  */
 import { windowsBridge } from "./bridge";
 import { carrying } from "./carrying";
-import { undo } from "./moves";
+import { undo, type Refusal } from "./moves";
 import { commitMove, readUndo } from "./wire";
 
-/** What a press did: took the latest move back, forgot it, or found none. */
-export type Undone = "undone" | "forgotten" | "none";
+/** What a press did: took the latest move back, found none, or forgot it and why. */
+export type Undone = "undone" | "none" | Refusal;
 
 export async function undoMove(): Promise<Undone> {
   const bridge = windowsBridge();
@@ -22,17 +22,20 @@ export async function undoMove(): Promise<Undone> {
   if (!latest) return "none";
   const entry = readUndo(latest.entry);
   if (entry) {
-    // Whether it still applies, as the windows are now (a stale commit is tried again).
-    let applies = true;
+    // Why it doesn't apply, as the windows are now (a stale commit is tried again).
+    let refused = null as Refusal | null;
     const taken = await commitMove((seen) => {
       const back = undo(seen.arrangement, entry);
-      applies = back !== null;
-      return back;
+      refused = typeof back === "string" ? back : null;
+      return typeof back === "string" ? null : back;
     }, latest.id);
     if (taken) return "undone";
     // The windows kept changing under it: it stays, for the next press.
-    if (applies) return "none";
+    if (refused === null) return "none";
+    bridge.dropUndo(latest.id);
+    return refused;
   }
+  // One kept by an older version of the app, which this one can't read.
   bridge.dropUndo(latest.id);
-  return "forgotten";
+  return "changed";
 }

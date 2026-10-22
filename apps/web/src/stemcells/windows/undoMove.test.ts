@@ -66,7 +66,7 @@ describe("Undo Move", () => {
     };
     const app = desktop(now, [writeUndo(torn.undo), writeUndo(closed.undo)]);
 
-    expect(await undoMove()).toBe("forgotten");
+    expect(await undoMove()).toBe("elsewhere");
     expect(app.commits).toEqual([]);
     expect(app.kept()).toEqual([1]);
 

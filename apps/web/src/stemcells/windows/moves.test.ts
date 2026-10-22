@@ -28,7 +28,8 @@ import { carry, closeWindow, join, tear, undo } from "./moves";
 /** `undo`, whose every result is checked whole: no tab, pane or chat in two places. */
 function undone(current: Arrangement, entry: Moved["undo"]): Moved | null {
   const back = undo(current, entry);
-  if (back) expect(problemsOf(back.next)).toEqual([]);
+  if (typeof back === "string") return null;
+  expect(problemsOf(back.next)).toEqual([]);
   return back;
 }
 
@@ -273,7 +274,7 @@ describe("undo", () => {
     const start = twoWindows();
     const torn = tear(start, "a1", where)!;
     const moreTabs = join(torn.next, "b1", "w-new", 1)!;
-    expect(undone(moreTabs.next, torn.undo)).toBeNull();
+    expect(undo(moreTabs.next, torn.undo)).toBe("changed");
   });
 
   it("leaves a window closed once one of its chats has been opened in another", () => {
@@ -281,7 +282,7 @@ describe("undo", () => {
     const closed = closeWindow(start, "b")!;
     expect(undone(closed.next, closed.undo)).not.toBeNull();
     const elsewhere = openChat(closed.next, "a", "p", "a9");
-    expect(undone(elsewhere, closed.undo)).toBeNull();
+    expect(undo(elsewhere, closed.undo)).toBe("elsewhere");
   });
 
   it("leaves a window moved by hand since where it is", () => {

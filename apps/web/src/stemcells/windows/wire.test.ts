@@ -83,7 +83,7 @@ describe("Aski's tab coming home", () => {
     const torn = tear(start, "a2", { id: "c", frame: frame(24), display: "laptop" })!;
     const kept = readUndo(JSON.parse(JSON.stringify(writeUndo(torn.undo))))!;
     expect(kept).toEqual(torn.undo);
-    expect(undo(torn.next, kept)!.transaction.close).toEqual(["c"]);
+    expect(undo(torn.next, kept)).toMatchObject({ transaction: { close: ["c"] } });
     expect(readUndo({ before: null, after: null })).toBeNull();
   });
 });

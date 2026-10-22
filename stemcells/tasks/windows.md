@@ -416,8 +416,8 @@ and main keeps the latest 20, not between launches. ⌥⌘Z in any window
 takes the latest back with `undo` from a fresh snapshot; one whose windows
 have changed shape since, or that would bring back a chat opened elsewhere
 since (a window closed, then one of its chats opened in another), is
-forgotten with a note, "Can't undo that move", and the next press tries the
-one before it. Every undo's result is checked whole in the tests: no tab,
+forgotten with a note, "Can't undo that move", that says which, and the
+next press tries the one before it. Every undo's result is checked whole in the tests: no tab,
 pane or chat in two places. The
 windows change at once, without motion yet (W6d). Closing a window isn't a
 move yet: it closes natively and the lead takes Aski home, so Undo Move
