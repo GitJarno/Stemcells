@@ -2,7 +2,6 @@
 import * as Schema from "effect/Schema";
 import * as NodeHttp from "node:http";
 import { codexAuthorizationRequest, codexCallbackUrl } from "@t3tools/shared/codexAuthHandoff";
-import { APP_NAME } from "../../../stemcells/brand/name.ts";
 
 export class CodexAuthCallbackError extends Schema.TaggedError<CodexAuthCallbackError>()(
   "CodexAuthCallbackError",
@@ -59,7 +58,7 @@ export async function receiveCodexAuthCallback(
         response
           .writeHead(200, { "content-type": "text/html; charset=utf-8" })
           .end(
-            `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>${APP_NAME}</title><style>body{font-family:system-ui;display:grid;place-items:center;min-height:90vh;margin:0}main{max-width:360px;padding:32px}h1{font-size:24px}p{line-height:1.6;opacity:.7}</style></head><body><main><h1>Return to ${APP_NAME}</h1><p>Your sign-in response has been received. ${APP_NAME} is finishing the connection. You can close this tab.</p></main></body></html>`,
+            '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>T3 Code</title><style>body{font-family:system-ui;display:grid;place-items:center;min-height:90vh;margin:0}main{max-width:360px;padding:32px}h1{font-size:24px}p{line-height:1.6;opacity:.7}</style></head><body><main><h1>Return to T3 Code</h1><p>Your sign-in response has been received. T3 Code is finishing the connection. You can close this tab.</p></main></body></html>',
           );
       }
       callback.resolve(url);
@@ -80,7 +79,7 @@ export async function receiveCodexAuthCallback(
       server.once("error", () =>
         reject(
           new Error(
-            `The ChatGPT callback port is in use on this computer. Close the other sign-in and try again, or paste the redirect URL in ${APP_NAME}.`,
+            "The ChatGPT callback port is in use on this computer. Close the other sign-in and try again, or paste the redirect URL in T3 Code.",
           ),
         ),
       );

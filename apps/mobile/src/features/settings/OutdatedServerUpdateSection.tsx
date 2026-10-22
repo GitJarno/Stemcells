@@ -16,7 +16,6 @@ import { useAtomCommand } from "../../state/use-atom-command";
 import { SettingsActionRow } from "./components/SettingsActionRow";
 import { SettingsSection } from "./components/SettingsSection";
 import { findEnvironmentUpdate } from "./environment-maintenance";
-import { APP_NAME } from "../../stemcells/brand/name";
 
 export function OutdatedServerUpdateSection({
   environmentId,
@@ -66,7 +65,7 @@ export function OutdatedServerUpdateSection({
     if (busy || !release || !targetVersion) return;
     Dialog.alert(
       `Update ${label}?`,
-      `Install ${APP_NAME} ${targetVersion}. ${APP_NAME} restarts on that machine and reconnects. Running threads may be interrupted.`,
+      `Install T3 Code ${targetVersion}. T3 Code restarts on that machine and reconnects. Running threads may be interrupted.`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -85,7 +84,7 @@ export function OutdatedServerUpdateSection({
   }
 
   return (
-    <SettingsSection title={APP_NAME}>
+    <SettingsSection title="T3 Code">
       <View className="gap-1 p-4">
         <Text className="text-base text-foreground">
           {release ? `Version ${release.fromVersion}` : "Update required"}
@@ -101,7 +100,7 @@ export function OutdatedServerUpdateSection({
               ? release.targetVersion
                 ? `Version ${release.targetVersion} is available.`
                 : "No newer version is available yet."
-              : `This app needs a newer version of ${APP_NAME} on this machine.`}
+              : "This app needs a newer version of T3 Code on this machine."}
         </Text>
         {error || state.status === "failed" ? (
           <Text selectable accessibilityRole="alert" className="text-sm text-danger-foreground">

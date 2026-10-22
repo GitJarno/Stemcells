@@ -103,7 +103,9 @@ What the numbers say:
    - Register a settings page from a module: about 4 files
      (`settingsSearch.ts`' lists, `SettingsSidebarNav.tsx`,
      `SettingsScopeSentence.tsx`, the route).
-   - Every sentence that names the app reads `APP_BASE_NAME`: 3 files.
+   - ~~Every sentence that names the app reads `APP_BASE_NAME`: 3 files.~~
+     Not needed: the web app's and the server's builds rename the name
+     (`stemcells/docs/fork.md`, "The name transform").
    - One function every view names a model through: 3 seams and 2
      substitutes become 1.
    - A compact sidebar state, or a slot for the sidebar's content: 1 to 2.

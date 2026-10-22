@@ -5,5 +5,12 @@
     "types": ["node", "electron"],
     "lib": ["ESNext", "DOM", "esnext.disposable"]
   },
-  "include": ["src", "vite.config.ts", "../../scripts/lib", "../../stemcells/brand/assets.ts"]
+  "include": [
+    "src",
+    "vite.config.ts",
+    "../../scripts/lib",
+    "../../stemcells/brand/assets.ts",
+    "../../stemcells/brand/name.ts",
+    "../../stemcells/brand/nameTransform.ts"
+  ]
 }

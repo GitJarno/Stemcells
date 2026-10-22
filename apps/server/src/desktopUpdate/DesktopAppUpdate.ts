@@ -17,7 +17,6 @@ import * as Stream from "effect/Stream";
 
 import * as ServerConfig from "../config.ts";
 import * as DesktopTelemetryReceiver from "../resourceTelemetry/DesktopTelemetryReceiver.ts";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const DESKTOP_UPDATE_TIMEOUT = Duration.minutes(20);
 const DESKTOP_INSTALL_TIMEOUT = Duration.minutes(2);
@@ -125,7 +124,7 @@ export const make = Effect.fn("desktopUpdate.desktopAppUpdate.make")(function* (
     }
     if (report.outcome === "up-to-date") {
       return yield* failWith(
-        `The ${APP_NAME} desktop app on this machine is already up to date on ${report.state.currentVersion}.`,
+        `The T3 Code desktop app on this machine is already up to date on ${report.state.currentVersion}.`,
       );
     }
     return yield* failWith(
@@ -137,7 +136,7 @@ export const make = Effect.fn("desktopUpdate.desktopAppUpdate.make")(function* (
     function* (reportProgress) {
       if (!available) {
         return yield* failWith(
-          `This server was not started by the ${APP_NAME} desktop app, so it cannot drive a desktop update.`,
+          "This server was not started by the T3 Code desktop app, so it cannot drive a desktop update.",
         );
       }
       if (yield* Ref.getAndSet(inFlight, true)) {
@@ -160,7 +159,7 @@ export const make = Effect.fn("desktopUpdate.desktopAppUpdate.make")(function* (
             .requestDesktopUpdate(requestId)
             .pipe(
               Effect.mapError((error) =>
-                failWith(`Could not reach the ${APP_NAME} desktop app on this machine.`, error),
+                failWith("Could not reach the T3 Code desktop app on this machine.", error),
               ),
             );
           return yield* consumeReports(requestId, changes, reportProgress).pipe(
@@ -192,9 +191,7 @@ export const make = Effect.fn("desktopUpdate.desktopAppUpdate.make")(function* (
         });
         yield* Effect.uninterruptible(
           receiver.commitDesktopUpdate(requestId).pipe(
-            Effect.mapError((error) =>
-              failWith(`Could not reach the ${APP_NAME} desktop app.`, error),
-            ),
+            Effect.mapError((error) => failWith("Could not reach the T3 Code desktop app.", error)),
             Effect.tap(() => onHandoffAccepted()),
           ),
         );

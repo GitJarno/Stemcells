@@ -673,6 +673,22 @@ describe("Stemcells' substitutes for upstream modules", () => {
     }
   });
 
+  it("dev and the production build say Stemcells where upstream says T3 Code; tests never do", () => {
+    // Tests run upstream's code as upstream wrote it (stemcells/brand/nameTransform.ts).
+    expect(process.env.VITEST).toBeTruthy();
+    expect(substituteUpstreamModules().transform).toBeUndefined();
+    const vitest = process.env.VITEST;
+    delete process.env.VITEST;
+    try {
+      const plugin = substituteUpstreamModules();
+      expect(plugin.transform).toBeTypeOf("function");
+      expect(plugin.transformIndexHtml).toBeTypeOf("function");
+      expect(plugin.generateBundle).toBeTypeOf("function");
+    } finally {
+      process.env.VITEST = vitest;
+    }
+  });
+
   it("vitest: this test run hands upstream's code the substitute", () => {
     // `lib/favicon.ts` is upstream's: it re-exports `@t3tools/shared/favicon`.
     expect(

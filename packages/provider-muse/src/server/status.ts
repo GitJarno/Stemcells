@@ -19,7 +19,6 @@ import {
   spawnAndCollect,
   type ProviderProbeResult,
 } from "@t3tools/provider-core/server/snapshotProbe";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const MUSE_PRESENTATION = {
   displayName: "Muse Code",
@@ -48,7 +47,7 @@ export const makePendingMuseProvider = Effect.fn("makePendingMuseProvider")(func
       auth: { status: "unknown" },
       message: settings.enabled
         ? "Checking Muse Code CLI availability..."
-        : `Muse Code is disabled in ${APP_NAME} settings.`,
+        : "Muse Code is disabled in T3 Code settings.",
     },
   });
 });

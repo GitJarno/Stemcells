@@ -2,6 +2,7 @@ import * as NodeFSP from "node:fs/promises";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import { build } from "vite-plus";
+import { upstreamNamePlugin } from "../../../stemcells/brand/nameTransform.ts";
 
 const mobileRoot = NodePath.resolve(NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)), "..");
 
@@ -10,6 +11,7 @@ async function generateWebViewScript(feature: string, name: string) {
   const result = await build({
     configFile: false,
     logLevel: "silent",
+    plugins: [upstreamNamePlugin({ mustRename: false })],
     build: {
       write: false,
       target: "es2022",

@@ -6,15 +6,19 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
-import { APP_BASE_NAME, APP_DISPLAY_NAME, APP_STAGE_LABEL } from "../../branding";
 import { resolveServerBackedAppDisplayName } from "../../branding.logic";
+import brandingSource from "../../branding.ts?raw";
 import rootRouteSource from "../../routes/__root.tsx?raw";
 import sidebarChromeSource from "../../components/sidebar/SidebarChrome.tsx?raw";
 import indexHtmlSource from "../../../index.html?raw";
 import desktopPackageSource from "../../../../desktop/package.json?raw";
 import desktopEnvironmentSource from "../../../../desktop/src/app/DesktopEnvironment.ts?raw";
 import desktopWindowSource from "../../../../desktop/src/window/DesktopWindow.ts?raw";
+import { renameUpstreamName } from "../../../../../stemcells/brand/nameTransform.ts";
 import { APP_NAME } from "../brand/name";
+
+/** What a build makes of an upstream file: our name where it says upstream's. */
+const built = (file: string, source: string) => renameUpstreamName(file, source)?.code ?? source;
 
 describe("the app's name", () => {
   it("is what the sidebar's top-left reads", () => {
@@ -24,21 +28,26 @@ describe("the app's name", () => {
   });
 
   it("titles a browser's window, before and after the app loads", () => {
-    expect(APP_BASE_NAME).toBe(APP_NAME);
-    expect(APP_DISPLAY_NAME.startsWith(APP_NAME)).toBe(true);
+    // Upstream's branding names the app when no desktop app does (a
+    // browser); the build says ours there (`stemcells/brand/nameTransform.ts`).
+    const branding = built("apps/web/src/branding.ts", brandingSource);
+    expect(branding).toContain(
+      `export const APP_BASE_NAME = injectedDesktopAppBranding?.baseName ?? "${APP_NAME}";`,
+    );
     // The title follows the primary server's channel.
     expect(
       resolveServerBackedAppDisplayName({
-        baseName: APP_BASE_NAME,
-        fallbackDisplayName: APP_DISPLAY_NAME,
-        fallbackStageLabel: APP_STAGE_LABEL,
+        baseName: APP_NAME,
+        fallbackDisplayName: APP_NAME,
+        fallbackStageLabel: "Alpha",
         primaryServerVersion: "1.0.0-nightly.20261021.1",
       }),
     ).toBe(`${APP_NAME} (Nightly)`);
     expect(rootRouteSource).toContain("document.title = title;");
     expect(rootRouteSource).not.toContain("T3 Code");
-    expect(indexHtmlSource).toContain(`<title>${APP_NAME} (Beta)</title>`);
-    expect(indexHtmlSource).not.toContain("T3 Code");
+    const indexHtml = built("apps/web/index.html", indexHtmlSource);
+    expect(indexHtml).toContain(`<title>${APP_NAME} (Beta)</title>`);
+    expect(indexHtml).not.toContain("T3 Code");
   });
 
   it("titles the desktop app's window, menu and About panel", () => {

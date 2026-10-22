@@ -23,7 +23,15 @@ asked for by name), then W7, W4, W9, W11.
       else the lead); a chat open in another window raises that window.
 - [ ] W5 Tear off: the carry engine, the flight layer, the tear band, the
       chip unfolding into a window preview, the drop in open space,
-      Esc, the one-tab window, mid-flight reversal, Reduce Motion.
+      Esc, the one-tab window, mid-flight reversal, Reduce Motion. In
+      steps:
+  - [x] W5a The carry engine (web, pure), fed recorded hands in tests.
+  - [ ] W5b The flight layer (desktop): one window per display, stills
+        from `capturePage`, keyframes from the renderer; frames proved in
+        the lab.
+  - [ ] W5c The strip carries: pick up, band, tear, the preview, the
+        warm window, the drop in open space, Esc.
+  - [ ] W5d The one-tab window carries itself.
 - [ ] W6 Into another window's strip: geometry, making room, spring-load
       raise, landing; Undo Move (⌥⌘Z).
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
@@ -275,11 +283,15 @@ Space, as macOS places any new window of a full-screen app (checked in W5).
 2. The host's chips at and after the slot slide over by the chip's width
    and gap on `travel`. The slot is the count of chips whose middle is left
    of the hand, with today's 8 px hysteresis.
-3. Held over a strip for `spring-load` (350 ms) whose window isn't in front
-   of the others under the hand, that window comes forward without taking
+3. A strip catches only where its window is the front one of ours under
+   the hand: a strip hidden under another of our windows can't be seen, so
+   it takes nothing. Held over a strip for `spring-load` (350 ms) whose
+   window isn't our front window, that window comes forward without taking
    focus. We can see only our own windows' order; a strip under another
    app's window still takes the drop, and the window comes forward as it
-   lands, so the landing is never hidden.
+   lands, so the landing is never hidden. A chip docks 8 px inside a catch
+   zone and leaves 8 px past it, so at the edge it doesn't fold and unfold
+   with each pixel.
 4. **Drop.** The chip lands in its slot on `land`. The host has already
    painted the real chip, hidden, in that slot; it shows in the frame the
    layer's still goes. The host turns to the tab on `page` and takes focus.

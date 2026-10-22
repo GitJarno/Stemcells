@@ -20,7 +20,6 @@ import { ChildProcessSpawner } from "effect/process";
 import * as ServerSecretStore from "../auth/ServerSecretStore.ts";
 import { CLOUD_ENDPOINT_RUNTIME_CONFIG } from "./config.ts";
 import * as ManagedEndpointRuntime from "./ManagedEndpointRuntime.ts";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 // cloudflared finds the edge through the SRV record `_v2-origintunneld._tcp.argotunnel.com`,
 // which names these two hosts on port 7844. QUIC and HTTP/2 both use that port.
@@ -66,7 +65,7 @@ export function classifyReachability(
     fix: string,
     hint: string | null = null,
   ): Unreachable => ({ status: "unreachable", checkedAt, cause, reason, hint, fix });
-  const restart = `Restart ${APP_NAME}. If it stays, run \`t3 connect\` again.`;
+  const restart = "Restart T3 Code. If it stays, run `t3 connect` again.";
 
   if (!facts.managedTunnelConfigured) {
     return fail(
@@ -79,7 +78,7 @@ export function classifyReachability(
     return fail(
       "connector_not_running",
       "The tunnel client (cloudflared) is not running.",
-      `Restart ${APP_NAME}. If it stays down, check the server log for relay client errors.`,
+      "Restart T3 Code. If it stays down, check the server log for relay client errors.",
     );
   }
   const status = endpoint?.kind === "status" ? endpoint.status : null;
@@ -112,7 +111,7 @@ export function classifyReachability(
     return fail(
       "origin_unreachable",
       "The tunnel is up, but it cannot reach the T3 server on this machine.",
-      `Restart ${APP_NAME} so the tunnel uses the port the server listens on.`,
+      "Restart T3 Code so the tunnel uses the port the server listens on.",
     );
   }
   if (endpoint === null || connector.readyConnections === 0) {

@@ -39,6 +39,7 @@
     "../../stemcells/brand/look.ts",
     "../../stemcells/brand/mark.ts",
     "../../stemcells/brand/name.ts",
+    "../../stemcells/brand/nameTransform.ts",
     "../../stemcells/words/cellTools.ts",
     "../../stemcells/words/subcells.ts"
   ]

@@ -15,7 +15,6 @@ import type { PreparedConnection } from "../connection/model.ts";
 import * as ManagedRelay from "../relay/managedRelay.ts";
 import { type RemoteEnvironmentRequestError } from "../rpc/http.ts";
 import { executeAuthenticatedEnvironmentHttpRequest } from "./environmentHttpAuth.ts";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const DEFAULT_PULL_REQUEST_DIFF_TIMEOUT_MS = 60_000;
 
@@ -29,7 +28,7 @@ export class PullRequestDiffCredentialRejectedError extends Schema.TaggedError<P
   },
 ) {
   override get message(): string {
-    return `This environment session is no longer valid (invalid_credential). Refresh the page or quit and reopen ${APP_NAME}.`;
+    return "This environment session is no longer valid (invalid_credential). Refresh the page or quit and reopen T3 Code.";
   }
 }
 

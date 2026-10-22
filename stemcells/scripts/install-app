@@ -86,6 +86,10 @@ ditto -x -k "$zip" "$stage"
 node stemcells/scripts/asar-has.mjs "$stage/Stemcells.app/Contents/Resources/app.asar" \
   stemcells-scroll-phases.node ||
   fail "the built app lacks the scroll-phases addon." "stemcells/scripts/build-scroll-phases --check, then run again"
+# The build says Stemcells where upstream's code says T3 Code, except where
+# stemcells/brand/nameTransform.ts keeps T3's name.
+node stemcells/scripts/check-app-name.ts "$stage/Stemcells.app/Contents/Resources/app.asar" ||
+  fail "the built app says T3 Code where it should say Stemcells." "see stemcells/docs/fork.md, The name transform"
 
 # 5. Swap it in: quit the running copy, keep the old one in the Trash.
 if pgrep -f "$dest/Contents/MacOS/" >/dev/null 2>&1; then

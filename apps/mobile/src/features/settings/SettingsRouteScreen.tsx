@@ -18,7 +18,6 @@ import {
   SettingsEnvironmentFilterHeader,
 } from "./components/SettingsEnvironmentFilterHeader";
 import { useSettingsEnvironmentFilter } from "./settings-environment-filter";
-import { APP_NAME } from "../../stemcells/brand/name";
 
 export function SettingsRouteScreen() {
   const navigation = useNavigation();
@@ -217,7 +216,7 @@ function SettingsIndexSections() {
 
       <SettingsSection title="App">
         <SettingsRow icon="chart.bar.xaxis" label="Usage" target="SettingsUsage" />
-        <SettingsRow icon="info.circle" label={`About ${APP_NAME}`} target="SettingsAbout" />
+        <SettingsRow icon="info.circle" label="About T3 Code" target="SettingsAbout" />
       </SettingsSection>
     </>
   );

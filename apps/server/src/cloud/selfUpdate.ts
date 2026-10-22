@@ -39,7 +39,6 @@ import {
 import { decodeServicePreflightResult } from "./servicePreflight.ts";
 import * as ServiceLauncherClient from "./serviceLauncherClient.ts";
 import { isExactServiceVersion, SERVICE_LAUNCHER_PROTOCOL } from "./serviceProtocol.ts";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const PREFLIGHT_TIMEOUT = Duration.seconds(30);
 
@@ -217,12 +216,12 @@ export const make = Effect.fn("cloud.server_self_update.make")(function* () {
         return yield* desktopAppUpdate.run(reportProgress);
       }
       return yield* failWith(
-        `This server is managed by the ${APP_NAME} desktop app on its machine; update the desktop app to update it.`,
+        "This server is managed by the T3 Code desktop app on its machine; update the desktop app to update it.",
       );
     }
     if (capability === null) {
       return yield* failWith(
-        `Remote updates require the ${APP_NAME} background service. Run \`t3 service install\` on the server machine.`,
+        "Remote updates require the T3 Code background service. Run `t3 service install` on the server machine.",
       );
     }
 

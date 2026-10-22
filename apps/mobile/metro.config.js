@@ -5,6 +5,7 @@ const { getDefaultConfig } = require("expo/metro-config");
 const { withUniwindConfig } = require("uniwind/metro");
 const extraThemes = require("./generated-uniwind-theme-names.json");
 const { substituteRequests } = require("./src/stemcells/upstream/substitutes/substitutes.cjs");
+const { nameTransformer } = require("./src/stemcells/upstream/substitutes/nameTransformer.cjs");
 
 /** @type {import("expo/metro-config").MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -62,6 +63,7 @@ config.resolver = {
   },
 };
 config.resolver.resolveRequest = substituteRequests(config.resolver.resolveRequest);
+config.transformer.babelTransformerPath = nameTransformer(config.transformer.babelTransformerPath);
 
 async function writeFileIfChanged(filePath, contents) {
   try {

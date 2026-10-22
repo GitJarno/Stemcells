@@ -105,7 +105,8 @@ case, go back to the three costs and choose what keeps them lowest.
 - **Our design tokens live in our own CSS layer.** It overrides upstream's
   variables through the cascade. We don't edit their stylesheet.
 - **Words:** our views say Cell and Aski. Upstream's strings stay until one
-  of our views replaces the one that shows them.
+  of our views replaces the one that shows them. The app's name is the one
+  exception: the builds rename it (The name transform, below).
 
 ## 5. Upstream first — against fixes we carry alone
 
@@ -172,11 +173,49 @@ upstream commits and conflicted in 2 files, both test expectations; its
 conflicts took about 2 minutes to resolve, and its checks about 20
 (`stemcells/tasks/seam-debt.md`).
 
+## The name transform
+
+Upstream writes "T3 Code" in hundreds of messages, across files it edits
+every week. A seam on each of them made the name the fork's largest family
+of conflicts: the sync of 2026-10-21 conflicted in 29 files, 12 of them
+only or mostly over lines where we had swapped the name, most in upstream's
+tests that pin those messages.
+So the builds rename it instead (the web app, the server, the phone, and
+the packages the desktop app bundles), and their sources stay upstream's
+(`stemcells/brand/nameTransform.ts`).
+
+- **Not a patch stack.** A patch is keyed on positions: it says which lines
+  to change, and breaks when upstream moves them. The transform is keyed on
+  content: each build reads upstream's source as it is that day and renames
+  the exact words "T3 Code" wherever they stand, so upstream can move,
+  rewrite or add them and there's nothing to re-apply. Nothing is written
+  back to the sources; git merges upstream's files as upstream wrote them.
+- **What it never touches** is listed, not guessed: `KEPT` names each line
+  that keeps T3's name and why (T3's command line, what only the model
+  reads, names another program keys on, files written to disk, T3's own
+  product). It renames whole words only, never inside a path, an id or a
+  longer word, and never in our folders, tests, `LICENSE` or the notices.
+- **It can't drift silently.** A Vite or `pack` build fails when it renamed
+  nothing, when a line says the name somewhere it can't rename that `KEPT`
+  doesn't name, and when its output says "T3 Code" where no kept line does
+  (Metro, the phone's, fails on the line it can't rename).
+  `check-app-name.ts` checks an install's archive the same way, and
+  `nameTransform.test.ts` fails on a kept line upstream removed.
+- **Tests and source runs see upstream's words.** Tests run upstream's
+  code as written, so upstream's tests pass unedited. The server run from
+  source (`pnpm dev:server`) isn't built and says T3 Code; that's
+  accepted.
+- **Where it doesn't run:** the desktop app's own code. It writes T3's
+  name into its profile folders and its command-line shim's marker, so it
+  needs a list of its own before it can be renamed; until then it says
+  what it said. Source maps carry upstream's source, words and all.
+
 ## What we don't do, and why
 
 - **No patch stacks** (patch files re-applied on each update). Git can't
   see through them, so every update re-solves the same conflicts. Real
-  merges remember.
+  merges remember. The name transform isn't one: it's keyed on words, not
+  positions (above).
 - **No vendoring of upstream as a package.** Their packages are private,
   unversioned and change together. A copy would freeze us on old code.
 - **No long-lived side branches.** Anything that lives outside `main`

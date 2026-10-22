@@ -5,6 +5,7 @@ import * as NodeURL from "node:url";
 
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { renameUpstreamName } from "../../../../../stemcells/brand/nameTransform.ts";
 import { APP_NAME } from "../brand/name";
 import { SUBSTITUTES } from "./substitutes/substitutes.cjs";
 
@@ -12,9 +13,12 @@ import { SUBSTITUTES } from "./substitutes/substitutes.cjs";
  * Contract: the phone says Stemcells where it said T3 Code: its name on the
  * home screen, its widgets, its permission prompts, and every screen's text.
  * Only the words change: its ids, schemes and bundle ids stay upstream's, or
- * an installed app and its pairing break. If this fails after a sync,
- * upstream wrote its name somewhere new: say `APP_NAME` there
- * (`stemcells/seams.md`, "The app's name").
+ * an installed app and its pairing break. The config says it through
+ * `withStemcellsName`; the screens' text through the name transform, which
+ * Metro runs on every module (`stemcells/brand/nameTransform.ts`). If this
+ * fails after a sync, upstream wrote its name somewhere the transform can't
+ * rename: keep it there, with why, or say `APP_NAME` (`stemcells/seams.md`,
+ * "The app's name").
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -26,6 +30,9 @@ const UPSTREAM_NAME = "T3 Code";
 const KEPT = new Set([
   'apps/mobile/src/lib/mobileTheme.ts: { id: DEFAULT_MOBILE_THEME_ID, label: "T3 Code" },',
 ]);
+
+/** What Metro's build makes of an upstream file: our name where it says upstream's. */
+const built = (file: string, source: string) => renameUpstreamName(file, source)?.code ?? source;
 
 const CHANNELS = {
   development: { name: `${APP_NAME} Dev`, scheme: "t3code-dev", id: "com.t3tools.t3code.dev" },
@@ -76,7 +83,7 @@ describe("the phone's name", () => {
     },
   );
 
-  it("no screen's text says T3 Code", () => {
+  it("no screen's text says T3 Code, once built", () => {
     const substituted = new Set(Object.keys(SUBSTITUTES));
     const src = NodePath.join(phoneRoot, "src");
     const said = NodeFS.readdirSync(src, { recursive: true, encoding: "utf8" })
@@ -85,7 +92,7 @@ describe("the phone's name", () => {
       .map((file) => NodePath.relative(repoRoot, NodePath.join(src, file)))
       .filter((file) => !substituted.has(file))
       .flatMap((file) =>
-        NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8")
+        built(file, NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8"))
           .split("\n")
           .filter((line) => line.includes(UPSTREAM_NAME))
           // Comments are for the people who read the code.

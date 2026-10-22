@@ -83,7 +83,6 @@ import { TerminalViewport } from "../ThreadTerminalDrawer";
 import { CloudEnvironmentConnectRows } from "../cloud/CloudEnvironmentConnectList";
 import { presentSavedCloudEnvironmentConnection } from "../cloud/cloudEnvironmentConnectionPresentation";
 import { ProviderInstanceIcon } from "../chat/ProviderInstanceIcon";
-import { APP_BASE_NAME } from "../../branding";
 import { WizardWordmark } from "../../stemcells/brand/Wordmark";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
@@ -230,7 +229,7 @@ export function WelcomeWizard({
         bottomStickOnMobile={false}
         initialFocus={() => document.getElementById("onboarding-pairing-url") ?? true}
       >
-        <WizardHeader title={`Set up ${APP_BASE_NAME}`} identity={<WizardWordmark />}>
+        <WizardHeader title="Set up T3 Code" identity={<WizardWordmark />}>
           <WizardSteps
             steps={ONBOARDING_STAGES}
             currentStep={stageIndex}

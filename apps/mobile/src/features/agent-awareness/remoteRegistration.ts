@@ -45,7 +45,6 @@ import {
 import { resolveCloudPublicConfig } from "../cloud/publicConfig";
 import { supportsAgentAwarenessPush } from "./capabilities";
 import { makeRelayDeviceRegistrationRequest, resolveApsEnvironment } from "./registrationPayload";
-import { APP_NAME } from "../../stemcells/brand/name";
 
 const REMOTE_ACTIVITY_REGISTRATION_RETRY_MS = 15_000;
 
@@ -503,7 +502,7 @@ function armAgentAwarenessLiveActivityForLocalWorkNow(input: {
     const nowIso = new Date(Date.now()).toISOString();
     const activity = startAgentLiveActivity(
       {
-        title: APP_NAME,
+        title: "T3 Code",
         subtitle: "Agent work in progress",
         activeCount: 1,
         updatedAt: nowIso,
