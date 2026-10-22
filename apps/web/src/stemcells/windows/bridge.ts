@@ -32,6 +32,16 @@ export interface WireTransaction {
   readonly memories: unknown;
   /** The version of every window it changes or closes, from the snapshot it was made from. */
   readonly basis: Readonly<Record<string, number>>;
+  /** How to take the move back (`writeUndo`), kept for Undo Move. */
+  readonly undo?: unknown;
+  /** The kept move this one takes back. */
+  readonly undoes?: number;
+}
+
+/** A move Undo Move can take back, as the desktop app keeps it. */
+export interface KeptUndo {
+  readonly id: number;
+  readonly entry: unknown;
 }
 
 /** A motion, resolved from the tokens (`flight.ts`). */
@@ -188,6 +198,10 @@ export interface WindowsBridge {
   onRoom(listener: (visit: Visit | null) => void): () => void;
   /** Brings `window` forward without focusing it. */
   raise(window: string): void;
+  /** The moves Undo Move can take back, the latest first. */
+  undos(): Promise<ReadonlyArray<KeptUndo>>;
+  /** A kept move that can't be taken back any more. */
+  dropUndo(id: number): void;
 }
 
 declare global {

@@ -9,12 +9,14 @@ import {
   windowById,
   windowHoldingPane,
   type Arrangement,
+  type Moved,
 } from "./arrangement";
 import {
   arrangement,
   askiTab,
   frame,
   LAPTOP,
+  random,
   randomArrangement,
   randomMove,
   settled,
@@ -22,6 +24,33 @@ import {
   window,
 } from "./fixtures";
 import { carry, closeWindow, join, tear, undo } from "./moves";
+
+/** `undo`, whose every result is checked whole: no tab, pane or chat in two places. */
+function undone(current: Arrangement, entry: Moved["undo"]): Moved | null {
+  const back = undo(current, entry);
+  if (typeof back === "string") return null;
+  expect(problemsOf(back.next)).toEqual([]);
+  return back;
+}
+
+/** The arrangement with chat `thread` opened in a new tab of window `id`, as the sidebar opens one. */
+function openChat(current: Arrangement, id: string, thread: string, tabId: string): Arrangement {
+  const into = windowById(current, id)!;
+  const workspace = { ...into.workspace, tabs: [...into.workspace.tabs, tab(tabId, thread)] };
+  return applyTransaction(current, {
+    open: [],
+    change: [{ ...into, workspace }],
+    close: [],
+    front: id,
+    lead: current.lead,
+    memories: current.memories,
+  });
+}
+
+const holds = (current: Arrangement, thread: string) =>
+  current.windows.some((w) =>
+    w.workspace.tabs.some((t) => panesOf(t).some((pane) => pane.cell?.threadId === thread)),
+  );
 
 const shapes = (a: Arrangement) =>
   Object.fromEntries(a.windows.map((w) => [w.id, [shapeOf(w.workspace), w.frame]]));
@@ -204,7 +233,7 @@ describe("undo", () => {
   it("takes a tear back", () => {
     const start = twoWindows();
     const torn = tear(start, "a1", where)!;
-    const back = undo(torn.next, torn.undo)!;
+    const back = undone(torn.next, torn.undo)!;
     expect(back.transaction.close).toEqual(["w-new"]);
     expect(settled(back.next)).toEqual(settled(start));
     expect(back.next.windows[0]!.id).toBe("a");
@@ -216,7 +245,7 @@ describe("undo", () => {
       window("b", frame(1000), [tab("b1", "y")]),
     );
     const joined = join(start, "a1", "b", 1)!;
-    const back = undo(joined.next, joined.undo)!;
+    const back = undone(joined.next, joined.undo)!;
     expect(back.transaction.open.map((w) => w.id)).toEqual(["a"]);
     expect(settled(back.next)).toEqual(settled(start));
     // The lead stays with the window it passed to: nothing a person sees.
@@ -236,7 +265,7 @@ describe("undo", () => {
       change: [draftBefore],
       front: "b",
     });
-    const back = undo(now, carried.undo)!;
+    const back = undone(now, carried.undo)!;
     expect(windowHoldingPane(back.next, "a2.z")!.window.id).toBe("a");
     expect(windowHoldingPane(back.next, "a2.z")!.pane.cell).toEqual(sent);
   });
@@ -245,7 +274,15 @@ describe("undo", () => {
     const start = twoWindows();
     const torn = tear(start, "a1", where)!;
     const moreTabs = join(torn.next, "b1", "w-new", 1)!;
-    expect(undo(moreTabs.next, torn.undo)).toBeNull();
+    expect(undo(moreTabs.next, torn.undo)).toBe("changed");
+  });
+
+  it("leaves a window closed once one of its chats has been opened in another", () => {
+    const start = twoWindows();
+    const closed = closeWindow(start, "b")!;
+    expect(undone(closed.next, closed.undo)).not.toBeNull();
+    const elsewhere = openChat(closed.next, "a", "p", "a9");
+    expect(undo(elsewhere, closed.undo)).toBe("elsewhere");
   });
 
   it("leaves a window moved by hand since where it is", () => {
@@ -259,7 +296,7 @@ describe("undo", () => {
       change: [{ ...a, frame: frame(50, 300) }],
       front: "a",
     });
-    expect(windowById(undo(dragged, torn.undo)!.next, "a")!.frame).toEqual(frame(50, 300));
+    expect(windowById(undone(dragged, torn.undo)!.next, "a")!.frame).toEqual(frame(50, 300));
   });
 });
 
@@ -273,7 +310,7 @@ describe("any move", () => {
       checked += 1;
       expect(problemsOf(result.next), `seed ${seed}`).toEqual([]);
       expect(applyTransaction(start, result.transaction)).toEqual(result.next);
-      const back = undo(result.next, result.undo);
+      const back = undone(result.next, result.undo);
       expect(back, `seed ${seed}`).not.toBeNull();
       expect(settled(back!.next), `seed ${seed}`).toEqual(settled(start));
       expect(problemsOf(back!.next), `seed ${seed}`).toEqual([]);
@@ -292,7 +329,7 @@ describe("any move", () => {
         kinds.add(result.next.memories.length > current.memories.length ? "gather" : "move");
         if (result.next.memories.length < current.memories.length) kinds.add("putBack");
         expect(problemsOf(result.next), `walk ${walk} step ${step}`).toEqual([]);
-        const back = undo(result.next, result.undo);
+        const back = undone(result.next, result.undo);
         if (back) {
           expect(settled(back.next), `walk ${walk} step ${step}`).toEqual(settled(current));
         } else {
@@ -303,5 +340,48 @@ describe("any move", () => {
       }
     }
     expect([...kinds].toSorted()).toEqual(["gather", "move", "putBack"]);
+  });
+
+  it("keeps every chat in one place along walks of moves, chats opened and undos off the stack", () => {
+    let refused = 0;
+    for (let walk = 1; walk <= 60; walk++) {
+      const rng = random(walk);
+      let current = randomArrangement(walk * 17);
+      const stack: Array<Moved["undo"]> = [];
+      const chats = new Set<string>();
+      const note = (a: Arrangement) => {
+        for (const w of a.windows) {
+          for (const t of w.workspace.tabs) {
+            for (const pane of panesOf(t)) {
+              if (pane.cell && pane.cell.threadId !== "aski") chats.add(pane.cell.threadId);
+            }
+          }
+        }
+      };
+      note(current);
+      for (let step = 1; step <= 30; step++) {
+        const act = rng.int(3);
+        if (act === 0) {
+          const result = randomMove(current, walk * 1000 + step);
+          if (!result) continue;
+          stack.push(result.undo);
+          current = result.next;
+        } else if (act === 1) {
+          // A chat is opened where it isn't shown: one a closed window held, say.
+          const thread = rng.pick([...chats]);
+          if (holds(current, thread)) continue;
+          current = openChat(current, rng.pick(current.windows).id, thread, `open-${step}`);
+        } else {
+          const entry = stack.pop();
+          if (!entry) continue;
+          const back = undone(current, entry);
+          if (back) current = back.next;
+          else refused += 1;
+        }
+        note(current);
+        expect(problemsOf(current), `walk ${walk} step ${step}`).toEqual([]);
+      }
+    }
+    expect(refused).toBeGreaterThan(0);
   });
 });

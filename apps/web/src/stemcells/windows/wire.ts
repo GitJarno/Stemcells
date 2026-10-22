@@ -5,9 +5,9 @@
  */
 import { EMPTY_WORKSPACE, parseWorkspace, serializeWorkspace } from "../tabs/layout";
 import { flushStoreWrites } from "../upstream/sharedStores";
-import type { Arrangement, Moved, Placed, Transaction } from "./arrangement";
+import type { Arrangement, Moved, Placed, Transaction, UndoEntry } from "./arrangement";
 import { windowsBridge, type WireSnapshot, type WireTransaction, type WireWindow } from "./bridge";
-import { parseAll, parseMemory } from "./persist";
+import { parseAll, parseMemory, parseWindows, serializeWindows } from "./persist";
 
 export interface Seen {
   readonly arrangement: Arrangement;
@@ -56,16 +56,36 @@ export function writeTransaction(
   };
 }
 
+/** A move's undo entry as the desktop app keeps it for Undo Move. */
+export function writeUndo(entry: UndoEntry): unknown {
+  return {
+    before: serializeWindows({ arrangement: entry.before, displays: [] }),
+    after: serializeWindows({ arrangement: entry.after, displays: [] }),
+  };
+}
+
+/** What `writeUndo` wrote, or null when it isn't one. */
+export function readUndo(value: unknown): UndoEntry | null {
+  if (typeof value !== "object" || value === null) return null;
+  const { before, after } = value as Record<string, unknown>;
+  const was = parseWindows(before)?.arrangement;
+  const then = parseWindows(after)?.arrangement;
+  return was && then ? { before: was, after: then } : null;
+}
+
 /** A move made against the windows as they are, again if one changed meanwhile. */
 const ATTEMPTS = 3;
 
 /**
  * Makes a move from the desktop app's current windows and has it carried
- * out. When a window it touches changed between the snapshot and the commit,
- * it's made again from a fresh snapshot. Null when there's no move to make,
- * or no desktop app.
+ * out, kept for Undo Move unless it `undoes` a kept one. When a window it
+ * touches changed between the snapshot and the commit, it's made again from
+ * a fresh snapshot. Null when there's no move to make, or no desktop app.
  */
-export async function commitMove(make: (seen: Seen) => Moved | null): Promise<Moved | null> {
+export async function commitMove(
+  make: (seen: Seen) => Moved | null,
+  undoes?: number,
+): Promise<Moved | null> {
   const bridge = windowsBridge();
   if (!bridge) return null;
   // What was typed a moment ago is written, for the window a chat goes to.
@@ -74,9 +94,11 @@ export async function commitMove(make: (seen: Seen) => Moved | null): Promise<Mo
     const seen = readSnapshot(await bridge.snapshot());
     const moved = make(seen);
     if (!moved) return null;
-    if ((await bridge.commit(writeTransaction(moved.transaction, seen.versions))) === "done") {
-      return moved;
-    }
+    const transaction = {
+      ...writeTransaction(moved.transaction, seen.versions),
+      ...(undoes === undefined ? { undo: writeUndo(moved.undo) } : { undoes }),
+    };
+    if ((await bridge.commit(transaction)) === "done") return moved;
   }
   return null;
 }

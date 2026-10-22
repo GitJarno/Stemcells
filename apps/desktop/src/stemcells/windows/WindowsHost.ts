@@ -741,6 +741,10 @@ export const layer = Layer.effectDiscard(
         });
         ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
         ipc.handle(WINDOWS_CHANNEL.geometry, (event) => geometry(event.sender));
+        ipc.handle(WINDOWS_CHANNEL.undos, () => book.undos());
+        ipc.on(WINDOWS_CHANNEL.dropUndo, (_event, id: unknown) => {
+          if (typeof id === "number") book.dropUndo(id);
+        });
         ipc.on(WINDOWS_CHANNEL.measured, (_event, request: unknown, strip: unknown) => {
           if (typeof request === "number") measuring.get(request)?.(strip);
         });
@@ -808,6 +812,7 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.measured,
             WINDOWS_CHANNEL.room,
             WINDOWS_CHANNEL.raise,
+            WINDOWS_CHANNEL.dropUndo,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }
@@ -820,6 +825,7 @@ export const layer = Layer.effectDiscard(
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightStill);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightPainted);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.geometry);
+          Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.undos);
           endFlight();
           if (saveTimer !== undefined) saveNow();
         }),

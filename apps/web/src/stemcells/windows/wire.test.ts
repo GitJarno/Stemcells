@@ -2,11 +2,11 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { serializeWorkspace } from "../tabs/layout";
 import { arrangement, frame, LAPTOP, tab, window } from "./fixtures";
-import { tear } from "./moves";
+import { tear, undo } from "./moves";
 import { cascaded, CASCADE } from "./newWindow";
 import { welcomeAskiHome } from "./askiHome";
 import { askiTab } from "./fixtures";
-import { readSnapshot, writeTransaction } from "./wire";
+import { readSnapshot, readUndo, writeTransaction, writeUndo } from "./wire";
 import { ASKI_TAB_ID } from "../tabs/askiTab";
 
 const start = arrangement(
@@ -77,5 +77,13 @@ describe("Aski's tab coming home", () => {
     expect(welcomed.activeTabId).toBe("h1");
     expect(welcomeAskiHome(welcomed, closed)).toBe(welcomed);
     expect(welcomeAskiHome(home, { tabs: [tab("c1", "y")], activeTabId: "c1" })).toBe(home);
+  });
+
+  it("keeps a move's undo through the desktop app, so Undo Move can take it back", () => {
+    const torn = tear(start, "a2", { id: "c", frame: frame(24), display: "laptop" })!;
+    const kept = readUndo(JSON.parse(JSON.stringify(writeUndo(torn.undo))))!;
+    expect(kept).toEqual(torn.undo);
+    expect(undo(torn.next, kept)).toMatchObject({ transaction: { close: ["c"] } });
+    expect(readUndo({ before: null, after: null })).toBeNull();
   });
 });

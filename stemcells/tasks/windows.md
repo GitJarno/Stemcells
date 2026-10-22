@@ -41,7 +41,9 @@ asked for by name), then W7, W4, W9, W11.
         at the pick-up, the host making room, spring-load, the landing.
   - [x] W6b A one-tab window into another window's strip: its still folds
         into a chip, and the window closes once the host has the tab.
-  - [ ] W6c Undo Move (⌥⌘Z).
+  - [x] W6c Undo Move (⌥⌘Z) for the moves between windows.
+  - [ ] W6d Closing a window as a move Undo Move takes back, and Undo
+        Move playing the move's own motion reversed.
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
       the flights, full screen restored.
 - [ ] W7 Carry a chat: the Cell as the handle, pane halves, tabs, strips,
@@ -402,8 +404,25 @@ memory.
 
 Every move above, and closing a window, pushes its inverse. Undo Move
 plays it with the move's own motion reversed, as long as every tab and pane
-it names still exists where expected; otherwise that entry is dropped and
-the next one is offered. ⌘Z stays the composer's.
+it names still exists where expected and no chat it brings back is open in
+another window; otherwise that entry is dropped with a quiet note, and the
+press does nothing else: the moves are a stack, and a press never reaches
+past the latest to an older one. ⌘Z stays the composer's. A carry in the
+hand holds ⌥⌘Z (and ⌥⌘G) off until it is put down.
+
+As built (W6c): each move a page commits carries its undo entry (the
+arrangement before and after, written as the windows file writes them),
+and main keeps the latest 20, not between launches. ⌥⌘Z in any window
+takes the latest back with `undo` from a fresh snapshot; one whose windows
+have changed shape since, or that would bring back a chat opened elsewhere
+since (a window closed, then one of its chats opened in another), is
+forgotten with a note, "Can't undo that move", that says which, and the
+next press tries the one before it. Every undo's result is checked whole in the tests: no tab,
+pane or chat in two places. The
+windows change at once, without motion yet (W6d). Closing a window isn't a
+move yet: it closes natively and the lead takes Aski home, so Undo Move
+can't reopen it (W6d makes the close a move, Aski's tab going home in the
+same transaction).
 
 ### Displays
 
@@ -722,3 +741,8 @@ behind another coming forward; a quick tear and drop
   close of a window whose page is flying the tab until its flight ends.
   Esc over the strip flies the still home, opening into the window, which
   shows there.
+- W6c: proved in the lab. ⌥⌘Z after a tear closes the new window and puts
+  the tab back at its place; after a one-tab window joined another, it
+  reopens that window with its tab and takes the tab back out; with
+  nothing kept it does nothing. After ⌥⌘T and a tab opened in the new
+  window, ⌥⌘Z forgets that move and changes nothing.
