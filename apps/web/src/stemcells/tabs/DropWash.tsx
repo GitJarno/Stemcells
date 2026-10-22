@@ -2,18 +2,14 @@ import { useEffect, useRef } from "react";
 
 import { reducedMotion } from "../tokens/motion.ts";
 import { takesCarriedFile } from "../upstream/drop";
-import { washBox, washCorners, type Box } from "./washShape";
+import { washBox, type Box } from "./washShape";
 import "../tokens/stemcells.css";
 import "./drop.css";
 
-/** How far inside the pane the wash draws, clear of the hairlines between panes. */
-const INSET = 1;
-
 /**
  * A file carried over a chat (the Mac app's drop wash): the chat it would
- * land in is washed in its tone, inside a hairline that wears the slate's
- * corners where the pane meets them. One shape for the whole slate, never
- * one per chat: crossing to the next chat glides it there, lighting afresh
+ * land in shows a white sheet, a soft fill inside a hairline, floating just
+ * inside the pane's edges. One shape for the whole slate, never one per chat: crossing to the next chat glides it there, lighting afresh
  * fades it in, and letting go or leaving fades it out where it was. Nothing
  * is dimmed, blurred or labelled; under Reduce Motion it only fades.
  *
@@ -181,27 +177,13 @@ class WashLight {
   }
 
   private place(pane: HTMLElement): void {
-    const slate = boxOf(this.slate);
-    const box = innerBoxOf(pane);
-    const radius = Number.parseFloat(getComputedStyle(this.slate).borderTopLeftRadius) || 0;
-    const at = washBox(box, slate, INSET);
-    const corners = washCorners(box, slate, radius, INSET);
-    const placed = [
-      at.left,
-      at.top,
-      at.width,
-      at.height,
-      corners.topLeft,
-      corners.topRight,
-      corners.bottomRight,
-      corners.bottomLeft,
-    ].join(" ");
+    const at = washBox(innerBoxOf(pane), boxOf(this.slate));
+    const placed = [at.left, at.top, at.width, at.height].join(" ");
     if (placed === this.placed) return;
     this.placed = placed;
     const { style } = this.wash;
     style.translate = `${at.left}px ${at.top}px`;
     style.width = `${at.width}px`;
     style.height = `${at.height}px`;
-    style.borderRadius = `${corners.topLeft}px ${corners.topRight}px ${corners.bottomRight}px ${corners.bottomLeft}px`;
   }
 }

@@ -1,20 +1,22 @@
-/* A file carried over the slate (DropWash.tsx) and over the tab strip
-   (springTab.ts): one lit target at a time, in colour, never stitching. */
+/* A file or a chat carried over the slate (DropWash.tsx, ChatCarry.tsx) and
+   over the tab strip (springTab.ts): one lit target at a time, never
+   stitching. */
 
-/* The wash: the chat a drop would land in, in its tone (the accent until a
-   Cell has a tone of its own) at a quarter of a tint, enough to say "this
-   one", never enough to dim a word under it; its hairline is the tone at a
-   tint's edge. It stands over the panes and under the slate's edge. */
+/* The wash: where a drop would land (a chat for a file, a half of one for
+   a carried chat), as a white sheet floating just inside it (`washShape.ts`):
+   a soft fill, enough to say "here", never enough to dim a word under it,
+   inside a clear hairline. White on every skin, never the accent: it reads
+   as light on the slate, not as a selection. It stands over the panes and
+   under the slate's edge. */
 [data-stemcells-drop-wash] {
-  --drop-tone: var(--sc-accent);
   position: absolute;
   top: 0;
   left: 0;
   z-index: 30;
   box-sizing: border-box;
-  border: 1px solid
-    color-mix(in srgb, var(--drop-tone) calc(var(--sc-tint-edge) * 100%), transparent);
-  background: color-mix(in srgb, var(--drop-tone) calc(var(--sc-tint-fill) * 25%), transparent);
+  border: 1px solid color-mix(in srgb, var(--sc-text) 42%, transparent);
+  border-radius: var(--sc-radius-chip);
+  background: color-mix(in srgb, var(--sc-text) 6%, transparent);
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
@@ -28,8 +30,7 @@
     opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
     translate var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
     width var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
-    height var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
-    border-radius var(--sc-motion-travel-duration) var(--sc-motion-travel-easing);
+    height var(--sc-motion-travel-duration) var(--sc-motion-travel-easing);
 }
 [data-stemcells-drop-wash][data-motion="cut"] {
   transition: none;

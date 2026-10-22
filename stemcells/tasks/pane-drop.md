@@ -17,7 +17,9 @@ file over Stemcells' chats and tabs.
       file, in its tone (the accent until Cells have tones of their own)
       at a quarter of a tint, inside a hairline at a tint's edge. Its
       corners round, by the slate's radius less the inset, only where the
-      pane's corner is the slate's. Crossing to the next chat glides it
+      pane's corner is the slate's (changed 2026-10-23: white, a sheet
+      6 px inside with round corners, `chat-carry-polish.md`). Crossing to
+      the next chat glides it
       there (travel); lighting afresh fades it in (flick); leaving or
       letting go fades it out where it was (fade). Under Reduce Motion it
       only fades. No label, no dimming, no stitching.

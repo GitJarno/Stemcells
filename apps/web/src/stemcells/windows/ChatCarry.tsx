@@ -32,7 +32,7 @@ import { ASKI_TAB_ID } from "../tabs/askiTab";
 import type { CellRef } from "../tabs/layout";
 import { SpringTab } from "../tabs/springTab";
 import { newIds, readWorkspace, updateWorkspace } from "../tabs/store";
-import { washBox, washCorners, type Box } from "../tabs/washShape";
+import { washBox, type Box } from "../tabs/washShape";
 import { motionTiming, reducedMotion, timing } from "../tokens/motion";
 import { randomUUID } from "../upstream/ui";
 import type { Placed, Rect } from "./arrangement";
@@ -56,9 +56,6 @@ import {
 import { handVelocity, letGoOf, recordHand, type Sample } from "./throw";
 import { commitMove } from "./wire";
 import "./carry.css";
-
-/** How far inside the pane the wash draws, as the file drop's does. */
-const WASH_INSET = 1;
 
 /** Where the hand holds the card: on its Cell. */
 const GRAB: Point = { x: 18, y: 16 };
@@ -658,15 +655,11 @@ class WindowCarrier implements Carrier {
       this.lit = false;
       return;
     }
-    const slateBox = boxOf(rectOf(slate));
-    const radius = Number.parseFloat(getComputedStyle(slate).borderTopLeftRadius) || 0;
     const place = () => {
-      const at = washBox(boxOf(half), slateBox, WASH_INSET);
-      const corners = washCorners(boxOf(half), slateBox, radius, WASH_INSET);
+      const at = washBox(boxOf(half), boxOf(rectOf(slate)));
       style.translate = `${at.left}px ${at.top}px`;
       style.width = `${at.width}px`;
       style.height = `${at.height}px`;
-      style.borderRadius = `${corners.topLeft}px ${corners.topRight}px ${corners.bottomRight}px ${corners.bottomLeft}px`;
     };
     if (!this.lit || reducedMotion()) {
       // Lighting afresh: put it where it belongs unseen, then fade it in there.
