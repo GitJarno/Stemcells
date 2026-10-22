@@ -2,7 +2,11 @@
 // hands every module to Expo's Babel transformer through this one, which
 // first says Stemcells where upstream's code says T3 Code. CommonJS, because
 // Metro loads a transformer with `require`; the transform itself is the web
-// app's and the server's, loaded once per worker.
+// app's and the server's, loaded once per worker. It runs as Expo's does, in
+// step: upstream's tests call Metro's transformer and read its result at
+// once (`reactCompilerCoverage.test.ts`), so the transform is loaded with
+// `require`, which Node (upstream's `engines`) takes TypeScript and ES
+// modules through.
 //
 // `metro.config.js` sets this as Metro's `babelTransformerPath` in place of
 // Expo's (`nameTransformer`, below). The phone's tests don't run Metro, so
@@ -10,7 +14,6 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
-const { pathToFileURL } = require("node:url");
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");
 const TRANSFORM_FILES = [
@@ -25,13 +28,13 @@ const EXPO_TRANSFORMER = require.resolve("@expo/metro-config/babel-transformer",
 });
 const expo = require(EXPO_TRANSFORMER);
 
-/** @type {Promise<typeof import("../../../../../../stemcells/brand/nameTransform.ts")> | undefined} */
+/** @type {typeof import("../../../../../../stemcells/brand/nameTransform.ts") | undefined} */
 let nameTransform;
 
 /** @param {{ filename: string, src: string, options: { projectRoot: string } }} props */
-async function transform(props) {
-  nameTransform ??= import(pathToFileURL(TRANSFORM_FILES[0]).href);
-  const { renameUpstreamName, UPSTREAM_NAME } = await nameTransform;
+function transform(props) {
+  nameTransform ??= require(TRANSFORM_FILES[0]);
+  const { renameUpstreamName, UPSTREAM_NAME } = nameTransform;
   const file = path
     .relative(repoRoot, path.resolve(props.options.projectRoot, props.filename))
     .split(path.sep)
