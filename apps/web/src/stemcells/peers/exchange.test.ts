@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { type Entry, exchangeOf, gistOf, sentOf } from "./exchange";
+import { type Entry, exchangeOf, gistOf, senderOf, sentOf } from "./exchange";
 
 const incoming = (id: string, from: string, text: string): Entry => ({
   kind: "message",
@@ -127,5 +127,36 @@ describe("messages between Cells, from one chat", () => {
         input: { threadId: "x", message: "hi" },
       }),
     ).toEqual({ to: "x", text: "hi" });
+  });
+
+  it("pairs mail from a Cell on a linked machine with this Cell's answer to it", () => {
+    const mail = "stemcells-peer:environment-studio:thread-puma:request-1";
+    expect(senderOf({ id: mail, role: "user" })).toEqual({
+      cell: "thread-puma",
+      machine: "environment-studio",
+    });
+    expect(senderOf({ id: "message-1", role: "user" })).toBeNull();
+    const notes = exchangeOf([
+      { kind: "message", message: { id: mail, role: "user", text: "Can I take the auth module?" } },
+      {
+        kind: "work",
+        entry: {
+          id: "t1",
+          structuredPayload: {
+            type: "dynamic_tool",
+            toolName: "mcp__t3-code__stemcells_peer_send",
+            status: "completed",
+            input: { threadId: "thread-puma", message: "Yes, it's yours." },
+          },
+        },
+      },
+    ]);
+    expect(notes.get(mail)).toMatchObject({
+      way: "in",
+      cell: "thread-puma",
+      kind: "ask",
+      answered: true,
+    });
+    expect(notes.get("t1")).toMatchObject({ way: "out", kind: "reply" });
   });
 });

@@ -1,5 +1,6 @@
 // Replaces `components/chat/TimelineUserMessageRow.tsx` (`plugin.ts`): a
-// message another Cell sent this one is mail it received, drawn as a card
+// message another Cell sent this one, here or from a linked machine, is mail
+// it received, drawn as a card
 // (`peers/PeerCard.tsx`), and a collision notice the app sent is a notice
 // (`peers/CollisionRow.tsx`). Neither wears the person's bubble. Every other
 // message is upstream's row (stemcells/tasks/peers.md, decision 4), and so
@@ -12,7 +13,7 @@ import { UserMessageRow as UpstreamUserMessageRow } from "../../../components/ch
 import { TimelineRowCtx } from "../../../components/chat/timelineRowContext";
 import { CollisionRow } from "../../peers/CollisionRow";
 import { collisionOf } from "../../peers/notice";
-import { isFromAnotherCell } from "../../peers/exchange";
+import { senderOf } from "../../peers/exchange";
 import { PeerCard } from "../../peers/PeerCard";
 
 export * from "../../../components/chat/TimelineUserMessageRow";
@@ -21,13 +22,14 @@ export function UserMessageRow(props: ComponentProps<typeof UpstreamUserMessageR
   const { message } = props.row;
   const ctx = use(TimelineRowCtx);
   // A Cell's message is never a notice, whatever its id says: only the app's own has no sender.
-  if (isFromAnotherCell(message)) {
+  const sender = senderOf(message);
+  if (sender !== null) {
     const plain =
       ctx.workflowOpening?.messageId !== message.id &&
       resolveUserMessagePresentation(message).attribution !== "automation" &&
       (message.attachments ?? []).length === 0;
     return plain ? (
-      <PeerCard row={props.row} message={message} />
+      <PeerCard row={props.row} sender={sender} />
     ) : (
       <UpstreamUserMessageRow {...props} />
     );

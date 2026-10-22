@@ -6,22 +6,31 @@
  * these.
  */
 
-export type StemcellsSettingsPath = "/settings/disk" | "/settings/aski";
+export type StemcellsSettingsPath =
+  | "/settings/disk"
+  | "/settings/aski"
+  | "/settings/linked-machines";
 
 /** Each page's name in the settings list, in the list's order. */
 export const STEMCELLS_SETTINGS_LABELS: Readonly<Record<StemcellsSettingsPath, string>> = {
   "/settings/disk": "Disk",
   "/settings/aski": "Aski",
+  "/settings/linked-machines": "Linked machines",
 };
 
-/** No settings scope applies: Disk reads this machine, and Aski's switch lives on this device. */
+/**
+ * No settings scope applies: Disk reads this machine, Aski's switch lives on
+ * this device, and a link is kept by the two machines' servers.
+ */
 export const STEMCELLS_SETTINGS_SCOPES: Readonly<Record<StemcellsSettingsPath, null>> = {
   "/settings/disk": null,
   "/settings/aski": null,
+  "/settings/linked-machines": null,
 };
 
 /** The pages whose header names no settings scope. */
 export const STEMCELLS_DEVICE_ONLY_PATHS: readonly StemcellsSettingsPath[] = [
   "/settings/disk",
   "/settings/aski",
+  "/settings/linked-machines",
 ];

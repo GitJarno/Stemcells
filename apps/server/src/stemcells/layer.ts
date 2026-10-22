@@ -6,6 +6,7 @@ import * as LimitResumeHttp from "./limitResume/http.ts";
 import * as Look from "./look/publish.ts";
 import * as NeedsHttp from "./needs/http.ts";
 import * as Collisions from "./peers/Collisions.ts";
+import * as PeersHttp from "./peers/http.ts";
 import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
@@ -16,8 +17,8 @@ import * as ModelList from "./upstream/modelList.ts";
 // routes, whether somebody is at this Mac for Aski's eyes, what needs the
 // person for Aski's page, Aski's planner, Cells carrying on after a usage
 // limit (and the drafts that hold them), Cells told when they step on each
-// other, the theme published on start, and the telemetry id upstream left
-// behind, removed on start.
+// other, the routes of linked environments, the theme published on start,
+// and the telemetry id upstream left behind, removed on start.
 
 export const layer = Layer.mergeAll(
   AttachmentsHttp.layer,
@@ -27,6 +28,7 @@ export const layer = Layer.mergeAll(
   PlannerHttp.layer,
   LimitResumeHttp.layer,
   Collisions.layer,
+  PeersHttp.layer,
   Look.layer,
   Privacy.layer,
 );

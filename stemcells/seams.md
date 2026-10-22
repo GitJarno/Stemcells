@@ -38,7 +38,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/htmlRender/publicProxy.ts` | Exports `publicAddresses` (one word) | A web address brought into a chat's draft (`/api/stemcells/attachments/import`) reaches only what the HTML renderer's proxy lets through: the same check that every address a name resolves to is public (not this machine, its networks, link-local or a cloud's metadata address), and the checked addresses the connection is pinned to, so a rebinding name reaches nothing new (`stemcells/upstream/attachments.ts`; `attachments.contract.test.ts` pins it) |
 | `apps/web/src/routes/settings.disk.tsx` | New route file; renders `stemcells/disk/DiskSettings` | TanStack's file routes live in `routes/` |
 | `apps/web/src/routes/settings.aski.tsx` | New route file; renders `stemcells/aski/AskiSettings` | Settings › Aski, the same way |
-| `apps/web/src/routeTree.gen.ts` | Regenerated for `settings.disk.tsx` and `settings.aski.tsx` | The router plugin writes it |
+| `apps/web/src/routes/settings.linked-machines.tsx` | New route file; renders `stemcells/peers/LinkedMachines` | Settings › Linked machines (Peers, below), the same way |
+| `apps/web/src/routeTree.gen.ts` | Regenerated for `settings.disk.tsx`, `settings.aski.tsx` and `settings.linked-machines.tsx` | The router plugin writes it |
 | `apps/web/src/components/settings/settingsSearch.ts` | Imports `stemcells/pages/settingsPages`; `StemcellsSettingsPath` in `SettingsPath`, and `STEMCELLS_SETTINGS_LABELS` and `STEMCELLS_SETTINGS_SCOPES` spread into `SETTINGS_SECTION_LABELS` and `SETTINGS_CATEGORY_SCOPES`, where Disk's entries stood | The settings sidebar lists its pages from these. A hot file, so our pages (Disk, Aski) come from one module of ours, and a new page edits only that module (`stemcells/docs/fork.md`, rule 7) |
 | `apps/web/src/components/settings/SettingsSidebarNav.tsx` | Imports `stemcells/pages/settingsIcons` and spreads `STEMCELLS_SETTINGS_ICONS` into `SETTINGS_SECTION_ICONS` | Every settings page has an icon |
 | `apps/web/src/components/settings/SettingsScopeSentence.tsx` | Imports `stemcells/pages/settingsPages` and spreads `STEMCELLS_DEVICE_ONLY_PATHS` into `SETTINGS_DEVICE_ONLY_PATHS` | Disk reads this machine's disk and Aski's switch lives on this device; no settings scope applies to them |
@@ -90,6 +91,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/orchestration-v2/ThreadManagementService.ts` | Imports `moveCellsOffAskisInstance` and `refuseAskisInstance` from `stemcells/upstream/askiInstance`; `dispatch` passes each command through the first before its gate and the orchestrator; `assertProviderInstanceEnabled` (the gate every thread start and every message asks) also runs the second, takes an optional `threadId`, and the message gate passes its thread; `ThreadManagementProviderInstanceDisabledError` takes an optional `reason` its message reads | Aski's instance runs only Aski (below): the server refuses a Cell started there, rather than trusting Aski's instructions, and a message to a Cell already there runs on the driver's own instance |
 | `apps/server/src/orchestration-v2/ProviderTurnStartService.ts` | Imports `* as Stemcells` from `stemcells/upstream/peers.ts` on its first line; a run's text for the provider is `Stemcells.text(projectionStore, projects, input.threadId, message)` where it was `projectComposerContextForProvider(…)`; the prompt-command handler is `Stemcells.promptCommandsOf(providerAuth, message)` where it was `providerAuth` | Peers (below): another Cell's message reaches the provider framed, not as the person's words, a turn's start says who's here when that changed, and only the person's own `/logout` signs a provider out. Any T3 user would want the frame and the guard; offered upstream once we ask |
 | `apps/server/src/orchestration-v2/ProviderTurnControlService.ts` | Imports `* as Stemcells` from `stemcells/upstream/peers.ts` on its first line; a steer's text is `Stemcells.providerText(projections, input.threadId, message)`, and its `projectComposerContextForProvider` import goes | Same, for a message that steers a running turn |
+| `apps/server/src/mcp/McpHttpServer.ts` | Imports `registerPeerTool` from `stemcells/upstream/peerTool.ts` on its first line; `layer`'s toolkits end with `registerPeerTool(toolkitRegistration)` | Peers (below): an agent writes to a Cell on a linked machine with `stemcells_peer_send`, registered as upstream registers its own toolkits, behind upstream's gate for a tool that writes as its caller |
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view. In dev and the production build the same plugin runs the name transform (The app's name, below) |
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
@@ -767,7 +769,8 @@ wants them.
 
 ### Peers
 
-Cells in one project know each other (`stemcells/tasks/peers.md`). T3
+Cells in one repository know each other, on this machine and on linked
+ones (`stemcells/tasks/peers.md`). T3
 already stamps who sends a message (`t3_thread_send`, `senderThreadId`),
 delivers it and guards permission modes; Stemcells adds what it lacks:
 
@@ -794,15 +797,35 @@ delivers it and guards permission modes; Stemcells adds what it lacks:
   is the app's (`createdBy: "agent"`, `creationSource: "server"`), its id
   names the kind and the other Cell.
 - **The chat** (substitutes, no edits): `TimelineUserMessageRow.tsx` draws
-  another Cell's message as a card (upstream's row still draws a
+  another Cell's message, here or from a linked machine, as a card
+  (upstream's row still draws a
   workflow's opening, an automation's run and attachments) and a collision
   notice as a notice
   (`apps/web/src/stemcells/peers/`); `MessagesTimeline.logic.ts`'s
-  `workEntryDisplayLabel` says what a `t3_thread_send` did ("Asked Otter:
-  …"); `MessagesTimeline.tsx` hands the rows the chat's exchange
+  `workEntryDisplayLabel` says what a `t3_thread_send` or
+  `stemcells_peer_send` did ("Asked Otter: …"); `MessagesTimeline.tsx` hands the rows the chat's exchange
   (`PeerExchangeProvider`). The phone keeps upstream's row.
 - **Cell names** live in `stemcells/words/cellNames.ts`, so the server
   names a peer as its tabs do.
+- **Linked machines** (Stemcells servers only; T3 Code's own can't join).
+  Settings › Linked machines links this app's machine with another the
+  client is connected to: each server mints the other a token that
+  reaches only `/api/stemcells/peers/peer/*` (who's at work in a
+  repository the caller names, a message to one of them, hello and
+  goodbye), keeps only its hash, and keeps the other's token in upstream's
+  secret store (`apps/server/src/stemcells/peers/Links.ts`, mounted
+  through `stemcells/layer.ts`). Making and ending a link take upstream's
+  `access:write`, as pairing a device does. Each minute a server asks
+  each linked one who's at work in the repositories its own Cells work
+  in, and who's here names them by machine. `stemcells_peer_send` (the
+  MCP seam above) checks the recipient is at work in the sender's
+  repository; the receiving server checks it again, with upstream's mode
+  rule for `t3_thread_send`, caps one machine at 60 messages an hour, and
+  delivers as the app's (no sender thread there), its id naming the
+  sending machine and Cell (`peers/link.ts`, `mailId`). The frame
+  always applies to it: no Cell elsewhere is a principal. A machine
+  reached through the relay or over SSH can't be linked: its address
+  reaches only this device, or someone's cloud.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

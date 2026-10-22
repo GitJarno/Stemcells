@@ -168,8 +168,8 @@ What it lacks:
 - [x] Scoped by repository: collisions, the frame, who's here
 - [x] Who's here: the roster (pure), told at a turn's start when it
       changed; tests, and the contract test
-- [ ] First pull request: one environment
-- [ ] Second pull request: environments linked to each other
+- [x] First pull request: one environment (#223)
+- [ ] Second pull request: environments linked to each other (below)
 
 ## Across environments (the second pull request)
 
@@ -178,20 +178,47 @@ T3 Code's own app can't join: it doesn't run this code, and the only way
 in is its pairing token, which is full control (terminals included) that
 any agent here able to read our state could use.
 
-- **Linking.** The person's client, already connected to both, asks each
-  environment to mint a peer credential for the other. Nothing to copy.
-  The credential reaches `/api/stemcells/peers/*` only: the Cells of a
-  shared repository, and delivering a framed message to one. Stolen, it
-  sends zero-authority mail and reads titles; nothing else. Unlink on
-  either side.
-- **Transport.** The environments' own addresses: one Mac, the local
-  network or Tailscale. Never the relay or anyone's cloud.
-- **Scope.** By repository key. A message to a Cell in a repository the
-  two don't share is refused.
-- **Delivery.** Through the receiving server, which stamps it as the
-  app's and keeps who sent it (Cell, environment), so its frame and card
-  name both. Who's here lists the other environment's Cells, marked with
-  it.
+1. **A link is a pair of narrow credentials.** Each environment mints one
+   for the other, on the person's say-so (their session, `access:write`).
+   A credential reaches only the peer routes below: who's at work in a
+   repository the caller names, and delivering a framed message to one of
+   them. Stolen, it sends zero-authority mail and reads titles. The
+   environment that minted it keeps only its hash; the one that holds it
+   keeps it in upstream's secret store (owner-only files). Unlinking on
+   either side ends both.
+2. **The person's client links.** It is already connected to both, so
+   Settings › Linked machines offers each environment it reaches and links
+   both ways in one action, at the addresses the client uses (this
+   desktop's own address on the network for the other side). Each server then says
+   hello to the other with its new credential; if one can't reach the
+   other, the link is undone and the page says which way failed. Relay
+   and SSH addresses are refused: never anyone's cloud, and never a tunnel
+   only this device reaches.
+3. **Who's here spans the link.** Every minute an environment asks each
+   linked one for the Cells at work in the repositories it has Cells in,
+   and who's here lists them with their environment's name.
+4. **Messages.** An agent writes to a Cell elsewhere with one tool,
+   `stemcells_peer_send` (thread, message): the thread id, as who's here
+   names it, finds its machine. The receiving
+   environment checks the credential, that the recipient's repository is
+   the one the sender named, and upstream's own rule for `t3_thread_send`:
+   no message to a Cell whose modes are broader than the sender's. It
+   delivers the message as the app's (no sender thread of its own), its id
+   naming the sending environment and Cell, so the frame and the card name
+   both. The frame always applies: no Cell elsewhere is a principal.
+5. **Not across the link:** collisions (each environment sees its own
+   checkouts' edits), and a door into the other environment's chat.
+
+- [x] Server: links and their store (`peers/Links.ts`, upstream's secret
+      store); tests
+- [x] Server: the peer routes (person's and peers'); tests
+- [x] Server: remote rosters in who's here; the frame for mail from
+      elsewhere
+- [x] Server: `stemcells_peer_send` (one seam in `McpHttpServer.ts`)
+- [x] Web: Settings › Linked machines; the card for mail from elsewhere;
+      the sender's row
+- [x] `seams.md`; drift, types, lint, tests
+- [x] Two servers linked in a lab; review
 
 ## Not done, on purpose
 
@@ -238,3 +265,32 @@ the whole text), the first-message rule above, a fresh provider thread
 wasn't told again, and a branch in a collision notice went unsanitized.
 The fifth stays: under upstream's own restart note the provider reads
 "User message:" twice, and the note between says it isn't the person.
+
+Across environments, two servers in the lab (fake providers, homes of
+their own) linked both ways through the person's routes. A request
+without the person's session, or a peer route with a token neither
+minted, got 401; a token at the wrong address, 502 with which way
+failed. Linked, each asked the other who's at work; unlinking on one
+ended it on both, and the old token then got 401. With one server
+stopped, the other's page said it couldn't be reached within the
+minute. The secret store's file was owner-only.
+
+An independent review of the second pull request found five; all are
+fixed, with tests:
+
+- A message reading `/compact` or `/logout` would have run it on the
+  recipient (upstream runs a maintenance command from the raw text).
+  Both sides refuse one.
+- A linked machine's refusal reached the sending model in its own words.
+  The sender now hears fixed words of its own for each kind of refusal.
+- The message limit counted characters, the peer route bytes: a message
+  under one could be turned away by the other. The sender measures
+  what it sends.
+- A machine asked only for the repositories its busy Cells work in, so a
+  quiet Cell learned of no one. It asks for all of its repositories.
+- Who's at work was read whole on every ask. A linked machine asks at
+  most every ten seconds.
+
+Left for upstream, as with `t3_queue_edit`: a `t3_thread_send` reading
+`/compact` or `/logout` runs it on the recipient on one machine too. The
+fix belongs in upstream's send, any T3 user's problem.

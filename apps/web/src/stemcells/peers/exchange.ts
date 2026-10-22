@@ -1,6 +1,7 @@
 // Messages between Cells, as one chat shows them (stemcells/tasks/peers.md,
-// decision 4): what came in from another Cell, what this Cell sent with
-// `t3_thread_send`, and how they answer each other. All of it reads from
+// decision 4): what came in from another Cell, here or on a linked machine,
+// what this Cell sent with `t3_thread_send` or `stemcells_peer_send`, and
+// how they answer each other. All of it reads from
 // this chat's own timeline: an ask is a message whose first sentence asks,
 // and a reply is the next message back to a Cell with an open ask.
 
@@ -66,15 +67,39 @@ export function gistOf(text: string): { readonly gist: string; readonly rest: st
 
 const asks = (gist: string) => gist.endsWith("?");
 
-/** A message another thread sent this one; principals and peers alike. */
-export function isFromAnotherCell(message: {
-  readonly role: string;
-  readonly senderThreadId?: string | undefined;
-}): message is { readonly role: string; readonly senderThreadId: string } {
-  return message.role === "user" && message.senderThreadId !== undefined;
+// The id the receiving server gives a message from a linked machine
+// (`apps/server/src/stemcells/peers/link.ts`, `mailId`).
+const MAIL = /^stemcells-peer:([^:]+):([^:]+):[^:]+$/;
+
+/** Who sent a message from another Cell, here (principals and peers alike) or on a linked machine. */
+export interface Sender {
+  /** The sending Cell's thread. */
+  readonly cell: string;
+  /** For mail from a linked machine, that machine's environment; null for a Cell here. */
+  readonly machine: string | null;
 }
 
-/** What this Cell sent another with `t3_thread_send`; null for any other tool call. */
+/** The Cell that sent a message; null for the person's own, or the app's. */
+export function senderOf(message: {
+  readonly id: string;
+  readonly role: string;
+  readonly senderThreadId?: string | undefined;
+}): Sender | null {
+  if (message.role !== "user") return null;
+  if (message.senderThreadId !== undefined) return { cell: message.senderThreadId, machine: null };
+  const mail = MAIL.exec(message.id);
+  if (mail === null) return null;
+  try {
+    return { cell: decodeURIComponent(mail[2]!), machine: decodeURIComponent(mail[1]!) };
+  } catch {
+    return null;
+  }
+}
+
+/** `stemcells_peer_send` under whatever prefix the provider gives T3's tools. */
+const PEER_SEND = /(?:^|[._:/\s·-])stemcells_peer_send$/;
+
+/** What this Cell sent another, here or on a linked machine; null for any other tool call. */
 export function sentOf(payload: unknown): { readonly to: string; readonly text: string } | null {
   if (typeof payload !== "object" || payload === null) return null;
   const item = payload as {
@@ -84,8 +109,9 @@ export function sentOf(payload: unknown): { readonly to: string; readonly text: 
     readonly input?: unknown;
   };
   if (item.type !== "dynamic_tool" || typeof item.toolName !== "string") return null;
-  if (resolveT3McpToolId(item.toolName) !== "t3_thread_send" || item.status === "failed")
-    return null;
+  const sends =
+    resolveT3McpToolId(item.toolName) === "t3_thread_send" || PEER_SEND.test(item.toolName);
+  if (!sends || item.status === "failed") return null;
   const input = item.input as { readonly threadId?: unknown; readonly message?: unknown } | null;
   if (typeof input?.threadId !== "string" || typeof input.message !== "string") return null;
   return { to: input.threadId, text: input.message };
@@ -113,11 +139,12 @@ export function exchangeOf(entries: ReadonlyArray<Entry>): ReadonlyMap<string, P
   for (const entry of entries) {
     let id: string;
     let note: Draft;
-    if (entry.kind === "message" && "message" in entry && isFromAnotherCell(entry.message)) {
+    const sender = entry.kind === "message" && "message" in entry ? senderOf(entry.message) : null;
+    if (sender !== null && "message" in entry) {
       id = entry.message.id;
       note = {
         way: "in",
-        cell: entry.message.senderThreadId,
+        cell: sender.cell,
         kind: "says",
         answers: null,
         answered: false,

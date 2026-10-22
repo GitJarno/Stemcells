@@ -27,39 +27,61 @@ export interface RosterThread {
   readonly at: number;
 }
 
+/** A Cell at work on a linked environment, as that environment told it. */
+export interface ElsewhereThread {
+  /** Its environment's name here. */
+  readonly environment: string;
+  readonly id: string;
+  readonly title: string;
+  readonly branch: string | null;
+  readonly status: string;
+  readonly aski: boolean;
+  readonly at: number;
+}
+
 export interface Roster {
   readonly self: RosterThread;
   /** The others at work, most recent first, at most `NAMED`. */
   readonly others: ReadonlyArray<RosterThread>;
   readonly more: number;
+  /** Those at work on linked environments, most recent first, at most `NAMED`. */
+  readonly elsewhere: ReadonlyArray<ElsewhereThread>;
+  readonly elsewhereMore: number;
 }
 
 const UNDER_WAY = new Set(["preparing", "queued", "starting", "running", "waiting"]);
 
-const isAski = (thread: RosterThread) =>
+export const isAski = (thread: RosterThread) =>
   thread.providerInstanceId === ASKI_INSTANCE_ID && thread.parentThreadId === null;
 
 const nameOf = (thread: RosterThread) => (isAski(thread) ? "Aski" : cellNameOf(thread.id));
 
+/** A Cell (a Subcell is its Cell's work) under way, or active within `LIVE_FOR_MS`. */
+export const isAtWork = (thread: RosterThread, now: number) =>
+  thread.relationshipToParent !== "subagent" &&
+  (UNDER_WAY.has(thread.status) || now - thread.at <= LIVE_FOR_MS);
+
 /**
- * The roster `self` reads, from the threads of its repository: every other
- * Cell (a Subcell is its Cell's work) under way, or active within
- * `LIVE_FOR_MS`.
+ * The roster `self` reads, from the threads of its repository, here and on
+ * linked environments: every other Cell at work.
  */
 export function rosterOf(
   self: RosterThread,
   threads: ReadonlyArray<RosterThread>,
   now: number,
+  elsewhere: ReadonlyArray<ElsewhereThread> = [],
 ): Roster {
   const live = threads
-    .filter(
-      (thread) =>
-        thread.id !== self.id &&
-        thread.relationshipToParent !== "subagent" &&
-        (UNDER_WAY.has(thread.status) || now - thread.at <= LIVE_FOR_MS),
-    )
+    .filter((thread) => thread.id !== self.id && isAtWork(thread, now))
     .toSorted((a, b) => b.at - a.at);
-  return { self, others: live.slice(0, NAMED), more: Math.max(0, live.length - NAMED) };
+  const there = elsewhere.toSorted((a, b) => b.at - a.at);
+  return {
+    self,
+    others: live.slice(0, NAMED),
+    more: Math.max(0, live.length - NAMED),
+    elsewhere: there.slice(0, NAMED),
+    elsewhereMore: Math.max(0, there.length - NAMED),
+  };
 }
 
 /**
@@ -70,6 +92,12 @@ export function signatureOf(roster: Roster): string {
   return [roster.self, ...roster.others]
     .map((thread) => `${thread.id}\t${thread.title}\t${thread.branch ?? ""}`)
     .concat(String(roster.more))
+    .concat(
+      roster.elsewhere.map(
+        (thread) => `${thread.environment}\t${thread.id}\t${thread.title}\t${thread.branch ?? ""}`,
+      ),
+    )
+    .concat(String(roster.elsewhereMore))
     .join("\n");
 }
 
@@ -88,19 +116,43 @@ function line(thread: RosterThread): string {
   return `- ${nameOf(thread)}${title} (thread ${thread.id}${branch}): ${stateOf(thread.status)}`;
 }
 
-/** The note: who this Cell is, then the others, one line each. */
+function lineElsewhere(thread: ElsewhereThread): string {
+  const name = thread.aski ? "Aski" : cellNameOf(thread.id);
+  const title = thread.aski || thread.title === "" ? "" : `, “${titleOf(thread.title)}”`;
+  const branch = thread.branch === null ? "" : `, branch ${titleOf(thread.branch)}`;
+  return `- ${name} on ${titleOf(thread.environment)}${title} (thread ${thread.id}${branch}): ${stateOf(thread.status)}`;
+}
+
+/** The note: who this Cell is, then the others here and elsewhere, one line each. */
 export function rosterText(roster: Roster): string {
   const { self } = roster;
   const you = isAski(self)
     ? `you are Aski (thread ${self.id})`
     : `you are ${nameOf(self)}, the Cell “${titleOf(self.title)}” (thread ${self.id})`;
   const head = `Stemcells, telling you, not the person: ${you}.`;
-  if (roster.others.length === 0) return `${head}\nNo other Cell is at work in this repository.`;
+  const here = roster.others.length > 0;
+  const there = roster.elsewhere.length > 0;
+  if (!here && !there) return `${head}\nNo other Cell is at work in this repository.`;
+  const how =
+    here && there
+      ? "Write to one here with t3_thread_send, and to one on another machine with stemcells_peer_send, only when it changes what it will do."
+      : `Write to one with ${here ? "t3_thread_send" : "stemcells_peer_send"} only when it changes what it will do.`;
   return [
     head,
-    "Other Cells at work in this repository:",
-    ...roster.others.map(line),
-    ...(roster.more === 0 ? [] : [`- and ${roster.more} more (t3_thread_list)`]),
-    "Write to one with t3_thread_send only when it changes what it will do.",
+    ...(here
+      ? [
+          "Other Cells at work in this repository:",
+          ...roster.others.map(line),
+          ...(roster.more === 0 ? [] : [`- and ${roster.more} more (t3_thread_list)`]),
+        ]
+      : []),
+    ...(there
+      ? [
+          "On other machines, in this repository:",
+          ...roster.elsewhere.map(lineElsewhere),
+          ...(roster.elsewhereMore === 0 ? [] : [`- and ${roster.elsewhereMore} more`]),
+        ]
+      : []),
+    how,
   ].join("\n");
 }

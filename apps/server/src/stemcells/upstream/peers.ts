@@ -22,13 +22,16 @@ import * as Effect from "effect/Effect";
 import type { ProjectionStoreV2Shape } from "../../orchestration-v2/ProjectionStore.ts";
 import type { ProjectService } from "../../project/ProjectService.ts";
 import type { ProviderAuthService } from "../../provider/ProviderAuthService.ts";
+import { elsewhereNow } from "../peers/elsewhere.ts";
 import { providerTextOf, type ThreadFacts } from "../peers/frame.ts";
+import { mailOf } from "../peers/link.ts";
 import { type RosterThread, rosterOf, rosterText, signatureOf } from "../peers/roster.ts";
 
 type Store = Pick<ProjectionStoreV2Shape, "getThreadShell">;
 type Projects = Pick<ProjectService["Service"], "listShells">;
 
 interface Message {
+  readonly id?: string | undefined;
   readonly text: string;
   readonly context?: OrchestrationMessageContext | undefined;
   readonly senderThreadId?: ThreadId | undefined;
@@ -38,7 +41,7 @@ interface Message {
  * Each project's repository key: upstream's own grouping, by its remote.
  * Who's here is extra: no failure of it, a defect included, may fail a turn.
  */
-const repoKeysOf = (projects: Projects) =>
+export const repoKeysOf = (projects: Projects) =>
   projects.listShells().pipe(
     Effect.map(
       (shells) =>
@@ -78,6 +81,20 @@ const framed = Effect.fnUntraced(function* (
     text: message.text,
     records: message.context?.records ?? [],
   });
+  // Mail from a linked environment names its sender in its id, as the
+  // receiving server made it: there is no sender thread here.
+  const id = message.id;
+  const mail = id === undefined ? null : mailOf(id);
+  if (id !== undefined && mail !== null) {
+    const known = elsewhereNow()?.senderOf(id) ?? { environment: null, title: null };
+    return providerTextOf({
+      text,
+      senderThreadId: undefined,
+      sender: null,
+      recipient: null,
+      elsewhere: { threadId: mail.threadId, ...known },
+    });
+  }
   const senderThreadId = message.senderThreadId;
   if (senderThreadId === undefined) return text;
   const read = (id: ThreadId) =>
@@ -116,7 +133,7 @@ const millisOf = (shell: OrchestrationV2ThreadShell) =>
     ),
   );
 
-const rosterThreadOf = (shell: OrchestrationV2ThreadShell): RosterThread => ({
+export const rosterThreadOf = (shell: OrchestrationV2ThreadShell): RosterThread => ({
   id: shell.id,
   title: shell.title,
   branch: shell.branch,
@@ -153,7 +170,8 @@ const rosterNote = Effect.fnUntraced(function* (
     .flatMap((snapshot) => snapshot.threads)
     .filter((thread) => thread.archivedAt === null && thread.deletedAt === null);
   const now = DateTime.toEpochMillis(yield* DateTime.now);
-  const roster = rosterOf(rosterThreadOf(self), threads.map(rosterThreadOf), now);
+  const elsewhere = repo === undefined ? [] : (elsewhereNow()?.cellsIn(repo) ?? []);
+  const roster = rosterOf(rosterThreadOf(self), threads.map(rosterThreadOf), now, elsewhere);
 
   const signature = signatureOf(roster);
   const byThread = told.get(store) ?? new Map<string, string>();

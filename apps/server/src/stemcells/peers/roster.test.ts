@@ -93,4 +93,59 @@ describe("who a Cell is told is here", () => {
     );
     expect(text.split("\n")).toHaveLength(4);
   });
+
+  it("names the Cells at work on linked machines by machine, and says how to write to them", () => {
+    const elsewhere = [
+      {
+        environment: "Studio Mac",
+        id: "puma",
+        title: "Auth rework",
+        branch: "auth",
+        status: "running",
+        aski: false,
+        at: NOW,
+      },
+      {
+        environment: "Studio Mac",
+        id: "aski-2",
+        title: "",
+        branch: null,
+        status: "idle",
+        aski: true,
+        at: NOW - 1,
+      },
+    ];
+    const roster = rosterOf(otter, [thread("badger")], NOW, elsewhere);
+    expect(rosterText(roster).split("\n").slice(1)).toEqual([
+      "Other Cells at work in this repository:",
+      `- ${cellNameOf("badger")}, “Work of badger” (thread badger, branch branch/badger): at rest`,
+      "On other machines, in this repository:",
+      `- ${cellNameOf("puma")} on Studio Mac, “Auth rework” (thread puma, branch auth): working`,
+      "- Aski on Studio Mac (thread aski-2): at rest",
+      "Write to one here with t3_thread_send, and to one on another machine with stemcells_peer_send, only when it changes what it will do.",
+    ]);
+    expect(
+      rosterText(rosterOf(otter, [], NOW, elsewhere))
+        .split("\n")
+        .at(-1),
+    ).toBe("Write to one with stemcells_peer_send only when it changes what it will do.");
+    // A Cell elsewhere taking up another one-liner is news; its state alone isn't.
+    const before = signatureOf(roster);
+    expect(
+      signatureOf(
+        rosterOf(otter, [thread("badger")], NOW, [
+          { ...elsewhere[0]!, status: "idle" },
+          elsewhere[1]!,
+        ]),
+      ),
+    ).toBe(before);
+    expect(
+      signatureOf(
+        rosterOf(otter, [thread("badger")], NOW, [
+          { ...elsewhere[0]!, title: "Docs" },
+          elsewhere[1]!,
+        ]),
+      ),
+    ).not.toBe(before);
+  });
 });

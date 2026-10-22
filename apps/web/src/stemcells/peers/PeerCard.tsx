@@ -10,14 +10,16 @@ import {
   formatDayAwareTimestamp,
   MessageCopyButton,
   type MessageRow,
-  type ThreadId,
+  threadIdOf,
   TimelineRowActivityCtx,
   TimelineRowCtx,
   usePeerShell,
 } from "../upstream/peers";
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { CellDoor } from "./CellDoor";
-import { gistOf, type Kind } from "./exchange";
+import { useMachineLabel } from "../upstream/machines";
+import { gistOf, type Kind, type Sender } from "./exchange";
+import { cellNameOf } from "../cell/name";
 import { isAskiChat, peerNameOf } from "./names";
 import { usePeerNote } from "./PeerExchange";
 
@@ -26,7 +28,8 @@ import "./peers.css";
 // A message another Cell sent this one (stemcells/tasks/peers.md, decision
 // 4): mail the Cell received, not the conversation, so it never wears the
 // person's bubble. Read in order: who and which way, the question a reply
-// answers, the gist, then the rest, folded. Its sender is a door to its chat.
+// answers, the gist, then the rest, folded. A sender here is a door to its
+// chat; one on a linked machine is named with its machine, and opens nothing.
 // Under it, as under the person's own message: when, going back to it, copy.
 
 const WAY: Readonly<Record<Kind, string>> = {
@@ -35,15 +38,15 @@ const WAY: Readonly<Record<Kind, string>> = {
   says: "says",
 };
 
-export function PeerCard(props: {
-  readonly row: MessageRow;
-  readonly message: MessageRow["message"] & { readonly senderThreadId: ThreadId };
-}) {
-  const { row, message } = props;
+export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sender }) {
+  const { row, sender } = props;
+  const { message } = row;
   const ctx = use(TimelineRowCtx);
-  const shell = usePeerShell(ctx.activeThreadEnvironmentId, message.senderThreadId);
-  const name = peerNameOf(message.senderThreadId, shell);
-  const aski = isAskiChat(message.senderThreadId, shell);
+  const shell = usePeerShell(ctx.activeThreadEnvironmentId, sender.cell);
+  const machine = useMachineLabel(sender.machine) ?? "another machine";
+  // A Cell elsewhere goes by the name its frame gave it: its own tab's.
+  const name = sender.machine === null ? peerNameOf(sender.cell, shell) : cellNameOf(sender.cell);
+  const aski = sender.machine === null && isAskiChat(sender.cell, shell);
   const note = usePeerNote(message.id) ?? {
     kind: "says" as const,
     answers: null,
@@ -60,15 +63,26 @@ export function PeerCard(props: {
 
   return (
     <div className="flex flex-col items-end gap-1" data-stemcells-peer="in">
-      <article className="sc-peer-card" aria-label={`${name} ${WAY[note.kind]}`}>
+      <article
+        className="sc-peer-card"
+        aria-label={`${name}${sender.machine === null ? "" : ` on ${machine}`} ${WAY[note.kind]}`}
+      >
         <header className="sc-peer-head">
-          <CellDoor
-            name={name}
-            title={shell?.title}
-            onOpen={() => ctx.onOpenThread(message.senderThreadId)}
-          >
-            {aski ? null : <SubcellMark name={message.senderThreadId} />}
-          </CellDoor>
+          {sender.machine === null ? (
+            <CellDoor
+              name={name}
+              title={shell?.title}
+              onOpen={() => ctx.onOpenThread(threadIdOf(sender.cell))}
+            >
+              {aski ? null : <SubcellMark name={sender.cell} />}
+            </CellDoor>
+          ) : (
+            <span className="sc-peer-who">
+              <SubcellMark name={sender.cell} />
+              <span className="sc-peer-name">{name}</span>
+              <span className="sc-peer-way">on {machine}</span>
+            </span>
+          )}
           <span className="sc-peer-way">{WAY[note.kind]}</span>
           {steered ? <span className="sc-peer-way">mid-turn</span> : null}
           {note.kind === "ask" && note.answered ? (

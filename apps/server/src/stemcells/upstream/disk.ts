@@ -1,4 +1,5 @@
 import {
+  AuthAccessWriteScope,
   AuthOrchestrationOperateScope,
   AuthOrchestrationReadScope,
   type AuthEnvironmentScope,
@@ -67,6 +68,13 @@ export const withReadAccess = withScope(AuthOrchestrationReadScope);
  * (the scope upstream asks of its own uploads).
  */
 export const withOperateAccess = withScope(AuthOrchestrationOperateScope);
+
+/**
+ * Runs `handler` only for a caller allowed to change who may reach this
+ * environment: linking another environment to it (`peers/http.ts`), as
+ * upstream asks of pairing a device.
+ */
+export const withAccessWrite = withScope(AuthAccessWriteScope);
 
 /** The platform the server runs on, as upstream injects it. */
 export const HostPlatform = HostProcess.Platform;
