@@ -1,19 +1,21 @@
 /**
- * Carrying a chat by its Cell (stemcells/tasks/windows.md, Carry a chat).
- * The Cell over the composer is the handle: past 4 px the pane gathers into
- * a card under the hand on `lift`, its place left empty. The half of
- * another pane the hand is nearest lights with the wash, gliding on
- * `travel`. Another tab's chip under the hand lights, and opens its tab
+ * Carrying a chat by its Cell or its pane's top (stemcells/tasks/windows.md,
+ * Carry a chat). The Cell over the composer is a handle, and so is the grip
+ * at the pane's top: past 4 px a card of the chat appears under the hand on
+ * `flick`, and the pane stays in its place, receding. The half of another
+ * pane the hand is nearest lights with the wash, gliding on `travel`. Another tab's chip under the hand lights, and opens its tab
  * after `spring-load`; past the last chip the strip makes room for a new
  * tab. Let go on a half or in the room, the chat goes there; on a chip, it
  * goes to the end of that tab and the person stays where they are
- * (stemcells/tasks/chip-drop.md). Each is a move Undo Move takes back, and
- * the card lands into its place on `land`. On the desktop the card leaves
- * the window onto the flight layer, and another window's chips light and
- * take it as this window's do. Let go anywhere else, or Esc, and the card
- * flies back to where it was picked up, its tab on stage again. Let go with
- * speed inside its own pane, the chat stays and its Cell is thrown from the
- * hand, to fly in that pane (`CellThrow.tsx`). Under Reduce Motion the card fades where it is.
+ * (stemcells/tasks/chip-drop.md). Each is a move Undo Move takes back;
+ * on a half the card fades from the hand as the chat takes its place, on a
+ * chip it lands into the chip on `land`. On the desktop the card leaves the
+ * window onto the flight layer, and another window's chips light and take
+ * it as this window's do. Let go anywhere else, or Esc, and the card fades
+ * from the hand and the pane comes back, its tab on stage again. Held by its
+ * Cell and let go with speed inside its own pane, the chat stays and its
+ * Cell is thrown from the hand, to fly in that pane (`CellThrow.tsx`).
+ * Under Reduce Motion the card only fades.
  */
 import {
   useEffect,
@@ -60,9 +62,16 @@ import "./carry.css";
 /** Where the hand holds the card: on its Cell. */
 const GRAB: Point = { x: 18, y: 16 };
 
+/** How small the card is as it comes into the hand and as it fades from it. */
+const CARD_AWAY = 0.92;
+
+/** What the hand took the chat by: its Cell, which can be thrown, or the grip at its pane's top. */
+export type Handle = "cell" | "top";
+
 interface Held {
   readonly paneId: string;
   readonly cell: CellRef;
+  readonly by: Handle;
   /** The Cell's box's centre less the press: where the hand holds it. */
   readonly grip: Point;
 }
@@ -70,7 +79,7 @@ interface Held {
 /** The mounted carry: one per window, in its slate. */
 interface Carrier {
   /** `hand` in the page, `onScreen` the same point on the screen. */
-  pickUp(held: Held, from: Rect, hand: Point, onScreen: Point): void;
+  pickUp(held: Held, hand: Point, onScreen: Point): void;
   move(hand: Point, at: number): void;
   letGo(hand: Point, at: number): void;
   cancel(): void;
@@ -152,12 +161,16 @@ const inside = (rect: Rect): Rect => ({
 });
 
 /**
- * The handle pressed: the chat in `cell`'s pane goes with the hand once it
- * has moved 4 px. Keeps the pointer, so the carry hears the hand anywhere;
- * the pointer lost to the system, or the window's focus lost, sends it back
- * as Esc does.
+ * A handle pressed (the Cell, or the grip at its pane's top): the chat in
+ * `cell`'s pane goes with the hand once it has moved 4 px. Keeps the
+ * pointer, so the carry hears the hand anywhere; the pointer lost to the
+ * system, or the window's focus lost, sends it back as Esc does.
  */
-export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: CellRef): void {
+export function startChatCarry(
+  event: ReactPointerEvent<HTMLElement>,
+  cell: CellRef,
+  by: Handle,
+): void {
   const handle = event.currentTarget;
   const pane = handle.closest<HTMLElement>("[data-stemcells-pane]");
   const paneId = pane?.dataset.stemcellsPane;
@@ -177,7 +190,7 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
       if (Math.hypot(hand.x - press.x, hand.y - press.y) < PICK_UP_DISTANCE) return;
       picked = true;
       handle.dataset.carrying = "true";
-      carrier?.pickUp({ paneId, cell, grip }, rectOf(pane), hand, {
+      carrier?.pickUp({ paneId, cell, by, grip }, hand, {
         x: move.screenX,
         y: move.screenY,
       });
@@ -282,8 +295,6 @@ const fromScreen = ({ origin, zoom }: OnScreen, rect: Rect): Rect => ({
 
 interface Live {
   readonly held: Held;
-  /** Where the pane was when it was picked up, which the card gathers from. */
-  readonly from: Rect;
   /** The tab it was picked up in, which comes back on stage if it goes back. */
   readonly tabId: string | null;
   /** The new tab's ids, should it go into one: the strip's room keeps them. */
@@ -298,7 +309,7 @@ interface Live {
   readonly screen: OnScreen | null;
   /** The other windows' strips, front to back, once each has measured its own. */
   others: ReadonlyArray<StripPlace>;
-  /** The card's size in the hand, once it is drawn (the lift starts it at the pane's). */
+  /** The card's size in the hand, once it is drawn. */
   size: { readonly width: number; readonly height: number } | null;
   /** The card has lifted: it looks as it will be carried, and a still of it can be taken. */
   lifted: boolean;
@@ -353,12 +364,11 @@ class WindowCarrier implements Carrier {
     private readonly show: (held: Held | null) => void,
   ) {}
 
-  pickUp(held: Held, from: Rect, hand: Point, onScreen: Point): void {
+  pickUp(held: Held, hand: Point, onScreen: Point): void {
     const bridge = windowsBridge();
     const zoom = bridge?.zoom() ?? 1;
     const live: Live = {
       held,
-      from,
       tabId: readWorkspace().activeTabId,
       newTab: newIds(),
       hand,
@@ -384,7 +394,10 @@ class WindowCarrier implements Carrier {
     });
   }
 
-  /** The card is drawn: the pane gathers into it under the hand. */
+  /**
+   * The card is drawn: it appears under the hand, from a touch smaller. The
+   * pane stays where it is (`carry.css`): nothing grows or shrinks out of it.
+   */
   lifted(): void {
     const now = this.live;
     const card = this.elements.card.current;
@@ -397,19 +410,14 @@ class WindowCarrier implements Carrier {
       if (this.live === now && !now.landingNow) this.follow(now.hand);
     };
     if (reducedMotion()) return done();
-    const rest = rectOf(card);
-    const timing = motionTiming("lift");
+    const { duration, easing } = motionTiming("flick");
     void card
       .animate(
         [
-          {
-            translate: `${now.from.x - rest.x}px ${now.from.y - rest.y}px`,
-            width: `${now.from.width}px`,
-            height: `${now.from.height}px`,
-          },
-          { translate: "0px 0px", width: `${rest.width}px`, height: `${rest.height}px` },
+          { opacity: 0, scale: CARD_AWAY },
+          { opacity: 1, scale: 1 },
         ],
-        { duration: timing.duration, easing: timing.easing },
+        { duration, easing },
       )
       .finished.then(done, done);
   }
@@ -469,10 +477,14 @@ class WindowCarrier implements Carrier {
     const { landing } = now;
     const velocity = handVelocity(now.samples, at);
     const over = landing !== null && !(landing.kind === "chip" && landing.tabId === now.tabId);
-    // Thrown only from inside its own chat, which it then flies in: anywhere else a let-go aims at a place.
+    // Thrown only when held by its Cell, from inside its own chat, which it
+    // then flies in: anywhere else a let-go aims at a place.
     const pane = paneElement(now.held.paneId);
     const inOwnChat =
-      readWorkspace().activeTabId === now.tabId && pane !== null && contains(rectOf(pane), hand);
+      now.held.by === "cell" &&
+      readWorkspace().activeTabId === now.tabId &&
+      pane !== null &&
+      contains(rectOf(pane), hand);
     const then = letGoOf(over, velocity, reducedMotion(), inOwnChat);
     // Thrown in its own chat: the chat stays, and its Cell flies from the hand.
     if (then === "toss") return this.toss(now, hand, velocity);
@@ -511,10 +523,9 @@ class WindowCarrier implements Carrier {
           column: randomUUID(),
           rowWidth: rowWidthOf(anchor),
         }));
-        // Its place, new or as it was, is drawn (still empty) before the card lands there.
-        await twoFrames();
-        const pane = paneElement(now.held.paneId);
-        return this.land(pane ? rectOf(pane) : now.from);
+        // The chat shows in its place, new or as it was, as the card leaves the hand.
+        setCarried(null);
+        return this.land(null);
       }
       const { newTab } = now;
       const moved = await carryHere(now.held.paneId, (here) => ({
@@ -527,8 +538,7 @@ class WindowCarrier implements Carrier {
       const chip = moved ? chipElement(newTab.tab) : null;
       if (!chip) {
         hostRoom(null);
-        const pane = paneElement(now.held.paneId);
-        return this.land(pane ? rectOf(pane) : now.from);
+        return this.land(null);
       }
       // The new tab's chip waits, hidden in the room, for the card to land on it.
       await this.land(rectOf(chip));
@@ -543,7 +553,7 @@ class WindowCarrier implements Carrier {
     void this.home(now);
   }
 
-  /** The card flies back to where the chat is, its tab on stage again. */
+  /** The chat stays where it is, its tab on stage again, and the card leaves the hand. */
   private async home(now: Live): Promise<void> {
     spring.out();
     setLit(null);
@@ -554,8 +564,8 @@ class WindowCarrier implements Carrier {
       this.elements.openTab.current(now.tabId);
       await new Promise((resolve) => setTimeout(resolve, motionTiming("travel").duration));
     }
-    const pane = paneElement(now.held.paneId);
-    await this.land(pane ? rectOf(pane) : null);
+    setCarried(null);
+    await this.land(null);
   }
 
   /**
@@ -678,8 +688,8 @@ class WindowCarrier implements Carrier {
   }
 
   /**
-   * The card into `to` (the page's pixels, which may be outside the window)
-   * on `land`, or faded where it is; then it goes.
+   * The card into `to` (a chip, in the page's pixels, which may be outside
+   * the window) on `land`, or faded from the hand; then it goes.
    */
   private async land(to: Rect | null): Promise<void> {
     const now = this.live;
@@ -687,17 +697,18 @@ class WindowCarrier implements Carrier {
     if (!now) return;
     now.landingNow = true;
     this.light(null);
-    const reduce = reducedMotion() || to === null;
+    const reduce = reducedMotion();
     if (now.flight?.shown && now.screen) {
       await (reduce || to === null
         ? now.flight.fadeOut()
         : now.flight.land(toScreen(now.screen, to), "land"));
     } else if (card) {
-      const timing = motionTiming(reduce ? "fade" : "land");
+      const timing = motionTiming(reduce || to === null ? "fade" : "land");
       const rest = rectOf(card);
-      const end =
-        reduce || to === null
-          ? { opacity: 0 }
+      const end = reduce
+        ? { opacity: 0 }
+        : to === null
+          ? { opacity: 0, scale: CARD_AWAY }
           : {
               translate: `${to.x - rest.x}px ${to.y - rest.y}px`,
               width: `${to.width}px`,
@@ -770,6 +781,7 @@ export function ChatCarry(props: {
               <div
                 ref={card}
                 className="flex items-center gap-1.5 overflow-hidden rounded-md bg-popover px-2 py-1.5 text-xs text-foreground shadow-md ring-1 ring-border"
+                style={{ transformOrigin: `${GRAB.x}px ${GRAB.y}px` }}
               >
                 <CellMark cell={held.cell} />
                 <span className="truncate">{cellNameOf(held.cell.threadId)}</span>

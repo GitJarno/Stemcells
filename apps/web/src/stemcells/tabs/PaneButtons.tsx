@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 
 import { cellNameOf } from "../cell/name";
 import { useCellTitle } from "../upstream/thread";
+import { startChatCarry } from "../windows/ChatCarry";
 import {
   Menu,
   MenuCheckboxItem,
@@ -234,5 +235,21 @@ export function CellPill(props: { cell: CellRef }) {
       <span data-stemcells-cell-pill-name="">{cellNameOf(props.cell.threadId)}</span>
       {title ? <span data-stemcells-cell-pill-title="">{title}</span> : null}
     </div>
+  );
+}
+
+/**
+ * The grip at the middle of a pane's top, shown while the pointer is in the
+ * pane (`carry.css`): the chat is carried by it as by its Cell, but never
+ * thrown, since the hand holds the chat, not the Cell.
+ */
+export function PaneGrip(props: { cell: CellRef }) {
+  return (
+    <div
+      data-stemcells-pane-grip=""
+      data-stemcells-chat-handle=""
+      aria-hidden
+      onPointerDown={(event) => startChatCarry(event, props.cell, "top")}
+    />
   );
 }

@@ -18,7 +18,7 @@ function Slate(props: { cellGone?: boolean }) {
       <ChatCarry onOpenTab={() => undefined} />
       <div data-stemcells-pane="p1" style={{ width: 300, height: 400 }}>
         {props.cellGone ? null : (
-          <button type="button" onPointerDown={(event) => startChatCarry(event, cell)}>
+          <button type="button" onPointerDown={(event) => startChatCarry(event, cell, "cell")}>
             Cell
           </button>
         )}
@@ -144,7 +144,7 @@ function Workspace() {
       <ChatCarry onOpenTab={(tabId) => updateWorkspace((ws) => activateTab(ws, tabId))} />
       <Strip />
       <div data-stemcells-pane="a.p" style={{ width: 300, height: 300 }}>
-        <button type="button" onPointerDown={(event) => startChatCarry(event, cell)}>
+        <button type="button" onPointerDown={(event) => startChatCarry(event, cell, "cell")}>
           Cell
         </button>
       </div>

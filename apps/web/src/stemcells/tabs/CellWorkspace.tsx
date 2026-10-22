@@ -72,7 +72,7 @@ import { keepEndAcrossWidth } from "./keepEnd";
 import { holdTranscriptsStill } from "./stillTranscripts";
 import { newCellTab, newCellTaken, takeNewCell, type NewCell } from "./newCell";
 import { mountedTabs } from "./pager";
-import { CellPill, PaneButtons } from "./PaneButtons";
+import { CellPill, PaneButtons, PaneGrip } from "./PaneButtons";
 import { PaneCellContext, PaneComposerContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { PagerPage, TabPager } from "./TabPager";
@@ -696,6 +696,8 @@ function PaneSlot(props: {
           />
           {/* With no composer drawn, no composer's line names the Cell: a pill does. */}
           {props.pane.cell && composers === 0 ? <CellPill cell={props.pane.cell} /> : null}
+          {/* A sent chat is carried by its pane's top as by its Cell. */}
+          {props.pane.cell?.draftId === null && target ? <PaneGrip cell={props.pane.cell} /> : null}
           {/* Upstream's thread view sizes itself to the window; a pane sizes it to the pane. */}
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
             {target ? (

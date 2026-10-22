@@ -112,7 +112,7 @@ export function CellComposerLine() {
           data-stemcells-chat-handle=""
           data-away={away || undefined}
           className="flex w-fit"
-          onPointerDown={(event) => startChatCarry(event, cell)}
+          onPointerDown={(event) => startChatCarry(event, cell, "cell")}
         >
           <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />
         </span>

@@ -1,6 +1,6 @@
-/* A chat carried by its Cell (ChatCarry.tsx). */
+/* A chat carried by its Cell or its pane's top (ChatCarry.tsx). */
 
-/* The Cell over the composer is the chat's handle. */
+/* The Cell over the composer, and the grip at the pane's top, are the chat's handles. */
 [data-stemcells-chat-handle] {
   pointer-events: auto;
   cursor: grab;
@@ -9,10 +9,57 @@
   cursor: grabbing;
 }
 
-/* Its place in the grid stays, empty, until the chat lands: nothing in it
-   shows, the buttons a pane under the pointer shows (workspace.css) too. */
+/* Its chat in the hand, a pane stays in its place and recedes: what it
+   shows dims, so the eye goes to where the chat would land, and comes back
+   as the carry ends. Its floating buttons go meanwhile. */
+[data-stemcells-pane] > * {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
 [data-stemcells-pane][data-carried="true"] > * {
-  opacity: 0 !important;
+  opacity: 0.4 !important;
+  transition-duration: var(--sc-motion-flick-duration);
+}
+[data-stemcells-pane][data-carried="true"]
+  :is([data-workspace-titlebar-controls], [data-stemcells-pane-buttons]) {
+  visibility: hidden;
+}
+
+/* The grip: a short bar at the middle of the pane's top, as a border's grip
+   looks (split.css), shown while the pointer is in the pane. Its reach is
+   taller than the bar; a border above the pane reaches over it and wins. */
+[data-stemcells-pane-grip] {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 30;
+  width: calc(var(--sc-split-grip-length) + var(--sc-space-xxl));
+  height: calc(var(--sc-space-md) * 2);
+  translate: -50% 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing),
+    visibility 0s linear var(--sc-motion-fade-duration);
+}
+[data-stemcells-pane-grip]::after {
+  content: "";
+  position: absolute;
+  top: var(--sc-space-sm);
+  left: 50%;
+  width: var(--sc-split-grip-length);
+  height: var(--sc-split-grip-width);
+  translate: -50% 0;
+  border-radius: calc(var(--sc-split-grip-width) / 2);
+  background: var(--sc-grip);
+  transition: background var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-stemcells-pane]:hover > [data-stemcells-pane-grip] {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+[data-stemcells-pane-grip]:is(:hover, [data-carrying="true"])::after {
+  background: var(--sc-grip-active);
 }
 
 /* The card in the hand, over everything in the window. */

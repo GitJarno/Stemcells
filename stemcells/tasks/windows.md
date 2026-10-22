@@ -351,13 +351,17 @@ still drags the window natively.
 
 ### Carry a chat
 
-The handle is the Cell: its mark at the start of the line over the
-composer. A pane has no header, the Cell is the chat's identity, and
-picking up the Cell to carry the chat reads as what it is.
+The handles are the Cell, its mark at the start of the line over the
+composer, and a grip at the middle of the pane's top. A pane has no
+header, the Cell is the chat's identity, and picking up the Cell to carry
+the chat reads as what it is; the grip is where a hand looks for a pane's
+own handle.
 
-1. **Pick up** (4 px). The pane gathers into a card under the hand, the
-   Cell's mark and name, on `lift`. Its place in the grid stays, empty, so
-   a cancel has somewhere to land.
+1. **Pick up** (4 px). A card, the Cell's mark and name, appears under
+   the hand on `flick`. The pane stays in its place and recedes (its
+   contents dim), so nothing grows or shrinks out of it, and a cancel has
+   nothing to undo but the dimming. (Until 2026-10-23 the pane gathered
+   into the card on `lift`, its place left empty: it read as a minimize.)
 2. **In its own window**, today's drop machinery answers: a pane's half
    lights with the wash (`DropWash`, gliding on `travel`); a chip lights and
    opens after `spring-load`; the strip makes room for a new tab (`travel`).
@@ -367,10 +371,11 @@ picking up the Cell to carry the chat reads as what it is.
    `spring-load`.
 4. **Open space**: the card unfolds into a window preview holding one pane
    (`unfold`), then lands like a torn tab.
-5. **Drop**: the card lands into its half, chip, slot or window on `land`. The
-   source grid reflows (`reflow`, instant by design). A tab whose last pane
-   left closes (`leave`); a window whose last tab left closes.
-6. **Cancel**: the card flies back and opens into its place on `land`.
+5. **Drop**: on a half, the card fades from the hand as the chat takes its
+   place; into a chip, slot or window it lands on `land`. The source grid
+   reflows. A tab whose last pane left closes (`leave`); a window whose
+   last tab left closes.
+6. **Cancel**: the card fades from the hand and the pane comes back.
 
 Before the source lets go of a pane, its pending draft write is flushed,
 and the carry is marked so upstream's drop-left-draft cleanup doesn't
@@ -526,7 +531,7 @@ the last tab (never a drop target), ⌘T, its own sidebar and route.
 ### Reduce Motion
 
 What follows the hand still follows it 1:1. Every morph (chip ↔ preview,
-card ↔ pane) becomes a cross-fade (`fade`); every flight becomes a fade
+card ↔ chip) becomes a cross-fade (`fade`); every flight becomes a fade
 out where it was and a fade in where it lands; strips making room jump
 (`cut`). Gather and Put back fade each window out and in, one `beat`
 apart.
