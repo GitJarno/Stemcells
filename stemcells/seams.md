@@ -22,13 +22,13 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/cli/browser.ts` | `sudo` home falls back to `~/.stemcells` | Same, under `sudo` on Linux |
 | `apps/web/src/routes/_chat.tsx` | Renders `CellWorkspace` (our tabs and panes) where it rendered `ThreadRouteView`, with its `<Outlet />` as the fallback | The chat area becomes tabs of panes; the route names the focused pane's chat |
 | `apps/web/src/components/chat/chatWindowInput.ts` | New: `ChatWindowInputContext`, default `true` | Upstream first: "ChatView safe to render twice" (below) |
-| `apps/web/src/components/ChatView.tsx` | Window shortcuts, type-to-focus, paste-to-focus, composer refocus (mount, window focus, snapshot), preview toggle, desktop menu actions and the open-in shortcut act only when the context is `true` | Same |
+| `apps/web/src/components/ChatView.tsx` | Imports everything of ours through `import * as Stemcells from "../stemcells/upstream/seams/ChatView"`, its first line (One import per hot file, below); paste-to-focus, composer refocus (mount, window focus, snapshot), preview toggle and desktop menu actions act only when `Stemcells.useOwnsChatWindowInput()` is `true` | Same. Its window shortcuts, type-to-focus and open-in shortcut are gated by substitutes of `useChatShortcuts` and `OpenInPicker` instead (Substitutes, below) |
 | `apps/web/src/components/chat/useTimelineFollow.ts` | Reads `useOwnsChatWindowInput()`; body-targeted scroll keys move the transcript only when the context is `true` | Same: upstream moved the transcript's follow logic out of `ChatView.tsx` (#22662–#22734) |
 | `apps/web/src/components/chat/ChatComposer.tsx` | The stash shortcut and desktop paste-as-text arm only when the context is `true` | Same |
 | `apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx` | Digit keys answer a question only when the context is `true` | Same |
 | `apps/web/src/components/RightPanelTabs.tsx` | The empty panel's launcher keys and `rightPanel.new` act only when the context is `true` | Same |
 | `apps/web/src/components/preview/PreviewView.tsx` | Preview actions (refresh, zoom, focus URL) act only when the context is `true` | Same |
-| `apps/web/src/components/ChatView.tsx` | Renders `stemcells/media/ChatMediaViewerHost` where it rendered `ExpandedImageDialogHost`, with the timeline it drew (`displayedTimeline.entries`), the thread and its cwd | The media viewer: a picture flies out of its thumbnail and steps through the whole chat, which only the timeline knows (the list mounts just the rows near the screen) |
+| `apps/web/src/components/ChatView.tsx` | Renders `Stemcells.ChatMediaViewerHost` where it rendered `ExpandedImageDialogHost` (dropped from its import line), with the timeline it drew (`displayedTimeline.entries`), the thread and its cwd | The media viewer: a picture flies out of its thumbnail and steps through the whole chat, which only the timeline knows (the list mounts just the rows near the screen) |
 | `apps/web/src/components/chat/ExpandedImageDialog.tsx` | `expandedImagePreviewAtom` is exported | Every thumbnail opens through upstream's `openExpandedImagePreview`; our host reads what it opened |
 | `apps/server/src/server.ts` | Imports `stemcells/layer.ts` and adds its layer to `layerMakeRoutes` | Mounts all of Stemcells' server layer: Settings › Disk's `/api/stemcells/disk` routes, and the theme published on start |
 | `apps/server/src/cli/theme.ts` | Exports `publishThemeFile` and `writeDefaultTheme` | Stemcells publishes its theme and makes it a fresh server's default through the same guarded writes `t3 theme set` uses (`stemcells/upstream/theme.ts`) |
@@ -42,7 +42,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/disk/DiskFoot` and renders it after Usage in `SidebarUtilityMenu` | The space left on the disk sits in the sidebar's foot and opens Settings › Disk |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` (narrow) | Imports `NarrowColumnButton` from `stemcells/rail/LeftColumn` and renders it after `DiskFoot` | The left column (below): the wide sidebar's way back to the rail, where the rail has its way out |
 | `apps/web/src/components/AppSidebarLayout.tsx` | Renders `<LeftColumn wide={<ThreadSidebar />} />` where it rendered `<ThreadSidebar />` | The left column's rail (below): our rail or upstream's wide list in the sidebar's slot |
-| `apps/web/src/components/ChatView.tsx` | Imports `stemcells/composer/CellComposerLine` and renders it right before `ComposerSurface.Shell` | The line over a Cell's composer (its name, project, where it runs and one-liner; in a pane it does the chat header's jobs) stands on the ground just above the composer's box, in the overlay whose height the transcript keeps clear; not an attached banner, which gives the plate a second surface, so the composer stays one box, as T3's is. It draws nothing outside a Cell's pane (`composerLine.contract.test.ts` pins its place) |
+| `apps/web/src/components/ChatView.tsx` | Renders `Stemcells.CellComposerLine` right before `ComposerSurface.Shell` | The line over a Cell's composer (its name, project, where it runs and one-liner; in a pane it does the chat header's jobs) stands on the ground just above the composer's box, in the overlay whose height the transcript keeps clear; not an attached banner, which gives the plate a second surface, so the composer stays one box, as T3's is. It draws nothing outside a Cell's pane (`composerLine.contract.test.ts` pins its place) |
 | `apps/web/src/components/chat/ChatComposer.tsx` | Imports `stemcells/glow/CellComposerGlass` and renders it first inside `ComposerSurface.Main`, given `selectedProvider` | The composer's light: in a pane of ours every composer keeps upstream's plate, lets a vertical wheel through to the transcript, and in a grid the focused pane's plate steps up upstream's outline; a Cell's also fills with the provider's colour while it works, clears when it's your turn, and holds the provider's faded mark. A layer behind the composer's words that draws nothing outside our panes (`glass.contract.test.ts` pins where it sits and what it reads there) |
 | `apps/web/src/components/settings/ProviderModelsSection.tsx` | Imports `withConciseName`; Settings › Models groups `models.map(withConciseName)` | Concise model names (below), for Settings › Models' rows and their filter. A seam, not a substitute: the grouping happens inside this module, and wrapping the component's `models` would also rename the custom-model editor's "Start from" list |
 | `apps/web/src/components/chat/MessagesTimeline.tsx`, `apps/web/src/components/chat/timelineRowContext.ts`, `apps/web/src/components/chat/TimelineWorkGroupRows.tsx` | Import `stemcells/verbs/WorkWord`; the rows' shared state (`timelineRowContext.ts`) carries `turnVerbs: turnVerbsOf(timelineEntries)`; the working row (`TimelineWorkGroupRows.tsx`) says `CellWorkingWord` where it said "Working", and the turn fold renders its label through `CellWorkedLabel` | The work verbs: "Noodling for 12s" while a Cell works, "Noodled for 3m 12s" once done. Upstream keeps its row, timer and layout, and screen readers its words (`workVerbs.contract.test.ts` pins what the verbs read). Upstream split the timeline into these files (#22662–#22734); there is no cooler place for these words |
@@ -133,6 +133,20 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/stemcells/windowsPreload.ts` | New: exposes `window.stemcellsWindows` | Same |
 | `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
 
+### One import per hot file
+
+Upstream edits the import block of its hottest files every day, and an
+import of ours in the middle of it conflicts whenever upstream changes the
+line next to it: three of the four code conflicts in the 2026-10-21 sync
+were our import lines. Upstream rarely edits a file's first line (once in
+90 days for `ChatView.tsx`). So a hot file reads everything of ours through
+one import there, from its own module in
+`apps/web/src/stemcells/upstream/seams/`:
+`import * as Stemcells from "../stemcells/upstream/seams/ChatView";`, each
+use reading `Stemcells.…`, which also marks every seam in the file.
+`seams/oneImport.contract.test.ts` fails on a second import of ours in a
+file it lists.
+
 ### Substitutes
 
 A seam that only changes which module upstream's code imports, or wraps
@@ -175,9 +189,13 @@ and `document` for keys, paste and focus. With two chats mounted, a key acts
 in every chat (`stopPropagation` doesn't stop other listeners on the same
 target), and each composer grabs focus on mount. The context lets a host give
 window-level input to one chat; with the default `true`, upstream behaves as
-before. Not yet offered (no GitHub access); until then these six files are
-our seam, and `ChatView.tsx` and `ChatComposer.tsx` are among upstream's
-hottest files, so expect conflicts there.
+before. Carried, upstream not asked (the person, 2026-10-21): until then these
+files are our seam, and `ChatView.tsx` and `ChatComposer.tsx` are among
+upstream's hottest files, so expect conflicts there. A gate that sits on a
+module's surface is a substitute instead: `useChatShortcuts` (the window
+shortcuts and type-to-focus) and `OpenInPicker` (the open-in shortcut, in the
+chat's details and the workbench's file) read the context themselves. The
+gates left in `ChatView.tsx` are inside its own effects.
 
 A second single-chat assumption, handled without a seam: `ChatView` takes its
 composer handle from `ComposerHandleContext`, which the command palette

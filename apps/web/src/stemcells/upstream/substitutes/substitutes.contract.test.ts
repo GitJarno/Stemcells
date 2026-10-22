@@ -38,6 +38,8 @@ import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSi
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
 import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
+import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
+import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
@@ -69,6 +71,8 @@ import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 import * as OurUsageProviders from "./usageProviders";
 import * as OurVisibleAnimation from "./visibleAnimation";
+import * as OurUseChatShortcuts from "./useChatShortcuts";
+import * as OurOpenInPicker from "./OpenInPicker";
 
 /**
  * Contract: every build of the web app hands upstream's code our substitute
@@ -511,6 +515,27 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/usage/UsageLimits.tsx": [
         "./usageProviders",
         ["PROVIDER_PRESENTATION"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/useChatShortcuts.ts": {
+    upstream: UpstreamUseChatShortcuts,
+    substitute: OurUseChatShortcuts satisfies typeof UpstreamUseChatShortcuts,
+    importers: {
+      // Its window shortcuts and type-to-focus, gated by the window's input.
+      "apps/web/src/components/ChatView.tsx": ["./chat/useChatShortcuts", ["useChatShortcuts"]],
+    },
+  },
+  "apps/web/src/components/chat/OpenInPicker.tsx": {
+    upstream: UpstreamOpenInPicker,
+    substitute: OurOpenInPicker satisfies RendersOrNothing<typeof UpstreamOpenInPicker>,
+    importers: {
+      // The chat's details panel, where ChatView hands the open-in shortcut.
+      "apps/web/src/components/chat/ThreadDetailsPanel.tsx": ["./OpenInPicker", ["OpenInPicker"]],
+      // A file the workbench shows, which has the shortcut while it's open.
+      "apps/web/src/components/files/FilePreviewPanel.tsx": [
+        "~/components/chat/OpenInPicker",
+        ["OpenInPicker"],
       ],
     },
   },

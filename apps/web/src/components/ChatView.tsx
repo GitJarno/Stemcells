@@ -1,3 +1,4 @@
+import * as Stemcells from "../stemcells/upstream/seams/ChatView";
 import { formatFilePathForClipboard } from "@t3tools/client-runtime/media-actions";
 import { resolvePathLinkTarget } from "@t3tools/shared/fileLinks";
 import { ThreadFind, ThreadFindCanvas, type ThreadFindControls } from "./chat/ThreadFindProvider";
@@ -41,7 +42,6 @@ import { feedbackBannerItem } from "./chat/ComposerFeedback";
 import { useUsageLimitsPanel } from "./chat/useUsageLimitsPanel";
 import { useWorktreeSetup } from "./chat/useWorktreeSetup";
 import { useChatShortcuts, type ChatShortcutHandler } from "./chat/useChatShortcuts";
-import { useOwnsChatWindowInput } from "./chat/chatWindowInput";
 import {
   pasteTextToFocusComposer,
   shouldRedirectInputToComposer,
@@ -334,8 +334,6 @@ import { environmentShell, useEnvironmentShellHasSnapshot } from "../state/shell
 import { ChatComposer, type ChatComposerHandle } from "./chat/ChatComposer";
 import { DraftHeroHeadline } from "./chat/DraftHeroHeadline";
 import { openExpandedImagePreview } from "./chat/ExpandedImageDialog";
-import { ChatMediaViewerHost } from "../stemcells/media/ChatMediaViewerHost";
-import { CellComposerLine } from "../stemcells/composer/CellComposerLine";
 import {
   BranchRestoreConfirmHost,
   DeviceSetupDialogHost,
@@ -563,7 +561,7 @@ export default function ChatView(props: ChatViewProps) {
     reserveTitleBarControlInset = true,
     forceExpandedMobileComposer = false,
   } = props;
-  const ownsWindowInput = useOwnsChatWindowInput();
+  const ownsWindowInput = Stemcells.useOwnsChatWindowInput();
   const canOperateThread = useEnvironmentScope(environmentId, AuthOrchestrationOperateScope);
   const canOperateTerminal = useEnvironmentScope(environmentId, AuthTerminalOperateScope);
   const hasTerminalWriteAccess = () =>
@@ -4215,7 +4213,7 @@ export default function ChatView(props: ChatViewProps) {
       if (!event.repeat) composerRef.current?.openControl(command);
     }) satisfies ChatShortcutHandler;
   useChatShortcuts({
-    enabled: activeThreadId !== null && ownsWindowInput,
+    enabled: activeThreadId !== null,
     keybindings,
     scriptKeybindings,
     getShortcutContext: getShortcutContextStable,
@@ -6808,7 +6806,7 @@ export default function ChatView(props: ChatViewProps) {
                         : undefined
                     }
                   >
-                    <CellComposerLine />
+                    <Stemcells.CellComposerLine />
                     <ComposerSurface.Shell
                       contextStrip={showComposerContextStrip || showComposerModelStrip}
                     >
@@ -7131,7 +7129,6 @@ export default function ChatView(props: ChatViewProps) {
               availableEditors={availableEditors}
               showOpenInPicker={showOpenInPicker}
               openInShortcutEnabled={
-                ownsWindowInput &&
                 !(
                   rightPanelOpen &&
                   renderedRightPanelSurface?.kind === "file" &&
@@ -7258,7 +7255,7 @@ export default function ChatView(props: ChatViewProps) {
       <RevertConfirmHost threadKey={routeThreadKey} onConfirm={onConfirmRevertStable} />
       <LinkPullRequestDialogHost />
       <ThreadVisitWatermark threadRef={routeThreadRef} />
-      <ChatMediaViewerHost
+      <Stemcells.ChatMediaViewerHost
         threadKey={routeThreadKey}
         threadRef={routeThreadRef}
         entries={displayedTimeline.entries}

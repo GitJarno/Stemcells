@@ -73,6 +73,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "packages/shared/src/themePalettes.ts": "themePalettes.ts",
   // Each provider's colour on the usage page is its own.
   "apps/web/src/components/usage/usageProviders.ts": "usageProviders.ts",
+  // ChatView safe to render twice: a chat's window shortcuts and its open-in
+  // shortcut act only in the chat that owns the window's input.
+  "apps/web/src/components/chat/useChatShortcuts.ts": "useChatShortcuts.ts",
+  "apps/web/src/components/chat/OpenInPicker.tsx": "OpenInPicker.tsx",
 };
 
 /**

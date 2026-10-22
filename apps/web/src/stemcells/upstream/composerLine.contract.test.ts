@@ -24,17 +24,17 @@ import promptEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
 
 describe("the composer line's contracts with upstream", () => {
   it("stands right before the composer's plate, outside its glass", () => {
-    expect(chatView).toMatch(/<CellComposerLine \/>\s*<ComposerSurface\.Shell\b/);
+    expect(chatView).toMatch(/<Stemcells\.CellComposerLine \/>\s*<ComposerSurface\.Shell\b/);
     // Not one of upstream's attached banners: an attached banner gives the
     // plate a second surface, and the three read as overlapping layers.
-    expect(chatComposer).not.toContain("<CellComposerLine");
+    expect(chatComposer).not.toContain("CellComposerLine");
   });
 
   it("the transcript keeps the height of the overlay the line is in clear at its foot", () => {
     // ChatView measures the overlay holding the composer, line and all, and
     // reserves that height under the transcript's last row.
     expect(chatView).toMatch(
-      /ref=\{setComposerOverlayElement\}[\s\S]*?data-chat-composer-overlay="true"[\s\S]*?<CellComposerLine \/>/,
+      /ref=\{setComposerOverlayElement\}[\s\S]*?data-chat-composer-overlay="true"[\s\S]*?<Stemcells\.CellComposerLine \/>/,
     );
     expect(chatView).toContain(
       "publishComposerOverlayHeightStable(composerOverlayElement.getBoundingClientRect().height);",
@@ -48,7 +48,7 @@ describe("the composer line's contracts with upstream", () => {
     // the ::before is free only while upstream draws nothing there.
     const block = chatView.slice(chatView.indexOf("ref={draftHeroComposerAnchorRef}"));
     expect(block).toMatch(
-      /^ref=\{draftHeroComposerAnchorRef\}\s*className="relative z-10"[\s\S]{0,400}?>\s*<CellComposerLine \/>\s*<ComposerSurface\.Shell\b/,
+      /^ref=\{draftHeroComposerAnchorRef\}\s*className="relative z-10"[\s\S]{0,400}?>\s*<Stemcells\.CellComposerLine \/>\s*<ComposerSurface\.Shell\b/,
     );
   });
 

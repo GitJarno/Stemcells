@@ -1,0 +1,48 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads upstream's hot files on disk.
+/**
+ * Contract: each of upstream's hot files we edit reads everything of ours
+ * through one import, on its first line, from its own module in this
+ * folder: `import * as Stemcells from "…/stemcells/upstream/seams/<File>"`.
+ * Upstream edits its import blocks all day, and our import lines there were
+ * where the 2026-10-21 sync conflicted; it rarely edits a file's first line.
+ * If this fails, a change added a second import of ours to a hot file: add
+ * the name to the file's module here instead (`stemcells/seams.md`, "One
+ * import per hot file").
+ */
+import * as NodeFS from "node:fs";
+import * as NodePath from "node:path";
+import * as NodeURL from "node:url";
+import { describe, expect, it } from "vite-plus/test";
+
+const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
+const repoRoot = NodePath.resolve(here, "../../../../../..");
+
+/** Each hot file, and the module of ours it imports. */
+const HOT_FILES: Readonly<Record<string, string>> = {
+  "apps/web/src/components/ChatView.tsx": "../stemcells/upstream/seams/ChatView",
+};
+
+/** An import of ours: our folders, the repository's `stemcells/`, or our files in upstream's folders. */
+const OURS = /\/stemcells\/|\/chatWindowInput["']/;
+
+function importsOf(
+  source: string,
+): ReadonlyArray<{ readonly line: number; readonly text: string }> {
+  return [
+    ...source.matchAll(/^import\b[\s\S]*?\bfrom\s*["'][^"']+["'];?$|^import\s*["'][^"']+["'];?$/gm),
+  ].map((match) => ({ line: source.slice(0, match.index).split("\n").length, text: match[0] }));
+}
+
+describe("one import per hot file", () => {
+  it.each(Object.entries(HOT_FILES))(
+    "%s reads ours through %s, on its first line",
+    (file, module) => {
+      const source = NodeFS.readFileSync(NodePath.join(repoRoot, file), "utf8");
+      const ours = importsOf(source).filter(({ text }) => OURS.test(text));
+      expect(ours).toEqual([{ line: 1, text: `import * as Stemcells from "${module}";` }]);
+      expect(
+        NodeFS.existsSync(NodePath.resolve(repoRoot, NodePath.dirname(file), `${module}.ts`)),
+      ).toBe(true);
+    },
+  );
+});

@@ -41,6 +41,11 @@ case, go back to the three costs and choose what keeps them lowest.
   constants. Avoid the files upstream changes every day. `drift` shows each
   seam file's upstream commits over the last 90 days; a hot file is a bad
   place for a seam.
+- **In a hot file, all of ours comes through one import, on its first
+  line** (`import * as Stemcells from …`). Upstream edits its import
+  blocks every day and rarely a file's first line; our import lines in the
+  middle of the block were most of the 2026-10-21 sync's code conflicts
+  (`seams.md`, One import per hot file).
 - **A seam that only swaps a module or wraps an export is a substitute
   instead.** The web's and the phone's builds hand upstream's code our
   module where it imports one of upstream's, so the importing file stays
