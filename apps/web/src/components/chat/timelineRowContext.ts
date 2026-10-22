@@ -19,7 +19,6 @@ import { type AssistantCitationTarget } from "./AssistantCitationSource";
 import { type MessagesTimelineRow, type WorkGroupScrollAnchor } from "./MessagesTimeline.logic";
 import { type TimestampFormat } from "@t3tools/contracts/settings";
 import { type HandoffTimelineRun } from "./V2LifecycleRow";
-import { type TurnVerbs } from "../../stemcells/verbs/WorkWord";
 
 export interface TimelineRowSharedState {
   citationRequest: AssistantCitationTarget | null;
@@ -65,7 +64,6 @@ export interface TimelineRowSharedState {
   onWorktreeSetupWorkLocally: (() => void) | null;
   onOpenWorktreeSetupTerminal: ((terminalId: string) => void) | null;
   workGroupViewState: WorkGroupViewState;
-  turnVerbs: TurnVerbs;
 }
 
 export interface TimelineRowActivityState {

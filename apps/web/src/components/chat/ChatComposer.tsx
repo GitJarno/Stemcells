@@ -1,6 +1,5 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import { useComposerTypingGuard } from "./useComposerTypingGuard";
-import { useOwnsChatWindowInput } from "./chatWindowInput";
-import { CellComposerGlass } from "../../stemcells/glow/CellComposerGlass";
 import { insertAttachmentReferencesForDraft } from "./composerAttachmentReferences";
 import { DESKTOP_PASTE_AS_TEXT_EVENT } from "../../lib/desktopPasteAsText";
 import { runtimeModeConfig, runtimeModeOptions as runtimeModes } from "./runtimeModeConfig";
@@ -1566,7 +1565,7 @@ const NO_PROVIDER_SKILLS: ServerProvider["skills"] = [];
 const NO_PROVIDER_SLASH_COMMANDS: ServerProvider["slashCommands"] = [];
 
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
-  const ownsWindowInput = useOwnsChatWindowInput();
+  const ownsWindowInput = Stemcells.useOwnsChatWindowInput();
   const {
     composerDraftTarget,
     environmentId,
@@ -5991,7 +5990,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
           }
           className={composerProviderState.composerFrameClassName}
         >
-          <CellComposerGlass provider={selectedProvider} />
+          <Stemcells.CellComposerGlass provider={selectedProvider} />
           <div
             ref={composerSurfaceRef}
             data-chat-composer-surface="true"

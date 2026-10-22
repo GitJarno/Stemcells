@@ -10,7 +10,7 @@ import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
 import * as UpstreamThemePalettes from "@t3tools/shared/themePalettes";
 import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } from "vite-plus";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
@@ -41,6 +41,7 @@ import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
+import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
@@ -75,6 +76,11 @@ import * as OurUsageProviders from "./usageProviders";
 import * as OurVisibleAnimation from "./visibleAnimation";
 import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
+import * as OurMessagesTimeline from "./MessagesTimeline";
+
+// Upstream's timeline loads the diff worker, which only a browser can start;
+// these tests read its module's exports, never draw it.
+vi.mock("@pierre/diffs/worker/worker.js?worker", () => ({ default: class {} }));
 
 /**
  * Contract: every build of the web app hands upstream's code our substitute
@@ -561,6 +567,14 @@ const CASES: Readonly<Record<string, Case>> = {
         "~/components/chat/OpenInPicker",
         ["OpenInPicker"],
       ],
+    },
+  },
+  "apps/web/src/components/chat/MessagesTimeline.tsx": {
+    upstream: UpstreamMessagesTimeline,
+    substitute: OurMessagesTimeline satisfies RendersOrNothing<typeof UpstreamMessagesTimeline>,
+    importers: {
+      // The chat's timeline, whose rows read the work verbs from our context.
+      "apps/web/src/components/ChatView.tsx": ["./chat/MessagesTimeline", ["MessagesTimeline"]],
     },
   },
 };

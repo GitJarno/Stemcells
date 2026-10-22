@@ -27,7 +27,7 @@ function body(source: string, name: string): string {
 describe("the composer light's contracts with upstream", () => {
   it("is the first thing inside the composer's main surface, told the composer's provider", () => {
     expect(chatComposer).toMatch(
-      /<ComposerSurface\.Main\b[^>]*>\s*<CellComposerGlass provider=\{selectedProvider\} \/>\s*<div\s+ref=\{composerSurfaceRef\}/,
+      /<ComposerSurface\.Main\b[^>]*>\s*<Stemcells\.CellComposerGlass provider=\{selectedProvider\} \/>\s*<div\s+ref=\{composerSurfaceRef\}/,
     );
   });
 

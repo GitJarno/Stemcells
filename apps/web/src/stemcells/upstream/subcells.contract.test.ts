@@ -19,7 +19,8 @@ import relationships from "../../components/chat/ThreadRelationshipsControl.tsx?
 import inspector from "../../components/chat/V2ItemInspector.tsx?raw";
 import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
 import workflowOpening from "../../components/chat/WorkflowOpeningBlock.tsx?raw";
-import { inSubcellWords, subcellCount } from "../../../../../stemcells/words/subcells.ts";
+import { inSubcellWords, SUBCELL, subcellCount } from "../../../../../stemcells/words/subcells.ts";
+import * as SeamsChat from "./seams/chat";
 import { formatSubagentDisplayTitle } from "./substitutes/subagentDisplay";
 
 /** The source of the top-level function or const named `name`, up to the next top-level declaration. */
@@ -32,16 +33,21 @@ function body(source: string, name: string): string {
 }
 
 describe("Subcells in upstream's views", () => {
-  it("the hot files take their Subcell words from our one module, imported once each", () => {
-    const from = /^import \{[^}]*\} from "(?:\.\.\/)+stemcells\/words\/subcells";$/gm;
+  it("the hot files take their Subcell words from our one module, through their one import", () => {
+    // `seams/oneImport.contract.test.ts` holds each to one import of ours.
+    expect(SeamsChat.SUBCELL).toBe(SUBCELL);
+    expect(SeamsChat.subcellCount).toBe(subcellCount);
     for (const source of [v2EventRow, workEntryRow, activityBanners]) {
-      expect(source.match(from)).toHaveLength(1);
+      expect(source).toMatch(
+        /^import \* as Stemcells from "\.\.\/\.\.\/stemcells\/upstream\/seams\/chat";$/m,
+      );
+      expect(source).not.toMatch(/words\/subcells/);
     }
   });
 
   it("the card counts Subcells and hands each header avatar its Subcell, with its status", () => {
     const card = body(v2EventRow, "V2SubagentGroup");
-    expect(card).toContain("const label = subcellCount(members.length);");
+    expect(card).toContain("const label = Stemcells.subcellCount(members.length);");
     expect(card).toMatch(
       /\.map\(\(\{ item, status \}\) => \(\s*<EnvironmentSubagentAvatar[^>]*subcell=\{\{ name: item\.childThreadId \?\? item\.subagentId, status \}\}/,
     );
@@ -49,11 +55,11 @@ describe("Subcells in upstream's views", () => {
 
   it("a notification row's button, and a spawn's screen-reader label, open a Subcell", () => {
     expect(workEntryRow).toMatch(
-      /aria-label=\{SUBCELL\.open\}[\s\S]{0,240}\{SUBCELL\.open\}\s*<\/InlineButton>/,
+      /aria-label=\{Stemcells\.SUBCELL\.open\}[\s\S]{0,240}\{Stemcells\.SUBCELL\.open\}\s*<\/InlineButton>/,
     );
     expect(workEntryRow).not.toMatch(/Open subagent/);
     expect(activityBanners).toContain(
-      'aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${SUBCELL.one} ${item.label}`}',
+      'aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${Stemcells.SUBCELL.one} ${item.label}`}',
     );
   });
 

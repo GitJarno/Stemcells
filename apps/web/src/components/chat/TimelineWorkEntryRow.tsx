@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import { WorkLogDetails, WorkLogRow } from "./WorkLog";
 import {
   getQuestionAnswerPreview,
@@ -46,8 +47,6 @@ import { cn } from "~/lib/utils";
 import { formatUpcomingTimestamp } from "../../timestampFormat";
 import { FetchedToolOutput, V2ItemInspector } from "./V2ItemInspector";
 import { SubagentNotificationLink } from "./V2LifecycleRow";
-import { ToolRowLabel } from "../../stemcells/transcript/ToolRowLabel";
-import { SUBCELL } from "../../../../../stemcells/words/subcells";
 import {
   TimelineRowCtx,
   TimelineRowActivityCtx,
@@ -430,7 +429,7 @@ function WorkEntryLogRow(props: WorkEntryRowProps) {
                   linked
                 />
               ) : (
-                <ToolRowLabel label={previewText} command={workEntry.command} />
+                <Stemcells.ToolRowLabel label={previewText} command={workEntry.command} />
               )}
             </span>
             {answerPreview ? (
@@ -468,14 +467,14 @@ function WorkEntryLogRow(props: WorkEntryRowProps) {
           ) : null}
           {notifiedSubagentThreadId ? (
             <InlineButton
-              aria-label={SUBCELL.open}
+              aria-label={Stemcells.SUBCELL.open}
               onClick={(event) => {
                 event.stopPropagation();
                 ctx.onOpenThread(notifiedSubagentThreadId);
               }}
               onKeyDown={stopRowToggle}
             >
-              {SUBCELL.open}
+              {Stemcells.SUBCELL.open}
             </InlineButton>
           ) : null}
           {showFailedIndicator &&

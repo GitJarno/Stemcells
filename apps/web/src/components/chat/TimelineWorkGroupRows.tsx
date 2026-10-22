@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import { WorkLogButton, WorkLogList, WorkLogRow } from "./WorkLog";
 import type { WorktreeSetupSnapshot } from "@t3tools/contracts";
 import {
@@ -37,7 +38,6 @@ import {
   type TimelineRow,
 } from "./timelineRowContext";
 import { TimelineRowTimestamp, ActivityShimmerOverlay } from "./TimelineRowParts";
-import { CellWorkingWord } from "../../stemcells/verbs/WorkWord";
 import {
   failedToolIconClassName,
   toolIconAcceptsTint,
@@ -287,7 +287,6 @@ const workEntryKey = (entry: TimelineWorkEntry) => entry.id;
 export function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "working" }> }) {
   const { isCompacting, isPreparingWorktree, backgroundWorktreeSetup } =
     use(TimelineRowActivityCtx);
-  const { turnVerbs } = use(TimelineRowCtx);
   const shimmer = isPreparingWorktree || isCompacting;
   const label = isPreparingWorktree ? (
     "Setting up worktree…"
@@ -295,11 +294,11 @@ export function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: 
     <CompactingLabel />
   ) : row.createdAt ? (
     <>
-      <CellWorkingWord verbs={turnVerbs} /> for <WorkingTimer createdAt={row.createdAt} />
+      <Stemcells.CellWorkingWord /> for <WorkingTimer createdAt={row.createdAt} />
     </>
   ) : (
     <>
-      <CellWorkingWord verbs={turnVerbs} />
+      <Stemcells.CellWorkingWord />
       ...
     </>
   );

@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import { WorkLogBlock } from "./WorkLog";
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { useAtomValue } from "@effect/atom-react";
@@ -20,7 +21,6 @@ import {
 } from "./V2LifecycleRow";
 import { SecretRequestCard } from "./SecretRequestCard";
 import { TimelineRowCtx, type TimelineRow } from "./timelineRowContext";
-import { subcellCount } from "../../../../../stemcells/words/subcells";
 import { v2EventPresentation, subagentGroupTiming } from "./TimelineV2EventRow.logic";
 
 export function V2EventTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "event" }> }) {
@@ -239,7 +239,7 @@ const V2SubagentGroup = memo(function V2SubagentGroup({
     };
   });
   const summary = subagentGroupSummary(agents);
-  const label = subcellCount(members.length);
+  const label = Stemcells.subcellCount(members.length);
   const statusSummary = summarizeSubagentStatuses(agents.map(({ status }) => status));
   const toggleExpanded = (open: boolean) => {
     ctx.onToggleWorkEntry(row.id, expanded);

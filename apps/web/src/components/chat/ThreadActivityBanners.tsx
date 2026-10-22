@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import type {
   OrchestrationV2PendingBackgroundTask,
   OrchestrationV2ProviderGoal,
@@ -15,7 +16,6 @@ import { cn } from "~/lib/utils";
 import { Button, InlineButton } from "../ui/button";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import type { ComposerBannerStackItem } from "./ComposerBannerStack";
-import { SUBCELL } from "../../../../../stemcells/words/subcells";
 
 /** Subagents waiting on the user, unless the parent is itself waiting on them. */
 export function childInputBannerItem(input: {
@@ -135,7 +135,7 @@ export function backgroundWorkBannerItem(input: {
                   <span className="whitespace-nowrap">
                     <InlineButton
                       tone="muted"
-                      aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${SUBCELL.one} ${item.label}`}
+                      aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${Stemcells.SUBCELL.one} ${item.label}`}
                       onClick={() => onOpenThread(childThreadId)}
                     >
                       {presentation.items.length === 1 ? "Show" : item.label}

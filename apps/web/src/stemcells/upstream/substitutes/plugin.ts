@@ -79,6 +79,9 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/OpenInPicker.tsx": "OpenInPicker.tsx",
   // Windows: one window notifies of a chat's turns, the focused one or else the lead.
   "apps/web/src/components/ThreadNotificationCoordinator.tsx": "ThreadNotificationCoordinator.tsx",
+  // The work verbs: the timeline hands its rows the chat's verbs in our
+  // context, read off the entries it draws.
+  "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
 };
 
 /**
