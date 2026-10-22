@@ -457,7 +457,10 @@ const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
  * desktop app's (tsdown), and the phone's WebView scripts (Vite). Tests
  * never run it: the web's plugin leaves it out under Vitest, and the other
  * apps' tests don't build. `mustRename: false` is for a small build that may
- * bundle nothing upstream names the app in (a WebView script).
+ * bundle nothing upstream names the app in (a WebView script). A build that
+ * reads none of the code the transform covers (upstream's desktop test packs
+ * a fixture of its own with the app's config) has nothing to rename, and
+ * isn't held to it.
  */
 export function upstreamNamePlugin(
   options: { readonly root?: string; readonly mustRename?: boolean } = {},
@@ -466,6 +469,7 @@ export function upstreamNamePlugin(
   // Counted over the plugin's life, not per build: a watch rebuild
   // transforms only what changed.
   let renamed = 0;
+  let covered = 0;
   return {
     name: "stemcells:upstream-name",
     enforce: "pre" as const,
@@ -475,6 +479,7 @@ export function upstreamNamePlugin(
       const [path = id, query = ""] = id.split("?");
       if (/(?:^|&)(?:raw|url|inline)(?:[&=]|$)/.test(query) || !SCRIPT.test(path)) return null;
       const file = NodePath.relative(root, path).split(NodePath.sep).join("/");
+      if (isRenamedIn(file)) covered += 1;
       const result = renameUpstreamName(file, code);
       if (result === null) return null;
       if (result.unkept.length > 0) {
@@ -496,7 +501,7 @@ export function upstreamNamePlugin(
       return result === null ? html : result.code;
     },
     generateBundle(this: BuildContext, _options: unknown, bundle: Record<string, OutputFile>) {
-      if (renamed === 0 && options.mustRename !== false) {
+      if (renamed === 0 && covered > 0 && options.mustRename !== false) {
         this.error(
           `the name transform renamed nothing: upstream's code no longer says "${UPSTREAM_NAME}" where it did, or the transform no longer sees it (stemcells/brand/nameTransform.ts)`,
         );

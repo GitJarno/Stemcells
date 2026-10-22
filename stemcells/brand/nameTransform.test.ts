@@ -232,7 +232,13 @@ describe("the build plugin", () => {
 
   it("fails a build that renamed nothing, or whose output says the name unkept", () => {
     const idle = pluginHooks();
+    idle.transform('const a = "Run it.";', "apps/server/src/example.ts");
     expect(() => idle.generateBundle({})).toThrow(/renamed nothing/);
+    // Upstream's desktop test packs a fixture of its own with the app's
+    // config: a build that reads none of the code it covers has nothing to rename.
+    const fixture = pluginHooks();
+    fixture.transform('export const shared = { value: 42 };', "../fixture/src/shared.ts");
+    expect(() => fixture.generateBundle({})).not.toThrow();
     const hooks = pluginHooks();
     hooks.transform('const a = "Run T3 Code.";', "apps/server/src/example.ts");
     expect(() =>
