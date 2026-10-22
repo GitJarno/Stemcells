@@ -37,6 +37,7 @@ import { cellNameOf } from "../cell/name";
 import type { Toss } from "../cell/toss";
 import { CellMark } from "../tabs/CellMark";
 import { ASKI_TAB_ID } from "../tabs/askiTab";
+import { glidePanes } from "../tabs/glide";
 import type { CellRef } from "../tabs/layout";
 import { SpringTab } from "../tabs/springTab";
 import { newIds, readWorkspace, updateWorkspace } from "../tabs/store";
@@ -526,13 +527,16 @@ class WindowCarrier implements Carrier {
     // Out before the move: a window whose last chat this was closes with it.
     this.visit(now, null);
     void (async () => {
+      // The chats left behind, or rearranged, glide to their places (`glide.ts`).
       if (landing.kind === "chip" || landing.kind === "elsewhere") {
-        const moved = await carryHere(now.held.paneId, () => ({
-          kind: "tab",
-          tabId: landing.tabId,
-          column: randomUUID(),
-          rowWidth: landing.kind === "elsewhere" ? landing.rowWidth : tabRowWidth(landing.tabId),
-        }));
+        const moved = await glidePanes(() =>
+          carryHere(now.held.paneId, () => ({
+            kind: "tab",
+            tabId: landing.tabId,
+            column: randomUUID(),
+            rowWidth: landing.kind === "elsewhere" ? landing.rowWidth : tabRowWidth(landing.tabId),
+          })),
+        );
         if (!moved) return this.home(now);
         // A browser's page hears no move: its address follows the stage itself.
         const stage = readWorkspace().activeTabId;
@@ -546,25 +550,29 @@ class WindowCarrier implements Carrier {
       }
       if (landing.kind === "pane") {
         const { anchor, side } = landing.pane;
-        await carryHere(now.held.paneId, () => ({
-          kind: "pane",
-          anchor,
-          side,
-          column: randomUUID(),
-          rowWidth: rowWidthOf(anchor),
-        }));
-        // The chat shows in its place, new or as it was, as the hand lets go.
-        setCarried(null);
-        await twoFrames();
+        await glidePanes(async () => {
+          const moved = await carryHere(now.held.paneId, () => ({
+            kind: "pane",
+            anchor,
+            side,
+            column: randomUUID(),
+            rowWidth: rowWidthOf(anchor),
+          }));
+          // The chat shows in its place, new or as it was, in the glide's new picture.
+          setCarried(null);
+          return moved;
+        });
         return this.goHome();
       }
       const { newTab } = now;
-      const moved = await carryHere(now.held.paneId, (here) => ({
-        kind: "strip",
-        window: here,
-        index: readWorkspace().tabs.length,
-        ids: newTab,
-      }));
+      const moved = await glidePanes(() =>
+        carryHere(now.held.paneId, (here) => ({
+          kind: "strip",
+          window: here,
+          index: readWorkspace().tabs.length,
+          ids: newTab,
+        })),
+      );
       await twoFrames();
       const chip = moved ? chipElement(newTab.tab) : null;
       if (!chip) {

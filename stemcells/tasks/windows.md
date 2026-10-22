@@ -375,9 +375,10 @@ own handle.
    (`unfold`), then lands like a torn tab.
 5. **Drop**: on a half, the card fades from the hand as the chat takes its
    place, or the Cell goes home to its line there on `land`; into a chip,
-   slot or window the card lands on `land`, the Cell going in after it. The source grid
-   reflows. A tab whose last pane left closes (`leave`); a window whose
-   last tab left closes.
+   slot or window the card lands on `land`, the Cell going in after it.
+   The panes on stage glide to their new places on `land`
+   (`tabs/glide.ts`). A tab whose last pane left closes (`leave`); a
+   window whose last tab left closes.
 6. **Cancel**: the card fades from the hand, or the Cell goes home, and
    the pane comes back.
 

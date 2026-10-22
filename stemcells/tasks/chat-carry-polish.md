@@ -21,8 +21,22 @@ cheap to draw, and it just works.
       from the hand (the toss's held pose), not a card; let go in its own
       chat it is thrown or set down, on a place the chat goes there and
       the Cell goes home.
-- [ ] **The chats glide.** A move inside the window morphs each pane from
+- [x] **The chats glide.** A move inside the window morphs each pane from
       its old place to its new one (a view transition: snapshots on the
       compositor, one layout).
 
 ## Review
+
+Five pull requests: #228 (toss bounded), #229 (white wash), #235 (no
+minimize, top grip), #236 (the Cell in the hand), and the glide.
+
+Seen in the never-shown lab with three seeded chats. A Cell thrown hard
+at the pane's edge stays inside it: the box's right edge reaches at most
+4 px short of the pane's edge. Carrying by the Cell and by the grip, onto
+a half and into a chip, moves the chat; the Cell flies home in about
+400 ms. Frames during a carry: median 8.3 ms.
+
+A move into another column stalls the page while the moved chat remounts
+there (upstream's chat view): 283 and 225 ms under Reduce Motion, 250, 75
+and 67 ms with the glide, so the glide adds none. Keeping each pane's host alive across moves
+(portals and `moveBefore`) would remove it, but that is a change of its own.

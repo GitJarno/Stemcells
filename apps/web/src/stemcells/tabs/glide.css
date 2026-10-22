@@ -1,0 +1,57 @@
+/* A glide (glide.ts). Each pane is a tile in the slate's colour, gliding
+   from its old box to its new one on `land`, so one crossing another hides
+   it rather than mixing their words. A tile shows its chat as it will be,
+   laid out once at its new size: never the old picture fading into the
+   new, which doubled every line that rewraps. The picture keeps its own
+   size, held at the bottom middle, where the composer and the latest
+   words are, and the tile clips it: nothing stretches. The tiles glide
+   inside the slate, clipped by its round corners. */
+html[data-stemcells-glide] [data-stemcells-slate] {
+  view-transition-name: sc-slate;
+}
+html[data-stemcells-glide] [data-stemcells-pane] {
+  view-transition-group: nearest;
+}
+html[data-stemcells-glide]::view-transition-group(sc-slate) {
+  animation: none;
+}
+/* The slate's corner (`--stemcells-slate-corner`, which the page's root
+   doesn't see, so the pseudo-elements under it can't). */
+html[data-stemcells-glide]::view-transition-group-children(sc-slate) {
+  overflow: clip;
+  border-radius: var(--sc-radius-sheet);
+}
+html[data-stemcells-glide]::view-transition-group(*.sc-pane) {
+  background: var(--background);
+  animation-duration: var(--sc-glide-duration);
+  animation-timing-function: var(--sc-glide-easing);
+}
+html[data-stemcells-glide]::view-transition-old(*.sc-pane) {
+  display: none;
+}
+html[data-stemcells-glide]::view-transition-new(*.sc-pane) {
+  width: 100%;
+  height: 100%;
+  overflow: clip;
+  object-fit: none;
+  object-position: 50% 100%;
+  animation: none;
+}
+/* The wash has said where the chat goes: it is gone before the old picture is taken. */
+html[data-stemcells-glide] [data-stemcells-drop-wash] {
+  opacity: 0;
+  transition: none;
+}
+
+/* What is in the hand keeps its own motion over the glide: never pictured
+   twice, never faded, above the panes. */
+html[data-stemcells-glide] [data-stemcells-chat-card] {
+  view-transition-name: sc-carry;
+}
+html[data-stemcells-glide]::view-transition-group(sc-carry),
+html[data-stemcells-glide]::view-transition-new(sc-carry) {
+  animation: none;
+}
+html[data-stemcells-glide]::view-transition-old(sc-carry) {
+  display: none;
+}
