@@ -28,11 +28,10 @@ though Cells run on others too.
 
 ## Review
 
-Done, uncommitted on `stemcells/disk-tiers`. Typecheck, lint, drift and the
-tests beside the change pass; `seams.md`'s format and knip's unused files
-fail on `main` too. An independent review found the ask sending the Cell
-into folders the walk avoids (Mail, Messages, Photos, other volumes) and
-`statfs` without a timeout on the RPC upstream's load balancing reads: both
-fixed. Open: the seam is upstream-first and names no pull request yet; an
-SSH machine shows a figure only once upstream ships the fields. Not run in
-a real client.
+Merged as #221; `check-local` passed every gate. An independent review
+found the ask sending the Cell into folders the walk avoids (Mail,
+Messages, Photos, other volumes) and `statfs` without a timeout on the RPC
+upstream's load balancing reads: both fixed. The seam stays ours: we don't
+offer T3 the fields (`fork.md`, rule 5), so an SSH machine, which runs
+T3's released server, shows its free space as unknown. Not run in a real
+client.

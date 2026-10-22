@@ -49,8 +49,8 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 - Our state lives in our own store, our endpoints under `/api/stemcells/`.
   Never a migration in upstream's sequence, never a column on their tables.
 - Never reformat, rename, move or tidy upstream code. A change any T3 user
-  would want goes upstream first (a branch from `upstream/main`); until it
-  lands, it's a seam that names the pull request.
+  would want would ideally live upstream, but we don't open pull requests
+  to T3 unless the person asks: we carry it as a seam.
 
 ## Taking upstream's work
 - `stemcells/scripts/sync-upstream` merges `upstream/main` on a branch,

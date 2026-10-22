@@ -109,20 +109,21 @@ case, go back to the three costs and choose what keeps them lowest.
   of our views replaces the one that shows them. The app's name is the one
   exception: the builds rename it (The name transform, below).
 
-## 5. Upstream first — against fixes we carry alone
+## 5. Fixes we carry alone — small, and upstream only when asked
 
 - **Ask of every change: would any T3 user want this?** That covers bug
   fixes and extension points. Examples: "register a settings page",
   "`ChatView` safe to render twice", "a system prompt per thread".
-  - **If yes**, it belongs upstream. Build it on a branch from
-    `upstream/main`, so the pull request carries nothing of ours, and offer
-    it to T3. Until they merge it, we carry it as a seam that names the
-    pull request. Once they merge it, the next sync deletes our seam.
+  - **If yes**, it would ideally live upstream, where each sync brings it
+    for free. We don't open pull requests to T3 unless the person asks:
+    we carry it as a seam, as small as rule 1 makes it, and `seams.md`
+    says upstream could take it. If T3 ships the same thing, the next
+    sync deletes our seam.
   - **If no**, it's Stemcells' own and lives in our folders: identity,
     Aski, Cells, delight.
-- Every extension point upstream accepts makes the fork permanently
-  smaller. This is how we contribute to what we care about and get paid
-  back in maintenance.
+- When the person asks to offer one, build it on a branch from
+  `upstream/main`, so the pull request carries nothing of ours, and name
+  the pull request in the seam until it lands.
 
 ## 6. Sync small and often
 
@@ -147,7 +148,7 @@ case, go back to the three costs and choose what keeps them lowest.
   carries `local-check` = success, which `check-local` records after
   running the `check` gates (`stemcells/AGENTS.md`, Landing).
 - **A seam that conflicts twice is a signal.** Move more of it into our
-  files, or make it upstream's extension point (rule 5 and rule 7).
+  files or a substitute (rule 7).
 
 ## 7. Watch the numbers
 
@@ -164,7 +165,7 @@ case, go back to the three costs and choose what keeps them lowest.
   little. Most seam files are cold and never conflict, and new files never
   do.
 - **The rule:** a seam in a hot file, or one that has conflicted twice,
-  gets a substitute or an extension point (rule 5) before a new feature
+  gets a substitute or an extension point before a new feature
   touches that file.
 - **The guard: a budget per hot file.** `seams.md`'s Hot-file budget gives
   each hot file the lines and hunks we may change in it, and why. `drift`
