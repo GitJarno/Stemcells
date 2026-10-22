@@ -7,12 +7,20 @@
 //   the person's (`stemcells/limitResume/row.ts`). The row is a notice, as
 //   Claude's own notices are. Why here, of all places: stemcells/seams.md,
 //   "A Cell carries on after a usage limit".
+// - a message this Cell sent another with `t3_thread_send` says what it did,
+//   to whom: "Asked Otter: Can I take 0043?" (stemcells/tasks/peers.md,
+//   decision 4).
 import type * as Upstream from "../../../components/chat/MessagesTimeline.logic";
-import { deriveMessagesTimelineRowsWithState as upstreamRowsWithState } from "../../../components/chat/MessagesTimeline.logic";
+import {
+  deriveMessagesTimelineRowsWithState as upstreamRowsWithState,
+  workEntryDisplayLabel as upstreamDisplayLabel,
+} from "../../../components/chat/MessagesTimeline.logic";
 import type { WorkLogEntry } from "../../../session-logic";
 
 import { CELL_TOOL_LABELS } from "../../../../../../stemcells/words/cellTools.ts";
 import { continuedWords } from "../../limitResume/row";
+import { sentOf } from "../../peers/exchange";
+import { sentLabel } from "../../peers/names";
 
 export * from "../../../components/chat/MessagesTimeline.logic";
 
@@ -21,6 +29,14 @@ const CELL_READ_OBJECT = ` ${CELL_TOOL_LABELS.t3_thread_read![3]}`;
 
 export const threadReadLabelPrefix: typeof Upstream.threadReadLabelPrefix = (label) =>
   label.endsWith(CELL_READ_OBJECT) ? `${label.slice(0, -CELL_READ_OBJECT.length)} Cell` : null;
+
+export const workEntryDisplayLabel: typeof Upstream.workEntryDisplayLabel = (
+  entry,
+  workspaceRoot,
+) => {
+  const sent = sentOf(entry.structuredPayload);
+  return sent === null ? upstreamDisplayLabel(entry, workspaceRoot) : sentLabel(sent);
+};
 
 type Row = Upstream.MessagesTimelineRow;
 

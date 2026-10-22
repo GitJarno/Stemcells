@@ -44,6 +44,7 @@ import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
 import * as UpstreamComposerStash from "../../../components/chat/useComposerStash";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
+import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
@@ -81,6 +82,7 @@ import * as OurOpenInPicker from "./OpenInPicker";
 import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
 import * as OurComposerStash from "./useComposerStash";
 import * as OurMessagesTimeline from "./MessagesTimeline";
+import * as OurUserMessageRow from "./TimelineUserMessageRow";
 
 // Upstream's timeline loads the diff worker, which only a browser can start;
 // these tests read its module's exports, never draw it.
@@ -422,7 +424,7 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": [
         "./MessagesTimeline.logic",
-        ["threadReadLabelPrefix"],
+        ["threadReadLabelPrefix", "workEntryDisplayLabel"],
       ],
       // Upstream derives the transcript's rows in this hook now.
       "apps/web/src/components/chat/useTimelineRows.ts": [
@@ -592,6 +594,17 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/ChatComposer.tsx": [
         "./useComposerStash",
         ["useComposerStash"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/TimelineUserMessageRow.tsx": {
+    upstream: UpstreamUserMessageRow,
+    substitute: OurUserMessageRow satisfies typeof UpstreamUserMessageRow,
+    importers: {
+      // The timeline draws a person's message, or another Cell's, through it.
+      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+        "./TimelineUserMessageRow",
+        ["UserMessageRow"],
       ],
     },
   },

@@ -1,3 +1,4 @@
+import * as Stemcells from "../stemcells/upstream/peers.ts";
 import { modelSelectionsEqual } from "@t3tools/shared/model";
 import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
 import {
@@ -417,7 +418,7 @@ export const layer: Layer.Layer<
         const authResult = isEmptyCompaction
           ? null
           : yield* Effect.result(
-              providerAuth.tryHandlePromptCommand({
+              Stemcells.promptCommandsOf(providerAuth, message).tryHandlePromptCommand({
                 instanceId: authInstanceId,
                 text: projectComposerContextForProvider({
                   text: message.text,
@@ -1019,10 +1020,7 @@ export const layer: Layer.Layer<
       const routableSubagents = projection.subagents.filter((subagent) =>
         RunExecutionService.canRouteRelatedSubagent(subagent.status),
       );
-      const userText = projectComposerContextForProvider({
-        text: message.text,
-        records: message.context?.records ?? [],
-      });
+      const userText = yield* Stemcells.text(projectionStore, projects, input.threadId, message);
       // Delivered once: this run's provider turn marks the work as told. A
       // restart continuation is prompted by its own text or resumes natively.
       const noteContinuation = isRestartNoteContinuation(

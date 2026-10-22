@@ -88,10 +88,12 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
 | `apps/server/src/orchestration-v2/ThreadManagementService.ts` | Imports `moveCellsOffAskisInstance` and `refuseAskisInstance` from `stemcells/upstream/askiInstance`; `dispatch` passes each command through the first before its gate and the orchestrator; `assertProviderInstanceEnabled` (the gate every thread start and every message asks) also runs the second, takes an optional `threadId`, and the message gate passes its thread; `ThreadManagementProviderInstanceDisabledError` takes an optional `reason` its message reads | Aski's instance runs only Aski (below): the server refuses a Cell started there, rather than trusting Aski's instructions, and a message to a Cell already there runs on the driver's own instance |
+| `apps/server/src/orchestration-v2/ProviderTurnStartService.ts` | Imports `* as Stemcells` from `stemcells/upstream/peers.ts` on its first line; a run's text for the provider is `Stemcells.text(projectionStore, projects, input.threadId, message)` where it was `projectComposerContextForProvider(…)`; the prompt-command handler is `Stemcells.promptCommandsOf(providerAuth, message)` where it was `providerAuth` | Peers (below): another Cell's message reaches the provider framed, not as the person's words, a turn's start says who's here when that changed, and only the person's own `/logout` signs a provider out. Any T3 user would want the frame and the guard; offered upstream once we ask |
+| `apps/server/src/orchestration-v2/ProviderTurnControlService.ts` | Imports `* as Stemcells` from `stemcells/upstream/peers.ts` on its first line; a steer's text is `Stemcells.providerText(projections, input.threadId, message)`, and its `projectComposerContextForProvider` import goes | Same, for a message that steers a running turn |
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view. In dev and the production build the same plugin runs the name transform (The app's name, below) |
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the desktop's also adds `stemcells/brand/name.ts`, `stemcells/brand/upstreamName.ts` and `stemcells/brand/nameTransform.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/brand/nameTransform.ts`, `stemcells/brand/upstreamName.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names, and its config the name transform. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts` and the name transform through its substitutes plugin, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the desktop's also adds `stemcells/brand/name.ts`, `stemcells/brand/upstreamName.ts` and `stemcells/brand/nameTransform.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/brand/nameTransform.ts`, `stemcells/brand/upstreamName.ts`, `stemcells/words/cellNames.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names, and its config the name transform. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts` and the name transform through its substitutes plugin, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, the Cell names (which the server deals too, for a peer's frame), and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/upstreamName.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
 | `apps/server/src/provider/CodexAuthCallbackPage.ts` | The sign-in page's wordmark is `<strong>T3 Code</strong>`, where it bolded "T3" alone | The name transform renames whole words only: drawn as one, the build says Stemcells there (The app's name, below) |
@@ -762,6 +764,45 @@ checkout with one remote spawns no extra git.
 
 To offer upstream: the same two lines, as any fork that is its own product
 wants them.
+
+### Peers
+
+Cells in one project know each other (`stemcells/tasks/peers.md`). T3
+already stamps who sends a message (`t3_thread_send`, `senderThreadId`),
+delivers it and guards permission modes; Stemcells adds what it lacks:
+
+- **A peer is not the person.** Where upstream builds the text a provider
+  reads for a message, at a turn's start and for a steer (two seams,
+  above), a message from another Cell that is neither of the recipient's
+  principals (a Subcell's parent, Aski) is framed: who sent it, that it carries no authority,
+  and how to answer, every line of its words behind a gutter
+  (`apps/server/src/stemcells/peers/frame.ts`). The stored message keeps
+  its words. Only a message the person sent runs a provider's prompt
+  command (`/logout`). `peers.contract.test.ts` sends through the
+  orchestrator to a provider that writes down what it reads.
+- **Who's here.** At a turn's start (the first seam above), a Cell is told
+  its own name and one-liner and the other Cells at work in its
+  repository, when that changed since it was last told
+  (`apps/server/src/stemcells/peers/roster.ts`). Repositories come from
+  upstream's project service (`repositoryGroupingKeyOf`); any failure
+  there leaves the turn as it was.
+- **Collisions.** `apps/server/src/stemcells/peers/Collisions.ts`, mounted
+  through `stemcells/layer.ts`, follows every finished `file_change` and
+  queues a notice behind the running turn of each Cell in a new collision
+  (same file within 30 minutes, any checkout of the repository; or one
+  checkout). The notice
+  is the app's (`createdBy: "agent"`, `creationSource: "server"`), its id
+  names the kind and the other Cell.
+- **The chat** (substitutes, no edits): `TimelineUserMessageRow.tsx` draws
+  another Cell's message as a card (upstream's row still draws a
+  workflow's opening, an automation's run and attachments) and a collision
+  notice as a notice
+  (`apps/web/src/stemcells/peers/`); `MessagesTimeline.logic.ts`'s
+  `workEntryDisplayLabel` says what a `t3_thread_send` did ("Asked Otter:
+  …"); `MessagesTimeline.tsx` hands the rows the chat's exchange
+  (`PeerExchangeProvider`). The phone keeps upstream's row.
+- **Cell names** live in `stemcells/words/cellNames.ts`, so the server
+  names a peer as its tabs do.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

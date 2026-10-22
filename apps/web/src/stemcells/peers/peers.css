@@ -1,0 +1,166 @@
+/* Messages between Cells in a chat (peers/PeerCard.tsx, peers/CollisionRow.tsx;
+   stemcells/tasks/peers.md, decision 4). Sizes follow the chat's own text,
+   so they scale with it; every colour is a token, chosen by role. */
+
+/* Mail the Cell received: drawn by a hairline edge, never the plate the
+   person's own turn sits on, so it can't read as the person speaking. */
+.sc-peer-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+  min-width: 0;
+  max-width: 80%;
+  padding: var(--sc-space-md) var(--sc-space-xl);
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-card);
+  color: var(--sc-content-ink);
+}
+
+.sc-peer-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  min-width: 0;
+  font-size: 0.8571em;
+  color: var(--sc-meta-ink);
+}
+
+/* The sender: its Cell and its name as a token in the Cell tone, the shape
+   every token takes (composer/composer-line.css), and a door to its chat. */
+.sc-peer-who {
+  --token-share: 50%;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  height: calc(1cap * 1.95 + 2px);
+  padding-inline: calc(1cap * 0.36);
+  border: 0.5px solid
+    color-mix(in srgb, var(--sc-peer) calc(var(--sc-tint-edge) * var(--token-share)), transparent);
+  border-radius: calc(1cap * 1.95 * 0.3);
+  background: color-mix(
+    in srgb,
+    var(--sc-peer) calc(var(--sc-tint-fill) * var(--token-share)),
+    transparent
+  );
+  color: color-mix(in oklch, var(--sc-peer) 70%, var(--foreground));
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sc-peer-who:hover {
+  --token-share: 80%;
+}
+.sc-peer-who:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.sc-peer-answered {
+  margin-inline-start: auto;
+  color: color-mix(in oklch, var(--sc-success) 60%, var(--sc-meta-ink));
+}
+
+/* When, going back to it, copy: under the card as under the person's own
+   message, shown on hover and to touch. */
+.sc-peer-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  padding-inline-end: var(--sc-space-xs);
+  font-size: 0.8571em;
+  color: var(--sc-meta-ink);
+  opacity: 0;
+  transition: opacity 200ms;
+}
+[data-stemcells-peer="in"]:hover .sc-peer-foot,
+.sc-peer-foot:focus-within {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .sc-peer-foot {
+    opacity: 1;
+  }
+}
+.sc-peer-status {
+  color: var(--sc-error);
+}
+
+/* The question a reply answers: one quiet line above its gist. */
+.sc-peer-re {
+  overflow: hidden;
+  font-size: 0.8571em;
+  color: var(--sc-quiet-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-peer-gist {
+  color: var(--sc-content-strong-ink);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* The rest, folded to its first line; it opens in place. */
+.sc-peer-more {
+  overflow: hidden;
+  color: var(--sc-quiet-ink);
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sc-peer-more:hover {
+  color: var(--sc-meta-ink);
+}
+.sc-peer-more:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  border-radius: var(--sc-radius-chip);
+}
+
+/* Two Cells in one file or one checkout: the app's notice, not a message,
+   so it stands in the work's column with the work's quiet words, and only
+   its mark wears the warning. */
+.sc-collision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+  min-width: 0;
+  font-size: 0.8571em;
+  color: var(--sc-meta-ink);
+}
+.sc-collision-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  min-width: 0;
+}
+.sc-collision-mark {
+  flex: none;
+  color: var(--sc-warning);
+}
+.sc-collision-files {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sc-interface-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sc-collision-more {
+  flex: none;
+  color: var(--sc-quiet-ink);
+  cursor: pointer;
+}
+.sc-collision-more:hover {
+  color: var(--sc-meta-ink);
+}
+.sc-collision-more:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  border-radius: var(--sc-radius-chip);
+}
+.sc-collision-rest {
+  color: var(--sc-quiet-ink);
+  overflow-wrap: anywhere;
+}

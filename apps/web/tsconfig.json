@@ -41,6 +41,7 @@
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/nameTransform.ts",
     "../../stemcells/brand/upstreamName.ts",
+    "../../stemcells/words/cellNames.ts",
     "../../stemcells/words/cellTools.ts",
     "../../stemcells/words/subcells.ts"
   ]

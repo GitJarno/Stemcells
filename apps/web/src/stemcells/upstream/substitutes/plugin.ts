@@ -60,6 +60,9 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
   "apps/web/src/components/chat/MessagesTimeline.logic.ts": "MessagesTimeline.logic.ts",
+  // Messages between Cells: another Cell's message is a card, not the
+  // person's bubble, and the app's collision notice a notice.
+  "apps/web/src/components/chat/TimelineUserMessageRow.tsx": "TimelineUserMessageRow.tsx",
   // A Cell stopped by a usage limit: Continue on its banner, and the row
   // "Continued after …" where it carried on (the timeline's logic above).
   "apps/web/src/components/chat/UsageLimitRecoveryBanner.tsx": "UsageLimitRecoveryBanner.tsx",

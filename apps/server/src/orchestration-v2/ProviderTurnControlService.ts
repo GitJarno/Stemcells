@@ -1,4 +1,4 @@
-import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
+import * as Stemcells from "../stemcells/upstream/peers.ts";
 import {
   MessageId,
   type NodeId,
@@ -361,10 +361,7 @@ export const layer: Layer.Layer<
               providerTurnId: loaded.providerTurn.id,
               message: {
                 messageId: message.id,
-                text: projectComposerContextForProvider({
-                  text: message.text,
-                  records: message.context?.records ?? [],
-                }),
+                text: yield* Stemcells.providerText(projections, input.threadId, message),
                 attachments: message.attachments,
                 createdBy: message.createdBy,
                 creationSource: message.creationSource,

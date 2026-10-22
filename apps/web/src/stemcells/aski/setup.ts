@@ -178,6 +178,11 @@ export function rememberedAskiThread(environmentId: string): string | null {
   return readAll()[environmentId] ?? null;
 }
 
+/** Whether a thread is Aski's chat in an environment this browser has met. */
+export function isRememberedAskiThread(threadId: string): boolean {
+  return Object.values(readAll()).includes(threadId);
+}
+
 export function rememberAskiThread(environmentId: string, threadId: string): void {
   if (typeof localStorage === "undefined") return;
   try {
