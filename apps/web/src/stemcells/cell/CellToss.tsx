@@ -1,7 +1,7 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
 // A thrown Cell in flight: the live figure in what it wears, drawn every
 // frame from the carry engine's facts (`toss.ts`), its dizzy stars behind
-// it. The engine moves the box; this draws what is in it.
+// it. The engine moves the box and runs the frame; this draws what is in it.
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { reducedMotion, timing } from "../tokens/motion.ts";
@@ -54,11 +54,15 @@ function drawStars(
   context.globalAlpha = 1;
 }
 
+/** Draws a thrown Cell for one frame, from the flight's facts then. */
+export type TossDraw = (toss: Toss, now: number) => void;
+
 /**
  * A Cell thrown, in its box at its size on the line: its pose each frame
- * from `read`, the flight's facts now (`toss.ts`), and while it is dizzy,
- * three stars round its head. Its look, colours and frame behind it as
- * `CellFigure` takes them. Under Reduce Motion its body holds still.
+ * its flight is stepped (`frames`, the flight's facts then, `toss.ts`), and
+ * while it is dizzy, three stars round its head. Its look, colours and
+ * frame behind it as `CellFigure` takes them. Under Reduce Motion its body
+ * holds still.
  */
 export function CellToss(props: {
   readonly name: string;
@@ -70,8 +74,12 @@ export function CellToss(props: {
   /** CSS pixels a cell of the miniature is drawn; 1 or 2 draw the hero art on a 2× display. */
   readonly points?: number | undefined;
   readonly strength?: Strength | undefined;
-  /** The flight's facts now, read every frame. */
-  readonly read: () => Toss;
+  /**
+   * Its flight's frames: `draw` is called each frame once the flight has
+   * stepped, and at once with its facts now; the returned function stops it.
+   * One loop, the flight's, runs the frame.
+   */
+  readonly frames: (draw: TossDraw) => () => void;
 }) {
   const [day] = useState(() => dayOf(new Date()));
   const worn = (props.look ?? lookOf(props.name, day)).join("+");
@@ -79,10 +87,7 @@ export function CellToss(props: {
   const points = props.points ?? POINTS_PER_PIXEL;
   const ground = props.ground ?? "black";
   const { strength } = props;
-  const read = useRef(props.read);
-  useLayoutEffect(() => {
-    read.current = props.read;
-  });
+  const { frames } = props;
   const canvas = useRef<HTMLCanvasElement>(null);
   const sky = useRef<HTMLCanvasElement>(null);
   useLayoutEffect(() => {
@@ -95,11 +100,7 @@ export function CellToss(props: {
     const size = { width: 2 * SKY.x * BOX.width * points, height: 2 * SKY.y * BOX.height * points };
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     let starry = false;
-    let frame = 0;
-    const draw = () => {
-      frame = requestAnimationFrame(draw);
-      const now = performance.now();
-      const toss = read.current();
+    const draw: TossDraw = (toss, now) => {
       const dpr = devicePixelRatio || 1;
       const picture = tossFrame(look, toss, now, points, reducedMotion());
       if (shown?.frame !== picture || shown.dpr !== dpr) {
@@ -111,9 +112,8 @@ export function CellToss(props: {
       drawStars(stars, size, t === undefined ? [] : dizzyStars(t, dizzy, points), inks, dpr);
       starry = t !== undefined;
     };
-    draw();
-    return () => cancelAnimationFrame(frame);
-  }, [worn, strength, body, points, ground]);
+    return frames(draw);
+  }, [worn, strength, body, points, ground, frames]);
   const width = BOX.width * points;
   const height = BOX.height * points;
   return (

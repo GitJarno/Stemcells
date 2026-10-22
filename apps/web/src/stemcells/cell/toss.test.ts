@@ -135,6 +135,16 @@ describe("a thrown Cell, as the original's soft Cell flies", () => {
     expect(right.detail).toEqual(walk.mini[2]!.detail.map((row) => [...row].toReversed().join("")));
   });
 
+  it("quickens its scoot's beat with its pace, so a quicker walk takes the same steps", () => {
+    const look = packLook([]);
+    const walk = sceneOf(look, WALK)!;
+    const step = 1000 / onBeat(walk.fps);
+    const quick = { ...still, walking: { from: T0, toward: -1, rate: 3 } } as const;
+    // Three times its pace: each frame of the scoot a third as long.
+    expect(tossFrame(look, quick, T0 + (3.5 * step) / 3)).toBe(walk.mini[3]);
+    expect(tossFrame(look, quick, T0 + (4.5 * step) / 3)).toBe(walk.mini[4]);
+  });
+
   it("circles three stars round its head, the near ones larger and brighter, gone by the beat's end", () => {
     const stars = dizzyStars(100, 1150);
     expect(stars).toHaveLength(3);

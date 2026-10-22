@@ -8,8 +8,9 @@
  * tab. Let go on a half or in the room, the chat goes there (a move Undo
  * Move takes back) and the card lands into its place on `land`. Let go
  * anywhere else, or Esc, and the card flies back to where it was picked
- * up, its tab on stage again. Under Reduce Motion the card fades where it
- * is.
+ * up, its tab on stage again. Let go with speed, the chat stays and its
+ * Cell is thrown from the hand (`CellThrow.tsx`). Under Reduce Motion the
+ * card fades where it is.
  */
 import {
   useEffect,
@@ -35,6 +36,7 @@ import type { Placed, Rect } from "./arrangement";
 import { windowsBridge } from "./bridge";
 import { PICK_UP_DISTANCE, type Point } from "./carry";
 import { carryStarts } from "./carrying";
+import { CellThrows, throwFromCarry } from "./CellThrow";
 import { hostRoom } from "./hostStrip";
 import { carry, type CarryTarget, type NewTabIds } from "./moves";
 import {
@@ -44,6 +46,7 @@ import {
   type PaneLanding,
   type PanePlace,
 } from "./paneLanding";
+import { handVelocity, letGoOf, recordHand, type Sample } from "./throw";
 import { commitMove } from "./wire";
 import "./carry.css";
 
@@ -56,13 +59,15 @@ const GRAB: Point = { x: 18, y: 16 };
 interface Held {
   readonly paneId: string;
   readonly cell: CellRef;
+  /** The Cell's box's centre less the press: where the hand holds it. */
+  readonly grip: Point;
 }
 
 /** The mounted carry: one per window, in its slate. */
 interface Carrier {
   pickUp(held: Held, from: Rect, hand: Point): void;
-  move(hand: Point): void;
-  letGo(): void;
+  move(hand: Point, at: number): void;
+  letGo(hand: Point, at: number): void;
   cancel(): void;
 }
 
@@ -144,6 +149,10 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
   event.preventDefault();
   handle.setPointerCapture(event.pointerId);
   const press = { x: event.clientX, y: event.clientY };
+  const box = handle.querySelector("[data-stemcells-cell-box]")?.getBoundingClientRect();
+  const grip = box
+    ? { x: box.left + box.width / 2 - press.x, y: box.top + box.height / 2 - press.y }
+    : { x: 0, y: 0 };
   let picked = false;
   const onMove = (move: PointerEvent) => {
     const hand = { x: move.clientX, y: move.clientY };
@@ -151,9 +160,9 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
       if (Math.hypot(hand.x - press.x, hand.y - press.y) < PICK_UP_DISTANCE) return;
       picked = true;
       handle.dataset.carrying = "true";
-      carrier?.pickUp({ paneId, cell }, rectOf(pane), hand);
+      carrier?.pickUp({ paneId, cell, grip }, rectOf(pane), hand);
     }
-    carrier?.move(hand);
+    carrier?.move(hand, move.timeStamp);
   };
   const stop = () => {
     handle.removeEventListener("pointermove", onMove);
@@ -166,9 +175,9 @@ export function startChatCarry(event: ReactPointerEvent<HTMLElement>, cell: Cell
     delete handle.dataset.carrying;
     if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
   };
-  const onUp = () => {
+  const onUp = (up: PointerEvent) => {
     stop();
-    if (picked) carrier?.letGo();
+    if (picked) carrier?.letGo({ x: up.clientX, y: up.clientY }, up.timeStamp);
   };
   const onCancel = () => {
     stop();
@@ -239,6 +248,8 @@ interface Live {
   /** The new tab's ids, should it go into one: the strip's room keeps them. */
   readonly newTab: NewTabIds;
   hand: Point;
+  /** The hand's recent samples: how fast it lets go. */
+  samples: Sample[];
   landing: Landing | null;
   /** The card is on its way to where it lands: the hand no longer moves it. */
   landingNow: boolean;
@@ -291,6 +302,7 @@ class WindowCarrier implements Carrier {
       tabId: readWorkspace().activeTabId,
       newTab: newIds(),
       hand,
+      samples: [],
       landing: null,
       landingNow: false,
     };
@@ -321,10 +333,11 @@ class WindowCarrier implements Carrier {
     );
   }
 
-  move(hand: Point): void {
+  move(hand: Point, at: number): void {
     const now = this.live;
     if (!now || now.landingNow) return;
     now.hand = hand;
+    now.samples = recordHand(now.samples, { ...hand, at });
     // Measured as the hand goes, before the card moves: a tab sprung open puts other panes on stage.
     const strip = document.querySelector("[data-stemcells-tab-strip]");
     const onStrip = strip ? stripLandingAt(rectOf(strip), cellChips(strip), hand) : null;
@@ -354,11 +367,20 @@ class WindowCarrier implements Carrier {
     this.follow(hand);
   }
 
-  letGo(): void {
+  letGo(hand: Point, at: number): void {
     const now = this.live;
     if (!now || now.landingNow) return;
+    now.samples = recordHand(now.samples, { ...hand, at });
     const { landing } = now;
-    if (landing?.kind !== "pane" && landing?.kind !== "end") return this.cancel();
+    const velocity = handVelocity(now.samples, at);
+    const over = landing?.kind === "pane" || landing?.kind === "end";
+    const ownTab = readWorkspace().activeTabId === now.tabId;
+    const then = letGoOf(over, velocity, reducedMotion(), ownTab);
+    // Thrown in its own tab: the chat stays, and its Cell flies from the hand.
+    if (then === "toss") return this.toss(now, hand, velocity);
+    if (then !== "drop" || (landing?.kind !== "pane" && landing?.kind !== "end")) {
+      return this.cancel();
+    }
     now.landingNow = true;
     this.light(null);
     spring.out();
@@ -412,6 +434,29 @@ class WindowCarrier implements Carrier {
       const pane = paneElement(now.held.paneId);
       await this.land(pane ? rectOf(pane) : null);
     })();
+  }
+
+  /**
+   * Let go with speed: the card goes, the chat shows where it was, and its
+   * Cell is thrown from where the card is, now.
+   */
+  private toss(now: Live, hand: Point, velocity: Point): void {
+    now.landingNow = true;
+    this.light(null);
+    spring.out();
+    if (now.landing?.kind === "end") hostRoom(null);
+    const { cell, grip } = now.held;
+    throwFromCarry({
+      cell,
+      centre: { x: hand.x + grip.x, y: hand.y + grip.y },
+      velocity,
+      grip,
+      at: performance.now(),
+      tabId: now.tabId,
+    });
+    this.live = null;
+    setCarried(null);
+    this.show(null);
   }
 
   private follow(hand: Point): void {
@@ -513,6 +558,7 @@ export function ChatCarry(props: {
   return (
     <>
       <div ref={wash} data-stemcells-drop-wash="" data-lit="false" aria-hidden />
+      <CellThrows />
       {held
         ? createPortal(
             <div ref={outer} data-stemcells-chat-card="" aria-hidden>
