@@ -108,5 +108,6 @@ if (boot !== null) {
     raise: (window: string) => ipcRenderer.send(WINDOWS_CHANNEL.raise, window),
     undos: () => ipcRenderer.invoke(WINDOWS_CHANNEL.undos),
     dropUndo: (id: number) => ipcRenderer.send(WINDOWS_CHANNEL.dropUndo, id),
+    onCloseRequest: listen<void>(WINDOWS_CHANNEL.closeRequest),
   });
 }

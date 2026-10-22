@@ -141,8 +141,12 @@ const electron = vi.hoisted(() => {
       this.emit("focus");
       app.emit("browser-window-focus", {}, this);
     }
+    /** Asks the window to close, as the person or an update's quit does: the app may keep it. */
     close() {
-      this.destroy();
+      if (this.destroyed) return;
+      let kept = false;
+      this.emit("close", { preventDefault: () => void (kept = true) });
+      if (!kept) this.destroy();
     }
     /** The window goes, whatever the app would say. */
     destroy() {
@@ -384,6 +388,8 @@ describe("the windows' host", () => {
         a.window.close();
         electron.app.emit("before-quit");
 
+        // Nothing holds a window back from the update's quit, and the book keeps them all.
+        expect([c.isDestroyed(), a.window.isDestroyed()]).toEqual([true, true]);
         expect(host.stored().windows.map((window) => window.id)).toEqual(
           expect.arrayContaining([a.id, "c"]),
         );
@@ -401,6 +407,7 @@ describe("the windows' host", () => {
       a.window.close();
       electron.app.emit("before-quit");
 
+      expect([c.isDestroyed(), a.window.isDestroyed()]).toEqual([true, true]);
       expect(host.stored().windows).toHaveLength(2);
     }).pipe(Effect.scoped),
   );
@@ -430,8 +437,11 @@ describe("the windows' host", () => {
         expect(ids).toEqual(expect.arrayContaining([a.id, "c", "d"]));
         expect(idsOf(back.webContents)).toEqual(expect.arrayContaining([a.id, "c", "d"]));
 
-        // And a window closed now goes, as the app isn't quitting any more.
-        reopened[ids.indexOf("d")]!.close();
+        // And a window the person closes now goes, as the app isn't quitting any more.
+        const d = reopened[ids.indexOf("d")]!;
+        d.close();
+        expect(d.webContents.heard(WINDOWS_CHANNEL.closeRequest)).toHaveLength(1);
+        d.destroy();
         expect(idsOf(back.webContents)).not.toContain("d");
       }).pipe(Effect.scoped),
   );
@@ -461,8 +471,11 @@ describe("the windows' host", () => {
         );
         expect(reopened).toHaveLength(1);
         expect(boot(reopened[0]!.webContents)?.id).toBe("c");
-        // And a window closed now goes, as the app isn't quitting any more.
-        reopened[0]!.close();
+        // And a window the person closes now goes, as the app isn't quitting any more.
+        const c2 = reopened[0]!;
+        c2.close();
+        expect(c2.webContents.heard(WINDOWS_CHANNEL.closeRequest)).toHaveLength(1);
+        c2.destroy();
         expect(idsOf(a.window.webContents)).not.toContain("c");
       }).pipe(Effect.scoped),
   );
@@ -583,10 +596,10 @@ describe("the windows' host", () => {
         const c = electron.windows.at(-1)!;
         c.focus();
 
-        a.window.close();
+        a.window.destroy();
         expect(host.setMain).toHaveBeenLastCalledWith(b);
         expect(b.webContents.heard(WINDOWS_CHANNEL.lead).at(-1)).toBe(true);
-        b.close();
+        b.destroy();
         expect(boot(c.webContents)!.lead).toBe(true);
         expect(host.setMain).toHaveBeenLastCalledWith(c);
       }).pipe(Effect.scoped),
