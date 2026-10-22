@@ -736,6 +736,31 @@ describe("a flight", () => {
     }).pipe(Effect.scoped),
   );
 
+  it.effect(
+    "stays the page's whose drop waits to land: another window's only tab carried takes none of it",
+    () =>
+      Effect.gen(function* () {
+        yield* startHost();
+        const a = yield* mainWindow();
+        const page = a.window.webContents;
+        const b = yield* opened(page, "b");
+        send(page, WINDOWS_CHANNEL.warm, move(page, { open: "w" }));
+        yield* tick;
+        yield* tick;
+        const warm = electron.windows.at(-1)!;
+
+        // b's only tab carried while a's drop waits to land: b doesn't hide.
+        send(b.webContents, WINDOWS_CHANNEL.windowShown, false);
+        expect(b.opacity).toBe(1);
+        // The flight is still a's, heard from a's page.
+        page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+        expect(warm.isDestroyed()).toBe(true);
+        // Once it's over, b's carry hides b.
+        send(b.webContents, WINDOWS_CHANNEL.windowShown, false);
+        expect(b.opacity).toBe(0);
+      }).pipe(Effect.scoped),
+  );
+
   it.effect("closes a warmed window a move opened and another closed before it was made", () =>
     Effect.gen(function* () {
       yield* startHost();

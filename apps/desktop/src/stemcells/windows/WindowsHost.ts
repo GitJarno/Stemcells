@@ -599,6 +599,13 @@ export const layer = Layer.effectDiscard(
       coolWarm();
     };
 
+    /**
+     * The layer is another page's while its flight lasts: one window's own
+     * window carried while another's flight waits to land can't take it.
+     */
+    const flownByOther = (page: Electron.WebContents) =>
+      flying !== null && flying !== page && !flying.isDestroyed();
+
     /** The app quits: a flight in the air ends, and the windows are saved as they are. */
     const beforeQuit = () => {
       endFlight();
@@ -695,6 +702,7 @@ export const layer = Layer.effectDiscard(
             if (hidden === window) showHidden();
             return;
           }
+          if (flownByOther(event.sender)) return;
           fly(event.sender);
           showHidden();
           hidden = window;
