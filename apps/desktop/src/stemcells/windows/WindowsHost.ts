@@ -116,6 +116,7 @@ export const layer = Layer.effectDiscard(
     const pages = new Map<number, string>();
     /** Windows a move opened whose pages haven't loaded yet, oldest first. */
     const opening: string[] = [];
+    let watchingDisplays = false;
     let saveTimer: ReturnType<typeof setTimeout> | undefined;
     let quitCheck: ReturnType<typeof setInterval> | undefined;
     const flight = new FlightLayer();
@@ -209,6 +210,13 @@ export const layer = Layer.effectDiscard(
       }
     };
 
+    /** Tells every window the windows or the displays changed, so its Gather button is right. */
+    const tellArranged = () => {
+      for (const window of live.values()) {
+        if (!window.isDestroyed()) window.webContents.send(WINDOWS_CHANNEL.arranged);
+      }
+    };
+
     const tellLeads = () => {
       for (const [id, window] of live) {
         if (!window.isDestroyed()) {
@@ -254,6 +262,7 @@ export const layer = Layer.effectDiscard(
       if (lead && !lead.isDestroyed()) {
         lead.webContents.send(WINDOWS_CHANNEL.closed, removed.workspace);
       }
+      tellArranged();
       save();
     };
 
@@ -315,6 +324,7 @@ export const layer = Layer.effectDiscard(
         window.webContents.send(WINDOWS_CHANNEL.returned, removed.workspace);
         window.focus();
       }
+      tellArranged();
       save();
     };
 
@@ -489,9 +499,16 @@ export const layer = Layer.effectDiscard(
      * Every window kept in the book without one opens, once upstream's main
      * window has loaded: at launch, and when it comes back after the app
      * closed them all to quit and then didn't (an update that couldn't
-     * install).
+     * install). From the first, the displays are watched: plugging one in or
+     * out changes which memory Put back would use.
      */
     const openTheRest = () => {
+      if (!watchingDisplays) {
+        watchingDisplays = true;
+        Electron.screen.on("display-added", tellArranged);
+        Electron.screen.on("display-removed", tellArranged);
+        Electron.screen.on("display-metrics-changed", tellArranged);
+      }
       if (quittingNow()) return;
       for (const record of [...book.snapshot().windows].toReversed()) {
         if (!live.has(record.id) && !opening.includes(record.id)) {
@@ -593,6 +610,7 @@ export const layer = Layer.effectDiscard(
       const front = committed.front === null ? undefined : live.get(committed.front);
       if (front && !front.isDestroyed()) front.focus();
       if (committed.leadChanged) promote(committed.lead);
+      tellArranged();
       save();
       return "done";
     };
@@ -852,6 +870,11 @@ export const layer = Layer.effectDiscard(
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightPainted);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.geometry);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.undos);
+          if (watchingDisplays) {
+            Electron.screen.removeListener("display-added", tellArranged);
+            Electron.screen.removeListener("display-removed", tellArranged);
+            Electron.screen.removeListener("display-metrics-changed", tellArranged);
+          }
           endFlight();
           if (saveTimer !== undefined) saveNow();
         }),

@@ -109,5 +109,6 @@ if (boot !== null) {
     undos: () => ipcRenderer.invoke(WINDOWS_CHANNEL.undos),
     dropUndo: (id: number) => ipcRenderer.send(WINDOWS_CHANNEL.dropUndo, id),
     onCloseRequest: listen<void>(WINDOWS_CHANNEL.closeRequest),
+    onArranged: listen<void>(WINDOWS_CHANNEL.arranged),
   });
 }

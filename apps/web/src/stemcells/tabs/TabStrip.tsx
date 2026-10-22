@@ -18,6 +18,7 @@ import {
 import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
+import { GatherButton } from "../windows/GatherButton";
 import { useHosting, useStripMeasure } from "../windows/hostStrip";
 import { useTabCarry } from "../windows/useTabCarry";
 import { useSpringTabs, type SpringHandlers } from "./springTab";
@@ -179,6 +180,7 @@ export function TabStrip(props: {
         </TooltipTrigger>
         <TooltipPopup>New tab</TooltipPopup>
       </Tooltip>
+      <GatherButton className="ml-auto" />
     </div>
   );
 }
