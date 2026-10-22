@@ -57,14 +57,24 @@ export function WindowsKeeper(props: {
       stopReturned();
     };
   }, []);
-  // Drawn: a window a tab was carried out to has its still taken away now.
+  // Drawn, and drawn again once a window started hidden shows: a window a
+  // tab was carried out to has its still taken away now.
   useEffect(() => {
     const bridge = windowsBridge();
     if (!bridge) return;
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => bridge.drawn());
-    });
-    return () => cancelAnimationFrame(frame);
+    let frame = 0;
+    const drawn = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => bridge.drawn());
+      });
+    };
+    drawn();
+    const stopShown = bridge.onShown(drawn);
+    return () => {
+      cancelAnimationFrame(frame);
+      stopShown();
+    };
   }, []);
   return null;
 }

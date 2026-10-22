@@ -90,6 +90,16 @@ describe("WindowBook", () => {
     expect(book.publish("a", "after")).toBe(true);
   });
 
+  it("ignores what a warm window's page published before it took the move as made", () => {
+    const book = twoWindows();
+    book.commit(move(book, { open: [placed("c", "c-tab")] }));
+    book.sending("c");
+    expect(book.publish("c", "as-planned-at-the-tear")).toBe(false);
+    expect(book.get("c")!.workspace).toBe("c-tab");
+    book.adopted("c");
+    expect(book.publish("c", "after")).toBe(true);
+  });
+
   it("lets a page that reloads start from the book", () => {
     const book = twoWindows();
     book.commit(move(book, { change: [placed("a", "a-less")] }));

@@ -41,7 +41,7 @@ import {
   type Landing,
   type Point,
 } from "./carry";
-import { tearToNewWindow } from "./newWindow";
+import { tearToNewWindow, warmNewWindow } from "./newWindow";
 import { TearFlight } from "./tearFlight";
 
 /** The tab list's `gap-1`, in CSS pixels. */
@@ -82,6 +82,8 @@ interface Live {
   readonly ends: () => void;
   /** Stops hearing the pointer's capture lost. */
   unhear: () => void;
+  /** The window a drop in open space opens, started hidden at the tear. */
+  readonly windowId: string;
   done: boolean;
 }
 
@@ -194,6 +196,10 @@ export function useTabCarry(options: {
     );
     at.flight = flight;
     const was = at.carry.carried;
+    // The window a drop in open space would open, drawn by the time it's dropped.
+    const frame =
+      was.kind === "open" ? was.frame : { ...chipAt(at, was), ...at.carry.pickUp.preview };
+    void warmNewWindow(at.carry.pickUp.tabId, frame, at.windowId, () => !at.done);
     at.tearing = flight
       .tear(lifted, chip, at.wasActive ? content : null, chipAt(at, was))
       .then(() => {
@@ -250,7 +256,7 @@ export function useTabCarry(options: {
       }
       case "window": {
         // The still stays until the new window has drawn under it.
-        const id = randomUUID();
+        const id = at.windowId;
         const landed = new Promise<void>((resolve) => {
           const stop = windowsBridge()?.onLanded((window) => {
             if (window !== id) return;
@@ -395,6 +401,7 @@ export function useTabCarry(options: {
       wasActive: false,
       ends: carryStarts(),
       unhear: () => undefined,
+      windowId: randomUUID(),
       done: false,
     };
     live.current = at;
