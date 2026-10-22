@@ -25,6 +25,11 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   success. `stemcells/scripts/check-local <pull request>` records it: the
   `check` gates on a clean checkout of that head, one run at a time, at low
   priority. A push after it needs a new run.
+- Agents land their own work without stopping to ask: once a change is
+  done and verified, push it, open its pull request, run `check-local` and
+  merge it (squash) when it passes. The root `AGENTS.md`'s "never make a PR
+  unless asked" is T3's rule for T3's repository; here it holds only for
+  pull requests to T3 (`stemcells/docs/fork.md`, rule 5).
 
 ## Where code goes
 - Ours lives in `apps/web/src/stemcells/`, `apps/server/src/stemcells/`,
