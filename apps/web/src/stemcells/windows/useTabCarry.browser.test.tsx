@@ -8,7 +8,7 @@ import type { Tab } from "../tabs/layout";
 import { TabStrip } from "../tabs/TabStrip";
 import { render } from "../upstream/testRender";
 import type { WindowsBridge } from "./bridge";
-import { carrying } from "./carrying";
+import { carrying, carryStarts } from "./carrying";
 
 const cell = (threadId: string) => ({ environmentId: "env", threadId, draftId: null });
 
@@ -26,7 +26,7 @@ function desktop() {
     boot: { id: "here", lead: true, workspace: null, others: [], notifies: true },
     zoom: () => 1,
     snapshot: () => Promise.resolve({ windows: [], lead: null, memories: [], displays: [] }),
-    still: () => Promise.resolve("data:image/gif;base64,R0lGODlhAQABAAAAACw="),
+    still: vi.fn(() => Promise.resolve("data:image/gif;base64,R0lGODlhAQABAAAAACw=")),
     flight: vi.fn(),
     painted: () => Promise.resolve(),
     endFlight: vi.fn(),
@@ -55,8 +55,8 @@ function desktop() {
   };
 }
 
-function Strip() {
-  const tabs = [tabOf("t1"), tabOf("t2")];
+function Strip(props: { tabs?: Tab[] }) {
+  const tabs = props.tabs ?? [tabOf("t1"), tabOf("t2")];
   return (
     <div style={{ width: 900 }}>
       <TabStrip
@@ -141,5 +141,29 @@ describe("a tab's chip flicked off its strip", () => {
     const chip = await flick(screen.container, true);
     lose(chip);
     await home(chip, app.bridge);
+  });
+
+  it("goes home when its chip goes mid-carry, and the document hears the pointer lost", async () => {
+    using app = desktop();
+    await using screen = await render(<Strip />);
+    await flick(screen.container, true);
+    // The tab goes from the strip under the hand: its chip, which held the pointer, with it.
+    await screen.rerender(<Strip tabs={[tabOf("t1")]} />);
+    document.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 }));
+    await expect.poll(() => app.bridge.endFlight.mock.calls.length).toBe(1);
+    expect(carrying()).toBe(false);
+  });
+
+  it("doesn't start while something else is in the hand, such as Gather's flight", async () => {
+    using app = desktop();
+    await using screen = await render(<Strip />);
+    const gathering = carryStarts();
+    const chip = chipOf(screen.container);
+    const box = chip.getBoundingClientRect();
+    pointer(chip, "pointerdown", box.left + 10, box.top + 10);
+    pointer(chip, "pointermove", box.left + 50, box.top + 210);
+    gathering();
+    expect(carrying()).toBe(false);
+    expect(app.bridge.still).not.toHaveBeenCalled();
   });
 });

@@ -24,7 +24,7 @@ import { reducedMotion, timing } from "../tokens/motion";
 import { randomUUID } from "../upstream/ui";
 import type { Display } from "./arrangement";
 import { windowsBridge, type WindowsBridge } from "./bridge";
-import { carryStarts } from "./carrying";
+import { carrying, carryStarts } from "./carrying";
 import {
   cancel,
   homeOf,
@@ -80,6 +80,8 @@ interface Live {
   wasActive: boolean;
   /** Puts the carry down for the keys that wait on one (`carrying.ts`). */
   readonly ends: () => void;
+  /** Stops hearing the pointer's capture lost. */
+  unhear: () => void;
   done: boolean;
 }
 
@@ -139,6 +141,7 @@ export function useTabCarry(options: {
   const finish = (at: Live) => {
     at.done = true;
     at.ends();
+    at.unhear();
     if (live.current === at) live.current = null;
     setView(null);
   };
@@ -280,6 +283,7 @@ export function useTabCarry(options: {
       live.current = null;
       at.done = true;
       at.ends();
+      at.unhear();
       void (at.tearing ?? Promise.resolve()).then(() => at.flight?.end());
     },
     [],
@@ -324,6 +328,8 @@ export function useTabCarry(options: {
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
     // A press in the name being edited places the caret: it never carries.
     if (event.button !== 0 || (event.target as Element).closest("button, input")) return;
+    // One thing in the hand at a time: not while Gather, Put back or a chat flies.
+    if (carrying()) return;
     const { tabs, tabElements, strip, windowTabs, staysId } = latest.current;
     const element = event.currentTarget;
     const stripElement = strip.current;
@@ -388,17 +394,23 @@ export function useTabCarry(options: {
       tearing: null,
       wasActive: false,
       ends: carryStarts(),
+      unhear: () => undefined,
       done: false,
     };
     live.current = at;
-    // Let go, the pointer goes back too; lost before that, the carry goes home.
-    element.addEventListener(
-      "lostpointercapture",
-      (lost: PointerEvent) => {
-        if (lost.pointerId === at.pointerId && live.current === at && !at.done) lose(at);
-      },
-      { once: true },
-    );
+    // Let go, the pointer goes back too; lost before that, the carry goes
+    // home. The chip may go mid-carry, and then the document hears it.
+    const onLost = (lost: PointerEvent) => {
+      if (lost.pointerId !== at.pointerId) return;
+      at.unhear();
+      if (live.current === at && !at.done) lose(at);
+    };
+    element.addEventListener("lostpointercapture", onLost);
+    document.addEventListener("lostpointercapture", onLost);
+    at.unhear = () => {
+      element.removeEventListener("lostpointercapture", onLost);
+      document.removeEventListener("lostpointercapture", onLost);
+    };
     setView({ tabId, picked: false, offset: 0, pulled: 0, slot: from, away: "no", geometry });
     // Every display, for where a window may open and how big: the desktop app knows them.
     void bridge?.snapshot().then((snapshot) => {
