@@ -53,13 +53,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/chat/WorkflowOpeningBlock.tsx` | A member's avatar gets `subcell={{ name: threadId ?? member.id }}` | Same, for a workflow's members |
 | `apps/web/src/components/chat/ThreadRelationshipsControl.tsx`, `apps/web/src/components/chat/V2ItemInspector.tsx` | Say Subcell where they said subagent or agent: the relation ("Subcell", "Parent Cell"), "Previous Subcells", the stop button's label, tooltip and error, "Open Subcell" | Same: the words a person reads about them |
 | `apps/mobile/src/features/threads/thread-subagent-group.tsx`, `apps/mobile/src/features/threads/ThreadAgentsSheet.tsx`, `apps/mobile/src/features/threads/threadAgentsPresentation.ts`, `apps/mobile/src/features/threads/floating-working-control.tsx`, `apps/mobile/src/features/threads/thread-work-log.tsx`, `apps/mobile/src/features/threads/ProviderSubagentBar.tsx` | Say Subcell where they said subagent or agent: the card's label, the sheet's title, empty line and hints, an untitled one's title, and the words read aloud for them | Same, on the phone |
-| `apps/web/src/branding.ts` | Imports `stemcells/brand/name`; `APP_BASE_NAME` falls back to `APP_NAME` where it fell back to "T3 Code" | The app's name (below): a browser's window title, the auth and pairing screens and every other view that names the app through upstream's branding |
 | `apps/web/src/components/sidebar/SidebarChrome.tsx` | Imports `stemcells/brand/Wordmark` and renders `SidebarWordmark` where it rendered `SidebarBrandMark` (the T3 logo beside "Code"), in the link and in the width probe; `SidebarBrandMark` and its `T3Wordmark` import go | The sidebar's top-left reads Stemcells |
-| `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The header's title is `Set up ${APP_BASE_NAME}` and its identity `WizardWordmark`, where it drew the T3 logo beside "Code" | The first thing a person reads |
-| `apps/web/src/components/settings/IntegrationsSettings.tsx` | "Open links in"'s `app` option and the pull request links row (description, reset label, switch label) say `APP_BASE_NAME` | The app as a place links open in |
-| `apps/web/src/components/settings/settingsSearch.ts` | The pull request links row's title says `APP_BASE_NAME` (one more name in the existing `~/branding` import) | Same row |
-| `apps/web/src/components/settings/SettingsPanels.logic.ts` | Imports `APP_BASE_NAME`; the changed-settings list names that row the same way | Same row |
-| `apps/web/index.html` | The boot page's title, the splash's label and its logo's alt text say Stemcells | Before the app loads; `__root.tsx` titles it from `APP_DISPLAY_NAME` after |
+| `apps/web/src/components/onboarding/WelcomeWizard.tsx` | The header is one line, its identity `WizardWordmark`, where it drew the T3 logo beside "Code"; its title stays upstream's, which the build renames (The app's name, below) | The first thing a person reads |
 | `apps/web/public/manifest.webmanifest` | `name` and `short_name` are "Stemcells" | The name a browser installs the web app under |
 | `apps/server/src/server.ts` (analytics) | Provides `Stemcells.analytics` where it provided `AnalyticsService.layer`, and drops that import | No telemetry (below): the server records through a service that keeps nothing |
 | `apps/server/src/server.ts` (model list) | Provides `Stemcells.modelList` where it provided `ModelManifest.layerModelCatalog` over `ModelManifest.layer`, and drops that import | No model list from T3 (below): the server runs the list bundled at build time and never asks T3's GitHub repository for one |
@@ -90,17 +85,18 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts` | `claudeAutoCompactThreshold` is imported from `stemcells/compaction/claudeWindow` (same name), and the local one goes | Same: the threshold a chat reports is where Claude compacts, the window capped at the model's context less 33,000, where upstream reported the window itself, and none at or above the context |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | Expects those thresholds (117k for 150k on a 200k model, 167k for 200k and 650k, 617k for 650k on an unknown model), and nothing else changes in it | It pins the thresholds this seam changes |
 | `apps/server/src/orchestration-v2/ThreadManagementService.ts` | Imports `moveCellsOffAskisInstance` and `refuseAskisInstance` from `stemcells/upstream/askiInstance`; `dispatch` passes each command through the first before its gate and the orchestrator; `assertProviderInstanceEnabled` (the gate every thread start and every message asks) also runs the second, takes an optional `threadId`, and the message gate passes its thread; `ThreadManagementProviderInstanceDisabledError` takes an optional `reason` its message reads | Aski's instance runs only Aski (below): the server refuses a Cell started there, rather than trusting Aski's instructions, and a message to a Cell already there runs on the driver's own instance |
-| `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view |
+| `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view. In dev and the production build the same plugin runs the name transform (The app's name, below) |
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts`, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/brand/nameTransform.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts` and the name transform through its substitutes plugin, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/name.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
 | `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsAboutRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsMicrophoneRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsNotificationsRouteScreen.tsx`, `apps/mobile/src/features/settings/SettingsEnvironmentDetailRouteScreen.tsx`, `apps/mobile/src/features/settings/OutdatedServerUpdateSection.tsx`, `apps/mobile/src/features/home/ThreadListToolbar.tsx`, `apps/mobile/src/features/pull-requests/PullRequestToolbar.android.tsx`, `apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx`, `apps/mobile/src/features/threads/ThreadComposer.tsx`, `apps/mobile/src/features/threads/ThreadFeed.tsx`, `apps/mobile/src/features/agent-awareness/remoteRegistration.ts`, `apps/mobile/src/features/diagnostics/crash-log-model.ts`, `apps/mobile/src/lib/authClientMetadata.ts`, `apps/mobile/src/features/showcase/showcaseAgentActivity.ts` | Each imports `APP_NAME` from `stemcells/brand/name` and says it where it said "T3 Code": a title, a label, a prompt, the crash report's first line, the Live Activity's title, the name a Mac lists this phone by ("Stemcells Mobile") | Same: the phone's screens write the name as text, with no name of upstream's to follow |
-| `packages/client-runtime/src/connection/compatibility.ts`, `packages/client-runtime/src/connection/diagnosis.ts`, `packages/client-runtime/src/connection/hostFreeze.ts`, `packages/client-runtime/src/connection/outdatedHostUpdate.ts`, `packages/client-runtime/src/relay/errorPresentation.ts`, `packages/client-runtime/src/state/pullRequestDiffHttp.ts`, `packages/contracts/src/browserImport.ts`, `packages/contracts/src/pullRequest.ts`, `packages/shared/src/codexAuthCallback.ts`, `packages/shared/src/codexAuthHandoff.ts`, `packages/shared/src/promptLinks.ts`, `packages/shared/src/relayClient.ts` | Each imports `APP_NAME` from `stemcells/brand/name.ts` and says it where a message said "T3 Code" | The app's name (below), in the messages the web and the phone show from the shared packages: why a host didn't answer, a prompt link refused, the Codex sign-in tab, Full Disk Access |
-| `apps/server/src/cloud/ConnectReachability.ts`, `apps/server/src/cloud/bootService.ts`, `apps/server/src/cloud/relayResponse.ts`, `apps/server/src/cloud/selfUpdate.ts`, `apps/server/src/cloud/servicePreflight.ts`, `apps/server/src/desktopUpdate/DesktopAppUpdate.ts`, `apps/server/src/orchestration-v2/RestartContinuation.ts`, `apps/server/src/orchestration-v2/UserFacingErrors.ts`, `apps/server/src/provider/AntigravityProvider.ts`, `apps/server/src/provider/ClaudeProvider.ts`, `apps/server/src/provider/CodexAuthCallback.ts`, `apps/server/src/provider/CodexAuthCallbackPage.ts`, `apps/server/src/provider/CodexInstallation.ts`, `apps/server/src/provider/CodexProvider.ts`, `apps/server/src/provider/ProviderAuthService.ts`, `apps/server/src/provider/providerCompatibility.ts`, `apps/server/src/provider/providerInstallation.ts`, `apps/server/src/provider/providerMaintenanceRunner.ts`, `apps/server/src/serverOwnership.ts`, `apps/server/src/vcs/GitVcsDriver.ts` | Same | The same, in what the server writes for a person: provider states, update and database errors, the restart notice, the Codex sign-in page (its "T3 Code" wordmark too), and the author's name on the checkpoint commits it makes (the email stays) |
-| `packages/provider-acp-registry/src/server/driver.ts`, `packages/provider-core/src/server/maintenanceResolver.ts`, `packages/provider-cursor/src/server/accountUsage.ts`, `packages/provider-cursor/src/server/status.ts`, `packages/provider-cursor/src/server/textGeneration.ts`, `packages/provider-cursor/src/server/usageLimits.ts`, `packages/provider-grok/src/server/status.ts`, `packages/provider-muse/src/server/adapter.ts`, `packages/provider-muse/src/server/status.ts`, `packages/provider-opencode/src/server/OpenCodeRuntime.ts`, `packages/provider-opencode/src/server/status.ts`, `packages/provider-opencode/src/server/v2/adapter.ts`, `packages/provider-opencode/src/server/versionProbe.ts`, `packages/provider-opencode/src/settings.ts`, `packages/provider-pi/src/server/mcpInjection.ts`, `packages/provider-pi/src/server/status.ts`, `packages/source-control-gitcafe/src/server/GitCafePullRequestProvider.ts`, `packages/source-control-github/src/server/githubStackRebase.ts` | Same | The same, in the providers' states and errors ("Cursor is disabled in Stemcells settings."), and the committer's name on a rebased GitHub stack (the email stays) |
-| `apps/server/src/cloud/servicePreflight.test.ts`, `packages/client-runtime/src/connection/diagnosis.test.ts`, `packages/client-runtime/src/connection/resolver.test.ts`, `packages/provider-core/src/server/maintenanceResolver.test.ts`, `packages/provider-cursor/src/server/accountUsage.test.ts`, `packages/provider-cursor/src/server/status.test.ts`, `packages/provider-pi/src/server/mcpInjection.test.ts`, `apps/server/src/orchestration-v2/Adapters/OpenCode2AdapterV2.test.ts` | Expect "Stemcells" in those messages, and nothing else changes in them | They pin the messages these seams change |
+| `packages/client-runtime/src/connection/compatibility.ts`, `packages/client-runtime/src/connection/diagnosis.ts`, `packages/client-runtime/src/connection/hostFreeze.ts`, `packages/client-runtime/src/connection/outdatedHostUpdate.ts`, `packages/client-runtime/src/relay/errorPresentation.ts`, `packages/client-runtime/src/state/pullRequestDiffHttp.ts`, `packages/contracts/src/browserImport.ts`, `packages/contracts/src/pullRequest.ts`, `packages/shared/src/codexAuthCallback.ts`, `packages/shared/src/codexAuthHandoff.ts`, `packages/shared/src/promptLinks.ts`, `packages/shared/src/relayClient.ts` | Each imports `APP_NAME` from `stemcells/brand/name.ts` and says it where a message said "T3 Code" | The app's name (below), in the messages the web, the phone and the desktop app show from the shared packages: why a host didn't answer, a prompt link refused, the Codex sign-in tab, Full Disk Access. The phone and the desktop app bundle these without the name transform, so they stay seams until those builds rename too |
+| `apps/server/src/provider/CodexAuthCallbackPage.ts` | The sign-in page's wordmark is `<strong>T3 Code</strong>`, where it bolded "T3" alone | The name transform renames whole words only: drawn as one, the build says Stemcells there (The app's name, below) |
+| `apps/server/vite.config.ts` | Imports `upstreamNamePlugin` from `stemcells/brand/nameTransform.ts` and adds it to `pack.plugins` | The name transform (The app's name, below): the server's bundle says Stemcells where upstream's code says T3 Code |
+| `packages/provider-opencode/src/settings.ts` | Same | The same, in a provider's setting the phone shows too ("Leave blank to let Stemcells spawn the server") |
+| `packages/client-runtime/src/connection/diagnosis.test.ts`, `packages/client-runtime/src/connection/resolver.test.ts` | Expect "Stemcells" in those messages, and nothing else changes in them | They pin the messages these seams change |
 | `apps/mobile/plugins/withWidgetLogoAsset.cjs` | Copies the Live Activity's logo from `stemcells/brand/phone-widget-mark.svg`, where it took `assets/widget/T3Mark.svg` (one line; the image keeps its name, `T3Mark`) | Same: the Live Activity's logo |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
 | `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
@@ -288,17 +284,36 @@ sidebar or a window's title.
   Bundle ids, URL schemes and storage keys stay upstream's, so an installed
   app and its pairing keep working. The phone's `appName.contract.test.ts`
   fails when a config string or a screen's text says "T3 Code".
-- **Messages from the shared packages and the server** say `APP_NAME`
-  too (the seams above): "Stemcells on the Mac did not answer", "Stemcells
-  restarted and resumed this turn", "Cursor is disabled in Stemcells
-  settings". `nameInMessages.contract.test.ts` sweeps every package's
-  `src` and the server's for "T3 Code" and fails on a line it doesn't list.
-  Its list of what keeps T3's name says why for each: T3's command line
-  (`t3`), what only the model reads (prompts, tool descriptions; the
-  replay fixtures record them), names other programs key on (client
-  names, API key and session names), logs, and files written to disk. The
-  name on commits Stemcells makes says Stemcells (people read it in their
-  git log); its email stays upstream's.
+- **The name transform: the web app and the server.** Their builds say
+  Stemcells where upstream's code says "T3 Code", so upstream's files keep
+  their own words and a sync never conflicts over them
+  (`stemcells/brand/nameTransform.ts`; `stemcells/docs/fork.md`, "The name
+  transform"). It renames the exact words and their possessive ("T3 Code's"
+  reads "Stemcells'"), never inside a path, an id or a longer word, in
+  `apps/web/src`, `index.html`, `apps/server/src` and the server's half of
+  the provider and source-control packages, never in our folders or tests.
+  Its `KEPT` list says why for each line that keeps T3's name: T3's command
+  line (`t3`), what only the model reads (prompts, tool descriptions; the
+  replay fixtures record them), names other programs key on (client names,
+  API key and session names), files written to disk, and lines that name
+  T3's own product (its theme, its phone app, the GNOME extension the
+  desktop installs). The web runs it in the substitutes plugin, in dev and
+  the production build; the server in its `pack` (the seams above). Tests
+  run upstream's code as written. A build fails when the transform renamed
+  nothing, when a line says the name where it can't rename and `KEPT`
+  doesn't keep, and when its output says "T3 Code" where no kept line
+  does; `stemcells/scripts/check-app-name.ts` checks an install's archive
+  the same way (`install-app`, the sync's build gate), and
+  `nameTransform.test.ts` holds the list to the sources. The server run
+  from source (`pnpm dev`, `pnpm dev:server`) isn't built, so it says
+  T3 Code; the web app in dev says Stemcells. The name on
+  commits Stemcells makes says Stemcells (people read it in their git
+  log); its email stays upstream's.
+- **Messages from the shared packages** say `APP_NAME` through seams
+  (above): "Stemcells on the Mac did not answer". The phone and the desktop
+  app bundle `contracts`, `shared`, `client-runtime` and a provider's
+  settings without the transform, so those seams stay until their builds
+  rename too; `nameInMessages.contract.test.ts` pins two of the messages.
 - **The desktop's release files and permission prompts.** The build names
   its files `Stemcells-<version>-<arch>.dmg` and `.zip` (`artifactName`
   from `APP_NAME`), and the Mac's camera, microphone, screen capture and
@@ -307,9 +322,9 @@ sidebar or a window's title.
   `stemcells/brand/releaseNames.test.ts` fails when either says T3's name.
 - **Already Stemcells, no seam:** the desktop's window title, app menu
   and About panel read the desktop's branding, and every web view that
-  names the app through `APP_BASE_NAME` or `APP_DISPLAY_NAME` follows the
-  branding seam: the browser's title, auth and pairing, the not-found
-  page, the error report. Notifications name no app: their titles are a
+  names the app through `APP_BASE_NAME` or `APP_DISPLAY_NAME` follows it
+  (in a browser, upstream's fallback, which the build renames): the
+  browser's title, auth and pairing, the not-found page, the error report. Notifications name no app: their titles are a
   thread's state, and macOS shows the bundle's name.
 - **The name in type, no logo,** in the size and weight upstream gives the
   T3 logo and "Code" (`brand/Wordmark.tsx`).
@@ -319,8 +334,9 @@ What keeps T3's name, on purpose:
 - What credits upstream: `LICENSE`, the notices, the docs.
 - T3's own theme, "T3 Code" in the theme picker, on the web and the phone.
 - The Android editor's clipboard label, which a person doesn't see.
-- In the shared packages and the server, lines a person never reads (the
-  sweep's list, above).
+- In what the web app and the server build, the lines the name
+  transform's `KEPT` list keeps, each with why (above); in the shared
+  packages, lines a person never reads.
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).

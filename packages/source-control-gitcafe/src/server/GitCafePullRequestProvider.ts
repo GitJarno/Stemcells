@@ -19,7 +19,6 @@ import * as GitCafeApi from "./GitCafeApi.ts";
 import * as GitCafeHosts from "./gitCafeHosts.ts";
 import * as Json from "./gitCafePullRequestJson.ts";
 import { definition } from "../client/definition.ts";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const CAPABILITIES: PullRequestCapabilities = {
   diff: true,
@@ -688,7 +687,7 @@ export const make = Effect.gen(function* () {
           return;
         }
         default:
-          return yield* failure(input.action, `GitCafe cannot ${input.action} from ${APP_NAME}.`);
+          return yield* failure(input.action, `GitCafe cannot ${input.action} from T3 Code.`);
       }
     }),
     updateChangeRequest: Effect.fn("GitCafePullRequestProvider.updateChangeRequest")(

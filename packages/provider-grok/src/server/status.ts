@@ -47,7 +47,6 @@ import {
 import { sessionModelStateFromInitialize } from "@t3tools/provider-acp/server/runtimeModel";
 import { discoverGrokSkills } from "./skills.ts";
 import { grokProbeEnvironment } from "./probeEnvironment.ts";
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const GROK_PRESENTATION = {
   displayName: "Grok",
@@ -92,7 +91,7 @@ export const buildInitialGrokProviderSnapshot = Effect.fn(
         version: null,
         status: "warning",
         auth: { status: "unknown" },
-        message: `Grok is disabled in ${APP_NAME} settings.`,
+        message: "Grok is disabled in T3 Code settings.",
       },
     });
   }
@@ -414,7 +413,7 @@ export const checkGrokProviderStatus = Effect.fn("checkGrokProviderStatus")(func
         version: null,
         status: "warning",
         auth: { status: "unknown" },
-        message: `Grok is disabled in ${APP_NAME} settings.`,
+        message: "Grok is disabled in T3 Code settings.",
       },
     });
   }

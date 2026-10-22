@@ -5,6 +5,7 @@ import baseConfig from "../../vite.config.ts";
 import { loadRepoEnv } from "../../scripts/lib/public-config.ts";
 import packageJson from "./package.json" with { type: "json" };
 import { WeightedShardSequencer } from "./src/testUtils/weightedShardSequencer.ts";
+import { upstreamNamePlugin } from "../../stemcells/brand/nameTransform.ts";
 
 // NSIS install time tracks file count, not bytes.
 import {
@@ -81,6 +82,7 @@ export default mergeConfig(
       outDir: packExecutable ? "dist-exe" : "dist",
       sourcemap: !packExecutable,
       clean: true,
+      plugins: [upstreamNamePlugin()],
       ...(packExecutable
         ? {
             exe: {

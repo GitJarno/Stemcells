@@ -4,6 +4,8 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import type { Plugin } from "vite-plus";
 
+import { upstreamNamePlugin } from "../../../../../../stemcells/brand/nameTransform.ts";
+
 /**
  * Upstream modules Stemcells replaces at build time, each with the module of
  * the same name in this folder. Upstream's code imports them as it always has
@@ -125,12 +127,23 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 
 /**
  * Resolves upstream's imports of a substituted module to ours, and serves
- * and builds our public files in place of upstream's.
+ * and builds our public files in place of upstream's. In dev and the
+ * production build, not in tests, it also says Stemcells where upstream's
+ * code says T3 Code (`stemcells/brand/nameTransform.ts`): tests run
+ * upstream's code as upstream wrote it.
  */
 export function substituteUpstreamModules(): Plugin {
+  const naming = process.env.VITEST ? null : upstreamNamePlugin(repoRoot);
   return {
     name: "stemcells:substitute-upstream-modules",
     enforce: "pre",
+    ...(naming === null
+      ? {}
+      : {
+          transform: naming.transform,
+          transformIndexHtml: naming.transformIndexHtml,
+          generateBundle: naming.generateBundle,
+        }),
     async resolveId(source, importer, options) {
       if (importer === undefined || isOurs(importer)) return null;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });

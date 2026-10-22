@@ -94,6 +94,8 @@ gate_upstream_server() { upstream_env pnpm exec vp run --filter t3 test; }
 # The web, server and desktop builds, and the check upstream's CI makes on them.
 gate_build() {
   pnpm build:desktop || return 1
+  # The server's bundle and the web app in it say T3's name only where kept.
+  node stemcells/scripts/check-app-name.ts apps/server/dist || return 1
   if [ "$(uname)" = Darwin ]; then
     # Upstream's CI checks the preload on Linux; on a Mac its own darwin-only
     # window code wants a page the check doesn't give it.

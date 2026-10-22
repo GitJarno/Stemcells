@@ -8,7 +8,6 @@ import {
 import { satisfiesSemverRange } from "@t3tools/shared/semver";
 import * as Schema from "effect/Schema";
 import packageJson from "../../package.json" with { type: "json" };
-import { APP_NAME } from "../../../../stemcells/brand/name.ts";
 
 const StableVersion = TrimmedNonEmptyString.pipe(
   Schema.check(Schema.makeFilter((value) => /^\d+\.\d+\.\d+$/.test(value))),
@@ -84,11 +83,11 @@ export function resolveProviderCompatibility(
       : "unknown";
   const message =
     status === "broken"
-      ? `This provider version is known to be incompatible with this ${APP_NAME} release.`
+      ? "This provider version is known to be incompatible with this T3 Code release."
       : status === "unsupported"
-        ? `This provider version is outside the supported range for this ${APP_NAME} release.`
+        ? "This provider version is outside the supported range for this T3 Code release."
         : status === "graceful"
-          ? `This provider version has limited compatibility with this ${APP_NAME} release.`
+          ? "This provider version has limited compatibility with this T3 Code release."
           : null;
   const recommendedVersion = policy.recommendedVersion ?? null;
   const recommendedRange = policy.recommendedRange ?? null;

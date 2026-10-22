@@ -43,7 +43,6 @@ import { useRef, useState } from "react";
 
 import { ScreenRotationIcon } from "~/browser/ScreenRotationIcon";
 import { AnimatedHeight } from "~/components/AnimatedHeight";
-import { APP_BASE_NAME } from "~/branding";
 import { resolveEnvironmentOptionLabel } from "~/components/BranchToolbar.logic";
 import { previewBridge } from "~/components/preview/previewBridge";
 import { cn, randomUUID } from "~/lib/utils";
@@ -644,7 +643,7 @@ function BrowserRecordingFrameRateSetting({ disabled }: { readonly disabled: boo
 
 const LINK_TARGET_LABELS: Readonly<Record<BrowserLinkTarget, string>> = {
   system: "Your default browser",
-  app: APP_BASE_NAME,
+  app: "T3 Code",
 };
 
 function BrowserLinkTargetSetting({ disabled }: { readonly disabled: boolean }) {
@@ -781,11 +780,11 @@ function PullRequestLinksOpenInAppSetting() {
   return (
     <SettingsRow
       {...searchableSetting("pull-request-links-open-in-app")}
-      description={`Clicking a pull request link opens it in ${APP_BASE_NAME}. Turn off to open pull request links like any other link, on GitHub or your git host.`}
+      description="Clicking a pull request link opens it in T3 Code. Turn off to open pull request links like any other link, on GitHub or your git host."
       resetAction={
         openInApp ? null : (
           <SettingResetButton
-            label={`open pull requests in ${APP_BASE_NAME}`}
+            label="open pull requests in T3 Code"
             onClick={() => updateSettings({ pullRequestLinksOpenInApp: true })}
           />
         )
@@ -796,7 +795,7 @@ function PullRequestLinksOpenInAppSetting() {
           onCheckedChange={(checked) =>
             updateSettings({ pullRequestLinksOpenInApp: Boolean(checked) })
           }
-          aria-label={`Open pull requests in ${APP_BASE_NAME}`}
+          aria-label="Open pull requests in T3 Code"
         />
       }
     />
