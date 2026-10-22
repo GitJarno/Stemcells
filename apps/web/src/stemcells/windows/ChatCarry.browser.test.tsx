@@ -25,10 +25,17 @@ function Slate(props: { cellGone?: boolean }) {
   );
 }
 
-function pointer(element: Element, type: string, x: number, y: number) {
-  element.dispatchEvent(
-    new PointerEvent(type, { bubbles: true, button: 0, pointerId: 1, clientX: x, clientY: y }),
-  );
+function pointer(element: Element, type: string, x: number, y: number, at?: number) {
+  const event = new PointerEvent(type, {
+    bubbles: true,
+    button: 0,
+    pointerId: 1,
+    clientX: x,
+    clientY: y,
+  });
+  // The hand's speed is read from the events' times.
+  if (at !== undefined) Object.defineProperty(event, "timeStamp", { value: at });
+  element.dispatchEvent(event);
 }
 
 const card = () => document.querySelector("[data-stemcells-chat-card]");
@@ -57,6 +64,24 @@ describe("a chat carried by its Cell", () => {
     await expect.poll(card, { timeout: 3000 }).toBeNull();
     expect(carrying()).toBe(false);
     expect(handle.dataset.carrying).toBeUndefined();
+  });
+
+  // Left in the hand, the carry would hold every tab's chip and the keys
+  // that wait on one (Gather, Undo Move) off for the rest of the session.
+  it("thrown, leaves the hand empty", async () => {
+    await using screen = await render(<Slate />);
+    const handle = screen.container.querySelector("button")!;
+    const box = handle.getBoundingClientRect();
+    // The hand's own clock: only the gaps between its events count.
+    const t = 1000;
+    pointer(handle, "pointerdown", box.left + 4, box.top + 4, t);
+    pointer(handle, "pointermove", box.left + 40, box.top + 40, t + 10);
+    await expect.poll(card).not.toBeNull();
+    pointer(handle, "pointermove", box.left + 240, box.top + 40, t + 30);
+    pointer(handle, "pointerup", box.left + 240, box.top + 40, t + 40);
+
+    await expect.poll(card).toBeNull();
+    expect(carrying()).toBe(false);
   });
 
   it("goes back when its Cell goes mid-carry, and the document hears the pointer lost", async () => {

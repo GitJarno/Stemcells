@@ -419,9 +419,10 @@ export function useTabCarry(options: {
     }
     if (!at.flight) {
       finish(at);
-      if (landing.kind === "click") onActivate(tabId);
-      else if (landing.kind === "reorder" && landing.slot !== at.geometry.from)
-        onMove(tabId, landing.slot);
+      // Let go in its own place, however the hand wobbled on the way, a press is a click.
+      const ownPlace = landing.kind === "reorder" && landing.slot === at.geometry.from;
+      if (landing.kind === "click" || ownPlace) onActivate(tabId);
+      else if (landing.kind === "reorder") onMove(tabId, landing.slot);
       return;
     }
     await at.tearing;
@@ -520,16 +521,14 @@ export function useTabCarry(options: {
     return () => window.removeEventListener("blur", onBlur);
   }, [held]);
 
-  const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string) => {
-    // A press in the name being edited places the caret: it never carries.
-    if (event.button !== 0 || (event.target as Element).closest("button, input")) return;
+  /** A press on `tabId`'s chip. True when the carry takes it: let go, it opens, moves or carries the tab. */
+  const onPointerDown = (event: ReactPointerEvent<HTMLElement>, tabId: string): boolean => {
     // One thing in the hand at a time: not while Gather, Put back or a chat flies.
-    if (carrying()) return;
+    if (carrying()) return false;
     const { tabs, tabElements, strip, windowTabs, staysId } = latest.current;
     const element = event.currentTarget;
     const stripElement = strip.current;
-    if (!stripElement) return;
-    element.setPointerCapture(event.pointerId);
+    if (!stripElement) return false;
     const bridge = windowsBridge();
     // On the desktop, a tab can leave its strip; the new Cell's, unsent, can't.
     const leaves = bridge !== null && tabId !== staysId;
@@ -578,7 +577,8 @@ export function useTabCarry(options: {
         springLoad: timing("springLoad"),
       },
     );
-    if (!carry || from < 0) return;
+    if (!carry || from < 0) return false;
+    element.setPointerCapture(event.pointerId);
     // The strip's own view of it, in its CSS pixels.
     const geometry = { widths: chips.map((chip) => chip.rect.width / zoom), gap: TAB_GAP, from };
     const at: Live = {
@@ -633,6 +633,7 @@ export function useTabCarry(options: {
     void bridge?.geometry().then((others) => {
       if (!at.done) at.carry = withOthers(at.carry, others);
     });
+    return true;
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {

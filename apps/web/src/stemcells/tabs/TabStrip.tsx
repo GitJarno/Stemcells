@@ -134,8 +134,14 @@ export function TabStrip(props: {
               data-dragged={dragged || undefined}
               {...spring.handlers(tab.id)}
               onPointerDown={(event) => {
-                if (!untaken) carry.onPointerDown(event, tab.id);
-                else if (event.button === 0) onActivate(tab.id);
+                // A press on its × or in its name being edited is theirs.
+                if (event.button !== 0 || (event.target as Element).closest("button, input")) {
+                  return;
+                }
+                // The click never waits on a carry: a press none takes (the new
+                // Cell's tab, unsent, or any while something else is in the hand)
+                // opens the tab at once.
+                if (untaken || !carry.onPointerDown(event, tab.id)) onActivate(tab.id);
               }}
               onPointerMove={carry.onPointerMove}
               onPointerUp={carry.onPointerUp}

@@ -68,6 +68,41 @@ describe("TabPager data-moving", () => {
   });
 });
 
+/** Where the strip shows, in pages. */
+const shown = (strip: HTMLElement) =>
+  -new DOMMatrixReadOnly(getComputedStyle(strip).transform).m41 / strip.clientWidth;
+
+/** The strip's slide, held still `ms` into it. */
+function holdSlide(strip: HTMLElement, ms: number): void {
+  const [slide] = strip.getAnimations();
+  slide!.pause();
+  slide!.currentTime = ms;
+}
+
+// A slide taken over by a newer turn (a second click before the first has
+// landed) carries on with the speed it has, as every spring here does
+// (tokens/spring.ts). Set off from rest instead, the strip stops dead.
+describe("TabPager turning again mid-slide", () => {
+  it("carries on from where the strip is, at the speed it has", async () => {
+    await using screen = await render(<Pages activeId="one" onTurn={() => undefined} />);
+    const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
+    await screen.rerender(<Pages activeId="two" onTurn={() => undefined} />);
+    holdSlide(strip, 150);
+    const at = shown(strip);
+    expect(at).toBeGreaterThan(0.5);
+
+    await screen.rerender(<Pages activeId="three" onTurn={() => undefined} />);
+    // Under way from the frame it took over in: it doesn't stand still
+    // while the turn renders, waiting for a frame to set off.
+    expect(strip.getAnimations()[0]!.pending).toBe(false);
+    holdSlide(strip, 0);
+    expect(shown(strip)).toBeCloseTo(at, 2);
+    // One frame on: from rest it would have gone 0.025 of a page.
+    holdSlide(strip, 16);
+    expect(shown(strip) - at).toBeGreaterThan(0.05);
+  });
+});
+
 describe("TabPager and the borders between Cells", () => {
   it("never starts a swipe from a border", async () => {
     const onTurn = vi.fn();

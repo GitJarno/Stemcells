@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
-import { cssLinear, settledDuration } from "../tokens/spring.ts";
+import { cssLinear, settledDuration, springAt } from "../tokens/spring.ts";
 import { SwipeHand, type HeldStrip } from "./hand";
 import { releaseVelocity } from "./pager";
 import { PhasedContact, type ScrollPhases } from "./phases";
@@ -20,7 +20,8 @@ import { LIFT_GAP } from "./swipe";
  * two-finger swipe that travels between them. The strip moves with the
  * fingers, one transform written once a frame, with nothing re-rendering;
  * letting go springs it to a page, and the tab turns once that slide is
- * under way. A turn by other means (a click, a key, a route) slides too.
+ * under way. A turn by other means (a click, a key, a route) slides too;
+ * one that takes over a slide still running carries on at its speed.
  *
  * The page on stage is the active tab's. The others are inert: only the
  * page on stage takes the pointer, the keyboard and focus.
@@ -171,6 +172,9 @@ class PageStrip {
   /** Where the strip is when no slide runs: at rest, or held by the fingers. */
   #position = 0;
   #slide: Animation | null = null;
+  /** The running slide's spring: its ends (pages) and the speed it set off with (moves a second). */
+  #slideSpring: { readonly from: number; readonly to: number; readonly velocity: number } | null =
+    null;
   /** The new Cell's tab, sliding alongside. */
   #tabSlide: Animation | null = null;
   #newCell: NewCellPage = NO_NEW_CELL;
@@ -252,6 +256,7 @@ class PageStrip {
     }
     // Where the eye has the strip: the tab on stage, and how far off it.
     const at = this.#onScreen();
+    const speed = this.#speed();
     const stage = this.#tabAt(Math.round(at));
     const offStage = stage === null ? 0 : at - this.#slotOf(stage);
     const reordered =
@@ -268,7 +273,7 @@ class PageStrip {
     if (turned && active !== this.#heading) {
       // A turn by other means. Fingers on the strip give it up.
       this.#hand.spend();
-      this.#travelTo(active, here, stage);
+      this.#travelTo(active, here, stage, speed);
       return;
     }
     // A swipe's own turn landing, or tabs that moved under the strip: the
@@ -282,7 +287,7 @@ class PageStrip {
       this.#stopSlide();
       this.#show(here);
       if (this.#hand.holding) this.#hand.regrab();
-      else if (sliding) this.#travel(here, this.#slotOf(heading), 0);
+      else if (sliding) this.#travel(here, this.#slotOf(heading), speed, true);
       else this.#show(this.#slotOf(heading));
     }
   }
@@ -316,6 +321,19 @@ class PageStrip {
     const transform = getComputedStyle(strip).transform;
     if (width === 0 || transform === "none") return this.#position;
     return -new DOMMatrixReadOnly(transform).m41 / width;
+  }
+
+  /** How fast the strip moves now, in pages a second toward later pages: a slide's speed, or none. */
+  #speed(): number {
+    const spec = this.#slideSpring;
+    const elapsed = this.#slide?.currentTime;
+    if (spec === null || typeof elapsed !== "number") return 0;
+    const page = spring("page");
+    const t = elapsed / 1000;
+    const before = Math.max(0, t - 0.004);
+    const after = t + 0.004;
+    const progress = (time: number) => springAt(page, time, spec.velocity);
+    return ((spec.to - spec.from) * (progress(after) - progress(before))) / (after - before);
   }
 
   /** Puts the strip at `position` now. */
@@ -353,6 +371,7 @@ class PageStrip {
   #stopSlide(): void {
     this.#slide?.cancel();
     this.#slide = null;
+    this.#slideSpring = null;
     this.#tabSlide?.cancel();
     this.#tabSlide = null;
   }
@@ -365,8 +384,13 @@ class PageStrip {
     this.#moved();
   }
 
-  /** Slides from `here` to `tabId`'s page; a far one comes in as the next page. */
-  #travelTo(tabId: string, here: number | null, stage: string | null): void {
+  /** Slides from `here`, moving at `pagesPerSecond`, to `tabId`'s page; a far one comes in as the next page. */
+  #travelTo(
+    tabId: string,
+    here: number | null,
+    stage: string | null,
+    pagesPerSecond: number,
+  ): void {
     this.#heading = tabId;
     const to = this.#order.indexOf(tabId);
     if (here === null || stage === null) {
@@ -383,12 +407,13 @@ class PageStrip {
       from = here - near + slot;
     }
     this.#placeAll();
-    this.#travel(from, to, 0);
+    this.#travel(from, to, pagesPerSecond);
   }
 
-  /** Springs the strip from `from` to page `to`, setting off at `pagesPerSecond`. */
-  #travel(from: number, to: number, pagesPerSecond: number): void {
+  /** Springs the strip from `from` to page `to`, setting off at `pagesPerSecond`; `tookOver`, from a slide just stopped. */
+  #travel(from: number, to: number, pagesPerSecond: number, tookOver = false): void {
     const strip = this.#strip;
+    const takesOver = tookOver || this.#slide !== null;
     this.#stopSlide();
     this.#show(to);
     if (strip === null || Math.abs(to - from) < 1e-3) {
@@ -412,13 +437,23 @@ class PageStrip {
         easing: cssLinear(page, velocity),
       };
       slide = strip.animate([{ transform: stripAt(from) }, { transform: stripAt(to) }], timing);
+      this.#slideSpring = { from, to, velocity };
       this.#slideNewTab(from, to, timing);
+    }
+    if (takesOver) {
+      // From the frame it took over in, where the slide it ends left the
+      // strip: left to wait for a frame, it would stand still while the
+      // turn renders.
+      const now = document.timeline.currentTime;
+      slide.startTime = now;
+      if (this.#tabSlide) this.#tabSlide.startTime = now;
     }
     this.#slide = slide;
     this.#moved();
     slide.onfinish = () => {
       if (this.#slide !== slide) return;
       this.#slide = null;
+      this.#slideSpring = null;
       this.#tabSlide = null;
       this.#settle();
       this.#moved();

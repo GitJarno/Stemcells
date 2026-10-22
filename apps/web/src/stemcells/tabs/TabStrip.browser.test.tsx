@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 
 import { render } from "../upstream/testRender";
+import { carryStarts } from "../windows/carrying";
 import type { Tab } from "./layout";
 import { TabStrip } from "./TabStrip";
 
@@ -57,6 +58,56 @@ function Strip(props: {
 
 const chip = (container: HTMLElement, id: string) =>
   container.querySelector<HTMLElement>(`[data-stemcells-tab="${id}"]`)!;
+
+function pointer(element: Element, type: string, x: number, y: number) {
+  element.dispatchEvent(
+    new PointerEvent(type, { bubbles: true, button: 0, pointerId: 1, clientX: x, clientY: y }),
+  );
+}
+
+// The click is the tab's own: carrying a chip is built on it and never takes it away.
+describe("clicking a tab", () => {
+  it("opens it, though the hand wobbled, when it's let go in its own place", async () => {
+    const onActivate = vi.fn();
+    const onMove = vi.fn();
+    await using screen = await render(
+      <Strip
+        tabs={[tabOf("t1", ["a"]), tabOf("t2", ["b"])]}
+        onActivate={onActivate}
+        onMove={onMove}
+      />,
+    );
+    const second = chip(screen.container, "t2");
+    const box = second.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    pointer(second, "pointerdown", x, y);
+    pointer(second, "pointermove", x + 9, y + 2);
+    pointer(second, "pointerup", x + 9, y + 2);
+    expect(onActivate).toHaveBeenCalledWith("t2");
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("opens it on the press while something else is in the hand", async () => {
+    const onActivate = vi.fn();
+    await using screen = await render(
+      <Strip tabs={[tabOf("t1", ["a"]), tabOf("t2", ["b"])]} onActivate={onActivate} />,
+    );
+    using _held = { [Symbol.dispose]: carryStarts() };
+    await userEvent.click(chip(screen.container, "t2"));
+    expect(onActivate).toHaveBeenCalledWith("t2");
+  });
+
+  it("never opens from its close button", async () => {
+    const onActivate = vi.fn();
+    await using screen = await render(
+      <Strip tabs={[tabOf("t1", ["a"]), tabOf("t2", ["b"])]} onActivate={onActivate} />,
+    );
+    using _held = { [Symbol.dispose]: carryStarts() };
+    await userEvent.click(chip(screen.container, "t2").querySelector("button")!);
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+});
 const field = (container: HTMLElement) => container.querySelector<HTMLInputElement>("input");
 
 describe("renaming a tab by its name", () => {

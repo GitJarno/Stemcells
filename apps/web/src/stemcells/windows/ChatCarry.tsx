@@ -455,6 +455,7 @@ class WindowCarrier implements Carrier {
       tabId: now.tabId,
     });
     this.live = null;
+    this.ends();
     setCarried(null);
     this.show(null);
   }
