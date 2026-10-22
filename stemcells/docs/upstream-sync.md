@@ -23,7 +23,7 @@ says what to do.
 | `stemcells/scripts/sync-upstream` | Merges upstream's newest commit whose own CI passed into `sync/upstream-<sha>`, a branch from `origin/main`. Conflicts in upstream's tests resolve themselves. Exits 3 on anything else, printing each file with the seams it touches |
 | `stemcells/scripts/sync-upstream --gates [G…]` | Runs the gates on this tree: all of them, or only the ones named |
 | `stemcells/scripts/sync-upstream --pr` | Pushes this branch and opens its pull request, or refreshes it, with the report as its body |
-| `stemcells/scripts/sync-upstream --report` | Prints the report: commits by kind, seams upstream touched, conflicts, new dependencies, outbound hosts, the test count |
+| `stemcells/scripts/sync-upstream --report` | Prints the report: outbound first (new lines in `outbound.txt`, the call sites upstream added that may contact someone, the runtime gate's last run), then commits by kind, seams upstream touched, conflicts, new dependencies, the test count |
 | `stemcells/scripts/sync-upstream --check` | All of it in one go: merge, gates, pull request |
 | `stemcells/scripts/sync-upstream --nightly` | `--check`, then the issue kept up to date: rewritten when it stops, closed when it goes through or finds nothing new |
 | `stemcells/scripts/check-local <pull request>` | The `check` gates on a clean checkout of the pull request's head, recorded on it as `local-check`, which a merge needs (`stemcells/AGENTS.md`, Landing) |
@@ -76,6 +76,7 @@ timing out under the load; `check-local` and the nightly set it themselves.
    | `upstream-packages`, `upstream-web`, `upstream-server` | Upstream's own suites, as its CI splits them, on our tree | Mostly a test pinning a name our seam changes: give it our expectation as a seam row ("Expects …"). Upstream's suites need Node 24 (its `engines`); a Mac's Node 25 fails a few of its tests on `localStorage`. On a busy Mac some time out at 15 s: run with `VITEST_MAX_WORKERS=2`, or the file alone, before reading a timeout as a break |
    | `build` | The web, server and desktop builds, and upstream's preload check | |
    | `boot` | The built server starts on a scratch home, and in headless Chromium its page wears Stemcells' look, a chat opens on its composer, and nothing is asked of any host but the server (`stemcells/scripts/boot-smoke.mjs`) | Run it alone after `--gates build`; it prints what the server said and saves the page as it was |
+   | `outbound-live` | Whom the running app contacts: the built desktop app is used for a few minutes in the desktop lab (a fake CLI for every provider, a scratch home, no account of the person's) while Chromium's net log, every Node process's lookups and sockets (`stemcells/lab/net-watch.cjs`) and `lsof` over the whole process tree are recorded. Nothing is let out meanwhile: names resolve to nothing and sockets beyond loopback are refused. Anything beyond loopback fails, unless `outbound.txt` lists it as `live` with why (`stemcells/lab/outbound-live.mjs`) | Read where the host comes from (the table says which record saw it, the URL a fetch asked for, and what the drive was doing then) and turn it off with a seam or a substitute, as for `outbound`. Its result is the top of the report; run it after `--gates build` |
    | `workflows` | Upstream's workflows stay switched off on this repository | `stemcells.yml` switches them off on `main` and on pull requests; switch one off by hand in Actions if it's on |
 
    Upstream's own CI runs its suites on Linux. On a Mac, the gates leave
@@ -127,8 +128,8 @@ timing out under the load; `check-local` and the nightly set it themselves.
 
 - Nothing is posted to upstream's repository. The only call to it reads its
   CI results, to pick a green commit.
-- Nothing reports on the person, to T3 or anyone else: the `outbound` gate,
-  `seams.md` (No telemetry).
+- Nothing reports on the person, to T3 or anyone else: the `outbound` and
+  `outbound-live` gates, `seams.md` (No telemetry).
 - Upstream's workflows never run here.
 - Upstream's history is never rebased or squashed.
 

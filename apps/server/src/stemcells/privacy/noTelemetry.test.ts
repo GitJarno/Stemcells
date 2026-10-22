@@ -147,7 +147,8 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
     else if (kind === "id") listed.idFiles.push(name);
     else if (kind === "forbid") listed.forbidden.push(name.toLowerCase());
     else if (kind === "cut") listed.cutFiles.push(name);
-    else throw new Error(`stemcells/outbound.txt: unknown kind "${kind}"`);
+    // `live` lines are the running app's, read by stemcells/lab/outbound-live.mjs.
+    else if (kind !== "live") throw new Error(`stemcells/outbound.txt: unknown kind "${kind}"`);
   }
 
   // A forbidden address may stay named only in a file whose fetch Stemcells

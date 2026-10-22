@@ -13,9 +13,10 @@
 #                               `check` names the ones a pull request must pass
 #   sync-upstream --pr          push this branch and open or refresh its pull
 #                               request, with --report as the body
-#   sync-upstream --report      print the sync's report: commits, seams,
-#                               drift before and after, dependencies,
-#                               outbound hosts, tests
+#   sync-upstream --report      print the sync's report: outbound first (the
+#                               static list, new call sites, the runtime
+#                               run), then commits, seams, drift before and
+#                               after, dependencies, tests
 #   sync-upstream --issue CODE LOG   keep the issue for a run that ended with
 #                               CODE, quoting LOG's last lines
 #
@@ -27,7 +28,7 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-GATES=(drift outbound typecheck lint ours upstream-packages upstream-web upstream-server build boot workflows)
+GATES=(drift outbound typecheck lint ours upstream-packages upstream-web upstream-server build boot outbound-live workflows)
 # What a pull request must pass before it merges (stemcells/scripts/check-local):
 # the one list, for check-local and the check workflow alike.
 CHECK=(drift outbound typecheck lint ours)
@@ -109,6 +110,16 @@ gate_build() {
 }
 # The built server starts headless, its page wears Stemcells' look, and a chat opens.
 gate_boot() { node stemcells/scripts/boot-smoke.mjs; }
+# Whom the running app contacts: the built desktop app, used for a few
+# minutes in the desktop lab, reaches nothing beyond this machine
+# (stemcells/lab/outbound-live.mjs). The lab is a Mac's.
+gate_outbound_live() {
+  if [ "$(uname)" != Darwin ]; then
+    echo "outbound-live runs in the desktop lab, on a Mac"
+    return 0
+  fi
+  node stemcells/lab/outbound-live.mjs
+}
 # Upstream's workflows stay switched off on this repository.
 gate_workflows() {
   local repo known active new=""
@@ -190,6 +201,43 @@ count_tests() {
   echo "$files $cases"
 }
 
+# Outbound comes first in a sync's report: nothing upstream brings may track
+# the person or contact T3 for them. The static gate's list, the call sites
+# upstream added that may contact someone (the gate sees only literal hosts,
+# so a person reads these), and the runtime gate's last run on this tree.
+outbound_report() {
+  local before=$1 target=$2 hosts sites live workflows
+  echo "### Outbound"
+  echo
+  hosts=$(git diff origin/main -- stemcells/outbound.txt | grep -E '^\+(host|id|live) ' | sed -E 's/^\+/- /' || true)
+  echo "**Static** (\`--gates outbound\`): ${hosts:+new lines in \`stemcells/outbound.txt\`, each with why:}"
+  echo "${hosts:-no new host, id, feed or crash reporter: \`stemcells/outbound.txt\` is unchanged.}"
+  echo
+  sites=$(git diff -U0 "$before" "$target" -- apps/server/src apps/web/src apps/desktop/src apps/mobile/src packages \
+    ':(glob,exclude)**/*.test.*' ':(glob,exclude)**/*.browser.*' ':(glob,exclude)**/test/**' ':(glob,exclude)**/fixtures/**' |
+    awk '
+      /^\+\+\+ b\// { file = substr($0, 7); next }
+      /^\+/ && /fetch\(|WebSocket|EventSource|sendBeacon|net\.(connect|createConnection)|tls\.connect|https?\.(get|request)\(|autoUpdater|setFeedURL|crashReporter|process\.env\.[A-Z0-9_]*(OTLP|TELEMETRY|ANALYTICS|SENTRY|POSTHOG|DSN|TRACE)|[Aa]nonymous_?[Ii]d|[Ii]nstall(ation)?_?[Ii]d|[Mm]achine_?[Ii]d|[Dd]evice_?[Ii]d/ {
+        line = substr($0, 2); gsub(/^[ \t]+/, "", line)
+        print "- `" file "`: `" substr(line, 1, 140) "`"
+      }' | sort -u | head -40 || true)
+  echo "**New call sites** in upstream's shipped code that may contact someone or name an id; read each:"
+  echo
+  echo "${sites:-None.}"
+  echo
+  echo "**Runtime** (\`--gates outbound-live\`):"
+  echo
+  live="$(git rev-parse --absolute-git-dir)/stemcells-outbound-live.md"
+  if [ -f "$live" ]; then
+    cat "$live"
+  else
+    echo "Not run on this tree yet: \`stemcells/scripts/sync-upstream --gates build outbound-live\`."
+  fi
+  workflows=$(git diff --name-only --diff-filter=A origin/main -- .github/workflows | grep -v '/stemcells' || true)
+  [ -n "$workflows" ] && echo && echo "New upstream workflows (switched off on their first run): ${workflows//$'\n'/, }"
+  echo
+}
+
 report() {
   local target before taken
   target=$(git merge-base HEAD upstream/main)
@@ -197,6 +245,7 @@ report() {
   taken=$(git rev-list --count "$before..$target")
   echo "Takes upstream at \`$(git rev-parse --short=9 "$target")\`: $taken commits since \`$(git rev-parse --short=9 "$before")\`, merged, never rebased. The runbook: \`stemcells/docs/upstream-sync.md\`."
   echo
+  outbound_report "$before" "$target"
   echo "### Commits, by kind"
   echo
   # Upstream titles its commits by kind: "feat(web): …", "fix: …".
@@ -264,15 +313,6 @@ for (const file of manifests(after)) {
 }
 console.log(lines.length ? lines.join("\n") : "None.");
 EOF
-  echo
-  echo "### Outbound"
-  echo
-  local hosts
-  hosts=$(git diff origin/main -- stemcells/outbound.txt | grep -E '^\+(host|id) ' | sed -E 's/^\+/- /' || true)
-  echo "${hosts:-No new host, id, feed or crash reporter: \`stemcells/outbound.txt\` is unchanged, and the outbound gate passed.}"
-  local workflows
-  workflows=$(git diff --name-only --diff-filter=A origin/main -- .github/workflows | grep -v '/stemcells' || true)
-  [ -n "$workflows" ] && echo && echo "New upstream workflows (switched off on their first run): ${workflows//$'\n'/, }"
   echo
   echo "### Tests"
   echo

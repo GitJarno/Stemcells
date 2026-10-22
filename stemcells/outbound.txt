@@ -11,8 +11,15 @@
 #   forbid <address prefix> <why>   no shipped code fetches from it
 #   cut <file> <why>                a file that still names a forbidden
 #                                   address, and why it's never fetched
+#   live <host>[/<path>] <why>      a host, or the URLs under a path, the
+#                                   running app may contact
 #
 # Loopback, an IP address and the reserved example names need no line.
+#
+# `live` is the runtime half: a host the running app contacts with no one
+# asking, which `stemcells/lab/outbound-live.mjs` (the outbound-live gate)
+# lets pass. Its why names what removes it; the gate fails on a `live` host
+# it no longer sees, so these only go.
 
 # Named, never contacted: doc links, schema ids, namespaces, demo rows.
 host agentclientprotocol.com doc links in the generated ACP schema
@@ -112,3 +119,11 @@ id apps/desktop/src/updates/updatesTestHarness.ts the updater's test harness, on
 forbid raw.githubusercontent.com/pingdotgg/ T3's repository on GitHub, read raw: upstream's server fetched its model list from it every hour
 cut apps/server/src/provider/ModelManifest.ts upstream's fetching model list; server.ts provides Stemcells' bundled one instead (modelList.contract.test.ts)
 cut apps/server/src/cli/triagePrompt.ts the instructions `t3 triage` hands the person's own agent; the app fetches nothing
+
+# The running app, with no one asking (outbound-live, 2026-10-22). None goes
+# to T3 or carries anything of the person's; each waits on the person's call to go
+# (stemcells/tasks/t3-sync.md, Needs the person).
+live registry.npmjs.org/%40anthropic-ai%2fclaude-code/ the Claude CLI's newest version, asked at start for the update notice (upstream's provider maintenance)
+live raw.githubusercontent.com/berriai/litellm/ LiteLLM's model price table, for the usage page's cost estimates (UsageService), as the usage page opens
+live api.github.com/repos/berriai/litellm/ the same price table's fallback, asked when raw.githubusercontent.com fails, as it does in the lab
+live api.meta.ai/muse-code/channels/ the Muse CLI's release channel, for its update notice (upstream's provider maintenance), as the usage page opens
