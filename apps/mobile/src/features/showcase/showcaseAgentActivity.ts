@@ -8,7 +8,6 @@ import type {
   AgentActivityProps,
   AgentActivityRowProps,
 } from "../../widgets/AgentActivity";
-import { APP_NAME } from "../../stemcells/brand/name";
 
 export const SHOWCASE_AGENT_ACTIVITY_ROWS = [
   { threadId: "pocket-command-center", phase: "waiting_for_approval", minutesAgo: 1 },
@@ -69,7 +68,7 @@ export function buildShowcaseAgentActivity(
     });
   }
   return {
-    title: APP_NAME,
+    title: "T3 Code",
     subtitle: "Agent work in progress",
     activeCount: rows.filter((row) => ACTIVE_PHASES.has(row.phase)).length,
     updatedAt: new Date(now).toISOString(),

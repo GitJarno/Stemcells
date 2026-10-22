@@ -133,7 +133,7 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
  * upstream's code as upstream wrote it.
  */
 export function substituteUpstreamModules(): Plugin {
-  const naming = process.env.VITEST ? null : upstreamNamePlugin(repoRoot);
+  const naming = process.env.VITEST ? null : upstreamNamePlugin({ root: repoRoot });
   return {
     name: "stemcells:substitute-upstream-modules",
     enforce: "pre",

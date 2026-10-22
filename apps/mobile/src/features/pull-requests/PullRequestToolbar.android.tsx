@@ -9,7 +9,6 @@ import { useHardwareKeyboardCommand } from "../keyboard/hardwareKeyboardCommands
 import { WorkspaceListToolbarRow } from "../workspace/WorkspaceListToolbarRow";
 import { useWorkspaceTabs } from "../workspace/WorkspaceTabsContext";
 import { usePullRequestFilterMenu } from "./PullRequestFilterMenuContext";
-import { APP_NAME } from "../../stemcells/brand/name";
 
 /** PR search shares the thread list's Android header row. */
 export function PullRequestToolbar(props: { readonly onRequestVisibility?: () => void }) {
@@ -71,7 +70,7 @@ export function PullRequestToolbar(props: { readonly onRequestVisibility?: () =>
         onCloseSearch={closeSearch}
         onOpenSearch={openSearch}
         searchAccessibilityLabel="Search pull requests"
-        titleAccessibilityLabel={`${APP_NAME}, Pull requests`}
+        titleAccessibilityLabel="T3 Code, Pull requests"
         onOpenEnvironments={() =>
           navigation.navigate("SettingsSheet", {
             screen: "SettingsContent",

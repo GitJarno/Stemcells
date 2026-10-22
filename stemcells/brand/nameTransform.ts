@@ -1,8 +1,8 @@
 /**
- * The name transform: the web app's and the server's builds say Stemcells
- * where upstream's code says "T3 Code", so upstream's files keep their own
- * words and a sync never conflicts over the name (`stemcells/docs/fork.md`,
- * "The name transform").
+ * The name transform: the builds of the web app, the server, the phone and
+ * the desktop app say Stemcells where upstream's code says "T3 Code", so
+ * upstream's files keep their own words and a sync never conflicts over the
+ * name (`stemcells/docs/fork.md`, "The name transform").
  *
  * It is keyed on content, never on positions: each build reads upstream's
  * source as it is that day, and renames the exact words "T3 Code" (and its
@@ -13,9 +13,12 @@
  * build step, not a source edit.
  *
  * - `upstreamNamePlugin` does it in a build: the web app's (through
- *   `apps/web/src/stemcells/upstream/substitutes/plugin.ts`) and the server's
- *   (`apps/server/vite.config.ts`). The build fails if the transform renamed
+ *   `apps/web/src/stemcells/upstream/substitutes/plugin.ts`), the server's
+ *   (`apps/server/vite.config.ts`) and the desktop app's main process
+ *   (`apps/desktop/vite.config.ts`). The build fails if the transform renamed
  *   nothing, or if its output says "T3 Code" anywhere this list doesn't keep.
+ * - The phone's Metro build does it through
+ *   `apps/mobile/src/stemcells/upstream/substitutes/nameTransformer.cjs`.
  * - `stemcells/scripts/check-app-name.ts` checks a built app the same way.
  * - `nameTransform.test.ts` holds the list to the sources.
  */
@@ -36,14 +39,12 @@ export const REPO_ROOT = NodePath.resolve(
 );
 
 /**
- * Where the builds rename: the web app's and the server's own code, and the
- * server's half of the provider and source-control packages. The packages
- * the phone and the desktop app bundle too (`contracts`, `shared`,
- * `client-runtime`, a provider's settings) say `APP_NAME` through their seams
- * until the phone's and the desktop's builds rename as well.
+ * Where the builds rename: the web app's, the server's and the phone's own
+ * code, and every package they share. The desktop app's own code isn't
+ * renamed (`KEPT`, below); its build renames the packages it bundles.
  */
 export const RENAMED_IN =
-  /^(?:apps\/(?:web|server)\/src\/|apps\/web\/index\.html$|packages\/[^/]+\/src\/server\/)/;
+  /^(?:apps\/(?:web|server|mobile)\/src\/|apps\/web\/index\.html$|packages\/[^/]+\/src\/)/;
 
 /** Never renamed: our own code, and what only tests run. */
 const NEVER_RENAMED =
@@ -164,6 +165,20 @@ export const KEPT: ReadonlyArray<Kept> = [
     file: /^apps\/web\/src\/connection\/clientMetadata\.ts$/,
     line: 'label: "T3 Code',
     why: "a session's label, which the server stores with the pairing; the desktop app's own sign-in writes the same",
+  },
+  {
+    file: /^apps\/desktop\/src\//,
+    why: "the desktop app's own code, not renamed yet: it writes T3's name into its profile folders and its command-line shim's marker, which need a list of their own first",
+  },
+  {
+    file: /^stemcells\/brand\/name\.ts$/,
+    line: "UPSTREAM_NAME",
+    why: "our own: the phone's build config finds T3's name by it, and the phone bundles the module",
+  },
+  {
+    file: /^apps\/mobile\/src\/lib\/mobileTheme\.ts$/,
+    line: 'label: "T3 Code"',
+    why: `${T3S_OWN}: T3's theme`,
   },
   // The web app, where a line names T3's own product, not this app.
   {
@@ -353,6 +368,9 @@ export function shippedSources(root: string = REPO_ROOT): string[] {
     "apps/web/index.html",
     ...sourcesUnder(root, "apps/web/src"),
     ...sourcesUnder(root, "apps/server/src"),
+    ...sourcesUnder(root, "apps/mobile/src"),
+    ...sourcesUnder(root, "apps/desktop/src"),
+    "stemcells/brand/name.ts",
     ...packages.flatMap((name) => sourcesUnder(root, `packages/${name}/src`)),
   ].filter((file) => !NEVER_RENAMED.test(file));
 }
@@ -435,11 +453,16 @@ const SCRIPT = /\.[cm]?[jt]sx?$/;
 const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 
 /**
- * The transform in a build: the web app's (Vite) and the server's (tsdown).
- * Tests never run it: the web's plugin leaves it out under Vitest, and the
- * server's tests don't pack.
+ * The transform in a build: the web app's (Vite), the server's and the
+ * desktop app's (tsdown), and the phone's WebView scripts (Vite). Tests
+ * never run it: the web's plugin leaves it out under Vitest, and the other
+ * apps' tests don't build. `mustRename: false` is for a small build that may
+ * bundle nothing upstream names the app in (a WebView script).
  */
-export function upstreamNamePlugin(root: string = REPO_ROOT) {
+export function upstreamNamePlugin(
+  options: { readonly root?: string; readonly mustRename?: boolean } = {},
+) {
+  const root = options.root ?? REPO_ROOT;
   // Counted over the plugin's life, not per build: a watch rebuild
   // transforms only what changed.
   let renamed = 0;
@@ -473,7 +496,7 @@ export function upstreamNamePlugin(root: string = REPO_ROOT) {
       return result === null ? html : result.code;
     },
     generateBundle(this: BuildContext, _options: unknown, bundle: Record<string, OutputFile>) {
-      if (renamed === 0) {
+      if (renamed === 0 && options.mustRename !== false) {
         this.error(
           `the name transform renamed nothing: upstream's code no longer says "${UPSTREAM_NAME}" where it did, or the transform no longer sees it (stemcells/brand/nameTransform.ts)`,
         );

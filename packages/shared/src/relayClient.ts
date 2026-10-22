@@ -23,7 +23,6 @@ import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/http";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 import { isWindowsRenameLock } from "./atomicWrite.ts";
 import * as HostProcess from "./HostProcess.ts";
-import { APP_NAME } from "../../../stemcells/brand/name.ts";
 
 export const CLOUDFLARED_VERSION = "2026.10.0";
 // The oldest release that accepts every flag the connector is started with
@@ -512,7 +511,7 @@ export const makeCloudflaredRelayClient = Effect.fn("cloudflared.make")(function
     if (!releaseAsset) {
       return yield* new RelayClientInstallError({
         reason: "unsupported_platform",
-        message: `${APP_NAME} does not provide a managed relay client binary for ${platform}-${arch}.`,
+        message: `T3 Code does not provide a managed relay client binary for ${platform}-${arch}.`,
       });
     }
 

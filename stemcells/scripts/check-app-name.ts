@@ -6,16 +6,17 @@
 //
 //   node stemcells/scripts/check-app-name.ts <app.asar | folder>...
 //
-// A folder is checked whole (apps/server/dist, apps/web/dist); in an archive,
-// the server's bundle and the web app inside it (apps/server/dist), which the
-// name transform builds. The desktop app's own code isn't renamed yet.
+// A folder is checked whole (apps/server/dist, apps/web/dist,
+// apps/desktop/dist-electron); in an archive, the server's bundle, the web app
+// inside it and the desktop app's main process, which the name transform
+// builds. The desktop app's own code keeps T3's name (`KEPT`).
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 
 import { keptLines, unexplainedNames } from "../brand/nameTransform.ts";
 
 const CHECKED = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
-const IN_ARCHIVE = "apps/server/dist/";
+const IN_ARCHIVE = /^apps\/(?:server\/dist|desktop\/dist-electron)\//;
 
 interface Entry {
   readonly files?: Record<string, Entry>;
@@ -42,7 +43,7 @@ function* archiveFiles(archive: string): Generator<[string, string]> {
           yield* walk(child, childPath);
           continue;
         }
-        if (!childPath.startsWith(IN_ARCHIVE) || !CHECKED.test(name)) continue;
+        if (!IN_ARCHIVE.test(childPath) || !CHECKED.test(name)) continue;
         if (child.unpacked === true) {
           yield [childPath, NodeFS.readFileSync(`${archive}.unpacked/${childPath}`, "utf8")];
           continue;

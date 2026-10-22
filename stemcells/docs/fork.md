@@ -180,8 +180,9 @@ every week. A seam on each of them made the name the fork's largest family
 of conflicts: the sync of 2026-10-21 conflicted in 29 files, 12 of them
 only or mostly over lines where we had swapped the name, most in upstream's
 tests that pin those messages.
-So the web app's and the server's builds rename it instead, and their
-sources stay upstream's (`stemcells/brand/nameTransform.ts`).
+So the builds rename it instead (the web app, the server, the phone, and
+the packages the desktop app bundles), and their sources stay upstream's
+(`stemcells/brand/nameTransform.ts`).
 
 - **Not a patch stack.** A patch is keyed on positions: it says which lines
   to change, and breaks when upstream moves them. The transform is keyed on
@@ -194,19 +195,20 @@ sources stay upstream's (`stemcells/brand/nameTransform.ts`).
   reads, names another program keys on, files written to disk, T3's own
   product). It renames whole words only, never inside a path, an id or a
   longer word, and never in our folders, tests, `LICENSE` or the notices.
-- **It can't drift silently.** A build fails when it renamed nothing, when
-  a line says the name somewhere it can't rename that `KEPT` doesn't name,
-  and when its output says "T3 Code" where no kept line does.
+- **It can't drift silently.** A Vite or `pack` build fails when it renamed
+  nothing, when a line says the name somewhere it can't rename that `KEPT`
+  doesn't name, and when its output says "T3 Code" where no kept line does
+  (Metro, the phone's, fails on the line it can't rename).
   `check-app-name.ts` checks an install's archive the same way, and
   `nameTransform.test.ts` fails on a kept line upstream removed.
 - **Tests and source runs see upstream's words.** Tests run upstream's
   code as written, so upstream's tests pass unedited. The server run from
   source (`pnpm dev:server`) isn't built and says T3 Code; that's
   accepted.
-- **Where it doesn't run yet:** the phone's and the desktop app's builds.
-  The packages they share with the web (`contracts`, `shared`,
-  `client-runtime`) keep their `APP_NAME` seams until those builds rename
-  too, and the desktop app's own code says what it said.
+- **Where it doesn't run:** the desktop app's own code. It writes T3's
+  name into its profile folders and its command-line shim's marker, so it
+  needs a list of its own before it can be renamed; until then it says
+  what it said. Source maps carry upstream's source, words and all.
 
 ## What we don't do, and why
 

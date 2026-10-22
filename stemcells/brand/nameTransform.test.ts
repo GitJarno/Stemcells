@@ -64,7 +64,7 @@ describe("the name transform renames upstream's name", () => {
     }
   });
 
-  it("only in upstream's code a build of the web app or the server ships", () => {
+  it("only in upstream's code a build of the web app, the server or the phone ships", () => {
     const code = 'const a = "T3 Code";';
     for (const file of [
       "apps/web/src/stemcells/brand/Wordmark.tsx",
@@ -72,9 +72,9 @@ describe("the name transform renames upstream's name", () => {
       "apps/server/src/cloud/servicePreflight.test.ts",
       "apps/web/src/components/chat/MessagesTimeline.browser.test.tsx",
       "apps/desktop/src/app/DesktopEnvironment.ts",
-      "apps/mobile/src/Stack.tsx",
-      "packages/client-runtime/src/connection/hostFreeze.ts",
-      "packages/provider-opencode/src/settings.ts",
+      "apps/mobile/src/stemcells/brand/name.ts",
+      "apps/mobile/app.config.ts",
+      "packages/client-runtime/src/connection/hostFreeze.test.ts",
       "LICENSE",
     ]) {
       expect(isRenamedIn(file), file).toBe(false);
@@ -85,6 +85,9 @@ describe("the name transform renames upstream's name", () => {
       "apps/web/index.html",
       "apps/server/src/cloud/ConnectReachability.ts",
       "packages/provider-cursor/src/server/status.ts",
+      "packages/client-runtime/src/connection/hostFreeze.ts",
+      "packages/provider-opencode/src/settings.ts",
+      "apps/mobile/src/Stack.tsx",
     ]) {
       expect(isRenamedIn(file), file).toBe(true);
     }
@@ -111,9 +114,9 @@ describe("the name transform renames upstream's name", () => {
 
 describe("upstream's sources, as a build sees them", () => {
   it("say the name only where the transform renames it or KEPT keeps it", () => {
-    // The build fails on a line it can't rename and KEPT doesn't name; in a
-    // file it doesn't rename in (the packages the phone shares), a person
-    // reads no line KEPT doesn't keep: those say APP_NAME through a seam.
+    // The build fails on a line it can't rename and KEPT doesn't name; a file
+    // it doesn't rename in (the desktop app's own code) says the name only
+    // where KEPT keeps it or no person reads it.
     const unkept = sources.flatMap(({ file, text }) => {
       const renamed = renameUpstreamName(file, text);
       if (renamed !== null) return renamed.unkept.map((line) => `${file}: ${line.trim()}`);
@@ -142,13 +145,14 @@ describe("upstream's sources, as a build sees them", () => {
     }
   });
 
-  it("still give the transform something to rename, in the web app, the server and its packages", () => {
+  it("still give the transform something to rename, in the web app, the server, the phone and the packages", () => {
     const renamedIn = (area: RegExp) =>
       sources
         .filter(({ file }) => area.test(file))
         .reduce((sum, { file, text }) => sum + (renameUpstreamName(file, text)?.renamed ?? 0), 0);
     expect(renamedIn(/^apps\/web\//)).toBeGreaterThan(0);
     expect(renamedIn(/^apps\/server\//)).toBeGreaterThan(0);
+    expect(renamedIn(/^apps\/mobile\//)).toBeGreaterThan(0);
     expect(renamedIn(/^packages\//)).toBeGreaterThan(0);
   });
 });
@@ -216,7 +220,7 @@ describe("the build plugin", () => {
     const hooks = pluginHooks();
     expect(hooks.transform('export default "T3 Code";', "apps/web/src/a.ts?raw")).toBeNull();
     expect(hooks.transform(".a { content: 'T3 Code' }", "apps/web/src/a.css")).toBeNull();
-    expect(hooks.transform('const a = "T3 Code";', "apps/mobile/src/a.ts")).toBeNull();
+    expect(hooks.transform('const a = "T3 Code";', "apps/desktop/src/a.ts")).toBeNull();
   });
 
   it("fails a build on a line it can't rename that KEPT doesn't name", () => {

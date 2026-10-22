@@ -259,7 +259,6 @@ import {
   ThreadMarkdownImageUnavailable,
   ThreadMarkdownImageView,
 } from "./ThreadMarkdownImage";
-import { APP_NAME } from "../../stemcells/brand/name";
 
 const WIDE_MARKDOWN_BLOCK_OPTIONS = {
   // Native iOS blockquotes and adjacent selectable text are separate layout
@@ -1228,7 +1227,7 @@ function renderFeedEntry(
             </Text>
           ) : presentation.attribution === "t3code" ? (
             <Text className="mb-1 pr-1 font-t3-medium text-2xs text-foreground-muted opacity-60">
-              Sent by {APP_NAME}
+              Sent by T3 Code
             </Text>
           ) : presentation.attribution === "agent" ? (
             <AgentMessageAttribution
