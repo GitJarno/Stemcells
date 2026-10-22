@@ -7,14 +7,18 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import timelineOverlays from "../../components/chat/TimelineOverlays.tsx?raw";
 import workspaceFileDrop from "../../components/chat/workspaceFileDrop.ts?raw";
 
 describe("the drop wash's contracts with upstream", () => {
   it("a chat draws its drop overlay only while a file is over it", () => {
     // The wash lights the pane whose chat shows the overlay.
     expect(chatView).toContain("setDragActive: setIsWorkspaceFileDragActive");
-    expect(chatView).toMatch(
-      /\{isWorkspaceFileDragActive \? \(\s*<div\s[^>]*data-chat-workspace-drop-overlay="true"/,
+    expect(chatView).toContain(
+      "{isWorkspaceFileDragActive ? <WorkspaceFileDropOverlay /> : null}",
+    );
+    expect(timelineOverlays).toMatch(
+      /export function WorkspaceFileDropOverlay\(\) \{\s*return \(\s*<div\s[^>]*data-chat-workspace-drop-overlay="true"/,
     );
   });
 
@@ -22,9 +26,11 @@ describe("the drop wash's contracts with upstream", () => {
     // So the pane holding the overlay is the pane a drop lands in; drop.css
     // hides its picture with opacity alone, keeping its status for screen readers.
     expect(chatView).toMatch(
-      /data-chat-workspace-drop-target="true"\s+onDragEnter=\{workspaceFileDropHandlers\.onDragEnter\}[\s\S]{0,400}\{isWorkspaceFileDragActive \? \(/,
+      /data-chat-workspace-drop-target="true"\s+onDragEnter=\{workspaceFileDropHandlers\.onDragEnter\}[\s\S]{0,400}\{isWorkspaceFileDragActive \? <WorkspaceFileDropOverlay \/> : null\}/,
     );
-    expect(chatView).toMatch(/data-chat-workspace-drop-overlay="true"\s*>\s*<div\s+role="status"/);
+    expect(timelineOverlays).toMatch(
+      /data-chat-workspace-drop-overlay="true"\s*>\s*<div\s+role="status"/,
+    );
   });
 
   it("files light the chat on entering and over it, and put it out on leaving and dropping", () => {

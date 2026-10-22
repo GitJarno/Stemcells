@@ -15,7 +15,10 @@ import { createModelSelection } from "@t3tools/shared/model";
 import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
-import chatView from "../../components/ChatView.tsx?raw";
+import composerControlsBar from "../../components/chat/ComposerControlsBar.tsx?raw";
+import composerProviderModel from "../../components/chat/useComposerProviderModel.ts?raw";
+import composerSelection from "../../components/chat/useComposerSelection.ts?raw";
+import composerSend from "../../components/chat/useComposerSend.ts?raw";
 import { resolveComposerProviderSelection } from "../../components/ChatView.logic";
 import { deriveEffectiveComposerModelState } from "../../composerDraftStore";
 import {
@@ -153,25 +156,26 @@ describe("the composer's contracts with upstream", () => {
   });
 
   it("upstream's composer offers its providerStatuses and resolves from the thread's model", () => {
-    expect(chatComposer).toMatch(
+    expect(composerProviderModel).toMatch(
       /applyProviderInstanceSettings\(\s*deriveProviderInstanceEntries\(providerStatuses\),/,
     );
     expect(chatComposer).toMatch(
       /threadModelSelection: activeThreadModelSelection,[\s\S]{0,300}candidateInstanceIds: \[\s*composerDraft\.activeProvider \?\? null,\s*activeThread\?\.runtime\?\.providerInstanceId,\s*activeThreadModelSelection\?\.instanceId,\s*activeProjectDefaultModelSelection\?\.instanceId,\s*\],/,
     );
-    expect(chatComposer).toMatch(/instanceEntries=\{providerInstanceEntries\}/);
+    expect(composerControlsBar).toMatch(/instanceEntries=\{providerInstanceEntries\}/);
   });
 
   it("a send dispatches with the composer's own selection, unchecked against the thread's", () => {
-    expect(chatView).toMatch(
-      /const sendCtx = composerRef\.current\?\.getSendContext\(\);[\s\S]{0,600}selectedModelSelection: ctxSelectedModelSelection,/,
+    expect(composerSend).toMatch(
+      /const sendCtx = composerRef\.current\?\.getSendContext\(\);[\s\S]{0,2500}selectedModelSelection: ctxSelectedModelSelection,/,
     );
-    expect(chatView).toMatch(
+    expect(composerSend).toMatch(
       /const startPromise = startThreadTurn\(\{[\s\S]{0,2500}modelSelection: ctxSelectedModelSelection,\s*titleSeed: title,/,
     );
     // The block on switching instances guards the picker only, never a send:
     // a pick, and the picker's disabled rows (`makeModelDisabledReason`).
-    expect(chatView.match(/getStartedThreadModelChangeBlockReason\(/g)).toHaveLength(1);
-    expect(chatView).toContain("const getModelDisabledReason = makeModelDisabledReason(");
+    expect(composerSend).not.toMatch(/getStartedThreadModelChangeBlockReason\(|makeModelDisabledReason\(/);
+    expect(composerSelection.match(/getStartedThreadModelChangeBlockReason\(/g)).toHaveLength(1);
+    expect(composerSelection).toContain("const getModelDisabledReason = makeModelDisabledReason(");
   });
 });

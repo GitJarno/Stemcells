@@ -41,6 +41,8 @@ import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
+import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
+import * as UpstreamComposerStash from "../../../components/chat/useComposerStash";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
@@ -76,6 +78,8 @@ import * as OurUsageProviders from "./usageProviders";
 import * as OurVisibleAnimation from "./visibleAnimation";
 import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
+import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
+import * as OurComposerStash from "./useComposerStash";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 
 // Upstream's timeline loads the diff worker, which only a browser can start;
@@ -566,6 +570,28 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/files/FilePreviewPanel.tsx": [
         "~/components/chat/OpenInPicker",
         ["OpenInPicker"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/usePasteToFocusComposer.ts": {
+    upstream: UpstreamPasteToFocusComposer,
+    substitute: OurPasteToFocusComposer satisfies typeof UpstreamPasteToFocusComposer,
+    importers: {
+      // A paste with no field to land in, gated by the window's input.
+      "apps/web/src/components/ChatView.tsx": [
+        "./chat/usePasteToFocusComposer",
+        ["usePasteToFocusComposer"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/useComposerStash.ts": {
+    upstream: UpstreamComposerStash,
+    substitute: OurComposerStash satisfies typeof UpstreamComposerStash,
+    importers: {
+      // The stash and its shortcut, gated by the window's input.
+      "apps/web/src/components/chat/ChatComposer.tsx": [
+        "./useComposerStash",
+        ["useComposerStash"],
       ],
     },
   },

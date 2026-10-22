@@ -73,7 +73,7 @@ timing out under the load; `check-local` and the nightly set it themselves.
    | `typecheck` | Every package's types | Usually inside `stemcells/upstream/`, our one place that imports upstream: fix the adapter |
    | `lint` | Upstream's lint rules, which hold our code too | Follow the rule as upstream does in its own code. A disable comment only where upstream would use one too: nothing can mark the moment, and the comment says why |
    | `ours` | Our tests and contract tests, each app's with its own config | A contract test names the upstream behaviour that moved: follow it in the adapter, the seam or the substitute, then in the test |
-   | `upstream-packages`, `upstream-web`, `upstream-server` | Upstream's own suites, as its CI splits them, on our tree | Mostly a test pinning a name our seam changes: give it our expectation as a seam row ("Expects …"). Upstream's suites need Node 24 (its `engines`); a Mac's Node 25 fails a few of its tests on `localStorage`. On a busy Mac some time out at 15 s: run with `VITEST_MAX_WORKERS=2`, or the file alone, before reading a timeout as a break |
+   | `upstream-packages`, `upstream-web`, `upstream-server` | Upstream's own suites, as its CI splits them, on our tree | Mostly a test pinning a name our seam changes: give it our expectation as a seam row ("Expects …"). Upstream's suites need the Node its `engines` names (26.12.1 since 2026-10-21: `nvm install 26.12.1`, first on PATH); the gates say when another one runs. On a busy Mac some time out at 15 s: run with `VITEST_MAX_WORKERS=2`, or the file alone, before reading a timeout as a break |
    | `build` | The web, server and desktop builds, and upstream's preload check | |
    | `boot` | The built server starts on a scratch home, and in headless Chromium its page wears Stemcells' look, a chat opens on its composer, and nothing is asked of any host but the server (`stemcells/scripts/boot-smoke.mjs`) | Run it alone after `--gates build`; it prints what the server said and saves the page as it was |
    | `outbound-live` | Whom the running app contacts: the built desktop app is used for a few minutes in the desktop lab (a fake CLI for every provider, a scratch home, no account of the person's) while Chromium's net log, every Node process's lookups and sockets (`stemcells/lab/net-watch.cjs`) and `lsof` over the whole process tree are recorded. Nothing is let out meanwhile: names resolve to nothing and sockets beyond loopback are refused. Anything beyond loopback fails, unless `outbound.txt` lists it as `live` with why (`stemcells/lab/outbound-live.mjs`) | Read where the host comes from (the table says which record saw it, the URL a fetch asked for, and what the drive was doing then) and turn it off with a seam or a substitute, as for `outbound`. Its result is the top of the report; run it after `--gates build` |
@@ -98,8 +98,9 @@ timing out under the load; `check-local` and the nightly set it themselves.
 
 ## The nightly
 
-- Opt in on one Mac: `stemcells/scripts/install-nightly-sync` (with Node 24
-  first on PATH). It installs a launchd job, `sh.stemcells.nightly-sync`,
+- Opt in on one Mac: `stemcells/scripts/install-nightly-sync` (with the
+  Node upstream's `engines` names first on PATH, and again when that
+  changes). It installs a launchd job, `sh.stemcells.nightly-sync`,
   that runs `nightly-sync` at 03:00. `--print` shows the job without
   installing it, and `--remove` takes it away.
 - `nightly-sync` goes ahead only on AC power, when the load average is
@@ -141,3 +142,10 @@ timing out under the load; `check-local` and the nightly set it themselves.
   themselves. Its Vitest turned on an on-disk transform cache that doesn't
   know a substitute resolves a module by who imports it, so the web's and
   the phone's test configs turn it off (`seams.md`).
+- 2026-10-22 (104 commits): upstream split `ChatView.tsx` and
+  `ChatComposer.tsx` into hooks (#23042–#23101). Only those two files
+  conflicted. Two of our window-input gates became substitutes of the new
+  hooks (`usePasteToFocusComposer`, `useComposerStash`), and the preview
+  toggle's gate moved with its code into `useRightPanelActions.ts`. A dozen
+  contract tests followed the code they pin into its new files. Upstream
+  pinned Node 26.12.1, which its suites now want.

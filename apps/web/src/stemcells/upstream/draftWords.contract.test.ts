@@ -14,11 +14,13 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import composerControlsBar from "../../components/chat/ComposerControlsBar.tsx?raw";
 import footerControls from "../../components/chat/ComposerFooterControls.tsx?raw";
 import draftHeroHeadline from "../../components/chat/DraftHeroHeadline.tsx?raw";
 import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?raw";
 import controlsMeasurement from "../../components/chat/restingComposerControlsMeasurement.ts?raw";
 import traitsPicker from "../../components/chat/TraitsPicker.tsx?raw";
+import composerSend from "../../components/chat/useComposerSend.ts?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
 
 /** The source of the function or const named `name`. */
@@ -60,11 +62,11 @@ describe("the words' contracts with upstream's drafts", () => {
 
   it("upstream's send reads the prompt as it sends, after the composer handed it on", () => {
     // The words make the text what is sent inside the composer's `onSend`,
-    // which ChatView's send reads from `promptRef` only then.
+    // which ChatView's send (`useComposerSend`) reads from `promptRef` only then.
     expect(chatComposer).toMatch(
       /onSend: \(sendEvent\) => \{\s*providerInputRejectedRef\.current = false;\s*onSend\(/,
     );
-    const send = body(chatView, "onSend");
+    const send = body(composerSend, "onSend");
     expect(send.indexOf("composerRef.current?.getSendContext()")).toBeLessThan(
       send.indexOf(": promptRef.current;"),
     );
@@ -84,7 +86,7 @@ describe("the words' contracts with upstream's drafts", () => {
   it("fits the readout where the composer's model picker is, by its label", () => {
     // The readout takes the picker's place (`substitutes/ProviderModelPicker.tsx`)
     // with a value other than "true", so the flights never land on it.
-    expect(chatComposer).toMatch(
+    expect(composerControlsBar).toMatch(
       /<ComposerModelPicker\s+environmentId=\{environmentId\}\s+compact=\{false\}\s+isComposerOwned\b/,
     );
     expect(footerControls).toContain('import { ProviderModelPicker } from "./ProviderModelPicker";');
@@ -102,7 +104,7 @@ describe("the words' contracts with upstream's drafts", () => {
     expect(chatComposer).toContain("useRestingComposerControlsLayout(null, true)");
     expect(chatComposer).toContain('data-chat-composer-resting-controls="true"');
     // The effort picker that makes way for it is a block of its own.
-    expect(chatComposer).toContain("data-resting-block={def.id}");
+    expect(composerControlsBar).toContain("data-resting-block={def.id}");
   });
 
   it("plays a spawn over the draft's headline, a child of the composer's stack", () => {

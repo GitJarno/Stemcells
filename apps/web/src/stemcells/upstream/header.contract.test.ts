@@ -16,6 +16,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import panelLayoutControls from "../../components/chat/PanelLayoutControls.tsx?raw";
 import askiPane from "../aski/AskiPane.tsx?raw";
 import cellWorkspace from "../tabs/CellWorkspace.tsx?raw";
 
@@ -30,9 +31,10 @@ describe("the header-less pane's contracts with upstream", () => {
   });
 
   it("the panel toggles sit in a fixed row marked as the titlebar's controls", () => {
-    expect(chatView).toMatch(
-      /"pointer-events-none fixed top-\[var\(--workspace-controls-top\)\] right-\[var\(--workspace-controls-right\)\] z-50 [^"]*",\s*\)\}\s*data-workspace-titlebar-controls\s*>/,
+    expect(panelLayoutControls).toMatch(
+      /className="pointer-events-none fixed top-\[var\(--workspace-controls-top\)\] right-\[var\(--workspace-controls-right\)\] z-50 [^"]*"\s*data-workspace-titlebar-controls\s*>/,
     );
+    expect(chatView).toMatch(/const panelLayoutControls = \(\s*<WorkspaceTitlebarControls\b/);
     // The row goes beside the header or at the chat's root, both places
     // PaneButtons follows it to.
     expect(chatView).toContain(
@@ -41,7 +43,7 @@ describe("the header-less pane's contracts with upstream", () => {
     expect(chatView).toContain("{rightPanelControlsAtRoot ? panelLayoutControls : null}");
     // Maximize stays in the row while the right panel is closed, out of
     // reach; the … menu leaves out what is inert.
-    expect(chatView).toContain("inert={!rightPanelOpen}");
+    expect(panelLayoutControls).toContain("inert={!props.rightPanelOpen}");
   });
 
   it("with the right panel open the toggles split in two rows, which every pane spaces, Aski's too", () => {
@@ -49,8 +51,11 @@ describe("the header-less pane's contracts with upstream", () => {
     // A pane that doesn't measure the root's row (--sc-pane-row) lays the
     // thread details toggle over the right panel's, the way out of an empty
     // Surface in Aski's tab.
-    expect(chatView).toMatch(
-      /const threadPanelHeaderControl = \([\s\S]*?showTerminalControl=\{false\}\s*showRightPanelControl=\{false\}/,
+    expect(chatView).toContain(
+      "const threadPanelHeaderControl = <ThreadPanelHeaderControl {...panelToggleControlProps} />;",
+    );
+    expect(panelLayoutControls).toMatch(
+      /export function ThreadPanelHeaderControl\([\s\S]*?showTerminalControl=\{false\}\s*showRightPanelControl=\{false\}/,
     );
     expect(cellWorkspace).toMatch(/<PaneButtons\s/);
     expect(askiPane).toContain("<PaneRows />");

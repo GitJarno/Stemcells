@@ -12,6 +12,7 @@ import chatRightPanel from "../../components/chat/ChatRightPanel.tsx?raw";
 import previewPanelShell from "../../components/preview/PreviewPanelShell.tsx?raw";
 import rightPanelTabs from "../../components/RightPanelTabs.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
+import panelLayoutControls from "../../components/chat/PanelLayoutControls.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 
 describe("the workbench's contracts with upstream", () => {
@@ -47,7 +48,8 @@ describe("the workbench's contracts with upstream", () => {
   });
 
   it("the panel toggles carry the attribute the slate hides in unfocused panes", () => {
-    expect(chatView).toContain("data-workspace-titlebar-controls");
+    expect(panelLayoutControls).toContain("data-workspace-titlebar-controls");
+    expect(chatView).toContain("<WorkspaceTitlebarControls");
   });
 
   it("the lanes the panes narrow still carry upstream's class names", () => {

@@ -17,6 +17,7 @@ import * as NodeFS from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
+import commandMenuLayer from "../../components/chat/ComposerCommandMenuLayer.tsx?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 import stashMenu from "../../components/chat/ComposerStashMenu.tsx?raw";
 
@@ -38,7 +39,7 @@ describe("the ledge's stash's contracts with upstream", () => {
   });
 
   it("the menu stands in by the shell's drawer inset, as the ledge does", () => {
-    expect(chatComposer).toContain('.getPropertyValue("--chat-composer-drawer-inset")');
+    expect(commandMenuLayer).toContain('.getPropertyValue("--chat-composer-drawer-inset")');
     const inset = /\[--chat-composer-drawer-inset:([\d.]+rem)\]/.exec(composerSurface)?.[1];
     expect(composerLineCss).toContain(`--ledge-inset: ${inset};`);
   });

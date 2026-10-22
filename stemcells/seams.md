@@ -24,9 +24,10 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/cli/browser.ts` | `sudo` home falls back to `~/.stemcells` | Same, under `sudo` on Linux |
 | `apps/web/src/routes/_chat.tsx` | Renders `CellWorkspace` (our tabs and panes) where it rendered `ThreadRouteView`, with its `<Outlet />` as the fallback | The chat area becomes tabs of panes; the route names the focused pane's chat |
 | `apps/web/src/components/chat/chatWindowInput.ts` | New: `ChatWindowInputContext`, default `true` | Upstream first: "ChatView safe to render twice" (below) |
-| `apps/web/src/components/ChatView.tsx` | Imports everything of ours through `import * as Stemcells from "../stemcells/upstream/seams/ChatView"`, its first line (One import per hot file, below); paste-to-focus, composer refocus (mount, window focus, snapshot), preview toggle and desktop menu actions act only when `Stemcells.useOwnsChatWindowInput()` is `true` | Same. Its window shortcuts, type-to-focus and open-in shortcut are gated by substitutes of `useChatShortcuts` and `OpenInPicker` instead (Substitutes, below) |
+| `apps/web/src/components/ChatView.tsx` | Imports everything of ours through `import * as Stemcells from "../stemcells/upstream/seams/ChatView"`, its first line (One import per hot file, below); composer refocus (mount, window focus, snapshot) and desktop menu actions act only when `Stemcells.useOwnsChatWindowInput()` is `true` | Same. Its window shortcuts, type-to-focus, open-in shortcut and paste-to-focus are gated by substitutes of `useChatShortcuts`, `OpenInPicker` and `usePasteToFocusComposer` instead (Substitutes, below) |
+| `apps/web/src/components/chat/useRightPanelActions.ts` | Reads `useOwnsChatWindowInput()` (its first line); the preview's toggle action opens and closes the panel only when the context is `true` | Same: upstream moved the right panel's actions out of `ChatView.tsx` (#23064), and the subscription sits inside the hook's own effect |
 | `apps/web/src/components/chat/useTimelineFollow.ts` | Reads `useOwnsChatWindowInput()`; body-targeted scroll keys move the transcript only when the context is `true` | Same: upstream moved the transcript's follow logic out of `ChatView.tsx` (#22662–#22734) |
-| `apps/web/src/components/chat/ChatComposer.tsx` | Imports `* as Stemcells` from `stemcells/upstream/seams/chat` on its first line (One import per hot file, below); the stash shortcut and desktop paste-as-text arm only when `Stemcells.useOwnsChatWindowInput()` is `true` | Same |
+| `apps/web/src/components/chat/ChatComposer.tsx` | Imports `* as Stemcells` from `stemcells/upstream/seams/chat` on its first line (One import per hot file, below); desktop paste-as-text arms only when `Stemcells.useOwnsChatWindowInput()` is `true` | Same. The stash shortcut is gated by a substitute of `useComposerStash` instead, since upstream moved the stash into it (#23046) |
 | `apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx` | Digit keys answer a question only when the context is `true` | Same |
 | `apps/web/src/components/RightPanelTabs.tsx` | The empty panel's launcher keys and `rightPanel.new` act only when the context is `true` | Same |
 | `apps/web/src/components/preview/PreviewView.tsx` | Preview actions (refresh, zoom, focus URL) act only when the context is `true` | Same |
@@ -181,9 +182,12 @@ before. Carried, upstream not asked (the person, 2026-10-21): until then these
 files are our seam, and `ChatView.tsx` and `ChatComposer.tsx` are among
 upstream's hottest files, so expect conflicts there. A gate that sits on a
 module's surface is a substitute instead: `useChatShortcuts` (the window
-shortcuts and type-to-focus) and `OpenInPicker` (the open-in shortcut, in the
-chat's details and the workbench's file) read the context themselves. The
-gates left in `ChatView.tsx` are inside its own effects.
+shortcuts and type-to-focus), `OpenInPicker` (the open-in shortcut, in the
+chat's details and the workbench's file), `usePasteToFocusComposer` (handed
+no thread, it takes no paste) and `useComposerStash` (handed no keys, it
+hears no stash shortcut) read the context themselves. The gates left in
+`ChatView.tsx`, `ChatComposer.tsx` and `useRightPanelActions.ts` are inside
+their own effects.
 
 A second single-chat assumption, handled without a seam: `ChatView` takes its
 composer handle from `ComposerHandleContext`, which the command palette
