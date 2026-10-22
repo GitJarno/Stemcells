@@ -47,10 +47,7 @@ import {
 import { TAB_GAP } from "./hostStrip";
 import { joinWindow } from "./joinWindow";
 import { tearToNewWindow, warmNewWindow } from "./newWindow";
-import { flyWindowHome, TearFlight, windowRadius } from "./tearFlight";
-
-/** How long a new window may take to draw before its still goes anyway. */
-const LANDING_WAIT = 4000;
+import { chromeOf, flyWindowHome, LANDING_WAIT, TearFlight, windowRadius } from "./tearFlight";
 
 export interface CarryView {
   readonly tabId: string;
@@ -114,15 +111,6 @@ function ownScreen(): Display[] {
     height: s.availHeight,
   };
   return [{ key: "this", bounds: workArea, workArea }];
-}
-
-/** The colour the strip is drawn on: the window's chrome. */
-function chromeOf(element: HTMLElement): string {
-  for (let at: HTMLElement | null = element; at; at = at.parentElement) {
-    const color = getComputedStyle(at).backgroundColor;
-    if (color && color !== "transparent" && !/rgba\(.*,\s*0\)$/.test(color)) return color;
-  }
-  return "rgb(11, 11, 12)";
 }
 
 /** Where the chip's top left is while it's off the strip. */
