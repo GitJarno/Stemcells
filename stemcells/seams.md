@@ -119,6 +119,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
 | `apps/web/src/main.tsx` (windows) | Imports `./stemcells/windows/startSharing` after `AppRoot` | Windows (below): each window starts merging the others' writes to the shared stores in the turn the stores read localStorage, so none is missed while the chat route loads |
 | `packages/contracts/src/resourceTelemetry.ts`, `apps/server/src/resourceTelemetry/HostResources.ts` | `HostResourcesSnapshot` gains optional `diskFreeBytes` and `diskTotalBytes`; `HostResources` fills them from one `statfs` of the home folder, and leaves them out when it can't read it | "Disk on every machine" (below) |
+| `apps/server/src/project/RepositoryIdentityResolver.ts` | Imports `ghDefaultRemote` from `stemcells/upstream/ghDefaultRemote.ts`; the primary remote is `(yield* ghDefaultRemote(cacheKey, remotes)) ?? pickPrimaryRemote(remotes)` (two lines) | A fork's own repository (below): the remote `gh repo set-default` names, where upstream always took `upstream` over `origin` |
 
 ### One import per hot file
 
@@ -746,6 +747,21 @@ connection; what's ours is which tabs it holds.
   upstream's in one window only, the focused one or else the lead.
 - Upstream candidate, offered only with the owner's go-ahead: "more than
   one app window" would retire the `DesktopWindow.ts` seam.
+
+### A fork's own repository
+
+A project's repository is what the Pull requests list shows, and what a
+thread's pull requests are found in. With an `upstream` remote, upstream
+takes that one over `origin`, right for someone contributing to the parent:
+Stemcells' own checkout (`origin` the fork, `upstream` T3's) listed T3's
+pull requests. The remote `gh repo set-default` chose
+(`remote.<name>.gh-resolved` = `base`) comes first, so the app reads the
+repository `gh pr list` reads there; without it upstream's pick stands. A
+checkout with one remote spawns no extra git.
+`ghDefaultRemote.contract.test.ts` pins both.
+
+To offer upstream: the same two lines, as any fork that is its own product
+wants them.
 
 ## Known overlaps, left on purpose
 - **The `t3code://` link scheme.** Both apps register it, so a link opened

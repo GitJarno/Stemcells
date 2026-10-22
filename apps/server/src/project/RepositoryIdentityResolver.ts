@@ -13,6 +13,7 @@ import * as Exit from "effect/Exit";
 import * as Layer from "effect/Layer";
 
 import * as ProcessRunner from "../processRunner.ts";
+import { ghDefaultRemote } from "../stemcells/upstream/ghDefaultRemote.ts";
 import { explicitBareRepositoryEnv } from "../vcs/VcsProcess.ts";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 
@@ -219,7 +220,7 @@ const resolveRepositoryIdentityFromCacheKey = Effect.fn(
   }
 
   const remotes = parseRemoteFetchUrls(remoteResult.value.stdout);
-  const remote = pickPrimaryRemote(remotes);
+  const remote = (yield* ghDefaultRemote(cacheKey, remotes)) ?? pickPrimaryRemote(remotes);
   return remote
     ? buildRepositoryIdentity({
         ...remote,
