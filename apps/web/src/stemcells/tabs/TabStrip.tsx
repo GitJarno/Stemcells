@@ -36,7 +36,7 @@ export function TabStrip(props: {
    */
   newCell: { readonly tab: Tab; readonly taken: boolean } | null;
   newTabRef: RefObject<HTMLDivElement | null>;
-  /** How many tabs the window holds, Aski's among them: its only tab doesn't tear off. */
+  /** How many tabs the window holds, Aski's among them: its only tab carries the window itself. */
   windowTabs: number;
   onActivate: (tabId: string) => void;
   onClose: (tabId: string) => void;

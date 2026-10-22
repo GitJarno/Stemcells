@@ -102,6 +102,7 @@ const electron = vi.hoisted(() => {
     readonly guests: Page[] = [];
     destroyed = false;
     focused = false;
+    opacity = 1;
     bounds: { x: number; y: number; width: number; height: number };
     constructor(bounds = { x: 100, y: 100, width: 900, height: 700 }) {
       super();
@@ -127,6 +128,9 @@ const electron = vi.hoisted(() => {
       this.bounds = bounds;
     }
     setFullScreen() {}
+    setOpacity(opacity: number) {
+      this.opacity = opacity;
+    }
     isFocused() {
       return this.focused;
     }
@@ -716,6 +720,45 @@ describe("a flight", () => {
       expect(warm.isDestroyed()).toBe(true);
       expect(idsOf(page)).toEqual([a.id]);
     }).pipe(Effect.scoped),
+  );
+
+  it.effect("shows the window hidden under it again, when its page crashes", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      // Its only tab carried, the window hides under its still on the layer.
+      send(page, WINDOWS_CHANNEL.windowShown, false);
+      expect(a.window.opacity).toBe(0);
+
+      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+      expect(a.window.opacity).toBe(1);
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect(
+    "stays the page's whose drop waits to land: another window's only tab carried takes none of it",
+    () =>
+      Effect.gen(function* () {
+        yield* startHost();
+        const a = yield* mainWindow();
+        const page = a.window.webContents;
+        const b = yield* opened(page, "b");
+        send(page, WINDOWS_CHANNEL.warm, move(page, { open: "w" }));
+        yield* tick;
+        yield* tick;
+        const warm = electron.windows.at(-1)!;
+
+        // b's only tab carried while a's drop waits to land: b doesn't hide.
+        send(b.webContents, WINDOWS_CHANNEL.windowShown, false);
+        expect(b.opacity).toBe(1);
+        // The flight is still a's, heard from a's page.
+        page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+        expect(warm.isDestroyed()).toBe(true);
+        // Once it's over, b's carry hides b.
+        send(b.webContents, WINDOWS_CHANNEL.windowShown, false);
+        expect(b.opacity).toBe(0);
+      }).pipe(Effect.scoped),
   );
 
   it.effect("closes a warmed window a move opened and another closed before it was made", () =>

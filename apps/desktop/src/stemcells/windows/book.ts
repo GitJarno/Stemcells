@@ -78,7 +78,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function readRect(value: unknown): Rect | null {
+/** A rectangle as a page sent it, or null when it isn't one. */
+export function readRect(value: unknown): Rect | null {
   if (!isRecord(value)) return null;
   const { x, y, width, height } = value;
   const numbers = [x, y, width, height];
