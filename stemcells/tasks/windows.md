@@ -48,7 +48,7 @@ asked for by name), then W7, W4, W9, W11.
       the flights, full screen restored.
   - [x] W8a The button and ⌥⌘G, read from the windows as they are, each
         press a move Undo Move takes back.
-  - [ ] W8b Gather's flight: each other window's still shrinks into its
+  - [x] W8b Gather's flight: each other window's still shrinks into its
         place in the home strip.
   - [ ] W8c Put back's flight: chips lift and unfold into stills, and
         each window lands under its still.
@@ -415,6 +415,16 @@ Undo Move takes either back, the memory with it. The Window menu items
 aren't built: the button and ⌥⌘G cover them, and they would need the
 menu's seam.
 
+As built (W8b): each other window closes as soon as its still covers it,
+not once its chips land; under the still, nobody can tell. The still keeps
+the window's proportions as it shrinks, cropped by the frame that becomes
+the chips' outline, so it never squashes. A window holding Aski's tab and
+Cells lands on its Cells' chips (Aski's chip never moves). A full-screen
+window has no frame to fly from on this Space, so it closes without a
+flight and its chips show at once. The gathered tabs join the end of the
+strip, so the home's own chips only move when the strip runs out of room,
+and then they jump.
+
 ### Undo Move (⌥⌘Z)
 
 Every move above, and closing a window, pushes its inverse. Undo Move
@@ -780,3 +790,11 @@ watching for a wait before the new window answers.
   memory, the button went; ⌥⌘Z reopening a window brought it back. The
   lab helper stacks windows at one edge, so frames put back are proved by
   the round-trip tests, not here.
+- W8b: proved in the lab by sampling the layer every 30 ms. Pressed,
+  the two other windows were on the layer 200 ms later and closed under
+  their stills, and the home strip held their four chips hidden. The
+  nearest still shrank onto its chip on `travel` and the next left 120 ms
+  later onto the rect around its two chips; each ended exactly on the
+  chips' screen rects. Each chip showed as its still began to fade, and
+  the layer went 890 ms after the press. Under Reduce Motion the stills
+  faded where they were, 120 ms apart, gone at 560 ms.

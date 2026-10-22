@@ -28,10 +28,18 @@ export const WINDOWS_CHANNEL = {
   notifies: "stemcells:windows:notifies",
   /** Page → main: what the flight layer draws (`FlightCommand`s, in order). */
   flight: "stemcells:windows:flight",
-  /** Page → main, invoked: a still of part of this window, answered with its id for `still`. */
+  /**
+   * Page → main, invoked: a still of part of this window, or of another
+   * window by its id, answered with its id for `still`.
+   */
   flightStill: "stemcells:windows:flight-still",
   /** Page → main, invoked: answered once the layer has painted every command sent before. */
   flightPainted: "stemcells:windows:flight-painted",
+  /**
+   * Page → main, invoked: where a window is on screen now, by its id. A
+   * maximized window's book frame is the one it goes back to, not this.
+   */
+  shownFrame: "stemcells:windows:shown-frame",
   /** Page → main: the flight is over; the layer goes. */
   flightEnd: "stemcells:windows:flight-end",
   /** Page → main: this window has drawn the workspace it started from. */

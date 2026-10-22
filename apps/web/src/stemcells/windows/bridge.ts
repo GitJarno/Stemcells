@@ -165,10 +165,15 @@ export interface WindowsBridge {
   reveal(window: string, pane: string): void;
   /** Draws on the flight layer, over every display. */
   flight(commands: ReadonlyArray<FlightCommand>): void;
-  /** A still of part of this window (screen points), for `still` commands; null if it can't be made. */
-  still(rect: Rect): Promise<string | null>;
+  /**
+   * A still of part of this window, or of the window `window` names (screen
+   * points), for `still` commands; null if it can't be made.
+   */
+  still(rect: Rect, window?: string): Promise<string | null>;
   /** Resolves once the layer has painted everything sent before. */
   painted(): Promise<void>;
+  /** Where window `window` is on screen now (maximized, bigger than its frame); null if it's gone. */
+  shownFrame(window: string): Promise<Rect | null>;
   /** The flight is over: the layer goes. */
   endFlight(): void;
   /** This window has drawn the workspace it started from. */

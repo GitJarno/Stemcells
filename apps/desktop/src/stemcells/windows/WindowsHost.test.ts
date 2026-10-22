@@ -193,15 +193,16 @@ const electron = vi.hoisted(() => {
 });
 
 /** The flight layer, as the host drives it: whether it is drawing anything. */
-const layer = vi.hoisted(() => ({ drawing: false }));
+const layer = vi.hoisted(() => ({ drawing: false, runs: 0 }));
 
 vi.mock("./flightLayer.ts", () => ({
   FlightLayer: class {
     run() {
       layer.drawing = true;
+      layer.runs += 1;
     }
     still() {
-      return Promise.resolve(null);
+      return Promise.resolve("still-1");
     }
     painted() {
       return Promise.resolve();
@@ -838,13 +839,32 @@ describe("a flight", () => {
         send(page, WINDOWS_CHANNEL.flightEnd);
         expect(hearing()).toEqual([0, 0, 0]);
       }
-      // Another page taking the layer over: the first is no longer heard.
-      const b = yield* opened(page, "b");
-      fly(page);
-      fly(b.webContents);
-      expect(hearing()).toEqual([0, 0, 0]);
-      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
-      expect(layer.drawing).toBe(true);
     }).pipe(Effect.scoped),
+  );
+
+  it.effect(
+    "is one page's while it lasts: another's draws nothing, takes no still, ends nothing",
+    () =>
+      Effect.gen(function* () {
+        yield* startHost();
+        const a = yield* mainWindow();
+        const b = yield* opened(a.window.webContents, "b");
+        fly(a.window.webContents);
+        const drawn = layer.runs;
+
+        // b's Gather pressed while a's flies.
+        fly(b.webContents);
+        expect(layer.runs).toBe(drawn);
+        expect(
+          yield* Effect.promise(async () => invoke(b.webContents, WINDOWS_CHANNEL.flightStill, {})),
+        ).toBeNull();
+        send(b.webContents, WINDOWS_CHANNEL.flightEnd);
+        expect(layer.drawing).toBe(true);
+
+        send(a.window.webContents, WINDOWS_CHANNEL.flightEnd);
+        expect(layer.drawing).toBe(false);
+        fly(b.webContents);
+        expect(layer.drawing).toBe(true);
+      }).pipe(Effect.scoped),
   );
 });

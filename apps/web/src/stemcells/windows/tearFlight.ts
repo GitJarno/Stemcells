@@ -307,10 +307,16 @@ export class TearFlight {
   }
 }
 
-const group = { radius: 0, shadow: false, color: "transparent", clip: false } as const;
+export const group = { radius: 0, shadow: false, color: "transparent", clip: false } as const;
 
-const wait = (timing: FlightTiming) =>
+export const wait = (timing: FlightTiming) =>
   new Promise((resolve) => setTimeout(resolve, timing.duration + (timing.delay ?? 0)));
+
+/** The corners of a window, which its preview and its still are drawn with. */
+export function windowRadius(): number {
+  const style = getComputedStyle(document.documentElement);
+  return Number.parseFloat(style.getPropertyValue("--sc-radius-sheet")) || 16;
+}
 
 /**
  * A one-tab window carried and sent home (stemcells/tasks/windows.md, A

@@ -85,8 +85,10 @@ if (boot !== null) {
       ipcRenderer.send(WINDOWS_CHANNEL.reveal, { window, pane }),
     flight: (commands: ReadonlyArray<FlightCommand>) =>
       ipcRenderer.send(WINDOWS_CHANNEL.flight, commands),
-    still: (rect: FlightRect) => ipcRenderer.invoke(WINDOWS_CHANNEL.flightStill, rect),
+    still: (rect: FlightRect, window?: string) =>
+      ipcRenderer.invoke(WINDOWS_CHANNEL.flightStill, rect, window),
     painted: () => ipcRenderer.invoke(WINDOWS_CHANNEL.flightPainted),
+    shownFrame: (window: string) => ipcRenderer.invoke(WINDOWS_CHANNEL.shownFrame, window),
     endFlight: () => ipcRenderer.send(WINDOWS_CHANNEL.flightEnd),
     drawn: () => ipcRenderer.send(WINDOWS_CHANNEL.drawn),
     zoom: () => webFrame.getZoomFactor(),
