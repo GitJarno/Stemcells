@@ -443,6 +443,20 @@ export function cancel(): Landing {
   return { kind: "home" };
 }
 
+/**
+ * The other windows, measured once the desktop app answered the pick-up:
+ * behind the source, which the press brought to the front.
+ */
+export function withOthers(carry: Carry, others: ReadonlyArray<WindowPlace>): Carry {
+  const source = windowOf(carry, carry.pickUp.window)!;
+  const windows = [source, ...others.filter((window) => window.id !== source.id)];
+  return {
+    ...carry,
+    geometry: { ...carry.geometry, windows },
+    order: windows.map((window) => window.id),
+  };
+}
+
 /** Where the carried chip sat at the press, which is where it goes home to. */
 export function homeOf(carry: Carry): Rect {
   return carry.chip;

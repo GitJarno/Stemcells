@@ -18,6 +18,7 @@ import {
 import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
+import { useHosting, useStripMeasure } from "../windows/hostStrip";
 import { useTabCarry } from "../windows/useTabCarry";
 import { useSpringTabs, type SpringHandlers } from "./springTab";
 import { restingOffsets } from "./tabDrag";
@@ -74,6 +75,9 @@ export function TabStrip(props: {
   const { newCell, newTabRef } = props;
   // In one list with the tabs, so taking or leaving the new Cell keeps its tab's element.
   const shownTabs = newCell && !newCell.taken ? [...tabs, newCell.tab] : tabs;
+  // A tab carried from another window: this strip makes room for it, then takes it.
+  const hosting = useHosting(shownTabs);
+  useStripMeasure(stripRef, tabElements, tabs, newCell && !newCell.taken ? newCell.tab.id : null);
 
   return (
     <div
@@ -92,7 +96,8 @@ export function TabStrip(props: {
           const dragged = view?.picked === true && view.tabId === tab.id;
           // Off the strip, its chip is on the flight layer and its place here is empty.
           const away = dragged && view.away !== "no";
-          const offset = dragged && !away ? view.offset : (offsets?.[index] ?? 0);
+          const offset =
+            dragged && !away ? view.offset : (offsets?.[index] ?? hosting.offsets?.[index] ?? 0);
           const isNewCell = tab.id === newCell?.tab.id;
           // Not yet taken, the new Cell's tab only opens: there is no tab to drag or close.
           const untaken = isNewCell && !newCell.taken;
@@ -126,11 +131,11 @@ export function TabStrip(props: {
                 }
               }}
               style={
-                away
+                away || tab.id === hosting.hiddenId
                   ? { visibility: "hidden" }
                   : dragged
                     ? { transform: `translate(${offset}px, ${view.pulled}px) scale(1.04)` }
-                    : offset !== 0 || view?.picked
+                    : offset !== 0 || view?.picked || hosting.gliding
                       ? {
                           transform: `translateX(${offset}px)`,
                           // The others make room and close up on `travel`.

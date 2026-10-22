@@ -36,7 +36,12 @@ asked for by name), then W7, W4, W9, W11.
   - [x] W5e The warm window: a dropped tab's window drawn before the
         drop, so its still goes at once.
 - [ ] W6 Into another window's strip: geometry, making room, spring-load
-      raise, landing; Undo Move (⌥⌘Z).
+      raise, landing; Undo Move (⌥⌘Z). In steps:
+  - [x] W6a A tab carried into another window's strip: the strips measured
+        at the pick-up, the host making room, spring-load, the landing.
+  - [ ] W6b A one-tab window into another window's strip: its still folds
+        into a chip, and the window closes once the host has the tab.
+  - [ ] W6c Undo Move (⌥⌘Z).
 - [ ] W8 Gather / Put back: the button, ⌥⌘G, memory per display set,
       the flights, full screen restored.
 - [ ] W7 Carry a chat: the Cell as the handle, pane halves, tabs, strips,
@@ -613,7 +618,8 @@ display; drop into another window's strip; carry a chat to a pane half in
 another window; Esc mid-carry; Gather, Put back, Gather; unplug and replug
 a display; relaunch with three windows; a browser pane moved; Reduce
 Motion on; a carry with View › Zoom at 125 %; a one-tab window carried
-by its chip while its chat streams; a quick tear and drop
+by its chip while its chat streams; a chip rested on the strip of a window
+behind another coming forward; a quick tear and drop
 (under a second), watching for a wait before the new window answers.
 
 ## Review
@@ -693,3 +699,16 @@ by its chip while its chat streams; a quick tear and drop
   fades in place. The lab helper keeps windows off the screen, so the
   window's own moves are read from the still's frames; that the chat keeps
   drawing in the hand is for the hand check.
+- W6a: proved in the lab with two windows side by side (the lab helper
+  stacks windows at one edge, so the source was made narrower than the
+  host, whose strip then stood clear of it). Torn off and carried over the
+  host's strip, the chip folds and the host's chips at and after its slot
+  slide over by its width and gap (164 px). Let go, the tab joins the host
+  at that slot and is on stage there, its chip painted hidden at once; the
+  chip lands on it in about 475 ms, the host shows its chip, and once it
+  has drawn the layer goes. Esc over the host's strip flies the chip home
+  and the host's chips glide back. The pick-up asks the other windows to
+  measure their strips (main places them on the screen from each window's
+  content bounds and zoom, `strips.ts`); a page that doesn't answer in
+  150 ms takes no drop. Spring-load's raise (`moveTop`, no focus) is a
+  no-op under the lab helper: for the hand check, with the engine's tests.
