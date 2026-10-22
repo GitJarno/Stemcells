@@ -15,6 +15,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
 | `apps/desktop/src/app/DesktopEnvironment.ts` | `APP_BASE_NAME` is "Stemcells" | Window and menu name, keychain entry |
 | `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app`, exported for its test; `artifactName` and the Mac's four permission prompts say `APP_NAME` | Own bundle id; people read the release files' names in Finder and the prompts in macOS's dialogs (The app's name, below) |
+| `scripts/build-desktop-artifact.ts` (DMG) | Copies `stemcells/brand/dmg/` over the staged `dmg` folder, one statement after it stages the resources | The DMG's window says "Drag Stemcells into Applications." with the name in type, where upstream's says T3's name beside T3's mark (The app's name, below) |
 | `scripts/build-desktop-artifact.test.ts` | Reads the bundle id (`DESKTOP_APP_ID`) from what the build reads, where it pinned T3's (upstream's pruning took the product name and permission prompt checks, #22557) | It pinned `com.t3tools.t3code`, so it failed on our build; now `stemcells.yml` runs it and it guards the build |
 | `apps/desktop/src/app/DesktopUserData.ts` | Profile folder `sh.stemcells.app(.dev)` | Never opens T3 Code's Electron profile |
 | `apps/desktop/src/app/DesktopStatePaths.ts` | State in `~/.stemcells` | Own database, never `~/.t3` |
@@ -88,15 +89,15 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/vite.config.ts` | Imports `stemcells/upstream/substitutes/plugin` and puts `substituteUpstreamModules()` first in `plugins` | Substitutes (below): upstream's views get our module where they import one of upstream's, in dev, the production build and both test projects, with no seam in the view. In dev and the production build the same plugin runs the name transform (The app's name, below) |
 | `scripts/lib/brand-assets.ts` | Imports `stemcells/brand/assets.ts`; `BRAND_ASSET_PATHS` is `withStemcellsBrand({…})` of upstream's list (two lines) | Stemcells' mark (below): every brand file upstream's builds read is ours (the desktop app's icon, the web icons the server and desktop builds copy in, the phone's icon and splash) |
 | `apps/desktop/src/app/DesktopAssets.ts` | Imports `stemcellsBrandAsset`; a run from the source tree takes `stemcellsBrandAsset(fileName)` where it took `assets/<brand>/<fileName>` | Same, for the Dock icon of a desktop app run from the source tree (`pnpm dev:desktop`) |
-| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the desktop's also adds `stemcells/brand/name.ts` and `stemcells/brand/nameTransform.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/brand/nameTransform.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names, and its config the name transform. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts` and the name transform through its substitutes plugin, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
+| `scripts/tsconfig.json`, `apps/desktop/tsconfig.json`, `apps/web/tsconfig.json` | `include` adds `stemcells/brand/assets.ts`; the scripts' also adds `stemcells/brand/name.ts`, the desktop's also adds `stemcells/brand/name.ts`, `stemcells/brand/upstreamName.ts` and `stemcells/brand/nameTransform.ts`, the web's also adds `stemcells/brand/look.ts`, `stemcells/brand/mark.ts`, `stemcells/brand/name.ts`, `stemcells/brand/nameTransform.ts`, `stemcells/brand/upstreamName.ts`, `stemcells/words/cellTools.ts`, `stemcells/words/subcells.ts` and `scripts/lib/brand-assets.ts` | A composite project lists every file it reaches. The desktop build reaches the name in its release files' names, and its config the name transform. The web reaches the mark's paths in its small mark, the name through its `brand/name.ts` and the name transform through its substitutes plugin, the look through its built-in theme (`upstream/look.ts`), the Cell and Subcell words in its substitutes, and the brand list only in `brandMarks.contract.test.ts` |
 | `apps/mobile/app.config.ts` | Imports `withStemcellsPhoneArt` from `stemcells/brand/assets.ts`; the channel is `withStemcellsPhoneArt(VARIANT_CONFIG[APP_VARIANT], fromRepoRoot)` (two lines) | Stemcells' mark (below): Android's launcher, monochrome, shortcut, splash and notification art are ours, on black, for every channel. Upstream names them here, not in its brand list |
-| `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/name.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
+| `apps/mobile/app.config.ts` | Imports `withStemcellsName` from `stemcells/brand/upstreamName.ts`; exports `withStemcellsName(config)` where it exported `config` (two lines) | The app's name (below), on the phone: its name on the home screen and in the share sheet, its widgets' descriptions and its permission prompts say Stemcells. Ids, schemes and bundle ids stay |
 | `apps/server/src/provider/CodexAuthCallbackPage.ts` | The sign-in page's wordmark is `<strong>T3 Code</strong>`, where it bolded "T3" alone | The name transform renames whole words only: drawn as one, the build says Stemcells there (The app's name, below) |
 | `apps/server/vite.config.ts` | Imports `upstreamNamePlugin` from `stemcells/brand/nameTransform.ts` and adds it to `pack.plugins` | The name transform (The app's name, below): the server's bundle says Stemcells where upstream's code says T3 Code |
 | `apps/mobile/plugins/withWidgetLogoAsset.cjs` | Copies the Live Activity's logo from `stemcells/brand/phone-widget-mark.svg`, where it took `assets/widget/T3Mark.svg` (one line; the image keeps its name, `T3Mark`) | Same: the Live Activity's logo |
 | `apps/mobile/metro.config.js` | Requires `stemcells/upstream/substitutes/substitutes.cjs`; `config.resolver.resolveRequest` is `substituteRequests(…)` of what it was, one line after the resolver | Substitutes (below), on the phone: Metro hands upstream's views our module (uniwind's resolver chains it) |
-| `apps/mobile/metro.config.js` (name) | Requires `nameTransformer` from `stemcells/upstream/substitutes/nameTransformer.cjs`; `config.transformer.babelTransformerPath` is `nameTransformer(…)` of Expo's, one line after the resolver | The name transform (The app's name, below), on the phone: every module reaches Expo's transformer saying Stemcells where upstream's code says T3 Code |
-| `apps/desktop/vite.config.ts` | Imports `upstreamNamePlugin` from `stemcells/brand/nameTransform.ts` and adds it to the main process's two `pack` builds (`plugins`) | The name transform (The app's name, below): the shared packages the desktop app bundles say Stemcells; its own code isn't renamed |
+| `apps/mobile/metro.config.js` (name) | Requires `withNameTransform` from `stemcells/upstream/substitutes/nameTransformer.cjs` and calls it on the config, one line after the resolver: Metro's transformer is the name transformer in place of Expo's, and its serializer runs the output check | The name transform (The app's name, below), on the phone: every module reaches Expo's transformer saying Stemcells where upstream's code says T3 Code, and a bundle that says "T3 Code" outside a kept line's words fails |
+| `apps/desktop/vite.config.ts` | Imports `upstreamNamePlugin` from `stemcells/brand/nameTransform.ts` and adds it to the main process's two `pack` builds (`plugins`) | The name transform (The app's name, below): the desktop app's main process, and the shared packages it bundles, say Stemcells |
 | `apps/mobile/scripts/generate-device-stream.mts` | Imports `upstreamNamePlugin` from `stemcells/brand/nameTransform.ts` and adds `upstreamNamePlugin({ mustRename: false })` to the WebView scripts' build | The name transform (The app's name, below): the scripts the phone injects into its WebViews bundle shared packages too |
 | `apps/mobile/vite.config.ts` | Imports `substituteUpstreamModules` from the same file and adds `plugins: [substituteUpstreamModules()]` | Same, for the phone's tests |
 | `apps/web/src/components/chat/timelineScrollTarget.test.ts` | Expects no collapse (`toBe(false)`) where a nested scroll would have collapsed the composer, and nothing else changes in it | It imports `composerScrollGesture`, which our substitute answers with one composer height (`substitutes/composerScrollGesture.ts`); upstream's suite runs on our tree in a sync's gates |
@@ -264,7 +265,8 @@ sidebar or a window's title.
   shows the desktop's. The contract test keeps the two and `productName`
   equal; a rename changes those three and `stemcells/scripts/install-app`'s
   `Stemcells.app`.
-- **The phone.** Its build config runs through `withStemcellsName`, so its
+- **The phone.** Its build config runs through `withStemcellsName`
+  (`stemcells/brand/upstreamName.ts`, the transform's own words), so its
   name on the home screen (and "Stemcells Dev", "Stemcells Preview"), its
   widgets' descriptions and its permission prompts say Stemcells; its
   screens say it through the name transform (below), which Metro runs on
@@ -279,25 +281,26 @@ sidebar or a window's title.
   (`stemcells/brand/nameTransform.ts`; `stemcells/docs/fork.md`, "The name
   transform"). It renames the exact words and their possessive ("T3 Code's"
   reads "Stemcells'"), never inside a path, an id or a longer word, in
-  `apps/web/src`, `index.html`, `apps/server/src`, `apps/mobile/src` and
-  every package's `src`, never in our folders or tests. The desktop app's
-  own code isn't renamed: it writes T3's name into its profile folders and
-  its command-line shim's marker, which need a list of their own first.
-  Its `KEPT` list says why for each line that keeps T3's name: T3's command
-  line (`t3`), what only the model reads (prompts, tool descriptions; the
+  `apps/web/src`, `index.html`, `apps/server/src`, `apps/mobile/src`,
+  `apps/desktop/src` and every package's `src`, never in our folders or
+  tests. Its `KEPT` list keeps places, never files: each by its file and
+  words only that place says, with why: what only the model reads (prompts, tool descriptions; the
   replay fixtures record them), names other programs key on (client names,
-  API key and session names), files written to disk, and lines that name
-  T3's own product (its theme, its phone app, the GNOME extension the
+  API key and device names), what's written to disk (the desktop app's
+  old profile folders, its `t3` launcher's marker, a service unit, an
+  AppArmor profile), and lines that name T3's own product (its theme, its
+  phone app, its releases and triage, `t3.json`, the GNOME extension the
   desktop installs). The web runs it in the substitutes plugin, in dev and
   the production build; the server and the desktop app in their `pack`;
   the phone in Metro, through `nameTransformer.cjs` (the seams above).
-  Tests run upstream's code as written. A Vite or `pack` build fails when
-  the transform renamed
-  nothing, when a line says the name where it can't rename and `KEPT`
-  doesn't keep, and when its output says "T3 Code" where no kept line
-  does; Metro fails on the line it can't rename.
-  `stemcells/scripts/check-app-name.ts` checks an install's archive the
-  same way (`install-app`, the sync's build gate), and
+  Tests run upstream's code as written. A build fails when a line says the
+  name where it can't rename and `KEPT` doesn't keep, and when a module it
+  bundles says "T3 Code" outside its own file's kept words, matched whole
+  however the build prints them (a dependency or our own folders keep
+  none); a Vite or `pack` build also fails when the transform renamed
+  nothing. `stemcells/scripts/check-app-name.ts` checks an install's
+  archive against every entry's words (`install-app`, the sync's build
+  gate), and
   `nameTransform.test.ts` holds the list to the sources. The server run
   from source (`pnpm dev`, `pnpm dev:server`) isn't built, so it says
   T3 Code; the web app in dev says Stemcells. The name on
@@ -309,6 +312,11 @@ sidebar or a window's title.
   local network prompts open with `APP_NAME`. `install-app` picks the zip
   by `-<arch>.zip`, and the update feed lists the names the build wrote.
   `stemcells/brand/releaseNames.test.ts` fails when either says T3's name.
+  The DMG's window is ours (`stemcells/brand/dmg/`, staged over upstream's
+  before the build renders it): "Drag Stemcells into Applications." with
+  the name in type where upstream draws T3's mark;
+  `stemcells/brand/dmgBackground.test.ts` fails when upstream ships one ours
+  doesn't replace, or when ours says T3's name.
 - **Already Stemcells, no seam:** the desktop's window title, app menu
   and About panel read the desktop's branding, and every web view that
   names the app through `APP_BASE_NAME` or `APP_DISPLAY_NAME` follows it
@@ -324,7 +332,7 @@ What keeps T3's name, on purpose:
 - T3's own theme, "T3 Code" in the theme picker, on the web and the phone.
 - The Android editor's clipboard label, which a person doesn't see.
 - In what the builds rename, the lines the name transform's `KEPT` list
-  keeps, each with why (above); the desktop app's own code.
+  keeps, each with why (above).
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).

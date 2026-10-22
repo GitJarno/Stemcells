@@ -1,10 +1,11 @@
 // @effect-diagnostics nodeBuiltinImport:off - sweeps upstream's sources on disk.
 /**
- * The name transform (`nameTransform.ts`): the web app's and the server's
- * builds say Stemcells where upstream's code says T3 Code. These hold it to
- * the sources: it renames the exact words and nothing else, every line it
- * leaves is kept on purpose, every kept line is still there, and it still
- * finds something to rename. If one fails after a sync, upstream wrote its
+ * The name transform (`nameTransform.ts`): the builds of the web app, the
+ * server, the phone and the desktop app say Stemcells where upstream's code
+ * says T3 Code. These hold it to the sources: it renames the exact words and
+ * nothing else, every line it leaves is kept on purpose, every kept line is
+ * still there, and it still finds something to rename; and a build's output
+ * says the name only inside a kept line's words. If one fails after a sync, upstream wrote its
  * name somewhere new: let the transform rename it, or keep it in `KEPT` with
  * why (`stemcells/docs/fork.md`, "The name transform").
  */
@@ -18,11 +19,12 @@ import { APP_NAME } from "./name.ts";
 import {
   isRenamedIn,
   KEPT,
-  keepsLine,
+  keptIn,
   REPO_ROOT,
   renameSourceMap,
   renameUpstreamName,
   shippedSources,
+  timesSaid,
   unexplainedNames,
   upstreamNamePlugin,
 } from "./nameTransform.ts";
@@ -64,14 +66,14 @@ describe("the name transform renames upstream's name", () => {
     }
   });
 
-  it("only in upstream's code a build of the web app, the server or the phone ships", () => {
+  it("only in upstream's code a build of the web app, the server, the phone or the desktop app ships", () => {
     const code = 'const a = "T3 Code";';
     for (const file of [
       "apps/web/src/stemcells/brand/Wordmark.tsx",
       "apps/server/src/stemcells/privacy/noTelemetry.ts",
       "apps/server/src/cloud/servicePreflight.test.ts",
       "apps/web/src/components/chat/MessagesTimeline.browser.test.tsx",
-      "apps/desktop/src/app/DesktopEnvironment.ts",
+      "apps/desktop/src/stemcells/windows/WindowsHost.ts",
       "apps/mobile/src/stemcells/brand/name.ts",
       "apps/mobile/app.config.ts",
       "packages/client-runtime/src/connection/hostFreeze.test.ts",
@@ -88,6 +90,7 @@ describe("the name transform renames upstream's name", () => {
       "packages/client-runtime/src/connection/hostFreeze.ts",
       "packages/provider-opencode/src/settings.ts",
       "apps/mobile/src/Stack.tsx",
+      "apps/desktop/src/app/DesktopApp.ts",
     ]) {
       expect(isRenamedIn(file), file).toBe(true);
     }
@@ -106,42 +109,82 @@ describe("the name transform renames upstream's name", () => {
       ].join("\n"),
     );
     expect(result?.kept).toEqual(['const CODEX_CLIENT_NAME = "T3 Code";']);
-    expect(renameUpstreamName("apps/server/src/cli/pair.ts", 'const a = "T3 Code";')?.code).toBe(
-      'const a = "T3 Code";',
-    );
+  });
+
+  it("keeps a place by its file and its words: a label upstream adds beside a kept one says ours", () => {
+    const file = "apps/web/src/components/settings/ThemePreviewCircles.tsx";
+    const source = NodeFS.readFileSync(NodePath.join(REPO_ROOT, file), "utf8");
+    const added = `${source}\nexport const MORE = [{ id: "plain", label: "T3 Code", previews: [] }];\n`;
+    const result = renameUpstreamName(file, added)!;
+    expect(result.code).toContain('id: "default",\n    label: "T3 Code",');
+    expect(result.code).toContain(`{ id: "plain", label: "${APP_NAME}", previews: [] }`);
+    // The same words in another file keep nothing there.
+    expect(
+      renameUpstreamName(
+        "apps/web/src/components/settings/Other.tsx",
+        'x = { id: "default",\n    label: "T3 Code",\n    previews: [] };',
+      )?.code,
+    ).toContain(`label: "${APP_NAME}"`);
+  });
+
+  it("keeps a place, never a file: a new line in a file KEPT names says ours", () => {
+    expect(
+      renameUpstreamName("apps/server/src/cli/update.ts", 'const a = "Restart T3 Code now";')?.code,
+    ).toBe(`const a = "Restart ${APP_NAME} now";`);
+    expect(
+      renameUpstreamName(
+        "apps/desktop/src/app/DesktopCliShim.ts",
+        'const MOVED = "T3 Code moved.";',
+      )?.code,
+    ).toBe(`const MOVED = "${APP_NAME} moved.";`);
   });
 });
 
 describe("upstream's sources, as a build sees them", () => {
   it("say the name only where the transform renames it or KEPT keeps it", () => {
-    // The build fails on a line it can't rename and KEPT doesn't name; a file
-    // it doesn't rename in (the desktop app's own code) says the name only
-    // where KEPT keeps it or no person reads it.
+    // The build fails on a line it can't rename and KEPT doesn't name. A file
+    // the builds don't rename in (our own `stemcells/brand/name.ts`, which the
+    // phone bundles) may not say the name at all.
     const unkept = sources.flatMap(({ file, text }) => {
       const renamed = renameUpstreamName(file, text);
       if (renamed !== null) return renamed.unkept.map((line) => `${file}: ${line.trim()}`);
-      return text
-        .split("\n")
-        .filter((line) => line.includes("T3 Code") && !keepsLine(file, line))
-        .map((line) => `${file}: ${line.trim().slice(0, 120)}`);
+      return text.includes("T3 Code") ? [`${file}: says the name, and no build renames it`] : [];
     });
     expect(unkept).toEqual([]);
   });
 
-  it("still have every line KEPT keeps", () => {
-    // A kept line upstream removed or reworded leaves a rule that keeps nothing.
+  it("pass the output check once renamed: every kept name stands inside its own file's words", () => {
+    const unexplained = sources.flatMap(({ file, text }) =>
+      unexplainedNames(renameUpstreamName(file, text)?.code ?? text, keptIn(file)).map(
+        (words) => `${file}: ${words}`,
+      ),
+    );
+    expect(unexplained).toEqual([]);
+  });
+
+  it("say each KEPT entry's words as many times as it says: none removed, none added", () => {
+    // Words upstream removed or reworded keep nothing; words it said again
+    // would keep the new place unasked.
     for (const kept of KEPT) {
-      const matches = sources.filter(
-        ({ file, text }) =>
-          kept.file.test(file) &&
-          text
-            .split("\n")
-            .some(
-              (line) =>
-                line.includes("T3 Code") && (kept.line === undefined || line.includes(kept.line)),
-            ),
-      );
-      expect(matches.length, `${kept.file} ${kept.line ?? ""}`).toBeGreaterThan(0);
+      const times = sources
+        .filter(({ file }) => kept.file.test(file))
+        .reduce((sum, { text }) => sum + timesSaid(text, kept.words), 0);
+      expect(times, `${kept.file} ${kept.words}`).toBe(kept.times ?? 1);
+    }
+  });
+
+  it("keep the name only in words of their own, never in generic ones", () => {
+    // A key or prop any code has (label, name, children) beside the name
+    // would keep that shape anywhere.
+    const generic = new Set(
+      "label name title children id text value description message key type".split(" "),
+    );
+    for (const kept of KEPT) {
+      expect(kept.words, `${kept.file}`).toContain("T3 Code");
+      const own = (
+        kept.words.replaceAll("T3 Code", "").match(/[A-Za-z][A-Za-z0-9_]{2,}/g) ?? []
+      ).filter((word) => !generic.has(word));
+      expect(own, `${kept.file} ${kept.words}`).not.toEqual([]);
     }
   });
 
@@ -154,25 +197,76 @@ describe("upstream's sources, as a build sees them", () => {
     expect(renamedIn(/^apps\/server\//)).toBeGreaterThan(0);
     expect(renamedIn(/^apps\/mobile\//)).toBeGreaterThan(0);
     expect(renamedIn(/^packages\//)).toBeGreaterThan(0);
+    expect(renamedIn(/^apps\/desktop\//)).toBeGreaterThan(0);
   });
 });
 
 describe("a build's output", () => {
-  const kept = [
-    'const CODEX_CLIENT_NAME = "T3 Code";',
-    "      ? `T3 Code stopped watching after ${LIMIT} updates`",
-  ];
-
-  it("may say the name where a kept line does", () => {
-    expect(unexplainedNames('var CODEX_CLIENT_NAME = "T3 Code";', kept)).toEqual([]);
-    // A build folds a constant into the text.
-    expect(unexplainedNames("`T3 Code stopped watching after 10 updates`", kept)).toEqual([]);
+  it("may say the name inside its own file's kept words, however the build prints them", () => {
+    for (const [file, output] of [
+      ["apps/server/src/provider/CodexProvider.ts", 'var CODEX_CLIENT_NAME = "T3 Code";'],
+      // Minified: no spaces, another quote, the next entry beside it.
+      [
+        "apps/web/src/components/settings/ThemePreviewCircles.tsx",
+        "WH=[{id:`default`,label:`T3 Code`,previews:[`light`,`dark`].map(e=>e)}]",
+      ],
+      ["apps/mobile/src/lib/mobileTheme.ts", '[{id:a,label:"T3 Code"},{id:"material-you"}]'],
+      // An escaped quote, an escaped character.
+      [
+        "packages/contracts/src/t3ProjectFile.ts",
+        '"Checked before T3 Code\'s built-in icon locations."',
+      ],
+      [
+        "apps/web/src/components/clerk/MobileClientsUserProfilePage.logic.ts",
+        "`${e.appVersion?`\\xB7 T3 Code ${e.appVersion}`:``}`",
+      ],
+      // A build folds a constant into the text.
+      [
+        "apps/server/src/orchestration-v2/pullRequestWatch.ts",
+        "`T3 Code stopped watching after 10 comment-only updates`",
+      ],
+      [
+        "packages/provider-muse/src/server/sdk.ts",
+        'clientInfo:{name:"t3_code",title:"T3 Code",version:"1"}',
+      ],
+    ] as const) {
+      expect(unexplainedNames(output, keptIn(file)), output).toEqual([]);
+    }
   });
 
-  it("names every other place it does", () => {
-    expect(unexplainedNames('x("Restart T3 Code to finish.")', kept)).toEqual([
-      "Restart T3 Code to finish.",
-    ]);
+  it("fails the name anywhere else: a dependency, our own folders, a phone module, other words", () => {
+    const shapes = [
+      'n={label:"T3 Code"}',
+      'x({label:"T3 Code",href:"/download"})',
+      'Menu({name:"T3 Code",items:[]})',
+      'Button({children:"Get T3 Code"})',
+      'title:"T3 Code"',
+      '"T3 Code Desktop"',
+      'var OTHER_NAME = "T3 Code";',
+    ];
+    for (const file of [
+      "node_modules/example-ui/dist/index.js",
+      "stemcells/brand/example.ts",
+      "apps/web/src/stemcells/example.tsx",
+      "apps/mobile/modules/example/src/index.ts",
+      "apps/web/src/components/settings/ThemePreviewCircles.tsx",
+    ]) {
+      for (const shape of shapes) {
+        expect(unexplainedNames(shape, keptIn(file)), `${file}: ${shape}`).toHaveLength(1);
+      }
+    }
+    // An app read with no modules to go by is checked against every entry's
+    // words: only a button's text the build alone can place gets through.
+    for (const shape of shapes.filter((shape) => !shape.includes("Get T3 Code"))) {
+      expect(unexplainedNames(shape), shape).toHaveLength(1);
+    }
+    // Kept words explain their own name, not one beside them.
+    expect(
+      unexplainedNames(
+        "`T3 Code stopped watching after 10 updates, T3 Code`",
+        keptIn("apps/server/src/orchestration-v2/pullRequestWatch.ts"),
+      ),
+    ).toHaveLength(1);
   });
 });
 
@@ -190,8 +284,12 @@ function pluginHooks() {
     errors,
     transform: (code: string, file: string) =>
       plugin.transform.call(context, code, NodePath.join(REPO_ROOT, file)),
-    generateBundle: (bundle: Record<string, { type: "chunk"; code: string }>) =>
-      plugin.generateBundle.call(context, {}, bundle),
+    generateBundle: (
+      bundle: Record<
+        string,
+        { type: "chunk"; code: string; modules?: Record<string, { code: string | null }> }
+      >,
+    ) => plugin.generateBundle.call(context, {}, bundle),
   };
 }
 
@@ -220,7 +318,7 @@ describe("the build plugin", () => {
     const hooks = pluginHooks();
     expect(hooks.transform('export default "T3 Code";', "apps/web/src/a.ts?raw")).toBeNull();
     expect(hooks.transform(".a { content: 'T3 Code' }", "apps/web/src/a.css")).toBeNull();
-    expect(hooks.transform('const a = "T3 Code";', "apps/desktop/src/a.ts")).toBeNull();
+    expect(hooks.transform('const a = "T3 Code";', "apps/desktop/src/stemcells/a.ts")).toBeNull();
   });
 
   it("fails a build on a line it can't rename that KEPT doesn't name", () => {
@@ -230,18 +328,62 @@ describe("the build plugin", () => {
     ).toThrow(/can't rename it/);
   });
 
-  it("fails a build that renamed nothing, or whose output says the name unkept", () => {
+  it("fails a build that renamed nothing, or with a module that says the name outside its own file's words", () => {
     const idle = pluginHooks();
+    idle.transform("export const a = 1;", "apps/server/src/example.ts");
     expect(() => idle.generateBundle({})).toThrow(/renamed nothing/);
-    const hooks = pluginHooks();
-    hooks.transform('const a = "Run T3 Code.";', "apps/server/src/example.ts");
+    // A build of code the builds don't rename in (a test's fixture) has nothing to rename.
+    expect(() => pluginHooks().generateBundle({})).not.toThrow();
+    const chunk = (modules: Record<string, string>, code = Object.values(modules).join(";")) => ({
+      "a.js": {
+        type: "chunk" as const,
+        code,
+        modules: Object.fromEntries(
+          Object.entries(modules).map(([file, moduleCode]) => [
+            NodePath.join(REPO_ROOT, file),
+            { code: moduleCode },
+          ]),
+        ),
+      },
+    });
+    const built = () => {
+      const hooks = pluginHooks();
+      hooks.transform('const a = "Run T3 Code.";', "apps/server/src/example.ts");
+      return hooks;
+    };
+    // A dependency's label, though a kept file's entry says the same key.
     expect(() =>
-      hooks.generateBundle({ "a.js": { type: "chunk", code: 'x("Restart T3 Code now")' } }),
-    ).toThrow(/Restart T3 Code now/);
-    const clean = pluginHooks();
-    clean.transform('const a = "Run T3 Code.";', "apps/server/src/example.ts");
+      built().generateBundle(
+        chunk({
+          "node_modules/example-ui/dist/index.js": 'n={label:"T3 Code"}',
+          "apps/web/src/components/settings/ThemePreviewCircles.tsx":
+            'WH=[{id:"default",label:"T3 Code",previews:[]}]',
+        }),
+      ),
+    ).toThrow(/node_modules\/example-ui\/dist\/index\.js\): n=\{label:"T3 Code"\}/);
+    // A chunk that says the name more often than its modules do.
     expect(() =>
-      clean.generateBundle({ "a.js": { type: "chunk", code: `x("Run ${APP_NAME}.")` } }),
+      built().generateBundle(
+        chunk(
+          { "packages/contracts/src/relay.ts": 'x("T3 Code Relay API")' },
+          'x("T3 Code Relay API");y("T3 Code")',
+        ),
+      ),
+    ).toThrow(/2 times, its modules 1/);
+    // A page keeps nothing.
+    expect(() =>
+      built().generateBundle({
+        "index.html": { type: "asset", source: "<title>T3 Code</title>" } as never,
+      }),
+    ).toThrow(/index\.html/);
+    expect(() =>
+      built().generateBundle(
+        chunk({
+          "apps/web/src/components/settings/ThemePreviewCircles.tsx":
+            'WH=[{id:"default",label:"T3 Code",previews:[]}]',
+          "apps/web/src/example.ts": `x("Run ${APP_NAME}.")`,
+        }),
+      ),
     ).not.toThrow();
   });
 });

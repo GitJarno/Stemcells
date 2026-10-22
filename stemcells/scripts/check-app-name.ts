@@ -1,5 +1,6 @@
 // Whether a built Stemcells says T3's name only where it should: every
-// "T3 Code" in the server's bundle and the web app inside it stands on a line
+// "T3 Code" in the server's bundle, the web app inside it and the desktop
+// app's main process stands inside the words of a line
 // stemcells/brand/nameTransform.ts keeps. The builds check their own output
 // as they write it; this checks what an install ships, inside the app's
 // archive. Exits 0 when it does, 1 with each unexplained line when not.
@@ -9,11 +10,11 @@
 // A folder is checked whole (apps/server/dist, apps/web/dist,
 // apps/desktop/dist-electron); in an archive, the server's bundle, the web app
 // inside it and the desktop app's main process, which the name transform
-// builds. The desktop app's own code keeps T3's name (`KEPT`).
+// builds.
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 
-import { keptLines, unexplainedNames } from "../brand/nameTransform.ts";
+import { unexplainedNames } from "../brand/nameTransform.ts";
 
 const CHECKED = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 const IN_ARCHIVE = /^apps\/(?:server\/dist|desktop\/dist-electron)\//;
@@ -75,14 +76,13 @@ if (targets.length === 0) {
   process.exit(2);
 }
 
-const kept = keptLines();
 let checked = 0;
 const unexplained: string[] = [];
 for (const target of targets) {
   const files = NodeFS.statSync(target).isDirectory() ? folderFiles(target) : archiveFiles(target);
   for (const [file, text] of files) {
     checked += 1;
-    for (const words of unexplainedNames(text, kept)) unexplained.push(`${file}: ${words}`);
+    for (const words of unexplainedNames(text)) unexplained.push(`${file}: ${words}`);
   }
 }
 
@@ -92,7 +92,7 @@ if (checked === 0) {
 }
 if (unexplained.length > 0) {
   console.error(
-    `check-app-name: the build says "T3 Code" where stemcells/brand/nameTransform.ts keeps nothing:\n  ${unexplained.join("\n  ")}`,
+    `check-app-name: the build says "T3 Code" outside every kept place's words (stemcells/brand/nameTransform.ts):\n  ${unexplained.join("\n  ")}`,
   );
   process.exit(1);
 }
