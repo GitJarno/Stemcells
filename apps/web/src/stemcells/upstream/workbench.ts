@@ -13,6 +13,13 @@ import { isCommandPaletteOpen } from "../../commandPaletteBus";
 import { isContextMenuOpen } from "../../contextMenuFallback";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { isTerminalFocused } from "../../lib/terminalFocus";
+import {
+  browserMiniPlayerSource,
+  previewMiniPlayerSourceKey,
+  selectThreadPreviewMiniPlayer,
+  usePreviewMiniPlayerStore,
+  type PreviewMiniPlayerSource,
+} from "../../previewMiniPlayerStore";
 import { useThreadPreviewState } from "../../previewStateStore";
 import { RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY } from "../../rightPanelLayout";
 import {
@@ -59,11 +66,50 @@ export function useCellPanelOnBrowser(cell: CellRef | null): boolean {
   });
 }
 
-/** Closes the Cell's right panel. Its surfaces stay, so reopening shows the same one. */
+/**
+ * Closes the Cell's right panel as upstream's own close does
+ * (`useRightPanelActions`, `closePreviewPanel`): a browser or device it was
+ * showing floats on over the chat, tucked where the chat has no room for
+ * it, and the panel leaves its maximized state. Its surfaces stay, so
+ * reopening shows the same one.
+ */
 export function closeCellPanel(cell: CellRef): void {
   const ref = threadRefOf(cell);
   const store = useRightPanelStore.getState();
-  if (selectThreadRightPanelState(store.byThreadKey, ref).isOpen) store.close(ref);
+  if (!selectThreadRightPanelState(store.byThreadKey, ref).isOpen) return;
+  const floater = floaterOf(selectActiveRightPanelSurface(store.byThreadKey, ref));
+  if (floater !== null) usePreviewMiniPlayerStore.getState().open(ref, floater);
+  store.setMaximized(ref, false);
+  store.close(ref);
+}
+
+/** What upstream floats when its panel closes on a surface: a browser, a device, or nothing. */
+function floaterOf(surface: RightPanelSurface | null): PreviewMiniPlayerSource | null {
+  if (surface?.kind === "preview" && surface.resourceId) {
+    return browserMiniPlayerSource(surface.resourceId);
+  }
+  if (surface?.kind === "device" && surface.target) return { kind: "device", ...surface.target };
+  return null;
+}
+
+/**
+ * Whether the surface the Cell's panel last showed floats over its chat
+ * (or is tucked at its edge), so the chat already shows it.
+ */
+export function useCellSurfaceFloats(cell: CellRef | null): boolean {
+  const ref = cell ? threadRefOf(cell) : null;
+  const surface = useRightPanelStore((state) =>
+    ref ? selectSelectedRightPanelSurface(state.byThreadKey, ref) : null,
+  );
+  const floating = usePreviewMiniPlayerStore((state) =>
+    selectThreadPreviewMiniPlayer(state.byThreadKey, ref),
+  );
+  const floater = floaterOf(surface);
+  return (
+    floater !== null &&
+    floating !== null &&
+    previewMiniPlayerSourceKey(floater) === previewMiniPlayerSourceKey(floating.source)
+  );
 }
 
 /** Reopens the Cell's right panel on the surface it last showed. */

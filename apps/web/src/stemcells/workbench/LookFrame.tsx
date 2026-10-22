@@ -16,6 +16,7 @@ import {
   openCellPanel,
   useCellPanelEmpty,
   useCellPanelOpen,
+  useCellSurfaceFloats,
   useCellSurfaceName,
   useInlinePanels,
 } from "../upstream/workbench";
@@ -167,13 +168,15 @@ function RailMark(props: { cell: CellRef; onSelect: () => void }) {
 
 /**
  * After Look, a Cell keeps the name of its workbench's last surface, as a
- * chip in its header that opens Look again.
+ * chip in its header that opens Look again. Not while that surface floats
+ * over the chat or is tucked at its edge: the chat shows it already.
  */
 export function LookChip(props: { cell: CellRef | null }) {
   const name = useCellSurfaceName(props.cell);
   const open = useCellPanelOpen(props.cell);
+  const floats = useCellSurfaceFloats(props.cell);
   const { cell } = props;
-  if (cell === null || name === null || open) return null;
+  if (cell === null || name === null || open || floats) return null;
   return (
     <button
       type="button"

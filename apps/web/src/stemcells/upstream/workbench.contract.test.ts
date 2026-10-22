@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import chatRightPanel from "../../components/chat/ChatRightPanel.tsx?raw";
+import rightPanelActions from "../../components/chat/useRightPanelActions.ts?raw";
 import mcpAppFrame from "../../components/chat/McpAppFrame.tsx?raw";
 import threadFindBar from "../../components/chat/ThreadFindBar.tsx?raw";
 import serverBrowser from "../../browser/ServerBrowserSurface.tsx?raw";
@@ -25,6 +26,11 @@ import threadShell from "../../../../../packages/client-runtime/src/state/thread
 import { RESIZABLE_WIDTH_PROPERTY } from "../../hooks/useResizableWidth";
 import { RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY } from "../../rightPanelLayout";
 import {
+  browserMiniPlayerSource,
+  selectThreadPreviewMiniPlayer,
+  usePreviewMiniPlayerStore,
+} from "../../previewMiniPlayerStore";
+import {
   selectActiveRightPanelSurface,
   selectSelectedRightPanelSurface,
   selectThreadRightPanelState,
@@ -38,6 +44,7 @@ const thread: CellRef = { environmentId: "env-look", threadId: "thread-look", dr
 const asDraft: CellRef = { ...thread, draftId: "draft-look" };
 
 beforeEach(() => {
+  usePreviewMiniPlayerStore.setState({ byThreadKey: {} });
   useRightPanelStore.setState({
     byThreadKey: {},
     threadPanelVisibilityByThreadKey: {},
@@ -69,6 +76,25 @@ describe("Look's contracts with upstream's right panel", () => {
     openCellPanel(thread);
     expect(panel(thread).isOpen).toBe(true);
     expect(panel(thread).activeSurfaceId).toBe("diff");
+  });
+
+  it("closing floats a browser or device as upstream's own close does, and nothing else", () => {
+    // Every close upstream's chat makes floats what the panel showed.
+    expect(rightPanelActions).toMatch(
+      /const closePreviewPanel = \(\) => \{[\s\S]*?browserMiniPlayerSource\(activeRightPanelSurface\.resourceId\)[\s\S]*?\{ kind: "device", \.\.\.activeRightPanelSurface\.target \}[\s\S]*?setMaximized\(activeThreadRef, false\)/,
+    );
+    const ref = threadRefOf(thread);
+    const floating = () =>
+      selectThreadPreviewMiniPlayer(usePreviewMiniPlayerStore.getState().byThreadKey, ref);
+
+    useRightPanelStore.getState().open(ref, "diff");
+    closeCellPanel(thread);
+    expect(floating()).toBeNull();
+
+    useRightPanelStore.getState().openBrowser(ref, "tab-garden");
+    closeCellPanel(thread);
+    expect(panel(thread).isOpen).toBe(false);
+    expect(floating()?.source).toEqual(browserMiniPlayerSource("tab-garden"));
   });
 
   it("a draft's panel is its thread's, so sending the draft keeps Look's Cell", () => {

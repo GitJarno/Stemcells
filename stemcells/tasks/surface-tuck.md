@@ -52,9 +52,9 @@ sits in the pane's buttons at the same time.
 
 ### PR 2: the way back
 
-- [ ] Look's endings float a live surface again (upstream's close)
-- [ ] The chip stays away while its surface floats or is tucked
-- [ ] Prove it: card → Look → Esc → card
+- [x] Look's endings float a live surface again (upstream's close)
+- [x] The chip stays away while its surface floats or is tucked
+- [x] Prove it: card → Look → its × → card
 
 ## Review
 
@@ -90,3 +90,14 @@ Review fixes (an independent read of the change):
   in an overlay that never resizes.
 - No motion when it comes or goes: a chat narrowing past the room for a
   floater swaps one for the other at once.
+
+### PR 2
+
+Look's endings close a Cell's panel as upstream's every close does
+(`closePreviewPanel`): a browser or device it showed floats on, and in a
+narrow pane that is its card. The contract test pins upstream's close
+and fails on main for ours. Headless, same chat in seven panes: the card,
+no chip; a click, Look; the workbench's ×, the card back and still no
+chip; × on the card, the card gone and the chip naming the browser back.
+Esc didn't end Look there, with or without the card: a closed popover
+the Cell's line keeps mounted counted as open (its own fix).

@@ -10,8 +10,10 @@
  * each thread's panel, open or not and on which surface, and the tab keeps
  * its focused pane, so a tab remembers whether it was in Look and on which
  * Cell, across tab switches and reloads, with nothing of ours to keep.
- * Every way out of Look closes that panel through upstream's store, which
- * keeps its surfaces for the next time.
+ * Every way out of Look closes that panel as upstream's own close does: its
+ * store keeps the surfaces for the next time, and a browser or device the
+ * panel showed floats on over the chat, tucked at its edge in a pane with
+ * no room for it.
  */
 import { panesOf, type CellRef, type Pane, type Tab } from "../tabs/layout";
 
