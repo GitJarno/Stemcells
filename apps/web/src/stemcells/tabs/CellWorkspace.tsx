@@ -27,6 +27,7 @@ import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../u
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import { seatAskiHere } from "../windows/askiHome";
+import { revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import {
@@ -132,6 +133,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const lastTabOnStage =
     workspace.tabs.length > 0 && workspace.tabs.at(-1)?.id === workspace.activeTabId;
   const newCellMotion = useNewCell(lastTabOnStage && !newCellIsTaken).motion;
+  const askiAway = useAskiElsewhere();
   // From here on, a browser off stage sleeps until it is wanted (`awake.ts`).
   useLayoutEffect(raiseSlate, []);
 
@@ -141,6 +143,12 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   const onRoute = useEffectEvent((cell: CellRef) => {
+    // A chat lives in one place: open in another window, that window comes
+    // forward, and this one stays on its own chat.
+    if (revealElsewhere(cell)) {
+      routeToFocused();
+      return;
+    }
     // The new Cell's draft, routed to (a reload, the sidebar): its tab is taken.
     const routedNewCell = useWorkspaceStore.getState().newCell;
     const ofNewCell = isNewCellDraft(cell, routedNewCell);
@@ -202,6 +210,10 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   const activateTabAndRoute = (tabId: string) => {
+    // Aski's tab in another window: Aski's place here brings that window forward.
+    if (tabId === ASKI_TAB_ID && !readWorkspace().tabs.some(isAskiTab) && askiAway) {
+      if (revealElsewhere(askiAway)) return;
+    }
     // The new Cell's page, gone to: its tab is taken, and the route goes to its draft.
     const current = useWorkspaceStore.getState().newCell;
     updateWorkspace((latest) =>
@@ -331,7 +343,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
       <AskiKeeper onChat={onAskiChat} />
       <AskiMomentWatch aski={askiChat.status === "ready" ? askiChat.cell : null} />
       <AskiSpawn />
-      <WindowsKeeper onMoved={routeToFocused} />
+      <WindowsKeeper onMoved={routeToFocused} onFocusPane={focusPaneAndRoute} />
     </>
   );
   if (props.target === null && !keepGrid) {
@@ -375,7 +387,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         activeTabId={workspace.activeTabId}
         aski={{
           active: askiTab !== null && workspace.activeTabId === ASKI_TAB_ID,
-          cell: askiTab ? (panesOf(askiTab)[0]?.cell ?? null) : null,
+          cell: askiTab ? (panesOf(askiTab)[0]?.cell ?? null) : askiAway,
           chat: askiChat,
         }}
         newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}

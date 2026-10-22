@@ -18,9 +18,9 @@ asked for by name), then W7, W4, W9, W11.
       Move Tab to New Window (⌥⌘T, no motion yet), closing a window, Aski
       going home, relaunch. Measured: memory, boot and server load per
       window.
-- [ ] W3 Shared state across windows: drafts, right panel and terminal UI
-      merge on `storage`; notifications from the lead window only; a chat
-      open in another window raises that window.
+- [x] W3 Shared state across windows: drafts, right panel and terminal UI
+      merge on `storage`; notifications from one window (the focused one,
+      else the lead); a chat open in another window raises that window.
 - [ ] W5 Tear off: the carry engine, the flight layer, the tear band, the
       chip unfolding into a window preview, the drop in open space,
       Esc, the one-tab window, mid-flight reversal, Reduce Motion.
@@ -174,18 +174,29 @@ memories), and an undo entry (the arrangement before and after).
   another window raises that window and focuses its pane.
 - Every window has a tab, except while a one-tab window is mid-carry.
 
-**The lead window** is upstream's main window. Notifications, Aski's
-keeper and, later, the phone's publishing run there only. When it closes,
+**The lead window** is upstream's main window. Aski's keeper and, later,
+the phone's publishing run there only; notifications run there while no
+window of the app has focus. When it closes,
 our layer promotes the frontmost window with upstream's `setMain`, so the
 menu, reload and dev tools keep a target. A window leads, or counts as in
 front, only once its page has loaded: one still opening (or one that never
 will) can't take Aski home. With none loaded, the next page to load leads.
+A move that makes a window still opening the lead has it lead once its page
+loads.
 
 **Persistence.** Main writes `stemcells-windows.json` in the desktop state
 folder (`windows/persist.ts`'s format: the windows, the lead, the memories
-and the displays last seen), debounced, and flushes it on quit. The undo
-stack isn't kept. At launch main opens every stored window at its frame at
-once, and the lead window runs `displaysChanged` against the displays last
+and the displays last seen), debounced, and flushes it on quit. Windows
+closing while the app quits (the app's own flag, which an update raises
+before it closes them) stay in the file. An update that can't install
+lowers the flag and the app carries on: the windows kept meanwhile open
+again as soon as it does (the host looks while the flag is up), or, with
+none left open, when upstream's main window comes back.
+A file that can't be read (not readable, not JSON, a book this app doesn't
+know) is moved aside as `.corrupt-<time>`; one that can't be moved aside
+isn't saved over.
+The undo stack isn't kept. At launch main opens every stored window at its
+frame at once, and the lead window runs `displaysChanged` against the displays last
 seen, so a display gone since gathers its windows. The first desktop boot
 with no file adopts the old `stemcells.tabs` from the renderer's
 localStorage as window 1. Upstream keeps saving window 1's bounds as it
@@ -196,6 +207,12 @@ localStorage, running the same functions over a one-window arrangement.
 once (`sendSync`) and gets its id, its workspace and whether it leads,
 before the app's scripts run, so the tab store's first read stays
 synchronous. Main knows the asker by its `webContents`; no id rides the URL.
+A window a move opens is bound to its id as upstream's maker returns it,
+which is in the same turn as the maker starts its page loading, so its page
+can't ask first; were it to, it would take the oldest window still opening,
+a guess that two windows opening at once (a move's and a tear's warm one)
+could get crossed. Left as is: making it certain needs the id handed to
+upstream's maker, a new seam.
 
 ## Interactions and their motion
 
@@ -436,7 +453,14 @@ timer the hand can beat, and in tests the engine is fed recorded hands.
   in W5; if not, the browser pane's still is its last frame from the
   preview manager.
 - **Aski's tab** tears off like any tab; it's first in whichever window
-  holds it; closing that window sends it home.
+  holds it; closing that window sends it home. Every other window's strip
+  keeps Aski's place, which brings Aski's window forward on Aski's chat.
+- **The new Cell past the last tab** has one draft for the whole app, kept
+  in step across windows like every draft, so each window's page past the
+  last tab shows the same words. Taken (written in) in two windows at once,
+  it would be one chat in two places. Open, for W5 with the tab swipe's
+  owner: a taken new Cell is published like a tab, so a second window
+  shows it as open elsewhere.
 - **Settings** is upstream's route, not a tab. Each window can show it
   (⌘,) today. W11 makes it a tab so it tears off like one; it starts with
   a spike: upstream's settings pages rendered inside a tab page under a
@@ -446,13 +470,30 @@ timer the hand can beat, and in tests the engine is fed recorded hands.
   window's tabs first, then each other window's by screen position. The
   phone has no tabs endpoint yet; this waits for it.
 - **Notifications** mount once per renderer upstream: N windows, N
-  notices. A substitute renders upstream's coordinator in the lead window
-  only.
+  notices. A substitute renders upstream's coordinator in one window: the
+  focused one, which judges by its own focus and route (a toast unless it
+  shows the chat, never a system notification while it has focus), else
+  the lead while the app is in the background (`book.ts` `notifier`).
 - **Shared localStorage.** Upstream's drafts, right panel state and
   terminal UI state are each one key, written whole by every window, so
   windows overwrite each other. Our adapter listens for `storage` and
-  merges: per chat, the window holding the chat wins; a merge that changes
-  nothing doesn't set state, so two windows can't ping-pong.
+  merges entry by entry (one chat's draft, one chat's panel). Every entry
+  carries a version, a Lamport counter and the window that wrote it,
+  written in the same write as the value (the drafts' in their state, the
+  others' beside it). A window gives an entry it changed a new version and
+  takes another window's value only where that one's version is newer. A
+  window passing on what it took passes its version on too, so a
+  bystander's write never wins over typing it hadn't heard, and a write
+  with nothing newer changes nothing, so windows settle. A base of "the
+  last write heard" wasn't enough: with three windows, one passing on a
+  stale entry undid another's typing. A deletion keeps its version (the
+  latest 256 are kept), so a sent draft stays sent.
+  Sharing starts as the app's first modules load (`main.tsx`), in the turn
+  the stores read localStorage, and takes what's on disk then as another
+  window's write: a window holds no versions of its own until it hears
+  one, so one that loaded slowly takes what was written meanwhile rather
+  than pinning what it read under a newer version. Its writes carry
+  versions from before that take, so the take is written with them.
 - **Many windows.** Each is a renderer, a client runtime and a WebSocket.
   W2 measures memory per window, boot to first paint, and the server's CPU
   with four idle windows against one. No cap unless the numbers ask for
@@ -567,3 +608,18 @@ Motion on.
   CPU; a new window draws its tab 1 to 1.5 s after ⌥⌘T. That is over
   `dwell`, so W5's spare window is likely needed; W5 measures a release
   build first.
+- W3: proved in the lab: drafts typed in two windows in turn are all in
+  each window and in storage; without the merge, each window's next write
+  dropped the other's. The merge reads, writes and hydrates through each
+  store's own persist options, which a contract test pins with upstream's
+  stores. Versioned entries are proved with upstream's real stores, one
+  copy per window over one storage: the three-window crossing that lost a
+  draft under the last-heard merge, and seeded random runs of four windows
+  (typing, sending, panels, terminal heights, each heard late and in
+  order), where every window ends with each chat's last change and
+  nothing more is written. The old merge lost a sent draft in the drafts'
+  runs and echoed without end in the others'. Notifications come from one window's coordinator, the focused
+  one's or else the lead's (a build substitute, pinned by the substitutes'
+  contract test; the lab has no live chats to notify of). A window without Aski's tab drew Aski's place
+  as not ready; it now brings Aski's window forward (lab: the lead went to
+  Aski's chat, the other window stayed on its tab).

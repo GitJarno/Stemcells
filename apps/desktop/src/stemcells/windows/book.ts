@@ -122,6 +122,8 @@ export class WindowBook {
    * show what the person brought forward.
    */
   private readonly loaded = new Set<string>();
+  /** The window a move made the lead before its page loaded: it leads once it has. */
+  private leadOnceLoaded: string | null = null;
   /** The app is quitting: its windows close to open again at the next launch. */
   private quitting = false;
 
@@ -198,7 +200,9 @@ export class WindowBook {
   }
 
   setLead(id: string): void {
-    if (this.canLead(id)) this.lead = id;
+    if (!this.canLead(id)) return;
+    this.lead = id;
+    this.leadOnceLoaded = null;
   }
 
   /**
@@ -209,7 +213,9 @@ export class WindowBook {
     this.adopting.delete(id);
     if (!this.get(id)) return false;
     this.loaded.add(id);
-    if (this.lead !== null && this.loaded.has(this.lead)) return false;
+    const leads = this.leadOnceLoaded === id || this.lead === null || !this.loaded.has(this.lead);
+    if (this.leadOnceLoaded === id) this.leadOnceLoaded = null;
+    if (!leads) return false;
     this.lead = id;
     return true;
   }
@@ -242,6 +248,15 @@ export class WindowBook {
     }
     this.windows[index] = { ...record, frame, display, fullScreen };
     return true;
+  }
+
+  /**
+   * The one window that raises the chats' notifications (sound, toast,
+   * system notification, badge): the focused window, or the lead while no
+   * window of the app has focus. Each would otherwise notify of every turn.
+   */
+  notifier(focused: string | null): string | null {
+    return focused !== null && this.get(focused) ? focused : this.lead;
   }
 
   /** A window came to the front; one whose page hasn't loaded yet comes once it has. */
@@ -289,6 +304,7 @@ export class WindowBook {
     const record = this.get(id);
     this.adopting.delete(id);
     this.loaded.delete(id);
+    if (this.leadOnceLoaded === id) this.leadOnceLoaded = null;
     if (!record) return { removed: null, leadChanged: false };
     this.windows = this.windows.filter((window) => window !== record);
     const leadChanged = this.lead === id;
@@ -337,9 +353,17 @@ export class WindowBook {
     );
     this.windows = front ? [front, ...windows.filter((window) => window !== front)] : windows;
     for (const record of adopt) this.adopting.add(record.id);
-    const lead = [transaction.lead, this.lead].find((id) => this.canLead(id)) ?? this.frontLoaded();
-    const leadChanged = lead !== this.lead;
+    const previous = this.lead;
+    const lead = [transaction.lead, previous].find((id) => this.canLead(id)) ?? this.frontLoaded();
+    const leadChanged = lead !== previous;
     this.lead = lead;
+    // A move that names a lead whose page hasn't loaded has it take over once
+    // it has (`booted`); one that leaves the lead as it was leaves that too.
+    const waiting = transaction.lead !== previous ? transaction.lead : this.leadOnceLoaded;
+    this.leadOnceLoaded =
+      waiting !== null && waiting !== lead && windows.some((window) => window.id === waiting)
+        ? waiting
+        : null;
     this.memories = transaction.memories;
     return {
       open,

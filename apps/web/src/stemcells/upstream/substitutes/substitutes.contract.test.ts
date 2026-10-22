@@ -22,6 +22,7 @@ import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerSt
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
+import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
@@ -65,6 +66,7 @@ import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurThemePalettes from "./themePalettes";
+import * as OurThreadNotificationCoordinator from "./ThreadNotificationCoordinator";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
@@ -224,6 +226,18 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/ChatRightPanel.tsx": [
         "../RightPanelSheet",
         ["RightPanelSheet"],
+      ],
+    },
+  },
+  "apps/web/src/components/ThreadNotificationCoordinator.tsx": {
+    upstream: UpstreamThreadNotificationCoordinator,
+    substitute: OurThreadNotificationCoordinator satisfies RendersOrNothing<
+      typeof UpstreamThreadNotificationCoordinator
+    >,
+    importers: {
+      "apps/web/src/routes/__root.tsx": [
+        "../components/ThreadNotificationCoordinator",
+        ["ThreadNotificationCoordinator"],
       ],
     },
   },

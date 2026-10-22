@@ -9,6 +9,7 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import { describe, it } from "@effect/vitest";
+import * as Clock from "effect/Clock";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -131,6 +132,10 @@ const electron = vi.hoisted(() => {
       app.emit("browser-window-focus", {}, this);
     }
     close() {
+      this.destroy();
+    }
+    /** The window goes, whatever the app would say. */
+    destroy() {
       if (this.destroyed) return;
       this.destroyed = true;
       this.focused = false;
@@ -197,11 +202,28 @@ class NoWindow extends Data.TaggedError("NoWindow") {}
 const tick = Effect.promise(() => new Promise((resolve) => setImmediate(resolve)));
 
 /**
+ * The host's own timers (its quit check, focus settling, saves) on a clock
+ * the test moves with `vi.advanceTimersByTime`; the event loop's turns stay
+ * real, so windows are still made.
+ */
+const hostTimers = Effect.acquireRelease(
+  Effect.sync(() =>
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] }),
+  ),
+  () => Effect.sync(() => vi.useRealTimers()),
+);
+
+/**
  * The host, started over a fresh windows' file (or `file`, as the last launch
  * left it), and what it was handed.
  */
 const startHost = Effect.fn("startHost")(function* (
-  options: { readonly opens?: boolean; readonly file?: string } = {},
+  options: {
+    readonly opens?: boolean;
+    readonly file?: string;
+    /** Something is already where an unreadable file would be moved aside to. */
+    readonly asideTaken?: boolean;
+  } = {},
 ) {
   electron.reset();
   const stateDir = yield* Effect.acquireRelease(
@@ -210,6 +232,11 @@ const startHost = Effect.fn("startHost")(function* (
   );
   const path = NodePath.join(stateDir, "stemcells-windows.json");
   if (options.file !== undefined) NodeFS.writeFileSync(path, options.file);
+  if (options.asideTaken) {
+    const aside = `${path}.corrupt-${yield* Clock.currentTimeMillis}`;
+    NodeFS.mkdirSync(aside);
+    NodeFS.writeFileSync(NodePath.join(aside, "taken"), "");
+  }
   const quitting = yield* Ref.make(false);
   const setMain = vi.fn((_window: Window) => Effect.void);
   const createExtra = (bounds: Window["bounds"]) =>
@@ -231,10 +258,14 @@ const startHost = Effect.fn("startHost")(function* (
   yield* Layer.build(WindowsHost.layer.pipe(Layer.provide(services)));
   return {
     setMain,
+    /** The folder the host keeps its file in, removed when the test ends. */
+    stateDir,
     /** The app's own quitting flag, as an update sets it. */
     setQuitting: (value: boolean) => Ref.set(quitting, value),
     /** The windows' file as the host last wrote it. */
     stored: (): { windows: Array<{ id: string }> } => JSON.parse(NodeFS.readFileSync(path, "utf8")),
+    /** The windows' file, as it is. */
+    file: () => NodeFS.readFileSync(path, "utf8"),
     /** The other files in the state folder, and what each holds. */
     beside: () =>
       NodeFS.readdirSync(stateDir)
@@ -316,6 +347,8 @@ describe("the windows' host", () => {
         const a = yield* mainWindow();
         const c = yield* opened(a.window.webContents, "c");
 
+        // The updater raises the app's flag, then closes every window.
+        yield* host.setQuitting(true);
         electron.autoUpdater.emit("before-quit-for-update");
         c.close();
         a.window.close();
@@ -343,20 +376,64 @@ describe("the windows' host", () => {
   );
 
   it.effect(
-    "drops a closed window again once an update that couldn't install lets the app carry on",
+    "brings every window back when an update that couldn't install lets the app carry on",
     () =>
       Effect.gen(function* () {
         const host = yield* startHost();
         const a = yield* mainWindow();
-        const c = yield* opened(a.window.webContents, "c");
-        const d = yield* opened(a.window.webContents, "d");
+        yield* opened(a.window.webContents, "c");
+        yield* opened(a.window.webContents, "d");
 
+        yield* host.setQuitting(true);
+        electron.autoUpdater.emit("before-quit-for-update");
+        for (const window of electron.windows) window.close();
+        // The install failed: the app's flag goes down, and the app carries on, windowless.
+        yield* host.setQuitting(false);
+
+        // A dock click (or the backend coming back) makes upstream's main window again.
+        const back = new electron.Window();
+        expect(boot(back.webContents)?.id).toBe(a.id);
+        yield* tick;
+        const reopened = electron.windows.filter((window) => !window.isDestroyed());
+        expect(reopened).toHaveLength(3);
+        const ids = reopened.map((window) => boot(window.webContents)?.id);
+        expect(ids).toEqual(expect.arrayContaining([a.id, "c", "d"]));
+        expect(idsOf(back.webContents)).toEqual(expect.arrayContaining([a.id, "c", "d"]));
+
+        // And a window closed now goes, as the app isn't quitting any more.
+        reopened[ids.indexOf("d")]!.close();
+        expect(idsOf(back.webContents)).not.toContain("d");
+      }).pipe(Effect.scoped),
+  );
+
+  it.effect(
+    "brings back a window closed while an update stopped the backends, once the install fails early",
+    () =>
+      Effect.gen(function* () {
+        yield* hostTimers;
+        const host = yield* startHost();
+        const a = yield* mainWindow();
+        const c = yield* opened(a.window.webContents, "c");
+
+        // The update raises the flag and stops the backends; the person closes a window meanwhile.
         yield* host.setQuitting(true);
         c.close();
         expect(idsOf(a.window.webContents)).toContain("c");
+        // The install fails before it closes anything: the flag goes down, and the app carries on.
         yield* host.setQuitting(false);
-        d.close();
-        expect(idsOf(a.window.webContents)).not.toContain("d");
+        // The host's quit check sees it, and the window is made.
+        vi.advanceTimersByTime(250);
+        yield* tick;
+        yield* tick;
+
+        const reopened = electron.windows.filter(
+          (window) => !window.isDestroyed() && window !== a.window,
+        );
+        expect(reopened).toHaveLength(1);
+        expect(boot(reopened[0]!.webContents)?.id).toBe("c");
+        // And a window closed now goes, as the app isn't quitting any more.
+        reopened[0]!.close();
+        expect(idsOf(a.window.webContents)).not.toContain("c");
       }).pipe(Effect.scoped),
   );
 
@@ -376,6 +453,17 @@ describe("the windows' host", () => {
           ],
         ]);
       }).pipe(Effect.scoped),
+  );
+
+  it.effect("saves nothing over a windows' file it could neither read nor move aside", () =>
+    Effect.gen(function* () {
+      const host = yield* startHost({ file: '{"version":1,"windows":[', asideTaken: true });
+      const a = yield* mainWindow();
+      send(a.window.webContents, WINDOWS_CHANNEL.publish, "a-tabs, later");
+      electron.app.emit("before-quit");
+
+      expect(host.file()).toBe('{"version":1,"windows":[');
+    }).pipe(Effect.scoped),
   );
 
   it.effect(
@@ -425,6 +513,34 @@ describe("the windows' host", () => {
     }).pipe(Effect.scoped),
   );
 
+  it.effect("closes a window a move closed while it was still being made, as it arrives", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      expect(openWindow(page, "c", "c-tabs")).toBe("done");
+      // Taken back before upstream's maker has handed the window over.
+      const book = snapshot(page)!;
+      expect(
+        invoke(page, WINDOWS_CHANNEL.commit, {
+          open: [],
+          change: [],
+          close: ["c"],
+          front: a.id,
+          lead: book.lead,
+          memories: [],
+          basis: Object.fromEntries(book.windows.map((window) => [window.id, window.version])),
+        }),
+      ).toBe("done");
+      // Made, then handed over.
+      yield* tick;
+      yield* tick;
+
+      expect(electron.windows.filter((window) => !window.isDestroyed())).toEqual([a.window]);
+      expect(idsOf(page)).toEqual([a.id]);
+    }).pipe(Effect.scoped),
+  );
+
   it.effect(
     "lets only a window whose page has loaded lead, and promotes the next page to load when none has",
     () =>
@@ -444,5 +560,64 @@ describe("the windows' host", () => {
         expect(boot(c.webContents)!.lead).toBe(true);
         expect(host.setMain).toHaveBeenLastCalledWith(c);
       }).pipe(Effect.scoped),
+  );
+
+  it.effect(
+    "withdraws a window that couldn't open from the others, which heard it hold its tabs",
+    () =>
+      Effect.gen(function* () {
+        yield* startHost({ opens: false });
+        const a = yield* mainWindow();
+        const b = new electron.Window();
+        boot(b.webContents);
+        expect(openWindow(a.window.webContents, "c", "c-tabs")).toBe("done");
+        yield* tick;
+
+        const news = b.webContents.heard(WINDOWS_CHANNEL.elsewhere) as Array<{ id: string }>;
+        expect(news.filter((window) => window.id === "c")).toEqual([
+          { id: "c", workspace: "c-tabs" },
+          { id: "c", workspace: null },
+        ]);
+      }).pipe(Effect.scoped),
+  );
+
+  it.effect(
+    "has the focused window notify, not the lead, and the lead while no window has focus",
+    () =>
+      Effect.gen(function* () {
+        yield* hostTimers;
+        yield* startHost();
+        const a = yield* mainWindow();
+        const b = yield* opened(a.window.webContents, "b");
+        const notifies = (window: Window) =>
+          window.webContents.heard(WINDOWS_CHANNEL.notifies).at(-1);
+
+        b.focus();
+        expect([notifies(a.window), notifies(b)]).toEqual([false, true]);
+        // Focus moving between windows blurs one first: the app waits a moment.
+        electron.blurAll();
+        vi.advanceTimersByTime(100);
+        expect([notifies(a.window), notifies(b)]).toEqual([true, false]);
+        a.window.focus();
+        expect([notifies(a.window), notifies(b)]).toEqual([true, false]);
+        const late = new electron.Window();
+        late.focus();
+        expect((boot(late.webContents) as { notifies?: boolean }).notifies).toBe(true);
+        expect([notifies(a.window), notifies(b)]).toEqual([false, false]);
+      }).pipe(Effect.scoped),
+  );
+
+  it.effect("stops saving once it stops, so a later quit writes nothing where its file was", () =>
+    Effect.gen(function* () {
+      const stateDir = yield* Effect.gen(function* () {
+        const host = yield* startHost();
+        const a = yield* mainWindow();
+        yield* opened(a.window.webContents, "c");
+        return host.stateDir;
+      }).pipe(Effect.scoped);
+
+      electron.app.emit("before-quit");
+      expect(NodeFS.existsSync(stateDir)).toBe(false);
+    }),
   );
 });

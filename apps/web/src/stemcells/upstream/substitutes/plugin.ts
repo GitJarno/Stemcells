@@ -77,6 +77,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // shortcut act only in the chat that owns the window's input.
   "apps/web/src/components/chat/useChatShortcuts.ts": "useChatShortcuts.ts",
   "apps/web/src/components/chat/OpenInPicker.tsx": "OpenInPicker.tsx",
+  // Windows: one window notifies of a chat's turns, the focused one or else the lead.
+  "apps/web/src/components/ThreadNotificationCoordinator.tsx": "ThreadNotificationCoordinator.tsx",
 };
 
 /**

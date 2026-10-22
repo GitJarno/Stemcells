@@ -30,6 +30,13 @@ import { readStoredFile } from "./storedFile.ts";
 const FILE_NAME = "stemcells-windows.json";
 /** How long the book rests before it's written: windows move and resize in bursts. */
 const SAVE_AFTER_MS = 500;
+/** Focus moving between windows blurs one before it focuses the next. */
+const FOCUS_SETTLE_MS = 50;
+/**
+ * How often, while the app is quitting, the host looks whether it still is:
+ * an update that can't install lowers the flag with nothing to tell of it.
+ */
+const QUIT_CHECK_MS = 250;
 
 /** One key per monitor at one size and scale, stable across launches. */
 export function displayKey(display: Electron.Display): string {
@@ -78,40 +85,45 @@ export const layer = Layer.effectDiscard(
       yield* Effect.logWarning(
         unreadable.movedTo
           ? "The windows' file couldn't be read; moved it aside and started afresh"
-          : "The windows' file couldn't be read, nor moved aside; starting afresh",
+          : "The windows' file couldn't be read, nor moved aside; starting afresh, saving nothing over it",
         { path, movedTo: unreadable.movedTo },
       );
     }
+    /** A file that couldn't be read or moved aside is left as it is: this run saves nothing. */
+    const saving = unreadable?.movedTo !== null;
     const book = WindowBook.read(stored);
     /** The open windows by id, and the ids by their pages. */
     const live = new Map<string, Electron.BrowserWindow>();
     const pages = new Map<number, string>();
     /** Windows a move opened whose pages haven't loaded yet, oldest first. */
     const opening: string[] = [];
-    let quitting = false;
-    let launched = false;
     let saveTimer: ReturnType<typeof setTimeout> | undefined;
+    let quitCheck: ReturnType<typeof setInterval> | undefined;
 
-    /** The app is quitting: the windows that close from now on open again at the next launch. */
-    const quit = () => {
-      quitting = true;
-      book.quit();
-    };
     /**
-     * Whether the app is quitting. An update quits it by closing every window
-     * before `before-quit`, with only the app's own flag (and the updater's
-     * `before-quit-for-update`) saying so. The app's flag goes down again when
-     * an update can't install, and the app carries on.
+     * Whether the app is quitting, as the app's own flag says: the windows
+     * that close while it is open again at the next launch. The flag is up
+     * before anything closes a window to quit (`before-quit`, or an update,
+     * which closes every window before `before-quit`), and goes down again
+     * when an update can't install and the app carries on: then the windows
+     * kept meanwhile open again (`quitEnded`).
      */
     const quittingNow = () => {
-      const now = quitting || Ref.getUnsafe(desktopState.quitting);
+      const now = Ref.getUnsafe(desktopState.quitting);
       book.quit(now);
+      if (now && quitCheck === undefined) {
+        quitCheck = setInterval(() => {
+          if (!Ref.getUnsafe(desktopState.quitting)) quitEnded();
+        }, QUIT_CHECK_MS);
+        quitCheck.unref();
+      }
       return now;
     };
 
     const saveNow = () => {
       clearTimeout(saveTimer);
       saveTimer = undefined;
+      if (!saving) return;
       try {
         NodeFS.mkdirSync(NodePath.dirname(path), { recursive: true });
         NodeFS.writeFileSync(`${path}.tmp`, JSON.stringify(book.stored()));
@@ -136,6 +148,15 @@ export const layer = Layer.effectDiscard(
       if (book.place(id, frame, display, window.isFullScreen())) save();
     };
 
+    /** Tells every window but `id` what `id` holds now (null: it closed). */
+    const tellOthers = (id: string, workspace: unknown) => {
+      for (const [other, window] of live) {
+        if (other !== id && !window.isDestroyed()) {
+          window.webContents.send(WINDOWS_CHANNEL.elsewhere, { id, workspace });
+        }
+      }
+    };
+
     const tellLeads = () => {
       for (const [id, window] of live) {
         if (!window.isDestroyed()) {
@@ -143,6 +164,21 @@ export const layer = Layer.effectDiscard(
         }
       }
     };
+
+    /** The window that raises the chats' notifications now (book.notifier). */
+    const notifierNow = () => {
+      const focused = Electron.BrowserWindow.getFocusedWindow();
+      return book.notifier([...live].find(([, window]) => window === focused)?.[0] ?? null);
+    };
+    const tellNotifier = () => {
+      const notifier = notifierNow();
+      for (const [id, window] of live) {
+        if (!window.isDestroyed()) {
+          window.webContents.send(WINDOWS_CHANNEL.notifies, notifier === id);
+        }
+      }
+    };
+    const blurred = () => setTimeout(tellNotifier, FOCUS_SETTLE_MS);
 
     /** Upstream's main window follows the lead: its menu, reload and browser previews act there. */
     const promote = (id: string | null) => {
@@ -152,6 +188,7 @@ export const layer = Layer.effectDiscard(
         void runPromise(previewManager.setMainWindow(window).pipe(Effect.ignore));
       }
       tellLeads();
+      tellNotifier();
     };
 
     const closed = (id: string) => {
@@ -159,6 +196,7 @@ export const layer = Layer.effectDiscard(
       quittingNow();
       const { removed, leadChanged } = book.closed(id);
       if (!removed) return;
+      tellOthers(id, null);
       if (leadChanged) promote(book.leadId());
       const lead = live.get(book.leadId() ?? "");
       if (lead && !lead.isDestroyed()) {
@@ -193,6 +231,8 @@ export const layer = Layer.effectDiscard(
       if (quittingNow()) return;
       const { removed, leadChanged } = book.failed(id);
       if (!removed) return;
+      // The move told the other windows this one holds its chats.
+      tellOthers(id, null);
       if (leadChanged) promote(book.leadId());
       const window = live.get(home ?? "") ?? live.get(book.leadId() ?? "");
       if (window && !window.isDestroyed()) {
@@ -213,6 +253,11 @@ export const layer = Layer.effectDiscard(
         (window) => {
           const waiting = opening.indexOf(id);
           if (waiting >= 0) opening.splice(waiting, 1);
+          // A move closed it while it was being made: it goes as it arrives.
+          if (!book.get(id)) {
+            if (!window.isDestroyed()) window.destroy();
+            return;
+          }
           if (!live.has(id)) bind(id, window);
           if (fullScreen) window.once("ready-to-show", () => window.setFullScreen(true));
         },
@@ -224,12 +269,28 @@ export const layer = Layer.effectDiscard(
       );
     };
 
-    /** At launch, once the first window's page loads, every other window kept opens. */
+    /**
+     * The app didn't quit after all (an update that couldn't install): the
+     * windows that closed meanwhile open again. With none left open, upstream's
+     * main window opens them when it comes back (`boot`).
+     */
+    const quitEnded = () => {
+      clearInterval(quitCheck);
+      quitCheck = undefined;
+      book.quit(false);
+      if (live.size > 0) openTheRest();
+    };
+
+    /**
+     * Every window kept in the book without one opens, once upstream's main
+     * window has loaded: at launch, and when it comes back after the app
+     * closed them all to quit and then didn't (an update that couldn't
+     * install).
+     */
     const openTheRest = () => {
-      if (launched) return;
-      launched = true;
+      if (quittingNow()) return;
       for (const record of [...book.snapshot().windows].toReversed()) {
-        if (!live.has(record.id)) {
+        if (!live.has(record.id) && !opening.includes(record.id)) {
           open(record.id, record.frame, record.fullScreen, book.leadId());
         }
       }
@@ -246,10 +307,16 @@ export const layer = Layer.effectDiscard(
       if (!window || window.webContents !== sender) return null;
       let id = pages.get(sender.id);
       if (!id) {
+        const waiting = opening.shift();
+        // Its window was closed by a move while it was being made: it goes, unbooted.
+        if (waiting !== undefined && !book.get(waiting)) {
+          setImmediate(() => window.isDestroyed() || window.destroy());
+          return null;
+        }
         const free = book.ids().filter((candidate) => !live.has(candidate));
         const lead = book.leadId();
         id =
-          opening.shift() ??
+          waiting ??
           (lead !== null && free.includes(lead) ? lead : free[0]) ??
           book.add({
             // @effect-diagnostics-next-line cryptoRandomUUID:off -- A window's id, made in a synchronous IPC answer.
@@ -266,8 +333,19 @@ export const layer = Layer.effectDiscard(
       const leads = book.booted(id);
       if (window.isFocused()) book.focus(id);
       placeFromWindow(id, window);
+      // A window focused before its page loaded may take the notifying over.
       if (leads) promote(id);
-      return { id, lead: book.leadId() === id, workspace: book.get(id)?.workspace ?? null };
+      else tellNotifier();
+      return {
+        id,
+        lead: book.leadId() === id,
+        workspace: book.get(id)?.workspace ?? null,
+        others: book
+          .snapshot()
+          .windows.filter((other) => other.id !== id)
+          .map((other) => ({ id: other.id, workspace: other.workspace })),
+        notifies: notifierNow() === id,
+      };
     };
 
     /** A move `home` (the window that made it) asked for. */
@@ -277,7 +355,10 @@ export const layer = Layer.effectDiscard(
       if (!committed) return "stale";
       for (const record of committed.adopt) {
         live.get(record.id)?.webContents.send(WINDOWS_CHANNEL.adopt, record.workspace);
+        tellOthers(record.id, record.workspace);
       }
+      for (const record of committed.open) tellOthers(record.id, record.workspace);
+      for (const id of committed.close) tellOthers(id, null);
       for (const record of committed.place) {
         const window = live.get(record.id);
         if (!window || window.isDestroyed()) continue;
@@ -333,7 +414,9 @@ export const layer = Layer.effectDiscard(
         );
         ipc.on(WINDOWS_CHANNEL.publish, (event, workspace: unknown) => {
           const id = pages.get(event.sender.id);
-          if (id && book.publish(id, workspace)) save();
+          if (!id || !book.publish(id, workspace)) return;
+          tellOthers(id, workspace);
+          save();
         });
         ipc.on(WINDOWS_CHANNEL.adopted, (event) => {
           const id = pages.get(event.sender.id);
@@ -346,12 +429,15 @@ export const layer = Layer.effectDiscard(
         ipc.handle(WINDOWS_CHANNEL.commit, (event, raw: unknown) =>
           commit(raw, pages.get(event.sender.id) ?? null),
         );
-        Electron.app.on("before-quit", () => {
-          quit();
-          saveNow();
+        ipc.on(WINDOWS_CHANNEL.reveal, (_event, raw: { window?: unknown; pane?: unknown }) => {
+          const window = typeof raw?.window === "string" ? live.get(raw.window) : undefined;
+          if (!window || window.isDestroyed() || typeof raw.pane !== "string") return;
+          window.webContents.send(WINDOWS_CHANNEL.focusPane, raw.pane);
+          void runPromise(electronWindow.reveal(window));
         });
-        // An update closes the windows before `before-quit`.
-        Electron.autoUpdater.on("before-quit-for-update", quit);
+        Electron.app.on("before-quit", saveNow);
+        Electron.app.on("browser-window-focus", tellNotifier);
+        Electron.app.on("browser-window-blur", blurred);
       }),
       () =>
         Effect.sync(() => {
@@ -359,12 +445,16 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.boot,
             WINDOWS_CHANNEL.publish,
             WINDOWS_CHANNEL.adopted,
+            WINDOWS_CHANNEL.reveal,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.snapshot);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.commit);
-          Electron.autoUpdater.removeListener("before-quit-for-update", quit);
+          Electron.app.removeListener("before-quit", saveNow);
+          clearInterval(quitCheck);
+          Electron.app.removeListener("browser-window-focus", tellNotifier);
+          Electron.app.removeListener("browser-window-blur", blurred);
           if (saveTimer !== undefined) saveNow();
         }),
     );

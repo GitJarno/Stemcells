@@ -107,8 +107,6 @@ id apps/desktop/src/electron/ElectronApp.ts the desktop updater, whose feed come
 id apps/desktop/src/electron/ElectronUpdater.ts same
 id apps/desktop/src/updates/DesktopUpdates.ts same; its own setFeedURL is the local mock server
 id apps/desktop/src/updates/updatesTestHarness.ts the updater's test harness, on a local mock feed
-id apps/desktop/src/stemcells/windows/WindowsHost.ts ours: listens for the updater's quit so every window closes with the app; it sets no feed
-
 # Forbidden: nothing fetches from these. The model list is the one bundled at
 # build time, which each upstream sync refreshes (seams.md, No model list from T3).
 forbid raw.githubusercontent.com/pingdotgg/ T3's repository on GitHub, read raw: upstream's server fetched its model list from it every hour

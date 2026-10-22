@@ -7,7 +7,7 @@
  */
 import { contextBridge, ipcRenderer } from "electron";
 
-import { WINDOWS_CHANNEL, type WindowBoot } from "./windows/channels.ts";
+import { WINDOWS_CHANNEL, type WindowBoot, type WindowElsewhere } from "./windows/channels.ts";
 
 function readBoot(): WindowBoot | null {
   try {
@@ -64,5 +64,10 @@ if (boot !== null) {
     onLead: listen<boolean>(WINDOWS_CHANNEL.lead),
     onClosed: listen<unknown>(WINDOWS_CHANNEL.closed),
     onReturned: listen<unknown>(WINDOWS_CHANNEL.returned),
+    onElsewhere: listen<WindowElsewhere>(WINDOWS_CHANNEL.elsewhere),
+    onFocusPane: listen<string>(WINDOWS_CHANNEL.focusPane),
+    onNotifies: listen<boolean>(WINDOWS_CHANNEL.notifies),
+    reveal: (window: string, pane: string) =>
+      ipcRenderer.send(WINDOWS_CHANNEL.reveal, { window, pane }),
   });
 }

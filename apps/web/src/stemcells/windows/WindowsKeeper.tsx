@@ -1,8 +1,9 @@
 /**
  * The window's part in the app's windows: ⌥⌘T moves the active tab to a
  * new window; a workspace a move gave this window routes to its focused
- * chat; the lead takes Aski's tab home from a window the person closed;
- * tabs a move sent to a window that couldn't open come back.
+ * chat; another window's request shows one of this window's chats; the lead
+ * takes Aski's tab home from a window the person closed; tabs a move sent to
+ * a window that couldn't open come back.
  * Renders nothing, and does nothing in a browser.
  */
 import { useEffectEvent, useLayoutEffect } from "react";
@@ -18,8 +19,14 @@ import { takeTabsBack } from "./returned";
 
 const matchesMoveToNewWindow = shortcutMatcher("mod+alt+t");
 
-export function WindowsKeeper(props: { onMoved: () => void }) {
+export function WindowsKeeper(props: {
+  /** A move changed this window's workspace. */
+  onMoved: () => void;
+  /** Another window asked this one to show the chat in this pane. */
+  onFocusPane: (paneId: string) => void;
+}) {
   const onMoved = useEffectEvent(props.onMoved);
+  const onFocusPane = useEffectEvent(props.onFocusPane);
   // A layout effect, so the key is heard before any chat's own listeners.
   useLayoutEffect(() => {
     const bridge = windowsBridge();
@@ -35,6 +42,7 @@ export function WindowsKeeper(props: { onMoved: () => void }) {
     };
     window.addEventListener("keydown", onKeyDown, true);
     const stopAdopt = bridge.onAdopt(() => onMoved());
+    const stopFocus = bridge.onFocusPane((paneId) => onFocusPane(paneId));
     const stopClosed = bridge.onClosed((closed) =>
       updateWorkspace((current) => welcomeAskiHome(current, parseWorkspace(closed))),
     );
@@ -44,6 +52,7 @@ export function WindowsKeeper(props: { onMoved: () => void }) {
     return () => {
       window.removeEventListener("keydown", onKeyDown, true);
       stopAdopt();
+      stopFocus();
       stopClosed();
       stopReturned();
     };

@@ -123,7 +123,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/stemcells/windows/WindowsHost.ts` | New: the main process's side of the windows: the book kept on disk, each page's boot, publishes and moves, windows opened and closed through upstream's maker, the lead passed on | Same |
 | `apps/desktop/src/stemcells/windows/book.ts` | New: the book of windows, and the check that refuses a move made from a stale view | Same |
 | `apps/desktop/src/stemcells/windows/book.test.ts` | New: pins the book | Same |
-| `apps/desktop/src/stemcells/windows/WindowsHost.test.ts` | New: pins the host against a stand-in for Electron: an update's quit, who may speak on the channels, an unreadable windows' file, a window that couldn't open, who leads | Same |
+| `apps/desktop/src/stemcells/windows/WindowsHost.test.ts` | New: pins the host against a stand-in for Electron: an update's quit, who may speak on the channels, an unreadable windows' file, a window that couldn't open, who leads, who notifies | Same |
 | `apps/desktop/src/stemcells/windows/channels.ts` | New: the windows' IPC channel names and messages | Same |
 | `apps/desktop/src/stemcells/windows/senders.ts` | New: who may speak on the windows' channels: a window's own page from its top frame, never a preview's guest | Same |
 | `apps/desktop/src/stemcells/windows/senders.test.ts` | New: pins it | Same |
@@ -131,6 +131,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/src/stemcells/windows/storedFile.test.ts` | New: pins it | Same |
 | `apps/desktop/src/stemcells/windowsPreload.ts` | New: exposes `window.stemcellsWindows` | Same |
 | `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
+| `apps/web/src/main.tsx` (windows) | Imports `./stemcells/windows/startSharing` after `AppRoot` | Windows (below): each window starts merging the others' writes to the shared stores in the turn the stores read localStorage, so none is missed while the chat route loads |
 
 ### One import per hot file
 
@@ -700,6 +701,15 @@ connection; what's ours is which tabs it holds.
 - Our IPC channels are our own strings, so `packages/contracts` is
   untouched. `createExtra` is optional so upstream's test doubles of the
   service need no change.
+- Upstream's drafts, right panel and terminal stores each keep one
+  localStorage entry that every window writes whole. Each window merges
+  the others' writes entry by entry through the stores' own persist
+  options (`upstream/sharedStores.ts`, pinned by
+  `sharedStores.contract.test.ts`). The one seam starts it from
+  `main.tsx`, as the stores load: started any later, a write another
+  window made meanwhile would go unheard.
+- Notifications: a substitute for `ThreadNotificationCoordinator` renders
+  upstream's in one window only, the focused one or else the lead.
 - Upstream candidate, offered only with the owner's go-ahead: "more than
   one app window" would retire the `DesktopWindow.ts` seam.
 

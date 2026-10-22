@@ -12,7 +12,11 @@ const one: Workspace = openTab(
 const two: Workspace = openTab(one, { tab: "t2", row: "r2", column: "c2", pane: "p2" }, cell("y"));
 
 /** The tab store as one desktop window loads it, with the bridge the preload exposes. */
-async function loadStore(boot: WindowsBridge["boot"], stored: Workspace | null = null) {
+async function loadStore(
+  booted: Omit<WindowsBridge["boot"], "others" | "notifies">,
+  stored: Workspace | null = null,
+) {
+  const boot = { ...booted, others: [], notifies: booted.lead };
   const published: unknown[] = [];
   const adopters: Array<(workspace: unknown) => void> = [];
   const bridge = {
@@ -25,8 +29,12 @@ async function loadStore(boot: WindowsBridge["boot"], stored: Workspace | null =
       return () => {};
     },
     onLead: () => () => {},
+    onNotifies: () => () => {},
     onClosed: () => () => {},
     onReturned: () => () => {},
+    onElsewhere: () => () => {},
+    onFocusPane: () => () => {},
+    reveal: () => {},
   } satisfies WindowsBridge;
   const storage = new Map<string, string>();
   if (stored) storage.set("stemcells.tabs", JSON.stringify(serializeWorkspace(stored)));

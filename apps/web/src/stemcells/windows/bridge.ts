@@ -34,18 +34,39 @@ export interface WireTransaction {
   readonly basis: Readonly<Record<string, number>>;
 }
 
+/** Another window's workspace, as its page published it; null once it closed. */
+export interface WindowElsewhere {
+  readonly id: string;
+  readonly workspace: unknown;
+}
+
 export interface WindowsBridge {
-  readonly boot: { readonly id: string; readonly lead: boolean; readonly workspace: unknown };
+  readonly boot: {
+    readonly id: string;
+    readonly lead: boolean;
+    readonly workspace: unknown;
+    readonly others: ReadonlyArray<WindowElsewhere>;
+    /** Whether this window raises the chats' notifications. */
+    readonly notifies: boolean;
+  };
   publish(workspace: unknown): void;
   snapshot(): Promise<WireSnapshot>;
   /** "stale" when a window it touches changed since its snapshot. */
   commit(transaction: WireTransaction): Promise<"done" | "stale">;
   onAdopt(listener: (workspace: unknown) => void): () => void;
   onLead(listener: (lead: boolean) => void): () => void;
+  /** Whether this window raises the chats' notifications, each time that changes. */
+  onNotifies(listener: (notifies: boolean) => void): () => void;
   /** Heard by the lead window: a window the person closed, with its workspace. */
   onClosed(listener: (workspace: unknown) => void): () => void;
   /** A window this one's move made that couldn't open, with its workspace, to take back. */
   onReturned(listener: (workspace: unknown) => void): () => void;
+  /** Another window's workspace, each time it changes. */
+  onElsewhere(listener: (window: WindowElsewhere) => void): () => void;
+  /** Another window asked this one to show one of its chats. */
+  onFocusPane(listener: (paneId: string) => void): () => void;
+  /** Brings another window forward, focused on one of its panes. */
+  reveal(window: string, pane: string): void;
 }
 
 declare global {

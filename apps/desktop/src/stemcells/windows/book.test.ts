@@ -164,6 +164,21 @@ describe("WindowBook", () => {
     expect(book.ids()).toEqual(["c"]);
   });
 
+  it("has a window a move made the lead take it once its page loads", () => {
+    const book = twoWindows();
+    book.commit(move(book, { open: [placed("c", "c-tabs", 2000)], front: "c", lead: "c" }));
+    expect(book.leadId()).toBe("b");
+    // Another move meanwhile, which leaves the lead as it found it.
+    book.commit(move(book, { change: [placed("a", "a-less")] }));
+    expect(book.booted("c")).toBe(true);
+    expect(book.leadId()).toBe("c");
+
+    const again = twoWindows();
+    again.commit(move(again, { open: [placed("d", "d-tabs", 2000)], lead: "d" }));
+    again.failed("d");
+    expect(again.leadId()).toBe("b");
+  });
+
   it("passes the lead on only to a window whose page has loaded", () => {
     const book = WindowBook.read({
       version: 1,
@@ -175,6 +190,14 @@ describe("WindowBook", () => {
     expect(book.closed("y")).toMatchObject({ leadChanged: true });
     expect(book.leadId()).toBe("z");
     expect(book.booted("x")).toBe(false);
+  });
+
+  it("has one window notify: the focused one, not the lead, else the lead in the background", () => {
+    const book = twoWindows();
+    expect(book.leadId()).toBe("b");
+    expect(book.notifier("a")).toBe("a");
+    expect(book.notifier(null)).toBe("b");
+    expect(book.notifier("a preview's window")).toBe("b");
   });
 
   it("keeps windows, lead, memories and displays across a launch", () => {

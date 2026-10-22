@@ -4,6 +4,7 @@
  * (stemcells/tasks/windows.md, "The model").
  */
 import { EMPTY_WORKSPACE, parseWorkspace, serializeWorkspace } from "../tabs/layout";
+import { flushStoreWrites } from "../upstream/sharedStores";
 import type { Arrangement, Moved, Placed, Transaction } from "./arrangement";
 import { windowsBridge, type WireSnapshot, type WireTransaction, type WireWindow } from "./bridge";
 import { parseAll, parseMemory } from "./persist";
@@ -67,6 +68,8 @@ const ATTEMPTS = 3;
 export async function commitMove(make: (seen: Seen) => Moved | null): Promise<Moved | null> {
   const bridge = windowsBridge();
   if (!bridge) return null;
+  // What was typed a moment ago is written, for the window a chat goes to.
+  flushStoreWrites();
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const seen = readSnapshot(await bridge.snapshot());
     const moved = make(seen);
