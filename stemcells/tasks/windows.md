@@ -26,7 +26,7 @@ asked for by name), then W7, W4, W9, W11.
       Esc, the one-tab window, mid-flight reversal, Reduce Motion. In
       steps:
   - [x] W5a The carry engine (web, pure), fed recorded hands in tests.
-  - [ ] W5b The flight layer (desktop): one window per display, stills
+  - [x] W5b The flight layer (desktop): one window per display, stills
         from `capturePage`, keyframes from the renderer; frames proved in
         the lab.
   - [ ] W5c The strip carries: pick up, band, tear, the preview, the
@@ -416,7 +416,10 @@ apart.
 A transparent, click-through, unfocusable, always-on-top window per
 display, made the way the snapshot overlay already makes one
 (`snapShot/SnapShotTransition.ts`), visible over full-screen Spaces.
-Created on the first carry, hidden between flights, kept.
+Made at the pick-up and gone when the flight ends: kept between flights,
+a hidden layer would be the "first window" upstream reveals on a Dock
+click when no app window is open. It loads in about 100 ms, well before a
+hand travels the 24 px to the tear.
 
 - **What it draws:** stills, a window frame (the slate's radius, a shadow
   close to the system's), and nothing else. Stills come from the main
@@ -635,3 +638,16 @@ Motion on.
   contract test; the lab has no live chats to notify of). A window without Aski's tab drew Aski's place
   as not ready; it now brings Aski's window forward (lab: the lead went to
   Aski's chat, the other window stayed on its tab).
+- W5a: the carry engine is pure, 22 tests of recorded hands. Two choices
+  went into the spec: a strip under another of our windows takes nothing,
+  and a chip docks 8 px inside a catch zone and leaves 8 px past it.
+- W5b: proved in the lab: a layer page drew a window frame (the slate's
+  radius, a shadow) with a 1:1 still of a hidden window's page and a
+  chip's still. Two stills took 21 ms; the layer's first frame, 115 ms
+  from nothing. 120 hand positions sent at 120 Hz arrived coalesced to
+  the latest (71 drawn, the last one last). From the page's send to the
+  layer's script placing it took 5 ms at the median and 9 ms at p95;
+  with the frame the screen adds, that is inside the two-frame budget,
+  so no message port yet (W5c measures it with a real hand). A motion
+  reversed after 300 ms started from where the frame was. The flight's
+  end closed the layer.

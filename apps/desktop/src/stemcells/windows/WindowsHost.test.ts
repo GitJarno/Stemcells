@@ -46,16 +46,21 @@ const electron = vi.hoisted(() => {
       for (const listener of this.listeners.get(name) ?? []) listener(...args);
       return true;
     }
+    /** How many listeners `name` has. */
+    count(name: string) {
+      return this.listeners.get(name)?.length ?? 0;
+    }
   }
 
   let pageIds = 0;
   /** A page: a window's own, or a preview's `<webview>` guest inside one. */
-  class Page {
+  class Page extends Emitter {
     readonly id = ++pageIds;
     readonly mainFrame = { top: true };
     readonly sent: Array<{ readonly channel: string; readonly value: unknown }> = [];
     private readonly type: "window" | "webview";
     constructor(type: "window" | "webview") {
+      super();
       this.type = type;
     }
     getType() {
@@ -177,6 +182,26 @@ const electron = vi.hoisted(() => {
     },
   };
 });
+
+/** The flight layer, as the host drives it: whether it is drawing anything. */
+const layer = vi.hoisted(() => ({ drawing: false }));
+
+vi.mock("./flightLayer.ts", () => ({
+  FlightLayer: class {
+    run() {
+      layer.drawing = true;
+    }
+    still() {
+      return Promise.resolve(null);
+    }
+    painted() {
+      return Promise.resolve();
+    }
+    end() {
+      layer.drawing = false;
+    }
+  },
+}));
 
 vi.mock("electron", () => ({
   ...electron.module,
@@ -619,5 +644,58 @@ describe("the windows' host", () => {
       electron.app.emit("before-quit");
       expect(NodeFS.existsSync(stateDir)).toBe(false);
     }),
+  );
+});
+
+describe("a flight", () => {
+  /** What the host hears from a page while it flies. */
+  const watched = ["destroyed", "render-process-gone", "did-start-navigation"];
+  const fly = (page: Page) => send(page, WINDOWS_CHANNEL.flight, [{ op: "end", id: "chip" }]);
+
+  it.effect("ends when the page flying it crashes, loads afresh, boots again or goes", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      const losses = {
+        crashed: () => page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 }),
+        reloaded: () =>
+          page.emit("did-start-navigation", { isMainFrame: true, isSameDocument: false }),
+        booted: () => boot(page),
+        destroyed: () => page.emit("destroyed"),
+      };
+      for (const [how, lose] of Object.entries(losses)) {
+        fly(page);
+        // A route change in the page, or a frame inside it loading, is no reload.
+        page.emit("did-start-navigation", { isMainFrame: true, isSameDocument: true });
+        page.emit("did-start-navigation", { isMainFrame: false, isSameDocument: false });
+        expect(layer.drawing, how).toBe(true);
+        lose();
+        expect(layer.drawing, how).toBe(false);
+      }
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect("hears its page once however often it draws, and not at all once it ends", () =>
+    Effect.gen(function* () {
+      yield* startHost();
+      const a = yield* mainWindow();
+      const page = a.window.webContents;
+      const hearing = () => watched.map((name) => page.count(name));
+      for (let flight = 0; flight < 3; flight++) {
+        fly(page);
+        fly(page);
+        expect(hearing()).toEqual([1, 1, 1]);
+        send(page, WINDOWS_CHANNEL.flightEnd);
+        expect(hearing()).toEqual([0, 0, 0]);
+      }
+      // Another page taking the layer over: the first is no longer heard.
+      const b = yield* opened(page, "b");
+      fly(page);
+      fly(b.webContents);
+      expect(hearing()).toEqual([0, 0, 0]);
+      page.emit("render-process-gone", {}, { reason: "crashed", exitCode: 1 });
+      expect(layer.drawing).toBe(true);
+    }).pipe(Effect.scoped),
   );
 });

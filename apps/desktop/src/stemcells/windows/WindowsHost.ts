@@ -23,7 +23,13 @@ import * as ElectronWindow from "../../electron/ElectronWindow.ts";
 import * as PreviewManager from "../../preview/Manager.ts";
 import * as DesktopWindow from "../../window/DesktopWindow.ts";
 import { WindowBook, type DisplayInfo, type Rect, type Transaction } from "./book.ts";
-import { WINDOWS_CHANNEL, type WindowBoot } from "./channels.ts";
+import {
+  WINDOWS_CHANNEL,
+  type FlightCommand,
+  type FlightRect,
+  type WindowBoot,
+} from "./channels.ts";
+import { FlightLayer } from "./flightLayer.ts";
 import { fromWindowPage } from "./senders.ts";
 import { readStoredFile } from "./storedFile.ts";
 
@@ -99,6 +105,11 @@ export const layer = Layer.effectDiscard(
     const opening: string[] = [];
     let saveTimer: ReturnType<typeof setTimeout> | undefined;
     let quitCheck: ReturnType<typeof setInterval> | undefined;
+    const flight = new FlightLayer();
+    /** The page carrying something, whose flight ends if it goes, crashes or loads afresh. */
+    let flying: Electron.WebContents | null = null;
+    /** Stops hearing the flying page. */
+    let unwatch = () => {};
 
     /**
      * Whether the app is quitting, as the app's own flag says: the windows
@@ -135,6 +146,45 @@ export const layer = Layer.effectDiscard(
     const save = () => {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(saveNow, SAVE_AFTER_MS);
+    };
+    /** The flight is over: the layer goes, and its page is no longer heard. */
+    const endFlight = () => {
+      flying = null;
+      unwatch();
+      unwatch = () => {};
+      flight.end();
+    };
+
+    /**
+     * The page carrying something now. If it goes, its renderer dies, or it
+     * loads afresh (upstream reloads a crashed page in place) mid-carry, the
+     * flight ends: nothing is left drawn over the screen for a carry no page
+     * is making any more.
+     */
+    const fly = (page: Electron.WebContents) => {
+      if (flying === page) return;
+      unwatch();
+      flying = page;
+      const lost = () => {
+        if (flying === page) endFlight();
+      };
+      const navigating = (details: { isMainFrame: boolean; isSameDocument: boolean }) => {
+        if (details.isMainFrame && !details.isSameDocument) lost();
+      };
+      page.on("destroyed", lost);
+      page.on("render-process-gone", lost);
+      page.on("did-start-navigation", navigating);
+      unwatch = () => {
+        page.removeListener("destroyed", lost);
+        page.removeListener("render-process-gone", lost);
+        page.removeListener("did-start-navigation", navigating);
+      };
+    };
+
+    /** The app quits: a flight in the air ends, and the windows are saved as they are. */
+    const beforeQuit = () => {
+      endFlight();
+      saveNow();
     };
 
     const readDisplays = () => {
@@ -303,6 +353,8 @@ export const layer = Layer.effectDiscard(
      * any record without a window, else a new one.
      */
     const boot = (sender: Electron.WebContents): WindowBoot | null => {
+      // A page booting mid-carry has loaded afresh: what it was carrying is gone.
+      if (flying === sender) endFlight();
       const window = Electron.BrowserWindow.fromWebContents(sender);
       if (!window || window.webContents !== sender) return null;
       let id = pages.get(sender.id);
@@ -435,7 +487,18 @@ export const layer = Layer.effectDiscard(
           window.webContents.send(WINDOWS_CHANNEL.focusPane, raw.pane);
           void runPromise(electronWindow.reveal(window));
         });
-        Electron.app.on("before-quit", saveNow);
+        ipc.on(WINDOWS_CHANNEL.flight, (event, commands: unknown) => {
+          if (!Array.isArray(commands)) return;
+          fly(event.sender);
+          flight.run(commands as FlightCommand[]);
+        });
+        ipc.handle(WINDOWS_CHANNEL.flightStill, (event, rect: FlightRect) => {
+          const window = Electron.BrowserWindow.fromWebContents(event.sender);
+          return window ? flight.still(window, rect) : null;
+        });
+        ipc.handle(WINDOWS_CHANNEL.flightPainted, () => flight.painted());
+        ipc.on(WINDOWS_CHANNEL.flightEnd, endFlight);
+        Electron.app.on("before-quit", beforeQuit);
         Electron.app.on("browser-window-focus", tellNotifier);
         Electron.app.on("browser-window-blur", blurred);
       }),
@@ -446,15 +509,20 @@ export const layer = Layer.effectDiscard(
             WINDOWS_CHANNEL.publish,
             WINDOWS_CHANNEL.adopted,
             WINDOWS_CHANNEL.reveal,
+            WINDOWS_CHANNEL.flight,
+            WINDOWS_CHANNEL.flightEnd,
           ]) {
             Electron.ipcMain.removeAllListeners(channel);
           }
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.snapshot);
           Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.commit);
-          Electron.app.removeListener("before-quit", saveNow);
+          Electron.app.removeListener("before-quit", beforeQuit);
           clearInterval(quitCheck);
           Electron.app.removeListener("browser-window-focus", tellNotifier);
           Electron.app.removeListener("browser-window-blur", blurred);
+          Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightStill);
+          Electron.ipcMain.removeHandler(WINDOWS_CHANNEL.flightPainted);
+          endFlight();
           if (saveTimer !== undefined) saveNow();
         }),
     );
