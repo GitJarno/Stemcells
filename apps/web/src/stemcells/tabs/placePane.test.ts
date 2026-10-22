@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { insertTab, placePane, type Tab, type Workspace } from "./layout";
+import { insertTab, joinTab, placePane, type Tab, type Workspace } from "./layout";
 
 const cell = (threadId: string) => ({ environmentId: "env", threadId, draftId: null });
 
@@ -67,6 +67,36 @@ describe("placePane", () => {
     const start = workspace();
     expect(placePane(start, moving, "nowhere", "left", "cm", 1200)).toBe(start);
     expect(placePane(start, { id: "a", cell: cell("a") }, "b", "left", "cm", 1200)).toBe(start);
+  });
+});
+
+describe("joinTab", () => {
+  const panesIn = (ws: Workspace, tabId: string) =>
+    ws.tabs
+      .find((tab) => tab.id === tabId)!
+      .rows.map((row) => row.columns.map((column) => column.panes.map((pane) => pane.id)));
+
+  it("puts a pane under the tab's last one when that one is in a stack", () => {
+    expect(panesIn(joinTab(workspace(), "t", moving, "cm", 1200), "t")).toEqual([
+      [["a"], ["b", "c", "m"]],
+    ]);
+  });
+
+  it("puts a pane beside the tab's last one where the row has room for a Cell, else under it", () => {
+    expect(panesIn(joinTab(workspace(), "u", moving, "cm", 1200), "u")).toEqual([[["u"], ["m"]]]);
+    expect(panesIn(joinTab(workspace(), "u", moving, "cm", 500), "u")).toEqual([[["u", "m"]]]);
+  });
+
+  it("leaves the tab on stage and the joined tab's focus as they were", () => {
+    const joined = joinTab(workspace(), "t", moving, "cm", 1200);
+    expect(joined.activeTabId).toBe("u");
+    expect(joined.tabs[0]!.focusedPaneId).toBe("a");
+  });
+
+  it("does nothing without the tab, or when the pane is already there", () => {
+    const start = workspace();
+    expect(joinTab(start, "nowhere", moving, "cm", 1200)).toBe(start);
+    expect(joinTab(start, "u", { id: "a", cell: cell("a") }, "cm", 1200)).toBe(start);
   });
 });
 

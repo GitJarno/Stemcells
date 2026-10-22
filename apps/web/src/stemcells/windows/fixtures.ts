@@ -140,7 +140,7 @@ export function randomMove(arrangement: Arrangement, seed: number): Moved | null
   const where = { id: `new-${seed}`, frame: frame(40 + rng.int(400)), display: LAPTOP.key };
   const ids = { tab: `t-${seed}`, row: `r-${seed}`, column: `c-${seed}` };
   const other = rng.pick(arrangement.windows).id;
-  switch (rng.int(7)) {
+  switch (rng.int(8)) {
     case 0:
       return tear(arrangement, tabId, where);
     case 1:
@@ -164,6 +164,13 @@ export function randomMove(arrangement: Arrangement, seed: number): Moved | null
       return carry(arrangement, rng.pick(panes).id, { kind: "window", window: where, ids });
     case 5:
       return closeWindow(arrangement, other);
+    case 6:
+      return carry(arrangement, rng.pick(panes).id, {
+        kind: "tab",
+        tabId,
+        column: ids.column,
+        rowWidth: rng.pick([500, 1200]),
+      });
     default: {
       const gathered = gather(arrangement, other, "laptop|monitor");
       if (gathered || arrangement.memories.length === 0) return gathered;

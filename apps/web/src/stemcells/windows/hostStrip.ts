@@ -4,7 +4,8 @@
  * carried by its Cell to a new tab: it measures itself when a carry's
  * pick-up asks, makes room where the tab would land, and, once the tab is
  * in its workspace, keeps its chip hidden until what was carried has
- * landed on it.
+ * landed on it. A chat carried from another window over one of its chips
+ * lights that chip (stemcells/tasks/chip-drop.md).
  */
 import { useEffect, useRef, useSyncExternalStore, type RefObject } from "react";
 
@@ -26,10 +27,12 @@ interface Hosting {
   readonly room: Room | null;
   /** The room just closed: the chips slide back rather than jump. */
   readonly closing: boolean;
+  /** The chip a chat carried from another window would go into. */
+  readonly lit: string | null;
 }
 
 const bridge = windowsBridge();
-let hosting: Hosting = { room: null, closing: false };
+let hosting: Hosting = { room: null, closing: false, lit: null };
 let closed: ReturnType<typeof setTimeout> | undefined;
 const listeners = new Set<() => void>();
 
@@ -40,22 +43,31 @@ function set(next: Hosting): void {
 
 /**
  * A tab carried over this strip: room for it at its slot, it arrived (its
- * chip shows), or it left (null, the chips glide back).
+ * chip shows), or it left (null, the chips glide back). Or a chat carried
+ * over a chip, which lights.
  */
 export function hostRoom(visit: Visit | null): void {
   clearTimeout(closed);
+  const closing = hosting.room !== null;
   if (visit === null) {
-    set({ room: null, closing: hosting.room !== null });
-    closed = setTimeout(() => set({ room: null, closing: false }), motionTiming("travel").duration);
+    set({ room: null, closing, lit: null });
+    closed = setTimeout(
+      () => set({ room: null, closing: false, lit: null }),
+      motionTiming("travel").duration,
+    );
+    return;
+  }
+  if ("lit" in visit) {
+    set({ room: null, closing, lit: visit.tabId });
     return;
   }
   if ("arrived" in visit) {
     // The still has landed on the chip: it shows, and once it's drawn the still goes.
-    set({ room: null, closing: false });
+    set({ room: null, closing: false, lit: null });
     requestAnimationFrame(() => requestAnimationFrame(() => bridge?.drawn()));
     return;
   }
-  set({ room: visit, closing: false });
+  set({ room: visit, closing: false, lit: null });
 }
 
 bridge?.onRoom(hostRoom);
@@ -71,19 +83,20 @@ const read = () => hosting;
  * makes room (CSS pixels), how far the strip grows to hold the room, so
  * what follows the chips moves over too, the arrived tab's chip kept hidden
  * until what was carried lands on it, and whether the chips glide
- * (`travel`).
+ * (`travel`). And the chip a chat carried from another window lights.
  */
 export function useHosting(shownTabs: ReadonlyArray<Tab>): {
   readonly offsets: ReadonlyArray<number> | null;
   readonly grows: number;
   readonly hiddenId: string | null;
   readonly gliding: boolean;
+  readonly lit: string | null;
 } {
-  const { room, closing } = useSyncExternalStore(subscribe, read, read);
-  if (!room) return { offsets: null, grows: 0, hiddenId: null, gliding: closing };
+  const { room, closing, lit } = useSyncExternalStore(subscribe, read, read);
+  if (!room) return { offsets: null, grows: 0, hiddenId: null, gliding: closing, lit };
   // In the workspace already (the move was made): it sits in its slot, hidden.
   if (shownTabs.some((tab) => tab.id === room.tabId)) {
-    return { offsets: null, grows: 0, hiddenId: room.tabId, gliding: false };
+    return { offsets: null, grows: 0, hiddenId: room.tabId, gliding: false, lit };
   }
   const shift = room.width / (bridge?.zoom() ?? 1) + TAB_GAP;
   return {
@@ -91,7 +104,22 @@ export function useHosting(shownTabs: ReadonlyArray<Tab>): {
     grows: shift,
     hiddenId: null,
     gliding: true,
+    lit,
   };
+}
+
+/**
+ * How wide tab `tabId`'s row shows in this window: its grid's width where
+ * its page is drawn, else the slate's, which every page fills.
+ */
+export function tabRowWidth(tabId: string): number {
+  const grid = document.querySelector<HTMLElement>(
+    `[data-stemcells-page="${CSS.escape(tabId)}"] [data-stemcells-grid]`,
+  );
+  if (grid && grid.clientWidth > 0) return grid.clientWidth;
+  return (
+    document.querySelector<HTMLElement>("[data-stemcells-slate]")?.clientWidth ?? window.innerWidth
+  );
 }
 
 const pageRect = (element: Element): PageRect => {
@@ -101,8 +129,9 @@ const pageRect = (element: Element): PageRect => {
 
 /**
  * Answers a carry in another window that asks where this strip is: its
- * rect, the Cells' chips in order, and where a first chip would sit (the new
- * Cell's place, when there is no chip), in this page's CSS pixels.
+ * rect, the Cells' chips in order with how wide each tab's row shows, and
+ * where a first chip would sit (the new Cell's place, when there is no
+ * chip), in this page's CSS pixels.
  */
 export function useStripMeasure(
   strip: RefObject<HTMLElement | null>,
@@ -121,7 +150,7 @@ export function useStripMeasure(
       if (!element) return null;
       const chips = latest.current.flatMap((tab) => {
         const chip = tabElements.current.get(tab.id);
-        return chip ? [{ tabId: tab.id, rect: pageRect(chip) }] : [];
+        return chip ? [{ tabId: tab.id, rect: pageRect(chip), rowWidth: tabRowWidth(tab.id) }] : [];
       });
       const phantom = newCellTabId ? tabElements.current.get(newCellTabId) : undefined;
       const rect = pageRect(element);

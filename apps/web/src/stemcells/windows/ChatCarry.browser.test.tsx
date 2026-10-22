@@ -3,9 +3,11 @@ import "../tokens/stemcells.css";
 
 import { describe, expect, it } from "vite-plus/test";
 
+import { activateTab, panesOf, type Tab } from "../tabs/layout";
+import { readWorkspace, updateWorkspace } from "../tabs/store";
 import { render } from "../upstream/testRender";
 import { carrying } from "./carrying";
-import { ChatCarry, startChatCarry } from "./ChatCarry";
+import { ChatCarry, startChatCarry, useCarryLit } from "./ChatCarry";
 
 const cell = { environmentId: "env", threadId: "t1", draftId: null };
 
@@ -93,5 +95,101 @@ describe("a chat carried by its Cell", () => {
     document.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 }));
     await expect.poll(card, { timeout: 3000 }).toBeNull();
     expect(carrying()).toBe(false);
+  });
+});
+
+/** A tab of one chat, its pane `<id>.p`. */
+const oneChat = (id: string, threadId: string): Tab => ({
+  id,
+  rows: [
+    {
+      id: `${id}.r`,
+      columns: [{ id: `${id}.c`, panes: [{ id: `${id}.p`, cell: { ...cell, threadId } }] }],
+    },
+  ],
+  focusedPaneId: `${id}.p`,
+});
+
+/** Tab "a" on stage holding the carried chat and another, tab "b" holding one: the strip's chips. */
+function setup() {
+  const a = oneChat("a", "t1");
+  const withSecond: Tab = {
+    ...a,
+    rows: [
+      { ...a.rows[0]!, columns: [...a.rows[0]!.columns, oneChat("a2", "t3").rows[0]!.columns[0]!] },
+    ],
+  };
+  updateWorkspace(() => ({ tabs: [withSecond, oneChat("b", "t2")], activeTabId: "a" }));
+}
+
+function Strip() {
+  const lit = useCarryLit();
+  return (
+    <div data-stemcells-tab-strip="" style={{ display: "flex", width: 600, height: 36 }}>
+      {["a", "b"].map((id) => (
+        <div
+          key={id}
+          data-stemcells-tab={id}
+          data-spring-lit={lit === id}
+          style={{ width: 160, height: 36 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Workspace() {
+  return (
+    <div style={{ width: 600 }}>
+      <ChatCarry onOpenTab={(tabId) => updateWorkspace((ws) => activateTab(ws, tabId))} />
+      <Strip />
+      <div data-stemcells-pane="a.p" style={{ width: 300, height: 300 }}>
+        <button type="button" onPointerDown={(event) => startChatCarry(event, cell)}>
+          Cell
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const chip = (id: string) => document.querySelector<HTMLElement>(`[data-stemcells-tab="${id}"]`)!;
+const panes = (tabId: string) =>
+  panesOf(readWorkspace().tabs.find((tab) => tab.id === tabId)!).map((pane) => pane.id);
+
+describe("a chat let go on a tab's chip", () => {
+  it("goes to the end of that tab, its chip lit on the way, and the stage stays", async () => {
+    setup();
+    await using screen = await render(<Workspace />);
+    const handle = lift(screen.container);
+    await expect.poll(card).not.toBeNull();
+
+    // Flung at the chip: a let-go there aims, so it drops rather than throws.
+    const over = chip("b").getBoundingClientRect();
+    pointer(handle, "pointermove", over.left + 80, over.top + 18);
+    await expect.element(chip("b")).toHaveAttribute("data-spring-lit", "true");
+    pointer(handle, "pointerup", over.left + 80, over.top + 18);
+
+    await expect.poll(() => panes("b")).toEqual(["b.p", "a.p"]);
+    expect(panes("a")).toEqual(["a2.p"]);
+    expect(readWorkspace().activeTabId).toBe("a");
+    await expect.poll(card).toBeNull();
+    expect(chip("b").dataset.springLit).toBe("false");
+    expect(carrying()).toBe(false);
+  });
+
+  it("takes nothing on its own tab's chip, which never lights: the chat flies home", async () => {
+    setup();
+    await using screen = await render(<Workspace />);
+    const handle = lift(screen.container);
+    await expect.poll(card).not.toBeNull();
+
+    const own = chip("a").getBoundingClientRect();
+    pointer(handle, "pointermove", own.left + 80, own.top + 18);
+    expect(chip("a").dataset.springLit).toBe("false");
+    pointer(handle, "pointerup", own.left + 80, own.top + 18);
+
+    await expect.poll(card).toBeNull();
+    expect(panes("a")).toEqual(["a.p", "a2.p"]);
+    expect(panes("b")).toEqual(["b.p"]);
   });
 });

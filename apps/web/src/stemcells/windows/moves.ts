@@ -9,7 +9,9 @@ import {
   arriving,
   closePane,
   closeTab,
+  focusPane,
   insertTab,
+  joinTab,
   panesOf,
   placePane,
   type CellRef,
@@ -122,7 +124,10 @@ export function join(
   );
 }
 
-/** Where a carried chat goes: beside a pane, into a strip as a tab, or out as a window. */
+/**
+ * Where a carried chat goes: beside a pane, into a strip as a tab, to the
+ * end of a tab, or out as a window.
+ */
 export type CarryTarget =
   | {
       readonly kind: "pane";
@@ -137,6 +142,13 @@ export type CarryTarget =
       readonly window: string;
       readonly index: number;
       readonly ids: NewTabIds;
+    }
+  | {
+      readonly kind: "tab";
+      readonly tabId: string;
+      readonly column: string;
+      /** How wide the tab's row shows in its window, for room beside its last pane. */
+      readonly rowWidth: number;
     }
   | { readonly kind: "window"; readonly window: NewWindow; readonly ids: NewTabIds };
 
@@ -168,12 +180,38 @@ export function carry(arrangement: Arrangement, paneId: string, to: CarryTarget)
     workspaces.set(target.id, withTab(workspaceOf(target), tabOf(to.ids), to.index));
     return change(arrangement, workspaces, [], target.id);
   }
+  if (to.kind === "tab") {
+    const target = windowHoldingTab(arrangement, to.tabId);
+    const into = target?.workspace.tabs.find((tab) => tab.id === to.tabId);
+    if (!target || !into || into.id === found.tab.id || isAskiTab(into)) return null;
+    workspaces.set(
+      target.id,
+      joinTab(workspaceOf(target), into.id, found.pane, to.column, to.rowWidth),
+    );
+    // The person stays on the tab the chat left, in its window: a tab sprung
+    // open on the way gives the stage back. That tab gone with its last chat,
+    // they follow the chat.
+    const left = workspaceOf(source);
+    if (left.tabs.some((tab) => tab.id === found.tab.id)) {
+      workspaces.set(source.id, activateTab(left, found.tab.id));
+      return change(arrangement, workspaces, [], source.id);
+    }
+    workspaces.set(target.id, focusPane(workspaceOf(target), paneId));
+    return change(arrangement, workspaces, [], target.id);
+  }
   const anchor = windowHoldingPane(arrangement, to.anchor);
   if (!anchor || to.anchor === paneId || isAskiTab(anchor.tab)) return null;
-  workspaces.set(
-    anchor.window.id,
-    placePane(workspaceOf(anchor.window), found.pane, to.anchor, to.side, to.column, to.rowWidth),
+  const placed = placePane(
+    workspaceOf(anchor.window),
+    found.pane,
+    to.anchor,
+    to.side,
+    to.column,
+    to.rowWidth,
   );
+  // Over the near half of the pane it sits beside, the chat lands where it was: no move.
+  if (anchor.window.id === source.id && shapeOf(placed) === shapeOf(source.workspace)) return null;
+  workspaces.set(anchor.window.id, placed);
   return change(arrangement, workspaces, [], anchor.window.id);
 }
 

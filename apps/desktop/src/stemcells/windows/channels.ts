@@ -148,8 +148,15 @@ export interface MeasuredStrip {
   /** Screen points per CSS pixel: the page's zoom. */
   readonly zoom: number;
   readonly rect: PageRect;
-  /** The Cells' chips a carried tab can land among, in order. */
-  readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: PageRect }>;
+  /**
+   * The Cells' chips a carried tab can land among, in order, each with how
+   * wide its tab's row shows: what a chat carried into it makes room by.
+   */
+  readonly chips: ReadonlyArray<{
+    readonly tabId: string;
+    readonly rect: PageRect;
+    readonly rowWidth: number;
+  }>;
   readonly gap: number;
   /** Where a first chip sits. */
   readonly start: number;
@@ -161,13 +168,21 @@ export interface StripPlace {
   readonly frame: FlightRect;
   readonly strip: {
     readonly rect: FlightRect;
-    readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: FlightRect }>;
+    /** `rowWidth` in the window's CSS pixels, as `MeasuredStrip` has it. */
+    readonly chips: ReadonlyArray<{
+      readonly tabId: string;
+      readonly rect: FlightRect;
+      readonly rowWidth: number;
+    }>;
     readonly gap: number;
     readonly start: number;
   };
 }
 
-/** A carried tab over a window's strip: the room it makes, or that it arrived there. */
+/**
+ * A carried tab over a window's strip: the room it makes, or that it
+ * arrived there. Or a chat carried over one of its chips, which lights.
+ */
 export type Visit =
   | {
       readonly tabId: string;
@@ -175,7 +190,8 @@ export type Visit =
       readonly width: number;
       readonly slot: number;
     }
-  | { readonly tabId: string; readonly arrived: true };
+  | { readonly tabId: string; readonly arrived: true }
+  | { readonly tabId: string; readonly lit: true };
 
 /** Another window's workspace, as its page published it; null once it closed. */
 export interface WindowElsewhere {

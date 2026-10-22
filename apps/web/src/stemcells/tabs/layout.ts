@@ -406,6 +406,47 @@ export function addPane(workspace: Workspace, ids: NewIds, rowWidth: number): Wo
 }
 
 /**
+ * Adds a pane at the end of a tab, the way `addPane` adds one after the
+ * focused pane, from the tab's last pane instead: the tab may not be on
+ * stage, and its end is the place the person can predict without seeing
+ * it. The stage and the tab's focus stay as they were.
+ */
+export function joinTab(
+  workspace: Workspace,
+  tabId: string,
+  pane: Pane,
+  columnId: string,
+  rowWidth: number,
+): Workspace {
+  const tab = workspace.tabs.find((candidate) => candidate.id === tabId);
+  const last = tab ? panesOf(tab).at(-1) : undefined;
+  if (!tab || !last || findPane(workspace, (candidate) => candidate.id === pane.id)) {
+    return workspace;
+  }
+  const holdsLast = (column: Column) => column.panes.some((candidate) => candidate.id === last.id);
+  const row = tab.rows.find((candidate) => candidate.columns.some(holdsLast))!;
+  const column = row.columns.find(holdsLast)!;
+  const width = rowWidth / (row.columns.length + 1);
+  const fitsBeside =
+    column.panes.length === 1 &&
+    width >= CELL_COLUMN_WIDTH &&
+    sharesBeside(row.columns, row.columns.indexOf(column), rowWidth, width) !== null;
+  const placed = placePane(
+    workspace,
+    pane,
+    last.id,
+    fitsBeside ? "right" : "below",
+    columnId,
+    rowWidth,
+  );
+  const joined = placed.tabs.find((candidate) => candidate.id === tabId)!;
+  return {
+    ...replaceTab(placed, { ...joined, focusedPaneId: tab.focusedPaneId }),
+    activeTabId: workspace.activeTabId,
+  };
+}
+
+/**
  * Removes a pane. Focus moves to the pane before it in reading order (rows,
  * then columns, then top to bottom), or after it when it was first. A tab
  * left without panes closes.

@@ -25,9 +25,11 @@ export function readMeasured(value: unknown): MeasuredStrip | null {
   if (!isNumber(zoom) || zoom <= 0 || !strip || !isNumber(gap) || !isNumber(start)) return null;
   if (!Array.isArray(chips)) return null;
   const read = chips.map((chip: unknown) => {
-    const { tabId, rect: chipRect } = (chip ?? {}) as Record<string, unknown>;
+    const { tabId, rect: chipRect, rowWidth } = (chip ?? {}) as Record<string, unknown>;
     const at = readPageRect(chipRect);
-    return typeof tabId === "string" && at ? { tabId, rect: at } : null;
+    return typeof tabId === "string" && at && isNumber(rowWidth)
+      ? { tabId, rect: at, rowWidth }
+      : null;
   });
   if (read.some((chip) => chip === null)) return null;
   return { zoom, rect: strip, chips: read as MeasuredStrip["chips"], gap, start };
@@ -47,7 +49,11 @@ export function placeStrip(id: string, content: FlightRect, measured: MeasuredSt
     frame: content,
     strip: {
       rect: onScreen(measured.rect),
-      chips: measured.chips.map((chip) => ({ tabId: chip.tabId, rect: onScreen(chip.rect) })),
+      chips: measured.chips.map((chip) => ({
+        tabId: chip.tabId,
+        rect: onScreen(chip.rect),
+        rowWidth: chip.rowWidth,
+      })),
       gap: measured.gap * zoom,
       start: content.x + measured.start * zoom,
     },

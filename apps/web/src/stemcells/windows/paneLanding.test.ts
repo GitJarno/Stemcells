@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { halfOf, paneLandingAt, sideAt, stripLandingAt } from "./paneLanding";
+import { chipElsewhereAt, halfOf, paneLandingAt, sideAt, stripLandingAt } from "./paneLanding";
 
 const pane = { x: 100, y: 0, width: 400, height: 200 };
 
@@ -49,5 +49,39 @@ describe("carrying a chat over the strip", () => {
     expect(stripLandingAt(strip, chips, { x: 222, y: 18 })).toBeNull();
     expect(stripLandingAt(strip, chips, { x: 20, y: 18 })).toBeNull();
     expect(stripLandingAt(strip, chips, { x: 600, y: 40 })).toBeNull();
+  });
+});
+
+describe("carrying a chat over another window's strip", () => {
+  const place = (id: string, x: number) => ({
+    id,
+    frame: { x, y: 100, width: 800, height: 600 },
+    strip: {
+      rect: { x: x + 70, y: 100, width: 730, height: 36 },
+      chips: [
+        { tabId: `${id}1`, rect: { x: x + 100, y: 106, width: 160, height: 24 }, rowWidth: 700 },
+      ],
+      gap: 4,
+      start: x + 100,
+    },
+  });
+  // Front to back: "front" covers "back"'s chip but for its last 60 px.
+  const places = [place("front", 0), place("back", 600)];
+
+  it("goes into the chip under the hand, in the window in front there", () => {
+    expect(chipElsewhereAt(places, { x: 150, y: 102 })).toEqual({
+      window: "front",
+      tabId: "front1",
+      chip: { x: 100, y: 106, width: 160, height: 24 },
+      rowWidth: 700,
+    });
+    expect(chipElsewhereAt(places, { x: 830, y: 118 })?.tabId).toBe("back1");
+    expect(chipElsewhereAt(places, { x: 750, y: 118 })).toBeNull();
+  });
+
+  it("takes nothing off a chip, off a strip, or outside every window", () => {
+    expect(chipElsewhereAt(places, { x: 400, y: 118 })).toBeNull();
+    expect(chipElsewhereAt(places, { x: 150, y: 300 })).toBeNull();
+    expect(chipElsewhereAt(places, { x: 2000, y: 118 })).toBeNull();
   });
 });

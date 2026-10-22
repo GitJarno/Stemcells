@@ -62,7 +62,9 @@ asked for by name), then W7, W4, W9, W11.
         its Cell flies (the original's toss), bonks, and walks home
         (`tasks/cell-toss.md`, The flight).
   - [ ] W7d Other windows: the card on the flight layer, their panes and
-        strips answering, spring-load raising them.
+        strips answering, spring-load raising them. Their chips take a
+        chat (`tasks/chip-drop.md`); their panes, the room for a new tab and
+        the raise are still to come.
   - [ ] W7e Open space: the card unfolds into a one-pane window.
 - [ ] W4 The browser in any window: one seam in the preview manager; a
       moved browser pane shows its last frame until its new guest paints.
@@ -365,7 +367,7 @@ picking up the Cell to carry the chat reads as what it is.
    `spring-load`.
 4. **Open space**: the card unfolds into a window preview holding one pane
    (`unfold`), then lands like a torn tab.
-5. **Drop**: the card lands into its half, slot or window on `land`. The
+5. **Drop**: the card lands into its half, chip, slot or window on `land`. The
    source grid reflows (`reflow`, instant by design). A tab whose last pane
    left closes (`leave`); a window whose last tab left closes.
 6. **Cancel**: the card flies back and opens into its place on `land`.
@@ -384,16 +386,18 @@ cleanup leaves alone, and a chat carried within a window never leaves the
 workspace; `commitMove` flushes the pending draft write first. The empty
 place keeps the grid's hairlines.
 
-As built (W7b): over the strip, the chip under the hand lights and opens
-its tab after `spring-load`, and past the last chip the strip makes room
-for a new tab, growing by a chip so the + and what follows move over (a
-tab carried in from another window gets the same room). Between chips is
-nothing: the room only opens at the end, so the chip under the hand never
-slides away from it, and a new tab can be dragged into order afterwards.
-Aski's chip takes no chat. Let go in the room, the chat becomes a tab
-there and the card lands on its chip; let go anywhere else after a tab
-sprang open, the tab the chat came from comes back on stage before the
-card flies home.
+As built (W7b): over the strip, another tab's chip under the hand lights
+and opens its tab after `spring-load`, and past the last chip the strip
+makes room for a new tab, growing by a chip so the + and what follows move
+over (a tab carried in from another window gets the same room). Between
+chips is nothing: the room only opens at the end, so the chip under the
+hand never slides away from it, and a new tab can be dragged into order
+afterwards. Aski's chip takes no chat. Let go in the room, the chat becomes
+a tab there and the card lands on its chip. Let go on another tab's chip,
+the chat goes to that tab's end and the card lands on the chip, while the
+person stays where they were (`tasks/chip-drop.md`). Let go anywhere else
+after a tab sprang open, the tab the chat came from comes back on stage
+before the card flies home.
 
 As built (W7c): let go faster than 100 px/s in the chat's own tab, the
 chat stays and only its Cell flies, in a layer over the window's content:

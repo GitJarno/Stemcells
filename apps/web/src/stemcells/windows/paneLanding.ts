@@ -5,6 +5,7 @@
  */
 import type { PaneSide } from "../tabs/layout";
 import type { Rect } from "./arrangement";
+import type { StripPlace } from "./bridge";
 import type { Point } from "./carry";
 
 /** A pane a chat can land beside. */
@@ -94,4 +95,31 @@ export function stripLandingAt(
   if (chip) return { kind: "chip", tabId: chip.tabId };
   const end = Math.max(strip.x, ...chips.map(({ rect }) => rect.x + rect.width));
   return at.x >= end ? { kind: "end" } : null;
+}
+
+/** Another window's chip a carried chat would go into, in screen points. */
+export interface ChipElsewhere {
+  readonly window: string;
+  readonly tabId: string;
+  readonly chip: Rect;
+  /** How wide the tab's row shows in its window. */
+  readonly rowWidth: number;
+}
+
+/**
+ * The chip under the hand (`at`, screen points, outside the chat's own
+ * window) in another window's strip, the whole strip's height: in the
+ * front-most window under the hand, as the person sees it. Anywhere else,
+ * nothing.
+ */
+export function chipElsewhereAt(
+  places: ReadonlyArray<StripPlace>,
+  at: Point,
+): ChipElsewhere | null {
+  const place = places.find(({ frame }) => inside(frame, at));
+  if (!place) return null;
+  const landing = stripLandingAt(place.strip.rect, place.strip.chips, at);
+  if (landing?.kind !== "chip") return null;
+  const chip = place.strip.chips.find(({ tabId }) => tabId === landing.tabId)!;
+  return { window: place.id, tabId: chip.tabId, chip: chip.rect, rowWidth: chip.rowWidth };
 }

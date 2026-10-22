@@ -18,7 +18,7 @@ import {
 import { ASKI_TAB_ID } from "./askiTab";
 import { CellMark } from "./CellMark";
 import { panesOf, type CellRef, type Tab } from "./layout";
-import { useCarrySpringLit } from "../windows/ChatCarry";
+import { useCarryLit } from "../windows/ChatCarry";
 import { GatherButton } from "../windows/GatherButton";
 import { useFlownChips } from "../windows/gatherFlight";
 import { useHosting, useStripMeasure } from "../windows/hostStrip";
@@ -55,8 +55,8 @@ export function TabStrip(props: {
   const { tabs, onActivate, onMove } = props;
   // A tab a drag rests on opens, so a file can be carried to another tab's chat.
   const spring = useSpringTabs(props.activeTabId, onActivate);
-  // A chat carried by its Cell rests on chips as a file does.
-  const carryLit = useCarrySpringLit();
+  // A chat carried by its Cell lights the chip it would go into.
+  const carryLit = useCarryLit();
   const carry = useTabCarry({
     tabs,
     activeTabId: props.activeTabId,
@@ -80,7 +80,8 @@ export function TabStrip(props: {
   const { newCell, newTabRef } = props;
   // In one list with the tabs, so taking or leaving the new Cell keeps its tab's element.
   const shownTabs = newCell && !newCell.taken ? [...tabs, newCell.tab] : tabs;
-  // A tab carried from another window: this strip makes room for it, then takes it.
+  // A tab carried from another window: this strip makes room for it, then
+  // takes it. A chat carried from another window lights a chip.
   const hosting = useHosting(shownTabs);
   // Tabs Gather brought here or Put back takes away, while their chips are on the flight layer.
   const flown = useFlownChips();
@@ -130,7 +131,9 @@ export function TabStrip(props: {
               aria-selected={tab.id === props.activeTabId}
               data-stemcells-tab={tab.id}
               data-stemcells-new-tab={isNewCell ? "" : undefined}
-              data-spring-lit={spring.lit === tab.id || carryLit === tab.id}
+              data-spring-lit={
+                spring.lit === tab.id || carryLit === tab.id || hosting.lit === tab.id
+              }
               data-dragged={dragged || undefined}
               {...spring.handlers(tab.id)}
               onPointerDown={(event) => {

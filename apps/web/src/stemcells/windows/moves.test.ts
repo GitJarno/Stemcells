@@ -14,6 +14,7 @@ import {
 import {
   arrangement,
   askiTab,
+  chat,
   frame,
   LAPTOP,
   random,
@@ -159,6 +160,34 @@ describe("carry", () => {
     expect(column.panes.map((pane) => pane.id)).toEqual(["a2.z", "b1.p"]);
   });
 
+  it("is no move when a chat would land where it is", () => {
+    const stacked = arrangement(
+      window("a", frame(0), [
+        {
+          id: "a1",
+          rows: [
+            {
+              id: "a1.row",
+              columns: [
+                {
+                  id: "a1.col",
+                  panes: [
+                    { id: "a1.x", cell: chat("x") },
+                    { id: "a1.y", cell: chat("y") },
+                  ],
+                },
+              ],
+            },
+          ],
+          focusedPaneId: "a1.x",
+        },
+      ]),
+    );
+    const to = { kind: "pane", anchor: "a1.y", column: "c", rowWidth: 1200 } as const;
+    expect(carry(stacked, "a1.x", { ...to, side: "above" })).toBeNull();
+    expect(carry(stacked, "a1.x", { ...to, side: "below" })).not.toBeNull();
+  });
+
   it("makes a chat a tab of its own in a strip, and a window of its own in open space", () => {
     const toStrip = carry(twoWindows(), "a2.z", { kind: "strip", window: "b", index: 1, ids })!;
     expect(tabIds(toStrip.next, "b")).toEqual(["b1", "t-new", "b2"]);
@@ -196,6 +225,69 @@ describe("carry", () => {
         rowWidth: 1200,
       }),
     ).toBeNull();
+  });
+
+  it("puts a chat at the end of another tab, and the person stays on the tab it left", () => {
+    // Aski's tab is on stage, as a tab sprung open on the way would be.
+    const result = carry(twoWindows(), "a2.z", {
+      kind: "tab",
+      tabId: "a1",
+      column: "c-new",
+      rowWidth: 1200,
+    })!;
+    const a = windowById(result.next, "a")!.workspace;
+    expect(a.tabs[1]!.rows[0]!.columns.map((column) => column.panes.map((p) => p.id))).toEqual([
+      ["a1.x"],
+      ["a2.z"],
+    ]);
+    expect(a.tabs[1]!.focusedPaneId).toBe("a1.x");
+    expect(a.activeTabId).toBe("a2");
+    expect(result.transaction.front).toBe("a");
+  });
+
+  it("puts a chat in another window's tab, and neither window's stage changes", () => {
+    const result = carry(twoWindows(), "a2.z", {
+      kind: "tab",
+      tabId: "b2",
+      column: "c-new",
+      rowWidth: 1200,
+    })!;
+    const b = windowById(result.next, "b")!.workspace;
+    expect(panesOf(b.tabs[1]!).map((p) => p.id)).toEqual(["b2.q", "a2.z"]);
+    expect(b.activeTabId).toBe("b1");
+    expect(windowById(result.next, "a")!.workspace.activeTabId).toBe("a2");
+    expect(result.transaction.front).toBe("a");
+  });
+
+  it("brings the person along with a tab's last chat: its new tab on stage, in front, focused", () => {
+    const result = carry(twoWindows(), "a1.x", {
+      kind: "tab",
+      tabId: "b2",
+      column: "c-new",
+      rowWidth: 1200,
+    })!;
+    expect(tabIds(result.next, "a")).toEqual([ASKI_TAB_ID, "a2"]);
+    const b = windowById(result.next, "b")!.workspace;
+    expect(b.activeTabId).toBe("b2");
+    expect(b.tabs[1]!.focusedPaneId).toBe("a1.x");
+    expect(result.transaction.front).toBe("b");
+
+    const alone = arrangement(
+      window("a", frame(0), [tab("a1", "x")]),
+      window("b", frame(1000), [tab("b1", "y")]),
+    );
+    const docked = carry(alone, "a1.x", { kind: "tab", tabId: "b1", column: "c", rowWidth: 1200 })!;
+    expect(docked.transaction.close).toEqual(["a"]);
+    expect(docked.transaction.front).toBe("b");
+    expect(problemsOf(docked.next)).toEqual([]);
+  });
+
+  it("takes no chat into its own tab or Aski's, and never Aski's chat", () => {
+    const to = (tabId: string) => ({ kind: "tab", tabId, column: "c", rowWidth: 1200 }) as const;
+    expect(carry(twoWindows(), "a2.z", to("a2"))).toBeNull();
+    expect(carry(twoWindows(), "a2.z", to(ASKI_TAB_ID))).toBeNull();
+    expect(carry(twoWindows(), "aski-tab.aski", to("b1"))).toBeNull();
+    expect(carry(twoWindows(), "a2.z", to("nowhere"))).toBeNull();
   });
 
   it("doesn't carry a window's only chat out into a window: that window moves", () => {

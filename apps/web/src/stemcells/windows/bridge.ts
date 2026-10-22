@@ -101,8 +101,15 @@ export interface MeasuredStrip {
   /** Screen points per CSS pixel: the page's zoom. */
   readonly zoom: number;
   readonly rect: PageRect;
-  /** The Cells' chips a carried tab can land among, in order. */
-  readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: PageRect }>;
+  /**
+   * The Cells' chips a carried tab can land among, in order, each with how
+   * wide its tab's row shows: what a chat carried into it makes room by.
+   */
+  readonly chips: ReadonlyArray<{
+    readonly tabId: string;
+    readonly rect: PageRect;
+    readonly rowWidth: number;
+  }>;
   readonly gap: number;
   /** Where a first chip sits. */
   readonly start: number;
@@ -114,13 +121,21 @@ export interface StripPlace {
   readonly frame: Rect;
   readonly strip: {
     readonly rect: Rect;
-    readonly chips: ReadonlyArray<{ readonly tabId: string; readonly rect: Rect }>;
+    /** `rowWidth` in the window's CSS pixels, as `MeasuredStrip` has it. */
+    readonly chips: ReadonlyArray<{
+      readonly tabId: string;
+      readonly rect: Rect;
+      readonly rowWidth: number;
+    }>;
     readonly gap: number;
     readonly start: number;
   };
 }
 
-/** A carried tab over a window's strip: the room it makes, or that it arrived there. */
+/**
+ * A carried tab over a window's strip: the room it makes, or that it
+ * arrived there. Or a chat carried over one of its chips, which lights.
+ */
 export type Visit =
   | {
       readonly tabId: string;
@@ -128,7 +143,8 @@ export type Visit =
       readonly width: number;
       readonly slot: number;
     }
-  | { readonly tabId: string; readonly arrived: true };
+  | { readonly tabId: string; readonly arrived: true }
+  | { readonly tabId: string; readonly lit: true };
 
 /** Another window's workspace, as its page published it; null once it closed. */
 export interface WindowElsewhere {
@@ -197,9 +213,9 @@ export interface WindowsBridge {
   geometry(): Promise<ReadonlyArray<StripPlace>>;
   /** How this window measures its strip when a carry elsewhere asks. */
   onMeasure(measure: () => MeasuredStrip | null): () => void;
-  /** Tells `window` a carried tab is over its strip, has arrived there, or left (null). */
+  /** Tells `window` a carried tab or chat is over its strip, a tab has arrived there, or it left (null). */
   room(window: string, visit: Visit | null): void;
-  /** A carried tab over this window's strip, arrived there, or gone (null). */
+  /** A carried tab or chat over this window's strip, a tab arrived there, or gone (null). */
   onRoom(listener: (visit: Visit | null) => void): () => void;
   /** Brings `window` forward without focusing it. */
   raise(window: string): void;
