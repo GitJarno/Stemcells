@@ -11,13 +11,14 @@ import { useLayoutEffect } from "react";
 import { openNewCellPane } from "../tabs/commands";
 import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
 import { useNavigateToMainApp } from "../upstream/settings";
-import { cn } from "../upstream/ui";
+import { cn, useSidebar } from "../upstream/ui";
 import { useColumnStore } from "./column";
 import { DiskGauge } from "./DiskGauge";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { RailProjects } from "./RailProjects";
+import { useRailUndoNotice } from "./undoNotice";
 import "../tokens/stemcells.css";
 import "./rail.css";
 
@@ -35,6 +36,9 @@ export function Rail() {
   const backToWork = useNavigateToMainApp();
   const searchKeys = useShortcutLabel("commandPalette.toggle");
   const setWidth = useColumnStore((store) => store.setWidth);
+  // Upstream's toggle can hide the rail, and Settings has no ⌘Z to undo with.
+  const { open } = useSidebar();
+  useRailUndoNotice(open && lit !== "settings" && lit !== "disk");
 
   useLayoutEffect(() => {
     const root = document.documentElement;
