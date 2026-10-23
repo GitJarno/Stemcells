@@ -660,7 +660,13 @@ export function ComposerWords(props: { readonly anchor: string }) {
           edit: () => {
             if (cell) playForming(cell.threadId, standingIn(view.dom));
             standingLeaves(draftId);
-            return null;
+            // Nothing went after all: Aski stands there again.
+            return (sent: unknown) =>
+              void Promise.resolve(sent)
+                .catch(() => undefined)
+                .then(() => {
+                  if (!isDraftGone(draftId)) standingBack(draftId);
+                });
           },
         };
       // A word still at the caret acts now, and upstream's send has to see it.

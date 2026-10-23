@@ -110,8 +110,8 @@ function onScreen(element: Element, rect: DOMRect): boolean {
  * `travel`, to where the Cell of `threadId` stands as it leaves (a pane
  * may still be settling): it buds from Aski's middle, bows on its way, and
  * lands on the target's middle. `whole`, it is Aski itself, and leaves at
- * its size. Resolves as it lands, the copy gone; at once, with no copy,
- * when the Cell's place no longer shows.
+ * its size. Resolves true as it lands, the copy gone; false at once, with
+ * no copy, when the Cell's place no longer shows as `into` planned.
  */
 export async function flyCopy(
   layer: HTMLElement,
@@ -120,11 +120,12 @@ export async function flyCopy(
   threadId: string,
   delay: number,
   travel: { readonly duration: number; readonly easing: string },
+  into: CopyTarget["into"],
   whole = false,
-): Promise<void> {
+): Promise<boolean> {
   await new Promise((resolve) => setTimeout(resolve, delay));
   const to = copyTargetOf(threadId);
-  if (to === null) return;
+  if (to?.into !== into) return false;
   const copy = layer.ownerDocument.createElement("canvas");
   copy.width = still.width;
   copy.height = still.height;
@@ -157,6 +158,7 @@ export async function flyCopy(
     )
     .finished.catch(() => undefined);
   copy.remove();
+  return true;
 }
 
 /**
@@ -178,9 +180,14 @@ export async function copiesOut(aski: Element, threadIds: readonly string[]): Pr
   page.body.append(layer);
   const travel = timed("travel");
   const stagger = timing("spawnStagger");
-  const shown = threadIds.filter((_, i) => targets[i] !== null);
+  const shown = threadIds.flatMap((threadId, i) => {
+    const target = targets[i];
+    return target ? [{ threadId, into: target.into }] : [];
+  });
   await Promise.all(
-    shown.map((threadId, i) => flyCopy(layer, still, from, threadId, i * stagger, travel)),
+    shown.map(({ threadId, into }, i) =>
+      flyCopy(layer, still, from, threadId, i * stagger, travel, into),
+    ),
   );
   layer.remove();
 }

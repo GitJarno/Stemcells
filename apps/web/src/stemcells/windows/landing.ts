@@ -1,16 +1,19 @@
 /**
  * Lands new Cells in their projects' tabs across the app's windows
- * (tabs/landing.ts). In a browser, the one window's workspace takes them;
- * on the desktop, every window's, in one transaction the desktop app
- * carries out, made again from a fresh snapshot if a window changed
+ * (tabs/landing.ts), once their chats are known here. This window's
+ * workspace takes its share through its own store, which keeps the unsent
+ * new Cell's tab that the workspace it publishes leaves out; on the
+ * desktop, the other windows take theirs in one transaction the desktop
+ * app carries out, made again from a fresh snapshot if a window changed
  * meanwhile. Not a move: Undo Move doesn't take it back.
  */
 import { useEffect } from "react";
 
 import { landCells, type LandingWindow } from "../tabs/landing";
 import type { CellRef, Workspace } from "../tabs/layout";
+import { newCellTaken } from "../tabs/newCell";
 import { newIds, updateWorkspace, useWorkspaceStore } from "../tabs/store";
-import { cellProject, subscribeLaunches } from "../upstream/landing";
+import { cellProject, cellsKnown, subscribeLaunches } from "../upstream/landing";
 import type { Placed } from "./arrangement";
 import { windowsBridge, type StripPlace } from "./bridge";
 import { tabRowWidth } from "./hostStrip";
@@ -30,12 +33,9 @@ export function useLandsLaunches(): void {
 
 export async function landNewCells(cells: readonly CellRef[]): Promise<void> {
   if (cells.length === 0) return;
+  // A Cell started a moment ago has no project here until its chat shows.
+  await cellsKnown(cells);
   const bridge = windowsBridge();
-  const here = (workspace: Workspace): LandingWindow => ({
-    workspace,
-    visited: useWorkspaceStore.getState().visited,
-    rowWidth: tabRowWidth,
-  });
   if (!bridge) {
     updateWorkspace((workspace) => landCells([here(workspace)], cells, cellProject, newIds)[0]!);
     return;
@@ -44,21 +44,39 @@ export async function landNewCells(cells: readonly CellRef[]): Promise<void> {
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const seen = readSnapshot(await bridge.snapshot());
     const { windows, lead, memories } = seen.arrangement;
-    const landed = landCells(
-      windows.map((window) =>
-        window.id === bridge.boot.id ? here(window.workspace) : elsewhere(window, strips),
-      ),
-      cells,
-      cellProject,
-      newIds,
-    );
-    const change = windows.flatMap((window, index): Placed[] =>
-      landed[index] === window.workspace ? [] : [{ ...window, workspace: landed[index]! }],
-    );
+    const change: Placed[] = [];
+    updateWorkspace((workspace) => {
+      const landed = landCells(
+        windows.map((window) =>
+          window.id === bridge.boot.id ? here(workspace) : elsewhere(window, strips),
+        ),
+        cells,
+        cellProject,
+        newIds,
+      );
+      windows.forEach((window, index) => {
+        if (window.id !== bridge.boot.id && landed[index] !== window.workspace)
+          change.push({ ...window, workspace: landed[index]! });
+      });
+      const at = windows.findIndex((window) => window.id === bridge.boot.id);
+      return at < 0 ? workspace : landed[at]!;
+    });
     if (change.length === 0) return;
     const transaction = { open: [], change, close: [], front: null, lead, memories };
+    // Made again from a fresh snapshot, it skips the Cells that landed here.
     if ((await bridge.commit(writeTransaction(transaction, seen.versions))) === "done") return;
   }
+}
+
+/** This window: its tabs used last, its rows as drawn, and its unsent new Cell's tab passed by. */
+function here(workspace: Workspace): LandingWindow {
+  const { visited, newCell } = useWorkspaceStore.getState();
+  return {
+    workspace,
+    visited,
+    rowWidth: tabRowWidth,
+    passing: newCell !== null && newCellTaken(workspace, newCell) ? newCell.ids.tab : null,
+  };
 }
 
 /** Another window, as far as this one can see it: its active tab used last, its rows as measured. */

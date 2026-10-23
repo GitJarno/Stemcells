@@ -237,7 +237,14 @@ spawn).
   app's "needs you" elsewhere is amber. One of them should give.
 - **Edges left.** A Cell that lands in another window gets no copy from
   this one. Every chat an agent launches through the tools lands and gets
-  a copy, not only Aski's. A single typed message whose send fails leaves
-  that draft without its standing Aski until it is opened again.
+  a copy, not only Aski's. A project's tab with room in the front window
+  wins over one used more lately in a window behind it.
+- **Review.** An independent review after #254 found six problems, fixed
+  in #255. Extra Cells landed before their chats were known, so they
+  missed their project's tab. A landing on the desktop dropped an unsent
+  new Cell's tab. Esc meant for a menu in a peeked chat closed the peek. A
+  failed send hid the standing Aski. A stacked column counted as room. A
+  copy could land where its timing didn't plan. Also, after a reload,
+  chats launched in the last two minutes landed again.
 - **Next.** Aski distilling a Cell's prose ask into a card (decision 8's
   model step) is the one piece of the design not built.

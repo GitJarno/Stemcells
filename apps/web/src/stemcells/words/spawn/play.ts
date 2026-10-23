@@ -159,10 +159,12 @@ export function playSpawn(input: {
     fadeLetters();
     const now = performance.now();
     const landed = shown.map((cell, i) => {
-      const flight = flyCopy(layer.root, figure!, aski, cell.threadId, starts[i]!, travel);
-      if (into(cell).into === "chip") return flight;
+      const goes = into(cell).into;
+      const flight = flyCopy(layer.root, figure!, aski, cell.threadId, starts[i]!, travel, goes);
+      if (goes === "chip") return flight;
       formAt(cell.threadId, now + starts[i]! + travel.duration + GLYPHS.length * step);
-      return flight.then(() => glyphs(layer, cell, step));
+      // Its box went off stage meanwhile: the Cell just stands.
+      return flight.then((flew) => (flew ? glyphs(layer, cell, step) : formAt(cell.threadId, 0)));
     });
     await Promise.all(landed);
     end();
@@ -206,7 +208,10 @@ export function playForming(threadId: string, standing: Element | null = null): 
     if (aski !== null && from) {
       const travel = timed("travel");
       formAt(threadId, performance.now() + travel.duration + GLYPHS.length * step);
-      await flyCopy(layer.root, aski, from, threadId, 0, travel, true);
+      if (!(await flyCopy(layer.root, aski, from, threadId, 0, travel, "box", true))) {
+        layer.remove();
+        return formAt(threadId, 0);
+      }
     } else formAt(threadId, performance.now() + GLYPHS.length * step);
     await glyphs(layer, { threadId, title: "" }, step).finally(() => layer.remove());
   });

@@ -17,6 +17,7 @@ import {
   paneShowing,
   panesOf,
   type CellRef,
+  type Column,
   type NewIds,
   type Tab,
   type Workspace,
@@ -31,6 +32,8 @@ export interface LandingWindow {
   readonly visited: readonly string[];
   /** How wide a tab's row shows there. */
   readonly rowWidth: (tabId: string) => number;
+  /** The unsent new Cell's tab (`newCell.ts`): it takes no Cell, and stays last. */
+  readonly passing?: string | null;
 }
 
 /**
@@ -45,9 +48,10 @@ export function landCells(
   ids: () => NewIds,
 ): Workspace[] {
   const workspaces = windows.map((window) => window.workspace);
+  const passing = new Set(windows.flatMap((window) => window.passing ?? []));
   const projectOfTab = (tab: Tab) => {
     const first = panesOf(tab)[0]?.cell;
-    return isAskiTab(tab) || !first ? null : projectOf(first);
+    return isAskiTab(tab) || passing.has(tab.id) || !first ? null : projectOf(first);
   };
 
   for (const cell of cells) {
@@ -85,22 +89,28 @@ export function landCells(
       0,
       workspaces.findIndex((workspace) => workspace.tabs.some(isAskiTab)),
     );
-    if (workspaces[home] === undefined) continue;
-    workspaces[home] = insertTab(workspaces[home], tab, workspaces[home].tabs.length);
+    const strip = workspaces[home];
+    if (strip === undefined) continue;
+    const end = strip.tabs.length - (passing.has(strip.tabs.at(-1)?.id ?? "") ? 1 : 0);
+    workspaces[home] = insertTab(strip, tab, end);
   }
   return workspaces;
 }
 
-/** Room for one more column: under 4 panes, and every column of the row still 300 px wide. */
+/**
+ * Room for one more column beside the last pane, as `joinTab` puts it: under
+ * 4 panes, that pane alone in its column (a stack takes it below), and
+ * every column of the row still 300 px wide.
+ */
 function hasRoom(tab: Tab, rowWidth: number): boolean {
   const panes = panesOf(tab);
   const last = panes.at(-1);
-  const row = tab.rows.find((candidate) =>
-    candidate.columns.some((column) => column.panes.some((pane) => pane.id === last?.id)),
-  );
+  const holdsLast = (column: Column) => column.panes.some((pane) => pane.id === last?.id);
+  const row = tab.rows.find((candidate) => candidate.columns.some(holdsLast));
   return (
     panes.length < CELLS_PER_TAB &&
     row !== undefined &&
+    row.columns.find(holdsLast)?.panes.length === 1 &&
     (row.columns.length + 1) * CELL_COLUMN_WIDTH <= rowWidth
   );
 }

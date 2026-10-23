@@ -97,6 +97,46 @@ describe("where a new Cell lands", () => {
     expect(shape(inHome!)).toEqual([["aski"], ["atlas-2"], ["pond-1", "pond-2"]]);
   });
 
+  it("passes the unsent new Cell's tab by, which stays last", () => {
+    const here = {
+      ...window(
+        [tab(ASKI_TAB_ID, "aski"), tab("h", "harbor-1"), tab("new", "harbor-draft")],
+        ["new"],
+      ),
+      passing: "new",
+    };
+    const [landed] = landCells([here], cells("harbor-2", "pond-1"), projectOf, ids);
+    expect(shape(landed!)).toEqual([
+      ["aski"],
+      ["harbor-1", "harbor-2"],
+      ["pond-1"],
+      ["harbor-draft"],
+    ]);
+    expect(landed!.activeTabId).toBe("new");
+  });
+
+  it("counts a tab whose last column is a stack as full, as no column fits beside it", () => {
+    const stacked: Tab = {
+      ...tab("h", "harbor-1"),
+      rows: [
+        {
+          id: "h-row",
+          columns: [
+            {
+              id: "h-col",
+              panes: [
+                { id: "h-1", cell: cell("harbor-1") },
+                { id: "h-2", cell: cell("harbor-2") },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const [landed] = landCells([window([stacked])], cells("harbor-3"), projectOf, ids);
+    expect(shape(landed!)).toEqual([["harbor-1", "harbor-2"], ["harbor-3"]]);
+  });
+
   it("never lands in Aski's tab, and leaves a Cell already showing where it is", () => {
     // Aski's chat works in no project; a Cell started there shares it.
     const here = window([tab(ASKI_TAB_ID, "scratch-aski"), tab("h", "harbor-1")]);

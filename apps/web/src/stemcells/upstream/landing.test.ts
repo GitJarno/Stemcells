@@ -36,9 +36,11 @@ describe("the chats that land as agents launch them", () => {
       shell("typed", { by: "user", from: "web" }),
       shell("subagent", { parent: "aski" }),
       shell("archived", { archived: true }),
-      shell("while-closed", { ageMinutes: 30 }),
+      shell("before-the-page", { ageMinutes: 1 }),
+      shell("reconnected-late", { ageMinutes: 30 }),
     ];
-    expect(ids(launchesAmong(shells, seen, NOW))).toEqual(["launched"]);
-    expect(ids(launchesAmong([...shells, shell("next")], seen, NOW))).toEqual(["next"]);
+    const since = NOW - 0.5 * MINUTE;
+    expect(ids(launchesAmong(shells, seen, NOW, since))).toEqual(["launched"]);
+    expect(ids(launchesAmong([...shells, shell("next")], seen, NOW, since))).toEqual(["next"]);
   });
 });

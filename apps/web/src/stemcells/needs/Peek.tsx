@@ -65,9 +65,11 @@ function PeekSheet(props: { cell: CellRef; ownsWindowInput: boolean }) {
 
   useEffect(() => {
     const room = sheet.current?.closest<HTMLElement>("[data-stemcells-aski]");
+    // Esc the chat hasn't taken (a menu, a mention, a word being composed),
+    // while the room is on stage.
     const keydown = (event: KeyboardEvent) => {
-      // An open menu or dialog takes Esc first.
-      if (event.key !== "Escape" || layerOpen()) return;
+      if (event.key !== "Escape" || event.defaultPrevented || event.isComposing) return;
+      if (layerOpen() || sheet.current?.closest("[inert]")) return;
       event.preventDefault();
       closePeek();
     };
@@ -75,10 +77,10 @@ function PeekSheet(props: { cell: CellRef; ownsWindowInput: boolean }) {
     const pointerdown = (event: PointerEvent) => {
       if (!sheet.current?.contains(event.target as Node | null)) closePeek();
     };
-    window.addEventListener("keydown", keydown, true);
+    window.addEventListener("keydown", keydown);
     room?.addEventListener("pointerdown", pointerdown);
     return () => {
-      window.removeEventListener("keydown", keydown, true);
+      window.removeEventListener("keydown", keydown);
       room?.removeEventListener("pointerdown", pointerdown);
     };
   }, []);
