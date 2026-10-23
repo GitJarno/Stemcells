@@ -8,7 +8,7 @@
  * meets, and nothing waits on it: the composer takes typing all along, and
  * a Cell whose place doesn't show in time just stands.
  */
-import { askiStill, copyTargetSoon, flyCopy } from "../../aski/copies";
+import { askiStill, copyHeight, copyTargetSoon, flyCopy } from "../../aski/copies";
 import { spawnDone, spawnPlanned, spawnStart } from "../../aski/spawn";
 import { cellBoxOf, formAt } from "../../cell/forming";
 import { path, SIZE } from "../../cell/look";
@@ -84,7 +84,7 @@ export function playSpawn(input: {
   const ink = getComputedStyle(input.editor);
   const aski = standing(input.hero, askiHeight(ink));
   // Drawn while the letters pour: a copy is half Aski.
-  const still = askiStill(aski.height / 2, input.editor).catch(() => null);
+  const still = askiStill(copyHeight(aski.height), input.editor).catch(() => null);
   // Each letter pours into its place on the orbit, then rides it round Aski.
   const riding = letters.map((letter, i) => {
     const from = centreOf(letter.box);
@@ -185,18 +185,30 @@ export function playSpawn(input: {
 }
 
 /**
- * A Cell that starts alone from its draft: its stream is its own line, so
- * only the glyphs play over its box, from when it shows, then the Cell.
+ * A Cell that starts alone from its draft: the glyphs play over its box,
+ * from when it shows, then the Cell. Where Aski stood in the new chat
+ * (`standing`, aski/AskiStanding.tsx), Aski is the Cell's copy: it flies to
+ * the line whole first, and becomes the Cell.
  */
-export function playForming(threadId: string): void {
+export function playForming(threadId: string, standing: Element | null = null): void {
   if (reducedMotion()) return;
   hold(threadId);
   const step = timing("formStep");
-  void boxOf(threadId).then((box) => {
+  const figure = standing?.querySelector(".aski-figure") ?? standing;
+  const from = figure?.getBoundingClientRect();
+  const still =
+    figure && from && from.height > 0
+      ? askiStill(from.height, figure).catch(() => null)
+      : Promise.resolve(null);
+  void Promise.all([boxOf(threadId), still]).then(async ([box, aski]) => {
     if (box === null) return formAt(threadId, 0);
-    formAt(threadId, performance.now() + GLYPHS.length * step);
     const layer = layerOver(document);
-    void glyphs(layer, { threadId, title: "" }, step).finally(() => layer.remove());
+    if (aski !== null && from) {
+      const travel = timed("travel");
+      formAt(threadId, performance.now() + travel.duration + GLYPHS.length * step);
+      await flyCopy(layer.root, aski, from, threadId, 0, travel, true);
+    } else formAt(threadId, performance.now() + GLYPHS.length * step);
+    await glyphs(layer, { threadId, title: "" }, step).finally(() => layer.remove());
   });
 }
 

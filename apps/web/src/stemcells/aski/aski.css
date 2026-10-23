@@ -209,3 +209,17 @@
 .aski-moment-cursor[hidden] {
   display: none;
 }
+
+/* Aski standing in a new chat (AskiStanding.tsx): over the headline, as
+   tall as the spawn's Aski and where it stands, so the spawn takes its place. */
+[data-stemcells-aski-standing] {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 100%;
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+}
+[data-stemcells-aski-standing][data-left] {
+  visibility: hidden;
+}

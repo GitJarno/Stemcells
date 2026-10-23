@@ -219,7 +219,25 @@ Each is one pull request.
 - [x] 5. Aski has no project.
 - [x] 6. The peek.
 - [x] 7. Cells land in their project's tab.
-- [ ] 8. Aski divides: the spawn, and Aski standing in a new tab.
+- [x] 8. Aski divides: the spawn, and Aski standing in a new tab.
 - [x] 9. Aski's words: the manager, finding past work, links that peek.
 
 ## Review
+
+All nine slices landed: #243 (the room), #245 (the close-out), #246 (the
+roster and Done), #248 (settling), #249 (no project), #250 (the peek),
+#251 (Aski's words), #252 (landing), #253 and the standing Aski (the
+spawn).
+
+- **Not yet seen running.** Tests and the gates cover the rules (stages,
+  the close-out, landing, where a copy goes); the motion (the peek, the
+  copies, Aski standing and flying to the line) was built from the code
+  and the tokens. One pass in the lab app is owed before a release.
+- **Colour.** The roster's stages are yellow, red and green as asked; the
+  app's "needs you" elsewhere is amber. One of them should give.
+- **Edges left.** A Cell that lands in another window gets no copy from
+  this one. Every chat an agent launches through the tools lands and gets
+  a copy, not only Aski's. A single typed message whose send fails leaves
+  that draft without its standing Aski until it is opened again.
+- **Next.** Aski distilling a Cell's prose ask into a card (decision 8's
+  model step) is the one piece of the design not built.

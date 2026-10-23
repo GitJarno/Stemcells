@@ -5,6 +5,7 @@ import type { EditorView } from "@tiptap/pm/view";
 import { use, useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { useAskiPlans } from "../aski/planning";
+import { standingBack, standingIn, standingLeaves } from "../aski/standing";
 import { type HoldLine, holdLines } from "../risk/hold";
 import { PaneCellContext } from "../tabs/paneCell";
 import {
@@ -435,8 +436,10 @@ export function ComposerWords(props: { readonly anchor: string }) {
     // Read now: upstream's send clears the draft's pictures and chips.
     const carry = besides && besides.length > 0 ? readCarry(draftId) : null;
     const before = view.state.doc;
+    const standing = standingIn(view.dom);
     const spawn = launch && cell ? spawnFor(view, launch, cell.threadId, input.titles) : null;
-    if (spawn === null && cell) playForming(cell.threadId);
+    if (spawn === null && cell) playForming(cell.threadId, standing);
+    standingLeaves(draftId);
     driver.hold(true);
     view.dispatch(input.write(view.state.tr));
     const sent = view.state.doc;
@@ -449,6 +452,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
           driver.hold(false);
           if (!gone) {
             spawn?.play?.off();
+            standingBack(draftId);
             return;
           }
           if (!besides || !setup || besides.length === 0 || !cell) {
@@ -654,7 +658,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
           ready: null,
           foreground: false,
           edit: () => {
-            if (cell) playForming(cell.threadId);
+            if (cell) playForming(cell.threadId, standingIn(view.dom));
+            standingLeaves(draftId);
             return null;
           },
         };

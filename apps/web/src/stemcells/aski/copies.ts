@@ -30,11 +30,14 @@ const BUDS = 0.18;
 /** How long a Cell's place may take to show, in ms: past it, no copy goes. */
 const PLACE_WAIT = 3000;
 
-/** A still of Aski at rest, `height` CSS px tall at most, in the ink and on the ground `from` shows. */
+/** How tall a copy buds out of an Aski `aski` CSS px tall. */
+export const copyHeight = (aski: number): number => Math.min(aski / 2, TALLEST);
+
+/** A still of Aski at rest, `height` CSS px tall, in the ink and on the ground `from` shows. */
 export async function askiStill(height: number, from: Element): Promise<HTMLCanvasElement> {
   const { drawFigure } = await import("./stage/figure.ts");
   const scale = window.devicePixelRatio || 1;
-  const tall = Math.max(1, Math.round(Math.min(height, TALLEST) * scale));
+  const tall = Math.max(1, Math.round(height * scale));
   // Aski is a little wider than tall, and stands centred on the canvas's foot.
   const wide = Math.ceil(tall * 1.1);
   const drawn = drawFigure({ width: wide, height: tall, ink: inkOf(from), ground: groundOf(from) });
@@ -106,8 +109,9 @@ function onScreen(element: Element, rect: DOMRect): boolean {
  * Flies a copy of `still` out of Aski's box `from`, after `delay` ms, on
  * `travel`, to where the Cell of `threadId` stands as it leaves (a pane
  * may still be settling): it buds from Aski's middle, bows on its way, and
- * lands on the target's middle. Resolves as it lands, the copy gone; at
- * once, with no copy, when the Cell's place no longer shows.
+ * lands on the target's middle. `whole`, it is Aski itself, and leaves at
+ * its size. Resolves as it lands, the copy gone; at once, with no copy,
+ * when the Cell's place no longer shows.
  */
 export async function flyCopy(
   layer: HTMLElement,
@@ -116,6 +120,7 @@ export async function flyCopy(
   threadId: string,
   delay: number,
   travel: { readonly duration: number; readonly easing: string },
+  whole = false,
 ): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, delay));
   const to = copyTargetOf(threadId);
@@ -139,12 +144,13 @@ export async function flyCopy(
     .animate(
       way.map((p, k) => {
         const t = k / STEPS;
+        const buds = whole ? 0 : BUDS;
         const scale =
-          t < BUDS ? 0.25 + (0.75 * t) / BUDS : 1 + ((lands - 1) * (t - BUDS)) / (1 - BUDS);
+          t < buds ? 0.25 + (0.75 * t) / buds : 1 + ((lands - 1) * (t - buds)) / (1 - buds);
         return {
           transform: `translate(${p.x - origin.x}px, ${p.y - origin.y}px) translate(-50%, -50%) scale(${scale})`,
           // It buds out of Aski, and into a chip it goes.
-          opacity: k === 0 || (to.into === "chip" && k === STEPS) ? 0 : 1,
+          opacity: (k === 0 && !whole) || (to.into === "chip" && k === STEPS) ? 0 : 1,
         };
       }),
       { duration: travel.duration, easing: travel.easing },
@@ -162,7 +168,7 @@ export async function copiesOut(aski: Element, threadIds: readonly string[]): Pr
   const from = aski.getBoundingClientRect();
   if (reducedMotion() || threadIds.length === 0 || !onScreen(aski, from)) return;
   const [still, targets] = await Promise.all([
-    askiStill(from.height / 2, aski),
+    askiStill(copyHeight(from.height), aski),
     Promise.all(threadIds.map(copyTargetSoon)),
   ]);
   const page = aski.ownerDocument;

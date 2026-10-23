@@ -86,10 +86,13 @@ function paint(
 /**
  * Aski, standing on its canvas's foot. `aski` is Aski's chat: its answers
  * make Aski think, and a failed one puzzles it; without one, the eyes still
- * say how this Mac and its chats stand.
+ * say how this Mac and its chats stand. Its eyes follow the caret of the
+ * composer in the box round it that `field` names, `[data-aski-looks]`
+ * unless told.
  */
-export function AskiFigure(props: { aski?: CellRef | null }) {
+export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
   const aski = props.aski ?? null;
+  const fieldBox = useEffectEvent(() => props.field ?? "[data-aski-looks]");
   const figureRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const eyesRef = useRef<HTMLDivElement>(null);
@@ -198,7 +201,7 @@ export function AskiFigure(props: { aski?: CellRef | null }) {
     );
     lookingRef.current = eyesLook;
     // The eyes follow the caret of Aski's field; words typed there make Aski listen, and answer a failed turn.
-    const place = figure.parentElement?.closest<HTMLElement>("[data-aski-looks]") ?? figure;
+    const place = figure.parentElement?.closest<HTMLElement>(fieldBox()) ?? figure;
     const unwatch = watchField(place, composerEditorIn, (field) => {
       eyesLook.caret(field.caret);
       typing(field.caret !== undefined && field.words);
