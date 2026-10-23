@@ -20,16 +20,21 @@ import {
   livedMs,
   type Order,
   ORDERS,
+  type Spend,
+  spentOf,
   spotlightOf,
   tallyOf,
+  tokensOf,
 } from "./lineage";
 import { ProviderCell } from "./ProviderCell";
+import { useSpend } from "./spend";
 
 // Settings › Lineage: every name a Cell has been dealt, and the lives lived
 // under it. A name comes back, so each chat that drew it is a new life of
 // the same avatar, in the look it was dealt the day it was born. The page
-// shows a face, a name and how many lives; a face opens its card with every
-// life. The Cells here stand still: a page of many costs no frames.
+// shows a face, a name, how many lives and what they spent; a face opens its
+// card with every life. The Cells here stand still: a page of many costs no
+// frames.
 
 /** What a life wore: the look its Cell is dealt alone, on the day it was born. */
 const lookOfLife = (life: Life): readonly string[] =>
@@ -37,9 +42,12 @@ const lookOfLife = (life: Life): readonly string[] =>
 
 const ORDER_NAMES: Readonly<Record<Order, string>> = {
   lives: "Most lives",
+  spent: "Most spent",
   newest: "Newest",
   oldest: "Oldest",
 };
+
+const isOrder = (value: string): value is Order => Object.hasOwn(ORDER_NAMES, value);
 
 /** "3 min", "2 h 14 min", "5 days". */
 function spanOf(ms: number): string {
@@ -53,10 +61,22 @@ function spanOf(ms: number): string {
 const dateOf = (ms: number) =>
   new Date(ms).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 
+/** "≥$4.20 · 1.2M tokens", or the tokens alone when nothing had a price. */
+const spendLine = (spend: Spend) =>
+  spend.costUsd === null ? spentOf(spend) : `${spentOf(spend)} · ${tokensOf(spend.tokens)} tokens`;
+
 const livesWord = (n: number) => `${n} ${n === 1 ? "life" : "lives"}`;
 
 export function LineageSettingsPanel() {
-  const { lives, loading } = useLives();
+  const read = useLives();
+  const spend = useSpend();
+  const lives =
+    spend === null
+      ? read.lives
+      : read.lives.map((life) => {
+          const spent = spend.byKey.get(life.key);
+          return spent === undefined ? life : { ...life, spend: spent };
+        });
   const now = useRelativeTimeTick(60_000);
   const ground = useCellGround();
   const [order, setOrder] = useState<Order>("lives");
@@ -77,7 +97,7 @@ export function LineageSettingsPanel() {
               value={[order]}
               onValueChange={(next) => {
                 const value = next[0];
-                if (value === "lives" || value === "newest" || value === "oldest") setOrder(value);
+                if (value !== undefined && isOrder(value)) setOrder(value);
               }}
             >
               {(Object.keys(ORDER_NAMES) as Order[]).map((key) => (
@@ -92,13 +112,16 @@ export function LineageSettingsPanel() {
       >
         {avatars.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {loading
+            {read.loading
               ? "Reading your Cells' lives…"
               : "No Cell has lived yet. Each chat is a Cell, and its name is kept here once it has one."}
           </p>
         ) : (
           <div className="flex flex-col gap-4">
-            <p className="text-xs text-muted-foreground">{tallyOf(avatars, now)}</p>
+            <p className="text-xs text-muted-foreground">
+              {tallyOf(avatars, now)}
+              {spend?.since != null ? ` · spend counted since ${dateOf(spend.since)}` : ""}
+            </p>
             {spotlight !== undefined ? (
               <button
                 type="button"
@@ -118,6 +141,7 @@ export function LineageSettingsPanel() {
                   <span className="text-lg font-medium text-foreground">{spotlight.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {livesWord(spotlight.lives.length)} · first born {dateOf(spotlight.firstBorn)}
+                    {spotlight.spend !== null ? ` · ${spentOf(spotlight.spend)}` : ""}
                   </span>
                 </span>
               </button>
@@ -181,6 +205,11 @@ function AvatarTile(props: {
         {livesWord(props.avatar.lives.length)}
         {props.awake ? " · awake" : ""}
       </span>
+      {props.avatar.spend !== null ? (
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {spentOf(props.avatar.spend)}
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -195,6 +224,12 @@ function AvatarCard(props: {
     <div className="col-span-full flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
       <p className="text-sm font-medium text-foreground">
         {props.avatar.name} · {livesWord(props.avatar.lives.length)}
+        {props.avatar.spend !== null ? (
+          <span className="font-normal text-muted-foreground">
+            {" "}
+            · {spendLine(props.avatar.spend)}
+          </span>
+        ) : null}
       </p>
       <ol className="flex flex-col gap-2">
         {props.avatar.lives.map((life) => (
@@ -212,6 +247,7 @@ function AvatarCard(props: {
                 <ProviderCell driver={life.driver} className="size-3 shrink-0" />
                 {life.provider} · {life.project} · born {dateOf(life.born)} · lived{" "}
                 {spanOf(livedMs(life))}
+                {life.spend !== undefined ? ` · ${spendLine(life.spend)}` : ""}
               </span>
             </span>
             <span className="shrink-0 text-xs text-muted-foreground">

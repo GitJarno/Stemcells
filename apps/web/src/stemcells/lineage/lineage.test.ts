@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { avatarsOf, isAwake, type Life, ORDERS, spotlightOf, tallyOf, WARMTH_MS } from "./lineage";
+import {
+  avatarsOf,
+  isAwake,
+  type Life,
+  ORDERS,
+  type Spend,
+  spentOf,
+  spotlightOf,
+  tallyOf,
+  tokensOf,
+  WARMTH_MS,
+} from "./lineage";
 
 const HOUR = 3_600_000;
 
@@ -60,5 +71,54 @@ describe("the lineage", () => {
     expect(tallyOf(avatarsOf([recent, life("c", "Bee", 0)]), now)).toBe(
       "2 names · 2 lives · 1 awake",
     );
+  });
+
+  it("adds a name's lives' spend up, short when a life went uncounted", () => {
+    const spent = (costUsd: number | null, tokens: number, short = false): Spend => ({
+      tokens,
+      inputTokens: tokens,
+      cachedInputTokens: 0,
+      outputTokens: 0,
+      costUsd,
+      short,
+    });
+    const avatars = avatarsOf([
+      life("a", "Honker", 1 * HOUR, { spend: spent(1.5, 1_000) }),
+      life("b", "Honker", 2 * HOUR, { spend: spent(null, 500) }),
+      life("c", "Otter", 3 * HOUR, { spend: spent(4, 2_000) }),
+      life("d", "Otter", 4 * HOUR),
+      life("e", "Ada", 5 * HOUR),
+    ]);
+    const byName = new Map(avatars.map((avatar) => [avatar.name, avatar.spend]));
+    expect(byName.get("Honker")).toMatchObject({ tokens: 1_500, costUsd: 1.5, short: false });
+    expect(byName.get("Otter")).toMatchObject({ tokens: 2_000, costUsd: 4, short: true });
+    expect(byName.get("Ada")).toBeNull();
+    expect(avatars.toSorted(ORDERS.spent).map((avatar) => avatar.name)).toEqual([
+      "Otter",
+      "Honker",
+      "Ada",
+    ]);
+    expect(tallyOf(avatars, 100 * HOUR)).toBe("3 names · 5 lives · 0 awake · ≥$5.50 spent");
+  });
+
+  it("says spend short: dollars, tokens when nothing had a price, ≥ when the count is short", () => {
+    const spend = (costUsd: number | null, short = false): Spend => ({
+      tokens: 2_140_000,
+      inputTokens: 0,
+      cachedInputTokens: 0,
+      outputTokens: 0,
+      costUsd,
+      short,
+    });
+    expect(spentOf(spend(1234.4))).toBe("$1,234");
+    expect(spentOf(spend(4.2))).toBe("$4.20");
+    expect(spentOf(spend(0.004))).toBe("<$0.01");
+    expect(spentOf(spend(null))).toBe("2.1M tokens");
+    expect(spentOf(spend(4.2, true))).toBe("≥$4.20");
+    expect([tokensOf(999), tokensOf(340_000), tokensOf(2_133_357_987)]).toEqual([
+      "999",
+      "340k",
+      "2.1B",
+    ]);
   });
 });
