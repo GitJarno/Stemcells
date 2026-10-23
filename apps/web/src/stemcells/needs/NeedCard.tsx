@@ -9,6 +9,7 @@ import { cardOf, LATER, type CardOption, type CardQuestion } from "./card";
 import type { Shown } from "./display";
 import type { Hold } from "./holds";
 import { holds } from "./live";
+import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
@@ -174,7 +175,7 @@ export function NeedCard(props: {
             Open provider setup
           </button>
         ) : null}
-        <button type="button" onClick={() => open.chat(need.threadId)}>
+        <button type="button" onClick={() => openPeek(need.threadId)}>
           Open chat
         </button>
       </footer>

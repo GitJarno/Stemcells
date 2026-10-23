@@ -1,0 +1,76 @@
+/* A Cell's chat peeked at from Aski's room (needs/Peek.tsx): it stands
+   over the room's right side, the column under it, and slides in from the
+   right on `settle`, a transform only. */
+[data-stemcells-peek] {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: 42;
+  display: flex;
+  flex-direction: column;
+  inline-size: min(100%, max(440px, 52%));
+  max-inline-size: 760px;
+  border-inline-start: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow-pop);
+  font-size: var(--sc-body);
+  animation: stemcells-peek-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
+}
+@keyframes stemcells-peek-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--sc-space-xxl) * 3));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-peek] {
+    animation: none;
+  }
+}
+
+[data-peek-head] {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-md);
+  min-block-size: var(--sc-pane-band);
+  padding-inline: var(--sc-space-xl) var(--sc-space-md);
+  border-block-end: 1px solid var(--sc-hairline);
+  color: var(--sc-dim);
+}
+[data-peek-head] b {
+  flex: none;
+  color: var(--sc-text);
+  font-weight: 600;
+}
+[data-peek-title],
+[data-peek-place] {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-peek-title] {
+  flex: 1 1 auto;
+  color: var(--sc-reading);
+}
+[data-peek-act] {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  padding: var(--sc-space-xs) var(--sc-space-sm);
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-dim);
+}
+[data-peek-act]:first-of-type {
+  margin-inline-start: auto;
+}
+[data-peek-act]:hover {
+  background: var(--sc-hot);
+  color: var(--sc-text);
+}
+[data-peek-act] svg {
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+}

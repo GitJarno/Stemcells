@@ -1,9 +1,10 @@
 import { useState } from "react";
 
 import { cellNameOf } from "../cell/name";
-import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { usePrimaryEnvironmentId } from "../upstream/needs";
 import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
+import { openPeek } from "./peeking";
 import { useNeeds } from "./stream";
 import type { CellStanding, Stage } from "./wire";
 
@@ -32,7 +33,7 @@ function rosterSummary(cells: ReadonlyArray<CellStanding>): string {
 /**
  * Under Aski's chat: every Cell in reach, newest first, at a glance
  * (stemcells/tasks/aski-manager.md, decision 10). A row is the Cell's
- * stage, its name, what it's on and where; a click opens its chat.
+ * stage, its name, what it's on and where; a click peeks at its chat.
  */
 export function Roster() {
   const { cells } = useNeeds();
@@ -65,10 +66,9 @@ function RosterRow(props: { cell: CellStanding }) {
   const place = useCellPlace(
     environmentId === null ? null : { environmentId, threadId: cell.threadId, draftId: null },
   );
-  const open = useOpenFromNeeds();
   return (
     <li data-stage={cell.stage}>
-      <button type="button" onClick={() => open.chat(cell.threadId)}>
+      <button type="button" onClick={() => openPeek(cell.threadId)}>
         <span data-roster-dot="" aria-hidden />
         <span data-roster-name="">{cellNameOf(cell.threadId)}</span>
         <span data-roster-title="">{cell.title}</span>
@@ -88,7 +88,6 @@ export function DoneList() {
   const { cells } = useNeeds();
   const environmentId = usePrimaryEnvironmentId();
   const settle = useSettleCell();
-  const open = useOpenFromNeeds();
   const done = (cells ?? []).filter((cell) => cell.stage === "done");
   if (done.length === 0 || environmentId === null) return null;
   const settleAll = () => {
@@ -106,7 +105,7 @@ export function DoneList() {
       </div>
       {done.map((cell) => (
         <div key={cell.threadId} data-needs-done-row="">
-          <button type="button" data-needs-done-open="" onClick={() => open.chat(cell.threadId)}>
+          <button type="button" data-needs-done-open="" onClick={() => openPeek(cell.threadId)}>
             <b>{cellNameOf(cell.threadId)}</b>
             <span>{cell.line ?? cell.title}</span>
           </button>

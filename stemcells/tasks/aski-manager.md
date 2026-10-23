@@ -214,7 +214,7 @@ Each is one pull request.
 - [x] 4. Settling puts a Cell away: its pane closes; the green line and
       Settle in the Cell's own tab.
 - [x] 5. Aski has no project.
-- [ ] 6. The peek.
+- [x] 6. The peek.
 - [ ] 7. Cells land in their project's tab.
 - [ ] 8. Aski divides: the spawn, and Aski standing in a new tab.
 - [ ] 9. Aski's words: the manager, finding past work, links that peek.

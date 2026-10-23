@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent } from "react";
+import { useEffect, useEffectEvent, type MouseEvent } from "react";
 
 import { useAskiChat, type AskiChat } from "../upstream/aski";
 import { useLeadWindow } from "../windows/lead";
@@ -8,6 +8,9 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui
 import { ComposerRoofSlot } from "../composer/slot";
 import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
+import { Peek } from "../needs/Peek";
+import { linkedCell, openPeek, usePeek } from "../needs/peeking";
+import { usePrimaryEnvironmentId } from "../upstream/needs";
 import { Roster } from "../needs/Roster";
 import { AskiFigure } from "./AskiFigure";
 import { AskiPerch } from "./AskiPerch";
@@ -53,7 +56,8 @@ export const ASKI_UNAVAILABLE: Record<
  * decision 1). Aski stands over its composer where a Cell's line would
  * (AskiPerch); until the chat exists, Aski stands over why. Aski's eyes
  * follow the pointer anywhere over the pane, and the caret in its chat's
- * field.
+ * field. A Cell opened from the room, a link in Aski's chat included, is
+ * peeked at over it (needs/Peek.tsx), and has the window's input meanwhile.
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -63,9 +67,31 @@ export function AskiPane(props: {
   focused: boolean;
 }) {
   const aski = props.chat.status === "ready" ? props.chat.cell : null;
+  const environmentId = usePrimaryEnvironmentId();
+  const peeking = usePeek() !== null;
+  const ownsInput = props.ownsWindowInput && !peeking;
+  // A plain click on a Cell's chip in Aski's chat peeks; a modified one opens it as upstream does.
+  const peekAtLink = (event: MouseEvent) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    const target = event.target instanceof Element ? event.target : null;
+    const link = target?.closest<HTMLAnchorElement>('a[data-slot="context-chip"]');
+    if (!link || link.closest("[data-stemcells-peek]") || environmentId === null) return;
+    const threadId = linkedCell(link.getAttribute("href"), environmentId);
+    if (threadId === null || threadId === aski?.threadId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openPeek(threadId);
+  };
   return (
-    <div data-stemcells-aski="" data-aski-looks="" className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <NeedsFrame aski={aski} ownsWindowInput={props.ownsWindowInput}>
+    <div
+      data-stemcells-aski=""
+      data-aski-looks=""
+      className="relative flex min-h-0 min-w-0 flex-1 flex-col"
+      onClickCapture={peekAtLink}
+    >
+      <NeedsFrame aski={aski} ownsWindowInput={ownsInput}>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
           {props.target ? (
             <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
@@ -73,7 +99,7 @@ export function AskiPane(props: {
               <AnswersProvider>
                 <ChatPaneView
                   target={props.target}
-                  ownsWindowInput={props.ownsWindowInput}
+                  ownsWindowInput={ownsInput}
                   focused={props.focused}
                   panelHost={null}
                   bare
@@ -99,6 +125,7 @@ export function AskiPane(props: {
         {/* Every Cell's stage, under the chat (aski-manager.md, decision 10). */}
         <Roster />
       </NeedsFrame>
+      <Peek ownsWindowInput={props.ownsWindowInput} />
     </div>
   );
 }
