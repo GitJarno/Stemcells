@@ -1,6 +1,8 @@
 /* A file or a chat carried over the slate (DropWash.tsx, ChatCarry.tsx) and
    over the tab strip (springTab.ts): one lit target at a time, never
-   stitching. */
+   stitching. A target lights, moves and goes out the frame the hand crosses
+   into or out of it, never on a transition: a light gliding or fading
+   between targets shows, for its length, a place the drop wouldn't go. */
 
 /* The wash: where a drop would land (a chat for a file, a half of one for
    a carried chat), as a white sheet floating just inside it (`washShape.ts`):
@@ -19,21 +21,9 @@
   background: color-mix(in srgb, var(--sc-text) 6%, transparent);
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
 [data-stemcells-drop-wash][data-lit="true"] {
   opacity: 1;
-  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
-}
-[data-stemcells-drop-wash][data-lit="true"][data-motion="glide"] {
-  transition:
-    opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
-    translate var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
-    width var(--sc-motion-travel-duration) var(--sc-motion-travel-easing),
-    height var(--sc-motion-travel-duration) var(--sc-motion-travel-easing);
-}
-[data-stemcells-drop-wash][data-motion="cut"] {
-  transition: none;
 }
 
 /* Upstream's own picture of the same moment (a dashed frame round a "Drop
@@ -78,7 +68,6 @@
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
 }
 [data-stemcells-tab][data-spring-lit="true"]::before {
   opacity: 1;

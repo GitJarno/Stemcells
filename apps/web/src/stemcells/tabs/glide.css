@@ -40,7 +40,6 @@ html[data-stemcells-glide]::view-transition-new(*.sc-pane) {
 /* The wash has said where the chat goes: it is gone before the old picture is taken. */
 html[data-stemcells-glide] [data-stemcells-drop-wash] {
   opacity: 0;
-  transition: none;
 }
 
 /* What is in the hand keeps its own motion over the glide: never pictured

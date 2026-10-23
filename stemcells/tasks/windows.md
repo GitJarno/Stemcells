@@ -365,8 +365,9 @@ own handle.
    undo but the dimming. (Until 2026-10-23 the pane gathered into a card
    on `lift`, its place left empty: it read as a minimize.)
 2. **In its own window**, today's drop machinery answers: a pane's half
-   lights with the wash (`DropWash`, gliding on `travel`); a chip lights and
-   opens after `spring-load`; the strip makes room for a new tab (`travel`).
+   lights with the wash (`DropWash`), which moves the frame the hand
+   crosses to another half, never gliding; a chip lights and opens after
+   `spring-load`; the strip makes room for a new tab (`travel`).
 3. **Out of the window**, the card hands off to the flight layer as a
    still. Over another window, main relays the hand to that window, whose
    wash and strip answer exactly as at home; its window comes forward after

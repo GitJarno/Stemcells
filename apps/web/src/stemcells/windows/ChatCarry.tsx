@@ -1,24 +1,24 @@
 /**
  * Carrying a chat by its Cell or its pane's top (stemcells/tasks/windows.md,
  * Carry a chat). The Cell over the composer is a handle, and so is the grip
- * at the pane's top. Past 4 px, taken by its Cell, the Cell itself hangs
- * from the hand; taken by the grip, a card of the chat appears under the
- * hand on `flick`, and the pane stays in its place, receding. The half of
- * another pane the hand is nearest lights with the wash, gliding on
- * `travel`. Another tab's chip under the hand lights, and opens its tab
- * after `spring-load`; past the last chip the strip makes room for a new
- * tab. Let go on a half or in the room, the chat goes there; on a chip, it
- * goes to the end of that tab and the person stays where they are
- * (stemcells/tasks/chip-drop.md). Each is a move Undo Move takes back;
- * on a half the card fades from the hand as the chat takes its place, on a
- * chip it lands into the chip on `land`. On the desktop the card leaves the
- * window onto the flight layer, and another window's chips light and take
- * it as this window's do. Let go anywhere else, or Esc, and the card fades
- * from the hand and the pane comes back, its tab on stage again. Held by its
- * Cell and let go inside its own pane, the chat stays and its Cell is
- * thrown from the hand as fast as the hand went, to fly in that pane
- * (`CellThrow.tsx`); a Cell let go on a half goes home to its line in the
- * chat's new place. Under Reduce Motion what is in the hand only fades.
+ * at the pane's top. Past 4 px, taken by its Cell, the Cell itself hangs from
+ * the hand; taken by the grip, a card of the chat appears under the hand on
+ * `flick`, and the pane stays in its place, receding. The half of another
+ * pane the hand is nearest lights with the wash, which moves the frame the
+ * hand crosses to another half. Another tab's chip under the hand lights, and
+ * opens its tab after `spring-load`; past the last chip the strip makes room
+ * for a new tab. Let go on a half or in the room, the chat goes there; on a
+ * chip, it goes to the end of that tab and the person stays where they are
+ * (stemcells/tasks/chip-drop.md). Each is a move Undo Move takes back; on a
+ * half the card fades from the hand as the chat takes its place, on a chip it
+ * lands into the chip on `land`. On the desktop the card leaves the window
+ * onto the flight layer, and another window's chips light and take it as this
+ * window's do. Let go anywhere else, or Esc, and the card fades from the hand
+ * and the pane comes back, its tab on stage again. Held by its Cell and let
+ * go inside its own pane, the chat stays and its Cell is thrown from the hand
+ * as fast as the hand went, to fly in that pane (`CellThrow.tsx`); a Cell let
+ * go on a half goes home to its line in the chat's new place. Under Reduce
+ * Motion what is in the hand only fades.
  */
 import {
   useEffect,
@@ -374,7 +374,6 @@ interface CarryElements {
 /** One window's carry, drawing on the elements `ChatCarry` renders. */
 class WindowCarrier implements Carrier {
   private live: Live | null = null;
-  private lit = false;
   /** Draws the Cell in the hand (`LooseCell`), while one is. */
   private drawCell: TossDraw | null = null;
 
@@ -704,33 +703,13 @@ class WindowCarrier implements Carrier {
     const wash = this.elements.wash.current;
     const slate = wash?.parentElement;
     if (!wash || !slate) return;
-    const { dataset, style } = wash;
-    if (half === null) {
-      dataset.motion = "still";
-      dataset.lit = "false";
-      this.lit = false;
-      return;
-    }
-    const place = () => {
+    if (half !== null) {
       const at = washBox(boxOf(half), boxOf(rectOf(slate)));
-      style.translate = `${at.left}px ${at.top}px`;
-      style.width = `${at.width}px`;
-      style.height = `${at.height}px`;
-    };
-    if (!this.lit || reducedMotion()) {
-      // Lighting afresh: put it where it belongs unseen, then fade it in there.
-      dataset.motion = "cut";
-      dataset.lit = "false";
-      place();
-      void wash.offsetWidth;
-      dataset.motion = "still";
-    } else {
-      // From one half to the next: one shape, gliding.
-      dataset.motion = "glide";
-      place();
+      wash.style.translate = `${at.left}px ${at.top}px`;
+      wash.style.width = `${at.width}px`;
+      wash.style.height = `${at.height}px`;
     }
-    dataset.lit = "true";
-    this.lit = true;
+    wash.dataset.lit = String(half !== null);
   }
 
   /**

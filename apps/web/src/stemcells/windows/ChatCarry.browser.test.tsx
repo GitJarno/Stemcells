@@ -1,5 +1,6 @@
 import "../upstream/appStyles";
 import "../tokens/stemcells.css";
+import "../tabs/drop.css";
 
 import { describe, expect, it } from "vite-plus/test";
 
@@ -95,6 +96,41 @@ describe("a chat carried by its Cell", () => {
     document.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 }));
     await expect.poll(card, { timeout: 3000 }).toBeNull();
     expect(carrying()).toBe(false);
+  });
+
+  // The wash is where the chat would land now. Gliding or fading between
+  // places, it showed for a moment a place the chat wouldn't go.
+  it("lights where it would land the moment the hand crosses there, and nowhere between", async () => {
+    await using screen = await render(
+      <div style={{ position: "relative", display: "flex", width: 600, height: 400 }}>
+        <ChatCarry onOpenTab={() => undefined} />
+        <div data-stemcells-pane="p1" style={{ width: 300, height: 400 }}>
+          <button type="button" onPointerDown={(event) => startChatCarry(event, cell, "cell")}>
+            Cell
+          </button>
+        </div>
+        <div data-stemcells-pane="p2" style={{ width: 300, height: 400 }} />
+      </div>,
+    );
+    const handle = lift(screen.container);
+    await expect.poll(card).not.toBeNull();
+    const wash = document.querySelector<HTMLElement>("[data-stemcells-drop-wash]")!;
+    const other = document.querySelector('[data-stemcells-pane="p2"]')!.getBoundingClientRect();
+    const middle = other.top + other.height / 2;
+    const x = other.left + other.width / 2;
+
+    pointer(handle, "pointermove", x, other.top + 20);
+    expect(getComputedStyle(wash).opacity).toBe("1");
+    expect(wash.getBoundingClientRect().bottom).toBeLessThanOrEqual(middle);
+
+    pointer(handle, "pointermove", x, other.bottom - 20);
+    expect(wash.getBoundingClientRect().top).toBeGreaterThanOrEqual(middle);
+
+    pointer(handle, "pointermove", other.left - 100, other.top + 20);
+    expect(getComputedStyle(wash).opacity).toBe("0");
+
+    pointer(handle, "pointercancel", 0, 0);
+    await expect.poll(card, { timeout: 3000 }).toBeNull();
   });
 });
 

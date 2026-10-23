@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 
-import { reducedMotion } from "../tokens/motion.ts";
 import { takesCarriedFile } from "../upstream/drop";
 import { washBox, type Box } from "./washShape";
 import "../tokens/stemcells.css";
@@ -9,9 +8,10 @@ import "./drop.css";
 /**
  * A file carried over a chat (the Mac app's drop wash): the chat it would
  * land in shows a white sheet, a soft fill inside a hairline, floating just
- * inside the pane's edges. One shape for the whole slate, never one per chat: crossing to the next chat glides it there, lighting afresh
- * fades it in, and letting go or leaving fades it out where it was. Nothing
- * is dimmed, blurred or labelled; under Reduce Motion it only fades.
+ * inside the pane's edges. One shape for the whole slate, never one per
+ * chat, on the chat it would land in now: it lights, moves to the next chat
+ * and goes out the frame the drag crosses (`drop.css`). Nothing is dimmed,
+ * blurred or labelled.
  *
  * Upstream decides which chat takes the drop (`upstream/drop.ts`); the wash
  * only draws it. It renders inside the slate, whose corners it reads.
@@ -66,9 +66,6 @@ function landingPane(slate: HTMLElement): HTMLElement | null {
  */
 class WashLight {
   private frame: number | null = null;
-  private lit = false;
-  /** The pane the wash stands over, lit or fading. */
-  private pane: HTMLElement | null = null;
   /** The pane a drop would land in now, marked so its composer rises (`drop.css`). */
   private landing: HTMLElement | null = null;
   /** The style last written, so a drag held still writes nothing. */
@@ -133,35 +130,13 @@ class WashLight {
   private update(): void {
     const pane = landingPane(this.slate);
     this.land(pane);
-    const { dataset } = this.wash;
-    if (pane === null) {
-      if (this.lit) {
-        dataset.motion = "still";
-        dataset.lit = "false";
-        this.lit = false;
-      }
-      // Gone and the drag with it: nothing more to watch for.
-      if (!this.carrying && this.watching) {
-        this.watch.disconnect();
-        this.watching = false;
-      }
-      return;
+    if (pane !== null) this.place(pane);
+    this.wash.dataset.lit = String(pane !== null);
+    // Gone and the drag with it: nothing more to watch for.
+    if (pane === null && !this.carrying && this.watching) {
+      this.watch.disconnect();
+      this.watching = false;
     }
-    if (!this.lit || (pane !== this.pane && reducedMotion())) {
-      // Lighting afresh: put it where it belongs unseen, then fade it in there.
-      dataset.motion = "cut";
-      dataset.lit = "false";
-      this.place(pane);
-      void this.wash.offsetWidth;
-      dataset.motion = "still";
-      dataset.lit = "true";
-    } else {
-      // From one chat to the next, or the slate resized under the hand: one shape, gliding.
-      dataset.motion = reducedMotion() ? "still" : "glide";
-      this.place(pane);
-    }
-    this.lit = true;
-    this.pane = pane;
   }
 
   /**
