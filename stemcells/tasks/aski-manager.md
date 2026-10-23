@@ -217,6 +217,6 @@ Each is one pull request.
 - [x] 6. The peek.
 - [ ] 7. Cells land in their project's tab.
 - [ ] 8. Aski divides: the spawn, and Aski standing in a new tab.
-- [ ] 9. Aski's words: the manager, finding past work, links that peek.
+- [x] 9. Aski's words: the manager, finding past work, links that peek.
 
 ## Review
