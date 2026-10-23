@@ -22,6 +22,8 @@ import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerSt
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
+import * as UpstreamDesktopUpdateLogic from "../../../components/desktopUpdate.logic";
+import * as UpstreamDesktopUpdateStatusIcon from "../../../components/sidebar/DesktopUpdateStatusIcon";
 import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/ThreadPreviewMiniPlayer";
@@ -76,6 +78,8 @@ import * as OurSubagentDisplay from "./subagentDisplay";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
+import * as OurDesktopUpdateLogic from "./desktopUpdate.logic";
+import * as OurDesktopUpdateStatusIcon from "./DesktopUpdateStatusIcon";
 import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadNotificationCoordinator from "./ThreadNotificationCoordinator";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
@@ -409,6 +413,30 @@ const CASES: Readonly<Record<string, Case>> = {
         ["T3Wordmark"],
       ],
       "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
+    },
+  },
+  "apps/web/src/components/desktopUpdate.logic.ts": {
+    upstream: UpstreamDesktopUpdateLogic,
+    substitute: OurDesktopUpdateLogic satisfies typeof UpstreamDesktopUpdateLogic,
+    importers: {
+      "apps/web/src/components/sidebar/SidebarUpdateReleaseNotes.tsx": [
+        "../desktopUpdate.logic",
+        ["getDesktopUpdateReleaseHistoryUrl", "getDesktopUpdateReleaseUrl"],
+      ],
+      "apps/web/src/components/desktopUpdate.toast.tsx": [
+        "./desktopUpdate.logic",
+        ["getDesktopUpdateReleaseUrl"],
+      ],
+    },
+  },
+  "apps/web/src/components/sidebar/DesktopUpdateStatusIcon.tsx": {
+    upstream: UpstreamDesktopUpdateStatusIcon,
+    substitute: OurDesktopUpdateStatusIcon satisfies typeof UpstreamDesktopUpdateStatusIcon,
+    importers: {
+      "apps/web/src/components/sidebar/SidebarUpdatePill.tsx": [
+        "./DesktopUpdateStatusIcon",
+        ["DesktopUpdateStatusIcon"],
+      ],
     },
   },
   "apps/web/src/lib/chatThreadActions.ts": {

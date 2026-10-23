@@ -2,11 +2,17 @@
 # Builds Stemcells from this checkout and installs it as Stemcells.app.
 # stemcells/docs/install.md explains each step.
 #
-#   stemcells/scripts/install-app [--pull] [--to <folder>] [--force]
+#   stemcells/scripts/install-app [--pull] [--to <folder>] [--force] [--version <v>]
+#   stemcells/scripts/install-app --stage <folder> [--version <v>]
+#   stemcells/scripts/install-app --swap-in <folder> [--to <folder>]
 #
 #   --pull     update to the latest main first
 #   --to       install into <folder> instead of /Applications
 #   --force    replace a different app that sits at <folder>/Stemcells.app
+#   --version  the version the build carries (its release's, or a nightly's)
+#   --stage    only build, leaving <folder>/Stemcells.app (the app's updater)
+#   --swap-in  only install <folder>/Stemcells.app, built with --stage, once
+#              the running app has quit (the app's updater)
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
@@ -15,21 +21,24 @@ args=("$@")
 dest_dir="/Applications"
 pull=0
 force=0
+stage_to=""
 swap_from=""
+version=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --pull) pull=1 ;;
     --force) force=1 ;;
     --to) dest_dir="${2:?--to needs a folder}"; shift ;;
-    # Its own run, below: steps 5–6 for an app built in the folder given.
+    --version) version="${2:?--version needs a version}"; shift ;;
+    --stage) stage_to="${2:?--stage needs a folder}"; shift ;;
     --swap-in) swap_from="${2:?--swap-in needs a folder}"; shift ;;
-    -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "install-app: unknown option $1" >&2; exit 2 ;;
   esac
   shift
 done
 
-# A swap on its own has no one watching: a notification says how it went.
+# A run on its own has no one watching: a notification says how it went.
 notify() {
   osascript -e 'on run argv' -e 'display notification (item 1 of argv) with title "Stemcells"' \
     -e 'end run' "$1" >/dev/null 2>&1 || true
@@ -38,10 +47,32 @@ fail() {
   echo "install-app: $1" >&2
   [ -n "${2:-}" ] && echo "  fix: $2" >&2
   reason=$1
-  [ -n "${held_lock:-}" ] && rm -rf "$held_lock"
+  release_locks
   exit 1
 }
 step() { echo "==> $1"; }
+
+# A lock is a folder only one run can make; a dead holder's is stale.
+held_locks=()
+take_lock() { # <folder> <tries> <seconds apart> <what it waits for>
+  local lock=$1 holder i
+  for i in $(seq 1 "$2"); do
+    mkdir "$lock" 2>/dev/null && { echo $$ > "$lock/pid"; held_locks+=("$lock"); return 0; }
+    holder=$(cat "$lock/pid" 2>/dev/null || true)
+    if [ -n "$holder" ] && ! kill -0 "$holder" 2>/dev/null; then rm -rf "$lock"; continue; fi
+    [ "$i" = 1 ] && step "Waiting for $4 (pid ${holder:-?}) to finish"
+    sleep "$3"
+  done
+  return 1
+}
+release_locks() {
+  local lock
+  for lock in ${held_locks[@]+"${held_locks[@]}"}; do rm -rf "$lock"; done
+  held_locks=()
+}
+# The app at $dest, as macOS knows it: not the helpers and command line
+# tools that run its binary.
+app_running() { [ -n "$(lsappinfo find bundlepath="$dest" 2>/dev/null)" ]; }
 
 # As `ps` shows the running app's path, which the check for it below matches.
 [ -d "$dest_dir" ] && dest_dir=$(cd "$dest_dir" && pwd -P)
@@ -50,37 +81,37 @@ dest="$dest_dir/Stemcells.app"
 # 5–6. Quit the running copy, keep the old one in the Trash, put the new one
 # in and open it.
 swap_in() {
-  local new=$1 lock holder next="$dest_dir/.Stemcells.app.new" trashed=""
+  local new=$1 common next="$dest_dir/.Stemcells.app.new" trashed=""
   [ -d "$new" ] || fail "the built app is gone ($new)."
+  common=$(git rev-parse --path-format=absolute --git-common-dir)
   # Quitting ends what runs inside the app, a check-local run with it. Its
   # lock (stemcells/scripts/check-local) keeps one from running during the
-  # swap, and two swaps apart. Half an hour at most.
-  lock="$(git rev-parse --path-format=absolute --git-common-dir)/stemcells-check-local.lock"
-  for i in $(seq 1 120); do
-    mkdir "$lock" 2>/dev/null && break
-    holder=$(cat "$lock/pid" 2>/dev/null || true)
-    if [ -n "$holder" ] && ! kill -0 "$holder" 2>/dev/null; then rm -rf "$lock"; continue; fi
-    [ "$i" = 120 ] && fail "check-local was still running after half an hour." "run again later"
-    [ "$i" = 1 ] && step "Waiting for check-local (pid ${holder:-?}) to finish"
-    sleep 15
-  done
-  echo $$ > "$lock/pid"
-  held_lock=$lock
+  # swap: half an hour at most. The app's updater (--swap-in) doesn't wait
+  # for it: the person chose the restart, and the app stopped every Cell
+  # before it handed over.
+  if [ -z "$swap_from" ]; then
+    take_lock "$common/stemcells-check-local.lock" 120 15 "check-local" ||
+      fail "check-local was still running after half an hour." "run again later"
+  fi
+  # Every swap puts its app in the same place: one at a time.
+  take_lock "$common/stemcells-swap.lock" 120 1 "another install" ||
+    fail "another install was still swapping after two minutes." "run again later"
   # The new copy goes in beside the old one first: a copy that fails on a
   # full disk leaves the old app where it was.
   mkdir -p "$dest_dir"
   rm -rf "$next"
   ditto "$new" "$next" || { rm -rf "$next"; fail "couldn't copy the new app into $dest_dir." "free some space, then run again"; }
-  if pgrep -f "$dest/Contents/MacOS/" >/dev/null 2>&1; then
+  if app_running; then
     step "Quitting the running Stemcells"
     osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true
-    for _ in $(seq 1 30); do pgrep -f "$dest/Contents/MacOS/" >/dev/null 2>&1 || break; sleep 1; done
-    pgrep -f "$dest/Contents/MacOS/" >/dev/null 2>&1 && { rm -rf "$next"; fail "Stemcells didn't quit." "quit it yourself, then run again"; }
+    # It stops its servers first, which can take a while.
+    for _ in $(seq 1 120); do app_running || break; sleep 1; done
+    app_running && { rm -rf "$next"; fail "Stemcells didn't quit." "quit it yourself, then run again"; }
   fi
   if [ -e "$dest" ]; then
     trashed="$HOME/.Trash/Stemcells $(date '+%Y-%m-%d %H.%M.%S').app"
     step "Moving the old copy to the Trash"
-    mv "$dest" "$trashed"
+    mv "$dest" "$trashed" || { rm -rf "$next"; fail "couldn't move the old copy to the Trash."; }
   fi
   step "Installing to $dest"
   if ! mv "$next" "$dest"; then
@@ -88,24 +119,37 @@ swap_in() {
     open "$dest" || true
     fail "couldn't put the new app in place; the old one is back."
   fi
-  rm -rf "$lock"
-  held_lock=""
+  release_locks
+  # The app updates itself from the repository it came from
+  # (apps/desktop/src/stemcells/updates/SourceUpdater.ts).
+  local updates="$HOME/Library/Application Support/$BUNDLE_ID/updates"
+  mkdir -p "$updates"
+  node -e 'process.stdout.write(JSON.stringify({ gitDir: process.argv[1] }))' \
+    "$common" > "$updates/source.json"
   open "$dest" || echo "install-app: installed, but couldn't open $dest" >&2
   echo "Stemcells is installed at $dest."
 }
 
 log="${TMPDIR:-/tmp}/stemcells-install-app.log"
+stage=""
+# shellcheck disable=SC2329 # the EXIT trap runs it
+ended() {
+  local code=$?
+  release_locks
+  [ -n "$stage" ] && [ -z "$stage_to" ] && rm -rf "$stage"
+  [ "$code" = 0 ] && return
+  # The app quit for this swap: whichever copy is in place opens again.
+  [ -n "$swap_from" ] && [ -d "$dest" ] && { open "$dest" || true; }
+  [ "${STEMCELLS_INSTALL_ALONE:-}" != 1 ] ||
+    notify "Not updated: ${reason:-the update failed} ($log)"
+}
+trap ended EXIT
+
 if [ -n "$swap_from" ]; then
-  # shellcheck disable=SC2329 # the EXIT trap runs it
-  told() { [ $? = 0 ] || notify "Not updated: ${reason:-the swap failed} ($log)"; }
-  trap told EXIT
-  # Half a minute for whoever started it to say what's coming: an agent's
-  # turn ends when the app quits.
-  sleep 30
   swap_in "$swap_from/Stemcells.app"
-  notify "Updated, and open again."
   rm -rf "$swap_from/Stemcells.app"
   rmdir "$swap_from" 2>/dev/null || true
+  if [ "${STEMCELLS_INSTALL_ALONE:-}" = 1 ]; then notify "Updated, and open again."; fi
   exit 0
 fi
 
@@ -134,6 +178,34 @@ if [ -e "$dest" ] && [ "$force" = 0 ]; then
     fail "$dest is another app ($existing), not Stemcells." "move it away, or run again with --force to replace it"
 fi
 
+# Run inside the app it replaces (from a Cell, or the app's terminal), the
+# script would end with the app: when the app quits for the swap, or sooner,
+# when its server restarts mid-build and ends the agent that ran it. There the
+# whole run goes on on its own, kept by launchd: two forks and a new session
+# put it outside the app's process tree. A build alone (--stage) is the
+# updater's, which watches it.
+inside=0
+if [ -z "$stage_to" ]; then
+  pid=$$
+  while [ -n "$pid" ] && [ "$pid" -gt 1 ]; do
+    case "$(ps -o command= -p "$pid")" in "$dest/Contents/MacOS/"*) inside=1; break ;; esac
+    pid=$(ps -o ppid= -p "$pid" | tr -d ' ') || pid=""
+  done
+fi
+if [ "$inside" = 1 ]; then
+  run_pid=$(STEMCELLS_INSTALL_ALONE=1 perl -MPOSIX -e '
+    exit 0 if fork; POSIX::setsid();
+    if (my $pid = fork) { print $pid; exit 0 }
+    my $log = shift;
+    open STDIN, "<", "/dev/null"; open STDOUT, ">", $log; open STDERR, ">&", \*STDOUT;
+    exec @ARGV or die "exec: $!";
+  ' -- "$log" stemcells/scripts/install-app ${args[@]+"${args[@]}"})
+  echo "install-app: building on its own (pid $run_pid). When it's built, Stemcells quits,"
+  echo "  updates and opens again, once no check-local is running; that ends every Cell's"
+  echo "  turn. A notification says how it went. Log: $log. To call it off: kill $run_pid"
+  exit 0
+fi
+
 # 2. Optionally take the latest main.
 if [ "$pull" = 1 ]; then
   step "Updating to the latest main"
@@ -147,17 +219,43 @@ if [ "$pull" = 1 ]; then
   exec stemcells/scripts/install-app ${rest[@]+"${rest[@]}"}
 fi
 
+# The version the build carries: its release's, at a release tag, else
+# upstream's nightly shape, which the app's updater files under Nightly
+# (apps/desktop/src/stemcells/updates/changes.ts says the same).
+if [ -z "$version" ]; then
+  tag=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)
+  if [ -n "$tag" ]; then
+    version=${tag#v}
+  else
+    day=$(TZ=UTC git show -s --format=%cd --date=format-local:%Y%m%d HEAD)
+    version="$(node -p 'require("./apps/desktop/package.json").version')-nightly.$day.$(git rev-list --count --first-parent HEAD)"
+  fi
+fi
+# The build names its feed in app-update.yml, as T3's does, and upstream's
+# updater stays off without one. Stemcells' updater asks the repository
+# itself, never GitHub.
+repository=$(git remote get-url origin 2>/dev/null |
+  sed -nE 's#^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)##p' | sed -E 's#\.git$##; s#/$##')
+[[ "$repository" =~ ^[^/]+/[^/]+$ ]] ||
+  { repository=""; echo "install-app: origin isn't on GitHub, so this app won't update itself." >&2; }
+
 # 3–4. Dependencies as locked, then the app for this processor.
 step "Installing dependencies"
 pnpm install --frozen-lockfile
-step "Building Stemcells for $arch (a few minutes)"
+step "Building Stemcells $version for $arch (a few minutes)"
 stemcells/scripts/build-scroll-phases --force
 rm -rf release
-pnpm exec node scripts/build-desktop-artifact.ts --platform mac --target dmg --arch "$arch"
+T3CODE_DESKTOP_UPDATE_REPOSITORY="$repository" pnpm exec node scripts/build-desktop-artifact.ts \
+  --platform mac --target dmg --arch "$arch" --build-version "$version"
 zip=$(ls -t release/*-"$arch".zip 2>/dev/null | head -1)
 [ -n "$zip" ] || fail "the build made no app archive in release/."
-stage=$(mktemp -d)
-trap 'rm -rf "$stage"' EXIT
+if [ -n "$stage_to" ]; then
+  stage=$stage_to
+  rm -rf "$stage/Stemcells.app"
+  mkdir -p "$stage"
+else
+  stage=$(mktemp -d)
+fi
 ditto -x -k "$zip" "$stage"
 [ -d "$stage/Stemcells.app" ] || fail "the archive holds no Stemcells.app."
 # The tab swipe reads the trackpad's own phases only with its addon: an app
@@ -170,29 +268,10 @@ node stemcells/scripts/asar-has.mjs "$stage/Stemcells.app/Contents/Resources/app
 node stemcells/scripts/check-app-name.ts "$stage/Stemcells.app/Contents/Resources/app.asar" ||
   fail "the built app says T3 Code where it should say Stemcells." "see stemcells/docs/fork.md, The name transform"
 
-# Run inside the app it replaces (from a Cell, or the app's terminal), this
-# script would end when the app quits, halfway through the swap. There the
-# swap gets a run of its own that launchd keeps: two forks and a new session
-# put it outside the app's process tree, which the app ends as it quits.
-inside=0
-pid=$$
-while [ -n "$pid" ] && [ "$pid" -gt 1 ]; do
-  case "$(ps -o command= -p "$pid")" in "$dest/Contents/MacOS/"*) inside=1; break ;; esac
-  pid=$(ps -o ppid= -p "$pid" | tr -d ' ') || pid=""
-done
-if [ "$inside" = 1 ]; then
-  # It prints the swap's pid, the one to stop it by.
-  swap_pid=$(perl -MPOSIX -e '
-    exit 0 if fork; POSIX::setsid();
-    if (my $pid = fork) { print $pid; exit 0 }
-    my $log = shift;
-    open STDIN, "<", "/dev/null"; open STDOUT, ">", $log; open STDERR, ">&", \*STDOUT;
-    exec @ARGV or die "exec: $!";
-  ' -- "$log" stemcells/scripts/install-app --to "$dest_dir" --swap-in "$stage")
-  trap - EXIT
-  echo "install-app: built. In half a minute Stemcells quits, updates and reopens on its own,"
-  echo "  once no check-local is running; a notification says how it went. Log: $log"
-  echo "  To call it off before then: kill $swap_pid"
+rm -rf release
+if [ -n "$stage_to" ]; then
+  echo "Stemcells is built at $stage/Stemcells.app."
   exit 0
 fi
 swap_in "$stage/Stemcells.app"
+if [ "${STEMCELLS_INSTALL_ALONE:-}" = 1 ]; then notify "Updated, and open again."; fi

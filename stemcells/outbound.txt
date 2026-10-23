@@ -110,10 +110,11 @@ id apps/server/src/provider/CodexChatGptAuth.ts hashes the Codex account for ups
 id packages/client-runtime/src/authorization/remote.ts sends its own server hashed owner ids for that analytics; the web keeps no device id (analyticsDevice.ts)
 id packages/effect-codex-app-server/src/_generated/schema.gen.ts the Codex protocol's own field names
 id apps/web/src/stemcells/privacy/analyticsDevice.ts ours: deletes upstream's stored browser analytics id
-id apps/desktop/src/electron/ElectronApp.ts the desktop updater, whose feed comes only from a build's own app-update.yml; install-app's build writes none (install.md)
+id apps/desktop/src/electron/ElectronApp.ts the desktop updater, whose feed is a build's own app-update.yml: install-app's names the person's own origin there, and electron-updater never reads it, as SourceUpdater takes its place (seams.md, Updates from the repository; SourceUpdater.test.ts)
 id apps/desktop/src/electron/ElectronUpdater.ts same
 id apps/desktop/src/updates/DesktopUpdates.ts same; its own setFeedURL is the local mock server
 id apps/desktop/src/updates/updatesTestHarness.ts the updater's test harness, on a local mock feed
+id apps/desktop/src/stemcells/updates/SourceUpdater.ts ours: electron-updater's place, which fetches with git from the repository's own origin
 # Forbidden: nothing fetches from these. The model list is the one bundled at
 # build time, which each upstream sync refreshes (seams.md, No model list from T3).
 forbid raw.githubusercontent.com/pingdotgg/ T3's repository on GitHub, read raw: upstream's server fetched its model list from it every hour

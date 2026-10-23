@@ -34,20 +34,22 @@ finds with your own accounts.
 4. Builds the app for your Mac's processor, with the small addon that
    reads the trackpad's own phases for the tab swipe
    (`stemcells/scripts/build-scroll-phases`). It stops if the built app
-   lacks the addon.
+   lacks the addon. The build carries its release's version at a release
+   tag, and a nightly one (`0.1.1-nightly.20261023.7266`) anywhere else.
 5. Waits for a `check-local` run in progress, since quitting would end it,
    and holds off the next one. Then it copies the new app into
    `/Applications` (or the folder given with `--to`) beside the old one,
    quits a running Stemcells, moves the old copy to the Trash and puts the
    new one in its place. If the copy fails, the old app stays.
-6. Opens it.
+6. Opens it, and records the repository it came from, so the app can
+   update itself from there.
 
-Run from inside Stemcells (a Cell, or the app's terminal), quitting the app
-would end the script halfway. There it hands steps 5 and 6 to a process of
-their own and exits: half a minute later, or once `check-local` is done
-(half an hour at most), the app quits, updates and opens again, and a
-notification says how it went. The script prints that process's id, to
-call it off with `kill`.
+Run from inside Stemcells (a Cell, or the app's terminal), the script would
+end with the app: when the app quits for the swap, or sooner, when its
+server restarts mid-build. There it goes on as a process of its own, prints
+that process's id (to call it off with `kill`) and returns at once. Once
+it's built, the app quits, updates and opens again, and a notification says
+how it went.
 
 It only replaces an app that is Stemcells (bundle id `sh.stemcells.app`).
 If `/Applications/Stemcells.app` is some other app, it stops and asks you
@@ -55,12 +57,22 @@ to move it.
 
 ## Updating
 
-```sh
-stemcells/scripts/install-app --pull
-```
+Once installed, Stemcells updates itself from that repository. The button
+at the foot of the left column counts the changes since your build, and
+hovering it lists them, a day at a time: each merged pull request's title
+and number. A click gets the update ready (it builds it, while you keep
+working); another click restarts into it. A restart ends every Cell's turn,
+so it's always your click.
 
-The build is unsigned, so the app updates only this way: it has no
-automatic updater.
+Settings › About › Update track picks what to follow: **Nightly**, every
+change merged to `main`, or **Stable**, the newest release (a `v*` tag).
+A build of `main` follows Nightly, and a release's build, Stable, until
+you pick. If an update builds but doesn't go in, the old app opens again and
+the button says so; the build's output is in
+`~/Library/Application Support/sh.stemcells.app/updates/build.log`.
+
+From a terminal, `stemcells/scripts/install-app --pull` does the same in
+one go.
 
 ## Where it keeps things
 
@@ -81,6 +93,7 @@ it. Ask the person before installing a toolchain (Node, pnpm, Rust, Xcode
 tools) on their machine. Don't pass `--force` unless they agree to replace a
 different app at `/Applications/Stemcells.app`.
 
-Inside Stemcells, the update ends your turn and every other Cell's: say so
-before you run it, and finish what you have to tell the person in the half
-minute after it exits.
+Inside Stemcells, the script returns at once and builds on its own; once
+it's built, the app restarts, which ends your turn and every other Cell's.
+Say so before you run it. Rather than run it, you can point the person at
+the update button, which restarts only when they click.

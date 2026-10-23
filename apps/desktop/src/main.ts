@@ -78,6 +78,7 @@ import * as DesktopWslEnvironment from "./wsl/DesktopWslEnvironment.ts";
 import * as DesktopWslServerTree from "./wsl/DesktopWslServerTree.ts";
 import "./stemcells/scrollPhases.ts";
 import * as StemcellsWindows from "./stemcells/windows/WindowsHost.ts";
+import * as StemcellsUpdater from "./stemcells/updates/SourceUpdater.ts";
 
 if (process.argv.includes("--version")) {
   try {
@@ -215,7 +216,7 @@ const layerDesktopApplication = Layer.mergeAll(
   StemcellsWindows.layer,
 ).pipe(
   Layer.provideMerge(layerDesktopSnapShot),
-  Layer.provideMerge(DesktopUpdates.layer),
+  Layer.provideMerge(DesktopUpdates.layer.pipe(Layer.provide(StemcellsUpdater.layer))),
   Layer.provideMerge(layerDesktopWslBackend),
   Layer.provideMerge(layerDesktopLocalEnvironmentAuth),
 );

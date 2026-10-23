@@ -58,6 +58,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
   // Stemcells' mark: where upstream draws T3's wordmark as an icon.
   "apps/web/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
+  // Updates built from the repository: the pill counts the changes, and a
+  // nightly's notes link the day's merged pull requests, not a release.
+  "apps/web/src/components/desktopUpdate.logic.ts": "desktopUpdate.logic.ts",
+  "apps/web/src/components/sidebar/DesktopUpdateStatusIcon.tsx": "DesktopUpdateStatusIcon.tsx",
   // A new chat never starts on Aski's provider instance, nor in its no-project.
   "apps/web/src/lib/chatThreadActions.ts": "chatThreadActions.ts",
   // The welcome lists Claude Code among the agents, never Aski's instance.

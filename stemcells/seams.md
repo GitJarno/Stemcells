@@ -16,6 +16,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/desktop/package.json` | `productName` is "Stemcells" | The app's name; runs beside T3 Code |
 | `apps/desktop/src/app/DesktopEnvironment.ts` | `APP_BASE_NAME` is "Stemcells" | Window and menu name, keychain entry |
 | `scripts/build-desktop-artifact.ts` | `DESKTOP_APP_ID` is `sh.stemcells.app`, exported for its test; `artifactName` and the Mac's four permission prompts say `APP_NAME` | Own bundle id; people read the release files' names in Finder and the prompts in macOS's dialogs (The app's name, below) |
+| `scripts/build-desktop-artifact.ts` (nightly name) | `resolveDesktopProductName` names a nightly build `APP_NAME`, where it named it "T3 Code (Nightly)" | A build of `main` carries upstream's nightly version, which files it under the Nightly track (Updates from the repository, below), and stays `Stemcells.app` |
 | `scripts/build-desktop-artifact.ts` (DMG) | Copies `stemcells/brand/dmg/` over the staged `dmg` folder, one statement after it stages the resources | The DMG's window says "Drag Stemcells into Applications." with the name in type, where upstream's says T3's name beside T3's mark (The app's name, below) |
 | `scripts/build-desktop-artifact.test.ts` | Reads the bundle id (`DESKTOP_APP_ID`) from what the build reads, where it pinned T3's (upstream's pruning took the product name and permission prompt checks, #22557) | It pinned `com.t3tools.t3code`, so it failed on our build; now `stemcells.yml` runs it and it guards the build |
 | `apps/desktop/src/app/DesktopUserData.ts` | Profile folder `sh.stemcells.app(.dev)` | Never opens T3 Code's Electron profile |
@@ -122,6 +123,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/web/index.html` (theme) | The boot script knows Stemcells' theme: its splash colours in `BUILT_IN_THEME_PALETTES`, its id in `RESERVED_THEME_IDS`, a built-in with one mode takes that mode as its base appearance, where every built-in was light, and no stored preference reads as `"stemcells"` | Same: the splash and the window's ground wear it before the app loads, on a first launch too |
 | `apps/web/src/hooks/useTheme.ts` | `DEFAULT_THEME_SNAPSHOT.theme` is `"stemcells"`, where it was `"system"` | Same: what the app opens on with nothing stored, or a stored theme that's gone |
 | `apps/desktop/src/main.ts` (windows) | Imports `./stemcells/windows/WindowsHost.ts` and adds its `layer` to `layerDesktopApplication` | Windows (below): more than one app window, kept by the main process |
+| `apps/desktop/src/main.ts` (updates) | Provides `./stemcells/updates/SourceUpdater.ts`'s `layer` to `DesktopUpdates.layer`, in electron-updater's place | Updates from the repository (below): upstream's updater runs unchanged on the repository the app was installed from |
 | `apps/desktop/src/preload.ts` (windows) | Imports `./stemcells/windowsPreload.ts` (for its side effect) after its own imports | Same: hands the page its window as `window.stemcellsWindows` |
 | `apps/desktop/src/window/DesktopWindow.ts` | `createWindow` takes an optional `{ bounds, show }`; such a window skips the main window's bounds saving, preview registration, maximizing and dev tools, and shows only when `show`. The service gains an optional `createExtra` | Same: every window is made by upstream's own maker, with its webview hardening, popup handling, navigation guard and renderer recovery, rather than a copy that would drift |
 | `apps/web/src/components/AppSidebarLayout.tsx` (drafts) | Imports `DraftReport` from `stemcells/limitResume/DraftReport` and renders it after `MainAppLocationTracker`, beside the sidebar | A stopped Cell never carries on over a draft, whatever the page or layout: inside the sidebar, a narrow window's closed sheet and the legacy sidebar would leave no screen reporting (A Cell carries on after a usage limit, below) |
@@ -380,8 +382,7 @@ What keeps T3's name, on purpose:
 - The welcome wizard's steps for other computers (`npx t3 pair`,
   `npx t3 connect`): they run T3's own command line tool there (Remote
   hosts, below).
-- In the desktop build: the nightly build's product name (Stemcells builds
-  no nightly), the URL types' names (identifiers the `t3code` links are
+- In the desktop build: the URL types' names (identifiers the `t3code` links are
   registered under), and the package's description, author and homepage,
   which only Linux package managers show.
 
@@ -861,6 +862,49 @@ checkout with one remote spawns no extra git.
 
 To offer upstream: the same two lines, as any fork that is its own product
 wants them.
+
+### Updates from the repository
+
+Stemcells builds from source, so it has no update feed for electron-updater
+to read. Upstream's `DesktopUpdates` runs as it is: its state, its checks,
+its pill and menu item, Settings' update track, remote updates, the restart
+that stops every backend first and the check that an update applied.
+`SourceUpdater.ts` takes only electron-updater's place beneath it (the one
+seam, above), with git and `install-app`:
+
+- **Check**: fetch, then the track's tip. Nightly follows `main`; Stable,
+  the newest `vX.Y.Z` tag on `origin`, fetched into
+  `refs/stemcells-updates/tags`, as T3's tags share `refs/tags`. The notes
+  are the first-parent commits the running build lacks: each a squashed
+  pull request, or a merge of T3's work. T3 cuts a nightly a day, and
+  upstream's pill lists notes per nightly, so each day's merges are one,
+  with the version its last commit carries.
+- **Download**: `install-app --stage` builds that commit in a worktree of
+  the updater's own, in the app's data folder, while the app runs. A built
+  update waits for its restart however far `main` moves on.
+- **Install**: `install-app --swap-in`, on its own, puts the build in once
+  the app has quit, and opens whichever app it ends with; the app quits
+  itself, as electron-updater's does.
+
+Upstream knows a track by a build's version, and an applied update by the
+version the new app reports, so `install-app` stamps one on every build: a
+release's own at its tag, upstream's nightly shape
+(`0.1.1-nightly.20261023.7266`, the day and count of `main`'s commits) on
+any other. That puts a build of `main` on Nightly and gives it upstream's
+"(Nightly)" label; the seam in the build keeps its name. The build also
+names `origin` as its GitHub feed (`T3CODE_DESKTOP_UPDATE_REPOSITORY`),
+since upstream's updater stays off without an `app-update.yml`; only its
+being there counts. `install-app` records the repository's git folder
+(`updates/source.json`) as it installs.
+
+The web draws upstream's own pill, notes, toast and words, so its changes
+to them arrive with each sync. Two substitutes (above) remain: upstream's
+dot on the pill's icon carries the count, in upstream's badge look
+(`DesktopUpdateStatusIcon`), and a nightly's links open the pull requests
+merged that day, where upstream's open a GitHub release
+(`desktopUpdate.logic`; the repository is upstream's own
+`T3CODE_DESKTOP_UPDATE_REPOSITORY`). Upstream shows the notes only on its
+nightly track: a Stable update shows its tooltip alone.
 
 ### Peers
 
