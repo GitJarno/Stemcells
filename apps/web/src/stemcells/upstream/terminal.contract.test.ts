@@ -3,11 +3,18 @@
  * upstream (`substitutes/ThreadTerminalDrawer.tsx`, `terminal.ts`,
  * `stemcells/terminal`). A failure here after a sync names the contract that
  * moved; the drawer likely opens at upstream's 280px again, at a height off
- * by a row, or with its buttons back over the terminal's text.
+ * by a row, with its buttons back over the terminal's text, or without
+ * moving, or with the words over it a frame behind its edge.
  */
+import { resolveChatListAnchoredEndSpace } from "@t3tools/shared/chatList";
 import { describe, expect, it } from "vite-plus/test";
 
+import chatTerminalDrawers from "../../components/chat/ChatTerminalDrawers.tsx?raw";
+import appFrame from "../../components/chat/McpAppFrame.tsx?raw";
+import timeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import findBar from "../../components/chat/ThreadFindBar.tsx?raw";
 import persistentTerminals from "../../components/PersistentThreadTerminals.tsx?raw";
+import { PanelAnimationSuppressionProvider } from "../../panelAnimations";
 import drawer from "../../components/ThreadTerminalDrawer.tsx?raw";
 import surface from "../../terminal/ghostty/surface.ts?raw";
 import terminalStore from "../../terminalUiStateStore.ts?raw";
@@ -49,5 +56,49 @@ describe("the terminal drawer's contracts with upstream", () => {
       /<aside\s+ref=\{drawerRef\}\s+data-thread-terminal-drawer[\s\S]*?<div className="pointer-events-none absolute right-2 top-2 z-20">\s*<div className="pointer-events-auto inline-flex items-center [^"]*">\s*<TerminalActionButton/,
     );
     expect(drawer).toMatch(/render=\{\s*<button[^>]*aria-label=\{label\}/);
+  });
+
+  it("the drawer sits in a one-row grid that opens and closes it, one div above ours", () => {
+    // terminal.css moves that row; it finds the grid as our host's grandparent.
+    expect(persistentTerminals).toMatch(
+      /"grid shrink-0 overflow-clip",\s*active \? \(visible \? "grid-rows-\[1fr\]" : "grid-rows-\[0fr\]"\) : "hidden",/,
+    );
+    expect(persistentTerminals).toMatch(
+      /<div className="min-h-0 overflow-clip">\s*<ThreadTerminalDrawer/,
+    );
+  });
+
+  it("the drawer stays mounted through its close for as long as the motion the seam gives", () => {
+    expect(chatTerminalDrawers).toMatch(
+      /usePanelPresence\(\s*Boolean\(activeThreadKey && props\.activeTerminalOpen\),\s*true,\s*panelAnimationsActive,\s*activeThreadKey,\s*panelAnimationDurationMs,\s*\)/,
+    );
+  });
+
+  it("a route's first paint holds panels still through a context the drawer's motion reads", () => {
+    // useDrawerMotion reads the context through its provider: in React 19 they are one.
+    expect(Reflect.get(PanelAnimationSuppressionProvider, "Provider")).toBe(
+      PanelAnimationSuppressionProvider,
+    );
+  });
+
+  it("the list keeps its end within a screen of it, only while it follows the end", () => {
+    // keepEnd does as much in the same frame, where our timeline marks the
+    // list as following (live follow on, no anchor) and nothing holds its place.
+    expect(timeline).toContain("maintainScrollAtEndThreshold={1}");
+    expect(timeline).toMatch(
+      /maintainScrollAtEnd=\{[^}]*anchoredEndSpace \|\|\s*!liveFollowEnabled \|\|\s*fullscreenAppRowId !== null \|\|/,
+    );
+    expect(timeline).toContain("liveFollowEnabled={!findOpen && props.liveFollowEnabled}");
+    expect(resolveChatListAnchoredEndSpace([{ id: "m" }], null, (row) => row.id)).toBeUndefined();
+    expect(findBar).toMatch(/^\s+data-thread-find-bar$/m);
+    expect(appFrame).toContain('data-mcp-app-fullscreen={fullscreen ? "" : undefined}');
+  });
+
+  it("the terminal store reads what it kept from localStorage as it is made, so a load opens nothing", () => {
+    // terminalJustOpened counts an opening only from a change it sees after that.
+    expect(terminalStore).toContain("storage: createJSONStorage(createTerminalUiStateStorage),");
+    expect(terminalStore).toContain(
+      'return resolveStorage(typeof window !== "undefined" ? window.localStorage : undefined);',
+    );
   });
 });

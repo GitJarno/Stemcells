@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import type { ResolvedKeybindingsConfig } from "@t3tools/contracts";
 import {
   parseScopedThreadKey,
@@ -56,7 +57,7 @@ export function ChatTerminalDrawers(props: ChatTerminalDrawersProps) {
     scopedThreadKey(scopeThreadRef(draftThread.environmentId, draftThread.threadId)),
   );
   const { active: panelAnimationsActive, durationMs: panelAnimationDurationMs } =
-    usePanelAnimationSettings();
+    Stemcells.useDrawerMotion(usePanelAnimationSettings());
   const activeTerminalDrawerPresence = usePanelPresence(
     Boolean(activeThreadKey && props.activeTerminalOpen),
     true,

@@ -23,6 +23,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/server/src/os-jank.ts` | Server base dir `~/.stemcells` | Same, for the server and CLI |
 | `apps/server/src/cli/browser.ts` | `sudo` home falls back to `~/.stemcells` | Same, under `sudo` on Linux |
 | `apps/web/src/routes/_chat.tsx` | Renders `CellWorkspace` (our tabs and panes) where it rendered `ThreadRouteView`, with its `<Outlet />` as the fallback | The chat area becomes tabs of panes; the route names the focused pane's chat |
+| `apps/web/src/components/chat/ChatTerminalDrawers.tsx` | Imports `* as Stemcells` from `stemcells/upstream/seams/chat` (its first line); the drawers' motion is `Stemcells.useDrawerMotion(usePanelAnimationSettings())` (one line) | The terminal drawer moves as one (below): with upstream's panel motion off, its default, the drawer still stays mounted through its close, for our motion to play |
 | `apps/web/src/components/chat/chatWindowInput.ts` | New: `ChatWindowInputContext`, default `true` | "ChatView safe to render twice" (below) |
 | `apps/web/src/components/ChatView.tsx` | Imports everything of ours through `import * as Stemcells from "../stemcells/upstream/seams/ChatView"`, its first line (One import per hot file, below); composer refocus (mount, window focus, snapshot) and desktop menu actions act only when `Stemcells.useOwnsChatWindowInput()` is `true` | Same. Its window shortcuts, type-to-focus, open-in shortcut and paste-to-focus are gated by substitutes of `useChatShortcuts`, `OpenInPicker` and `usePasteToFocusComposer` instead (Substitutes, below) |
 | `apps/web/src/components/chat/useRightPanelActions.ts` | Reads `useOwnsChatWindowInput()` (its first line); the preview's toggle action opens and closes the panel only when the context is `true` | Same: upstream moved the right panel's actions out of `ChatView.tsx` (#23064), and the subscription sits inside the hook's own effect |
@@ -665,6 +666,23 @@ over several events. On the Mac the app reads the system's own phases:
 - Without the addon (not built, a dev run that skipped it, or another
   platform) nothing is sent, and the swipe reads wheel events alone, as
   before.
+
+### The terminal drawer moves as one
+
+Upstream's terminal drawer appears and goes at once unless the person sets
+panel motion (Settings › Appearance, off by default), and either way the
+transcript followed its edge a frame late (gliding, while a Cell worked):
+the composer rose first and the words after it. `useDrawerMotion`
+(`stemcells/upstream/terminal.ts`) gives the drawer Stemcells' `keyboard`
+motion where upstream's panel motion is off; where the person set it, the
+drawer moves as upstream's panels do. It holds still where upstream holds
+its panels still and with less motion. `terminal/terminal.css` moves
+upstream's own grid row, and the drawer slides in only when its terminal
+just opened, not as a chat comes back with it open. Where upstream's list
+will keep the transcript's end on its next frame (it follows the end and
+stands within a screen of it), the pane keeps it in the same frame as the
+drawer's edge (`tabs/keepEnd.ts`); our timeline marks when the list
+follows.
 
 ### Aski's instance is Aski's
 

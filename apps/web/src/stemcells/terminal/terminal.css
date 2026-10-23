@@ -18,3 +18,18 @@
   align-items: center;
   height: var(--sc-terminal-band);
 }
+
+/* Where upstream's panels don't move, the drawer opens and closes on the
+   keyboard's motion (useDrawerMotion, the seam in upstream's
+   ChatTerminalDrawers): upstream's own row of the grid it sits in, from
+   none of the drawer to all of it and back, while the words over it keep
+   their end (tabs/keepEnd.ts) and the composer rides its edge.
+   terminal.contract.test.ts pins the grid. */
+.grid:has(> div > [data-stemcells-terminal="drawer"][data-moves]) {
+  transition: grid-template-rows var(--sc-motion-keyboard-duration) var(--sc-motion-keyboard-easing);
+}
+@starting-style {
+  .grid:has(> div > [data-stemcells-terminal="drawer"][data-moves]) {
+    grid-template-rows: 0fr;
+  }
+}

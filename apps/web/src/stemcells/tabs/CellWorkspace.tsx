@@ -68,7 +68,7 @@ import {
   type Tab,
   type Workspace,
 } from "./layout";
-import { keepEndAcrossWidth } from "./keepEnd";
+import { keepEnd } from "./keepEnd";
 import { holdTranscriptsStill } from "./stillTranscripts";
 import { newCellTab, newCellTaken, takeNewCell, type NewCell } from "./newCell";
 import { mountedTabs } from "./pager";
@@ -631,7 +631,7 @@ function Border(props: {
  */
 function attachPane(pane: HTMLDivElement | null) {
   if (!pane) return undefined;
-  const stopKeepingEnd = keepEndAcrossWidth(pane);
+  const stopKeepingEnd = keepEnd(pane);
   const stopShowingMarks = showMarksWhileScrolling(pane);
   return () => {
     stopKeepingEnd();

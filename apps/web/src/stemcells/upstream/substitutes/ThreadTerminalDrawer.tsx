@@ -2,12 +2,22 @@
 // terminal drawer opens at about ten rows, not upstream's 280px, and its
 // buttons get a row of their own over the terminal (`stemcells/terminal`).
 // A height the person drags to stays theirs, stored as upstream stores it.
-import { useLayoutEffect, useRef, useState, type ComponentProps } from "react";
+// Where upstream's panels don't move, the drawer moves on our motion, which
+// its style plays (`useDrawerMotion`).
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 
 import UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
+import { usePanelAnimationSettings } from "../../../panelAnimations";
 import { defaultDrawerHeight } from "../../terminal/drawerHeight";
+import "../../tokens/stemcells.css";
 import "../../terminal/terminal.css";
-import { TERMINAL_GRID_PADDING, UPSTREAM_DRAWER_HEIGHT, useTerminalRowHeight } from "../terminal";
+import {
+  TERMINAL_GRID_PADDING,
+  UPSTREAM_DRAWER_HEIGHT,
+  terminalJustOpened,
+  useDrawerMotion,
+  useTerminalRowHeight,
+} from "../terminal";
 
 export * from "../../../components/ThreadTerminalDrawer";
 
@@ -18,6 +28,16 @@ export default function ThreadTerminalDrawer(
   props: ComponentProps<typeof UpstreamThreadTerminalDrawer>,
 ) {
   const rowHeight = useTerminalRowHeight();
+  const motion = useDrawerMotion(usePanelAnimationSettings());
+  const drawer = props.mode !== "panel";
+  // It slides in when its terminal just opened; drawn as its chat comes
+  // back with the terminal open, it is simply there, and moves from then on.
+  const [slidesIn] = useState(() => terminalJustOpened(props.threadRef));
+  const [drawn, setDrawn] = useState(false);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const hostRef = useRef<HTMLDivElement | null>(null);
   // Measured once, before the drawer first draws: upstream reads the height
   // it is given when it mounts, and keeps it until the person drags.
@@ -38,10 +58,15 @@ export default function ThreadTerminalDrawer(
   // Upstream stores its own height for a chat when the drawer first opens, so
   // a drawer at that height was never dragged. The right panel's terminal
   // fills the panel, at no height of its own.
-  const atUpstreamHeight = props.mode !== "panel" && props.height === UPSTREAM_DRAWER_HEIGHT;
+  const atUpstreamHeight = drawer && props.height === UPSTREAM_DRAWER_HEIGHT;
   const height = atUpstreamHeight ? opening : props.height;
   return (
-    <div ref={hostRef} data-stemcells-terminal="" className="contents">
+    <div
+      ref={hostRef}
+      data-stemcells-terminal={drawer ? "drawer" : "panel"}
+      data-moves={drawer && motion.ours && motion.active && (slidesIn || drawn) ? "" : undefined}
+      className="contents"
+    >
       {height === null ? null : <UpstreamThreadTerminalDrawer {...props} height={height} />}
     </div>
   );
