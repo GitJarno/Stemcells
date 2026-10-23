@@ -13,6 +13,7 @@ import {
   paneShowing,
   panesOf,
   sameChat,
+  setCell,
   showRoute,
   splitDown,
   splitRight,
@@ -94,6 +95,25 @@ export function showRouteBesideAski(workspace: Workspace, cell: CellRef, ids: Ne
     return showRoute(workspace, cell, ids);
   }
   return openTab(workspace, ids, cell);
+}
+
+/**
+ * A chat opened from a link in another (a thread chip): it opens in a new
+ * pane of the tab on screen, beside the pane the link was in, so the chat
+ * being read stays. A chat already in a pane goes to that pane, and from
+ * Aski's tab, which never splits, it gets a tab of its own.
+ */
+export function openBesideOutsideAski(
+  workspace: Workspace,
+  cell: CellRef,
+  ids: NewIds,
+  rowWidth: number,
+): Workspace {
+  const tab = activeTab(workspace);
+  if (!tab || isAskiTab(tab) || paneShowing(workspace, cell)) {
+    return showRouteBesideAski(workspace, cell, ids);
+  }
+  return setCell(addPane(workspace, ids, rowWidth), ids.pane, cell);
 }
 
 export function closeTabUnlessAski(workspace: Workspace, tabId: string): Workspace {

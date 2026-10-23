@@ -40,13 +40,14 @@ import {
   closeTabUnlessAski,
   isAskiTab,
   moveTabAfterAski,
+  openBesideOutsideAski,
   seatAski,
   showRouteBesideAski,
   splitDownOutsideAski,
   splitRightOutsideAski,
 } from "./askiTab";
 import { DropWash } from "./DropWash";
-import { provideNewCellPane, provideNewCellTab } from "./commands";
+import { provideCellBeside, provideNewCellPane, provideNewCellTab } from "./commands";
 import {
   activateTab,
   activeTab,
@@ -281,6 +282,15 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     openCellInto((current) => addPaneOutsideAski(current, newIds(), gridWidth()));
   const provideNewPane = useEffectEvent(openNewPane);
   useEffect(() => provideNewCellPane(() => provideNewPane()), []);
+
+  const openBeside = (cell: CellRef) => {
+    // A chat open in another window: that window comes forward.
+    if (revealElsewhere(cell)) return;
+    updateWorkspace((current) => openBesideOutsideAski(current, cell, newIds(), gridWidth()));
+    routeToFocused();
+  };
+  const provideBeside = useEffectEvent(openBeside);
+  useEffect(() => provideCellBeside((cell) => provideBeside(cell)), []);
 
   /**
    * Aski's chat, once it exists, goes in Aski's tab, in the window that holds

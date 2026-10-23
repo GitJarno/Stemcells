@@ -6,6 +6,7 @@ import {
   askiCellOf,
   closeTabUnlessAski,
   moveTabAfterAski,
+  openBesideOutsideAski,
   seatAski,
   showRouteBesideAski,
   splitDownOutsideAski,
@@ -154,5 +155,32 @@ describe("Aski's tab", () => {
   it("is kept with the layout", () => {
     const seated = seatAski(withCells("a"), aski, ids());
     expect(parseWorkspace(JSON.parse(JSON.stringify(serializeWorkspace(seated))))).toEqual(seated);
+  });
+});
+
+describe("a chat opened from a link in another", () => {
+  it("opens in a new pane beside the one being read, which keeps its chat", () => {
+    const start = withCells("a");
+    const reading = focusedPane(start)!.id;
+    const opened = openBesideOutsideAski(start, thread("b"), ids(), 1200);
+    expect(opened.activeTabId).toBe(start.activeTabId);
+    const panes = panesOf(activeTab(opened)!);
+    expect(panes.map((pane) => pane.cell?.threadId)).toEqual(["a", "b"]);
+    expect(panes[0]!.id).toBe(reading);
+    expect(focusedPane(opened)?.cell).toEqual(thread("b"));
+  });
+
+  it("goes to the pane already showing the chat, without a second one", () => {
+    const start = openBesideOutsideAski(withCells("a", "b"), thread("a"), ids(), 1200);
+    expect(start.tabs.flatMap(panesOf)).toHaveLength(2);
+    expect(focusedPane(start)?.cell).toEqual(thread("a"));
+  });
+
+  it("gets a tab of its own from Aski's tab", () => {
+    const start = seatAski(withCells("a"), aski, ids());
+    const opened = openBesideOutsideAski(start, thread("b"), ids(), 1200);
+    expect(askiCellOf(opened)).toEqual(aski);
+    expect(opened.tabs).toHaveLength(3);
+    expect(focusedPane(opened)?.cell).toEqual(thread("b"));
   });
 });

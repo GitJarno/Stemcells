@@ -24,6 +24,7 @@ import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamDesktopUpdateLogic from "../../../components/desktopUpdate.logic";
 import * as UpstreamDesktopUpdateStatusIcon from "../../../components/sidebar/DesktopUpdateStatusIcon";
+import * as UpstreamThreadContextChip from "../../../components/ThreadContextChip";
 import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/ThreadPreviewMiniPlayer";
@@ -81,6 +82,7 @@ import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurDesktopUpdateLogic from "./desktopUpdate.logic";
 import * as OurDesktopUpdateStatusIcon from "./DesktopUpdateStatusIcon";
 import * as OurThemePalettes from "./themePalettes";
+import * as OurThreadContextChip from "./ThreadContextChip";
 import * as OurThreadNotificationCoordinator from "./ThreadNotificationCoordinator";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurThreadPreviewMiniPlayer from "./ThreadPreviewMiniPlayer";
@@ -250,6 +252,24 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/ChatRightPanel.tsx": [
         "../RightPanelSheet",
         ["RightPanelSheet"],
+      ],
+    },
+  },
+  "apps/web/src/components/ThreadContextChip.tsx": {
+    upstream: UpstreamThreadContextChip,
+    substitute: OurThreadContextChip satisfies typeof UpstreamThreadContextChip,
+    importers: {
+      "apps/web/src/components/chat/MarkdownThreadLink.tsx": [
+        "../ThreadContextChip",
+        ["ThreadContextChip"],
+      ],
+      "apps/web/src/components/chat/UserMessageContextChips.tsx": [
+        "../ThreadContextChip",
+        ["ThreadContextChip"],
+      ],
+      "apps/web/src/components/composerContextPresentation.tsx": [
+        "./ThreadContextChip",
+        ["ThreadContextChip"],
       ],
     },
   },

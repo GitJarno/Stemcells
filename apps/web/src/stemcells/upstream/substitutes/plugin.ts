@@ -97,6 +97,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/useComposerStash.ts": "useComposerStash.ts",
   // Windows: one window notifies of a chat's turns, the focused one or else the lead.
   "apps/web/src/components/ThreadNotificationCoordinator.tsx": "ThreadNotificationCoordinator.tsx",
+  // A thread chip opens its chat in a new pane beside the one it is in.
+  "apps/web/src/components/ThreadContextChip.tsx": "ThreadContextChip.tsx",
   // The work verbs: the timeline hands its rows the chat's verbs in our
   // context, read off the entries it draws.
   "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
