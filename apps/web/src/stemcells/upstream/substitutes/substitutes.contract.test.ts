@@ -30,6 +30,7 @@ import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWin
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
+import * as UpstreamProviderReadiness from "../../../onboarding/providerReadiness.logic";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderInstanceIcon from "../../../components/chat/ProviderInstanceIcon";
@@ -58,6 +59,7 @@ import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
+import * as OurProviderReadiness from "./providerReadiness.logic";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
@@ -429,6 +431,16 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/desktop/SnapShotCoordinator.tsx": [
         "../../lib/chatThreadActions",
         ["resolveThreadActionProjectRef"],
+      ],
+    },
+  },
+  "apps/web/src/onboarding/providerReadiness.logic.ts": {
+    upstream: UpstreamProviderReadiness,
+    substitute: OurProviderReadiness satisfies typeof UpstreamProviderReadiness,
+    importers: {
+      "apps/web/src/components/onboarding/WelcomeWizard.tsx": [
+        "../../onboarding/providerReadiness.logic",
+        ["selectOnboardingProvidersByDriver"],
       ],
     },
   },

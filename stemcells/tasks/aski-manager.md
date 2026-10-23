@@ -230,10 +230,14 @@ roster and Done), #248 (settling), #249 (no project), #250 (the peek),
 #251 (Aski's words), #252 (landing), #253 and the standing Aski (the
 spawn).
 
-- **Not yet seen running.** Tests and the gates cover the rules (stages,
-  the close-out, landing, where a copy goes); the motion (the peek, the
-  copies, Aski standing and flying to the line) was built from the code
-  and the tokens. One pass in the lab app is owed before a release.
+- **Seen running.** A pass through the hidden lab app, on fake CLIs
+  (2026-10-23), played every piece: the room, the roster's stages, the
+  column's cards, the peek, Aski dividing into its tab chips, landing by
+  project, the green ledge and Settle. It found four problems.
+  - #257: from a new tab, Aski's flight was black and half a second late.
+  - #258: a new tab without a project had no Aski, and a new chat from
+    Aski's tab (on a fresh install, from anywhere) started in no project.
+  - #259: the welcome listed Aski in Claude's place.
 - **Colour.** The roster's stages are yellow, red and green as asked; the
   app's "needs you" elsewhere is amber. One of them should give.
 - **Edges left.** A Cell that lands in another window gets no copy from
