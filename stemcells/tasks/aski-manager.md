@@ -69,7 +69,8 @@ Everything on Aski's tab serves 1, 3 and 4. Anything else is noise there.
 ### 4. A new tab is Aski, waiting to divide
 
 - ⌘T opens a new chat with Aski standing in it, where upstream would say
-  "Send a message": what you write there, Aski carries into Cells.
+  "Send a message": what you write there, Aski carries into Cells. From
+  Aski's tab it opens in the first project, not in Aski's no-project.
 - On Send, Aski becomes the work: one Cell, and Aski condenses into it on
   the chat's line; several, and Aski divides, each part flying to where its
   Cell will stand (decision 5).

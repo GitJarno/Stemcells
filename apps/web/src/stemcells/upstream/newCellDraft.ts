@@ -11,11 +11,12 @@ import { useRouter } from "@tanstack/react-router";
 
 import { useComposerDraftStore } from "../../composerDraftStore";
 import { useHandleNewThread } from "../../hooks/useHandleNewThread";
+// Ours, as upstream's "new thread" gets it (`substitutes/plugin.ts`): this folder gets upstream's.
 import {
   resolveNewDraftStartFromOrigin,
   resolveNewThreadModelSelectionOverride,
   resolveThreadActionProjectRef,
-} from "../../lib/chatThreadActions";
+} from "./substitutes/chatThreadActions";
 import { readT3ProjectFile } from "../../lib/t3ProjectFileDefaults";
 import { newDraftId, newThreadId } from "../../lib/utils";
 import { appAtomRegistry } from "../../rpc/atomRegistry";

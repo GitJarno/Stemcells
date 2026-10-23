@@ -29,6 +29,7 @@ import * as UpstreamUsageProviders from "../../../components/usage/usageProvider
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
+import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderInstanceIcon from "../../../components/chat/ProviderInstanceIcon";
@@ -56,6 +57,7 @@ import * as OurComposerPromptEditor from "./ComposerPromptEditor";
 import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
+import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
@@ -377,6 +379,13 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/ChatView.tsx": ["./chat/ChatComposer", ["ChatComposer"]],
     },
   },
+  "apps/web/src/components/chat/DraftHeroHeadline.tsx": {
+    upstream: UpstreamDraftHeroHeadline,
+    substitute: OurDraftHeroHeadline satisfies RendersOrNothing<typeof UpstreamDraftHeroHeadline>,
+    importers: {
+      "apps/web/src/components/ChatView.tsx": ["./chat/DraftHeroHeadline", ["DraftHeroHeadline"]],
+    },
+  },
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": {
     upstream: UpstreamDraftHeroProjectHeading,
     substitute: OurDraftHeroProjectHeading satisfies RendersOrNothing<
@@ -407,6 +416,19 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/hooks/useHandleNewThread.ts": [
         "../lib/chatThreadActions",
         ["resolveNewThreadModelSelectionOverride"],
+      ],
+      "apps/web/src/components/CommandPalette.tsx": [
+        "../lib/chatThreadActions",
+        ["resolveThreadActionProjectRef", "startNewThreadFromContext"],
+      ],
+      "apps/web/src/components/Sidebar.tsx": [
+        "../lib/chatThreadActions",
+        ["startNewThreadFromContext"],
+      ],
+      "apps/web/src/routes/_chat.tsx": ["../lib/chatThreadActions", ["startNewThreadFromContext"]],
+      "apps/web/src/components/desktop/SnapShotCoordinator.tsx": [
+        "../../lib/chatThreadActions",
+        ["resolveThreadActionProjectRef"],
       ],
     },
   },

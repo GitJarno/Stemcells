@@ -12,7 +12,6 @@ import { ThreadRouteView } from "../../components/ThreadRouteView";
 import { useComposerDraftStore, type DraftId } from "../../composerDraftStore";
 import { ComposerHandleContext, useComposerHandleContext } from "../../composerHandleContext";
 import { useHandleNewThread } from "../../hooks/useHandleNewThread";
-import { resolveThreadActionProjectRef } from "../../lib/chatThreadActions";
 import { useQuietThreadShell } from "../../state/entities";
 import { useEnvironmentShellStatus } from "../../state/shell";
 import { isThreadRouteSnapshotAuthoritative } from "../../threadRoutes";
@@ -20,6 +19,8 @@ import type { CellRef } from "../tabs/layout";
 import { PaneCellContext } from "../tabs/paneCell";
 import { ChatPanelHostContext } from "./chatPanel";
 import { routeTargetForCell, threadRefOf, type ThreadRouteTarget } from "./routes";
+// Ours, as upstream's "new thread" gets it (`substitutes/plugin.ts`): this folder gets upstream's.
+import { resolveThreadActionProjectRef } from "./substitutes/chatThreadActions";
 
 type CellLiveness = "alive" | "gone" | "unknown";
 

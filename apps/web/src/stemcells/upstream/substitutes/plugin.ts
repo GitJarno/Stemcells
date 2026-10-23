@@ -52,11 +52,13 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // Where a Cell runs: upstream's branch toolbar in the menu under the
   // ledge's "branch ⌄", never under the box; git only once known.
   "apps/web/src/components/BranchToolbar.tsx": "BranchToolbar.tsx",
+  // Aski stands over every new chat's headline, in a project or in none.
+  "apps/web/src/components/chat/DraftHeroHeadline.tsx": "DraftHeroHeadline.tsx",
   // The hero names every place the words start Cells in.
   "apps/web/src/components/chat/DraftHeroProjectHeading.tsx": "DraftHeroProjectHeading.tsx",
   // Stemcells' mark: where upstream draws T3's wordmark as an icon.
   "apps/web/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
-  // A new chat never starts on Aski's provider instance.
+  // A new chat never starts on Aski's provider instance, nor in its no-project.
   "apps/web/src/lib/chatThreadActions.ts": "chatThreadActions.ts",
   // T3's own tools in the work log say Cell, not thread.
   "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",

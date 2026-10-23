@@ -2,7 +2,9 @@
  * A new Cell never starts on Aski's provider instance, which carries Aski's
  * persona: a Cell opened from Aski's tab (+, ⌘T) ran as Aski. Upstream's new
  * chat takes its model from the chat on screen, else from the model last
- * picked; neither may be Aski's. Any other chat's model still carries.
+ * picked; neither may be Aski's. Any other chat's model still carries. Nor
+ * does it start in Aski's no-project: upstream's new chat takes the chat on
+ * screen's project, and Aski lives in none.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
@@ -12,7 +14,10 @@ import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { DraftId, useComposerDraftStore } from "../../composerDraftStore";
 import { ASKI_INSTANCE_ID } from "../aski/setup";
 import { startingModel } from "./draftWords";
-import { resolveNewThreadModelSelectionOverride } from "./substitutes/chatThreadActions";
+import {
+  resolveNewThreadModelSelectionOverride,
+  resolveThreadActionProjectRef,
+} from "./substitutes/chatThreadActions";
 
 const environmentId = EnvironmentId.make("env-new-chat");
 const projectRef = scopeProjectRef(environmentId, ProjectId.make("project-new-chat"));
@@ -57,6 +62,26 @@ describe("a new chat opened from Aski's chat", () => {
     expect(carried(codex, null)).toEqual(codex);
     const projectDefault = createModelSelection(ProviderInstanceId.make("claudeAgent"), "model-c");
     expect(carried(askis, projectDefault)).toEqual(projectDefault);
+  });
+
+  it("starts in the first project, not Aski's no-project; from any other chat, in that chat's", () => {
+    // Upstream hands its thread shell: where the chat is, and what it runs on.
+    const shown = (projectId: string, modelSelection: typeof askis) => ({
+      environmentId,
+      projectId: ProjectId.make(projectId),
+      modelSelection,
+    });
+    const from = (activeThread: ReturnType<typeof shown>) =>
+      resolveThreadActionProjectRef({
+        activeThread,
+        activeDraftThread: null,
+        defaultProjectRef: projectRef,
+        handleNewThread: async () => undefined,
+      });
+    expect(from(shown("no-project", askis))).toEqual(projectRef);
+    expect(from(shown("harbor", codex))).toEqual(
+      scopeProjectRef(environmentId, ProjectId.make("harbor")),
+    );
   });
 });
 
