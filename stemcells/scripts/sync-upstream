@@ -30,8 +30,10 @@ cd "$(git rev-parse --show-toplevel)"
 
 GATES=(drift outbound typecheck lint ours upstream-packages upstream-web upstream-server build boot outbound-live workflows)
 # What a pull request must pass before it merges (stemcells/scripts/check-local):
-# the one list, for check-local and the check workflow alike.
-CHECK=(drift outbound typecheck lint ours)
+# the one list, for check-local and the check workflow alike. The build is in
+# it: a change can pass every test and still leave install-app nothing to
+# build, as the name check (nameTransform.ts) runs only in a build.
+CHECK=(drift outbound typecheck lint ours build)
 summary=${SYNC_SUMMARY:-/dev/null}
 mode=${1:-}
 
