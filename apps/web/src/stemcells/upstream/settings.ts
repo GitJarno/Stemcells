@@ -19,8 +19,10 @@ export {
   SettingsPageContainer,
   SettingsRow,
   SettingsSection,
+  useRelativeTimeTick,
 } from "../../components/settings/settingsLayout";
 export { Switch } from "../../components/ui/switch";
+export { Toggle, ToggleGroup } from "../../components/ui/toggle-group";
 export { useNavigateToMainApp } from "../../components/sidebar/mainAppLocation";
 export type { SettingsPath };
 

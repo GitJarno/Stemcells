@@ -25,6 +25,7 @@ import { Route as SettingsProvidersRouteImport } from './routes/settings.provide
 import { Route as SettingsProjectsRouteImport } from './routes/settings.projects'
 import { Route as SettingsOpenSourceLicensesRouteImport } from './routes/settings.open-source-licenses'
 import { Route as SettingsLinkedMachinesRouteImport } from './routes/settings.linked-machines'
+import { Route as SettingsLineageRouteImport } from './routes/settings.lineage'
 import { Route as SettingsKeybindingsRouteImport } from './routes/settings.keybindings'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
 import { Route as SettingsGeneralRouteImport } from './routes/settings.general'
@@ -120,6 +121,11 @@ const SettingsLinkedMachinesRoute = SettingsLinkedMachinesRouteImport.update({
   path: '/linked-machines',
   getParentRoute: () => SettingsRoute,
 } as any)
+const SettingsLineageRoute = SettingsLineageRouteImport.update({
+  id: '/lineage',
+  path: '/lineage',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsKeybindingsRoute = SettingsKeybindingsRouteImport.update({
   id: '/keybindings',
   path: '/keybindings',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/keybindings': typeof SettingsKeybindingsRoute
+  '/settings/lineage': typeof SettingsLineageRoute
   '/settings/linked-machines': typeof SettingsLinkedMachinesRoute
   '/settings/open-source-licenses': typeof SettingsOpenSourceLicensesRoute
   '/settings/projects': typeof SettingsProjectsRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/keybindings': typeof SettingsKeybindingsRoute
+  '/settings/lineage': typeof SettingsLineageRoute
   '/settings/linked-machines': typeof SettingsLinkedMachinesRoute
   '/settings/open-source-licenses': typeof SettingsOpenSourceLicensesRoute
   '/settings/projects': typeof SettingsProjectsRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/keybindings': typeof SettingsKeybindingsRoute
+  '/settings/lineage': typeof SettingsLineageRoute
   '/settings/linked-machines': typeof SettingsLinkedMachinesRoute
   '/settings/open-source-licenses': typeof SettingsOpenSourceLicensesRoute
   '/settings/projects': typeof SettingsProjectsRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/settings/general'
     | '/settings/integrations'
     | '/settings/keybindings'
+    | '/settings/lineage'
     | '/settings/linked-machines'
     | '/settings/open-source-licenses'
     | '/settings/projects'
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/settings/general'
     | '/settings/integrations'
     | '/settings/keybindings'
+    | '/settings/lineage'
     | '/settings/linked-machines'
     | '/settings/open-source-licenses'
     | '/settings/projects'
@@ -371,6 +382,7 @@ export interface FileRouteTypes {
     | '/settings/general'
     | '/settings/integrations'
     | '/settings/keybindings'
+    | '/settings/lineage'
     | '/settings/linked-machines'
     | '/settings/open-source-licenses'
     | '/settings/projects'
@@ -509,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsLinkedMachinesRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/settings/lineage': {
+      id: '/settings/lineage'
+      path: '/lineage'
+      fullPath: '/settings/lineage'
+      preLoaderRoute: typeof SettingsLineageRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/keybindings': {
       id: '/settings/keybindings'
       path: '/keybindings'
@@ -638,6 +657,7 @@ interface SettingsRouteChildren {
   SettingsGeneralRoute: typeof SettingsGeneralRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsKeybindingsRoute: typeof SettingsKeybindingsRoute
+  SettingsLineageRoute: typeof SettingsLineageRoute
   SettingsLinkedMachinesRoute: typeof SettingsLinkedMachinesRoute
   SettingsOpenSourceLicensesRoute: typeof SettingsOpenSourceLicensesRoute
   SettingsProjectsRoute: typeof SettingsProjectsRoute
@@ -658,6 +678,7 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsGeneralRoute: SettingsGeneralRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsKeybindingsRoute: SettingsKeybindingsRoute,
+  SettingsLineageRoute: SettingsLineageRoute,
   SettingsLinkedMachinesRoute: SettingsLinkedMachinesRoute,
   SettingsOpenSourceLicensesRoute: SettingsOpenSourceLicensesRoute,
   SettingsProjectsRoute: SettingsProjectsRoute,

@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import { AskiSettingsIcon } from "../aski/AskiSettingsIcon";
 import { DiskSettingsIcon } from "../disk/DiskSettingsIcon";
+import { LineageSettingsIcon } from "../lineage/LineageSettingsIcon";
 import { LinkedMachinesIcon } from "../peers/LinkedMachinesIcon";
 import type { StemcellsSettingsPath } from "./settingsPages";
 
@@ -12,4 +13,5 @@ export const STEMCELLS_SETTINGS_ICONS: Readonly<
   "/settings/disk": DiskSettingsIcon,
   "/settings/aski": AskiSettingsIcon,
   "/settings/linked-machines": LinkedMachinesIcon,
+  "/settings/lineage": LineageSettingsIcon,
 };
