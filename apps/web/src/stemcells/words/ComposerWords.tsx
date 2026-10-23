@@ -6,9 +6,7 @@ import { use, useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useStat
 
 import { useAskiPlans } from "../aski/planning";
 import { type HoldLine, holdLines } from "../risk/hold";
-import { paneShowing } from "../tabs/layout";
 import { PaneCellContext } from "../tabs/paneCell";
-import { newIds, readWorkspace, updateWorkspace } from "../tabs/store";
 import {
   isDraftGone,
   moveDraft,
@@ -30,6 +28,7 @@ import { askPlanner, readProjectLines, recordPlan } from "../upstream/planner";
 import { ProviderLogo } from "../upstream/providers";
 import { useLimitPools } from "../upstream/rail";
 import { useMinute } from "../rail/clock";
+import { landNewCells } from "../windows/landing";
 import {
   draftHeroBox,
   promptOf,
@@ -58,7 +57,6 @@ import { type DriverSource, WordsDriver } from "./driver";
 import { showPlaces } from "./heroPlaces";
 import { limitNotes } from "./limits";
 import { effortLabel, type MenuAction, type MenuEntry, menuFor } from "./menu";
-import { placeCells } from "./placement";
 import {
   askOf,
   needsCheck,
@@ -416,7 +414,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
 
   /**
    * Sends the draft's own Cell what `write` makes of its text and, once it
-   * has started, the Cells `besides` it, which land after its pane. Several
+   * has started, the Cells `besides` it, each in its project's tab. Several
    * Cells play the spawn from the words as they stand; a Cell with no spawn
    * to come from forms on its line. The text comes back if nothing went.
    * Returns what to do once upstream's send settles.
@@ -436,8 +434,6 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const setup = launch ? readDraftSetup(draftId) : null;
     // Read now: upstream's send clears the draft's pictures and chips.
     const carry = besides && besides.length > 0 ? readCarry(draftId) : null;
-    const pane = cell ? paneShowing(readWorkspace(), cell)?.pane.id : undefined;
-    const width = view.dom.closest("[data-stemcells-grid]")?.clientWidth ?? window.innerWidth;
     const before = view.state.doc;
     const spawn = launch && cell ? spawnFor(view, launch, cell.threadId, input.titles) : null;
     if (spawn === null && cell) playForming(cell.threadId);
@@ -468,9 +464,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
           );
           if (spawn) spawn.play?.started(formed);
           else for (const one of formed) playForming(one.threadId);
-          const cells = started.flatMap((s) => (s.ok ? [s.cell] : []));
-          if (pane !== undefined && cells.length > 0)
-            updateWorkspace((workspace) => placeCells(workspace, pane, cells, width, newIds));
+          void landNewCells(started.flatMap((s) => (s.ok ? [s.cell] : [])));
         });
     };
   };
@@ -635,7 +629,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
 
   // As the composer sends, the text becomes what the draft's Cell is sent;
   // it comes back if nothing went. When the words start several Cells, the
-  // rest start once the draft's has, and land after its pane. Nothing is
+  // rest start once the draft's has, each in its project's tab. Nothing is
   // sent when the words were only setup.
   useEffect(() => {
     if (sendSlot === null) return;

@@ -29,6 +29,7 @@ import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } fr
 import { seatAskiHere } from "../windows/askiHome";
 import { ChatCarry, useCarriedPane } from "../windows/ChatCarry";
 import { revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
+import { useLandsLaunches } from "../windows/landing";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
@@ -116,6 +117,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const isIndexRoute = useIsIndexRoute();
   const navigateToCell = useNavigateToCell();
   const openNewCell = useOpenNewCell();
+  useLandsLaunches();
   const gridRef = useRef<HTMLDivElement>(null);
   const tab = activeTab(workspace);
   const focused = focusedPane(workspace);

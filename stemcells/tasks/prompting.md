@@ -455,15 +455,12 @@ well match it, and the first eval runs both. "Recommended" means measured.
 
 ### 15. Where the Cells land
 - The first Cell takes the draft's pane.
-- The others open as columns right after it, in the same tab, while every
-  column stays at least 300 px wide (the narrow pane this design works at),
-  up to 4 panes in the tab. Panes already there keep their order and count
-  toward the 4.
-- The rest open in a new tab right after, by the same rule, and so on.
-  With no room for a second column (a narrow window, a 300 px pane), each
-  sibling gets its own tab.
-- From Aski's tab, which never splits: new tabs open right after Aski's,
-  and you stay with Aski. The tab chip shows the Cells arriving.
+- The others land in their project's tab, in any window
+  (`aski-manager.md`, decision 6): as a column of the project's tab used
+  last while every column stays at least 300 px wide (the narrow pane this
+  design works at), up to 4 panes in the tab; else in a new tab after the
+  project's tabs. One of the draft's project joins the draft's tab first.
+- Aski's tab never takes one, and you stay where you are.
 
 This ports the Swift `ChatPlacement` (the first takes the draft's slot, and
 the siblings follow right after it in birth order), with the column floor
@@ -669,7 +666,7 @@ From the TypeScript rebuild (`SC-legacy`), keep:
      a provider is. The words read the same projects and models in the
      same render (`words.contract.test.ts` pins both gates).
 4. **Several Cells from words alone.** Built: `words/cells.ts` (which
-   Cells, each one's part, the readout; pure), `words/placement.ts`,
+   Cells, each one's part, the readout; pure), `tabs/landing.ts`,
    `words/Readout.tsx` and `upstream/launch.ts`, sent from `words/send.ts`.
    - The readout sentence in the controls row: its tokens open their menus,
      defaults are dim, it takes the model picker's place, and

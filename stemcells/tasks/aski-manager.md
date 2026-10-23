@@ -95,8 +95,11 @@ Everything on Aski's tab serves 1, 3 and 4. Anything else is noise there.
 - Each new Cell goes to the most recently used tab of its project, in any
   window (a detached window holding that project's tab gets it), as a new
   column while the tab has room (`prompting.md` decision 15: 300 px
-  columns, 4 panes). A full tab gets a new tab of the project right after
-  it. A project with no tab gets a new tab, after Aski's.
+  columns, 4 panes). When the project's tabs are full, a new one opens
+  after them. A project with no tab gets a new tab at the end of the strip
+  Aski's tab heads, so Cells keep the order they started in.
+- Cells an agent launches through the tools land as their chats arrive,
+  placed once, by the lead window.
 - From a new tab's chat, the first Cell takes that chat, wherever its
   project's tab is: the person is looking at it.
 - Aski's tab never takes a Cell. You stay where you are; the spawn shows
@@ -215,7 +218,7 @@ Each is one pull request.
       Settle in the Cell's own tab.
 - [x] 5. Aski has no project.
 - [x] 6. The peek.
-- [ ] 7. Cells land in their project's tab.
+- [x] 7. Cells land in their project's tab.
 - [ ] 8. Aski divides: the spawn, and Aski standing in a new tab.
 - [x] 9. Aski's words: the manager, finding past work, links that peek.
 
