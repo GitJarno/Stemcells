@@ -89,10 +89,10 @@ function useUndoKey(active: boolean) {
 const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need you`);
 
 /**
- * Aski's page around its chat: the column of what needs the person on the
- * right while anything does (stemcells/tasks/aski-room.md, decisions 9 and
- * 10). Narrow, it is a count over the chat that opens the list as a sheet;
- * on two screens, the list keeps the second screen.
+ * Aski's page around its chat: the column of what needs the person, always
+ * on the right (stemcells/tasks/aski-manager.md, decision 1). Narrow, it is
+ * a count over the chat that opens the list as a sheet; on two screens, the
+ * list keeps the second screen.
  */
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
@@ -140,7 +140,6 @@ export function NeedsFrame(props: {
   };
   const frozen = draft !== "" || pointerIn || focusIn;
   useEffect(() => page.setFrozen(frozen), [frozen]);
-  useEffect(() => page.setDraft(draft), [draft]);
   useUndoKey(props.ownsWindowInput);
 
   const waiting = view.shown.filter((each) => each.goneAt === null).length;
@@ -170,8 +169,8 @@ export function NeedsFrame(props: {
     </div>
   );
 
-  const showColumn = layout === "dual" || (layout === "wide" && view.columnIn);
-  const showCount = waiting > 0 && (layout === "narrow" || (layout === "wide" && !view.columnIn));
+  const showColumn = layout !== "narrow";
+  const showCount = waiting > 0 && layout === "narrow";
   const showSheet = layout === "narrow" && view.sheet;
 
   return (
@@ -195,8 +194,8 @@ export function NeedsFrame(props: {
           <button
             type="button"
             data-stemcells-needs-count=""
-            aria-expanded={layout === "narrow" ? showSheet : undefined}
-            onClick={() => (layout === "narrow" ? page.setSheet(!view.sheet) : page.openColumn())}
+            aria-expanded={showSheet}
+            onClick={() => page.setSheet(!view.sheet)}
           >
             {needYou(waiting)}
           </button>

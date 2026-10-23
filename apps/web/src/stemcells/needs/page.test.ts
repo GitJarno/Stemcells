@@ -6,7 +6,6 @@ import type { NeedsState } from "./stream";
 
 const LINGER = 1_200;
 const CLEARED_FOR = 5_000;
-const TYPING_PAUSE = 1_000;
 const floof = needFixture({ key: "floof", number: 1 });
 
 function setup() {
@@ -19,7 +18,6 @@ function setup() {
     now: () => vi.getMockedSystemTime()!.getTime(),
     linger: () => LINGER,
     clearedFor: () => CLEARED_FOR,
-    typingPause: () => TYPING_PAUSE,
   });
   page.subscribe(() => {});
   return {
@@ -35,21 +33,6 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe("Aski's page around the list", () => {
-  it("keeps the column out while the person types, and lets it in once they pause", () => {
-    const t = setup();
-    t.page.setDraft("for 1 go with");
-    t.push([floof]);
-    expect(t.page.read().columnIn).toBe(false);
-    vi.advanceTimersByTime(TYPING_PAUSE);
-    expect(t.page.read().columnIn).toBe(true);
-  });
-
-  it("brings the column in at once when the composer is empty", () => {
-    const t = setup();
-    t.push([floof]);
-    expect(t.page.read().columnIn).toBe(true);
-  });
-
   it("holds a gone card while frozen and lets it leave a beat after unfreezing", () => {
     const t = setup();
     t.push([floof]);
@@ -62,15 +45,14 @@ describe("Aski's page around the list", () => {
     expect(t.page.read().cleared).toMatch(/^All clear · 1 answered in /);
   });
 
-  it("shows the all-clear line for a moment, then lets the column go", () => {
+  it("shows the all-clear line for a moment, then lets it go", () => {
     const t = setup();
     t.push([floof]);
     t.push([]);
     vi.advanceTimersByTime(LINGER);
     expect(t.page.read().cleared).not.toBeNull();
-    expect(t.page.read().columnIn).toBe(true);
     vi.advanceTimersByTime(CLEARED_FOR);
-    expect(t.page.read()).toMatchObject({ cleared: null, columnIn: false });
+    expect(t.page.read().cleared).toBeNull();
   });
 
   it("keeps an open sheet through the all-clear line, then closes it so the next card can't open it", () => {

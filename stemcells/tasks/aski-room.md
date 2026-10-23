@@ -2,11 +2,11 @@
 
 Aski's tab becomes a page with two parts. On the left is the chat with Aski:
 start Cells, ask how things stand, ask about settings, find past Cells and
-bring them back, and answer by dictation. On the right, only when a Cell
-needs the person, is a live list of what needs them. Each item is a card the
-person can decide from without opening the Cell: a brief of two lines at
-most and two to four options, the recommended one first. Settings gains a
-page of its own for Aski.
+bring them back, and answer by dictation. On the right is a live list of
+what needs the person. Each item is a card the person can decide from
+without opening the Cell: a brief of two lines at most and two to four
+options, the recommended one first. Settings gains a page of its own for
+Aski.
 
 This is the design. Nothing is built yet; the prototype is a page outside
 the repo. The PR slices are at the end.
@@ -260,11 +260,7 @@ While it is frozen:
 
 When it unfreezes, everything queued plays as one motion.
 
-The column also never arrives under a caret. A card that arrives while the
-person is typing first shows as the count in the pane's band. The column
-slides in after a pause in typing (the `typingPause` timing token, 1 s).
-
-### 10. Layout: Aski in its chat, the column only when needed
+### 10. Layout: Aski in its chat, the column beside it
 - **Aski is in its chat, not over it** (the person, 2026-10-21: "they should be
   combined"). There is no band of Aski's own. It stands over the composer,
   where a Cell's line stands in a Cell's pane, in the composer's flow, so
@@ -282,11 +278,11 @@ slides in after a pause in typing (the `typingPause` timing token, 1 s).
   the band's left end; the sheet hangs from the band's foot.
 - **Wide (Aski's pane ≥ 880 px):**
   - The chat keeps its reading width.
-  - The column (380 px; 420 px past 1,400 px) slides in on the right with
-    `settle` when the first card arrives.
-  - It leaves after the last, with one line: "All clear · 4 answered in
-    1 min 12 s". That is a true fact and the page's one beat of reward.
-  - With nothing in it, there is no column: the chat fills the page.
+  - The column (380 px; 420 px past 1,400 px) always stands on the right
+    (`aski-manager.md`, decision 1), its head saying "Nothing needs you"
+    when it's empty.
+  - After the last card, one line: "All clear · 4 answered in 1 min 12 s".
+    That is a true fact and the page's one beat of reward.
 - **Narrow:**
   - The list becomes a count in the pane's band: "4 need you", the one
     accent in view.

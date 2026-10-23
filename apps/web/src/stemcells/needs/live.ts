@@ -24,7 +24,6 @@ export const page = createPage({
   now: () => Date.now(),
   linger: () => timing("linger"),
   clearedFor: () => timing("bannerStay"),
-  typingPause: () => timing("typingPause"),
 });
 
 if (typeof window !== "undefined") window.addEventListener("pagehide", () => holds.flush());

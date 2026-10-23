@@ -114,6 +114,8 @@ export function ChatPaneView(props: {
   /** Whether the pane is its tab's focused one (on stage or not). */
   focused: boolean;
   panelHost: HTMLElement | null;
+  /** No surfaces and no terminal, nor their shortcuts (Aski's chat). */
+  bare?: boolean;
 }) {
   const appComposerRef = useComposerHandleContext();
   const paneComposerRef = useRef<ChatComposerHandle | null>(null);
@@ -129,6 +131,7 @@ export function ChatPaneView(props: {
             owns: props.ownsWindowInput,
             focused: props.focused,
             threadKey: cell === null ? null : scopedThreadKey(threadRefOf(cell)),
+            bare: props.bare === true,
           }}
         >
           <ThreadRouteView target={props.target} />

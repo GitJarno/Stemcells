@@ -32,6 +32,8 @@ export interface ChatPanelHost {
   readonly focused: boolean;
   /** The chat's thread (a draft's is its thread), which the panel names while it holds its surfaces. */
   readonly threadKey: string | null;
+  /** A chat with no surfaces and no terminal (Aski's): it has no project to show them for. */
+  readonly bare?: boolean;
 }
 
 /** Null (the default): the panel stays beside its chat, as upstream draws it. */
@@ -53,6 +55,7 @@ export function ChatPanelTabs(props: ComponentProps<typeof RightPanelTabs>) {
   const host = use(ChatPanelHostContext);
   // The page a turn leaves keeps its surfaces until the pages rest.
   const shows = useOwnedUntilRest(host?.owns ?? false, host?.node ?? null);
+  if (host?.bare) return null;
   if (host === null || props.mode !== "inline") return <RightPanelTabs {...props} />;
   return (
     <WorkbenchPanel
@@ -129,6 +132,6 @@ function useTellMaximized(maximized: boolean) {
 /** Upstream's narrow-window sheet: a window overlay, so only the owning chat's opens. */
 export function ChatPanelSheet(props: ComponentProps<typeof RightPanelSheet>) {
   const host = use(ChatPanelHostContext);
-  if (host !== null && !host.owns) return null;
+  if (host !== null && (!host.owns || host.bare)) return null;
   return <RightPanelSheet {...props} />;
 }

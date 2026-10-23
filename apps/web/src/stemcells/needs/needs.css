@@ -1,6 +1,7 @@
 /* Aski's page with what needs the person (needs/NeedsFrame.tsx). Every
    value is a token, chosen by role, but the column's widths: those are the
-   page's own layout (stemcells/tasks/aski-room.md, decision 10). */
+   page's own layout (stemcells/tasks/aski-room.md, decision 10). The
+   column stands on a wide page always (aski-manager.md, decision 1). */
 
 [data-stemcells-needs-frame] {
   --stemcells-needs-width: 380px;
@@ -22,24 +23,17 @@
   min-height: 0;
 }
 
-/* Wide: the column slides in beside the chat while anything needs you. */
+/* Wide: the column stands beside the chat. */
 [data-stemcells-needs-column] {
   flex: none;
   inline-size: var(--stemcells-needs-width);
   overflow-y: auto;
   border-inline-start: 1px solid var(--sc-hairline);
   background: var(--sc-surface);
-  animation: stemcells-needs-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
 }
 @container (min-width: 1400px) {
   [data-stemcells-needs-column] {
     inline-size: var(--stemcells-needs-width-roomy);
-  }
-}
-@keyframes stemcells-needs-in {
-  from {
-    opacity: 0;
-    transform: translateX(var(--sc-space-xxl));
   }
 }
 
@@ -50,7 +44,6 @@
   flex: 1;
   inline-size: auto;
   border-inline-start: 0;
-  animation: none;
 }
 [data-stemcells-needs-frame][data-hinge="side"] > [data-stemcells-needs-main] {
   flex: none;
@@ -174,7 +167,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-stemcells-needs-column],
   [data-stemcells-need] {
     animation: none;
   }

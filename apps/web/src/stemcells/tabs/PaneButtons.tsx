@@ -88,17 +88,6 @@ export function PaneButtons(props: { cell: CellRef | null; onClose: (() => void)
 }
 
 /**
- * A pane that shows upstream's toggles but none of our buttons (Aski's):
- * its split rows still sit side by side, so the thread details toggle never
- * covers the right panel's.
- */
-export function PaneRows() {
-  const anchor = useRef<HTMLSpanElement>(null);
-  usePaneRows(anchor);
-  return <span ref={anchor} hidden />;
-}
-
-/**
  * The rows of upstream's toggles in the pane around `anchor`, followed as
  * the chat lays out. While upstream splits them, the header's row sits left
  * of the root's (`workspace.css`, at the root row's width from the edge).

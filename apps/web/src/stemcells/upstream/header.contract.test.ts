@@ -17,7 +17,6 @@ import { describe, expect, it } from "vite-plus/test";
 import chatView from "../../components/ChatView.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 import panelLayoutControls from "../../components/chat/PanelLayoutControls.tsx?raw";
-import askiPane from "../aski/AskiPane.tsx?raw";
 import cellWorkspace from "../tabs/CellWorkspace.tsx?raw";
 
 /** CSS imports come in empty under test; the stylesheet is read as text. */
@@ -46,11 +45,11 @@ describe("the header-less pane's contracts with upstream", () => {
     expect(panelLayoutControls).toContain("inert={!props.rightPanelOpen}");
   });
 
-  it("with the right panel open the toggles split in two rows, which every pane spaces, Aski's too", () => {
+  it("with the right panel open the toggles split in two rows, which every pane spaces", () => {
     // The thread details toggle stays by the header; the rest go to the root.
     // A pane that doesn't measure the root's row (--sc-pane-row) lays the
-    // thread details toggle over the right panel's, the way out of an empty
-    // Surface in Aski's tab.
+    // thread details toggle over the right panel's. Aski's pane shows no
+    // toggles at all (aski/room.css).
     expect(chatView).toContain(
       "const threadPanelHeaderControl = <ThreadPanelHeaderControl {...panelToggleControlProps} />;",
     );
@@ -58,7 +57,6 @@ describe("the header-less pane's contracts with upstream", () => {
       /export function ThreadPanelHeaderControl\([\s\S]*?showTerminalControl=\{false\}\s*showRightPanelControl=\{false\}/,
     );
     expect(cellWorkspace).toMatch(/<PaneButtons\s/);
-    expect(askiPane).toContain("<PaneRows />");
   });
 
   it("the transcript opens below a spacer, and fades under it, both as tall as one height", () => {

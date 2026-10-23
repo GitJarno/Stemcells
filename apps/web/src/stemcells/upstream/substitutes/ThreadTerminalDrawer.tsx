@@ -3,14 +3,15 @@
 // buttons get a row of their own over the terminal (`stemcells/terminal`).
 // A height the person drags to stays theirs, stored as upstream stores it.
 // Where upstream's panels don't move, the drawer moves on our motion, which
-// its style plays (`useDrawerMotion`).
-import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
+// its style plays (`useDrawerMotion`). A bare chat (Aski's) has none.
+import { use, useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 
 import UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import { usePanelAnimationSettings } from "../../../panelAnimations";
 import { defaultDrawerHeight } from "../../terminal/drawerHeight";
 import "../../tokens/stemcells.css";
 import "../../terminal/terminal.css";
+import { ChatPanelHostContext } from "../chatPanel";
 import {
   TERMINAL_GRID_PADDING,
   UPSTREAM_DRAWER_HEIGHT,
@@ -27,6 +28,10 @@ const DRAWER_EDGE = 1;
 export default function ThreadTerminalDrawer(
   props: ComponentProps<typeof UpstreamThreadTerminalDrawer>,
 ) {
+  return use(ChatPanelHostContext)?.bare ? null : <StemcellsTerminalDrawer {...props} />;
+}
+
+function StemcellsTerminalDrawer(props: ComponentProps<typeof UpstreamThreadTerminalDrawer>) {
   const rowHeight = useTerminalRowHeight();
   const motion = useDrawerMotion(usePanelAnimationSettings());
   const drawer = props.mode !== "panel";

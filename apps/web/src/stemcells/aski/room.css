@@ -1,0 +1,5 @@
+/* Aski's room (aski/AskiPane.tsx): its chat has no surfaces and no
+   terminal, so none of upstream's panel toggles show over it. */
+[data-stemcells-aski] [data-workspace-titlebar-controls] {
+  display: none;
+}

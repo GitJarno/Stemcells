@@ -8,10 +8,11 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui
 import { ComposerRoofSlot } from "../composer/slot";
 import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
-import { PaneRows } from "../tabs/PaneButtons";
 import { AskiFigure } from "./AskiFigure";
 import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
+
+import "./room.css";
 
 /**
  * Keeps Aski's chat: sets it up through upstream and hands it to the
@@ -46,11 +47,12 @@ export const ASKI_UNAVAILABLE: Record<
 
 /**
  * Aski's pane: its chat, with Aski in it, and beside them what needs the
- * person while anything does (NeedsFrame). The chat is upstream's thread
- * view, as in any pane, and Aski stands over its composer where a Cell's
- * line would (AskiPerch); until the chat exists, Aski stands over why. Aski's
- * eyes follow the pointer anywhere over the pane, and the caret in its
- * chat's field.
+ * person (NeedsFrame). The chat is upstream's thread view, bare: Aski has no
+ * project, so no surface or terminal opens under it (aski-manager.md,
+ * decision 1). Aski stands over its composer where a Cell's line would
+ * (AskiPerch); until the chat exists, Aski stands over why. Aski's eyes
+ * follow the pointer anywhere over the pane, and the caret in its chat's
+ * field.
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -58,16 +60,12 @@ export function AskiPane(props: {
   ownsWindowInput: boolean;
   /** Whether Aski's pane is its tab's focused one. */
   focused: boolean;
-  /** The tab's workbench, where Aski's surfaces show while its chat is focused. */
-  panelHost: HTMLElement | null;
 }) {
   const aski = props.chat.status === "ready" ? props.chat.cell : null;
   return (
     <div data-stemcells-aski="" data-aski-looks="" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <NeedsFrame aski={aski} ownsWindowInput={props.ownsWindowInput}>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
-          {/* With the Surface open, upstream's two rows of toggles sit side by side, as in any pane. */}
-          <PaneRows />
           {props.target ? (
             <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
               {/* Words in its composer answer the cards beside it. */}
@@ -76,7 +74,8 @@ export function AskiPane(props: {
                   target={props.target}
                   ownsWindowInput={props.ownsWindowInput}
                   focused={props.focused}
-                  panelHost={props.panelHost}
+                  panelHost={null}
+                  bare
                 />
               </AnswersProvider>
             </ComposerRoofSlot>
