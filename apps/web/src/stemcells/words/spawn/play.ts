@@ -8,7 +8,7 @@
  * meets, and nothing waits on it: the composer takes typing all along, and
  * a Cell whose place doesn't show in time just stands.
  */
-import { askiStill, copyHeight, copyTargetSoon, flyCopy } from "../../aski/copies";
+import { askiStill, copyAt, copyHeight, copyTargetSoon, flyCopy, stillOf } from "../../aski/copies";
 import { spawnDone, spawnPlanned, spawnStart } from "../../aski/spawn";
 import { cellBoxOf, formAt } from "../../cell/forming";
 import { path, SIZE } from "../../cell/look";
@@ -189,8 +189,8 @@ export function playSpawn(input: {
 /**
  * A Cell that starts alone from its draft: the glyphs play over its box,
  * from when it shows, then the Cell. Where Aski stood in the new chat
- * (`standing`, aski/AskiStanding.tsx), Aski is the Cell's copy: it flies to
- * the line whole first, and becomes the Cell.
+ * (`standing`, aski/AskiStanding.tsx), Aski is the Cell's copy: it waits
+ * there until the line shows, flies to it whole, and becomes the Cell.
  */
 export function playForming(threadId: string, standing: Element | null = null): void {
   if (reducedMotion()) return;
@@ -198,17 +198,20 @@ export function playForming(threadId: string, standing: Element | null = null): 
   const step = timing("formStep");
   const figure = standing?.querySelector(".aski-figure") ?? standing;
   const from = figure?.getBoundingClientRect();
-  const still =
-    figure && from && from.height > 0
-      ? askiStill(from.height, figure).catch(() => null)
-      : Promise.resolve(null);
-  void Promise.all([boxOf(threadId), still]).then(async ([box, aski]) => {
-    if (box === null) return formAt(threadId, 0);
-    const layer = layerOver(document);
-    if (aski !== null && from) {
+  const layer = layerOver(document);
+  // The new chat's hero goes as its chat starts: Aski waits where it stood,
+  // as it looked, until its Cell's box shows.
+  const still = figure && from && from.height > 0 ? stillOf(figure) : null;
+  const held = still && from ? copyAt(layer.root, still, from) : null;
+  void boxOf(threadId).then(async (box) => {
+    if (box === null) {
+      layer.remove();
+      return formAt(threadId, 0);
+    }
+    if (still && held && from) {
       const travel = timed("travel");
       formAt(threadId, performance.now() + travel.duration + GLYPHS.length * step);
-      if (!(await flyCopy(layer.root, aski, from, threadId, 0, travel, "box", true))) {
+      if (!(await flyCopy(layer.root, still, from, threadId, 0, travel, "box", held))) {
         layer.remove();
         return formAt(threadId, 0);
       }

@@ -1,12 +1,12 @@
 // Each copy of Aski goes where its Cell will stand: its box when its pane
 // is on stage, else its tab's chip, and never into a page off stage, whose
-// boxes are drawn but unseen.
+// boxes are drawn but unseen. A copy wears the ink of where Aski stood.
 import { describe, expect, it } from "vite-plus/test";
 
 import type { CellRef, Tab } from "../tabs/layout";
 import { useWorkspaceStore } from "../tabs/store";
 import { render } from "../upstream/testRender";
-import { copyTargetOf } from "./copies";
+import { askiStill, copyTargetOf } from "./copies";
 
 const cell = (threadId: string): CellRef => ({ environmentId: "e", threadId, draftId: null });
 const tab = (id: string, ...threads: string[]): Tab => ({
@@ -59,5 +59,25 @@ describe("where a copy of Aski goes", () => {
     expect(copyTargetOf("otter")).toEqual({ box: chip.getBoundingClientRect(), into: "chip" });
     expect(copyTargetOf("pip")).toBeNull();
     expect(copyTargetOf("nowhere")).toBeNull();
+  });
+});
+
+describe("a copy of Aski", () => {
+  it("wears the ink of where Aski stood, though that left the page as the copy was drawn", async () => {
+    // A new chat's hero, where Aski stands, goes as the chat starts.
+    const hero = document.createElement("div");
+    hero.style.color = "rgb(240, 240, 240)";
+    hero.style.background = "rgb(16, 16, 16)";
+    document.body.append(hero);
+    const drawing = askiStill(40, hero);
+    hero.remove();
+    const still = await drawing;
+
+    const { data } = still.getContext("2d")!.getImageData(0, 0, still.width, still.height);
+    let inked = 0;
+    for (let at = 0; at < data.length; at += 4)
+      if (data[at + 3] === 255 && data[at] === 240 && data[at + 1] === 240 && data[at + 2] === 240)
+        inked += 1;
+    expect(inked).toBeGreaterThan(0);
   });
 });

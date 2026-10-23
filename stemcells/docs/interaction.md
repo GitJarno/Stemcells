@@ -24,8 +24,9 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
 - **One Cell from a draft** plays only the last three beats, in its own
   pane, starting on Enter. Aski stands over a new chat's headline, where
   the spawn's Aski stands (`aski/AskiStanding.tsx`): with one Cell, Aski
-  flies to the line whole and becomes the Cell; with several, the spawn's
-  Aski takes its place.
+  waits there, a still of itself as the headline goes, until the Cell's
+  line shows, then flies to it whole and becomes the Cell; with several,
+  the spawn's Aski takes its place.
 - **A copy into a chip** shrinks away there: the Cell stands in its pane
   when the person goes to it.
 - **From Aski's room**, each Cell Aski launches gets a copy from Aski to

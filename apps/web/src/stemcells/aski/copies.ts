@@ -35,12 +35,16 @@ export const copyHeight = (aski: number): number => Math.min(aski / 2, TALLEST);
 
 /** A still of Aski at rest, `height` CSS px tall, in the ink and on the ground `from` shows. */
 export async function askiStill(height: number, from: Element): Promise<HTMLCanvasElement> {
+  // Read before the wait: a new chat's hero, where Aski stands, leaves the
+  // page as the chat starts, and an element off the page has no colours.
+  const ink = inkOf(from);
+  const ground = groundOf(from);
   const { drawFigure } = await import("./stage/figure.ts");
   const scale = window.devicePixelRatio || 1;
   const tall = Math.max(1, Math.round(height * scale));
   // Aski is a little wider than tall, and stands centred on the canvas's foot.
   const wide = Math.ceil(tall * 1.1);
-  const drawn = drawFigure({ width: wide, height: tall, ink: inkOf(from), ground: groundOf(from) });
+  const drawn = drawFigure({ width: wide, height: tall, ink, ground });
   const page = from.ownerDocument;
   const canvas = page.createElement("canvas");
   canvas.width = wide;
@@ -62,6 +66,34 @@ export async function askiStill(height: number, from: Element): Promise<HTMLCanv
     paint.drawImage(tile, eye.x, eye.y);
   }
   return canvas;
+}
+
+/**
+ * What `figure` (aski/AskiFigure.tsx) shows this frame, eyes and all, as one
+ * still, copied at once from its canvases: it stays as `figure` goes.
+ */
+export function stillOf(figure: Element): HTMLCanvasElement {
+  const box = figure.getBoundingClientRect();
+  const scale = window.devicePixelRatio || 1;
+  const still = figure.ownerDocument.createElement("canvas");
+  still.width = Math.max(1, Math.round(box.width * scale));
+  still.height = Math.max(1, Math.round(box.height * scale));
+  still.style.width = `${box.width}px`;
+  still.style.height = `${box.height}px`;
+  const paint = still.getContext("2d");
+  for (const shown of figure.querySelectorAll("canvas")) {
+    if (shown.width === 0 || shown.height === 0) continue;
+    if (!shown.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;
+    const at = shown.getBoundingClientRect();
+    paint?.drawImage(
+      shown,
+      (at.left - box.left) * scale,
+      (at.top - box.top) * scale,
+      at.width * scale,
+      at.height * scale,
+    );
+  }
+  return still;
 }
 
 /**
@@ -105,27 +137,8 @@ function onScreen(element: Element, rect: DOMRect): boolean {
   );
 }
 
-/**
- * Flies a copy of `still` out of Aski's box `from`, after `delay` ms, on
- * `travel`, to where the Cell of `threadId` stands as it leaves (a pane
- * may still be settling): it buds from Aski's middle, bows on its way, and
- * lands on the target's middle. `whole`, it is Aski itself, and leaves at
- * its size. Resolves true as it lands, the copy gone; false at once, with
- * no copy, when the Cell's place no longer shows as `into` planned.
- */
-export async function flyCopy(
-  layer: HTMLElement,
-  still: HTMLCanvasElement,
-  from: Box,
-  threadId: string,
-  delay: number,
-  travel: { readonly duration: number; readonly easing: string },
-  into: CopyTarget["into"],
-  whole = false,
-): Promise<boolean> {
-  await new Promise((resolve) => setTimeout(resolve, delay));
-  const to = copyTargetOf(threadId);
-  if (to?.into !== into) return false;
+/** A copy of `still` on `layer`, at rest on the middle of Aski's box `from`. */
+export function copyAt(layer: HTMLElement, still: HTMLCanvasElement, from: Box): HTMLCanvasElement {
   const copy = layer.ownerDocument.createElement("canvas");
   copy.width = still.width;
   copy.height = still.height;
@@ -136,11 +149,42 @@ export async function flyCopy(
   const origin = centreOf(from);
   copy.style.left = `${origin.x}px`;
   copy.style.top = `${origin.y}px`;
+  layer.append(copy);
+  return copy;
+}
+
+/**
+ * Flies a copy of `still` out of Aski's box `from`, after `delay` ms, on
+ * `travel`, to where the Cell of `threadId` stands as it leaves (a pane
+ * may still be settling): it buds from Aski's middle, bows on its way, and
+ * lands on the target's middle. With `held`, Aski itself waiting at `from`
+ * (`copyAt`), that flies instead, leaving at its size. Resolves true as it
+ * lands, the copy gone; false at once, with no copy, when the Cell's place
+ * no longer shows as `into` planned.
+ */
+export async function flyCopy(
+  layer: HTMLElement,
+  still: HTMLCanvasElement,
+  from: Box,
+  threadId: string,
+  delay: number,
+  travel: { readonly duration: number; readonly easing: string },
+  into: CopyTarget["into"],
+  held: HTMLCanvasElement | null = null,
+): Promise<boolean> {
+  if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+  const to = copyTargetOf(threadId);
+  if (to?.into !== into) {
+    held?.remove();
+    return false;
+  }
+  const whole = held !== null;
+  const copy = held ?? copyAt(layer, still, from);
+  const origin = centreOf(from);
   const tall = Number.parseFloat(still.style.height) || 1;
   // Into a box, as tall as the box; into a chip, nearly nothing.
   const lands = to.into === "box" ? to.box.height / tall : 0.2;
   const way = trace(origin, centreOf(to.box), BEND, STEPS);
-  layer.append(copy);
   await copy
     .animate(
       way.map((p, k) => {

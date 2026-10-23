@@ -382,6 +382,8 @@ button[type="submit"][data-stemcells-over] {
 /* Aski's copy (aski/copies.ts): placed by its middle, moved on the compositor. */
 .sc-aski-copy {
   position: absolute;
+  /* Centred on where it stands, as its flight's keyframes centre it. */
+  transform: translate(-50%, -50%);
   will-change: transform, opacity;
 }
 
