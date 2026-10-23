@@ -24,6 +24,11 @@ describe("the close-out every Cell is given", () => {
     expect(T3_CODE_ORCHESTRATION_INSTRUCTIONS).toContain(closeOut);
   });
 
+  it("comes after upstream's sections, which keep their places", () => {
+    // Codex numbers its entries by place, and upstream's tests read them so.
+    expect(T3_CODE_ORCHESTRATION_SECTIONS.at(-1)).toBe(closeOut);
+  });
+
   it("fits a Codex entry whole", () => {
     expect(new TextEncoder().encode(closeOut).length).toBeLessThan(4_000);
   });
