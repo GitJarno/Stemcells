@@ -158,6 +158,12 @@ re-exports it (`export * from …`) and replaces only the names it changes.
   `substitutes.contract.test.ts` proves each one, and that every substitute
   exports what its upstream module does; the type check holds each to the
   upstream module's types.
+- **Or for one folder's views.** `SCOPED_SUBSTITUTES` hands our module only
+  to the upstream files under a folder, for a module many views share and
+  one of them should draw differently: the usage page draws each provider
+  as its Cell in the provider's colour (`ProviderInstanceIcon.tsx`), where
+  every other view keeps upstream's logos. The contract test proves a view
+  outside the folder still gets upstream's.
 - **The phone too.** `apps/mobile/src/stemcells/upstream/substitutes/`
   holds the phone's table and substitutes, in CommonJS for Metro's config;
   Metro (the app) and the phone's test config both read it, and its own

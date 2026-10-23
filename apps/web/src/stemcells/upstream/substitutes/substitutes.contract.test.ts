@@ -31,6 +31,7 @@ import * as UpstreamComposerScrollGesture from "../../../components/chat/compose
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
+import * as UpstreamProviderInstanceIcon from "../../../components/chat/ProviderInstanceIcon";
 import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamTimelineSystemDivider from "../../../components/chat/TimelineSystemDivider";
@@ -56,10 +57,11 @@ import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
+import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
 import * as OurFavicon from "./favicon";
 import * as OurTimelineLogic from "./MessagesTimeline.logic";
-import { SUBSTITUTES, substituteUpstreamModules } from "./plugin";
+import { SCOPED_SUBSTITUTES, SUBSTITUTES, substituteUpstreamModules } from "./plugin";
 import * as OurProviderIconUtils from "./providerIconUtils";
 import * as OurProviderSubagentBar from "./ProviderSubagentBar";
 import * as OurUpdateNotice from "./providerUpdateRequiredModels";
@@ -812,5 +814,67 @@ describe("Stemcells' substitutes for upstream modules", () => {
         return specifiers.some((specifier) => source.includes(`"${specifier}"`));
       });
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * Contract: a scoped substitute reaches the upstream views in its folder and
+ * no others. If this fails after a sync, the usage page draws providers'
+ * logos again, or another view lost upstream's.
+ */
+describe("Stemcells' substitutes for one folder's views", () => {
+  const icon = "apps/web/src/components/chat/ProviderInstanceIcon.tsx";
+  const scoped = {
+    [icon]: {
+      upstream: UpstreamProviderInstanceIcon,
+      substitute: OurProviderInstanceIcon satisfies typeof UpstreamProviderInstanceIcon,
+      // The usage page's provider rows, models, chart, plan sections and model dialog.
+      inside: [
+        "apps/web/src/components/usage/UsagePage.tsx",
+        "apps/web/src/components/usage/UsageProviderChart.tsx",
+        "apps/web/src/components/usage/UsageLimitsPooled.tsx",
+        "apps/web/src/components/usage/UsageModelDialog.tsx",
+      ],
+      // Settings' providers keep their logos.
+      outside: "apps/web/src/components/settings/ProviderInstanceCard.tsx",
+    },
+  } as const;
+
+  it("has a case here for every scoped substitute", () => {
+    expect(Object.keys(scoped)).toEqual(Object.keys(SCOPED_SUBSTITUTES));
+  });
+
+  it("each exports every name its upstream module does", () => {
+    for (const [upstream, { upstream: theirs, substitute: ours }] of Object.entries(scoped)) {
+      expect(Object.keys(ours).toSorted(), upstream).toEqual(Object.keys(theirs).toSorted());
+    }
+  });
+
+  it("dev: the folder's views resolve to ours, a view outside it to upstream's", async () => {
+    const config = await configFor("serve");
+    const server = await createServer({
+      ...config,
+      configFile: false,
+      root: webRoot,
+      logLevel: "silent",
+      server: { middlewareMode: true, hmr: false, ws: false, warmup: {} },
+      optimizeDeps: { noDiscovery: true, include: [] },
+    });
+    try {
+      const container = server.environments.client.pluginContainer;
+      for (const [upstream, { inside, outside }] of Object.entries(scoped)) {
+        const ours = NodePath.join(here, SCOPED_SUBSTITUTES[upstream]!.file);
+        for (const importer of [...inside, outside]) {
+          const source = NodeFS.readFileSync(fromRepo(importer), "utf8");
+          const specifier = /from\s+["']([^"']*ProviderInstanceIcon)["']/.exec(source)?.[1];
+          expect(specifier, importer).toBeDefined();
+          expect((await container.resolveId(specifier!, fromRepo(importer)))?.id, importer).toBe(
+            inside.includes(importer as never) ? ours : fromRepo(upstream),
+          );
+        }
+      }
+    } finally {
+      await server.close();
+    }
   });
 });

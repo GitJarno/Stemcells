@@ -95,6 +95,22 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Upstream modules Stemcells replaces only for the upstream files in one
+ * folder (`within`, from the repository's root): a module many views share,
+ * changed where one of them draws it. Each is proven like the rest, and also
+ * that a view outside the folder still gets upstream's module.
+ */
+export const SCOPED_SUBSTITUTES: Readonly<
+  Record<string, { readonly within: string; readonly file: string }>
+> = {
+  // The usage page draws each provider as its Cell, in the provider's colour.
+  "apps/web/src/components/chat/ProviderInstanceIcon.tsx": {
+    within: "apps/web/src/components/usage/",
+    file: "ProviderInstanceIcon.tsx",
+  },
+};
+
+/**
  * Upstream's public files Stemcells serves its own in place of, by the path
  * a page asks for, each with our file (from the repository's root). These
  * are the web icons, which carry T3's mark: the tab's favicon, and the
@@ -119,6 +135,13 @@ const substituteOf: ReadonlyMap<string, string> = new Map(
   Object.entries(SUBSTITUTES).map(([upstream, ours]) => [
     NodePath.join(repoRoot, upstream),
     NodePath.join(here, ours),
+  ]),
+);
+
+const scopedSubstituteOf: ReadonlyMap<string, { within: string; file: string }> = new Map(
+  Object.entries(SCOPED_SUBSTITUTES).map(([upstream, { within, file }]) => [
+    NodePath.join(repoRoot, upstream),
+    { within: NodePath.resolve(repoRoot, within) + NodePath.sep, file: NodePath.join(here, file) },
   ]),
 );
 
@@ -156,6 +179,8 @@ export function substituteUpstreamModules(): Plugin {
       if (importer === undefined || isOurs(importer)) return null;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (resolved === null || resolved.external) return resolved;
+      const scoped = scopedSubstituteOf.get(resolved.id);
+      if (scoped !== undefined && importer.startsWith(scoped.within)) return scoped.file;
       return substituteOf.get(resolved.id) ?? resolved;
     },
     configureServer(server) {
