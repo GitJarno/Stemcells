@@ -62,9 +62,14 @@ describe("upstream's usage marks, as the substitute colours them", () => {
     expect(chart).toContain("stroke={PROVIDER_PRESENTATION[provider].color}");
   });
 
-  it("the legend's dots and the models' bars", () => {
-    expect(page).toContain("backgroundColor: PROVIDER_PRESENTATION[provider].color");
+  it("the models' bars", () => {
     expect(page).toContain("backgroundColor: PROVIDER_PRESENTATION[model.provider].color");
+  });
+
+  it("the legend's key is the provider's Cell, with no dot beside it", () => {
+    // The Cell (`ProviderInstanceIcon.tsx`) wears the colour the dot did (`seams.md`).
+    expect(page).not.toContain("backgroundColor: PROVIDER_PRESENTATION[provider].color");
+    expect(page).toContain('<ProviderMark provider={provider} className="size-4" />');
   });
 
   it("the plan bars and their rows, which read the provider's colour by driver", () => {

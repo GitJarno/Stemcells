@@ -769,13 +769,6 @@ function UsageOverview({
               <div key={provider} className="flex flex-col gap-1">
                 <div className="flex items-baseline justify-between gap-4">
                   <span className="flex min-w-0 items-center gap-2 text-sm text-foreground">
-                    <span
-                      aria-hidden
-                      className="size-2 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor: PROVIDER_PRESENTATION[provider].color,
-                      }}
-                    />
                     <ProviderMark provider={provider} className="size-4" />
                     <span className="flex min-w-0 items-baseline gap-1.5">
                       <span className="truncate">{PROVIDER_PRESENTATION[provider].label}</span>
