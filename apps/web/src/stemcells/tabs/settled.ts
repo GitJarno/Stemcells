@@ -7,6 +7,7 @@
  */
 import { useSyncExternalStore } from "react";
 
+import { HAND_SETTLE_MS } from "./handSettles";
 import {
   arriving,
   closePane,
@@ -18,6 +19,26 @@ import {
   type NewIds,
   type Workspace,
 } from "./layout";
+
+/**
+ * Whether a pane leaves the slate: the Cell it showed at work turned settled
+ * while the person's settle was fresh (`handSettles.ts`). Upstream's
+ * auto-settle leaves no mark, so it never closes a chat under its reader,
+ * and a Cell the pane only ever showed settled was opened on purpose.
+ */
+export function leavesForSettle(input: {
+  readonly sawUnsettled: boolean;
+  readonly settled: boolean | null;
+  readonly markedAt: number | null;
+  readonly now: number;
+}): boolean {
+  return (
+    input.sawUnsettled &&
+    input.settled === true &&
+    input.markedAt !== null &&
+    input.now - input.markedAt < HAND_SETTLE_MS
+  );
+}
 
 /** Where a settled Cell stood, kept while its settle can be undone. */
 export interface Left {

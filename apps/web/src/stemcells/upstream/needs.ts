@@ -36,6 +36,8 @@ import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
 import { readEnvironmentScope } from "~/state/session";
 import { threadEnvironment } from "~/state/threads";
 
+import { markHandSettle, unmarkHandSettle } from "../tabs/handSettles";
+
 export type ApprovalDecision = ProviderApprovalDecision;
 export { usePrimaryEnvironmentId } from "~/state/environments";
 /**
@@ -221,8 +223,14 @@ export async function sendThreadCommand(
         environmentId,
         input: { threadId, visitedAt: command.visitedAt },
       });
-    case "settle":
-      return run(threadEnvironment.settle, { environmentId, input: { threadId } });
+    case "settle": {
+      // The person's "Nothing to do", so the Cell's pane closes for it.
+      const thread = { environmentId, threadId };
+      markHandSettle(thread);
+      const outcome = await run(threadEnvironment.settle, { environmentId, input: { threadId } });
+      if (!outcome.ok) unmarkHandSettle(thread);
+      return outcome;
+    }
   }
 }
 

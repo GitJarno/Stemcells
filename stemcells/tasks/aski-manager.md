@@ -186,7 +186,9 @@ fits, Reply… sends the person's.
   turns green when it is done, with Settle at its end.
 - **Settle** puts the Cell away: upstream's settle, and its pane closes
   wherever it is open (the tab too, when it was the last pane). Undo, for
-  the usual few seconds, brings back both. Asked, Aski brings a settled
+  the usual few seconds, brings back both. Upstream's auto-settle (a merged
+  pull request, a quiet day) closes nothing: a chat never leaves under its
+  reader unless the person settled it. Asked, Aski brings a settled
   Cell back, into its project's tab.
 - Writing to a done Cell makes it working again: the green goes.
 

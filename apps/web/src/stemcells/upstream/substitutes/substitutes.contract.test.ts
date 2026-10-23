@@ -50,6 +50,7 @@ import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShort
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
 import * as UpstreamComposerStash from "../../../components/chat/useComposerStash";
+import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
 import * as OurBranchToolbar from "./BranchToolbar";
@@ -95,6 +96,7 @@ import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
 import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
 import * as OurComposerStash from "./useComposerStash";
+import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 import * as OurUserMessageRow from "./TimelineUserMessageRow";
 
@@ -690,6 +692,22 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       // The stash and its shortcut, gated by the window's input.
       "apps/web/src/components/chat/ChatComposer.tsx": ["./useComposerStash", ["useComposerStash"]],
+    },
+  },
+  "apps/web/src/hooks/useThreadActions.ts": {
+    upstream: UpstreamThreadActions,
+    substitute: OurThreadActions satisfies typeof UpstreamThreadActions,
+    importers: {
+      // A settle from the sidebar, its menu or the settle key marks itself.
+      "apps/web/src/components/Sidebar.tsx": [
+        "../hooks/useThreadActions",
+        ["useAcknowledgeThreadWoke", "useThreadActions"],
+      ],
+      "apps/web/src/hooks/useThreadActionMenu.ts": ["./useThreadActions", ["useThreadActions"]],
+      "apps/web/src/components/chat/useThreadLifecycle.tsx": [
+        "../../hooks/useThreadActions",
+        ["useAcknowledgeThreadWoke", "useThreadActions"],
+      ],
     },
   },
   "apps/web/src/components/chat/TimelineUserMessageRow.tsx": {

@@ -102,6 +102,9 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // The work verbs: the timeline hands its rows the chat's verbs in our
   // context, read off the entries it draws.
   "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
+  // A settle the person sends marks itself, so its pane closes and an
+  // auto-settle's never does.
+  "apps/web/src/hooks/useThreadActions.ts": "useThreadActions.ts",
 };
 
 /**

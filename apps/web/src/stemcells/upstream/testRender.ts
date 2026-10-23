@@ -2,4 +2,4 @@
 // the React root and unmounts it when the test ends, and its fake timers for
 // one test, the full set its lint asks for.
 
-export { fakeTimers, render } from "../../../test/render";
+export { act, fakeTimers, render } from "../../../test/render";

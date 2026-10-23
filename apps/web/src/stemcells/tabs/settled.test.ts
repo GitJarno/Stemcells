@@ -10,7 +10,8 @@ import {
   type NewIds,
   type Workspace,
 } from "./layout";
-import { comeBack, leaveSlate } from "./settled";
+import { HAND_SETTLE_MS, markedAt, withMark, withoutMark } from "./handSettles";
+import { comeBack, leaveSlate, leavesForSettle } from "./settled";
 
 let counter = 0;
 function ids(): NewIds {
@@ -80,5 +81,36 @@ describe("a settled Cell leaving the slate", () => {
     const otter = leaveSlate(workspace, paneOf(workspace, "otter").id, 1);
     const reopened = openTab(otter.workspace, ids(), thread("otter"));
     expect(comeBack(reopened, otter.left!, ids(), WIDE)).toBe(reopened);
+  });
+});
+
+describe("which settle closes a pane", () => {
+  const now = 1_000_000;
+
+  it("leaves the chat open for an auto-settle, which marks nothing", () => {
+    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: null, now })).toBe(false);
+  });
+
+  it("closes it for the person's settle while its mark is fresh", () => {
+    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: now - 1, now })).toBe(
+      true,
+    );
+    const stale = now - HAND_SETTLE_MS;
+    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: stale, now })).toBe(
+      false,
+    );
+  });
+
+  it("leaves open a settled Cell the pane never showed at work", () => {
+    expect(leavesForSettle({ sawUnsettled: false, settled: true, markedAt: now, now })).toBe(false);
+  });
+
+  it("keeps a mark per chat, and lets old ones go", () => {
+    const otter = { environmentId: "env", threadId: "otter" };
+    const elsewhere = { environmentId: "other", threadId: "otter" };
+    const marks = withMark(withMark({}, otter, now), elsewhere, now + HAND_SETTLE_MS);
+    expect(markedAt(marks, otter)).toBeNull();
+    expect(markedAt(marks, elsewhere)).toBe(now + HAND_SETTLE_MS);
+    expect(markedAt(withoutMark(marks, elsewhere), elsewhere)).toBeNull();
   });
 });
