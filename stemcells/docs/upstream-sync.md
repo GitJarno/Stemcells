@@ -149,3 +149,17 @@ timing out under the load; `check-local` and the nightly set it themselves.
   toggle's gate moved with its code into `useRightPanelActions.ts`. A dozen
   contract tests followed the code they pin into its new files. Upstream
   pinned Node 26.12.1, which its suites now want.
+- 2026-10-23 (69 commits): upstream moved the chat's timeline into
+  `ThreadTimeline.tsx`, so a streamed reply re-renders only it (#23117).
+  ChatView's own entries no longer hold replies, which our media viewer
+  read; nothing failed, so read what a seam's data is made of when its
+  producer moves. Our timeline substitute now hands the viewer what it
+  draws. Upstream's lint now refuses em dashes in strings a person or an
+  agent reads, our folders included. Two of upstream's web tests had been
+  red on main since #258 and #261: `check-local` runs the quick gates, so a
+  substitute's imports and behaviour meet upstream's suites first in a
+  sync. A gate started inside Stemcells inherits `ELECTRON_RUN_AS_NODE=1`
+  from the app's server, which upstream's desktop artifact test fails on;
+  the gates unset it, and `GIT_DIR`, which `git bisect run` exports in a
+  worktree: upstream's tests' own `git init` then set `core.bare` on this
+  repository.

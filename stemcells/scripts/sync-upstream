@@ -153,6 +153,11 @@ run_gates() {
   # tests compare against real paths; Linux's isn't.
   TMPDIR="$(cd "${TMPDIR:-/tmp}" && pwd -P)/"
   export TMPDIR
+  # A shell inside Stemcells inherits ELECTRON_RUN_AS_NODE=1 from the app's
+  # server, which upstream's desktop artifact test fails on. A git that runs
+  # the gates (a hook, `git bisect run` in a worktree) exports GIT_DIR, and
+  # upstream's tests' own `git init` would then rewrite this repository.
+  unset ELECTRON_RUN_AS_NODE GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
   # Upstream's suites are written for its Node (package.json's engines).
   local want have
   want=$(node -p 'require("./package.json").engines.node.replace(/^\D*/, "").split(".")[0]')
