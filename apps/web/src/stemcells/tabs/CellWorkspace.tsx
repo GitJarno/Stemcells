@@ -31,6 +31,7 @@ import { ChatCarry, useCarriedPane } from "../windows/ChatCarry";
 import { revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
+import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
 import {
   addPaneOutsideAski,
   ASKI_TAB_ID,
@@ -348,6 +349,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
       <AskiMomentWatch aski={askiChat.status === "ready" ? askiChat.cell : null} />
       <AskiSpawn />
       <WindowsKeeper onMoved={routeToFocused} onFocusPane={focusPaneAndRoute} />
+      <SettledComeBack rowWidth={gridWidth} />
     </>
   );
   if (props.target === null && !keepGrid) {
@@ -652,6 +654,7 @@ function PaneSlot(props: {
   onClose: ((paneId: string) => void) | null;
 }) {
   const presence = useCellPresence(props.pane.cell);
+  useLeavesWhenSettled(props.pane, props.onClose !== null && props.aski === null);
   const carried = useCarriedPane() === props.pane.id;
   const { onClose } = props;
   // Other panes render only a chat that still exists, so upstream's view never

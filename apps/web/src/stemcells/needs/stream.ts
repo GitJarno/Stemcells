@@ -113,3 +113,13 @@ export const readNeeds = (): NeedsState => state;
 export function useNeeds(): NeedsState {
   return useSyncExternalStore(subscribeNeeds, readNeeds, readNeeds);
 }
+
+/**
+ * A Cell's stage as the server reads it (stage.ts there), or null: not in
+ * reach (settled, a draft, on another machine), or not known yet.
+ */
+export function useCellStage(threadId: string | null): CellStanding["stage"] | null {
+  const { cells } = useNeeds();
+  if (threadId === null) return null;
+  return cells?.find((cell) => cell.threadId === threadId)?.stage ?? null;
+}

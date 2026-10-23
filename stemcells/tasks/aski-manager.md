@@ -211,7 +211,7 @@ Each is one pull request.
 - [x] 2. The close-out: the section every Cell gets, and the server reading
       each Cell's stage from facts, the line and the pre-read.
 - [x] 3. The roster under Aski's chat, and "Done" with Settle in the column.
-- [ ] 4. Settling puts a Cell away: its pane closes; the green line and
+- [x] 4. Settling puts a Cell away: its pane closes; the green line and
       Settle in the Cell's own tab.
 - [ ] 5. Aski has no project.
 - [ ] 6. The peek.

@@ -29,3 +29,13 @@ export function useCellPlace(
     ? { name: "No project", isProject: false }
     : { name: project.title, isProject: true };
 }
+
+/**
+ * Whether the person settled the chat: upstream's own settle sets the
+ * override, where its auto-settle (a merged pull request, a quiet day) only
+ * dates it. Null while the chat isn't known yet, or is a draft.
+ */
+export function useCellSettledByPerson(cell: CellRef | null): boolean | null {
+  const shell = useQuietThreadShell(cell && cell.draftId === null ? threadRefOf(cell) : null);
+  return shell === null ? null : shell.settledOverride === "settled";
+}

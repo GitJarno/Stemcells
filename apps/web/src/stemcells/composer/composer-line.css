@@ -42,6 +42,37 @@
   height: var(--sc-composer-line);
 }
 
+/* Done: the ledge takes the done green, the stage's colour in Aski's
+   roster, and Settle stands at its right end, before the stash. */
+[data-stemcells-composer-line][data-stage="done"] .composer-line-ledge::before {
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--sc-success) 14%, transparent),
+      color-mix(in srgb, var(--sc-success) 14%, transparent)
+    ),
+    linear-gradient(var(--chat-composer-attached-surface), var(--chat-composer-attached-surface)),
+    var(--background);
+}
+[data-stemcells-composer-line] .composer-line-settle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  margin-inline-start: auto;
+  color: color-mix(in oklch, var(--sc-success) 70%, var(--foreground));
+  font-weight: 500;
+}
+[data-stemcells-composer-line] .composer-line-settle svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+[data-stemcells-composer-line]
+  .composer-line-settle
+  + .composer-line-stash-slot
+  .composer-line-stash {
+  margin-inline-start: var(--sc-space-sm);
+}
+
 /* The stash at the ledge's right end (`LineStash.tsx`): it never truncates.
    What the chat is about gives way first, then the project. */
 [data-stemcells-composer-line] .composer-line-stash-slot {
@@ -175,7 +206,12 @@
 }
 @container stemcells-pane (width <= 240px) {
   [data-stemcells-composer-line]
-    :is(.composer-line-one-liner, .composer-line-runs-on, .composer-line-parent) {
+    :is(
+      .composer-line-one-liner,
+      .composer-line-runs-on,
+      .composer-line-parent,
+      .composer-line-settle span
+    ) {
     display: none;
   }
   [data-stemcells-composer-line]:not([data-draft]) .composer-line-env {

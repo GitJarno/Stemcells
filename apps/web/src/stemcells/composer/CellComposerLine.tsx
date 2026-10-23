@@ -1,9 +1,10 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (composer-line.css), outside upstream's Tailwind entry. */
-import { CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
+import { CheckIcon, CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
 import { type CSSProperties, use, useLayoutEffect } from "react";
 
 import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
+import { useCellStage } from "../needs/stream";
 import { RenameField } from "../rename/RenameField";
 import { CellMark } from "../tabs/CellMark";
 import { PaneCellContext, PaneComposerContext } from "../tabs/paneCell";
@@ -17,6 +18,7 @@ import {
 } from "../upstream/chatHeader";
 import { useNavigateToCell } from "../upstream/routes";
 import { useCellBranch } from "../upstream/checkout";
+import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
 import { cn, ComposerBanner, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { startChatCarry } from "../windows/ChatCarry";
@@ -39,7 +41,9 @@ import "./composer-line.css";
  * work. After the project, the branch the chat is on, whose ⌄ opens
  * upstream's branch toolbar where upstream offers it (`LineEnv.tsx`).
  * Before the chat is sent, only that branch and the stash, once git is
- * known; nothing outside a Cell's pane.
+ * known; nothing outside a Cell's pane. Once the Cell is done, the ledge
+ * turns green and offers Settle, which puts the Cell away
+ * (stemcells/tasks/aski-manager.md, decision 10).
  *
  * A pane has no header, so the line does the header's jobs, as upstream's
  * did them: the name and the one-liner open the chat's menu and a
@@ -63,6 +67,8 @@ export function CellComposerLine() {
   const env = use(ComposerEnvSlot);
   const checkout = useCellBranch(cell);
   const away = useCellAway(cell?.threadId);
+  const stage = useCellStage(cell?.draftId === null ? cell.threadId : null);
+  const settle = useSettleCell();
   const offered = env?.offered === true;
   // Where the menu offers a choice, a checkout on no branch reads as
   // upstream's picker reads it; elsewhere it names nothing.
@@ -102,7 +108,7 @@ export function CellComposerLine() {
     onBlur: menu.onBlur,
   } as const;
   return (
-    <div data-stemcells-composer-line="">
+    <div data-stemcells-composer-line="" data-stage={stage ?? undefined}>
       <div
         className="composer-line-roof pointer-events-none text-foreground"
         style={{ "--cell-stands-in": `${CELL_STANDS_IN}px` } as CSSProperties}
@@ -211,6 +217,17 @@ export function CellComposerLine() {
               </TooltipTrigger>
               <TooltipPopup side="top">{line}</TooltipPopup>
             </Tooltip>
+          ) : null}
+          {stage === "done" ? (
+            <button
+              type="button"
+              className="composer-line-settle composer-line-act"
+              aria-label={`Settle ${name}`}
+              onClick={() => void settle(cell)}
+            >
+              <CheckIcon aria-hidden />
+              <span>Settle</span>
+            </button>
           ) : null}
           <span ref={stash?.setElement} className="composer-line-stash-slot" />
         </div>

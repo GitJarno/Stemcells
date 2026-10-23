@@ -1,0 +1,84 @@
+import { describe, expect, it } from "vite-plus/test";
+
+import {
+  activateTab,
+  EMPTY_WORKSPACE,
+  openTab,
+  setCell,
+  splitRight,
+  type CellRef,
+  type NewIds,
+  type Workspace,
+} from "./layout";
+import { comeBack, leaveSlate } from "./settled";
+
+let counter = 0;
+function ids(): NewIds {
+  counter += 1;
+  return {
+    tab: `tab-${counter}`,
+    row: `row-${counter}`,
+    column: `col-${counter}`,
+    pane: `pane-${counter}`,
+  };
+}
+const thread = (threadId: string): CellRef => ({ environmentId: "env", threadId, draftId: null });
+const WIDE = 2_000;
+
+function shape(workspace: Workspace) {
+  return workspace.tabs.map((tab) =>
+    tab.rows.flatMap((row) =>
+      row.columns.flatMap((column) => column.panes.map((pane) => pane.cell?.threadId ?? "∅")),
+    ),
+  );
+}
+
+/** Aski's tab, then Harbor with Floof and Pip side by side, then Atlas with Otter, on stage. */
+function slate() {
+  let workspace = openTab(EMPTY_WORKSPACE, ids(), thread("aski"));
+  workspace = openTab(workspace, ids(), thread("floof"));
+  const harbor = workspace.activeTabId!;
+  workspace = splitRight(workspace, ids(), WIDE);
+  workspace = setCell(workspace, workspace.tabs[1]!.focusedPaneId, thread("pip"));
+  workspace = openTab(workspace, ids(), thread("otter"));
+  return { workspace, harbor };
+}
+
+const paneOf = (workspace: Workspace, threadId: string) =>
+  workspace.tabs
+    .flatMap((tab) => tab.rows.flatMap((row) => row.columns.flatMap((column) => column.panes)))
+    .find((pane) => pane.cell?.threadId === threadId)!;
+
+describe("a settled Cell leaving the slate", () => {
+  it("closes its pane, and its tab with its last pane, and keeps where it stood", () => {
+    const { workspace, harbor } = slate();
+    const otter = leaveSlate(workspace, paneOf(workspace, "otter").id, 1);
+    expect(shape(otter.workspace)).toEqual([["aski"], ["floof", "pip"]]);
+    expect(otter.left).toMatchObject({ tabIndex: 2, onStage: true });
+    const floof = leaveSlate(workspace, paneOf(workspace, "floof").id, 1);
+    expect(shape(floof.workspace)).toEqual([["aski"], ["pip"], ["otter"]]);
+    expect(floof.left).toMatchObject({ tabId: harbor, onStage: false });
+  });
+
+  it("comes back to its tab on Undo, or to a tab where its own stood", () => {
+    const { workspace } = slate();
+    const floof = leaveSlate(workspace, paneOf(workspace, "floof").id, 1);
+    expect(shape(comeBack(floof.workspace, floof.left!, ids(), WIDE))).toEqual([
+      ["aski"],
+      ["pip", "floof"],
+      ["otter"],
+    ]);
+    const onAtlas = activateTab(workspace, workspace.tabs[2]!.id);
+    const otter = leaveSlate(onAtlas, paneOf(onAtlas, "otter").id, 1);
+    const back = comeBack(otter.workspace, otter.left!, ids(), WIDE);
+    expect(shape(back)).toEqual([["aski"], ["floof", "pip"], ["otter"]]);
+    expect(back.activeTabId).toBe(back.tabs[2]!.id);
+  });
+
+  it("doesn't come back twice when it was opened again meanwhile", () => {
+    const { workspace } = slate();
+    const otter = leaveSlate(workspace, paneOf(workspace, "otter").id, 1);
+    const reopened = openTab(otter.workspace, ids(), thread("otter"));
+    expect(comeBack(reopened, otter.left!, ids(), WIDE)).toBe(reopened);
+  });
+});
