@@ -206,9 +206,9 @@ done."
 
 Each is one pull request.
 
-- [ ] 1. The room's shape: the column always on, no surfaces or terminal
+- [x] 1. The room's shape: the column always on, no surfaces or terminal
       in Aski's tab, this page.
-- [ ] 2. The close-out: the section every Cell gets, and the server reading
+- [x] 2. The close-out: the section every Cell gets, and the server reading
       each Cell's stage from facts, the line and the pre-read.
 - [ ] 3. The roster under Aski's chat, and "Done" with Settle in the column.
 - [ ] 4. Settling puts a Cell away: its pane closes; the green line and

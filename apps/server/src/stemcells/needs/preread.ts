@@ -7,7 +7,8 @@
  * finely; until then, or with it off, this decides alone.
  */
 
-export type Cue = "question" | "offer" | "stopped";
+/** "left": the Cell's own close-out names a step that is the person's (`closeOut.ts`). */
+export type Cue = "question" | "offer" | "stopped" | "left";
 
 export interface PreRead {
   readonly cue: Cue;

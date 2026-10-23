@@ -75,6 +75,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `packages/provider-core/src/server/textGeneration.ts`, `packages/provider-core/src/server/textGenerationOperations.ts` | `ProviderTextGeneration` has an optional `runLean` (a `Runner`), and `fromRunner` hands its runner out as it | Aski's planner (below) makes one structured call of its own on any runner-based provider, with that provider's flags, timeouts and decoding, and no new operation threaded through upstream's service, RPC and fakes |
 | `apps/server/src/textGeneration/ClaudeTextGeneration.ts` | A `runLean` call also passes `--setting-sources ""` and `--no-session-persistence` | The planner runs lean, as the Swift app's split did: no settings files, no session saved for each plan; upstream's own operations are unchanged |
 | `packages/provider-opencode/src/server/textGeneration.ts` | Its operation names include `runLean` | Its errors name the operation, which may now be the planner's |
+| `packages/provider-core/src/server/orchestrationInstructions.ts`, `packages/provider-core/src/server/stemcells/closeOut.ts` | Imports `STEMCELLS_CLOSE_OUT_SECTION` (its first line) and makes it the first of `T3_CODE_ORCHESTRATION_SECTIONS` (one line); the section is a new file of ours | The close-out (below): every Cell, on every provider, is told to end a stop saying where it stands |
 | `apps/server/src/textGeneration/ClaudeTextGeneration.test.ts` | Two cases: a `runLean` call carries the lean flags, a title call doesn't | They pin that seam |
 | `apps/server/src/textGeneration/CodexTextGeneration.ts` | A `runLean` call also passes `--ignore-user-config` and `--ignore-rules` | The closest Codex has to Claude's lean call: no `config.toml` and no rules files (it already runs `--ephemeral`, saving no session). It still reads its login from `CODEX_HOME` and the global `AGENTS.md` there, which no flag turns off (checked on codex-cli 0.163.0). A CLI too old for these flags fails the call, and the planner falls back to the words |
 | `apps/server/src/textGeneration/CodexTextGeneration.test.ts` | Two cases: a `runLean` call carries those flags, a title call doesn't | They pin that seam |
@@ -717,6 +718,22 @@ Aski's instance shares its driver's home, else handed off. Nothing refuses
 that, so the composer needs no "Move" action. `cellInstance.contract.test.ts`
 runs upstream's composer on a chat seeded on Aski's instance, and the
 server's `askiInstanceMove.contract.test.ts` pins the carry-over.
+
+### The close-out
+
+Every chat upstream starts gets its orchestration sections: Claude as one
+appended prompt, Codex one instruction entry per section, the other
+providers likewise. Ours is one more section, first among them, in a file
+of its own beside upstream's (`stemcells/closeOut.ts`), as no package of
+ours may hold server code upstream's providers import. It tells a Cell to
+ask its choices through its question tool and to end each stop with
+`**Done:**` or `**Left:** you, me or waiting —`
+(`stemcells/tasks/aski-manager.md`, decisions 7 and 8), which
+`apps/server/src/stemcells/needs/closeOut.ts` reads for each Cell's stage.
+Aski's chat gets it too, and the section tells Aski it isn't Aski's.
+`closeOut.contract.test.ts` pins it among upstream's sections, whole within
+a Codex entry, and asking for the lines the reader reads. Upstream could
+take the extension point (a system prompt per thread, `fork.md` rule 5).
 
 ### Aski's planner
 

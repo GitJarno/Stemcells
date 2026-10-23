@@ -23,6 +23,7 @@ export type Choice =
   | { readonly kind: "dismiss" }
   | { readonly kind: "later" }
   | { readonly kind: "goAhead" }
+  | { readonly kind: "didIt" }
   | { readonly kind: "nothingToDo" }
   | { readonly kind: "nudge" }
   | { readonly kind: "stopAndReply" }
@@ -128,6 +129,7 @@ export const PHRASES = {
   // Upstream's own words when it resumes a run stopped by a limit (ChatView).
   continueNow: "Continue where you left off.",
   goAhead: "Go ahead.",
+  didIt: "Done. Carry on.",
 } as const;
 
 const RECOMMENDED = /\s*\(recommended\)\s*/i;
@@ -152,7 +154,8 @@ const option = (
 /** Why a Cell with full access still asks, by the kind upstream reports (#22546). */
 const FULL_ACCESS_WHY: Record<NonNullable<NeedRequest["fullAccessOverride"]>, string> = {
   ask_rule: "Asked despite full access: an ask rule in the provider's settings matches this.",
-  provider_check: "Asked despite full access: the provider checks this itself, and no setting skips it.",
+  provider_check:
+    "Asked despite full access: the provider checks this itself, and no setting skips it.",
 };
 
 export const LATER: CardOption = option("later", "Later", { kind: "later" });
@@ -178,7 +181,16 @@ const PROSE: Record<NonNullable<Need["prose"]>["cue"], { tag: string; headline: 
   question: { tag: "Question", headline: "Has a question" },
   offer: { tag: "Question", headline: "Offers to go on" },
   stopped: { tag: "Stopped", headline: "Stopped short of done" },
+  left: { tag: "Your step", headline: "Waits on you" },
 };
+
+/** The person did the step a Cell left them, and tells it so. */
+const didIt = option(
+  "did-it",
+  "Done it",
+  { kind: "didIt" },
+  { consequence: `Sends “${PHRASES.didIt}”` },
+);
 
 function questionOf(question: AskedQuestion): CardQuestion {
   return {
@@ -264,7 +276,8 @@ export function cardOf(need: Need, now: number): Card {
         headline,
         request: request.prompt,
         quote: request.reason,
-        why: request.fullAccessOverride === null ? null : FULL_ACCESS_WHY[request.fullAccessOverride],
+        why:
+          request.fullAccessOverride === null ? null : FULL_ACCESS_WHY[request.fullAccessOverride],
         options: [
           ...decisions.map((choice, index) =>
             option(
@@ -427,7 +440,9 @@ export function cardOf(need: Need, now: number): Card {
         options:
           cue === "question"
             ? [reply("Your answer…"), nothingToDo]
-            : [goAhead(cue === "stopped"), reply("Tell it what to do…"), nothingToDo],
+            : cue === "left"
+              ? [didIt, reply("Tell it what you did…"), nothingToDo]
+              : [goAhead(cue === "stopped"), reply("Tell it what to do…"), nothingToDo],
       };
     }
     case "stuck": {

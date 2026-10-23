@@ -10,12 +10,15 @@ import * as Stream from "effect/Stream";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 
 import * as UpstreamNeeds from "../upstream/needs.ts";
+import { stopOf, type Stop } from "./closeOut.ts";
 import { needOf, signalsOf, stuckFor, type Need, type NeedDetail, type Signal } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
-import { preRead } from "./preread.ts";
+import { standingsOf, type CellStanding } from "./stage.ts";
 
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
+  /** Every Cell in reach and its stage, for Aski's roster (stage.ts). */
+  readonly cells: ReadonlyArray<CellStanding>;
 }
 
 /**
@@ -72,16 +75,21 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
         : signal.kind === "plan"
           ? Effect.map(source.plan(shell.id), (plan) => ({ plan }))
           : signal.kind === "prose"
-            ? Effect.map(source.reply(shell.id, runId), (reply) => ({
-                prose: reply === null ? null : preRead(reply),
-              }))
+            ? Effect.map(source.reply(shell.id, runId), (reply) => {
+                const stop = reply === null ? null : stopOf(reply);
+                return { prose: stop?.ask ?? null, stop };
+              })
             : signal.kind === "stuck"
               ? Effect.map(source.inFlight(shell.id, runId), (inFlight) => ({ inFlight }))
               : Effect.succeed({});
     return Effect.tap(read, (detail) =>
       Effect.sync(() => {
         // A report's verdict is kept like any read: the key changes with the next run.
-        const missed = detail.request === null || detail.plan === null || detail.inFlight === null;
+        const missed =
+          detail.request === null ||
+          detail.plan === null ||
+          detail.inFlight === null ||
+          detail.stop === null;
         if (!missed) details.set(signal.key, detail);
       }),
     );
@@ -117,7 +125,14 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     const needs = kept.map(({ signal, detail }) =>
       needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0),
     );
-    const list = { needs: needs.toSorted((a, b) => a.number - b.number) };
+    const stops = new Map<string, Stop>();
+    for (const { signal, detail } of read) {
+      if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
+    }
+    const list: NeedsList = {
+      needs: needs.toSorted((a, b) => a.number - b.number),
+      cells: standingsOf([...shells.values()], needs, stops, now),
+    };
     if (sent !== null && Equal.equals(list, sent)) return;
     sent = list;
     yield* SubscriptionRef.set(latest, list);
@@ -175,7 +190,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     Stream.filter((list): list is NeedsList => list !== null),
   );
   const list = Stream.runHead(changes).pipe(
-    Effect.map(Option.getOrElse((): NeedsList => ({ needs: [] }))),
+    Effect.map(Option.getOrElse((): NeedsList => ({ needs: [], cells: [] }))),
   );
   return Needs.of({ list, changes });
 });

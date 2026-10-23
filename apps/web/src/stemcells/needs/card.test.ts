@@ -218,7 +218,7 @@ describe("a card says what the Cell asked, as it asked it", () => {
 });
 
 describe("cards read from a Cell's prose, with no model", () => {
-  const prose = (cue: "question" | "offer" | "stopped", text = "Want me to push it?") =>
+  const prose = (cue: "question" | "offer" | "stopped" | "left", text = "Want me to push it?") =>
     cardOf(
       needFixture({
         kind: "prose",
@@ -240,6 +240,16 @@ describe("cards read from a Cell's prose, with no model", () => {
     expect(prose("offer").options[0]?.recommended).toBe(false);
     expect(prose("stopped").options[0]).toMatchObject({ title: "Go ahead", recommended: true });
     expect(prose("stopped").tag).toBe("Stopped");
+  });
+
+  it("asks the person to say they did the step a Cell left them, recommending nothing", () => {
+    const left = prose("left", "run the sign-in with Drive access");
+    expect(left).toMatchObject({ tag: "Your step", quote: "run the sign-in with Drive access" });
+    expect(left.options.map((each) => [each.title, each.recommended])).toEqual([
+      ["Done it", false],
+      ["Reply…", false],
+      ["Nothing to do", false],
+    ]);
   });
 
   it("answers a question only in the person's words: Go ahead can't answer one", () => {

@@ -71,6 +71,8 @@ export function commandsFor(
       return [{ type: "snooze", until: new Date(now + LATER_MS).toISOString() }];
     case "goAhead":
       return [{ type: "message", text: PHRASES.goAhead }];
+    case "didIt":
+      return [{ type: "message", text: PHRASES.didIt }];
     case "nothingToDo":
       return [{ type: "settle" }];
     case "nudge":

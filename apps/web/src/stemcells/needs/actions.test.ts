@@ -72,6 +72,9 @@ describe("a choice as upstream's commands", () => {
       { type: "message", text: "Go ahead." },
     ]);
     expect(commandsFor(prose, { kind: "nothingToDo" }, {}, NOW)).toEqual([{ type: "settle" }]);
+    expect(commandsFor(prose, { kind: "didIt" }, {}, NOW)).toEqual([
+      { type: "message", text: "Done. Carry on." },
+    ]);
   });
 
   it("nudges a stuck run without stopping it, or stops it to start again from the person's words", () => {

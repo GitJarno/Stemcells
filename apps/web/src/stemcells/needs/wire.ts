@@ -90,8 +90,11 @@ export interface Need {
   } | null;
   readonly prose: {
     readonly runId: string;
-    /** What the pre-read found: a question, an offer to go on, or a stop short of done. */
-    readonly cue: "question" | "offer" | "stopped";
+    /**
+     * What the pre-read found: a question, an offer to go on, or a stop short
+     * of done; or the Cell's own close-out naming a step that is the person's.
+     */
+    readonly cue: "question" | "offer" | "stopped" | "left";
     /** The reply's last paragraph, word for word. */
     readonly text: string;
   } | null;

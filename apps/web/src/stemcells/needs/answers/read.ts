@@ -19,7 +19,7 @@ export interface Addressee {
   readonly name: string | null;
   readonly kind: NeedKind;
   /** What a prose card's pre-read found. */
-  readonly cue: "question" | "offer" | "stopped" | null;
+  readonly cue: "question" | "offer" | "stopped" | "left" | null;
   readonly card: Card;
   /** It left the list while the person typed: nothing goes to it. */
   readonly gone: boolean;
@@ -616,7 +616,7 @@ export function readAnswers(
       }
       const offer = card.kind === "prose" && card.cue !== "question";
       const yesTo = offer
-        ? has("goAhead")
+        ? (has("goAhead") ?? has("didIt"))
         : card.kind === "plan"
           ? has("build")
           : card.kind === "failed"

@@ -1,3 +1,4 @@
+import { STEMCELLS_CLOSE_OUT_SECTION } from "./stemcells/closeOut.ts";
 import type { ProviderInteractionMode } from "@t3tools/contracts";
 
 /**
@@ -6,6 +7,7 @@ import type { ProviderInteractionMode } from "@t3tools/contracts";
  * of any entry over 4,000 bytes, so start a new section before one gets close.
  */
 export const T3_CODE_ORCHESTRATION_SECTIONS: ReadonlyArray<string> = [
+  STEMCELLS_CLOSE_OUT_SECTION,
   `## T3 Code orchestration
 
 The \`t3-code\` MCP server provides app-owned orchestration. Treat these concepts distinctly:

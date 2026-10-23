@@ -21,6 +21,7 @@ import type {
   RequestKind,
   Shell,
 } from "../upstream/needs.ts";
+import type { Stop } from "./closeOut.ts";
 import type { Cue, PreRead } from "./preread.ts";
 
 /** The provider instance Aski's chat runs on; the web's `aski/setup.ts` names the same. */
@@ -105,7 +106,8 @@ export interface Signal {
   readonly blocks: boolean;
 }
 
-const ACTIVE_RUN = new Set<Shell["status"]>([
+/** A run under way: it may be setting up, queued, working or waiting on a request. */
+export const ACTIVE_RUN = new Set<Shell["status"]>([
   "preparing",
   "queued",
   "starting",
@@ -170,7 +172,7 @@ function runEnded(shell: Shell): number {
 }
 
 /** Waits on what finishes without the person: its own background work, or another Cell. */
-const waitsOnItsOwn = (shell: Shell) =>
+export const waitsOnItsOwn = (shell: Shell) =>
   shell.blockedOnThreadWait === true || (shell.pendingBackgroundTasks ?? []).length > 0;
 
 /**
@@ -370,8 +372,10 @@ export interface Need {
 export interface NeedDetail {
   readonly request?: RequestDetail | null;
   readonly plan?: PlanDetail | null;
-  /** Null: the reply was a report, or couldn't be read. */
+  /** Null: the reply leaves the person nothing, or couldn't be read. */
   readonly prose?: PreRead | null;
+  /** What the finished reply says of where the Cell stands; null when it couldn't be read. */
+  readonly stop?: Stop | null;
   readonly inFlight?: InFlight | null;
 }
 
