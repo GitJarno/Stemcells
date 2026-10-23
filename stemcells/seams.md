@@ -129,6 +129,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `packages/contracts/src/resourceTelemetry.ts`, `apps/server/src/resourceTelemetry/HostResources.ts` | `HostResourcesSnapshot` gains optional `diskFreeBytes` and `diskTotalBytes`; `HostResources` fills them from one `statfs` of the home folder, and leaves them out when it can't read it | "Disk on every machine" (below) |
 | `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx` | Import `stemcellsSettingsScreens` and `StemcellsServerRows` from `stemcells/pages`; the settings stack spreads the screens after its own, and Server settings ends with the rows (an import and a line each) | Same, on the phone: its Settings › Disk |
 | `apps/server/src/project/RepositoryIdentityResolver.ts` | Imports `ghDefaultRemote` from `stemcells/upstream/ghDefaultRemote.ts`; the primary remote is `(yield* ghDefaultRemote(cacheKey, remotes)) ?? pickPrimaryRemote(remotes)` (two lines) | A fork's own repository (below): the remote `gh repo set-default` names, where upstream always took `upstream` over `origin` |
+| `apps/server/src/provider/ProviderOrchestrationAdapterInfrastructure.ts` | Imports `withPromptSuggestions` from `stemcells/upstream/claudeSuggestions.ts` on its first line; the Claude query runner in `layer` is `withPromptSuggestions(ClaudeAdapterV2.layerQueryRunner)` (two lines) | What to say next (below): every Claude query asks for Claude's own next-prompt suggestion and hands it to ours, where `ClaudeAdapterV2.ts`, one of upstream's hottest files, would have taken three seams; the adapter never sees the message |
 
 ### One import per hot file
 
@@ -773,6 +774,48 @@ CLIs:
   holds, still load.
 - **Codex 0.163.0** still reads its login and the global `AGENTS.md` from
   `CODEX_HOME` (the `CodexTextGeneration.ts` row above).
+
+### What to say next
+
+When a Cell finishes, its empty composer shows what the person would most
+likely say next; Tab, → or a tap on its key fills it in, Esc hides it
+(`stemcells/tasks/prompt-suggestions.md`).
+
+- **Claude's own, when it makes one.** The Agent SDK's
+  `promptSuggestions` has Claude Code predict the next prompt after each
+  turn, on a fork that reads the turn's prompt cache, so it costs almost
+  nothing. The runner seam above turns it on for every query and keeps
+  the suggestion in memory (`suggestions/provider.ts`), dropping one that
+  comes after a newer prompt went; the route takes it only when no other
+  run began between its run and it, so a rolled-back turn's never shows.
+- **Everyone else's from one short call**, `POST
+  /api/stemcells/prompt-suggestion`: the last reply and the person's last
+  four messages, on the text generation model through `runLean`, in a
+  private temporary folder, for at most 20 s. A Claude run's own is waited
+  for until 10 s after the run completed; the call stands in only when
+  none came. No other provider predicts one: Codex's experimental
+  `thread/sample` isn't in our app-server schema, and ACP and OpenCode
+  have nothing. So a new provider has suggestions with no code of its
+  own, and one that predicts them hands its suggestion to
+  `offerProviderSuggestion`.
+- **Spent once, on a reply someone opens.** The page asks for the reply
+  its composer shows; the route answers each reply once however many
+  windows ask, and makes the call only for a completed run's reply within
+  an hour of it. It spends, so it takes the operate scope. Nothing is
+  stored: no event, projection or column (upstream closed its own attempt,
+  #8524, for storing them as activities).
+- **No line of the composer changes.** The composer's substitute asks and
+  hands the suggestion to the editor's, which draws it only where
+  upstream would say its idle hint (`suggestions.contract.test.ts` pins
+  the hint and the placeholder's look), and takes it as an edit, as
+  typing would.
+- Settings › Aski has the switch, on this device: off, the device asks
+  for none, so no short call is made for it. Claude still predicts its own
+  after each turn, as Claude Code does (its own `promptSuggestionEnabled`
+  setting turns that off). A wait for Claude's ends when a new prompt
+  goes, and no call is made for a reply the person has moved on from. The
+  phone's composer doesn't show suggestions yet; the route is ready for
+  it.
 
 ### Windows
 

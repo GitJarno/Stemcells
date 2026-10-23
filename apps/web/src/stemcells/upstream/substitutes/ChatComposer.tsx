@@ -5,7 +5,9 @@
 // (`stemcells/words/readoutSlot.ts`). What reads the words hands it both
 // through slots, each reader under its turn; upstream's composer and its
 // send stay as they are. Only
-// Aski's own chat offers Aski's instance (`../cellInstance.ts`).
+// Aski's own chat offers Aski's instance (`../cellInstance.ts`). Once its
+// Cell has replied, the composer hands its editor what the person would
+// likely say next (`stemcells/suggestions`).
 import { memo, type ReactNode, useState } from "react";
 
 import {
@@ -14,6 +16,10 @@ import {
 } from "../../../components/chat/ChatComposer";
 import { type ShownReadout, WordsReadoutShown, WordsReadoutSlot } from "../../words/readoutSlot";
 import { oneSendAtATime, sendSlots, WordsSendSlot } from "../../words/send";
+import {
+  PromptSuggestionContext,
+  usePromptSuggestion,
+} from "../../suggestions/usePromptSuggestion";
 import { useComposerInstances } from "../cellInstance";
 
 export * from "../../../components/chat/ChatComposer";
@@ -21,6 +27,7 @@ export * from "../../../components/chat/ChatComposer";
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
   const [slots] = useState(sendSlots);
   const instances = useComposerInstances(props);
+  const suggestion = usePromptSuggestion(props);
   // A send waiting for the draft to show what a last word set, or for Aski's
   // plan, takes no other; one whose wait fails sends nothing and lets go.
   const [queue] = useState(oneSendAtATime);
@@ -44,7 +51,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   return (
     <WordsSendSlot value={slots.register}>
       <ReadoutSlot>
-        <UpstreamChatComposer {...props} {...instances} onSend={send} />
+        <PromptSuggestionContext value={suggestion}>
+          <UpstreamChatComposer {...props} {...instances} onSend={send} />
+        </PromptSuggestionContext>
       </ReadoutSlot>
     </WordsSendSlot>
   );

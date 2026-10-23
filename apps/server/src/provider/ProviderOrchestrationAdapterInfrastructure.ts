@@ -1,3 +1,4 @@
+import { withPromptSuggestions } from "../stemcells/upstream/claudeSuggestions.ts";
 import * as Layer from "effect/Layer";
 
 import * as ClaudeAdapterV2 from "../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
@@ -22,7 +23,7 @@ export type ProviderOrchestrationAdapterInfrastructure =
  * memoization yields one shared queue.
  */
 export const layer = Layer.mergeAll(
-  ClaudeAdapterV2.layerQueryRunner,
+  withPromptSuggestions(ClaudeAdapterV2.layerQueryRunner),
   CodexAdapterV2.layerAppServerClientFactory,
   CursorAgentSdk.layer.pipe(Layer.provideMerge(CursorSdk.layer)),
   CursorKeychain.layer,
