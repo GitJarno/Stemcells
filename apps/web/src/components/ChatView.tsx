@@ -3904,7 +3904,6 @@ export default function ChatView(props: ChatViewProps) {
       <Stemcells.ChatMediaViewerHost
         threadKey={routeThreadKey}
         threadRef={routeThreadRef}
-        entries={displayedTimeline.entries}
         cwd={gitCwd ?? undefined}
       />
     </div>

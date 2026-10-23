@@ -16,6 +16,7 @@ import {
   waitForComposerDraftsLoaded,
 } from "../../state/use-composer-drafts";
 import { useWorkspaceEnvironments } from "../../state/workspace";
+import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
 import { projectOn } from "../disk/machineProject";
 
 // Settings › Disk on the phone reads each machine's free space from its
@@ -110,17 +111,14 @@ export function useOpenCellWithDraft(
     // sheet, the Cell it becomes on sending would show inside that sheet.
     let root = navigation;
     for (let parent = root.getParent(); parent; parent = root.getParent()) root = parent;
-    root.dispatch(
-      StackActions.replace("NewTaskSheet", {
-        screen: "NewTaskDraft",
-        params: {
-          environmentId: String(project.environmentId),
-          projectId: String(project.id),
-          draftId,
-          title: project.title,
-        },
-      }),
-    );
+    // A draft is the root's Thread route, as upstream opens one (#23467).
+    const draft = {
+      environmentId: String(project.environmentId),
+      projectId: String(project.id),
+      draftId,
+      title: project.title,
+    } satisfies NewTaskDraftRouteParams;
+    root.dispatch(StackActions.replace("Thread", { draft }));
     return true;
   };
 }

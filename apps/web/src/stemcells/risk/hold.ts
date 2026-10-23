@@ -84,10 +84,10 @@ function contains(hay: readonly string[], needle: readonly string[]): boolean {
  * force push the fix" is compared as "force push the fix".
  */
 function clauseOf(finding: RiskFinding, text: string): string {
-  const marks = ",:;–—";
+  const mark = /[,:;–—]/;
   let start = finding.start;
-  while (start > finding.sentence.start && !marks.includes(text[start - 1]!)) start--;
+  while (start > finding.sentence.start && !mark.test(text[start - 1]!)) start--;
   let end = finding.end;
-  while (end < finding.sentence.end && !marks.includes(text[end]!)) end++;
+  while (end < finding.sentence.end && !mark.test(text[end]!)) end++;
   return text.slice(start, end);
 }

@@ -86,7 +86,7 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
 
   it("decides its env mode from the project, its project file and whether it has threads", () => {
     expect(newThread).toMatch(
-      /const consultProjectFile =\s*project !== undefined && projectSettings\.settings\.defaultThreadEnvMode === null;/,
+      /const consultProjectFile =\s*project !== undefined &&\s*projectSettings\.settings\.defaultThreadEnvMode === null &&\s*appAtomRegistry\s*\.get\(environmentSummaries\.connectedEnvironmentIdsAtom\)\s*\.includes\(project\.environmentId\);/,
     );
     expect(newThread).toMatch(
       /resolveNewThreadEnvMode\(\{\s*projectSettings: resolveProjectSettings\(\s*targetServerSettings,\s*project\?\.id \?\? null,\s*project,\s*projectFile,\s*\),\s*workspaceRoot: project\?\.workspaceRoot \?\? null,\s*newProjectsRoot: environmentServerConfigs\.get\(projectRef\.environmentId\)\?\.newProjectsRoot,\s*projectHasThreads:/,

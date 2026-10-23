@@ -13,6 +13,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
+import threadTimeline from "../../components/chat/ThreadTimeline.tsx?raw";
 
 const webSource = NodePath.resolve(
   NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)),
@@ -63,7 +64,8 @@ describe("the chat's scroll indicator, against upstream", () => {
   it("the transcript scrolls under the class the indicator hears it by, beside the chat's marks", () => {
     expect(messagesTimeline).toContain('"messages-timeline-scroll ');
     expect(messagesTimeline).toContain("<TimelineMinimap");
-    expect(chatView.match(/<MessagesTimeline\b/g)).toHaveLength(1);
+    expect(chatView.match(/<ThreadTimeline\b/g)).toHaveLength(1);
+    expect(threadTimeline.match(/<MessagesTimeline\b/g)).toHaveLength(1);
   });
 
   it("the composer floats in an overlay whose keys and presses aren't a reader's scroll", () => {

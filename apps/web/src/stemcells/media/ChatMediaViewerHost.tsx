@@ -9,22 +9,21 @@ import {
   type ChatPlace,
   type MediaItem,
   type MediaPreview,
-  type TimelineEntries,
 } from "../upstream/media";
+import { useChatEntries } from "./chatEntries";
 import { MediaViewer } from "./MediaViewer";
 import { MarkdownSources, chatReel, itemKey, reelAround } from "./reel";
 import { pressedMedia } from "./thumbnails";
 
 /**
  * A chat's media viewer. `ChatView` renders this where it rendered
- * upstream's preview host (a seam), with the timeline it drew: every
- * thumbnail in the chat still opens through upstream's
- * `openExpandedImagePreview`, and the viewer steps through the whole chat.
+ * upstream's preview host (a seam): every thumbnail in the chat still opens
+ * through upstream's `openExpandedImagePreview`, and the viewer steps
+ * through the whole chat, as its timeline draws it (`chatEntries.ts`).
  */
 export function ChatMediaViewerHost(props: {
   threadKey: string;
   threadRef: Pick<ChatPlace, "environmentId" | "threadId">;
-  entries: TimelineEntries;
   cwd: string | undefined;
 }) {
   const { threadKey } = props;
@@ -54,7 +53,7 @@ export function ChatMediaViewerHost(props: {
           clicked={clicked}
           place={props.threadRef}
           cwd={props.cwd}
-          entries={props.entries}
+          threadKey={threadKey}
           scope={scope}
           ownsWindowInput={ownsWindowInput}
           onClosed={() => closeOpenedMedia(threadKey)}
@@ -69,7 +68,7 @@ function OpenedMedia(props: {
   clicked: MediaItem;
   place: Pick<ChatPlace, "environmentId" | "threadId">;
   cwd: string | undefined;
-  entries: TimelineEntries;
+  threadKey: string;
   scope: Element | null;
   ownsWindowInput: boolean;
   onClosed: () => void;
@@ -83,7 +82,8 @@ function OpenedMedia(props: {
     };
   });
   const { environmentId, threadId } = props.place;
-  const resources = attachedPictureResources(props.entries);
+  const entries = useChatEntries(props.threadKey);
+  const resources = attachedPictureResources(entries);
   const urls = useAttachedPictureUrls(environmentId, resources);
   // Each message's markdown is read once it settles, however often the chat streams.
   const [sources] = useState(() => new MarkdownSources());
@@ -93,7 +93,7 @@ function OpenedMedia(props: {
     if (resource._tag === "attachment" && url) urlById.set(resource.attachmentId, url);
   });
   const reel = chatReel(
-    props.entries,
+    entries,
     { environmentId, threadId, cwd: props.cwd },
     (id) => urlById.get(id),
     sources.of,

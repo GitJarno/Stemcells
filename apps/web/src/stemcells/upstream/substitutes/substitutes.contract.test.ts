@@ -708,7 +708,10 @@ const CASES: Readonly<Record<string, Case>> = {
     substitute: OurMessagesTimeline satisfies RendersOrNothing<typeof UpstreamMessagesTimeline>,
     importers: {
       // The chat's timeline, whose rows read the work verbs from our context.
-      "apps/web/src/components/ChatView.tsx": ["./chat/MessagesTimeline", ["MessagesTimeline"]],
+      "apps/web/src/components/chat/ThreadTimeline.tsx": [
+        "./MessagesTimeline",
+        ["MessagesTimeline"],
+      ],
     },
   },
 };

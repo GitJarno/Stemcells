@@ -69,7 +69,7 @@ describe("desktop update UI helpers", () => {
     "falls back to upstream for an invalid configured repository: %s",
     (repository) => {
       expect(getDesktopUpdateReleaseHistoryUrl(repository)).toBe(
-        "https://github.com/pingdotgg/t3code/releases",
+        "https://github.com/pingdotgg/t3code/pulls?q=is%3Apr%20is%3Amerged",
       );
       expect(getDesktopUpdateReleaseUrl("1.2.3", repository)).toBe(
         "https://github.com/pingdotgg/t3code/releases/tag/v1.2.3",

@@ -30,8 +30,8 @@ Space on a picture sends it back into the thumbnail of whatever is showing.
   window also settles the swipe: the tab pager listens on its own viewport,
   and the viewer's portal is outside it, so the pager never sees a swipe made
   over the viewer.
-- **The reel is the chat's, built from the timeline ChatView already drew**
-  (`displayedTimeline.entries`), not from the DOM: the timeline is virtualised,
+- **The reel is the chat's, built from the entries its timeline draws**
+  (`media/chatEntries.ts`), not from the DOM: the timeline is virtualised,
   so most thumbnails aren't mounted. Per message: its pictures, its videos,
   then the media its text embeds (image syntax, `<img>`, `<video>`); each once,
   at its first place. Proposed plans count as text. Anything opened from
@@ -75,7 +75,8 @@ Space on a picture sends it back into the thumbnail of whatever is showing.
 ## Seams
 
 - `ChatView.tsx`: renders `ChatMediaViewerHost` where it rendered
-  `ExpandedImageDialogHost`, with the displayed timeline and its cwd.
+  `ExpandedImageDialogHost`, with the thread and its cwd; the entries come
+  from our `MessagesTimeline` substitute (`media/chatEntries.ts`).
 - `ExpandedImageDialog.tsx`: exports `expandedImagePreviewAtom`, so our host
   reads what upstream's `openExpandedImagePreview` opens.
 

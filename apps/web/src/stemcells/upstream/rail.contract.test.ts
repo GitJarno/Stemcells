@@ -12,7 +12,9 @@ import { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
 
 describe("the rail's seams", () => {
   it("the app's sidebar renders the left column where it rendered its thread list", () => {
-    expect(appSidebarLayout).toContain("<LeftColumn wide={<ThreadSidebar />} />");
+    expect(appSidebarLayout).toContain(
+      "<LeftColumn wide={<ThreadSidebar routeReveal={sidebarRouteReveal} />} />",
+    );
     expect(appSidebarLayout).toMatch(/<Sidebar\s[^>]*data-app-sidebar=""/);
   });
 

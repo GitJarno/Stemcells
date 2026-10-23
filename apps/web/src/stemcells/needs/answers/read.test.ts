@@ -164,11 +164,11 @@ const DOC_EXAMPLES: Array<[string, string]> = [
     "for decision 5, let's go with 2; for decision 2, let's do use staging",
     "5 Mochi: Remove it first · 2 Bongo: stop, then reply “let's do use staging”",
   ],
-  ["3 yes", `3 Pip: ${allow(3)} — needs your click`],
+  ["3 yes", `3 Pip: ${allow(3)} (needs your click)`],
   ["3 no, use a normal push", "3 Pip: Decline, with “use a normal push”"],
   ["3 no", `3 Pip: ${decline(3)}`],
-  ["for 3 go with 2", `3 Pip: ${title(3, 2)} — needs your click`],
-  ["for 2 go with 1", `2 Bongo: ${title(2, 1)} — say what`],
+  ["for 3 go with 2", `3 Pip: ${title(3, 2)} (needs your click)`],
+  ["for 2 go with 1", `2 Bongo: ${title(2, 1)} (say what)`],
   ["for 4 wait", `4 Otter: ${kindOf(4, "carryOn")}`],
   ["1 and 2 later", `1 Floof: ${LATER.title} · 2 Bongo: ${kindOf(2, "wait")}`],
   ["for 2, go with 3", `2 Bongo: ${title(2, 3)}`],
@@ -205,8 +205,8 @@ const ANCHORS: Array<[string, string]> = [
 /** What words answer, card by card. */
 const ANSWERS: Array<[string, string]> = [
   // A permission: words say no; only a click says yes.
-  ["3 approve it", `3 Pip: ${allow(3)} — needs your click`],
-  ["3 always allow", `3 Pip: ${title(3, 2)} — needs your click`],
+  ["3 approve it", `3 Pip: ${allow(3)} (needs your click)`],
+  ["3 always allow", `3 Pip: ${title(3, 2)} (needs your click)`],
   ["3 decline", `3 Pip: ${decline(3)}`],
   ["for 3 use a normal push", "3 Pip: ? yes or no"],
   // An offer.
@@ -223,7 +223,7 @@ const ANSWERS: Array<[string, string]> = [
   ["for 1 yes", "1 Floof: reply “yes”"],
   ["for 1 nothing", `1 Floof: ${kindOf(1, "nothingToDo")}`],
   ["for 1 wait for the tests to finish", "1 Floof: reply “wait for the tests to finish”"],
-  ["1 reply", `1 Floof: ${kindOf(1, "reply")} — say what`],
+  ["1 reply", `1 Floof: ${kindOf(1, "reply")} (say what)`],
   ['for 1 "staging. Then run it"', "1 Floof: reply “staging. Then run it”"],
   [
     "for 1 reply use staging. What's Goose doing?",
@@ -232,7 +232,7 @@ const ANSWERS: Array<[string, string]> = [
   // A stuck run.
   ["2 nudge keep going", "2 Bongo: nudge “keep going”"],
   ["2 stop and reply use staging", "2 Bongo: stop, then reply “use staging”"],
-  ["2 stop", `2 Bongo: ${kindOf(2, "stopAndReply")} — say what`],
+  ["2 stop", `2 Bongo: ${kindOf(2, "stopAndReply")} (say what)`],
   // A structured question.
   ["5 go with the second one", "5 Mochi: Remove it first"],
   ["5 option 3", "5 Mochi: ? no option 3"],
@@ -243,7 +243,7 @@ const ANSWERS: Array<[string, string]> = [
     "for 7 refine add tests first",
     `7 Kiwi: ${kindOf(7, "revise").replace(/…$/, "")}, with “add tests first”`,
   ],
-  ["7 no", `7 Kiwi: ${kindOf(7, "revise")} — say what`],
+  ["7 no", `7 Kiwi: ${kindOf(7, "revise")} (say what)`],
   // A failed run.
   ["8 retry", `8 Taco: ${kindOf(8, "retry")}`],
   ["8 dismiss", `8 Taco: ${kindOf(8, "dismiss")}`],
