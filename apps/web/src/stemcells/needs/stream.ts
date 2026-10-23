@@ -7,7 +7,7 @@
 import { useSyncExternalStore } from "react";
 
 import { openPrimaryStream } from "../upstream/needs";
-import type { Need, NeedsList } from "./wire";
+import type { CellStanding, Need, NeedsList } from "./wire";
 
 const STREAM_PATH = "/api/stemcells/needs/stream";
 const RETRY_FIRST_MS = 1_000;
@@ -16,6 +16,8 @@ const RETRY_MAX_MS = 30_000;
 export interface NeedsState {
   /** Null until the server's first list arrives. */
   readonly needs: ReadonlyArray<Need> | null;
+  /** Every Cell's stage, for the roster; null until the first list arrives. */
+  readonly cells: ReadonlyArray<CellStanding> | null;
   /** Whether the list is live; a list kept from before a drop may be stale. */
   readonly live: boolean;
 }
@@ -45,7 +47,7 @@ export function readEvents(buffer: string): {
   return { lists, rest };
 }
 
-let state: NeedsState = { needs: null, live: false };
+let state: NeedsState = { needs: null, cells: null, live: false };
 const listeners = new Set<() => void>();
 let stop: AbortController | null = null;
 
@@ -76,7 +78,7 @@ async function follow(signal: AbortSignal) {
         buffer = rest;
         const newest = lists.at(-1);
         if (newest !== undefined) {
-          publish({ needs: newest.needs, live: true });
+          publish({ needs: newest.needs, cells: newest.cells ?? [], live: true });
           retry = RETRY_FIRST_MS;
         }
       }

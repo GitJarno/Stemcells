@@ -14,6 +14,7 @@ import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hin
 import { useHolds } from "./holds";
 import { holds, page } from "./live";
 import { NeedCard } from "./NeedCard";
+import { DoneList } from "./Roster";
 
 import "../tokens/stemcells.css";
 import "./needs.css";
@@ -166,6 +167,7 @@ export function NeedsFrame(props: {
         />
       ))}
       {view.cleared !== null ? <p data-needs-cleared="">{view.cleared}</p> : null}
+      <DoneList />
     </div>
   );
 

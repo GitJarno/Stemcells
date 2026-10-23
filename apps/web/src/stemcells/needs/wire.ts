@@ -119,6 +119,23 @@ export interface Need {
   } | null;
 }
 
+/** A Cell's stage: at work, needs you, or done (aski-manager.md, decision 7). */
+export type Stage = "working" | "needs-you" | "done";
+
+export interface CellStanding {
+  readonly threadId: string;
+  readonly projectId: string;
+  /** Its chat's title: what it is on. */
+  readonly title: string;
+  readonly stage: Stage;
+  /** Its own word: what it delivered when done, or what it waits on while at work. */
+  readonly line: string | null;
+  /** The roster lists the newest first. */
+  readonly createdAt: string;
+}
+
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
+  /** Every Cell in reach and its stage; absent from a server before stages. */
+  readonly cells?: ReadonlyArray<CellStanding>;
 }

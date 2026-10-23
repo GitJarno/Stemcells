@@ -8,6 +8,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../upstream/ui
 import { ComposerRoofSlot } from "../composer/slot";
 import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
+import { Roster } from "../needs/Roster";
 import { AskiFigure } from "./AskiFigure";
 import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
@@ -95,6 +96,8 @@ export function AskiPane(props: {
             </Empty>
           )}
         </div>
+        {/* Every Cell's stage, under the chat (aski-manager.md, decision 10). */}
+        <Roster />
       </NeedsFrame>
     </div>
   );

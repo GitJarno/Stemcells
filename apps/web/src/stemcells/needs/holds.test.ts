@@ -22,7 +22,7 @@ const NO = spoken("no");
 const NO_STAGING = spoken("no, use staging");
 
 function setup(outcomes: CommandOutcome[] = []) {
-  let state: NeedsState = { needs: [needFixture()], live: true };
+  let state: NeedsState = { needs: [needFixture()], cells: null, live: true };
   const sent: ThreadCommand[] = [];
   let kept = 0;
   const holds = createHolds({
@@ -80,7 +80,11 @@ describe("an answer waits out the undo window", () => {
   it("sends nothing when the need left meanwhile: answered elsewhere, or asked again", async () => {
     const t = setup();
     t.hold();
-    t.setNeeds({ needs: [needFixture({ key: "thread-floof:request:request-2" })], live: true });
+    t.setNeeds({
+      needs: [needFixture({ key: "thread-floof:request:request-2" })],
+      cells: null,
+      live: true,
+    });
     await vi.advanceTimersByTimeAsync(WINDOW);
     expect(t.sent).toEqual([]);
     expect(t.stateOf()).toBe("stale");
@@ -89,7 +93,7 @@ describe("an answer waits out the undo window", () => {
   it("sends nothing on a list it can't trust, and says so", async () => {
     const t = setup();
     t.hold();
-    t.setNeeds({ needs: [needFixture()], live: false });
+    t.setNeeds({ needs: [needFixture()], cells: null, live: false });
     await vi.advanceTimersByTimeAsync(WINDOW);
     expect(t.sent).toEqual([]);
     expect(t.stateOf()).toBe("failed");
@@ -126,7 +130,7 @@ describe("an answer read from words in Aski's composer", () => {
   it("gives its words back once when the need moved before it went", async () => {
     const t = setup();
     t.hold([decline], NO);
-    t.setNeeds({ needs: [], live: true });
+    t.setNeeds({ needs: [], cells: null, live: true });
     await vi.advanceTimersByTimeAsync(WINDOW);
     expect(t.stateOf()).toBe("stale");
     expect(t.holds.takeWords(key)).toBe(NO);
@@ -161,7 +165,7 @@ describe("an answer read from words in Aski's composer", () => {
   it("keeps its hold while the words wait, so they never go unsaid, and lets it go once back", async () => {
     const t = setup();
     t.hold([decline], NO);
-    t.setNeeds({ needs: [], live: true });
+    t.setNeeds({ needs: [], cells: null, live: true });
     await vi.advanceTimersByTimeAsync(WINDOW + 10 * 60_000);
     expect(t.stateOf()).toBe("stale");
     expect(t.holds.takeWords(key)).toBe(NO);

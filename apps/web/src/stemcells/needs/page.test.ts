@@ -9,7 +9,7 @@ const CLEARED_FOR = 5_000;
 const floof = needFixture({ key: "floof", number: 1 });
 
 function setup() {
-  let state: NeedsState = { needs: [], live: true };
+  let state: NeedsState = { needs: [], cells: null, live: true };
   let notify = () => {};
   const page = createPage({
     needs: () => state,
@@ -23,7 +23,7 @@ function setup() {
   return {
     page,
     push: (needs: NeedsState["needs"]) => {
-      state = { needs, live: true };
+      state = { needs, cells: null, live: true };
       notify();
     },
   };
