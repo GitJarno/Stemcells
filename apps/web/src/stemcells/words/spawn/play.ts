@@ -1,12 +1,14 @@
 /**
  * Plays the words' half of the spawn (`plan.ts`, and
  * `stemcells/docs/interaction.md`): the sent words' letters pour into Aski,
- * one stream a Cell leaves Aski for that Cell's pane, and over the Cell's
- * box the stream condenses through `. : + # @` until the Cell takes over
+ * Aski divides into a copy a Cell (`aski/copies.ts`), each flying to its
+ * Cell's box or, when the Cell landed off stage, its tab's chip, and over
+ * a box the copy condenses through `. : + # @` until the Cell takes over
  * (`formAt`). It draws on a layer of its own over the page that no pointer
  * meets, and nothing waits on it: the composer takes typing all along, and
- * a Cell whose box doesn't show in time just stands.
+ * a Cell whose place doesn't show in time just stands.
  */
+import { askiStill, copyTargetSoon, flyCopy } from "../../aski/copies";
 import { spawnDone, spawnPlanned, spawnStart } from "../../aski/spawn";
 import { cellBoxOf, formAt } from "../../cell/forming";
 import { path, SIZE } from "../../cell/look";
@@ -81,6 +83,8 @@ export function playSpawn(input: {
   const apart = letterStagger(letters.length, timing("letterStagger"), timing("lettersSpan"));
   const ink = getComputedStyle(input.editor);
   const aski = standing(input.hero, askiHeight(ink));
+  // Drawn while the letters pour: a copy is half Aski.
+  const still = askiStill(aski.height / 2, input.editor).catch(() => null);
   // Each letter pours into its place on the orbit, then rides it round Aski.
   const riding = letters.map((letter, i) => {
     const from = centreOf(letter.box);
@@ -130,30 +134,35 @@ export function playSpawn(input: {
   let over = false;
 
   const out = async (cells: readonly SpawnCell[]) => {
-    const boxes = await Promise.all(cells.map((cell) => boxOf(cell.threadId)));
+    const [targets, figure] = await Promise.all([
+      Promise.all(cells.map((cell) => copyTargetSoon(cell.threadId))),
+      still,
+    ]);
     await until(poured);
     if (over) return;
     const origin = centreOf(aski);
-    const shown = cells.filter((_, i) => boxes[i] !== null);
-    for (const [i, cell] of cells.entries()) if (boxes[i] === null) formAt(cell.threadId, 0);
+    const shown = figure === null ? [] : cells.filter((_, i) => targets[i] !== null);
+    const into = (cell: SpawnCell) => targets[cells.indexOf(cell)]!;
+    // A Cell its copy doesn't land on stands as its pane shows.
+    for (const cell of cells)
+      if (!shown.includes(cell) || into(cell).into === "chip") formAt(cell.threadId, 0);
     const starts = streamStarts(
       origin,
-      shown.map((cell) => centreOf(boxes[cells.indexOf(cell)]!)),
+      shown.map((cell) => centreOf(into(cell).box)),
       { stagger: timing("spawnStagger"), travel: travel.duration },
     );
-    // Aski pulses once a stream and looks at each pane, in the order they leave.
+    // Aski pulses once a copy and looks where each goes, in the order they leave.
     const leaving = shown
       .map((cell, i) => ({ cell, at: starts[i]! }))
       .toSorted((a, b) => a.at - b.at);
-    spawnPlanned(
-      leaving.map(({ cell }) => ({ title: cell.title, to: boxes[cells.indexOf(cell)]! })),
-    );
+    spawnPlanned(leaving.map(({ cell }) => ({ title: cell.title, to: into(cell).box })));
     fadeLetters();
     const now = performance.now();
     const landed = shown.map((cell, i) => {
-      const glyphsAt = now + starts[i]! + travel.duration;
-      formAt(cell.threadId, glyphsAt + GLYPHS.length * step);
-      return stream(layer, origin, cell, starts[i]!, travel).then(() => glyphs(layer, cell, step));
+      const flight = flyCopy(layer.root, figure!, aski, cell.threadId, starts[i]!, travel);
+      if (into(cell).into === "chip") return flight;
+      formAt(cell.threadId, now + starts[i]! + travel.duration + GLYPHS.length * step);
+      return flight.then(() => glyphs(layer, cell, step));
     });
     await Promise.all(landed);
     end();
@@ -238,33 +247,6 @@ function layerOver(page: Document) {
   };
 }
 type Layer = ReturnType<typeof layerOver>;
-
-/** The Cell's readout words, from Aski to its box, after `delay` ms. */
-async function stream(
-  layer: Layer,
-  origin: Point,
-  cell: SpawnCell,
-  delay: number,
-  travel: { readonly duration: number; readonly easing: string },
-): Promise<void> {
-  await until(performance.now() + delay);
-  // Where the box is now: a pane may still be settling.
-  const box = cellBoxOf(cell.threadId);
-  if (box === null) return;
-  const to = centreOf(box);
-  const element = layer.append("sc-spawn-stream", cell.title, origin);
-  const way = trace(origin, to, 0, WAY_STEPS);
-  await element
-    .animate(
-      way.map((p, k) => ({
-        transform: `translate(${p.x - origin.x}px, ${p.y - origin.y}px) translate(-50%, -50%) scale(${1 - (0.7 * k) / WAY_STEPS})`,
-        opacity: k < WAY_STEPS ? 1 : 0,
-      })),
-      { duration: travel.duration, easing: travel.easing },
-    )
-    .finished.catch(() => undefined);
-  element.remove();
-}
 
 let clips = 0;
 

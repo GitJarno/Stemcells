@@ -1,9 +1,9 @@
 /**
  * The words' half of the spawn, as geometry and times
  * (`stemcells/docs/interaction.md`): the sent words leave the composer as
- * letters and pour into Aski; Aski sends one stream to each Cell's pane;
- * over the Cell's box the stream condenses into glyphs, and the Cell takes
- * over (`cell/forming.ts`). Pure: `play.ts` draws it.
+ * letters and pour into Aski; Aski divides, a copy flying to each Cell
+ * (`aski/copies.ts`); over the Cell's box the copy condenses into glyphs,
+ * and the Cell takes over (`cell/forming.ts`). Pure: `play.ts` draws it.
  */
 
 /** A point on screen, in viewport CSS pixels. */
@@ -23,10 +23,10 @@ export interface Box {
 /** The most letters that leave: the rest of a long message goes with them unseen. */
 export const MOST_LETTERS = 48;
 
-/** The most streams in flight at once. */
+/** The most copies in flight at once. */
 export const MOST_IN_FLIGHT = 4;
 
-/** The glyphs a stream condenses through over the Cell's box, one a `form-step`. */
+/** The glyphs a copy condenses through over the Cell's box, one a `form-step`. */
 export const GLYPHS = [".", ":", "+", "#", "@"] as const;
 
 /**
@@ -80,10 +80,9 @@ export function trace(from: Point, to: Point, bend: number, steps: number): Poin
 }
 
 /**
- * When each stream leaves Aski, in ms from the first, in `targets`' order:
+ * When each copy leaves Aski, in ms from the first, in `targets`' order:
  * the nearest first, `stagger` apart, and never more than `most` in flight,
- * each `travel` long. Every stream is straight from one point, so no two
- * ways cross.
+ * each `travel` long.
  */
 export function streamStarts(
   origin: Point,

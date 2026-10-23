@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, type MouseEvent } from "react";
+import { useEffect, useEffectEvent, useRef, type MouseEvent } from "react";
 
 import { useAskiChat, type AskiChat } from "../upstream/aski";
 import { useLeadWindow } from "../windows/lead";
@@ -10,9 +10,11 @@ import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
 import { Peek } from "../needs/Peek";
 import { linkedCell, openPeek, usePeek } from "../needs/peeking";
+import { subscribeLaunches } from "../upstream/landing";
 import { usePrimaryEnvironmentId } from "../upstream/needs";
 import { Roster } from "../needs/Roster";
 import { AskiFigure } from "./AskiFigure";
+import { copiesOut } from "./copies";
 import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
 
@@ -58,6 +60,8 @@ export const ASKI_UNAVAILABLE: Record<
  * follow the pointer anywhere over the pane, and the caret in its chat's
  * field. A Cell opened from the room, a link in Aski's chat included, is
  * peeked at over it (needs/Peek.tsx), and has the window's input meanwhile.
+ * Each Cell launched while the room shows, a copy of Aski flies to where
+ * it landed (aski/copies.ts).
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -68,6 +72,19 @@ export function AskiPane(props: {
 }) {
   const aski = props.chat.status === "ready" ? props.chat.cell : null;
   const environmentId = usePrimaryEnvironmentId();
+  const room = useRef<HTMLDivElement>(null);
+  useEffect(
+    () =>
+      subscribeLaunches((cells) => {
+        const figure = room.current?.querySelector("[data-aski-perch-stage]");
+        if (figure)
+          void copiesOut(
+            figure,
+            cells.map((cell) => cell.threadId),
+          );
+      }),
+    [],
+  );
   const peeking = usePeek() !== null;
   const ownsInput = props.ownsWindowInput && !peeking;
   // A plain click on a Cell's chip in Aski's chat peeks; a modified one opens it as upstream does.
@@ -86,6 +103,7 @@ export function AskiPane(props: {
   };
   return (
     <div
+      ref={room}
       data-stemcells-aski=""
       data-aski-looks=""
       className="relative flex min-h-0 min-w-0 flex-1 flex-col"

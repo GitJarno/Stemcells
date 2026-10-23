@@ -373,16 +373,16 @@ button[type="submit"][data-stemcells-over] {
   pointer-events: none;
 }
 
-.sc-spawn-letter,
-.sc-spawn-stream {
+.sc-spawn-letter {
   position: absolute;
   white-space: pre;
   will-change: transform, opacity;
 }
 
-.sc-spawn-stream {
-  color: var(--sc-meta-ink);
-  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+/* Aski's copy (aski/copies.ts): placed by its middle, moved on the compositor. */
+.sc-aski-copy {
+  position: absolute;
+  will-change: transform, opacity;
 }
 
 .sc-spawn-glyphs {
