@@ -7,8 +7,8 @@
  * would start in no project. Past it, the first project there is.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import { isScratchProject } from "@t3tools/client-runtime/state/projects";
 import type { EnvironmentId, ProjectId, ScopedProjectRef } from "@t3tools/contracts";
+import { normalizeProjectPathForComparison } from "@t3tools/shared/path";
 
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProjects } from "../../state/entities";
@@ -33,6 +33,22 @@ export function pastScratch(
   return real ? scopeProjectRef(real.environmentId, real.id) : first;
 }
 
+/**
+ * Upstream's `isScratchProject`, read without its module: that one
+ * re-exports the project commands, whose connection layer loads with it, and
+ * this file loads with every new chat (`substitutes/chatThreadActions.ts`),
+ * in upstream's own tests of the new chat too. `firstProject.test.ts` holds
+ * the two to the same answers.
+ */
+export function isScratchWorkspace(
+  workspaceRoot: string,
+  scratchWorkspaceRoot: string | null | undefined,
+): boolean {
+  if (scratchWorkspaceRoot == null) return false;
+  const scratch = normalizeProjectPathForComparison(scratchWorkspaceRoot);
+  return scratch.length > 0 && normalizeProjectPathForComparison(workspaceRoot) === scratch;
+}
+
 /** `pastScratch` over the projects the app knows now. */
 export function firstProject(first: ScopedProjectRef | null): ScopedProjectRef | null {
   if (first === null) return null;
@@ -42,7 +58,10 @@ export function firstProject(first: ScopedProjectRef | null): ScopedProjectRef |
     readProjects().map((project) => ({
       environmentId: project.environmentId,
       id: project.id,
-      scratch: isScratchProject(project, configs.get(project.environmentId)?.scratchWorkspaceRoot),
+      scratch: isScratchWorkspace(
+        project.workspaceRoot,
+        configs.get(project.environmentId)?.scratchWorkspaceRoot,
+      ),
     })),
   );
 }

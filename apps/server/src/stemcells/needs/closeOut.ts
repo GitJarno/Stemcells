@@ -4,8 +4,8 @@
  * `stemcells/closeOut.ts`), read by code, with no model.
  *
  *     **Done:** the header fix, merged as #12
- *     **Left:** you — run the sign-in with Drive access
- *     **Left:** waiting — the merge check on #212
+ *     **Left:** you: run the sign-in with Drive access
+ *     **Left:** waiting: the merge check on #212
  *
  * The facts outrank it (a pending request, a run, a failure), and it
  * outranks the pre-read, except where the pre-read finds a real question:

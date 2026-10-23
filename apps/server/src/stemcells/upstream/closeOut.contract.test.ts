@@ -35,10 +35,10 @@ describe("the close-out every Cell is given", () => {
 
   it("asks for the lines the reader reads", () => {
     expect(closeOut).toContain("**Done:** what you delivered");
-    expect(closeOut).toContain("**Left:** you, me or waiting —");
+    expect(closeOut).toContain("**Left:** you, me or waiting:");
     expect(readCloseOut("**Done:** what you delivered").closeOut?.kind).toBe("done");
     for (const owner of ["you", "me", "waiting"] as const) {
-      expect(readCloseOut(`**Left:** ${owner} — the step`).closeOut).toEqual({
+      expect(readCloseOut(`**Left:** ${owner}: the step`).closeOut).toEqual({
         kind: "left",
         owner,
         text: "the step",

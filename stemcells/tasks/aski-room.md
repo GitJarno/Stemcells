@@ -586,10 +586,10 @@ Examples. The four cards are the prototype's:
 | 1: commit then remove | 1 Floof: Commit, then remove |
 | Floof, remove it first | 1 Floof: Remove it first |
 | for decision 1, let's go with 2; for decision 2, let's do use staging | 1 Floof: Remove it first · 2 Bongo: stop, then reply "let's do use staging" |
-| 3 yes | 3 Pip: Approve — needs your click |
+| 3 yes | 3 Pip: Approve (needs your click) |
 | 3 no, use a normal push | 3 Pip: Decline, with "use a normal push" |
-| for 3 go with 2 | 3 Pip: Always allow this session — needs your click |
-| for 2 go with 1 | 2 Bongo: Stop and reply… — say what to reply |
+| for 3 go with 2 | 3 Pip: Always allow this session (needs your click) |
+| for 2 go with 1 | 2 Bongo: Stop and reply… (say what) |
 | for 4 wait | 4 Otter: Wait for the reset |
 | 1 and 2 later | 1 Floof: Later · 2 Bongo: Wait 15 min (its own way to wait) |
 | for 2, go with 2 | 2 Bongo: Wait 15 min |

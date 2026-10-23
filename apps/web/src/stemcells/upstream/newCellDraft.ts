@@ -21,6 +21,7 @@ import { readT3ProjectFile } from "../../lib/t3ProjectFileDefaults";
 import { newDraftId, newThreadId } from "../../lib/utils";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProjects, readThreadShell, readThreadShells } from "../../state/entities";
+import { environmentSummaries } from "../../state/presentation";
 import { environmentServerConfigsAtom } from "../../state/server";
 import { resolveThreadRouteTarget } from "../../threadRoutes";
 import type { CellRef } from "../tabs/layout";
@@ -79,8 +80,14 @@ export function useNewCellDraftMaker(): {
       carryShell?.interactionMode ??
       carryDraft?.interactionMode ??
       null;
+    // As upstream's (#23967): reading the project file of a machine that's
+    // offline never settles, and the draft would never be made.
     const consultProjectFile =
-      project !== undefined && projectSettings.settings.defaultThreadEnvMode === null;
+      project !== undefined &&
+      projectSettings.settings.defaultThreadEnvMode === null &&
+      appAtomRegistry
+        .get(environmentSummaries.connectedEnvironmentIdsAtom)
+        .includes(project.environmentId);
     const projectFile = consultProjectFile
       ? await readT3ProjectFile(project.environmentId, project.workspaceRoot)
       : null;

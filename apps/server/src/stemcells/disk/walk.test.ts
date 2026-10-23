@@ -212,9 +212,9 @@ describe("the cleanup Cell's report", () => {
   it("names each finding's paths and sizes, and the disk's figures", () => {
     const report = diskReport(map, "this Mac");
     expect(report).toContain(
-      "### Dependencies: 3 MB (in 2 projects) — reinstall with one command, low risk",
+      "### Dependencies: 3 MB (in 2 projects); reinstall with one command, low risk",
     );
-    expect(report).toContain("/node_modules` — 2 MB");
+    expect(report).toContain("/node_modules`: 2 MB");
     expect(report).toContain("Disk: 100 GB free of 1 TB.");
     expect(report).toContain("a git checkout, its state not read");
   });

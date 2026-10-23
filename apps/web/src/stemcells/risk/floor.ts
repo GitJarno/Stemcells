@@ -125,7 +125,7 @@ function isVerbPosition(text: string, at: number, sentenceStart: number): boolea
   const before = text.slice(sentenceStart, at).replace(/\s+$/, "");
   const last = before.at(-1);
   if (last === undefined) return true;
-  if (",:;-–—()•*>".includes(last) || /\d/.test(last)) return true;
+  if (/[,:;\-–—()•*>\d]/.test(last)) return true;
   const word = previousWords(before, 1)[0] ?? "";
   if (word.endsWith("'s") || word.endsWith("’s")) return false;
   return !NOUN_CONTEXT.has(word);
@@ -145,7 +145,7 @@ const NEGATIONS = new Set(
  */
 function isNegated(text: string, at: number, sentenceStart: number): boolean {
   let clause = text.slice(sentenceStart, at);
-  const cut = Math.max(...[",", ":", "–", "—"].map((mark) => clause.lastIndexOf(mark)));
+  const cut = clause.search(/[,:–—][^,:–—]*$/);
   if (cut >= 0) clause = clause.slice(cut + 1);
   return previousWords(clause, 3).some(
     (word) =>

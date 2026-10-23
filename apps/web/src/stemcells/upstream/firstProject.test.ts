@@ -1,10 +1,11 @@
 // A new chat that no chat on screen gives a project starts in upstream's
 // first project, past the scratch project Aski's chat opened first.
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { isScratchProject } from "@t3tools/client-runtime/state/projects";
 import { EnvironmentId, ProjectId } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
-import { pastScratch } from "./firstProject";
+import { isScratchWorkspace, pastScratch } from "./firstProject";
 
 const environmentId = EnvironmentId.make("env-first-project");
 const project = (id: string, scratch: boolean) => ({
@@ -27,5 +28,26 @@ describe("the first project a new chat starts in", () => {
     expect(pastScratch(refOf(atlas), [scratch, harbor, atlas])).toEqual(refOf(atlas));
     expect(pastScratch(refOf(scratch), [scratch])).toEqual(refOf(scratch));
     expect(pastScratch(null, [scratch, harbor])).toBeNull();
+  });
+});
+
+describe("the scratch project", () => {
+  it("is the one upstream calls scratch", () => {
+    const roots = [
+      "/Users/a/scratch",
+      "/Users/a/scratch/",
+      "/Users/a/Scratch",
+      "C:\\Scratch",
+      "c:/scratch",
+      "",
+    ];
+    for (const workspaceRoot of roots) {
+      for (const scratchRoot of [...roots, null, undefined]) {
+        expect(
+          isScratchWorkspace(workspaceRoot, scratchRoot),
+          `${workspaceRoot} ${scratchRoot}`,
+        ).toBe(isScratchProject({ workspaceRoot }, scratchRoot));
+      }
+    }
   });
 });

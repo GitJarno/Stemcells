@@ -191,13 +191,17 @@ describe("where the drafts are reported from", () => {
   });
 
   it("narrow layout: not in the sidebar, which a narrow window draws as a sheet only while open", () => {
-    expect(sidebar).toContain("<LeftColumn wide={<ThreadSidebar />} />");
+    expect(sidebar).toContain(
+      "<LeftColumn wide={<ThreadSidebar routeReveal={sidebarRouteReveal} />} />",
+    );
     expect(sidebar).not.toContain("DraftReport");
     expect(leftColumn).not.toContain("useDraftReport");
   });
 
   it("legacy sidebar: not in what the setting swaps, so the legacy list reports too", () => {
-    expect(sidebar).toContain("{legacySidebarEnabled ? <LegacyThreadSidebar /> :");
+    expect(sidebar).toMatch(
+      /\{legacySidebarEnabled \? \(\s*<LegacyThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\s*\) :/,
+    );
     expect(legacySidebar).not.toContain("DraftReport");
     expect(besideSidebar).not.toContain("legacySidebarEnabled");
   });

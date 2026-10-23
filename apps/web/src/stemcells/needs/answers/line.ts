@@ -44,9 +44,9 @@ export function readingLine(reading: Reading, card: Addressee): string {
     case "open":
       return "open its chat";
     case "click":
-      return `${reading.option.title} — needs your click`;
+      return `${reading.option.title} (needs your click)`;
     case "words":
-      return `${reading.option.title} — say what`;
+      return `${reading.option.title} (say what)`;
     case "kept":
       switch (reading.why) {
         case "unread":

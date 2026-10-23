@@ -14,6 +14,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
 import threadFind from "../../components/chat/ThreadFindProvider.tsx?raw";
+import threadTimeline from "../../components/chat/ThreadTimeline.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
 import threadRouteView from "../../components/ThreadRouteView.tsx?raw";
 import sidebar from "../../components/ui/sidebar.tsx?raw";
@@ -57,9 +58,11 @@ describe("a chat paints nothing over the slate", () => {
   it("so does the timeline's wrapper, a child of the chat's canvas", () => {
     // At the canvas's own depth in ChatView: a child of ThreadFindCanvas,
     // which renders upstream's ChatCanvas, whose canvas holds its children.
+    // ThreadTimeline renders the timeline itself, with no box of its own.
     expect(chatView).toMatch(
-      /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div className="relative flex min-h-0 flex-1 flex-col bg-background">\s*<MessagesTimeline/,
+      /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div className="relative flex min-h-0 flex-1 flex-col bg-background">\s*<ThreadTimeline/,
     );
+    expect(threadTimeline).toMatch(/return <MessagesTimeline [^>]*\/>;/);
     expect(threadFind).toContain("<ChatCanvas {...canvasProps} />");
     expect(chatCanvas).toMatch(/data-chat-canvas[\s\S]*?\{children\}\s*<\/div>/);
   });
