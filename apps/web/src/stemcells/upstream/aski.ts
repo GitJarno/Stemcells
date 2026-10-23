@@ -26,6 +26,7 @@ import {
   waitForThreadShell,
 } from "../../state/entities";
 import { usePrimaryEnvironmentId } from "../../state/environments";
+import { projectEnvironment } from "../../state/projects";
 import { primaryServerConfigAtom, serverEnvironment } from "../../state/server";
 import { useEnvironmentShellStatus } from "../../state/shell";
 import { threadEnvironment } from "../../state/threads";
@@ -46,6 +47,7 @@ import {
 import type { CellRef } from "../tabs/layout";
 import { chatFactsOf } from "./askiChats";
 import { useCellPresence } from "./chat";
+import { useCellPlace } from "./thread";
 
 export type AskiChat =
   | { readonly status: "starting" }
@@ -73,6 +75,8 @@ function wantedInstance(config: ServerConfig | null): AskiInstance | null | "no-
 let stepInFlight: string | null = null;
 const instancesWritten = new Set<string>();
 const repinsAsked = new Set<string>();
+// An Aski chat made in a project before Aski had none is moved out once per page.
+const movesAsked = new Set<string>();
 
 /** Runs one setup step as the page's step in flight; `fail` when it throws. */
 async function runStep(step: string, work: () => Promise<void>, fail: () => void): Promise<void> {
@@ -89,8 +93,14 @@ async function runStep(step: string, work: () => Promise<void>, fail: () => void
 /**
  * Aski's chat on the primary server: its instance kept current, and its one
  * thread found among the server's chats (pinned again if someone unpinned
- * it), else made in the most recent project and pinned. This browser
- * remembers it, to show it before the server's chats have loaded.
+ * it), else made and pinned. It is made without a project, in upstream's
+ * scratch project: Aski works across every project and in none
+ * (stemcells/tasks/aski-manager.md, decision 2). Where the server has no
+ * scratch folder (its data inside a repository, as in a dev worktree), it
+ * is made in the most recent project instead. An Aski chat still in a
+ * project where it could have none gets a new one without, once, and the
+ * old one is settled, its history kept. This browser remembers it, to
+ * show it before the server's chats have loaded.
  */
 /** `setsUp`: whether this page may set Aski's chat up when there's none (one window does). */
 export function useAskiChat(setsUp = true): AskiChat {
@@ -111,6 +121,14 @@ export function useAskiChat(setsUp = true): AskiChat {
   const cell: CellRef | null =
     environmentId !== null && threadId !== null ? { environmentId, threadId, draftId: null } : null;
   const presence = useCellPresence(cell);
+  const place = useCellPlace(presence.liveness === "alive" ? cell : null);
+  // Upstream offers a chat without a project only where it has a scratch folder.
+  const scratch = config?.scratchWorkspaceRoot != null;
+  // Aski's chat is in a project, where it could have none: it moves out.
+  const moving =
+    scratch && cell !== null && place?.isProject === true && !movesAsked.has(cell.threadId)
+      ? cell.threadId
+      : null;
   // Whether the server's chats have loaded: until then, no chat is known to be missing.
   const chatsLoaded = isThreadRouteSnapshotAuthoritative(useEnvironmentShellStatus(environmentId));
 
@@ -119,6 +137,9 @@ export function useAskiChat(setsUp = true): AskiChat {
   });
   const createThread = useOrchestrationCommand(threadEnvironment.create, { reportFailure: false });
   const pinThread = useOrchestrationCommand(threadEnvironment.pin, { reportFailure: false });
+  const unpinThread = useOrchestrationCommand(threadEnvironment.unpin, { reportFailure: false });
+  const settleThread = useOrchestrationCommand(threadEnvironment.settle, { reportFailure: false });
+  const openScratch = useAtomCommand(projectEnvironment.openScratch, { reportFailure: false });
 
   const wanted = wantedInstance(config);
   const instanceKey = wanted === null || wanted === "no-provider" ? null : JSON.stringify(wanted);
@@ -180,16 +201,36 @@ export function useAskiChat(setsUp = true): AskiChat {
       return;
     }
 
-    if (!instanceLive || !needsThread || !chatsLoaded || adopted !== null || !hasProject) return;
+    if (!instanceLive) return;
+    const makes = needsThread && chatsLoaded && adopted === null && (hasProject || scratch);
+    if (!makes && moving === null) return;
+    if (moving !== null) movesAsked.add(moving);
     void run("thread", async () => {
-      const ownProjects = readProjects().filter(
-        (project) => project.environmentId === environmentId,
-      );
-      const project = sortScopedProjectsForSidebar(
-        ownProjects,
-        readThreadShells(),
-        "updated_at",
-      )[0];
+      if (moving !== null) {
+        // Another window or browser may have moved it already: the pinned one is Aski's.
+        const current = askiChatAmong(chatFactsOf(readThreadShells(), environmentId));
+        if (current !== null && current.threadId !== moving && current.pinned) {
+          rememberAskiThread(environmentId, current.threadId);
+          setRemembered({ environmentId, threadId: current.threadId });
+          return;
+        }
+      }
+      const home = async () => {
+        if (scratch) {
+          const opened = await openScratch({
+            environmentId: environmentId as EnvironmentId,
+            input: {},
+          });
+          if (opened._tag === "Success") return opened.value;
+        }
+        // A chat only moves out of its project into none.
+        if (moving !== null) return null;
+        const ownProjects = readProjects().filter(
+          (project) => project.environmentId === environmentId,
+        );
+        return sortScopedProjectsForSidebar(ownProjects, readThreadShells(), "updated_at")[0];
+      };
+      const project = await home();
       if (!project) return;
       const settings = config?.settings;
       const model = getDefaultProviderInstanceModel(config?.providers ?? [], askiInstanceId);
@@ -219,6 +260,16 @@ export function useAskiChat(setsUp = true): AskiChat {
         environmentId: environmentId as EnvironmentId,
         input: { threadId: newId },
       });
+      if (moving !== null) {
+        // The pinned one is Aski's (askiChatAmong, and the server's needs list):
+        // the old one stops being it, and is put away with its history.
+        const old = {
+          environmentId: environmentId as EnvironmentId,
+          input: { threadId: ThreadId.make(moving) },
+        };
+        await unpinThread(old);
+        await settleThread(old);
+      }
       rememberAskiThread(environmentId, newId);
       setRemembered({ environmentId, threadId: newId });
     });
@@ -233,7 +284,7 @@ export function useAskiChat(setsUp = true): AskiChat {
     return { status: "ready", cell: { environmentId, threadId: adopted, draftId: null } };
   }
   if (cell !== null && presence.liveness === "alive") return { status: "ready", cell };
-  if (config !== null && !hasProject && needsThread) {
+  if (config !== null && !hasProject && !scratch && needsThread) {
     return { status: "unavailable", reason: "no-project" };
   }
   return { status: "starting" };

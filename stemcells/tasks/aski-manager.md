@@ -213,7 +213,7 @@ Each is one pull request.
 - [x] 3. The roster under Aski's chat, and "Done" with Settle in the column.
 - [x] 4. Settling puts a Cell away: its pane closes; the green line and
       Settle in the Cell's own tab.
-- [ ] 5. Aski has no project.
+- [x] 5. Aski has no project.
 - [ ] 6. The peek.
 - [ ] 7. Cells land in their project's tab.
 - [ ] 8. Aski divides: the spawn, and Aski standing in a new tab.
