@@ -15,6 +15,7 @@ import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
 import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
+import { showAskiStays } from "../aski/stays";
 import { showMarksWhileScrolling } from "../scrollIndicator/scrollIndicator";
 import { growSides } from "../split/grow";
 import { Separator, type Axis } from "../split/Separator";
@@ -331,9 +332,14 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     },
     closePane: () => {
       const pane = focusedPane(readWorkspace());
+      // Aski never closes, nor lets the key close the window under it.
+      if (inAskiTab()) {
+        showAskiStays();
+        return true;
+      }
       // The last pane of the last tab is left to upstream: on the desktop, ⌘W
-      // closes the window. So is Aski's, which never closes.
-      if (!pane || isLastPane() || inAskiTab()) return false;
+      // closes the window.
+      if (!pane || isLastPane()) return false;
       updateWorkspace((current) => closePane(current, pane.id));
       routeToFocused();
       return true;

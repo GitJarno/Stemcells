@@ -13,5 +13,11 @@
   "moment.things.many": "{n} new files. Words became things.",
   "moment.window.one": "Window's open. A Cell carried on.",
   "moment.window.many": "Window's open. {n} Cells carried on.",
-  "moment.pages": "Same thread, fewer pages."
+  "moment.pages": "Same thread, fewer pages.",
+  "stays.cant": "You can't {keys} me.",
+  "stays.respawn": "Nice try. I respawn.",
+  "stays.save": "I'm the save point. I stay.",
+  "stays.passive": "Immune to {keys}. It's a passive.",
+  "stays.hub": "No exit from the hub world.",
+  "stays.achievement": "Achievement unlocked: tried to close me."
 }
