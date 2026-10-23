@@ -23,6 +23,7 @@ import type { ProjectionStoreV2Shape } from "../../orchestration-v2/ProjectionSt
 import type { ProjectService } from "../../project/ProjectService.ts";
 import type { ProviderAuthService } from "../../provider/ProviderAuthService.ts";
 import { elsewhereNow } from "../peers/elsewhere.ts";
+import { cellsOnTheWire } from "../peers/onTheWire.ts";
 import { providerTextOf, type ThreadFacts } from "../peers/frame.ts";
 import { mailOf } from "../peers/link.ts";
 import { type RosterThread, rosterOf, rosterText, signatureOf } from "../peers/roster.ts";
@@ -70,6 +71,12 @@ const factsOf = (shell: OrchestrationV2ThreadShell, repo: string | null): Thread
   relationshipToParent: shell.lineage.relationshipToParent,
 });
 
+const upstreamTextOf = (message: Message) =>
+  projectComposerContextForProvider({
+    text: message.text,
+    records: message.context?.records ?? [],
+  });
+
 // Untraced, as `rosterNote` is: each runs inside `text`'s or `providerText`'s span.
 const framed = Effect.fnUntraced(function* (
   store: Store,
@@ -77,10 +84,8 @@ const framed = Effect.fnUntraced(function* (
   message: Message,
   repos: ReadonlyMap<string, string>,
 ) {
-  const text = projectComposerContextForProvider({
-    text: message.text,
-    records: message.context?.records ?? [],
-  });
+  const text = upstreamTextOf(message);
+  if (!cellsOnTheWire()) return text;
   // Mail from a linked environment names its sender in its id, as the
   // receiving server made it: there is no sender thread here.
   const id = message.id;
@@ -195,6 +200,7 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
   threadId: ThreadId,
   message: Message,
 ) {
+  if (!cellsOnTheWire()) return upstreamTextOf(message);
   const repos = yield* repoKeysOf(projects);
   const words = yield* framed(store, threadId, message, repos);
   // A command (`/compact`, a provider's own) works only as the text's start.

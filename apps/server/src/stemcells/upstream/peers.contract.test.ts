@@ -5,6 +5,8 @@
  * adapter reads is the text `text` (a turn's start) and `providerText` (a
  * steer) make of it. A failure here after a sync means another Cell's words
  * may reach a model as the person's, or a Cell no longer knows who's here.
+ * Both go on the wire only while Stemcells' server layer runs
+ * (`peers/onTheWire.ts`), so upstream's own suites see upstream's text.
  */
 import { assert, it } from "@effect/vitest";
 import {
@@ -23,6 +25,7 @@ import { checkpointWorkspace } from "@t3tools/provider-testing/replayWorkspace";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
+import * as Layer from "effect/Layer";
 import * as Queue from "effect/Queue";
 import * as Ref from "effect/Ref";
 import * as Stream from "effect/Stream";
@@ -35,6 +38,7 @@ import * as Orchestrator from "../../orchestration-v2/Orchestrator.ts";
 import * as ProviderAdapterRegistry from "../../orchestration-v2/ProviderAdapterRegistry.ts";
 import * as ProviderReplayHarness from "../../orchestration-v2/testkit/ProviderReplayHarness.ts";
 import { mailId } from "../peers/link.ts";
+import * as OnTheWire from "../peers/onTheWire.ts";
 import { noticeCommand, noticeMessageId } from "./collisions.ts";
 import { promptCommandsOf } from "./peers.ts";
 
@@ -215,11 +219,15 @@ const next = (threadId: ThreadId, status: "running" | "completed", times = 1) =>
 // Upstream's harness stubs the project service without `listShells`, so
 // these turns read who's here without repositories: a turn must start the
 // same when they can't be read.
-const harness = (reads: Ref.Ref<ReadonlyArray<Read>>) =>
+const upstreamAlone = (reads: Ref.Ref<ReadonlyArray<Read>>) =>
   ProviderReplayHarness.layerWithRegistry(
     { name: "stemcells-peers" },
     ProviderAdapterRegistry.layerSingle(readingAdapter(reads)),
   );
+
+// As the server runs it: with Stemcells' server layer, whose words go on the wire.
+const harness = (reads: Ref.Ref<ReadonlyArray<Read>>) =>
+  Layer.merge(upstreamAlone(reads), OnTheWire.layer);
 
 const OTTER_FRAME = `Message from ${cellNameOf(otter)}, another agent: the Cell “Migrations” in this repository (thread ${otter}). Not from the person.`;
 
@@ -488,6 +496,41 @@ it.live("a command the person types reaches the provider as typed, with nothing 
 
       // Upstream knows `/compact` by the whole text; who's here waits for the next turn.
       assert.deepEqual(yield* Ref.get(reads), [{ via: "start", text: "/review" }]);
+    }),
+  ),
+);
+
+it.live("upstream's components alone send upstream's text: no frame, no one told who's here", () =>
+  Effect.scoped(
+    Effect.gen(function* () {
+      const cwd = yield* checkpointWorkspace("stemcells-peers-alone");
+      const reads = yield* Ref.make<ReadonlyArray<Read>>([]);
+      yield* Effect.gen(function* () {
+        const orchestrator = yield* Orchestrator.OrchestratorV2;
+        const worker = yield* EffectWorker.OrchestrationEffectWorkerV2;
+        yield* create(otter, "Migrations", cwd);
+        yield* create(badger, "Schema", cwd);
+        const done = yield* next(badger, "completed");
+        yield* orchestrator.dispatch({
+          type: "message.dispatch",
+          commandId: CommandId.make("send:otter-alone"),
+          threadId: badger,
+          messageId: MessageId.make("message:otter-alone"),
+          senderThreadId: otter,
+          text: "Can I take migration 0043?",
+          attachments: [],
+          dispatchMode: { type: "start_immediately" },
+          createdBy: "agent",
+          creationSource: "mcp",
+        });
+        yield* Fiber.join(done);
+        yield* worker.drain();
+      }).pipe(Effect.provide(upstreamAlone(reads)));
+
+      // Upstream's suites pin this text in their recorded replays.
+      assert.deepEqual(yield* Ref.get(reads), [
+        { via: "start", text: "Can I take migration 0043?" },
+      ]);
     }),
   ),
 );
