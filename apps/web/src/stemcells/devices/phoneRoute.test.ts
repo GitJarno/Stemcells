@@ -35,8 +35,8 @@ const tailscaleHttps = endpoint(
   "tailscale",
 );
 
-const on = { mode: "network-accessible", tailscaleServeEnabled: true } as const;
-const off = { mode: "local-only", tailscaleServeEnabled: false } as const;
+const on = { mode: "network-accessible" } as const;
+const off = { mode: "local-only" } as const;
 
 describe("the address a phone's code points at", () => {
   it("is Tailscale HTTPS ahead of the tailnet IP and the local network, never loopback", () => {
@@ -51,15 +51,24 @@ describe("the address a phone's code points at", () => {
       baseUrl: "https://mac.example.ts.net",
       anywhere: true,
       tailnet: true,
-      tailscaleOff: false,
     });
+  });
+
+  it("is the tailnet IP without Tailscale HTTPS, so a phone needs no certificates", () => {
+    expect(
+      phoneRoute({
+        desktop: true,
+        exposure: on,
+        endpoints: [loopback, lan, tailnetIp, { ...tailscaleHttps, status: "unavailable" }],
+      }),
+    ).toEqual({ kind: "ready", baseUrl: tailnetIp.httpBaseUrl, anywhere: true, tailnet: true });
   });
 
   it("is the local network when that's all there is, which the phone leaves with the house", () => {
     expect(
       phoneRoute({
         desktop: true,
-        exposure: { mode: "network-accessible", tailscaleServeEnabled: false },
+        exposure: on,
         endpoints: [loopback, lan],
       }),
     ).toEqual({
@@ -67,24 +76,22 @@ describe("the address a phone's code points at", () => {
       baseUrl: lan.httpBaseUrl,
       anywhere: false,
       tailnet: false,
-      tailscaleOff: true,
     });
   });
 
-  it("is none while Tailscale HTTPS is on but not answering, not the tailnet IP the server isn't on", () => {
+  it("is none without Network access, not the tailnet IP the server isn't on", () => {
     expect(
       phoneRoute({
         desktop: true,
-        exposure: { mode: "local-only", tailscaleServeEnabled: true },
+        exposure: off,
         endpoints: [loopback, tailnetIp, { ...tailscaleHttps, status: "unavailable" }],
       }),
-    ).toEqual({ kind: "tailscale-silent", networkOff: true });
+    ).toEqual({ kind: "off" });
   });
 
   it("is none when this machine answers only itself", () => {
     expect(phoneRoute({ desktop: true, exposure: off, endpoints: [loopback] })).toEqual({
       kind: "off",
-      networkOff: true,
     });
   });
 

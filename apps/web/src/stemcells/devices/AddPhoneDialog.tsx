@@ -17,7 +17,6 @@ import {
   refreshRoutes,
   revokePairingLink,
   turnOnNetworkAccess,
-  turnOnTailscale,
   useCopyToClipboard,
   useThisMachine,
 } from "../upstream/devices";
@@ -29,8 +28,6 @@ import { phoneRoute } from "./phoneRoute";
 // this computer's best address for a phone, a one-time link to it as a QR
 // code, and "Paired" once the phone has used it. Without an address, the
 // switch that adds one.
-
-const DEFAULT_TAILSCALE_PORT = 443;
 
 type Link = {
   readonly id: string;
@@ -88,9 +85,12 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       : null;
   const expired = link !== null && Date.parse(link.expiresAt) <= nowMs;
 
-  // Fresh routes on open: the desktop app checks Tailscale again.
+  // Fresh routes on open, and on coming back from starting Tailscale: the
+  // code then points at the tailnet address.
   useEffect(() => {
     refreshRoutes();
+    window.addEventListener("focus", refreshRoutes);
+    return () => window.removeEventListener("focus", refreshRoutes);
   }, []);
 
   useEffect(() => {
@@ -125,10 +125,10 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
     };
   }, []);
 
-  const flip = async (turnOn: () => Promise<void>) => {
+  const turnOn = async () => {
     setSwitching(true);
     try {
-      await turnOn();
+      await turnOnNetworkAccess();
     } catch (error) {
       toastManager.add({
         type: "error",
@@ -139,23 +139,6 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
     }
     setSwitching(false);
   };
-  const port = here.exposure?.tailscaleServePort ?? DEFAULT_TAILSCALE_PORT;
-  const useTailscale = (
-    <Button disabled={switching} onClick={() => void flip(() => turnOnTailscale(port))}>
-      {switching ? <Spinner size="xs" /> : null}
-      Turn on Tailscale
-    </Button>
-  );
-  const useThisNetwork = (
-    <Button variant="outline" disabled={switching} onClick={() => void flip(turnOnNetworkAccess)}>
-      This network only
-    </Button>
-  );
-  const restartNote = (
-    <p className="text-xs text-muted-foreground">
-      Stemcells restarts once to turn it on, and any Cell at work stops. Come back here after.
-    </p>
-  );
 
   if (paired !== null)
     return (
@@ -179,7 +162,6 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
 
   if (route.kind === "ready") {
     const url = link === null ? null : pairingUrlFor(route.baseUrl, link.credential);
-    const offerTailscale = !route.anywhere && route.tailscaleOff && here.canSwitch;
     return (
       <>
         <DialogHeader>
@@ -226,13 +208,12 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
           ) : null}
           {!route.anywhere ? (
             <p className="text-xs text-muted-foreground">
-              This works on this network only. Tailscale reaches this computer from anywhere.
+              This works on this Wi-Fi only. Start Tailscale on this computer and your phone, and
+              the code reaches it from anywhere.
             </p>
           ) : null}
-          {offerTailscale ? restartNote : null}
         </DialogPanel>
         <DialogFooter variant="bare">
-          {offerTailscale ? useTailscale : null}
           {problem !== null || expired ? (
             <Button
               variant="outline"
@@ -248,9 +229,7 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
               Copy link
             </Button>
           ) : null}
-          <Button variant={route.anywhere ? "default" : "outline"} onClick={onDone}>
-            Done
-          </Button>
+          <Button onClick={onDone}>Done</Button>
         </DialogFooter>
       </>
     );
@@ -286,41 +265,25 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       </>
     );
 
-  if (route.kind === "tailscale-silent")
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Tailscale isn&apos;t answering</DialogTitle>
-          <DialogDescription>
-            Start Tailscale on this computer and sign in, then quit and reopen Stemcells.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogPanel>
-          <p className="text-xs text-muted-foreground">
-            On a new tailnet, also turn on HTTPS in Tailscale&apos;s admin console, under DNS ›
-            HTTPS Certificates.
-          </p>
-        </DialogPanel>
-        <DialogFooter variant="bare">
-          {route.networkOff ? useThisNetwork : null}
-          <Button onClick={() => refreshRoutes()}>Check again</Button>
-        </DialogFooter>
-      </>
-    );
-
   return (
     <>
       <DialogHeader>
         <DialogTitle>Add a phone</DialogTitle>
         <DialogDescription>
-          Your phone reaches this computer through Tailscale, at home or away. Turn it on here, and
-          on your phone with the same account.
+          Your phone reaches this computer on the same Wi-Fi, and from anywhere with Tailscale on
+          both. Turn it on here.
         </DialogDescription>
       </DialogHeader>
-      <DialogPanel>{restartNote}</DialogPanel>
+      <DialogPanel>
+        <p className="text-xs text-muted-foreground">
+          Stemcells restarts once, and any Cell at work stops. Come back here after.
+        </p>
+      </DialogPanel>
       <DialogFooter variant="bare">
-        {route.networkOff ? useThisNetwork : null}
-        {useTailscale}
+        <Button disabled={switching} onClick={() => void turnOn()}>
+          {switching ? <Spinner size="xs" /> : null}
+          Turn on
+        </Button>
       </DialogFooter>
     </>
   );

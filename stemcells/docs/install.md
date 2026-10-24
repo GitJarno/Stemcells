@@ -98,9 +98,8 @@ Stemcells.
 1. Install Tailscale on each computer and on your phone, signed in to one
    account.
 2. On each computer, open **Settings › Devices › Add › Phone or tablet**.
-   The first time, choose **Turn on Tailscale**: Stemcells restarts once,
-   and any Cell at work stops. On a new tailnet, also turn on HTTPS in
-   Tailscale's admin console, under DNS › HTTPS Certificates.
+   The first time, choose **Turn on**: Stemcells restarts once, and any
+   Cell at work stops.
 3. In Stemcells on your phone, scan the code. Each computer needs one scan.
 4. To reach one computer from another, choose **Copy link** in step 2 on
    the computer you want to reach, then **Add › Computer** on the one
@@ -108,8 +107,8 @@ Stemcells.
    Cells see each other.
 
 **Remove** takes a device's access away, or forgets a computer on this
-device. Without Tailscale, **This network only** pairs a phone on the same
-Wi-Fi. The phone gets no notifications while its app is closed: those need
+device. Without Tailscale, the code pairs a phone on the same Wi-Fi, and
+starting Tailscale later points it at the tailnet. The phone gets no notifications while its app is closed: those need
 T3 Connect.
 
 ## For coding agents

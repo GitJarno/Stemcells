@@ -179,17 +179,12 @@ export function reachablePageOrigin(): string | null {
   return isLoopbackHostname(window.location.hostname) ? null : window.location.origin;
 }
 
-/**
- * Turns on Tailscale HTTPS, or Network access, in the desktop app. Either
- * saves the choice and relaunches the app, as Settings › Connections does.
- */
 export const refreshRoutes = refreshDesktopNetworkAccessState;
 
-export async function turnOnTailscale(port: number) {
-  await window.desktopBridge?.setTailscaleServeEnabled({ enabled: true, port });
-  refreshDesktopNetworkAccessState();
-}
-
+/**
+ * Turns on Network access in the desktop app: it saves the choice and
+ * relaunches the app, as Settings › Connections does.
+ */
 export async function turnOnNetworkAccess() {
   await window.desktopBridge?.setServerExposureMode("network-accessible");
   refreshDesktopNetworkAccessState();

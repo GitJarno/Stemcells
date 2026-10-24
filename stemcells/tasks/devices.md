@@ -28,8 +28,15 @@ upstream, so a section inside it would conflict at most syncs.
       never T3's hosted app), mints a one-time link with the standard
       permissions, shows its QR, says "Paired" once the link is used by a
       device that isn't the command line's or an agent's, and takes an
-      unused link back on close. Without a route it offers to turn on
-      Tailscale (one restart), or the local network.
+      unused link back on close. Without a route it offers Network access
+      (one restart).
+- [x] The tailnet IP over Tailscale Serve: with Network access on, the
+      desktop app lists the Mac's Tailscale address, and the phone app
+      speaks plain HTTP inside Tailscale's tunnel (`NSAllowsArbitraryLoads`,
+      Android cleartext). No Serve, no HTTPS certificates, no admin console:
+      the dead end "Tailscale isn't answering" is gone. The routes refresh
+      when the window regains focus, so starting Tailscale moves the code
+      to the tailnet.
 - [x] Computer: upstream's Add environment dialog, unchanged.
 - [x] Only `upstream/devices.ts` imports upstream; a contract test pins
       the code's URL: this machine's own `/pair`, with the token upstream's
