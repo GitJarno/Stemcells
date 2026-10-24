@@ -174,7 +174,10 @@ fits, Reply… sends the person's.
 - Send closes the peek once the message is on its way: the Cell is moving
   again, and the person is back with Aski. Esc or a click outside closes
   it too. "Open in its tab" takes it to its tab (decision 6).
-- A Cell link in Aski's chat opens the same peek.
+- A Cell link in Aski's chat opens its chat in a tab of its own, as a chip
+  does anywhere (the person's call, 2026-10-24): pulling up a past chat
+  shouldn't cover the talk with Aski. The peek is for the room's own rows
+  and cards.
 
 ### 10. Done, and settling, look the same everywhere
 
@@ -204,7 +207,7 @@ done."
 ### 12. Finding past work
 
 - Sure which chat the person means: Aski links it, and the link opens the
-  peek.
+  chat in a tab of its own.
 - Not sure: up to three, linked, one line each, and "Which one?". A click is
   the answer.
 - "Summarise it": Aski reads it (`t3_thread_read`) and answers in two or

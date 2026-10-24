@@ -28,21 +28,3 @@ const read = () => peeking;
 export function usePeek(): string | null {
   return useSyncExternalStore(subscribe, read, read);
 }
-
-const BASE = "http://aski.invalid";
-
-/**
- * The Cell a link in Aski's chat names on this server (a thread chip,
- * upstream's link to `/$environmentId/$threadId`), or null.
- */
-export function linkedCell(href: string | null, environmentId: string): string | null {
-  if (href === null) return null;
-  const url = new URL(href, BASE);
-  // The desktop app routes by the hash, so its links are `<page>#/<route>`.
-  const route = url.hash.startsWith("#/") ? new URL(url.hash.slice(1), BASE) : url;
-  const [, environment, thread, ...rest] = route.pathname.split("/");
-  if (rest.length > 0 || environment === undefined || thread === undefined || thread === "") {
-    return null;
-  }
-  return decodeURIComponent(environment) === environmentId ? decodeURIComponent(thread) : null;
-}
