@@ -57,6 +57,7 @@ import {
   type CachedFile,
   type ScanCache,
 } from "./usageScanCache.ts";
+import { usageHistory } from "../stemcells/upstream/usageHistory.ts";
 
 const LITELLM_RATES_URL =
   "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json";
@@ -673,7 +674,19 @@ export const make = Effect.gen(function* () {
       [Effect.forEach(dirs, (dir) => scanTranscriptDir(dir, windowStartMs)), scans],
       { concurrency: "unbounded" },
     );
-    const scanned: readonly ScannedDir[] = [...transcripts, ...scanDirs.flat()];
+    const scanned: readonly ScannedDir[] = [
+      ...transcripts,
+      ...scanDirs.flat(),
+      ...(yield* usageHistory({
+        fileSystem,
+        path,
+        stateDir: config.stateDir,
+        live: transcripts,
+        cache: fileCache,
+        windowStartMs,
+        retentionCutoffMs,
+      })),
+    ];
     return scanned;
   });
 
