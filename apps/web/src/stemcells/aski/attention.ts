@@ -1,9 +1,7 @@
 // What holds Aski's eyes. While Aski's field has the keyboard, the eyes
 // follow its caret; while Aski answers, it thinks, its eyes up and a little
-// to the left, still; else while words stand in the field Aski listens, and
-// while anything waits on the person, they blink like a cursor. A mood
-// types a character into them in place of the blocks, and holds them so
-// while its cause holds: first `- -` while nobody is at this Mac, `x x`
+// to the left, still. A mood types a character into them in place of the
+// blocks, and holds them so while its cause holds: first `- -` while nobody is at this Mac, `x x`
 // while its server doesn't answer, nothing while words are typed or a chat
 // waits on the person, `? ?` while Aski's newest turn failed and nothing
 // was typed since, `^ ^` once Cells have landed and none works or needs

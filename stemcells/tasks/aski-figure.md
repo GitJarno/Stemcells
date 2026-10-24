@@ -19,10 +19,11 @@ stood there, without changes of our own.
       (`stage/figure.ts`): blinks on the wall clock's 4.4 s slots, now and
       then twice, by transform alone; the eyes follow the pointer over Aski's
       pane and the caret in its field, rest up and to the left while Aski
-      answers, and blink like a cursor while words stand in its field or a
-      chat waits on the person (`eyes.ts`).
+      answers (`eyes.ts`). They no longer blink like a cursor while a chat
+      waits on the person: with three to seven waiting at once, that was a
+      beat a second all day, and the cards already say it.
 - [x] The eyes say how things stand (`attention.ts`), first that holds:
-      `- -` nobody at the Mac, `x x` the server doesn't answer, the cursor
+      `- -` nobody at the Mac, `x x` the server doesn't answer, none
       while typing or waiting, `? ?` Aski's newest turn failed and nothing
       typed since, `^ ^` a Cell landed and none works or needs the person.
 - [x] Nobody at the Mac: the server reads the I/O registry (idle 5 minutes,

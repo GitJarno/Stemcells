@@ -11,13 +11,11 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { useMinute } from "../rail/clock";
 import type { CellRef } from "../tabs/layout";
-import { reducedMotion } from "../tokens/motion";
 import { composerEditorIn, useAskiHome } from "../upstream/askiEyes";
 import { eyesMood, homeMood, watchField } from "./attention";
-import { type Aim, blinking, cursoring, type Looking, looking } from "./eyes";
+import { type Aim, blinking, type Looking, looking } from "./eyes";
 import type { Mood } from "./mood";
 import { usePresent } from "./presence";
-import { useShown } from "./useShown";
 import { groundOf, inkOf } from "./stage/colour.ts";
 import type { FigureAsk, FigureDrawn } from "./stage/figure.ts";
 import "../tokens/stemcells.css";
@@ -223,25 +221,6 @@ export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
   // Aski beginning to think turns its eyes up and to the left, and lets the caret go.
   useEffect(() => lookingRef.current?.thought(thinking), [thinking]);
 
-  // While Aski listens, and while anything waits on the person, the eyes blink like a cursor, but while it thinks
-  // or wears a mood, and at rest off screen and under Reduce Motion.
-  const shown = useShown(figureRef);
-  const cursor =
-    (home.waits || listening) && !thinking && mood === undefined && shown && !reducedMotion();
-  useEffect(() => {
-    const eyes = eyesRef.current;
-    if (!cursor || eyes === null) return;
-    const beats = [...eyes.querySelectorAll<HTMLSpanElement>(".aski-eye")].flatMap((eye) =>
-      cursoring(
-        eye.querySelector<HTMLCanvasElement>("canvas:not(.aski-eyes-shut)")!,
-        eye.querySelector<HTMLCanvasElement>(".aski-eyes-shut")!,
-      ),
-    );
-    return () => {
-      for (const beat of beats) beat.cancel();
-    };
-  }, [cursor]);
-
   return (
     <div className="aski-figure" ref={figureRef} aria-hidden="true">
       <canvas ref={canvasRef} />
@@ -251,7 +230,6 @@ export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
         hidden
         data-mood={mood}
         data-thinking={thinking ? "" : undefined}
-        data-waiting={cursor ? "" : undefined}
       >
         <span className="aski-eye">
           <canvas />

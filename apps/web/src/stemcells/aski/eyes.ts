@@ -3,10 +3,9 @@
 // while you type to Aski, else the pointer while it moves over Aski's
 // place, letting go a while after it stops or as soon as it leaves; while
 // Aski answers it thinks, its eyes resting up and a little to the left
-// without a blink; while words stand in Aski's field it listens, and while
-// anything waits on the person, they blink like a cursor instead, at rest
-// off screen; eyes wearing a mood hold it without a blink. The figure
-// draws each eye on layers of its own (stage/figure.ts); a blink squashes
+// without a blink; eyes wearing a mood hold it without a blink. They never
+// blink like a cursor: what waits on the person shows in the cards, and a
+// beat a second at the edge of sight tires the eye. The figure draws each eye on layers of its own (stage/figure.ts); a blink squashes
 // them toward a sliver and a look moves them in whole device pixels, both
 // by transform alone, so none draws Aski again.
 // Under Reduce Motion the eyes don't blink, and they cut to where they look
@@ -53,9 +52,8 @@ function blink(): void {
   ];
   const line: Keyframe[] = [{ opacity: 0 }, { opacity: 1, offset }, { opacity: 0 }];
   for (const [eyes, shutEyes] of open) {
-    // Eyes blinking like a cursor keep that beat alone; thinking ones and ones wearing a mood hold still.
-    if (!eyes.isConnected || eyes.closest("[data-waiting], [data-thinking], [data-mood]") !== null)
-      continue;
+    // Thinking eyes and eyes wearing a mood hold still.
+    if (!eyes.isConnected || eyes.closest("[data-thinking], [data-mood]") !== null) continue;
     eyes.animate(squash, timing);
     shutEyes.animate(line, timing);
   }
@@ -91,33 +89,12 @@ export function blinking(eyes: HTMLElement, shut: HTMLElement): () => void {
   };
 }
 
-/** A cursor's beat, open then shut, in milliseconds: the eyes open half of it and shut the other half. */
+/** A cursor's beat, open then shut, in milliseconds: a typed line's caret is shown half of it. */
 export const CURSOR = 1060;
 
-/** How far into the cursor's beat `now` (Unix milliseconds) falls, on the clock the Cells read: open in its first half. */
+/** How far into the cursor's beat `now` (Unix milliseconds) falls, on the clock the Cells read: shown in its first half. */
 export const cursorPhase = (now: number = Date.now()): number =>
   (((clockSeconds(now) * 1000) % CURSOR) + CURSOR) % CURSOR;
-
-/**
- * An eye, open and shut, blinks like a cursor until the animations are
- * cancelled: on whole beats of the clock the Cells read (`clockSeconds`), so
- * every Aski keeps one beat, and it with a Cell that waits on the person.
- */
-export function cursoring(eye: HTMLElement, shut: HTMLElement): Animation[] {
-  const timing = { duration: CURSOR, iterations: Number.POSITIVE_INFINITY };
-  const beats = [
-    eye.animate(
-      [{ opacity: 1 }, { opacity: 1, offset: 0.5 }, { opacity: 0, offset: 0.5 }, { opacity: 0 }],
-      timing,
-    ),
-    shut.animate(
-      [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1, offset: 0.5 }, { opacity: 1 }],
-      timing,
-    ),
-  ];
-  for (const beat of beats) beat.currentTime = cursorPhase();
-  return beats;
-}
 
 /** Where the eyes look from and how far they go, in fractions of the figure's box. */
 export interface Aim {
