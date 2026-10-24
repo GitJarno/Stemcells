@@ -6,21 +6,26 @@
 import { useSyncExternalStore } from "react";
 
 import { isAskiTab } from "../tabs/askiTab";
-import { paneShowing, panesOf, parseWorkspace, type CellRef, type Workspace } from "../tabs/layout";
+import {
+  paneShowing,
+  parseWorkspace,
+  type CellRef,
+  type Tab,
+  type Workspace,
+} from "../tabs/layout";
 import { windowsBridge, type WindowElsewhere } from "./bridge";
 
 const bridge = windowsBridge();
 const others = new Map<string, Workspace>();
 
-/** Aski's chat, when another window holds Aski's tab. */
-let askiAway: CellRef | null = null;
+/** Aski's tab, when another window holds it. */
+let askiAway: Tab | null = null;
 const listeners = new Set<() => void>();
 
-function findAski(): CellRef | null {
+function findAski(): Tab | null {
   for (const workspace of others.values()) {
     const tab = workspace.tabs.find(isAskiTab);
-    const cell = tab ? panesOf(tab)[0]?.cell : null;
-    if (cell) return cell;
+    if (tab) return tab;
   }
   return null;
 }
@@ -63,13 +68,13 @@ const subscribe = (listener: () => void) => {
 };
 
 /**
- * Aski's chat while another window holds Aski's tab, else null. Aski's
- * place in this window's strip then brings that window forward.
+ * Aski's tab while another window holds it, else null. Aski's place in this
+ * window's strip then brings it here (`bringAskiHere`).
  */
-export function askiElsewhere(): CellRef | null {
+export function askiElsewhere(): Tab | null {
   return askiAway;
 }
 
-export function useAskiElsewhere(): CellRef | null {
+export function useAskiElsewhere(): Tab | null {
   return useSyncExternalStore(subscribe, askiElsewhere, askiElsewhere);
 }

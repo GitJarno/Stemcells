@@ -2,7 +2,7 @@
  * A tab carried into another window's strip joins that window
  * (stemcells/tasks/windows.md, Into another window's strip).
  */
-import { isAskiTab } from "../tabs/askiTab";
+import { ASKI_TAB_ID, isAskiTab } from "../tabs/askiTab";
 import { windowById } from "./arrangement";
 import { windowsBridge } from "./bridge";
 import { join } from "./moves";
@@ -26,4 +26,18 @@ export async function joinWindow(
     return join(arrangement, tabId, host, slot + (first && isAskiTab(first) ? 1 : 0));
   });
   return moved ? host : null;
+}
+
+/**
+ * Aski comes to the window the person goes to it in: its tab joins this
+ * one, first. Going to Aski never sends the person to another window, so a
+ * swipe to Aski's place always lands where they are.
+ */
+export async function bringAskiHere(): Promise<boolean> {
+  const bridge = windowsBridge();
+  if (!bridge) return false;
+  const moved = await commitMove(({ arrangement }) =>
+    join(arrangement, ASKI_TAB_ID, bridge.boot.id, 0),
+  );
+  return moved !== null;
 }

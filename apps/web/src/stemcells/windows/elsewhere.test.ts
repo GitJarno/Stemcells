@@ -53,9 +53,8 @@ describe("chats in other windows", () => {
     const { elsewhere, hear, revealed } = await load();
     expect(elsewhere.askiElsewhere()).toBeNull();
     hear({ id: "c", workspace: serializeWorkspace({ tabs: [askiTab()], activeTabId: "aski" }) });
-    const aski = elsewhere.askiElsewhere();
-    expect(aski).toEqual(chat("aski"));
-    expect(elsewhere.revealElsewhere(aski!)).toBe(true);
+    expect(elsewhere.askiElsewhere()).toEqual(askiTab());
+    expect(elsewhere.revealElsewhere(chat("aski"))).toBe(true);
     expect(revealed).toEqual([["c", "aski-tab.aski"]]);
     hear({ id: "c", workspace: null });
     expect(elsewhere.askiElsewhere()).toBeNull();

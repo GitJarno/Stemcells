@@ -600,7 +600,11 @@ timer the hand can beat, and in tests the engine is fed recorded hands.
   preview manager.
 - **Aski's tab** tears off like any tab; it's first in whichever window
   holds it; closing that window sends it home. Every other window's strip
-  keeps Aski's place, which brings Aski's window forward on Aski's chat.
+  keeps Aski's place and its page, first: going to it (a click, a swipe,
+  a route or link to Aski's chat) brings Aski's tab into that window. No
+  window is Aski's home, and going to Aski never sends the person to
+  another window: a gesture that sometimes stays and sometimes jumps
+  windows can't become habit.
 - **The new Cell past the last tab** has one draft for the whole app, kept
   in step across windows like every draft, so each window's page past the
   last tab shows the same words. Taken (written in) in two windows at once,

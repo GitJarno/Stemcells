@@ -29,7 +29,8 @@ import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import { seatAskiHere } from "../windows/askiHome";
 import { ChatCarry, useCarriedPane } from "../windows/ChatCarry";
-import { revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
+import { askiElsewhere, revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
+import { bringAskiHere } from "../windows/joinWindow";
 import { useLandsLaunches } from "../windows/landing";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
@@ -143,6 +144,9 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     workspace.tabs.length > 0 && workspace.tabs.at(-1)?.id === workspace.activeTabId;
   const newCellMotion = useNewCell(lastTabOnStage && !newCellIsTaken).motion;
   const askiAway = useAskiElsewhere();
+  // Aski's tab on its way here from another window: its page holds the
+  // stage meanwhile, so the strip doesn't slide back while the move lands.
+  const [askiComing, setAskiComing] = useState(false);
   // From here on, a browser off stage sleeps until it is wanted (`awake.ts`).
   useLayoutEffect(raiseSlate, []);
 
@@ -151,10 +155,20 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     if (cell) navigateToCell(cell, { replace: true });
   };
 
+  /** Brings Aski here if another window holds it; false when it doesn't. */
+  const bringAski = (cell?: CellRef): boolean => {
+    const away = askiElsewhere();
+    const awayCell = away ? panesOf(away)[0]?.cell : undefined;
+    if (!awayCell || (cell && !sameChat(cell, awayCell))) return false;
+    // The window takes the move's workspace before the commit answers.
+    void bringAskiHere().then(() => setAskiComing(false));
+    return true;
+  };
+
   const onRoute = useEffectEvent((cell: CellRef) => {
     // A chat lives in one place: open in another window, that window comes
-    // forward, and this one stays on its own chat.
-    if (revealElsewhere(cell)) {
+    // forward, and this one stays on its own chat. Aski comes here instead.
+    if (bringAski(cell) || revealElsewhere(cell)) {
       routeToFocused();
       return;
     }
@@ -219,10 +233,9 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   };
 
   const activateTabAndRoute = (tabId: string) => {
-    // Aski's tab in another window: Aski's place here brings that window forward.
-    if (tabId === ASKI_TAB_ID && !readWorkspace().tabs.some(isAskiTab) && askiAway) {
-      if (revealElsewhere(askiAway)) return;
-    }
+    const askiComes = tabId === ASKI_TAB_ID && !readWorkspace().tabs.some(isAskiTab) && bringAski();
+    setAskiComing(askiComes);
+    if (askiComes) return;
     // The new Cell's page, gone to: its tab is taken, and the route goes to its draft.
     const current = useWorkspaceStore.getState().newCell;
     updateWorkspace((latest) =>
@@ -284,8 +297,8 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   useEffect(() => provideNewCellPane(() => provideNewPane()), []);
 
   const openBeside = (cell: CellRef) => {
-    // A chat open in another window: that window comes forward.
-    if (revealElsewhere(cell)) return;
+    // A chat open in another window: that window comes forward. Aski comes here.
+    if (bringAski(cell) || revealElsewhere(cell)) return;
     updateWorkspace((current) => openBesideOutsideAski(current, cell, newIds(), gridWidth()));
     routeToFocused();
   };
@@ -388,17 +401,27 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const routeOwnerId =
     props.target === null ? null : (routeHolder?.pane.id ?? (routeIsNew ? focused?.id : null));
 
-  // The new Cell's page is the strip's last, taken or not.
-  const workspaceTabIds = workspace.tabs.map((candidate) => candidate.id);
-  const untakenNewCell = newCell !== null && !newCellIsTaken ? newCell : null;
-  const tabIds = untakenNewCell ? [...workspaceTabIds, untakenNewCell.ids.tab] : workspaceTabIds;
-  const tabOf = (tabId: string): Tab | undefined =>
-    workspace.tabs.find((candidate) => candidate.id === tabId) ??
-    (untakenNewCell && tabId === untakenNewCell.ids.tab ? newCellTab(untakenNewCell) : undefined);
   const askiTab = workspace.tabs.find(isAskiTab) ?? null;
   const cellTabs = askiTab
     ? workspace.tabs.filter((candidate) => candidate !== askiTab)
     : workspace.tabs;
+  // Aski's page is first in every window. Held by another, it shows Aski's
+  // chat as it stands there, and turning to it brings Aski here.
+  const askiVisiting = askiTab === null ? askiAway : null;
+  const askiShown = askiTab ?? askiVisiting;
+  const stageId = askiVisiting && askiComing ? ASKI_TAB_ID : workspace.activeTabId;
+  // The new Cell's page is the strip's last, taken or not.
+  const workspaceTabIds = workspace.tabs.map((candidate) => candidate.id);
+  const untakenNewCell = newCell !== null && !newCellIsTaken ? newCell : null;
+  const tabIds = [
+    ...(askiVisiting ? [ASKI_TAB_ID] : []),
+    ...workspaceTabIds,
+    ...(untakenNewCell ? [untakenNewCell.ids.tab] : []),
+  ];
+  const tabOf = (tabId: string): Tab | undefined =>
+    workspace.tabs.find((candidate) => candidate.id === tabId) ??
+    (askiVisiting && tabId === ASKI_TAB_ID ? askiVisiting : undefined) ??
+    (untakenNewCell && tabId === untakenNewCell.ids.tab ? newCellTab(untakenNewCell) : undefined);
 
   return (
     <SidebarInset
@@ -408,10 +431,10 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
       {keeper}
       <TabStrip
         tabs={cellTabs}
-        activeTabId={workspace.activeTabId}
+        activeTabId={stageId}
         aski={{
-          active: askiTab !== null && workspace.activeTabId === ASKI_TAB_ID,
-          cell: askiTab ? (panesOf(askiTab)[0]?.cell ?? null) : askiAway,
+          active: askiShown !== null && stageId === ASKI_TAB_ID,
+          cell: askiShown ? (panesOf(askiShown)[0]?.cell ?? null) : null,
           chat: askiChat,
         }}
         newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}
@@ -440,13 +463,13 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         ) : (
           <TabPager
             tabIds={tabIds}
-            activeId={tab.id}
+            activeId={stageId ?? tab.id}
             onTurn={activateTabAndRoute}
             newCellId={newCell?.ids.tab ?? null}
             newTabRef={newTabRef}
             onMotion={newCellMotion}
           >
-            {mountedTabs(tabIds, tab.id, settledTabId, visited).map((tabId) => {
+            {mountedTabs(tabIds, stageId ?? tab.id, settledTabId, visited).map((tabId) => {
               const pageTab = tabOf(tabId);
               if (!pageTab) return null;
               const onStage = tabId === tab.id;
