@@ -143,3 +143,16 @@ on anything irreversible.
       it names in Settings.
 - [ ] F. **The phone's push opens on its card.** Waits on the person: no
       push leaves this Mac without a service that isn't ours.
+
+## Move 3 slices
+
+- [x] 1. **Done is settled first.** Every Cell is told to know what done
+      is before it starts (what it delivers, what shows it works), the
+      smallest result that fully answers when the ask doesn't say, and to
+      carry it there before it stops.
+- [ ] 2. **Aski says what Cells give the person.** Asked how it's going,
+      Aski answers from the measures above: this week against the last.
+- [ ] 3. **How far Cells go alone, per project.** Waits on the person.
+- [ ] 4. **Autonomy earned.** Waits on the person.
+- [ ] 5. **Aski's prose read, only if still needed.** Waits on a week of
+      stops under the close-out (from 2026-10-24).
