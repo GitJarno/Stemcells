@@ -132,8 +132,10 @@ on anything irreversible.
 - [x] C. **Tab completes an option.** After a card's number its
       recommendation shows as a ghost, and the first letters of another
       option narrow it; Tab writes it.
-- [ ] D. **A walk through the cards.** One key steps to the next card in
-      its number's order and answers it there, never re-sorting.
+- [x] D. **A walk through the cards.** ↓ from Aski's empty composer
+      lands on the first card's recommendation, Enter takes it and steps
+      on, ↑ and ↓ move card to card, Esc goes back; the focus holds the
+      list still.
 - [ ] E. **Settings in Aski's reply.** A setting Aski names renders as its
       live control, writing where Settings writes.
 - [ ] F. **The phone's push opens on its card.** Waits on the person: no

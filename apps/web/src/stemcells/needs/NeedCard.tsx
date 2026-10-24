@@ -1,4 +1,4 @@
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { cellNameOf } from "../cell/name";
 import { timing } from "../tokens/motion";
@@ -11,6 +11,7 @@ import type { Hold } from "./holds";
 import { holds } from "./live";
 import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
+import { answering } from "./walk";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
 export function whoOf(need: Shown["need"]): string {
@@ -67,7 +68,9 @@ export function NeedCard(props: {
     return () => clearTimeout(timer);
   }, [props.seenAt]);
 
+  const section = useRef<HTMLElement>(null);
   const choose = (option: CardOption, given: Given = {}) => {
+    answering(section.current);
     lit.answered(need.key);
     holds.hold({
       key: need.key,
@@ -83,7 +86,11 @@ export function NeedCard(props: {
 
   return (
     <section
+      ref={section}
+      // The walk lands here when the card recommends nothing (walk.ts).
+      tabIndex={-1}
       data-stemcells-need=""
+      data-open={answerable || undefined}
       data-blocks={need.blocks || undefined}
       data-gone={gone || undefined}
       aria-label={`${need.number} ${who}: ${card.headline}`}
@@ -138,6 +145,7 @@ export function NeedCard(props: {
               questions={card.questions}
               lit={fromWords}
               onAnswer={(answers, label) => {
+                answering(section.current);
                 lit.answered(need.key);
                 holds.hold({
                   key: need.key,
@@ -242,6 +250,7 @@ function Options(props: {
             type="button"
             data-need-option=""
             data-recommended={option.recommended || undefined}
+            data-allows={option.allows || undefined}
             data-warn={option.warn || undefined}
             data-lit={lightOf(option.id, props.lit, props.asked)}
             disabled={option.allows && !props.allowReady}

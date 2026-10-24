@@ -193,6 +193,12 @@ approve), and RiskFloor is the one floor shared with `tasks/prompting.md`
 - **A click or a confirmed dictation** puts the card into its hold:
   - the options fold to the one chosen;
   - a flat fuse runs under it, with Undo (and ⌘Z for the newest hold).
+- **From the keyboard**, ↓ in Aski's empty composer steps onto the first
+  open card, ↓ and ↑ step card to card in their numbers' order, and Esc
+  goes back to the composer. A step lands on the card's recommendation, so
+  Enter takes it, or on the card itself when it recommends nothing or
+  recommends an allow. An answer given from the keyboard steps on to the
+  next card, and after the last, back to the composer.
 - **When the fuse ends**, the client re-reads the item from the live shell
   and checks its key: thread, kind, and the request, message, run or plan
   id. If the key still matches, it sends T3's own command. If not, nothing

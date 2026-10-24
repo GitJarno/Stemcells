@@ -152,6 +152,11 @@
     filter var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
   animation: stemcells-need-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
 }
+/* The walk landed on a card that recommends nothing (walk.ts). */
+[data-stemcells-need]:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
+}
 [data-stemcells-need][data-blocks] {
   border-inline-start: 2px solid var(--sc-needs-you);
 }

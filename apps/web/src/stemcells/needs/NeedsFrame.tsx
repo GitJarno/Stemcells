@@ -5,6 +5,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type KeyboardEvent as KeyEvent,
   type ReactNode,
   type RefObject,
 } from "react";
@@ -15,6 +16,7 @@ import { useHolds } from "./holds";
 import { holds, page } from "./live";
 import { NeedCard } from "./NeedCard";
 import { DoneList } from "./Roster";
+import { enter, leave, step } from "./walk";
 
 import "../tokens/stemcells.css";
 import "./needs.css";
@@ -144,8 +146,29 @@ export function NeedsFrame(props: {
   useUndoKey(props.ownsWindowInput);
 
   const waiting = view.shown.filter((each) => each.goneAt === null).length;
+  // ↓ and ↑ step card to card, Esc goes back to the composer (walk.ts); a
+  // field's keys are its own.
+  const walkKeys = (event: KeyEvent<HTMLDivElement>) => {
+    if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("input, textarea, [contenteditable='true']")) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      if (step(target, event.key === "ArrowDown" ? 1 : -1)) event.preventDefault();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      leave(target);
+    }
+  };
+  // ↓ in Aski's empty composer steps onto the first open card.
+  const enterKeys = (event: KeyEvent<HTMLDivElement>) => {
+    if (event.key !== "ArrowDown" || event.altKey || event.metaKey || event.ctrlKey) return;
+    if (event.shiftKey || draft !== "" || event.defaultPrevented) return;
+    const target = event.target as HTMLElement;
+    if (!target.closest(COMPOSER_SURFACE_SELECTOR) || !target.isContentEditable) return;
+    if (enter(target)) event.preventDefault();
+  };
   const list = (
-    <div ref={watchPerson} data-stemcells-needs-list="">
+    <div ref={watchPerson} data-stemcells-needs-list="" onKeyDown={walkKeys}>
       <div data-needs-head="">
         <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
         {frozen && view.shown.some((each) => each.goneAt !== null) ? (
@@ -190,7 +213,7 @@ export function NeedsFrame(props: {
             } as CSSProperties)
       }
     >
-      <div ref={main} data-stemcells-needs-main="">
+      <div ref={main} data-stemcells-needs-main="" onKeyDown={enterKeys}>
         {props.children}
         {showCount ? (
           <button
