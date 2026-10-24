@@ -112,8 +112,39 @@ Stemcells.
 **Remove** takes a device's access away, or forgets a computer on this
 device; **Turn off** beside **Over Tailscale** stops phones reaching the
 computer at all. Without Tailscale, **Wi-Fi only** pairs a phone on the same
-Wi-Fi, after one restart. The phone gets no notifications while its app is
-closed: those need T3 Connect.
+Wi-Fi, after one restart.
+
+### Notifications on your phone
+
+When a Cell has waited on you for two minutes and nobody is at your
+computer, your phone can hear of it, and a tap opens the Cell. The push goes
+from your computer straight to Apple with a key of your own; nothing goes
+through anyone else's service. It takes a paid Apple Developer account, once:
+
+1. In your Apple Developer account, under Certificates, Identifiers &
+   Profiles, register an App ID of your own (such as `com.example.cells`)
+   with Push Notifications on. Under Keys, create a key with the Apple Push
+   Notifications service, download its `.p8` file (Apple lets you download
+   it once), and note its Key ID and your Team ID.
+2. On each computer you want to hear from, open **Settings › Aski › Your
+   phone › Add key** and give it the Key ID, Team ID and `.p8` file. The key
+   stays on that computer.
+3. Build the phone app under your team, with your iPhone connected and
+   Xcode signed in to your Apple account. Xcode registers the app's
+   extensions and app group under your team on the first build.
+
+   ```
+   cd apps/mobile
+   STEMCELLS_IOS_TEAM_ID=<Team ID> STEMCELLS_IOS_BUNDLE_ID=<App ID> pnpm run ios:release -- --device
+   ```
+
+4. In Stemcells on your phone, tap **Settings › When a Cell needs you** and
+   allow notifications. Each computer then lists your phone under **Your
+   phone**, where **Send a test** checks the whole way.
+
+Turning notifications off for Stemcells in the phone's iOS Settings stops
+them; **Remove** beside a phone on a computer forgets it until the phone's
+app next opens.
 
 ## For coding agents
 

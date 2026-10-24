@@ -70,7 +70,10 @@ const world = (key: ApnsKey = KEY) =>
         saveDevices: (devices) => Queue.offer(saved, devices).pipe(Effect.asVoid),
         send: (device, _token, alert) =>
           Queue.offer(sent, { token: device.token, alert }).pipe(
-            Effect.as(state.answers.get(device.token) ?? { status: 200, reason: null }),
+            Effect.as(
+              state.answers.get(`${device.token}@${device.environment}`) ??
+                state.answers.get(device.token) ?? { status: 200, reason: null },
+            ),
           ),
       },
       Stream.fromQueue(ticks),
@@ -178,5 +181,26 @@ it.effect("a push Apple never took is tried again on the next look", () =>
     yield* w.tick;
     assert.strictEqual((yield* Queue.take(w.sent)).alert.threadId, "thread-a");
     assert.strictEqual((yield* w.push.status).last?.ok, true);
+  }).pipe(Effect.scoped),
+);
+
+it.effect("a phone on Apple's other service is found there, and stays there", () =>
+  Effect.gen(function* () {
+    const w = yield* world();
+    yield* w.register("aa11");
+    w.state.answers.set("aa11@development", { status: 400, reason: "BadDeviceToken" });
+    yield* TestClock.adjust(HOLD_MS);
+    yield* Queue.offer(w.lists, listOf(need("a", 0)));
+
+    const kept = yield* Queue.take(w.saved);
+    assert.deepStrictEqual(
+      kept.map((device) => device.environment),
+      ["production"],
+    );
+    assert.strictEqual((yield* w.push.status).last?.ok, true);
+
+    // The phone asks again on opening, still naming development.
+    yield* w.push.register(phone("aa11"));
+    assert.strictEqual((yield* w.push.status).devices[0]?.environment, "production");
   }).pipe(Effect.scoped),
 );

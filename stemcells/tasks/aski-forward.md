@@ -141,10 +141,11 @@ on anything irreversible.
       divides the work, suggestions, auto-settle on merge, keeping Cells
       with a pull request, carrying on or snoozing at a usage limit. Others
       it names in Settings (#286).
-- [ ] F. **The phone's push opens on its card.** The person chose our own
-      sender: the Mac sends straight to Apple's push service with their
-      APNs key, so only Apple sees a push, never T3's relay
-      (`phone-push.md`).
+- [x] F. **The phone hears when a Cell needs the person.** The person
+      chose our own sender: the Mac sends straight to Apple's push service
+      with their APNs key, so only Apple sees a push, never T3's relay
+      (#295 and the phone's half, `phone-push.md`). A tap opens the Cell;
+      opening on its card waits for an Aski room on the phone (slice 5).
 
 ## Move 3 slices
 
@@ -186,6 +187,6 @@ on anything irreversible.
   Cells this week, 3 of the person's turns a Cell, 1.8 min of work between
   turns, 21 asks on a card against 77 as the person's step and 45 in
   prose, answered in 4.5 min. Slice 1's effect shows there from next week.
-- Left for the person: F waits on their Apple developer account and APNs
-  key (`phone-push.md`, the steps only they can take). 5 waits on a week
+- Left for the person: F's APNs key and the phone build under their team
+  (`stemcells/docs/install.md`, Notifications on your phone). 5 waits on a week
   of stops under the close-out.

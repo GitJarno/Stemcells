@@ -32,6 +32,8 @@ or anyone else's cloud.
   their own with push turned on.
 - The phone has no Aski room yet, so a tap opens the Cell's thread, not its
   card.
+- Upstream's Settings › Notifications page on the phone still says
+  notifications need T3 Connect; ours is the row beside Disk.
 - A paired Watch mirrors the iPhone's alerts by itself.
 
 ## Slices
@@ -49,18 +51,24 @@ or anyone else's cloud.
       title, the card's cue and the thread's deep link. A card that waits
       while the person is here pushes once they go. Elsewhere than macOS
       nobody is ever away, so nothing pushes.
-- [ ] 3. Phone registration in `apps/mobile/src/stemcells/push/`. Ask for
-      notification permission, read the device token, and post it to each
-      saved connection. It shows as a Notifications row of our own.
-- [ ] 4. Phone build under the person's own team and bundle id, keeping
-      push. This is a seam in `app.config.ts` and `capabilities.ts`.
+- [x] 3. Phone registration in `apps/mobile/src/stemcells/push/`: on
+      start, when the saved Macs change and on each return to the front,
+      with notifications allowed, the phone posts its token, APNs
+      environment, bundle id and name to each saved Mac (bearer
+      connections only). A Mac keeps a token's Apple service: a release
+      build signed for development gets a sandbox token, so a
+      `BadDeviceToken` is tried once on the other service. Settings › When a Cell needs you asks iOS, and
+      says how many Macs took it. Mounted by a seam in `App.tsx`.
+- [x] 4. Phone build under the person's own team and bundle id, keeping
+      push: `STEMCELLS_IOS_TEAM_ID` and `STEMCELLS_IOS_BUNDLE_ID`, a seam in
+      `app.config.ts`. Upstream's `supportsAgentAwarenessPush` already
+      says yes for any build but a Personal Team's, so `capabilities.ts`
+      stays upstream's. Android isn't supported: it would need Google's
+      push service.
 - [ ] 5. Later: an Aski room on the phone, so a tap lands on the card.
 
 ## Steps only the person can take
 
-1. Join the paid Apple Developer Program (a Personal Team can't push).
-2. Register an App ID of their own with Push Notifications on.
-3. Create an APNs Auth Key (.p8) under Certificates, Identifiers & Profiles
-   › Keys, and note its Key ID and the Team ID. The `.p8` downloads once.
-4. Hand the key to Stemcells through its key setting, never the repo.
-5. Install the phone build on the iPhone and allow notifications.
+`stemcells/docs/install.md`, Notifications on your phone: an App ID with
+push, an APNs key handed to Settings › Aski › Your phone on each Mac, the
+phone build under their team, and allowing notifications on the phone.

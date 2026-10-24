@@ -109,6 +109,27 @@ export const make = Effect.fn("Push.make")(function* (
     return token.value;
   };
 
+  /**
+   * Sends to one phone. A token Apple doesn't know on the service the phone
+   * named is tried once on the other: a release build signed for
+   * development (as a build to one's own phone is) gets a sandbox token,
+   * and nothing on the phone can tell.
+   */
+  const sendOne = Effect.fn("Push.sendOne")(function* (
+    device: Device,
+    signed: string,
+    alert: Alert,
+  ) {
+    const sent = yield* source.send(device, signed, alert);
+    if (sent.reason !== "BadDeviceToken") return { device, sent };
+    const moved: Device = {
+      ...device,
+      environment: device.environment === "production" ? "development" : "production",
+    };
+    const again = yield* source.send(moved, signed, alert);
+    return again.status === 200 ? { device: moved, sent: again } : { device, sent };
+  });
+
   /** Sends one alert to every phone; drops the ones Apple says are gone. */
   const sendAll = Effect.fn("Push.sendAll")(function* (alert: Alert, now: number) {
     const signed = yield* Effect.try({ try: () => tokenAt(now), catch: () => null }).pipe(
@@ -118,16 +139,18 @@ export const make = Effect.fn("Push.make")(function* (
       if (key !== null) last = { at: iso(now), ok: false, why: "The APNs key didn't sign" };
       return [];
     }
-    const results = yield* Effect.forEach(
-      devices,
-      (device) => Effect.map(source.send(device, signed, alert), (sent) => ({ device, sent })),
-      { concurrency: "unbounded" },
-    );
-    const gone = new Set(
-      results.filter(({ sent }) => isGone(sent)).map(({ device }) => device.token),
-    );
-    if (gone.size > 0) {
-      devices = devices.filter((device) => !gone.has(device.token));
+    const results = yield* Effect.forEach(devices, (device) => sendOne(device, signed, alert), {
+      concurrency: "unbounded",
+    });
+    // Phones Apple calls gone are dropped, and one found on its other service is kept there.
+    const answered = new Map(results.map((result) => [result.device.token, result]));
+    const next = devices.flatMap((device) => {
+      const result = answered.get(device.token);
+      if (result === undefined) return [device];
+      return isGone(result.sent) ? [] : [result.device];
+    });
+    if (next.length !== devices.length || next.some((device, index) => device !== devices[index])) {
+      devices = next;
       yield* source.saveDevices(devices);
     }
     const failed = results.find(({ sent }) => sent.status !== 200);
@@ -201,9 +224,13 @@ export const make = Effect.fn("Push.make")(function* (
     })),
     register: Effect.fn("Push.register")(function* (device) {
       const now = yield* Clock.currentTimeMillis;
+      const known = devices.find((each) => each.token === device.token);
+      // A phone asks again each time it opens; a token keeps the service Apple took it on.
+      const environment = known?.environment ?? device.environment;
+      if (known?.topic === device.topic && known.label === device.label) return;
       devices = [
         ...devices.filter((each) => each.token !== device.token),
-        { ...device, addedAt: now },
+        { ...device, environment, addedAt: known?.addedAt ?? now },
       ].slice(-DEVICES_MAX);
       yield* source.saveDevices(devices);
     }),
