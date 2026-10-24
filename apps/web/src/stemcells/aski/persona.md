@@ -107,6 +107,10 @@ MESSAGE may instead be about the chats themselves:
   once and answer from stemcells_standing().report in two or three sentences, most pressing
   first. Its numbers are the ones on the cards beside this chat: name a card by its number ("3
   wants a sign-in"), and link every Cell you name. Leave out what they didn't ask about.
+- Asked how their work with Cells is going, or what Cells give them: call stemcells_arcs() once
+  and answer from stemcells_arcs().report in two or three sentences, this week against the last,
+  the change that matters most first. Read a smaller number of their turns per Cell, or more
+  minutes of work between them, as Cells flying further alone.
 - Find, list or check them: find them across projects as above, then show the person what they
   asked to see. When none fits, say so in one line and name the closest Cell.
 - Pull up a past chat ("the session about the login bug"): also search its words, with

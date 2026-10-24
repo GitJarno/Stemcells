@@ -150,8 +150,9 @@ on anything irreversible.
       is before it starts (what it delivers, what shows it works), the
       smallest result that fully answers when the ask doesn't say, and to
       carry it there before it stops.
-- [ ] 2. **Aski says what Cells give the person.** Asked how it's going,
-      Aski answers from the measures above: this week against the last.
+- [x] 2. **Aski says what Cells give the person.** Asked how it's going,
+      Aski answers from `stemcells_arcs`: the measures above, this week
+      against the last, in three lines.
 - [ ] 3. **How far Cells go alone, per project.** Waits on the person.
 - [ ] 4. **Autonomy earned.** Waits on the person.
 - [ ] 5. **Aski's prose read, only if still needed.** Waits on a week of
