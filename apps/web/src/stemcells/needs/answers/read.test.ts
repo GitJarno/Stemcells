@@ -255,6 +255,84 @@ const ANSWERS: Array<[string, string]> = [
   ["for 9 yes", "9 Yeti: ? open its chat"],
 ];
 
+/** Words that take every other card's recommendation: Kiwi's plan and Taco's retry. */
+const THE_REST: Array<[string, string]> = [
+  ["ok the rest", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
+  ["ok", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
+  ["Yes to all.", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
+  ["go with your recommendations", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
+  ["8 dismiss, ok the rest", `8 Taco: ${kindOf(8, "dismiss")} · 7 Kiwi: ${kindOf(7, "build")}`],
+  // A reply stops where the rest begins.
+  [
+    "7 refine add tests first, and the rest ok",
+    `7 Kiwi: ${kindOf(7, "revise").replace(/…$/, "")}, with “add tests first” · 8 Taco: ${kindOf(8, "retry")}`,
+  ],
+  // Only at the end, and only as said.
+  ["ok, 5 go with 2", "5 Mochi: Remove it first · rest: ok"],
+  ["ok thanks", "rest: ok thanks"],
+  ["is the rest ok?", "rest: is the rest ok?"],
+];
+
+describe("readAnswers: the rest", () => {
+  it.each(THE_REST)("%s", (text, expected) => {
+    expect(preview(text)).toBe(expected);
+  });
+
+  it("skips a card answered already or gone", () => {
+    const cards = CARDS.map((card) =>
+      card.number === 7
+        ? { ...card, held: true }
+        : card.number === 8
+          ? { ...card, gone: true }
+          : card,
+    );
+    expect(preview("ok the rest", [...cards, addressee(NEEDS[7]![0], "Taco")])).toBe(
+      `8 Taco: ${kindOf(8, "retry")}`,
+    );
+  });
+
+  it("leaves the words to Aski when no card recommends anything", () => {
+    expect(preview("ok the rest", CARDS.slice(0, 6))).toBe("rest: ok the rest");
+  });
+
+  it("answers a question with its recommended option, and a Cell that stopped short with go ahead", () => {
+    const question = needFixture({
+      key: "thread-mochi:request:question-2",
+      number: 1,
+      kind: "question",
+      threadId: "thread-mochi",
+      request: requestFixture({
+        id: "question-2",
+        kind: "user_input",
+        prompt: null,
+        questions: [
+          {
+            id: "where",
+            header: "Where",
+            question: "Staging, or a fresh local copy?",
+            options: [
+              { label: "Fresh local copy", description: "", value: null },
+              { label: "Staging (Recommended)", description: "", value: null },
+            ],
+            multiSelect: false,
+            allowCustomAnswer: true,
+          },
+        ],
+      }),
+    });
+    const stopped = needFixture({
+      key: "thread-gus:prose:run-2",
+      number: 2,
+      kind: "prose",
+      threadId: "thread-gus",
+      prose: { runId: "run-2", cue: "stopped", text: "Tests pass; the docs are left." },
+    });
+    expect(preview("ok", [addressee(question, "Mochi"), addressee(stopped, "Gus")])).toBe(
+      "1 Mochi: Staging · 2 Gus: Go ahead",
+    );
+  });
+});
+
 describe("readAnswers: the doc's examples", () => {
   it.each(DOC_EXAMPLES)("%s", (text, expected) => {
     expect(preview(text)).toBe(expected);
@@ -403,9 +481,10 @@ const HERE: Shown[] = NEEDS.map(([need]) => ({ need, goneAt: null }));
 function said(state: EditorState, cards: ReadonlyArray<Addressee> = CARDS): Spoken[] {
   const { text, answers } = readDoc(state.doc, cards);
   const enter = enterOf(answers, text.raw);
-  return (enter?.answers ?? []).map((answer) => {
+  return (enter?.answers ?? []).flatMap((answer) => {
     const [need, who] = NEEDS.find(([each]) => each.number === answer.number)!;
-    return spokenOf(state.doc, text, answer, { key: need.key, who });
+    const spoken = spokenOf(state.doc, text, answer, { key: need.key, who });
+    return spoken === null ? [] : [spoken];
   });
 }
 const answersIn = (state: EditorState) =>
@@ -494,6 +573,15 @@ describe("giving back: the words read as the same answer again", () => {
   });
 });
 
+describe("giving back: the rest", () => {
+  it("holds every recommendation, and gives back only the words that said one", () => {
+    const state = composer(line("8 dismiss, ok the rest"));
+    const { text, answers } = readDoc(state.doc, CARDS);
+    expect(enterOf(answers, text.raw)!.answers.map(({ number }) => number)).toEqual([8, 7]);
+    expect(said(state).map(({ number }) => number)).toEqual([8]);
+  });
+});
+
 describe("giving back: the words never reach another Cell", () => {
   const otter = needFixture({
     key: "thread-otter:request:request-9",
@@ -550,7 +638,7 @@ describe("giving back: the words never reach another Cell", () => {
       key: helper.key,
       who: "Floof › Header tokens",
     });
-    const after = back(composer(), [spoken], [], []);
+    const after = back(composer(), [spoken!], [], []);
     expect(textOf(after)).toBe("Floof › Header tokens › no");
   });
 });

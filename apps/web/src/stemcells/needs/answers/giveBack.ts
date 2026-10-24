@@ -48,27 +48,29 @@ export function choiceOf(reading: Sent): string {
     : `option ${reading.option.id} ${reading.words ?? ""}`;
 }
 
-/** What an answer keeps of the words in `said`, from the document `text` was read from. */
+/**
+ * What an answer keeps of the words in `said`, from the document `text` was
+ * read from; null when no words said it ("ok the rest"): none come back.
+ */
 export function spokenOf(
   doc: PmNode,
   text: DocText,
   answer: { readonly number: number; readonly reading: Sent; readonly said: Span },
   need: { readonly key: string; readonly who: string },
-): Spoken {
+): Spoken | null {
+  if (answer.said.end <= answer.said.start) return null;
   const lines: NodeJson[][] = [];
-  if (answer.said.end > answer.said.start) {
-    const { from, to } = rangeOf(text, answer.said);
-    doc.nodesBetween(from, to, (node, pos) => {
-      if (!node.isTextblock) return true;
-      const start = pos + 1;
-      const line = node.content.cut(
-        Math.max(from, start) - start,
-        Math.min(to - start, node.content.size),
-      );
-      lines.push((line.toJSON() as NodeJson[] | null) ?? []);
-      return false;
-    });
-  }
+  const { from, to } = rangeOf(text, answer.said);
+  doc.nodesBetween(from, to, (node, pos) => {
+    if (!node.isTextblock) return true;
+    const start = pos + 1;
+    const line = node.content.cut(
+      Math.max(from, start) - start,
+      Math.min(to - start, node.content.size),
+    );
+    lines.push((line.toJSON() as NodeJson[] | null) ?? []);
+    return false;
+  });
   return {
     key: need.key,
     number: answer.number,

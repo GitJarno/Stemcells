@@ -121,3 +121,19 @@ on anything irreversible.
   median 4.4 min; 484 of 728 stops said nothing of where they stood, most
   of them before the close-out landed on 2026-10-23. The view of it comes
   later; these are its baseline.
+
+## Move 2 slices
+
+- [x] A. **Past chats open beside Aski.** A chat Aski links opens in a tab
+      of its own after Aski's, never over the talk (#282).
+- [x] B. **"ok" takes every recommendation.** "ok the rest" after some
+      answers, or "ok" alone, takes each other card's recommended option;
+      one only a click allows just lights.
+- [ ] C. **Tab completes an option.** After a card's number, Tab offers
+      that card's options and the recommendation first.
+- [ ] D. **A walk through the cards.** One key steps to the next card in
+      its number's order and answers it there, never re-sorting.
+- [ ] E. **Settings in Aski's reply.** A setting Aski names renders as its
+      live control, writing where Settings writes.
+- [ ] F. **The phone's push opens on its card.** Waits on the person: no
+      push leaves this Mac without a service that isn't ours.

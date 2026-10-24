@@ -598,6 +598,11 @@ anything else.
 
 - A negation before an option ("don't go with 2") never picks that option.
 - A number with no open card ("for 5") is kept in the message.
+- "ok the rest", "yes to all", "go with your recommendations" at the end,
+  or a bare "ok" as the whole message, take the recommended option of every
+  card the message doesn't answer: one a click allows only lights, and a
+  card that recommends nothing, or words, stays. With none to take, the
+  words go to Aski.
 - Anything after the answers that is not an anchored part goes to Aski as
   a message.
 

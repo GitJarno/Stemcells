@@ -118,7 +118,9 @@ export function createHolds(deps: HoldsDeps) {
      * the old one. `words` are the composer's words that chose it.
      */
     hold(
-      input: Pick<Hold, "key" | "threadId" | "label" | "commands"> & { readonly words?: Spoken },
+      input: Pick<Hold, "key" | "threadId" | "label" | "commands"> & {
+        readonly words?: Spoken | null;
+      },
     ) {
       if (input.commands.length === 0) return;
       clearTimer(input.key);

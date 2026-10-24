@@ -7,7 +7,7 @@
  * answer to send. A Cell never sees our numbers.
  */
 import { literalSpans, type Span, tokenize } from "../../words/text";
-import { type Card, type CardOption, type Choice, LATER } from "../card";
+import { type Card, type CardOption, type CardQuestion, type Choice, LATER } from "../card";
 import type { NeedKind } from "../wire";
 
 /** A card the words may answer. */
@@ -216,6 +216,15 @@ const PICKS = [
 const NAMES_A_NUMBER =
   /\b(?:go(?:ing)? (?:with|for)|pick|option|take|choose|number)\s+(?:the\s+)?(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth)\b|\bthe (?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth) (?:one|option)\b/i;
 
+/**
+ * Words that end a message by taking every other card's recommendation:
+ * "ok the rest", "yes to all", "go with your recommendations". A bare "ok"
+ * takes them only as the whole message.
+ */
+const THE_REST =
+  /(?:^|[,.;:!?\n—–]|\s-\s|\band\b)\s*((?:(?:ok(?:ay)?|yes|sure)(?: (?:to|for))? (?:all|all the rest|the rest|everything(?: else)?|the others)|(?:all|the rest|everything else|the others) (?:ok(?:ay)?|recommended|as recommended)|(?:go with|take) (?:the|your) recommendations?(?: for (?:all|the rest|the others))?|(?:as )?recommended for (?:all|the rest|the others))[.!]*)\s*$/i;
+const ALL_OK = /^\s*((?:ok(?:ay)?|recommended)[.!]*)\s*$/i;
+
 const SENTENCE_END = /[.!?;](?=\s|$)|\n/g;
 const SENTENCE_BREAK = /[.!?;](?=\s|$)|\n/;
 const BOUNDARY = /[,.;:!?\n—–]|\s-\s/;
@@ -223,6 +232,28 @@ const LIST_ITEM = /^\s*\d{1,2}[.)]\s+\S/gm;
 
 function phrases(list: string, kinds: Kinds) {
   return list.split("|").map((phrase) => ({ words: phrase.split(" "), kinds }));
+}
+
+function answerOf(question: CardQuestion, choice: CardQuestion["options"][number]): Reading {
+  return {
+    kind: "answer",
+    answers: { [question.id]: question.multiSelect ? [choice.answer] : choice.answer },
+    label: choice.label,
+    pick: choice.answer,
+  };
+}
+
+/** What a card recommends, as words may take it; null when it recommends nothing words can choose. */
+function recommendationOf(card: Card): Reading | null {
+  if (card.questions.length > 1) return null;
+  const question = card.questions[0];
+  if (question !== undefined) {
+    const picks = question.options.filter((choice) => choice.recommended);
+    return picks.length === 1 ? answerOf(question, picks[0]!) : null;
+  }
+  const option = card.options.find((each) => each.recommended);
+  if (option === undefined || option.words !== null) return null;
+  return option.allows ? { kind: "click", option } : { kind: "option", option, words: null };
 }
 
 function numberOf(word: string): number {
@@ -263,6 +294,9 @@ export function readAnswers(
   }
   const tokens = tokenize(text);
   const listLines = [...text.matchAll(LIST_ITEM)].length >= 2;
+  // "ok the rest" ends the answers before it, so a reply doesn't run on into it.
+  const theRest = THE_REST.exec(text) ?? ALL_OK.exec(text);
+  const edge = theRest === null ? text.length : theRest.index + theRest[0].lastIndexOf(theRest[1]!);
   // A number is given again only once the list empties, so a card still
   // leaving may share one with a new card: the live card has it.
   const cardAt = (n: number) =>
@@ -288,9 +322,9 @@ export function readAnswers(
     SENTENCE_END.lastIndex = offset;
     for (let end = SENTENCE_END.exec(text); end !== null; end = SENTENCE_END.exec(text)) {
       if (!literals.some((span) => end!.index >= span.start && end!.index < span.end))
-        return end.index + end[0].length;
+        return Math.min(edge, end.index + end[0].length);
     }
-    return text.length;
+    return edge;
   };
   /** Whether tokens k… read `words`, inside `limit`. */
   const reads = (k: number, words: ReadonlyArray<string>, limit: number) =>
@@ -525,15 +559,8 @@ export function readAnswers(
     const after = (j: number): Said | null => (inside(j) ? wordsIn(last(j), limit) : null);
     const choseWith = (option: CardOption, j: number) =>
       chose(option, j, option.words === null ? null : after(j));
-    const answer = (j: number, index: number): Read | "free" => {
-      const choice = question!.options[index]!;
-      return closed(j, {
-        kind: "answer",
-        answers: { [question!.id]: question!.multiSelect ? [choice.answer] : choice.answer },
-        label: choice.label,
-        pick: choice.answer,
-      });
-    };
+    const answer = (j: number, index: number): Read | "free" =>
+      closed(j, answerOf(question!, question!.options[index]!));
 
     /** Steps 1 to 4: an answer of a fixed form, at the part's start. */
     const fixed = (): Read | "free" | null => {
@@ -730,7 +757,7 @@ export function readAnswers(
   const parts: AnswerPart[] = [];
   const answered = new Set<number>();
   let taken = 0;
-  for (let i = 0; i < tokens.length;) {
+  for (let i = 0; i < tokens.length && tokens[i]!.start < edge;) {
     const anchor = opens(i, taken) ? anchorAt(i) : null;
     if (anchor === null) {
       i++;
@@ -783,6 +810,18 @@ export function readAnswers(
     parts.push(part);
     taken = part.end;
     i = tokenFrom(part.end);
+  }
+
+  // The rest: each card not answered above that recommends what words may take.
+  if (theRest !== null) {
+    const span = trimmed(text, { start: edge, end: text.length }, false);
+    const targets = cards.flatMap((card): Target[] => {
+      const reading =
+        card.gone || card.held || answered.has(card.number) ? null : recommendationOf(card.card);
+      return reading === null ? [] : [{ number: card.number, reading, end: span.end }];
+    });
+    if (targets.length > 0)
+      parts.push({ ...span, anchor: span, form: null, targets, missing: null });
   }
 
   const rest: Span[] = [];
