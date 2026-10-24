@@ -2,6 +2,7 @@ import * as Layer from "effect/Layer";
 
 import * as ArcsHttp from "./arcs/http.ts";
 import * as AttachmentsHttp from "./attachments/http.ts";
+import * as AutonomyHttp from "./autonomy/http.ts";
 import * as DiskHttp from "./disk/http.ts";
 import * as LimitResumeHttp from "./limitResume/http.ts";
 import * as Look from "./look/publish.ts";
@@ -26,11 +27,13 @@ import * as ModelList from "./upstream/modelList.ts";
 // (`peers/onTheWire.ts`), the routes of linked environments, what the person would say
 // next to a Cell, a phone's way in over Tailscale, what each chat has spent for Settings › Lineage, the
 // theme published on start, the telemetry id upstream left behind,
-// removed on start, and how the person's work with Cells went, week by week.
+// removed on start, how the person's work with Cells went, week by week, and
+// the cards Aski takes for the person once they've granted it.
 
 export const layer = Layer.mergeAll(
   ArcsHttp.layer,
   AttachmentsHttp.layer,
+  AutonomyHttp.layer,
   DiskHttp.layer,
   PresenceHttp.layer,
   NeedsHttp.layer,
