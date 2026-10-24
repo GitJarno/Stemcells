@@ -218,12 +218,12 @@ const NAMES_A_NUMBER =
 
 /**
  * Words that end a message by taking every other card's recommendation:
- * "ok the rest", "yes to all", "go with your recommendations". A bare "ok"
- * takes them only as the whole message.
+ * "ok the rest", "yes to all", "the others recommended". They always say
+ * which cards, the rest or all: "ok" alone, or "go with your
+ * recommendations", may be meant for Aski or for one Cell.
  */
 const THE_REST =
-  /(?:^|[,.;:!?\n—–]|\s-\s|\band\b)\s*((?:(?:ok(?:ay)?|yes|sure)(?: (?:to|for))? (?:all|all the rest|the rest|everything(?: else)?|the others)|(?:all|the rest|everything else|the others) (?:ok(?:ay)?|recommended|as recommended)|(?:go with|take) (?:the|your) recommendations?(?: for (?:all|the rest|the others))?|(?:as )?recommended for (?:all|the rest|the others))[.!]*)\s*$/i;
-const ALL_OK = /^\s*((?:ok(?:ay)?|recommended)[.!]*)\s*$/i;
+  /(?:^|[,.;:!?\n—–]|\s-\s|\band\b)\s*((?:(?:ok(?:ay)?|yes|sure)(?: (?:to|for))? (?:all|all the rest|the rest|everything(?: else)?|the others)|(?:all|the rest|everything else|the others) (?:ok(?:ay)?|recommended|as recommended)|(?:go with|take) (?:the|your) recommendations for (?:all|the rest|the others)|(?:as )?recommended for (?:all|the rest|the others))[.!]*)\s*$/i;
 
 const SENTENCE_END = /[.!?;](?=\s|$)|\n/g;
 const SENTENCE_BREAK = /[.!?;](?=\s|$)|\n/;
@@ -295,8 +295,8 @@ export function readAnswers(
   const tokens = tokenize(text);
   const listLines = [...text.matchAll(LIST_ITEM)].length >= 2;
   // "ok the rest" ends the answers before it, so a reply doesn't run on into it.
-  const theRest = THE_REST.exec(text) ?? ALL_OK.exec(text);
-  const edge = theRest === null ? text.length : theRest.index + theRest[0].lastIndexOf(theRest[1]!);
+  let theRest = THE_REST.exec(text);
+  let edge = theRest === null ? text.length : theRest.index + theRest[0].lastIndexOf(theRest[1]!);
   // A number is given again only once the list empties, so a card still
   // leaving may share one with a new card: the live card has it.
   const cardAt = (n: number) =>
@@ -359,12 +359,8 @@ export function readAnswers(
       ...(question?.options.map((choice) => choice.label) ?? []),
       ...card.card.options.map((option) => option.title),
     ];
-    return titles.some((title) => {
-      const words = tokenize(title).map((t) => t.norm);
-      let n = 0;
-      while (n < words.length && word(k + 1 + n) === words[n]) n++;
-      return n >= Math.min(2, words.length);
-    });
+    // The whole title: its start alone may run on into other words ("5 commit, then push").
+    return titles.some((title) => tokenize(title).every((t, n) => word(k + 1 + n) === t.norm));
   };
 
   /** A line-start "1." in a pasted list is the list's, not an answer. */
@@ -629,7 +625,14 @@ export function readAnswers(
         .map((each) => {
           let n = 0;
           while (n < each.words.length && inside(k + n) && word(k + n) === each.words[n]) n++;
-          return { ...each, run: n >= Math.min(2, each.words.length) ? n : 0 };
+          // A start of a title holds only where the words stop: "commit, then
+          // push" runs on past "Commit, then remove" and isn't it.
+          const stops =
+            n === each.words.length ||
+            !inside(k + n) ||
+            BOUNDARY.test(gapBefore(k + n)) ||
+            JOINERS.has(word(k + n) ?? "");
+          return { ...each, run: n >= Math.min(2, each.words.length) && stops ? n : 0 };
         })
         .filter((each) => each.run > 0);
       const found =
@@ -772,62 +775,88 @@ export function readAnswers(
     return end;
   };
 
-  const parts: AnswerPart[] = [];
-  const answered = new Set<number>();
+  let parts: AnswerPart[] = [];
+  let answered = new Set<number>();
   let taken = 0;
-  for (let i = 0; i < tokens.length && tokens[i]!.start < edge;) {
-    const anchor = opens(i, taken) ? anchorAt(i) : null;
-    if (anchor === null) {
-      i++;
-      continue;
-    }
-    const limit = limitOf(anchor, taken, false);
-    let part: AnswerPart | null;
-    if (anchor.missing !== null) {
-      part = {
-        start: anchor.start,
-        end: trimmed(text, { start: anchor.start, end: limit }).end,
-        anchor: { start: anchor.start, end: anchor.end },
-        form: null,
-        targets: [],
-        missing: anchor.missing,
-      };
-    } else {
-      const reads = anchor.numbers.map((number) => {
-        const card = cardAt(number)!;
-        return { number, card, read: readAnswer(card, anchor.next, limit) };
-      });
-      // A name holds only when an answer follows it; else "Otter, rebase"
-      // is a message to Otter, which the composer reads.
-      if (anchor.byName && reads.every(({ read }) => read.free || read.reading.kind === "kept")) {
+  const readParts = () => {
+    parts = [];
+    answered = new Set();
+    taken = 0;
+    for (let i = 0; i < tokens.length && tokens[i]!.start < edge;) {
+      const anchor = opens(i, taken) ? anchorAt(i) : null;
+      if (anchor === null) {
         i++;
         continue;
       }
-      const targets = reads.map(({ number, card, read }): Target => {
-        const kept = (why: Kept): Target => ({
-          number,
-          reading: { kind: "kept", why },
-          end: read.end,
+      const limit = limitOf(anchor, taken, false);
+      let part: AnswerPart | null;
+      if (anchor.missing !== null) {
+        part = {
+          start: anchor.start,
+          end: trimmed(text, { start: anchor.start, end: limit }).end,
+          anchor: { start: anchor.start, end: anchor.end },
+          form: null,
+          targets: [],
+          missing: anchor.missing,
+        };
+      } else {
+        const reads = anchor.numbers.map((number) => {
+          const card = cardAt(number)!;
+          return { number, card, read: readAnswer(card, anchor.next, limit) };
         });
-        if (card.gone) return kept("gone");
-        if (anchor.byName && reads.length > 1) return kept("names");
-        if (anchor.numbers.length > 1 && card.kind === "permission") return kept("list");
-        if (answered.has(number) || card.held) return kept("twice");
-        return { number, reading: read.reading, end: read.end };
-      });
-      for (const target of targets) answered.add(target.number);
-      part = {
-        start: anchor.start,
-        end: Math.max(anchor.end, ...reads.map(({ read }) => read.end)),
-        anchor: { start: anchor.start, end: anchor.end },
-        form: reads[0]?.read.form ?? null,
-        targets,
-        missing: null,
-      };
+        // A name holds only when an answer follows it; else "Otter, rebase"
+        // is a message to Otter, which the composer reads.
+        if (anchor.byName && reads.every(({ read }) => read.free || read.reading.kind === "kept")) {
+          i++;
+          continue;
+        }
+        const targets = reads.map(({ number, card, read }): Target => {
+          const kept = (why: Kept): Target => ({
+            number,
+            reading: { kind: "kept", why },
+            end: read.end,
+          });
+          if (card.gone) return kept("gone");
+          if (anchor.byName && reads.length > 1) return kept("names");
+          if (anchor.numbers.length > 1 && card.kind === "permission") return kept("list");
+          if (answered.has(number) || card.held) return kept("twice");
+          return { number, reading: read.reading, end: read.end };
+        });
+        for (const target of targets) answered.add(target.number);
+        part = {
+          start: anchor.start,
+          end: Math.max(anchor.end, ...reads.map(({ read }) => read.end)),
+          anchor: { start: anchor.start, end: anchor.end },
+          form: reads[0]?.read.form ?? null,
+          targets,
+          missing: null,
+        };
+      }
+      parts.push(part);
+      taken = part.end;
+      i = tokenFrom(part.end);
     }
-    parts.push(part);
-    taken = part.end;
-    i = tokenFrom(part.end);
+  };
+  readParts();
+
+  // "the rest" holds as the whole message, or after answers that each
+  // answered: after words to Aski or to one Cell ("Floof, ok to all"), or an
+  // answer left open, it may mean something else, and those words read on.
+  const answeredBefore =
+    parts.every(
+      (part) =>
+        part.missing === null &&
+        part.targets.length > 0 &&
+        part.targets.every((t) => t.reading.kind !== "kept" && t.reading.kind !== "words"),
+    ) &&
+    [...parts, { start: edge, end: edge }].every((part, n) => {
+      const from = n === 0 ? 0 : parts[n - 1]!.end;
+      return !/[\p{L}\p{N}]/u.test(text.slice(from, part.start).replace(/\band\b/gi, ""));
+    });
+  if (theRest !== null && !answeredBefore) {
+    theRest = null;
+    edge = text.length;
+    readParts();
   }
 
   // The rest: each card not answered above that recommends what words may take.

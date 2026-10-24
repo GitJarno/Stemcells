@@ -147,15 +147,16 @@ export function NeedsFrame(props: {
 
   const waiting = view.shown.filter((each) => each.goneAt === null).length;
   // ↓ and ↑ step card to card, Esc goes back to the composer (walk.ts); a
-  // field's keys are its own.
+  // field's keys are its own. A held Enter answers one card, not each it
+  // steps on to; Esc stays unhandled, so a peek over the room closes too.
   const walkKeys = (event: KeyEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" && event.repeat) return event.preventDefault();
     if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
     const target = event.target as HTMLElement;
     if (target.closest("input, textarea, [contenteditable='true']")) return;
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       if (step(target, event.key === "ArrowDown" ? 1 : -1)) event.preventDefault();
     } else if (event.key === "Escape") {
-      event.preventDefault();
       leave(target);
     }
   };

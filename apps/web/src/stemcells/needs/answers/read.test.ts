@@ -195,8 +195,9 @@ const ANCHORS: Array<[string, string]> = [
   ["Otter, rebase onto main", "rest: Otter, rebase onto main"],
   ["Floof, use staging", "rest: Floof, use staging"],
   ["1, 2", `1 Floof: ${title(1, 2)}`],
-  // A bare number before the start of one of its card's titles.
+  // A bare number before one of its card's titles, whole.
   ["5 remove it first", "5 Mochi: Remove it first"],
+  ["5 commit, then push", "rest: 5 commit, then push"],
   // Not answers: a count, a pasted list, a number inside a sentence.
   ["2 more tests in Harbor", "rest: 2 more tests in Harbor"],
   ["1. fix the header\n2. fix the footer", "rest: 1. fix the header\n2. fix the footer"],
@@ -239,6 +240,8 @@ const ANSWERS: Array<[string, string]> = [
   // A structured question.
   ["5 go with the second one", "5 Mochi: Remove it first"],
   ["5 option 3", "5 Mochi: ? no option 3"],
+  // A title's start that runs on into other words isn't that option.
+  ["for 5 commit, then push", "5 Mochi: ? which option"],
   ["5 answer keep both", "5 Mochi: “keep both”"],
   // A plan.
   ["7 yes", `7 Kiwi: ${kindOf(7, "build")}`],
@@ -261,17 +264,33 @@ const ANSWERS: Array<[string, string]> = [
 /** Words that take every other card's recommendation: Kiwi's plan and Taco's retry. */
 const THE_REST: Array<[string, string]> = [
   ["ok the rest", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
-  ["ok", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
+  ["ok to all", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
   ["Yes to all.", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
-  ["go with your recommendations", `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`],
+  [
+    "go with your recommendations for the rest",
+    `7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`,
+  ],
+  [
+    "1: use staging, and the rest ok",
+    `1 Floof: reply “use staging” · 7 Kiwi: ${kindOf(7, "build")} · 8 Taco: ${kindOf(8, "retry")}`,
+  ],
   ["8 dismiss, ok the rest", `8 Taco: ${kindOf(8, "dismiss")} · 7 Kiwi: ${kindOf(7, "build")}`],
   // A reply stops where the rest begins.
   [
     "7 refine add tests first, and the rest ok",
     `7 Kiwi: ${kindOf(7, "revise").replace(/…$/, "")}, with “add tests first” · 8 Taco: ${kindOf(8, "retry")}`,
   ],
-  // Only at the end, and only as said.
+  // Only at the end, only saying which cards, and only after answers that each answered.
   ["ok, 5 go with 2", "5 Mochi: Remove it first · rest: ok"],
+  ["ok", "rest: ok"],
+  ["go with your recommendations", "rest: go with your recommendations"],
+  ["Floof, ok to all", "rest: Floof, ok to all"],
+  ["tell Floof to use staging and the rest ok", "rest: tell Floof to use staging and the rest ok"],
+  [
+    "make sure the build passes and everything else ok.",
+    "rest: make sure the build passes and everything else ok.",
+  ],
+  ["for 1, ok the rest", "1 Floof: reply “ok the rest”"],
   ["ok thanks", "rest: ok thanks"],
   ["is the rest ok?", "rest: is the rest ok?"],
 ];
@@ -330,7 +349,7 @@ describe("readAnswers: the rest", () => {
       threadId: "thread-gus",
       prose: { runId: "run-2", cue: "stopped", text: "Tests pass; the docs are left." },
     });
-    expect(preview("ok", [addressee(question, "Mochi"), addressee(stopped, "Gus")])).toBe(
+    expect(preview("ok to all", [addressee(question, "Mochi"), addressee(stopped, "Gus")])).toBe(
       "1 Mochi: Staging · 2 Gus: Go ahead",
     );
   });

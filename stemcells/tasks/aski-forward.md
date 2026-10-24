@@ -127,8 +127,8 @@ on anything irreversible.
 - [x] A. **Past chats open beside Aski.** A chat Aski links opens in a tab
       of its own after Aski's, never over the talk (#282).
 - [x] B. **"ok" takes every recommendation.** "ok the rest" after some
-      answers, or "ok" alone, takes each other card's recommended option;
-      one only a click allows just lights.
+      answers, or "ok to all" alone, takes each other card's recommended
+      option; one only a click allows just lights.
 - [x] C. **Tab completes an option.** After a card's number its
       recommendation shows as a ghost, and the first letters of another
       option narrow it; Tab writes it.
