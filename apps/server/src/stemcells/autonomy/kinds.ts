@@ -16,12 +16,66 @@ export const PHRASES = { retry: "Try that again.", goAhead: "Go ahead." } as con
 export const PLAN_PREFIX = "PLEASE IMPLEMENT THIS PLAN:\n";
 
 /**
- * Words naming what is never Aski's to answer: a deploy, a merge, a release,
- * something deleted, or money or messages leaving. A card that says one is
- * the person's every time, and its take never counts.
+ * What every take adds to the card's own words: the boundary the person set
+ * when they granted it. A word list can't tell what is final; the Cell
+ * reading this can, and stops for the person there.
  */
-const NOT_REVERSIBLE =
-  /\b(?:deploy\w*|merg(?:e|es|ed|ing)|releas(?:e|es|ing)|publish\w*|production|delet(?:e|es|ing)|drop(?:s|ped|ping)?|truncat\w*|wip(?:e|es|ing)|force[- ]push\w*|rm -rf|migrat\w*|purchas\w*|payments?|outreach|e-?mails?)\b/i;
+export const BOUNDARY =
+  "Stop and ask me before anything final: a deploy, a merge, a release, deleting something, or spending or sending anything.";
+
+/**
+ * A card whose own ask is plainly final stays the person's, boundary or
+ * not: a deploy, a merge or a landing, a release, a forced or main-branch
+ * push, a deletion of what isn't code, an install of the app, money spent,
+ * or a message sent. Only the ask is read (a Cell's stop, a plan, what a
+ * retry repeats), not the whole run, whose code and talk name these words
+ * in passing ("the merge conflicts", "the deployment docs").
+ */
+const FINAL = new RegExp(
+  [
+    String.raw`\bdeploy(?:s|ed|ing)?\b`,
+    String.raw`\bmerg(?:e|es|ed|ing)\b(?! ?\()(?! conflicts?\b)`,
+    String.raw`\b(?:land|ship)(?:s|ping|ing)? (?:it|this|them|that|the (?:pr|pull request|change|branch|fix)|#\d+)\b`,
+    String.raw`\b(?:land|squash|push)\w* (?:\w+ )?(?:to|on|in|into) (?:origin |the )?(?:main|master)\b|\bpush\w* (?:origin )?(?:main|master)\b`,
+    String.raw`\breleas(?:e|es|ing) (?:it|this|v?\d)|\bcut (?:the |a )?release\b|\bpush\w* (?:the )?tags?\b`,
+    String.raw`\bpublish(?:es|ed|ing)?\b`,
+    String.raw`\b(?:to|in|on|into) (?:the )?(?:prod|production)\b|\bproduction (?:database|db|server|data)\b`,
+    String.raw`\bforce[- ]push\w*|--force\b|\bpush\w* -f\b`,
+    String.raw`\brm -\w*[rf]|\brm (?:the |-\w+ )|\breset --hard\b|\bclean -\w*f|\bbranch -D\b`,
+    String.raw`\b(?:remov|delet|drop|wip|purg|destroy|reset|clean|clear)\w* (?:up |out |away )?(?:the |its |this |that |all |every |any |old )?(?:\w+ ){0,2}(?:worktrees?|branch(?:es)?|repo(?:sitor(?:y|ies))?|folders?|director(?:y|ies)|databases?|db|tables?|isos?|simulators?|volumes?|backups?|accounts?)\b`,
+    String.raw`\b(?:truncat\w*|wip(?:e|es|ing)|purg(?:e|es|ing)|destroy\w*|overwrit\w*|uninstall\w*)\b`,
+    String.raw`\binstall(?:s|ing)? (?:the |it|this )?(?:app|update|build)\b|\binstall-app\b`,
+    String.raw`\b(?:purchas\w*|pay for|buy(?:s|ing)?|spend(?:s|ing)? (?:money|\$))\b`,
+    String.raw`\b(?:send|email|message|tweet|dm)(?:s|ed|ing)? (?:it |them |this |the |an? |to )?(?:\w+ ){0,2}(?:e-?mails?|messages?|customers?|users?|clients?|team|channel|slack)\b|\bpost(?:s|ed|ing)? (?:it |this )?(?:in|to|on) \S+|\boutreach\b`,
+  ].join("|"),
+  "i",
+);
+
+/** Whether a card's ask names nothing plainly final. */
+export const reversible = (ask: string): boolean => !FINAL.test(ask);
+
+/** Words that only carry a Cell on, or only agree: what they mean is in what came before. */
+const CARRY_ON =
+  /^(?:continue\b.*|go ahead\.?|try that again\.?|carry on\.?|done\. carry on\.?)$/is;
+const SHORT = 40;
+
+/**
+ * What a retry repeats, read from the Cell's conversation newest first:
+ * every message back to the newest request of the person's own. A "Go
+ * ahead." or a "Yes, do it." means what the Cell's reply before it offered,
+ * so that reply is part of the ask.
+ */
+export function askOf(
+  newestFirst: ReadonlyArray<{ readonly role: "user" | "assistant"; readonly text: string }>,
+): string {
+  const ask: string[] = [];
+  for (const message of newestFirst) {
+    ask.push(message.text);
+    const text = message.text.trim();
+    if (message.role === "user" && !CARRY_ON.test(text) && text.length > SHORT) break;
+  }
+  return ask.join("\n\n");
+}
 
 /** The kind of card `need` is, or null when it is never Aski's to take. */
 export function kindOf(need: Need): Kind | null {
@@ -33,12 +87,10 @@ export function kindOf(need: Need): Kind | null {
       return errorClass === "transport_error" || errorClass === "provider_error" ? "retry" : null;
     }
     case "prose":
-      return need.prose?.cue === "stopped" && !NOT_REVERSIBLE.test(need.prose.text)
-        ? "goAhead"
-        : null;
+      return need.prose?.cue === "stopped" && reversible(need.prose.text) ? "goAhead" : null;
     case "plan": {
       const plan = need.plan;
-      return plan?.id != null && plan.markdown != null && !NOT_REVERSIBLE.test(plan.markdown)
+      return plan?.id != null && plan.markdown != null && reversible(plan.markdown)
         ? "implement"
         : null;
     }

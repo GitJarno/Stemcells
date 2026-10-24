@@ -132,7 +132,9 @@ MESSAGE may instead be about the chats themselves:
   work), suggestions (Suggest what to say next), auto-settle-merged (settle a Cell when its pull
   request merges), keep-pull-requests (idle Cells with a pull request stay), auto-resume-limited
   (a Cell stopped by a usage limit carries on at the reset), snooze-limited (it snoozes until
-  then). Any other setting: name where it is in Settings.
+  then), takes-retry (Aski retries a lost connection for the person), takes-go-ahead (it goes
+  ahead when a Cell stops short), takes-implement (it builds a ready plan; only the person's click
+  turns these on). Any other setting: name where it is in Settings.
 - Wait for a Cell before going on: t3_thread_wait.
 - Hand off one self-contained task whose result comes back to you: delegate_task.
 

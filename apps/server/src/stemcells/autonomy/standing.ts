@@ -17,6 +17,11 @@ const KindSchema = Schema.Literals(KINDS);
 export const Standing = Schema.Struct({
   streaks: Schema.Struct({ retry: Schema.Int, goAhead: Schema.Int, implement: Schema.Int }),
   granted: Schema.Array(KindSchema),
+  /**
+   * When each granted kind was granted: only cards that came after it are
+   * taken. Missing from a file written before it existed (`loaded`).
+   */
+  grantedAt: Schema.optionalKey(Schema.Record(Schema.String, Schema.Number)),
   /** Turned down: "Not now" on the offer, or switched off. Never offered again. */
   declined: Schema.Array(KindSchema),
   /** Cards the person kept from a take, by key: never taken for them. */
@@ -27,8 +32,16 @@ export type Standing = typeof Standing.Type;
 export const INITIAL: Standing = {
   streaks: { retry: 0, goAhead: 0, implement: 0 },
   granted: [],
+  grantedAt: {},
   declined: [],
   kept: [],
+};
+
+/** A standing as read: a kind granted with no time of its own counts from now. */
+export const loaded = (standing: Standing, now: number): Standing => {
+  const grantedAt = { ...standing.grantedAt };
+  for (const kind of standing.granted) grantedAt[kind] ??= now;
+  return { ...standing, grantedAt };
 };
 
 const without = (kinds: ReadonlyArray<Kind>, kind: Kind) => kinds.filter((k) => k !== kind);
@@ -50,16 +63,23 @@ export const offers = (standing: Standing): ReadonlyArray<Kind> =>
       !standing.declined.includes(kind),
   );
 
-export const grant = (standing: Standing, kind: Kind): Standing => ({
-  ...standing,
-  granted: adding(standing.granted, kind),
-  declined: without(standing.declined, kind),
-});
+export const grant = (standing: Standing, kind: Kind, now: number): Standing =>
+  standing.granted.includes(kind)
+    ? standing
+    : {
+        ...standing,
+        granted: adding(standing.granted, kind),
+        grantedAt: { ...standing.grantedAt, [kind]: now },
+        declined: without(standing.declined, kind),
+      };
 
 /** Switched off, or "Not now": Aski stops, and doesn't offer the kind again. */
 export const decline = (standing: Standing, kind: Kind): Standing => ({
   ...standing,
   granted: without(standing.granted, kind),
+  grantedAt: Object.fromEntries(
+    Object.entries(standing.grantedAt ?? {}).filter(([granted]) => granted !== kind),
+  ),
   declined: adding(standing.declined, kind),
   streaks: { ...standing.streaks, [kind]: 0 },
 });

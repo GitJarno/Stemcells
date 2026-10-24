@@ -10,6 +10,7 @@ import {
   type RefObject,
 } from "react";
 
+import { AutonomyOffer } from "../autonomy/Cards";
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
 import { useHolds } from "./holds";
@@ -182,6 +183,7 @@ export function NeedsFrame(props: {
           </button>
         ) : null}
       </div>
+      <AutonomyOffer />
       {view.shown.map((each) => (
         <NeedCard
           key={each.need.key}

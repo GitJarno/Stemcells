@@ -1,8 +1,9 @@
 /**
  * The arcs read what upstream's projection stores, written here by upstream's
  * own projection from its events: runs, the reply that ended each, the
- * person's messages and a Cell's requests. A failure after a sync means the
- * arcs read the store as it no longer is.
+ * person's messages and a Cell's requests. Autonomy reads a Cell's messages
+ * through the same store (`upstream/autonomy.ts`). A failure after a sync
+ * means they read the store as it no longer is.
  */
 import { assert, it } from "@effect/vitest";
 import {
@@ -82,6 +83,7 @@ const chat = (name: string, options: { parent?: string; instance?: string } = {}
       createdBy: "user" | "agent",
       text: string,
       minutes: number,
+      creationSource: "web" | "provider" | "server" = createdBy === "user" ? "web" : "provider",
     ) =>
       store.apply({
         id: EventId.make(`event:${name}:${id}`),
@@ -90,7 +92,7 @@ const chat = (name: string, options: { parent?: string; instance?: string } = {}
         occurredAt: later(minutes),
         payload: {
           createdBy,
-          creationSource: createdBy === "user" ? "web" : "provider",
+          creationSource,
           id: MessageId.make(`${name}:${id}`),
           threadId,
           runId: role === "assistant" ? runId : null,
@@ -130,6 +132,8 @@ const chat = (name: string, options: { parent?: string; instance?: string } = {}
     });
     yield* message("draft", "assistant", "agent", "Working on it.", 5);
     yield* message("reply", "assistant", "agent", "Merged.\n\n**Done:** #12 merged", 20);
+    // Aski taking a card for the person, under their name but from the server: not their turn.
+    yield* message("take", "user", "user", "Go ahead.", 25, "server");
     yield* store.apply({
       id: EventId.make(`event:${name}:request`),
       type: "runtime-request.updated",
@@ -175,6 +179,36 @@ it.layer(layerTest)("the arcs' records", (it) => {
           resolvedAt: "2026-10-23T09:12:00.000Z",
         },
       ]);
+    }),
+  );
+});
+
+it.layer(layerTest)("a Cell's messages, as autonomy reads them", (it) => {
+  it.effect("say who made each: the person's screen, an agent, or the server in their name", () =>
+    Effect.gen(function* () {
+      yield* chat("otter");
+      const store = yield* ProjectionStore.ProjectionStoreV2;
+      const records = yield* store.getThreadRecords(ThreadId.make("otter"), ["messages"], {
+        messageRoles: ["user"],
+      });
+      assert.deepStrictEqual(
+        records.messages.map(({ text, createdBy, creationSource, scheduledTaskId }) => ({
+          text,
+          createdBy,
+          creationSource,
+          scheduled: scheduledTaskId !== undefined,
+        })),
+        [
+          { text: "Fix the header.", createdBy: "user", creationSource: "web", scheduled: false },
+          {
+            text: "The reviewer's notes.",
+            createdBy: "agent",
+            creationSource: "provider",
+            scheduled: false,
+          },
+          { text: "Go ahead.", createdBy: "user", creationSource: "server", scheduled: false },
+        ],
+      );
     }),
   );
 });

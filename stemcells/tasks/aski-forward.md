@@ -159,12 +159,12 @@ on anything irreversible.
       project's own rules (AGENTS.md, CLAUDE.md), which every agent reads
       and the close-out already defers to, over a store of ours: asked to
       change it, Aski starts a Cell in that project to write the line.
-- [ ] 4. **Autonomy earned.** The person chose it for reversible asks
+- [x] 4. **Autonomy earned.** The person chose it for reversible asks
       only: after five straight takes of one kind's recommendation (retry
       a failed run, go ahead where a Cell stopped short, implement a plan),
       Aski offers once to take it from then on; never a permission, a
       deploy or a merge, the undo window stays, and Settings › Aski takes
-      it back (`aski-autonomy.md`).
+      it back (`aski-autonomy.md`; the server #292, the room #294).
 - [ ] 5. **Aski's prose read, only if still needed.** Waits on a week of
       stops under the close-out (from 2026-10-24).
 
@@ -186,6 +186,6 @@ on anything irreversible.
   Cells this week, 3 of the person's turns a Cell, 1.8 min of work between
   turns, 21 asks on a card against 77 as the person's step and 45 in
   prose, answered in 4.5 min. Slice 1's effect shows there from next week.
-- Left for the person: F (a phone push needs a service beyond this Mac),
-  3 and 4 (how far Cells go alone, and autonomy earned, both let Cells act
-  without asking). 5 waits on a week of stops under the close-out.
+- Left for the person: F waits on their Apple developer account and APNs
+  key (`phone-push.md`, the steps only they can take). 5 waits on a week
+  of stops under the close-out.

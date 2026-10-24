@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
+import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
+import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
 import { timing } from "../tokens/motion";
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
@@ -19,6 +21,13 @@ export function whoOf(need: Shown["need"]): string {
     ? cellNameOf(need.threadId)
     : `${cellNameOf(need.parentThreadId)} › ${need.title}`;
 }
+
+/** The kind of take a card Aski took was, by its need (the server's `autonomy/kinds.ts`). */
+const TAKEN: Partial<Record<Shown["need"]["kind"], Kind>> = {
+  failed: "retry",
+  prose: "goAhead",
+  plan: "implement",
+};
 
 /** What a held answer says it chose. */
 export const pickLabel = (option: CardOption, given: Given): string =>
@@ -58,6 +67,11 @@ export function NeedCard(props: {
   const lights = useLit();
   const fromWords = lights.reading.get(need.key) ?? null;
   const asked = lights.asked.get(need.key) ?? null;
+  // Whether Aski is about to take this card for the person, or took it.
+  const autonomy = useAutonomy();
+  const taking = autonomy?.taking.find((each) => each.key === need.key) ?? null;
+  const took = TAKEN[need.kind];
+  const tookIt = took !== undefined && autonomy?.took.includes(need.key) === true;
 
   // An allow can't land in the card's first moment: a card arriving under
   // the pointer is read before it is clicked.
@@ -69,7 +83,12 @@ export function NeedCard(props: {
   }, [props.seenAt]);
 
   const section = useRef<HTMLElement>(null);
+  // An answer of the person's own keeps the card from Aski's take.
+  const keepFromAski = () => {
+    if (taking !== null) void keepCard(need.key);
+  };
   const choose = (option: CardOption, given: Given = {}) => {
+    keepFromAski();
     answering(section.current);
     lit.answered(need.key);
     holds.hold({
@@ -118,13 +137,15 @@ export function NeedCard(props: {
         <p data-need-receipt="">
           {hold?.state === "sent"
             ? "Sent."
-            : hold?.state === "stale"
-              ? staleLine(need, who) + backLine(hold)
-              : need.kind === "stuck"
-                ? "It's moving again."
-                : need.request !== null
-                  ? "Answered elsewhere."
-                  : "Taken care of elsewhere."}
+            : tookIt
+              ? KINDS[took].took
+              : hold?.state === "stale"
+                ? staleLine(need, who) + backLine(hold)
+                : need.kind === "stuck"
+                  ? "It's moving again."
+                  : need.request !== null
+                    ? "Answered elsewhere."
+                    : "Taken care of elsewhere."}
         </p>
       ) : folded ? (
         <HeldAnswer hold={hold} />
@@ -132,6 +153,15 @@ export function NeedCard(props: {
         <p data-need-receipt="">Sent.</p>
       ) : (
         <>
+          {taking !== null ? (
+            <TakingFuse
+              key={taking.at}
+              kind={taking.kind}
+              from={taking.from}
+              at={taking.at}
+              onUndo={() => keepCard(need.key)}
+            />
+          ) : null}
           {hold?.state === "failed" || hold?.state === "stale" ? (
             <p data-need-receipt="" data-warn="">
               {(hold.state === "stale" ? staleLine(need, who) : hold.why) + backLine(hold)}
@@ -145,6 +175,7 @@ export function NeedCard(props: {
               questions={card.questions}
               lit={fromWords}
               onAnswer={(answers, label) => {
+                keepFromAski();
                 answering(section.current);
                 lit.answered(need.key);
                 holds.hold({

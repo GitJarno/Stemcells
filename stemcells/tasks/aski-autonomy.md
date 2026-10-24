@@ -19,6 +19,11 @@ those are a person's call every time.
 
 ## How it works
 
+- **Every take carries the boundary**: the card's own words, then "Stop
+  and ask me before anything final: a deploy, a merge, a release, deleting
+  something, or spending or sending anything." A word list can't tell
+  what is final; the Cell reading this can. A card whose own ask is
+  plainly final stays the person's all the same.
 - **The server does it**, so Cells fly while the person is away and two
   screens never both answer. `stemcells/autonomy/` follows the needs list;
   its command id is the card's key, so the orchestrator takes it once
@@ -45,5 +50,37 @@ those are a person's call every time.
       a decline: Aski stops and doesn't offer it again until it's switched
       on. A card naming a deploy, a merge or a deletion is never taken or
       counted, and a Cell someone is writing to keeps its card.
-- [ ] 2. The room: the offer card, the taken card's fuse and Undo, Settings
-      › Aski's switches, and Aski's inline switches.
+- [x] 2. The room: the offer card, the taken card's fuse and Undo, Settings
+      › Aski's switches, and Aski's inline switches (`takes-retry`,
+      `takes-go-ahead`, `takes-implement`). An answer of the person's own
+      keeps the card from Aski, and a card Aski took says so as it goes.
+
+## Review
+
+An independent review of slices 1 and 2, before the room's half shipped,
+found and #294 fixed:
+
+- The word guard took three rounds and still couldn't hold alone. Read
+  over the whole run it blocked 10 of 11 real stops (every Cell here
+  talks of merging); read over the card's ask it still missed "land the
+  PR", "send the email", and a retry of a run the person had sent on with
+  "Go ahead." after a deploy. So every take now carries the boundary
+  above, and the guard only keeps cards whose ask is plainly final: a
+  Cell's stop, a plan, or what a retry repeats, read back to the person's
+  own request through any "Go ahead." or "Yes" and the reply it answered.
+- A sleeping Mac ended windows unseen, and drafts lapsed meanwhile. After
+  a start or a wake (between looks or within one) no card goes for 90 s,
+  windows start again, and the room's fuse waits for its window.
+- Undo or a switch turned off could lose to a take already due; a take
+  checks both again just before it goes. A refused take stays the
+  person's instead of coming back every window.
+- Saves could land out of order and turn a declined kind back on; they
+  now go one at a time. A file from before grants had times still reads.
+- A grant took the cards already waiting too; it now takes only those
+  that come after it.
+- Aski's takes, and scheduled tasks, counted as the person's own turns in
+  the arcs and as their answers; neither does now.
+
+The phone shows neither the fuse nor Undo, and a reply being written
+there doesn't hold a take back: the phone has no Aski room yet
+(`phone-push.md`, slice 5). Settings on the Mac turns a kind off.

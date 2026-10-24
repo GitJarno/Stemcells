@@ -22,12 +22,16 @@ export interface NeedsState {
   readonly live: boolean;
 }
 
-/** Splits what has arrived into whole events: the lists they carry, and the rest. */
-export function readEvents(buffer: string): {
-  readonly lists: ReadonlyArray<NeedsList>;
-  readonly rest: string;
-} {
-  const lists: NeedsList[] = [];
+/**
+ * Splits what has arrived of a server's event stream into whole events: the
+ * JSON each carries that `accept` takes, and the rest, a torn event waiting
+ * for the next chunk.
+ */
+export function readJsonEvents<T>(
+  buffer: string,
+  accept: (data: unknown) => data is T,
+): { readonly values: ReadonlyArray<T>; readonly rest: string } {
+  const values: T[] = [];
   const events = buffer.replaceAll("\r\n", "\n").split("\n\n");
   const rest = events.pop() ?? "";
   for (const event of events) {
@@ -38,13 +42,25 @@ export function readEvents(buffer: string): {
       .join("\n");
     if (data === "") continue;
     try {
-      const list = JSON.parse(data) as NeedsList;
-      if (Array.isArray(list.needs)) lists.push(list);
+      const value: unknown = JSON.parse(data);
+      if (accept(value)) values.push(value);
     } catch {
-      // A torn or foreign event; the next whole list replaces it.
+      // A torn or foreign event; the next whole one replaces it.
     }
   }
-  return { lists, rest };
+  return { values, rest };
+}
+
+const isList = (data: unknown): data is NeedsList =>
+  typeof data === "object" && data !== null && Array.isArray((data as NeedsList).needs);
+
+/** Splits what has arrived into whole events: the lists they carry, and the rest. */
+export function readEvents(buffer: string): {
+  readonly lists: ReadonlyArray<NeedsList>;
+  readonly rest: string;
+} {
+  const { values, rest } = readJsonEvents(buffer, isList);
+  return { lists: values, rest };
 }
 
 let state: NeedsState = { needs: null, cells: null, live: false };

@@ -8,6 +8,7 @@
  */
 import type { ReactNode } from "react";
 
+import { KINDS, setTaking, useAutonomy, type Kind } from "../autonomy/autonomy";
 import {
   ScopedSwitch,
   SettingsScopeProvider,
@@ -24,10 +25,25 @@ import "./settingLinks.css";
 /** The context link's kind for a setting: `t3-context://v1/<kind>/<id>`. */
 export const SETTING_LINK_KIND = "stemcells-setting";
 
+/** What Aski takes for the person, by the id Aski links each with. */
+export const TAKES_SWITCHES: Readonly<Record<string, Kind>> = {
+  "takes-retry": "retry",
+  "takes-go-ahead": "goAhead",
+  "takes-implement": "implement",
+};
+
+const takes = (kind: Kind) => ({
+  title: KINDS[kind].title,
+  set: (on: boolean) => void setTaking(kind, on),
+});
+
 /** Our switches, by the id Aski links them with. */
 export const ASKI_SWITCHES = {
   "aski-plans": { title: "Aski divides the work", set: setAskiPlans },
   suggestions: { title: "Suggest what to say next", set: setSuggestionsOn },
+  "takes-retry": takes("retry"),
+  "takes-go-ahead": takes("goAhead"),
+  "takes-implement": takes("implement"),
 } as const;
 
 /** Upstream's switches, by the id Aski links them with, each with its server setting. */
@@ -87,11 +103,23 @@ function AskiSwitch(props: { id: AskiId; label: string }) {
   // Each hook by its name: the compiler keeps a call to a hook it can't name.
   const plans = useAskiPlans();
   const suggestions = useSuggestionsOn();
-  const on = props.id === "aski-plans" ? plans : suggestions;
+  const autonomy = useAutonomy();
+  const kind = TAKES_SWITCHES[props.id];
+  const on =
+    kind !== undefined
+      ? (autonomy?.granted.includes(kind) ?? false)
+      : props.id === "aski-plans"
+        ? plans
+        : suggestions;
   return (
     <span data-stemcells-setting="">
       {props.label}
-      <Switch checked={on} aria-label={title} onCheckedChange={(checked) => set(checked)} />
+      <Switch
+        checked={on}
+        disabled={kind !== undefined && autonomy === null}
+        aria-label={title}
+        onCheckedChange={(checked) => set(checked)}
+      />
     </span>
   );
 }

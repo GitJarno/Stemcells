@@ -7,7 +7,7 @@ import { OrchestrationV2Command } from "@t3tools/contracts";
 import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
-import { PHRASES, PLAN_PREFIX } from "../autonomy/kinds.ts";
+import { BOUNDARY, PHRASES, PLAN_PREFIX } from "../autonomy/kinds.ts";
 import type { Need } from "../needs/derive.ts";
 import { TAKE_PREFIX, takeCommands } from "./autonomy.ts";
 
@@ -49,20 +49,20 @@ describe("a take, as upstream's orchestrator reads it", () => {
     expect(mode).toMatchObject({ interactionMode: "default" });
     expect(message).toMatchObject({
       commandId: `${TAKE_PREFIX}${planNeed.key}`,
-      text: `${PLAN_PREFIX}# Tidy\n- Sort it`,
+      text: `${PLAN_PREFIX}# Tidy\n- Sort it\n\n${BOUNDARY}`,
       sourcePlanRef: { threadId: "thread-1", planId: "plan-1" },
       dispatchMode: { type: "start_immediately" },
     });
   });
 
-  it("a message's take sends the card's own words, under the card's key", () => {
+  it("a message's take sends the card's own words and the boundary, under the card's key", () => {
     const [message] = takeCommands({ ...planNeed, kind: "failed", plan: null }, "retry").map(
       (command) => decode(command),
     );
     expect(message).toMatchObject({
       type: "message.dispatch",
       commandId: `${TAKE_PREFIX}${planNeed.key}`,
-      text: PHRASES.retry,
+      text: `${PHRASES.retry} ${BOUNDARY}`,
     });
   });
 });
