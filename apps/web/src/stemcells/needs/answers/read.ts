@@ -351,6 +351,22 @@ export function readAnswers(
     return ANSWER_WORDS.has(next);
   };
 
+  /** The words after token k run along the start of one of the card's titles: "5 remove it first". */
+  const titleFollows = (k: number, card: Addressee) => {
+    if (SENTENCE_BREAK.test(gapAfter(k))) return false;
+    const question = card.card.questions.length === 1 ? card.card.questions[0]! : null;
+    const titles = [
+      ...(question?.options.map((choice) => choice.label) ?? []),
+      ...card.card.options.map((option) => option.title),
+    ];
+    return titles.some((title) => {
+      const words = tokenize(title).map((t) => t.norm);
+      let n = 0;
+      while (n < words.length && word(k + 1 + n) === words[n]) n++;
+      return n >= Math.min(2, words.length);
+    });
+  };
+
   /** A line-start "1." in a pasted list is the list's, not an answer. */
   const listItem = (k: number) =>
     listLines &&
@@ -468,8 +484,10 @@ export function readAnswers(
       if (numbers.every((n) => cardAt(n) !== null))
         return anchorOf(start, last, { numbers, byName: false, missing: null });
     }
-    const n = Number(w);
-    return cardAt(n) !== null && answerFollows(i) ? byNumber(start, i, n) : null;
+    const card = cardAt(Number(w));
+    return card !== null && (answerFollows(i) || titleFollows(i, card))
+      ? byNumber(start, i, card.number)
+      : null;
   };
 
   interface Said {

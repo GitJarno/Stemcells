@@ -129,8 +129,9 @@ on anything irreversible.
 - [x] B. **"ok" takes every recommendation.** "ok the rest" after some
       answers, or "ok" alone, takes each other card's recommended option;
       one only a click allows just lights.
-- [ ] C. **Tab completes an option.** After a card's number, Tab offers
-      that card's options and the recommendation first.
+- [x] C. **Tab completes an option.** After a card's number its
+      recommendation shows as a ghost, and the first letters of another
+      option narrow it; Tab writes it.
 - [ ] D. **A walk through the cards.** One key steps to the next card in
       its number's order and answers it there, never re-sorting.
 - [ ] E. **Settings in Aski's reply.** A setting Aski names renders as its

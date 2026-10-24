@@ -552,7 +552,8 @@ anything else.
     without a "for" before them, but not before a unit ("for 5 minutes",
     "for 2 more tests");
   - a bare "N" only when ":", ",", "." or an answer word follows it ("1:
-    go with 2", "3 yes"). Otherwise a number at the start is a count for the
+    go with 2", "3 yes"), or the start of one of its options' titles ("5
+    remove it first"). Otherwise a number at the start is a count for the
     composer ("2 Sol in Harbor …", `tasks/prompting.md`). The composer's
     reader skips the spans of our anchors, as it already skips literal
     text;
@@ -598,6 +599,10 @@ anything else.
 
 - A negation before an option ("don't go with 2") never picks that option.
 - A number with no open card ("for 5") is kept in the message.
+- After a card's number, the recommended option shows as a ghost, and
+  typing narrows it to the option that starts so; Tab writes it. It offers
+  only words that read back as that option, and a project's name at the
+  caret keeps Tab.
 - "ok the rest", "yes to all", "go with your recommendations" at the end,
   or a bare "ok" as the whole message, take the recommended option of every
   card the message doesn't answer: one a click allows only lights, and a

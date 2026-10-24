@@ -1,11 +1,12 @@
 import { type Node as PmNode, Schema } from "@tiptap/pm/model";
+import { EditorState, TextSelection } from "@tiptap/pm/state";
 import { describe, expect, it } from "vite-plus/test";
 
 import { cardOf } from "../card";
 import { NOW, needFixture, requestFixture } from "../fixtures";
 import type { Need } from "../wire";
 import { enterOf } from "./enter";
-import { readDoc } from "./plugin";
+import { answersKey, answersOf, answersPlugin, readDoc } from "./plugin";
 import type { Addressee } from "./read";
 
 const addressee = (need: Need, who: string): Addressee => ({
@@ -134,5 +135,28 @@ describe("a Cell is sent the words the person wrote, as the composer sends them"
     expect(sent(doc("for 1 “use ", file, ". Then run it”"))).toEqual([
       "1 use @src/App.tsx. Then run it",
     ]);
+  });
+});
+
+describe("Tab's ghost", () => {
+  it("shows at a caret after a card's number while the composer has the focus", () => {
+    const start = EditorState.create({
+      doc: doc("5 rem"),
+      plugins: [
+        answersPlugin(
+          () => CARDS,
+          () => {},
+        ),
+      ],
+    });
+    const atEnd = start.apply(start.tr.setSelection(TextSelection.atEnd(start.doc)));
+    const offer = (state: EditorState) => answersOf(state)?.offer?.rest ?? null;
+    expect(offer(atEnd)).toBeNull();
+    const focused = atEnd.apply(atEnd.tr.setMeta(answersKey, { focused: true }));
+    expect(offer(focused)).toBe("ove it first");
+    expect(
+      offer(focused.apply(focused.tr.setSelection(TextSelection.create(focused.doc, 2)))),
+    ).toBeNull();
+    expect(offer(focused.apply(focused.tr.setMeta(answersKey, { composing: true })))).toBeNull();
   });
 });

@@ -265,7 +265,7 @@ export function wordsPlugin(source: () => WordsSetting | null, hooks: WordsHooks
 }
 
 /** The rest of a name, as a ghost after the caret, with the key that writes it. */
-function ghost(rest: string): HTMLElement {
+export function ghost(rest: string): HTMLElement {
   const el = document.createElement("span");
   el.className = "sc-word-ghost";
   el.contentEditable = "false";

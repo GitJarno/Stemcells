@@ -7,6 +7,7 @@ import { cardOf, LATER } from "../card";
 import type { Shown } from "../display";
 import { NOW, needFixture, requestFixture } from "../fixtures";
 import type { Need } from "../wire";
+import { optionCompletionAt } from "./complete";
 import { enterOf } from "./enter";
 import { giveBack, type Spoken, spokenOf } from "./giveBack";
 import { partLines } from "./line";
@@ -194,6 +195,8 @@ const ANCHORS: Array<[string, string]> = [
   ["Otter, rebase onto main", "rest: Otter, rebase onto main"],
   ["Floof, use staging", "rest: Floof, use staging"],
   ["1, 2", `1 Floof: ${title(1, 2)}`],
+  // A bare number before the start of one of its card's titles.
+  ["5 remove it first", "5 Mochi: Remove it first"],
   // Not answers: a count, a pasted list, a number inside a sentence.
   ["2 more tests in Harbor", "rest: 2 more tests in Harbor"],
   ["1. fix the header\n2. fix the footer", "rest: 1. fix the header\n2. fix the footer"],
@@ -330,6 +333,43 @@ describe("readAnswers: the rest", () => {
     expect(preview("ok", [addressee(question, "Mochi"), addressee(stopped, "Gus")])).toBe(
       "1 Mochi: Staging · 2 Gus: Go ahead",
     );
+  });
+});
+
+/** What Tab writes at the end of the words, if anything. */
+const tab = (text: string, cards: ReadonlyArray<Addressee> = CARDS) =>
+  optionCompletionAt(text, text.length, cards)?.rest ?? null;
+
+describe("optionCompletionAt: Tab completes an option", () => {
+  it("offers the recommendation once the card is named", () => {
+    expect(tab("8 ")).toBe(kindOf(8, "retry"));
+    expect(tab("for 7 ")).toBe(kindOf(7, "build"));
+    expect(tab("3 no, and 8 ")).toBe(kindOf(8, "retry"));
+    // Pip recommends nothing.
+    expect(tab("3 ")).toBeNull();
+  });
+
+  it("completes the option that starts with what's typed, as the reader reads it back", () => {
+    expect(tab("3 alw")).toBe(title(3, 2).slice(3));
+    expect(tab("5 rem")).toBe("ove it first");
+    expect(tab("for 5 Comm")).toBe("it, then remove");
+    expect(tab("2 st")).toBe("op and reply");
+    expect(tab("4 la")).toBe("ter");
+  });
+
+  it("offers nothing that wouldn't answer the card", () => {
+    expect(tab("8 retry")).toBeNull();
+    expect(tab("2 Sol")).toBeNull();
+    expect(tab("I asked for 2 ")).toBeNull();
+    expect(tab("12 ")).toBeNull();
+    expect(optionCompletionAt("8 Re", 3, CARDS)).toBeNull();
+    const held = CARDS.map((card) => (card.number === 8 ? { ...card, held: true } : card));
+    expect(tab("8 ", held)).toBeNull();
+  });
+
+  it("asks for words after an option that takes them", () => {
+    expect(optionCompletionAt("2 st", 4, CARDS)?.words).toBe(true);
+    expect(optionCompletionAt("8 ", 2, CARDS)?.words).toBe(false);
   });
 });
 
