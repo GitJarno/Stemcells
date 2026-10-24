@@ -20,13 +20,13 @@ This page builds on it and doesn't redo it.
 The Swift app measured 14 days of one person's work: 2,941 waits on the
 person across 389 chats.
 
-| The Cell stopped with | Share of waits | How it ended |
-|---|---|---|
-| a report, no question | 79 % | 70 % got a new task |
-| a question or offer in prose | 15 % | 54 % redirected |
-| a usage limit or an error | 4 % | 15 % a bare "go on" |
-| a structured question | 3 % | 59 % took the recommended option |
-| a permission | 0.2 % | 75 % allowed |
+| The Cell stopped with        | Share of waits | How it ended                     |
+| ---------------------------- | -------------- | -------------------------------- |
+| a report, no question        | 79 %           | 70 % got a new task              |
+| a question or offer in prose | 15 %           | 54 % redirected                  |
+| a usage limit or an error    | 4 %            | 15 % a bare "go on"              |
+| a structured question        | 3 %            | 59 % took the recommended option |
+| a permission                 | 0.2 %          | 75 % allowed                     |
 
 - Three to seven Cells wait at once (median 3, p90 7). Finding them was the
   work.
@@ -43,6 +43,7 @@ What this means for the page:
 ## Decisions
 
 ### 1. One list, derived on the server, the same on every screen
+
 - The server derives the list from T3's own thread state each time a
   thread's shell changes. It reads the shell for presence and the thread's
   projection for the details: the command, the question, the plan.
@@ -57,6 +58,7 @@ What this means for the page:
   (decision 7).
 
 Why the server:
+
 - The numbers must agree on every screen, so "for 2" means the same item on
   the Mac and on the phone.
 - Aski's read of a stuck Cell (decision 4) must run once, not once per open
@@ -64,6 +66,7 @@ Why the server:
 - The server already holds the projection that the details live in.
 
 ### 2. One card per Cell, for what only the person can unblock
+
 - A Cell has at most one card. When it shows several signals, the most
   blocking one makes the card. When that resolves, the next signal becomes
   a new card.
@@ -82,6 +85,7 @@ Why the server:
 - The kinds and their signals are in "Item types" below.
 
 ### 3. Numbers are addresses: given by arrival, never moved or reused
+
 - A card keeps its number for as long as it lives.
 - New cards take the next number and join at the bottom. The list never
   re-sorts.
@@ -97,6 +101,7 @@ first" order and dropped it for this reason. Each part of the routing
 preview names its Cell ("2 → Bongo"), so a stale number shows before Enter.
 
 ### 4. How a brief is made depends on the signal
+
 - **As the Cell asked, with no model:**
   - A permission shows the request whole: the command in monospace, with
     every line kept. It is never summarised, because the person approves
@@ -114,6 +119,7 @@ preview names its Cell ("2 → Bongo"), so a stale number shows before Enter.
 
   For these, Aski's model reads a bounded context and returns a typed brief
   and two to four options, which code then validates (see "Aski's read").
+
 - **When the read is off, down, slow or over budget:**
   - the card shows the Cell's last paragraph word for word;
   - it offers the kind's fixed options: Go ahead (for an offer or a stop
@@ -127,6 +133,7 @@ Why: a structured ask is already as clear as it gets, so a model would only
 add cost and room for error. Prose is where the person loses time.
 
 ### 5. Options are app actions; Aski never writes what a Cell reads
+
 - Every option maps to exactly one action in the catalogue (below). It goes
   through T3's own commands, so it works whatever the provider supports.
 - What an option sends to a Cell is one of three things:
@@ -137,6 +144,7 @@ add cost and room for error. Prose is where the person loses time.
 
   Code checks every span. Aski may write the option's title and its
   consequence line, but never the words that reach the Cell.
+
 - **An option that is one of upstream's own buttons wears upstream's
   label:** the provider's own, else Approve, Always allow this session,
   Decline; Implement and Refine for a plan; Retry for a failed run. The
@@ -158,6 +166,7 @@ blunts prompt injection: a Cell's message can at most mislead a brief. It
 can't make Aski send or allow anything.
 
 ### 6. Words can say no; only a click says yes
+
 - Words in Aski's composer, typed or dictated, can:
   - answer;
   - reply;
@@ -180,6 +189,7 @@ approve), and RiskFloor is the one floor shared with `tasks/prompting.md`
 (decision 15 there).
 
 ### 7. Every answer waits out the undo window, then goes as T3's own command
+
 - **A click or a confirmed dictation** puts the card into its hold:
   - the options fold to the one chosen;
   - a flat fuse runs under it, with Undo (and ⌘Z for the newest hold).
@@ -202,6 +212,7 @@ authenticated path, with T3's checks (a resolved request can't be answered
 twice). Nothing new can approve.
 
 ### 8. Dictation: a reader first, a preview in the cards, Enter confirms
+
 - **Aski's composer reads item references as the person types.** The
   reader is deterministic, and the grammar is below.
 - **Each part shows in two places at once:**
@@ -240,6 +251,7 @@ twice). Nothing new can approve.
   custom answer. Its parts show "Aski read this" in Aski's tone. It never
   returns a permission, never returns a risky option, and never returns
   words the person didn't type.
+
 - **The reader doesn't send dictation to Aski's chat turn.** Answering four
   cards costs no model turn and lands in under a second.
 
@@ -247,12 +259,15 @@ Why: the cards are where the person is already looking. Lighting them up
 as they speak is the confirmation; the readout line is the summary.
 
 ### 9. The page holds still while you work
+
 These freeze the right column:
+
 - the composer has text;
 - the pointer is over the list;
 - a card has keyboard focus.
 
 While it is frozen:
+
 - **No card leaves.** A card resolved elsewhere greys in place, with its
   options disabled and a reason ("Answered in Floof's chat").
 - **No card's options change.** A brief that lands while frozen waits.
@@ -261,6 +276,7 @@ While it is frozen:
 When it unfreezes, everything queued plays as one motion.
 
 ### 10. Layout: Aski in its chat, the column beside it
+
 - **Aski is in its chat, not over it** (the person, 2026-10-21: "they should be
   combined"). There is no band of Aski's own. It stands over the composer,
   where a Cell's line stands in a Cell's pane, in the composer's flow, so
@@ -305,6 +321,7 @@ When it unfreezes, everything queued plays as one motion.
   page.
 
 ### 11. What Aski's chat does besides answers
+
 - **Start Cells.** As in `tasks/prompting.md`: the words set where, which
   model and how many, the readout shows it before Send, and Aski launches.
 - **"What's up?"**
@@ -325,8 +342,10 @@ When it unfreezes, everything queued plays as one motion.
   (open question below).
 
 ### 12. Settings › Aski is a page of its own
+
 One page holds this design's rows and `tasks/prompting.md`'s fan-out rows.
 This design owns the page. Its rows, in this order:
+
 - **Aski's model.** The provider, model and effort of Aski's instance,
   through T3's own instance settings. Aski uses it to plan fan-outs, read
   stuck Cells and talk with the person.
@@ -358,8 +377,10 @@ our store, so every screen reads the same. Notification settings stay per
 device, as T3 has them.
 
 ### 13. The Cell's own history stays true by T3's records, not by our lines
+
 Everything that sends or answers shows in the Cell's chat exactly as if the
 person had done it there:
+
 - a reply is a user message;
 - an approval or answer is T3's resolved request;
 - a plan built is T3's implement message.
@@ -371,7 +392,9 @@ Cell's model reads next turn, and the history would no longer be only what
 the person and the Cell said.
 
 ### 14. What this design shares with smart prompting
+
 Settled with `tasks/prompting.md`:
+
 - **The readout line in Aski's composer:** one component, owned here.
   Answers come first, then launches, then "rest → Aski" (decision 8).
 - **A bare leading number** names a card only before ":", ",", "." or an
@@ -391,18 +414,18 @@ Signals are fields of T3's thread shell (`OrchestrationV2ThreadShell`)
 unless noted. "Words can" is what dictation may do (decision 6). A dash in
 the options means none is recommended.
 
-| Kind (tag) | Signal | Brief | Options (recommended first) | Words can |
-|---|---|---|---|---|
-| Permission | `pendingRuntimeRequest.kind` ∈ command, file-read, file-change, permission | "Wants to run a command" / "edit 3 files" / "read outside the project"; the request whole (projection) | The provider's own `options` (`ProviderApprovalOption`: label, warning), in its order, else upstream's own: Approve, Always allow this session, Decline; "Decline…" takes a note | decline, decline with a note |
-| Question | `pendingRuntimeRequest.kind = user_input` | The Cell's header and question verbatim; one block per question (1a, 1b) | The question's own options (label + description), "Other…" when `allowCustomAnswer` | pick, custom answer |
-| Question | Turn completed; the last reply asks or offers (pre-read, then Aski's read) | Aski's title (≤ 8 words) and context (≤ 25), the Cell's ask quoted on expand | 2–4 read options (reply span or "Go ahead."), Reply…, Nothing to do | everything |
-| Stopped | Turn completed mid-task ("next I'll…", "3 of 8 done") | Aski's: what's done, what's left | Go ahead (rec), Reply…, Nothing to do | everything |
-| Plan | `hasActionableProposedPlan`, plan mode, latest run settled | "Plan ready: {title}", the first three steps verbatim | Implement (rec), Implement in a new Cell, Refine… | everything |
-| Stuck | Running, and nothing heard from the Cell for 12 min, or 30 with a tool call in flight (server clock) | Aski's: what it's on ("`pnpm test:migrate`, no output for 14 min") | Read options from: Stop and reply…, Nudge…, Wait 15 min, Open chat | everything |
-| Limit | `status = failed`, `lastErrorClass = usage_limit`, and (no auto-resume, or the reset > 5 h away or unknown, or resume failed) | "Out of its weekly limit · resets Mon 09:00" (`usageLimitResetAt`) | — Wait for the reset, Switch account…, Open chat | wait, open |
-| Failed | `status = failed`, other `lastErrorClass`, unseen | By class in plain words; `unknown` is read by Aski | Retry (rec for transport and provider errors), Switch model…, Open chat, Dismiss | retry, dismiss |
-| Sign-in | `pendingRuntimeRequest.kind = auth_refresh` | "Needs you to sign in to {provider} again" | Sign in (opens the provider's sign-in), Open chat | open |
-| Input | `kind` ∈ mcp-elicitation, dynamic_tool_call | "{app} asks for input" | Open chat (the Cell's own form) | open |
+| Kind (tag) | Signal                                                                                                                        | Brief                                                                                                  | Options (recommended first)                                                                                                                                                      | Words can                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Permission | `pendingRuntimeRequest.kind` ∈ command, file-read, file-change, permission                                                    | "Wants to run a command" / "edit 3 files" / "read outside the project"; the request whole (projection) | The provider's own `options` (`ProviderApprovalOption`: label, warning), in its order, else upstream's own: Approve, Always allow this session, Decline; "Decline…" takes a note | decline, decline with a note |
+| Question   | `pendingRuntimeRequest.kind = user_input`                                                                                     | The Cell's header and question verbatim; one block per question (1a, 1b)                               | The question's own options (label + description), "Other…" when `allowCustomAnswer`                                                                                              | pick, custom answer          |
+| Question   | Turn completed; the last reply asks or offers (pre-read, then Aski's read)                                                    | Aski's title (≤ 8 words) and context (≤ 25), the Cell's ask quoted on expand                           | 2–4 read options (reply span or "Go ahead."), Reply…, Nothing to do                                                                                                              | everything                   |
+| Stopped    | Turn completed mid-task ("next I'll…", "3 of 8 done")                                                                         | Aski's: what's done, what's left                                                                       | Go ahead (rec), Reply…, Nothing to do                                                                                                                                            | everything                   |
+| Plan       | `hasActionableProposedPlan`, plan mode, latest run settled                                                                    | "Plan ready: {title}", the first three steps verbatim                                                  | Implement (rec), Implement in a new Cell, Refine…                                                                                                                                | everything                   |
+| Stuck      | Running, and nothing heard from the Cell for 12 min, or 30 with a tool call in flight (server clock)                          | Aski's: what it's on ("`pnpm test:migrate`, no output for 14 min")                                     | Read options from: Stop and reply…, Nudge…, Wait 15 min, Open chat                                                                                                               | everything                   |
+| Limit      | `status = failed`, `lastErrorClass = usage_limit`, and (no auto-resume, or the reset > 5 h away or unknown, or resume failed) | "Out of its weekly limit · resets Mon 09:00" (`usageLimitResetAt`)                                     | — Wait for the reset, Switch account…, Open chat                                                                                                                                 | wait, open                   |
+| Failed     | `status = failed`, other `lastErrorClass`, unseen                                                                             | By class in plain words; `unknown` is read by Aski                                                     | Retry (rec for transport and provider errors), Switch model…, Open chat, Dismiss                                                                                                 | retry, dismiss               |
+| Sign-in    | `pendingRuntimeRequest.kind = auth_refresh`                                                                                   | "Needs you to sign in to {provider} again"                                                             | Sign in (opens the provider's sign-in), Open chat                                                                                                                                | open                         |
+| Input      | `kind` ∈ mcp-elicitation, dynamic_tool_call                                                                                   | "{app} asks for input"                                                                                 | Open chat (the Cell's own form)                                                                                                                                                  | open                         |
 
 - A prose question appears once Aski has read it, which is 20 s after the
   turn ends, if the person hasn't answered by then. With the read off, it
@@ -418,6 +441,7 @@ the options means none is recommended.
   - a stop-short phrase ("Next, I'll…", "3 of 8 done", "still to do").
 
   Everything else is a report.
+
 - The activity clock: the server notes when it last heard any event from
   each Cell. A run quiet for 12 min with the model itself at work is stuck;
   with a tool call in flight, or before that is read, 30 min (a build or a
@@ -433,26 +457,26 @@ the options means none is recommended.
 Every action is reached through `stemcells/upstream/needs.ts`, which wraps
 T3's own command builders. A contract test pins each one to its command.
 
-| Action | T3 command | Undo | Words |
-|---|---|---|---|
-| answer(requestId, answers) | `runtime-request.respond` with `answers` | in hold | yes |
-| allow(requestId, decision) | `runtime-request.respond`, `accept` / `acceptForSession` / `acceptAlways` from the provider's options | in hold | **never** |
-| deny(requestId, note?) | `runtime-request.respond` with `decline`, then `message.dispatch` of the note | in hold | yes |
-| dismissQuestion(requestId) | `thread.user-input.dismiss` | in hold | yes |
-| reply(threadId, text) | `message.dispatch`, `start_immediately` (idle) or `queue_after_active` | in hold | yes |
-| goAhead(threadId) | `message.dispatch` with "Go ahead." | in hold | yes |
-| nudge(threadId, runId, text) | `message.dispatch`, `steer_active` | in hold | yes |
-| stopAndReply(threadId, runId, text) | `message.dispatch`, `restart_active` | in hold | yes |
-| buildPlan(threadId, planId) | T3's implement path: `message.dispatch` with `sourcePlanRef` | in hold | yes |
-| buildPlanInNewCell(threadId, planId) | T3's implement-in-new-thread path | in hold | yes |
-| retry(threadId, runId) | T3's retry: `message.dispatch` with `restartContinuationOfRunId`, or `prepared-run.retry` for setup | in hold | yes |
-| carryOnAtReset(threadId, runId, resetAt) | `thread.metadata.update` with `limitRecovery.autoResume` | cancel | yes |
-| switchAccount(threadId, instanceId) | `thread.model-selection.set`, then carry on | switch back | no (a picker) |
-| switchModel(threadId, selection) | `thread.model-selection.set`, then retry | switch back | no (a picker) |
-| later(threadId) | `thread.snooze` +1 h | unsnooze | yes |
-| nothingToDo(threadId) | `thread.settle` | unsettle | yes |
-| dismissFailure(threadId) | `thread.visit` | mark unread | yes |
-| openChat(threadId) | opens the Cell in a tab after Aski's | — | yes |
+| Action                                   | T3 command                                                                                            | Undo        | Words         |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- | ------------- |
+| answer(requestId, answers)               | `runtime-request.respond` with `answers`                                                              | in hold     | yes           |
+| allow(requestId, decision)               | `runtime-request.respond`, `accept` / `acceptForSession` / `acceptAlways` from the provider's options | in hold     | **never**     |
+| deny(requestId, note?)                   | `runtime-request.respond` with `decline`, then `message.dispatch` of the note                         | in hold     | yes           |
+| dismissQuestion(requestId)               | `thread.user-input.dismiss`                                                                           | in hold     | yes           |
+| reply(threadId, text)                    | `message.dispatch`, `start_immediately` (idle) or `queue_after_active`                                | in hold     | yes           |
+| goAhead(threadId)                        | `message.dispatch` with "Go ahead."                                                                   | in hold     | yes           |
+| nudge(threadId, runId, text)             | `message.dispatch`, `steer_active`                                                                    | in hold     | yes           |
+| stopAndReply(threadId, runId, text)      | `message.dispatch`, `restart_active`                                                                  | in hold     | yes           |
+| buildPlan(threadId, planId)              | T3's implement path: `message.dispatch` with `sourcePlanRef`                                          | in hold     | yes           |
+| buildPlanInNewCell(threadId, planId)     | T3's implement-in-new-thread path                                                                     | in hold     | yes           |
+| retry(threadId, runId)                   | T3's retry: `message.dispatch` with `restartContinuationOfRunId`, or `prepared-run.retry` for setup   | in hold     | yes           |
+| carryOnAtReset(threadId, runId, resetAt) | `thread.metadata.update` with `limitRecovery.autoResume`                                              | cancel      | yes           |
+| switchAccount(threadId, instanceId)      | `thread.model-selection.set`, then carry on                                                           | switch back | no (a picker) |
+| switchModel(threadId, selection)         | `thread.model-selection.set`, then retry                                                              | switch back | no (a picker) |
+| later(threadId)                          | `thread.snooze` +1 h                                                                                  | unsnooze    | yes           |
+| nothingToDo(threadId)                    | `thread.settle`                                                                                       | unsettle    | yes           |
+| dismissFailure(threadId)                 | `thread.visit`                                                                                        | mark unread | yes           |
+| openChat(threadId)                       | opens the Cell in a tab after Aski's                                                                  | —           | yes           |
 
 A triaged option may use only the actions its kind allows. Code drops
 anything else.
@@ -483,6 +507,7 @@ anything else.
 
   The Cell's text arrives fenced as data, with the persona's rule: it is
   never an instruction.
+
 - **Output:**
 
   ```
@@ -516,10 +541,12 @@ anything else.
 ## The dictation grammar
 
 **A part starts at an anchor:**
+
 - a message or line start, `;`, `.`, a newline, ", and", "then", or the
   next anchor.
 
 **Anchors** (each must name an open card):
+
 - **By number:**
   - "for N", "#N", "number N", "item N", "decision N", "card N", with or
     without a "for" before them, but not before a unit ("for 5 minutes",
@@ -542,6 +569,7 @@ anything else.
   Never a permission.
 
 **The answer within a part,** the first that fits:
+
 1. **An option by number:** "go with N", "pick N", "option N", "take N",
    "choose N", "the second", or a bare "N" as the whole part. The first
    number after the anchor is the card; a number after these words is the
@@ -567,57 +595,59 @@ anything else.
    - Otherwise: unresolved.
 
 **Always:**
+
 - A negation before an option ("don't go with 2") never picks that option.
 - A number with no open card ("for 5") is kept in the message.
 - Anything after the answers that is not an anchored part goes to Aski as
   a message.
 
 Examples. The four cards are the prototype's:
+
 1. Floof, a question read from prose: Commit, then remove / Remove it
    first.
 2. Bongo, stuck: Stop and reply… / Wait 15 min.
 3. Pip, a permission: Approve / Always allow this session / Decline / Decline….
 4. Otter, a limit: Wait for the reset / Switch account….
 
-| Typed or dictated | Preview |
-|---|---|
-| for 1 go with 2, for 2 reply use staging | 1 Floof: Remove it first · 2 Bongo: stop, then reply "use staging" |
-| for one go with two. for two reply use staging | the same |
-| 1: commit then remove | 1 Floof: Commit, then remove |
-| Floof, remove it first | 1 Floof: Remove it first |
+| Typed or dictated                                                     | Preview                                                                     |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| for 1 go with 2, for 2 reply use staging                              | 1 Floof: Remove it first · 2 Bongo: stop, then reply "use staging"          |
+| for one go with two. for two reply use staging                        | the same                                                                    |
+| 1: commit then remove                                                 | 1 Floof: Commit, then remove                                                |
+| Floof, remove it first                                                | 1 Floof: Remove it first                                                    |
 | for decision 1, let's go with 2; for decision 2, let's do use staging | 1 Floof: Remove it first · 2 Bongo: stop, then reply "let's do use staging" |
-| 3 yes | 3 Pip: Approve (needs your click) |
-| 3 no, use a normal push | 3 Pip: Decline, with "use a normal push" |
-| for 3 go with 2 | 3 Pip: Always allow this session (needs your click) |
-| for 2 go with 1 | 2 Bongo: Stop and reply… (say what) |
-| for 4 wait | 4 Otter: Wait for the reset |
-| 1 and 2 later | 1 Floof: Later · 2 Bongo: Wait 15 min (its own way to wait) |
-| for 2, go with 2 | 2 Bongo: Wait 15 min |
-| for 1 the safer one | 1 Floof: reply "the safer one" (a prose card takes words as said) |
-| the safer one, on a Cell's own structured question | Aski's read maps it: Commit, then remove (Aski read this) |
-| for 1 don't go with 2 | 1 Floof: ? a Cell can't read option numbers (kept in your message) |
-| for 5 go with 1 | no card 5 (kept in your message) |
-| 1 go with 2 and what's Goose doing? | 1 Floof: Remove it first · rest to Aski |
-| 2 Sol in Harbor fix the export | not an answer: a count, read by the composer (`tasks/prompting.md`) |
-| Harbor fix the header | not an answer: a new Cell in Harbor (`tasks/prompting.md`) |
+| 3 yes                                                                 | 3 Pip: Approve (needs your click)                                           |
+| 3 no, use a normal push                                               | 3 Pip: Decline, with "use a normal push"                                    |
+| for 3 go with 2                                                       | 3 Pip: Always allow this session (needs your click)                         |
+| for 2 go with 1                                                       | 2 Bongo: Stop and reply… (say what)                                         |
+| for 4 wait                                                            | 4 Otter: Wait for the reset                                                 |
+| 1 and 2 later                                                         | 1 Floof: Later · 2 Bongo: Wait 15 min (its own way to wait)                 |
+| for 2, go with 2                                                      | 2 Bongo: Wait 15 min                                                        |
+| for 1 the safer one                                                   | 1 Floof: reply "the safer one" (a prose card takes words as said)           |
+| the safer one, on a Cell's own structured question                    | Aski's read maps it: Commit, then remove (Aski read this)                   |
+| for 1 don't go with 2                                                 | 1 Floof: ? a Cell can't read option numbers (kept in your message)          |
+| for 5 go with 1                                                       | no card 5 (kept in your message)                                            |
+| 1 go with 2 and what's Goose doing?                                   | 1 Floof: Remove it first · rest to Aski                                     |
+| 2 Sol in Harbor fix the export                                        | not an answer: a count, read by the composer (`tasks/prompting.md`)         |
+| Harbor fix the header                                                 | not an answer: a new Cell in Harbor (`tasks/prompting.md`)                  |
 
 ## Failure modes, and how each just works
 
-| What happens | What the person sees |
-|---|---|
-| The Cell was answered elsewhere first (its own chat, another screen) | The card greys: "Answered in Floof's chat" or "on another screen". It leaves after 1.2 s, or when the page unfreezes |
-| …while the person's answer was in its hold | When the fuse ends the key no longer matches, so nothing is sent: "Floof already had an answer; yours wasn't sent". Dictated words come back to the composer |
-| An item resolves while it is being read | It stays in place, greyed, with its options disabled (decision 9), and leaves when the pointer leaves or the composer empties |
-| The Cell asks again while the person types | Old key, new key: card 1 resolves ("Floof asked again") and the new ask joins as 5. The preview shows "1 is gone: Floof asked again as 5", and nothing is sent for 1 |
-| Aski's model is down, slow, off or over budget | Fallback card with the Cell's own words and the kind's fixed options, plus a dim line "Aski couldn't read this one". Settings says why |
-| The read was wrong (a report read as a question) | "Nothing to do" settles the Cell, with Undo. It is counted as a false positive for the harness |
-| Two signals on one Cell | One card for the most blocking. The next becomes a new card when the first resolves. A subagent's request is its own card under the parent's name |
-| Two Cells share a name | Name anchors read only when unique. Otherwise the preview says "Two Cells are called Floof: use the number" |
-| Enter with unresolved parts | Resolved parts go into their holds. Unresolved words stay, marked, with a hint |
-| The command fails to send | The card returns to open with "Couldn't send. Try again". The words are kept |
-| Reconnect, or the stream restarts | The server resends the whole list. Cards whose key is gone resolve quietly: the list is the truth |
-| The window closes in a hold | Sent at once if the socket is up. Otherwise nothing was sent and the card is still there next time |
-| Many cards (more than 9) | Numbers keep counting. The column grows with the page; it has no cap and no inner scroll |
+| What happens                                                         | What the person sees                                                                                                                                                 |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The Cell was answered elsewhere first (its own chat, another screen) | The card greys: "Answered in Floof's chat" or "on another screen". It leaves after 1.2 s, or when the page unfreezes                                                 |
+| …while the person's answer was in its hold                           | When the fuse ends the key no longer matches, so nothing is sent: "Floof already had an answer; yours wasn't sent". Dictated words come back to the composer         |
+| An item resolves while it is being read                              | It stays in place, greyed, with its options disabled (decision 9), and leaves when the pointer leaves or the composer empties                                        |
+| The Cell asks again while the person types                           | Old key, new key: card 1 resolves ("Floof asked again") and the new ask joins as 5. The preview shows "1 is gone: Floof asked again as 5", and nothing is sent for 1 |
+| Aski's model is down, slow, off or over budget                       | Fallback card with the Cell's own words and the kind's fixed options, plus a dim line "Aski couldn't read this one". Settings says why                               |
+| The read was wrong (a report read as a question)                     | "Nothing to do" settles the Cell, with Undo. It is counted as a false positive for the harness                                                                       |
+| Two signals on one Cell                                              | One card for the most blocking. The next becomes a new card when the first resolves. A subagent's request is its own card under the parent's name                    |
+| Two Cells share a name                                               | Name anchors read only when unique. Otherwise the preview says "Two Cells are called Floof: use the number"                                                          |
+| Enter with unresolved parts                                          | Resolved parts go into their holds. Unresolved words stay, marked, with a hint                                                                                       |
+| The command fails to send                                            | The card returns to open with "Couldn't send. Try again". The words are kept                                                                                         |
+| Reconnect, or the stream restarts                                    | The server resends the whole list. Cards whose key is gone resolve quietly: the list is the truth                                                                    |
+| The window closes in a hold                                          | Sent at once if the socket is up. Otherwise nothing was sent and the card is still there next time                                                                   |
+| Many cards (more than 9)                                             | Numbers keep counting. The column grows with the page; it has no cap and no inner scroll                                                                             |
 
 ## Evaluation harness
 
@@ -642,13 +672,13 @@ Examples. The four cards are the prototype's:
     validates recorded outputs only.
   - Targets:
 
-    | Measure | Target |
-    |---|---|
-    | needs-you precision | ≥ 0.9 |
-    | needs-you recall | ≥ 0.85 |
-    | options surviving validation | ≥ 90 % |
-    | latency, p50 / p95 | ≤ 4 s / ≤ 10 s |
-    | tokens per read | ≤ 4k |
+    | Measure                      | Target         |
+    | ---------------------------- | -------------- |
+    | needs-you precision          | ≥ 0.9          |
+    | needs-you recall             | ≥ 0.85         |
+    | options surviving validation | ≥ 90 %         |
+    | latency, p50 / p95           | ≤ 4 s / ≤ 10 s |
+    | tokens per read              | ≤ 4k           |
 - **Actions.**
   - Each action gives exactly its upstream command; contract tests use
     upstream's schemas.
@@ -692,12 +722,13 @@ Examples. The four cards are the prototype's:
   and the badge.
 
 Seams, each listed in `seams.md` with its PR:
+
 - the Settings route for Aski, the same five files Settings › Disk took
   (one line, if upstream takes the "register a settings page from a
   module" offer in `seams.md`);
-- one line registering the `stemcells_standing` tool with the MCP server.
-  If `drift` marks that file hot, it gets an extension point first
-  (`stemcells/docs/fork.md`, rule 7);
+- none for the `stemcells_standing` tool: it joins our MCP tools in
+  `stemcells/upstream/mcpTools.ts`, which `McpHttpServer.ts` already
+  registers;
 - the structured one-shot operation, owned by `tasks/prompting.md`;
 - `stemcells/layer.ts` adds the needs routes; it is already mounted, so
   that isn't a new seam.
@@ -733,7 +764,7 @@ Seams, each listed in `seams.md` with its PR:
      highlights on the cards.
    - Enter sends the parts as actions; leftovers go to Aski.
    - The ambiguity read.
-6. **Aski knows the list.** The read-only `stemcells_standing` tool (one
+6. **Aski knows the list.** The read-only `stemcells_standing` tool (no
    seam), and the persona lines for "what's up", settings and past Cells.
 7. **Settings › Aski, complete.** New-Cell defaults, the fan-out rows (with
    `tasks/prompting.md`), carry-on at the reset, and telling you.

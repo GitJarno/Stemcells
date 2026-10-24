@@ -90,7 +90,7 @@ on anything irreversible.
       through the question tool, `Left: you` only for the person's own
       step, Done names its evidence, the labels and owner words in English
       whatever language the reply is in.
-- [ ] 3. **Aski reads the room in one call.** `stemcells_standing`, read
+- [x] 3. **Aski reads the room in one call.** `stemcells_standing`, read
       only: the numbered cards, the Cells at work and the done ones with
       their lines; the persona answers "what needs me?" from it.
 - [ ] 4. **The numbers, derived.** The measures above from T3's records,
@@ -108,3 +108,7 @@ on anything irreversible.
   reads that example as the Cell means it, so the instruction and the
   reader can't drift apart again. With no question tool, a Cell asks in
   its last paragraph and ends with `Left: you`.
+- Slice 3: `stemcells_standing` reads the list Aski's room streams (one
+  Needs per server: Effect builds a layer once however many layers provide
+  it), so "for 3" in Aski's words is card 3. It joins our MCP tools with no
+  new seam, and the persona contract test now resolves our tools too.

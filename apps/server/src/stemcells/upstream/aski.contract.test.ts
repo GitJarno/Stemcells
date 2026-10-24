@@ -18,6 +18,7 @@ import { ProjectToolkit } from "../../mcp/toolkits/project/tools.ts";
 import { ThreadToolkit } from "../../mcp/toolkits/thread/tools.ts";
 import * as ClaudeAdapterV2 from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
 import { codexAppServerArgs } from "../../provider/codexLaunchArgs.ts";
+import { StandingToolkit } from "./standingTool.ts";
 
 const DEFAULT_CLAUDE_SETTINGS = Schema.decodeSync(ClaudeSettings)({});
 
@@ -32,6 +33,7 @@ const offered: Record<string, Tool.Any> = {
   ...OrchestratorToolkit.tools,
   ...ProjectToolkit.tools,
   ...ThreadToolkit.tools,
+  ...StandingToolkit.tools,
 };
 
 type JsonSchema = {
@@ -91,7 +93,9 @@ function namedCalls(text: string) {
 describe("the tools Aski's persona names", () => {
   it("are tools of the orchestration toolkits", () => {
     const named = [
-      ...new Set(persona.match(/\b(?:t3_[a-z_]+|delegate_task|orchestrator_[a-z_]+)\b/g)),
+      ...new Set(
+        persona.match(/\b(?:t3_[a-z_]+|delegate_task|orchestrator_[a-z_]+|stemcells_[a-z_]+)\b/g),
+      ),
     ];
     expect(named.length).toBeGreaterThan(0);
     expect(named.filter((tool) => !(tool in offered))).toEqual([]);

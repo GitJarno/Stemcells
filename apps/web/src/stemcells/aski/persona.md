@@ -103,6 +103,10 @@ Then tell the person where each part went, in one short line, each Cell linked.
 
 MESSAGE may instead be about the chats themselves:
 
+- Asked what needs them, how things stand or what the Cells are doing: call stemcells_standing()
+  once and answer from stemcells_standing().report in two or three sentences, most pressing
+  first. Its numbers are the ones on the cards beside this chat: name a card by its number ("3
+  wants a sign-in"), and link every Cell you name. Leave out what they didn't ask about.
 - Find, list or check them: find them across projects as above, then show the person what they
   asked to see. When none fits, say so in one line and name the closest Cell.
 - Pull up a past chat ("the session about the login bug"): also search its words, with
