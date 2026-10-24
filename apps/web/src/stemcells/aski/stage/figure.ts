@@ -1,7 +1,10 @@
 // Aski at rest as pixels: drawn by Aski's own reference renderer
 // (`../render.ts`), clear around it, its ink in the skin's colour, and its
-// eyes on layers of their own in the colour of the ground it stands on, so
-// a Cell passing behind Aski never shows through them. Each eye comes open
+// eyes on layers of their own. Aski is made of characters: where a cell of
+// its body is large enough to read, it wears its live ASCII skin and its
+// eyes are the two solid blocks in it, in ink; smaller, it is solid ink and
+// its eyes are cut in the colour of the ground it stands on. Either way a
+// Cell passing behind Aski never shows through them. Each eye comes open
 // and shut, drawn by the renderer so a shut eye is a crisp line at any
 // size; the page lays them over the body, moves them as Aski looks and
 // turns from one to the other as it blinks, without drawing again. A mood
@@ -11,6 +14,7 @@
 import { BLINK } from "../acts.ts";
 import { Aski, type Frame, GAZE } from "../aski.ts";
 import { BODY_HEIGHT, EYES } from "../canon.ts";
+import { CELL } from "../particles.ts";
 import { type Mood, typed } from "../mood.ts";
 import { render } from "../render.ts";
 import { BODY_MID, BODY_WIDTH } from "../scene.ts";
@@ -53,6 +57,8 @@ export interface FigureDrawn extends FigureAsk {
 const SEED = 1;
 /** How tall an eye must be, in device pixels, to read a character typed into it; a smaller one keeps its block. */
 const TYPED_FROM = 8;
+/** How wide a cell of the body must be, in device pixels, for its character to read: the font's 5 dots and their margin. */
+const READS_FROM = 6;
 
 /** How much of each pixel the eyes cut out of the body, given the alpha of the body whole and of the body they cut. */
 function holes(body: Uint8ClampedArray, cut: Uint8ClampedArray): Float32Array {
@@ -62,18 +68,18 @@ function holes(body: Uint8ClampedArray, cut: Uint8ClampedArray): Float32Array {
   return out;
 }
 
-/** The eyes in the ground's colour, cut to their box. */
+/** The eyes in `colour`, cut to their box. */
 function eyesIn(
   cut: Float32Array,
   width: number,
   box: FigureBox,
-  ground: FigureAsk["ground"],
+  colour: FigureAsk["ground"],
 ): ArrayBuffer {
   const pixels = new Uint8ClampedArray(box.width * box.height * 4);
   for (let y = 0; y < box.height; y++) {
     for (let x = 0; x < box.width; x++) {
       const o = (y * box.width + x) * 4;
-      pixels.set(ground, o);
+      pixels.set(colour, o);
       pixels[o + 3] = Math.round(cut[(box.y + y) * width + box.x + x]! * 255);
     }
   }
@@ -101,9 +107,16 @@ export function drawFigure(ask: FigureAsk): FigureDrawn {
     ground: height,
     background: "clear",
   } as const;
-  const body = render(frame, { ...camera, eyes: false });
-  const open = holes(body, render(frame, camera));
-  const closed = holes(body, render(shut, camera));
+  const solid = render(frame, { ...camera, eyes: false });
+  const open = holes(solid, render(frame, camera));
+  const closed = holes(solid, render(shut, camera));
+  // The skin leaves the eyes' cells and a ring round them empty, so solid eyes in ink read inside it. The
+  // ring is the blocks', whatever mood is typed into them.
+  const reads = CELL * scale >= READS_FROM;
+  const body = reads
+    ? render({ ...resting, controls: { ...resting.controls, live: 1 } }, { ...camera, eyes: false })
+    : solid;
+  const eyeInk = reads ? ink : ground;
   // The ink over the body's whole silhouette in the ground's colour, as the eyes' layers are under their edge.
   const pixels = new Uint8ClampedArray(body.length);
   for (let i = 0; i < body.length; i += 4) {
@@ -159,8 +172,8 @@ export function drawFigure(ask: FigureAsk): FigureDrawn {
       ...box,
       each: boxes.map((b) => ({
         ...b,
-        open: eyesIn(open, width, b, ground),
-        shut: eyesIn(closed, width, b, ground),
+        open: eyesIn(open, width, b, eyeInk),
+        shut: eyesIn(closed, width, b, eyeInk),
       })),
     },
     middle: { x: toX((left.x + right.x) / 2), y: toY((left.y + right.y) / 2) },

@@ -24,12 +24,15 @@ made this page; it is kept outside the repo. The slices are at the end.
 
 ### 2. Aski is characters, always
 
-- Aski's own form is its canon body (five lobes, `canon.ts`) sampled into
-  glyphs on the character grid, shaded by depth from the edge:
-  `. : + * # @`. It is no longer drawn as a solid field.
-- The eyes are the one solid thing: the two block cursors, cut in the
-  ground's colour. They snap to whole character columns as they look.
-  They are what makes any arrangement of characters read as Aski.
+- Aski's own form is its canon body (five lobes, `canon.ts`) in its live
+  ASCII skin (`render.ts`): the ramp `. : - = +` at its edges, its own body
+  characters inside, in Aski's 5×7 font. It is no longer drawn as a solid
+  field.
+- The eyes are the one solid thing: the two block cursors, the █ of SC█,
+  in ink, in a clear ring the characters leave round them. They are what
+  makes any arrangement of characters read as Aski. A figure too small for
+  its characters to read stays solid ink, its eyes cut in the ground's
+  colour.
 - Settled forms step on the sprite clock (12 a second), so an edge
   changes glyph in beats, the way type does. Only characters in flight
   move at the display's rate.
