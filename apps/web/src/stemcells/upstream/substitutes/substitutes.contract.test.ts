@@ -28,6 +28,7 @@ import * as UpstreamThreadContextChip from "../../../components/ThreadContextChi
 import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/ThreadPreviewMiniPlayer";
+import * as UpstreamUsageLimitsPooled from "../../../components/usage/UsageLimitsPooled";
 import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
@@ -91,6 +92,7 @@ import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 import * as OurUsageProviders from "./usageProviders";
+import * as OurUsageLimitsPooled from "./UsageLimitsPooled";
 import * as OurVisibleAnimation from "./visibleAnimation";
 import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
@@ -651,6 +653,17 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/usage/UsageLimits.tsx": [
         "./usageProviders",
         ["PROVIDER_PRESENTATION"],
+      ],
+    },
+  },
+  "apps/web/src/components/usage/UsageLimitsPooled.tsx": {
+    upstream: UpstreamUsageLimitsPooled,
+    substitute: OurUsageLimitsPooled satisfies typeof UpstreamUsageLimitsPooled,
+    importers: {
+      // The Usage page's limits section.
+      "apps/web/src/components/usage/UsageLimits.tsx": [
+        "./UsageLimitsPooled",
+        ["UsageLimitsPooled"],
       ],
     },
   },

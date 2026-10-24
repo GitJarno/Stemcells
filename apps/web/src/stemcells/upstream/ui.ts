@@ -12,6 +12,11 @@ export { Tooltip, TooltipPopup, TooltipTrigger } from "../../components/ui/toolt
 export { MiddleTruncate } from "../../components/ui/middle-truncate";
 export { Popover, PopoverPopup, PopoverTrigger } from "../../components/ui/popover";
 export {
+  PreviewCard,
+  PreviewCardPopup,
+  PreviewCardTrigger,
+} from "../../components/ui/preview-card";
+export {
   Menu,
   MenuCheckboxItem,
   MenuPopup,

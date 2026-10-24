@@ -1,7 +1,7 @@
 /**
- * The plan limit the rail's ring shows: of every provider's limit windows,
- * the one that binds first. The worse tone wins, then the smaller share
- * left.
+ * The plan limit the readout's words name: of a provider's limit windows,
+ * pooled as upstream's Usage page pools them, the one that binds first. The
+ * worse tone wins, then the smaller share left.
  */
 import type { LimitPool } from "../upstream/rail";
 

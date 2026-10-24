@@ -573,6 +573,22 @@ To offer upstream: a compact sidebar state of upstream's own (open, compact,
 closed), or a slot for the sidebar's content. Then the rail is a component
 in that slot, and both seams go.
 
+### Plan limits
+
+A plan is an account as upstream's Usage page merges them
+(`collectLimitAccounts`); `stemcells/upstream/limits.ts` reads those, the
+instance each chat runs on and which chats work, and
+`limits.contract.test.ts` pins them. The rail's rings and their hover card
+are ours. The Usage page's limit cards are a substitute
+(`UsageLimitsPooled.tsx`): the same rows as the hover, a plan each, where
+upstream pools a provider's accounts into one bar per window. Upstream's
+section still filters the environments and providers, and its notices,
+links, Cursor prompt and reset credits are upstream's own. Not on the
+phone yet: it keeps upstream's pooled screens.
+
+To offer upstream: a per-account view of the pool, and a pace that says
+when a window runs out. Then the substitute goes.
+
 ### Auto-compact window
 
 Claude Cells compact at a window set in Settings › Providers, in each

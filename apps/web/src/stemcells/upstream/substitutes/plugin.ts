@@ -88,6 +88,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "packages/shared/src/themePalettes.ts": "themePalettes.ts",
   // Each provider's colour on the usage page is its own.
   "apps/web/src/components/usage/usageProviders.ts": "usageProviders.ts",
+  // The usage page lists every plan a row each, as the rail's hover does.
+  "apps/web/src/components/usage/UsageLimitsPooled.tsx": "UsageLimitsPooled.tsx",
   // ChatView safe to render twice: a chat's window shortcuts, its open-in
   // shortcut, paste-to-focus and the stash shortcut act only in the chat
   // that owns the window's input.

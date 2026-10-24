@@ -130,7 +130,7 @@ export function openSearch(): void {
   openCommandPalette();
 }
 
-/** Upstream's usage limits, pooled per provider as its Usage page shows them. */
+/** Upstream's usage limits, pooled per provider as upstream's Usage page pools them. */
 export function useLimitPools(now: number): ReadonlyArray<LimitPool> {
   const presentations = useAtomValue(environmentPresentations.presentationsWithProvidersAtom);
   return collectLimitPools(collectLimitAccounts(presentations), now);
