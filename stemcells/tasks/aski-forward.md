@@ -128,19 +128,19 @@ on anything irreversible.
       of its own after Aski's, never over the talk (#282).
 - [x] B. **"ok" takes every recommendation.** "ok the rest" after some
       answers, or "ok to all" alone, takes each other card's recommended
-      option; one only a click allows just lights.
+      option; one only a click allows just lights (#283, #289).
 - [x] C. **Tab completes an option.** After a card's number its
       recommendation shows as a ghost, and the first letters of another
-      option narrow it; Tab writes it.
+      option narrow it; Tab writes it (#284).
 - [x] D. **A walk through the cards.** ↓ from Aski's empty composer
       lands on the first card's recommendation, Enter takes it and steps
       on, ↑ and ↓ move card to card, Esc goes back; the focus holds the
-      list still.
+      list still (#285).
 - [x] E. **Settings in Aski's reply.** Asked about a setting, Aski links it
       and the reply draws its switch, writing where Settings writes: Aski
       divides the work, suggestions, auto-settle on merge, keeping Cells
       with a pull request, carrying on or snoozing at a usage limit. Others
-      it names in Settings.
+      it names in Settings (#286).
 - [ ] F. **The phone's push opens on its card.** Waits on the person: no
       push leaves this Mac without a service that isn't ours.
 
@@ -149,11 +149,33 @@ on anything irreversible.
 - [x] 1. **Done is settled first.** Every Cell is told to know what done
       is before it starts (what it delivers, what shows it works), the
       smallest result that fully answers when the ask doesn't say, and to
-      carry it there before it stops.
+      carry it there before it stops (#287).
 - [x] 2. **Aski says what Cells give the person.** Asked how it's going,
       Aski answers from `stemcells_arcs`: the measures above, this week
-      against the last, in three lines.
+      against the last, in three lines (#288).
 - [ ] 3. **How far Cells go alone, per project.** Waits on the person.
 - [ ] 4. **Autonomy earned.** Waits on the person.
 - [ ] 5. **Aski's prose read, only if still needed.** Waits on a week of
       stops under the close-out (from 2026-10-24).
+
+## Review of moves 2 and 3
+
+- On the common path an ask now takes one or two keys: "ok to all" or "ok
+  the rest", a card's number and Tab, or ↓ and Enter down the cards. A
+  setting is changed where Aski names it, and a past chat opens beside the
+  talk. The gate (median answer under a minute) can only be read after a
+  week of use; the baseline is 4.4 min, the week of 2026-10-19.
+- An independent review of B to E found words meant elsewhere taking every
+  card's recommendation ("Floof, go with your recommendation") and a
+  title's start choosing an option the words then contradicted ("5 commit,
+  then push"). #289 narrowed both: "the rest" holds only as the whole
+  message or after answers that each answered, and always names which
+  cards; a title's start holds only where the words stop. No reading ever
+  sent an option that allows: those only light.
+- The arcs on this Mac's store, through `stemcells_arcs` (42 ms): 109
+  Cells this week, 3 of the person's turns a Cell, 1.8 min of work between
+  turns, 21 asks on a card against 77 as the person's step and 45 in
+  prose, answered in 4.5 min. Slice 1's effect shows there from next week.
+- Left for the person: F (a phone push needs a service beyond this Mac),
+  3 and 4 (how far Cells go alone, and autonomy earned, both let Cells act
+  without asking). 5 waits on a week of stops under the close-out.
