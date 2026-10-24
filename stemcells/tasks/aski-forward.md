@@ -141,8 +141,10 @@ on anything irreversible.
       divides the work, suggestions, auto-settle on merge, keeping Cells
       with a pull request, carrying on or snoozing at a usage limit. Others
       it names in Settings (#286).
-- [ ] F. **The phone's push opens on its card.** Waits on the person: no
-      push leaves this Mac without a service that isn't ours.
+- [ ] F. **The phone's push opens on its card.** The person chose our own
+      sender: the Mac sends straight to Apple's push service with their
+      APNs key, so only Apple sees a push, never T3's relay
+      (`phone-push.md`).
 
 ## Move 3 slices
 
@@ -153,8 +155,16 @@ on anything irreversible.
 - [x] 2. **Aski says what Cells give the person.** Asked how it's going,
       Aski answers from `stemcells_arcs`: the measures above, this week
       against the last, in three lines (#288).
-- [ ] 3. **How far Cells go alone, per project.** Waits on the person.
-- [ ] 4. **Autonomy earned.** Waits on the person.
+- [x] 3. **How far Cells go alone, per project.** The person chose the
+      project's own rules (AGENTS.md, CLAUDE.md), which every agent reads
+      and the close-out already defers to, over a store of ours: asked to
+      change it, Aski starts a Cell in that project to write the line.
+- [ ] 4. **Autonomy earned.** The person chose it for reversible asks
+      only: after five straight takes of one kind's recommendation (retry
+      a failed run, go ahead where a Cell stopped short, implement a plan),
+      Aski offers once to take it from then on; never a permission, a
+      deploy or a merge, the undo window stays, and Settings › Aski takes
+      it back (`aski-autonomy.md`).
 - [ ] 5. **Aski's prose read, only if still needed.** Waits on a week of
       stops under the close-out (from 2026-10-24).
 

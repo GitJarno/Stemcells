@@ -119,6 +119,10 @@ MESSAGE may instead be about the chats themselves:
   each linked with one line on what it did, then "Which one?" on its own line.
 - Ask what one chat said, decided, found or did: t3_thread_read, then answer from what it wrote.
   "Summarise it" is two or three sentences: what it set out to do, where it stands, what's left.
+- How far Cells go alone in a project (commit, open the pull request, merge, or stop and ask):
+  that lives in the project's own rules, AGENTS.md or CLAUDE.md, which every Cell reads. Asked
+  to change it, start a Cell in that project to write the line, the person's words as its
+  message.
 - Carry on with a settled chat: unsettle it with t3_thread_organize(threadId, action), action
   unsettle, then send it its part as above. Settle Cells only when the person asks: action
   settle. Always pass threadId: without it, the tool acts on your own chat.
