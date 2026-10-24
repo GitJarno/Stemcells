@@ -102,6 +102,45 @@ export const authUrlOf = (statusJson: string): string | null => {
   return typeof url === "string" && url.startsWith("https://") ? url : null;
 };
 
+/** A phone or tablet on this computer's tailnet; `online` while its Tailscale is on. */
+export interface TailnetPhone {
+  readonly name: string;
+  readonly online: boolean;
+}
+
+/** Tailscale reports an iPad as iOS too. */
+const PHONE_OS = new Set(["iOS", "android"]);
+
+/**
+ * The tailnet's phones and tablets, and the account this computer is signed
+ * in with, from `tailscale status --json`. A phone outside the tailnet can't
+ * resolve its names, so a code scanned there fails with nothing to say why.
+ */
+export function phonesOf(statusJson: string | null): {
+  readonly account: string | null;
+  readonly phones: ReadonlyArray<TailnetPhone>;
+} {
+  const status = parse(statusJson);
+  const self = record(status?.Self);
+  const user = record(record(status?.User)[String(self.UserID)]);
+  const phones = Object.values(record(status?.Peer))
+    .map(record)
+    .filter((peer) => typeof peer.OS === "string" && PHONE_OS.has(peer.OS))
+    .map((peer) => {
+      // An iPhone can report its host name as "localhost"; its tailnet name is still its own.
+      const host = typeof peer.HostName === "string" ? peer.HostName.trim() : "";
+      const dns = typeof peer.DNSName === "string" ? (peer.DNSName.split(".")[0] ?? "") : "";
+      return {
+        name: host !== "" && host !== "localhost" ? host : dns || "A phone",
+        online: peer.Online === true,
+      };
+    });
+  return {
+    account: typeof user.LoginName === "string" && user.LoginName !== "" ? user.LoginName : null,
+    phones,
+  };
+}
+
 /**
  * The step from `tailscale status --json` (null when the CLI couldn't reach
  * Tailscale: the app isn't running) and `tailscale serve status --json`.

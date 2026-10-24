@@ -24,7 +24,7 @@ import {
 } from "../upstream/devices";
 import { Button, Spinner, toastManager, useRelativeTimeTick } from "../upstream/disk";
 import { deviceName, pairedBy } from "./devices";
-import { advanceTailnet, type TailnetStep, useTailnet } from "./tailnet";
+import { advanceTailnet, type TailnetLook, type TailnetStep, useTailnet } from "./tailnet";
 import { wifiRoute } from "./wifiRoute";
 
 // Settings › Devices › Add › Phone or tablet (stemcells/tasks/devices.md):
@@ -125,6 +125,39 @@ const STEP_COPY: Record<
     failed: "",
   },
 };
+
+/**
+ * Whether a phone is on the tailnet yet. A code scanned on a phone outside it
+ * fails with only a transport error, since the tailnet's name doesn't resolve
+ * there, so the step that's the person's, on the phone, is said here and
+ * ticks once the phone shows up.
+ */
+function PhoneOnTailnet({ look }: { readonly look: TailnetLook }) {
+  const online = look.phones.filter((phone) => phone.online);
+  const offline = look.phones.find((phone) => !phone.online);
+  const account = look.account === null ? "" : ` as ${look.account}`;
+  return (
+    <div className="flex flex-col gap-1 text-sm">
+      <p className="flex items-center gap-2">
+        {online.length > 0 ? (
+          <CheckIcon aria-hidden className="size-4 text-success" />
+        ) : (
+          <CircleIcon aria-hidden className="size-4 text-foreground" />
+        )}
+        {online.length > 0
+          ? `${online.map((phone) => phone.name).join(", ")} on your tailnet`
+          : "Your phone on your tailnet"}
+      </p>
+      {online.length > 0 ? null : (
+        <p className="text-xs text-muted-foreground">
+          {offline !== undefined
+            ? `${offline.name} has Tailscale off. Turn it on there, then scan this code.`
+            : `On your phone, get Tailscale from the App Store or Google Play, sign in${account} and turn it on. Then scan this code. This updates by itself.`}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function AddPhone({ onDone }: { readonly onDone: () => void }) {
   const here = useThisMachine();
@@ -313,12 +346,12 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
               </p>
             ) : null}
           </div>
-          {here.canSwitch ? (
+          {overWifi ? (
             <p className="text-xs text-muted-foreground">
-              {overWifi
-                ? "This works on this Wi-Fi only. Over Tailscale it reaches this computer from anywhere."
-                : "Your phone needs Tailscale too, signed in to the same account."}
+              This works on this Wi-Fi only. Over Tailscale it reaches this computer from anywhere.
             </p>
+          ) : here.canSwitch && tailnet.look !== null ? (
+            <PhoneOnTailnet look={tailnet.look} />
           ) : null}
         </DialogPanel>
         <DialogFooter variant="bare">

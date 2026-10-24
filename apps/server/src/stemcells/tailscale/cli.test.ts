@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { authUrlOf, consentUrlOf, stepOf } from "./cli.ts";
+import { authUrlOf, consentUrlOf, phonesOf, stepOf } from "./cli.ts";
 
 const ports = { localHost: "127.0.0.1", localPort: 3773, servePort: 443 };
 
@@ -87,5 +87,43 @@ describe("the pages Tailscale names", () => {
       ),
     ).toBe("https://login.tailscale.com/a/abc");
     expect(authUrlOf(JSON.stringify({ BackendState: "NeedsLogin", AuthURL: "" }))).toBeNull();
+  });
+});
+
+describe("the phones on this computer's tailnet", () => {
+  const tailnet = (peers: Record<string, Record<string, unknown>>) =>
+    JSON.stringify({
+      BackendState: "Running",
+      Self: { DNSName: "mac.example.ts.net.", UserID: 7, OS: "macOS" },
+      User: { 7: { LoginName: "person@example.com" } },
+      Peer: peers,
+    });
+
+  it("lists none on a tailnet of this computer alone, with the account a phone signs in with", () => {
+    expect(phonesOf(tailnet({}))).toEqual({ account: "person@example.com", phones: [] });
+  });
+
+  it("lists phones and tablets only, and whether their Tailscale is on", () => {
+    expect(
+      phonesOf(
+        tailnet({
+          a: { HostName: "Work laptop", OS: "linux", Online: true },
+          b: { HostName: "Phone", OS: "iOS", Online: false },
+          c: {
+            HostName: "localhost",
+            DNSName: "tablet.example.ts.net.",
+            OS: "android",
+            Online: true,
+          },
+        }),
+      ).phones,
+    ).toEqual([
+      { name: "Phone", online: false },
+      { name: "tablet", online: true },
+    ]);
+  });
+
+  it("knows nothing without Tailscale's answer", () => {
+    expect(phonesOf(null)).toEqual({ account: null, phones: [] });
   });
 });

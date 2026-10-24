@@ -15,11 +15,13 @@ import {
   authUrlOf,
   backendStateOf,
   openMacApp,
+  phonesOf,
   runCli,
   servesUs,
   startServe,
   stepOf,
   type ServeOutcome,
+  type TailnetPhone,
   type TailscaleStep,
 } from "./cli.ts";
 
@@ -36,6 +38,10 @@ export interface TailscaleLook {
   readonly step: TailscaleStep;
   /** The person turned phones over Tailscale on, and hasn't turned them off. */
   readonly on: boolean;
+  /** The account this computer is signed in with: a phone signs in with it too. */
+  readonly account: string | null;
+  /** Phones and tablets on the tailnet, the ones a code here can pair. */
+  readonly phones: ReadonlyArray<TailnetPhone>;
 }
 
 export interface TailscaleAdvance extends TailscaleLook {
@@ -90,18 +96,21 @@ const make = Effect.gen(function* () {
   const cli = (args: ReadonlyArray<string>, timeoutMs?: number) =>
     Effect.promise(() => runCli(args, platform, timeoutMs));
 
-  const read = Effect.fn("StemcellsTailscale.read")(function* () {
-    if (ports === null) return { kind: "missing" } as const satisfies TailscaleStep;
+  /** The step, and the `status --json` it was read from (null without Tailscale). */
+  const readStatus = Effect.fn("StemcellsTailscale.read")(function* () {
+    const missing = { step: { kind: "missing" } as TailscaleStep, status: null };
+    if (ports === null) return missing;
     const status = yield* cli(["status", "--json"]);
-    if (status.missing) return { kind: "missing" } as const satisfies TailscaleStep;
+    if (status.missing) return missing;
     const step = stepOf(status.stdout, null, ports);
-    if (step.kind !== "not-serving") return step;
+    if (step.kind !== "not-serving") return { step, status: status.stdout };
     const serve = yield* cli(["serve", "status", "--json"]);
     const now = stepOf(status.stdout, serve.ok ? serve.stdout : null, ports);
     // Serve in front of this server's port is this run's to take down, however it got there.
     if (now.kind === "ready") yield* Ref.set(serving, true);
-    return now;
+    return { step: now, status: status.stdout };
   });
+  const read = () => Effect.map(readStatus(), (read) => read.step);
 
   const serve = Effect.fn("StemcellsTailscale.serve")(function* () {
     if (ports === null) return { kind: "failed" } as const;
@@ -117,7 +126,8 @@ const make = Effect.gen(function* () {
   });
 
   const look = Effect.fn("StemcellsTailscale.look")(function* () {
-    return { step: yield* read(), on: yield* isOn };
+    const { step, status } = yield* readStatus();
+    return { step, on: yield* isOn, ...phonesOf(status) };
   });
 
   const openApp = Effect.promise(() =>

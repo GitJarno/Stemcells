@@ -15,9 +15,19 @@ export type TailnetStep =
   | { readonly kind: "port-taken"; readonly port: number }
   | { readonly kind: "ready"; readonly baseUrl: string };
 
+export interface TailnetPhone {
+  readonly name: string;
+  /** Its Tailscale is on: it reaches this computer's tailnet name. */
+  readonly online: boolean;
+}
+
 export interface TailnetLook {
   readonly step: TailnetStep;
   readonly on: boolean;
+  /** The account this computer's Tailscale is signed in with. */
+  readonly account: string | null;
+  /** The tailnet's phones and tablets. */
+  readonly phones: ReadonlyArray<TailnetPhone>;
 }
 
 const TAILSCALE_PATH = "/api/stemcells/tailscale";
@@ -45,8 +55,9 @@ export const turnOffTailnet = () => ask<TailnetLook>("POST", `${TAILSCALE_PATH}/
 
 /**
  * The way in now: read on mount, when the window comes back, and every
- * couple of seconds while `watch` and not yet ready (the person is
- * clicking through Tailscale). While watched, what needs nobody is done
+ * couple of seconds while `watch` and not yet ready, or ready with no phone
+ * on the tailnet (the person is clicking through Tailscale, here or on the
+ * phone). While watched, what needs nobody is done
  * on arrival, once: Serve put in front of this server, or a way in that's
  * already there kept on. A page that step names opens.
  * `look` is null until the first read, or on a server without the route.
@@ -56,6 +67,7 @@ export function useTailnet(watch: boolean) {
   /** The automatic Serve ran and left the step where it was. */
   const [serveFailed, setServeFailed] = useState(false);
   const ready = look?.step.kind === "ready";
+  const phoneOnline = look?.phones.some((phone) => phone.online) === true;
   const readNow = useRef<() => void>(() => undefined);
 
   useEffect(() => {
@@ -88,13 +100,14 @@ export function useTailnet(watch: boolean) {
     readNow.current = onFocus;
     void read();
     window.addEventListener("focus", onFocus);
-    const timer = watch && !ready ? setInterval(onFocus, WATCH_EVERY_MS) : undefined;
+    const timer =
+      watch && (!ready || !phoneOnline) ? setInterval(onFocus, WATCH_EVERY_MS) : undefined;
     return () => {
       stopped = true;
       window.removeEventListener("focus", onFocus);
       clearInterval(timer);
     };
-  }, [watch, ready]);
+  }, [watch, ready, phoneOnline]);
 
   return { look, setLook, serveFailed, readAgain: () => readNow.current() };
 }

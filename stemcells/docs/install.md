@@ -102,6 +102,8 @@ Stemcells.
    its sign-in, and the first time on a tailnet opens Tailscale's page to
    turn on HTTPS, where you confirm once. Nothing restarts.
 3. In Stemcells on your phone, scan the code. Each computer needs one scan.
+   The dialog ticks once your phone is on your tailnet; until then a scan
+   can't reach the computer, and it names the account to sign in with.
 4. To reach one computer from another, choose **Copy link** in step 2 on
    the computer you want to reach, then **Add › Computer** on the one
    you're at, and paste it. Its **Cells** switch lets the two computers'
