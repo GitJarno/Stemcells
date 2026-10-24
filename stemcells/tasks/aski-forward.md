@@ -61,7 +61,8 @@ fewer interruptions, more decisions made in a keystroke. T3's event log
 already holds every run, request, message and settle with its time, so the
 numbers are derived from it, back to the first day, with no store of our
 own. Only what T3 can't see (an answer taken back in its hold) would ever
-need a counter.
+need a counter. A chat T3 imported from before its V2 keeps its messages
+but not its runs, so the history starts with the first run on this server.
 
 - Missed asks: stops read done whose next message from the person answers
   something.
@@ -93,7 +94,7 @@ on anything irreversible.
 - [x] 3. **Aski reads the room in one call.** `stemcells_standing`, read
       only: the numbered cards, the Cells at work and the done ones with
       their lines; the persona answers "what needs me?" from it.
-- [ ] 4. **The numbers, derived.** The measures above from T3's records,
+- [x] 4. **The numbers, derived.** The measures above from T3's records,
       replayed over the person's history, read locally.
 
 ## Review
@@ -112,3 +113,11 @@ on anything irreversible.
   Needs per server: Effect builds a layer once however many layers provide
   it), so "for 3" in Aski's words is card 3. It joins our MCP tools with no
   new seam, and the persona contract test now resolves our tools too.
+- Slice 4: `GET /api/stemcells/arcs` gives the last eight weeks, worked out
+  from T3's records when asked (0.6 s over this Mac's 1.4 GB store). The
+  week of 2026-10-19, the first on V2 here: 105 Cells, 660 of the person's
+  turns (3 a Cell), a median flight of 1.8 min between turns, 21 asks
+  through the tool against 72 `Left: you` and 45 in prose, answered in a
+  median 4.4 min; 484 of 728 stops said nothing of where they stood, most
+  of them before the close-out landed on 2026-10-23. The view of it comes
+  later; these are its baseline.
