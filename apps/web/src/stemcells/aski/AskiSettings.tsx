@@ -1,4 +1,5 @@
 import { KINDS, setTaking, useAutonomy, type Kind } from "../autonomy/autonomy";
+import { PhoneSettings } from "../push/PhoneSettings";
 import { SettingsPageContainer, SettingsRow, SettingsSection, Switch } from "../upstream/settings";
 import { setSuggestionsOn, useSuggestionsOn } from "../suggestions/switch";
 import { setAskiPlans, useAskiPlans } from "./planning";
@@ -6,7 +7,8 @@ import { ASKI_SWITCHES } from "./settingLinks";
 
 // Settings › Aski, first cut: whether Aski divides the work, whether a
 // finished Cell suggests what to say next, and what Aski takes for the
-// person (stemcells/tasks/aski-autonomy.md). The rest of the page (what Aski
+// person (stemcells/tasks/aski-autonomy.md), and the pushes to their phone
+// (stemcells/tasks/phone-push.md). The rest of the page (what Aski
 // thinks with, checking a plan, the most Cells, the plan history) comes with
 // stemcells/tasks/prompting.md's slice 6.
 
@@ -83,6 +85,7 @@ export function AskiSettingsPanel() {
           />
         ))}
       </SettingsSection>
+      <PhoneSettings />
     </SettingsPageContainer>
   );
 }

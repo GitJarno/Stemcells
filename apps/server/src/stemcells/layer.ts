@@ -12,6 +12,7 @@ import * as OnTheWire from "./peers/onTheWire.ts";
 import * as PeersHttp from "./peers/http.ts";
 import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
+import * as PushHttp from "./push/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
 import * as SpendHttp from "./spend/http.ts";
 import * as SuggestionHttp from "./suggestions/http.ts";
@@ -27,8 +28,9 @@ import * as ModelList from "./upstream/modelList.ts";
 // (`peers/onTheWire.ts`), the routes of linked environments, what the person would say
 // next to a Cell, a phone's way in over Tailscale, what each chat has spent for Settings › Lineage, the
 // theme published on start, the telemetry id upstream left behind,
-// removed on start, how the person's work with Cells went, week by week, and
-// the cards Aski takes for the person once they've granted it.
+// removed on start, how the person's work with Cells went, week by week,
+// the cards Aski takes for the person once they've granted it, and the
+// pushes to their phone when a card waits and they're away.
 
 export const layer = Layer.mergeAll(
   ArcsHttp.layer,
@@ -36,6 +38,7 @@ export const layer = Layer.mergeAll(
   AutonomyHttp.layer,
   DiskHttp.layer,
   PresenceHttp.layer,
+  PushHttp.layer,
   NeedsHttp.layer,
   PlannerHttp.layer,
   LimitResumeHttp.layer,

@@ -24,7 +24,9 @@ or anyone else's cloud.
 
 - The server's `fetch` is held to HTTP/1.1 (`apps/server/src/outboundHttp.ts`)
   and APNs needs HTTP/2, so the sender uses `node:http2`.
-- `api.push.apple.com` goes into `stemcells/outbound.txt` as a `live` line.
+- `api.push.apple.com` and its sandbox go into `stemcells/outbound.txt` as
+  `host` lines: the app contacts them only once the person sets a key, so
+  they aren't `live`.
 - The phone build is pinned to T3's team, and the Personal Team build drops
   `aps-environment`. A push needs the person's paid team and an App ID of
   their own with push turned on.
@@ -34,14 +36,19 @@ or anyone else's cloud.
 
 ## Slices
 
-- [ ] 1. Server sender in `apps/server/src/stemcells/push/`. Endpoints:
+- [x] 1. Server sender in `apps/server/src/stemcells/push/`. Endpoints:
       `POST /api/stemcells/push/devices` stores the token, environment and
-      bundle id, and `PUT /api/stemcells/push/key` stores the `.p8`, Key ID
-      and Team ID in the secret store; both need write access. Also an
-      HTTP/2 client with a JWT reused for 45 minutes, a test push, and the
-      allow-list line.
-- [ ] 2. Trigger: a new card in the needs list pushes once, with the
-      Cell's title and the card's cue, and the thread's deep link.
+      bundle id (read access: a phone that reads the Cells may hear of
+      them), and `PUT /api/stemcells/push/key` stores the `.p8`, Key ID and
+      Team ID in the secret store (the access pairing asks). Also an HTTP/2
+      client with a JWT reused for 45 minutes, a test push, and the
+      allow-list lines. Settings › Aski › Your phone sets the key, lists
+      and removes phones, and sends a test.
+- [x] 2. Trigger: a card still waiting 2 minutes after its `since`, while
+      nobody is at the Mac (`presence.ts`), pushes once, with the Cell's
+      title, the card's cue and the thread's deep link. A card that waits
+      while the person is here pushes once they go. Elsewhere than macOS
+      nobody is ever away, so nothing pushes.
 - [ ] 3. Phone registration in `apps/mobile/src/stemcells/push/`. Ask for
       notification permission, read the device token, and post it to each
       saved connection. It shows as a Notifications row of our own.

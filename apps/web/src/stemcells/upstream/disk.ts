@@ -36,6 +36,7 @@ export {
 } from "~/components/settings/settingsLayout";
 export { Badge } from "~/components/ui/badge";
 export { Button } from "~/components/ui/button";
+export { Input } from "~/components/ui/input";
 export { Spinner } from "~/components/ui/spinner";
 export { toastManager } from "~/components/ui/toast";
 export { formatRelativeTimeLabel };
@@ -52,6 +53,24 @@ export async function getFromPrimary(
   return fetch(resolvePrimaryEnvironmentHttpUrl(pathname, searchParams), {
     credentials: bearerToken ? "omit" : "include",
     headers: bearerToken ? { authorization: `Bearer ${bearerToken}` } : {},
+  });
+}
+
+/** A JSON request that changes something on the primary environment's server, sent as `getFromPrimary` is. */
+export async function sendToPrimary(
+  method: "POST" | "PUT" | "DELETE",
+  pathname: string,
+  body?: unknown,
+): Promise<Response> {
+  const bearerToken = await readDesktopPrimaryBearerToken();
+  return fetch(resolvePrimaryEnvironmentHttpUrl(pathname), {
+    method,
+    credentials: bearerToken ? "omit" : "include",
+    headers: {
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+      ...(bearerToken ? { authorization: `Bearer ${bearerToken}` } : {}),
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
 }
 

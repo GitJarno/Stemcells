@@ -100,6 +100,11 @@ host googlechromelabs.github.io a comment naming Chrome for Testing's version li
 host open-vsx.org theme search, when the person imports a VS Code theme
 host api.expo.dev the device hub's builds, with the person's Expo token
 
+# Apple's push service, with the person's own APNs key: only once they set
+# one in Settings › Aski, and only to their own phones (push/apns.ts).
+host api.push.apple.com pushes to the person's phone from a release build
+host api.sandbox.push.apple.com pushes to the person's phone from a development build
+
 # The phone app's config: off unless a build turns it on.
 host u.expo.dev T3's over-the-air updates, only with T3CODE_MOBILE_UPDATES_ENABLED=1 (outbound.contract.test.ts)
 host api.axiom.co the default trace url, unused unless a build sets a dataset and token
