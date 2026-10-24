@@ -79,6 +79,9 @@ export const withAccessWrite = withScope(AuthAccessWriteScope);
 /** The platform the server runs on, as upstream injects it. */
 export const HostPlatform = HostProcess.Platform;
 
+/** The home folder of the person the server runs as, as upstream injects it. */
+export const HostHome = HostProcess.HomeDirectory;
+
 export interface KnownFolders {
   /** Workspace roots of the projects the person added. */
   readonly projects: ReadonlyArray<string>;

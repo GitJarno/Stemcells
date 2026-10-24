@@ -1,11 +1,12 @@
 // What Settings › Disk takes from upstream: its settings layout and
 // controls, a request to the primary environment as upstream authenticates
 // one, the connected environments and each one's host resources, and its
-// new-thread flow with a draft in the composer.
+// way to open a Cell without a project, with a draft in the composer.
 
 import { RegistryContext, useAtomValue } from "@effect/atom-react";
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import type { EnvironmentId, ProjectId, ScopedProjectRef } from "@t3tools/contracts";
+import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
+import type { EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";
 import { AsyncResult } from "effect/reactivity";
 import { useContext, useEffect } from "react";
@@ -13,14 +14,15 @@ import { useContext, useEffect } from "react";
 import { useComposerDraftStore } from "~/composerDraftStore";
 import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
 import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAuth";
-import { useHandleNewThread } from "~/hooks/useHandleNewThread";
-import { useProjects } from "~/state/entities";
+import { useNewThreadHandler } from "~/hooks/useHandleNewThread";
 import {
   useConnectedEnvironmentIds,
   useEnvironments,
   usePrimaryEnvironmentId,
 } from "~/state/environments";
+import { projectEnvironment } from "~/state/projects";
 import { serverEnvironment } from "~/state/server";
+import { useAtomCommand } from "~/state/use-atom-command";
 import { formatRelativeTimeLabel } from "~/timestampFormat";
 
 export type { EnvironmentId };
@@ -54,40 +56,30 @@ export async function getFromPrimary(
 }
 
 /**
- * Where a Cell on `environmentId` opens: the person's first project when it
- * is there, else the first project there, never one elsewhere, since the
- * Cell frees the disk of the machine it runs on.
- */
-export function projectRefOn(
-  environmentId: EnvironmentId | null,
-  defaultProjectRef: ScopedProjectRef | null,
-  projects: ReadonlyArray<{ readonly environmentId: EnvironmentId; readonly id: ProjectId }>,
-): ScopedProjectRef | null {
-  if (environmentId === null) return null;
-  if (defaultProjectRef?.environmentId === environmentId) return defaultProjectRef;
-  const project = projects.find((candidate) => candidate.environmentId === environmentId);
-  return project ? scopeProjectRef(project.environmentId, project.id) : null;
-}
-
-/**
- * Opens a new Cell on `environmentId`, in the person's first project when
- * it is there, else in the first project there, with `text` waiting in its
- * composer, unsent. Null when that environment has no project.
+ * Opens a new Cell on `environmentId` without a project, in that machine's
+ * folder for such Cells, with `text` waiting in its composer, unsent. Null
+ * when that machine offers no Cells without a project (not connected, or a
+ * server without the folder).
  */
 export function useOpenCellWithDraft(
   environmentId: EnvironmentId | null,
 ): ((text: string) => Promise<boolean>) | null {
-  const { defaultProjectRef, handleNewThread } = useHandleNewThread();
-  const projectRef = projectRefOn(environmentId, defaultProjectRef, useProjects());
-  if (projectRef === null) return null;
+  const { environments } = useEnvironments();
+  const openScratch = useAtomCommand(projectEnvironment.openScratch, { reportFailure: false });
+  const handleNewThread = useNewThreadHandler();
+  const environment = environments.find((entry) => entry.environmentId === environmentId);
+  if (
+    environmentId === null ||
+    availableScratchWorkspaceRoot(environment?.connection.phase, environment?.serverConfig) === null
+  ) {
+    return null;
+  }
   return async (text) => {
-    // In the project folder itself: a new worktree on a full disk copies the
-    // checkout and runs its setup, an install, before the Cell frees a byte.
-    const opened = await handleNewThread(projectRef, {
-      envMode: "local",
-      branch: null,
-      worktreePath: null,
-    }).catch(() => null);
+    const result = await openScratch({ environmentId, input: {} });
+    if (result._tag !== "Success") return false;
+    const opened = await handleNewThread(
+      scopeProjectRef(result.value.environmentId, result.value.id),
+    ).catch(() => null);
     if (opened === null) return false;
     useComposerDraftStore.getState().setPrompt(opened.draftId, text);
     return true;

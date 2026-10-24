@@ -1,4 +1,4 @@
-import { registerPeerTool } from "../stemcells/upstream/peerTool.ts";
+import { registerStemcellsTools } from "../stemcells/upstream/mcpTools.ts";
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
@@ -1078,5 +1078,5 @@ export const layer = Layer.mergeAll(
   layerPullRequestsToolkit,
   layerDeviceToolkit,
   layerHtmlToolkit,
-  registerPeerTool(toolkitRegistration),
+  registerStemcellsTools(toolkitRegistration),
 ).pipe(Layer.provideMerge(layerMcpTransport));

@@ -1,8 +1,9 @@
 /**
  * Disk words every surface says the same: the size format, and the cleanup
- * Cell's ask, which the server puts above its own measurement and the web
- * and the phone send to a machine they didn't measure. One copy, so a Cell
- * started from the phone is asked exactly what one from the desktop is.
+ * Cell's ask, which the web and the phone put in a new Cell on any machine.
+ * One copy, so a Cell started from the phone is asked exactly what one from
+ * the desktop is; the measurement it starts from comes from the machine it
+ * runs on (`stemcells_disk_report`), not from the client that opened it.
  */
 
 /** "107 GB", "940 MB", "1.2 TB": decimal units, as Finder counts. */
@@ -19,22 +20,19 @@ export function diskBytes(bytes: number): string {
   return `${Math.trunc(value)} bytes`;
 }
 
-/** The machine a Cell frees, as the ask names it when no client measured it. */
-export const ITS_OWN_MACHINE = "the machine you run on";
-
 /** What a cleanup Cell does, as a person reads it before starting one. */
 export const CLEANUP_PROMISE =
   "A Cell lists what can go as Low, Medium and High risk, and removes only what you name: “delete L1, L3 and M5”.";
 
 /**
- * The cleanup Cell's first message: look first, read-only; one list in
- * three tiers whose IDs (L1, M2, H1) the person answers with; remove only
- * the IDs they name. High is theirs to weigh, so it is listed, never chosen.
+ * The cleanup Cell's first message: start from the machine's own
+ * measurement, look further read-only; one list in three tiers whose IDs
+ * (L1, M2, H1) the person answers with; remove only the IDs they name. High
+ * is theirs to weigh, so it is listed, never chosen.
  */
-export function cleanupAsk(machine: string): string {
-  return `Free space on ${machine}: find what can go, show me in three tiers, and remove only what I name.
+export const CLEANUP_ASK = `Free space on the machine you run on: find what can go, show me in three tiers, and remove only what I name.
 
-First look, read-only (df, du, git status, git log, lsof; no deletions, no moves), and note the free space now with df. Where to look:
+First call the stemcells_disk_report tool: it returns what Stemcells measured on this machine, with how to read it. If it says it is still measuring, call it again. If you don't have the tool, measure yourself. Either way, look only read-only (df, du, git status, git log, lsof; no deletions, no moves), and note the free space now with df. Where to look:
 - Build output and dependency folders (.build, DerivedData, node_modules, target, dist, .next and the like) in checkouts nobody is working in.
 - Git worktrees whose branch is merged or fully pushed.
 - Caches: ~/Library/Caches on a Mac, ~/.cache on Linux, package and toolchain caches (npm, pnpm, pip, Homebrew, Playwright's browsers), Xcode device support, simulators and runtimes nothing uses, toolchain versions nothing uses.
@@ -49,4 +47,3 @@ Then one list in three tiers, largest first within each, every item with an ID I
 Open with each tier's total, counting shared space once. End with "Not touched" and why: the system, keychains and credentials, settings, the state of Stemcells and of T3 (~/.stemcells, ~/.t3), checkouts with uncommitted or unpushed work (someone may be working in them), anything a running process uses, and anything you couldn't check.
 
 Delete nothing until I reply with IDs ("delete L1, L3 and M5", or "all L"). Then remove exactly those. Right before removing each, check it again: still there, unchanged, nothing using it, and for a checkout no uncommitted or unpushed work; skip any that changed and say why. Use the owner's command where there is one (git worktree remove without --force, pnpm store prune, xcrun simctl delete, brew cleanup), otherwise rm -rf on one full path: never a wildcard, never sudo (give me the command to run myself instead). End with the space that came back, from df before and after: sizes overstate what deleting an APFS clone or a hard-linked copy returns.`;
-}

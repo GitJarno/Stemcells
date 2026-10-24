@@ -6,8 +6,7 @@ import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 
 import * as UpstreamDisk from "../upstream/disk.ts";
-import { cleanupAsk } from "../../../../../stemcells/words/disk.ts";
-import { cleanupDraft } from "./report.ts";
+import { diskReport } from "./report.ts";
 import {
   diskMap,
   machineFolders,
@@ -43,6 +42,10 @@ export interface DiskLook {
   readonly map: DiskMap | null;
 }
 
+export type DiskReportLook =
+  | { readonly measured: true; readonly report: string }
+  | { readonly measured: false; readonly counted: number };
+
 export class StemcellsDisk extends Context.Service<
   StemcellsDisk,
   {
@@ -53,27 +56,38 @@ export class StemcellsDisk extends Context.Service<
     readonly look: (input: { readonly again: boolean }) => Effect.Effect<DiskLook, DiskVolumeError>;
     /** The disk now, one `statfs`: never starts a walk, never keeps one alive. */
     readonly volume: () => Effect.Effect<DiskVolume, DiskVolumeError>;
-    /** The cleanup Cell's first message, with the last measurement once there is one. */
-    readonly cleanupDraft: () => Effect.Effect<string, DiskVolumeError>;
+    /**
+     * The measurement as the cleanup Cell reads it: the last one when it is
+     * fresh, else one walked now, waited for up to `REPORT_WAIT_MS`.
+     */
+    readonly report: () => Effect.Effect<DiskReportLook, DiskVolumeError>;
   }
 >()("t3/stemcells/disk/StemcellsDisk") {}
 
 /** Older than this, looking measures again. */
 const FRESHNESS_MS = 30 * 60_000;
-/** A walk nobody looks at for this long stops: the page was closed. */
+/** A walk nobody looks at for this long stops: the page closed, or the Cell stopped asking. */
 const UNWATCHED_MS = 30_000;
+/**
+ * How long a report call waits on a walk: under the shortest MCP tool
+ * timeout a provider sets (Codex's 60 s), so a long walk answers "still
+ * measuring" and the Cell calls again.
+ */
+const REPORT_WAIT_MS = 45_000;
 
 const make = Effect.gen(function* () {
   const readKnownFolders = yield* UpstreamDisk.knownFoldersReader;
   const platform = yield* UpstreamDisk.HostPlatform;
-  const folders = machineFolders(platform);
+  const folders = machineFolders(platform, yield* UpstreamDisk.HostHome);
   const machine = platform === "darwin" ? "this Mac" : "this computer";
-  const walks = yield* FiberHandle.make<void>();
+  const walks = yield* FiberHandle.make<void, never>();
   let map: DiskMap | null = null;
   let attemptedAt = 0;
   let lookedAt = 0;
   let scanning = false;
   let counted = 0;
+  // Cells waiting on a walk keep it watched, as an open Settings › Disk does.
+  let waiting = 0;
 
   const volumeNow = Effect.tryPromise({
     try: () => readVolume(folders.home),
@@ -89,7 +103,7 @@ const make = Effect.gen(function* () {
           {
             signal,
             // @effect-diagnostics-next-line globalDate:off -- The walk asks between folders, outside the Effect runtime.
-            cancelled: () => Date.now() - lookedAt > UNWATCHED_MS,
+            cancelled: () => waiting === 0 && Date.now() - lookedAt > UNWATCHED_MS,
             onProgress: (bytes) => {
               counted = bytes;
             },
@@ -117,17 +131,19 @@ const make = Effect.gen(function* () {
     Effect.withSpan("StemcellsDisk.measure"),
   );
 
+  const startWalk = Effect.fn("StemcellsDisk.startWalk")(function* (now: number) {
+    scanning = true;
+    counted = 0;
+    attemptedAt = now;
+    yield* FiberHandle.run(walks, measure);
+  });
+
   const look = Effect.fn("StemcellsDisk.look")(function* (input: { readonly again: boolean }) {
     const now = yield* Clock.currentTimeMillis;
     lookedAt = now;
     const volume = yield* volumeNow;
     const due = input.again || attemptedAt === 0 || now - attemptedAt > FRESHNESS_MS;
-    if (!scanning && due) {
-      scanning = true;
-      counted = 0;
-      attemptedAt = now;
-      yield* FiberHandle.run(walks, measure);
-    }
+    if (!scanning && due) yield* startWalk(now);
     return {
       volume,
       scanning,
@@ -136,16 +152,37 @@ const make = Effect.gen(function* () {
     } satisfies DiskLook;
   });
 
-  const draft = Effect.fn("StemcellsDisk.cleanupDraft")(function* () {
-    if (map === null) return cleanupAsk(machine);
-    return cleanupDraft(rebased(map, yield* volumeNow), machine);
+  const fresh = (now: number) => map !== null && now - map.measuredAt <= FRESHNESS_MS;
+
+  const report = Effect.fn("StemcellsDisk.report")(function* () {
+    if (!fresh(yield* Clock.currentTimeMillis)) {
+      if (!scanning) yield* startWalk(yield* Clock.currentTimeMillis);
+      waiting += 1;
+      yield* FiberHandle.awaitEmpty(walks).pipe(
+        Effect.timeoutOption(REPORT_WAIT_MS),
+        // A Cell told "still measuring" calls again: the walk gets the same
+        // grace an open Settings › Disk would give it, not cancelled at once.
+        Effect.ensuring(
+          Effect.map(Clock.currentTimeMillis, (now) => {
+            waiting -= 1;
+            lookedAt = now;
+          }),
+        ),
+      );
+    }
+    // A walk that failed leaves the last measurement, stale or none.
+    if (map === null || scanning) return { measured: false, counted } satisfies DiskReportLook;
+    return {
+      measured: true,
+      report: diskReport(rebased(map, yield* volumeNow), machine),
+    } satisfies DiskReportLook;
   });
 
   const volume = Effect.fn("StemcellsDisk.volume")(function* () {
     return yield* volumeNow;
   });
 
-  return StemcellsDisk.of({ look, volume, cleanupDraft: draft });
+  return StemcellsDisk.of({ look, volume, report });
 });
 
 export const layer = Layer.effect(StemcellsDisk, make);

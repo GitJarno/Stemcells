@@ -17,19 +17,15 @@ import {
   useRelativeTimeTick,
   type EnvironmentId,
 } from "../upstream/disk";
-import {
-  cleanupAsk,
-  CLEANUP_PROMISE,
-  diskBytes,
-  ITS_OWN_MACHINE,
-} from "../../../../../stemcells/words/disk.ts";
-import { readCleanupDraft, useDiskReading, type DiskReading } from "./diskReading";
+import { CLEANUP_ASK, CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure } from "./pressure";
 
 // Settings › Disk: how full each machine's disk is, what is large on this
 // one, and a Cell to free space with. The app deletes nothing itself: "Free
-// space" opens a new Cell on that machine with the ask (and, here, the
-// measurement) in its composer, for the person to send.
+// space" opens a new Cell without a project on that machine with the ask in
+// its composer, for the person to send; the Cell reads that machine's
+// measurement itself.
 
 const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
   calm: "bg-primary",
@@ -66,39 +62,28 @@ const Size = ({ bytes }: { readonly bytes: number }) => (
   <span className="text-sm text-foreground tabular-nums">{diskBytes(bytes)}</span>
 );
 
-/**
- * Opens the cleanup Cell with its draft, or says it couldn't: here, the ask
- * and this server's measurement; elsewhere, which this one didn't measure,
- * the ask alone.
- */
+/** Opens the cleanup Cell with its ask, or says it couldn't. */
 async function openCleanupCell(
   openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
-  machine: "this" | "other",
 ): Promise<void> {
-  try {
-    const draft = machine === "this" ? await readCleanupDraft() : cleanupAsk(ITS_OWN_MACHINE);
-    if (!(await openCell(draft))) throw new Error("No Cell opened");
-  } catch {
-    toastManager.add({
-      type: "error",
-      title: "Couldn't start a Cell",
-      description: "Try Free space again in a moment.",
-    });
-  }
+  if (await openCell(CLEANUP_ASK)) return;
+  toastManager.add({
+    type: "error",
+    title: "Couldn't start a Cell",
+    description: "Try Free space again in a moment.",
+  });
 }
 
 function FreeSpaceButton({
   openCell,
-  machine,
 }: {
   readonly openCell: ReturnType<typeof useOpenCellWithDraft>;
-  readonly machine: "this" | "other";
 }) {
   const [opening, setOpening] = useState(false);
   const freeSpace = async () => {
     if (openCell === null) return;
     setOpening(true);
-    await openCleanupCell(openCell, machine).finally(() => setOpening(false));
+    await openCleanupCell(openCell).finally(() => setOpening(false));
   };
   return (
     <Button size="sm" disabled={openCell === null || opening} onClick={() => void freeSpace()}>
@@ -127,8 +112,8 @@ function OtherMachineRow({
   return (
     <SettingsRow
       title={label}
-      description={openCell ? space : `${space} · Add a project there to start a Cell on it.`}
-      control={<FreeSpaceButton openCell={openCell} machine="other" />}
+      description={openCell ? space : `${space} · It can't start a Cell without a project.`}
+      control={<FreeSpaceButton openCell={openCell} />}
     >
       {disk ? <DiskGauge volume={disk} /> : null}
     </SettingsRow>
@@ -155,9 +140,9 @@ export function DiskSettingsPanel() {
                 : "Reading the disk…"
           }
           description={
-            openCell ? CLEANUP_PROMISE : "Add a project to start a Cell that frees space."
+            openCell ? CLEANUP_PROMISE : "This machine can't start a Cell without a project."
           }
-          control={<FreeSpaceButton openCell={openCell} machine="this" />}
+          control={<FreeSpaceButton openCell={openCell} />}
         >
           {reading ? <DiskGauge volume={reading.volume} /> : null}
         </SettingsRow>

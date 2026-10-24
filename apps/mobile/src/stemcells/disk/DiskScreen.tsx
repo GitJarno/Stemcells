@@ -2,12 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-  cleanupAsk,
-  CLEANUP_PROMISE,
-  diskBytes,
-  ITS_OWN_MACHINE,
-} from "../../../../../stemcells/words/disk.ts";
+import { CLEANUP_ASK, CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
 import {
   AppText,
   Dialog,
@@ -21,7 +16,8 @@ import {
 } from "../upstream/disk";
 
 // Settings › Disk on the phone: each machine's free space, and a tap that
-// opens a new Cell on that machine with the cleanup ask waiting, unsent.
+// opens a new Cell without a project on that machine with the cleanup ask
+// waiting, unsent.
 // The phone deletes nothing and measures nothing; the Cell does both, on
 // the machine, after the person names what goes.
 
@@ -89,7 +85,7 @@ function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
     <SettingsRow
       icon={machine.icon}
       label={machine.label}
-      value={openCell ? space : `${space} · Add a project there to start a Cell on it.`}
+      value={openCell ? space : `${space} · It can't start a Cell without a project.`}
       valuePosition="below"
       disabled={openCell === null || opening}
       onPress={() => {
@@ -104,7 +100,7 @@ function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
 async function freeSpace(
   openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
 ): Promise<void> {
-  if (!(await openCell(cleanupAsk(ITS_OWN_MACHINE)))) {
+  if (!(await openCell(CLEANUP_ASK))) {
     Dialog.alert("Couldn't start a Cell", "Try again in a moment.");
   }
 }

@@ -3,7 +3,7 @@
  * decision 4): upstream's MCP server offers it beside `t3_thread_send`, with
  * upstream's own gate for a tool that writes as its caller (read-only
  * clients refused, a credential that controls threads, a live run), and our
- * links service does the rest. `McpHttpServer.ts` registers it, in one line.
+ * links service does the rest. `mcpTools.ts` registers it beside our other tools.
  */
 import { OrchestratorMcpFailure } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";

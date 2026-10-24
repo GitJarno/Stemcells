@@ -485,8 +485,10 @@ const realPath = (path: string) => {
  * home's, apps and Homebrew, and the temporary and cache folders macOS keeps
  * for each person.
  */
-export function machineFolders(platform: NodeJS.Platform): Omit<WalkPlan, "projects" | "ownState"> {
-  const home = NodeOS.homedir();
+export function machineFolders(
+  platform: NodeJS.Platform,
+  home: string,
+): Omit<WalkPlan, "projects" | "ownState"> {
   const userTemp = realPath(NodeOS.tmpdir());
   if (platform !== "darwin") {
     return { home, outside: [], temporary: userTemp ? [userTemp] : [], caches: [] };

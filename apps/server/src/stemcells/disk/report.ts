@@ -8,22 +8,13 @@ import {
   type FindingKind,
 } from "./rules.ts";
 import type { DiskMap } from "./walk.ts";
-import { cleanupAsk, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { diskBytes } from "../../../../../stemcells/words/disk.ts";
 
-// What "Free space" hands the cleanup Cell: an ask that keeps it read-only
-// until the person names what goes, then the last measurement, each
-// finding's paths with their sizes. Evidence for proposing, never permission
-// to delete: the disk keeps changing under other apps and Cells, so the
-// report says to check each item again right before removing it, and how.
-
-/**
- * After the ask, with the measurement below it: start from it instead of
- * walking the disk again (the walk is what makes a cleanup Cell slow), and
- * check again before removing.
- */
-export function fromMeasurement(machine: string): string {
-  return `Start from what Stemcells measured on ${machine} (below). Its sizes are measured, so don't walk those folders again (no du or find over them): check only what the report leaves open, such as a checkout's git state where it says not checked, and, for High, the folders of mine the ask names that it didn't read. Its risk marks are tiers: low risk is Low, medium risk is Medium. The disk keeps changing while we talk: right before removing anything I name, check it again the way the report describes, and skip anything that changed.`;
-}
+// What `stemcells_disk_report` hands the cleanup Cell: the last measurement,
+// each finding's paths with their sizes. Evidence for proposing, never
+// permission to delete: the disk keeps changing under other apps and Cells,
+// so the report says to check each item again right before removing it, and
+// how.
 
 /** The measurement as the Cell reads it: facts, never verdicts. */
 export function diskReport(map: DiskMap, machine: string, zone?: string): string {
@@ -42,7 +33,8 @@ export function diskReport(map: DiskMap, machine: string, zone?: string): string
     "",
     "## How to read it",
     "- Sizes are measured allocated bytes, a hard link counted once. An APFS clone shares its blocks with its copies, so deleting one can return less than its size; a local snapshot can hold blocks back too.",
-    "- These sizes are as of the walk: don't measure these folders again (no du or find over them).",
+    "- Start from these sizes: they are measured, so don't walk these folders again (no du or find over them). Check only what the report leaves open: git state and processes in use, and, for High, the folders the ask names that the walk doesn't read.",
+    "- Each candidate's risk is its tier: low risk is Low, medium risk is Medium.",
     ...(map.partial
       ? [
           "- The walk stopped at its limit before reading every folder: each size is at least what it says.",
@@ -83,13 +75,6 @@ export function diskReport(map: DiskMap, machine: string, zone?: string): string
     lines.push(`- Could not read: ${map.unreadable.map(code).join(", ")}`);
   }
   return `${lines.join("\n")}\n`;
-}
-
-/** The whole draft: the ask, how to use the measurement, the measurement. */
-export function cleanupDraft(map: DiskMap, machine: string, zone?: string): string {
-  return [cleanupAsk(machine), fromMeasurement(machine), diskReport(map, machine, zone)].join(
-    "\n\n",
-  );
 }
 
 /** "Xcode makes new ones…" keeps its capital; every other note continues the line. */

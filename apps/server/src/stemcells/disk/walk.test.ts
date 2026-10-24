@@ -7,7 +7,7 @@ import * as NodePath from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 
 import { diskBytes } from "../../../../../stemcells/words/disk.ts";
-import { cleanupDraft, code, diskReport } from "./report.ts";
+import { code, diskReport } from "./report.ts";
 import { guardedFolders, isWithin } from "./rules.ts";
 import {
   diskMap,
@@ -220,7 +220,7 @@ describe("the cleanup Cell's report", () => {
   });
 
   it("says to check each item again, and how, and what it didn't check", () => {
-    const report = cleanupDraft(map, "this Mac");
+    const report = diskReport(map, "this Mac");
     expect(report).toContain("Before removing anything");
     expect(report).toContain("git worktree remove");
     expect(report).toContain("were not checked");

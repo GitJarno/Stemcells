@@ -144,11 +144,3 @@ export function useDiskFree(): DiskReading["volume"] | null {
 
   return volume;
 }
-
-/** This machine's cleanup Cell's first message: the ask, and the last measurement to start from. */
-export async function readCleanupDraft(): Promise<string> {
-  const response = await getFromPrimary(`${DISK_PATH}/cleanup-draft`);
-  if (!response.ok) throw new Error(`Cleanup draft failed: ${response.status}`);
-  const body = (await response.json()) as { readonly draft: string };
-  return body.draft;
-}

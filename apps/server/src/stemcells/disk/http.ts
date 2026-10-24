@@ -19,7 +19,6 @@ import type { DiskItem, DiskVolume } from "./walk.ts";
 // while Settings › Disk is open (`?measure=again` measures anew).
 // GET /api/stemcells/disk/volume: free space alone, one statfs, for the
 // sidebar's foot; it never starts a walk.
-// GET /api/stemcells/disk/cleanup-draft: the cleanup Cell's first message.
 
 const DISK_PATH = "/api/stemcells/disk";
 const NO_STORE = { "cache-control": "private, no-store" };
@@ -96,14 +95,6 @@ const volumeRoute = Effect.gen(function* () {
   );
 });
 
-const draftRoute = Effect.gen(function* () {
-  const disk = yield* StemcellsDisk.StemcellsDisk;
-  return yield* disk.cleanupDraft().pipe(
-    Effect.map((draft) => HttpServerResponse.jsonUnsafe({ draft }, { headers: NO_STORE })),
-    Effect.catchTags({ DiskVolumeError: volumeUnreadable }),
-  );
-});
-
 export const layer = HttpRouter.use((router) =>
   Effect.gen(function* () {
     const disk = yield* StemcellsDisk.StemcellsDisk;
@@ -113,6 +104,5 @@ export const layer = HttpRouter.use((router) =>
       );
     yield* router.add("GET", DISK_PATH, serve(lookRoute));
     yield* router.add("GET", `${DISK_PATH}/volume`, serve(volumeRoute));
-    yield* router.add("GET", `${DISK_PATH}/cleanup-draft`, serve(draftRoute));
   }),
 ).pipe(Layer.provide(StemcellsDisk.layer));
