@@ -3,7 +3,8 @@
  * upstream's sidebar drew it, the sections' names and which of them a scope
  * shows, and the way back to where you were. `pages.contract.test.ts` pins
  * what the slate relies on. Our own pages (Settings › Aski) are laid out
- * with upstream's rows and switch.
+ * with upstream's rows and switch, and a setting Aski shows in its reply
+ * reads and writes through upstream's scope, as Settings does.
  */
 import { useLocation } from "@tanstack/react-router";
 
@@ -22,6 +23,13 @@ export {
   useRelativeTimeTick,
 } from "../../components/settings/settingsLayout";
 export { Switch } from "../../components/ui/switch";
+export { ScopedSwitch } from "../../components/settings/ScopedSwitch";
+export { SettingsScopeProvider } from "../../components/settings/SettingsScopeContext";
+export { searchableSetting } from "../../components/settings/settingsSearch";
+export {
+  useScopedSettings,
+  useUpdateScopedSettings,
+} from "../../components/settings/useScopedSettings";
 export { Toggle, ToggleGroup } from "../../components/ui/toggle-group";
 export { useNavigateToMainApp } from "../../components/sidebar/mainAppLocation";
 export type { SettingsPath };

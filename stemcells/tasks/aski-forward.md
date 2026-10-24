@@ -136,7 +136,10 @@ on anything irreversible.
       lands on the first card's recommendation, Enter takes it and steps
       on, ↑ and ↓ move card to card, Esc goes back; the focus holds the
       list still.
-- [ ] E. **Settings in Aski's reply.** A setting Aski names renders as its
-      live control, writing where Settings writes.
+- [x] E. **Settings in Aski's reply.** Asked about a setting, Aski links it
+      and the reply draws its switch, writing where Settings writes: Aski
+      divides the work, suggestions, auto-settle on merge, keeping Cells
+      with a pull request, carrying on or snoozing at a usage limit. Others
+      it names in Settings.
 - [ ] F. **The phone's push opens on its card.** Waits on the person: no
       push leaves this Mac without a service that isn't ours.

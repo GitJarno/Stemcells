@@ -25,6 +25,7 @@ import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamDesktopUpdateLogic from "../../../components/desktopUpdate.logic";
 import * as UpstreamDesktopUpdateStatusIcon from "../../../components/sidebar/DesktopUpdateStatusIcon";
 import * as UpstreamThreadContextChip from "../../../components/ThreadContextChip";
+import * as UpstreamChatMarkdown from "../../../components/ChatMarkdown";
 import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
 import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
 import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/ThreadPreviewMiniPlayer";
@@ -85,6 +86,7 @@ import * as OurDesktopUpdateLogic from "./desktopUpdate.logic";
 import * as OurDesktopUpdateStatusIcon from "./DesktopUpdateStatusIcon";
 import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadContextChip from "./ThreadContextChip";
+import * as OurChatMarkdown from "./ChatMarkdown";
 import * as OurThreadNotificationCoordinator from "./ThreadNotificationCoordinator";
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurThreadPreviewMiniPlayer from "./ThreadPreviewMiniPlayer";
@@ -257,6 +259,14 @@ const CASES: Readonly<Record<string, Case>> = {
         "../RightPanelSheet",
         ["RightPanelSheet"],
       ],
+    },
+  },
+  "apps/web/src/components/ChatMarkdown.tsx": {
+    upstream: UpstreamChatMarkdown,
+    substitute: OurChatMarkdown satisfies typeof UpstreamChatMarkdown,
+    importers: {
+      // Where a reply is drawn: Aski's settings in it.
+      "apps/web/src/components/chat/TimelineAssistantRows.tsx": ["../ChatMarkdown", []],
     },
   },
   "apps/web/src/components/ThreadContextChip.tsx": {

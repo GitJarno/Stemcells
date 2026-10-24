@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import persona from "./persona.md?raw";
+import { SETTING_LINKS } from "./settingLinks";
 import {
   ASKI_INSTANCE_ID,
   askiChatAmong,
@@ -95,6 +96,12 @@ describe("the persona", () => {
     expect(personaFor("codex")).toContain("instanceId codex, with your own model");
     expect(personaFor("claudeAgent")).toContain("instanceId claudeAgent, with your own model");
     expect(personaFor("claudeAgent")).not.toContain("{");
+  });
+
+  it("links every setting the chat draws as a switch, and only those", () => {
+    const listed = persona.slice(persona.indexOf("The ids:"), persona.indexOf("Any other setting"));
+    const ids = [...listed.matchAll(/([a-z][a-z-]*)\s+\(/g)].map((match) => match[1]);
+    expect(ids.toSorted()).toEqual([...SETTING_LINKS.keys()].toSorted());
   });
 
   it("says Cell and Aski to the person", () => {

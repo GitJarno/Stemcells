@@ -1,0 +1,7 @@
+/* A setting's switch in Aski's reply, on the line that names it. */
+[data-stemcells-setting] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  vertical-align: middle;
+}
