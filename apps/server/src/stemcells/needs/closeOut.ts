@@ -36,7 +36,9 @@ const TAIL_LINES = 6;
 
 const LABEL =
   /^\s*(?:[-*+]\s+)?[*_]{0,2}(done|left)(?:[*_]{0,2}\s*:|\s*:[*_]{0,2})[*_]{0,2}\s*(.*?)\s*$/i;
-const OWNER = /^[*_]{0,2}(you|me|waiting)[*_]{0,2}(?:\s*[—–:,.]|\s+-\s)\s*(.*)$/i;
+const OWNER = /^[*_]{0,2}(you|me|waiting)[*_]{0,2}(?:\s*[—–:,.]|\s+-\s)[*_]{0,2}\s*(.*)$/i;
+/** A step under a bare label: a bulleted or numbered line, or one an owner leads. */
+const ITEM = /^\s*(?:[-*+]|\d+[.)])\s+(.*?)\s*$/;
 /** A Left that names nothing leaves nothing. */
 const NOTHING = /^(?:nothing|none|n\/?a|nil|[—–-])[.!]?$/i;
 const FENCE = /^\s*(?:```|~~~)/;
@@ -63,44 +65,95 @@ function proseLines(reply: string): ReadonlyArray<{ readonly at: number; readonl
 }
 
 /**
- * The reply's close-out, and the reply without it. Of several Lefts, the
- * one that matters most: the person's, one with no owner, the Cell's own,
- * then a wait. Any Left outranks a Done.
+ * The reply's close-out, and the reply without it. A label may carry its
+ * step on its own line, or head a list of them, one owner a line. Of
+ * several Lefts, the ones that matter most: the person's, then those with
+ * no owner, the Cell's own, then a wait; those at the same rank read as
+ * one. Any Left outranks a Done.
  */
 export function readCloseOut(reply: string): {
   readonly closeOut: CloseOut | null;
   readonly rest: string;
 } {
-  const tail = proseLines(reply).slice(-TAIL_LINES);
-  const found: Array<{ at: number; closeOut: CloseOut }> = [];
-  for (const { at, text } of tail) {
-    const label = LABEL.exec(text);
+  const lines = proseLines(reply);
+  const tailFrom = lines.length - TAIL_LINES;
+  const found: CloseOut[] = [];
+  const gone = new Set<number>();
+  for (let index = 0; index < lines.length; index++) {
+    const label = LABEL.exec(lines[index]!.text);
     if (label === null) continue;
     const said = label[2] ?? "";
+    const steps = said === "" ? stepsAfter(lines, index) : [];
+    const head = lines[index]!.at;
+    index += steps.length;
+    // The block must reach the reply's last lines: a label far up is part of the report.
+    if (index < tailFrom) continue;
+    gone.add(head);
+    for (const { at } of steps) gone.add(at);
     if (label[1]?.toLowerCase() === "done") {
-      found.push({ at, closeOut: { kind: "done", text: said } });
+      found.push({ kind: "done", text: said || steps.map((step) => step.text).join(SEP) });
       continue;
     }
-    const owned = OWNER.exec(said);
-    const step = (owned?.[2] ?? said).trim();
-    if (step === "" || NOTHING.test(step)) continue;
-    const owner = (owned?.[1]?.toLowerCase() as Owner | undefined) ?? null;
-    found.push({ at, closeOut: { kind: "left", owner, text: step } });
+    found.push(...leftsOf(said === "" ? steps : [{ at: head, text: said, indent: 0 }]));
   }
   if (found.length === 0) return { closeOut: null, rest: reply };
-  const lefts = found.flatMap(({ closeOut }) => (closeOut.kind === "left" ? [closeOut] : []));
-  const closeOut =
-    lefts.length > 0
-      ? lefts.reduce((best, left) =>
-          OWNER_RANK[left.owner ?? "none"] < OWNER_RANK[best.owner ?? "none"] ? left : best,
-        )
-      : found[0]!.closeOut;
-  const gone = new Set(found.map(({ at }) => at));
+  const lefts = found.flatMap((closeOut) => (closeOut.kind === "left" ? [closeOut] : []));
   const rest = reply
     .split("\n")
     .filter((_, at) => !gone.has(at))
     .join("\n");
-  return { closeOut, rest };
+  if (lefts.length === 0) return { closeOut: found[0]!, rest };
+  const rank = (left: (typeof lefts)[number]) => OWNER_RANK[left.owner ?? "none"];
+  const top = Math.min(...lefts.map(rank));
+  const most = lefts.filter((left) => rank(left) === top);
+  return {
+    closeOut: {
+      kind: "left",
+      owner: most[0]!.owner,
+      text: most.map((left) => left.text).join(SEP),
+    },
+    rest,
+  };
+}
+
+/** Steps read as one, in the order the Cell wrote them. */
+const SEP = " · ";
+
+interface Step {
+  readonly at: number;
+  readonly text: string;
+  readonly indent: number;
+}
+
+/** The list a bare label heads: its lines up to the first that isn't a step. */
+function stepsAfter(lines: ReturnType<typeof proseLines>, label: number): Step[] {
+  const steps: Step[] = [];
+  for (const { at, text } of lines.slice(label + 1)) {
+    if (LABEL.test(text)) break;
+    const step = ITEM.exec(text)?.[1] ?? (OWNER.test(text) ? text.trim() : null);
+    if (step === null) break;
+    steps.push({ at, text: step, indent: text.length - text.trimStart().length });
+  }
+  return steps;
+}
+
+/** A Left's steps. An owner alone on a line owns the steps set in under it. */
+function leftsOf(steps: ReadonlyArray<Step>): CloseOut[] {
+  const lefts: CloseOut[] = [];
+  const parents: Array<{ readonly owner: Owner; readonly indent: number }> = [];
+  for (const { text: said, indent } of steps) {
+    while (parents.length > 0 && indent <= parents.at(-1)!.indent) parents.pop();
+    const owned = OWNER.exec(said);
+    const step = (owned?.[2] ?? said).trim();
+    const owner = (owned?.[1]?.toLowerCase() as Owner | undefined) ?? parents.at(-1)?.owner ?? null;
+    if (owned !== null && step === "" && owner !== null) {
+      parents.push({ owner, indent });
+      continue;
+    }
+    if (step === "" || NOTHING.test(step)) continue;
+    lefts.push({ kind: "left", owner, text: step });
+  }
+  return lefts;
 }
 
 /** What a finished reply leaves to the person, from its close-out and then its words. */

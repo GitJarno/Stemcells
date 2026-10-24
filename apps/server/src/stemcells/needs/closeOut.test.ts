@@ -45,6 +45,56 @@ describe("a Cell's close-out", () => {
     });
   });
 
+  // "A line per owner" reads as a list under a bare label: the form Cells write most.
+  it("reads a Left set out as a list, one owner a line", () => {
+    const reply = [
+      "Both fixes are drafted.",
+      "",
+      "**Left:**",
+      "- **you:** say whether to build fixes 1 and 2",
+      "- **me:** confirm the page once the publish job finishes",
+    ].join("\n");
+    expect(stopOf(reply)).toEqual({
+      ask: { cue: "left", text: "say whether to build fixes 1 and 2" },
+      waits: false,
+      line: "say whether to build fixes 1 and 2",
+    });
+    expect(stopOf("Pushed.\n\n**Left:**\n- waiting: CI on #817\n- me: merge it")).toMatchObject({
+      ask: null,
+      waits: true,
+    });
+  });
+
+  it("keeps every step a list leaves the person, however long the list", () => {
+    const reply = [
+      "Merged #1422.",
+      "",
+      "**Left:**",
+      "- me: archive the old branch",
+      "- waiting: the nightly import",
+      "- me: check the import's log",
+      "- you: send the reply (draft in `tasks/launch.md`)",
+      "- waiting: the supplier's answer",
+      "- you: tell the store its invoice reference",
+    ].join("\n");
+    expect(stopOf(reply).ask).toEqual({
+      cue: "left",
+      text: "send the reply (draft in `tasks/launch.md`) · tell the store its invoice reference",
+    });
+  });
+
+  it("gives the steps set in under an owner to that owner", () => {
+    const own =
+      "Loaded.\n\n**Left:**\n- **me:**\n  - run the nightly job once\n  - send the link\n- **waiting:** the data build";
+    expect(stopOf(own)).toMatchObject({ ask: null, waits: true });
+    const theirs =
+      "Wired.\n\n**Left:**\n- **you:**\n  - give node Full Disk Access\n  - pick the aggregator\n- **me:** follow the first post";
+    expect(stopOf(theirs).ask).toEqual({
+      cue: "left",
+      text: "give node Full Disk Access · pick the aggregator",
+    });
+  });
+
   it("puts the person's Left first, whatever order the lines come in", () => {
     const reply = [
       "Two things left.",
