@@ -12,14 +12,14 @@ something is missing, and says what to do.
 
 ## What it needs
 
-| | Why | How to get it |
-| --- | --- | --- |
-| macOS, Apple silicon or Intel | The app is a Mac app | — |
-| Xcode Command Line Tools | Compilers for the native helpers | `xcode-select --install` |
-| Node.js 24 | Runs the build | [nodejs.org](https://nodejs.org), or `brew install node@24` |
-| pnpm | Installs dependencies | `corepack enable pnpm` |
-| Rust | Builds the app's small resource monitor | [rustup.rs](https://rustup.rs), then `rustup target add aarch64-apple-darwin` (Apple silicon) or `x86_64-apple-darwin` (Intel) |
-| About 5 GB free | Dependencies and the build | — |
+|                               | Why                                     | How to get it                                                                                                                  |
+| ----------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| macOS, Apple silicon or Intel | The app is a Mac app                    | —                                                                                                                              |
+| Xcode Command Line Tools      | Compilers for the native helpers        | `xcode-select --install`                                                                                                       |
+| Node.js 24                    | Runs the build                          | [nodejs.org](https://nodejs.org), or `brew install node@24`                                                                    |
+| pnpm                          | Installs dependencies                   | `corepack enable pnpm`                                                                                                         |
+| Rust                          | Builds the app's small resource monitor | [rustup.rs](https://rustup.rs), then `rustup target add aarch64-apple-darwin` (Apple silicon) or `x86_64-apple-darwin` (Intel) |
+| About 5 GB free               | Dependencies and the build              | —                                                                                                                              |
 
 You also need at least one coding CLI signed in, for example Claude Code
 (`claude auth login`) or Codex (`codex login`). Stemcells runs the ones it
@@ -76,14 +76,41 @@ one go.
 
 ## Where it keeps things
 
-| | |
-| --- | --- |
-| Chats, settings and state | `~/.stemcells` |
-| Window and browser data | `~/Library/Application Support/sh.stemcells.app` |
-| Whether the swipe reads the trackpad's phases, as of the last start | `stemcells-scroll-phases.log` in that folder |
+|                                                                     |                                                  |
+| ------------------------------------------------------------------- | ------------------------------------------------ |
+| Chats, settings and state                                           | `~/.stemcells`                                   |
+| Window and browser data                                             | `~/Library/Application Support/sh.stemcells.app` |
+| Whether the swipe reads the trackpad's phases, as of the last start | `stemcells-scroll-phases.log` in that folder     |
 
 It never touches T3 Code's data (`~/.t3`), so both can be installed side by
 side.
+
+## Your phone and other computers
+
+Settings › Devices lists your devices: the computers this app reaches, and
+the phones, browsers and computers that reach this one. Each computer
+running Stemcells is its own environment, and every app (the desktop app,
+the phone app, a browser) can reach several of them. They reach each other
+through Tailscale, at home and away, and nothing goes through anyone's
+cloud. T3 Connect, T3 Code's own way, runs on T3's servers and is off in
+Stemcells.
+
+1. Install Tailscale on each computer and on your phone, signed in to one
+   account.
+2. On each computer, open **Settings › Devices › Add › Phone or tablet**.
+   The first time, choose **Turn on Tailscale**: Stemcells restarts once,
+   and any Cell at work stops. On a new tailnet, also turn on HTTPS in
+   Tailscale's admin console, under DNS › HTTPS Certificates.
+3. In Stemcells on your phone, scan the code. Each computer needs one scan.
+4. To reach one computer from another, choose **Copy link** in step 2 on
+   the computer you want to reach, then **Add › Computer** on the one
+   you're at, and paste it. Its **Cells** switch lets the two computers'
+   Cells see each other.
+
+**Remove** takes a device's access away, or forgets a computer on this
+device. Without Tailscale, **This network only** pairs a phone on the same
+Wi-Fi. The phone gets no notifications while its app is closed: those need
+T3 Connect.
 
 ## For coding agents
 

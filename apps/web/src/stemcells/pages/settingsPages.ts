@@ -9,26 +9,26 @@
 export type StemcellsSettingsPath =
   | "/settings/disk"
   | "/settings/aski"
-  | "/settings/linked-machines"
+  | "/settings/devices"
   | "/settings/lineage";
 
 /** Each page's name in the settings list, in the list's order. */
 export const STEMCELLS_SETTINGS_LABELS: Readonly<Record<StemcellsSettingsPath, string>> = {
   "/settings/disk": "Disk",
   "/settings/aski": "Aski",
-  "/settings/linked-machines": "Linked machines",
+  "/settings/devices": "Devices",
   "/settings/lineage": "Lineage",
 };
 
 /**
  * No settings scope applies: Disk reads this machine, Aski's switch lives on
- * this device, a link is kept by the two machines' servers, and Lineage
- * reads every machine's Cells.
+ * this device, Devices lists this machine's devices and the computers
+ * this device reaches, and Lineage reads every machine's Cells.
  */
 export const STEMCELLS_SETTINGS_SCOPES: Readonly<Record<StemcellsSettingsPath, null>> = {
   "/settings/disk": null,
   "/settings/aski": null,
-  "/settings/linked-machines": null,
+  "/settings/devices": null,
   "/settings/lineage": null,
 };
 
@@ -36,6 +36,6 @@ export const STEMCELLS_SETTINGS_SCOPES: Readonly<Record<StemcellsSettingsPath, n
 export const STEMCELLS_DEVICE_ONLY_PATHS: readonly StemcellsSettingsPath[] = [
   "/settings/disk",
   "/settings/aski",
-  "/settings/linked-machines",
+  "/settings/devices",
   "/settings/lineage",
 ];

@@ -24,13 +24,13 @@ import { Route as SettingsScheduledTasksRouteImport } from './routes/settings.sc
 import { Route as SettingsProvidersRouteImport } from './routes/settings.providers'
 import { Route as SettingsProjectsRouteImport } from './routes/settings.projects'
 import { Route as SettingsOpenSourceLicensesRouteImport } from './routes/settings.open-source-licenses'
-import { Route as SettingsLinkedMachinesRouteImport } from './routes/settings.linked-machines'
 import { Route as SettingsLineageRouteImport } from './routes/settings.lineage'
 import { Route as SettingsKeybindingsRouteImport } from './routes/settings.keybindings'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
 import { Route as SettingsGeneralRouteImport } from './routes/settings.general'
 import { Route as SettingsDiskRouteImport } from './routes/settings.disk'
 import { Route as SettingsDiagnosticsRouteImport } from './routes/settings.diagnostics'
+import { Route as SettingsDevicesRouteImport } from './routes/settings.devices'
 import { Route as SettingsConnectionsRouteImport } from './routes/settings.connections'
 import { Route as SettingsAskiRouteImport } from './routes/settings.aski'
 import { Route as SettingsArchivedRouteImport } from './routes/settings.archived'
@@ -116,11 +116,6 @@ const SettingsOpenSourceLicensesRoute =
     path: '/open-source-licenses',
     getParentRoute: () => SettingsRoute,
   } as any)
-const SettingsLinkedMachinesRoute = SettingsLinkedMachinesRouteImport.update({
-  id: '/linked-machines',
-  path: '/linked-machines',
-  getParentRoute: () => SettingsRoute,
-} as any)
 const SettingsLineageRoute = SettingsLineageRouteImport.update({
   id: '/lineage',
   path: '/lineage',
@@ -149,6 +144,11 @@ const SettingsDiskRoute = SettingsDiskRouteImport.update({
 const SettingsDiagnosticsRoute = SettingsDiagnosticsRouteImport.update({
   id: '/diagnostics',
   path: '/diagnostics',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsDevicesRoute = SettingsDevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
   getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsConnectionsRoute = SettingsConnectionsRouteImport.update({
@@ -213,13 +213,13 @@ export interface FileRoutesByFullPath {
   '/settings/archived': typeof SettingsArchivedRoute
   '/settings/aski': typeof SettingsAskiRoute
   '/settings/connections': typeof SettingsConnectionsRoute
+  '/settings/devices': typeof SettingsDevicesRoute
   '/settings/diagnostics': typeof SettingsDiagnosticsRoute
   '/settings/disk': typeof SettingsDiskRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/keybindings': typeof SettingsKeybindingsRoute
   '/settings/lineage': typeof SettingsLineageRoute
-  '/settings/linked-machines': typeof SettingsLinkedMachinesRoute
   '/settings/open-source-licenses': typeof SettingsOpenSourceLicensesRoute
   '/settings/projects': typeof SettingsProjectsRoute
   '/settings/providers': typeof SettingsProvidersRoute
@@ -244,13 +244,13 @@ export interface FileRoutesByTo {
   '/settings/archived': typeof SettingsArchivedRoute
   '/settings/aski': typeof SettingsAskiRoute
   '/settings/connections': typeof SettingsConnectionsRoute
+  '/settings/devices': typeof SettingsDevicesRoute
   '/settings/diagnostics': typeof SettingsDiagnosticsRoute
   '/settings/disk': typeof SettingsDiskRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/keybindings': typeof SettingsKeybindingsRoute
   '/settings/lineage': typeof SettingsLineageRoute
-  '/settings/linked-machines': typeof SettingsLinkedMachinesRoute
   '/settings/open-source-licenses': typeof SettingsOpenSourceLicensesRoute
   '/settings/projects': typeof SettingsProjectsRoute
   '/settings/providers': typeof SettingsProvidersRoute
@@ -278,13 +278,13 @@ export interface FileRoutesById {
   '/settings/archived': typeof SettingsArchivedRoute
   '/settings/aski': typeof SettingsAskiRoute
   '/settings/connections': typeof SettingsConnectionsRoute
+  '/settings/devices': typeof SettingsDevicesRoute
   '/settings/diagnostics': typeof SettingsDiagnosticsRoute
   '/settings/disk': typeof SettingsDiskRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/keybindings': typeof SettingsKeybindingsRoute
   '/settings/lineage': typeof SettingsLineageRoute
-  '/settings/linked-machines': typeof SettingsLinkedMachinesRoute
   '/settings/open-source-licenses': typeof SettingsOpenSourceLicensesRoute
   '/settings/projects': typeof SettingsProjectsRoute
   '/settings/providers': typeof SettingsProvidersRoute
@@ -313,13 +313,13 @@ export interface FileRouteTypes {
     | '/settings/archived'
     | '/settings/aski'
     | '/settings/connections'
+    | '/settings/devices'
     | '/settings/diagnostics'
     | '/settings/disk'
     | '/settings/general'
     | '/settings/integrations'
     | '/settings/keybindings'
     | '/settings/lineage'
-    | '/settings/linked-machines'
     | '/settings/open-source-licenses'
     | '/settings/projects'
     | '/settings/providers'
@@ -344,13 +344,13 @@ export interface FileRouteTypes {
     | '/settings/archived'
     | '/settings/aski'
     | '/settings/connections'
+    | '/settings/devices'
     | '/settings/diagnostics'
     | '/settings/disk'
     | '/settings/general'
     | '/settings/integrations'
     | '/settings/keybindings'
     | '/settings/lineage'
-    | '/settings/linked-machines'
     | '/settings/open-source-licenses'
     | '/settings/projects'
     | '/settings/providers'
@@ -377,13 +377,13 @@ export interface FileRouteTypes {
     | '/settings/archived'
     | '/settings/aski'
     | '/settings/connections'
+    | '/settings/devices'
     | '/settings/diagnostics'
     | '/settings/disk'
     | '/settings/general'
     | '/settings/integrations'
     | '/settings/keybindings'
     | '/settings/lineage'
-    | '/settings/linked-machines'
     | '/settings/open-source-licenses'
     | '/settings/projects'
     | '/settings/providers'
@@ -514,13 +514,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsOpenSourceLicensesRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/settings/linked-machines': {
-      id: '/settings/linked-machines'
-      path: '/linked-machines'
-      fullPath: '/settings/linked-machines'
-      preLoaderRoute: typeof SettingsLinkedMachinesRouteImport
-      parentRoute: typeof SettingsRoute
-    }
     '/settings/lineage': {
       id: '/settings/lineage'
       path: '/lineage'
@@ -561,6 +554,13 @@ declare module '@tanstack/react-router' {
       path: '/diagnostics'
       fullPath: '/settings/diagnostics'
       preLoaderRoute: typeof SettingsDiagnosticsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/devices': {
+      id: '/settings/devices'
+      path: '/devices'
+      fullPath: '/settings/devices'
+      preLoaderRoute: typeof SettingsDevicesRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/connections': {
@@ -652,13 +652,13 @@ interface SettingsRouteChildren {
   SettingsArchivedRoute: typeof SettingsArchivedRoute
   SettingsAskiRoute: typeof SettingsAskiRoute
   SettingsConnectionsRoute: typeof SettingsConnectionsRoute
+  SettingsDevicesRoute: typeof SettingsDevicesRoute
   SettingsDiagnosticsRoute: typeof SettingsDiagnosticsRoute
   SettingsDiskRoute: typeof SettingsDiskRoute
   SettingsGeneralRoute: typeof SettingsGeneralRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsKeybindingsRoute: typeof SettingsKeybindingsRoute
   SettingsLineageRoute: typeof SettingsLineageRoute
-  SettingsLinkedMachinesRoute: typeof SettingsLinkedMachinesRoute
   SettingsOpenSourceLicensesRoute: typeof SettingsOpenSourceLicensesRoute
   SettingsProjectsRoute: typeof SettingsProjectsRoute
   SettingsProvidersRoute: typeof SettingsProvidersRoute
@@ -673,13 +673,13 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsArchivedRoute: SettingsArchivedRoute,
   SettingsAskiRoute: SettingsAskiRoute,
   SettingsConnectionsRoute: SettingsConnectionsRoute,
+  SettingsDevicesRoute: SettingsDevicesRoute,
   SettingsDiagnosticsRoute: SettingsDiagnosticsRoute,
   SettingsDiskRoute: SettingsDiskRoute,
   SettingsGeneralRoute: SettingsGeneralRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsKeybindingsRoute: SettingsKeybindingsRoute,
   SettingsLineageRoute: SettingsLineageRoute,
-  SettingsLinkedMachinesRoute: SettingsLinkedMachinesRoute,
   SettingsOpenSourceLicensesRoute: SettingsOpenSourceLicensesRoute,
   SettingsProjectsRoute: SettingsProjectsRoute,
   SettingsProvidersRoute: SettingsProvidersRoute,

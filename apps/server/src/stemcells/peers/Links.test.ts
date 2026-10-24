@@ -99,7 +99,7 @@ const network = Effect.fn(function* (...machines: ReadonlyArray<Machine>) {
   return { running, up, start };
 });
 
-/** What the person's client does in Settings › Linked machines: each side invites the other, then each links. */
+/** What the person's client does in Settings › Devices: each side invites the other, then each links. */
 const linkBoth = Effect.fn(function* (a: Machine, ra: Running, b: Machine, rb: Running) {
   const intoA = yield* ra.service.invite({ environmentId: b.id, label: b.label });
   const intoB = yield* rb.service.invite({ environmentId: a.id, label: a.label });

@@ -1,4 +1,4 @@
-// What Settings › Linked machines takes from upstream: a request to any
+// What Settings › Devices takes from upstream: a request to any
 // connected environment's server, authenticated as upstream authenticates
 // its own (the primary's session or desktop token, a paired environment's
 // bearer token), each environment's address as this device reaches it, and
