@@ -95,11 +95,12 @@ through Tailscale, at home and away, and nothing goes through anyone's
 cloud. T3 Connect, T3 Code's own way, runs on T3's servers and is off in
 Stemcells.
 
-1. Install Tailscale on each computer and on your phone, signed in to one
-   account.
+1. Install Tailscale on your phone, signed in to the account your
+   computers use.
 2. On each computer, open **Settings › Devices › Add › Phone or tablet**.
-   The first time, choose **Turn on**: Stemcells restarts once, and any
-   Cell at work stops.
+   Stemcells sets up Tailscale step by step: it starts Tailscale, opens
+   its sign-in, and the first time on a tailnet opens Tailscale's page to
+   turn on HTTPS, where you confirm once. Nothing restarts.
 3. In Stemcells on your phone, scan the code. Each computer needs one scan.
 4. To reach one computer from another, choose **Copy link** in step 2 on
    the computer you want to reach, then **Add › Computer** on the one
@@ -107,9 +108,10 @@ Stemcells.
    Cells see each other.
 
 **Remove** takes a device's access away, or forgets a computer on this
-device. Without Tailscale, the code pairs a phone on the same Wi-Fi, and
-starting Tailscale later points it at the tailnet. The phone gets no notifications while its app is closed: those need
-T3 Connect.
+device; **Turn off** beside **Over Tailscale** stops phones reaching the
+computer at all. Without Tailscale, **Wi-Fi only** pairs a phone on the same
+Wi-Fi, after one restart. The phone gets no notifications while its app is
+closed: those need T3 Connect.
 
 ## For coding agents
 

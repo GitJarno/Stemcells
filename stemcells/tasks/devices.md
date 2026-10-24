@@ -28,15 +28,27 @@ upstream, so a section inside it would conflict at most syncs.
       never T3's hosted app), mints a one-time link with the standard
       permissions, shows its QR, says "Paired" once the link is used by a
       device that isn't the command line's or an agent's, and takes an
-      unused link back on close. Without a route it offers Network access
-      (one restart).
-- [x] The tailnet IP over Tailscale Serve: with Network access on, the
-      desktop app lists the Mac's Tailscale address, and the phone app
-      speaks plain HTTP inside Tailscale's tunnel (`NSAllowsArbitraryLoads`,
-      Android cleartext). No Serve, no HTTPS certificates, no admin console:
-      the dead end "Tailscale isn't answering" is gone. The routes refresh
-      when the window regains focus, so starting Tailscale moves the code
-      to the tailnet.
+      unused link back on close.
+- [x] Over Tailscale, set up for the person (`apps/server/src/stemcells/tailscale/`).
+      The server stays on loopback and Tailscale Serve answers for it on
+      the tailnet with HTTPS: no Network access, no restart, nothing
+      listening on a café's Wi-Fi, and an address that works away from
+      home. (#276 had pointed phones at the tailnet IP over Network
+      access instead; that opened the server on every network the laptop
+      joins and sent a Wi-Fi pairing's token in the clear.) The dialog
+      walks Tailscale on this computer → HTTPS for the tailnet → this
+      computer on the tailnet, taking each step itself: it opens the app
+      and flips its switch (`tailscale up`), sends a sign-in under way
+      straight to the browser, takes the one-click page `tailscale serve`
+      names when the tailnet lacks HTTPS (the only click that's the
+      person's, once per tailnet), and puts Serve in front without a
+      restart. Once on, a mark in our state folder keeps it on: Serve
+      comes back after a restart and whenever Tailscale returns, and
+      comes down when the server stops. Settings › Devices shows it with
+      Turn off. Upstream's own Tailscale HTTPS switch (Connections) still
+      serves on start when it's on; Turn off doesn't change that switch.
+- [x] Wi-Fi only stays for a person without Tailscale: Network access
+      (one restart), the local network address.
 - [x] Computer: upstream's Add environment dialog, unchanged.
 - [x] Only `upstream/devices.ts` imports upstream; a contract test pins
       the code's URL: this machine's own `/pair`, with the token upstream's

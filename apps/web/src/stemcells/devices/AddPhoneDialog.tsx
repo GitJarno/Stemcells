@@ -1,4 +1,5 @@
-import { CheckIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CheckIcon, CircleIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -11,6 +12,7 @@ import {
   DialogPopup,
   DialogTitle,
   formatExpiresInLabel,
+  openExternal,
   pairingUrlFor,
   QRCodeSvg,
   reachablePageOrigin,
@@ -22,12 +24,16 @@ import {
 } from "../upstream/devices";
 import { Button, Spinner, toastManager, useRelativeTimeTick } from "../upstream/disk";
 import { deviceName, pairedBy } from "./devices";
-import { phoneRoute } from "./phoneRoute";
+import { advanceTailnet, type TailnetStep, useTailnet } from "./tailnet";
+import { wifiRoute } from "./wifiRoute";
 
 // Settings › Devices › Add › Phone or tablet (stemcells/tasks/devices.md):
-// this computer's best address for a phone, a one-time link to it as a QR
-// code, and "Paired" once the phone has used it. Without an address, the
-// switch that adds one.
+// a one-time link to this computer as a QR code, and "Paired" once the
+// phone has used it. The address is Tailscale's: this computer stays on
+// loopback and Tailscale Serve answers for it on the tailnet, which the
+// dialog sets up step by step, taking each step itself where it can and
+// opening the page where the person's click is needed. Wi-Fi only is the
+// way for a person without Tailscale.
 
 type Link = {
   readonly id: string;
@@ -53,17 +59,107 @@ export function AddPhoneDialog({
   );
 }
 
+/** The three things a phone's way in over Tailscale needs, in order, and the step each covers. */
+const SETUP = [
+  {
+    title: "Tailscale on this computer",
+    steps: ["missing", "stopped", "signed-out", "starting"],
+  },
+  { title: "HTTPS for your tailnet, once", steps: ["https-off"] },
+  { title: "This computer on your tailnet", steps: ["not-serving", "port-taken"] },
+] as const satisfies ReadonlyArray<{
+  readonly title: string;
+  readonly steps: ReadonlyArray<TailnetStep["kind"]>;
+}>;
+
+/**
+ * What the person reads at each step: the step itself with the button that
+ * takes it, then, back on the same step after it, what to do on the page
+ * or in the app window that opened, or what went wrong when neither did.
+ */
+const STEP_COPY: Record<
+  Exclude<TailnetStep["kind"], "ready">,
+  {
+    readonly hint: string;
+    readonly action: string | null;
+    readonly page?: string;
+    readonly app?: string;
+    readonly failed: string;
+  }
+> = {
+  missing: {
+    hint: "Install Tailscale and sign in.",
+    action: "Get Tailscale",
+    page: "Install Tailscale from the page that opened, then sign in.",
+    failed: "Install Tailscale from tailscale.com, then sign in.",
+  },
+  stopped: {
+    hint: "Tailscale is off.",
+    action: "Start Tailscale",
+    app: "Turn Tailscale on in its window.",
+    failed: "Start Tailscale on this computer.",
+  },
+  "signed-out": {
+    hint: "Sign in to Tailscale.",
+    action: "Sign in",
+    page: "Sign in on the page that opened.",
+    app: "Sign in in Tailscale's window.",
+    failed: "Sign in to Tailscale on this computer.",
+  },
+  starting: { hint: "Tailscale is connecting.", action: null, failed: "Tailscale is connecting." },
+  "https-off": {
+    hint: "Your tailnet needs HTTPS, once. Tailscale asks you to confirm.",
+    action: "Turn on HTTPS",
+    page: "Confirm on Tailscale's page. This updates by itself.",
+    failed:
+      "Tailscale didn't offer its page. Try again; only your tailnet's admin can turn on HTTPS.",
+  },
+  "not-serving": {
+    hint: "Putting this computer on your tailnet.",
+    action: null,
+    failed: "Tailscale didn't put this computer on your tailnet.",
+  },
+  "port-taken": {
+    hint: "Tailscale's HTTPS port already serves something else on this computer. Give Stemcells another under Tailscale HTTPS in Settings › Connections.",
+    action: null,
+    failed: "",
+  },
+};
+
 function AddPhone({ onDone }: { readonly onDone: () => void }) {
   const here = useThisMachine();
-  // A desktop app that may not switch this computer's routes reads none of them.
-  const route = phoneRoute(
+  const [way, setWay] = useState<"tailnet" | "wifi">("tailnet");
+  const tailnet = useTailnet(here.canSwitch && way === "tailnet");
+  // A browser away from this computer already reaches it at its page's address.
+  const wifi = wifiRoute(
     here.canSwitch
       ? { desktop: true, exposure: here.exposure, endpoints: here.endpoints }
       : { desktop: false, pageOrigin: here.desktop ? null : reachablePageOrigin() },
   );
+  const step = tailnet.look?.step ?? null;
+  const baseUrl = !here.canSwitch
+    ? wifi.kind === "ready"
+      ? wifi.baseUrl
+      : null
+    : way === "tailnet"
+      ? step?.kind === "ready"
+        ? step.baseUrl
+        : null
+      : wifi.kind === "ready"
+        ? wifi.baseUrl
+        : null;
+
   const [link, setLink] = useState<Link | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const [switching, setSwitching] = useState(false);
+  const [busy, setBusy] = useState(false);
+  /**
+   * The step the last advance was taken from, and whether it opened a page:
+   * back on that step, its hint turns to what to do there.
+   */
+  const [advanced, setAdvanced] = useState<{
+    readonly from: TailnetStep["kind"] | null;
+    readonly opened: "page" | "app" | null;
+  } | null>(null);
   const minting = useRef(false);
   const mounted = useRef(true);
   const unused = useRef<string | null>(null);
@@ -77,7 +173,7 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       }),
   });
 
-  const ready = route.kind === "ready";
+  const ready = baseUrl !== null;
   const devices = here.devices;
   const paired =
     link !== null && devices !== null && here.openLinkIds !== null
@@ -85,12 +181,8 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       : null;
   const expired = link !== null && Date.parse(link.expiresAt) <= nowMs;
 
-  // Fresh routes on open, and on coming back from starting Tailscale: the
-  // code then points at the tailnet address.
   useEffect(() => {
     refreshRoutes();
-    window.addEventListener("focus", refreshRoutes);
-    return () => window.removeEventListener("focus", refreshRoutes);
   }, []);
 
   useEffect(() => {
@@ -125,8 +217,27 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
     };
   }, []);
 
-  const turnOn = async () => {
-    setSwitching(true);
+  const advance = async () => {
+    const from = step?.kind ?? null;
+    setBusy(true);
+    const next = await advanceTailnet();
+    setBusy(false);
+    if (!mounted.current) return;
+    if (next === null) {
+      toastManager.add({
+        type: "error",
+        title: "Couldn't reach this computer's server",
+        description: "Try again in a moment.",
+      });
+      return;
+    }
+    tailnet.setLook(next);
+    setAdvanced({ from, opened: next.open !== null ? "page" : next.openedApp ? "app" : null });
+    if (next.open !== null) void openExternal(next.open);
+  };
+
+  const turnOnWifi = async () => {
+    setBusy(true);
     try {
       await turnOnNetworkAccess();
     } catch (error) {
@@ -137,7 +248,7 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
           error instanceof Error ? error.message : "Try again from Settings › Connections.",
       });
     }
-    setSwitching(false);
+    setBusy(false);
   };
 
   if (paired !== null)
@@ -160,8 +271,9 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       </>
     );
 
-  if (route.kind === "ready") {
-    const url = link === null ? null : pairingUrlFor(route.baseUrl, link.credential);
+  if (baseUrl !== null) {
+    const url = link === null ? null : pairingUrlFor(baseUrl, link.credential);
+    const overWifi = here.canSwitch && way === "wifi";
     return (
       <>
         <DialogHeader>
@@ -197,23 +309,24 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
             )}
             {link !== null && !expired ? (
               <p className="text-xs text-muted-foreground">
-                {new URL(route.baseUrl).host} · {formatExpiresInLabel(link.expiresAt, nowMs)}
+                {new URL(baseUrl).host} · {formatExpiresInLabel(link.expiresAt, nowMs)}
               </p>
             ) : null}
           </div>
-          {route.tailnet ? (
+          {here.canSwitch ? (
             <p className="text-xs text-muted-foreground">
-              Your phone needs Tailscale too, signed in to the same account.
-            </p>
-          ) : null}
-          {!route.anywhere ? (
-            <p className="text-xs text-muted-foreground">
-              This works on this Wi-Fi only. Start Tailscale on this computer and your phone, and
-              the code reaches it from anywhere.
+              {overWifi
+                ? "This works on this Wi-Fi only. Over Tailscale it reaches this computer from anywhere."
+                : "Your phone needs Tailscale too, signed in to the same account."}
             </p>
           ) : null}
         </DialogPanel>
         <DialogFooter variant="bare">
+          {overWifi ? (
+            <Button variant="outline" onClick={() => setWay("tailnet")}>
+              Use Tailscale
+            </Button>
+          ) : null}
           {problem !== null || expired ? (
             <Button
               variant="outline"
@@ -235,28 +348,14 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
     );
   }
 
-  if (route.kind === "loading")
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Add a phone</DialogTitle>
-        </DialogHeader>
-        <DialogPanel>
-          <div className="flex justify-center py-8">
-            <Spinner />
-          </div>
-        </DialogPanel>
-      </>
-    );
-
-  if (route.kind === "unreachable" || !here.canSwitch)
+  if (!here.canSwitch)
     return (
       <>
         <DialogHeader>
           <DialogTitle>Add a phone</DialogTitle>
           <DialogDescription>
-            Open Settings › Devices in the Stemcells app on this computer, which can turn on
-            Tailscale for your phone.
+            Open Settings › Devices in the Stemcells app on this computer, which sets up the way in
+            for your phone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter variant="bare">
@@ -265,25 +364,117 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       </>
     );
 
+  if (way === "wifi")
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>Wi-Fi only</DialogTitle>
+          <DialogDescription>
+            A phone on this Wi-Fi reaches this computer, and loses it away from home. Every device
+            on the network can then knock, though only a paired one gets in.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogPanel>
+          {wifi.kind === "loading" ? (
+            <div className="flex justify-center py-4">
+              <Spinner />
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Stemcells restarts once, and any Cell at work stops. Come back here after.
+            </p>
+          )}
+        </DialogPanel>
+        <DialogFooter variant="bare">
+          <Button variant="outline" disabled={busy} onClick={() => setWay("tailnet")}>
+            Use Tailscale
+          </Button>
+          <Button disabled={busy || wifi.kind === "loading"} onClick={() => void turnOnWifi()}>
+            {busy ? <Spinner size="xs" /> : null}
+            Turn on
+          </Button>
+        </DialogFooter>
+      </>
+    );
+
+  const current = step === null || step.kind === "ready" ? null : step.kind;
+  const copy = current === null ? null : STEP_COPY[current];
+  const at =
+    current === null ? -1 : SETUP.findIndex((item) => item.steps.some((s) => s === current));
+  const waitingOnPerson =
+    current !== null &&
+    (advanced?.from === current || (current === "not-serving" && tailnet.serveFailed));
   return (
     <>
       <DialogHeader>
         <DialogTitle>Add a phone</DialogTitle>
         <DialogDescription>
-          Your phone reaches this computer on the same Wi-Fi, and from anywhere with Tailscale on
-          both. Turn it on here.
+          Your phone reaches this computer through Tailscale, at home or away. Stemcells sets it up
+          here.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel>
-        <p className="text-xs text-muted-foreground">
-          Stemcells restarts once, and any Cell at work stops. Come back here after.
-        </p>
+        {copy === null ? (
+          <div className="flex justify-center py-4">
+            <Spinner />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <ol className="flex flex-col gap-2 text-sm">
+              {SETUP.map((item, index) => (
+                <li key={item.title} className="flex items-center gap-2">
+                  {index < at ? (
+                    <CheckIcon aria-hidden className="size-4 text-success" />
+                  ) : index === at &&
+                    (busy ||
+                      current === "starting" ||
+                      (current === "not-serving" && !waitingOnPerson)) ? (
+                    <Spinner size="xs" />
+                  ) : (
+                    <CircleIcon
+                      aria-hidden
+                      className={
+                        index === at ? "size-4 text-foreground" : "size-4 text-muted-foreground/50"
+                      }
+                    />
+                  )}
+                  <span className={index > at ? "text-muted-foreground" : undefined}>
+                    {item.title}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <p className="text-xs text-muted-foreground">
+              {!waitingOnPerson
+                ? copy.hint
+                : advanced?.opened === "page"
+                  ? (copy.page ?? copy.failed)
+                  : advanced?.opened === "app"
+                    ? (copy.app ?? copy.failed)
+                    : copy.failed}
+            </p>
+          </div>
+        )}
       </DialogPanel>
       <DialogFooter variant="bare">
-        <Button disabled={switching} onClick={() => void turnOn()}>
-          {switching ? <Spinner size="xs" /> : null}
-          Turn on
+        <Button variant="outline" disabled={busy} onClick={() => setWay("wifi")}>
+          Wi-Fi only
         </Button>
+        {current === "port-taken" ? (
+          <Button render={<Link to="/settings/connections" />} onClick={onDone}>
+            Open Connections
+          </Button>
+        ) : null}
+        {copy?.action != null || (current === "not-serving" && waitingOnPerson) ? (
+          <Button disabled={busy} onClick={() => void advance()}>
+            {busy ? <Spinner size="xs" /> : null}
+            {!waitingOnPerson
+              ? copy?.action
+              : advanced?.opened === "page"
+                ? "Open again"
+                : "Try again"}
+          </Button>
+        ) : null}
       </DialogFooter>
     </>
   );

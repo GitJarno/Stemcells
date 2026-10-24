@@ -27,6 +27,7 @@ import {
 import { AddPhoneDialog } from "./AddPhoneDialog";
 import { ComputerRows } from "./Computers";
 import { deviceKind, deviceName } from "./devices";
+import { turnOffTailnet, useTailnet } from "./tailnet";
 
 // Settings › Devices (stemcells/tasks/devices.md): the person's devices in
 // one list, the computers this app reaches and the phones, browsers and
@@ -47,6 +48,8 @@ export function DevicesPanel() {
   const [adding, setAdding] = useState<"phone" | "computer" | null>(null);
   const [computerError, setComputerError] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
+  const tailnet = useTailnet(false);
+  const [turningOff, setTurningOff] = useState(false);
   // This app's own session, and the command line's and agents' (bots), aren't devices.
   const devices =
     here.devices?.filter((device) => !device.current && device.deviceType !== "bot") ?? null;
@@ -71,6 +74,25 @@ export function DevicesPanel() {
     setRemoving(null);
   };
 
+  const turnOff = async () => {
+    const confirmed = await requestConfirmDialog(
+      "Stop reaching this computer over Tailscale?\nPaired phones reach it again once you add a phone.",
+      { variant: "destructive" },
+    );
+    if (confirmed !== true) return;
+    setTurningOff(true);
+    const next = await turnOffTailnet();
+    setTurningOff(false);
+    if (next === null)
+      toastManager.add({
+        type: "error",
+        title: "Couldn't turn it off",
+        description: "Try again in a moment.",
+      });
+    else tailnet.setLook(next);
+  };
+  const tailnetLook = tailnet.look;
+
   const add = (
     <Menu>
       <MenuTrigger render={<Button size="xs" variant="ghost-muted" aria-label="Add a device" />}>
@@ -88,6 +110,30 @@ export function DevicesPanel() {
     <SettingsPageContainer>
       <SettingsSection id="devices" title="Your devices" headerAction={add}>
         <ComputerRows alone={devices !== null && devices.length === 0} />
+        {tailnetLook?.on ? (
+          <SettingsRow
+            title="Over Tailscale"
+            description={
+              tailnetLook.step.kind === "ready"
+                ? `Phones reach this computer at ${new URL(tailnetLook.step.baseUrl).host}`
+                : "On, waiting for Tailscale on this computer"
+            }
+            control={
+              turningOff ? (
+                <Spinner size="xs" />
+              ) : (
+                <Button
+                  size="xs"
+                  variant="destructive-outline"
+                  disabled={!here.canPair}
+                  onClick={() => void turnOff()}
+                >
+                  Turn off
+                </Button>
+              )
+            }
+          />
+        ) : null}
         {!here.canSee ? (
           <SettingsRow
             title="Phones and browsers"
@@ -133,7 +179,10 @@ export function DevicesPanel() {
       </p>
       <AddPhoneDialog
         open={adding === "phone"}
-        onOpenChange={(open) => setAdding(open ? "phone" : null)}
+        onOpenChange={(open) => {
+          setAdding(open ? "phone" : null);
+          if (!open) tailnet.readAgain();
+        }}
       />
       {/* Upstream's dialog draws its own "Add environment" button; Add opens it instead. */}
       <div hidden>

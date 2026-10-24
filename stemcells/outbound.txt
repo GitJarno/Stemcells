@@ -49,6 +49,7 @@ host claude.ai sign-up link in onboarding
 host git-scm.com the install link when git is missing
 host cli.github.com the install link when gh is missing
 host login.tailscale.com the link `t3 pair` prints
+host tailscale.com its download page, opened in the browser by Add › Phone or tablet when Tailscale is missing
 host chatgpt.com usage link, and the Codex usage limits read with the person's own sign-in
 
 # The person's own search, in the preview browser's address bar.

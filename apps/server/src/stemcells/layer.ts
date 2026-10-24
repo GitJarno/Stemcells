@@ -13,6 +13,7 @@ import * as PresenceHttp from "./presence/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
 import * as SpendHttp from "./spend/http.ts";
 import * as SuggestionHttp from "./suggestions/http.ts";
+import * as TailscaleHttp from "./tailscale/http.ts";
 import * as ModelList from "./upstream/modelList.ts";
 
 // Everything Stemcells adds to the server, mounted by one line in server.ts:
@@ -22,7 +23,7 @@ import * as ModelList from "./upstream/modelList.ts";
 // limit (and the drafts that hold them), Cells told when they step on each
 // other, another Cell's words framed and who's here on a provider's wire
 // (`peers/onTheWire.ts`), the routes of linked environments, what the person would say
-// next to a Cell, what each chat has spent for Settings › Lineage, the
+// next to a Cell, a phone's way in over Tailscale, what each chat has spent for Settings › Lineage, the
 // theme published on start, and the telemetry id upstream left behind,
 // removed on start.
 
@@ -38,6 +39,7 @@ export const layer = Layer.mergeAll(
   OnTheWire.layer,
   SuggestionHttp.layer,
   SpendHttp.layer,
+  TailscaleHttp.layer,
   Look.layer,
   Privacy.layer,
 );

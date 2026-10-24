@@ -20,7 +20,6 @@ import { getPairingTokenFromUrl, readHostedPairingRequest } from "@t3tools/share
 import * as DateTime from "effect/DateTime";
 
 import {
-  isTailscaleHttpsEndpoint,
   sortDesktopClientSessions,
   toDesktopClientSessionRecord,
 } from "~/components/settings/ConnectionsSettings.logic";
@@ -35,6 +34,9 @@ import {
   type ServerClientSessionRecord,
   usePrimarySessionState,
 } from "~/environments/primary";
+import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
+import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAuth";
+import { ensureLocalApi } from "~/localApi";
 import { isLocalEnvironmentDisabled } from "~/localEnvironment";
 import { authEnvironment } from "~/state/auth";
 import {
@@ -91,7 +93,6 @@ export { QRCodeSvg } from "~/components/ui/qr-code";
 export { requestConfirmDialog } from "~/confirmDialog";
 export { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 export { formatExpiresInLabel } from "~/timestampFormat";
-export { isTailscaleHttpsEndpoint };
 
 const NO_ENDPOINTS: ReadonlyArray<AdvertisedEndpoint> = [];
 
@@ -180,6 +181,22 @@ export function reachablePageOrigin(): string | null {
 }
 
 export const refreshRoutes = refreshDesktopNetworkAccessState;
+
+/**
+ * A request to this computer's own server: the desktop app's bearer token,
+ * the session cookie in a browser on its origin.
+ */
+export async function requestPrimary(method: "GET" | "POST", pathname: string) {
+  const bearerToken = await readDesktopPrimaryBearerToken();
+  return fetch(resolvePrimaryEnvironmentHttpUrl(pathname), {
+    method,
+    credentials: bearerToken ? "omit" : "include",
+    headers: bearerToken ? { authorization: `Bearer ${bearerToken}` } : {},
+  });
+}
+
+/** A page in the person's browser, outside the app. */
+export const openExternal = (url: string) => ensureLocalApi().shell.openExternal(url);
 
 /**
  * Turns on Network access in the desktop app: it saves the choice and
