@@ -11,7 +11,7 @@ import {
 } from "@t3tools/provider-core/server/orchestrationInstructions";
 import { describe, expect, it } from "vite-plus/test";
 
-import { readCloseOut } from "../needs/closeOut.ts";
+import { readCloseOut, stopOf } from "../needs/closeOut.ts";
 
 const closeOut =
   T3_CODE_ORCHESTRATION_SECTIONS.find((section) =>
@@ -35,8 +35,11 @@ describe("the close-out every Cell is given", () => {
 
   it("asks for the lines the reader reads", () => {
     expect(closeOut).toContain("**Done:** what you delivered");
-    expect(closeOut).toContain("**Left:** you, me or waiting:");
     expect(readCloseOut("**Done:** what you delivered").closeOut?.kind).toBe("done");
+    // The example Cells copy must read as they mean it: a Cell waiting on its own step is at work.
+    const example = /Like this:\n\n([\s\S]+?)\n\n/.exec(closeOut)?.[1] ?? "";
+    expect(example).toContain("**Left:**");
+    expect(stopOf(`Pushed it.\n\n${example}`)).toMatchObject({ ask: null, waits: true });
     for (const owner of ["you", "me", "waiting"] as const) {
       expect(readCloseOut(`**Left:** ${owner}: the step`).closeOut).toEqual({
         kind: "left",

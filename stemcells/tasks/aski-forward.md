@@ -86,7 +86,7 @@ on anything irreversible.
       so those Cells showed done. A list's steps are read one a line, steps
       set in under an owner are that owner's, and the person's steps read
       as one card.
-- [ ] 2. **The contract, sharper.** The section every Cell gets: choices
+- [x] 2. **The contract, sharper.** The section every Cell gets: choices
       through the question tool, `Left: you` only for the person's own
       step, Done names its evidence, the labels and owner words in English
       whatever language the reply is in.
@@ -104,3 +104,7 @@ on anything irreversible.
   short" is waiting on CI, and none that needed the person now shows done.
   Owner words in another language (`sinä:`) read as the person's, the safe
   side, until slice 2 keeps the labels in English.
+- Slice 2: the section shows the list it asks for, and a contract test
+  reads that example as the Cell means it, so the instruction and the
+  reader can't drift apart again. With no question tool, a Cell asks in
+  its last paragraph and ends with `Left: you`.

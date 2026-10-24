@@ -125,10 +125,12 @@ agent's own words, then a model):
 1. **Facts** from upstream's shell: a run, a pending request, a failure, a
    limit, the stall clock.
 2. **The Cell's own close-out.** Every Cell is told (one section in the
-   instructions upstream gives every chat) to end each final reply with one
-   line: `Done: <what it delivered>`, or `Left: you — <what it needs>`, or
-   `Left: waiting — <on what>`; and to ask a choice through its question
-   tool, not in prose. Code reads the line. The agent knows whether it is
+   instructions upstream gives every chat) to end each final reply with
+   `Done: <what it delivered, and what shows it works>`, or `Left:` with a
+   line per owner (`you` for a step only the person can take, `me`,
+   `waiting`), the labels in English whatever language it writes; and to
+   ask a choice through its question tool, never in prose or a `Left:`
+   line (`aski-forward.md`). Code reads the lines. The agent knows whether it is
    done better than anything reading it afterwards, and the line costs
    nothing.
 3. **The pre-read** (`needs/preread.ts`), free code, when the line is
