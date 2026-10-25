@@ -23,6 +23,8 @@ export function ThreadCell(props: {
   readonly away?: boolean;
   /** Its machine is out of reach: it peers. */
   readonly lineDown?: boolean;
+  /** When it forms, if the view showing it is where it's first seen (`forming.ts`). */
+  readonly formingFrom?: number | undefined;
 }) {
   const { thread } = props;
   const providers = useEnvironmentProviders().get(thread.environmentId);
@@ -53,6 +55,7 @@ export function ThreadCell(props: {
       points={props.points}
       plays={props.plays === true && (face.activity !== undefined || face.mood === "pleased")}
       ground={ground}
+      formingFrom={props.formingFrom}
     />
   );
 }

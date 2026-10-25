@@ -1,10 +1,12 @@
 // The ledge over a Cell's composer, as on the Mac (`apps/web/src/stemcells/
 // composer/CellComposerLine.tsx`) and on the original app's roof: the Cell stands
 // on the composer, playing what it's doing, with what its chat is about
-// beside it, quiet. The header above says who it is; this says on what.
+// beside it, quiet. The header above says who it is; this says on what. A
+// chat just sent from the phone shows here first, so its Cell forms here.
 
 import { View } from "react-native";
 
+import { formingFrom } from "../cell/forming";
 import { ThreadCell } from "../cell/ThreadCell";
 import { cellNameOf, oneLinerOf } from "../cell/kit";
 import { AppText, type EnvironmentThreadShell, useProject } from "../upstream/cells";
@@ -37,7 +39,7 @@ export function CellLedge(props: {
         className="w-full flex-row items-end self-center"
         style={{ maxWidth: props.contentMaxWidth, paddingLeft: STANDS_IN, gap: 8 }}
       >
-        <ThreadCell thread={thread} plays />
+        <ThreadCell thread={thread} plays formingFrom={formingFrom(thread.id, thread.createdAt)} />
         {line === null ? null : (
           <AppText
             className="flex-1 text-[13px] text-foreground-muted"

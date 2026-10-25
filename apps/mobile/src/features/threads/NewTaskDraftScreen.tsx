@@ -1,4 +1,5 @@
 import { DraftEnvironmentControl } from "./DraftEnvironmentControl";
+import { AskiStanding } from "../../stemcells/aski/AskiStanding";
 import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { DraftThreadHeader } from "./DraftThreadHeader";
 import { threadHeaderAppearance } from "./thread-header-appearance";
@@ -1083,6 +1084,7 @@ export function NewTaskDraftScreen(props: {
             testID="new-task-hero-scroll"
           >
             <View style={{ flexGrow: 1 }} />
+            <AskiStanding />
             {hero}
             <View style={{ flexGrow: 2 }} />
           </ScrollView>

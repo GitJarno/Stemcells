@@ -46,13 +46,15 @@ export function AskiFigure(props: {
   useEffect(() => {
     if (holds) return;
     return onBlink(() => {
-      open.value = withSequence(
-        withTiming(BLINK.shut, { duration: BLINK.close * 1000 }),
-        withTiming(1, { duration: BLINK.open * 1000 }),
+      open.set(
+        withSequence(
+          withTiming(BLINK.shut, { duration: BLINK.close * 1000 }),
+          withTiming(1, { duration: BLINK.open * 1000 }),
+        ),
       );
     });
   }, [holds, open]);
-  const blinking = useAnimatedStyle(() => ({ transform: [{ scaleY: open.value }] }));
+  const blinking = useAnimatedStyle(() => ({ transform: [{ scaleY: open.get() }] }));
   return (
     <View
       pointerEvents="none"

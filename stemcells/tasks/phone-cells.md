@@ -3,7 +3,8 @@
 The phone still shows T3's thread list and composer. This brings the
 Stemcells layer to it, from the original app's phone and the Mac: each Cell's
 creature, the ledge over its composer, a home where Aski greets you and the
-Cells stand in cards, the pen that opens Aski, and the attachment card.
+Cells stand in cards, Aski in the new chat with the Cells it forms, and the
+attachment card.
 
 Research (2026-10-25): the original app's phone (`Companion/Phone`), the web's
 creature, Aski and composer line, and the phone's own list, header and
@@ -59,10 +60,18 @@ composer. What it settled:
 - [x] Asleep: the night over Aski, stars, the moon at today's phase, a shooting star now and then; the tab's shelves open
 - [x] Aski's chat is the one the Mac and the server pick (`aski/chat.ts`), not every chat on its instance (fixes slice 1's header and ledge)
 
-### 3. Aski on the pen
+### 3. Aski in the new chat, and the spawn
 
-- [ ] The pen opens Aski's chat when the environment has one, else T3's new chat
-- [ ] Cells Aski starts form on the home: blocks, then the hop
+The Mac's design, not the first reading of "Aski should be there": the
+pen keeps T3's new chat, with Aski standing in it (the Mac's
+`AskiStanding`), and what's sent becomes a Cell that forms out of Aski's
+characters. A pen that opened Aski's own chat would lose choosing the
+project and model.
+
+- [x] Aski stands over the new chat's headline (a seam in the draft: an import and a line)
+- [x] A new Cell forms where it's first seen: glyphs `. : + # @`, blocks, the hop (the web's `forming.ts`); on the ledge for a chat sent from the phone
+- [x] On the home, a copy of Aski flies to each Cell forming in its card, staggered; Aski's eyes `^ ^` while they fly; only while the home is in front
+- [ ] Later: several Cells from one message, as the Mac plans them (`POST /api/stemcells/planner`)
 
 ### 4. The attachment card
 

@@ -91,7 +91,8 @@ export function streamStarts(
 ): number[] {
   const most = timing.most ?? MOST_IN_FLIGHT;
   const away = (p: Point) => Math.hypot(p.x - origin.x, p.y - origin.y);
-  const order = targets.map((_, i) => i).toSorted((a, b) => away(targets[a]!) - away(targets[b]!));
+  // A fresh array, sorted in place: the phone's Hermes has no `toSorted`.
+  const order = targets.map((_, i) => i).sort((a, b) => away(targets[a]!) - away(targets[b]!));
   const starts: number[] = [];
   const byTarget: number[] = Array.from({ length: targets.length }, () => 0);
   order.forEach((target, k) => {

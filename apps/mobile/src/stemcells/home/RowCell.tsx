@@ -4,31 +4,52 @@
 // it, has Aski. T3's row hands control here at its seam
 // (`features/threads/thread-list-v2-items.tsx`, `stemcells/seams.md`).
 
-import type { ReactNode } from "react";
-import { View } from "react-native";
+import { type ReactNode, use, useEffect, useRef } from "react";
+import { View, type ViewInstance } from "react-native";
+import { useReducedMotion } from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
 import { useIsAskiChat } from "../aski/useAskiChat";
-import { cellNameOf } from "../cell/kit";
+import { formingFrom } from "../cell/forming";
+import { cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
-import { useMinute } from "./state";
+import { sendCopy } from "./copies";
+import { HomeInFront, useMinute } from "./state";
 import { isAway } from "./tabs";
 
 function Figure(props: { readonly thread: EnvironmentThreadShell; readonly points: number }) {
-  const aski = useIsAskiChat(props.thread.id);
+  const { thread } = props;
+  const aski = useIsAskiChat(thread.id);
   const now = useMinute();
   const ink = useResolveClassNames("text-foreground").color;
   const card = useResolveClassNames("bg-grouped-card").backgroundColor;
+  const reduced = useReducedMotion();
+  const inFront = use(HomeInFront);
+  const box = useRef<ViewInstance>(null);
+  // Asked on every draw, not kept: a list row is handed another chat as it scrolls. A Cell about to form here gets its copy of Aski (`copies.ts`).
+  const forming =
+    aski || reduced || !inFront ? undefined : formingFrom(thread.id, thread.createdAt);
+  const sendFor = () => {
+    if (forming === undefined || forming <= clockSeconds()) return;
+    box.current?.measureInWindow((x, y, width, height) => {
+      if (width > 0) sendCopy(thread.id, { x, y, width, height }, forming);
+    });
+  };
+  // A list row is handed another chat as it scrolls, without a new layout.
+  useEffect(sendFor, [thread.id, forming]);
   if (aski) return <AskiFigure height={props.points * 14} ink={ink} ground={card} />;
   return (
-    <ThreadCell
-      thread={props.thread}
-      points={props.points}
-      plays
-      away={isAway(props.thread, now)}
-    />
+    <View ref={box} onLayout={sendFor}>
+      <ThreadCell
+        thread={thread}
+        points={props.points}
+        plays
+        away={isAway(thread, now)}
+        formingFrom={forming}
+      />
+    </View>
   );
 }
 

@@ -18,6 +18,14 @@ export interface HomeTabs {
 /** Set while the home shows its tabs: T3's own home, searching, shows none. */
 export const HomeTabsContext = createContext<HomeTabs | null>(null);
 
+/**
+ * Whether the home is the screen in front. T3's home stays mounted under a
+ * chat and keeps drawing its rows; a Cell forms only where it's seen
+ * (`cell/forming.ts`), so one Aski starts meanwhile forms on the way back.
+ * Rows outside the home (the iPad's sidebar) leave forming to the chat.
+ */
+export const HomeInFront = createContext(false);
+
 let chosen: HomeTab | null = null;
 const listeners = new Set<() => void>();
 

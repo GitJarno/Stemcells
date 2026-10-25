@@ -1,7 +1,8 @@
 // The top of the home, as the original app's board had it: Aski greeting you over
 // the tabs. A tap on Aski opens its chat; a tap on its line rolls another
 // (`greeting.ts`). Its eyes are `^ ^` once every Cell has landed and none
-// works or waits on you. On the Asleep tab the night comes over it.
+// works or waits on you, and while its copies fly to Cells forming in their
+// cards (`copies.ts`). On the Asleep tab the night comes over it.
 
 import { use, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -18,6 +19,7 @@ import {
   SegmentedControl,
   useHomeThreadSelection,
 } from "../upstream/home";
+import { askiStandsIn, useCopies } from "./copies";
 import { greetingAt } from "./greeting";
 import { Night } from "./Night";
 import { NIGHT_INK, NIGHT_TEXT, skyAt } from "./sky";
@@ -42,6 +44,7 @@ export function AskiHome() {
   const [rolls, setRolls] = useState(0);
   const [seed] = useState(seedNow);
   const [height, setHeight] = useState(0);
+  const copies = useCopies();
   const ink = useResolveClassNames("text-foreground").color;
   const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
   if (home === null) return null;
@@ -50,7 +53,9 @@ export function AskiHome() {
   const eyesAt = ROOM_OVER + ((EYE_LINE - VIEW.y) / VIEW.height) * ASKI_HEIGHT;
   const ground = night ? skyAt(height > 0 ? eyesAt / height : 0) : screen;
   const line = greetingAt(counts, rolls, seed);
-  const pleased = counts.input === 0 && counts.working === 0 && counts.active > 0;
+  // While its copies fly, and once every Cell has landed with none waiting.
+  const pleased =
+    copies.length > 0 || (counts.input === 0 && counts.working === 0 && counts.active > 0);
   return (
     <View
       className="items-center pb-4"
@@ -59,6 +64,7 @@ export function AskiHome() {
     >
       {night ? <Night above={NIGHT_ABOVE + insets.top} screen={screen} /> : null}
       <Pressable
+        ref={askiStandsIn}
         accessibilityRole="button"
         accessibilityLabel="Aski"
         accessibilityHint="Opens Aski's chat"
