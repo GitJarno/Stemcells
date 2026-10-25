@@ -18,15 +18,16 @@ lands is dealt; a scene that lands can be played.
 `stemcells/scripts/cells` runs from any worktree, with no dev server and no
 build. It uses node's own TypeScript.
 
-| Command | What it makes |
-|---|---|
+| Command                        | What it makes                                                                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cells render <look> [scene…]` | `sheet.png`: every frame of each scene, at the miniature and the hero, on black and on light. Also one animated PNG per scene, size and frame |
-| `cells pack <theme>` | A still sheet of every piece and outfit in a pack, at rest and cheering |
-| `cells lookbook [theme…]` | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack |
-| `cells crew [day] [count]` | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering |
-| `cells check [theme…]` | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art |
+| `cells pack <theme>`           | A still sheet of every piece and outfit in a pack, at rest and cheering                                                                       |
+| `cells lookbook [theme…]`      | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack                                                |
+| `cells crew [day] [count]`     | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering      |
+| `cells check [theme…]`         | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art                                                          |
 
 A `<look>` is one of:
+
 - `bare`;
 - a curated look (`builder`);
 - pack pieces (`gym/towel+gym/sweatband`);
@@ -90,6 +91,9 @@ people: open it in a browser.
 
 ## Formats
 
+A new file under `art/` is imported by name in `art.ts`, so the phone's
+bundler has it too; `art.test.ts` fails until it is.
+
 ### A pack: `art/packs/<theme>.json`
 
 ```json
@@ -98,30 +102,79 @@ people: open it in a browser.
   "season": null,
   "about": "What the pack is, in a line.",
   "pieces": [
-    { "name": "weldmask", "slot": "face", "eyes": true,
+    {
+      "name": "weldmask",
+      "slot": "face",
+      "eyes": true,
       "poses": { "building": "weldmask-down" },
-      "art": ["…"], "hotspot": [7, 4], "mini": ["…"], "miniHotspot": [3, 2] },
-    { "name": "weldmask-down", "slot": "face", "eyes": true, "posed": true,
-      "art": ["…"], "hotspot": [7, 2], "mini": ["…"], "miniHotspot": [3, 1] },
-    { "name": "toolbelt", "slot": "wrap",
-      "art": ["…"], "hotspot": [11, 2], "mini": ["…"], "miniHotspot": [5, 1],
-      "frames": [["…"], ["…"]], "miniFrames": [["…"], ["…"]], "fps": 4 }
+      "art": ["…"],
+      "hotspot": [7, 4],
+      "mini": ["…"],
+      "miniHotspot": [3, 2]
+    },
+    {
+      "name": "weldmask-down",
+      "slot": "face",
+      "eyes": true,
+      "posed": true,
+      "art": ["…"],
+      "hotspot": [7, 2],
+      "mini": ["…"],
+      "miniHotspot": [3, 1]
+    },
+    {
+      "name": "toolbelt",
+      "slot": "wrap",
+      "art": ["…"],
+      "hotspot": [11, 2],
+      "mini": ["…"],
+      "miniHotspot": [5, 1],
+      "frames": [["…"], ["…"]],
+      "miniFrames": [["…"], ["…"]],
+      "fps": 4
+    }
   ],
   "fabrics": {
-    "hivis": [{ "parts": ["torso"], "map": { "B": "Y", "b": "J" }, "rides": false,
-                "rows": [24, 29], "miniRows": [10, 13] }],
-    "hivis-orange": [{ "parts": ["torso"], "map": { "B": "3", "b": "R" }, "rides": false,
-                       "rows": [24, 29], "miniRows": [10, 13] }]
+    "hivis": [
+      {
+        "parts": ["torso"],
+        "map": { "B": "Y", "b": "J" },
+        "rides": false,
+        "rows": [24, 29],
+        "miniRows": [10, 13]
+      }
+    ],
+    "hivis-orange": [
+      {
+        "parts": ["torso"],
+        "map": { "B": "3", "b": "R" },
+        "rides": false,
+        "rows": [24, 29],
+        "miniRows": [10, 13]
+      }
+    ]
   },
   "outfits": [
-    { "id": "welder", "face": "workshop/weldmask", "wrap": "workshop/toolbelt",
+    {
+      "id": "welder",
+      "face": "workshop/weldmask",
+      "wrap": "workshop/toolbelt",
       "fabric": "workshop/hivis",
       "colourways": [{ "id": "orange", "fabric": "workshop/hivis-orange" }],
-      "cheer": "workshop/sparks", "silhouette": "mask", "family": "yellow" }
+      "cheer": "workshop/sparks",
+      "silhouette": "mask",
+      "family": "yellow"
+    }
   ],
-  "cheers": { "sparks": { "fps": 6, "facing": "right", "kind": "once", "tell": 1,
-                          "frames": [{ "pose": { "eyes": "happy" } },
-                                     { "pose": { "eyes": "happy", "base": 28 } }] } }
+  "cheers": {
+    "sparks": {
+      "fps": 6,
+      "facing": "right",
+      "kind": "once",
+      "tell": 1,
+      "frames": [{ "pose": { "eyes": "happy" } }, { "pose": { "eyes": "happy", "base": 28 } }]
+    }
+  }
 }
 ```
 
@@ -132,15 +185,16 @@ people: open it in a browser.
   - for a feast that moves, `{"years": {"2027": ["02-06", "02-20"]}}`.
 - **`slot`** names where the piece sits:
 
-  | Slot | Anchor | Depth |
-  |---|---|---|
-  | `headwear` | the crown: hero (15, 14), mini (6, 6) at rest | z 3 |
-  | `face` | the eyes: (15, 21) and (6, 9) | z 3 |
-  | `wrap` | the ground: (15, 30) and (6, 14) | z 1: over the body, under the face and arms |
-  | `back` | (15, 20) and (6, 10) | z −1: behind the body |
+  | Slot       | Anchor                                        | Depth                                       |
+  | ---------- | --------------------------------------------- | ------------------------------------------- |
+  | `headwear` | the crown: hero (15, 14), mini (6, 6) at rest | z 3                                         |
+  | `face`     | the eyes: (15, 21) and (6, 9)                 | z 3                                         |
+  | `wrap`     | the ground: (15, 30) and (6, 14)              | z 1: over the body, under the face and arms |
+  | `back`     | (15, 20) and (6, 10)                          | z −1: behind the body                       |
 
   `z` overrides the depth. Headwear, and a back piece that rises above the
   crown, hold the Cell's hop and stretch down so they stay on the canvas.
+
 - **`hotspot`** is the cell of the art that lands on the anchor.
 - **`frames`** is the whole hero cycle, starting with `art`. `miniFrames`
   matches it, and `fps` divides 12. A scene folds the cycle into its own
@@ -174,6 +228,7 @@ people: open it in a browser.
 
 The Cells in view are dealt together (`cell/looks.ts`, rules in
 `stemcells/tasks/cell-outfits.md`):
+
 - A pack with outfits deals each Cell one outfit, in one of its colourways;
   a pack without deals one piece.
 - No two Cells in view wear the same silhouette or colour family while the
@@ -189,13 +244,31 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
 ```json
 {
   "scenes": {
-    "editing/0": { "fps": 6, "facing": "right", "kind": "loop", "priority": 3,
-                   "tier": "common", "lively": false, "tell": 1, "next": "idle",
-                   "frames": [
-                     { "pose": { "eyes": "focused", "arms": [{ "side": 1, "at": 0.5, "dx": 2, "dy": -1 }] },
-                       "layers": [{ "art": ["…"], "attach": "handR", "hotspot": [0, 2], "z": 4,
-                                    "mini": ["…"], "miniHotspot": [0, 1] }] }
-                   ] }
+    "editing/0": {
+      "fps": 6,
+      "facing": "right",
+      "kind": "loop",
+      "priority": 3,
+      "tier": "common",
+      "lively": false,
+      "tell": 1,
+      "next": "idle",
+      "frames": [
+        {
+          "pose": { "eyes": "focused", "arms": [{ "side": 1, "at": 0.5, "dx": 2, "dy": -1 }] },
+          "layers": [
+            {
+              "art": ["…"],
+              "attach": "handR",
+              "hotspot": [0, 2],
+              "z": 4,
+              "mini": ["…"],
+              "miniHotspot": [0, 1]
+            }
+          ]
+        }
+      ]
+    }
   },
   "meta": { "idle": { "tell": 0, "kind": "loop" } },
   "strength": { "arms": { "at": 0.5, "dx": 3, "dy": 2 } }
@@ -271,12 +344,22 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
 ### A temperament: `art/temperaments/<id>.json`
 
 ```json
-{ "id": "steady", "weight": 2,
+{
+  "id": "steady",
+  "weight": 2,
   "breath": { "periodMs": 4200, "depthRows": 1 },
   "blink": { "windowMs": 4000, "shutMs": 150, "double": false },
-  "noticeMs": 300, "gaze": [{ "look": [1, 0], "holdMs": 1200 }],
+  "noticeMs": 300,
+  "gaze": [{ "look": [1, 0], "holdMs": 1200 }],
   "fidget": "idle",
-  "beats": { "onIt": "idle", "landed": "happy", "needsYou": "waiting", "wake": "idle", "sleep": "asleep" } }
+  "beats": {
+    "onIt": "idle",
+    "landed": "happy",
+    "needsYou": "waiting",
+    "wake": "idle",
+    "sleep": "asleep"
+  }
+}
 ```
 
 `fidget` and the `beats` name scenes.
@@ -317,6 +400,7 @@ These hold on drawn art. On the original's art they are notes.
     miniature's footprint: the box, which drawn art keeps inside.
 
 Before a pack's pull request:
+
 1. `cells check <theme>` passes.
 2. `cells pack <theme>` and `cells lookbook <theme>` are attached for review.
 3. The kit tests pass: `pnpm exec vp test run src/stemcells/cell`.

@@ -97,7 +97,8 @@ function composeFrame(
     ? { ...body, rows: body.rows.map((row) => ".".repeat(row.length)), front: [], features: [] }
     : body;
   const rows = compose(shown, [...worn, ...effects], probe.spill);
-  return move.facing === "left" ? rows.map((row) => [...row].toReversed().join("")) : rows;
+  // `reverse` on the copy: the phone runs this, and Hermes has no `toReversed`.
+  return move.facing === "left" ? rows.map((row) => [...row].reverse().join("")) : rows;
 }
 
 /** One frame at the miniature's size, with the hero art it stands for, at twice the density. */

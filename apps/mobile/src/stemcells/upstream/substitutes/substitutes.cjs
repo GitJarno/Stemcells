@@ -23,6 +23,9 @@ const SUBSTITUTES = {
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
   // A subagent with no title of its own is a Subcell.
   "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
+  // The Cell stands on its composer's ledge, and heads its chat by name.
+  "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
+  "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

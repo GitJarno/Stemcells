@@ -146,8 +146,9 @@ export function ranked(codename: string, theme: string): readonly string[] {
 
 /** `names` by their scores under `key`, the highest first, ties by name. */
 const rankedBy = (names: readonly string[], key: (name: string) => string): string[] =>
-  names
-    .toSorted()
+  // Copied, then sorted: the phone runs this, and Hermes has no `toSorted`.
+  [...names]
+    .sort()
     .map((name) => ({ name, score: score(key(name)) }))
     .sort((a, b) => (a.score === b.score ? 0 : a.score > b.score ? -1 : 1))
     .map((p) => p.name);

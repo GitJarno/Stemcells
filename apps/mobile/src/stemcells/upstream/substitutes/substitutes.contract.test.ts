@@ -48,7 +48,17 @@ function exportsOf(file: string): string[] {
   const listed = [...source.matchAll(/^export \{([^}]*)\}/gm)].flatMap((match) =>
     match[1]!.split(",").map((name) => name.trim()),
   );
-  return [...declared.map((match) => match[1]!), ...listed].filter((name) => name !== "");
+  // A substitute that wraps one export passes the rest on from upstream's module.
+  const passed = [...source.matchAll(/^export \* from "(\.[^"]+)";/gm)].flatMap((match) =>
+    exportsOf(
+      [".tsx", ".ts"]
+        .map((extension) => NodePath.resolve(NodePath.dirname(file), match[1]!) + extension)
+        .find((candidate) => NodeFS.existsSync(candidate))!,
+    ),
+  );
+  return [...new Set([...declared.map((match) => match[1]!), ...listed, ...passed])].filter(
+    (name) => name !== "",
+  );
 }
 
 const view = (upstream: string, ours: string) =>
@@ -150,6 +160,28 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/ThreadComposer.tsx": {
+    exports: view("apps/mobile/src/features/threads/ThreadComposer.tsx", "ThreadComposer.tsx"),
+    importers: {
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": [
+        "./ThreadComposer",
+        ["ThreadComposer"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/threads/ThreadHeader.tsx": {
+    exports: view("apps/mobile/src/features/threads/ThreadHeader.tsx", "ThreadHeader.tsx"),
+    importers: {
+      "apps/mobile/src/features/threads/ThreadRouteScreen.tsx": [
+        "./ThreadHeader",
+        ["ThreadHeader"],
+      ],
+      "apps/mobile/src/features/threads/DraftThreadHeader.tsx": [
+        "./ThreadHeader",
+        ["ThreadHeader"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -228,6 +260,12 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./brandAssets")>().toEqualTypeOf<
       typeof import("../../../components/brandAssets")
+    >();
+    expectTypeOf<typeof import("./ThreadComposer")>().toEqualTypeOf<
+      typeof import("../../../features/threads/ThreadComposer")
+    >();
+    expectTypeOf<typeof import("./ThreadHeader")>().toEqualTypeOf<
+      typeof import("../../../features/threads/ThreadHeader")
     >();
   });
 

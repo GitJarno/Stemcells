@@ -486,10 +486,30 @@ is a Cell of its own where upstream drew its provider's logo.
   import of ours (`stemcells/upstream/seams/chat`), on their first line, so a
   sync's conflict there is the lines that use it; cold files say it in place.
 - Left as upstream's: the subagent bar's screen-reader announcement, inside
-  the component the bar's substitute wraps. The phone draws no Cells yet, so
-  its card keeps the provider's logos: drawing them there is a follow-up.
+  the component the bar's substitute wraps. The phone's subagent card keeps
+  the provider's logos: drawing its Cells there (The phone's Cells, below)
+  is a follow-up.
 - `subcells.contract.test.ts` (the web's) and `subcellWords.contract.test.ts`
   (the phone's) pin each seam and the substitutes' words.
+
+### The phone's Cells
+
+The phone draws each chat's Cell as the Mac does
+(`stemcells/tasks/phone-cells.md`). No upstream file changes for it:
+
+- **The creature is the web's.** `apps/mobile/src/stemcells/cell/kit.ts`
+  imports the web's own modules from a thread id to a frame of role letters
+  (`apps/web/src/stemcells/cell/`), plain TypeScript both bundlers take, and
+  the phone draws a frame as one SVG path per colour (`figure.ts`). The
+  web's `art.ts` imports its art by name, where it globbed through Vite:
+  Metro bundles a glob as nothing, which would have left every outfit off
+  the phone (`art.test.ts` fails on a file left out).
+- **The ledge.** A substitute wraps `ThreadComposer`: the Cell stands on the
+  composer with what its chat is about, and the height the chat clears its
+  feed by is the ledge's and the composer's together
+  (`cells.contract.test.ts` pins that the chat reads it).
+- **The header.** A substitute wraps `ThreadHeader`: a Cell's chat is
+  headed by its name, Aski's by Aski; a draft keeps upstream's title.
 
 ### No telemetry
 
