@@ -14,7 +14,7 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 import phoneTestConfig from "../../../../vite.config";
 import * as OurFavicon from "./favicon";
 import * as OurSubagentDisplay from "./subagentDisplay";
-import { SUBSTITUTES } from "./substitutes.cjs";
+import { PACKAGES, SUBSTITUTES } from "./substitutes.cjs";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 
@@ -225,6 +225,22 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx": {
+    exports: view(
+      "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx",
+      "ComposerAttachmentButton.tsx",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/ThreadComposer.tsx": [
+        "./ComposerAttachmentButton",
+        ["ComposerAttachmentButton"],
+      ],
+      "apps/mobile/src/features/threads/QuestionAttachments.tsx": [
+        "./ComposerAttachmentButton",
+        ["ComposerAttachmentButton"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -238,6 +254,24 @@ const CASES: Readonly<Record<string, Case>> = {
     },
   },
 };
+
+/** Each package substituted by name: upstream's file that imports it, and what that file calls of it. */
+const PACKAGE_CASES: Readonly<
+  Record<string, { readonly importer: string; readonly calls: ReadonlyArray<string> }>
+> = {
+  "expo-image-picker": {
+    importer: "apps/mobile/src/lib/composerImages.ts",
+    calls: ["launchImageLibraryAsync"],
+  },
+};
+const packages: Readonly<Record<string, string>> = PACKAGES;
+const packageExpectations = Object.entries(PACKAGE_CASES).map(([name, { importer }]) => ({
+  name,
+  importer: fromRepo(importer),
+  substitute: NodePath.join(here, packages[name]!),
+}));
+/** A package's own file, which must keep the package it imports. */
+const insidePackage = NodePath.join(phoneRoot, "node_modules/expo/build/Expo.js");
 
 const substitutePath = (upstream: string) => NodePath.join(here, substitutes[upstream]!);
 
@@ -275,6 +309,22 @@ describe("the phone's substitutes for upstream modules", () => {
     for (const upstream of Object.keys(substitutes)) {
       expect(NodeFS.existsSync(fromRepo(upstream)), upstream).toBe(true);
       expect(NodeFS.existsSync(substitutePath(upstream)), substitutes[upstream]).toBe(true);
+    }
+  });
+
+  it("has a case here for every package substitute, and every file exists", () => {
+    expect(Object.keys(PACKAGE_CASES).toSorted()).toEqual(Object.keys(packages).toSorted());
+    for (const { importer, substitute } of packageExpectations) {
+      expect(NodeFS.existsSync(importer), importer).toBe(true);
+      expect(NodeFS.existsSync(substitute), substitute).toBe(true);
+    }
+  });
+
+  it("upstream still imports each substituted package and calls what we replace", () => {
+    for (const [name, { importer, calls }] of Object.entries(PACKAGE_CASES)) {
+      const source = NodeFS.readFileSync(fromRepo(importer), "utf8");
+      expect(source, importer).toMatch(new RegExp(`(?:from |import\\()"${name}"`));
+      for (const call of calls) expect(source, importer).toContain(`.${call}(`);
     }
   });
 
@@ -325,6 +375,12 @@ describe("the phone's substitutes for upstream modules", () => {
     expectTypeOf<typeof import("./use-thread-list-v2-shelf-preferences")>().toEqualTypeOf<
       typeof import("../../../features/threads/use-thread-list-v2-shelf-preferences")
     >();
+    expectTypeOf<typeof import("./ComposerAttachmentButton")>().toEqualTypeOf<
+      typeof import("../../../features/threads/ComposerAttachmentButton")
+    >();
+    expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
+      typeof import("expo-image-picker")
+    >();
   });
 
   it("upstream's views still import what we replace from the substituted module", () => {
@@ -359,6 +415,15 @@ describe("the phone's substitutes for upstream modules", () => {
       // Our own folder gets upstream's module, so a substitute can wrap it.
       expect(resolve(NodePath.join(here, "favicon.ts")).filePath, key).toBe(upstream);
     }
+    for (const { name, importer, substitute } of packageExpectations) {
+      const thePackage = NodePath.join(phoneRoot, "node_modules", name, "index.js");
+      const metroResolves: ResolveRequest = () => ({ type: "sourceFile", filePath: thePackage });
+      const resolve = (origin: string) =>
+        resolveRequest({ originModulePath: origin, resolveRequest: metroResolves }, name, "ios");
+      expect(resolve(importer).filePath, name).toBe(substitute);
+      expect(resolve(substitute).filePath, name).toBe(thePackage);
+      expect(resolve(insidePackage).filePath, name).toBe(thePackage);
+    }
   });
 
   it("the tests: the phone's test config resolves upstream's imports to the substitutes", async () => {
@@ -390,6 +455,13 @@ describe("the phone's substitutes for upstream modules", () => {
         expect((await container.resolveId(specifier, importer))?.id, key).toBe(substitute);
         const ours = NodePath.join(here, "favicon.ts");
         expect((await container.resolveId(specifierFromOurs, ours))?.id, key).toBe(upstream);
+      }
+      for (const { name, importer, substitute } of packageExpectations) {
+        expect((await container.resolveId(name, importer))?.id, name).toBe(substitute);
+        const fromOurs = (await container.resolveId(name, substitute))?.id;
+        expect(fromOurs, name).toContain(`${NodePath.sep}node_modules${NodePath.sep}`);
+        const fromPackage = (await container.resolveId(name, insidePackage))?.id;
+        expect(fromPackage, name).toContain(`${NodePath.sep}node_modules${NodePath.sep}`);
       }
     } finally {
       await server.close();

@@ -4,8 +4,10 @@
 //
 // Upstream's code that imports one of these modules gets the module of the
 // same name in this folder; our own folder still gets upstream's, so a
-// substitute can re-export what it replaces. `substitutes.contract.test.ts`
-// proves both builds and the exports.
+// substitute can re-export what it replaces. A package is named as upstream
+// imports it, and only upstream's own files get its substitute, never a
+// package's. `substitutes.contract.test.ts` proves both builds and the
+// exports.
 const path = require("node:path");
 
 /** Upstream module (from the repository's root) to its substitute in this folder. */
@@ -34,10 +36,20 @@ const SUBSTITUTES = {
     "thread-list-v2-row-appearance.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
+  // The + opens Add to Chat: your photos, the camera first, picks in order.
+  "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx": "ComposerAttachmentButton.tsx",
+};
+
+/** Package upstream's code imports, by name, to its substitute in this folder. */
+const PACKAGES = {
+  // The photos picked on Add to Chat reach T3's photo picking as its
+  // picker's own.
+  "expo-image-picker": "expo-image-picker.ts",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");
 const ourRoot = path.resolve(__dirname, "../..");
+const nodeModules = `${path.sep}node_modules${path.sep}`;
 
 const substituteOf = new Map(
   Object.entries(SUBSTITUTES).map(([upstream, ours]) => [
@@ -50,6 +62,20 @@ const substituteOf = new Map(
 const isOurs = (file) => file.startsWith(ourRoot + path.sep);
 
 /**
+ * The substitute for package `name` imported from `file`, when `file` is upstream's.
+ * @param {string} name
+ * @param {string} file
+ */
+const packageSubstitute = (name, file) => {
+  const ours = Object.hasOwn(PACKAGES, name)
+    ? PACKAGES[/** @type {keyof typeof PACKAGES} */ (name)]
+    : undefined;
+  return ours === undefined || isOurs(file) || file.includes(nodeModules)
+    ? undefined
+    : path.join(__dirname, ours);
+};
+
+/**
  * Metro: wraps the config's `resolveRequest` (or Metro's own), handing
  * upstream's importers the substitute.
  * @template {(context: any, moduleName: string, platform: string | null) => any} Resolve
@@ -59,6 +85,8 @@ const isOurs = (file) => file.startsWith(ourRoot + path.sep);
 function substituteRequests(resolveRequest) {
   return /** @type {Resolve} */ (
     (context, moduleName, platform) => {
+      const ours = packageSubstitute(moduleName, context.originModulePath);
+      if (ours !== undefined) return { type: "sourceFile", filePath: ours };
       const resolution = (resolveRequest ?? context.resolveRequest)(context, moduleName, platform);
       if (resolution.type !== "sourceFile" || isOurs(context.originModulePath)) return resolution;
       const substitute = substituteOf.get(resolution.filePath);
@@ -80,6 +108,8 @@ function substituteUpstreamModules() {
      */
     async resolveId(source, importer, options) {
       if (importer === undefined || isOurs(importer)) return null;
+      const ours = packageSubstitute(source, importer);
+      if (ours !== undefined) return ours;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (resolved === null || resolved.external) return resolved;
       return substituteOf.get(resolved.id) ?? resolved;
@@ -87,4 +117,4 @@ function substituteUpstreamModules() {
   };
 }
 
-module.exports = { SUBSTITUTES, substituteRequests, substituteUpstreamModules };
+module.exports = { PACKAGES, SUBSTITUTES, substituteRequests, substituteUpstreamModules };

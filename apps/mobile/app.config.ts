@@ -3,6 +3,7 @@ import type { ExpoConfig } from "expo/config";
 import { BRAND_ASSET_PATHS } from "../../scripts/lib/brand-assets.ts";
 import { withStemcellsPhoneArt } from "../../stemcells/brand/assets.ts";
 import { withStemcellsName } from "../../stemcells/brand/upstreamName.ts";
+import { withAttachPrompts } from "./src/stemcells/attach/prompts.ts";
 import { ownTeam } from "./src/stemcells/push/ownTeam.ts";
 import { loadRepoEnv } from "../../scripts/lib/public-config.ts";
 
@@ -501,4 +502,4 @@ const config: ExpoConfig = {
   },
 };
 
-export default withStemcellsName(config);
+export default withStemcellsName(withAttachPrompts(config));

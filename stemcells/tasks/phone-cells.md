@@ -75,5 +75,33 @@ project and model.
 
 ### 4. The attachment card
 
-- [ ] Add to Chat: recent photos in a grid, camera first, picks numbered, Add N; Files from the same card
-- [ ] T3's own picking, sizing and upload stay: the card hands its picks to T3's picker
+the original app's "Add to Chat" (`AttachSheet.swift`): the album is the card, the
+camera first, a tap numbers a photo in the order picked, and "Add N" puts
+them in the composer in that order. T3's + opens a menu, then the system's
+picker. A grid of your photos needs the photo library (`expo-media-library`,
+a new native module, so a new build of the phone app), which T3 never asks
+for: its picker needs no access. So the card asks when it first opens, and
+without access it says so and still reaches every photo through the
+system's picker.
+
+- [x] The + opens Add to Chat on iOS (T3's `Sheet` idiom, a form sheet at part height that pulls up): Recents, the camera first, picks numbered (ten a go), Add N; Files and All Photos on the same card
+- [x] Picks go through T3's own photo picking (a substitute of `expo-image-picker` for upstream's importer): its sizing, limits and upload stay
+- [x] Limited access has Choose more; none says where to turn it on
+- [x] A JPEG, which T3 would send as its own bytes, EXIF and all, is drawn again first, so where it was taken doesn't go with it; Android doesn't link the module
+- [x] The build's photo prompt says why, in our words (a config wrapper); a build without the module keeps T3's menu
+
+## Review (2026-10-25)
+
+Four pull requests: the creature and the ledge (#297), the home (#298),
+Aski in the new chat and the spawn (#299), and Add to Chat (this one).
+Each ported the web's own modules or reused T3's views through
+substitutes; upstream changed only at the row, the new chat, the build
+config and one dependency.
+
+- **Checked:** the phone's tests, contract tests for every upstream
+  behaviour we lean on, the phone's typecheck, an iOS Metro bundle
+  compiled by Hermes, and drift. No simulator here, so no device pass
+  yet: the first build with `expo-media-library` is the one to try Add to
+  Chat on.
+- **Left:** several Cells from one message (the Mac's planner), and the
+  card's albums (Recents only; the magnifier reaches the rest).
