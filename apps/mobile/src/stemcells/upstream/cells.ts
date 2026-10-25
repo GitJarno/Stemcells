@@ -8,16 +8,11 @@ import { useAtomValue } from "@effect/atom-react";
 import { useAppearancePreferences } from "../../features/settings/appearance/AppearancePreferencesProvider";
 import { threadListEnvironmentsAtom } from "../../state/server";
 import { environmentThreadShells } from "../../state/threads";
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentThreadShell } from "./threads";
 
-export type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+export * from "./threads";
 export { AppText } from "../../components/ui/AppText";
 export { useProject } from "../../state/entities";
-export { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
-export {
-  resolveThreadListV2Status,
-  type ThreadListV2Status,
-} from "../../features/threads/threadListV2";
 
 /** What `select` reads from every chat the phone knows; the caller draws again only when that changes. */
 export function useThreadShellsSelected<A>(

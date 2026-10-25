@@ -3,7 +3,7 @@
 // its chats by codename; what the chat is about stands on the composer's
 // ledge (`ledge/CellLedge.tsx`). A draft keeps upstream's title.
 import * as Upstream from "../../../features/threads/ThreadHeader";
-import { ASKI_INSTANCE } from "../../aski/instance";
+import { useIsAskiChat } from "../../aski/useAskiChat";
 import { cellNameOf } from "../../cell/kit";
 import { useThreadShellsSelected } from "../cells";
 
@@ -11,10 +11,11 @@ export * from "../../../features/threads/ThreadHeader";
 
 export function ThreadHeader(props: Parameters<typeof Upstream.ThreadHeader>[0]) {
   const threadId = String(props.gitControls.threadId);
-  const instance = useThreadShellsSelected(
-    (threads) => threads.find((thread) => thread.id === threadId)?.providerInstanceId ?? null,
+  const known = useThreadShellsSelected((threads) =>
+    threads.some((thread) => thread.id === threadId),
   );
-  if (props.draft === true || instance === null) return <Upstream.ThreadHeader {...props} />;
-  const title = instance === ASKI_INSTANCE ? "Aski" : cellNameOf(threadId);
+  const aski = useIsAskiChat(threadId);
+  if (props.draft === true || !known) return <Upstream.ThreadHeader {...props} />;
+  const title = aski ? "Aski" : cellNameOf(threadId);
   return <Upstream.ThreadHeader {...props} title={title} />;
 }

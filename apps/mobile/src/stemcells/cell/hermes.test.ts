@@ -6,11 +6,12 @@ import * as NodeURL from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 /**
- * The phone runs the web's creature modules (`kit.ts`), which the lint's
- * Hermes rule (`t3code/no-hermes-unsupported-apis`) doesn't cover: it reads
- * the phone's own folder. A call Hermes lacks there crashes the app as the
- * first Cell is drawn, so this reads every module the phone takes from
- * outside its folder for the rule's calls.
+ * The phone runs the web's creature and Aski modules (`kit.ts`,
+ * `aski/kit.ts`), which the lint's Hermes rule
+ * (`t3code/no-hermes-unsupported-apis`) doesn't cover: it reads the phone's
+ * own folder. A call Hermes lacks there crashes the app as the first Cell is
+ * drawn, so this reads every module the phone takes from outside its folder
+ * for the rule's calls.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -29,7 +30,8 @@ function modulesFrom(entry: string): Set<string> {
   const visit = (file: string) => {
     if (seen.has(file) || !/\.tsx?$/.test(file)) return;
     seen.add(file);
-    const source = NodeFS.readFileSync(file, "utf8");
+    // A type is erased before bundling: its module never reaches the phone.
+    const source = NodeFS.readFileSync(file, "utf8").replaceAll(/^import type [^;]+;/gm, "");
     for (const [, specifier] of source.matchAll(/(?:from|import)\s*["'](\.[^"']+)["']/g)) {
       const next = resolved(file, specifier!);
       if (next !== undefined) visit(next);
@@ -41,9 +43,10 @@ function modulesFrom(entry: string): Set<string> {
 
 describe("what the phone takes from the web", () => {
   it("calls nothing Hermes lacks", () => {
-    const taken = [...modulesFrom(NodePath.join(here, "kit.ts"))].filter(
-      (file) => !file.startsWith(phone + NodePath.sep),
-    );
+    const taken = [
+      ...modulesFrom(NodePath.join(here, "kit.ts")),
+      ...modulesFrom(NodePath.join(here, "../aski/kit.ts")),
+    ].filter((file) => !file.startsWith(phone + NodePath.sep));
     expect(taken.length).toBeGreaterThan(5);
     const offending = taken.flatMap((file) =>
       NodeFS.readFileSync(file, "utf8")

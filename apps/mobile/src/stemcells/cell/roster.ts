@@ -7,21 +7,28 @@
 import { useSyncExternalStore } from "react";
 
 import { type EnvironmentThreadShell, useThreadShellsSelected } from "../upstream/cells";
-import { ASKI_INSTANCE } from "../aski/instance";
+import { askiChatsOf } from "../aski/chat";
 import { dayOf, type Look, looksOf } from "./kit";
 
-/** The crew's names (thread ids), the first-born first, as one key. */
+let crewSeen: ReadonlyArray<EnvironmentThreadShell> | null = null;
+let crewKey = "";
+
+/** The crew's names (thread ids), the first-born first, as one key; every Cell in view asks of the same list, so the last answer is kept. */
 function crewOf(threads: ReadonlyArray<EnvironmentThreadShell>): string {
-  return [...threads]
+  if (threads === crewSeen) return crewKey;
+  const aski = askiChatsOf(threads);
+  crewSeen = threads;
+  crewKey = threads
     .filter(
       (thread) =>
         thread.archivedAt === null &&
         thread.lineage.relationshipToParent !== "subagent" &&
-        thread.providerInstanceId !== ASKI_INSTANCE,
+        !aski.has(thread.id),
     )
     .sort((a, b) => (a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0))
     .map((thread) => thread.id)
     .join(",");
+  return crewKey;
 }
 
 let last: { key: string; seats: readonly string[]; looks: ReadonlyMap<string, Look> } = {

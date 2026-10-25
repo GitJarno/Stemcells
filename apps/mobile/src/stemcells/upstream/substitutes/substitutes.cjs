@@ -26,6 +26,14 @@ const SUBSTITUTES = {
   // The Cell stands on its composer's ledge, and heads its chat by name.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
+  // The home: one tab of Cells at a time under Aski, in cards, each tab's
+  // shelves open.
+  "apps/mobile/src/features/home/HomeScreen.tsx": "HomeScreen.tsx",
+  "apps/mobile/src/features/home/ThreadListFilters.tsx": "ThreadListFilters.tsx",
+  "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":
+    "thread-list-v2-row-appearance.ts",
+  "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
+    "use-thread-list-v2-shelf-preferences.ts",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

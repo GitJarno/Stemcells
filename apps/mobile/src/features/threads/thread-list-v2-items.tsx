@@ -1,4 +1,5 @@
 import * as Dialog from "../../components/ui/Dialog";
+import { CellBesideRow, SlimRowCell } from "../../stemcells/home/RowCell";
 import type { ThreadRowProviderInstance } from "./thread-provider-instance";
 import {
   THREAD_LIST_V2_MONO_FONT as MONO_FONT,
@@ -1265,7 +1266,9 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           fadedCardContent
         ) : (
           <View>
-            <View className={THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME}>{fadedCardContent}</View>
+            <View className={THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME}>
+              <CellBesideRow thread={thread}>{fadedCardContent}</CellBesideRow>
+            </View>
             {THREAD_LIST_V2_ROW_DIVIDERS && props.showTrailingDivider !== false ? (
               <View className="ml-5 h-px bg-border-subtle" />
             ) : null}
@@ -1296,6 +1299,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
             sidebarPane ? "px-3" : "px-5",
           )}
         >
+          <SlimRowCell thread={thread} sidebar={sidebarPane} />
           {props.project ? (
             <View className="opacity-40">
               <ProjectFavicon

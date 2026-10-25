@@ -6,7 +6,7 @@
 // While its machine is out of reach it peers.
 
 import type { Activity, Mood } from "./kit";
-import type { EnvironmentThreadShell, ThreadListV2Status } from "../upstream/cells";
+import type { EnvironmentThreadShell, ThreadListV2Status } from "../upstream/threads";
 
 /** How long a Cell cheers once its turn lands, as the Mac's does. */
 export const CHEER_MS = 6_000;

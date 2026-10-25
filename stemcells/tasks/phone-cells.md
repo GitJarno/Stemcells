@@ -31,7 +31,9 @@ composer. What it settled:
 - **Tabs.** the original app had Asleep · Awake · Working · Decide (replaced
   there on 2026-10-18 by pages). Ours, as asked: Asleep (settled or
   snoozed) · Active (the rest) · Working (T3's row says Working) · Input
-  (an approval or a question waits).
+  (an approval or a question waits). A Cell is in a tab when its face says
+  so, so the "?" and the Input tab agree. Android and searching keep T3's
+  home: Android's list has no header to hold the tabs.
 - **Cost.** Composing a Cell's scene takes about 7.5 ms with V8's
   interpreter alone (Hermes is the same order), so figures compose in 8 ms
   slices off the first frame (`compose.ts`), and only a working or cheering
@@ -51,10 +53,11 @@ composer. What it settled:
 
 ### 2. Home
 
-- [ ] Aski over the list with a greeting that rolls on a tap; Aski drawn from the web's renderer, generated, with a test that it stays in step
-- [ ] Tabs with counts; the list shows the tab's Cells; an empty tab keeps the header
-- [ ] Cards: T3's row tokens; the creature on the left (a seam in the row)
-- [ ] Asleep: the night over Aski, the moon at today's phase
+- [x] Aski over the list with a line from its own bank that rolls on a tap (`greeting.test.ts` holds the lines to the persona); Aski drawn from the web's canon as SVG, blinking with the Mac's rhythm; a tap on Aski opens its chat
+- [x] Tabs with counts (Asleep · Active · Working · Input), T3's segmented control; the list shows the tab's Cells; an empty tab keeps the header; opens on Input when anything waits
+- [x] Cards: T3's row tokens (a substitute); the creature and its name on the left (a seam in the row: an import and two lines)
+- [x] Asleep: the night over Aski, stars, the moon at today's phase, a shooting star now and then; the tab's shelves open
+- [x] Aski's chat is the one the Mac and the server pick (`aski/chat.ts`), not every chat on its instance (fixes slice 1's header and ledge)
 
 ### 3. Aski on the pen
 

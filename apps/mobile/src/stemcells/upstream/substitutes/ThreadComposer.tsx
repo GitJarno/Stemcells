@@ -5,14 +5,15 @@
 import { useRef, useState } from "react";
 
 import * as Upstream from "../../../features/threads/ThreadComposer";
-import { ASKI_INSTANCE } from "../../aski/instance";
+import { useIsAskiChat } from "../../aski/useAskiChat";
 import { CellLedge, LEDGE_OVERLAP } from "../../ledge/CellLedge";
 
 export * from "../../../features/threads/ThreadComposer";
 
 export const ThreadComposer: typeof Upstream.ThreadComposer = (props) => {
   const thread = props.selectedThread;
-  const shows = props.isDraft !== true && thread.providerInstanceId !== ASKI_INSTANCE;
+  const aski = useIsAskiChat(thread.id);
+  const shows = props.isDraft !== true && !aski;
   const [ledge, setLedge] = useState(0);
   const composer = useRef<number | null>(null);
   const report = props.onHeightChange;

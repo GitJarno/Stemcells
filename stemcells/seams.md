@@ -137,6 +137,7 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/mobile/src/Stack.tsx`, `apps/mobile/src/features/settings/SettingsRouteScreen.tsx`                                                                                                                                                                                                                                                                                    | Import `stemcellsSettingsScreens` and `StemcellsServerRows` from `stemcells/pages`; the settings stack spreads the screens after its own, and Server settings ends with the rows (an import and a line each)                                                                                                                                                                                                                                                                                                                                                      | Same, on the phone: its Settings › Disk, and whether a Cell's needs reach this phone (`stemcells/tasks/phone-push.md`)                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `apps/server/src/project/RepositoryIdentityResolver.ts`                                                                                                                                                                                                                                                                                                                     | Imports `ghDefaultRemote` from `stemcells/upstream/ghDefaultRemote.ts`; the primary remote is `(yield* ghDefaultRemote(cacheKey, remotes)) ?? pickPrimaryRemote(remotes)` (two lines)                                                                                                                                                                                                                                                                                                                                                                             | A fork's own repository (below): the remote `gh repo set-default` names, where upstream always took `upstream` over `origin`                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `apps/server/src/provider/ProviderOrchestrationAdapterInfrastructure.ts`                                                                                                                                                                                                                                                                                                    | Imports `withPromptSuggestions` from `stemcells/upstream/claudeSuggestions.ts` on its first line; the Claude query runner in `layer` is `withPromptSuggestions(ClaudeAdapterV2.layerQueryRunner)` (two lines)                                                                                                                                                                                                                                                                                                                                                     | What to say next (below): every Claude query asks for Claude's own next-prompt suggestion and hands it to ours, where `ClaudeAdapterV2.ts`, one of upstream's hottest files, would have taken three seams; the adapter never sees the message                                                                                                                                                                                                                                                                                                                             |
+| `apps/mobile/src/features/threads/thread-list-v2-items.tsx`                                                                                                                                                                                                                                                                                                                 | Imports `CellBesideRow` and `SlimRowCell` from `stemcells/home/RowCell`; a card row's content stands in `CellBesideRow`, and a slim row starts with `SlimRowCell` (an import and two lines)                                                                                                                                                                                                                                                                                                                                                                       | The phone's home (`stemcells/tasks/phone-cells.md`): each Cell stands in its card, left of what its chat is about, in both the card and the settled row. No upstream module draws the row's left side or knows its thread, so no substitute reaches it                                                                                                                                                                                                                                                                                                                    |
 
 ### One import per hot file
 
@@ -494,8 +495,9 @@ is a Cell of its own where upstream drew its provider's logo.
 
 ### The phone's Cells
 
-The phone draws each chat's Cell as the Mac does
-(`stemcells/tasks/phone-cells.md`). No upstream file changes for it:
+The phone draws each chat's Cell as the Mac does, and its home is Aski's
+(`stemcells/tasks/phone-cells.md`). One upstream file changes for it, the
+row (above); the rest are substitutes:
 
 - **The creature is the web's.** `apps/mobile/src/stemcells/cell/kit.ts`
   imports the web's own modules from a thread id to a frame of role letters
@@ -510,6 +512,24 @@ The phone draws each chat's Cell as the Mac does
   (`cells.contract.test.ts` pins that the chat reads it).
 - **The header.** A substitute wraps `ThreadHeader`: a Cell's chat is
   headed by its name, Aski's by Aski; a draft keeps upstream's title.
+  Aski's chat is the one the Mac and the server pick (`aski/chat.ts`):
+  another chat on Aski's instance is a Cell.
+- **The home.** A substitute wraps `HomeScreen` and hands T3's list one tab
+  of Cells (`home/tabs.ts`); everything the list does stays T3's. The list's
+  header (`ThreadListFilters`, substituted) puts Aski, its line and the
+  tabs over T3's filters, reading the tabs from context. Where the list has
+  no header (Android, outside the workspace) and while searching, the home
+  is T3's own. Two more substitutes: the row tokens make cards on the
+  phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
+  and the iPad's sidebar stay T3's), and the shelves a tab holds start open
+  (`use-thread-list-v2-shelf-preferences.ts`). The seam in the row puts the
+  Cell beside its card's content: the row is the only place that knows
+  both its thread and its left edge.
+- **Aski is the web's.** `apps/mobile/src/stemcells/aski/kit.ts` imports
+  the web's canon (its lobes, block eyes, mood glyphs and blink rhythm),
+  and the phone draws it as SVG; `cell/hermes.test.ts` reads those modules
+  for calls Hermes lacks. Its greeting is word for word from its persona
+  (`home/greeting.test.ts`).
 
 ### No telemetry
 

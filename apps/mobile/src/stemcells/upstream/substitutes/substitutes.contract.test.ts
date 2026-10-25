@@ -182,6 +182,49 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/home/HomeScreen.tsx": {
+    exports: view("apps/mobile/src/features/home/HomeScreen.tsx", "HomeScreen.tsx"),
+    importers: {
+      "apps/mobile/src/features/home/HomeRouteScreen.tsx": ["./HomeScreen", ["HomeScreen"]],
+    },
+  },
+  "apps/mobile/src/features/home/ThreadListFilters.tsx": {
+    exports: view("apps/mobile/src/features/home/ThreadListFilters.tsx", "ThreadListFilters.tsx"),
+    importers: {
+      "apps/mobile/src/features/home/HomeScreen.tsx": [
+        "./ThreadListFilters",
+        ["ThreadListFilters"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts": {
+    exports: view(
+      "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts",
+      "thread-list-v2-row-appearance.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/thread-list-v2-items.tsx": [
+        "./thread-list-v2-row-appearance",
+        [
+          "THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME",
+          "THREAD_LIST_V2_ROW_DIVIDERS",
+          "getThreadListV2RowAppearance",
+        ],
+      ],
+    },
+  },
+  "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts": {
+    exports: view(
+      "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts",
+      "use-thread-list-v2-shelf-preferences.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/home/HomeScreen.tsx": [
+        "../threads/use-thread-list-v2-shelf-preferences",
+        ["useThreadListV2ShelfPreferences"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -266,6 +309,21 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadHeader")>().toEqualTypeOf<
       typeof import("../../../features/threads/ThreadHeader")
+    >();
+    expectTypeOf<typeof import("./HomeScreen")>().toEqualTypeOf<
+      typeof import("../../../features/home/HomeScreen")
+    >();
+    expectTypeOf<typeof import("./ThreadListFilters")>().toEqualTypeOf<
+      typeof import("../../../features/home/ThreadListFilters")
+    >();
+    // Its tokens are other strings and flags, of the same kinds.
+    expectTypeOf<
+      typeof import("./thread-list-v2-row-appearance").getThreadListV2RowAppearance
+    >().toEqualTypeOf<
+      typeof import("../../../features/threads/thread-list-v2-row-appearance").getThreadListV2RowAppearance
+    >();
+    expectTypeOf<typeof import("./use-thread-list-v2-shelf-preferences")>().toEqualTypeOf<
+      typeof import("../../../features/threads/use-thread-list-v2-shelf-preferences")
     >();
   });
 
