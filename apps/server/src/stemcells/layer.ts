@@ -14,6 +14,7 @@ import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as PushHttp from "./push/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
+import * as MergeDefault from "./settle/mergeDefault.ts";
 import * as SpendHttp from "./spend/http.ts";
 import * as SuggestionHttp from "./suggestions/http.ts";
 import * as TailscaleHttp from "./tailscale/http.ts";
@@ -27,10 +28,12 @@ import * as ModelList from "./upstream/modelList.ts";
 // other, another Cell's words framed and who's here on a provider's wire
 // (`peers/onTheWire.ts`), the routes of linked environments, what the person would say
 // next to a Cell, a phone's way in over Tailscale, what each chat has spent for Settings › Lineage, the
-// theme published on start, the telemetry id upstream left behind,
-// removed on start, how the person's work with Cells went, week by week,
-// the cards Aski takes for the person once they've granted it, and the
-// pushes to their phone when a card waits and they're away.
+// theme published on start, settling on merge turned off once (a Cell
+// that merged its own pull request lands, for the person to settle), the
+// telemetry id upstream left behind, removed on start, how the person's
+// work with Cells went, week by week, the cards Aski takes for the person
+// once they've granted it, and the pushes to their phone when a card waits
+// and they're away.
 
 export const layer = Layer.mergeAll(
   ArcsHttp.layer,
@@ -49,6 +52,7 @@ export const layer = Layer.mergeAll(
   SpendHttp.layer,
   TailscaleHttp.layer,
   Look.layer,
+  MergeDefault.layer,
   Privacy.layer,
 );
 
