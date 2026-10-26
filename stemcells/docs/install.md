@@ -57,18 +57,20 @@ to move it.
 
 ## Updating
 
-Once installed, Stemcells updates itself from that repository. The button
-at the foot of the left column counts the changes since your build, and
-hovering it lists them, a day at a time: each merged pull request's title
-and number. A click gets the update ready (it builds it, while you keep
-working); another click restarts into it. A restart ends every Cell's turn,
-so it's always your click.
+Once installed, Stemcells updates itself from that repository. When there's
+an update, the left column says **Stemcells gets better** above its foot,
+with how many changes it brings; hovering or clicking it lists them, a day
+at a time: each merged pull request's title and number. **Download** gets
+the update ready (it builds it, while you keep working); **Restart to
+update** restarts into it. A restart ends every Cell's turn, so it's always
+your click. With the column narrowed to its rail, or showing all chats, the
+update button at its foot does the same.
 
 Settings › About › Update track picks what to follow: **Nightly**, every
 change merged to `main`, or **Stable**, the newest release (a `v*` tag).
 A build of `main` follows Nightly, and a release's build, Stable, until
 you pick. If an update builds but doesn't go in, the old app opens again and
-the button says so; the build's output is in
+offers it once more; the build's output is in
 `~/Library/Application Support/sh.stemcells.app/updates/build.log`.
 
 From a terminal, `stemcells/scripts/install-app --pull` does the same in

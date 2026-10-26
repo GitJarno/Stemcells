@@ -5,12 +5,16 @@ import type { ReactElement, ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 
+import { APP_NAME } from "../brand/name";
 import { needFixture, NOW, requestFixture } from "../needs/fixtures";
 import type { CellStanding, Need } from "../needs/wire";
 import { render } from "../upstream/testRender";
+import type { DesktopUpdateState } from "../upstream/updates";
 import { Cells } from "./Cells";
 
 const spies = vi.hoisted(() => ({ settle: vi.fn(), open: vi.fn(), openChat: vi.fn() }));
+/** The app's update as the desktop reports it; each test sets it in `setup`. */
+const desktop = vi.hoisted(() => ({ update: null as DesktopUpdateState | null }));
 
 const needs: Need[] = [
   needFixture({
@@ -123,20 +127,69 @@ vi.mock("../tabs/CellMark", () => ({ CellMark: () => <span data-testid="sprite" 
 vi.mock("../upstream/rail", () => ({
   isElectron: false,
   openSearch: () => undefined,
-  SidebarUpdatePill: () => null,
+  SidebarUpdatePill: () => <li data-testid="upstream-update-pill" />,
   useShortcutLabel: () => "⌘K",
 }));
 vi.mock("../upstream/settings", () => ({ useNavigateToMainApp: () => async () => undefined }));
-vi.mock("../upstream/ui", () => ({
-  cn: (...names: unknown[]) => names.filter(Boolean).join(" "),
+vi.mock("../upstream/ui", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../upstream/ui")>()),
   useSidebar: () => ({ open: true, isMobile: false }),
   Tooltip: (props: { children: ReactNode }) => props.children,
   TooltipTrigger: (props: { render: ReactElement }) => props.render,
   TooltipPopup: () => null,
 }));
+vi.mock("../upstream/updates", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../upstream/updates")>()),
+  useDesktopUpdateState: () => desktop.update,
+}));
 vi.mock("./PlanRing", () => ({ PlanRing: () => null }));
 vi.mock("./DiskGauge", () => ({ DiskGauge: () => null }));
 vi.mock("./undoNotice", () => ({ useRailUndoNotice: () => undefined }));
+
+const upToDate: DesktopUpdateState = {
+  enabled: true,
+  status: "up-to-date",
+  channel: "nightly",
+  currentVersion: "0.1.1-nightly.20261024.7266",
+  hostArch: "arm64",
+  appArch: "arm64",
+  runningUnderArm64Translation: false,
+  availableVersion: null,
+  downloadedVersion: null,
+  releaseNotes: [],
+  omittedReleaseCount: 0,
+  downloadPercent: null,
+  checkedAt: "2026-10-26T10:00:00.000Z",
+  message: null,
+  errorContext: null,
+  canRetry: false,
+};
+
+/** Two days of merges to main: five pull requests, three of them listed. */
+const available: DesktopUpdateState = {
+  ...upToDate,
+  status: "available",
+  availableVersion: "0.1.1-nightly.20261026.7271",
+  releaseNotes: [
+    {
+      version: "0.1.1-nightly.20261026.7271",
+      items: [
+        "The phone's + opens Add to Chat (#300)",
+        "The left column is the Cells' line (#302)",
+      ],
+      totalItems: 2,
+    },
+    {
+      version: "0.1.1-nightly.20261025.7269",
+      items: ["Aski stands in the phone's new chat (#299)"],
+      totalItems: 3,
+    },
+  ],
+};
+
+function setup(update: DesktopUpdateState | null) {
+  desktop.update = update;
+}
 
 function Column() {
   return (
@@ -148,6 +201,7 @@ function Column() {
 
 describe("the Cells' column", () => {
   it("opens on what needs you: the question asked, counted in the row", async () => {
+    setup(null);
     await using screen = await render(<Column />);
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
@@ -158,6 +212,7 @@ describe("the Cells' column", () => {
   });
 
   it("opens an asking Cell's chat from its card, not a peek only Aski's room shows", async () => {
+    setup(null);
     spies.openChat.mockClear();
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: "Open chat" }));
@@ -201,6 +256,7 @@ describe("the Cells' column", () => {
   });
 
   it("shows a stage's Cells when its row is chosen, each with its own word", async () => {
+    setup(null);
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Working\s*1/ }));
     await expect.element(screen.getByText("Running benchmarks, 3 of 5")).toBeVisible();
@@ -212,6 +268,7 @@ describe("the Cells' column", () => {
   });
 
   it("settles a landed Cell from its row, and all of them at once", async () => {
+    setup(null);
     spies.settle.mockClear();
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Landed\s*2/ }));
@@ -223,10 +280,44 @@ describe("the Cells' column", () => {
   });
 
   it("opens a Cell's chat from its row", async () => {
+    setup(null);
     spies.open.mockClear();
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Pinned\s*1/ }));
     await userEvent.click(screen.getByText("Roadmap"));
     expect(spies.open).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-p" });
+  });
+});
+
+describe("the column's word that Stemcells gets better", () => {
+  it("says so with the pull requests the update brings, in place of upstream's pill", async () => {
+    setup(available);
+    await using screen = await render(<Column />);
+    await expect
+      .element(screen.getByRole("button", { name: `${APP_NAME} gets better, 5 changes` }))
+      .toHaveTextContent(`${APP_NAME} gets better5`);
+    await expect.element(screen.getByTestId("upstream-update-pill")).not.toBeInTheDocument();
+  });
+
+  it("lists the pull requests by title when hovered, with the one thing to do next", async () => {
+    setup(available);
+    await using screen = await render(<Column />);
+    await userEvent.hover(screen.getByRole("button", { name: /gets better/ }));
+    await expect
+      .element(screen.getByText("The left column is the Cells' line (#302)"))
+      .toBeVisible();
+    await expect
+      .element(screen.getByText("Aski stands in the phone's new chat (#299)"))
+      .toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "Download" })).toBeVisible();
+  });
+
+  it("is nowhere while the app is up to date, and the foot keeps upstream's pill", async () => {
+    setup(upToDate);
+    await using screen = await render(<Column />);
+    await expect.element(screen.getByTestId("upstream-update-pill")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: /gets better/ }))
+      .not.toBeInTheDocument();
   });
 });

@@ -999,7 +999,12 @@ being there counts. `install-app` records the repository's git folder
 (`updates/source.json`) as it installs.
 
 The web draws upstream's own pill, notes, toast and words, so its changes
-to them arrive with each sync. Two substitutes (above) remain: upstream's
+to them arrive with each sync. The Cells' column says an update of the
+app's own once, in a banner of ours over its foot (`rail/UpdateBanner.tsx`):
+upstream's notes in its popover, and its pill's download and restart
+(`upstream/updates.tsx`, which upstream's pill keeps to itself). The foot
+leaves the pill out meanwhile; the rest of the time it keeps it, for its
+checks and Update Everything. Two substitutes (above) remain: upstream's
 dot on the pill's icon carries the count, in upstream's badge look
 (`DesktopUpdateStatusIcon`), and a nightly's links open the pull requests
 merged that day, where upstream's open a GitHub release

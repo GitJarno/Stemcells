@@ -28,6 +28,7 @@ import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { useRailUndoNotice } from "./undoNotice";
+import { UpdateBanner, useUpdateToTake } from "./UpdateBanner";
 import "../tokens/stemcells.css";
 import "./rail.css";
 import "../needs/needs.css";
@@ -64,6 +65,7 @@ export function Cells() {
   const { cells } = useNeeds();
   const shelves = useShelves();
   const environmentId = usePrimaryEnvironmentId();
+  const update = useUpdateToTake();
   // Upstream's toggle can hide the column, and Settings has no ⌘Z to undo with.
   const { open } = useSidebar();
   useRailUndoNotice(open && lit !== "settings" && lit !== "disk");
@@ -153,10 +155,15 @@ export function Cells() {
           onOpen={() => setStage("pinned")}
         />
       </nav>
+      {update ? <UpdateBanner update={update} /> : null}
       <div data-cells-foot="">
-        <ul data-stemcells-rail-update="">
-          <SidebarUpdatePill />
-        </ul>
+        {/* Beside the banner the pill would say the same update twice; without
+            one, it stays for its checks and Update Everything. */}
+        {update ? null : (
+          <ul data-stemcells-rail-update="">
+            <SidebarUpdatePill />
+          </ul>
+        )}
         <RailButton
           label="Settings"
           on={onSettings}

@@ -1,7 +1,7 @@
 import { EnvironmentId } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
-import { offeredServerUpdates } from "./updates";
+import { offeredServerUpdates, updateStep, type DesktopUpdateState } from "./updates";
 
 // Contract: Update Everything offers a server update only to a server this
 // app runs. Any other server would download T3's build, which Stemcells
@@ -35,5 +35,57 @@ describe("Update Everything in Stemcells", () => {
       ...unreachable,
       { environmentId: "service", label: "service", reason: "needs a manual update" },
     ]);
+  });
+});
+
+// Contract: the column's banner reads where the app's update stands from
+// upstream's own reading of the desktop's state (its pill's action). If this
+// fails after a sync, the banner may show with nothing to take, or miss one.
+
+const state = (patch: Partial<DesktopUpdateState>): DesktopUpdateState => ({
+  enabled: true,
+  status: "up-to-date",
+  channel: "nightly",
+  currentVersion: "0.1.1-nightly.20261024.7266",
+  hostArch: "arm64",
+  appArch: "arm64",
+  runningUnderArm64Translation: false,
+  availableVersion: null,
+  downloadedVersion: null,
+  releaseNotes: [],
+  omittedReleaseCount: 0,
+  downloadPercent: null,
+  checkedAt: null,
+  message: null,
+  errorContext: null,
+  canRetry: false,
+  ...patch,
+});
+
+describe("where the app's update stands", () => {
+  const next = "0.1.1-nightly.20261026.7271";
+
+  it("is nothing to take while up to date, checking, or when the check failed", () => {
+    expect(updateStep(state({}))).toBeNull();
+    expect(updateStep(state({ status: "checking" }))).toBeNull();
+    expect(updateStep(state({ status: "error", errorContext: "check" }))).toBeNull();
+    expect(updateStep(state({ status: "disabled", enabled: false }))).toBeNull();
+  });
+
+  it("downloads one that's available, or whose download failed", () => {
+    expect(updateStep(state({ status: "available", availableVersion: next }))).toBe("download");
+    expect(
+      updateStep(state({ status: "error", errorContext: "download", availableVersion: next })),
+    ).toBe("download");
+  });
+
+  it("shows one downloading, and restarts into one downloaded, or whose install failed", () => {
+    expect(updateStep(state({ status: "downloading", availableVersion: next }))).toBe(
+      "downloading",
+    );
+    expect(updateStep(state({ status: "downloaded", downloadedVersion: next }))).toBe("restart");
+    expect(
+      updateStep(state({ status: "error", errorContext: "install", downloadedVersion: next })),
+    ).toBe("restart");
   });
 });
