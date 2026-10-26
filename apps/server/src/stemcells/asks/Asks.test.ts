@@ -47,17 +47,17 @@ it.effect("follows the list on this Mac, and measures how each kind's asks ended
   Effect.gen(function* () {
     const w = yield* world;
     yield* w.list(need("a", "question"), need("b", "question"), need("c", "permission"));
-    yield* w.asks.mark("a", "answered", null);
+    yield* w.asks.mark("a", "answered", null, null);
     yield* Queue.take(w.saved);
-    yield* w.asks.mark("b", "flagged", "Which copy is the old one");
+    yield* w.asks.mark("b", "flagged", "Which copy is the old one", null);
     const flagged = yield* Queue.take(w.saved);
     assert.deepStrictEqual(flagged.asks["b"]?.flag?.note, "Which copy is the old one");
 
     // All three leave the list: one answered from the ask, one flagged, one taken care of elsewhere.
     yield* w.list();
     assert.deepStrictEqual((yield* w.asks.measure).kinds, [
-      { kind: "question", ended: 2, alone: 1, flagged: 1 },
-      { kind: "permission", ended: 1, alone: 0, flagged: 0 },
+      { kind: "question", ended: 2, alone: 1, flagged: 1, whole: false },
+      { kind: "permission", ended: 1, alone: 0, flagged: 0, whole: false },
     ]);
   }).pipe(Effect.scoped),
 );

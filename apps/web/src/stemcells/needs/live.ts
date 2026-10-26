@@ -20,7 +20,7 @@ export const holds = createHolds({
   needs: readNeeds,
   keepLive: () => subscribeNeeds(() => {}),
   line: putAnswerOnUndoLine,
-  sent: (key) => tellAsk(key, "answered"),
+  sent: (key) => void tellAsk(key, "answered"),
 });
 
 export const leaving = createLeaving({ needs: readNeeds, subscribeNeeds });

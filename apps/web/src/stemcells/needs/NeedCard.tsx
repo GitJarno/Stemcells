@@ -31,6 +31,7 @@ import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
 import { tellAsk } from "./told";
+import { rereadWholeKinds, useShowsWhole } from "./whole";
 import { answering, land } from "./walk";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
@@ -118,9 +119,14 @@ export function NeedCard(props: {
   // missing waits for the person, who may leave it empty.
   const [flag, setFlag] = useState<"asking" | "said" | null>(null);
   const flagIt = () => {
-    if (flag === null) tellAsk(need.key, "flagged");
+    if (flag === null)
+      void tellAsk(need.key, "flagged", {
+        shown: { ask: card.headline, context: card.quote },
+      }).then(rereadWholeKinds);
     setFlag("asking");
   };
+  // A kind flagged often shows its Cell's words whole (decision 13).
+  const whole = useShowsWhole(need.kind);
 
   const section = useRef<HTMLElement>(null);
   const holdAnswer = (commands: ReturnType<typeof commandsFor>) => {
@@ -183,7 +189,7 @@ export function NeedCard(props: {
           type="button"
           data-lit={lightOf(NOTHING_TO_DO, fromWords, asked)}
           onClick={() => {
-            tellAsk(need.key, "answered");
+            void tellAsk(need.key, "answered");
             void settle({ environmentId, threadId: need.threadId });
           }}
         >
@@ -193,7 +199,7 @@ export function NeedCard(props: {
       <button
         type="button"
         onClick={() => {
-          tellAsk(need.key, "opened");
+          void tellAsk(need.key, "opened");
           (props.openChat ?? openPeek)(need.threadId);
         }}
       >
@@ -272,7 +278,7 @@ export function NeedCard(props: {
         {gone ? null : tail}
       </header>
       <p data-need-ask="">{card.headline}</p>
-      {card.quote ? <Context text={card.quote} open={flag !== null} /> : null}
+      {card.quote ? <Context text={card.quote} open={flag !== null || whole} /> : null}
       {card.request ? <pre data-need-request="">{card.request}</pre> : null}
       {card.steps.length > 0 ? (
         <ol data-need-steps="">
@@ -288,7 +294,7 @@ export function NeedCard(props: {
           placeholder="What was missing? Kept on this Mac"
           action="Note it"
           onSend={(note) => {
-            tellAsk(need.key, "flagged", note);
+            void tellAsk(need.key, "flagged", { note });
             setFlag("said");
           }}
           onCancel={() => setFlag("said")}

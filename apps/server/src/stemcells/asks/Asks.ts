@@ -8,7 +8,15 @@ import * as Stream from "effect/Stream";
 
 import * as Needs from "../needs/Needs.ts";
 import * as Upstream from "../upstream/asks.ts";
-import { listed, mark, measure, type Did, type Ledger, type Measure } from "./ledger.ts";
+import {
+  listed,
+  mark,
+  measure,
+  type Did,
+  type Ledger,
+  type Measure,
+  type Shown,
+} from "./ledger.ts";
 
 /**
  * The asks' ledger on this Mac (`ledger.ts`): it follows the needs list on the server, so an ask
@@ -17,7 +25,12 @@ import { listed, mark, measure, type Did, type Ledger, type Measure } from "./le
 export class Asks extends Context.Service<
   Asks,
   {
-    readonly mark: (key: string, did: Did, note: string | null) => Effect.Effect<void>;
+    readonly mark: (
+      key: string,
+      did: Did,
+      note: string | null,
+      shown: Shown | null,
+    ) => Effect.Effect<void>;
     readonly measure: Effect.Effect<Measure>;
   }
 >()("t3/stemcells/asks/Asks") {}
@@ -49,8 +62,8 @@ export const make = Effect.fn("Asks.make")(function* (source: AsksSource) {
   );
 
   return Asks.of({
-    mark: Effect.fn("Asks.mark")((key, did, note) =>
-      change((each, now) => mark(each, key, did, note, now)),
+    mark: Effect.fn("Asks.mark")((key, did, note, shown) =>
+      change((each, now) => mark(each, key, did, note, now, shown)),
     ),
     measure: Effect.gen(function* () {
       return measure(yield* Ref.get(ledger), yield* Clock.currentTimeMillis);

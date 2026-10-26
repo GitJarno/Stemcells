@@ -11,6 +11,7 @@ interface Measure {
     readonly ended: number;
     readonly alone: number;
     readonly flagged: number;
+    readonly whole: boolean;
   }>;
 }
 
@@ -72,7 +73,11 @@ export function AsksMeasure() {
           key={kind.kind}
           id={`aski-asks-${kind.kind}`}
           title={KIND_WORDS[kind.kind] ?? kind.kind}
-          description={kind.flagged > 0 ? `${kind.flagged} flagged` : undefined}
+          description={
+            kind.flagged === 0
+              ? undefined
+              : `${kind.flagged} flagged${kind.whole ? ", so these show the Cell's words whole" : ""}`
+          }
           control={<span className="tabular-nums">{share(kind.alone, kind.ended)}</span>}
         />
       ))}

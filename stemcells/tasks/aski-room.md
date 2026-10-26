@@ -694,6 +694,11 @@ Examples. The four cards are the prototype's:
   - A golden set of stops, hand-labelled: needs-you or not, the kind, and
     acceptable options. Public-safe synthetic cases live in the repo. A
     replay of the person's own threads is read locally and never committed.
+  - The asks the person flagged as not enough to decide are local cases
+    too: the server's `asks.json` keeps what each showed and what was
+    missing (`aski-asks.md`, decision 13). A change to how Cells ask, or
+    to this read, must say more of what those notes asked for before it
+    lands.
   - `stemcells/scripts/needs-eval` runs the live calls on demand, and CI
     validates recorded outputs only.
   - Targets:

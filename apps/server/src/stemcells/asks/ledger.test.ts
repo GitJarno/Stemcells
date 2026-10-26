@@ -68,12 +68,41 @@ describe("the asks' ledger", () => {
       { ...permission("p1"), did: ["answered"] },
     );
     expect(measure(ledger, T + DAY).kinds).toEqual([
-      { kind: "question", ended: 3, alone: 1, flagged: 1 },
-      { kind: "permission", ended: 1, alone: 1, flagged: 0 },
+      { kind: "question", ended: 3, alone: 1, flagged: 1, whole: false },
+      { kind: "permission", ended: 1, alone: 1, flagged: 0, whole: false },
     ]);
     // An ask still on the list hasn't ended; one that ended over a week ago is past the window.
     expect(measure(listed(ledger, [question("q4")], T + DAY), T + DAY).kinds[0]?.ended).toBe(3);
     expect(measure(ledger, T + 8 * DAY).kinds).toEqual([]);
+  });
+
+  it("shows a kind's words whole once two of its week's asks, and a quarter of them, were flagged", () => {
+    const flagged = (key: string) => ({ ...question(key), did: ["flagged" as const] });
+    const answered = (key: string) => ({ ...question(key), did: ["answered" as const] });
+    const whole = (ledger: Ledger) => measure(ledger, T + DAY).kinds[0]?.whole;
+    expect(whole(ended(flagged("a"), answered("b")))).toBe(false);
+    expect(
+      whole(
+        ended(flagged("a"), flagged("b"), ...["c", "d", "e", "f", "g", "h", "i"].map(answered)),
+      ),
+    ).toBe(false);
+    expect(
+      whole(ended(flagged("a"), flagged("b"), ...["c", "d", "e", "f", "g", "h"].map(answered))),
+    ).toBe(true);
+  });
+
+  it("keeps what a flagged ask showed, for the asks to learn from", () => {
+    let ledger = listed(EMPTY, [question("a")], T);
+    ledger = mark(ledger, "a", "flagged", null, T, {
+      ask: "Should I change those two?",
+      context: "Two pages say basket.",
+    });
+    ledger = mark(ledger, "a", "flagged", "Which macros", T + 5);
+    expect(ledger.asks["a"]?.flag).toEqual({
+      at: T,
+      note: "Which macros",
+      shown: { ask: "Should I change those two?", context: "Two pages say basket." },
+    });
   });
 
   it("forgets an ask a month after it ended", () => {

@@ -87,5 +87,21 @@ says yes, the undo window.
 - [x] Words that need more reach the Cell as its question (decision 9)
 - [x] The column as the index in Aski's room (decision 8)
 - [x] The flag, and the local measure in Settings › Aski (decisions 11, 12)
-- [ ] Asks show more where they were flagged; flagged asks as the evaluation set (decision 13)
+- [x] Asks show more where they were flagged; flagged asks as the evaluation set (decision 13)
 - [x] Docs
+
+## Review
+
+Landed in #324 (the ask as a message), #325 (two halves, the column as the
+index), #326 (the ask's number back in the room), #327 (words that need more
+reach the Cell), #328 (the flag and the local measure), #329 (the older
+plans) and the pull request that closes this plan (what's flagged teaches).
+
+- **The number came back.** Decision 3 first said no numbers, but the
+  words in Aski's composer address an ask by its number, and a number
+  nobody can see is a guess. It stays, quiet, in the room only.
+- **The undo line stayed one.** Decision 7 first put an undo line under
+  the room's asks; the app keeps its single line in the column, with
+  upstream's notice where the column is hidden.
+- **Not yet seen by the person:** the room, the flag and the measure were
+  checked in headless captures and tests, not on the installed app.

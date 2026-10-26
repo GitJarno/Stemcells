@@ -7,7 +7,19 @@ import { postToPrimary } from "../upstream/limitResume";
 
 export type Did = "answered" | "opened" | "flagged";
 
-export function tellAsk(key: string, did: Did, note?: string): void {
-  const body = note === undefined ? { key, did } : { key, did, note };
-  void postToPrimary("/api/stemcells/asks", body).catch(() => undefined);
+/** What a flagged ask showed: it keeps them, as the asks to learn from (decision 13). */
+export interface Shown {
+  readonly ask: string;
+  readonly context: string | null;
+}
+
+export function tellAsk(
+  key: string,
+  did: Did,
+  more: { readonly note?: string; readonly shown?: Shown } = {},
+): Promise<void> {
+  return postToPrimary("/api/stemcells/asks", { key, did, ...more }).then(
+    () => undefined,
+    () => undefined,
+  );
 }

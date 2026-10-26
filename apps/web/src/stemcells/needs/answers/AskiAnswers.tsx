@@ -194,7 +194,7 @@ function act(
   for (const number of enter.opens) {
     const need = needs.get(number);
     if (need === undefined) continue;
-    tellAsk(need.key, "opened");
+    void tellAsk(need.key, "opened");
     openChat(need.threadId);
   }
   lit.ask(

@@ -1,9 +1,13 @@
 import * as Schema from "effect/Schema";
 
-// How each ask ended, kept on this Mac only and never sent anywhere (stemcells/tasks/aski-asks.md,
-// decisions 11 and 12): answered from the ask alone, answered after opening its chat, flagged as
-// not enough to decide, or taken care of elsewhere. Its measure is the share answered from the
-// ask alone and unflagged, by kind, over the last week: whether an ask says enough to decide.
+// How each ask ended, on this Mac only and sent nowhere (stemcells/tasks/aski-asks.md, decisions
+// 11 to 13): answered from the ask alone, after opening its chat, flagged, or elsewhere. A kind
+// flagged often shows the Cell's words whole; each flag keeps what its ask showed, as a case to
+// learn from.
+
+/** What a flagged ask showed: what it asked, and the Cell's words under it. */
+const Shown = Schema.Struct({ ask: Schema.String, context: Schema.NullOr(Schema.String) });
+export type Shown = typeof Shown.Type;
 
 const AskRecord = Schema.Struct({
   /** The need's kind; a string, so a kind added later never makes the file unreadable. */
@@ -15,8 +19,14 @@ const AskRecord = Schema.Struct({
   answered: Schema.Boolean,
   /** The person opened its chat from the ask. */
   opened: Schema.Boolean,
-  /** "Not enough to decide", with what was missing when the person said. */
-  flag: Schema.NullOr(Schema.Struct({ at: Schema.Number, note: Schema.NullOr(Schema.String) })),
+  /** "Not enough to decide", with what was missing when the person said, and what it showed. */
+  flag: Schema.NullOr(
+    Schema.Struct({
+      at: Schema.Number,
+      note: Schema.NullOr(Schema.String),
+      shown: Schema.optionalKey(Shown),
+    }),
+  ),
 });
 export type AskRecord = typeof AskRecord.Type;
 
@@ -39,6 +49,8 @@ export interface KindMeasure {
   /** Of those, answered from the ask alone and unflagged. */
   readonly alone: number;
   readonly flagged: number;
+  /** Flagged often enough that its asks show the Cell's words whole. */
+  readonly whole: boolean;
 }
 
 export interface Measure {
@@ -51,6 +63,12 @@ const MEASURE_DAYS = 7;
 /** Ended asks stay a month: the measure reads a week, and flagged ones are the asks to learn from. */
 const KEEP_MS = 30 * DAY_MS;
 const NOTE_MAX = 500;
+const ASK_MAX = 500;
+const CONTEXT_MAX = 4000;
+
+/** A kind shows the Cell's words whole once two of its week's asks, and a quarter of them, were flagged. */
+const showsWhole = (counts: { readonly ended: number; readonly flagged: number }) =>
+  counts.flagged >= 2 && counts.flagged * 4 >= counts.ended;
 
 /**
  * The ledger once the list holds `asks`: a new ask is recorded, one that left ends, and one
@@ -92,6 +110,7 @@ export function mark(
   did: Did,
   note: string | null,
   now: number,
+  shown: Shown | null = null,
 ): Ledger {
   const record = ledger.asks[key];
   if (record === undefined) return ledger;
@@ -104,7 +123,20 @@ export function mark(
         : // A note said after the flag fills it in; flagging again keeps what was said.
           {
             ...record,
-            flag: { at: record.flag?.at ?? now, note: said ?? record.flag?.note ?? null },
+            flag: {
+              at: record.flag?.at ?? now,
+              note: said ?? record.flag?.note ?? null,
+              ...(shown === null
+                ? record.flag?.shown === undefined
+                  ? {}
+                  : { shown: record.flag.shown }
+                : {
+                    shown: {
+                      ask: shown.ask.slice(0, ASK_MAX),
+                      context: shown.context?.slice(0, CONTEXT_MAX) ?? null,
+                    },
+                  }),
+            },
           };
   return { version: 1, asks: { ...ledger.asks, [key]: next } };
 }
@@ -131,7 +163,7 @@ export function measure(ledger: Ledger, now: number): Measure {
   return {
     days: MEASURE_DAYS,
     kinds: [...kinds]
-      .map(([kind, counts]) => ({ kind, ...counts }))
+      .map(([kind, counts]) => ({ kind, ...counts, whole: showsWhole(counts) }))
       .toSorted((a, b) => b.ended - a.ended || a.kind.localeCompare(b.kind)),
   };
 }
