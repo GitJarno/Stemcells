@@ -37,8 +37,13 @@ machine, had stopped answering its 15-second heartbeat.
 - [x] The freeze log records the freezes that drop clients: a sample counts
       a gap no timer has recorded yet, so one that crosses the 30-second
       tick is no longer lost.
-- [ ] Prove it on this Mac: install, then the freeze watchdog and
-      heartbeat stay quiet under the same load.
+- [x] Prove it on this Mac: installed at 20:45. In the 8 minutes before,
+      the old build froze 8 times (a watchdog's 3-second probe; its own
+      log, 55 s at the longest). The new build froze none in the 24
+      minutes up to a reboot, with the disk still 98% full and the server
+      writing 1.7 MB/s. After the reboot, under the boot's load, it
+      stalled once for 4.7 s: as it spawned `git`, with no SQLite
+      statement running, so another cause, and too short to drop a client.
 
 ## Review
 
