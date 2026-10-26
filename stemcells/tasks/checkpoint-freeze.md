@@ -26,15 +26,31 @@ machine, had stopped answering its 15-second heartbeat.
 
 ## Plan
 
-- [ ] The writer runs nothing while a checkpoint is in flight: statements
+- [x] The writer runs nothing while a checkpoint is in flight: statements
       wait asynchronously for the worker's reply, so a slow write delays
-      queries instead of freezing the event loop.
-- [ ] The worker checkpoints only when the main thread asks (its idle retry
-      asks instead of checkpointing on its own).
-- [ ] A test that fails on main: a statement issued while a checkpoint
-      reply is outstanding does not run until the reply arrives.
-- [ ] Seam listed in `stemcells/seams.md`.
+      queries instead of freezing the event loop (#317).
+- [x] The worker checkpoints only when the main thread asks (its idle retry
+      asks instead of checkpointing on its own) (#317).
+- [x] A test that fails on main: a statement issued while a checkpoint
+      reply is outstanding does not run until the reply arrives (#317).
+- [x] Seam listed in `stemcells/seams.md`.
+- [x] The freeze log records the freezes that drop clients: a sample counts
+      a gap no timer has recorded yet, so one that crosses the 30-second
+      tick is no longer lost.
 - [ ] Prove it on this Mac: install, then the freeze watchdog and
       heartbeat stay quiet under the same load.
 
 ## Review
+
+- The cause was found by sampling the running server during freezes,
+  not by reading code: the first theory (a slow query, then the whole
+  disk) was wrong both times. Five samples, and an independent reader
+  blocked on the same file while other files stayed fast, pinned it.
+- The freeze log missed every freeze that crossed its 30-second tick (all
+  three long ones), which is why the app said "disconnected" and never
+  "froze for": the second PR.
+- Left outside this task: the disk is 98% full, which is what makes the
+  checkpoint's writes stick, and the server writes 0.4 to 2.4 MB/s to its
+  4 GB database (macOS files a disk-writes report against the app daily).
+  The Claude status check (`claude --version`, 20 s limit) also failed
+  once during such an episode, with macOS's space reclaimer hung.
