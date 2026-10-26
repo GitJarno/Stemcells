@@ -2,7 +2,20 @@
 // tabs), how it opens a chat, which column it stands in, and whether it
 // stands in the workspace (where its list has a header).
 
+import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+
+import { useSelectWorkspaceDetail } from "../../features/workspace/useSelectWorkspaceDetail";
+
 export { SegmentedControl } from "../../components/ui/SegmentedControl";
-export { useHomeThreadSelection } from "../../features/home/home-thread-navigation";
 export { useWorkspaceTabs } from "../../features/workspace/WorkspaceTabsContext";
 export { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
+
+/** Opens a chat as upstream's home opens a thread (`HomeRouteScreen.tsx`). */
+export function useHomeThreadSelection() {
+  const selectDetail = useSelectWorkspaceDetail();
+  return (thread: { readonly environmentId: EnvironmentId; readonly id: ThreadId }) =>
+    selectDetail({
+      name: "Thread",
+      params: { environmentId: String(thread.environmentId), threadId: String(thread.id) },
+    });
+}

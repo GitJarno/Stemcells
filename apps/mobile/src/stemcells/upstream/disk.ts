@@ -31,6 +31,7 @@ export { ScreenScrollView } from "../../components/ui/ScreenScrollView";
 export { SettingsRow } from "../../features/settings/components/SettingsRow";
 export { SettingsScreen } from "../../features/settings/components/SettingsScreen";
 export { SettingsSection } from "../../features/settings/components/SettingsSection";
+export { openSettings } from "../../features/settings/settings-navigation";
 
 /** Each machine the phone keeps a connection to, how that connection is now, and its icon. */
 export function useMachines() {

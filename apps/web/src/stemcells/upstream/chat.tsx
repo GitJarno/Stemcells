@@ -4,7 +4,7 @@
  */
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId } from "@t3tools/contracts";
-import { use, useRef } from "react";
+import { createContext, use, useRef } from "react";
 
 import type { ChatComposerHandle } from "../../components/chat/ChatComposer";
 import { ChatWindowInputContext } from "../../components/chat/chatWindowInput";
@@ -97,6 +97,12 @@ export function useOpenNewCell(): () => Promise<CellRef | null> {
 }
 
 /**
+ * Whether the chats are under Settings or Usage, which upstream opens as a
+ * modal over them: its thread view goes inert there and leaves the route alone.
+ */
+export const ChatsInBackground = createContext(false);
+
+/**
  * Upstream's thread view for one pane. Only the pane that owns window input
  * answers shortcuts, typing and paste that reach the window.
  *
@@ -135,7 +141,7 @@ export function ChatPaneView(props: {
             bare: props.bare === true,
           }}
         >
-          <ThreadRouteView target={props.target} />
+          <ThreadRouteView target={props.target} background={use(ChatsInBackground)} />
         </ChatPanelHostContext>
       </ChatWindowInputContext>
     </ComposerHandleContext>

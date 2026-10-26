@@ -5,6 +5,7 @@ import {
   useEffectEvent,
   useLayoutEffect,
   useRef,
+  use,
   useState,
   type ReactNode,
   type RefObject,
@@ -22,7 +23,12 @@ import { Separator, type Axis } from "../split/Separator";
 import { raiseSlate } from "../surfaces/awake";
 import { readNeeds } from "../needs/stream";
 import type { AskiChat } from "../upstream/aski";
-import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
+import {
+  ChatPaneView,
+  ChatsInBackground,
+  useCellPresence,
+  useOpenNewCell,
+} from "../upstream/chat";
 import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { usePrimaryEnvironmentId } from "../upstream/needs";
@@ -112,7 +118,16 @@ function isNewCellDraft(cell: CellRef, newCell: NewCell | null): boolean {
  * its chat. `target` is the route's chat; `fallback` is upstream's page for
  * routes without one.
  */
-export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallback: ReactNode }) {
+/**
+ * `background` is set while Settings or Usage is open over the workspace:
+ * upstream keeps its thread mounted and inert under them, and so the
+ * workspace keeps its chats, hearing no keys.
+ */
+export function CellWorkspace(props: {
+  target: ThreadRouteTarget | null;
+  fallback: ReactNode;
+  background?: boolean;
+}) {
   const workspace = useWorkspaceStore((store) => store.workspace);
   const takenRoute = useWorkspaceStore((store) => store.takenRoute);
   const visited = useWorkspaceStore((store) => store.visited);
@@ -400,7 +415,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
       closePaneAndRoute(pane.id);
       return true;
     },
-  });
+  }, props.background !== true);
 
   // On the index route Aski's chat is on its way: the grid waits for it
   // rather than letting upstream's index start a draft beside it.
@@ -460,7 +475,9 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     <SidebarInset
       data-stemcells-workspace=""
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
+      inert={props.background}
     >
+      <ChatsInBackground value={props.background === true}>
       {keeper}
       <TabStrip
         tabs={cellTabs}
@@ -532,6 +549,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
         <DropWash />
         <ChatCarry onOpenTab={activateTabAndRoute} />
       </div>
+      </ChatsInBackground>
     </SidebarInset>
   );
 }
@@ -728,6 +746,7 @@ function PaneSlot(props: {
   onClose: ((paneId: string) => void) | null;
 }) {
   const presence = useCellPresence(props.pane.cell);
+  const ownsInput = props.ownsInput && !use(ChatsInBackground);
   useLeavesWhenSettled(props.pane, props.onClose !== null && props.aski === null);
   const carried = useCarriedPane() === props.pane.id;
   const { onClose } = props;
@@ -756,7 +775,7 @@ function PaneSlot(props: {
         <AskiPane
           chat={props.aski}
           target={target}
-          ownsWindowInput={props.ownsInput}
+          ownsWindowInput={ownsInput}
           focused={props.focused}
         />
       ) : (
@@ -782,7 +801,7 @@ function PaneSlot(props: {
                     <LineSlotHost slot={ComposerStashSlot}>
                       <ChatPaneView
                         target={target}
-                        ownsWindowInput={props.ownsInput}
+                        ownsWindowInput={ownsInput}
                         focused={props.focused}
                         panelHost={props.panelHost}
                       />
