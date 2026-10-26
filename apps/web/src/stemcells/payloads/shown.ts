@@ -39,7 +39,7 @@ export function shownOfMedia(item: MediaItem): Shown | null {
   };
 }
 
-/** A file a message holds, on the machine of the chat it was sent in. */
+/** A picture or file a message holds, on the machine of the chat it was sent in. */
 export function shownOfAttachment(
   environmentId: string,
   attachment: {
@@ -51,10 +51,15 @@ export function shownOfAttachment(
 ): Shown {
   return {
     name: attachment.name,
-    kind: attachment.mimeType.startsWith("video/") ? "video" : "file",
+    kind: kindOfType(attachment.mimeType),
     mimeType: attachment.mimeType,
     sizeBytes: attachment.sizeBytes,
     asset: { environmentId, resource: { _tag: "attachment", attachmentId: attachment.id } },
     url: null,
   };
+}
+
+/** What a file of this type is shown as. */
+export function kindOfType(mimeType: string): Shown["kind"] {
+  return mimeType.startsWith("image/") ? "image" : mimeType.startsWith("video/") ? "video" : "file";
 }

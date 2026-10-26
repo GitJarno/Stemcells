@@ -55,6 +55,8 @@ import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePaste
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
+import * as UpstreamWorkspaceFileDrop from "../../../components/chat/workspaceFileDrop";
+import * as UpstreamMediaActions from "../../../components/media/MediaActions";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
@@ -103,6 +105,8 @@ import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 import * as OurUserMessageRow from "./TimelineUserMessageRow";
+import * as OurWorkspaceFileDrop from "./workspaceFileDrop";
+import * as OurMediaActions from "./MediaActions";
 
 // Upstream's timeline loads the diff worker, which only a browser can start;
 // these tests read its module's exports, never draw it.
@@ -751,6 +755,39 @@ const CASES: Readonly<Record<string, Case>> = {
         "./MessagesTimeline",
         ["MessagesTimeline"],
       ],
+    },
+  },
+  "apps/web/src/components/chat/workspaceFileDrop.ts": {
+    upstream: UpstreamWorkspaceFileDrop,
+    substitute: OurWorkspaceFileDrop satisfies typeof UpstreamWorkspaceFileDrop,
+    importers: {
+      // The chat's drop target, which takes a carry into its composer.
+      "apps/web/src/components/ChatView.tsx": [
+        "./chat/workspaceFileDrop",
+        ["makeWorkspaceFileDropHandlers"],
+      ],
+      // A thread in the sidebar, which takes one into its draft.
+      "apps/web/src/components/sidebar/SidebarThreadRow.tsx": [
+        "../chat/workspaceFileDrop",
+        ["makeWorkspaceFileDropHandlers"],
+      ],
+      "apps/web/src/components/LegacySidebar.tsx": [
+        "./chat/workspaceFileDrop",
+        ["makeWorkspaceFileDropHandlers"],
+      ],
+    },
+  },
+  "apps/web/src/components/media/MediaActions.tsx": {
+    upstream: UpstreamMediaActions,
+    substitute: OurMediaActions satisfies typeof UpstreamMediaActions,
+    importers: {
+      // A reply's pictures (and videos, which draw through the player below).
+      "apps/web/src/components/chat/ChatMarkdownMedia.tsx": [
+        "../media/MediaActions",
+        ["MediaActions"],
+      ],
+      // A message's videos.
+      "apps/web/src/components/media/MediaVideoPlayer.tsx": ["./MediaActions", ["MediaActions"]],
     },
   },
 };

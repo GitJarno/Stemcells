@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import { InlineAudioPreview } from "../files/InlineAudioPreview";
 import { filePreviewKind } from "@t3tools/shared/filePreview";
 import { findRevealRef } from "./markdownFindContext";
@@ -406,7 +407,10 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
           ? (userFiles.find((file) => file.id === record.attachmentId) ?? null)
           : null;
     return (
-      <span data-thread-find-ignore>
+      <span
+        data-thread-find-ignore
+        {...Stemcells.attachedCarry(ctx.activeThreadEnvironmentId, attachment)}
+      >
         <UserMessageContextReferenceChip
           reference={reference}
           record={record}
@@ -484,6 +488,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
                 {regularImages.map((image) => (
                   <div
                     key={image.id}
+                    {...Stemcells.attachedCarry(ctx.activeThreadEnvironmentId, image)}
                     className={cn(
                       "bg-background/70",
                       image.source?.kind === "snap-shot" && image.previewUrl
@@ -561,7 +566,11 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
                   );
                   if (file.downloadable !== false) {
                     return (
-                      <div key={file.id} className="flex min-w-0 items-center gap-1">
+                      <div
+                        key={file.id}
+                        {...Stemcells.attachedCarry(ctx.activeThreadEnvironmentId, file)}
+                        className="flex min-w-0 items-center gap-1"
+                      >
                         <button
                           type="button"
                           aria-label={`Preview ${file.name}`}

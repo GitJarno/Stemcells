@@ -107,5 +107,9 @@ describe("a file a message holds, carried", () => {
       shownOfAttachment(HERE, { id: "v", name: "run.mp4", mimeType: "video/mp4", sizeBytes: 9 })
         .kind,
     ).toBe("video");
+    expect(
+      shownOfAttachment(HERE, { id: "p", name: "sky.png", mimeType: "image/png", sizeBytes: 9 })
+        .kind,
+    ).toBe("image");
   });
 });

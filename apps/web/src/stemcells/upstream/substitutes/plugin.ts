@@ -104,6 +104,11 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // A settle the person sends marks itself, so its pane closes and an
   // auto-settle's never does.
   "apps/web/src/hooks/useThreadActions.ts": "useThreadActions.ts",
+  // Attachments carried between chats: a chat takes a carry as it takes
+  // files off the disk, and a transcript's pictures and videos are carried
+  // by dragging them (`payloads/`).
+  "apps/web/src/components/chat/workspaceFileDrop.ts": "workspaceFileDrop.ts",
+  "apps/web/src/components/media/MediaActions.tsx": "MediaActions.tsx",
 };
 
 /**

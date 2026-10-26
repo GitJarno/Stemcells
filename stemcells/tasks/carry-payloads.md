@@ -5,16 +5,30 @@ attachments into another chat; grab a picture, video or file shown in a
 chat and drop it in another chat, where it lands as an attachment.
 Scalable, and right in the details.
 
-One carry engine for everything: tab-swipe's (`windows/carry.ts`, W5a), and
-its payload API when it lands. Nothing here is a second drag system: this
-work brings the payloads, what accepts them, and how they land.
+Attachments ride the browser's own drag, not tab-swipe's carry engine
+(`windows/carry.ts`): it already crosses panes, spring-loaded tabs, the
+app's windows and other apps, and every chat already takes files off the
+disk through it. A carry is one more thing that drag holds (`seams.md`,
+Attachments carried between chats). A stash, which moves with ⌥ to copy,
+may still want the engine's card.
 
 ## Decisions
 
 - **A payload is references, never bytes.** A composer chip, a stored
   attachment, a file a Cell showed (by the signed asset URL the chat already
   holds), a remote URL, or a stash entry.
-- **Landing copies on the server.** The server copies the referenced file
+- **Attachments land through the composer's intake.** A carried picture,
+  video or file is read into a File in the page (the window's own bytes, or
+  signed afresh by its machine) and handed to the chat's composer as a
+  file off the disk is: upstream's checks, previews and upload to the
+  chat's own machine, so a chat on any machine takes it. Upstream's
+  clipboard import reads attachments into the page the same way. This
+  replaces the server copy below for attachments; a video up to the 50 MB
+  cap passes through the page.
+- **A carried chip is copied.** The intake doesn't say what it took, so a
+  move could lose a chip the target refused; the person removes the
+  source's with its ×.
+- **Landing copies on the server** (stashes). The server copies the referenced file
   into a pending attachment (`/api/stemcells/attachments/import`) and the
   target's draft holds that id, as a restored stash file does. A video is
   never read into the renderer; a remote URL is fetched once, by the server,
@@ -48,6 +62,31 @@ work brings the payloads, what accepts them, and how they land.
 - [ ] A stash dropped in a chat lands through upstream's own restore: a
       seam lets the composer register it.
 - [ ] Keyboard: "Send to…" on each source, listing the tabs.
-- [ ] With the payload API: the sources and targets wired, spring-load,
-      "+", Esc home, ⌥⌘Z, Reduce Motion, the OS drag when leaving the
-      window; their tests.
+- [x] Attachments on the browser's drag: a composer's chips, a sent
+      message's pictures, files and chips, and a transcript's pictures and
+      videos dragged into any chat, in this tab, another (spring-load),
+      another window or on another machine; the chat lights upstream's
+      overlay and its composer takes them; a chip's own chat, and its row
+      in the sidebar, refuse it; only drags the app started are read;
+      Esc; `DownloadURL` for a drop outside the app. Tests: the wire, the
+      reading, real drags in the browser, upstream's contracts.
+- [ ] The strip's "+", ⌥ to move a chip, a stash dragged, Undo.
+
+## Review (attachments)
+
+Checked with real drags in headless Chromium (`attachmentCarry.browser
+.test.tsx`): a chip from upstream's own strip lands in another chat as the
+same File and its own chat never lights; a reply's picture is read from
+its address and lands; outside a transcript nothing carries. Each fails
+with its seam or gate taken out. Not checked by hand: the drag between two
+of the app's windows, and `DownloadURL` onto the desktop in Electron.
+
+An independent review found five things, fixed before merging: a reply's
+video couldn't be dragged (its player has controls over all of it; now a
+press above them carries); a chip let go over its own chat's sidebar row
+went back in; an answer that didn't say its size was read whole before the
+cap; a web page could dress a drag as a carry; and a type guessed from a
+name beat the one the answer declared. Left as they are: two windows on
+the same chat each take a chip from the other (each window knows only its
+own drags' chips), and a pane that switches chats while a drop is still
+being read lands it in the new chat.

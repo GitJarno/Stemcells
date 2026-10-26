@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import type {
   ChatAttachment,
   ChatFileAttachment,
@@ -177,6 +178,7 @@ export function ComposerAttachmentMediaRow({
             <SnapShotAttachmentFrame
               key={image.id}
               data-chat-composer-expanded-image="true"
+              {...Stemcells.chipCarry(ready, attachmentDraftTarget)}
               aria-hidden={snapShotAnimationPending || undefined}
               inert={snapShotAnimationPending || undefined}
               arrival={snapShotArrival}
@@ -332,6 +334,7 @@ export function ComposerAttachmentMediaRow({
         return (
           <div
             key={file.id}
+            {...Stemcells.chipCarry(file, attachmentDraftTarget)}
             className="relative h-16 w-16 shrink-0 snap-start overflow-hidden rounded-lg border border-border/80 bg-black"
           >
             <button
@@ -440,6 +443,7 @@ export function ComposerAttachmentFileList({
         return (
           <div
             key={file.id}
+            {...Stemcells.chipCarry(file, attachmentDraftTarget)}
             className="flex min-w-0 items-center gap-2 py-1 text-sm text-foreground"
           >
             <PierreEntryIcon pathValue={file.name} kind="file" theme={resolvedTheme} />

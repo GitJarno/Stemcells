@@ -1,5 +1,6 @@
 /** What `accepts` reads and landing does, in the app itself. */
 import * as Upstream from "../upstream/payloads";
+import type { Reading } from "./drop";
 import type { Hands } from "./land";
 import type { Facts } from "./payload";
 
@@ -27,3 +28,6 @@ export const appHands: Hands = {
   maxPictureBytes: Upstream.MAX_PICTURE_BYTES,
   isPictureType: Upstream.isPictureType,
 };
+
+/** What reading a carry dropped on a chat takes, in the app itself. */
+export const appReading: Reading = { ...appHands, maxBytes: Upstream.MAX_FILE_BYTES };

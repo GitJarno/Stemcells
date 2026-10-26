@@ -1,16 +1,17 @@
 /**
  * What carrying pictures, files and stashed prompts between chats takes from upstream: a chat's
- * draft and chips, how a chip lets go of its upload, what each machine's chats take, a file
- * signed afresh by its machine, the stash, and an authenticated request to the primary server.
- * `payloads.contract.test.ts` pins what this relies on.
+ * draft and chips, the attachments a message holds, how a chip lets go of its upload, what each
+ * machine's chats take, a file signed afresh by its machine, the stash, and an authenticated
+ * request to the primary server. `payloads.contract.test.ts` pins what this relies on.
  */
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { executeAtomQuery } from "@t3tools/client-runtime/state/runtime";
 import {
+  AssetResource,
   isProviderSendTurnSupportedImageMimeType,
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
+  PROVIDER_SEND_TURN_MAX_FILE_BYTES,
   PROVIDER_SEND_TURN_MAX_IMAGE_BYTES,
-  type AssetResource,
   type EnvironmentId,
   type ThreadId,
 } from "@t3tools/contracts";
@@ -34,9 +35,13 @@ import { assetEnvironment } from "../../state/assets";
 import { primaryEnvironmentIdAtom } from "../../state/primaryEnvironment";
 import { environmentServerConfigsAtom } from "../../state/server";
 import { environmentSession } from "../../state/session";
+import type { ChatFileAttachment, ChatImageAttachment } from "../../types";
 import type { CellRef } from "../tabs/layout";
 
-export type { AssetResource };
+/** The schema of what a machine's file is named by, for reading one out of a drag. */
+export { AssetResource };
+/** A picture or file a sent message holds. */
+export type Attached = ChatImageAttachment | ChatFileAttachment;
 /** A picture or file in a composer. */
 export type Chip = ComposerImageAttachment | ComposerFileAttachment;
 export type PictureChip = ComposerImageAttachment;
@@ -48,10 +53,22 @@ export type StashedFile = PersistedComposerFileAttachment;
 export const MAX_ATTACHMENTS = PROVIDER_SEND_TURN_MAX_ATTACHMENTS;
 /** The most a picture in a message may be. */
 export const MAX_PICTURE_BYTES = PROVIDER_SEND_TURN_MAX_IMAGE_BYTES;
+/** The most any file in a message may be, on any machine. */
+export const MAX_FILE_BYTES = PROVIDER_SEND_TURN_MAX_FILE_BYTES;
 /** Whether a model is sent pictures of this type (the rest go as files). */
 export const isPictureType = isProviderSendTurnSupportedImageMimeType;
 
 export const newId = randomUUID;
+
+/** What a composer writes to: its draft's id while unsent, its thread after. */
+export type ChatTarget = ComposerThreadTarget;
+
+/** A chat's key, as the sidebar marks its row with (`THREAD_ROW`). */
+export const chatKeyOf = (chat: ChatTarget): string =>
+  typeof chat === "string" ? chat : scopedThreadKey(chat);
+
+/** The attribute a sidebar row names its chat by, where files dropped on it go. */
+export const THREAD_ROW = "data-thread-item";
 
 /** The draft a chat's composer writes to: its draft's id while unsent, its thread after. */
 function draftOf(cell: CellRef): ComposerThreadTarget {

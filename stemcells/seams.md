@@ -145,6 +145,8 @@ here. Keep each seam the smallest edit that hands control to our code
 | `apps/mobile/package.json`, `pnpm-lock.yaml`                                                                                                                                                                                                                                                                                                                                | Adds `expo-media-library`, and leaves it out of Android's autolinking (eight lines in two places; its three blocks in the lockfile)                                                                                                                                                                                                                                                                                                                                                                                                                               | Add to Chat shows the phone's photos, which only the library's module reaches; T3's picker needs no access. Android keeps T3's menu, so it links no module and declares no storage permissions. The lockfile is hot (its budget, below); on a conflict, take upstream's and run `pnpm install`                                                                                                                                                                                                                                                                            |
 | `packages/shared/src/nodeSqliteClient.ts`, `packages/shared/src/nodeSqliteClient.test.ts`                                                                                                                                                                                                                                                                                   | While the checkpoint worker has a check out, the writer runs no statement: reads wait for its reply as writes already waited out backpressure, and the worker's idle retry asks the parent instead of checkpointing on its own (about twenty lines); one test holds the worker's reply and finds a read and a write waiting                                                                                                                                                                                                                                       | The writer waits out a checkpoint (below). Upstream could take it whole                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `apps/server/src/observability/EventLoopMonitor.ts`, `apps/server/src/observability/EventLoopMonitor.test.ts`                                                                                                                                                                                                                                                               | Beside Node's delay histogram, a one-second beat times the longest gap since the last sample, counting one still open (`makeLoopGaps`); the sample reports the larger of the two (about twenty lines), and one test reads a freeze no beat has seen                                                                                                                                                                                                                                                                                                               | A freeze that crossed the sampler's 30-second tick could reach the sample before the histogram's timer, and the sample's reset lost it: every freeze long enough to drop clients went unreported, so no "froze for" toast explained the drop (`stemcells/tasks/checkpoint-freeze.md`). Upstream could take it whole                                                                                                                                                                                                                                                       |
+| `apps/web/src/components/chat/ComposerAttachmentStrip.tsx`                                                                                                                                                                                                                                                                                                                  | Imports `* as Stemcells` from `stemcells/upstream/seams/chat` on its first line; spreads `Stemcells.chipCarry(…)` on a picture's tile, a video's tile and a file's row                                                                                                                                                                                                                                                                                                                                                                                            | Attachments carried between chats (below): a composer's chip is picked up by dragging it. No module surface hands a tile its chip, so no substitute reaches it; the file is cold                                                                                                                                                                                                                                                                                                                                                                                          |
+| `apps/web/src/components/chat/TimelineUserMessageRow.tsx`                                                                                                                                                                                                                                                                                                                   | Imports `* as Stemcells` from `stemcells/upstream/seams/chat` on its first line; spreads `Stemcells.attachedCarry(…)` on a message's picture tiles, its file rows and its attachment chips                                                                                                                                                                                                                                                                                                                                                                        | Same: what a sent message holds is picked up by dragging it. Its `UserMessageRow` substitute wraps the whole row and can't reach a tile                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ### One import per hot file
 
@@ -1127,6 +1129,43 @@ write to it is stuck, and on a nearly full disk the checkpoint's writes can
 stick; the writer lives on the main thread, so it stuck with them. Only the
 worker writes the database file, so the writer now runs nothing while a
 check is out, and waits for the reply without blocking the event loop.
+
+### Attachments carried between chats
+
+A picture, video or file is dragged from one chat into another: a composer's
+chip, what a sent message holds, or a picture or video a reply shows
+(`stemcells/payloads/`). The carry rides the browser's own drag, so it
+crosses panes, tabs (they spring open), the app's other windows and other
+apps; Esc cancels it, and the drag image is the thumbnail. It writes one
+type of ours, `application/x-stemcells-attachment`, holding references,
+never bytes (`payloads/wire.ts`). The window it starts in keeps a chip's
+bytes for a drop there, and lends a blob URL of each to its other windows
+until its next carry.
+
+- **One drop path, upstream's.** A chat takes a carry as it takes files off
+  the disk: the `workspaceFileDrop` substitute claims the carry's type
+  before upstream's handlers see it, lights upstream's overlay (and so the
+  pane's wash), and hands Files to the composer's own intake, which checks,
+  previews and uploads them to its own machine. Each item is read into a
+  File first: the bytes the window holds, a machine's file signed afresh by
+  that machine (so a chat on another machine takes it), a page's or the
+  web's address, or a web picture through the primary's import route, read
+  no further than the 50 MB cap. A chip's own chat refuses it, and so does
+  that chat's row in the sidebar (upstream's `data-thread-item`). A drop is
+  read only when one of the app's windows started its drag (they share
+  their storage): a web page can dress a drag of its own as a carry.
+- **No text on the drag.** A picture's own drag brings its address and
+  markup, which the composer's editor would type in; the carry clears them.
+  A drop outside the app gets the file from `DownloadURL`, where there's a
+  web address to give.
+- **Sources:** the two seams above, for chips and a message's attachments,
+  and the `MediaActions` substitute for the pictures and videos a
+  transcript shows. Outside a transcript (a viewer, a dialog) and on a
+  player's own controls (a reply's player has them over all of it, so its
+  bottom 80 px), a press does what it did.
+- `attachmentCarry.browser.test.tsx` drags for real;
+  `payloads.contract.test.ts` pins the intake, the editor letting a carry
+  pass, and the sidebar row's key.
 
 ## Known overlaps, left on purpose
 
