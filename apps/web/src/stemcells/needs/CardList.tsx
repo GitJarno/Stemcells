@@ -1,0 +1,109 @@
+import { useEffect, type KeyboardEvent as KeyEvent, type ReactNode } from "react";
+
+import { AutonomyOffer } from "../autonomy/Cards";
+import { useHolds } from "./holds";
+import { holds } from "./live";
+import { NeedCard } from "./NeedCard";
+import type { PageView } from "./page";
+import { leave, step } from "./walk";
+
+/** ⌘Z takes back the newest held answer, unless the keys belong to a field. */
+export function useUndoKey(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const keydown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.key.toLowerCase() !== "z") {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, [contenteditable='true']")) return;
+      if (holds.undoNewest()) event.preventDefault();
+    };
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  }, [active]);
+}
+
+/**
+ * Whether the person is in the list: the pointer over it, or the keyboard's
+ * focus in it (a click's focus isn't). Native listeners, because a chosen
+ * option's button leaves the page with the focus and the pointer on it: only
+ * the browser's own focusout says the focus went, and no pointerleave ever
+ * comes, so the pointer is wherever the next pointerover anywhere says it is.
+ */
+function watchPerson(onIn: (pointer: boolean | null, focus: boolean | null) => void) {
+  return (list: HTMLDivElement | null) => {
+    if (list === null) return;
+    const focusin = (event: FocusEvent) =>
+      onIn(null, event.target instanceof Element && event.target.matches(":focus-visible"));
+    const focusout = (event: FocusEvent) => {
+      if (!list.contains(event.relatedTarget as Node | null)) onIn(null, false);
+    };
+    const over = (event: PointerEvent) => onIn(list.contains(event.target as Node | null), null);
+    const out = (event: PointerEvent) => {
+      if (event.relatedTarget === null) onIn(false, null);
+    };
+    list.addEventListener("focusin", focusin);
+    list.addEventListener("focusout", focusout);
+    document.addEventListener("pointerover", over);
+    document.addEventListener("pointerout", out);
+    return () => {
+      list.removeEventListener("focusin", focusin);
+      list.removeEventListener("focusout", focusout);
+      document.removeEventListener("pointerover", over);
+      document.removeEventListener("pointerout", out);
+      onIn(false, false);
+    };
+  };
+}
+
+// ↓ and ↑ step card to card, Esc goes back to Aski's composer (walk.ts); a
+// field's keys are its own. A held Enter answers one card, not each it
+// steps on to; Esc stays unhandled, so a peek over the room closes too.
+function walkKeys(event: KeyEvent<HTMLDivElement>) {
+  if (event.key === "Enter" && event.repeat) return event.preventDefault();
+  if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  const target = event.target as HTMLElement;
+  if (target.closest("input, textarea, [contenteditable='true']")) return;
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (step(target, event.key === "ArrowDown" ? 1 : -1)) event.preventDefault();
+  } else if (event.key === "Escape") {
+    leave(target);
+  }
+}
+
+/**
+ * The cards of what needs the person, as Aski's room and the Cells' column
+ * show them: the offer to let Aski take some, each card, and the all-clear
+ * line once they're gone. `onPerson` hears the pointer and the keyboard's
+ * focus come and go, each null when only the other changed.
+ */
+export function CardList(props: {
+  view: PageView;
+  head: ReactNode;
+  foot?: ReactNode;
+  onPerson: (pointer: boolean | null, focus: boolean | null) => void;
+  /** Where a card's Open chat goes: a peek, which only Aski's room shows, unless given. */
+  openChat?: (threadId: string) => void;
+}) {
+  const answers = useHolds(holds);
+  const { view, onPerson } = props;
+  const watch = watchPerson(onPerson);
+  return (
+    <div ref={watch} data-stemcells-needs-list="" onKeyDown={walkKeys}>
+      {props.head}
+      <AutonomyOffer />
+      {view.shown.map((each) => (
+        <NeedCard
+          key={each.need.key}
+          shown={each}
+          hold={answers.get(each.need.key)}
+          seenAt={view.seen.get(each.need.key) ?? null}
+          openChat={props.openChat}
+        />
+      ))}
+      {view.cleared !== null ? <p data-needs-cleared="">{view.cleared}</p> : null}
+      {props.foot}
+    </div>
+  );
+}

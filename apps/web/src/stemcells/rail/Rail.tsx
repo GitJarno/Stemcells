@@ -81,7 +81,7 @@ export function Rail() {
         </RailButton>
         <PlanRing on={onUsage} />
         <DiskGauge on={lit === "disk"} />
-        <RailButton label="Widen the column" onClick={() => setWidth("wide")}>
+        <RailButton label="Widen the column" onClick={() => setWidth("cells")}>
           <ChevronsRightIcon />
         </RailButton>
       </div>

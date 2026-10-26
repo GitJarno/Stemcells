@@ -10,14 +10,13 @@ import {
   type RefObject,
 } from "react";
 
-import { AutonomyOffer } from "../autonomy/Cards";
+import { useColumnShowsCards } from "../rail/LeftColumn";
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
+import { CardList, useUndoKey } from "./CardList";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
-import { useHolds } from "./holds";
-import { holds, page } from "./live";
-import { NeedCard } from "./NeedCard";
+import { page } from "./live";
 import { DoneList } from "./Roster";
-import { enter, leave, step } from "./walk";
+import { enter } from "./walk";
 
 import "../tokens/stemcells.css";
 import "./needs.css";
@@ -73,30 +72,15 @@ function useLayout(root: RefObject<HTMLElement | null>): {
   return { layout: hinge !== null ? "dual" : wide ? "wide" : "narrow", hinge };
 }
 
-/** ⌘Z takes back the newest held answer, unless the keys belong to a field. */
-function useUndoKey(active: boolean) {
-  useEffect(() => {
-    if (!active) return;
-    const keydown = (event: KeyboardEvent) => {
-      if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.key.toLowerCase() !== "z") {
-        return;
-      }
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("input, textarea, [contenteditable='true']")) return;
-      if (holds.undoNewest()) event.preventDefault();
-    };
-    window.addEventListener("keydown", keydown);
-    return () => window.removeEventListener("keydown", keydown);
-  }, [active]);
-}
-
 const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need you`);
 
 /**
  * Aski's page around its chat: the column of what needs the person, always
  * on the right (stemcells/tasks/aski-manager.md, decision 1). Narrow, it is
  * a count over the chat that opens the list as a sheet; on two screens, the
- * list keeps the second screen.
+ * list keeps the second screen. While the Cells' column shows the cards,
+ * the page is the chat alone: the cards live in one place
+ * (stemcells/tasks/left-column.md, decision 11).
  */
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
@@ -109,58 +93,23 @@ export function NeedsFrame(props: {
   const main = useRef<HTMLDivElement>(null);
   const { layout, hinge } = useLayout(root);
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
-  const answers = useHolds(holds);
   const draft = useDraftText(props.aski);
+  const inColumn = useColumnShowsCards();
   const [pointerIn, setPointerIn] = useState(false);
   const [focusIn, setFocusIn] = useState(false);
-  // The pointer or keyboard focus in the list holds it still; a click's
-  // focus doesn't. Native listeners, because a chosen option's button leaves
-  // the page with the focus and the pointer on it: only the browser's own
-  // focusout says the focus went, and no pointerleave ever comes, so the
-  // pointer is wherever the next pointerover anywhere says it is.
-  const watchPerson = (list: HTMLDivElement | null) => {
-    if (list === null) return;
-    const focusin = (event: FocusEvent) =>
-      setFocusIn(event.target instanceof Element && event.target.matches(":focus-visible"));
-    const focusout = (event: FocusEvent) => {
-      if (!list.contains(event.relatedTarget as Node | null)) setFocusIn(false);
-    };
-    const over = (event: PointerEvent) => setPointerIn(list.contains(event.target as Node | null));
-    const out = (event: PointerEvent) => {
-      if (event.relatedTarget === null) setPointerIn(false);
-    };
-    list.addEventListener("focusin", focusin);
-    list.addEventListener("focusout", focusout);
-    document.addEventListener("pointerover", over);
-    document.addEventListener("pointerout", out);
-    return () => {
-      list.removeEventListener("focusin", focusin);
-      list.removeEventListener("focusout", focusout);
-      document.removeEventListener("pointerover", over);
-      document.removeEventListener("pointerout", out);
-      setFocusIn(false);
-      setPointerIn(false);
-    };
+  // The pointer or keyboard focus in the list holds it still; a click's focus doesn't.
+  const onPerson = (pointer: boolean | null, focus: boolean | null) => {
+    if (pointer !== null) setPointerIn(pointer);
+    if (focus !== null) setFocusIn(focus);
   };
   const frozen = draft !== "" || pointerIn || focusIn;
-  useEffect(() => page.setFrozen(frozen), [frozen]);
-  useUndoKey(props.ownsWindowInput);
+  // The Cells' column holds the cards still while they're there.
+  useEffect(() => {
+    if (!inColumn) page.setFrozen(frozen);
+  }, [frozen, inColumn]);
+  useUndoKey(props.ownsWindowInput && !inColumn);
 
   const waiting = view.shown.filter((each) => each.goneAt === null).length;
-  // ↓ and ↑ step card to card, Esc goes back to the composer (walk.ts); a
-  // field's keys are its own. A held Enter answers one card, not each it
-  // steps on to; Esc stays unhandled, so a peek over the room closes too.
-  const walkKeys = (event: KeyEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" && event.repeat) return event.preventDefault();
-    if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
-    const target = event.target as HTMLElement;
-    if (target.closest("input, textarea, [contenteditable='true']")) return;
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      if (step(target, event.key === "ArrowDown" ? 1 : -1)) event.preventDefault();
-    } else if (event.key === "Escape") {
-      leave(target);
-    }
-  };
   // ↓ in Aski's empty composer steps onto the first open card.
   const enterKeys = (event: KeyEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowDown" || event.altKey || event.metaKey || event.ctrlKey) return;
@@ -170,36 +119,30 @@ export function NeedsFrame(props: {
     if (enter(target)) event.preventDefault();
   };
   const list = (
-    <div ref={watchPerson} data-stemcells-needs-list="" onKeyDown={walkKeys}>
-      <div data-needs-head="">
-        <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
-        {frozen && view.shown.some((each) => each.goneAt !== null) ? (
-          <span data-needs-still="">Held still while you work</span>
-        ) : null}
-        {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
-        {layout === "narrow" ? (
-          <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
-            Back to the chat
-          </button>
-        ) : null}
-      </div>
-      <AutonomyOffer />
-      {view.shown.map((each) => (
-        <NeedCard
-          key={each.need.key}
-          shown={each}
-          hold={answers.get(each.need.key)}
-          seenAt={view.seen.get(each.need.key) ?? null}
-        />
-      ))}
-      {view.cleared !== null ? <p data-needs-cleared="">{view.cleared}</p> : null}
-      <DoneList />
-    </div>
+    <CardList
+      view={view}
+      onPerson={onPerson}
+      head={
+        <div data-needs-head="">
+          <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
+          {frozen && view.shown.some((each) => each.goneAt !== null) ? (
+            <span data-needs-still="">Held still while you work</span>
+          ) : null}
+          {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
+          {layout === "narrow" ? (
+            <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
+              Back to the chat
+            </button>
+          ) : null}
+        </div>
+      }
+      foot={<DoneList />}
+    />
   );
 
-  const showColumn = layout !== "narrow";
-  const showCount = waiting > 0 && layout === "narrow";
-  const showSheet = layout === "narrow" && view.sheet;
+  const showColumn = layout !== "narrow" && !inColumn;
+  const showCount = waiting > 0 && layout === "narrow" && !inColumn;
+  const showSheet = layout === "narrow" && view.sheet && !inColumn;
 
   return (
     <div

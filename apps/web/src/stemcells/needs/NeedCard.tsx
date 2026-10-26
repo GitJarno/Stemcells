@@ -53,6 +53,8 @@ export function NeedCard(props: {
   hold: Hold | undefined;
   /** When this page first saw the need. */
   seenAt: number | null;
+  /** Opens the asking chat; a peek beside the cards unless the list says otherwise. */
+  openChat?: ((threadId: string) => void) | undefined;
 }) {
   const { need, goneAt } = props.shown;
   const hold = props.hold;
@@ -214,7 +216,7 @@ export function NeedCard(props: {
             Open provider setup
           </button>
         ) : null}
-        <button type="button" onClick={() => openPeek(need.threadId)}>
+        <button type="button" onClick={() => (props.openChat ?? openPeek)(need.threadId)}>
           Open chat
         </button>
       </footer>

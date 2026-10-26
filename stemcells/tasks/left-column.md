@@ -52,13 +52,14 @@ interactive draft in the chat that asked for it.
 
 ## Plan
 
-- [ ] Opening never replaces (decision 9): `showRoute` lands a chat no pane
+- [x] Opening never replaces (decision 9): `showRoute` lands a chat no pane
       shows instead of putting it over the focused pane's; Aski's pane needs
-      no rule of its own then
-- [ ] The column (5, 8): our view in `LeftColumn`'s wide slot, from
+      no rule of its own then (#301)
+- [x] The column (5, 8): our view in `LeftColumn`'s wide slot, from
       `useNeeds` and upstream's shells (settled, pinned); never reads the
       route. Upstream's list stays one click away for what only it does
-      (projects, environments)
+      (projects, environments). The cards move into it from Aski's room
+      while it shows (decision 11's first half)
 - [ ] Asks in the column (6): `NeedCard` in Needs you, the next opening as
       one is answered
 - [ ] Motion (7): roll-up, hops, a stage taking a Cell in
