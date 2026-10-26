@@ -64,23 +64,43 @@ interactive draft in the chat that asked for it.
       `useNeeds` and upstream's shells (settled, pinned); never reads the
       route. Upstream's list stays one click away for what only it does
       (projects, environments). The cards move into it from Aski's room
-      while it shows (decision 11's first half)
+      while it shows (decision 11's first half) (#302)
 - [x] Asks in the column (6): one card open at a time, the rest folded to
       who asks and what; answering one opens the next, and so does a click
-      or the keyboard's step onto a folded one
+      or the keyboard's step onto a folded one (#303)
 - [x] Motion (7): an answered card rolls up into its one line; a Cell that
       changes stage hops from its card, row or old stage's Cells to its place
       in the new row, whose count bumps; each stage's row shows a few of its
-      Cells, held still (5)
+      Cells, held still (5) (#310)
 - [x] Closing a landed pane settles it (3); a pin already keeps a Cell out
-      of auto-settle (4)
+      of auto-settle (4) (#305)
 - [x] Settle from any stage (2): a Cell at work or asking stops first, and
       settles once its run ends; Working rows and every card carry Settle
-- [ ] Merge auto-settle off by default (3): once per server, never over the
-      person's own choice
+      (#307)
+- [x] Merge auto-settle off by default (3): once per server, never over the
+      person's own choice (#309)
 - [x] Aski's room (11): the decision column and roster step aside while
-      the column shows the Cells
-- [ ] Docs: `left-rail.md` and the user guides that describe the column
-- [ ] The phone's home (#298) follows the same line: a plan of its own
+      the column shows the Cells (#308)
+- [x] Docs: `seams.md`'s entry for the column and `left-rail.md` (#311);
+      Stemcells has no user guide of its own for the column
+- [ ] The phone's home (#298) follows the same line: a plan of its own,
+      not started
 
 ## Review
+
+- Shipped in #301–#311, each through `check-local`. Alongside, from the
+  same chat: the "Stemcells gets better" banner over the column's foot
+  (#304) and the casual chat's words (#306).
+- Proven in tests: opening a chat lands it beside the focused one
+  (`layout.test.ts`); the column's stages, cards, Settle, Open chat and
+  hops (`Cells.browser.test.tsx`); which close settles and that Undo waits
+  for the settle (`settled.test.ts`, `SettledPanes.browser.test.tsx`);
+  stop-then-settle (`upstream/settle.test.ts`); the hops' detection
+  (`moves.test.ts`); the merge default, once (`mergeDefault.test.ts`).
+- Seen in headless captures: the column at 288 px, the queue folding one
+  card and opening the next, and a hop from Working's Cells to Landed's.
+- Not seen in the real app: the hop and roll-up at full speed on the
+  person's own Cells, and Settle on a Cell mid-run (the interrupt's timing
+  on a real provider). Both are worth a look on the next build.
+- Kept from upstream, on purpose: settling a pinned Cell takes its pin off;
+  a queued message still blocks Settle; closing a tab never settles.
