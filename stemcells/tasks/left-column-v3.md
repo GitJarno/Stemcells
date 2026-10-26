@@ -49,4 +49,4 @@ settled, colour meant nothing, and the stages carried critters.
 - [ ] Stages as label and count; hops only for the person's acts
 - [ ] Filters
 - [ ] Docs
-- [ ] The phone's home follows, in a plan of its own
+- [ ] The phone's home follows (`phone-line.md`)
