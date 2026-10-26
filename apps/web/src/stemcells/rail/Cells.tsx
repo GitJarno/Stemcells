@@ -30,6 +30,7 @@ import { DiskPlate } from "./DiskPlate";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
+import { StagePager } from "./StagePager";
 import { useRailUndoNotice } from "./undoNotice";
 import { UndoLine } from "./UndoLine";
 import { UpdateBanner, useUpdateToTake } from "./UpdateBanner";
@@ -70,6 +71,11 @@ export function Cells() {
   const backToWork = useNavigateToMainApp();
   const searchKeys = useShortcutLabel("commandPalette.toggle");
   const { stage, setStage, setWidth } = useColumnStore();
+  // The column, where a two-finger swipe turns its stages (StagePager.tsx).
+  const [surface, setSurface] = useState<HTMLDivElement | null>(null);
+  // The stage a swipe or a click is taking the column to, lit in the rows before it lands.
+  const [aim, setAim] = useState<ColumnStage | null>(null);
+  const shownStage = aim ?? stage;
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
   const { cells } = useNeeds();
   const shelves = useShelves();
@@ -116,7 +122,7 @@ export function Cells() {
   };
 
   return (
-    <div data-stemcells-cells="">
+    <div ref={setSurface} data-stemcells-cells="">
       {/* Upstream's sidebar button, or the window's controls, stand here. */}
       <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
       <div data-cells-top="">
@@ -135,31 +141,33 @@ export function Cells() {
           <SquarePenIcon />
         </RailButton>
       </div>
-      <div data-cells-list="" data-stage={stage}>
-        {stage === "needs" ? <NeedsHere waiting={waiting} /> : null}
-        {stage === "working" ? (
-          <Rows label="Working" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
-        ) : null}
-        {stage === "landed" ? (
-          <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />
-        ) : null}
-        {stage === "settled" ? (
-          <Rows
-            label="Settled"
-            cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
-            more={
-              shelves.settled.length > SETTLED_SHOWN ? (
-                <button type="button" data-cells-more="" onClick={openSearch}>
-                  {shelves.settled.length - SETTLED_SHOWN} more · search finds them
-                </button>
-              ) : null
-            }
-          />
-        ) : null}
-        {stage === "pinned" ? (
-          <Rows label="Pinned" cells={shelves.pinned.map(rowOfShelved)} />
-        ) : null}
-      </div>
+      <StagePager
+        stage={stage}
+        onTurn={setStage}
+        onAim={setAim}
+        surface={surface}
+        pages={{
+          needs: <NeedsHere waiting={waiting} />,
+          working: (
+            <Rows label="Working" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
+          ),
+          landed: <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />,
+          settled: (
+            <Rows
+              label="Settled"
+              cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
+              more={
+                shelves.settled.length > SETTLED_SHOWN ? (
+                  <button type="button" data-cells-more="" onClick={openSearch}>
+                    {shelves.settled.length - SETTLED_SHOWN} more · search finds them
+                  </button>
+                ) : null
+              }
+            />
+          ),
+          pinned: <Rows label="Pinned" cells={shelves.pinned.map(rowOfShelved)} />,
+        }}
+      />
       <nav data-cells-stages="" aria-label="Stages">
         <UndoLine />
         {(["needs", "working", "landed", "settled"] as const).map((each) => (
@@ -169,7 +177,7 @@ export function Cells() {
             count={counts[each]}
             minis={minis[each]}
             environmentId={environmentId}
-            open={stage === each}
+            open={shownStage === each}
             onOpen={() => setStage(each)}
           />
         ))}
@@ -179,7 +187,7 @@ export function Cells() {
           count={counts.pinned}
           minis={minis.pinned}
           environmentId={environmentId}
-          open={stage === "pinned"}
+          open={shownStage === "pinned"}
           onOpen={() => setStage("pinned")}
         />
       </nav>

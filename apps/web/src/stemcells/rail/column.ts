@@ -19,10 +19,17 @@ export function parseColumnWidth(raw: string | null): ColumnWidth {
   return raw === "rail" || raw === "list" ? raw : "cells";
 }
 
-const STAGES: ReadonlyArray<ColumnStage> = ["needs", "working", "landed", "settled", "pinned"];
+/** The stages in the line's order, the pins last: the order a swipe goes through them. */
+export const COLUMN_STAGES: ReadonlyArray<ColumnStage> = [
+  "needs",
+  "working",
+  "landed",
+  "settled",
+  "pinned",
+];
 
 export function parseColumnStage(raw: string | null): ColumnStage {
-  return STAGES.find((stage) => stage === raw) ?? "needs";
+  return COLUMN_STAGES.find((stage) => stage === raw) ?? "needs";
 }
 
 function readStored(key: string): string | null {

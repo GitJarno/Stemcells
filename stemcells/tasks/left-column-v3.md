@@ -24,7 +24,8 @@ settled, colour meant nothing, and the stages carried critters.
    Failed (red). A new kind joins a family; none gets a colour of its own.
 5. **Stages are a label and a count.** T3's status icon in its colour; no
    critters, no chevron (a stage switches the list, it doesn't expand). The
-   open one is filled.
+   open one is filled. Two fingers swipe from stage to stage in the line's
+   order, Pinned last, on the tabs' own strip, so both slide alike.
 6. **Only the person's own act flies.** Answer, Settle or Nothing to do from
    the open list: the Cell drops its "?", hops and dives into its stage's
    count, and the stage catches it (its icon nods, the row glows once, the
@@ -46,6 +47,7 @@ settled, colour meant nothing, and the stages carried critters.
 - [x] Your own answer or settle leaves at once, with upstream's undo line
 - [ ] Type, rows and resize
 - [ ] Asks: tags, the header row, grouped answers, keys
+- [x] Two fingers swipe through the stages
 - [ ] Stages as label and count; hops only for the person's acts
 - [ ] Filters
 - [ ] Docs

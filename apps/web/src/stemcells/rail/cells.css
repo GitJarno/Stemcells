@@ -66,13 +66,29 @@
   color: var(--sc-faint);
 }
 
-/* The open stage fills the column between the top and the rows. */
-[data-cells-list] {
+/* The open stage fills the column between the top and the rows. The
+   others wait beside it on one strip, a swipe away (StagePager.tsx). */
+[data-cells-pages] {
+  position: relative;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: clip;
 }
-[data-cells-list] > [data-stemcells-needs-list] {
+[data-cells-strip] {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+[data-cells-page] {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+[data-cells-page][inert] {
+  pointer-events: none;
+}
+[data-cells-page] > [data-stemcells-needs-list] {
   gap: var(--sc-space-sm);
   padding: 0 var(--sc-space-sm) var(--sc-space-md);
 }

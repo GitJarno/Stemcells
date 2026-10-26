@@ -289,10 +289,11 @@ describe("the Cells' column", () => {
     setup(null);
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Working\s*1/ }));
-    await expect.element(screen.getByText("Running benchmarks, 3 of 5")).toBeVisible();
+    await expect.element(screen.getByText("Running benchmarks, 3 of 5")).toBeInViewport();
+    // What needs you slid off beside it, a swipe away.
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .not.toBeInTheDocument();
+      .not.toBeInViewport();
     await userEvent.click(screen.getByRole("button", { name: /Settled\s*1/ }));
     await expect.element(screen.getByText("Bump dependencies")).toBeVisible();
   });
@@ -310,8 +311,9 @@ describe("the Cells' column", () => {
       });
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Landed\s*2/ }));
-    await userEvent.hover(screen.getByText("Done: #312 merged"));
-    await userEvent.click(screen.getByRole("button", { name: "Settle", exact: true }).first());
+    const landed = screen.getByRole("list", { name: "Landed" });
+    await userEvent.hover(landed.getByText("Done: #312 merged"));
+    await userEvent.click(landed.getByRole("button", { name: "Settle", exact: true }).first());
     expect(spies.settle).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-l1" });
     await expect.element(screen.getByText("Done: #312 merged")).not.toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: /Landed\s*1/ })).toBeVisible();
@@ -333,6 +335,51 @@ describe("the Cells' column", () => {
     await userEvent.click(screen.getByRole("button", { name: /Pinned\s*1/ }));
     await userEvent.click(screen.getByText("Roadmap"));
     expect(spies.open).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-p" });
+  });
+});
+
+/**
+ * Two fingers touching down on the column once it rests, and moving `dx` (px, toward later
+ * stages): a wheel event a frame, as a trackpad sends them, the first one short as a touch's is.
+ */
+async function swipe(column: HTMLElement, dx: number) {
+  const pages = column.querySelector<HTMLElement>("[data-cells-pages]")!;
+  const strip = column.querySelector<HTMLElement>("[data-cells-strip]")!;
+  await vi.waitFor(() => expect(pages.hasAttribute("data-moving")).toBe(false), { timeout: 3000 });
+  const first = Math.sign(dx) * 4;
+  column.dispatchEvent(new WheelEvent("wheel", { deltaX: first, cancelable: true }));
+  for (let i = 0; i < 9; i++) {
+    const drawn = strip.style.transform;
+    column.dispatchEvent(new WheelEvent("wheel", { deltaX: (dx - first) / 9, cancelable: true }));
+    await vi.waitFor(() => expect(strip.style.transform).not.toBe(drawn), { interval: 1 });
+  }
+}
+
+describe("swiping the column", () => {
+  it("turns its stages in the line's order, either way, and holds at the first", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    const column = screen.container.querySelector<HTMLElement>("[data-stemcells-cells]")!;
+    await userEvent.click(screen.getByRole("button", { name: /Needs you\s*2/ }));
+    const open = (name: RegExp) =>
+      expect.element(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "true");
+
+    await swipe(column, 300);
+    await open(/Working\s*1/);
+    await expect.element(screen.getByText("Running benchmarks, 3 of 5")).toBeInViewport();
+    await swipe(column, 300);
+    await open(/Landed\s*2/);
+    await swipe(column, -300);
+    await open(/Working\s*1/);
+    await swipe(column, -300);
+    await open(/Needs you\s*2/);
+
+    // Past the first stage the column gives a little, and springs back.
+    await swipe(column, -300);
+    await open(/Needs you\s*2/);
+    await expect
+      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
+      .toBeInViewport();
   });
 });
 
