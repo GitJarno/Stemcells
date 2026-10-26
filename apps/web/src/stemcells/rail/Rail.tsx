@@ -13,7 +13,7 @@ import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../
 import { useNavigateToMainApp } from "../upstream/settings";
 import { cn, useSidebar } from "../upstream/ui";
 import { useColumnStore } from "./column";
-import { DiskGauge } from "./DiskGauge";
+import { DiskPlate } from "./DiskPlate";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
@@ -80,7 +80,7 @@ export function Rail() {
           <ChartNoAxesColumnIcon />
         </RailButton>
         <PlanRing on={onUsage} />
-        <DiskGauge on={lit === "disk"} />
+        <DiskPlate on={lit === "disk"} />
         <RailButton label="Widen the column" onClick={() => setWidth("cells")}>
           <ChevronsRightIcon />
         </RailButton>

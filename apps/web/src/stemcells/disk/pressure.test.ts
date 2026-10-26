@@ -14,8 +14,8 @@ describe("the disk's pressure from its free space", () => {
     expect(diskPressure(0)).toBe("now");
   });
 
-  it("colours the foot green, then yellow, then red", () => {
-    expect(FOOT_TONE[diskPressure(48 * GB)]).toBe("text-success-foreground");
+  it("keeps the foot quiet while there is room, then amber, then red", () => {
+    expect(FOOT_TONE[diskPressure(48 * GB)]).toBe("");
     expect(FOOT_TONE[diskPressure(15 * GB)]).toBe("text-warning-foreground");
     expect(FOOT_TONE[diskPressure(4 * GB)]).toBe("text-error-foreground");
   });

@@ -165,7 +165,7 @@ vi.mock("../upstream/updates", async (importOriginal) => ({
   useDesktopUpdateState: () => desktop.update,
 }));
 vi.mock("./PlanRing", () => ({ PlanRing: () => null }));
-vi.mock("./DiskGauge", () => ({ DiskGauge: () => null }));
+vi.mock("./DiskPlate", () => ({ DiskPlate: () => null }));
 vi.mock("./undoNotice", () => ({ useRailUndoNotice: () => undefined }));
 
 const upToDate: DesktopUpdateState = {
