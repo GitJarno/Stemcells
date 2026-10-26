@@ -289,8 +289,8 @@
 }
 
 /* Stemcells' own update, between the stages and the foot while there's one
-   to take: a gift in the accent's ink, the pull requests it brings, and
-   once it's downloading, how far. */
+   to take: a gift in the accent's ink, how many changes it brings, and once
+   it's on its way, how far, or what it waits for. */
 [data-cells-better] {
   flex-shrink: 0;
   padding: var(--sc-space-xs) var(--sc-space-sm) 0;
@@ -360,11 +360,79 @@
     transition: none;
   }
 }
-/* The popover's one action, under upstream's notes. */
-[data-cells-better-act] {
+/* What got better (UpdateBanner.tsx): a title, then each change as a row
+   that opens its pull request, then the one action. */
+[data-better] {
   display: flex;
-  justify-content: flex-end;
-  padding: var(--sc-space-md) var(--sc-space-xs) var(--sc-space-xs);
+  flex-direction: column;
+  gap: var(--sc-space-sm);
+  width: min(20rem, calc(100vw - 2rem));
+}
+[data-better-title] {
+  padding: 0 var(--sc-space-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+[data-better-list] {
+  display: flex;
+  flex-direction: column;
+  max-height: min(24rem, calc(100vh - 12rem));
+  overflow-y: auto;
+}
+[data-better-item] {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sc-space-sm);
+  padding: var(--sc-space-xs) var(--sc-space-sm);
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-soft);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-decoration: none;
+  transition:
+    background-color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
+    color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-better-item] > span {
+  flex: 1;
+  min-width: 0;
+}
+/* The arrow says where a row goes, only once it's pointed at. */
+[data-better-item] > svg {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: 0.1875rem;
+  opacity: 0;
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+a[data-better-item]:hover,
+a[data-better-item]:focus-visible {
+  background: var(--sc-hot);
+  color: var(--sc-text);
+  outline: none;
+}
+a[data-better-item]:hover > svg,
+a[data-better-item]:focus-visible > svg {
+  opacity: 1;
+}
+[data-better-more] {
+  padding: 0 var(--sc-space-sm);
+  color: var(--sc-dim);
+  font-size: 0.75rem;
+}
+[data-better-act] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sc-space-sm);
+  padding: var(--sc-space-sm) var(--sc-space-sm) var(--sc-space-xs);
+  border-top: 1px solid var(--sc-hairline);
+}
+[data-better-note] {
+  color: var(--sc-dim);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 /* A Cell on its way from one stage to the next (Hops.tsx): drawn over the

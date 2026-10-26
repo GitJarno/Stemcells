@@ -1,19 +1,12 @@
-import type { DesktopUpdateActionResult, DesktopUpdateState } from "@t3tools/contracts";
+import type { DesktopUpdateState } from "@t3tools/contracts";
 
-import {
-  getDesktopUpdateActionError,
-  getDesktopUpdateButtonTooltip,
-  getDesktopUpdateInstallConfirmationMessage,
-  resolveDesktopUpdateButtonAction,
-} from "../../components/desktopUpdate.logic";
-import { showDesktopUpdateDownloadedToast } from "../../components/desktopUpdate.toast";
-import { SidebarUpdateReleaseNotes } from "../../components/sidebar/SidebarUpdateReleaseNotes";
+import { resolveDesktopUpdateButtonAction } from "../../components/desktopUpdate.logic";
+import { openDesktopUpdateReleaseNotes } from "../../components/desktopUpdate.toast";
 import type {
   SkippedMachine,
   collectServerUpdateTargets,
 } from "../../components/sidebar/updateEverything.logic";
 import { stackedThreadToast, toastManager } from "../../components/ui/toast";
-import { ensureLocalApi } from "../../localApi";
 
 export { useDesktopUpdateState } from "../../state/desktopUpdate";
 export type { DesktopUpdateState };
@@ -57,72 +50,52 @@ export function updateStep(state: DesktopUpdateState): UpdateStep | null {
   return action === "download" ? "download" : action === "install" ? "restart" : null;
 }
 
-/**
- * Upstream's notes, as its pill's popover draws them: each nightly's pull
- * requests by title, its links through our `desktopUpdate.logic`, under
- * upstream's own line for where the update stands.
- */
-export function UpdateNotes(props: { state: DesktopUpdateState }) {
-  return (
-    <SidebarUpdateReleaseNotes
-      shell={window.desktopBridge}
-      state={props.state}
-      tooltip={getDesktopUpdateButtonTooltip(props.state)}
-    />
-  );
-}
+// Upstream's pill keeps its download and install to itself, so these make the
+// same bridge calls. The column says where the update stands (UpdateBanner.tsx),
+// so neither shows upstream's toast or its confirmation.
 
-// Upstream's pill keeps its download and install to itself, so these do as
-// it does: the same bridge calls, toast and confirmation, in its words.
-
-const toastError = (title: string, description: string) => {
+const toastError = (title: string, error: unknown) => {
+  const description = error instanceof Error ? error.message : "An unexpected error occurred.";
   toastManager.add(stackedThreadToast({ type: "error", title, description }));
 };
-const messageOf = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
-const toastResultError = (title: string, result: DesktopUpdateActionResult) => {
-  const error = getDesktopUpdateActionError(result);
-  if (error) toastError(title, error);
-};
 
-/** Gets the update ready; a toast says when it is, or why not. */
-export async function downloadUpdate(): Promise<void> {
-  const bridge = window.desktopBridge;
-  if (!bridge) return;
+/** Gets the update ready; its state says how far, or why not. True once it is. */
+export async function downloadUpdate(): Promise<boolean> {
   try {
-    const result = await bridge.downloadUpdate();
-    if (result.completed) showDesktopUpdateDownloadedToast(bridge, result.state);
-    toastResultError("Could not download update", result);
+    const result = await window.desktopBridge?.downloadUpdate();
+    return result?.completed === true;
   } catch (error) {
-    toastError(
-      "Could not start update download",
-      messageOf(error, "An unexpected error occurred."),
-    );
+    toastError("Couldn't update", error);
+    return false;
   }
 }
 
-/** Asks first, as every running turn ends with the restart, then restarts into the update. */
-export async function restartToUpdate(state: DesktopUpdateState): Promise<void> {
-  const bridge = window.desktopBridge;
-  if (!bridge) return;
-  let confirmed = false;
+/** Restarts into the update that's ready. True once the app is on its way out. */
+export async function installUpdate(): Promise<boolean> {
   try {
-    confirmed = await ensureLocalApi().dialogs.confirm(
-      getDesktopUpdateInstallConfirmationMessage(state),
-    );
+    const result = await window.desktopBridge?.installUpdate();
+    return result?.accepted === true && result.state.status !== "error";
   } catch (error) {
-    toastError("Could not confirm update", messageOf(error, "Update confirmation failed."));
-    return;
+    toastError("Couldn't update", error);
+    return false;
   }
-  if (!confirmed) return;
-  try {
-    const result = await bridge.installUpdate();
-    if (!result.accepted) {
-      showDesktopUpdateDownloadedToast(bridge, result.state);
-      return;
-    }
-    toastResultError("Could not install update", result);
-  } catch (error) {
-    toastError("Could not install update", messageOf(error, "An unexpected error occurred."));
-  }
+}
+
+const REPOSITORY = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/u;
+
+/**
+ * A pull request on the repository the app updates from, which `install-app` builds in. None
+ * without one: upstream's fallback is T3's repository, where our numbers mean something else.
+ */
+export function pullRequestUrl(
+  number: number,
+  repository: string | undefined = import.meta.env.T3CODE_DESKTOP_UPDATE_REPOSITORY,
+): string | null {
+  const name = repository?.trim() ?? "";
+  return REPOSITORY.test(name) ? `https://github.com/${name}/pull/${number}` : null;
+}
+
+/** Opens a link in the person's browser, as upstream's notes do. */
+export function openLink(url: string): void {
+  void openDesktopUpdateReleaseNotes(window.desktopBridge, url);
 }

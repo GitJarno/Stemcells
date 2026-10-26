@@ -9,10 +9,12 @@ import {
   TooltipTrigger,
   useSidebar,
 } from "../upstream/ui";
+import { useUpdateWanted } from "../updates/wanted";
 import { useZoomNotice } from "../zoom/useZoomNotice";
 import { Cells } from "./Cells";
 import { useColumnStore } from "./column";
 import { Rail } from "./Rail";
+import { UpdateDriver } from "./UpdateBanner";
 // App-wide: the root layout renders this column on every page.
 import "../scrollbars/scrollbars.css";
 // The frame and the slate every page stands on, loaded with the column for
@@ -31,8 +33,16 @@ export function LeftColumn(props: { wide: ReactNode }) {
   useZoomNotice();
   const width = useColumnStore((store) => store.width);
   const { isMobile } = useSidebar();
-  if (isMobile || width === "list") return props.wide;
-  return width === "rail" ? <Rail /> : <Cells />;
+  // An update the person asked for carries on whichever column shows.
+  const wanted = useUpdateWanted((store) => store.wanted);
+  const column =
+    isMobile || width === "list" ? props.wide : width === "rail" ? <Rail /> : <Cells />;
+  return (
+    <>
+      {wanted ? <UpdateDriver /> : null}
+      {column}
+    </>
+  );
 }
 
 /** Whether the cards of what needs you are in the Cells' column: it's chosen, shown, and not a phone's sheet. */

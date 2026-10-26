@@ -1,18 +1,28 @@
-import { GiftIcon } from "lucide-react";
-import { useState } from "react";
+import { ArrowUpRightIcon, GiftIcon } from "lucide-react";
+import { useEffect } from "react";
 
 import { APP_NAME } from "../brand/name";
+import { useNeeds } from "../needs/stream";
 import { Button, Popover, PopoverPopup, PopoverTrigger } from "../upstream/ui";
 import {
   downloadUpdate,
-  restartToUpdate,
-  UpdateNotes,
+  installUpdate,
+  openLink,
+  pullRequestUrl,
   updateStep,
   useDesktopUpdateState,
   type DesktopUpdateState,
   type UpdateStep,
 } from "../upstream/updates";
-import { changeCountLabel, updateChangeCount } from "../updates/changes";
+import { bettersOf, changeCountLabel, updateChangeCount } from "../updates/changes";
+import {
+  nextUpdateAct,
+  takeUpdateStep,
+  updateViewOf,
+  useUpdateWanted,
+  wantUpdate,
+  type UpdateView,
+} from "../updates/wanted";
 
 interface UpdateToTake {
   readonly state: DesktopUpdateState;
@@ -26,42 +36,47 @@ export function useUpdateToTake(): UpdateToTake | null {
   return state === null || step === null ? null : { state, step };
 }
 
-const ACTION: Record<Exclude<UpdateStep, "downloading">, string> = {
-  download: "Download",
-  restart: "Restart to update",
-};
+/**
+ * The Cells whose turn a restart would end: at work, or holding their run on an ask. Null until
+ * the server's list says, or while it can't be trusted.
+ */
+function useCellsAtWork(): number | null {
+  const { cells, needs, live } = useNeeds();
+  if (!live || cells === null || needs === null) return null;
+  const threads = new Set<string>();
+  for (const cell of cells) if (cell.stage === "working") threads.add(cell.threadId);
+  for (const need of needs) if (need.blocks) threads.add(need.threadId);
+  return threads.size;
+}
+
+/** The changes the popover lists before it says how many more. */
+const LISTED = 8;
 
 /**
- * The column's word that Stemcells gets better: how many pull requests the
- * update brings, and once it's ready, that it restarts. Hovering or clicking
- * it lists them by title, in upstream's notes, with the one thing to do next.
+ * The column's word that Stemcells gets better. Hovering or clicking it lists what got better,
+ * each a link to its pull request, and offers one Update. That gets the update ready, then
+ * restarts once no Cell is at work; until then the column says what it waits for.
  */
 export function UpdateBanner(props: { update: UpdateToTake }) {
   const { state, step } = props.update;
-  const [busy, setBusy] = useState(false);
+  const wanted = useUpdateWanted((store) => store.wanted);
+  const atWork = useCellsAtWork();
+  const view = updateViewOf({
+    status: state.status,
+    step,
+    percent: state.downloadPercent,
+    wanted,
+    atWork,
+  });
   const total = updateChangeCount(state);
   const count = total === 0 ? null : changeCountLabel(total, state.omittedReleaseCount > 0);
-  const percent = step === "downloading" ? state.downloadPercent : null;
-  const detail =
-    step === "downloading"
-      ? `Downloading${percent === null ? "…" : ` ${Math.floor(percent)}%`}`
-      : step === "restart"
-        ? ACTION.restart
-        : null;
   const label = [
     `${APP_NAME} gets better`,
     count === null ? null : `${count} ${total === 1 ? "change" : "changes"}`,
-    detail,
+    view.line,
   ]
     .filter(Boolean)
     .join(", ");
-
-  const act = () => {
-    setBusy(true);
-    void (step === "restart" ? restartToUpdate(state) : downloadUpdate()).finally(() =>
-      setBusy(false),
-    );
-  };
 
   return (
     <div data-cells-better="">
@@ -77,31 +92,102 @@ export function UpdateBanner(props: { update: UpdateToTake }) {
           <GiftIcon aria-hidden />
           <span data-cells-better-words="">{APP_NAME} gets better</span>
           {count === null ? null : <span data-cells-better-count="">{count}</span>}
-          {detail === null ? null : <span data-cells-better-detail="">{detail}</span>}
-          {step === "downloading" ? (
+          {view.line === null ? null : <span data-cells-better-detail="">{view.line}</span>}
+          {view.percent === null ? null : (
             <span data-cells-better-bar="" aria-hidden>
-              <span style={{ transform: `scaleX(${(percent ?? 0) / 100})` }} />
+              <span style={{ transform: `scaleX(${view.percent / 100})` }} />
             </span>
-          ) : null}
+          )}
         </PopoverTrigger>
         <PopoverPopup
           side="right"
           align="end"
           sideOffset={10}
-          tooltipStyle
           initialFocus={false}
-          aria-label="What the update brings"
+          aria-label="What got better"
         >
-          <UpdateNotes state={state} />
-          {step === "downloading" ? null : (
-            <div data-cells-better-act="">
-              <Button size="xs" disabled={busy} onClick={act}>
-                {ACTION[step]}
-              </Button>
-            </div>
-          )}
+          <WhatGotBetter state={state} total={total} />
+          <UpdateAct view={view} />
         </PopoverPopup>
       </Popover>
     </div>
   );
+}
+
+/** What the update makes better, newest first, each opening its pull request. */
+function WhatGotBetter(props: { state: DesktopUpdateState; total: number }) {
+  const betters = bettersOf(props.state);
+  const listed = betters.slice(0, LISTED);
+  const more = Math.max(props.total, betters.length) - listed.length;
+  return (
+    <div data-better="">
+      <h3 data-better-title="">What got better</h3>
+      <ul data-better-list="">
+        {listed.map((better) => {
+          const url = better.number === null ? null : pullRequestUrl(better.number);
+          return (
+            <li key={better.number ?? better.title}>
+              {url === null ? (
+                <span data-better-item="">{better.title}</span>
+              ) : (
+                <a
+                  href={url}
+                  data-better-item=""
+                  onClick={(event) => {
+                    event.preventDefault();
+                    openLink(url);
+                  }}
+                >
+                  <span>{better.title}</span>
+                  <ArrowUpRightIcon aria-hidden />
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {more > 0 ? <p data-better-more="">and {more} more</p> : null}
+    </div>
+  );
+}
+
+/** The popover's one action, with a sentence over it when what happens next isn't plain. */
+function UpdateAct(props: { view: UpdateView }) {
+  const { view } = props;
+  if (view.act === null && view.note === null) return null;
+  return (
+    <div data-better-act="">
+      {view.note === null ? null : <p data-better-note="">{view.note}</p>}
+      {view.act === "restart-now" ? (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void takeUpdateStep("restart", installUpdate)}
+        >
+          Restart now
+        </Button>
+      ) : view.act === null ? null : (
+        <Button size="sm" onClick={wantUpdate}>
+          {view.act === "retry" ? "Try again" : "Update"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Carries a wanted update through: gets it ready, then restarts once no Cell is at work. Mounted
+ * only while the person wants it, wherever the column stands (`LeftColumn.tsx`).
+ */
+export function UpdateDriver() {
+  const update = useUpdateToTake();
+  const atWork = useCellsAtWork();
+  const taking = useUpdateWanted((store) => store.taking !== null);
+  const act = update === null || taking ? null : nextUpdateAct(update.step, atWork);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Start the update's next bridge step once, when where it stands calls for it.
+  useEffect(() => {
+    if (act === "download") void takeUpdateStep(act, downloadUpdate);
+    if (act === "restart") void takeUpdateStep(act, installUpdate);
+  }, [act]);
+  return null;
 }

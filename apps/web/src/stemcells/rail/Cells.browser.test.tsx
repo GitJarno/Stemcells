@@ -10,9 +10,18 @@ import { needFixture, NOW, requestFixture } from "../needs/fixtures";
 import type { CellStanding, Need } from "../needs/wire";
 import { act, render } from "../upstream/testRender";
 import type { DesktopUpdateState } from "../upstream/updates";
+import { useUpdateWanted } from "../updates/wanted";
 import { Cells } from "./Cells";
+import { UpdateDriver } from "./UpdateBanner";
 
-const spies = vi.hoisted(() => ({ settle: vi.fn(), open: vi.fn(), openChat: vi.fn() }));
+const spies = vi.hoisted(() => ({
+  settle: vi.fn(),
+  open: vi.fn(),
+  openChat: vi.fn(),
+  download: vi.fn(async () => true),
+  install: vi.fn(async () => true),
+  openLink: vi.fn(),
+}));
 /** Tells the column the stream changed, as the live stream does. */
 const changes = vi.hoisted(() => {
   const listeners = new Set<() => void>();
@@ -163,6 +172,10 @@ vi.mock("../upstream/ui", async (importOriginal) => ({
 vi.mock("../upstream/updates", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../upstream/updates")>()),
   useDesktopUpdateState: () => desktop.update,
+  downloadUpdate: spies.download,
+  installUpdate: spies.install,
+  openLink: spies.openLink,
+  pullRequestUrl: (number: number) => `https://github.com/example/stemcells/pull/${number}`,
 }));
 vi.mock("./PlanRing", () => ({ PlanRing: () => null }));
 vi.mock("./DiskPlate", () => ({ DiskPlate: () => null }));
@@ -214,6 +227,10 @@ const available: DesktopUpdateState = {
 
 function setup(update: DesktopUpdateState | null) {
   desktop.update = update;
+  useUpdateWanted.setState({ wanted: false });
+  spies.download.mockClear();
+  spies.install.mockClear();
+  spies.openLink.mockClear();
 }
 
 function Column() {
@@ -393,16 +410,54 @@ describe("the column's word that Stemcells gets better", () => {
     await expect.element(screen.getByTestId("upstream-update-pill")).not.toBeInTheDocument();
   });
 
-  it("lists the pull requests by title when hovered, with the one thing to do next", async () => {
+  it("lists what got better when hovered, each opening its pull request", async () => {
     setup(available);
     await using screen = await render(<Column />);
     await userEvent.hover(screen.getByRole("button", { name: /gets better/ }));
     // The list is a popup, outside the column.
-    await expect.element(page.getByText("The left column is the Cells' line (#302)")).toBeVisible();
+    const change = page.getByRole("link", { name: "The left column is the Cells' line" });
+    await expect.element(change).toBeVisible();
     await expect
-      .element(page.getByText("Aski stands in the phone's new chat (#299)"))
+      .element(page.getByRole("link", { name: "Aski stands in the phone's new chat" }))
       .toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Download" })).toBeVisible();
+    await expect.element(page.getByText("and 2 more")).toBeVisible();
+    await userEvent.click(change);
+    expect(spies.openLink).toHaveBeenCalledWith("https://github.com/example/stemcells/pull/302");
+  });
+
+  it("updates on one click: it gets the update ready, without a step of its own", async () => {
+    setup(available);
+    await using screen = await render(
+      <>
+        <UpdateDriver />
+        <Column />
+      </>,
+    );
+    await userEvent.hover(screen.getByRole("button", { name: /gets better/ }));
+    await userEvent.click(page.getByRole("button", { name: "Update" }));
+    await vi.waitFor(() => expect(spies.download).toHaveBeenCalledOnce());
+  });
+
+  it("waits for Cells at work before it restarts, and says so, unless told to now", async () => {
+    setup({ ...available, status: "downloaded", downloadedVersion: available.availableVersion });
+    await using screen = await render(
+      <>
+        <UpdateDriver />
+        <Column />
+      </>,
+    );
+    await userEvent.hover(screen.getByRole("button", { name: /gets better/ }));
+    await userEvent.click(page.getByRole("button", { name: "Update" }));
+    // One Cell works and two hold their run on an ask: a restart would stop all three.
+    await expect
+      .element(screen.getByRole("button", { name: /Restarts once your Cells finish/ }))
+      .toBeVisible();
+    await expect
+      .element(page.getByText("3 Cells are at work, and a restart would stop them."))
+      .toBeVisible();
+    expect(spies.install).not.toHaveBeenCalled();
+    await userEvent.click(page.getByRole("button", { name: "Restart now" }));
+    expect(spies.install).toHaveBeenCalledOnce();
   });
 
   it("is nowhere while the app is up to date, and the foot keeps upstream's pill", async () => {

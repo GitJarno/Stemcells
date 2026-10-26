@@ -59,12 +59,13 @@ to move it.
 
 Once installed, Stemcells updates itself from that repository. When there's
 an update, the left column says **Stemcells gets better** above its foot,
-with how many changes it brings; hovering or clicking it lists them, a day
-at a time: each merged pull request's title and number. **Download** gets
-the update ready (it builds it, while you keep working); **Restart to
-update** restarts into it. A restart ends every Cell's turn, so it's always
-your click. With the column narrowed to its rail, or showing all chats, the
-update button at its foot does the same.
+with how many changes it brings; hovering or clicking it lists what got
+better, newest first, each opening its pull request. **Update** does the
+rest: it builds the update while you keep working, then restarts into it.
+A restart ends every Cell's turn, so it waits until none is at work, and
+says so; **Restart now** doesn't wait. With the column narrowed to its
+rail, or showing all chats, the update button at its foot offers
+upstream's two steps instead.
 
 Settings › About › Update track picks what to follow: **Nightly**, every
 change merged to `main`, or **Stable**, the newest release (a `v*` tag).
