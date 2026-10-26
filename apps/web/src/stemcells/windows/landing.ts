@@ -10,7 +10,7 @@
 import { useEffect } from "react";
 
 import { landCells, type LandingWindow } from "../tabs/landing";
-import type { CellRef, Workspace } from "../tabs/layout";
+import type { CellRef, Land, Workspace } from "../tabs/layout";
 import { newCellTaken } from "../tabs/newCell";
 import { newIds, updateWorkspace, useWorkspaceStore } from "../tabs/store";
 import { cellProject, cellsKnown, subscribeLaunches } from "../upstream/landing";
@@ -67,6 +67,13 @@ export async function landNewCells(cells: readonly CellRef[]): Promise<void> {
     if ((await bridge.commit(writeTransaction(transaction, seen.versions))) === "done") return;
   }
 }
+
+/**
+ * A chat opened here that no pane shows: in this window, where a new Cell
+ * would land. Its chat is known, as it was opened from it.
+ */
+export const landHere: Land = (workspace, cell, ids) =>
+  landCells([here(workspace)], [cell], cellProject, () => ids)[0] ?? workspace;
 
 /** This window: its tabs used last, its rows as drawn, and its unsent new Cell's tab passed by. */
 function here(workspace: Workspace): LandingWindow {

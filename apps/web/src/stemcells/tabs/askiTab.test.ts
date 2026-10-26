@@ -8,7 +8,6 @@ import {
   moveTabAfterAski,
   openBesideOutsideAski,
   seatAski,
-  showRouteBesideAski,
   splitDownOutsideAski,
   splitRightOutsideAski,
 } from "./askiTab";
@@ -21,6 +20,7 @@ import {
   parseWorkspace,
   serializeWorkspace,
   setCell,
+  showRoute,
   type CellRef,
   type NewIds,
   type Workspace,
@@ -131,9 +131,9 @@ describe("Aski's tab", () => {
     expect(addPaneOutsideAski(EMPTY_WORKSPACE, ids(), 2000).tabs).toHaveLength(1);
   });
 
-  it("keeps Aski's chat when another chat is routed to from it, in a tab of its own", () => {
+  it("keeps Aski's chat when another chat is routed to from it", () => {
     const seated = seatAski(withCells("a"), aski, ids());
-    const routed = showRouteBesideAski(seated, thread("new"), ids());
+    const routed = showRoute(seated, thread("new"), ids());
     expect(askiCellOf(routed)).toEqual(aski);
     expect(routed.tabs).toHaveLength(3);
     expect(focusedPane(routed)?.cell).toEqual(thread("new"));
@@ -141,7 +141,7 @@ describe("Aski's tab", () => {
 
   it("hands a chat already in a pane to that pane", () => {
     const seated = seatAski(withCells("a"), aski, ids());
-    const routed = showRouteBesideAski(seated, thread("a"), ids());
+    const routed = showRoute(seated, thread("a"), ids());
     expect(routed.tabs).toHaveLength(2);
     expect(activeTab(routed)?.id).toBe(seated.tabs[1]!.id);
   });
@@ -149,7 +149,7 @@ describe("Aski's tab", () => {
   it("is focused when Aski's chat is routed to", () => {
     const seated = seatAski(withCells("a"), aski, ids());
     const onCell = { ...seated, activeTabId: seated.tabs[1]!.id };
-    expect(showRouteBesideAski(onCell, aski, ids()).activeTabId).toBe(ASKI_TAB_ID);
+    expect(showRoute(onCell, aski, ids()).activeTabId).toBe(ASKI_TAB_ID);
   });
 
   it("is kept with the layout", () => {

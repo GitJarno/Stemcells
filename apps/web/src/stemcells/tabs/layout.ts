@@ -491,14 +491,26 @@ function dropStrayEmptyPanes(workspace: Workspace): Workspace {
   return next;
 }
 
+/** Places a chat no pane shows, leaving every pane's chat where it is. */
+export type Land = (workspace: Workspace, cell: CellRef, ids: NewIds) => Workspace;
+
+const ownTab: Land = (workspace, cell, ids) => openTab(workspace, ids, cell);
+
 /**
  * The URL names the chat the user went to. A pane already showing it takes
- * focus; otherwise the focused pane shows it. Draft and thread share an id,
- * so a draft that was sent arrives as its thread and updates its pane in
- * place. When that pane isn't focused (the send finished after the user
- * moved on), it updates without taking focus.
+ * focus, and an empty focused pane (one opening) shows it. Otherwise `land`
+ * places it and it takes focus: going to a chat never takes the chat being
+ * read off its pane (stemcells/tasks/left-column.md, decision 9). Draft and
+ * thread share an id, so a draft that was sent arrives as its thread and
+ * updates its pane in place. When that pane isn't focused (the send
+ * finished after the user moved on), it updates without taking focus.
  */
-export function showRoute(workspace: Workspace, cell: CellRef, ids: NewIds): Workspace {
+export function showRoute(
+  workspace: Workspace,
+  cell: CellRef,
+  ids: NewIds,
+  land: Land = ownTab,
+): Workspace {
   const holder = paneShowing(workspace, cell);
   if (holder) {
     const updated = setCell(workspace, holder.pane.id, cell);
@@ -510,7 +522,11 @@ export function showRoute(workspace: Workspace, cell: CellRef, ids: NewIds): Wor
   }
   const focused = focusedPane(workspace);
   if (!focused) return openTab(workspace, ids, cell);
-  return dropStrayEmptyPanes(setCell(workspace, focused.id, cell));
+  if (focused.cell === null) return dropStrayEmptyPanes(setCell(workspace, focused.id, cell));
+  const landed = land(workspace, cell, ids);
+  const placed = paneShowing(landed, cell) ? landed : ownTab(workspace, cell, ids);
+  const pane = paneShowing(placed, cell)?.pane;
+  return pane ? dropStrayEmptyPanes(focusPane(placed, pane.id)) : placed;
 }
 
 // Persistence. Only whole Cells are kept: an empty pane is mid-opening and

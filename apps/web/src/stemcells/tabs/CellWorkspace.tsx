@@ -31,7 +31,7 @@ import { seatAskiHere } from "../windows/askiHome";
 import { ChatCarry, useCarriedPane } from "../windows/ChatCarry";
 import { askiElsewhere, revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
 import { bringAskiHere } from "../windows/joinWindow";
-import { useLandsLaunches } from "../windows/landing";
+import { landHere, useLandsLaunches } from "../windows/landing";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
@@ -43,7 +43,6 @@ import {
   moveTabAfterAski,
   openBesideOutsideAski,
   seatAski,
-  showRouteBesideAski,
   splitDownOutsideAski,
   splitRightOutsideAski,
 } from "./askiTab";
@@ -68,6 +67,7 @@ import {
   sameChat,
   setCell,
   sharesOf,
+  showRoute,
   type CellRef,
   type Pane,
   type Tab,
@@ -178,7 +178,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     updateWorkspace((current) =>
       ofNewCell && routedNewCell !== null
         ? takeNewCell(current, routedNewCell)
-        : showRouteBesideAski(current, cell, newIds()),
+        : showRoute(current, cell, newIds(), landHere),
     );
     useWorkspaceStore.setState({ takenRoute: routeKey(cell) });
     const holder = paneShowing(readWorkspace(), cell);
@@ -299,7 +299,9 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
   const openBeside = (cell: CellRef) => {
     // A chat open in another window: that window comes forward. Aski comes here.
     if (bringAski(cell) || revealElsewhere(cell)) return;
-    updateWorkspace((current) => openBesideOutsideAski(current, cell, newIds(), gridWidth()));
+    updateWorkspace((current) =>
+      openBesideOutsideAski(current, cell, newIds(), gridWidth(), landHere),
+    );
     routeToFocused();
   };
   const provideBeside = useEffectEvent(openBeside);

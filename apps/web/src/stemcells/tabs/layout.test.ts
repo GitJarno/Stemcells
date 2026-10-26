@@ -205,11 +205,28 @@ describe("a new Cell in the tab (⌘T)", () => {
 });
 
 describe("routes", () => {
-  it("going to a chat shows it in the focused pane", () => {
+  it("going to a chat no pane shows leaves the focused pane's chat and focuses where it landed", () => {
     let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
     workspace = fill(splitRight(workspace, ids(), 1200), thread("b"));
-    workspace = showRoute(workspace, thread("c"), ids());
-    expect(shape(workspace)).toEqual([[[["a"], ["c"]]]]);
+    const beside = (into: Workspace, cell: CellRef, fresh: NewIds) =>
+      setCell(addPane(into, fresh, 1200), fresh.pane, cell);
+    workspace = showRoute(workspace, thread("c"), ids(), beside);
+    expect(shape(workspace)).toEqual([[[["a"], ["b"], ["c"]]]]);
+    expect(focusedPane(workspace)?.cell).toEqual(thread("c"));
+  });
+
+  it("going to a chat that lands nowhere gives it a tab of its own", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = showRoute(workspace, thread("b"), ids(), (unchanged) => unchanged);
+    expect(shape(workspace)).toEqual([[[["a"]]], [[["b"]]]]);
+    expect(focusedPane(workspace)?.cell).toEqual(thread("b"));
+  });
+
+  it("going to a chat with an empty pane focused shows it there", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    workspace = splitRight(workspace, ids(), 1200);
+    workspace = showRoute(workspace, thread("b"), ids());
+    expect(shape(workspace)).toEqual([[[["a"], ["b"]]]]);
   });
 
   it("going to a chat another pane shows focuses that pane instead of showing it twice", () => {

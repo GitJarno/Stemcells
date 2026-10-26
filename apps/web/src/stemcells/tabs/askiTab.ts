@@ -1,23 +1,23 @@
 /**
  * Aski's tab: the first in the strip, always there once Aski's chat is, and
  * holding that one chat alone. It never closes, moves or splits, and a chat
- * routed to while it is focused opens in a tab of its own.
+ * routed to while it is focused lands elsewhere, as every chat routed to
+ * over a pane's chat does (`showRoute`).
  */
 import {
   activeTab,
   addPane,
   closeTab,
-  focusedPane,
   moveTab,
   openTab,
   paneShowing,
   panesOf,
-  sameChat,
   setCell,
   showRoute,
   splitDown,
   splitRight,
   type CellRef,
+  type Land,
   type NewIds,
   type Tab,
   type Workspace,
@@ -84,34 +84,21 @@ export function seatAski(
 }
 
 /**
- * The route's chat, shown as `showRoute` would, except that Aski's pane
- * only ever shows Aski: another chat routed to while it is focused opens in
- * the pane already showing it, else in a new tab.
- */
-export function showRouteBesideAski(workspace: Workspace, cell: CellRef, ids: NewIds): Workspace {
-  const askiCell = askiCellOf(workspace);
-  const inAskiTab = isAskiTab(activeTab(workspace)) && focusedPane(workspace) !== null;
-  if (!inAskiTab || (askiCell && sameChat(askiCell, cell)) || paneShowing(workspace, cell)) {
-    return showRoute(workspace, cell, ids);
-  }
-  return openTab(workspace, ids, cell);
-}
-
-/**
  * A chat opened from a link in another (a thread chip): it opens in a new
  * pane of the tab on screen, beside the pane the link was in, so the chat
  * being read stays. A chat already in a pane goes to that pane, and from
- * Aski's tab, which never splits, it gets a tab of its own.
+ * Aski's tab, which never splits, it lands where `land` puts it.
  */
 export function openBesideOutsideAski(
   workspace: Workspace,
   cell: CellRef,
   ids: NewIds,
   rowWidth: number,
+  land?: Land,
 ): Workspace {
   const tab = activeTab(workspace);
   if (!tab || isAskiTab(tab) || paneShowing(workspace, cell)) {
-    return showRouteBesideAski(workspace, cell, ids);
+    return showRoute(workspace, cell, ids, land);
   }
   return setCell(addPane(workspace, ids, rowWidth), ids.pane, cell);
 }
