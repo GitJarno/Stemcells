@@ -36,7 +36,9 @@ describe("a Mermaid diagram, against upstream", () => {
   });
 
   it("takes its colours from the theme, which Stemcells' look sets", () => {
-    expect(indexCss).toMatch(/\.pele \{\n {2}--pele-bg: var\(--background\);\n {2}--pele-fg: var\(--foreground\);/);
+    expect(indexCss).toMatch(
+      /\.pele \{\n {2}--pele-bg: var\(--background\);\n {2}--pele-fg: var\(--foreground\);/,
+    );
   });
 
   it("reads its corners from --pele-radius, where our sheet puts a chip's", () => {

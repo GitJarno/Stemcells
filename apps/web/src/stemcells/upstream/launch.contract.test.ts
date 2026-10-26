@@ -25,7 +25,9 @@ import contextReferences from "../../../../../packages/shared/src/composerContex
 
 describe("starting Cells beside a draft, as upstream starts its threads", () => {
   it("each thread of a multiple-model send is created in one call, as ours are", () => {
-    const fanout = multipleModelSend.slice(multipleModelSend.indexOf("const starts = Promise.all("));
+    const fanout = multipleModelSend.slice(
+      multipleModelSend.indexOf("const starts = Promise.all("),
+    );
     expect(fanout).toMatch(
       /bootstrap: \{\s*createThread: \{\s*projectId: project\.id,\s*title,\s*modelSelection: target\.selection,\s*runtimeMode,\s*interactionMode: target\.interactionMode,\s*branch,\s*worktreePath: null,\s*createdAt: createdAt,\s*\},\s*prepareWorktree: \{\s*projectCwd: project\.workspaceRoot,\s*baseBranch: branch,/,
     );
@@ -60,7 +62,9 @@ describe("the send the words hold and count", () => {
 
 describe("what a message carries, taken to the Cells beside the draft's", () => {
   it("every thread of a multiple-model send gets the same attachments and context", () => {
-    const fanout = multipleModelSend.slice(multipleModelSend.indexOf("const starts = Promise.all("));
+    const fanout = multipleModelSend.slice(
+      multipleModelSend.indexOf("const starts = Promise.all("),
+    );
     expect(fanout).toMatch(
       /message: \{\s*messageId: newMessageId\(\),\s*role: "user",\s*attachments,\s*\.\.\.withMessageContext\(\{\s*text: target\.text,\s*context,\s*supportsInlineMessageContext,\s*\}\),/,
     );

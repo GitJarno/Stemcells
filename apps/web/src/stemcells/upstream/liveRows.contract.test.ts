@@ -36,7 +36,9 @@ describe("upstream's live rows, as the wave reads them", () => {
     // The transcript's rows live in these modules; each that lights a box
     // takes observeVisibleAnimation from the module we substitute.
     for (const source of [messagesTimeline, workGroupRows]) {
-      expect(source).toContain('import { observeVisibleAnimation } from "../../lib/visibleAnimation";');
+      expect(source).toContain(
+        'import { observeVisibleAnimation } from "../../lib/visibleAnimation";',
+      );
     }
     const timeline = [messagesTimeline, workGroupRows].join("\n");
     // The live rows' boxes, the working label's, a separator's and a work group's header.

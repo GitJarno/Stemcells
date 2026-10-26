@@ -174,7 +174,9 @@ describe("the composer's contracts with upstream", () => {
     );
     // The block on switching instances guards the picker only, never a send:
     // a pick, and the picker's disabled rows (`makeModelDisabledReason`).
-    expect(composerSend).not.toMatch(/getStartedThreadModelChangeBlockReason\(|makeModelDisabledReason\(/);
+    expect(composerSend).not.toMatch(
+      /getStartedThreadModelChangeBlockReason\(|makeModelDisabledReason\(/,
+    );
     expect(composerSelection.match(/getStartedThreadModelChangeBlockReason\(/g)).toHaveLength(1);
     expect(composerSelection).toContain("const getModelDisabledReason = makeModelDisabledReason(");
   });

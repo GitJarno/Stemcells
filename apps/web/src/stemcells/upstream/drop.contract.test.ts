@@ -14,9 +14,7 @@ describe("the drop wash's contracts with upstream", () => {
   it("a chat draws its drop overlay only while a file is over it", () => {
     // The wash lights the pane whose chat shows the overlay.
     expect(chatView).toContain("setDragActive: setIsWorkspaceFileDragActive");
-    expect(chatView).toContain(
-      "{isWorkspaceFileDragActive ? <WorkspaceFileDropOverlay /> : null}",
-    );
+    expect(chatView).toContain("{isWorkspaceFileDragActive ? <WorkspaceFileDropOverlay /> : null}");
     expect(timelineOverlays).toMatch(
       /export function WorkspaceFileDropOverlay\(\) \{\s*return \(\s*<div\s[^>]*data-chat-workspace-drop-overlay="true"/,
     );

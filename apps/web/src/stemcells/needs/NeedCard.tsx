@@ -5,6 +5,7 @@ import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
 import { timing } from "../tokens/motion";
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
 import { commandsFor, type Given } from "./actions";
 import { cardOf, LATER, type CardOption, type CardQuestion } from "./card";
@@ -77,6 +78,7 @@ export function NeedCard(props: {
     environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null },
   );
   const open = useOpenFromNeeds();
+  const settle = useSettleCell();
   // What the words in Aski's composer do to this card (answers/lit.ts).
   const lights = useLit();
   const fromWords = lights.reading.get(need.key) ?? null;
@@ -274,6 +276,15 @@ export function NeedCard(props: {
         {need.kind === "sign-in" ? (
           <button type="button" onClick={() => open.providerSetup(need.providerInstanceId)}>
             Open provider setup
+          </button>
+        ) : null}
+        {environmentId !== null ? (
+          // Done with it, asked or not: it stops, then settles (upstream/settle.ts).
+          <button
+            type="button"
+            onClick={() => void settle({ environmentId, threadId: need.threadId })}
+          >
+            Settle
           </button>
         ) : null}
         <button type="button" onClick={() => (props.openChat ?? openPeek)(need.threadId)}>

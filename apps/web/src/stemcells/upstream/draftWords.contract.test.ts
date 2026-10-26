@@ -89,7 +89,9 @@ describe("the words' contracts with upstream's drafts", () => {
     expect(composerControlsBar).toMatch(
       /<ComposerModelPicker\s+environmentId=\{environmentId\}\s+compact=\{false\}\s+isComposerOwned\b/,
     );
-    expect(footerControls).toContain('import { ProviderModelPicker } from "./ProviderModelPicker";');
+    expect(footerControls).toContain(
+      'import { ProviderModelPicker } from "./ProviderModelPicker";',
+    );
     expect(footerControls).toMatch(/<ProviderModelPicker\s+\{\.\.\.pickerProps\}/);
     expect(controlsMeasurement).toContain(
       'controls.querySelector<HTMLElement>("[data-chat-provider-model-picker]")',

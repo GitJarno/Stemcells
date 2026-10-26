@@ -71,7 +71,8 @@ interactive draft in the chat that asked for it.
 - [ ] Motion (7): roll-up, hops, a stage taking a Cell in
 - [x] Closing a landed pane settles it (3); a pin already keeps a Cell out
       of auto-settle (4)
-- [ ] Settle from any stage (2): a Cell at work or asking stops first
+- [x] Settle from any stage (2): a Cell at work or asking stops first, and
+      settles once its run ends; Working rows and every card carry Settle
 - [ ] Merge auto-settle off by default (3): once per server, never over the
       person's own choice
 - [x] Aski's room (11): the decision column and roster step aside while

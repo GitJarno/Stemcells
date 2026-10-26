@@ -115,7 +115,7 @@ export function Cells() {
       <div data-cells-list="" data-stage={stage}>
         {stage === "needs" ? <NeedsHere waiting={waiting} /> : null}
         {stage === "working" ? (
-          <Rows label="Working" cells={working.flatMap((cell) => rowOf(cell, toRef))} />
+          <Rows label="Working" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
         ) : null}
         {stage === "landed" ? (
           <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />
@@ -265,11 +265,22 @@ function NeedsHere(props: { waiting: number }) {
   );
 }
 
-function Rows(props: { label: string; cells: ReadonlyArray<Row>; more?: ReactNode }) {
+/** A stage's Cells; `settles` gives each a Settle, which stops one at work first (`upstream/settle.ts`). */
+function Rows(props: {
+  label: string;
+  cells: ReadonlyArray<Row>;
+  more?: ReactNode;
+  settles?: boolean;
+}) {
+  const settle = useSettleCell();
   return (
     <ol data-cells-rows="" aria-label={props.label}>
       {props.cells.map((row) => (
-        <CellRow key={row.cell.threadId} row={row} />
+        <CellRow
+          key={row.cell.threadId}
+          row={row}
+          {...(props.settles ? { onSettle: () => void settle(row.cell) } : {})}
+        />
       ))}
       {props.cells.length === 0 ? <li data-cells-none="">None</li> : null}
       {props.more ? <li>{props.more}</li> : null}
