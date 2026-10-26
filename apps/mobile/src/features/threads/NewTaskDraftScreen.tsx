@@ -1,5 +1,6 @@
 import { DraftEnvironmentControl } from "./DraftEnvironmentControl";
 import { AskiStanding } from "../../stemcells/aski/AskiStanding";
+import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { DraftThreadHeader } from "./DraftThreadHeader";
 import { threadHeaderAppearance } from "./thread-header-appearance";
@@ -1009,7 +1010,7 @@ export function NewTaskDraftScreen(props: {
   const hero = flow.isScratchDraft ? (
     <View className="items-center gap-2 px-6" testID="new-task-hero">
       <Text className="text-center text-2xl font-t3-medium tracking-tight text-foreground">
-        What should we work on?
+        {CASUAL_CHAT.headline}
       </Text>
       <View className="flex-row flex-wrap items-center justify-center gap-x-1">
         <ComposerInlineControl

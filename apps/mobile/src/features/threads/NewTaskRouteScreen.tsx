@@ -1,4 +1,5 @@
 import { isDraftThreadRoute } from "./thread-route-state";
+import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import * as Dialog from "../../components/ui/Dialog";
 import { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";
 import { NavigationRow } from "../../components/ui/NavigationRow";
@@ -328,8 +329,8 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
               <View collapsable={false} className="overflow-hidden rounded-[28px] bg-grouped-card">
                 <NavigationRow
                   className="bg-grouped-card"
-                  title="No project"
-                  subtitle="Start a task without a project"
+                  title={CASUAL_CHAT.title}
+                  subtitle={CASUAL_CHAT.detail}
                   onPress={() => void startScratch()}
                   leading={
                     <SymbolView
@@ -345,7 +346,7 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
               <View collapsable={false} className="overflow-hidden rounded-[24px] bg-grouped-card">
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="No project"
+                  accessibilityLabel={CASUAL_CHAT.title}
                   onPress={() => void startScratch()}
                   className="flex-row items-center gap-3 bg-grouped-card px-4 py-3.5"
                 >
@@ -358,9 +359,9 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
                     />
                   </View>
                   <View className="min-w-0 flex-1">
-                    <Text className="text-base font-t3-bold leading-snug">No project</Text>
+                    <Text className="text-base font-t3-bold leading-snug">{CASUAL_CHAT.title}</Text>
                     <Text className="text-xs leading-snug text-foreground-muted" numberOfLines={1}>
-                      Start a task without a project
+                      {CASUAL_CHAT.detail}
                     </Text>
                   </View>
                   <SymbolView
@@ -403,7 +404,7 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
                   />
                   {canStartScratch ? (
                     <Button
-                      label="Start without a project"
+                      label={CASUAL_CHAT.start}
                       tone="secondary"
                       onPress={() => void startScratch()}
                     />
@@ -428,7 +429,7 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
                   </View>
                   {canStartScratch ? (
                     <Button
-                      label="Start without a project"
+                      label={CASUAL_CHAT.start}
                       tone="secondary"
                       onPress={() => void startScratch()}
                     />

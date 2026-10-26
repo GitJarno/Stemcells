@@ -1,4 +1,5 @@
 import type { DraftId } from "~/composerDraftStore";
+import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { composerDraftHasUserContent, useComposerDraftStore } from "~/composerDraftStore";
 import { resolveEnvironmentMachineKind, type ScopedProjectRef } from "@t3tools/contracts";
 import { scopedProjectKey, scopeProjectRef } from "@t3tools/client-runtime/environment";
@@ -334,7 +335,7 @@ export function DraftHeroHeadline({
             />
           }
         >
-          or start without a project
+          {CASUAL_CHAT.offer}
         </TooltipTrigger>
         {noProjectShortcut ? <TooltipPopup side="bottom">{noProjectShortcut}</TooltipPopup> : null}
       </Tooltip>
@@ -349,7 +350,7 @@ export function DraftHeroHeadline({
       ) : (
         <h1 className="w-full text-center font-normal text-2xl text-foreground tracking-tight sm:text-3xl">
           {isScratchDraft ? (
-            <>What should we work on?</>
+            <>{CASUAL_CHAT.headline}</>
           ) : canChooseProject ? (
             <>{projectSelector} to start</>
           ) : (

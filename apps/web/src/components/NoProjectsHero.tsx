@@ -1,4 +1,5 @@
 import { MessageSquareDashedIcon, PlusIcon } from "lucide-react";
+import { CASUAL_CHAT } from "../../../../stemcells/words/casualChat.ts";
 
 import { openCommandPalette } from "../commandPaletteBus";
 import { isElectron } from "../env";
@@ -40,7 +41,7 @@ export function NoProjectsHero() {
                     onClick={() => void startScratchThread(scratchTargetEnvironmentId)}
                   >
                     <MessageSquareDashedIcon className="size-4" />
-                    Start without a project
+                    {CASUAL_CHAT.start}
                   </Button>
                 )}
               </div>

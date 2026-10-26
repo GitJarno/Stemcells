@@ -35,6 +35,7 @@ import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWin
 import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
+import * as UpstreamCommandPaletteLogic from "../../../components/CommandPalette.logic";
 import * as UpstreamProviderReadiness from "../../../onboarding/providerReadiness.logic";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
@@ -65,6 +66,7 @@ import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
+import * as OurCommandPaletteLogic from "./CommandPalette.logic";
 import * as OurProviderReadiness from "./providerReadiness.logic";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
@@ -436,6 +438,13 @@ const CASES: Readonly<Record<string, Case>> = {
         "./DraftHeroProjectHeading",
         ["DraftHeroProjectHeading"],
       ],
+    },
+  },
+  "apps/web/src/components/CommandPalette.logic.ts": {
+    upstream: UpstreamCommandPaletteLogic,
+    substitute: OurCommandPaletteLogic satisfies typeof UpstreamCommandPaletteLogic,
+    importers: {
+      "apps/web/src/components/CommandPalette.tsx": ["./CommandPalette.logic", ["buildRootGroups"]],
     },
   },
   "apps/web/src/components/T3Wordmark.tsx": {
