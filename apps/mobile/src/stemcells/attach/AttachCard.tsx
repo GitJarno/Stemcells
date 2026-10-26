@@ -153,17 +153,16 @@ function Card(props: {
   const load = async (from: number) => {
     if (loading.current) return;
     loading.current = true;
-    try {
-      const page = await photosFrom(from, PAGE);
-      // A photo arriving meanwhile shifts the pages, so one may come again.
-      setIds((shown) => {
-        const known = new Set(shown);
-        return [...shown, ...page.filter((id) => !known.has(id))];
-      });
-      setMore(page.length === PAGE);
-    } finally {
+    // `.finally`, not `try`: React Compiler can't compile a `try` without a `catch`.
+    const page = await photosFrom(from, PAGE).finally(() => {
       loading.current = false;
-    }
+    });
+    // A photo arriving meanwhile shifts the pages, so one may come again.
+    setIds((shown) => {
+      const known = new Set(shown);
+      return [...shown, ...page.filter((id) => !known.has(id))];
+    });
+    setMore(page.length === PAGE);
   };
 
   const add = async (picked: readonly string[]) => {
