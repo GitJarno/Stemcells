@@ -1,16 +1,8 @@
 /**
- * The light in a Cell's composer, moving: the Swift app's glow layer on the
- * Web Animations API. Each change is set once and left to the browser, and
- * what loops while a Cell works is a transform or an opacity, so a working
- * chat costs no script per frame. What never rests (the drift, the breath)
- * steps on the Cells' sprite clock, so it draws twelve frames a second, not
- * one per refresh of the display; in a window beside another app the band's
- * crossing does too, and in one no one can see nothing loops.
- *
- * `light` holds it all and hides once the glass is plain; `lit` is the
- * colour, the wash and the band, and is what the iris opens and gathers at
- * the anchor; `bloom` is the small flare where the light drains, outside the
- * iris so it is the last thing seen.
+ * The light in a Cell's composer, moving: the Swift app's glow layer on the Web Animations API.
+ * Each change is set once and left to the browser, and what loops is a transform or an opacity,
+ * so a working chat costs no script per frame; what never rests steps on the Cells' sprite clock.
+ * `light` holds it all; `lit` is what the iris opens and gathers; `bloom`, outside it, is last.
  */
 import { crossing, cubicEase, onBeat, resweep, steppedFrames, sweep } from "../motion/beat";
 import type { Sight } from "../motion/sight";
@@ -170,11 +162,9 @@ export class GlassLight {
   }
 
   /**
-   * How the glass can be seen (`motion/sight.ts`). Hidden, it holds: it keeps
-   * its tint and its band waits off it, as at the beat's rest, and it
-   * rejoins the beat where the beat is once seen. Beside another app its
-   * band crosses on the Cells' sprite clock; the drift and the breath always
-   * do.
+   * How the glass can be seen (`motion/sight.ts`). Hidden, it holds as at the beat's rest and
+   * rejoins the beat where it is once seen. Beside another app its band crosses on the Cells'
+   * sprite clock; the drift and the breath always do.
    */
   see(sight: Sight): void {
     if (sight === this.sight) return;

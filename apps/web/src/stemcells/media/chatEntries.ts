@@ -1,10 +1,8 @@
 /**
- * The entries each chat's timeline draws, by its thread key, for the chat's
- * media viewer. Upstream's `ChatView` keeps streamed replies out of its own
- * entries, so a delta never re-renders it (#23117); only the timeline draws
- * every row. Our `MessagesTimeline` substitute publishes what it draws, and
- * only an open viewer reads it, so a closed one costs nothing while a reply
- * streams. Two panes on one chat each publish; the viewer reads the last.
+ * The entries each chat's timeline draws, by thread key, for the media viewer. Upstream's
+ * `ChatView` keeps streamed replies out of its entries so a delta never re-renders it; our
+ * `MessagesTimeline` substitute publishes what it draws and only an open viewer reads it, so a
+ * closed one costs nothing while a reply streams. With two panes on one chat, the last wins.
  */
 import { useLayoutEffect, useState, useSyncExternalStore } from "react";
 
@@ -50,10 +48,12 @@ export function chatEntriesOf(threadKey: string): TimelineEntries {
 /** Publishes the entries a timeline draws, while it's mounted. */
 export function usePublishChatEntries(threadKey: string, entries: TimelineEntries): void {
   const [timeline] = useState(() => ({}));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Publish what the timeline draws to the media viewer's store before paint.
   useLayoutEffect(
     () => publishChatEntries(threadKey, timeline, entries),
     [timeline, threadKey, entries],
   );
+  // oxlint-disable-next-line t3code/react-effect-budget -- Withdraw this timeline's entries when its thread changes or it unmounts.
   useLayoutEffect(() => () => withdrawChatEntries(threadKey, timeline), [timeline, threadKey]);
 }
 

@@ -1,10 +1,8 @@
 /**
- * Undo Move (⌥⌘Z, stemcells/tasks/windows.md): takes the latest move between
- * windows back, while what it moved is still where it put it and no chat it
- * would bring back is open anywhere else. The moves are a stack: the latest
- * goes back, or, if it can't any more, is forgotten and nothing changes; a
- * press never reaches past it to an older move. A press while a carry is in
- * the hand does nothing.
+ * Undo Move (⌥⌘Z, stemcells/tasks/windows.md): takes the latest move between windows back,
+ * while what it moved is still where it put it and no chat it would bring back is open
+ * elsewhere. The latest goes back, or if it can't, is forgotten and nothing changes; a press
+ * never reaches an older move, and does nothing while a carry is in the hand.
  */
 import { windowsBridge } from "./bridge";
 import { carrying } from "./carrying";

@@ -25,12 +25,9 @@ import { usePeerNote } from "./PeerExchange";
 
 import "./peers.css";
 
-// A message another Cell sent this one (stemcells/tasks/peers.md, decision
-// 4): mail the Cell received, not the conversation, so it never wears the
-// person's bubble. Read in order: who and which way, the question a reply
-// answers, the gist, then the rest, folded. A sender here is a door to its
-// chat; one on a linked machine is named with its machine, and opens nothing.
-// Under it, as under the person's own message: when, going back to it, copy.
+// A message another Cell sent this one (stemcells/tasks/peers.md, decision 4): mail the Cell
+// received, so it never wears the person's bubble. A sender here opens its chat; one on a
+// linked machine is named with its machine and opens nothing.
 
 const WAY: Readonly<Record<Kind, string>> = {
   ask: "asks you",

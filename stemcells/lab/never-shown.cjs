@@ -1,33 +1,7 @@
-// A desktop lab that never reaches the screen of the person at the Mac.
-//
-// stemcells/lab/electron preloads it into Electron's main process, before
-// the app's own code, and checks that it did:
-//
-//   stemcells/lab/electron dev             the dev app (pnpm dev:desktop)
-//   stemcells/lab/electron main.cjs        a scratch app, on the repo's Electron
-//
-// The app gets a fresh profile each run, or STEMCELLS_LAB_PROFILE's folder,
-// where the helper leaves `.never-shown-<pid>` for each main it guards, and
-// for each Electron run as Node, which has no windows to guard.
-//
-// Every window is created hidden, off every display, and is never shown,
-// focused or raised; it keeps rendering hidden, so a lab drives and captures
-// it over the remote debugging port (Page.captureScreenshot,
-// webContents.capturePage, beginFrameSubscription; a <webview> guest paints
-// too). The app runs in its own profile, out of the Dock, and nothing else it
-// does reaches the person: no dialog, notification, menu, global shortcut,
-// clipboard write or link opened in another app.
-//
-// It fails closed: a window that shows anyway, or whose bounds touch a
-// display, is destroyed with every other window and the app exits with
-// LAB_EXIT, as does an app whose main reads electron as an ES module (it
-// would get windows the helper can't make hidden; the desktop app's main is
-// CommonJS). Its main also stops before the app's code runs unless the home
-// it was given is a lab's, where every provider runs a fake (fakes-only.cjs).
-// A lab script checks `globalThis[Symbol.for("stemcells.lab")]` first, and
-// stops if it isn't there. Electron run as Node gets the mark; it and plain
-// Node in a lab start no provider CLI that isn't a fake; a renderer is left
-// alone.
+// A desktop lab that never reaches the screen of the person at the Mac, preloaded into
+// Electron's main by stemcells/lab/electron: windows are hidden, off every display, and still
+// render for capture, and nothing else reaches the person. It fails closed (LAB_EXIT), as does
+// a home that isn't a lab's (fakes-only.cjs).
 "use strict";
 
 const LAB_EXIT = 86;
@@ -298,6 +272,7 @@ if (process.versions.electron && process.type === "browser") {
   const profile =
     process.env.STEMCELLS_LAB_PROFILE ?? NodeFS.mkdtempSync(NodePath.join(temp, "stemcells-lab-"));
   NodeFS.mkdirSync(profile, { recursive: true });
+  // stemcells/lab/electron looks for this file to know the helper guards this main.
   NodeFS.writeFileSync(NodePath.join(profile, `.never-shown-${process.pid}`), "");
   // A lab script checks this before it does anything: no helper, no lab.
   globalThis[Symbol.for("stemcells.lab")] = { profile, exitCode: LAB_EXIT };
@@ -338,11 +313,9 @@ if (process.versions.electron && process.type === "browser") {
   });
 }
 
-// Electron run as Node (ELECTRON_RUN_AS_NODE, as the desktop app's server
-// and workers are) inherits NODE_OPTIONS too. It can't make a window, so it
-// gets the mark stemcells/lab/electron looks for on every Electron it
-// starts. It, and plain Node in a lab, find the lab's fakes first on the
-// PATH and start no provider CLI that isn't a fake (fakes-only.cjs).
+// Electron run as Node (ELECTRON_RUN_AS_NODE, as the desktop app's server and workers are)
+// inherits NODE_OPTIONS too. It can't make a window, so it gets the mark stemcells/lab/electron
+// looks for; it and plain Node in a lab start no provider CLI that isn't a fake (fakes-only.cjs).
 if (process.type === undefined && process.env.STEMCELLS_LAB_PROFILE) {
   if (process.versions.electron) {
     require("node:fs").writeFileSync(

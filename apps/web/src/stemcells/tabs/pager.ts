@@ -111,12 +111,10 @@ export function releaseTarget(drag: Drag, travel = drag.travel): number {
 }
 
 /**
- * The speed a spring from `from` to `to` sets off with, as a share of its
- * move per second, when the strip was moving at `pagesPerSecond`: positive
- * toward `to`. Capped below the spring's own pace (`omega`, rad/s), so a
- * critically damped spring never overshoots. A strip moving away from `to`
- * sets off from rest: carrying on first would take it past where the
- * fingers left it, and back.
+ * The speed a spring from `from` to `to` sets off with, as a share of its move per second, when
+ * the strip moved at `pagesPerSecond` (positive toward `to`). Capped below the spring's pace
+ * (`omega`, rad/s), so a critically damped spring never overshoots. A strip moving away from `to`
+ * sets off from rest: carrying on would take it past where the fingers left it, and back.
  */
 export function releaseVelocity(
   from: number,

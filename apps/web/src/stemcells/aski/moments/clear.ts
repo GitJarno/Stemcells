@@ -1,8 +1,6 @@
-// All clear: several asks were waiting on the person and they answered
-// them all, soon. The asks stand beside Aski as `!` marks, its eyes
-// blinking like a cursor while they wait; one by one they go, and Aski is
-// pleased. It says nothing: the list of what needs the person says it as
-// it empties, and one line is enough.
+// All clear: several asks waited on the person and they answered them all, soon. The asks
+// stand beside Aski as `!` marks, its eyes blinking like a cursor; one by one they go, and Aski
+// is pleased. It says nothing: the list of what needs the person says it as it empties.
 
 import { type Grid, type Stage } from "../grid.ts";
 import { sstep } from "../math.ts";

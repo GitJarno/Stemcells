@@ -55,13 +55,10 @@ export interface AutonomyView {
 }
 
 /**
- * Aski takes, for the person, the cards they always take
- * (stemcells/tasks/aski-autonomy.md). It follows the needs list: a card of a
- * kind that leaves is counted from the person's next message to its Cell,
- * and a card of a granted kind that came after the grant is taken once
- * `WINDOW` passes with nobody keeping it, nobody writing to its Cell, and
- * the card still there. On the server, so Cells fly while the person is
- * away and two screens never both answer.
+ * Aski takes the cards the person always takes (stemcells/tasks/aski-autonomy.md). A card of
+ * a kind that leaves counts from the person's next message to its Cell; a granted kind's card
+ * from after the grant is taken once `WINDOW` passes with nobody keeping it or writing to its
+ * Cell. On the server, so Cells fly while the person is away and two screens never both answer.
  */
 export class Autonomy extends Context.Service<
   Autonomy,
@@ -304,19 +301,21 @@ export const make = Effect.fn("Autonomy.make")(function* (
   return Autonomy.of({
     view: SubscriptionRef.get(latest),
     changes: SubscriptionRef.changes(latest),
-    grant: (kind) => settle((s, now) => S.grant(s, kind, now)),
-    decline: (kind) =>
+    grant: Effect.fn("Autonomy.grant")((kind) => settle((s, now) => S.grant(s, kind, now))),
+    decline: Effect.fn("Autonomy.decline")((kind) =>
       settle(
         (s) => S.decline(s, kind),
         () => {
           for (const [key, entry] of taking) if (entry.kind === kind) taking.delete(key);
         },
       ),
-    keep: (key) =>
+    ),
+    keep: Effect.fn("Autonomy.keep")((key) =>
       settle(
         (s) => S.keep(s, key),
         () => taking.delete(key),
       ),
+    ),
   });
 });
 

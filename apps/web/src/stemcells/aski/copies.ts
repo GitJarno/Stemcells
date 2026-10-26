@@ -1,10 +1,8 @@
 /**
- * Aski divides (stemcells/tasks/aski-manager.md, decision 5): one small
- * Aski per Cell buds out of Aski and flies to where its Cell will stand,
- * its box on its pane's line when that is on stage, else its tab's chip.
- * Into a box it lands that box's height, for the glyphs to condense over;
- * into a chip it shrinks away. A copy is a still of Aski at rest, drawn
- * once by Aski's own renderer and copied for each.
+ * Aski divides (stemcells/tasks/aski-manager.md, decision 5): one small Aski per Cell flies to
+ * where its Cell will stand, its box on its pane's line when on stage, else its tab's chip,
+ * landing at the box's height or shrinking into the chip. A copy is a still of Aski at rest,
+ * drawn once by Aski's own renderer and copied for each.
  */
 import { drawnCellBoxOf } from "../cell/forming";
 import { findPane } from "../tabs/layout";
@@ -154,12 +152,9 @@ export function copyAt(layer: HTMLElement, still: HTMLCanvasElement, from: Box):
 }
 
 /**
- * Flies a copy of `still` out of Aski's box `from`, after `delay` ms, on
- * `travel`, to where the Cell of `threadId` stands as it leaves (a pane
- * may still be settling): it buds from Aski's middle, bows on its way, and
- * lands on the target's middle. With `held`, Aski itself waiting at `from`
- * (`copyAt`), that flies instead, leaving at its size. Resolves true as it
- * lands, the copy gone; false at once, with no copy, when the Cell's place
+ * Flies a copy of `still` from Aski's box `from` to where `threadId`'s Cell stands as it leaves
+ * (a pane may still be settling). With `held` (`copyAt`), Aski itself, waiting at `from`, flies.
+ * Resolves true as it lands, the copy gone; false at once, with no copy, when the Cell's place
  * no longer shows as `into` planned.
  */
 export async function flyCopy(

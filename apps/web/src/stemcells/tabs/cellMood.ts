@@ -1,10 +1,8 @@
 /**
- * A Cell's face from its chat's status: crashed when its run failed, asking
- * while it waits on you (leave to run or change something plays
- * `needsApproval`; an answer or a plan to accept, `needsYou`), awake while
- * it works. Once a turn lands it cheers a moment and rests awake; it sleeps
- * once its chat's prompt cache has gone cold, so a sleeping Cell is one
- * whose next message costs a cold start. While its line is down it peers.
+ * A Cell's face from its chat's status: crashed when its run failed, asking while it waits on
+ * you (`needsApproval` for leave to run or change something, `needsYou` for an answer or a plan),
+ * awake while it works, cheering then resting once a turn lands. It sleeps once the prompt cache
+ * is cold, so a sleeping Cell's next message costs a cold start. While its line is down it peers.
  */
 import type { Activity } from "../cell/activity";
 import type { Mood } from "../cell/look";
@@ -13,6 +11,7 @@ import type { CellStatus } from "../upstream/status";
 const MOOD_BY_STATUS: Readonly<Record<CellStatus, Mood>> = {
   "Pending Approval": "needsApproval",
   "Awaiting Input": "needsYou",
+  "Guest Request": "needsYou",
   "Plan Ready": "needsYou",
   Failed: "crashed",
   Working: "awake",
@@ -30,12 +29,10 @@ export function moodOfStatus(status: CellStatus | null): Mood {
 export const CHEER_MS = 6_000;
 
 /**
- * The face at `now` for a chat in `status` whose last turn landed at
- * `landedAt` and whose prompt cache goes cold at `coldAt` (ms; null before a
- * turn has landed, undefined when nothing says when the cache goes cold).
- * While `lineDown` (its machine reconnecting or offline, its provider out:
- * `useCellLineDown`) it peers, whatever the chat last said: nothing it
- * shows can change until the line is back.
+ * The face at `now` for a chat in `status` whose last turn landed at `landedAt` and whose prompt
+ * cache goes cold at `coldAt` (ms; null before a turn lands, undefined when nothing says). While
+ * `lineDown` (machine reconnecting or offline, provider out: `useCellLineDown`) it peers, whatever
+ * the chat last said: nothing it shows can change until the line is back.
  */
 export function moodAt(
   status: CellStatus | null,

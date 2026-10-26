@@ -1,11 +1,8 @@
 /**
- * Where a new Cell lands (stemcells/tasks/aski-manager.md, decision 6): in
- * its project's tab, in whichever window holds it. A tab is the project of
- * its first pane. The Cell joins the project's tab used last that has room
- * for another column (300 px each, 4 panes at most). With none, it gets a
- * new tab after the project's tabs; a project with no tab, a new tab at the
- * end of the strip Aski's tab heads. Aski's tab never takes one, and
- * nothing comes to the front: the person stays where they are.
+ * Where a new Cell lands (stemcells/tasks/aski-manager.md, decision 6): the tab of its project
+ * (its first pane's) used last with room for another column (300 px each, 4 panes at most), in
+ * whichever window holds it; else a new tab after the project's, or at the strip's end. Aski's
+ * tab never takes one, and nothing comes to the front: the person stays where they are.
  */
 import { isAskiTab } from "./askiTab";
 import {

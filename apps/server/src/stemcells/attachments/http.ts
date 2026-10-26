@@ -18,21 +18,10 @@ import {
   type Stored,
 } from "./import.ts";
 
-// POST /api/stemcells/attachments/import: a file one chat shows, brought
-// into another chat's draft as an attachment of its own.
-//
-//   { from: { asset }, name? }       a file a chat shows, by the signed URL
-//                                    it was shown by: copied into a pending
-//                                    attachment, its id answered as JSON
-//   { from: { url }, as?, name? }    a public web address, fetched once:
-//                                    stored the same way, or, `as:
-//                                    "picture"`, its bytes answered (a
-//                                    picture's chip needs them in the page)
-//
-// A refusal answers 4xx or 5xx with `{ reason }`, a few words the chat
-// shows. A few imports run at once, the bytes waiting unsent in the store
-// have a ceiling, and an import stops, leaving nothing, when its caller
-// goes away.
+// POST /api/stemcells/attachments/import: a file a chat shows (`from.asset`, the signed URL it
+// was shown by) or a public address (`from.url`, fetched once), stored as a pending attachment
+// for another chat's draft; `as: "picture"` answers a fetched picture's bytes, as its chip needs
+// them in the page. A refusal answers `{ reason }`; an import whose caller goes leaves nothing.
 
 export const IMPORT_PATH = "/api/stemcells/attachments/import";
 const NO_STORE = { "cache-control": "private, no-store" };

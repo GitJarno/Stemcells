@@ -1,9 +1,7 @@
-// A scene on Aski's stage, as the page plays it: the canvas over the stage,
-// the worker that draws into it, and the few moments the page itself acts
-// at. A due scene is played once the stage is in sight; a
-// playing one fades the stage away under its canvas, says its line at its
-// moment, and fades the stage back as it ends. The page's code runs at those
-// moments alone: the worker draws every frame.
+// A scene on Aski's stage, as the page plays it: a canvas over the stage and the worker that
+// draws into it. A due scene plays once the stage is in sight, fading the stage out under it,
+// saying its line, and fading it back as it ends. The page's code runs at those moments alone:
+// the worker draws every frame.
 
 import { BODY_HEIGHT } from "../canon.ts";
 import { BODY_WIDTH, CELL_ASPECT, homeFit } from "../scene.ts";

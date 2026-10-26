@@ -59,13 +59,24 @@ export function workspaceKeyListeners(latest: () => WorkspaceKeyHandlers): {
   };
 }
 
-export function useWorkspaceKeys(handlers: WorkspaceKeyHandlers) {
+/** Under Settings or Usage the workspace stands down: every key goes through. */
+const STOOD_DOWN: WorkspaceKeyHandlers = {
+  newCell: () => false,
+  closeTab: () => false,
+  splitRight: () => false,
+  splitDown: () => false,
+  closePane: () => false,
+};
+
+export function useWorkspaceKeys(handlers: WorkspaceKeyHandlers, heard: boolean) {
   const latest = useRef(handlers);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Point the key listener at this render's handlers.
   useLayoutEffect(() => {
-    latest.current = handlers;
+    latest.current = heard ? handlers : STOOD_DOWN;
   });
   // A layout effect, so this capture listener is in place before any chat's
   // own (passive-effect) listeners and hears these keys first.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the window's keydown listeners; remove on unmount.
   useLayoutEffect(() => {
     const { onKeyDownCapture, onKeyDown } = workspaceKeyListeners(() => latest.current);
     window.addEventListener("keydown", onKeyDownCapture, true);

@@ -1,8 +1,7 @@
-// Replaces `features/threads/ComposerAttachmentButton.tsx` (`substitutes.cjs`):
-// T3's + opens Add to Chat (`attach/AttachCard.tsx`) in place of its menu,
-// wherever a composer has one. The + itself stays T3's: handed no files, it
-// is a plain button that asks for photos, and the card answers. A build
-// without the photo library's module (`attach/library.ts`) keeps T3's menu.
+// Replaces `features/threads/ComposerAttachmentButton.tsx` (`substitutes.cjs`): T3's + opens
+// Add to Chat (`attach/AttachCard.tsx`) in place of its menu. The + stays T3's: handed no files,
+// it is a plain button that asks for photos, and the card answers. A build without the photo
+// library's module (`attach/library.ts`) keeps T3's menu.
 import { useState } from "react";
 import { Keyboard } from "react-native";
 

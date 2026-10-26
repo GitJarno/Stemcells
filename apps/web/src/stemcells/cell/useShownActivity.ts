@@ -10,6 +10,7 @@ import { type Activity, ActivityHold } from "./activity.ts";
 export function useShownActivity(raw: Activity | undefined): Activity | undefined {
   const [hold] = useState(() => new ActivityHold());
   const [shown, setShown] = useState(raw);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hold the shown activity with a timer for its next change, cleared on change or unmount.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const look = () => {

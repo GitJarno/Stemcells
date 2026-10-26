@@ -14,13 +14,10 @@ import {
 import { threadReadLabelPrefix } from "./substitutes/MessagesTimeline.logic";
 
 /**
- * Contract: the work log names T3's own tools in Cell words. Every label a
- * person reads for one (a call as it runs, ends or fails, and the sentence a
- * run of them sums up to) says no T3, thread or agent. Upstream's views
- * build these from `@t3tools/shared/t3McpToolPresentation` and
+ * Contract: every work log label a person reads for T3's own tools says no T3, thread or agent.
+ * Upstream builds them from `@t3tools/shared/t3McpToolPresentation` and
  * `@t3tools/client-runtime/t3ToolSummary`, which the substitutes replace
- * (`stemcells/words/cellTools.ts`). If this fails after a sync, upstream
- * added or renamed a tool: give it Cell words there.
+ * (`stemcells/words/cellTools.ts`). If this fails after a sync, give the new tool Cell words.
  */
 
 const NOT_OUR_WORDS = /\bT3\b|thread|agent/i;

@@ -1,13 +1,8 @@
 /**
- * What a carry holds when it isn't a chat, a tab or a window: pictures,
- * videos and files, and stashed prompts, and whether a place takes them.
- *
- * A payload is references, never bytes: a composer's chip (its File names
- * bytes the page already holds, or the chip names an upload on its
- * machine), what a chat shows (by the file it names on its machine, signed
- * afresh when it lands, or by its web address), or a stash entry. Landing
- * (`land.ts`) makes copies with ids of their own; a move is a copy and the
- * source letting go.
+ * What a carry holds when it isn't a chat, a tab or a window: pictures, videos, files and stashed
+ * prompts, and whether a place takes them. A payload is references, never bytes: a composer's
+ * chip, what a chat shows (its file, signed afresh when it lands, or its web address), or a stash
+ * entry. Landing (`land.ts`) makes copies with ids of their own.
  */
 import { sameChat, type CellRef } from "../tabs/layout";
 import type { AssetResource, Chip, StashEntry } from "../upstream/payloads";

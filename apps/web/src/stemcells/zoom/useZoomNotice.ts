@@ -14,6 +14,7 @@ const view = (): ZoomView => ({
 
 /** Shows the zoom level whenever the page's zoom changes, however it was changed. */
 export function useZoomNotice(): void {
+  // oxlint-disable-next-line t3code/react-effect-budget -- Follow resizes and pixel-ratio changes to show the zoom level; remove listeners on unmount.
   useEffect(() => {
     const follow = followZoom(view());
     // A zoom is a resize; a browser's also moves the pixel ratio, which may

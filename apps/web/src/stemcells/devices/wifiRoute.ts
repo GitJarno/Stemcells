@@ -1,14 +1,10 @@
 import type { AdvertisedEndpoint } from "../upstream/devices";
 
 /**
- * The Wi-Fi way a phone reaches this machine, for a person without
- * Tailscale (stemcells/tasks/devices.md), read from the routes the desktop
- * app advertises:
- * - `ready`: the local network address the code points at.
- * - `off`: none, until Network access adds one.
- * - `loading`: the desktop app hasn't said yet.
- * - `unreachable`: a browser on this machine's own loopback address.
- * A browser elsewhere is `ready` at its own page's origin.
+ * The Wi-Fi way a phone reaches this machine without Tailscale (stemcells/tasks/devices.md), from
+ * the desktop app's advertised routes: `off` until Network access adds a local address, `loading`
+ * until the desktop app says. A browser elsewhere is `ready` at its own page's origin; one on this
+ * machine's own loopback address is `unreachable`.
  */
 export type WifiRoute =
   | { readonly kind: "ready"; readonly baseUrl: string }

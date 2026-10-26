@@ -1,9 +1,7 @@
 /**
- * Upstream's media as the media viewer reads it: what a chat shows as
- * pictures and videos (its timeline's messages, their attachments and the
- * media their markdown embeds), how a click opens one, and the pieces that
- * draw one (the video player, the media's context menu, asset URLs).
- * `media.contract.test.ts` pins what the viewer relies on.
+ * Upstream's media as the media viewer reads it: a chat's pictures and videos (its messages,
+ * their attachments and embedded markdown media), how a click opens one, and the pieces that
+ * draw one (video player, context menu, asset URLs). `media.contract.test.ts` pins them.
  */
 import { useAtomValue } from "@effect/atom-react";
 import { resolveMediaSource } from "@t3tools/client-runtime/media-source";
@@ -119,11 +117,9 @@ export interface MarkdownText {
 }
 
 /**
- * One of a chat's pictures or videos. An attachment also says where it sits
- * (`at`: its message and its place among the attachments), which stays the
- * same while its URL and stored id don't: a sending picture's blob becomes
- * the stored file's URL, the server gives it its stored id, and the URL is
- * re-signed now and then.
+ * One of a chat's pictures or videos. An attachment also says where it sits (`at`: its message
+ * and place among its attachments), which holds while its URL and stored id change: a sending
+ * picture's blob becomes the stored file's URL, it gets its stored id, and URLs are re-signed.
  */
 export interface ChatMedia {
   readonly item: MediaItem;

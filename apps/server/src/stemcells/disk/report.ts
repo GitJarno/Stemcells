@@ -10,11 +10,10 @@ import {
 import type { DiskMap } from "./walk.ts";
 import { diskBytes } from "../../../../../stemcells/words/disk.ts";
 
-// What `stemcells_disk_report` hands the cleanup Cell: the last measurement,
-// each finding's paths with their sizes. Evidence for proposing, never
-// permission to delete: the disk keeps changing under other apps and Cells,
-// so the report says to check each item again right before removing it, and
-// how.
+// What `stemcells_disk_report` hands the cleanup Cell: the last measurement, each finding's
+// paths with their sizes. Evidence for proposing, never permission to delete: the disk keeps
+// changing under other apps and Cells, so the report says to check each item again right before
+// removing it, and how.
 
 /** The measurement as the Cell reads it: facts, never verdicts. */
 export function diskReport(map: DiskMap, machine: string, zone?: string): string {

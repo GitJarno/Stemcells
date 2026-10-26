@@ -1,20 +1,8 @@
 /**
- * How a lit surface can be seen, so its light costs what that needs and no
- * more. A wave costs the display a frame each time it moves, seen or not.
- *
- * - `hidden`: no one can see it move. Its window is minimised, hidden or
- *   fully covered (Chromium's occlusion hides the page), or the surface is
- *   off screen: the tab pager keeps a tab's neighbours mounted beside the
- *   window. The light holds, and rejoins the beat where the beat is.
- * - `unfocused`: the window shows, but another app has the focus, as when
- *   it stands beside an editor. The light keeps moving, as a frozen wave
- *   reads as a stalled Cell, but steps on the Cells' sprite clock, twelve
- *   times a second, on the same beat.
- * - `focused`: the window is the one in use and the surface is on screen.
- *
- * The window counts as in use while its page or anything inside it (a
- * browser pane's page) has focus: a `blur` is checked once focus has
- * landed, so moving into a frame of the window's own is no blur.
+ * How a lit surface can be seen, so its light costs no more than that needs: `hidden` (window
+ * minimised or covered, or surface off screen) holds it; `unfocused` (another app has focus)
+ * steps it on the sprite clock, as a frozen wave reads as a stalled Cell; `focused` runs it.
+ * A `blur` is checked once focus lands, so focus moving into the window's own frame is no blur.
  */
 
 export type Sight = "hidden" | "unfocused" | "focused";

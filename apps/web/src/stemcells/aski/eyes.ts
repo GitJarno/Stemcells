@@ -1,15 +1,7 @@
-// Aski's eyes at rest, which are theater: they blink on the wall clock, so
-// every place that shows Aski blinks together, and they follow the caret
-// while you type to Aski, else the pointer while it moves over Aski's
-// place, letting go a while after it stops or as soon as it leaves; while
-// Aski answers it thinks, its eyes resting up and a little to the left
-// without a blink; eyes wearing a mood hold it without a blink. They never
-// blink like a cursor: what waits on the person shows in the cards, and a
-// beat a second at the edge of sight tires the eye. The figure draws each eye on layers of its own (stage/figure.ts); a blink squashes
-// them toward a sliver and a look moves them in whole device pixels, both
-// by transform alone, so none draws Aski again.
-// Under Reduce Motion the eyes don't blink, and they cut to where they look
-// (aski.css).
+// Aski's eyes blink on the wall clock, so every place that shows Aski blinks together, but
+// never like a cursor: a beat a second at the edge of sight tires the eye. A blink or a look
+// is a transform of the eye layers (stage/figure.ts), in whole device pixels, so none draws
+// Aski again. Under Reduce Motion they don't blink and cut to where they look (aski.css).
 
 import { clockSeconds } from "../cell/blink.ts";
 import { reducedMotion } from "../tokens/motion.ts";
@@ -119,14 +111,10 @@ export interface Looking {
 }
 
 /**
- * The eyes follow the caret of Aski's field while it has the keyboard, else
- * the pointer over Aski's place: the nearest element marked
- * `data-aski-looks` around the figure, else the figure itself. They look
- * all the way toward a point a figure's height away or more, and part way
- * toward one nearer; the caret and the pointer let them go `HOLD` after
- * they last moved, the pointer at once as it leaves. With neither, the eyes
- * look up and a little to the left while Aski thinks, else ahead; Aski
- * beginning to think lets the caret go.
+ * The eyes follow the caret of Aski's field while it has the keyboard, else the pointer over
+ * the nearest `data-aski-looks` around the figure; each lets go `HOLD` after it last moved,
+ * the pointer at once as it leaves. With neither, they look up and to the left while Aski
+ * thinks, else ahead; Aski beginning to think lets the caret go.
  */
 export function looking(
   figure: HTMLElement,

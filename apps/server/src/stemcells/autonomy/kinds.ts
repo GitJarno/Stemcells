@@ -24,12 +24,10 @@ export const BOUNDARY =
   "Stop and ask me before anything final: a deploy, a merge, a release, deleting something, or spending or sending anything.";
 
 /**
- * A card whose own ask is plainly final stays the person's, boundary or
- * not: a deploy, a merge or a landing, a release, a forced or main-branch
- * push, a deletion of what isn't code, an install of the app, money spent,
- * or a message sent. Only the ask is read (a Cell's stop, a plan, what a
- * retry repeats), not the whole run, whose code and talk name these words
- * in passing ("the merge conflicts", "the deployment docs").
+ * A card whose own ask is plainly final stays the person's, boundary or not: a deploy, a
+ * merge or landing, a release, a forced or main-branch push, deleting what isn't code, an
+ * app install, money spent, or a message sent. Only the ask is read, not the whole run,
+ * whose code and talk name these words in passing ("the merge conflicts").
  */
 const FINAL = new RegExp(
   [

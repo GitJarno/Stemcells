@@ -1,12 +1,7 @@
-// What a Cell wears, dealt from the packs (`kit/packs.json` and `art/packs/`):
-// one item of the outfit theme the person picked (the house theme until
-// they do) and, in a season while Seasons is on, one of that season's. An
-// item is an outfit, dealt as one in one of its colourways, where the pack
-// has outfits, and a piece where it has none. The season's item is dealt
-// first, being the day's; the theme's takes the slots it leaves free. Dealt
-// by codename over the crew in view, no two alike while the catalogue
-// lasts, and a Cell keeps its look while it stays in view. Pure; the deal is
-// tested from fixtures/looks.json.
+// What a Cell wears, dealt from the packs (`kit/packs.json`, `art/packs/`): one item of the
+// person's outfit theme and, in a season while Seasons is on, one of that season's, dealt
+// first. Dealt by codename over the crew in view, no two alike while the catalogue lasts; a
+// Cell keeps its look while it stays in view. Pure; the deal is tested from fixtures/looks.json.
 
 import { type Pack, type PackOutfit, PACKS, type Slot } from "./kit.ts";
 
@@ -178,16 +173,10 @@ function parse(id: string): { theme: string; item: Item; colourway: string } | u
 }
 
 /**
- * What each Cell of a crew wears on `day` (`2027-02-06`, or a month-day) in
- * `dress`, as ids, the Cells given in the order they took their seats, the
- * first-born first. Each theme worn is dealt in turn, the season's first
- * (`themesOn`). In each, a Cell `kept` names keeps what it was dealt there
- * while it still fits. Each other Cell takes the first item in
- * its own order that fits the slots it has free and whose silhouette and
- * colour family no other Cell wears; past those (and for pieces, which name
- * neither), the first among those held least. An outfit worn twice takes a
- * colourway the other doesn't. With nothing kept the deal is the crew's own,
- * the same on every screen.
+ * What each Cell of a crew wears on `day` (`2027-02-06`, or a month-day) in `dress`, as ids,
+ * Cells in seat order; themes dealt in turn, the season's first. A Cell `kept` names keeps its
+ * item while it fits; each other takes the first that fits its free slots in a silhouette and
+ * colour family no one else wears, else the least held. Nothing kept, every screen agrees.
  */
 export function looksOf(
   codenames: readonly string[],

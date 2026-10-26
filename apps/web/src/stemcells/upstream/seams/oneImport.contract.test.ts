@@ -1,13 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's hot files on disk.
 /**
- * Contract: each of upstream's hot files we edit reads everything of ours
- * through one import, on its first line, from its own module in this
- * folder: `import * as Stemcells from "…/stemcells/upstream/seams/<File>"`.
- * Upstream edits its import blocks all day, and our import lines there were
- * where the 2026-10-21 sync conflicted; it rarely edits a file's first line.
- * If this fails, a change added a second import of ours to a hot file: add
- * the name to the file's module here instead (`stemcells/seams.md`, "One
- * import per hot file").
+ * Contract: each upstream hot file we edit reads all of ours through one import on its first
+ * line: `import * as Stemcells from "…/stemcells/upstream/seams/<File>"`. Upstream edits import
+ * blocks all day but rarely a first line, so a second name goes in the file's module here
+ * (`stemcells/seams.md`, "One import per hot file").
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";

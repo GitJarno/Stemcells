@@ -1,10 +1,8 @@
 /**
- * How the person's work with Cells goes, week by week, worked out from T3's
- * own records (`upstream/arcs.ts`), so it reaches back to the first run on
- * this server and keeps nothing of its own (stemcells/tasks/aski-forward.md, "Measured from
- * T3's own records"). The measures say what Cells give the person: longer
- * flights between their turns, fewer of their turns per Cell, asks they
- * answer in one move, answered sooner. Pure.
+ * How the person's work with Cells goes, week by week, from T3's own records
+ * (`upstream/arcs.ts`), so it reaches back to the first run on this server and keeps nothing of
+ * its own (stemcells/tasks/aski-forward.md). Measures: longer flights between the person's
+ * turns, fewer of their turns per Cell, asks answered in one move and sooner. Pure.
  */
 import * as DateTime from "effect/DateTime";
 

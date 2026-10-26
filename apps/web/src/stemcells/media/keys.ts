@@ -1,9 +1,8 @@
 /**
- * What a key does while the viewer is open. The viewer hears every key
- * before the rest of the app (`viewerHearsFirst`), so a key it takes never
- * reaches the chat behind it (Esc there would stop a Cell), the video (whose
- * arrows would seek) or the app's shortcuts: while it is up, the workspace's
- * and the chat's shortcuts stand down.
+ * What a key does while the viewer is open. The viewer hears every key first
+ * (`viewerHearsFirst`), so a key it takes never reaches the chat behind it (Esc there would
+ * stop a Cell), the video (whose arrows would seek) or the app's shortcuts, which stand down
+ * while it is up.
  */
 
 export type ViewerKey =

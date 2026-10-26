@@ -1,13 +1,8 @@
 /**
- * What Subcells rely on in upstream's views (`stemcells/seams.md`, Subcells).
- * A turn's subagents are Subcells: the card that groups them says "2
- * Subcells", and each one, in the card's header and its rows and in a
- * workflow's members, is drawn as a Cell of its own (`SubcellMark`) where
- * upstream drew its provider's logo, dealt by its thread's id, its face its
- * status: in the card's header too, where upstream gives the avatars of two
- * or more none, to keep their dots off. A failure
- * here after a sync names the line that moved: say Subcell there again, or
- * hand the avatar its Subcell again.
+ * What Subcells rely on in upstream's views (`stemcells/seams.md`, Subcells): the card grouping
+ * a turn's subagents says "2 Subcells", and each one, in the card's header and rows and in a
+ * workflow's members, is a Cell (`SubcellMark`) where upstream drew a logo, its face its status.
+ * A failure after a sync names the line that moved: say Subcell, or give the avatar back.
  */
 import { describe, expect, it } from "vite-plus/test";
 

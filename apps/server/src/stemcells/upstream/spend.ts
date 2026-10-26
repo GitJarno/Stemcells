@@ -1,9 +1,8 @@
 /**
- * What Settings › Lineage's spend takes from upstream: the tokens each
- * provider turn reported, as the orchestrator stores them on the turn
- * (`turnTokenUsage`, the main agent's), the model its run asked for, and the
- * usage page's price table and the person's price settings. Read only:
- * nothing here writes, and no transcript is opened.
+ * What Settings › Lineage's spend takes from upstream: each provider turn's tokens as the
+ * orchestrator stores them (`turnTokenUsage`, the main agent's), the model its run asked for,
+ * the usage page's price table and the person's price settings. Read only: nothing here
+ * writes, and no transcript is opened.
  */
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";

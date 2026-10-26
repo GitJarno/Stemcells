@@ -1,10 +1,7 @@
 /**
- * What the composer's light relies on in upstream: where it sits in the
- * composer, what it reads there (the glass's colour, the send button) and
- * which providers upstream draws a mark for; and the outline the focused
- * pane's plate steps up. A failure here after a sync names the contract
- * that moved; the light is likely in the wrong place, off its button, or
- * wearing the wrong colour, or the focused pane no longer shows.
+ * What the composer's light relies on in upstream: where it sits in the composer, what it reads
+ * there (the glass's colour, the send button), which providers get a mark, and the outline the
+ * focused pane's plate steps up. A failure after a sync names the contract that moved.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -36,7 +33,7 @@ describe("the composer light's contracts with upstream", () => {
     // under the words only because the surface stacks its children.
     const main = body(composerSurface, "Main");
     expect(main).toContain('data-chat-composer-main-surface="true"');
-    expect(main).toMatch(/"group relative z-10 rounded-3xl p-px"/);
+    expect(main).toMatch(/"group relative z-10 rounded-2xl p-px"/);
     expect(main).toContain("{...props}");
   });
 

@@ -5,16 +5,10 @@ import * as NodeFSP from "node:fs/promises";
 import * as NodePath from "node:path";
 
 /**
- * Which account a Claude instance is signed in to, read cheaply and only
- * while one of its Cells is stopped by a limit.
- *
- * Claude Code keeps its login in the macOS keychain (elsewhere, in
- * `.credentials.json` in its config folder). The item's modification date
- * moves when the person signs in, and also when Claude refreshes its token,
- * so a moved date only says to look again: `claude auth status --json`
- * then says who is signed in. That account is kept as a hash, never the
- * email, and the secret itself is never read: `security` is asked for the
- * item's attributes only (no `-w`, no `-g`).
+ * Which account a Claude instance is signed in to, read only while one of its Cells is stopped.
+ * The login's modification date (macOS keychain, else `.credentials.json`) also moves when Claude
+ * refreshes its token, so a moved date only says to ask `claude auth status --json`. The account
+ * is kept as a hash, never the email; the secret is never read (no `-w` or `-g` to `security`).
  */
 
 /** How a Claude instance runs: the CLI and the environment its Cells get. */

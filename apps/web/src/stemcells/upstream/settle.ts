@@ -1,14 +1,8 @@
 /**
- * Settling a Cell the way upstream's sidebar does: its settle command, and
- * the "Settled" notice with Undo it shows (`useThreadActions`), so Undo
- * puts back what the Cell had, its pin and snooze included. Through our
- * substitute, as the sidebar's goes, so the Cell's pane closes for it.
- *
- * Settle works from any stage (stemcells/tasks/left-column.md, decision 2):
- * upstream refuses to settle a thread that runs or waits on an answer, so a
- * Cell at work is stopped first, and settles once its run has ended. A
- * queued message still refuses, with upstream's words: those are the
- * person's own, not ours to drop.
+ * Settles a Cell as upstream's sidebar does, via our substitute so its pane closes, with the
+ * "Settled" notice whose Undo restores its pin and snooze. From any stage
+ * (stemcells/tasks/left-column.md, decision 2): upstream refuses a thread that runs or waits on
+ * an answer, so a Cell at work stops first. A queued message still refuses: it's the person's.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { runAtomCommand } from "@t3tools/client-runtime/state/runtime";

@@ -25,21 +25,10 @@ import { useRosterLook } from "./roster";
 const POINTS = 1;
 
 /**
- * A chat's Cell, small: its look dealt by the chat's thread id with the crew
- * in view (`roster.ts`; a draft keeps it once sent), its face from the chat's
- * status, the "?" over it while it waits on you, peering while its line is
- * down, in its provider's colours.
- * While the chat works it acts out the call in flight, and meditates once its
- * thought goes deep; when a turn lands it cheers, then rests, and sleeps once
- * the chat's prompt cache has gone cold. It grows from the time it has worked
- * alone, and flexes for a landing after a long run alone; as its cheer
- * starts, the lines its run added and removed rise as a + and a −.
- * Its box holds all of it, hats too, so centring the box centres the whole
- * Cell. Drawn `points` a sprite pixel; small beside a label unless told.
- * Given a `stage` (room at its right, as on the composer), its Subcells at
- * work stand there as its buds, those in the background too, each its own
- * Cell; the box stays its own, and a Cell starting there forms in it
- * (`cell/forming.ts`).
+ * A chat's Cell, small: its look dealt by thread id with the crew in view (`roster.ts`; a draft
+ * keeps it once sent), its face and acts from the chat's status. Its box holds all of it, hats
+ * too, so centring the box centres the Cell; `points` is a sprite pixel. Given a `stage`, its
+ * Subcells at work stand at its right as buds, and a Cell starting there forms in its box.
  */
 export function CellMark(props: { cell: CellRef | null; points?: number; stage?: boolean }) {
   const status = useCellStatus(props.cell);
@@ -60,6 +49,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
   const mood = moodAt(status, landedAt, coldAt, now, useCellLineDown(props.cell));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Rerender when the mood next turns; clear the timer on change.
   useEffect(() => {
     if (turnsAt === undefined) return;
     const timer = setTimeout(() => setNow(Date.now()), Math.max(0, turnsAt - Date.now()));

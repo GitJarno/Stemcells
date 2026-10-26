@@ -1,11 +1,9 @@
 import type { ContextWindowSnapshot } from "../upstream/compaction";
 
 /**
- * A chat's context as the meter shows it: against where the chat compacts,
- * when its provider says (`autoCompactThreshold`), so the ring is full when
- * it compacts. A Claude Cell under a 500k window on a 1M model fills toward
- * 467k, not 1M. Otherwise as upstream measures it, against the model's
- * whole context.
+ * A chat's context against where it compacts, when its provider says (`autoCompactThreshold`),
+ * so the ring is full as it compacts: a Claude Cell under a 500k window on a 1M model fills
+ * toward 467k. Otherwise as upstream measures it, against the model's whole context.
  */
 export function towardCompaction(usage: ContextWindowSnapshot): ContextWindowSnapshot {
   const compactsAt = usage.autoCompactThreshold;

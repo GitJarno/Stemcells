@@ -1,10 +1,8 @@
 /**
- * The project a new chat starts in when no chat on screen gives it one:
- * upstream's first project (`useHandleNewThread`'s `defaultProjectRef`), the
- * sidebar's first. Upstream counts the scratch project among them, though
- * the sidebar shows none: Aski's chat opens it at the first launch
- * (`aski.ts`), so on a fresh install it comes first, and every new chat
- * would start in no project. Past it, the first project there is.
+ * The project a new chat starts in when no chat on screen gives one: upstream's first
+ * (`useHandleNewThread`'s `defaultProjectRef`), the sidebar's first, past the scratch project.
+ * Upstream counts the scratch project, which the sidebar hides and Aski's chat opens at first
+ * launch (`aski.ts`), so on a fresh install every new chat would start in no project.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId, ProjectId, ScopedProjectRef } from "@t3tools/contracts";
@@ -34,10 +32,9 @@ export function pastScratch(
 }
 
 /**
- * Upstream's `isScratchProject`, read without its module: that one
- * re-exports the project commands, whose connection layer loads with it, and
- * this file loads with every new chat (`substitutes/chatThreadActions.ts`),
- * in upstream's own tests of the new chat too. `firstProject.test.ts` holds
+ * Upstream's `isScratchProject`, read without its module: that one re-exports the project
+ * commands and loads their connection layer, and this file loads with every new chat
+ * (`substitutes/chatThreadActions.ts`), in upstream's tests too. `firstProject.test.ts` holds
  * the two to the same answers.
  */
 export function isScratchWorkspace(

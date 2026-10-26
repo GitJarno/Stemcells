@@ -57,6 +57,7 @@ export function Hops(props: { standings: Standings; environmentId: string | null
   const [flights, setFlights] = useState<ReadonlyArray<Flight>>([]);
   const { standings, environmentId } = props;
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Measure the rows before paint to launch hop flights for Cells whose stage changed.
   useLayoutEffect(() => {
     const previous = before.current;
     before.current = standings;
@@ -101,6 +102,7 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
   const element = useRef<HTMLSpanElement>(null);
   const landed = useEffectEvent(props.onLanded);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Run the hop animation from measured rects, hiding its landing place until it lands; cancel on unmount.
   useLayoutEffect(() => {
     const sprite = element.current;
     if (sprite === null) return;

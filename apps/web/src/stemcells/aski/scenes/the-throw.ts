@@ -1,10 +1,7 @@
-// Aski's part of a spawn (stemcells/docs/interaction.md, The spawn). The words
-// pour in and orbit, and the streams go out to the panes; Aski only watches
-// and throws. `theWait` is in and around: its eyes look down at the words
-// coming from the composer, then ride their orbit. `theThrow` is out: a pulse
-// for each stream as it leaves, its eyes on that stream's pane, and `^ ^`
-// once the last one is away. The times are the motion tokens, read by the
-// page and handed in, in seconds.
+// Aski's part of a spawn (stemcells/docs/interaction.md, The spawn): it only watches and throws.
+// `theWait`: its eyes follow the words in from the composer and round their orbit. `theThrow`:
+// a pulse per stream as it leaves, eyes on its pane, and `^ ^` once the last is away. The times
+// are the motion tokens, read by the page and handed in, in seconds.
 
 import { blinkAt } from "../acts.ts";
 import { BODY_HEIGHT } from "../canon.ts";

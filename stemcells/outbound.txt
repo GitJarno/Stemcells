@@ -28,6 +28,8 @@ host platform.openai.com doc links in the generated Codex schema
 host developers.openai.com a comment citing image-cost docs
 host platform.claude.com a comment citing vision docs
 host www.w3.org XML and SVG namespaces
+host schemas.openxmlformats.org Office XML namespaces the document preview matches
+host www.idpf.org the EPUB package namespace the document preview matches
 host json-schema.org the $schema id of t3.json
 host www.apple.com the plist DTD id in a generated plist
 host tailwindcss.com the license comment in generated CSS
@@ -38,7 +40,6 @@ host moonbase.tail9f3a.ts.net made-up showcase rows on the phone
 host aurora-gpu.t3.sh made-up showcase rows on the phone
 host pocket-pi.t3.sh made-up showcase rows on the phone
 host suspense-vps.hel1.t3.sh made-up showcase rows on the phone
-host t3.chat an example url in the preview tool's description
 
 # Links a person opens in their own browser.
 host app.t3.codes T3's hosted app: T3 Connect's sign-in page and hosted pairing and prompt links, used only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
@@ -71,8 +72,6 @@ host codeberg.org the person's Forgejo
 host gitea.com the person's Forgejo
 host bitbucket.org the person's Bitbucket
 host api.bitbucket.org asked only when a Bitbucket token is configured
-host dev.azure.com the person's Azure DevOps
-host git.cafe the person's GitCafe
 
 # The providers the person signs in to, for their sign-in, models and limits.
 host api.anthropic.com Claude credits and usage limits

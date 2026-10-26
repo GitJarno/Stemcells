@@ -155,10 +155,9 @@ interface PlanSource {
 }
 
 /**
- * The composer reads what is typed into a new chat. It joins the editor
- * that wears `anchor` with the ink plugin, keeps the draft in step with
- * the words (`driver.ts`), opens a read word's menu, reads several Cells
- * back (`Readout`), and makes the text what is sent (`send.ts`). A sent
+ * The composer reads what is typed into a new chat: it joins the editor wearing `anchor` to the
+ * ink plugin, keeps the draft in step with the words (`driver.ts`), opens a read word's menu,
+ * reads several Cells back (`Readout`) and makes the text what is sent (`send.ts`). A sent
  * chat's composer reads nothing: its words set nothing up.
  */
 export function ComposerWords(props: { readonly anchor: string }) {
@@ -202,6 +201,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     if (draftId !== null) showPlaces(draftId, places);
   };
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the editor plugin's ref sources the latest settings and re-read the words before paint.
   useLayoutEffect(() => {
     current.current = setting;
     starting.current = startCells;
@@ -215,6 +215,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     const editor = joined.current?.editor;
     if (editor && !editor.isDestroyed) refreshWords(editor.view);
   }, [setting, startCells, draftId, catalog, places, members]);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the planner's inputs current for callbacks the editor plugin calls outside render.
   useLayoutEffect(() => {
     planSource.current = { model: thinker, pools, recency, members };
   });
@@ -286,6 +287,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
   // render looks for the one wearing the anchor now. It is mounted by the
   // time this runs: it renders first, and effects run in that order.
   // Once its draft is sent, the composer lets go of the words.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Join the editor wearing the anchor to the ink plugin and driver, leaving the one it replaced.
   useEffect(() => {
     const element = document.querySelector<TiptapEditorHTMLElement>(`.${props.anchor}`);
     const editor = current.current === null ? null : (element?.editor ?? null);
@@ -317,6 +319,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     joined.current = { editor, driver };
   });
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Leave the joined editor and clear the hero's places when the composer unmounts.
   useEffect(
     () => () => {
       leave(joined.current);
@@ -328,6 +331,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
   );
 
   // A pick in the hero or a picker changes what the readout fills in.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to the draft store so a pick re-reads the words, unsubscribing on change.
   useEffect(() => {
     if (draftId === null) return;
     return subscribeDraft(draftId, () => {
@@ -339,6 +343,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
   // The composer says how many Cells Send starts, and the effort picker
   // makes way for the readout (`words.css`). Upstream re-renders its controls,
   // so every render marks them again; leaving takes the marks off.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mark upstream's composer controls with the readout after each render, as upstream redraws them.
   useEffect(() => {
     const view = joined.current?.editor.view;
     if (view && !view.isDestroyed) markComposer(view.dom, readout);
@@ -367,6 +372,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
     planning.current = null;
     readBack(view);
   });
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for the keys that drop a shown plan, removing the listener once it goes.
   useEffect(() => {
     if (!planShown) return;
     const drop = (event: KeyboardEvent) => dropPlan(event);
@@ -375,6 +381,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
   }, [planShown]);
 
   // The menu closes on Esc, a click elsewhere, and typing (above).
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for Esc and outside presses while a word's menu is open, removing them on close.
   useEffect(() => {
     if (menu === null) return;
     const close = (event: Event) => {
@@ -414,11 +421,10 @@ export function ComposerWords(props: { readonly anchor: string }) {
   };
 
   /**
-   * Sends the draft's own Cell what `write` makes of its text and, once it
-   * has started, the Cells `besides` it, each in its project's tab. Several
-   * Cells play the spawn from the words as they stand; a Cell with no spawn
-   * to come from forms on its line. The text comes back if nothing went.
-   * Returns what to do once upstream's send settles.
+   * Sends the draft's own Cell what `write` makes of its text and, once it has started, the
+   * Cells `besides` it, each in its project's tab. Several Cells play the spawn from the words;
+   * a Cell with no spawn forms on its line. The text comes back if nothing went. Returns what
+   * to do once upstream's send settles.
    */
   const sendCells = (
     view: EditorView,
@@ -635,6 +641,7 @@ export function ComposerWords(props: { readonly anchor: string }) {
   // it comes back if nothing went. When the words start several Cells, the
   // rest start once the draft's has, each in its project's tab. Nothing is
   // sent when the words were only setup.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Register the words' before-send hook in upstream's send slot, unregistering on change.
   useEffect(() => {
     if (sendSlot === null) return;
     const beforeSend: BeforeSend = (intent) => {
@@ -713,10 +720,12 @@ export function ComposerWords(props: { readonly anchor: string }) {
     if (view && placed) openMenu(view, placed, menuAtRect(rect, view.dom.getBoundingClientRect()));
   };
   const fromReadout = useRef(openFromReadout);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the readout's word callback current behind its stable handler.
   useEffect(() => {
     fromReadout.current = openFromReadout;
   });
   const [onWord] = useState(() => (mark: Span, rect: DOMRect) => fromReadout.current(mark, rect));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the readout to the controls row's slot and take it back on change or unmount.
   useEffect(() => {
     if (readoutSlot === null || readout === null) return;
     readoutSlot({ readout, drivers, onWord });

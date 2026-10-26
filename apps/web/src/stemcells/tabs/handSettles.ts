@@ -1,10 +1,8 @@
 /**
- * The settles the person sent from this device. Upstream's auto-settle (a
- * merged pull request, a quiet day) leaves a thread just as the person's
- * Settle does (`settledOverride: "settled"`), so the thread can't tell a
- * pane which it was. Each settle the person sends leaves its mark here
- * first, kept in local storage so every window of the app hears it, and a
- * pane leaves only for a settle whose mark is fresh (`settled.ts`).
+ * The settles the person sent from this device. Upstream's auto-settle (a merged pull request, a
+ * quiet day) leaves a thread just as Settle does, so the thread can't tell a pane which it was.
+ * Each settle the person sends marks it here first, in local storage so every window hears it,
+ * and a pane leaves only for a settle whose mark is fresh (`settled.ts`).
  */
 import { useSyncExternalStore } from "react";
 

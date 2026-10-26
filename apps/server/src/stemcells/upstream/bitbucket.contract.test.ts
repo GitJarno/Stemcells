@@ -1,26 +1,23 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
-import * as BitbucketApi from "@t3tools/source-control-bitbucket/server/BitbucketApi";
 import * as ConfigProvider from "effect/ConfigProvider";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import { HttpClient, HttpClientResponse } from "effect/http";
 
 import * as ServerSettings from "../../serverSettings.ts";
-import * as ServerSourceControlHost from "../../sourceControl/ServerSourceControlHost.ts";
+import * as SourceControlDrivers from "../../sourceControl/builtInDrivers.ts";
 import * as GitVcsDriver from "../../vcs/GitVcsDriver.ts";
 import * as VcsDriverRegistry from "../../vcs/VcsDriverRegistry.ts";
 import * as VcsProcess from "../../vcs/VcsProcess.ts";
 
-// Contract: source control discovery asks Bitbucket who is signed in only
-// when a Bitbucket token is configured. Without one the answer is
-// "unauthenticated" either way, and the request would only tell Atlassian
-// the app is running, each time the command palette opens. If this fails
-// after a sync, the probe is sent without a token again.
+// Contract: source control discovery (the server's drivers, as the command palette reads
+// them) asks Bitbucket who is signed in only when a Bitbucket token is configured. Without
+// one the answer is "unauthenticated" anyway, and the request would only tell Atlassian the
+// app is running each time the palette opens. If this fails, the tokenless probe is back.
 
 const layerWith = (requests: Array<{ url: string; authorization: string | undefined }>) =>
-  BitbucketApi.layer.pipe(
-    Layer.provide(ServerSourceControlHost.layer),
+  SourceControlDrivers.layer.pipe(
     Layer.provide(Layer.mock(VcsProcess.VcsProcess)({})),
     Layer.provide(Layer.mock(VcsDriverRegistry.VcsDriverRegistry)({})),
     Layer.provide(Layer.mock(GitVcsDriver.GitVcsDriver)({})),
@@ -43,7 +40,12 @@ const layerWith = (requests: Array<{ url: string; authorization: string | undefi
 it.effect("Bitbucket's sign-in is asked only with a token, and without one nothing is sent", () => {
   const requests: Array<{ url: string; authorization: string | undefined }> = [];
   return Effect.gen(function* () {
-    const bitbucket = yield* BitbucketApi.BitbucketApi;
+    const drivers = yield* SourceControlDrivers.SourceControlDrivers;
+    const discovery = drivers.find((entry) => entry.driver.kind === "bitbucket")?.instance
+      .discovery;
+    assert.strictEqual(discovery?.type, "api");
+    if (discovery?.type !== "api") return;
+    const bitbucket = discovery;
     const settings = yield* ServerSettings.ServerSettingsService;
 
     assert.strictEqual((yield* bitbucket.probeAuth).status, "unauthenticated");
@@ -57,5 +59,5 @@ it.effect("Bitbucket's sign-in is asked only with a token, and without one nothi
     assert.deepStrictEqual(requests, [
       { url: "https://api.bitbucket.org/2.0/user", authorization: "Bearer saved-access-token" },
     ]);
-  }).pipe(Effect.provide(layerWith(requests)));
+  }).pipe(Effect.provide(layerWith(requests)), Effect.scoped);
 });

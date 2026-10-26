@@ -7,7 +7,7 @@ import {
   SettingsRow,
   Spinner,
   toastManager,
-  useRelativeTimeTick,
+  useNowMinuteMs,
 } from "../upstream/disk";
 import { requestConfirmDialog, useComputers, useRemoveComputer } from "../upstream/devices";
 import {
@@ -20,11 +20,10 @@ import {
 } from "../upstream/machines";
 import { Switch } from "../upstream/settings";
 
-// Settings › Devices, the computers (stemcells/tasks/devices.md): the ones
-// this app reaches, the way to forget each, and whether this one's Cells and
-// theirs see each other (stemcells/tasks/peers.md, "Across environments").
-// A link is made here, both ways in one action; ended here or from the other
-// computer, it ends on both.
+// Settings › Devices, the computers (stemcells/tasks/devices.md): the ones this app reaches, the
+// way to forget each, and whether this one's Cells and theirs see each other
+// (stemcells/tasks/peers.md, "Across environments"). A link is made here, both ways in one
+// action; ended here or from the other computer, it ends on both.
 
 /** How often the links are read again while the page shows: when each computer last answered. */
 const READ_EVERY_MS = 30_000;
@@ -66,12 +65,13 @@ export function ComputerRows({ alone }: { readonly alone: boolean }) {
   const hereOnNetwork = usePrimaryNetworkAddress();
   // What the other computer's Cells will call this one.
   const hereLabel = useMachineLabel(primaryId) ?? "This app's computer";
-  const nowMs = useRelativeTimeTick(READ_EVERY_MS);
+  const nowMs = useNowMinuteMs();
   const [links, setLinks] = useState<ReadonlyArray<MachineLink> | null>(null);
   const [kinds, setKinds] = useState<Readonly<Record<string, Kind>>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const othersKey = others.map((other) => other.environmentId).join(" ");
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Poll this computer's links; stop the timer on unmount.
   useEffect(() => {
     if (primaryId === null) return;
     let live = true;
@@ -87,6 +87,7 @@ export function ComputerRows({ alone }: { readonly alone: boolean }) {
     };
   }, [primaryId]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Ask each other computer if it runs Stemcells; drop stale answers.
   useEffect(() => {
     let live = true;
     for (const environmentId of othersKey.split(" ").filter(Boolean)) {

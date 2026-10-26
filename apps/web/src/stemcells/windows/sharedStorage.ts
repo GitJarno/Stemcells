@@ -1,8 +1,7 @@
 /**
- * Keeps upstream's per-chat stores in step across windows: every write
- * carries the versions of its entries, and each window merges what another
- * writes into its own copy, entry by entry, taking only what is newer
- * (`storageMerge.ts`). So no window's next write puts back what another
+ * Keeps upstream's per-chat stores in step across windows: every write carries its entries'
+ * versions, and each window merges another's writes into its own copy, entry by entry, taking
+ * only what is newer (`storageMerge.ts`), so no window's next write puts back what another
  * just changed, whatever order the windows hear each other in.
  */
 import { sharedStores, type SharedStore } from "../upstream/sharedStores";
@@ -40,11 +39,10 @@ export function shareAcrossWindows(
   writer: string = writerName(),
 ): () => void {
   const sharing = stores.map((store) => {
-    // What this window holds has no versions yet, and what's on disk now is
-    // merged in as another window's write: it may be newer than what the
-    // store read at load, if a write landed before this started. Writes
-    // carry their versions from before that merge, so what it takes is
-    // written with the versions it was taken at.
+    // What this window holds has no versions yet, and what's on disk now is merged in as
+    // another window's write: it may be newer than what the store read at load. Writes carry
+    // their versions from before that merge, so what it takes is written with the versions it
+    // was taken at.
     const versions = new EntryVersions(writer, store.persisted());
     const stop = store.carry((fields) => versions.stamp(fields));
     const stored = store.read(storage.getItem(store.key));

@@ -7,13 +7,10 @@ import * as UpstreamDisk from "../upstream/disk.ts";
 import { APPLE_ID, readsAsKey } from "./apns.ts";
 import * as Push from "./Push.ts";
 
-// GET /api/stemcells/push: whether a key is set, the phones, how the last
-// push went. Never the key.
-// POST /api/stemcells/push/devices: a phone asks for pushes; DELETE with
-// `{ token }` stops them. A phone that can read this Mac's Cells may hear of them.
-// PUT /api/stemcells/push/key: the person's APNs key; DELETE forgets it.
-// Changing it changes who can reach their phones, so it asks what pairing does.
-// POST /api/stemcells/push/test: a push to every phone now.
+// GET /api/stemcells/push: whether a key is set, the phones, how the last push went; never
+// the key. POST /devices: a phone asks for pushes (DELETE with `{ token }` stops them); a
+// phone that can read this Mac's Cells may hear of them. PUT /key sets the APNs key, DELETE
+// forgets it: it changes who can reach the phones, so it asks what pairing does.
 
 const PATH = "/api/stemcells/push";
 const NO_STORE = { "cache-control": "private, no-store" };

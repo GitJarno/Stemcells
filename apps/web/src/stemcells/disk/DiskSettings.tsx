@@ -14,18 +14,17 @@ import {
   useOpenCellWithDraft,
   useOtherMachines,
   usePrimaryEnvironmentId,
-  useRelativeTimeTick,
+  useNowMinuteMs,
   type EnvironmentId,
 } from "../upstream/disk";
 import { CLEANUP_ASK, CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
 import { useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure } from "./pressure";
 
-// Settings › Disk: how full each machine's disk is, what is large on this
-// one, and a Cell to free space with. The app deletes nothing itself: "Free
-// space" opens a new Cell without a project on that machine with the ask in
-// its composer, for the person to send; the Cell reads that machine's
-// measurement itself.
+// Settings › Disk: how full each machine's disk is, what is large on this one, and a Cell to
+// free space with. The app deletes nothing itself: "Free space" opens a new Cell without a
+// project on that machine with the ask in its composer, for the person to send; the Cell
+// reads that machine's measurement itself.
 
 const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
   calm: "bg-primary",
@@ -124,7 +123,7 @@ export function DiskSettingsPanel() {
   const { reading, failed, measureAgain } = useDiskReading();
   const openCell = useOpenCellWithDraft(usePrimaryEnvironmentId());
   const otherMachines = useOtherMachines();
-  const nowMs = useRelativeTimeTick(30_000);
+  const nowMs = useNowMinuteMs();
   const map = reading?.map ?? null;
   const scanning = reading?.scanning ?? false;
 

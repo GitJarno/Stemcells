@@ -1,14 +1,8 @@
 /**
- * Aski's provider instance is Aski's alone. Its launch arguments carry Aski's
- * persona, so a Cell started there takes itself for Aski. The server refuses
- * a thread being started there (t3_thread_launch, create_threads,
- * delegate_task, a scheduled task that starts one), naming the instances a
- * Cell may use, so Aski, which gets it as a tool error, starts the Cell again
- * on one of them.
- * A message to a chat already there that isn't Aski's own, from whoever
- * sends it, runs on the driver's own instance instead, as the web's composer
- * sends it (`apps/web/src/stemcells/upstream/cellInstance.ts`): upstream's
- * dispatch carries the chat over and delivers the message.
+ * Aski's provider instance is Aski's alone: its launch arguments carry Aski's persona, so a
+ * Cell started there takes itself for Aski. Any thread start there is refused, naming the
+ * instances a Cell may use, so Aski starts it again on one. A message to another chat already
+ * there runs on the driver's own instance (`apps/web/src/stemcells/upstream/cellInstance.ts`).
  */
 import {
   defaultInstanceIdForDriver,

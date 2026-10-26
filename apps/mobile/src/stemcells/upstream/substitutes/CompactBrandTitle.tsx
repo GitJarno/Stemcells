@@ -1,8 +1,7 @@
-// Replaces `components/CompactBrandTitle.tsx` (`substitutes.cjs`): upstream's
-// header, with the app's name set in type where upstream draws the T3 logo
-// beside "Code", as the web's sidebar does (`brand/Wordmark.tsx` there). The
-// rest is upstream's as it is: the offset, the stage badge, and dropping the
-// badge when the title doesn't fit.
+// Replaces `components/CompactBrandTitle.tsx` (`substitutes.cjs`): the app's name set in type
+// where upstream draws the T3 logo beside "Code", as the web's sidebar does (`brand/Wordmark.tsx`
+// there). The rest is upstream's: the offset, the stage badge, and dropping the badge when the
+// title doesn't fit.
 import Constants from "expo-constants";
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { useState } from "react";

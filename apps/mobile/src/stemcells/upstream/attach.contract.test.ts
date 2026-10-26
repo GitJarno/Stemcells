@@ -3,11 +3,10 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import type { ImagePickerAsset } from "expo-image-picker";
 
 /**
- * Contract: Add to Chat hands its photos to T3's own photo picking
- * (`lib/composerImages.ts`) by staging them for T3's picker
- * (`attach/staged.ts`, `substitutes/expo-image-picker.ts`). T3 then reads
- * and adds them as it does the system picker's; with none staged, the
- * system's picker opens. If this fails after a sync, Add N adds nothing.
+ * Contract: Add to Chat stages its photos for T3's picker (`attach/staged.ts`,
+ * `substitutes/expo-image-picker.ts`), and T3's photo picking (`lib/composerImages.ts`) adds
+ * them as it does the system picker's; with none staged, the system's picker opens. If this
+ * fails after a sync, Add N adds nothing.
  */
 
 const mocks = vi.hoisted(() => ({ systemPicker: vi.fn() }));

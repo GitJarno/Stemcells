@@ -1,8 +1,7 @@
-// What a Cell wears, as layers for the compositor: a back piece, an
-// outfit's trim, a wrap, a face piece, headwear and the tool in its hands,
-// each from the wardrobe library or a pack (`theme/piece`). Clothing is
-// fabric too: a band recolours the body's own cells before anything is
-// stamped, so it reaches the silhouette and follows every pose.
+// What a Cell wears, as layers for the compositor: back piece, outfit trim, wrap, face piece,
+// headwear and the tool in its hands, each from the wardrobe library or a pack (`theme/piece`).
+// Clothing is fabric too: a band recolours the body's own cells before anything is stamped,
+// so it reaches the silhouette and follows every pose.
 
 import {
   ACCESSORIES,

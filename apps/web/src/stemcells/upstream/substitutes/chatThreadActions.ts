@@ -1,12 +1,7 @@
-// Replaces `lib/chatThreadActions.ts` (`plugin.ts`): a new chat never starts
-// on Aski's provider instance, nor in Aski's no-project. Upstream's new chat
-// carries the model and the project of the chat on screen, so one opened
-// from Aski's chat (its tab's +, ⌘T there, the sidebar's new chat, the
-// palette) ran on Aski's instance, with Aski's persona, in no project. From
-// Aski's chat a new chat goes where one from no chat would: the first
-// project, which is never the scratch project while there is another
-// (`firstProject.ts`). A model or a project carried from any other chat is
-// upstream's.
+// Replaces `lib/chatThreadActions.ts` (`plugin.ts`): a new chat never starts on Aski's provider
+// instance (its persona) nor in Aski's no-project, though upstream's carries the on-screen
+// chat's model and project. From Aski's chat a new chat goes where one from no chat would: the
+// first project, never the scratch one while another exists (`firstProject.ts`).
 import {
   type ChatThreadActionContext,
   resolveNewThreadModelSelectionOverride as resolveUpstreamOverride,

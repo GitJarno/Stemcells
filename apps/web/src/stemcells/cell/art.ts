@@ -1,9 +1,7 @@
-// Art drawn for Stemcells beside the original's export (`kit/`): one JSON
-// file per pack, move set or temperament under `art/`, so drawings made in
-// parallel never share a file. Each is imported by name here, as `kit.ts`
-// imports the kit: a bundler's glob is Vite's alone, and the phone's Metro
-// bundles one as nothing (`art.test.ts` fails on a file left out).
-// Formats: `stemcells/docs/cell-art.md`.
+// Art drawn for Stemcells beside the original's export (`kit/`): one JSON file per pack, move
+// set or temperament under `art/`, so parallel drawings never share a file. Each is imported
+// by name: a bundler's glob is Vite's alone, and the phone's Metro bundles one as nothing
+// (`art.test.ts` fails on a file left out). Formats: `stemcells/docs/cell-art.md`.
 
 import dock from "./art/moves/dock.json" with { type: "json" };
 import form from "./art/moves/form.json" with { type: "json" };

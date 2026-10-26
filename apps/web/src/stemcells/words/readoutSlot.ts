@@ -1,8 +1,7 @@
 /**
- * Where the readout stands: in the controls row, in the model picker's
- * place (`upstream/substitutes/ProviderModelPicker.tsx`), so upstream's
- * fitting measures it as it measures the picker (decision 18). The
- * composer's words hand it over through the composer
+ * Where the readout stands: in the controls row, in the model picker's place
+ * (`upstream/substitutes/ProviderModelPicker.tsx`), so upstream's fitting measures it as the
+ * picker (decision 18). The words hand it over through the composer
  * (`upstream/substitutes/ChatComposer.tsx`).
  */
 import { createContext } from "react";

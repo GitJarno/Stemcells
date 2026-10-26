@@ -9,12 +9,10 @@ import { describe, expect, it } from "vite-plus/test";
 import { workEntryRowLabel } from "../../lib/threadActivity";
 
 /**
- * Contract: the phone's work log names T3's own tools in Cell words, as the
- * web's does (`apps/web/src/stemcells/upstream/cellToolWords.contract.test.ts`):
- * a row as its call runs, ends or fails, and the sentence a run of calls
- * sums up to, says no T3, thread or agent. If this fails after a sync,
- * upstream added or renamed a tool: give it Cell words in
- * `stemcells/words/cellTools.ts`.
+ * Contract: the phone's work log names T3's own tools in Cell words, as the web's does
+ * (`apps/web/src/stemcells/upstream/cellToolWords.contract.test.ts`): no row or summing-up
+ * sentence says T3, thread or agent. If this fails after a sync, upstream added or renamed a
+ * tool: give it Cell words in `stemcells/words/cellTools.ts`.
  */
 
 const NOT_OUR_WORDS = /\bT3\b|thread|agent/i;

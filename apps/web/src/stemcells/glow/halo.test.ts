@@ -1,14 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheets on disk.
 /**
- * Only the composer's box is glass. The halo round the dock is a plain fade
- * in the page's colour and the Cell's ledge is solid: a blur under either
- * reads as a second pane of frosted glass round the line. The halo stopped
- * below the line once, so text ran on under the line's words; then it
- * covered the Cell too, and dimmed a band of text the pane's width over the
- * Cell's height (2026-10-21). It stops a short fade above the ledge, and
- * the Cell and Aski stay clear of the text behind them by a glow of their
- * own. What passes under the box blurs (the veil), and only below the box's
- * top.
+ * Only the composer's box is glass: the halo round the dock is a plain fade in the page's
+ * colour and the Cell's ledge is solid, since a blur under either reads as a second pane. The
+ * halo stops a short fade above the ledge, so it neither runs text under the line's words nor
+ * dims a band over the Cell. What passes under the box blurs (the veil), only below its top.
  */
 import * as NodeFS from "node:fs";
 

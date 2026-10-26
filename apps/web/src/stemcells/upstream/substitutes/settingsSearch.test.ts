@@ -1,11 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
- * Two of upstream's settings rows are never offered. "Collapse composer on
- * scroll" has nothing to turn on in Stemcells: the composer never rests
- * (`composerScrollGesture.ts`); its row is hidden by the anchor id upstream's
- * row carries. "Privacy policy" accounts for usage data Stemcells never
- * sends; its row is drawn `hidden` (`privacyRow.browser.test.tsx` proves it
- * takes no space and no focus). Search skips both.
+ * Two of upstream's settings rows are never offered, and search skips both. "Collapse composer
+ * on scroll" has nothing to turn on, as the composer never rests (`composerScrollGesture.ts`);
+ * it is hidden by its anchor id. "Privacy policy" covers usage data Stemcells never sends; it is
+ * drawn `hidden` (`privacyRow.browser.test.tsx` proves it takes no space and no focus).
  */
 import * as NodeFS from "node:fs";
 

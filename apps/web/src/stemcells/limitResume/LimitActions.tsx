@@ -26,13 +26,10 @@ export function resetToWaitFor(resetAt: string | null, stoppedAt: string): numbe
 }
 
 /**
- * Whether the reset will carry the Cell on by itself, so the banner says so.
- * With Settings' "Auto-resume limited threads" on, upstream's worker arms
- * each stop and sends upstream's line at its reset (the server's
- * `limitResume.contract.test.ts` pins both), whatever a draft or the
- * server's own refusals say: those hold only the server's sends. Nothing
- * does when the switch is off, the person cancelled it, there is no reset to
- * wait for, or it has passed.
+ * Whether the reset will carry the Cell on by itself, so the banner says so. With Settings'
+ * "Auto-resume limited threads" on, upstream's worker sends at each reset (the server's
+ * `limitResume.contract.test.ts`); drafts and the server's refusals hold only the server's
+ * sends. Not when the switch is off, it was cancelled, or there is no reset still to come.
  */
 export function carriesOn(at: {
   readonly switchOn: boolean;
@@ -75,6 +72,7 @@ function CellCarriesOn(props: { readonly reset: number; readonly cell: CellRef }
   const switchOn = useAutoResume(props.cell.environmentId);
   // Read again once the reset passes, so the line goes with it.
   const [now, setNow] = useState(() => Date.now());
+  // oxlint-disable-next-line t3code/react-effect-budget -- Wake once the limit's reset passes so the line goes with it, clearing the timer on change.
   useEffect(() => {
     if (now >= props.reset) return;
     const wait = Math.min(Math.max(props.reset - Date.now(), 0) + 1, MAX_TIMER_MS);

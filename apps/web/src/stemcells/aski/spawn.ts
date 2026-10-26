@@ -1,12 +1,7 @@
-// Aski's half of a spawn (stemcells/docs/interaction.md, The spawn), for a
-// composer that starts several Cells from one message. The composer says when
-// the words go (`spawnStart`), when the plan is in and the streams leave
-// (`spawnPlanned`), and when the last stream has landed or the spawn is off
-// (`spawnDone`). The words and the streams are the composer's to draw; Aski
-// watches the words in and round, throws once a stream, and fades.
-// `AskiSpawn` plays it at the rect the composer gives, Aski centred in it;
-// under Reduce Motion it plays nothing. The calls are safe in any order: a
-// repeat, or a call with no spawn to belong to, does nothing.
+// Aski's half of a spawn (stemcells/docs/interaction.md, The spawn), for a composer that starts
+// several Cells from one message: it calls `spawnStart`, `spawnPlanned` and `spawnDone`, and
+// draws the words and streams itself. Under Reduce Motion nothing plays. The calls are safe in
+// any order: a repeat, or a call with no spawn to belong to, does nothing.
 
 import { lookToward, type ThrowTimes, thrown, type WaitTimes } from "./scenes/the-throw.ts";
 

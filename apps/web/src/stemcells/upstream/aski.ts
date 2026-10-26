@@ -91,16 +91,10 @@ async function runStep(step: string, work: () => Promise<void>, fail: () => void
 }
 
 /**
- * Aski's chat on the primary server: its instance kept current, and its one
- * thread found among the server's chats (pinned again if someone unpinned
- * it), else made and pinned. It is made without a project, in upstream's
- * scratch project: Aski works across every project and in none
- * (stemcells/tasks/aski-manager.md, decision 2). Where the server has no
- * scratch folder (its data inside a repository, as in a dev worktree), it
- * is made in the most recent project instead. An Aski chat still in a
- * project where it could have none gets a new one without, once, and the
- * old one is settled, its history kept. This browser remembers it, to
- * show it before the server's chats have loaded.
+ * Aski's chat on the primary server: its instance kept current, its one thread found (pinned
+ * again if unpinned) or made and pinned in upstream's scratch project, as Aski works in none
+ * (stemcells/tasks/aski-manager.md, decision 2); with no scratch folder, in the latest project.
+ * One left in a project it needn't be in is replaced once, the old one settled with its history.
  */
 /** `setsUp`: whether this page may set Aski's chat up when there's none (one window does). */
 export function useAskiChat(setsUp = true): AskiChat {
@@ -161,6 +155,7 @@ export function useAskiChat(setsUp = true): AskiChat {
   const adopted = adoptedChat?.threadId ?? null;
   const adoptedPinned = adoptedChat?.pinned ?? false;
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Remember Aski's chat in this browser, to show before the server's chats load, and ask once per page to pin it.
   useEffect(() => {
     if (environmentId === null || adopted === null) return;
     rememberAskiThread(environmentId, adopted);
@@ -173,6 +168,7 @@ export function useAskiChat(setsUp = true): AskiChat {
     });
   }, [environmentId, adopted, adoptedPinned, pinThread]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Set Aski up on the server one step at a time: write its instance, then make, pin or move its chat.
   useEffect(() => {
     if (!setsUp || environmentId === null || failed || stepInFlight !== null) return;
     if (instanceKey === null) return;

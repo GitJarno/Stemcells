@@ -1,20 +1,8 @@
 /**
- * A chat read to its end stays at its end while its pane changes width or
- * its transcript changes height. Narrowing reflows the transcript taller,
- * often by more than a screen in one layout, and upstream's list holds its
- * end only through growth within a screen, so the reader was left mid-chat.
- * The pane remembers whether its transcript was at its end at its last
- * width; when the width changes, it holds the end until the transcript
- * settles, or the reader takes over.
- *
- * A terminal drawer opening under the transcript shortens it, and upstream's
- * list keeps its end a frame late (gliding, while a Cell works), so the
- * composer rose with the drawer before the words did. Where upstream's list
- * will keep the end, the transcript's own resize keeps it before the frame
- * is drawn, so the words move with the composer. Our timeline marks when
- * the list follows its end (not while it holds a sent message at the top,
- * nor once the reader scrolled away); the pane does no more than the list
- * would.
+ * A chat read to its end stays at its end while its pane changes width or its transcript changes
+ * height. Narrowing can reflow the transcript taller by more than a screen, past what upstream's
+ * list holds, so the pane remembers whether it was at its end at its last width and holds the end
+ * until the transcript settles or the reader takes over.
  */
 const TRANSCRIPT = ".messages-timeline-scroll";
 const FOLLOWS = "[data-stemcells-follows]";
@@ -81,6 +69,9 @@ export function keepEnd(pane: HTMLElement): () => void {
     height = scroller.clientHeight;
     heightChanged.observe(scroller);
   };
+  // A drawer opening under the transcript shortens it, and upstream's list keeps its end a frame
+  // late. Where the list will keep the end (`FOLLOWS`: not while it holds a sent message at the
+  // top, nor once the reader scrolled away), this keeps it before the frame is drawn, no more.
   // oxlint-disable-next-line t3code/no-raw-resize-observer -- Its callback runs after layout and before paint, the one moment the end can move in the same frame as the composer.
   const heightChanged = new ResizeObserver(() => {
     if (scrolled === null) return;

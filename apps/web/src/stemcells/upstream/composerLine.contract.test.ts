@@ -1,19 +1,8 @@
 /**
- * What the line over a Cell's composer, the composer's halo and its one
- * height rely on in upstream: that the line stands right before the
- * composer's plate, inside the overlay whose height the transcript keeps
- * clear at its foot; that the line and the plate share a block that stacks
- * its own layers, so the halo lies under both; that the plate stacks its
- * own layers, its ::after free, with room kept under it, so the veil lies
- * under its glass and reaches the pane's foot; that the composer rests into
- * one line only through its scroll gesture, which a substitute turns off;
- * that its field's height is one class `workspace.css` can lower; that a
- * wheel over the composer reaches it; and that the chat's column, which the
- * halo reaches past, scrolls unless clipped. A failure here after a sync names the
- * contract that moved; the line likely covers the transcript's last row or
- * sits in a box of its own, the halo covers the plate or misses the ledge,
- * the veil covers the plate or stops short of the foot, the composer shrinks on a scroll or opens tall, a wheel over it stops
- * at the plate, or one scrolls the whole chat up.
+ * What the line over a Cell's composer, the composer's halo and its one height rely on in
+ * upstream: where the line and plate stand and stack (so halo and veil lie under them), the
+ * scroll gesture a substitute turns off, the field's one height class, a wheel's reach, and the
+ * chat's column scrolling. A failure after a sync names the contract that moved.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -34,7 +23,7 @@ describe("the composer line's contracts with upstream", () => {
     // ChatView measures the overlay holding the composer, line and all, and
     // reserves that height under the transcript's last row.
     expect(chatView).toMatch(
-      /ref=\{setComposerOverlayElement\}[\s\S]*?data-chat-composer-overlay="true"[\s\S]*?<Stemcells\.CellComposerLine \/>/,
+      /ref=\{\(overlay: HTMLDivElement \| null\) => \{\s*setComposerOverlayElement\(overlay\);[\s\S]{0,200}?data-chat-composer-overlay="true"[\s\S]*?<Stemcells\.CellComposerLine \/>/,
     );
     expect(chatView).toContain(
       "publishComposerOverlayHeightStable(composerOverlayElement.getBoundingClientRect().height);",
@@ -82,11 +71,11 @@ describe("the composer line's contracts with upstream", () => {
     );
   });
 
-  it("the field's height is one class, and it grows to a cap as text is typed", () => {
-    // workspace.css lowers the field to one row; upstream's cap and scroll
-    // still let it grow with what is typed.
+  it("the field's height is its classes alone, and it grows to a cap as text is typed", () => {
+    // workspace.css lowers the field to one row over both designs' minimums;
+    // upstream's cap and scroll still let it grow with what is typed.
     expect(promptEditor).toContain(
-      '"composer-tiptap -m-1 block max-h-52 min-h-19.5 overflow-y-auto p-1 ',
+      '"composer-tiptap -m-1 block max-h-52 min-h-19.5 redesign:min-h-12 overflow-y-auto p-1 ',
     );
   });
 

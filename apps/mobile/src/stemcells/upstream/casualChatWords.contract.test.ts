@@ -6,12 +6,10 @@ import * as NodeURL from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 /**
- * Contract: the phone offers upstream's chat in no project as a casual chat,
- * in the new chat's list of projects (its row on iOS and Android, and the
- * buttons when there are no projects), and heads a new casual chat as the
- * Mac does (`stemcells/seams.md`, A casual chat). If this fails after a
- * sync, upstream rewrote one of these places: say the casual chat's words
- * there again.
+ * Contract: the phone offers upstream's chat in no project as a casual chat in the new chat's
+ * project list (its row on iOS and Android, the buttons with no projects) and heads one as the
+ * Mac does (`stemcells/seams.md`, A casual chat). If this fails after a sync, upstream rewrote
+ * one of these places: say the casual chat's words there again.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

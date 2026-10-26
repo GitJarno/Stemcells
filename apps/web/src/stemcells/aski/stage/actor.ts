@@ -1,16 +1,7 @@
-// One Cell on Aski's stage, drawn twice: a far copy under Aski's figure and
-// a near copy over it, exactly one of them showing. Passing behind Aski is
-// then a change of opacity, which the compositor plays, rather than of
-// stacking, which it cannot. The copies change over only where the Cell
-// stands clear of Aski (on the ground line, at the front, at the orbit's
-// ends), so the change never shows.
-//
-// Every move is a transform and an opacity on one element, played by the
-// compositor: the orbit is one looping animation, a move is a spring laid
-// out as keyframes, a hop is three keyframes. Where a Cell is at any
-// moment is worked out from the move it is in, never read from layout, so a
-// move taken over mid-flight leaves from where the Cell visibly is, with the
-// speed it has.
+// One Cell on Aski's stage, drawn twice, a far copy under Aski and a near one over it, one
+// showing: passing behind Aski is then an opacity change the compositor plays, not a stacking
+// change, which it can't, and they swap only where the Cell stands clear of Aski. Where a Cell
+// is comes from its move, never layout, so a move taken over mid-flight starts where it shows.
 
 import { type Spring, settledDuration, springAt, springEasing } from "../../tokens/spring.ts";
 import { bodyOf, frameShown, sceneFor } from "../../cell/cast.ts";

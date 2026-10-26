@@ -22,18 +22,15 @@ import {
   useCopyToClipboard,
   useThisMachine,
 } from "../upstream/devices";
-import { Button, Spinner, toastManager, useRelativeTimeTick } from "../upstream/disk";
+import { Button, Spinner, toastManager, useNowSecond } from "../upstream/disk";
 import { deviceName, pairedBy } from "./devices";
 import { advanceTailnet, type TailnetLook, type TailnetStep, useTailnet } from "./tailnet";
 import { wifiRoute } from "./wifiRoute";
 
-// Settings › Devices › Add › Phone or tablet (stemcells/tasks/devices.md):
-// a one-time link to this computer as a QR code, and "Paired" once the
-// phone has used it. The address is Tailscale's: this computer stays on
-// loopback and Tailscale Serve answers for it on the tailnet, which the
-// dialog sets up step by step, taking each step itself where it can and
-// opening the page where the person's click is needed. Wi-Fi only is the
-// way for a person without Tailscale.
+// Settings › Devices › Add › Phone or tablet (stemcells/tasks/devices.md): a one-time link to
+// this computer as a QR code, and "Paired" once the phone used it. This computer stays on
+// loopback and Tailscale Serve answers for it on the tailnet; the dialog sets that up, opening a
+// page where the person's click is needed. Wi-Fi only is the way without Tailscale.
 
 type Link = {
   readonly id: string;
@@ -196,7 +193,7 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
   const minting = useRef(false);
   const mounted = useRef(true);
   const unused = useRef<string | null>(null);
-  const nowMs = useRelativeTimeTick(1_000);
+  const nowMs = useNowSecond();
   const { copyToClipboard } = useCopyToClipboard({
     onCopy: () =>
       toastManager.add({
@@ -214,10 +211,12 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       : null;
   const expired = link !== null && Date.parse(link.expiresAt) <= nowMs;
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Ask the desktop app for its advertised routes once on open.
   useEffect(() => {
     refreshRoutes();
   }, []);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mint one pairing link once its route and scopes are known.
   useEffect(() => {
     const scopesKnown = here.delegatable.length > 0;
     if (!ready || !here.canPair || !scopesKnown || devices === null) return;
@@ -239,9 +238,11 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
   }, [ready, here.canPair, here.delegatable, devices, link, problem]);
 
   // A link nobody used goes back when the dialog closes, not five minutes later.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mirror the unused link's id for the unmount cleanup.
   useEffect(() => {
     unused.current = link !== null && paired === null && !expired ? link.id : null;
   }, [link, paired, expired]);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Revoke the unused pairing link when the dialog unmounts.
   useEffect(() => {
     mounted.current = true;
     return () => {

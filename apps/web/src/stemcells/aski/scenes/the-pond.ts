@@ -1,14 +1,7 @@
-// The pond, when every Cell has landed and nothing waits: a clean slate, and an
-// invitation. Aski at rest drips into its ground line; the line opens into a pond
-// spelled `pond`, with rings where drops fall; Aski surfaces as a gold koi spelled
-// `koi`, swims, dives, rises, circles and sinks; out of the stilled water a
-// portrait rises face first, spelled in her name; Aski's eyes settle on hers and
-// blink once; one line; then everything goes back into the cloud.
-//
-// Its shapes are drawn on a design stage 940 units wide and 520 tall, with cells
-// 4.8 by 9, and scaled to whatever stage it plays on. Glyphs are chosen per cell
-// by a seeded hash, so nothing churns: what changes, changes because something
-// moved.
+// The pond, when every Cell has landed and nothing waits: Aski drips into a pond, swims as a
+// gold koi, and a portrait rises from the stilled water to meet its eyes. Shapes are drawn on a
+// 940 by 520 design stage (cells 4.8 by 9) and scaled to the stage it plays on. Glyphs come from
+// a seeded hash per cell, so nothing churns: what changes, changes because something moved.
 
 import { type Grid, makeGrid, put, type Stage } from "../grid.ts";
 import { clamp, ease, hash, lerp, sstep } from "../math.ts";

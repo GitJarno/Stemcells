@@ -1,11 +1,10 @@
 import type { Account } from "./decide.ts";
 
 /**
- * The account behind each Claude login, kept current cheaply: the login's
- * mark (`readLoginMark`) is read at most every `markEveryMs`, and the
- * account (`claude auth status`) only when the mark moved, or every
- * `accountEveryMs` in case the mark can't see a change (a login it can't
- * name). Asked only for the logins a stopped Cell runs on.
+ * The account behind each Claude login, kept current cheaply: the login's mark (`readLoginMark`)
+ * is read at most every `markEveryMs`, and the account (`claude auth status`) only when the mark
+ * moved, or every `accountEveryMs` for a login the mark can't name. Asked only for the logins a
+ * stopped Cell runs on.
  */
 
 export interface AccountReader<L> {

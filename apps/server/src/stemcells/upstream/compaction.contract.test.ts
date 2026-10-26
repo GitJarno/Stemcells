@@ -1,10 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the seam's source and the web's default.
 /**
- * Upstream behaviour the auto-compact window relies on. A failure here after
- * a sync names the contract that moved: how a Claude instance's
- * `autoCompactWindow` reaches the CLI at launch, and where the adapter says
- * a chat compacts. The fix goes in `stemcells/compaction/claudeWindow.ts` or
- * the seams, not in the views.
+ * Upstream behaviour the auto-compact window relies on: how a Claude instance's
+ * `autoCompactWindow` reaches the CLI at launch, and where the adapter says a chat compacts.
+ * A failure after a sync names the contract that moved; the fix goes in
+ * `stemcells/compaction/claudeWindow.ts` or the seams, not in the views.
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";

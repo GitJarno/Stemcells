@@ -1,29 +1,8 @@
 /**
- * The name transform: the builds of the web app, the server, the phone and
- * the desktop app say Stemcells where upstream's code says "T3 Code", so
- * upstream's files keep their own words and a sync never conflicts over the
- * name (`stemcells/docs/fork.md`, "The name transform").
- *
- * It is keyed on content, never on positions: each build reads upstream's
- * source as it is that day, and renames the exact words "T3 Code" (and its
- * possessive) everywhere this file doesn't keep them. A kept place is
- * named by its file and its words (ones only it says), with why; no file is
- * kept whole, so a name upstream adds says Stemcells like the rest. A word
- * that only contains the name (a path, an id) is left, and the build fails
- * until an entry here keeps it. Tests run upstream's code as upstream wrote
- * it: the transform is a build step, not a source edit.
- *
- * - `upstreamNamePlugin` does it in a build: the web app's (through
- *   `apps/web/src/stemcells/upstream/substitutes/plugin.ts`), the server's
- *   (`apps/server/vite.config.ts`) and the desktop app's main process
- *   (`apps/desktop/vite.config.ts`). The build fails if the transform renamed
- *   nothing, or if a module it bundles says "T3 Code" outside its own file's
- *   kept words.
- * - The phone's Metro build does both through
- *   `apps/mobile/src/stemcells/upstream/substitutes/nameTransformer.cjs`.
- * - `stemcells/scripts/check-app-name.ts` checks a built app's files against
- *   every entry's words.
- * - `nameTransform.test.ts` holds the list to the sources.
+ * The name transform: builds say Stemcells where upstream's code says "T3 Code", so upstream's
+ * files keep their words and a sync never conflicts (`stemcells/docs/fork.md`, "The name
+ * transform"). Keyed on content, not positions; no file is kept whole, and a word that only
+ * contains the name (a path, an id) fails the build until an entry here keeps it.
  */
 // @effect-diagnostics nodeBuiltinImport:off - a build step: it reads upstream's sources on disk.
 import * as NodeFS from "node:fs";
@@ -59,11 +38,9 @@ export function isRenamedIn(file: string): boolean {
 export interface Kept {
   readonly file: RegExp;
   /**
-   * The kept words: the name and the words around it that only this place
-   * says (a sentence, or a distinctive key, string or identifier, across
-   * lines if need be), never the name in generic words (`label`, `name`,
-   * `children`). A name in its file with these words around it is kept; a
-   * built module from its file may say the name only inside them.
+   * The name and the words around it that only this place says (a sentence, or a distinctive
+   * key, string or identifier, across lines if need be), never generic words (`label`, `name`).
+   * A built module from its file may say the name only inside them.
    */
   readonly words: string;
   /** How many times its files say the words (1 unless given): one upstream adds fails the test. */
@@ -119,22 +96,6 @@ export const KEPT: ReadonlyArray<Kept> = [
     "so they need an agent running inside T3 Code.",
   ),
   ...keep(
-    /^apps\/server\/src\/mcp\/toolkits\/(?:orchestrator|project)\/tools\.ts$/,
-    FOR_THE_MODEL,
-    ["not URL-encoded; T3 Code shows the thread", 3],
-  ),
-  ...keep(
-    /^apps\/server\/src\/mcp\/toolkits\/pullRequests\/tools\.ts$/,
-    FOR_THE_MODEL,
-    "Whether T3 Code now watches the pull request",
-    "so T3 Code tracks it,",
-    "Have T3 Code watch an open pull request",
-    "T3 Code checks it every two minutes",
-    "While T3 Code watches, the thread",
-    "when T3 Code fails to read it",
-    "Stop T3 Code from watching a pull request",
-  ),
-  ...keep(
     /^apps\/server\/src\/orchestration-v2\/ContextHandoffService\.ts$/,
     `${FOR_THE_MODEL}: the history handed to the next orchestrator`,
     "from the previous T3 Code orchestrator.",
@@ -146,7 +107,7 @@ export const KEPT: ReadonlyArray<Kept> = [
     "so T3 Code stopped watching it.",
     "which T3 Code is watching for you:",
     "T3 Code stopped watching after",
-    "T3 Code keeps watching and wakes you",
+    "and T3 Code wakes you on the next change",
   ),
   ...keep(
     /^apps\/server\/src\/provider\/CodexDeveloperInstructions\.ts$/,
@@ -157,16 +118,13 @@ export const KEPT: ReadonlyArray<Kept> = [
     /^packages\/provider-core\/src\/server\/orchestrationInstructions\.ts$/,
     FOR_THE_MODEL,
     "## T3 Code orchestration",
-    "T3 Code opens the thread in the app",
-    "## T3 Code collaborative browser",
-    "You are running inside T3 Code.",
+    "## T3 Code browser",
     ["## T3 Code interaction mode: ", 2],
     ["active until T3 Code supplies a different interaction-mode", 2],
   ),
   ...keep(
     /^packages\/provider-core\/src\/server\/runtimeInstructions\.ts$/,
     FOR_THE_MODEL,
-    "end your turn: T3 Code wakes you when checks finish",
     "you are running in T3 Code through the",
   ),
   ...keep(
@@ -602,11 +560,9 @@ function sourcesUnder(root: string, dir: string): string[] {
 const REACH = 2000;
 
 /**
- * Each "T3 Code" in `output` (built code) that the words of none of `kept`
- * stand around, with what surrounds it. A build checks each module against
- * its own file's entries (`keptIn`), so no other file can borrow them;
- * `check-app-name.ts`, reading an app with no modules to go by, checks
- * against them all.
+ * Each "T3 Code" in built `output` that no `kept` entry's words stand around, with what
+ * surrounds it. A build passes each module only its own file's entries (`keptIn`), so no file
+ * borrows another's; `check-app-name.ts`, with no modules to go by, checks against them all.
  */
 export function unexplainedNames(output: string, kept: ReadonlyArray<Kept> = KEPT): string[] {
   const words = evenWords(kept);
@@ -662,11 +618,9 @@ const SCRIPT = /\.[cm]?[jt]sx?$/;
 const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 
 /**
- * The transform in a build: the web app's (Vite), the server's and the
- * desktop app's (tsdown), and the phone's WebView scripts (Vite). Tests
- * never run it: the web's plugin leaves it out under Vitest, and the other
- * apps' tests don't build. `mustRename: false` is for a small build that may
- * bundle nothing upstream names the app in (a WebView script).
+ * The transform in a Vite or tsdown build (web, server, desktop main, the phone's WebView
+ * scripts). Tests never run it, so they run upstream's code as written. `mustRename: false`
+ * is for a small build that may bundle nothing upstream names the app in (a WebView script).
  */
 export function upstreamNamePlugin(
   options: { readonly root?: string; readonly mustRename?: boolean } = {},

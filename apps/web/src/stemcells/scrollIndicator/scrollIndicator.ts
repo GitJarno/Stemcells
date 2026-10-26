@@ -1,12 +1,8 @@
 /**
- * A chat's one scroll indicator is T3's ask marks (its timeline minimap: a
- * dash per ask, a preview under the hand); no bar draws anywhere
- * (`scrollbars/scrollbars.css`). The marks are hidden at rest. They show
- * while the reader scrolls the chat and fade half a linger after the last
- * scroll; a hand on them holds them, and they fade that long after it
- * leaves (`scrollIndicator.css`). A reply the list follows to its end
- * scrolls too, many times a second, and shows nothing.
- * `upstream/scrollIndicator.contract.test.ts` pins what this relies on.
+ * A chat's one scroll indicator is T3's ask marks (its timeline minimap); no bar draws
+ * anywhere (`scrollbars/scrollbars.css`). The marks show while the reader scrolls, fade half a
+ * linger after, and hold under a hand (`scrollIndicator.css`); a reply the list follows shows
+ * nothing. `upstream/scrollIndicator.contract.test.ts` pins what this relies on.
  */
 import { timing } from "../tokens/motion";
 

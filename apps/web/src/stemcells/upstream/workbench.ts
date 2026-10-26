@@ -1,10 +1,8 @@
 /**
- * What Look needs of upstream: a Cell's right panel (open or not, empty or
- * not, the surface it last showed), closing and reopening it through
- * upstream's own store, whether the window is wide enough for the panel to
- * sit inline, and
- * the focus facts that say an Esc is someone else's. When the user last
- * wrote in a Cell's chat is `useCellLastSent` (`chat.tsx`).
+ * What Look needs of upstream: a Cell's right panel (open, empty, its last surface), closing and
+ * reopening it through upstream's store, whether the window fits the panel inline, and the focus
+ * facts that say an Esc is someone else's. When a Cell's chat was last written in is
+ * `useCellLastSent` (`chat.tsx`).
  */
 import type { PreviewNavStatus } from "@t3tools/contracts";
 import { getTerminalLabel } from "@t3tools/shared/terminalLabels";
@@ -68,11 +66,9 @@ export function useCellPanelOnBrowser(cell: CellRef | null): boolean {
 }
 
 /**
- * Closes the Cell's right panel as upstream's own close does
- * (`useRightPanelActions`, `closePreviewPanel`): a browser or device it was
- * showing floats on over the chat, tucked where the chat has no room for
- * it, and the panel leaves its maximized state. Its surfaces stay, so
- * reopening shows the same one.
+ * Closes the Cell's right panel as upstream's close does (`useRightPanelActions`,
+ * `closePreviewPanel`): a browser or device it showed floats on over the chat, tucked where
+ * there's no room, and the panel leaves maximized. Its surfaces stay, so reopening shows the same.
  */
 export function closeCellPanel(cell: CellRef): void {
   const ref = threadRefOf(cell);
@@ -185,11 +181,9 @@ const ESCAPE_HOLDERS = [
 ].join(", ");
 
 /**
- * Whether something of upstream's holds Esc right now: an open layer (a
- * closed one kept mounted, as the Cell's line keeps its popover, doesn't),
- * the command palette or a context menu, or focus in a terminal or in the
- * desktop browser's page, which take the key for the shell or the page.
- * (The server browser's page is a text field and stops the keys it sends.)
+ * Whether something of upstream's holds Esc now: an open layer (not one kept mounted closed),
+ * the command palette, a context menu, or focus in a terminal or the desktop browser's page,
+ * which take the key. The server browser's page is a text field and stops the keys it sends.
  */
 export function escapeHeldElsewhere(): boolean {
   return (

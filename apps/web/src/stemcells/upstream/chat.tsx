@@ -4,7 +4,7 @@
  */
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId } from "@t3tools/contracts";
-import { use, useRef } from "react";
+import { createContext, use, useRef } from "react";
 
 import type { ChatComposerHandle } from "../../components/chat/ChatComposer";
 import { ChatWindowInputContext } from "../../components/chat/chatWindowInput";
@@ -97,17 +97,16 @@ export function useOpenNewCell(): () => Promise<CellRef | null> {
 }
 
 /**
- * Upstream's thread view for one pane. Only the pane that owns window input
- * answers shortcuts, typing and paste that reach the window.
- *
- * Upstream shares one composer handle app-wide (the command palette provides
- * it, and a chat's composer fills it), as there is one chat on screen. Each
- * pane's composer fills a handle of its own; the pane that owns input fills
- * the app's, so the palette and window shortcuts reach the focused chat.
- *
- * The pane that owns input also owns the tab's workbench (`panelHost`): its
- * thread's surfaces show there, and the other panes show none. Off stage, the
- * focused pane keeps its Surface's frame there (`chatPanel.tsx`).
+ * Whether the chats are under Settings or Usage, which upstream opens as a
+ * modal over them: its thread view goes inert there and leaves the route alone.
+ */
+export const ChatsInBackground = createContext(false);
+
+/**
+ * Upstream's thread view for one pane. Each pane's composer fills a handle of its own; the pane
+ * that owns window input answers shortcuts, typing and paste, fills the app's handle so the
+ * palette reaches the focused chat, and shows its surfaces in the tab's workbench
+ * (`panelHost`). Off stage, the focused pane keeps its Surface's frame there (`chatPanel.tsx`).
  */
 export function ChatPaneView(props: {
   target: ThreadRouteTarget;
@@ -135,7 +134,7 @@ export function ChatPaneView(props: {
             bare: props.bare === true,
           }}
         >
-          <ThreadRouteView target={props.target} />
+          <ThreadRouteView target={props.target} background={use(ChatsInBackground)} />
         </ChatPanelHostContext>
       </ChatWindowInputContext>
     </ComposerHandleContext>

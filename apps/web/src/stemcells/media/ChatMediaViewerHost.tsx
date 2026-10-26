@@ -32,12 +32,16 @@ export function ChatMediaViewerHost(props: {
   const anchorRef = useRef<HTMLSpanElement>(null);
   // The chat's view: this host sits inside it, beside the timeline and the composer.
   const [scope, setScope] = useState<Element | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Read the chat view the host's anchor sits in from the DOM after mount.
   useLayoutEffect(() => setScope(anchorRef.current?.parentElement ?? null), []);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Share the document's capturing pointerdown listener while mounted.
   useEffect(() => trackPresses(), []);
   // Leaving the chat drops what it had open.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Close the chat's opened media when the thread changes or the host unmounts.
   useEffect(() => () => closeOpenedMedia(threadKey), [threadKey]);
   const clicked = preview?.images[preview.index];
   const ownedSrc = clicked?.ownsSrc === true ? clicked.src : null;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Revoke the clicked preview's own object URL when it changes or unmounts.
   useEffect(() => {
     if (ownedSrc === null) return;
     return () => URL.revokeObjectURL(ownedSrc);

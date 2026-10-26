@@ -1,10 +1,7 @@
-// The lineage: every name a Cell has been dealt and the lives lived under
-// it. A Cell's name is dealt from its chat's id (`cellNameOf`), and the
-// names are few, so a name comes back: each chat that drew it is one life of
-// the same avatar. Nothing is stored; the lives are the person's chats, the
-// archived ones too, read again each time the page shows. What a life spent
-// is its chat's turns as its provider counted them, so a name's spend is
-// its lives' added up.
+// The lineage: every name a Cell has been dealt and the lives lived under it. Names are dealt
+// from the chat's id (`cellNameOf`) and are few, so each chat that drew a name is one life of
+// its avatar. Nothing is stored: the lives are the person's chats, archived ones too, read
+// each time the page shows. A name's spend is its lives' turns as their providers counted.
 
 /** What one chat spent (`GET /api/stemcells/spend`). */
 export interface Spend {

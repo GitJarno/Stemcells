@@ -1,13 +1,8 @@
 /**
- * Upstream's right panel (a thread's surfaces: terminals, browser, diff,
- * files, pull requests), hosted by the tab rather than by each chat.
- *
- * Upstream draws the panel inside its thread view, beside the chat. With
- * several chats on a tab, the tab keeps one panel, the workbench, at the
- * slate's right edge, and it shows the focused chat's surfaces: the focused
- * chat's view renders its panel into the workbench, the others render none.
- * Upstream keeps each thread's surfaces apart, so focusing another chat shows
- * that chat's, as switching threads does upstream.
+ * Upstream's right panel (a thread's terminals, browser, diff, files, pull requests), hosted
+ * once per tab as the workbench at the slate's right edge rather than beside each chat: the
+ * focused chat's view renders its panel there, the others none. Upstream keeps each thread's
+ * surfaces apart, so focusing another chat shows its own, as switching threads does.
  */
 import {
   createContext,
@@ -73,11 +68,10 @@ export function ChatPanelTabs(props: ComponentProps<typeof RightPanelTabs>) {
 }
 
 /**
- * A chat's panel in its page's workbench. On stage it holds the chat's
- * surfaces. Off stage, the focused chat's panel keeps its frame and tabs
- * there, inert and holding nothing: the page lays out at its real width and
- * slides in with its Surface, and what the Surface shows, a live browser
- * above all, comes only with the stage, where it fades in (`workspace.css`).
+ * A chat's panel in its page's workbench, holding the chat's surfaces on stage. Off stage, the
+ * focused chat's panel keeps its frame and tabs there, inert and empty, so the page lays out at
+ * its real width and slides in with its Surface; what it shows, a live browser above all, comes
+ * only with the stage, where it fades in (`workspace.css`).
  */
 export function WorkbenchPanel<P extends { children?: ReactNode }>(props: {
   workbench: HTMLElement | null;
@@ -122,6 +116,7 @@ export function WorkbenchPanel<P extends { children?: ReactNode }>(props: {
 /** Tells the page while `maximized` holds. */
 function useTellMaximized(maximized: boolean) {
   const tell = use(PanelMaximizedContext);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the page while the panel is maximized, and take it back on change or unmount.
   useLayoutEffect(() => {
     if (!maximized || tell === null) return;
     tell(true);

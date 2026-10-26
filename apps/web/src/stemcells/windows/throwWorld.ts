@@ -1,21 +1,8 @@
 /**
- * The world a thrown Cell flies in: the original's soft Cell, alone in a
- * world of its own (the original app's `MochiWorld.swift` and `MochiToss.swift`,
- * ported line for line where one body goes). Gravity pulls, a landing
- * squashes it and the floor gives like a drum skin, friction turns a throw
- * into a slide, braking tips its crown, a wall flattens it the other way. It
- * never tumbles: an off-centre throw rolls its face round until it lands.
- *
- * A fixed step: the world advances whole frames of 1/24 world second, eight
- * substeps each, and the Cell glides between its last two frames, so a
- * flight is the same at any frame rate. The world's clock runs fast enough
- * that a thrown Cell falls 1400 CSS px a second² whatever its size. It
- * settles exactly, so a still Cell is still to the last bit.
- *
- * Two units: the world's px and seconds inside (the body is 25 px across, y
- * down), CSS px and seconds outside, `unit` CSS px a world px. A body never
- * leaves `bounds`: its sides, its top, and its floor, the line its feet
- * stand on at home.
+ * The world a thrown Cell flies in, ported from the original app's `MochiWorld.swift`/`MochiToss.swift`.
+ * Fixed steps of 1/24 world second, eight substeps each, the Cell gliding between its last two,
+ * so a flight is the same at any frame rate; it settles exactly. World px inside (body 25 px, y
+ * down), CSS px outside, `unit` CSS px a world px. A body never leaves `bounds`.
  */
 import type { Rect } from "./arrangement";
 import type { Point, Size } from "./carry";

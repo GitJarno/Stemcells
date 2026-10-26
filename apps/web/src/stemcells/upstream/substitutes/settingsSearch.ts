@@ -1,19 +1,7 @@
-// Replaces `components/settings/settingsSearch.ts` (`plugin.ts`). Two of
-// upstream's settings rows are never offered in Stemcells; each keeps its
-// place in upstream's code, so the panels that draw them stay upstream's:
-//
-// - "Collapse composer on scroll": Stemcells' composer never rests into one
-//   line (`composerScrollGesture.ts`), so the setting has nothing to turn
-//   on. Its row is hidden by its anchor id (`settingsSearch.css`). The
-//   setting itself stays in upstream's settings.
-// - "Privacy policy": it links T3's policy as the account of "the anonymous
-//   usage data T3 Code collects", and Stemcells sends none (`seams.md`, No
-//   telemetry). Its row is given `hidden`, so it is neither shown nor
-//   reached by the keyboard, and it links out only; what keeps the person's
-//   data at home is the server's no-op analytics, which
-//   `analytics.contract.test.ts` holds in place.
-//
-// Settings search, and the command palette's, skip both.
+// Replaces `components/settings/settingsSearch.ts` (`plugin.ts`). Two upstream rows keep their
+// place in its panels but are never offered, and search, the palette's too, skips both:
+// "Collapse composer on scroll" has nothing to turn on (`settingsSearch.css` hides it), and
+// "Privacy policy" accounts for usage data Stemcells never sends (`seams.md`, No telemetry).
 import * as Upstream from "../../../components/settings/settingsSearch";
 import "./settingsSearch.css";
 

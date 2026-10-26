@@ -1,9 +1,7 @@
 /**
- * The light holds while no one can see it: a window hidden or covered, or a
- * surface off screen (the tab pager keeps neighbours mounted beside the
- * window). Beside another app it keeps moving, stepped: a frozen wave reads
- * as a stalled Cell. Without this, three working Cells in a window no one
- * saw kept the GPU busy drawing their wave.
+ * The light holds while no one can see it: a window hidden or covered, or a surface off screen
+ * (the tab pager keeps neighbours mounted). Beside another app it keeps moving, stepped, as a
+ * frozen wave reads as a stalled Cell. Unseen working Cells otherwise kept the GPU busy.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 

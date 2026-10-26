@@ -1,8 +1,7 @@
-// What a server knows of its linked environments, read where upstream builds
-// a provider's text (who's here, the frame), which hands us nothing that
-// reaches the links service. A process runs one server (upstream's
-// ownership lock: one per T3 home), so the service files its view here for
-// as long as it runs.
+// What a server knows of its linked environments, read where upstream builds a provider's
+// text (who's here, the frame), which hands us nothing that reaches the links service. A
+// process runs one server (upstream's ownership lock: one per T3 home), so the service
+// files its view here while it runs.
 
 import * as Effect from "effect/Effect";
 

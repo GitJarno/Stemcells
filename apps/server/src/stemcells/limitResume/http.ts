@@ -8,11 +8,9 @@ import * as UpstreamDisk from "../upstream/disk.ts";
 import { DRAFTS_MAX_THREADS } from "./drafts.ts";
 import * as LimitResume from "./LimitResume.ts";
 
-// POST /api/stemcells/limit-resume/drafts: a screen's chats with words in a
-// composer, `{ screen, threadIds }`, its whole list each time. A Cell a
-// usage limit stopped never carries on by itself while one is listed. A
-// report can only hold a resume back, never cause one, so reading access
-// is enough to send it.
+// POST /api/stemcells/limit-resume/drafts: a screen's chats with words in a composer,
+// `{ screen, threadIds }`, its whole list each time. A report can only hold a resume back, never
+// cause one, so reading access is enough to send it.
 
 const DRAFTS_PATH = "/api/stemcells/limit-resume/drafts";
 

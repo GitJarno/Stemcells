@@ -1,14 +1,8 @@
 /**
- * Stemcells: the flight layer (stemcells/tasks/windows.md, The flight
- * layer). What a carry shows outside any window, a chip or a window preview
- * in the hand, is drawn on a transparent, click-through window over each
- * display, made as the snapshot overlay makes one. It draws boxes and
- * stills and nothing else: the page that carries sends what to draw and
- * how it moves, resolved from its motion tokens.
- *
- * A layer lives for one flight. Kept between flights, a hidden layer would
- * be the "first window" upstream reveals on a Dock click when no app window
- * is open.
+ * Stemcells: the flight layer (stemcells/tasks/windows.md). A transparent, click-through
+ * window per display, made as the snapshot overlay makes one, draws only the boxes and
+ * stills the carrying page sends. A layer lives for one flight: a hidden one kept between
+ * flights would be the "first window" upstream reveals on a Dock click.
  */
 import * as Electron from "electron";
 

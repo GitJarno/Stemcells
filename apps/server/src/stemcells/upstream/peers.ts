@@ -1,11 +1,8 @@
 /**
- * Where upstream builds the text a provider reads for a message, at a turn's
- * start (`ProviderTurnStartService`) and for a steer
- * (`ProviderTurnControlService`), a message from another Cell gets the peer
- * frame (stemcells/tasks/peers.md, decision 2), and a turn's start the note
- * on who's here when it changed (decision 6). Upstream gives the provider
- * the message's text alone, with its composer context references written
- * out; this does the same, then frames it.
+ * Where upstream builds a provider's text at a turn's start (`ProviderTurnStartService`) and
+ * for a steer (`ProviderTurnControlService`), a message from another Cell gets the peer frame
+ * (stemcells/tasks/peers.md, decision 2) and a turn's start the who's-here note when it
+ * changed (decision 6). The text is upstream's (context references written out), then framed.
  */
 import {
   type OrchestrationMessageContext,
@@ -123,11 +120,10 @@ export const providerText = Effect.fn("Stemcells.peers.providerText")(function* 
 });
 
 const toldCap = 2_000;
-// Per server (its projection store), the roster each thread's provider
-// thread was last told: in memory, so after a restart each Cell is told once
-// more, and a fresh provider thread (another provider, a handoff) is told
-// anew. Recorded as the text is built: a turn the provider then refuses
-// leaves it told until the roster changes.
+// Per server (its projection store), the roster each provider thread was last told. In
+// memory, so after a restart each Cell is told once more, and a fresh provider thread (another
+// provider, a handoff) is told anew. Recorded as the text is built: a turn the provider then
+// refuses leaves it told until the roster changes.
 const told = new WeakMap<object, Map<string, string>>();
 
 const millisOf = (shell: OrchestrationV2ThreadShell) =>

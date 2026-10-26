@@ -16,25 +16,10 @@ import { PhasedContact, type ScrollPhases } from "./phases";
 import { LIFT_GAP } from "./swipe";
 
 /**
- * The tabs' pages side by side on one strip across the slate, and the
- * two-finger swipe that travels between them. The strip moves with the
- * fingers, one transform written once a frame, with nothing re-rendering;
- * letting go springs it to a page, and the tab turns once that slide is
- * under way. A turn by other means (a click, a key, a route) slides too;
- * one that takes over a slide still running carries on at its speed.
- *
- * The page on stage is the active tab's. The others are inert: only the
- * page on stage takes the pointer, the keyboard and focus.
- *
- * While the pages move, from the moment the fingers take the strip or a
- * slide sets off until it rests on a page, `[data-stemcells-pages]` carries
- * `data-moving`. Whatever can't move with them (a native view over a page)
- * watches it.
- *
- * The new Cell's page, past the last tab (`newCell.ts`), is the strip's
- * last. Its tab in the tab bar shows as much as the page does: the strip
- * sets the tab's `--stemcells-shown` (0 to 1) each frame it moves, and
- * slides it alongside, on the same spring.
+ * The tabs' pages side by side on one strip, and the two-finger swipe between them: one transform
+ * written a frame, nothing re-rendering. Only the page on stage takes pointer, keys and focus.
+ * While pages move, `[data-stemcells-pages]` carries `data-moving` for what can't move with them
+ * (a native view). The new Cell's tab follows its page through `--stemcells-shown` (0 to 1).
  */
 export function TabPager(props: {
   /** Every tab, in the strip's order: a tab's place is its index. */
@@ -55,12 +40,14 @@ export function TabPager(props: {
   const viewportRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the page strip to its viewport; detach on unmount.
   useLayoutEffect(() => {
     if (viewportRef.current === null || stripRef.current === null) return;
     strip.attach(viewportRef.current, stripRef.current);
     return () => strip.detach();
   }, [strip]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the strip this render's tabs and callbacks before paint.
   useLayoutEffect(() => {
     strip.sync(props.tabIds, props.activeId, props.onTurn, {
       id: props.newCellId ?? NO_NEW_CELL.id,

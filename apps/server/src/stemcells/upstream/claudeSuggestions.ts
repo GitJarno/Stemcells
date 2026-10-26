@@ -6,13 +6,10 @@ import * as Stream from "effect/Stream";
 import * as ClaudeAdapterV2 from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
 import { forgetProviderSuggestion, offerProviderSuggestion } from "../suggestions/provider.ts";
 
-// Claude Code predicts what the person will say next after each turn, on a
-// fork of the turn that reads its prompt cache, so it costs almost nothing
-// (`promptSuggestions`, Agent SDK). Upstream's adapter doesn't ask for it.
-// This wraps the runner the adapter opens its queries with (one line in
-// `ProviderOrchestrationAdapterInfrastructure.ts`), so the adapter, one of
-// upstream's hottest files, stays as upstream wrote it and never sees the
-// message.
+// Claude Code predicts the person's next message after each turn, on a fork reading its
+// prompt cache, so it costs almost nothing (`promptSuggestions`, Agent SDK). Upstream's
+// adapter doesn't ask for it, so this wraps the runner it opens queries with (one line in
+// `ProviderOrchestrationAdapterInfrastructure.ts`): the hot adapter stays upstream's.
 
 type Runner = ClaudeAdapterV2.ClaudeAgentSdkQueryRunner["Service"];
 type Session = ClaudeAdapterV2.ClaudeAgentSdkQuerySession;

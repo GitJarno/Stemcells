@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the brand files and the build script on disk.
 /**
- * The DMG's background (`stemcells/brand/dmg/`): the window a person drags
- * the app into Applications from. Upstream's says "Drag T3 Code into
- * Applications." beside T3's mark; the desktop build stages ours over it
- * (`scripts/build-desktop-artifact.ts`, one seam) before it renders the
- * PNGs the DMG shows. Fails when upstream ships a background ours doesn't
- * replace, when ours says T3's name or draws a mark, or when the build no
- * longer stages ours before it renders.
+ * The DMG's background (`stemcells/brand/dmg/`), which the desktop build stages over upstream's
+ * (`scripts/build-desktop-artifact.ts`, one seam) before rendering. Fails when upstream ships a
+ * background ours doesn't replace, when ours says T3's name or draws a mark, or when the build
+ * no longer stages ours before it renders.
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";

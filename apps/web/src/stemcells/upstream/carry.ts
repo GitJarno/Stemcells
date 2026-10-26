@@ -1,13 +1,8 @@
 /**
- * What a message carries besides its words, taken to the Cells its words
- * start beside the draft's own: its pictures and files, and the context
- * its chips point at (terminal output, review comments, annotations, other
- * chats). Each Cell gets all of it, as each thread of upstream's
- * multiple-model send does; a chip's context reaches the model only where
- * that Cell's text has the chip. Upstream lets the draft's uploads go once
- * its own Cell has started, so the Cells beside it take their own: one
- * upload of each file per machine, shared by every Cell there.
- * `launch.contract.test.ts` pins what this follows.
+ * A message's pictures, files and chip context, taken to each Cell it starts beside the draft's
+ * own, as upstream's multiple-model send does; a chip's context reaches the model only where
+ * that Cell's text has the chip. Upstream lets the draft's uploads go once its Cell starts, so
+ * the others upload their own, once per file per machine (`launch.contract.test.ts`).
  */
 import type {
   ChatAttachment,

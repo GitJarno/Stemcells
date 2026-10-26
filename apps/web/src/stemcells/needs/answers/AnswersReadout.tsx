@@ -14,18 +14,17 @@ interface Pop {
 }
 
 /**
- * What Enter does with the words in Aski's composer, as one line in the
- * model picker's place (stemcells/tasks/aski-room.md, decision 8): each
- * card's number and Cell, then what it gets, answers first; then "rest →
- * Aski" for the words that go to Aski. Upstream's fitting measures it as the
- * picker. When the row can't hold it, the line ends short, and a click opens
- * it whole.
+ * What Enter does with the words in Aski's composer, one line in the model picker's place
+ * (stemcells/tasks/aski-room.md, decision 8): each card's number, Cell and what it gets, then
+ * "rest → Aski". Upstream's fitting measures it as the picker; when the row can't hold it, the
+ * line ends short and a click opens it whole.
  */
 export function AnswersReadout(props: { readonly shown: ShownAnswers }) {
   const { parts, rest } = props.shown;
   const root = useRef<HTMLButtonElement>(null);
   const [pop, setPop] = useState<Pop | null>(null);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Close the open popover on Escape or an outside pointerdown; remove the listeners when it closes.
   useEffect(() => {
     if (pop === null) return;
     const close = (event: Event) => {

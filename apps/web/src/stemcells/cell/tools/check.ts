@@ -1,11 +1,7 @@
-// The rules a drawing must pass before it ships. The original's, ported
-// (its pack test): known roles, inside the canvas, one eye left whole,
-// nothing dark against the void, clothing clear of the mouth. Then
-// Stemcells' own: every scene keeps the art on the canvas, the outline reads
-// on the light frame after its keyline as on black, moves keep the beat and
-// say what Reduce Motion holds, and a pack's outfits stay apart. On the
-// original's art these are notes, never failures: it is the reference
-// (`stemcells/docs/cell-art.md`).
+// The rules a drawing must pass before it ships: the original's pack test, ported (known roles,
+// inside the canvas, one eye whole, nothing dark on the void, clothing clear of the mouth), then
+// Stemcells' own (art on the canvas, outlines that read on light and black, moves on the beat,
+// outfits apart). On the original's art they are only notes (`stemcells/docs/cell-art.md`).
 
 import {
   BODY_ROLES,
@@ -140,11 +136,10 @@ function fabricRoles(look: CellLook): Set<string> {
 }
 
 /**
- * What a look breaks at rest (the original's rules, at both sizes) and in
- * any scene (art falling off the canvas, a warning: the original's own hats
- * do in the plea's hop). `mouth` holds a piece to the mouth zone (headwear
- * and back pieces: a face piece is the face's own, a wrap is the Cell's
- * trousers); `eyesAllowed` frees a variant posed only for work.
+ * What a look breaks at rest (the original's rules, both sizes) and in any scene (art off the
+ * canvas only warns: the original's own hats do in the plea's hop). `mouth` holds a piece to the
+ * mouth zone (headwear and back pieces; a face piece is the face's, a wrap the Cell's trousers);
+ * `eyesAllowed` frees a variant posed only for work.
  */
 function lookFindings(
   subject: string,

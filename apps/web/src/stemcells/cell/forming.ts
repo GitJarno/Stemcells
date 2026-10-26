@@ -1,8 +1,7 @@
 // A Cell forming on its line as it starts: the spawn's last beats
-// (`stemcells/docs/interaction.md`). The words' stream condenses into glyphs
-// over the Cell's box; at the hand-off the Cell takes over, its outline in
-// blocks ░▒▓█, then its own pixels, a crouch and a hop onto its line.
-// Nothing waits on it: a Cell no call forms just stands.
+// (`stemcells/docs/interaction.md`). The words' stream condenses into glyphs over the Cell's
+// box; then the Cell takes over, its outline in blocks ░▒▓█, its own pixels, a crouch and a
+// hop. Nothing waits on it: a Cell no call forms just stands.
 
 import { useSyncExternalStore } from "react";
 
@@ -29,11 +28,10 @@ const formings = new Map<string, Forming>();
 const listeners = new Set<() => void>();
 
 /**
- * Forms the Cell of `threadId` at `at`, a `performance.now()` time: before
- * it the Cell's box is the stream's, from it the Cell plays its blocks and
- * its hop. Call it as soon as the thread is known: a Cell already standing
- * when asked leaves its box until `at`. A call whose forming has played out
- * leaves the Cell standing, and under Reduce Motion nothing forms.
+ * Forms the Cell of `threadId` at `at`, a `performance.now()` time: before it the Cell's box
+ * is the stream's, from it the Cell plays its blocks and hop. Call it as soon as the thread is
+ * known: a Cell already standing leaves its box until `at`. A call already played out leaves
+ * the Cell standing, and under Reduce Motion nothing forms.
  */
 export function formAt(threadId: string, at: number): void {
   if (reducedMotion()) return;

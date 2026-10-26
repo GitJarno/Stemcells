@@ -1,10 +1,8 @@
 /**
- * What Aski's page takes from upstream to answer a Cell
- * (stemcells/tasks/aski-room.md, "Action catalogue"): the primary
- * environment's stream of what needs the person, a thread's live shell, and
- * the thread commands upstream's own chat sends, run the way its chat runs
- * them. Nothing here can approve except `respond` with an allow decision,
- * which only a click on Aski's page reaches.
+ * What Aski's page takes from upstream to answer a Cell (stemcells/tasks/aski-room.md, "Action
+ * catalogue"): the primary environment's stream of what needs the person, a thread's live
+ * shell, and upstream's own chat's thread commands, run as it runs them. Only `respond` with an
+ * allow decision can approve, and only a click on Aski's page reaches it.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import {

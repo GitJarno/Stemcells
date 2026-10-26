@@ -109,7 +109,10 @@ describe("native surfaces' contracts with upstream", () => {
     // Our substitute measures upstream's box, the first child of a wrapper
     // without one, and bumps the version when the pages rest.
     expect(slot).toContain(
-      "return <div ref={elementRef} className={className} data-browser-surface-slot={tabId} />;",
+      "return <div ref={attachSurface} className={className} data-browser-surface-slot={tabId} />;",
+    );
+    expect(slot).toMatch(
+      /const attachSurface = \(element: HTMLDivElement\) => \{[\s\S]*?const rect = element\.getBoundingClientRect\(\);/,
     );
     expect(slot).toMatch(/\[\s*cornerRadius,[^\]]*layoutVersion,\s*visible,\s*zIndex,\s*\]/);
   });

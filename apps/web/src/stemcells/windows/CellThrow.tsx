@@ -1,12 +1,8 @@
 /**
- * A Cell thrown (stemcells/docs/interaction.md, The toss), in flight inside
- * its chat. Its chat stayed where it was and its place on the composer's line
- * stands empty; the Cell flies in a layer over the window's content, kept to
- * its chat's pane and moved by its transform alone. The flight is `throw.ts`, the Cell draws its facts
- * (`CellToss`), and a real hit says BONK! under it (`BonkWord`). Caught
- * mid-air it hangs from the hand and is thrown again; Esc sends it home.
- * Home, the layer goes and nothing of it runs; so does leaving the page it
- * flies over, which puts it home at once.
+ * A Cell thrown (stemcells/docs/interaction.md, The toss), flying inside its chat while its
+ * place on the composer's line stands empty: a layer over the window's content, kept to its
+ * chat's pane and moved by its transform alone (`throw.ts`). Esc sends it home; once home, or
+ * when the page it flies over goes, the layer goes too and nothing of it runs.
  */
 import {
   Component,
@@ -145,11 +141,10 @@ function watchEscape(event: KeyboardEvent): void {
 }
 
 /**
- * Esc sends every Cell in its flight proper home when it is no one
- * else's: no field has focus, no layer is open (upstream's own rule,
- * `upstream/layers.ts`), and no one claimed it (find closing, say). A
- * carry never lets it get here: it takes Esc first and stops it. Decided
- * once every handler has had it, so one Esc does one thing.
+ * Esc sends every Cell in its flight proper home when it is no one else's: no field has focus,
+ * no layer is open (upstream's rule, `upstream/layers.ts`), and no one claimed it (find
+ * closing, say). A carry takes Esc first and stops it. Decided once every handler has had it,
+ * so one Esc does one thing.
  */
 function onEscape(event: KeyboardEvent): void {
   if (event.key !== "Escape" || event.isComposing) return;
@@ -436,11 +431,13 @@ function FlyingCell(props: { readonly launch: Launch }) {
   const [words, setWords] = useState<ReadonlyArray<Word>>([]);
   const [flight] = useState(() => new Flight(launch, box, setWords));
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Start the flight before paint and send the Cell home when it unmounts.
   useLayoutEffect(() => {
     flight.start();
     return () => flight.leave();
   }, [flight]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Watch resizes, the active tab and Reduce Motion while the Cell flies; unsubscribe on unmount.
   useEffect(() => {
     const resized = () => flight.measure();
     // Another tab on stage, or Reduce Motion turned on: it is home at once.

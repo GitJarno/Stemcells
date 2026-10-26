@@ -55,8 +55,11 @@ const refusal = Effect.fn("StemcellsAccess.refusal")(
 const withScope =
   (scope: AuthEnvironmentScope) =>
   <E, R>(handler: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>) =>
-    Effect.flatMap(refusal(scope), (refused) =>
-      refused === null ? handler : Effect.succeed(refused),
+    refusal(scope).pipe(
+      Effect.filterOrElse(
+        (refused): refused is HttpServerResponse.HttpServerResponse => refused !== null,
+        () => handler,
+      ),
     );
 
 /** Runs `handler` only for a caller allowed to read this environment. */

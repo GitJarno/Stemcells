@@ -1,10 +1,8 @@
 /**
- * The reader: what a message sets up before it's sent. It reads how many
- * Cells, in which projects, on which models and efforts, and how the work
- * is shared, from the words alone: locally, on every keystroke, and the same
- * way on every screen. These facts are final. Aski's planner may fill only
- * what they leave open (an open place, who does what) and never changes
- * them. The design is `stemcells/tasks/prompting.md`, decisions 1 to 11.
+ * The reader: what a message sets up before it's sent (how many Cells, which projects, models
+ * and efforts, how the work is shared), from the words alone, locally on every keystroke and the
+ * same on every screen. These facts are final: Aski's planner fills only what they leave open
+ * and never changes them. The design: `stemcells/tasks/prompting.md`, decisions 1 to 11.
  */
 
 import type { ModelLexicon } from "./catalog";

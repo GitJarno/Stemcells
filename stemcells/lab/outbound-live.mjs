@@ -1,36 +1,8 @@
-// Who the running app contacts: the built desktop app is used for a few
-// minutes in the desktop lab, and every name it looks up and every
-// connection it opens is written down. Anything beyond this machine fails
-// the run, unless `stemcells/outbound.txt` lists the host as `live`, with
-// why. The runtime half of a sync's outbound gate
-// (`stemcells/scripts/sync-upstream --gates outbound-live`, after `build`).
+// Who the running app contacts, the runtime half of a sync's outbound gate: the built app runs
+// in the desktop lab on a scratch home with fake CLIs, every lookup and connection is recorded
+// and held, and any beyond this machine fails unless `stemcells/outbound.txt` lists it `live`.
 //
 //   node stemcells/lab/outbound-live.mjs [--seconds 180]
-//
-// The app runs through stemcells/lab/electron (no window reaches the
-// screen), in a scratch home whose every provider is a fake CLI inside it
-// (fakes-only.cjs), with no account of the person's: HOME is scratch too,
-// and Chromium's keychain is a mock. Three records are kept, and none of
-// them lets a contact leave:
-//   - Chromium's net log (Electron's netLog, which net-watch.cjs starts in
-//     the main process): every page, Electron `net` and updater request,
-//     and every name Chromium resolves. Every name but loopback resolves to
-//     nothing, so no request is sent.
-//   - net-watch.cjs, in every Node process (Electron's main, the server,
-//     Node children): every lookup and socket; those beyond loopback fail.
-//   - lsof over the whole process tree every half second: any socket with
-//     a peer beyond loopback, from any process, Node or not.
-// A record that didn't take fails the run: the page sends one request to a
-// reserved name (PROBE_HOST) that the net log must show, and Electron's
-// main and the server must each have loaded net-watch.cjs.
-// The drive: the app's page opens, a chat starts on its composer and is
-// sent a message (the fake answers nothing), every settings page and the
-// usage page is visited, and the app then idles until the time is up.
-//
-// The result is printed and kept in `<git dir>/stemcells-outbound-live.md`,
-// which `sync-upstream --report` puts at the top of the sync's report.
-// Exits 0 when only loopback was contacted, 1 when anything else was (or
-// the drive failed), 2 when the app isn't built.
 import * as NodeChildProcess from "node:child_process";
 import * as NodeFS from "node:fs";
 import * as NodeModule from "node:module";
@@ -148,15 +120,10 @@ export function netLogEvents(text) {
 }
 
 /**
- * The hosts a Chromium net log shows it contacting, each with when (`at`,
- * ms since the epoch) and, for a name the lab's rule held, a note.
- *
- * - A UDP socket that connected and sent nothing reached no one: Chromium
- *   checks IPv6 that way, by connecting to Google's DNS address.
- * - A socket's own (local) address is this machine's.
- * - A name the rule held shows only as HELD_NAME. Next to a request it is
- *   that request's, whose URL names the host; on its own it is reported,
- *   since the log keeps no other name for it.
+ * The hosts a Chromium net log shows it contacting, with when (`at`, epoch ms) and a note for a
+ * held name. A UDP socket that sent nothing reached no one (Chromium's IPv6 check); a local
+ * address is this machine's. A held name shows only as HELD_NAME: beside a request, its URL
+ * names the host; alone, it is reported, as the log keeps no other name.
  */
 export function netLogHosts(text) {
   const events = netLogEvents(text);
@@ -655,9 +622,9 @@ async function drive(port, until, drove, ended, step) {
     drove.push("a chat opened on its composer and was sent a message");
     await page.waitForTimeout(5_000);
 
-    // Every settings page, and the usage page.
+    // Every settings page, and the usage page; upstream opens them over the chat (`_chat.`).
     const routes = NodeFS.readdirSync(NodePath.join(root, "apps/web/src/routes"))
-      .map((file) => /^(settings\.[\w-]+|usage)\.tsx$/.exec(file)?.[1])
+      .map((file) => /^(?:_chat\.)?(settings\.[\w-]+|usage)\.tsx$/.exec(file)?.[1])
       .filter(Boolean)
       .map((name) => `/${name.replace(".", "/")}`);
     let visited = 0;

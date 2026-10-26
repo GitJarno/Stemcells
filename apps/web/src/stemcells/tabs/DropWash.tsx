@@ -6,18 +6,14 @@ import "../tokens/stemcells.css";
 import "./drop.css";
 
 /**
- * A file carried over a chat (the Mac app's drop wash): the chat it would
- * land in shows a white sheet, a soft fill inside a hairline, floating just
- * inside the pane's edges. One shape for the whole slate, never one per
- * chat, on the chat it would land in now: it lights, moves to the next chat
- * and goes out the frame the drag crosses (`drop.css`). Nothing is dimmed,
- * blurred or labelled.
- *
- * Upstream decides which chat takes the drop (`upstream/drop.ts`); the wash
- * only draws it. It renders inside the slate, whose corners it reads.
+ * A file carried over a chat (the Mac app's drop wash): one white sheet for the whole slate,
+ * never one per chat, over the pane it would land in now; nothing is dimmed, blurred or labelled.
+ * Upstream decides which chat takes the drop (`upstream/drop.ts`); the wash only draws it,
+ * inside the slate, whose corners it reads (`drop.css`).
  */
 export function DropWash() {
   const ref = useRef<HTMLDivElement>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the wash's drag listeners to its slate; detach on unmount.
   useEffect(() => {
     const wash = ref.current;
     const slate = wash?.parentElement;
@@ -58,11 +54,10 @@ function landingPane(slate: HTMLElement): HTMLElement | null {
 }
 
 /**
- * Moves the wash as a drag crosses the slate, writing its style directly:
- * a crossing renders nothing in React. Upstream's drop handlers run after
- * these listeners (React listens at the root) and React mounts its overlay
- * when it gets to it, so while a drag is over the slate the wash watches
- * the slate for that overlay coming and going, and follows it a frame later.
+ * Moves the wash as a drag crosses the slate, writing its style directly: a crossing renders
+ * nothing in React. Upstream's drop handlers run after these listeners (React listens at the
+ * root) and mount its overlay later, so while a drag is over the slate the wash watches for that
+ * overlay coming and going, and follows it a frame later.
  */
 class WashLight {
   private frame: number | null = null;

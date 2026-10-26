@@ -1,13 +1,8 @@
 /**
- * The new Cell past the last tab. Two fingers swiped past the last tab
- * bring a fresh new Cell's page, ready to write in. Sending starts the
- * Cell, and its tab becomes a normal tab; leaving without sending takes the
- * tab away with no trace in the strip, the tab bar or the stored tabs,
- * while its draft keeps any words for the next time.
- *
- * Until it is taken, the new Cell is no tab of the workspace: the pager
- * shows its page as the strip's last. Taken, it is the last tab, and stays
- * "bare" (one pane showing its unsent draft) until it is sent or changed.
+ * The new Cell past the last tab: swiping past the last tab brings a fresh page to write in.
+ * Until taken it is no tab of the workspace; the pager shows its page as the strip's last. Taken,
+ * it is the last tab, "bare" until sent or changed. Sending makes it a normal tab; leaving unsent
+ * removes it without a trace, its draft keeping any words for next time.
  */
 import {
   closeTab,

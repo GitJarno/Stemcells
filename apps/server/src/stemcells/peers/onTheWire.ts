@@ -1,9 +1,7 @@
-// Whether this process's provider text carries Stemcells' words: the frame
-// around another Cell's message and the roster of who's here. They go on the
-// wire while Stemcells' server layer runs (`layer.ts`), as `elsewhere.ts` is
-// filed. Upstream's components built alone, as upstream's suites build them,
-// send upstream's text: those suites pin it byte for byte in recorded
-// provider replays, and run on our tree in every sync's gates.
+// Whether this process's provider text carries Stemcells' words (the frame around another
+// Cell's message, the roster of who's here): yes while Stemcells' server layer runs
+// (`layer.ts`), as `elsewhere.ts` is filed. Upstream's components built alone send upstream's
+// text: their suites pin it byte for byte in recorded replays, run on our tree every sync.
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";

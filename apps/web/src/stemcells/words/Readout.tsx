@@ -19,24 +19,10 @@ interface Pop {
 }
 
 /**
- * What Send will do when the words start several Cells (decision 10): one
- * sentence of tokens, the words read back, standing in the model picker's
- * place in the controls row (`readoutSlot.ts`). A word you typed wears its
- * plate and opens its menu; a default is dim. Past the most Cells, the
- * count wears the warning edge and says so; so does a message whose Cells
- * only a planner could share the work out to, when there's none to ask.
- * While Aski thinks, and once its plan waits for a second Enter, it says
- * so, and a place Aski picked wears the accent; a risky act Aski wrote
- * asks "Is this what you meant?", and only ⌘↵ starts it. A provider whose plan runs
- * short says so too.
- *
- * Upstream's fitting measures it as it measures the picker. The whole
- * sentence shows when the row holds it beside every other control at full
- * size; otherwise it folds to "3 Cells · Harbor, Atlas ▾", which opens it
- * whole (decision 18), and the fold is what upstream fits: the row's other
- * controls go small only when even the fold doesn't fit. A warning and a
- * plan's note stay in the fold, after the places; cut short, a plan's tone
- * stays on the caret. The count never goes.
+ * What Send will do when the words start several Cells (decision 10): one sentence of tokens in
+ * the model picker's place (`readoutSlot.ts`). It shows whole when the row holds it beside every
+ * control at full size, else folds to "3 Cells · Harbor, Atlas ▾" (decision 18), and upstream
+ * fits the fold; a warning and a plan's note stay in it, and the count never goes.
  */
 export function Readout(props: {
   readonly readout: ReadoutData;
@@ -83,6 +69,7 @@ export function Readout(props: {
     setFolded(!holds);
     if (holds) setPop(null);
   });
+  // oxlint-disable-next-line t3code/react-effect-budget -- Observe the row and the controls beside it to refit the sentence, disconnecting on unmount.
   useLayoutEffect(() => {
     const at = root.current;
     const row = at?.parentElement;
@@ -91,10 +78,12 @@ export function Readout(props: {
     return observeResize([at, row, ...row.querySelectorAll("[data-resting-block]")], () => fit());
   }, []);
   // The words changed: the sentence may be longer or shorter now.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Refit the sentence against the row's measured width before paint after each render.
   useLayoutEffect(() => fit());
 
   // The sentence closes on Esc and on a press outside it (a token's menu
   // counts as inside, and takes Esc first).
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for Esc and outside presses while the sentence is open, removing them on close.
   useEffect(() => {
     if (shown === null) return;
     const close = (event: Event) => {

@@ -1,8 +1,7 @@
-// Aski on the phone, at rest, as the Mac draws it: its body in the ink of
-// the text, its eyes in the colour of what it stands on, so they read as
-// cut out of it. The eyes blink with every Aski (`blinks.ts`) by squashing
-// toward their line on the UI thread, so a blink draws nothing again; eyes
-// wearing a mood hold it, and under Reduce Motion they don't blink.
+// Aski on the phone, at rest, as the Mac draws it: body in the text's ink, eyes in the colour
+// beneath, so they read as cut out. The eyes blink with every Aski (`blinks.ts`) by squashing
+// on the UI thread, so a blink redraws nothing; eyes wearing a mood hold it, and under Reduce
+// Motion they don't blink.
 
 import { useEffect } from "react";
 import { type ColorValue, View } from "react-native";
@@ -43,6 +42,7 @@ export function AskiFigure(props: {
   const width = VIEW.width * scale;
   const open = useSharedValue(1);
   const holds = useReducedMotion() || props.mood !== undefined;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to the shared blink clock while the eyes may blink, and unsubscribe on change or unmount.
   useEffect(() => {
     if (holds) return;
     return onBlink(() => {

@@ -1,9 +1,7 @@
-// Replaces `components/chat/useChatShortcuts.ts` (`plugin.ts`): a chat's
-// window shortcuts and type-to-focus act only in the chat that owns the
-// window's input, so with several chats on screen a key acts once
-// (`stemcells/seams.md`, "ChatView safe to render twice"). Outside a pane
-// every chat owns it, as upstream's does. A bare chat (Aski's) opens no
-// surface and no terminal from a key.
+// Replaces `components/chat/useChatShortcuts.ts` (`plugin.ts`): window shortcuts and
+// type-to-focus act only in the chat owning the window's input, so a key acts once with several
+// chats on screen (`stemcells/seams.md`, "ChatView safe to render twice"); outside a pane every
+// chat owns it. A bare chat (Aski's) opens no surface and no terminal from a key.
 import { use } from "react";
 
 import { useOwnsChatWindowInput } from "../../../components/chat/chatWindowInput";

@@ -36,10 +36,11 @@ export function Rail() {
   const backToWork = useNavigateToMainApp();
   const searchKeys = useShortcutLabel("commandPalette.toggle");
   const setWidth = useColumnStore((store) => store.setWidth);
-  // Upstream's toggle can hide the rail, and Settings has no ⌘Z to undo with.
+  // Upstream's toggle can hide the rail, and Settings and Usage have no ⌘Z to undo with.
   const { open } = useSidebar();
-  useRailUndoNotice(open && lit !== "settings" && lit !== "disk");
+  useRailUndoNotice(open && lit === null);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the rail column while it is mounted.
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.stemcellsColumn = "rail";

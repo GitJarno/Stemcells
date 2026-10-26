@@ -8,7 +8,7 @@ import { isDraftThreadRoute } from "../../features/threads/thread-route-state";
 
 /**
  * Contract: a new task's draft opens as the root stack's `Thread` route,
- * its draft in `draft` (#23467). Settings › Disk opens its cleanup Cell
+ * its draft in `draft`. Settings › Disk opens its cleanup Cell
  * that way (`upstream/disk.ts`); a route name is only a string to the type
  * checker, so a renamed route would fail only when the person taps.
  */

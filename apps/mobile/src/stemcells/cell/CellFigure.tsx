@@ -1,10 +1,6 @@
-// A Cell's character on the phone, as the Mac draws it (`apps/web/src/
-// stemcells/cell/CellFigure.tsx`): the kit's art in its provider's colours,
-// wearing what it was dealt, its face from its mood, the "?" over it while
-// it waits on you. Held still it only blinks; playing, it acts out its
-// scene on the sprite clock. Its box is the miniature's (13 × 14 cells),
-// hats and all, so every Cell stands on the same line; its picture reaches
-// past the box by the margin, taking no room.
+// A Cell on the phone, as the Mac draws it (`apps/web/src/stemcells/cell/CellFigure.tsx`).
+// Its box is the miniature's (13 × 14 cells), hats and all, so every Cell stands on the same
+// line; its picture reaches past the box by the margin, taking no room.
 
 import { useSyncExternalStore } from "react";
 import { Text, View } from "react-native";

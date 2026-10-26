@@ -1,9 +1,8 @@
 /**
- * The places a new chat's words start Cells in, by draft, for the hero
- * above its composer: "What should we build in Harbor and Atlas?", or "in
- * 3 projects?" past two (decision 10). The composer's words write them,
- * and the hero reads them (`upstream/substitutes/DraftHeroProjectHeading.tsx`).
- * One place, or none, leaves the hero as it is.
+ * The places a new chat's words start Cells in, by draft, for the hero over its composer: "What
+ * should we build in Harbor and Atlas?", or "in 3 projects?" past two (decision 10). The words
+ * write them; the hero reads them (`upstream/substitutes/DraftHeroProjectHeading.tsx`). One
+ * place, or none, leaves the hero as it is.
  */
 import { useSyncExternalStore } from "react";
 

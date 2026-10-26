@@ -1,10 +1,8 @@
 /**
- * What the line over a Cell's composer says its chat is about: upstream's
- * title for the thread. Once the first message is sent, upstream asks a
- * model for a title of a few words that is never the message cut short, so
- * the line takes it as it comes and drops only what says nothing: no title,
- * upstream's placeholder, or a title that is only the names the line
- * already shows ("garden" beside the garden project).
+ * What the line over a Cell's composer says its chat is about: upstream's thread title, which
+ * a model writes after the first send and is never the message cut short. So the line takes it
+ * as it comes and drops only what says nothing: no title, upstream's placeholder, or only the
+ * names the line already shows ("garden" beside the garden project).
  */
 import { UNTITLED_THREAD } from "../upstream/titles";
 

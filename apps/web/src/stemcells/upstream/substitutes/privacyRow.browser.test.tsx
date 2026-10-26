@@ -1,12 +1,8 @@
 /**
- * Upstream's "Privacy policy" row stays in its General panel, but Stemcells
- * never offers it: it links T3's policy as the account of "the anonymous
- * usage data T3 Code collects", and Stemcells sends none. The settings
- * search substitute hands the row `hidden` through the props upstream's row
- * spreads on its root, so with the app's own styles it takes no space, shows
- * nothing, and nothing in it takes the keyboard's focus. It links out only;
- * what keeps the person's data at home is the server's no-op analytics
- * (`analytics.contract.test.ts`).
+ * Upstream's "Privacy policy" row links T3's account of "the anonymous usage data T3 Code
+ * collects", and Stemcells sends none, so the settings search substitute hands it `hidden`
+ * through the props it spreads on its root: no space, nothing shown, no focus. The no-op server
+ * analytics keep the person's data at home (`analytics.contract.test.ts`).
  */
 import "../../../index.css";
 

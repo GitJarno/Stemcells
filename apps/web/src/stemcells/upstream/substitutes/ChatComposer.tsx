@@ -1,13 +1,7 @@
-// Replaces `components/chat/ChatComposer.tsx` (`plugin.ts`): a message
-// whose words set up a new Cell is sent without its setup words, and one
-// that starts several waits past the most for ⌘↵ (`stemcells/words/send.ts`),
-// and their readout stands in the model picker's place
-// (`stemcells/words/readoutSlot.ts`). What reads the words hands it both
-// through slots, each reader under its turn; upstream's composer and its
-// send stay as they are. Only
-// Aski's own chat offers Aski's instance (`../cellInstance.ts`). Once its
-// Cell has replied, the composer hands its editor what the person would
-// likely say next (`stemcells/suggestions`).
+// Replaces `components/chat/ChatComposer.tsx` (`plugin.ts`); upstream's composer and send stay.
+// Setup words go unsent, a send that starts several waits past the most for ⌘↵, and their
+// readout takes the model picker's place (`stemcells/words`). Only Aski's chat offers Aski's
+// instance; a replied Cell suggests what's next; a pane without window input drops shortcuts.
 import { memo, type ReactNode, useState } from "react";
 
 import {
@@ -21,6 +15,7 @@ import {
   usePromptSuggestion,
 } from "../../suggestions/usePromptSuggestion";
 import { useComposerInstances } from "../cellInstance";
+import { WindowInputGate } from "../windowInput";
 
 export * from "../../../components/chat/ChatComposer";
 
@@ -52,7 +47,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     <WordsSendSlot value={slots.register}>
       <ReadoutSlot>
         <PromptSuggestionContext value={suggestion}>
-          <UpstreamChatComposer {...props} {...instances} onSend={send} />
+          <WindowInputGate>
+            <UpstreamChatComposer {...props} {...instances} onSend={send} />
+          </WindowInputGate>
         </PromptSuggestionContext>
       </ReadoutSlot>
     </WordsSendSlot>

@@ -1,10 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
-// A Cell's character: the original app's Cell, drawn from the kit frame by
-// frame in its provider's colours, wearing what it was dealt, playing what
-// its mood and its work call for, with the "?" over it while it waits on
-// you. Its box is the miniature's (13 × 14 cells), hats and all, so every
-// Cell stands on the same line. Its picture reaches past the box by a
-// margin (`MARGIN`), where the original's widest pieces go, taking no room.
+// A Cell's character: the original app's Cell, drawn from the kit frame by frame in its
+// provider's colours, wearing its deal, playing its mood and work, with the "?" while it waits
+// on you. Its box is the miniature's (13 × 14 cells), hats and all, so every Cell stands on
+// one line; its picture reaches past the box by `MARGIN`, taking no room.
 
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Activity } from "./activity.ts";
@@ -38,14 +36,10 @@ function formedOf(look: CellLook) {
 }
 
 /**
- * A Cell's character in its mood. It wears `look` (ids `looks.ts` deals over
- * the crew in view, so no two look alike) when given; otherwise the
- * look its name is dealt alone, on the day it was first drawn, kept while it
- * stays on screen. Its name also picks when it blinks. Grown strong, it holds
- * its arms at rest; a landing that earned it flexes. As its cheer starts, a
- * + and a − rise for the lines its run added and removed, and are gone.
- * Asked to form as it starts, it condenses on its line from blocks, then
- * hops onto it (`forming.ts`).
+ * A Cell's character in its mood. It wears `look` (dealt over the crew in view, `looks.ts`)
+ * when given, else the look its name is dealt alone on the day it was first drawn, kept while
+ * it stays on screen. Its name also picks when it blinks. Grown strong it holds its arms at
+ * rest; asked to form, it condenses from blocks and hops onto its line (`forming.ts`).
  */
 export function CellFigure(props: {
   readonly name: string;
@@ -84,6 +78,7 @@ export function CellFigure(props: {
   const canvas = useRef<HTMLCanvasElement>(null);
   /** The landing whose marks it has raised, and from when (`clockSeconds`). */
   const rising = useRef<{ landing: number; from: number } | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Paint the figure's canvas on each stage clock tick, unsubscribing when what it shows changes.
   useLayoutEffect(() => {
     const element = canvas.current;
     if (element === null) return;

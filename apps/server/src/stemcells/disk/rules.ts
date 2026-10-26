@@ -1,9 +1,7 @@
-// How the disk is used, in the words a person uses for it: code, apps,
-// caches, media, not a directory tree. Every folder the walk reads gets a
-// context from its parent's: the kind its bytes count toward, the item it
-// is listed under, and the finding (space that could come back) it belongs
-// to. These are the earlier Stemcells app's rules, ported rule for rule;
-// only the folders it names for its own state are this app's.
+// How the disk is used, in a person's words (code, apps, caches, media), not a directory tree.
+// Every folder the walk reads gets a context from its parent's: the kind its bytes count toward,
+// the item it is listed under, and the finding (space that could come back) it belongs to.
+// Ported rule for rule from the earlier Stemcells app, but for the folders of its own state.
 
 export const DISK_KINDS = [
   "code",

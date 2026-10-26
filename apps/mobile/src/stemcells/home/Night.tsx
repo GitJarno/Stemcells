@@ -1,8 +1,6 @@
-// The night over the Asleep tab, as the original app's glade had it: a dark sky
-// fading into the screen below, a scatter of stars, the moon at tonight's
-// phase, and now and then a shooting star. It stands still between shooting
-// stars (nothing repaints), they come only while the app is in front, and
-// not at all under Reduce Motion.
+// The night over the Asleep tab: a dark sky, stars, the moon at tonight's phase, and now and
+// then a shooting star. It stands still between shooting stars (nothing repaints); they come
+// only while the app is in front, and not at all under Reduce Motion.
 
 import { useEffect, useState } from "react";
 import { AppState, type ColorValue, View } from "react-native";
@@ -57,6 +55,7 @@ function ShootingStar(props: {
 }) {
   const flight = useSharedValue(0);
   const [from, setFrom] = useState({ x: 0, y: 0 });
+  // oxlint-disable-next-line t3code/react-effect-budget -- Schedule shooting stars while the app is active, and clear the timer and AppState listener on unmount.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let shots = 0;

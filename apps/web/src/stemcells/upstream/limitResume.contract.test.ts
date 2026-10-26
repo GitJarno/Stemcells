@@ -94,6 +94,7 @@ describe("the limit banner", () => {
     stoppedAt: AT,
     snoozedUntil: null,
     recovery: null,
+    timestampFormat: "24-hour" as const,
     onChange: async () => {},
   };
 

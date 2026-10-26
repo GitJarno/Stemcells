@@ -12,12 +12,10 @@ import type * as Undici from "undici";
 
 import { isPictureType, publicAddresses, typeOfName } from "../upstream/attachments.ts";
 
-// Bringing a file another chat shows into a chat's draft, as an attachment
-// of its own: a copy in the attachment store, made here on the machine that
-// keeps the file, so a video never passes through a page. A remote address
-// is fetched once, into the store, never into the person's project, and
-// only from the public internet: never this machine, its network, or a
-// cloud's metadata address, however a name or a redirect points there.
+// Bringing a file another chat shows into a chat's draft: a copy in the attachment store, made
+// on the machine that keeps the file, so a video never passes through a page. A web address is
+// fetched once, into the store, never the project, and only from the public internet: never
+// this machine, its network or a cloud's metadata address, however a name or redirect points.
 
 /** Something to bring in: what it is called, its type, its size when known, and its bytes from the start. */
 export interface Incoming {
@@ -77,7 +75,6 @@ export const unfetched = () => refuse(502, "Couldn't fetch it");
  */
 export function cleanName(name: string | undefined): string | null {
   const last = (name ?? "").split(/[/\\]/).at(-1) ?? "";
-  // oxlint-disable-next-line no-control-regex -- control characters are what this removes.
   const clean = last.replace(/[\u0000-\u001f\u007f]/g, "").trim();
   return clean === "" ? null : clean.slice(0, 200);
 }

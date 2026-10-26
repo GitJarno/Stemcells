@@ -3,7 +3,8 @@
  * Cell's own chat would. A failure here after a sync names what moved; the
  * fix goes in `needs.ts` or the card's words, not in the column.
  */
-import { describe, expect, it } from "vite-plus/test";
+import { minuteTick } from "@t3tools/client-runtime/clock";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { buildPlanImplementationPrompt } from "../../proposedPlan";
 import { PHRASES } from "../needs/card";
@@ -15,6 +16,7 @@ import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw
 import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import composerResume from "../../components/chat/useComposerResume.ts?raw";
 import nowMinute from "../../hooks/useNowMinute.ts?raw";
+import clock from "../../../../../packages/client-runtime/src/clock.ts?raw";
 
 describe("the column's contracts with upstream", () => {
   it("offers a permission upstream's own buttons when the provider names none", () => {
@@ -49,7 +51,17 @@ describe("the column's contracts with upstream", () => {
 
   it("reads upstream's minute clock as the UTC minute it names, wherever the Mac is", () => {
     // A card's "now": read as local time, a limit's reset looked hours away.
-    expect(nowMinute).toContain("new Date().toISOString().slice(0, 16)");
-    expect(minuteMs("2026-10-21T09:17")).toBe(Date.parse("2026-10-21T09:17:00.000Z"));
+    expect(nowMinute).toContain(
+      "useSyncExternalStore(minuteTick.subscribe, minuteTick.getSnapshot, minuteTick.getSnapshot)",
+    );
+    expect(clock).toMatch(
+      /minuteTick[^=]*= makeTickStore\(\s*\(\) => new Date\(\)\.toISOString\(\)\.slice\(0, 16\),/,
+    );
+    vi.useFakeTimers({ toFake: ["Date"], now: Date.parse("2026-10-21T09:17:42.500Z") });
+    try {
+      expect(minuteMs(minuteTick.getSnapshot())).toBe(Date.parse("2026-10-21T09:17:00.000Z"));
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

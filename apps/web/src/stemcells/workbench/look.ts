@@ -1,19 +1,8 @@
 /**
- * Look: when the focused Cell opens its workbench (a surface in its right
- * panel), that Cell and its workbench take the slate, and the tab's other
- * Cells fold into a rail of marks. Watch is the slate the rest of the time:
- * the tab's Cells in their grid, no workbench showing.
- *
- * Look is not stored. It is the focused Cell's panel, open, in a window wide
- * enough for the panel to sit beside its chat, on a tab of two Cells or
- * more (a tab of one is upstream's thread view, unchanged). Upstream keeps
- * each thread's panel, open or not and on which surface, and the tab keeps
- * its focused pane, so a tab remembers whether it was in Look and on which
- * Cell, across tab switches and reloads, with nothing of ours to keep.
- * Every way out of Look closes that panel as upstream's own close does: its
- * store keeps the surfaces for the next time, and a browser or device the
- * panel showed floats on over the chat, tucked at its edge in a pane with
- * no room for it.
+ * Look: the focused Cell's workbench open, so it and the Cell take the slate and the tab's other
+ * Cells fold into a rail; Watch is the rest of the time. Not stored: it is that panel open, in a
+ * window wide enough, on a tab of two Cells or more, so upstream's panel state carries it across
+ * tab switches and reloads. Every way out closes the panel as upstream's own close does.
  */
 import { panesOf, type CellRef, type Pane, type Tab } from "../tabs/layout";
 
@@ -126,12 +115,10 @@ function isTextEditor(target: EventTarget | null): boolean {
 }
 
 /**
- * Whether Esc may end Look, for a press that reached the window, so nothing
- * on the way stopped it: a plain Esc (Shift+Esc leaves upstream's
- * browser), not part of composing text, not in a form field, not marked
- * handled (but for the composer's blanket mark), and while nothing of
- * upstream's held the key when it was pressed (an open menu, dialog or
- * palette, a focused terminal or browser).
+ * Whether Esc may end Look, for a press that reached the window unstopped: a plain Esc
+ * (Shift+Esc leaves upstream's browser), not composing text, not in a form field, not marked
+ * handled (but for the composer's blanket mark), and while nothing of upstream's held the key
+ * when pressed (an open menu, dialog or palette, a focused terminal or browser).
  */
 export function escapeMayEndLook(press: EscapePress, heldElsewhere: boolean): boolean {
   if (press.key !== "Escape") return false;

@@ -5,7 +5,7 @@ import { escDropsPlan } from "./esc";
 const esc = { key: "Escape", isComposing: false };
 const inComposer = { inComposer: true, menuOpen: false };
 
-// Esc gave no way out of a plan Aski was thinking or holding (#173's review).
+// Esc gave no way out of a plan Aski was thinking or holding.
 describe("Esc on Aski's plan", () => {
   it("drops it from the composer", () => {
     expect(escDropsPlan(esc, inComposer)).toBe(true);

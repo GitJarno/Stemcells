@@ -1,52 +1,16 @@
-// A desktop lab runs fake provider CLIs only.
-//
-// A real `claude` or `codex` would spend the person's plan and could work on
-// their files. A lab once started one: its settings named the Claude
-// instance by a key that is no driver, so the app made its default
-// instance, which runs the `claude` on the PATH.
-//
-// A lab runs on a home of its own (`T3CODE_HOME`, which `--home-dir` sets).
-// Each built-in driver's default instance, every instance in the settings
-// (on or off, legacy `providers.<driver>` entries included) names a fake by
-// the driver's own setting, in each settings file the server could read
-// (`dev/` or `userdata/`, by how it was started), and none points at a
-// server by address:
-//
-//   "providerInstances": {
-//     "claudeAgent": { "driver": "claudeAgent", "config": { "binaryPath": "<home>/bin/claude" } },
-//     "codex": { "driver": "codex", "config": { "binaryPath": "<home>/bin/codex" } },
-//     ...every driver in DRIVERS
-//   }
-//
-// A fake is a file inside the home with FAKE_MARK in its first 4 KB (a
-// comment will do): a path inside the home is not enough, as the app
-// downloads some CLIs into its home. The mark is the fake's own say-so, and
-// the lab trusts it: a fake must never run a real CLI, nor hand its
-// arguments on to one. Fakes go in `<home>/bin`, named as the CLIs they
-// stand in for; the lab puts that folder first on its processes' PATH.
-//
-// Three checks, from the outside in:
-// - stemcells/lab/electron runs `node stemcells/lab/fakes-only.cjs <home>`
-//   before it starts anything;
-// - never-shown.cjs checks the home Electron's main was actually given
-//   (`homeRefusal`) before the app's code runs, and stops the lab if it
-//   isn't the one checked or doesn't pass;
-// - in every process of the lab, a provider CLI that isn't a fake is never
-//   started (`guardSpawns`), whatever the settings said: a settings file
-//   the server can't read sends it back to its defaults, which run the
-//   real CLIs on the PATH, and the server runs the PATH's `codex
-//   --version` at start whatever they say.
-//
-// What the last check can't see: a CLI named in a quoted `sh -c` script in
-// a way word splitting misses, and the in-app terminal, whose shell
-// (node-pty) runs what is typed into it, after its own startup files may
-// have put the real CLIs back ahead of the lab's fakes on its PATH.
+// A desktop lab runs fake provider CLIs only: a real `claude` or `codex` would spend the
+// person's plan and could work on their files. Each provider in the lab's home names a fake
+// inside it by its driver's own setting and reaches no server by address. Three checks: the
+// launcher runs this on the home, `homeRefusal` in Electron's main, `guardSpawns` everywhere.
 "use strict";
 
 const NodeFS = require("node:fs");
 const NodePath = require("node:path");
 
-/** What a lab's fake CLI carries in its first 4 KB. */
+/**
+ * What a lab's fake CLI carries in its first 4 KB; a path inside the home isn't enough, as the
+ * app downloads some CLIs there. The lab trusts the mark, so a fake must never run a real CLI.
+ */
 const FAKE_MARK = "stemcells-lab-fake";
 
 /**
@@ -361,9 +325,9 @@ function realCli(program, args, options, shell, installed) {
 }
 
 /**
- * From here on, `child_process` starts no real provider CLI: it runs one
- * that says so and exits 127, as a missing program would, instead, and
- * `log` is told. ES module imports of `node:child_process` get the same.
+ * From here on, `child_process` starts no real provider CLI (ES module imports included): it
+ * runs one that says so and exits 127, as a missing program would, and `log` is told. It can't
+ * see a CLI hidden in a quoted `sh -c` script, or what's typed in the in-app terminal.
  */
 function guardSpawns(log) {
   const ChildProcess = require("node:child_process");

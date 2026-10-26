@@ -1,8 +1,7 @@
-// The top of the home, as the original app's board had it: Aski greeting you over
-// the tabs. A tap on Aski opens its chat; a tap on its line rolls another
-// (`greeting.ts`). Its eyes are `^ ^` once every Cell has landed and none
-// works or waits on you, and while its copies fly to Cells forming in their
-// cards (`copies.ts`). On the Asleep tab the night comes over it.
+// Aski greeting you over the home's tabs. A tap on Aski opens its chat; a tap on its line
+// rolls another (`greeting.ts`). Its eyes are `^ ^` once every Cell has landed and none works
+// or waits on you, and while its copies fly to forming Cells (`copies.ts`). On the Asleep tab
+// the night comes over it.
 
 import { use, useState } from "react";
 import { Pressable, View } from "react-native";

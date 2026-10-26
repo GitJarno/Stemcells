@@ -1,11 +1,8 @@
 /**
- * The playful word on a turn's working row: "Noodling" while the Cell works,
- * "Noodled for 3m 12s" once it is done. Chosen once per turn, here and on no
- * model: the person's own words pick a topic by a keyword (`topicOf`), the
- * turn's stable id picks within it (`pick`), so every redraw shows the same
- * word, and the word a turn starts with is the word it ends with. A chat
- * never says the same word twice in a row (`chain`). The words are data:
- * `workVerbs.json`.
+ * The playful word on a turn's working row ("Noodling", then "Noodled for 3m 12s"), chosen once
+ * per turn with no model: the person's words pick a topic (`topicOf`), the turn's stable id picks
+ * within it (`pick`), so every redraw and the turn's end show the same word, and a chat never
+ * says one twice in a row (`chain`). The words are data: `workVerbs.json`.
  */
 import { fnv1a } from "../cell/name";
 import table from "./workVerbs.json" with { type: "json" };
@@ -147,13 +144,10 @@ export interface TurnPrompt {
 }
 
 /**
- * A chat's verbs, one per turn in order, by the id of the prompt that
- * started it: each picked avoiding the one before it.
- *
- * A turn's seed is its prompt's id. The app makes that id before the send
- * and the server keeps it, so a turn's word is the same from the moment its
- * words echo to the moment it settles; and no two chats share an id, so two
- * chats asking the same first thing don't open on the same word.
+ * A chat's verbs, one per turn in order, by the id of the prompt that started it, each avoiding
+ * the one before. A turn's seed is its prompt's id: the app makes it before the send and the
+ * server keeps it, so the word holds from echo to settle, and two chats asking the same first
+ * thing don't open on the same word.
  */
 export function chain(prompts: readonly TurnPrompt[]): ReadonlyMap<string, WorkVerb> {
   const verbs = new Map<string, WorkVerb>();

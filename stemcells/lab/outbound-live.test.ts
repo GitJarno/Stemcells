@@ -1,11 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - runs Node children with the lab's network hook.
 /**
- * The runtime half of a sync's outbound gate (outbound-live.mjs) sees every
- * contact the running app makes, and lets none of them leave: a Node
- * process's lookups and sockets beyond loopback are written down and fail
- * (net-watch.cjs), and Chromium's net log and lsof's sockets are read for
- * the hosts they name. If this fails, a contact could leave a lab run
- * unseen, or leave the machine during it.
+ * The outbound gate's runtime half (outbound-live.mjs) sees every contact the running app makes
+ * and lets none leave: Node lookups and sockets beyond loopback are logged and fail
+ * (net-watch.cjs), and Chromium's net log and lsof are read for hosts. If this fails, a contact
+ * could leave a lab run unseen, or leave the machine during it.
  */
 import * as NodeChildProcess from "node:child_process";
 import * as NodeFS from "node:fs";

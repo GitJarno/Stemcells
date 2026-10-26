@@ -1,10 +1,8 @@
 /**
- * What a pane relies on in upstream's thread details card (threadDetails.ts,
- * workspace.css). The card opens by default, which a Cell undoes on first
- * showing; it floats at the chat's top-right, where workspace.css moves it,
- * and the find bar above it, below the pane's buttons. A failure here after
- * a sync names the contract that moved; a new Cell likely shows the card
- * again, or the card sits under the pane's buttons.
+ * What a pane relies on in upstream's thread details card (threadDetails.ts, workspace.css): it
+ * opens by default, which a Cell undoes on first showing, and floats at the chat's top-right,
+ * the find bar above it, where workspace.css drops it below the pane's buttons. A failure after
+ * a sync: a new Cell likely shows the card again, or it sits under the pane's buttons.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -36,7 +34,7 @@ describe("the thread details card's contracts with upstream", () => {
     );
     // The card in it can shrink in a column: it clips and scrolls its rows.
     expect(threadDetailsCard).toMatch(
-      /"dropdown-glass isolate contain-paint grid max-h-full grid-rows-\[minmax\(0,1fr\)\] overflow-hidden rounded-3xl"[\s\S]{0,300}data-thread-details-card/,
+      /"dropdown-glass isolate contain-paint grid max-h-full grid-rows-\[minmax\(0,1fr\)\] overflow-hidden rounded-[\w-]+"[\s\S]{0,300}data-thread-details-card/,
     );
     expect(chatCanvas).toContain("data-chat-canvas");
   });

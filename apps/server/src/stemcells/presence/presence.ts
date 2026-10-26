@@ -2,18 +2,10 @@
 import * as NodeChildProcess from "node:child_process";
 import * as NodeUtil from "node:util";
 
-// Whether somebody is at this Mac, so Aski's eyes can say when nobody is:
-// nobody while the person's session is switched out, or once 5 minutes
-// have passed without input of any kind. Read from macOS's I/O registry,
-// which needs no permission: the seconds since the last input
-// (`HIDIdleTime`) and whether the session is on the console. Elsewhere,
-// and when a reading fails, nothing says nobody is there.
-//
-// Once asked, the server also reads it itself every minute, so it knows
-// how long the person was away even while no page asks (a page out of
-// sight asks nothing): when they come back it says the stretch, and Aski
-// can tell them what happened meanwhile. A Mac asleep reads nothing, so a
-// long gap between readings is a stretch away too.
+// Whether somebody is at this Mac, so Aski's eyes can say when nobody is: not while the
+// person's session is switched out, or after 5 minutes without input. Read from macOS's I/O
+// registry, which needs no permission (`HIDIdleTime`, the console session). Elsewhere, and
+// when a reading fails, nothing says nobody is there.
 
 /** Seconds without input after which nobody is at the Mac. */
 export const IDLE_AFTER = 300;
@@ -82,7 +74,10 @@ export interface Watch {
 
 export const NOT_WATCHED: Watch = { awaySince: null, lastAt: null, back: null };
 
-/** How often the server reads by itself, in milliseconds. */
+/**
+ * How often the server reads by itself once asked, in milliseconds, so it knows how long the
+ * person was away even while no page asks (a page out of sight asks nothing).
+ */
 export const WATCH_EVERY = 60_000;
 /** How long after a return its stretch is said, in milliseconds. */
 export const BACK_SAID_FOR = 10 * 60_000;

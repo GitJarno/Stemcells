@@ -40,12 +40,10 @@ export function askiCellOf(workspace: Workspace): CellRef | null {
 }
 
 /**
- * Puts Aski's chat in Aski's tab, first in the strip. A tab that is new
- * becomes the active one unless the person has `acted` since the app opened
- * (clicked, typed or swiped): Aski is where the app opens the first time,
- * even over a draft the app opened while Aski's chat was on its way, but it
- * never takes the front from a Cell the person went to or is typing in, or
- * what they wrote would go to Aski.
+ * Puts Aski's chat in Aski's tab, first in the strip. A new tab becomes the active one unless the
+ * person has `acted` (clicked, typed or swiped) since the app opened: Aski is where the app first
+ * opens, even over a draft opened meanwhile, but never takes the front from a Cell the person
+ * went to or is typing in, or what they wrote would go to Aski.
  */
 export function seatAski(
   workspace: Workspace,

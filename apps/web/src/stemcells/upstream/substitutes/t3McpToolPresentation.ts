@@ -1,8 +1,7 @@
-// Replaces `@t3tools/shared/t3McpToolPresentation` (`plugin.ts`): the work
-// log names T3's own tools in Cell words (`stemcells/words/cellTools.ts`).
-// Both resolvers are wrapped, since upstream's presentation reads the
-// definition inside its module. The server reads only the tools' ids from
-// this module, never their words, so it needs no substitute.
+// Replaces `@t3tools/shared/t3McpToolPresentation` (`plugin.ts`): the work log names T3's own
+// tools in Cell words (`stemcells/words/cellTools.ts`). Both resolvers are wrapped, as upstream's
+// presentation reads the definition inside its module. The server reads only the tools' ids
+// here, never their words, so it needs no substitute.
 import * as Upstream from "@t3tools/shared/t3McpToolPresentation";
 
 import { withCellWords } from "../../../../../../stemcells/words/cellTools.ts";

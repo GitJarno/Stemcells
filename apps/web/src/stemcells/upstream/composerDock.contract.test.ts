@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
- * What the dock's CSS (`tabs/workspace.css`) relies on in upstream's
- * composer: that an approval drops the controls row, whose height the box
- * keeps; and that T3's banners attach above the box inside the form, as
- * insets with their own outline colour, over a box with a rounded outline
- * of its own. A failure here after a sync names the contract that moved;
- * the box likely shrinks under an approval again, or a banner and the box
- * read as two pieces.
+ * What the dock's CSS (`tabs/workspace.css`) relies on in upstream's composer: an approval drops
+ * the controls row, whose height the box keeps; T3's banners attach above the box inside the
+ * form as insets with their own outline colour, over a box with its own rounded outline. A
+ * failure after a sync: the box shrinks under an approval, or a banner and box read as two.
  */
 import * as NodeFS from "node:fs";
 
@@ -57,7 +54,11 @@ describe("the composer's dock and upstream", () => {
     expect(composerSurface).toContain(
       "after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-(--chat-composer-outline)",
     );
-    expect(composerSurface).toMatch(/"group relative z-10 rounded-3xl p-px"/);
-    expect(chatComposer).toMatch(/data-chat-composer-surface="true"[\s\S]{0,200}?"rounded-3xl /);
+    expect(composerSurface).toMatch(/"group relative z-10 rounded-2xl p-px"/);
+    expect(chatComposer).toMatch(/data-chat-composer-surface="true"[\s\S]{0,200}?"rounded-2xl /);
+    // Where workspace.css makes the box whole again, the glass it uncuts
+    // takes the box's own corners back.
+    expect(composerSurface).toContain("before:inset-0 before:z-0 before:rounded-2xl ");
+    expect(workspaceCss).toMatch(/clip-path: none;\s*border-radius: var\(--radius-2xl\);/);
   });
 });

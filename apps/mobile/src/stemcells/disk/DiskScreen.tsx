@@ -15,11 +15,9 @@ import {
   useOpenCellWithDraft,
 } from "../upstream/disk";
 
-// Settings › Disk on the phone: each machine's free space, and a tap that
-// opens a new Cell without a project on that machine with the cleanup ask
-// waiting, unsent.
-// The phone deletes nothing and measures nothing; the Cell does both, on
-// the machine, after the person names what goes.
+// Settings › Disk on the phone: each machine's free space, and a tap that opens a new Cell
+// without a project on that machine, the cleanup ask waiting unsent. The phone deletes and
+// measures nothing; the Cell does both, on the machine, after the person names what goes.
 
 type Machine = ReturnType<typeof useMachines>[number];
 

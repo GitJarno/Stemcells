@@ -1,14 +1,8 @@
 /**
- * Stemcells' mark, SC█, in each file upstream ships a T3 mark in. Upstream
- * names its brand files in `scripts/lib/brand-assets.ts`; that list runs
- * through `withStemcellsBrand` (one seam), so every build that reads it (the
- * desktop app's icon, the web icons the server and desktop builds copy in,
- * the phone's icon and splash) takes ours. Stemcells has one mark, so each
- * channel (dev, nightly, prod) gets the same file.
- *
- * The source is `app-icon.icon`, the Swift app's icon copied as it is. The
- * rest are rendered from it by Apple's tools, never drawn by hand
- * (`stemcells/brand/README.md`).
+ * Stemcells' mark, SC█, in each file upstream ships a T3 mark in: upstream's list in
+ * `scripts/lib/brand-assets.ts` runs through `withStemcellsBrand` (one seam), so every build
+ * that reads it takes ours, the same file for each channel. All are rendered from
+ * `app-icon.icon` by Apple's tools, never drawn by hand (`stemcells/brand/README.md`).
  */
 
 /** Our brand files, from the repository's root. */
@@ -55,11 +49,9 @@ const MARK_GROUND = "#000000";
 const MARK_INK = "#EDE9E0";
 
 /**
- * The phone's channel (`app.config.ts`) with our Android art, which upstream
- * names there rather than in its list: the launcher, monochrome and shortcut
- * icon, the splash and the notification icon, rendered by
- * `stemcells/scripts/render-phone-art`, and the mark's own colours in place of
- * each channel's. `fromRepoRoot` turns our path into one the config can use.
+ * The phone's channel (`app.config.ts`) with our Android art, which upstream names there rather
+ * than in its list (rendered by `stemcells/scripts/render-phone-art`), and the mark's own colours
+ * in place of each channel's. `fromRepoRoot` turns our path into one the config can use.
  */
 export function withStemcellsPhoneArt<Channel extends { readonly assets: object }>(
   channel: Channel,

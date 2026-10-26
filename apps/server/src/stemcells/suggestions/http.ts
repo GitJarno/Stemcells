@@ -17,11 +17,10 @@ import { cleanSuggestion, SuggestionAnswer, suggestionPrompt } from "./prompt.ts
 import { awaitProviderSuggestion } from "./provider.ts";
 import { follows, lastCompletedRun, recentUserMessageIds, settledReply } from "./reply.ts";
 
-// POST /api/stemcells/prompt-suggestion { threadId, afterMessageId }: what
-// the person would most likely say next to the thread, after its last
-// reply, or null. Claude's own prediction when it made one, else one short
-// call on the text generation model. Each reply is answered once, however
-// many windows ask; the call spends, so the route takes the operate scope.
+// POST /api/stemcells/prompt-suggestion { threadId, afterMessageId }: what the person would
+// most likely say next after the thread's last reply, or null. Claude's own prediction when it
+// made one, else one short call on the text generation model. Each reply is answered once,
+// however many windows ask; the call spends, so the route takes the operate scope.
 
 export const SUGGESTION_PATH = "/api/stemcells/prompt-suggestion";
 

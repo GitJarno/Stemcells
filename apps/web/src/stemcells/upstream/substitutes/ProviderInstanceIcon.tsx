@@ -1,9 +1,7 @@
-// Replaces `components/chat/ProviderInstanceIcon.tsx` for the usage page's
-// files only (`SCOPED_SUBSTITUTES` in `plugin.ts`): where upstream draws a
-// provider's logo there, the page draws the provider as a Cell, the bare
-// body in the provider's own colour (`tokens/providers.ts`), the one its
-// lines, dots and bars wear. A provider with no colour of its own is drawn
-// neutral. Everywhere else upstream's logos stay.
+// Replaces `components/chat/ProviderInstanceIcon.tsx` for the usage page's files only
+// (`SCOPED_SUBSTITUTES` in `plugin.ts`): where upstream draws a provider's logo there, the page
+// draws a Cell's bare body in the provider's own colour (`tokens/providers.ts`), neutral if it
+// has none. Everywhere else upstream's logos stay.
 import { providerInstanceInitials } from "@t3tools/client-runtime/state/provider-instance-display";
 import { memo, type ComponentProps } from "react";
 

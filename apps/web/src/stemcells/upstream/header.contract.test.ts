@@ -1,14 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's stylesheet on disk.
 /**
- * What a header-less pane relies on in upstream: the chat's header carries
- * an attribute workspace.css can hide its contents by (the element stays, as
- * the thread panel's anchor), and the panel toggles carry the attribute
- * PaneButtons and workspace.css move them by. A failure here after a sync
- * names the contract that moved; a pane likely shows upstream's breadcrumb
- * again, or its toggles sit in the window's corner without the Look chip
- * and ×. The transcript clears the buttons by upstream's top fade, whose
- * height a pane sets to its button band; if that moved, the buttons cover
- * the chat's first message.
+ * What a header-less pane relies on in upstream: the chat's header carries an attribute
+ * workspace.css hides its contents by (the element stays, as the thread panel's anchor), and the
+ * panel toggles carry the one PaneButtons and workspace.css move them by. The transcript's top
+ * fade, whose height a pane sets to its button band, keeps the buttons off the first message.
  */
 import * as NodeFS from "node:fs";
 

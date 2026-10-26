@@ -14,12 +14,9 @@ import {
 import "./settings.css";
 
 /**
- * Settings on the slate: upstream's section list at the slate's left edge
- * and the panel beside it, where upstream gave the list the left column and
- * the panel a breadcrumb bar. On a narrow slate the list folds into one row
- * at the top, a menu of the sections. `actions` (General's restore button)
- * stand at the right of that row, which shows for them alone when the list
- * has room.
+ * Settings on the slate: upstream's section list at its left edge, the panel beside it. On a
+ * narrow slate the list folds into a menu row at the top. `actions` (General's restore button)
+ * stand at the right of that row, which shows for them alone when the list has room.
  */
 export function SettingsOnSlab(props: {
   pathname: string;

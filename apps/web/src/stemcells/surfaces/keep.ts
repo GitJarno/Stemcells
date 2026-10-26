@@ -1,11 +1,9 @@
 import { useState, useSyncExternalStore } from "react";
 
 /**
- * Whether a workbench still shows surfaces it no longer owns. A tab turns
- * while its pages slide; the page leaving keeps its surfaces on it, its
- * browser riding with it (`ride.ts`), until the pages rest, instead of
- * dropping them halfway across the screen. Only a workbench leaving
- * listens for the rest: the others don't render again as pages move.
+ * Whether a workbench still shows surfaces it no longer owns. While a tab's pages slide, the
+ * page leaving keeps its surfaces, its browser riding with it (`ride.ts`), until the pages rest.
+ * Only a workbench leaving listens for the rest: the others don't render again as pages move.
  */
 export function useOwnedUntilRest(owns: boolean, node: HTMLElement | null): boolean {
   const [kept, setKept] = useState(owns);

@@ -1,9 +1,7 @@
 /**
- * Whether Aski divides the work (Settings › Aski): on unless the person
- * turned it off. Off, a message whose words don't say what each Cell does
- * waits until they do, as when there is no planner to ask, and no call
- * goes (`words/plan/`). It is kept in local storage, so every window of
- * the app on this device reads the same.
+ * Whether Aski divides the work (Settings › Aski), on unless turned off. Off, a message whose
+ * words don't say what each Cell does waits until they do, and no planner call goes
+ * (`words/plan/`). Kept in local storage, so every window on this device reads the same.
  */
 import { useSyncExternalStore } from "react";
 

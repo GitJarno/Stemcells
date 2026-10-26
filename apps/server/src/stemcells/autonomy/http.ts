@@ -9,10 +9,8 @@ import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Autonomy from "./Autonomy.ts";
 import { KINDS } from "./kinds.ts";
 
-// GET /api/stemcells/autonomy: what Aski takes for the person, what it could
-// offer to, and the cards it is about to take, as JSON.
-// GET /api/stemcells/autonomy/stream: the same as server-sent events, whole
-// on connect and on every change.
+// GET /api/stemcells/autonomy: what Aski takes for the person, could offer to, and is about
+// to take, as JSON; GET .../stream: the same as server-sent events, on connect and each change.
 // POST /api/stemcells/autonomy: `{ grant | decline: kind }` or `{ keep: key }`.
 // Granting lets Aski answer Cells, so it needs the access that answers them.
 

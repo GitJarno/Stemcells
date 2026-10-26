@@ -1,8 +1,7 @@
-// The phone's crew: every Cell it knows (no Subcell, not Aski, none
-// archived), the first-born first, dealt its looks together, so no two wear
-// the same while the catalogue lasts and a Cell wears the same on the home
-// and in its chat. As on the Mac (`apps/web/src/stemcells/tabs/roster.ts`),
-// a Cell keeps its seat and its look while it stays; a newcomer sits after.
+// The phone's crew: every Cell it knows (no Subcell, not Aski, none archived), first-born
+// first, dealt its looks together: no two alike while the catalogue lasts, the same on the home
+// and in its chat. As on the Mac (`apps/web/src/stemcells/tabs/roster.ts`), a Cell keeps its
+// seat and its look while it stays; a newcomer sits after.
 
 import { useSyncExternalStore } from "react";
 

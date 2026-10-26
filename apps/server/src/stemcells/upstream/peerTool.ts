@@ -1,9 +1,8 @@
 /**
- * `stemcells_peer_send` (stemcells/tasks/peers.md, "Across environments",
- * decision 4): upstream's MCP server offers it beside `t3_thread_send`, with
- * upstream's own gate for a tool that writes as its caller (read-only
- * clients refused, a credential that controls threads, a live run), and our
- * links service does the rest. `mcpTools.ts` registers it beside our other tools.
+ * `stemcells_peer_send` (stemcells/tasks/peers.md, "Across environments", decision 4):
+ * offered beside `t3_thread_send` behind upstream's gate for a tool that writes as its caller
+ * (read-only clients refused, a credential that controls threads, a live run); our links
+ * service does the rest. `mcpTools.ts` registers it beside our other tools.
  */
 import { OrchestratorMcpFailure } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";

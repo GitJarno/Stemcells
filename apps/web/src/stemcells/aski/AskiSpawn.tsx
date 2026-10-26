@@ -42,6 +42,7 @@ function SpawnTheater(props: { spawn: Spawn }) {
   const playerRef = useRef<MomentPlayer | null>(null);
 
   const rect = spawn.rect;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Create the spawn's canvas and moment player for its rect, and close them on change or unmount.
   useEffect(() => {
     const theater = theaterRef.current;
     if (theater === null) return;
@@ -68,12 +69,14 @@ function SpawnTheater(props: { spawn: Spawn }) {
     if (part.startedAt === from) playerRef.current?.play(part);
   });
   const from = spawn.plannedAt ?? spawn.startedAt;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Play the spawn's part on the worker's player when the spawn starts or its plan is in.
   useEffect(() => {
     play(from);
   }, [from]);
 
   const endsAt = spawnEndsAt(spawn, times),
     id = spawn.id;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Time the spawn's end and fade-out, and clear both timers on change or unmount.
   useEffect(() => {
     let gone: ReturnType<typeof setTimeout> | undefined;
     const ends = setTimeout(

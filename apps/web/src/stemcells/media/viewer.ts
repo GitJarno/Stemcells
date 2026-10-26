@@ -598,12 +598,10 @@ let repeatsHeldUntil = 0;
 const heard = new WeakSet<Event>();
 
 /**
- * Hands a key to the viewer before the rest of the app hears it. The
- * workspace's key listener, the window's first, calls this before anything
- * else (`tabs/useWorkspaceKeys.ts`); the viewer's own listener calls it too,
- * for a chat outside the workspace. Each key is heard once. True while the
- * key is the viewer's to say (it is up, or the key repeats one that closed
- * it): whoever called stands down.
+ * Hands a key to the viewer before the rest of the app hears it. The workspace's key listener,
+ * the window's first, calls this first (`tabs/useWorkspaceKeys.ts`); the viewer's own does too,
+ * for a chat outside the workspace; each key is heard once. True while the key is the viewer's
+ * (it is up, or the key repeats one that closed it): the caller stands down.
  */
 export function viewerHearsFirst(event: KeyboardEvent): boolean {
   const viewer = [...up].at(-1);

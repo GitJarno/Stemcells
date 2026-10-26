@@ -63,11 +63,10 @@ export function settledSources(text: MarkdownText): readonly string[] {
 }
 
 /**
- * Remembers each message's markdown media by the message, so a chat that
- * streams doesn't parse its messages again on every token. A message still
- * streaming isn't read until it settles; one whose text changes is read
- * again, in its one place. `settle` forgets messages the last reel didn't
- * read (reverted away).
+ * Remembers each message's markdown media by the message, so a streaming chat doesn't parse
+ * its messages again on every token. A message still streaming isn't read until it settles;
+ * one whose text changes is read again, in its one place. `settle` forgets messages the last
+ * reel didn't read (reverted away).
  */
 export class MarkdownSources {
   readonly #parse: (markdown: string) => readonly string[];
@@ -121,11 +120,10 @@ export function chatReel(
 }
 
 /**
- * What the viewer steps through around the item showing now: the chat's
- * reel when it holds the item; else the list its click came with (the
- * composer's pictures, a tool's output); else the item on its own (its
- * message was reverted away). Found by the item, never by an index, so a
- * reel that changes under the viewer never puts another picture up.
+ * What the viewer steps through around the item showing now: the chat's reel when it holds
+ * the item; else the list its click came with (the composer's pictures, a tool's output);
+ * else the item alone (its message was reverted away). Found by the item, never by an index,
+ * so a reel that changes under the viewer never puts another picture up.
  */
 export function reelAround(
   showing: MediaItem,
@@ -146,11 +144,10 @@ export interface Standing {
 }
 
 /**
- * The viewer's place after the reel changed under it (it streamed, a URL
- * was re-signed, a message was reverted): found again by the item showing,
- * on the same step, so nothing on screen starts over. The standing comes
- * back as it was unless the reel knows the item by a newer first name (its
- * stored file, its message's place), whose copy it then keeps.
+ * The viewer's place after the reel changed under it (it streamed, a URL was re-signed, a
+ * message was reverted): found again by the item showing, on the same step, so nothing on
+ * screen starts over. The standing comes back as it was unless the reel knows the item by a
+ * newer first name (its stored file, its message's place), whose copy it then keeps.
  */
 export function restand(
   standing: Standing,

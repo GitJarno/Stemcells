@@ -9,6 +9,7 @@ import { leave, step } from "./walk";
 
 /** ⌘Z takes back the newest held answer, unless the keys belong to a field. */
 export function useUndoKey(active: boolean) {
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for ⌘Z on the window while active, and remove the listener on change or unmount.
   useEffect(() => {
     if (!active) return;
     const keydown = (event: KeyboardEvent) => {
@@ -25,11 +26,10 @@ export function useUndoKey(active: boolean) {
 }
 
 /**
- * Whether the person is in the list: the pointer over it, or the keyboard's
- * focus in it (a click's focus isn't). Native listeners, because a chosen
- * option's button leaves the page with the focus and the pointer on it: only
- * the browser's own focusout says the focus went, and no pointerleave ever
- * comes, so the pointer is wherever the next pointerover anywhere says it is.
+ * Whether the person is in the list: pointer over it, or keyboard focus in it (not a click's).
+ * Native listeners: a chosen option's button leaves the page with focus and pointer on it, so
+ * only the browser's focusout says focus went, and with no pointerleave, the pointer is
+ * wherever the next pointerover anywhere says.
  */
 function watchPerson(onIn: (pointer: boolean | null, focus: boolean | null) => void) {
   return (list: HTMLDivElement | null) => {

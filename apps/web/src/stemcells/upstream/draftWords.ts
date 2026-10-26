@@ -1,10 +1,8 @@
 /**
- * What the composer's words do to an unsent draft, through upstream's own
- * draft store: point it at a project, the way the hero's project picker
- * does, and set its model and effort, the way the pickers do. Upstream's
- * hero and pickers then show what the words set, and its send sends it.
- * `draftWords.contract.test.ts` pins that the hero moves a draft the same
- * way.
+ * What the composer's words do to an unsent draft through upstream's draft store: point it at a
+ * project as the hero's picker does, and set its model and effort as the pickers do, so
+ * upstream's hero and pickers show it and its send sends it. `draftWords.contract.test.ts` pins
+ * that the hero moves a draft the same way.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type {

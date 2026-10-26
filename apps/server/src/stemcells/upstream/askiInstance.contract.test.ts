@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads t3_thread_send's service source.
 /**
- * No Cell runs on Aski's provider instance, whose launch arguments carry
- * Aski's persona. The server refuses a Cell started there, rather than
- * trusting Aski's instructions to keep Cells off it, and a message to a Cell
- * made there before runs on the driver's own instance instead, whoever sends
- * it. A failure here after a sync names the upstream path that moved: the
- * gate every thread start asks whether its instance may run, and the one
- * dispatch every message takes.
+ * No Cell runs on Aski's provider instance, whose launch arguments carry Aski's persona. The
+ * server refuses a Cell started there, and a message to a Cell made there before runs on the
+ * driver's own instance, whoever sends it. A failure after a sync names the upstream path
+ * that moved: the gate every thread start asks, or the one dispatch every message takes.
  */
 import * as NodeFS from "node:fs";
 
@@ -26,7 +23,6 @@ import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
 
 import * as GitWorkflow from "../../git/GitWorkflowService.ts";
 import { dispatchFailure } from "../../mcp/threadAccess.ts";
@@ -126,8 +122,7 @@ const threadManagement = (dispatched: Array<Dispatched>) =>
 const launches = ThreadLaunch.layer.pipe(
   Layer.provide(
     Layer.mock(ProjectService.ProjectService)({
-      getById: () =>
-        Effect.succeed(Option.some({ id: projectId, workspaceRoot: "/repo" } as never)),
+      getById: () => Effect.succeedSome({ id: projectId, workspaceRoot: "/repo" } as never),
     }),
   ),
   Layer.provide(

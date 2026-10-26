@@ -1,8 +1,7 @@
-// Who's here (stemcells/tasks/peers.md, decision 6): every Cell knows its
-// own name and one-liner, and the other Cells at work in its repository,
-// told at a turn's start only when that list changed since it was last told.
-// The the original app roster cost millions of tokens by riding every tool call;
-// once per change costs a line or two.
+// Who's here (stemcells/tasks/peers.md, decision 6): every Cell knows its own name and
+// one-liner, and the other Cells at work in its repository, told at a turn's start only when
+// that list changed. Riding every tool call cost millions of tokens; once per change costs
+// a line or two.
 
 import { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
 import { ASKI_INSTANCE_ID } from "../needs/derive.ts";

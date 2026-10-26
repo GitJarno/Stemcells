@@ -8,11 +8,10 @@ import * as Stream from "effect/Stream";
 import * as Upstream from "../upstream/collisions.ts";
 import { type Collision, makeRoom, noteEdit, noticeText } from "./room.ts";
 
-// Tells Cells when they step on each other (stemcells/tasks/peers.md,
-// decision 3): follows every edit a provider finishes, and queues a notice
-// for each Cell in a new collision that has a run under way. A Cell at rest
-// isn't woken: a turn spent on news it can't use costs more than it saves.
-// The room lives in memory; after a restart it knows only the edits since.
+// Tells Cells when they step on each other (stemcells/tasks/peers.md, decision 3): from each
+// finished edit, queues a notice for each Cell in a new collision with a run under way. A Cell
+// at rest isn't woken: a turn spent on news it can't use costs more than it saves. The room
+// lives in memory; after a restart it knows only the edits since.
 
 /** A shell's run is under way: the notice queues behind it. */
 const UNDER_WAY: ReadonlySet<Upstream.Shell["status"]> = new Set([

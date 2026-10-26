@@ -1,13 +1,8 @@
-// Copies the tokens the original app's usage ledger kept, per transcript, hour and
-// model, into Stemcells' usage history, where the Usage page counts the
-// transcripts its own scan no longer finds (apps/server/src/stemcells/usageHistory).
-// Prices come from the page's own rates, as for every other row. Run again
-// whenever: the newest ledger replaces each transcript it names, and the rest
-// stay. Reads the ledger only; writes only the history file.
+// Copies the original app's usage ledger into Stemcells' usage history, for transcripts the Usage
+// page's scan no longer finds. Rerun freely: the newest ledger replaces each transcript it
+// names. Reads only the ledger, writes only the history.
 //
 //   node stemcells/scripts/import-usage-ledger.ts [--home-dir <folder>] [--ledger <file>]
-//
-// The home defaults to ~/.stemcells, the ledger to <ledger file>.
 import * as NodeFS from "node:fs";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";

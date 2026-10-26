@@ -1,16 +1,8 @@
 /**
- * Where a finished Cell says it stands: the close-out lines every Cell is
- * told to end a stop with (the section in `@t3tools/provider-core`'s
- * `stemcells/closeOut.ts`), read by code, with no model.
- *
- *     **Done:** the header fix, merged as #12
- *     **Left:** you: run the sign-in with Drive access
- *     **Left:** waiting: the merge check on #212
- *
- * The facts outrank it (a pending request, a run, a failure), and it
- * outranks the pre-read, except where the pre-read finds a real question:
- * calling a Cell done that still asks is the costly mistake
- * (stemcells/tasks/aski-manager.md, decision 7).
+ * Where a finished Cell says it stands: the close-out lines every Cell ends a stop with
+ * (`@t3tools/provider-core`'s `stemcells/closeOut.ts`), read by code, no model. Facts (a
+ * pending request, a run, a failure) outrank it; it outranks the pre-read unless that finds
+ * a real question: a Cell called done that still asks is the costly mistake (aski-manager.md).
  */
 import { lastParagraph, preRead, type PreRead } from "./preread.ts";
 
@@ -65,11 +57,10 @@ function proseLines(reply: string): ReadonlyArray<{ readonly at: number; readonl
 }
 
 /**
- * The reply's close-out, and the reply without it. A label may carry its
- * step on its own line, or head a list of them, one owner a line. Of
- * several Lefts, the ones that matter most: the person's, then those with
- * no owner, the Cell's own, then a wait; those at the same rank read as
- * one. Any Left outranks a Done.
+ * The reply's close-out, and the reply without it. A label may carry its step on its own
+ * line, or head a list of them, one owner a line. Of several Lefts, the ones that matter most:
+ * the person's, then those with no owner, the Cell's own, then a wait; those at one rank read
+ * as one. Any Left outranks a Done.
  */
 export function readCloseOut(reply: string): {
   readonly closeOut: CloseOut | null;

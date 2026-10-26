@@ -1,9 +1,7 @@
-// A Cell's scenes: a move played in what it wears, composed once into
-// frames at both sizes, the hero (32 × 32) and the miniature (13 × 14), each
-// miniature carrying its hero art cropped cell for cell as detail, both as a
-// display draws them with a margin past the box, and the same loop with its
-// open eyes shut for the blink. A worn piece that animates is folded into
-// the scene's own clock.
+// A Cell's scenes: a move played in what it wears, composed once into frames at both sizes,
+// the hero (32 × 32) and the miniature (13 × 14) carrying its hero art cropped as detail, with
+// a margin past the box, and the same loop with its open eyes shut for the blink. A worn piece
+// that animates is folded into the scene's own clock.
 
 import {
   animatedOf,

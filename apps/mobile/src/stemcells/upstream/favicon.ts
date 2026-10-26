@@ -3,12 +3,10 @@ import {
   toolActivityFaviconUrl as upstreamToolActivityFaviconUrl,
 } from "@t3tools/shared/favicon";
 
-// Upstream's favicons, with nothing fetched. Upstream asks Google's favicon
-// service for a link's icon, and loads a page's icon from its own site, so
-// the hostname of every link in a chat, and every page a Cell reads, left
-// the machine. Stemcells draws its own mark instead: each caller shows its
-// glyph when there is no icon (a globe for a link, the tool's icon for a
-// page). An icon the provider sent inline is still shown: it is already here.
+// Upstream's favicons, with nothing fetched: upstream asks Google for a link's icon and loads a
+// page's icon from its site, so every link's and read page's hostname left the machine. Each
+// caller shows its own glyph instead (a globe for a link, the tool's icon for a page); an icon
+// the provider sent inline is still shown, as it is already here.
 
 const inline = (url: string | null) => (url?.startsWith("data:") ? url : null);
 

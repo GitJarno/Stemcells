@@ -57,7 +57,7 @@ export interface RequestDetail {
   readonly appName: string | null;
   /** The provider's own words for why it asks, when it gives them. */
   readonly reason: string | null;
-  /** Why it asks although the thread runs with full access (upstream #22546). */
+  /** Why it asks although the thread runs with full access. */
   readonly fullAccessOverride: FullAccessOverride | null;
   readonly options: ReadonlyArray<ApprovalOption>;
   readonly questions: ReadonlyArray<AskedQuestion>;
@@ -83,10 +83,9 @@ export interface InFlight {
 }
 
 /**
- * A thread that changed in a batch. `lively` when the Cell itself did
- * something: wrote, asked, planned, or moved a run or a tool call along.
- * The person's hand on the thread (a visit, a snooze, a rename) isn't the
- * Cell's life, and nor is a provider's beat: Codex polls a running command
+ * A thread that changed in a batch. `lively` when the Cell itself did something: wrote,
+ * asked, planned, or moved a run or a tool call along. The person's hand (a visit, a snooze,
+ * a rename) isn't the Cell's life, nor is a provider's beat: Codex polls a running command
  * about once a minute and reports the tokens, with nothing new to show.
  */
 export interface Changed {

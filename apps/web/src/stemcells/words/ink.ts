@@ -1,9 +1,7 @@
 /**
- * What the composer inks, from the reader's facts: each word that set
- * something up wears a token plate, and a project only mentioned gets a
- * quiet underline. Only the winner is inked: a place that lost to the
- * address is a mention, never a second plate. `stemcells/tasks/prompting.md`,
- * decision 4.
+ * What the composer inks, from the reader's facts: a token plate on each word that set something
+ * up, a quiet underline on a project only mentioned. Only the winner is inked: a place that lost
+ * to the address is a mention, never a second plate. `stemcells/tasks/prompting.md`, decision 4.
  */
 
 import type { Facts } from "./read";

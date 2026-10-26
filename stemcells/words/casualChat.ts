@@ -1,9 +1,8 @@
 /**
- * Upstream's chat in no project, in its scratch folder, is a casual chat in
- * the words a person reads: a one-off chat with nothing to build in mind.
- * Only the words are ours. It stays upstream's scratch chat, a Cell like any
- * other, on the composer's provider and model (`stemcells/seams.md`, A
- * casual chat).
+ * Upstream's chat in no project, in its scratch folder, is a casual chat in the words a person
+ * reads: a one-off chat with nothing to build in mind. Only the words are ours: it stays
+ * upstream's scratch chat, a Cell like any, on the composer's provider and model
+ * (`stemcells/seams.md`, A casual chat).
  */
 export const CASUAL_CHAT = {
   /** Under a new chat's headline, beside its project picker. */

@@ -1,11 +1,8 @@
 /**
- * Starts the Cells a message's words set up beside the draft's own, the way
- * upstream starts each thread of a multiple-model send: one call per Cell
- * creates the thread with its project, model, modes and first message
- * (`orchestration.launchThread`, under `startTurn`). Each Cell runs with
- * the draft's modes, so a Cell started this way never gets more access
- * than the draft would have. `launch.contract.test.ts` pins what this
- * follows.
+ * Starts the Cells a message's words set up beside the draft's own, as upstream starts each
+ * thread of a multiple-model send: one `orchestration.launchThread` per Cell (under
+ * `startTurn`) with its project, model, modes and first message. Each runs with the draft's
+ * modes, so it never gets more access than the draft would. `launch.contract.test.ts` pins this.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { deriveThreadTitleSeed } from "@t3tools/client-runtime/operations";

@@ -1,17 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheets on disk.
 /**
- * A border dragged between Cells moves at the pointer's pace only if a frame
- * restyles what changed and no more. Two kinds of rule restyled a whole tab:
- *
- * - A `:has()` on the grid, a page, a row, a column or a pane. Chrome
- *   restyles everything inside the element a `:has()` stands on whenever
- *   anything in it is added or removed, so a composer folding its controls
- *   at a width step restyled the page: 2,260 to 2,781 elements, frames of
- *   20 to 30 ms mid-drag. The page now says what they looked for in
- *   attributes it sets itself (`CellWorkspace.tsx`, `DropWash.tsx`).
- * - A rule keyed on a mark a drag or a glide sets, whose subject is anything
- *   (`> *`): Chrome restyles everything under the marked element. Marking
- *   the row for its glide restyled 2,839 elements, 17 ms, at each end.
+ * A border dragged between Cells keeps the pointer's pace only if a frame restyles what changed.
+ * Chrome restyles all inside an element a `:has()` stands on when anything in it changes, and all
+ * under an element a drag or glide marks for a `> *` rule: either restyled a whole tab. Set an
+ * attribute instead (`CellWorkspace.tsx`, `DropWash.tsx`).
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";

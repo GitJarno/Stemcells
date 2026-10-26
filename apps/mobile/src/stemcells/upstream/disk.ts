@@ -31,6 +31,7 @@ export { ScreenScrollView } from "../../components/ui/ScreenScrollView";
 export { SettingsRow } from "../../features/settings/components/SettingsRow";
 export { SettingsScreen } from "../../features/settings/components/SettingsScreen";
 export { SettingsSection } from "../../features/settings/components/SettingsSection";
+export { openSettings } from "../../features/settings/settings-navigation";
 
 /** Each machine the phone keeps a connection to, how that connection is now, and its icon. */
 export function useMachines() {
@@ -68,6 +69,7 @@ export function useMachineDisk(
 ): { readonly free: number; readonly total: number } | null | undefined {
   const registry = useContext(RegistryContext);
   const result = useAtomValue(serverEnvironment.hostResources({ environmentId, input: {} }));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Poll host resources every 30 s while active; stop on unmount.
   useEffect(() => {
     const timer = setInterval(() => {
       if (AppState.currentState !== "active") return;
@@ -120,7 +122,7 @@ export function useOpenCellWithDraft(
     // sheet, the Cell it becomes on sending would show inside that sheet.
     let root = navigation;
     for (let parent = root.getParent(); parent; parent = root.getParent()) root = parent;
-    // A draft is the root's Thread route, as upstream opens one (#23467).
+    // A draft is the root's Thread route, as upstream opens one.
     const draft = {
       environmentId: String(project.environmentId),
       projectId: String(project.id),

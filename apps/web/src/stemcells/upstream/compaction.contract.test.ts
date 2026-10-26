@@ -1,9 +1,7 @@
 /**
- * What the auto-compact window relies on in upstream's web: the Claude
- * instance setting its row writes, the card and search it lives in, and the
- * context meter it fills. If one fails after a sync, the seam moved
- * (`stemcells/seams.md`, Auto-compact window); the fix goes in
- * `compaction/` or the seam.
+ * What the auto-compact window relies on in upstream's web: the Claude instance setting its row
+ * writes, the card and search it lives in, and the context meter it fills. A failure after a
+ * sync means the seam moved (`stemcells/seams.md`, Auto-compact window): fix `compaction/` or it.
  */
 import { ClaudeSettings, ProviderDriverKind } from "@t3tools/contracts";
 import * as Schema from "effect/Schema";

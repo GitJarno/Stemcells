@@ -32,8 +32,8 @@ export {
   SettingsPageContainer,
   SettingsRow,
   SettingsSection,
-  useRelativeTimeTick,
 } from "~/components/settings/settingsLayout";
+export { useNowMinuteMs, useNowSecond } from "./settings";
 export { Badge } from "~/components/ui/badge";
 export { Button } from "~/components/ui/button";
 export { Input } from "~/components/ui/input";
@@ -135,6 +135,7 @@ export function useMachineDisk(
 ): { readonly free: number; readonly total: number } | null | undefined {
   const registry = useContext(RegistryContext);
   const result = useAtomValue(serverEnvironment.hostResources({ environmentId, input: {} }));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Refresh the machine's disk figures on an interval while the page is visible, and clear it on unmount.
   useEffect(() => {
     const timer = setInterval(() => {
       if (document.visibilityState !== "visible") return;

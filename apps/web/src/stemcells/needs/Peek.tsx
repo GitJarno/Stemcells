@@ -16,12 +16,10 @@ import { useCellStage } from "./stream";
 import "./peek.css";
 
 /**
- * A Cell's chat, slid in from the right over Aski's room
- * (stemcells/tasks/aski-manager.md, decision 9): read it, answer it, and
- * it goes. It leaves a beat after the person sends it a message, or once
- * what it needed from them is answered; Esc, ×, or a click elsewhere in the
- * room close it too. "Open in its tab" takes the person there instead.
- * While it is open it has the window's input, which Aski's chat gives up.
+ * A Cell's chat, slid in over Aski's room (stemcells/tasks/aski-manager.md, decision 9). It
+ * leaves a beat after the person sends it a message or once what it needed is answered; Esc,
+ * ×, or a click elsewhere in the room close it too. While open it has the window's input,
+ * which Aski's chat gives up.
  */
 export function Peek(props: { ownsWindowInput: boolean }) {
   const threadId = usePeek();
@@ -57,12 +55,14 @@ function PeekSheet(props: { cell: CellRef; ownsWindowInput: boolean }) {
     openedWith !== null &&
     ((lastSent !== undefined && lastSent !== openedWith.sent) ||
       (openedWith.stage === "needs-you" && stage !== null && stage !== "needs-you"));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Close the peek a beat after the person's message lands, and clear the timer on change.
   useEffect(() => {
     if (!said) return;
     const timer = setTimeout(closePeek, timing("sendLanded"));
     return () => clearTimeout(timer);
   }, [said]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Close the peek on Esc or a pointerdown elsewhere in the room; remove both listeners on unmount.
   useEffect(() => {
     const room = sheet.current?.closest<HTMLElement>("[data-stemcells-aski]");
     // Esc the chat hasn't taken (a menu, a mention, a word being composed),

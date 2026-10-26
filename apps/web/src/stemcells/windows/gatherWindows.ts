@@ -43,6 +43,7 @@ export async function gatherOrPutBack(): Promise<boolean> {
 /** What the button offers now, read again whenever a window opens or closes or a display changes. */
 export function useGatherOffer(): GatherOffer | null {
   const [offer, setOffer] = useState<GatherOffer | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Read the window snapshot on mount and each arrangement change; ignore answers after unmount.
   useEffect(() => {
     const bridge = windowsBridge();
     if (!bridge) return;

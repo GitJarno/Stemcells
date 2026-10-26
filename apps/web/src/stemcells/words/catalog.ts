@@ -1,9 +1,7 @@
 /**
- * The models a person can name, derived from the providers' own catalogs.
- * Nothing here lists a model: the keywords come from each model's concise
- * name ("Opus 5.5"), its family ("opus"), its aliases and its provider's
- * words ("claude", "codex"). A new model in a catalog is readable the day
- * it ships.
+ * The models a person can name, derived from the providers' own catalogs; nothing here lists a
+ * model. Keywords come from each model's concise name ("Opus 5.5"), family ("opus"), aliases
+ * and provider words ("claude", "codex"), so a new model is readable the day it ships.
  */
 
 import { tokenize } from "./text";

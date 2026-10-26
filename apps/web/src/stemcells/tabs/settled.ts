@@ -1,9 +1,7 @@
 /**
- * A Cell the person settles leaves the slate (stemcells/tasks/aski-manager.md,
- * decision 10): its pane closes, and its tab with its last pane. While
- * upstream's Undo is on offer, the place it left is kept, so Undo brings it
- * back there: to its tab when that is still open, else to a tab of its own
- * where the old one stood.
+ * A Cell the person settles leaves the slate (stemcells/tasks/aski-manager.md, decision 10): its
+ * pane closes, and its tab with its last pane. While upstream's Undo is on offer the place it left
+ * is kept, so Undo brings it back to its tab if still open, else a tab of its own where it stood.
  */
 import { useSyncExternalStore } from "react";
 

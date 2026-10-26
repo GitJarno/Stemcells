@@ -5,11 +5,10 @@ import * as ProcessRunner from "../../processRunner.ts";
 import { explicitBareRepositoryEnv } from "../../vcs/VcsProcess.ts";
 
 /**
- * The remote `gh repo set-default` chose for a checkout, so the app's repository
- * is the one `gh pr list` reads there. Upstream picks `upstream` over `origin`,
- * right for someone contributing to a fork's parent and wrong for a fork that is
- * its own product: its Pull requests list showed the parent's. gh records the
- * choice as `remote.<name>.gh-resolved = base`; null leaves upstream's pick.
+ * The remote `gh repo set-default` chose for a checkout, so the app's repository is the one
+ * `gh pr list` reads there. Upstream picks `upstream` over `origin`, wrong for a fork that is
+ * its own product. gh records the choice as `remote.<name>.gh-resolved = base`; null leaves
+ * upstream's pick.
  */
 export const ghDefaultRemote = Effect.fn("Stemcells.ghDefaultRemote")(function* (
   repository: { readonly rootPath: string; readonly isBare: boolean },

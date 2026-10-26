@@ -138,11 +138,10 @@ function mapPanes(tab: Tab, map: (pane: Pane) => Pane): Tab {
 }
 
 /**
- * Each child's share of its parent, in order, at a mean of 1: its own, or,
- * unset, the mean of the shares its siblings have, so a newcomer takes an
- * even share. Read at a mean of 1, the children always fill their parent,
- * whatever left it: a column closed or carried away leaves its siblings'
- * shares summing under 1, and a flex parent fills only that part of itself.
+ * Each child's share of its parent, in order, at a mean of 1: its own, or, unset, the mean of its
+ * siblings' shares, so a newcomer takes an even share. Read at a mean of 1, children always fill
+ * their parent: a column closed or carried away leaves its siblings' shares summing under 1, and
+ * a flex parent fills only that part of itself.
  */
 export function sharesOf(children: ReadonlyArray<Shared>): number[] {
   const set = children.flatMap((child) => child.share ?? []);
@@ -497,13 +496,10 @@ export type Land = (workspace: Workspace, cell: CellRef, ids: NewIds) => Workspa
 const ownTab: Land = (workspace, cell, ids) => openTab(workspace, ids, cell);
 
 /**
- * The URL names the chat the user went to. A pane already showing it takes
- * focus, and an empty focused pane (one opening) shows it. Otherwise `land`
- * places it and it takes focus: going to a chat never takes the chat being
- * read off its pane (stemcells/tasks/left-column.md, decision 9). Draft and
- * thread share an id, so a draft that was sent arrives as its thread and
- * updates its pane in place. When that pane isn't focused (the send
- * finished after the user moved on), it updates without taking focus.
+ * The URL names the chat the user went to. A pane showing it takes focus; an empty focused pane
+ * shows it; otherwise `land` places and focuses it, never taking the chat being read off its pane
+ * (stemcells/tasks/left-column.md, decision 9). A sent draft arrives as its thread (same id) and
+ * updates its pane in place, without taking focus when that pane isn't focused.
  */
 export function showRoute(
   workspace: Workspace,
@@ -639,12 +635,10 @@ export function insertTab(workspace: Workspace, tab: Tab, index: number): Worksp
 export type PaneSide = "left" | "right" | "above" | "below";
 
 /**
- * Puts a pane on one side of `anchorId`: beside it in a new column of its
- * row (left, right), or in its column (above, below). A new column is as
- * wide as an even share of the row, `rowWidth` wide as it shows, and the
- * others give it room as ⌘D's do (`sharesBeside`); where they haven't the
- * room, the pane stacks in the anchor's column instead, over it for left
- * and under it for right. The pane takes focus and its tab becomes active.
+ * Puts a pane beside `anchorId` in a new column of its row (left, right), or in its column
+ * (above, below). A new column takes an even share of the row, the others giving room as ⌘D's do
+ * (`sharesBeside`); without the room, it stacks in the anchor's column, over it for left and
+ * under it for right. The pane takes focus and its tab becomes active.
  */
 export function placePane(
   workspace: Workspace,

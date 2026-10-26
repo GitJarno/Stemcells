@@ -1,11 +1,8 @@
 /**
- * Upstream behaviour the frame relies on: on Stemcells' own theme,
- * pages/frame.css takes the line off the sidebar's edge by giving
- * `[data-app-sidebar]`'s border no width; the sidebar, the inset the
- * workspace is and the frame behind them wear the same grain, so they read
- * as one ground; and the slate is flat because upstream's chat is. A
- * failure here after a sync names the contract that moved: a line or an
- * edge is likely back, or the slate no longer matches upstream's chat.
+ * Upstream behaviour the frame relies on, on Stemcells' theme: pages/frame.css hides the
+ * sidebar's edge line by zeroing `[data-app-sidebar]`'s border; the sidebar, the workspace inset
+ * and the frame wear one grain; and the slate is flat as upstream's chat is. A failure after a
+ * sync names the contract that moved: a line or edge is back, or the slate left the chat's look.
  */
 import { describe, expect, it } from "vite-plus/test";
 

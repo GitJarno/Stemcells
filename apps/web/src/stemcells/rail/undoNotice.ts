@@ -23,9 +23,11 @@ export function undoNoticeWords(notice: UndoNotice): string {
 export function useRailUndoNotice(shown: boolean): void {
   const notice = useUndoNotice();
   const keys = useUndoKeys();
+  // oxlint-disable-next-line t3code/react-effect-budget -- Show or close the imperative undo toast to match the notice and whether the column shows.
   useEffect(() => {
     if (shown && notice) showUndoToast(undoNoticeWords(notice), keys ? `${keys} to undo` : "Undo");
     else closeUndoToast();
   }, [shown, notice, keys]);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Close the undo toast when the column unmounts.
   useEffect(() => closeUndoToast, []);
 }

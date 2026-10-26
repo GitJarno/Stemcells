@@ -1,9 +1,7 @@
 /**
- * The timeline's substitute hands upstream's rows the chat's work verbs in
- * our context, read off the entries the timeline draws: the working row and
- * a turn's fold say the turn's verb, and outside the substitute they say
- * upstream's words. Upstream's timeline is a stand-in that draws the two
- * rows as upstream's do.
+ * The timeline's substitute hands upstream's rows the chat's work verbs in our context, read off
+ * the entries it draws: the working row and a turn's fold say the turn's verb, and outside the
+ * substitute upstream's words. Upstream's timeline here is a stand-in drawing those two rows.
  */
 import { MessageId, RunId } from "@t3tools/contracts";
 import { renderToStaticMarkup } from "react-dom/server";

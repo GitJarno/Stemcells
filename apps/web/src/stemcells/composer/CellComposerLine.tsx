@@ -31,26 +31,10 @@ import "../tokens/stemcells.css";
 import "./composer-line.css";
 
 /**
- * The line over a Cell's composer: who, where and on what. The Cell's name
- * in its tone, its project, where it runs when that is news, the chat it
- * came from, and what the chat is about, quiet, and at its right end the
- * composer's stash (`LineStash.tsx`). It is a ledge on the composer's box,
- * upstream's own tab made solid (`composer-line.css`); the Cell stands on
- * it over its name, nothing it wears past where the name starts
- * (`stand.ts`), with room at its right for the buds of its subagents at
- * work. After the project, the branch the chat is on, whose ⌄ opens
- * upstream's branch toolbar where upstream offers it (`LineEnv.tsx`).
- * Before the chat is sent, only that branch and the stash, once git is
- * known; nothing outside a Cell's pane. Once the Cell is done, the ledge
- * turns green and offers Settle, which puts the Cell away
- * (stemcells/tasks/aski-manager.md, decision 10).
- *
- * A pane has no header, so the line does the header's jobs, as upstream's
- * did them: the name and the one-liner open the chat's menu and a
- * double-click renames it; the project starts a new chat in it; the parent's
- * mark goes back to the chat this one came from. As the pane narrows, words
- * become marks and then go (`composer-line.css`); the name never does.
- * A pane with no Cell stands its roof slot here instead (`slot.ts`).
+ * The ledge over a Cell's composer, upstream's tab made solid (`composer-line.css`): the Cell
+ * stands on it over its name (`stand.ts`), then project, branch (`LineEnv.tsx`), parent and
+ * one-liner, with the stash at its right end. A pane has no header, so the line does its jobs.
+ * As the pane narrows, words become marks and then go; the name never does.
  */
 export function CellComposerLine() {
   const cell = use(PaneCellContext);
@@ -239,6 +223,7 @@ export function CellComposerLine() {
 /** The line stands over a composer: drawn, it tells its pane one is (`PaneComposerContext`). */
 function useTellComposerDrawn() {
   const tell = use(PaneComposerContext);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the pane a composer line is drawn before paint, and take it back on unmount.
   useLayoutEffect(() => {
     if (tell === null) return;
     tell(true);

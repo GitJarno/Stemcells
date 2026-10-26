@@ -1,11 +1,8 @@
 /**
- * Ordinary prose never moves a chat or loses words. The bug: a draft's
- * "Without using any tools, write an 800-word essay about moss in plain
- * prose." was read as the place plain-project, by a near spelling; the
- * chat started there and was sent without "in plain prose". Each sentence
- * here says "in", "for" or "with" before a word that is only a prefix, a
- * part or a near spelling of a project's name, or uses a model, effort or
- * count word as a plain word. None may route, ink or strip anything.
+ * Ordinary prose never moves a chat or loses words: "...an 800-word essay about moss in plain
+ * prose." once read as the place plain-project by a near spelling, and was sent without "in
+ * plain prose". Each sentence puts "in", "for" or "with" before a prefix, part or near spelling
+ * of a project's name, or uses a model, effort or count word plainly: none may route, ink or strip.
  */
 import { describe, expect, it } from "vite-plus/test";
 

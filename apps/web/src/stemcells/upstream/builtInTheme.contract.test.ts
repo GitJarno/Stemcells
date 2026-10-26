@@ -1,14 +1,8 @@
 /**
- * Stemcells' theme is built in (look.ts, substitutes/themePalettes.ts), so
- * the app wears it from its first frame. Published by the server only, it
- * resolved when the server's theme event came, a couple of seconds into a
- * launch in the desktop app, and until then T3's stock palette painted: a
- * lighter frame round the slate, the slate's edge and the column's border.
- * It is also what a launch with nothing stored opens on, where upstream
- * opened on T3's stock theme. These pin the parts: the theme module's first
- * paint, the boot script's splash before it (index.html), the default, the
- * server's copy left out, and Settings' card. A failure after a sync names
- * the part that moved.
+ * Stemcells' theme is built in (look.ts, substitutes/themePalettes.ts), so the app wears it from
+ * its first frame and on a launch with nothing stored, not T3's stock palette until the server's
+ * theme event. These pin the theme module's first paint, the boot splash (index.html), the
+ * default, the server's copy left out, and Settings' card.
  */
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -16,7 +10,6 @@ import { T3_CODE_DARK_THEME_COLORS } from "@t3tools/shared/themePalettes";
 
 import indexHtml from "../../../index.html?raw";
 import themeSettings from "../../components/settings/ThemeSettings.tsx?raw";
-import useEnvironmentTheme from "../../hooks/useEnvironmentTheme.ts?raw";
 import { STEMCELLS_OVER_T3_DARK } from "../../../../../stemcells/brand/look.ts";
 import { STEMCELLS_THEME } from "./look";
 
@@ -162,7 +155,17 @@ describe("Stemcells' theme is built in", () => {
     const { palette } = await loadTheme({}, true);
     expect(palette.isReservedThemeId("stemcells")).toBe(true);
     expect(palette.getThemeDefinition("stemcells")).toEqual(STEMCELLS_THEME);
-    expect(useEnvironmentTheme).toContain("if (isReservedThemeId(theme.id)) return false;");
+    const copy = {
+      name: "Published",
+      appearance: "dark",
+      canvas: "#101010",
+      accent: "#ff6600",
+    } as const;
+    const kept = palette.publishedThemeDefinitions([
+      { id: "stemcells", ...copy },
+      { id: "machine", ...copy },
+    ]);
+    expect(kept.map((theme) => theme.id)).toEqual(["machine"]);
   });
 
   it("Settings lists it first among T3's themes", () => {

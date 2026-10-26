@@ -1,18 +1,7 @@
-// What a lab's Node processes ask of the network, written down and held on
-// the machine.
-//
-// stemcells/lab/outbound-live preloads it, beside never-shown.cjs, into every
-// Node process the lab starts: Electron's main, the server Electron runs as
-// Node, and any Node child after them (NODE_OPTIONS carries it down). With
-// STEMCELLS_NET_LOG naming a file, each process appends one JSON line there
-// for every name it looks up and every socket it opens, and anything bound
-// beyond loopback fails as an offline Mac would fail it: the lookup finds
-// nothing, the connection is refused. So the run sees every contact the app
-// would make, and none of them leaves.
-//
-// Chromium's own traffic (the pages, Electron's `net`, the updater) goes
-// through its network service, not Node's: outbound-live reads that from
-// Chromium's net log instead.
+// What a lab's Node processes ask of the network, logged to STEMCELLS_NET_LOG and held on the
+// machine: preloaded by outbound-live into every Node process (NODE_OPTIONS carries it down),
+// it fails anything beyond loopback as an offline Mac would. Chromium's own traffic goes
+// through its network service, not Node's: outbound-live reads its net log instead.
 "use strict";
 
 const NodeFS = require("node:fs");

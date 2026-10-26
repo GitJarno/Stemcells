@@ -1,9 +1,7 @@
 /**
- * The crew in view: every Cell the workspace shows (Aski's tab aside),
- * dealt its look together with the others (`cell/looks.ts`), so no two wear
- * the same while the catalogue lasts. A Cell takes its seat when it first
- * shows and keeps its look while it stays; one that leaves and comes back is
- * dealt again, as a newcomer.
+ * The crew in view: every Cell the workspace shows (Aski's tab aside), dealt its look together
+ * with the others (`cell/looks.ts`), so no two wear the same while the catalogue lasts. A Cell
+ * keeps its seat and look while it stays; one that leaves and comes back is dealt again.
  */
 import { useSyncExternalStore } from "react";
 

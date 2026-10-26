@@ -1,10 +1,8 @@
 /**
- * What the left column shows when it shows: the Cells' column (the
- * default), the rail (the smallest it goes) or upstream's list, for what
- * only it does (projects, environments). Hidden is upstream's own open and
- * closed, so its shortcut and button hide and show whichever this says.
- * The Cells' column also keeps which stage is open. Remembered in this
- * browser.
+ * What the left column shows when it shows: the Cells' column (the default, which also keeps
+ * which stage is open), the rail (its narrowest) or upstream's list, for what only it does
+ * (projects, environments). Hidden is upstream's own open and closed, so its shortcut and
+ * button hide and show whichever this says. Remembered in this browser.
  */
 import { create } from "zustand";
 

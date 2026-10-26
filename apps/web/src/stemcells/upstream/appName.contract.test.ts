@@ -6,9 +6,9 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
+import appInitSource from "../../appInit.tsx?raw";
 import { resolveServerBackedAppDisplayName } from "../../branding.logic";
 import brandingSource from "../../branding.ts?raw";
-import rootRouteSource from "../../routes/__root.tsx?raw";
 import sidebarChromeSource from "../../components/sidebar/SidebarChrome.tsx?raw";
 import indexHtmlSource from "../../../index.html?raw";
 import desktopPackageSource from "../../../../desktop/package.json?raw";
@@ -34,7 +34,7 @@ describe("the app's name", () => {
     expect(branding).toContain(
       `export const APP_BASE_NAME = injectedDesktopAppBranding?.baseName ?? "${APP_NAME}";`,
     );
-    // The title follows the primary server's channel.
+    // From the app's start, the title is that name on the primary server's channel.
     expect(
       resolveServerBackedAppDisplayName({
         baseName: APP_NAME,
@@ -43,8 +43,13 @@ describe("the app's name", () => {
         primaryServerVersion: "1.0.0-nightly.20261021.1",
       }),
     ).toBe(`${APP_NAME} (Nightly)`);
-    expect(rootRouteSource).toContain("document.title = title;");
-    expect(rootRouteSource).not.toContain("T3 Code");
+    expect(appInitSource).toMatch(
+      /document\.title = resolveServerBackedAppDisplayName\(\{\s*baseName: APP_BASE_NAME,/,
+    );
+    expect(appInitSource).toMatch(
+      /export function startAppServices\(\)[\s\S]*startDocumentTitle\(\);/,
+    );
+    expect(appInitSource).not.toContain("T3 Code");
     const indexHtml = built("apps/web/index.html", indexHtmlSource);
     expect(indexHtml).toContain(`<title>${APP_NAME} (Beta)</title>`);
     expect(indexHtml).not.toContain("T3 Code");

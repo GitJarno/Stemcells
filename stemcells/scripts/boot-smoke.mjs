@@ -1,15 +1,8 @@
-// The built app boots, headless: the server starts on a scratch home, its page
-// loads in a headless Chromium, wears Stemcells' look, and opens a chat on its
-// composer, asking no host but its own server. A sync's last gate
-// (`stemcells/scripts/sync-upstream --gates boot`), after the build gate has
-// built the web and the server.
+// The built app boots headless: the server starts on a scratch home, and its page loads in
+// headless Chromium, wears Stemcells' look and opens a chat, asking no host but its server.
+// A sync's last gate (`sync-upstream --gates boot`). The pairing URL is never printed.
 //
 //   node stemcells/scripts/boot-smoke.mjs
-//
-// Nothing of the person's is read or written: the server's home and state
-// are a scratch folder, and the provider variables a shell may carry
-// are left out. The pairing URL carries a one-time token, so it is never
-// printed.
 import * as NodeChildProcess from "node:child_process";
 import * as NodeFS from "node:fs";
 import * as NodeModule from "node:module";

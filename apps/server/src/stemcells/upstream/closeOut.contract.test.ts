@@ -1,9 +1,8 @@
 /**
- * The close-out reaches every Cell through the instructions upstream gives
- * every chat (`seams.md`, The close-out): one entry of its sections, which
- * Codex takes entry by entry and Claude as one appended prompt. A failure
- * here after a sync means Cells no longer say where they stand, and every
- * stop falls back to the pre-read.
+ * The close-out reaches every Cell through the instructions upstream gives every chat
+ * (`seams.md`, The close-out): one entry of its sections, which Codex takes entry by entry
+ * and Claude as one appended prompt. A failure after a sync means Cells no longer say where
+ * they stand, and every stop falls back to the pre-read.
  */
 import {
   T3_CODE_ORCHESTRATION_INSTRUCTIONS,

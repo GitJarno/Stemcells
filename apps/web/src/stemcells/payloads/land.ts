@@ -1,17 +1,8 @@
 /**
- * Landing pictures and files in a chat's draft, by reference. Each lands as
- * a copy with an id of its own; a move is that copy and the source letting
- * go, once the copy is in.
- *
- * - A chip whose File the page holds is copied as a chip: the target's
- *   composer uploads it from the same File.
- * - A file only its machine has (a chip's finished upload, a video a chat
- *   shows) is copied there by the server's import route into a pending
- *   upload of its own, which the chip names: the bytes never pass through
- *   the page. A web address is fetched once, the same way.
- * - A picture comes in as a File (upstream's picture chips need the bytes,
- *   at most 10 MB): from the URL the chat shows it by, or for one from the
- *   web, from the import route, which fetches it.
+ * Landing pictures and files in a chat's draft by reference: each lands as a copy with its own
+ * id, and a move lets the source go once the copy is in. A file only its machine has, or a web
+ * address, is copied by the server's import route, so the bytes never pass through the page; a
+ * picture comes in as a File (at most 10 MB), as upstream's picture chips need the bytes.
  */
 import type { CellRef } from "../tabs/layout";
 import type { AssetResource, Chip, FileChip, PictureChip, StashEntry } from "../upstream/payloads";
@@ -248,11 +239,10 @@ async function pictureFromWeb(item: Shown, hands: Hands): Promise<Copy> {
 }
 
 /**
- * A stash entry with the same words, pictures and context, whose files are
- * copies of their own (made by the primary's server): what ⌥ leaves in the
- * stash while the entry itself lands, so the stash and the chat never name
- * one upload. Null, with why, when a file couldn't be copied; copies made
- * before then are let go.
+ * A stash entry with the same words, pictures and context, whose files are copies of their own
+ * (made by the primary's server): what ⌥ leaves in the stash while the entry lands, so the stash
+ * and the chat never name one upload. Null, with why, when a file couldn't be copied; copies
+ * made before then are let go.
  */
 export async function copyOfStashEntry(
   entry: StashEntry,

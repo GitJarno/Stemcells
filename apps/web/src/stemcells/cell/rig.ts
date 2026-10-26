@@ -1,11 +1,7 @@
-// The rig: a Cell's body as one soft mound deformed per frame, a pure
-// function from a pose to a body. A squash keeps the volume (sx = 1 /
-// sy^0.75), a lean shears the crown over a planted base, a spread melts the
-// base into a puddle, and the face slides across the front and hides where
-// it leaves the body. The eyes keep their size and ride the body; what the
-// head wears follows its crown, lift and lag included. At rest the hero is
-// `HERO` cell for cell. The miniature is drawn, never the hero halved: it
-// moves and squashes in whole cells.
+// The rig: a Cell's body as one soft mound deformed per frame, a pure function from pose to
+// body. A squash keeps the volume (sx = 1 / sy^0.75), a lean shears the crown over a planted
+// base, a spread melts the base; the face slides across and hides where it leaves the body.
+// At rest the hero is `HERO` cell for cell; the miniature is drawn, never the hero halved.
 
 import { EYES, MINI, MOUTHS, RIG, type Pose } from "./kit.ts";
 import {

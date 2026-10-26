@@ -16,9 +16,10 @@ import { AnalyticsService } from "../../telemetry/AnalyticsService.ts";
 export const noAnalytics: Layer.Layer<AnalyticsService> = Layer.succeed(
   AnalyticsService,
   AnalyticsService.of({
-    record: () => Effect.void,
+    // Untraced: every server feature calls these, and they do nothing to trace.
+    record: Effect.fnUntraced(function* () {}),
     flush: Effect.void,
-    recordOwners: () => Effect.void,
+    recordOwners: Effect.fnUntraced(function* () {}),
   }),
 );
 

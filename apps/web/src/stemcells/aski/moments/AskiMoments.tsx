@@ -1,11 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (aski.css), outside upstream's Tailwind entry. */
-// Aski's moments, around its figure: the theater a moment plays in, and
-// the line it types beside Aski. Most are earned by the watch
-// (`AskiMomentWatch.tsx`); the seven bits and the night shift are earned
-// here, by looking at Aski. A moment earned while Aski is out of sight
-// waits a while for the person to look. When it plays it asks the lively
-// budget first, so moments stay rare and none plays while anything waits
-// on the person.
+// Aski's moments around its figure. Most are earned by the watch (`AskiMomentWatch.tsx`); the
+// seven bits and the night shift are earned here, by looking at Aski. One earned out of sight
+// waits a while for the person to look, and each asks the lively budget before it plays, so
+// moments stay rare and none plays while anything waits on the person.
 
 import { type ReactNode, useEffect, useEffectEvent, useRef } from "react";
 
@@ -158,6 +155,7 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
     if (next.seven) earn({ id: "bits", line: words["moment.bits"], at: now });
   });
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Own the moment canvas, its player, size observer, click and earned listeners; clean up on unmount.
   useEffect(() => {
     const theater = theaterRef.current;
     if (theater === null) return;
@@ -192,6 +190,7 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
     };
   }, []);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Run or pause the moment player as Aski comes into or out of sight, and reschedule what's due.
   useEffect(() => {
     playerRef.current?.run(shown);
     shownSince.current = shown ? Date.now() : null;
@@ -199,6 +198,7 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
   }, [shown]);
 
   // The night shift: the first look at Aski tonight while Cells work.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Earn the night shift when Aski is in sight at night while Cells work.
   useEffect(() => {
     if (!shown || !present || working === 0) return;
     const night = nightOf(new Date(minute));

@@ -1,17 +1,8 @@
 /**
- * Upstream's stores that keep one localStorage entry for the whole app
- * (drafts, the right panel, the terminal drawer) are written whole by every
- * window, each from its own copy in memory. Each window hears the others'
- * writes (`storage`) and merges them in, entry by entry: one entry per key
- * of a record field (a chat's draft, its panel), the whole field otherwise.
- *
- * Every entry carries a version: a counter (Lamport's: past every version
- * this window has seen) and the window that wrote it. A window gives an
- * entry it changed a new version, and takes another window's value only
- * where that one's version is newer than its own. A window passing on what
- * it took passes its version on too, so a bystander's write can't win over
- * typing it hadn't heard yet, and a write that changes nothing newer settles
- * (stemcells/tasks/windows.md, Edges).
+ * Upstream's stores with one localStorage entry for the app (drafts, panels) are written
+ * whole by every window. Each merges the others' writes entry by entry (a record field's key,
+ * else the whole field), taking a value only where its version (Lamport counter and writer) is
+ * newer, and passing it on with that version (stemcells/tasks/windows.md, Edges).
  */
 
 /** An entry's version: the counter it was written at, and by which window. */

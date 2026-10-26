@@ -1,9 +1,8 @@
 /**
- * `stemcells_standing`: Aski's room in one read (`needs/standing.ts`), so
- * Aski answers "what needs me?" with the numbers the cards show. Read only.
- * Registered beside upstream's toolkits, as `diskTool.ts` is. Its Needs is
- * the instance Aski's room streams: Effect builds a layer once per server,
- * however many layers provide it, so the numbers here are the cards'.
+ * `stemcells_standing`: Aski's room in one read (`needs/standing.ts`), with the numbers the
+ * cards show. Read only. Registered beside upstream's toolkits, as `diskTool.ts` is. Its
+ * Needs is the instance Aski's room streams: Effect builds a layer once per server, however
+ * many layers provide it, so the numbers here are the cards'.
  */
 import { OrchestratorMcpFailure } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";

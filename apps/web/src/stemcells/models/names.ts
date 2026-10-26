@@ -1,19 +1,8 @@
 /**
- * How Stemcells writes a model's name: family first, then version, without
- * the vendor word. "GPT-6.1 Sol" reads "Sol 6.1", "Claude Opus 5.5" reads
- * "Opus 5.5": the provider's mark or colour beside the name already says
- * whose model it is.
- *
- * - A name with no family keeps its vendor word: "GPT-5.5" reads "GPT 5.5".
- * - A family is one or two words: "GPT-5.3-Codex-Spark" reads "Codex Spark 5.3".
- * - A variant baked into the name is a distinct model, so it stays, as a
- *   trailing word, with or without its parentheses: "Gemini 3.8 Flash (High)"
- *   and "Gemini 3.8 Flash High" both read "Flash 3.8 High". Only the effort
- *   words upstream's models carry count as a variant, never as a family.
- * - A name the rule doesn't recognise comes back unchanged.
- *
- * Display only. Slugs, ids and anything sent to a provider keep the name the
- * provider gave.
+ * How Stemcells shows a model's name (display only; ids and sends keep the provider's): family,
+ * then version, no vendor word ("Claude Opus 5.5" reads "Opus 5.5"). With no family the vendor
+ * stays ("GPT 5.5"); an effort word baked in stays as a trailing variant ("Flash 3.8 High"),
+ * never a family. A name the rule doesn't know comes back unchanged.
  */
 
 /** Each variant as it's written; "Xhigh" is how a name built from a slug spells it. */

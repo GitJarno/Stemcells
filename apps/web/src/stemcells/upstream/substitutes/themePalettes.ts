@@ -1,9 +1,7 @@
-// Replaces `@t3tools/shared/themePalettes` (`plugin.ts`) in the web: Stemcells'
-// theme is built in (`../look.ts`), so it is reserved too, and the copy the
-// server publishes for other clients is left out rather than shown twice.
-// `BUILT_IN_THEME_IDS` stays upstream's: the web reads the built-ins from
-// `BUILT_IN_THEMES`, and the server, which keeps upstream's module, lists
-// the ids it may not publish from it.
+// Replaces `@t3tools/shared/themePalettes` (`plugin.ts`) in the web: Stemcells' theme is built
+// in (`../look.ts`), so it is reserved too, and the server's published copy is left out, not
+// shown twice. `BUILT_IN_THEME_IDS` stays upstream's: the web reads built-ins from
+// `BUILT_IN_THEMES`, and the server, on upstream's module, lists the ids it may not publish.
 import {
   BUILT_IN_THEMES as UPSTREAM_BUILT_IN_THEMES,
   MOBILE_DEFAULT_THEME_ID,

@@ -274,11 +274,10 @@ function withCells(workspace: Workspace, cells: ReadonlyMap<string, CellRef | nu
 export type Refusal = "changed" | "elsewhere";
 
 /**
- * Takes a move back, while every window it touched still holds what the move
- * left there (focus and the active tab aside), and every chat it brings back
- * is in no window it leaves alone: a window closed, then one of its chats
- * opened in another, stays closed. Windows return to their places only where
- * the move placed them; one moved by hand since stays put. Else, why not.
+ * Takes a move back, while every window it touched still holds what the move left there
+ * (focus and the active tab aside), and every chat it brings back is in no window it leaves
+ * alone: a window closed, then one of its chats opened in another, stays closed. Windows
+ * return only where the move placed them; one moved by hand since stays put. Else, why not.
  */
 export function undo(current: Arrangement, entry: Moved["undo"]): Moved | Refusal {
   const { before, after } = entry;

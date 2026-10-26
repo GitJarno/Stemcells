@@ -1,8 +1,7 @@
-// What the next-prompt suggestion takes from upstream's web: the composer's
-// and its editor's props (the thread, its messages, what the composer waits
-// on), the hint its placeholder gives when nothing else is asked of the
-// person, its key look, and the thread's own server, as upstream reaches it
-// (`machines.ts`).
+// What the next-prompt suggestion takes from upstream's web: the composer's and its editor's
+// props (the thread, its messages, what the composer waits on), the hint its placeholder gives
+// when nothing else is asked of the person, its key look, and the thread's own server, as
+// upstream reaches it (`machines.ts`).
 
 import { type EnvironmentId, MessageId, type ThreadId } from "@t3tools/contracts";
 
@@ -30,7 +29,7 @@ export { Kbd } from "../../components/ui/kbd";
  * Upstream's placeholder when the composer asks nothing else of the person;
  * the only one a suggestion stands in for (`suggestions.contract.test.ts`).
  */
-export const IDLE_PLACEHOLDER = "Ask anything, @tag files/folders, $use skills, or / for commands";
+export { DEFAULT_COMPOSER_PLACEHOLDER as IDLE_PLACEHOLDER } from "../../composerPlaceholder";
 
 const SUGGESTION_PATH = "/api/stemcells/prompt-suggestion";
 

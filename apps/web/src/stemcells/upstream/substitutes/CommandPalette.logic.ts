@@ -1,9 +1,7 @@
-// Replaces `components/CommandPalette.logic.ts` (`plugin.ts`): the palette's
-// action that starts a chat in no project is a casual chat
-// (`stemcells/words/casualChat.ts`), found by its words too. Upstream builds
-// the action inside `CommandPalette.tsx`, which it edits about daily, and
-// hands it to `buildRootGroups` here, so the words change on the way through
-// and that file stays upstream's.
+// Replaces `components/CommandPalette.logic.ts` (`plugin.ts`): the palette's no-project chat
+// action is a casual chat (`stemcells/words/casualChat.ts`), found by its words too. Upstream
+// builds it in `CommandPalette.tsx`, a hot file, and hands it to `buildRootGroups` here, so the
+// words change on the way through and that file stays upstream's.
 import { buildRootGroups as buildUpstreamRootGroups } from "../../../components/CommandPalette.logic";
 import { CASUAL_CHAT } from "../../../../../../stemcells/words/casualChat.ts";
 

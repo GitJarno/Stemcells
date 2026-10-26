@@ -1,9 +1,8 @@
 /**
- * The new Cell's draft, made ahead (`newCell.ts`): its page is on the strip
- * before anyone goes to it, so the draft is made with no route to it, from
- * the same steps upstream's "new thread" takes for a fresh draft
- * (`useNewThreadHandler`), in the project a new tab gets.
- * `newCell.contract.test.ts` pins those steps.
+ * The new Cell's draft, made ahead (`newCell.ts`): its page is on the strip before anyone goes
+ * to it, so it is made with no route to it, by the steps upstream's "new thread" takes for a
+ * fresh draft (`useNewThreadHandler`), in the project a new tab gets. `newCell.contract.test.ts`
+ * pins those steps.
  */
 import { DEFAULT_SERVER_SETTINGS } from "@t3tools/contracts";
 import { resolveNewThreadEnvMode, resolveProjectSettings } from "@t3tools/shared/projectSettings";
@@ -80,7 +79,7 @@ export function useNewCellDraftMaker(): {
       carryShell?.interactionMode ??
       carryDraft?.interactionMode ??
       null;
-    // As upstream's (#23967): reading the project file of a machine that's
+    // As upstream's: reading the project file of a machine that's
     // offline never settles, and the draft would never be made.
     const consultProjectFile =
       project !== undefined &&

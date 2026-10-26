@@ -7,11 +7,10 @@ import * as NodeURL from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 /**
- * Stemcells sends no telemetry or usage data, to T3 or anyone else. Every
- * build is made from these folders, so none of them may carry T3's analytics
- * endpoint, a PostHog project key or a PostHog client. If this fails after a
- * sync, upstream added a way to report on the person: turn it off before
- * merging (`stemcells/seams.md`, No telemetry).
+ * Stemcells sends no telemetry or usage data. No folder a build is made from may carry T3's
+ * analytics endpoint, a PostHog project key or a PostHog client. If this fails after a sync,
+ * upstream added a way to report on the person: turn it off before merging
+ * (`stemcells/seams.md`, No telemetry).
  */
 
 const repoRoot = NodePath.resolve(
@@ -85,13 +84,10 @@ describe("no Stemcells build reports on the person", () => {
 });
 
 /**
- * Nothing new leaves the machine unread. Every host the shipped code names,
- * and every file naming an install, anonymous or analytics id, an update feed
- * or a crash reporter, is listed in `stemcells/outbound.txt` with why it may
- * stay, and no package that reports on the person is a dependency. A sync
- * that brings a new one fails here until someone reads what the code does
- * with it: turn off what reports on the person, list the rest
- * (`stemcells/docs/upstream-sync.md`, Outbound).
+ * Every host the shipped code names, and every file naming an install, anonymous or analytics
+ * id, an update feed or a crash reporter, is in `stemcells/outbound.txt` with why it may stay;
+ * no dependency reports on the person. A new one fails until someone reads it: turn off what
+ * reports on the person, list the rest (`stemcells/docs/upstream-sync.md`, Outbound).
  */
 describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", () => {
   const SHIPPED = [

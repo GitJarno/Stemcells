@@ -1,9 +1,7 @@
 /**
- * Upstream's name, and our name in its place: the words the name transform
- * renames (`nameTransform.ts`) and the phone's build config
- * (`apps/mobile/app.config.ts`). Only the builds and the build config read
- * this file, never an app: it says T3's name, and an app's own code may not
- * (`nameTransform.ts`'s output check).
+ * Upstream's name and ours in its place, for the name transform (`nameTransform.ts`) and the
+ * phone's build config. Only builds read this file, never an app: it says T3's name, which an
+ * app's own code may not (`nameTransform.ts`'s output check).
  */
 import { APP_NAME } from "./name.ts";
 

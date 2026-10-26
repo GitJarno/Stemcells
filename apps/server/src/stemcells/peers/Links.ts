@@ -15,11 +15,10 @@ import { titleOf } from "./frame.ts";
 import * as Wire from "./link.ts";
 import { isAski, isAtWork } from "./roster.ts";
 
-// Linked environments (stemcells/tasks/peers.md, "Across environments"):
-// the links this environment keeps, the routes a linked one calls, who's at
-// work on each (asked every minute), and a Cell's message to a Cell there.
-// A link is the person's: made and ended from Settings › Devices,
-// or ended by the other side, whose token then stops working here.
+// Linked environments (stemcells/tasks/peers.md, "Across environments"): the links kept
+// here, the routes a linked one calls, who's at work on each (asked every minute), and a
+// Cell's message to a Cell there. A link is the person's: made and ended from Settings ›
+// Devices, or ended by the other side, whose token then stops working here.
 
 /** How often each linked environment is asked who's at work there. */
 const POLL_EVERY = Duration.seconds(60);

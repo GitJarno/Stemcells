@@ -1,9 +1,8 @@
 /**
- * The viewer's motion: the picture lifting out of its thumbnail, stepping
- * to its neighbours, zooming, following the fingers, and landing home. Each
- * move is a transform (and the crop a clip-path) played by the compositor;
- * nothing re-renders while the picture moves. A newer move takes the
- * picture from wherever it is on screen: latest input wins.
+ * The viewer's motion: lifting out of the thumbnail, stepping to neighbours, zooming,
+ * following the fingers, and landing home. Each move is a transform (the crop a clip-path)
+ * played by the compositor; nothing re-renders while the picture moves. A newer move takes
+ * the picture from wherever it is on screen: latest input wins.
  */
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { cssLinear, settledDuration } from "../tokens/spring.ts";

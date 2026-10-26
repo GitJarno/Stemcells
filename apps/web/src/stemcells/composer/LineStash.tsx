@@ -4,20 +4,18 @@ import { BookmarkIcon } from "lucide-react";
 import { cn, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 
 /**
- * The composer's stash at the right end of the Cell's ledge, as upstream's
- * stash tab says it: its mark, "Stash" and the count, never truncated
- * (the word goes where the line's words become marks). It opens upstream's
- * stash menu as upstream's tab does (the menu knows its trigger by
- * `data-prompt-stash-badge`), and the count lights up for a moment when a
- * prompt is stashed, as upstream's does.
+ * The composer's stash at the right end of the Cell's ledge, as upstream's stash tab says it:
+ * mark, "Stash" and the count, never truncated. It opens upstream's stash menu, which knows its
+ * trigger by `data-prompt-stash-badge`, and pulses once on a stash with upstream's animations.
  */
 export function LineStash(props: {
   count: number;
   menuOpen: boolean;
+  /** Bumped per stash; each new key replays the pulse. 0 means never pulsed. */
   pulseKey: number;
-  pulsing: boolean;
   onToggleMenu: () => void;
 }) {
+  const pulsed = props.pulseKey > 0;
   return (
     <Tooltip>
       <TooltipTrigger
@@ -30,7 +28,12 @@ export function LineStash(props: {
             className={cn(
               "composer-line-stash composer-line-act",
               props.menuOpen && "pointer-events-none",
-              props.menuOpen || props.pulsing ? "text-foreground" : "text-muted-foreground",
+              props.menuOpen ? "text-foreground" : "text-muted-foreground",
+              // Two identical keyframes, swapped, restart the row's pulse as upstream's tab does.
+              pulsed &&
+                (props.pulseKey % 2 === 0
+                  ? "animate-stash-pulse-row-alt"
+                  : "animate-stash-pulse-row"),
             )}
             onPointerDown={(event) => event.preventDefault()}
             onClick={props.onToggleMenu}
@@ -43,8 +46,8 @@ export function LineStash(props: {
           key={props.pulseKey}
           className={cn(
             "font-medium tabular-nums",
-            props.pulsing &&
-              "text-primary transition-[opacity,translate] duration-180 ease-out starting:translate-y-0.5 starting:opacity-0 motion-reduce:transition-none",
+            pulsed &&
+              "animate-stash-pulse-count transition-[opacity,translate] duration-180 ease-out starting:translate-y-0.5 starting:opacity-0 motion-reduce:transition-none",
           )}
         >
           {props.count}

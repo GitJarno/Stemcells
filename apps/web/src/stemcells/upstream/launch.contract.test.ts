@@ -1,14 +1,8 @@
 /**
- * What starting several Cells relies on upstream: a Cell beside the draft
- * starts the way each thread of upstream's multiple-model send does, with
- * the same effort in the prompt; ⌘↵ in a new chat is the "background"
- * send the words take as "send past the most"; and the Send button the
- * count goes on is the footer's submit button. What the message carries
- * goes to every Cell as to every thread of that send, on uploads of their
- * own (`carry.ts`). A failure here after a sync names the contract that
- * moved: Cells would start unlike upstream's threads, the most would never
- * yield, Send would lose its count, or the Cells beside would lose the
- * message's files.
+ * What starting several Cells relies on upstream: a Cell beside the draft starts as each thread
+ * of upstream's multiple-model send does, effort in the prompt and the message's files on its
+ * own uploads (`carry.ts`); ⌘↵ in a new chat is the "background" send the words take as "send
+ * past the most"; and the Send button the count goes on is the footer's submit button.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -82,10 +76,12 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
   });
 
   it("the server copies an upload into each thread that claims it, so one serves every Cell on a machine", () => {
-    expect(attachmentClaims).toContain("A copy, not a move");
     expect(attachmentClaims).toMatch(
       /fileSystem\.copyFile\(claim\.currentPath, claim\.finalPath\)/,
     );
+    // Nothing moves, links or removes the upload itself: the next Cell claims it too.
+    expect(attachmentClaims).not.toMatch(/\.(rename|link|symlink)\(/);
+    expect(attachmentClaims).not.toMatch(/\.remove\(claim\.currentPath/);
   });
 
   it("a chip's context reaches the model only where the text has the chip", () => {

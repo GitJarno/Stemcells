@@ -1,9 +1,8 @@
 /**
- * What the terminal drawer's opening height needs of upstream: the height
- * upstream opens it at (and stores for a chat on opening, dragged or not),
- * and one terminal row, measured the way upstream's terminal measures its
- * cells, in the font the person's settings give the terminal
- * (terminal.contract.test.ts). And how the drawer opens and closes.
+ * What the terminal drawer's opening height needs of upstream: the height it opens at (and
+ * stores for a chat on opening, dragged or not), and one terminal row, measured as upstream's
+ * terminal measures cells in the person's terminal font (terminal.contract.test.ts). And how
+ * the drawer opens and closes.
  */
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { ScopedThreadRef } from "@t3tools/contracts";
@@ -75,13 +74,10 @@ interface PanelMotion {
 }
 
 /**
- * How a chat's terminal drawer opens and closes (the seam in upstream's
- * `ChatTerminalDrawers`, given upstream's panel motion). Where the person
- * set panel motion, as upstream moves its panels. Where it is off, its
- * default, on Stemcells' `keyboard` motion instead (`ours`, played by
- * `terminal/terminal.css`), so the drawer, the composer and the words over
- * it rise and fall as one; held still where upstream holds its panels still
- * (a route's first paint), and with less motion.
+ * How a chat's terminal drawer opens and closes (the seam in upstream's `ChatTerminalDrawers`).
+ * With panel motion set, as upstream moves its panels; off, its default, on Stemcells'
+ * `keyboard` motion (`ours`, played by `terminal/terminal.css`), so drawer, composer and words
+ * rise and fall as one. Held still where upstream holds panels still, and with less motion.
  */
 export function useDrawerMotion(panels: PanelMotion): PanelMotion & { readonly ours: boolean } {
   const held = useContext(PanelsHeld);

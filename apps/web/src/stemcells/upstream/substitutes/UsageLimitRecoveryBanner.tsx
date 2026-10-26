@@ -1,8 +1,7 @@
-// Replaces `components/chat/UsageLimitRecoveryBanner.tsx` (`plugin.ts`): the
-// banner over a Cell a usage limit stopped also offers Continue, which
-// carries it on now, as the composer's "Resume thread" does, before
-// upstream's own actions. With Settings' auto-resume on, a line under it says
-// the reset carries the Cell on (`stemcells/limitResume/LimitActions.tsx`).
+// Replaces `components/chat/UsageLimitRecoveryBanner.tsx` (`plugin.ts`): the banner over a Cell
+// a usage limit stopped also offers Continue, before upstream's own actions, which carries it on
+// now as the composer's "Resume thread" does. With Settings' auto-resume on, a line under it
+// says the reset carries the Cell on (`stemcells/limitResume/LimitActions.tsx`).
 import type * as Upstream from "../../../components/chat/UsageLimitRecoveryBanner";
 import { usageLimitRecoveryBannerItem as upstreamBannerItem } from "../../../components/chat/UsageLimitRecoveryBanner";
 

@@ -51,9 +51,10 @@ const draftExists = (draftId: DraftId) =>
   useComposerDraftStore.getState().getDraftSession(draftId) !== null;
 
 describe("chats render from props, not from the URL", () => {
-  it("ThreadRouteView takes the chat to show as its target", () => {
+  it("ThreadRouteView takes the chat to show as its target, and whether a modal covers it", () => {
     expectTypeOf<ComponentProps<typeof ThreadRouteView>>().toEqualTypeOf<{
       target: ThreadRouteTarget;
+      background?: boolean;
     }>();
   });
 

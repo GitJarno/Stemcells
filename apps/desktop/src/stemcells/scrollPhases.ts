@@ -2,17 +2,10 @@
 // @effect-diagnostics globalTimers:off -- Clock ticks to a page that just loaded, outside any Effect fiber.
 // @effect-diagnostics globalDate:off -- Stamps the line that says whether phases are live, outside any Effect fiber.
 /**
- * Stemcells: macOS's own phases for trackpad scrolls, for the tab swipe
- * (apps/web/src/stemcells/tabs/phases.ts). DOM wheel events lack them. The
- * scroll-phases addon (stemcells/native/scroll-phases.m, built by
- * stemcells/scripts/build-scroll-phases) reports each phased scroll event,
- * and this sends it to the page of the window it happened in, where
- * scrollPhasesPreload.ts hands it on. Without the addon (not built, or not
- * a Mac) nothing is sent, and the page reads swipes from wheel events alone.
- *
- * Each start says which it is, in one line of stemcells-scroll-phases.log
- * in the app's user data folder (and on stdout), so an install can be
- * checked.
+ * Stemcells: macOS's trackpad scroll phases, which DOM wheel events lack, sent to the page of
+ * the window they happen in for the tab swipe. Without the addon (`stemcells/native/`, not built
+ * or not a Mac) the page reads swipes from wheel events alone. Each start logs which in
+ * `stemcells-scroll-phases.log` in user data, so an install can be checked.
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";

@@ -1,15 +1,8 @@
 /**
- * What a stopped Cell's resume takes from upstream (stemcells/tasks/limit-resume.md):
- * the thread shells (as Aski's needs list reads them), Settings' "Auto-resume
- * limited threads" (`autoResumeLimitedThreads`), each provider instance's
- * driver and, for Claude, the CLI and environment its Cells run with, and
- * the orchestrator's message dispatch.
- *
- * The resume is upstream's own manual continuation, the composer's "Resume
- * thread": "Continue where you left off." with `manualContinuationOfRunId`.
- * The orchestrator refuses it unless the stopped run is still the thread's
- * latest and failed on a usage limit, so it never lands after the CLI, the
- * person or upstream's own worker carried the Cell on.
+ * What a stopped Cell's resume takes from upstream (stemcells/tasks/limit-resume.md). The
+ * resume is upstream's own manual continuation, the composer's "Resume thread", with
+ * `manualContinuationOfRunId`. The orchestrator refuses it unless the stopped run is still
+ * the latest and failed on a usage limit, so it never lands after another carried the Cell on.
  */
 import {
   ClaudeSettings,

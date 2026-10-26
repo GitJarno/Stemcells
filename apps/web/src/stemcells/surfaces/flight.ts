@@ -1,21 +1,8 @@
 /**
- * A surface flies between its card and the workbench: opened, the card
- * grows into the workbench (on `lift`); put away, the workbench shrinks back
- * into the card (on `land`), floating beside the chat or tucked at its edge.
- *
- * Every way in or out goes through upstream's floater store (the card's
- * click, upstream's "Open in right panel", every close of the panel on a
- * browser or device, Look's endings), so the flights are read from there,
- * once, rather than from each button. The store tells of a change as it is
- * made, before React draws it, so where the surface was is still on screen
- * to measure; where it goes is measured once React has drawn it.
- *
- * What flies is a stand-in: the card's ground, cut by a rounded clip that
- * moves from the one place to the other on the compositor. The live page
- * can't fly (a desktop browser is drawn at the app's root, over its slot,
- * and resizing it every frame would repaint the page), so it waits hidden
- * where it lands and fades in as the stand-in fades out. With less motion
- * there is no flight: the surface is simply where it goes.
+ * A surface flies between its card and the workbench. Every way in or out goes through
+ * upstream's floater store, so flights are read there once; it tells of a change before React
+ * draws it, so the start is still on screen to measure. A stand-in flies (the live page can't:
+ * a desktop browser is drawn at the app's root), and the page fades in where it lands.
  */
 import { motionTiming, reducedMotion } from "../tokens/motion";
 import {

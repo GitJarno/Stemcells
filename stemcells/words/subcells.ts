@@ -1,11 +1,8 @@
 /**
- * A subagent, in the words a person reads, is a Subcell: a Cell another Cell
- * starts for a piece of its work. Upstream names them in a few sentences it
- * builds (a turn's "Launched 2 subagents", the title of one with none of its
- * own, "Subagent of" over its thread); the web's and the phone's substitutes
- * for those modules say Subcell instead. The views that write the word
- * inline in upstream's hot files import it from here, once each; cold ones
- * say it in place (`stemcells/seams.md`, Subcells).
+ * A subagent, in the words a person reads, is a Subcell: a Cell another Cell starts for a
+ * piece of its work. The web's and phone's substitutes for upstream's sentences about them say
+ * Subcell; views that write it inline in upstream's hot files import it from here, once each;
+ * cold ones say it in place (`stemcells/seams.md`, Subcells).
  */
 
 /** The word, for the views that write it inline: one, many, and the button that opens one. */

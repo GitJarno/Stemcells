@@ -1,10 +1,8 @@
 /**
- * What the slate's drop wash needs of upstream: which chat a carried file
- * would land in. Upstream's thread view takes files dragged over its canvas
- * and, while one is over it, draws an overlay of its own; the chat showing
- * that overlay is the one a drop lands in, so the wash follows it rather
- * than guessing. In a pane the overlay's picture steps aside for the wash
- * (`tabs/drop.css`). `drop.contract.test.ts` pins both.
+ * Which chat a carried file would land in, for the slate's drop wash. Upstream's thread view
+ * draws its own overlay while a file is over its canvas, and the chat showing it takes the drop,
+ * so the wash follows it rather than guessing. In a pane the overlay's picture steps aside for
+ * the wash (`tabs/drop.css`). `drop.contract.test.ts` pins both.
  */
 const CHAT_DROP_OVERLAY = "[data-chat-workspace-drop-overlay]";
 

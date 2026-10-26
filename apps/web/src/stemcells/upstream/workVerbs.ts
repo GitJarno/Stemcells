@@ -1,10 +1,8 @@
 /**
- * Upstream's chat timeline as the work verbs read it: the entries that start
- * a turn, in order. Upstream's own rule is private to its timeline
- * (`timelineEntryStartsResponse` in `MessagesTimeline.logic.ts`): the
- * person's words start a turn unless they steer the one running, and a
- * notification starts one of its own. `workVerbs.contract.test.ts` pins it,
- * with the labels the verbs swap a word in.
+ * Upstream's chat timeline as the work verbs read it: the entries that start a turn, in order,
+ * by upstream's private rule (`timelineEntryStartsResponse` in `MessagesTimeline.logic.ts`): the
+ * person's words start one unless they steer the one running; a notification starts its own.
+ * `workVerbs.contract.test.ts` pins it, with the labels the verbs swap a word in.
  */
 import type { TimelineEntry } from "../../session-logic";
 

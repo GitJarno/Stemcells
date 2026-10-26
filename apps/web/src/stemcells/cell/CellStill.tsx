@@ -22,6 +22,7 @@ export function CellStill(props: {
   const { name, provider, points, ground } = props;
   const worn = props.look.join("+");
   const canvas = useRef<HTMLCanvasElement>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Paint the still frame onto its canvas before the browser paints, whenever what it shows changes.
   useLayoutEffect(() => {
     const element = canvas.current;
     if (element === null) return;

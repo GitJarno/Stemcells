@@ -1,45 +1,40 @@
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackScreen } from "@react-navigation/native-stack";
+import type { ComponentProps } from "react";
 
 import { DiskScreen } from "./disk/DiskScreen";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
-import { SettingsRow } from "./upstream/disk";
+import { openSettings, type SettingsRow } from "./upstream/disk";
 import { useSavedRemoteConnections } from "./upstream/push";
 
-// Our settings pages on the phone. Upstream's settings stack spreads these
-// screens into its own (`Stack.tsx`), and its index shows these rows at the
-// end of Server settings (`SettingsRouteScreen.tsx`): a line in each
-// (seams.md).
+// Our settings pages on the phone. Upstream's Settings routes spread these with its own page
+// options (`Stack.tsx`), and its index lists these rows at the end of Server settings, where
+// its search finds them (`SettingsRouteScreen.tsx`): a line in each (seams.md).
 
-export const stemcellsSettingsScreens = {
+export const stemcellsSettingsScreens = <Options extends object>(pageOptions: Options) => ({
   SettingsDisk: createNativeStackScreen({
     screen: DiskScreen,
-    linking: "disk",
-    options: { title: "Disk" },
+    linking: "settings/disk",
+    options: { ...pageOptions, title: "Disk" },
   }),
-};
+});
 
-export function StemcellsServerRows() {
+type Row = ComponentProps<typeof SettingsRow> & { readonly id: string };
+
+export function useStemcellsServerRows(): Row[] {
   const navigation = useNavigation();
-  return (
-    <>
-      <SettingsRow
-        icon="internaldrive"
-        label="Disk"
-        onPress={() =>
-          navigation.navigate("SettingsSheet", {
-            screen: "SettingsContent",
-            params: { screen: "SettingsDisk" },
-          })
-        }
-      />
-      <PushRow />
-    </>
-  );
+  const push = usePushRow();
+  const disk: Row = {
+    id: "SettingsDisk",
+    icon: "internaldrive",
+    label: "Disk",
+    onPress: () => openSettings(navigation, "SettingsDisk"),
+  };
+  return push ? [disk, push] : [disk];
 }
 
 /** Whether this phone hears from the Macs when a Cell needs the person; a tap allows it. */
-function PushRow() {
+function usePushRow(): Row | null {
   const push = usePushState();
   const { savedConnectionsById } = useSavedRemoteConnections();
   if (push.permission === "unsupported") return null;
@@ -54,12 +49,11 @@ function PushRow() {
           : reached === 1
             ? "On for 1 Mac"
             : `On for ${reached} Macs`;
-  return (
-    <SettingsRow
-      icon="bell.badge"
-      label="When a Cell needs you"
-      value={value}
-      onPress={() => void allowPushes(Object.values(savedConnectionsById))}
-    />
-  );
+  return {
+    id: "StemcellsPush",
+    icon: "bell.badge",
+    label: "When a Cell needs you",
+    value,
+    onPress: () => void allowPushes(Object.values(savedConnectionsById)),
+  };
 }

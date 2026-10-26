@@ -1,21 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off -- The updater runs git, the build and the swap, each a Node child process.
 /**
- * Stemcells updates from the repository it was installed from
- * (stemcells/tasks/updates.md). Upstream's `DesktopUpdates` runs the update:
- * its state, its checks, the pill, Settings' track, the restart and its
- * recovery. This takes only electron-updater's place beneath it, with git
- * and `stemcells/scripts/install-app`:
- *
- * - check: fetch, then the channel's tip. Nightly follows `main`, latest the
- *   newest release tag on `origin`. The notes are the merged pull requests
- *   this build lacks (`changes.ts`).
- * - download: `install-app --stage` builds that commit, in a worktree of the
- *   updater's own, while the app keeps running.
- * - quitAndInstall: `install-app --swap-in`, on its own, puts the build in
- *   once this app has quit, and opens it.
- *
- * Its versions are the ones `install-app` stamps on a build, so upstream's
- * channels and its check that an update applied both hold.
+ * Takes only electron-updater's place beneath upstream's `DesktopUpdates`, with git and
+ * `stemcells/scripts/install-app` (stemcells/tasks/updates.md): check fetches the channel's
+ * tip, download stages a build, quitAndInstall swaps it in once the app has quit. Versions are
+ * the ones `install-app` stamps, so upstream's channels and its applied-update check hold.
  */
 import * as NodeChildProcess from "node:child_process";
 import * as NodeEvents from "node:events";
@@ -373,21 +361,27 @@ export const make = Effect.gen(function* () {
   return ElectronUpdater.ElectronUpdater.of({
     // The feed is the repository install-app recorded; upstream's mock feed
     // has no place here.
-    setFeedURL: () => Effect.void,
-    setAutoDownload: () => Effect.void,
-    setAutoInstallOnAppQuit: () => Effect.void,
-    setChannel: (next) =>
+    setFeedURL: Effect.fn("stemcells.updates.setFeedURL")(() => Effect.void),
+    setAutoDownload: Effect.fn("stemcells.updates.setAutoDownload")(() => Effect.void),
+    setAutoInstallOnAppQuit: Effect.fn("stemcells.updates.setAutoInstallOnAppQuit")(
+      () => Effect.void,
+    ),
+    setChannel: Effect.fn("stemcells.updates.setChannel")((next) =>
       Effect.sync(() => {
         channel = next;
       }),
-    setAllowPrerelease: () => Effect.void,
+    ),
+    setAllowPrerelease: Effect.fn("stemcells.updates.setAllowPrerelease")(() => Effect.void),
     allowDowngrade: Effect.sync(() => allowDowngrade),
-    setAllowDowngrade: (value) =>
+    setAllowDowngrade: Effect.fn("stemcells.updates.setAllowDowngrade")((value) =>
       Effect.sync(() => {
         allowDowngrade = value;
       }),
-    setFullChangelog: () => Effect.void,
-    setDisableDifferentialDownload: () => Effect.void,
+    ),
+    setFullChangelog: Effect.fn("stemcells.updates.setFullChangelog")(() => Effect.void),
+    setDisableDifferentialDownload: Effect.fn("stemcells.updates.setDisableDifferentialDownload")(
+      () => Effect.void,
+    ),
     checkForUpdates: check.pipe(
       Effect.mapError(
         (cause) => new ElectronUpdater.ElectronUpdaterCheckForUpdatesError({ channel, cause }),
@@ -400,7 +394,7 @@ export const make = Effect.gen(function* () {
       ),
       Effect.withSpan("stemcells.updates.download"),
     ),
-    quitAndInstall: ({ isSilent, isForceRunAfter }) =>
+    quitAndInstall: Effect.fn("stemcells.updates.swap")(({ isSilent, isForceRunAfter }) =>
       swap.pipe(
         Effect.mapError(
           (cause) =>
@@ -411,9 +405,9 @@ export const make = Effect.gen(function* () {
               cause,
             }),
         ),
-        Effect.withSpan("stemcells.updates.swap"),
       ),
-    on: (eventName, listener) => {
+    ),
+    on: Effect.fn("stemcells.updates.on")(function (eventName, listener) {
       const untyped = listener as unknown as (...args: Array<unknown>) => void;
       return Effect.acquireRelease(
         Effect.sync(() => {
@@ -424,7 +418,7 @@ export const make = Effect.gen(function* () {
             events.removeListener(eventName, untyped);
           }),
       ).pipe(Effect.asVoid);
-    },
+    }),
   });
 });
 

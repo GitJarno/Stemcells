@@ -1,11 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's stylesheet on disk.
 /**
- * The line the window's controls stand on, which the tab strip's row stands
- * on too (pages/frame.css, `--stemcells-controls-line`). Upstream draws it:
- * the desktop app seats the traffic lights on the middle of its topbar, and
- * moves them there again at each zoom, and the page centres its sidebar
- * button in the same topbar. A failure here after a sync names the contract
- * that moved; the tabs likely sit above or below the lights again.
+ * The line the window's controls and the tab strip's row stand on (pages/frame.css,
+ * `--stemcells-controls-line`). Upstream draws it: the desktop app seats the traffic lights on
+ * its topbar's middle, again at each zoom, and the page centres its sidebar button there. A
+ * failure after a sync names the contract that moved; the tabs likely sit off the lights.
  */
 import * as NodeFS from "node:fs";
 

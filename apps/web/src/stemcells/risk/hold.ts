@@ -1,11 +1,8 @@
 /**
- * Which risky sentences need the person's yes before Cells start
- * (stemcells/tasks/prompting.md, decision 17): one a Cell's prompt asks
- * for that the person's own words don't, word for word and in the same
- * polarity. Typed words that reach a Cell as typed pass: the Cell's own
- * permission mode is the guard there. Ported from the Swift app's
- * `RiskHold`; Stemcells has no dictation yet, so a sentence heard by the
- * ear isn't asked about here.
+ * Which risky sentences need the person's yes before Cells start (stemcells/tasks/prompting.md,
+ * decision 17): one a Cell's prompt asks for that the person's own words don't, word for word
+ * and in the same polarity. Typed words that reach a Cell as typed pass: the Cell's permission
+ * mode guards there. With no dictation yet, a sentence heard by the ear isn't asked about.
  */
 import { type RiskFinding, type RiskKind, type RiskSpan, riskFindings } from "./floor";
 

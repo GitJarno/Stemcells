@@ -1,24 +1,8 @@
-// Resolves a sync's conflicts in upstream's test files, where our only edits
-// are expectations: lines that pin a name or a path our seams change
-// (`stemcells/seams.md`, "Expects ..."). Upstream rewrites and prunes its
-// tests more than any other code, so they conflict first, though nothing
-// about them needs judgment: take upstream's file and put each of our line
-// swaps back where upstream still has the line. A test upstream deleted goes
-// with our edits. Either way, a file left the same as upstream's leaves
-// `seams.md` too, as `drift` requires.
+// Resolves a sync's conflicts in upstream's tests, where our only edits are line swaps pinning
+// a name or path our seams change: upstream's file wins, each swap goes back where it still has
+// the line, and a file left as upstream's leaves `stemcells/seams.md`. Anything else is left.
 //
-//   node stemcells/scripts/resolve-test-seams.mjs                    inside a conflicted merge
-//   node stemcells/scripts/resolve-test-seams.mjs --preview OURS THEIRS   what merging THEIRS into OURS would leave, writing nothing
-//
-// A file is left conflicted when our edit isn't a plain line swap (lines
-// added with nothing replaced, or a line we swapped in one place and kept in
-// another), and every file that isn't a test is left too: those take a
-// person or a Cell (stemcells/docs/upstream-sync.md). Upstream's tests run on
-// the merged tree afterwards (`sync-upstream --gates`), so a swap put back
-// wrongly fails there.
-//
-// Prints one line per conflicted file: resolved, deleted or left. Exits 0
-// when nothing is left, 1 otherwise.
+//   node stemcells/scripts/resolve-test-seams.mjs [--preview OURS THEIRS (writes nothing)]
 import * as NodeChildProcess from "node:child_process";
 import * as NodeFS from "node:fs";
 

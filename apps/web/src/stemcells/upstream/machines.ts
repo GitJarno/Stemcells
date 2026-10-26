@@ -1,8 +1,7 @@
-// What Settings › Devices takes from upstream: a request to any
-// connected environment's server, authenticated as upstream authenticates
-// its own (the primary's session or desktop token, a paired environment's
-// bearer token), each environment's address as this device reaches it, and
-// this desktop's own addresses on the network (Settings › Connections).
+// What Settings › Devices takes from upstream: a request to any connected environment's server,
+// authenticated as upstream does (the primary's session or desktop token, a paired one's
+// bearer token), each environment's address as this device reaches it, and this desktop's own
+// network addresses (Settings › Connections).
 
 import type { AdvertisedEndpoint, EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";

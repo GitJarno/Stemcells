@@ -1,11 +1,8 @@
 /**
- * Aski's planner on the primary environment's server
- * (`apps/server/src/stemcells/planner/http.ts`): one lean structured call
- * on the model the web names, and each project's one line. Requests go as
- * upstream authenticates one: the session cookie in a browser on its
- * origin, the desktop app's bearer token otherwise. Each one ends when the
- * plan is dropped or at its time, whatever the server does
- * (`words/plan/wait.ts`).
+ * Aski's planner on the primary server (`apps/server/src/stemcells/planner/http.ts`): one
+ * lean structured call on the model the web names, and each project's one line. Requests
+ * authenticate as upstream's do (a browser's session cookie, else the desktop's bearer token)
+ * and end when the plan is dropped or times out, whatever the server does (`words/plan/wait.ts`).
  */
 import type { ProviderInstanceId } from "@t3tools/contracts";
 import { createModelSelection } from "@t3tools/shared/model";

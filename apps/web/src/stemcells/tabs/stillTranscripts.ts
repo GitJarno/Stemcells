@@ -1,11 +1,8 @@
 /**
- * A long chat re-wraps in more than a frame: dragged across a border, it
- * re-measured every row each frame and the drag fell behind the pointer.
- * While a border between Cells side by side is held, the transcripts on
- * either side keep the width and lanes they had (`workspace.css`), so the
- * border slides over them; they take the new width once, when it rests or
- * is let go. So does a row gliding to even, until it lands. The composers
- * follow the borders all along.
+ * A long chat re-wraps in more than a frame, so while a border between Cells is held, or a row
+ * glides to even, the transcripts beside it keep their width and lanes (`workspace.css`) and the
+ * border slides over them; they take the new width once, when it rests or is let go. The
+ * composers follow the borders all along.
  */
 const TRANSCRIPT = "[data-stemcells-pane] [data-chat-canvas] .messages-timeline-scroll";
 
@@ -72,11 +69,9 @@ export function holdTranscriptsStill(
 }
 
 /**
- * Which edge each Cell's transcript keeps to while it moves: the edge that
- * moves the less, so the text stays put and the border slides over it. Beside
- * a dragged border, that's the edge away from it ("before" for the Cell
- * before it, "after" for the one after); in a row gliding to even, the edge
- * nearer where it lands.
+ * Which edge each Cell's transcript keeps to while it moves: the one that moves less, so the text
+ * stays put. Beside a dragged border, the edge away from it ("before" for the Cell before it,
+ * "after" for the one after); in a row gliding to even, the edge nearer where it lands.
  */
 export function evenAnchors(
   sides: ReadonlyArray<{ readonly offsetWidth: number }>,

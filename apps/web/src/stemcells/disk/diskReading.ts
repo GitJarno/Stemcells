@@ -69,6 +69,7 @@ export function useDiskReading() {
   const [failed, setFailed] = useState(false);
   const readNow = useRef<(again: boolean) => void>(() => undefined);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Poll the disk reading while visible, faster during a scan, and stop the timer on unmount.
   useEffect(() => {
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -114,6 +115,7 @@ const FREE_FOCUS_AFTER_MS = 10_000;
 export function useDiskFree(): DiskReading["volume"] | null {
   const [volume, setVolume] = useState<DiskReading["volume"] | null>(null);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Poll free space on an interval and on focus or visibility, removing the listeners on unmount.
   useEffect(() => {
     let stopped = false;
     let inFlight = false;

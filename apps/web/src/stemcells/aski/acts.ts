@@ -13,7 +13,8 @@ export interface Controls {
   lift: number; // off the ground, canon units
   tuck: number; // feet drawn up, 0..1
   lean: number; // radians, + leans forward
-  wave: number; // the front hand up, 0..1
+  // the front hand up, 0..1
+  wave: number;
   melt: number; // slumped into a puddle, 0..1
   open: number; // eyelids, 1 open
   eyeRot: number; // radians: an act's sway of the eyes off upright

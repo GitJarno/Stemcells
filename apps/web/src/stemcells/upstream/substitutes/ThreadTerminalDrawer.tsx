@@ -1,9 +1,7 @@
-// Replaces `components/ThreadTerminalDrawer.tsx` (`plugin.ts`): a chat's
-// terminal drawer opens at about ten rows, not upstream's 280px, and its
-// buttons get a row of their own over the terminal (`stemcells/terminal`).
-// A height the person drags to stays theirs, stored as upstream stores it.
-// Where upstream's panels don't move, the drawer moves on our motion, which
-// its style plays (`useDrawerMotion`). A bare chat (Aski's) has none.
+// Replaces `components/ThreadTerminalDrawer.tsx` (`plugin.ts`): a chat's terminal drawer opens
+// at about ten rows, not upstream's 280px, with its buttons on a row over the terminal
+// (`stemcells/terminal`); a dragged height stays, stored as upstream stores it. Where upstream's
+// panels don't move it moves on our motion (`useDrawerMotion`). A bare chat (Aski's) has none.
 import { use, useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 
 import UpstreamThreadTerminalDrawer from "../../../components/ThreadTerminalDrawer";
@@ -39,14 +37,16 @@ function StemcellsTerminalDrawer(props: ComponentProps<typeof UpstreamThreadTerm
   // back with the terminal open, it is simply there, and moves from then on.
   const [slidesIn] = useState(() => terminalJustOpened(props.threadRef));
   const [drawn, setDrawn] = useState(false);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the drawer drawn on the frame after it mounts, and cancel that frame on unmount.
   useEffect(() => {
     const frame = requestAnimationFrame(() => setDrawn(true));
     return () => cancelAnimationFrame(frame);
   }, []);
   const hostRef = useRef<HTMLDivElement | null>(null);
-  // Measured once, before the drawer first draws: upstream reads the height
-  // it is given when it mounts, and keeps it until the person drags.
+  // Measured once, before the drawer first draws: upstream draws whatever
+  // height it is given, so it never shows 280px, and holds still until a drag.
   const [opening, setOpening] = useState<number | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Measure the opening height from the host's styles and pane once, before the drawer first draws.
   useLayoutEffect(() => {
     const host = hostRef.current;
     if (opening !== null || host === null) return;

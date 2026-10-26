@@ -1,14 +1,8 @@
 /**
- * The work verbs in upstream's chat timeline: its working row says the
- * running turn's verb where it said "Working", lit by the composer's wave,
- * and a finished turn's fold its past form where it said "Worked". Upstream
- * keeps its row, its timer and its layout. A screen reader hears upstream's
- * plain words.
- *
- * The rows read the chat's verbs from `TurnVerbsProvider`, which the
- * timeline's substitute puts round upstream's timeline with the entries it
- * draws, so upstream's own row state carries nothing of ours. Without one,
- * the rows say upstream's words.
+ * The work verbs in upstream's chat timeline: its working row says the running turn's verb for
+ * "Working", lit by the composer's wave, and a finished turn's fold its past form for "Worked";
+ * a screen reader hears upstream's words. The verbs come from `TurnVerbsProvider`, round the
+ * timeline from its substitute, so upstream's row state carries nothing of ours.
  */
 import { createContext, use, type ReactNode } from "react";
 

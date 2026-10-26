@@ -54,13 +54,10 @@ export const advanceTailnet = () => ask<TailnetAdvance>("POST", `${TAILSCALE_PAT
 export const turnOffTailnet = () => ask<TailnetLook>("POST", `${TAILSCALE_PATH}/off`);
 
 /**
- * The way in now: read on mount, when the window comes back, and every
- * couple of seconds while `watch` and not yet ready, or ready with no phone
- * on the tailnet (the person is clicking through Tailscale, here or on the
- * phone). While watched, what needs nobody is done
- * on arrival, once: Serve put in front of this server, or a way in that's
- * already there kept on. A page that step names opens.
- * `look` is null until the first read, or on a server without the route.
+ * The way in now: read on mount, on the window's return, and every couple of seconds while
+ * `watch` and not ready, or ready with no phone on the tailnet. While watched, what needs nobody
+ * is done once on arrival (Serve put in front of this server, or a way in kept on); a page that
+ * step names opens. `look` is null until the first read, or on a server without the route.
  */
 export function useTailnet(watch: boolean) {
   const [look, setLook] = useState<TailnetLook | null>(null);
@@ -70,6 +67,7 @@ export function useTailnet(watch: boolean) {
   const phoneOnline = look?.phones.some((phone) => phone.online) === true;
   const readNow = useRef<() => void>(() => undefined);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Read Tailscale on mount, focus and a watch timer; detach on change.
   useEffect(() => {
     let stopped = false;
     let served = false;

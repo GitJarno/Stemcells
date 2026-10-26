@@ -1,13 +1,8 @@
 /**
- * Upstream behaviour a stopped Cell's resume relies on
- * (stemcells/tasks/limit-resume.md). A failure here after a sync names what
- * moved: the Settings switch it obeys, the shell fields that say a limit
- * stopped a Cell, the continuation command, the instances it reads logins
- * from, or the continuation upstream's own worker sends (which the web shows
- * as the same "Continued after the limit reset" row).
- *
- * The guard, the orchestrator refusing a continuation once anything ran
- * after the stop, is pinned in `limitResumeGuard.contract.test.ts`.
+ * Upstream behaviour a stopped Cell's resume relies on (stemcells/tasks/limit-resume.md): the
+ * Settings switch, the shell fields that say a limit stopped a Cell, the continuation command,
+ * the instances it reads logins from, and upstream's own worker's continuation. The guard is
+ * pinned in `limitResumeGuard.contract.test.ts`.
  */
 import {
   DEFAULT_SERVER_SETTINGS,

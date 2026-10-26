@@ -1,9 +1,7 @@
 /**
- * The cards on the page, from the newest list (stemcells/tasks/aski-room.md,
- * decisions 3 and 9). Cards never re-sort: a new one joins at the bottom. A
- * card whose need is gone greys in place and leaves after a beat, but not
- * while the page holds still for the person (typing, pointing or focused in
- * the list): then it waits until they're done.
+ * The cards on the page, from the newest list (stemcells/tasks/aski-room.md, decisions 3 and
+ * 9). Cards never re-sort: a new one joins at the bottom. A card whose need is gone greys in
+ * place and leaves after a beat, but waits while the person types, points or focuses the list.
  */
 import type { Need } from "./wire";
 

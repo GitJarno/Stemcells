@@ -1,9 +1,8 @@
 /**
- * Server behaviour the line over a Cell's composer relies on. It shows the
- * thread's title as what the chat is about, as it comes, because upstream
- * asks a model for a short title rather than cutting the first message. If
- * this fails after a sync, the title may be a cut message again, and the
- * line needs a summary of its own.
+ * The line over a Cell's composer shows the thread's title as what the chat is about, as it
+ * comes, because upstream asks a model for a short title rather than cutting the first
+ * message. If this fails after a sync, the title may be a cut message again, and the line
+ * needs a summary of its own.
  */
 import { buildThreadTitlePrompt } from "@t3tools/provider-core/server/textGenerationPrompts";
 import { sanitizeThreadTitle } from "@t3tools/provider-core/server/textGenerationUtils";

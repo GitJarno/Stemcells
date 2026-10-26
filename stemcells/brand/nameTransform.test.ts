@@ -1,13 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - sweeps upstream's sources on disk.
 /**
- * The name transform (`nameTransform.ts`): the builds of the web app, the
- * server, the phone and the desktop app say Stemcells where upstream's code
- * says T3 Code. These hold it to the sources: it renames the exact words and
- * nothing else, every line it leaves is kept on purpose, every kept line is
- * still there, and it still finds something to rename; and a build's output
- * says the name only inside a kept line's words. If one fails after a sync, upstream wrote its
- * name somewhere new: let the transform rename it, or keep it in `KEPT` with
- * why (`stemcells/docs/fork.md`, "The name transform").
+ * Holds the name transform (`nameTransform.ts`) to the sources: it renames the exact words and
+ * nothing else, and still finds some; every line it leaves is kept on purpose and still there;
+ * a build says the name only inside kept words. If one fails after a sync, upstream wrote its
+ * name somewhere new: rename it, or keep it in `KEPT` with why (`stemcells/docs/fork.md`).
  */
 import * as NodeFS from "node:fs";
 import * as NodeModule from "node:module";

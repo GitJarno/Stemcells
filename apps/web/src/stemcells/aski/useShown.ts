@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 /** Whether `element` is on screen and its page in sight. */
 export function useShown(element: { readonly current: Element | null }): boolean {
   const [shown, setShown] = useState(false);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Observe the element's intersection and the page's visibility, and disconnect both on unmount.
   useEffect(() => {
     const target = element.current;
     if (target === null) return;

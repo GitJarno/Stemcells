@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - the files are written and aged on disk.
 /**
- * What carrying a file into another chat relies on in upstream's attachment
- * store. A carried file is a pending attachment of its own, made by
- * `pendingFile`: if upstream stops recognising those ids, a sent message
- * can't claim the file, or the sweep leaves it forever. A chat's signed
- * asset URL must still read back to the file it names, and to nothing else.
- * And the HTML renderer's check must still refuse every address that isn't
- * public, or a web address brought in could reach this machine's network.
+ * What carrying a file into another chat relies on in upstream's attachment store: a carried
+ * file is its own pending attachment (`pendingFile`) that a sent message can claim and the
+ * sweep clear; a signed asset URL reads back to its file and nothing else; and the HTML
+ * renderer refuses every non-public address, so a web address can't reach the local network.
  */
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import * as NodeHttpPlatform from "@effect/platform-node/NodeHttpPlatform";

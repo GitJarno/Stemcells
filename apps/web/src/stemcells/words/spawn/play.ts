@@ -1,12 +1,8 @@
 /**
- * Plays the words' half of the spawn (`plan.ts`, and
- * `stemcells/docs/interaction.md`): the sent words' letters pour into Aski,
- * Aski divides into a copy a Cell (`aski/copies.ts`), each flying to its
- * Cell's box or, when the Cell landed off stage, its tab's chip, and over
- * a box the copy condenses through `. : + # @` until the Cell takes over
- * (`formAt`). It draws on a layer of its own over the page that no pointer
- * meets, and nothing waits on it: the composer takes typing all along, and
- * a Cell whose place doesn't show in time just stands.
+ * Plays the words' half of the spawn (`plan.ts`, `stemcells/docs/interaction.md`): letters pour
+ * into Aski, a copy flies to each Cell's box (or its tab's chip, off stage) and condenses until
+ * the Cell takes over (`formAt`). It draws on its own layer that no pointer meets, and nothing
+ * waits on it: the composer takes typing all along, and a Cell not shown in time just stands.
  */
 import { askiStill, copyAt, copyHeight, copyTargetSoon, flyCopy, stillOf } from "../../aski/copies";
 import { spawnDone, spawnPlanned, spawnStart } from "../../aski/spawn";

@@ -44,6 +44,7 @@ const subscribe = (listener: () => void) => {
 export function useHomeTab(counts: TabCounts, known: boolean): HomeTab {
   const tab = useSyncExternalStore(subscribe, () => chosen);
   const opens: HomeTab = counts.input > 0 ? "input" : "active";
+  // oxlint-disable-next-line t3code/react-effect-budget -- Choose the opening tab in the shared tab store once the counts are known.
   useEffect(() => {
     if (known && chosen === null) chooseTab(opens);
   }, [known, opens]);

@@ -1,9 +1,7 @@
-// A Cell's face from its chat, as the Mac reads it (`apps/web/src/stemcells/
-// tabs/cellMood.ts`), from what the phone's shell says (T3's list status):
-// asking while it waits on you, crashed once its run failed, at work while
-// it runs, cheering a moment once a turn lands, then resting; asleep once
-// put away (settled or snoozed) or once its prompt cache has gone cold.
-// While its machine is out of reach it peers.
+// A Cell's face from T3's list status, as the Mac reads it (`apps/web/src/stemcells/tabs/
+// cellMood.ts`): asking while it waits on you, crashed once its run failed, at work while it
+// runs, cheering a moment once a turn lands, then resting; asleep once settled, snoozed or its
+// prompt cache has gone cold. While its machine is out of reach it peers.
 
 import type { Activity, Mood } from "./kit";
 import type { EnvironmentThreadShell, ThreadListV2Status } from "../upstream/threads";

@@ -1,12 +1,8 @@
 /**
- * What Aski's autonomy takes from upstream (stemcells/tasks/aski-autonomy.md):
- * a Cell's messages and shell, the orchestrator's dispatch, and the app's own
- * data folder for what autonomy keeps.
- *
- * A take is upstream's own command for the card's choice, as the room sends
- * it: a message, or for a plan upstream's "Implement", out of plan mode with
- * the plan sent back to build. Its command id is the card's key, so a card
- * is taken once however often it is sent.
+ * What Aski's autonomy takes from upstream (stemcells/tasks/aski-autonomy.md): a Cell's
+ * messages and shell, the orchestrator's dispatch, and the app's data folder. A take is
+ * upstream's own command for the card's choice (a message, or a plan's "Implement"), and its
+ * command id is the card's key, so a card is taken once however often it is sent.
  */
 import {
   CommandId,

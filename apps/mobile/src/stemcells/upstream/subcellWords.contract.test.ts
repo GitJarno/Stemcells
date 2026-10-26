@@ -8,11 +8,10 @@ import { describe, expect, it } from "vite-plus/test";
 import { formatSubagentDisplayTitle } from "./substitutes/subagentDisplay";
 
 /**
- * Contract: the phone says Subcell where it said subagent, in the card that
- * groups a turn's subagents, the sheet that lists them, and the words read
- * aloud for them (`stemcells/seams.md`, Subcells). Its marks stay the
- * provider's: the phone has no Cell figure of its own yet. If this fails
- * after a sync, upstream rewrote one of these lines: say Subcell there again.
+ * Contract: the phone says Subcell where it said subagent: the card grouping a turn's
+ * subagents, the sheet listing them, and the words read aloud (`stemcells/seams.md`,
+ * Subcells). Its marks stay the provider's: the phone has no Cell figure of its own yet.
+ * If this fails after a sync, upstream rewrote one of these lines: say Subcell there again.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

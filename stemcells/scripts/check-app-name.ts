@@ -1,16 +1,8 @@
-// Whether a built Stemcells says T3's name only where it should: every
-// "T3 Code" in the server's bundle, the web app inside it and the desktop
-// app's main process stands inside the words of a line
-// stemcells/brand/nameTransform.ts keeps. The builds check their own output
-// as they write it; this checks what an install ships, inside the app's
-// archive. Exits 0 when it does, 1 with each unexplained line when not.
+// Whether a built Stemcells says "T3 Code" only inside words stemcells/brand/nameTransform.ts
+// keeps, in what an install ships: a folder whole, or the server, web and desktop main inside
+// an archive. Exits 0 when it does, 1 with each unexplained line when not.
 //
 //   node stemcells/scripts/check-app-name.ts <app.asar | folder>...
-//
-// A folder is checked whole (apps/server/dist, apps/web/dist,
-// apps/desktop/dist-electron); in an archive, the server's bundle, the web app
-// inside it and the desktop app's main process, which the name transform
-// builds.
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 

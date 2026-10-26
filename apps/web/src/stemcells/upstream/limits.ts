@@ -42,11 +42,9 @@ interface Login {
 }
 
 /**
- * A login as upstream's `accountKeyResolver` (not exported) keys the
- * accounts it merges: the driver and email, else the credential's
- * fingerprint, then its workspace; a login seen in several workspaces with
- * none named has no key. `limits.contract.test.ts` holds this to how
- * `collectLimitAccounts` merges.
+ * A login as upstream's private `accountKeyResolver` keys the accounts it merges: driver and
+ * email, else the credential's fingerprint, then its workspace; one seen in several workspaces
+ * with none named has no key. `limits.contract.test.ts` holds this to `collectLimitAccounts`.
  */
 function loginResolver(logins: Iterable<Login>): (login: Login) => string | null {
   const keyOf = (login: Login) => {

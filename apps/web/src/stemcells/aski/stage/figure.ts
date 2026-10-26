@@ -1,15 +1,7 @@
-// Aski at rest as pixels: drawn by Aski's own reference renderer
-// (`../render.ts`), clear around it, its ink in the skin's colour, and its
-// eyes on layers of their own. Aski is made of characters: where a cell of
-// its body is large enough to read, it wears its live ASCII skin and its
-// eyes are the two solid blocks in it, in ink; smaller, it is solid ink and
-// its eyes are cut in the colour of the ground it stands on. Either way a
-// Cell passing behind Aski never shows through them. Each eye comes open
-// and shut, drawn by the renderer so a shut eye is a crisp line at any
-// size; the page lays them over the body, moves them as Aski looks and
-// turns from one to the other as it blinks, without drawing again. A mood
-// comes typed into the eyes where they are large enough to read it. The
-// page asks a worker to run this; it runs here only where no worker can.
+// Aski at rest as pixels, by its reference renderer (`../render.ts`), the eyes on layers of
+// their own, open and shut, so blinks and looks never redraw. Where a body cell can be read it
+// wears its ASCII skin, eyes in ink; smaller, it is solid ink, eyes cut in the ground's colour,
+// so a Cell behind Aski never shows through them. Runs in a worker wherever one can run.
 
 import { BLINK } from "../acts.ts";
 import { Aski, type Frame, GAZE } from "../aski.ts";

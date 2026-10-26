@@ -14,9 +14,11 @@ describe("a Cell's face from its chat's status", () => {
 
   it("asks exactly while the chat waits on you, an approval with the original's own act", () => {
     const asking = CELL_STATUSES.filter((status) => asksYou(moodAt(status, 0, undefined, 0)));
-    expect(asking).toEqual(["Pending Approval", "Awaiting Input", "Plan Ready"]);
+    expect(asking).toEqual(["Pending Approval", "Awaiting Input", "Guest Request", "Plan Ready"]);
     expect(moodAt("Pending Approval", null, undefined, 0)).toBe("needsApproval");
     expect(moodAt("Awaiting Input", null, undefined, 0)).toBe("needsYou");
+    // A guest's message to let through is an answer from you, not leave for the Cell to act.
+    expect(moodAt("Guest Request", null, undefined, 0)).toBe("needsYou");
     expect(moodAt("Plan Ready", null, undefined, 0)).toBe("needsYou");
   });
 

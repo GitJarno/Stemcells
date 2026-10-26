@@ -1,11 +1,8 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheets on disk.
 /**
- * The provider's mark in a Cell's composer reads at a glance and stays
- * quieter than the placeholder. It had been cut to near-invisible: halfway
- * between the glass and upstream's accent surface, about 1% contrast on
- * dark glass, where the placeholder has about 3:1. Its strength is a token
- * by role, over the composer's own glass, so it holds whatever greys the
- * glass wears.
+ * The provider's mark in a Cell's composer reads at a glance, not the near-invisible 1% contrast
+ * it once had, and stays quieter than the placeholder (about 3:1 on dark glass). Its strength is
+ * a token by role over the composer's own glass, so it holds whatever greys the glass wears.
  */
 import * as NodeFS from "node:fs";
 

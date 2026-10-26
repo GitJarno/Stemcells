@@ -1,13 +1,8 @@
 /**
- * A tab's chip carried from its strip (stemcells/tasks/windows.md, Tear a
- * tab off): the strip's half of the carry engine (`carry.ts`). Along the
- * strip a chip reorders as it always has, and bands past its edge; on the
- * desktop it tears off there onto the flight layer (`tearFlight.ts`), and
- * let go out in the open, it opens a window of its own. A window's only
- * tab carries the window itself. Esc sends it home.
- *
- * The strip draws what `view` says: the chip riding the hand, the others
- * making room, or, with the chip off the strip, closing up after it.
+ * A tab's chip carried from its strip (stemcells/tasks/windows.md, Tear a tab off): the strip's
+ * half of the carry engine (`carry.ts`). Along the strip a chip reorders and bands past its
+ * edge; on the desktop it tears off there onto the flight layer (`tearFlight.ts`) and, let go
+ * in the open, opens its own window. A window's only tab carries the window. Esc sends it home.
  */
 import {
   useEffect,
@@ -137,6 +132,7 @@ export function useTabCarry(options: {
   const live = useRef<Live | null>(null);
   // What the handlers read, as of the last render.
   const latest = useRef(options);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the carry handlers' options ref current before the next event.
   useLayoutEffect(() => {
     latest.current = options;
   });
@@ -472,6 +468,7 @@ export function useTabCarry(options: {
 
   // A strip that goes mid-carry (its window's view changed under it) takes
   // the carry with it: the layer goes, and the tab is where it always was.
+  // oxlint-disable-next-line t3code/react-effect-budget -- End a live carry and its flight when the strip unmounts mid-carry.
   useEffect(
     () => () => {
       const at = live.current;
@@ -487,6 +484,7 @@ export function useTabCarry(options: {
 
   // Esc sends a carry home.
   const sendHome = useEffectEvent((at: Live) => void goHome(at));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for Esc while a tab is picked up and remove the listener when it is let go.
   useEffect(() => {
     if (!view?.picked) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -514,6 +512,7 @@ export function useTabCarry(options: {
     if (at && !at.done) lose(at);
   });
   const held = view !== null;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Lose the carry when the window blurs while a tab is held; remove the listener after.
   useEffect(() => {
     if (!held) return;
     const onBlur = () => loseLive();

@@ -1,9 +1,7 @@
 /**
- * The lively budget: the one store every rare beat on screen draws from,
- * Aski's moments and the Cells' rare beats alike. About three an hour,
- * never the same beat twice in a row within the hour, and none at all
- * while anything waits on the person. It is kept in local storage, so every
- * window of the app spends from one budget.
+ * The lively budget every rare beat on screen draws from, Aski's moments and the Cells' alike:
+ * about three an hour, never the same twice in a row within the hour, none while anything
+ * waits on the person. Kept in local storage, so every window spends from one budget.
  */
 
 /** At most `perHour` rare beats in any `hour` of milliseconds. */

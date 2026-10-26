@@ -6,12 +6,10 @@ import * as NodeURL from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 /**
- * The phone runs the web's creature and Aski modules (`kit.ts`,
- * `aski/kit.ts`), which the lint's Hermes rule
- * (`t3code/no-hermes-unsupported-apis`) doesn't cover: it reads the phone's
- * own folder. A call Hermes lacks there crashes the app as the first Cell is
- * drawn, so this reads every module the phone takes from outside its folder
- * for the rule's calls.
+ * The lint's Hermes rule (`t3code/no-hermes-unsupported-apis`) reads only the phone's own
+ * folder, but the phone runs the web's creature and Aski modules (`kit.ts`, `aski/kit.ts`).
+ * A call Hermes lacks there crashes the app as the first Cell is drawn, so this reads every
+ * module the phone takes from outside its folder for the rule's calls.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

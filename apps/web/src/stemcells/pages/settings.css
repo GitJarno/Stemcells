@@ -39,6 +39,9 @@
   display: none;
 }
 [data-stemcells-settings-actions] {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-xs);
   margin-inline-start: auto;
 }
 @container stemcells-settings (width < 48rem) {

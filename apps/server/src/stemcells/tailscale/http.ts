@@ -5,11 +5,9 @@ import { HttpRouter, HttpServerResponse } from "effect/http";
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as StemcellsTailscale from "./StemcellsTailscale.ts";
 
-// GET /api/stemcells/tailscale: where a phone's way in over Tailscale
-// stands, polled while Add › Phone or tablet is open.
-// POST …/advance: the next step taken for the person.
-// POST …/off: phones stop reaching this computer over Tailscale.
-// Changing who can reach this computer asks what pairing a device asks.
+// GET /api/stemcells/tailscale: where a phone's way in stands, polled while Add › Phone or
+// tablet is open. POST …/advance takes the next step; POST …/off stops phones reaching this
+// computer. Changing who can reach this computer asks what pairing a device asks.
 
 const TAILSCALE_PATH = "/api/stemcells/tailscale";
 const NO_STORE = { "cache-control": "private, no-store" };

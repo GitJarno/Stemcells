@@ -1,10 +1,8 @@
 /**
- * What carrying pictures, files and stashed prompts between chats takes
- * from upstream: a chat's draft and its chips, how a chip lets go of its
- * upload, what each machine's chats take, a file signed afresh by the
- * machine that has it, the stash, and a request to the primary machine's
- * server as upstream authenticates one. `payloads.contract.test.ts` pins
- * what this relies on.
+ * What carrying pictures, files and stashed prompts between chats takes from upstream: a chat's
+ * draft and chips, how a chip lets go of its upload, what each machine's chats take, a file
+ * signed afresh by its machine, the stash, and an authenticated request to the primary server.
+ * `payloads.contract.test.ts` pins what this relies on.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { executeAtomQuery } from "@t3tools/client-runtime/state/runtime";

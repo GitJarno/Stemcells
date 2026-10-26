@@ -28,11 +28,10 @@ const PER_ROW = 19;
 const LOOK_DOWN = 6;
 
 /**
- * Where character `n` lands in the table on a stage, in cells: under the
- * eyes, so none hides behind them, and no lower than the cloud's own last
- * row, so none falls below Aski's feet; every other row while they fit. A
- * stage too short for the square's rows (a 1x screen has half the rows)
- * widens the table to the left instead.
+ * Where character `n` lands in the table on a stage, in cells: under the eyes and no lower than
+ * the cloud's last row, so none hides behind them or falls below Aski's feet; every other row
+ * while they fit. A stage too short for the rows (a 1x screen has half) widens the table to
+ * the left instead.
  */
 function placeIn(stage: Stage): (n: number) => readonly [number, number] {
   const fit = homeFit(stage);

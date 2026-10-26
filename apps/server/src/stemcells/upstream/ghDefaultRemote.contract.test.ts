@@ -1,9 +1,8 @@
 /**
- * Which repository a checkout with a fork and its parent belongs to. The Pull
- * requests list and a thread's pull requests read it. Stemcells' own checkout
- * has `origin` (the fork, a product of its own) and `upstream` (T3's), and
- * upstream's resolver picks `upstream`: these pin that `gh repo set-default`
- * wins (`ghDefaultRemote.ts`) and that without it upstream's pick stands.
+ * Which repository a checkout with a fork and its parent belongs to, as the Pull requests
+ * list and a thread's pull requests read it. Upstream's resolver picks `upstream` over
+ * `origin`: these pin that `gh repo set-default` wins (`ghDefaultRemote.ts`) and that
+ * without it upstream's pick stands.
  */
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it } from "@effect/vitest";

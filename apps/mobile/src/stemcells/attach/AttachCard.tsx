@@ -1,12 +1,7 @@
-// Add to Chat, as the original app's card has it: the + raises a sheet at part
-// height that pulls up to the whole screen. Your newest photos run edge to
-// edge, the camera first; a tap picks a photo and it wears its place in the
-// order you tapped, a second tap lets it go. A glass bar floats at the foot
-// with the sources, Photos and Files; with photos picked it becomes "Add N",
-// which puts them in the composer in that order through T3's own picking
-// (`staged.ts`). The magnifier opens the system's picker: every photo,
-// searchable, no access needed. Leaving by another door (the camera, Files,
-// the system's picker) adds what's picked first, so nothing chosen drops.
+// Add to Chat, as the original app's card has it: a sheet of the newest photos, camera first, where a
+// tap picks a photo in order and a second tap lets it go. "Add N" puts them in the composer in
+// that order through T3's own picking (`staged.ts`). Leaving by another door (the camera,
+// Files, the system's picker) adds what's picked first, so nothing chosen drops.
 
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
@@ -123,6 +118,7 @@ function Card(props: {
   const shake = useSharedValue(0);
   const reduced = useReducedMotion();
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Ask for photo access and load the newest page once; drop late answers and the cap timer on unmount.
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -141,6 +137,7 @@ function Card(props: {
     };
   }, []);
   // New photos, or more chosen under limited access: the newest page again.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to photo library changes and unsubscribe on unmount.
   useEffect(
     () =>
       onLibraryChange(() => {
@@ -156,17 +153,16 @@ function Card(props: {
   const load = async (from: number) => {
     if (loading.current) return;
     loading.current = true;
-    try {
-      const page = await photosFrom(from, PAGE);
-      // A photo arriving meanwhile shifts the pages, so one may come again.
-      setIds((shown) => {
-        const known = new Set(shown);
-        return [...shown, ...page.filter((id) => !known.has(id))];
-      });
-      setMore(page.length === PAGE);
-    } finally {
+    // `.finally`, not `try`: React Compiler can't compile a `try` without a `catch`.
+    const page = await photosFrom(from, PAGE).finally(() => {
       loading.current = false;
-    }
+    });
+    // A photo arriving meanwhile shifts the pages, so one may come again.
+    setIds((shown) => {
+      const known = new Set(shown);
+      return [...shown, ...page.filter((id) => !known.has(id))];
+    });
+    setMore(page.length === PAGE);
   };
 
   const add = async (picked: readonly string[]) => {

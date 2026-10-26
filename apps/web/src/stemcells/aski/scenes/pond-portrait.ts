@@ -1,10 +1,7 @@
-// The portrait that rises out of the pond: a brightness grid, 63 cells across
-// and 50 down (a cell a little over half as wide as it is tall, so the grid
-// keeps the painting's shape), one byte per cell, 00 dark to ff light, row by row.
-//
-// Sampled from a public-domain painting: Leonardo da Vinci's portrait of Lisa
-// Gherardini, oil on poplar, painted about 1503 to 1519. Credited in
-// THIRD-PARTY-NOTICES.md.
+// The portrait that rises out of the pond: a brightness grid, 63 cells across and 50 down (a
+// cell a little over half as wide as tall keeps the painting's shape), one byte per cell, 00
+// dark to ff light, row by row. Sampled from a public-domain painting, Leonardo da Vinci's
+// portrait of Lisa Gherardini; credited in THIRD-PARTY-NOTICES.md.
 
 /** Cells across and down. */
 export const PORTRAIT_COLS = 63;

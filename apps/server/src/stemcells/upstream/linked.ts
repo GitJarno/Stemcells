@@ -1,8 +1,7 @@
 /**
- * What linked environments take from upstream (stemcells/tasks/peers.md,
- * "Across environments"): this environment's id, its secret store for the
- * links, the projects' repositories, the Cells at work in them, upstream's
- * own mode rule for one thread writing to another (`t3_thread_send`'s), and
+ * What linked environments take from upstream (stemcells/tasks/peers.md, "Across
+ * environments"): this environment's id, its secret store, the projects' repositories, the
+ * Cells at work in them, `t3_thread_send`'s mode rule for one thread writing to another, and
  * its way of sending a message to a thread.
  */
 import {

@@ -1,10 +1,8 @@
 /**
- * What the terminal drawer's opening height and its buttons' row rely on in
- * upstream (`substitutes/ThreadTerminalDrawer.tsx`, `terminal.ts`,
- * `stemcells/terminal`). A failure here after a sync names the contract that
- * moved; the drawer likely opens at upstream's 280px again, at a height off
- * by a row, with its buttons back over the terminal's text, or without
- * moving, or with the words over it a frame behind its edge.
+ * What the terminal drawer's opening height and buttons' row rely on in upstream
+ * (`substitutes/ThreadTerminalDrawer.tsx`, `terminal.ts`, `stemcells/terminal`). A failure after
+ * a sync names the contract that moved; the drawer likely opens at 280px or a row off, its
+ * buttons over the text, without moving, or with the words over it a frame behind its edge.
  */
 import { resolveChatListAnchoredEndSpace } from "@t3tools/shared/chatList";
 import { describe, expect, it } from "vite-plus/test";
@@ -31,12 +29,13 @@ describe("the terminal drawer's contracts with upstream", () => {
     );
   });
 
-  it("the drawer reads its height when it mounts and keeps it until a drag", () => {
-    expect(drawer).toMatch(
-      /useState\(\(\) => \(\{\s*threadId,\s*height: controlledDrawerHeight,\s*\}\)\)/,
+  it("the drawer draws at the height it is given, and a drag stores its height once, at its end", () => {
+    expect(drawer).toContain("const drawerHeight = clampDrawerHeight(height, maxDrawerHeight);");
+    expect(drawer).toContain(
+      "style={isPanel ? undefined : { height: `var(${DRAG_HEIGHT_PROPERTY}, ${drawerHeight}px)` }}",
     );
     expect(drawer).toMatch(
-      /const preferredDrawerHeight =\s*drawerHeightState\.threadId === threadId \? drawerHeightState\.height : controlledDrawerHeight;/,
+      /if \(resizeState\.height === resizeState\.startHeight \|\| resizeState\.height === height\) return;\s*onHeightChange\(resizeState\.height\);/,
     );
   });
 

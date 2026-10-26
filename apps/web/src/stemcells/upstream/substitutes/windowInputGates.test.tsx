@@ -1,21 +1,21 @@
 /**
- * The window-input gates that sit on a module's surface: a chat that doesn't
- * own the window's input (another pane has it) gets its window shortcuts,
- * type-to-focus, open-in shortcut, paste-to-focus and stash shortcut switched
- * off, and a chat that owns it, or one outside any pane, keeps what upstream
- * asked for.
- * Upstream's hooks and picker are stand-ins that record what they were handed.
+ * The window-input gates on a module's surface: a chat that doesn't own the window's input gets
+ * its window shortcuts, type-to-focus, open-in shortcut, paste-to-focus and composer shortcuts
+ * off; one that owns it, or is outside any pane, keeps upstream's. Upstream's hooks and picker
+ * are stand-ins recording what they were handed.
  */
-import type { ReactNode } from "react";
+import { use, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import { BackgroundThreadContext } from "../../../components/chat/backgroundThread";
 import { ChatWindowInputContext } from "../../../components/chat/chatWindowInput";
-import { ChatPanelHostContext } from "../chatPanel";
+import upstreamPendingInputSource from "../../../components/chat/ComposerPendingUserInputPanel.tsx?raw";
 import upstreamComposerStashSource from "../../../components/chat/useComposerStash.ts?raw";
+import { ChatPanelHostContext } from "../chatPanel";
+import { WindowInputGate } from "../windowInput";
 import { OpenInPicker } from "./OpenInPicker";
 import { useChatShortcuts } from "./useChatShortcuts";
-import { useComposerStash } from "./useComposerStash";
 import { usePasteToFocusComposer } from "./usePasteToFocusComposer";
 
 const handed = vi.hoisted(() => ({
@@ -23,7 +23,7 @@ const handed = vi.hoisted(() => ({
   shortcutCommands: [] as string[][],
   openInShortcut: [] as Array<boolean | undefined>,
   pasteThread: [] as Array<string | null>,
-  stashKeys: [] as number[],
+  background: [] as boolean[],
 }));
 
 vi.mock(import("../../../components/chat/useChatShortcuts"), async (importOriginal) => ({
@@ -54,13 +54,6 @@ vi.mock(import("../../../components/chat/usePasteToFocusComposer"), async (impor
   ...(await importOriginal()),
   usePasteToFocusComposer: ((threadId: string | null) => {
     handed.pasteThread.push(threadId);
-  }) as never,
-}));
-
-vi.mock(import("../../../components/chat/useComposerStash"), async (importOriginal) => ({
-  ...(await importOriginal()),
-  useComposerStash: ((input: { readonly keybindings: ReadonlyArray<unknown> }) => {
-    handed.stashKeys.push(input.keybindings.length);
   }) as never,
 }));
 
@@ -105,12 +98,19 @@ function PasteToFocus({ threadId }: { readonly threadId: string | null }) {
   return null;
 }
 
-const KEYS = [{ command: "composer.stash" }, { command: "chat.new" }];
-
-function Stash() {
-  useComposerStash({ keybindings: KEYS } as never);
+/** What upstream's composer reads of its gate, inside ours. */
+function Composer() {
+  handed.background.push(use(BackgroundThreadContext));
   return null;
 }
+
+const gated = (underModal: boolean) => (
+  <BackgroundThreadContext value={underModal}>
+    <WindowInputGate>
+      <Composer />
+    </WindowInputGate>
+  </BackgroundThreadContext>
+);
 
 type PickerProps = Parameters<typeof OpenInPicker>[0];
 const PICKER = {
@@ -186,31 +186,28 @@ describe("paste-to-focus", () => {
   });
 });
 
-describe("the stash shortcut", () => {
-  it("hears no keys in a chat that doesn't own the window's input", () => {
-    handed.stashKeys.length = 0;
-    inChat(false, <Stash />);
-    expect(handed.stashKeys).toEqual([0]);
+describe("a composer's global shortcuts", () => {
+  it("stand down in a chat that doesn't own the window's input, as under Settings", () => {
+    handed.background.length = 0;
+    inChat(false, gated(false));
+    inChat(true, gated(true));
+    expect(handed.background).toEqual([true, true]);
   });
 
-  it("hears the person's keys in the chat that owns it, and outside a pane", () => {
-    handed.stashKeys.length = 0;
-    inChat(true, <Stash />);
-    inChat(undefined, <Stash />);
-    expect(handed.stashKeys).toEqual([2, 2]);
+  it("stay up in the chat that owns it, and outside a pane", () => {
+    handed.background.length = 0;
+    inChat(true, gated(false));
+    inChat(undefined, gated(false));
+    expect(handed.background).toEqual([false, false]);
   });
 
-  it("is all upstream's stash reads its keys for, so the rest of the stash stays", () => {
-    const uses = upstreamComposerStashSource
-      .split("\n")
-      .filter((line) => /\bkeybindings\b/.test(line));
-    expect(uses.map((line) => line.trim())).toEqual([
-      'import { resolveShortcutCommand } from "../../keybindings";',
-      'readonly keybindings: ChatComposerProps["keybindings"];',
-      "keybindings,",
-      "const command = resolveShortcutCommand(event, keybindings, {",
-      "keybindings,",
-    ]);
-    expect(upstreamComposerStashSource).toContain('if (command !== "composer.stash") return;');
+  it("are the stash shortcut and the question's digit keys, which upstream gates on it", () => {
+    expect(upstreamComposerStashSource).toMatch(
+      /if \(backgroundThread\) return;\s*return registerCommands\(\s*\{ "composer\.stash": handleStashShortcut \}/,
+    );
+    expect(upstreamPendingInputSource).toContain(
+      "const backgroundThread = use(BackgroundThreadContext);",
+    );
+    expect(upstreamPendingInputSource).toMatch(/\|\| isCollapsed \|\| backgroundThread\b/);
   });
 });

@@ -1,9 +1,7 @@
 /**
- * What the words in Aski's composer do to each card, while they're there
- * (stemcells/tasks/aski-room.md, decision 8): the option they choose wears a
- * ring, a reply shows on its card before it goes, and an option only a click
- * may choose says so. Once Enter has gone, "needs your click" stays lit on
- * its card until a click answers it.
+ * What the words in Aski's composer do to each card (stemcells/tasks/aski-room.md, decision 8):
+ * the chosen option wears a ring, a reply shows on its card, and an option only a click may
+ * choose says so. After Enter, "needs your click" stays lit until a click answers it.
  */
 import { useSyncExternalStore } from "react";
 
