@@ -1,11 +1,8 @@
-/* Aski's page with what needs the person (needs/NeedsFrame.tsx). Every
-   value is a token, chosen by role, but the column's widths: those are the
-   page's own layout (stemcells/tasks/aski-room.md, decision 10). The
-   column stands on a wide page always (aski-manager.md, decision 1). */
+/* Aski's room (needs/NeedsFrame.tsx): its chat on the left half, what
+   needs the person on the right (stemcells/tasks/aski-asks.md, decision 2).
+   Every value is a token, chosen by role, but the asks' measure. */
 
 [data-stemcells-needs-frame] {
-  --stemcells-needs-width: 380px;
-  --stemcells-needs-width-roomy: 420px;
   container-type: inline-size;
   display: flex;
   flex: 1;
@@ -17,24 +14,36 @@
 [data-stemcells-needs-main] {
   position: relative;
   display: flex;
-  flex: 1;
+  flex: 1 1 0;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
 }
 
-/* Wide: the column stands beside the chat. */
+/* Wide: the asks take the right half, on the chat's own ground, with a
+   hairline between the halves and between the asks, and nothing else
+   (decision 3). */
 [data-stemcells-needs-column] {
-  flex: none;
-  inline-size: var(--stemcells-needs-width);
+  flex: 1 1 0;
+  min-width: 0;
   overflow-y: auto;
   border-inline-start: 1px solid var(--sc-hairline);
-  background: var(--sc-surface);
 }
-@container (min-width: 1400px) {
-  [data-stemcells-needs-column] {
-    inline-size: var(--stemcells-needs-width-roomy);
-  }
+[data-stemcells-needs-column] > [data-stemcells-needs-list] {
+  gap: 0;
+  max-inline-size: 42rem;
+  padding: var(--sc-space-lg) var(--sc-space-xxl);
+}
+[data-stemcells-needs-column] [data-stemcells-need] {
+  padding: var(--sc-space-xl) 0;
+  border-radius: 0;
+}
+[data-stemcells-needs-column] [data-stemcells-need] + [data-stemcells-need] {
+  border-block-start: 1px solid var(--sc-hairline);
+}
+[data-stemcells-needs-column] [data-need-ask] {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 /* Two screens: the chat keeps the first, the list the second, never across
@@ -114,11 +123,7 @@
   font-size: var(--sc-body);
   line-height: 1.25rem;
 }
-/* In the column, its head shares the band's row with the pane's buttons,
-   and the cards start under the band, as the chat's transcript does. */
-[data-stemcells-needs-column] > [data-stemcells-needs-list] {
-  padding-block-start: var(--sc-space-md);
-}
+/* In the room, its head shares the band's row with the pane's buttons. */
 [data-stemcells-needs-column] [data-needs-head] {
   align-items: center;
   min-block-size: var(--sc-pane-button);

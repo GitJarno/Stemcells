@@ -10,10 +10,12 @@ import {
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 
+import { useAskiRoomInFront } from "../aski/inFront";
 import { CardList, useOnList } from "../needs/CardList";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce } from "../needs/live";
 import { useNeeds } from "../needs/stream";
+import { reveal } from "../needs/walk";
 import type { CellStanding } from "../needs/wire";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
@@ -285,9 +287,9 @@ function StageRow(props: {
 
 /**
  * What needs you: the cards, held still while you're among them for what
- * the server changes; your own answer or settle takes one off at once. The
- * cards live here while the column shows, and Aski's room shows the chat
- * alone (`NeedsFrame`).
+ * the server changes; your own answer or settle takes one off at once. In
+ * front of Aski's room, which shows every ask open, they fold to an index
+ * of it (stemcells/tasks/aski-asks.md, decision 8).
  */
 function NeedsHere(props: { waiting: number }) {
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
@@ -300,9 +302,10 @@ function NeedsHere(props: { waiting: number }) {
   const held = pointerIn || focusIn;
   // oxlint-disable-next-line t3code/react-effect-budget -- Hold the needs page's cards still while the pointer or focus is among them, releasing on unmount.
   useEffect(() => {
-    page.setFrozen(held);
-    return () => page.setFrozen(false);
+    page.holdStill("column", held);
+    return () => page.holdStill("column", false);
   }, [held]);
+  const index = useAskiRoomInFront();
   // A peek shows only in Aski's room; from here the chat opens where a Cell lands.
   const open = useOpenFromNeeds();
   return (
@@ -311,6 +314,7 @@ function NeedsHere(props: { waiting: number }) {
       onPerson={onPerson}
       openChat={open.chat}
       queue
+      reveal={index ? revealInRoom : undefined}
       head={
         props.waiting === 0 && view.cleared === null ? (
           <div data-cells-calm="">
@@ -325,6 +329,13 @@ function NeedsHere(props: { waiting: number }) {
       }
     />
   );
+}
+
+/** Lands on an ask in Aski's room; a narrow room shows its asks as a sheet, opened first. */
+function revealInRoom(key: string) {
+  if (reveal(key)) return;
+  page.setSheet(true);
+  requestAnimationFrame(() => reveal(key));
 }
 
 /** A stage's Cells; `settles` gives each a Settle, which stops one at work first (`upstream/settle.ts`). */

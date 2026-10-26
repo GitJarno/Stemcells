@@ -194,6 +194,7 @@ export function NeedCard(props: {
         // The walk lands here, and the card opens (walk.ts).
         tabIndex={-1}
         data-stemcells-need=""
+        data-need-key={need.key}
         data-need-thread={need.threadId}
         data-open=""
         data-queued=""
@@ -218,6 +219,7 @@ export function NeedCard(props: {
       // The walk lands here when the card recommends nothing (walk.ts).
       tabIndex={-1}
       data-stemcells-need=""
+      data-need-key={need.key}
       data-need-thread={need.threadId}
       data-open={answerable || undefined}
       data-blocks={need.blocks || undefined}

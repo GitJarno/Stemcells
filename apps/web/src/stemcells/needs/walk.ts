@@ -53,6 +53,19 @@ export function enter(from: Element): boolean {
   return true;
 }
 
+/**
+ * Lands on the ask `key` in Aski's room, from the column's index of it
+ * (stemcells/tasks/aski-asks.md, decision 8); false when the room doesn't show it.
+ */
+export function reveal(key: string): boolean {
+  const card = document.querySelector<HTMLElement>(
+    `${FRAME} ${LIST} [data-need-key="${CSS.escape(key)}"]`,
+  );
+  if (card === null) return false;
+  land(card);
+  return true;
+}
+
 /** Back to Aski's composer in the frame around `from`. */
 export function leave(from: Element): void {
   from

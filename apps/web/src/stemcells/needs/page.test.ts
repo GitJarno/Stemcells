@@ -33,14 +33,18 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe("Aski's page around the list", () => {
-  it("holds a gone card while frozen and lets it leave a beat after unfreezing", () => {
+  it("holds a gone card while any place holds it, and lets it leave once none does", () => {
     const t = setup();
     t.push([floof]);
-    t.page.setFrozen(true);
+    t.page.holdStill("room", true);
+    t.page.holdStill("column", true);
     t.push([]);
     vi.advanceTimersByTime(10 * LINGER);
     expect(t.page.read().shown.map((each) => each.goneAt !== null)).toEqual([true]);
-    t.page.setFrozen(false);
+    // Held while either place holds it.
+    t.page.holdStill("room", false);
+    expect(t.page.read().shown.map((each) => each.goneAt !== null)).toEqual([true]);
+    t.page.holdStill("column", false);
     expect(t.page.read().shown).toEqual([]);
     expect(t.page.read().cleared).toMatch(/^All clear · 1 answered in /);
   });

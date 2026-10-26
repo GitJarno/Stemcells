@@ -45,13 +45,6 @@ export function LeftColumn(props: { wide: ReactNode }) {
   );
 }
 
-/** Whether the cards of what needs you are in the Cells' column: it's chosen, shown, and not a phone's sheet. */
-export function useColumnShowsCards(): boolean {
-  const width = useColumnStore((store) => store.width);
-  const { isMobile, open } = useSidebar();
-  return width === "cells" && open && !isMobile;
-}
-
 /** In upstream's list's foot, beside the disk: back to the Cells' column. */
 export function NarrowColumnButton() {
   const setWidth = useColumnStore((store) => store.setWidth);

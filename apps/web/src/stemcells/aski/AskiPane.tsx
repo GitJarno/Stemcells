@@ -11,8 +11,6 @@ import { NeedsFrame } from "../needs/NeedsFrame";
 import { Peek } from "../needs/Peek";
 import { usePeek } from "../needs/peeking";
 import { subscribeLaunches } from "../upstream/landing";
-import { Roster } from "../needs/Roster";
-import { useColumnShowsCards } from "../rail/LeftColumn";
 import { AskiFigure } from "./AskiFigure";
 import { copiesOut } from "./copies";
 import { AskiPerch } from "./AskiPerch";
@@ -55,8 +53,8 @@ export const ASKI_UNAVAILABLE: Record<
 /**
  * Aski's pane: upstream's thread view, bare (Aski has no project, so no surface or terminal;
  * aski-manager.md, decision 1), with what needs the person beside it (NeedsFrame). A Cell
- * opened from the roster or a card is peeked at over it (needs/Peek.tsx) and has the window's
- * input meanwhile; a link in Aski's chat opens a tab, so the talk with Aski stays on screen.
+ * opened from an ask is peeked at over it (needs/Peek.tsx) and has the window's input
+ * meanwhile; a link in Aski's chat opens a tab, so the talk with Aski stays on screen.
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -82,7 +80,6 @@ export function AskiPane(props: {
   );
   const peeking = usePeek() !== null;
   const ownsInput = props.ownsWindowInput && !peeking;
-  const inColumn = useColumnShowsCards();
   return (
     <div
       ref={room}
@@ -121,9 +118,6 @@ export function AskiPane(props: {
             </Empty>
           )}
         </div>
-        {/* Every Cell's stage, under the chat (aski-manager.md, decision 10),
-            while the Cells' column isn't showing them (left-column.md, decision 11). */}
-        {inColumn ? null : <Roster />}
       </NeedsFrame>
       <Peek ownsWindowInput={props.ownsWindowInput} />
     </div>

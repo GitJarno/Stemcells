@@ -43,10 +43,11 @@ says yes, the undo window.
 6. **Later, Settle and Open chat stand in the age's place** while the
    pointer or the keyboard is on the ask. "Nothing to do" leaves the
    options: Settle says it.
-7. **An answer leaves at once.** The undo line under the asks says what
-   you sent, with Undo and ⌘Z; when it goes, the answer is sent and the
-   Cell hops to Working (`left-column-v3.md` decisions 7 and 8, the same
-   here).
+7. **An answer leaves at once.** The app's one undo line says what you
+   sent, with Undo and ⌘Z: in the Cells' column, above its stages, or
+   upstream's notice where the column is narrow or hidden. When it goes,
+   the answer is sent and the Cell hops to Working (`left-column-v3.md`
+   decisions 7 and 8, the same here).
 8. **The column is the index in Aski's room.** Its Needs you rows stay the
    same everywhere; in Aski's room a click opens that ask on the right
    instead of in the column.
@@ -80,9 +81,9 @@ says yes, the undo window.
 ## Steps
 
 - [x] The ask's look, in the column and in Aski's room (decisions 4 to 6, 10)
-- [ ] Aski's room: two halves, every ask open, the undo line (decisions 2, 3, 7)
+- [x] Aski's room: two halves, every ask open, the undo line (decisions 2, 3, 7)
 - [ ] Words that need more reach the Cell as its question (decision 9)
-- [ ] The column as the index in Aski's room (decision 8)
+- [x] The column as the index in Aski's room (decision 8)
 - [ ] The flag, and the local measure in Settings › Aski (decisions 11, 12)
 - [ ] Asks show more where they were flagged; flagged asks as the evaluation set (decision 13)
 - [ ] Docs

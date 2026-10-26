@@ -88,6 +88,11 @@ export function CardList(props: {
    * asks and what (stemcells/tasks/left-column.md, decision 6).
    */
   queue?: boolean;
+  /**
+   * Every card folded, an index of asks shown open elsewhere: opening one
+   * calls this instead (stemcells/tasks/aski-asks.md, decision 8).
+   */
+  reveal?: ((key: string) => void) | undefined;
 }) {
   const answers = useHolds(holds);
   const { view, onPerson } = props;
@@ -110,9 +115,11 @@ export function CardList(props: {
           seenAt={view.seen.get(each.need.key) ?? null}
           openChat={props.openChat}
           queued={
-            props.queue
-              ? { open: each.need.key === open, onOpen: () => setPicked(each.need.key) }
-              : undefined
+            props.reveal
+              ? { open: false, onOpen: () => props.reveal?.(each.need.key) }
+              : props.queue
+                ? { open: each.need.key === open, onOpen: () => setPicked(each.need.key) }
+                : undefined
           }
         />
       ))}

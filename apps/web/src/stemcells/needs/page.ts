@@ -48,6 +48,8 @@ export function createPage(deps: PageDeps) {
   };
   let episode: Episode | null = null;
   let frozen = false;
+  // Each place that shows the list as where the person works holds it still for itself.
+  const holders = new Set<string>();
   let sheetAsked = false;
   // The all-clear line waits for the last gone card to leave, then stays a moment.
   let pending: string | null = null;
@@ -122,10 +124,15 @@ export function createPage(deps: PageDeps) {
       };
     },
     read: (): PageView => view,
-    /** Typing, pointing or focus in the list holds the cards still. */
-    setFrozen(next: boolean) {
-      if (frozen === next) return;
-      frozen = next;
+    /**
+     * Typing, pointing or focus in a list holds the cards still. Aski's room and the Cells'
+     * column each say so for themselves, and the cards hold while either does.
+     */
+    holdStill(who: string, on: boolean) {
+      if (on) holders.add(who);
+      else holders.delete(who);
+      if (frozen === holders.size > 0) return;
+      frozen = holders.size > 0;
       update();
     },
     /** Narrow, the count opens the list over the chat, and "Back to the chat" closes it. */

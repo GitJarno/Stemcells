@@ -38,6 +38,8 @@ const changes = vi.hoisted(() => {
     },
   };
 });
+/** Whether Aski's room is in front, its asks open on its right half. */
+const room = vi.hoisted(() => ({ inFront: false }));
 /** The app's update as the desktop reports it; each test sets it in `setup`. */
 const desktop = vi.hoisted(() => ({ update: null as DesktopUpdateState | null }));
 
@@ -149,6 +151,7 @@ vi.mock("../upstream/column", () => ({
   useOpenCell: () => spies.open,
 }));
 
+vi.mock("../aski/inFront", () => ({ useAskiRoomInFront: () => room.inFront }));
 vi.mock("../upstream/settle", () => ({ useSettleCell: () => spies.settle }));
 vi.mock("../upstream/thread", () => ({
   useCellPlace: () => ({ name: "shop", isProject: true }),
@@ -254,6 +257,29 @@ function Column() {
   );
 }
 
+/** Aski's room as the column finds it: each ask open, where a step onto it lands. */
+function Room() {
+  return (
+    <div data-stemcells-needs-frame="">
+      <div data-stemcells-needs-list="">
+        {needs.map((need) => (
+          <section
+            key={need.key}
+            data-stemcells-need=""
+            data-open=""
+            data-need-key={need.key}
+            tabIndex={-1}
+          >
+            <button type="button" data-need-option="" data-recommended="">
+              {`Answer ${need.threadId}`}
+            </button>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 describe("the Cells' column", () => {
   it("opens on what needs you: the question asked, counted in the row", async () => {
     setup(null);
@@ -303,6 +329,24 @@ describe("the Cells' column", () => {
     await userEvent.click(screen.getByText("Which format for the hero images?"));
     await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Keep them/ })).not.toBeInTheDocument();
+  });
+
+  it("folds every ask to an index in front of Aski's room, and lands on one there when clicked", async () => {
+    room.inFront = true;
+    using _room = { [Symbol.dispose]: () => (room.inFront = false) };
+    await using screen = await render(
+      <>
+        <Column />
+        <Room />
+      </>,
+    );
+    await expect
+      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
+      .toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Keep them/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText("Which format for the hero images?"));
+    expect(document.activeElement?.textContent).toBe("Answer thread-b");
+    await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
   });
 
   it("opens the next ask as the keyboard steps onto it", async () => {

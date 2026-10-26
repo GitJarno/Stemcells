@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { answering, enter, leave, step } from "./walk";
+import { answering, enter, leave, reveal, step } from "./walk";
 
 /** A frame with Aski's composer and cards: "r" recommends, "a" recommends an allow, "-" nothing, "x" is answered. */
 function frame(
@@ -13,7 +13,7 @@ function frame(
     <div data-stemcells-needs-list="">${[...cards]
       .map(
         (kind, i) => `
-      <section data-stemcells-need="" tabindex="-1" ${kind === "x" ? "" : "data-open"} data-n="${i + 1}">
+      <section data-stemcells-need="" tabindex="-1" ${kind === "x" ? "" : "data-open"} data-n="${i + 1}" data-need-key="ask:${i + 1}">
         <button data-need-option="" data-allows ${kind === "a" ? "data-recommended" : ""}>Allow</button>
         <button data-need-option="" ${kind === "r" ? "data-recommended" : ""}>Take</button>
       </section>`,
@@ -72,6 +72,15 @@ describe("the cards' walk", () => {
     page.composer.focus();
     answering(page.card(1));
     expect(focus()).toBe("composer");
+  });
+
+  it("reveals an ask the room shows where a step onto it lands, and says when it doesn't", () => {
+    using page = frame("-r");
+    expect(reveal("ask:2")).toBe(true);
+    expect(focus()).toBe("2 Take");
+    expect(reveal("ask:9")).toBe(false);
+    expect(focus()).toBe("2 Take");
+    page.composer.focus();
   });
 
   it("has nowhere to go with no card open", () => {

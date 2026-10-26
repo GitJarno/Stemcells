@@ -10,12 +10,11 @@ import {
   type RefObject,
 } from "react";
 
-import { useColumnShowsCards } from "../rail/LeftColumn";
+import { useAskiRoomInFront } from "../aski/inFront";
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
 import { CardList, useOnList } from "./CardList";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
 import { page } from "./live";
-import { DoneList } from "./Roster";
 import { enter } from "./walk";
 
 import "../tokens/stemcells.css";
@@ -76,10 +75,10 @@ function useLayout(root: RefObject<HTMLElement | null>): {
 const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need you`);
 
 /**
- * Aski's page around its chat, with what needs the person always on the right
- * (stemcells/tasks/aski-manager.md, decision 1): narrow, a count that opens it as a sheet; on
- * two screens, the second screen. While the Cells' column shows the cards, the page is the chat
- * alone: the cards live in one place (stemcells/tasks/left-column.md, decision 11).
+ * Aski's room: its chat on the left half, every ask open on the right
+ * (stemcells/tasks/aski-asks.md, decisions 2 and 3); narrow, a count that opens them as a
+ * sheet; on two screens, the second screen. The Cells' column lists the same asks as an index
+ * meanwhile (decision 8).
  */
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
@@ -91,7 +90,7 @@ export function NeedsFrame(props: {
   const { layout, hinge } = useLayout(root);
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
   const draft = useDraftText(props.aski);
-  const inColumn = useColumnShowsCards();
+  const inFront = useAskiRoomInFront();
   const [pointerIn, setPointerIn] = useState(false);
   const [focusIn, setFocusIn] = useState(false);
   // The pointer or keyboard focus in the list holds it still; a click's focus doesn't.
@@ -100,11 +99,13 @@ export function NeedsFrame(props: {
     if (focus !== null) setFocusIn(focus);
   };
   const frozen = draft !== "" || pointerIn || focusIn;
-  // The Cells' column holds the cards still while they're there.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Sync the shared page's frozen flag to this frame's draft, pointer and focus.
+  // The room holds the asks still only while it is in front: a draft left in Aski's composer
+  // doesn't hold them while the person works elsewhere.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hold the shared page still for this room's draft, pointer and focus while it is in front; let go on unmount.
   useEffect(() => {
-    if (!inColumn) page.setFrozen(frozen);
-  }, [frozen, inColumn]);
+    page.holdStill("room", inFront && frozen);
+    return () => page.holdStill("room", false);
+  }, [frozen, inFront]);
   const waiting = useOnList(view).filter((each) => each.goneAt === null).length;
   // ↓ in Aski's empty composer steps onto the first open card.
   const enterKeys = (event: KeyEvent<HTMLDivElement>) => {
@@ -119,26 +120,27 @@ export function NeedsFrame(props: {
       view={view}
       onPerson={onPerson}
       head={
-        <div data-needs-head="">
-          <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
-          {frozen && view.shown.some((each) => each.goneAt !== null) ? (
-            <span data-needs-still="">Held still while you work</span>
-          ) : null}
-          {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
-          {layout === "narrow" ? (
-            <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
-              Back to the chat
-            </button>
-          ) : null}
-        </div>
+        // Wide, the asks speak for themselves: only what isn't plain from them is said.
+        layout === "narrow" || waiting === 0 || !view.live ? (
+          <div data-needs-head="">
+            {layout === "narrow" || waiting === 0 ? (
+              <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
+            ) : null}
+            {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
+            {layout === "narrow" ? (
+              <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
+                Back to the chat
+              </button>
+            ) : null}
+          </div>
+        ) : null
       }
-      foot={<DoneList />}
     />
   );
 
-  const showColumn = layout !== "narrow" && !inColumn;
-  const showCount = waiting > 0 && layout === "narrow" && !inColumn;
-  const showSheet = layout === "narrow" && view.sheet && !inColumn;
+  const showColumn = layout !== "narrow";
+  const showCount = waiting > 0 && layout === "narrow";
+  const showSheet = layout === "narrow" && view.sheet;
 
   return (
     <div
