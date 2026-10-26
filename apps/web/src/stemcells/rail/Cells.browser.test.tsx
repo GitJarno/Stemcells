@@ -155,6 +155,18 @@ vi.mock("../upstream/thread", () => ({
   useCellTitle: () => null,
 }));
 vi.mock("../tabs/CellMark", () => ({ CellMark: () => <span data-testid="sprite" /> }));
+// A row's parts read upstream's thread store; here each says a fixed age and project.
+vi.mock("../upstream/cellRow", async () => {
+  const { cloneElement } = await import("react");
+  return {
+    useCellShell: (cell: { threadId: string }) => ({ id: cell.threadId }),
+    CellAge: () => "5m",
+    CellProject: () => <span data-cells-row-project="">shop</span>,
+    CellPullRequest: () => null,
+    CellCard: (props: { trigger: ReactElement; children: ReactNode }) =>
+      cloneElement(props.trigger, undefined, props.children),
+  };
+});
 vi.mock("../upstream/rail", () => ({
   isElectron: false,
   openSearch: () => undefined,
@@ -302,11 +314,14 @@ describe("the Cells' column", () => {
     );
   });
 
-  it("shows a stage's Cells when its row is chosen, each with its own word", async () => {
+  it("shows a stage's Cells when its row is chosen, each with its age and project", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Working\s*1/ }));
-    await expect.element(screen.getByText("Running benchmarks, 3 of 5")).toBeInViewport();
+    const working = screen.getByRole("list", { name: "Working" });
+    await expect.element(working.getByText("Chat thread-w")).toBeInViewport();
+    await expect.element(working.getByText("5m")).toBeVisible();
+    await expect.element(working.getByText("shop")).toBeVisible();
     // What needs you slid off beside it, a swipe away.
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
@@ -317,6 +332,7 @@ describe("the Cells' column", () => {
 
   it("settles a landed Cell from its row, and all of them, each off the line at once", async () => {
     setup(null);
+    spies.open.mockClear();
     // Each settle runs until the test says how it ended.
     const settling: Array<(settled: boolean) => void> = [];
     spies.settle
@@ -329,15 +345,17 @@ describe("the Cells' column", () => {
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Landed\s*2/ }));
     const landed = screen.getByRole("list", { name: "Landed" });
-    await userEvent.hover(landed.getByText("Done: #312 merged"));
+    await userEvent.hover(landed.getByText("Chat thread-l1"));
     await userEvent.click(landed.getByRole("button", { name: "Settle", exact: true }).first());
     expect(spies.settle).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-l1" });
-    await expect.element(screen.getByText("Done: #312 merged")).not.toBeInTheDocument();
+    // Settling isn't opening: the row's own click stays put.
+    expect(spies.open).not.toHaveBeenCalled();
+    await expect.element(screen.getByText("Chat thread-l1")).not.toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: /Landed\s*1/ })).toBeVisible();
 
     // A settle that fails puts its Cell back.
     await refuse();
-    await expect.element(screen.getByText("Done: #312 merged")).toBeVisible();
+    await expect.element(screen.getByText("Chat thread-l1")).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Settle all" }));
     expect(spies.settle).toHaveBeenCalledTimes(3);
@@ -383,7 +401,7 @@ describe("swiping the column", () => {
 
     await swipe(column, 300);
     await open(/Working\s*1/);
-    await expect.element(screen.getByText("Running benchmarks, 3 of 5")).toBeInViewport();
+    await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
     await swipe(column, 300);
     await open(/Landed\s*2/);
     await swipe(column, -300);

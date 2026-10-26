@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ChartNoAxesColumnIcon,
+  CheckIcon,
   ChevronsLeftIcon,
   ListIcon,
   SearchIcon,
@@ -16,11 +17,11 @@ import { useNeeds } from "../needs/stream";
 import type { CellStanding } from "../needs/wire";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
+import { CellAge, CellCard, CellProject, CellPullRequest, useCellShell } from "../upstream/cellRow";
 import { useOpenCell, useShelves, type ShelvedCell } from "../upstream/column";
 import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
 import { useNavigateToMainApp } from "../upstream/settings";
-import { useCellPlace } from "../upstream/thread";
 import { cn, useSidebar } from "../upstream/ui";
 import { CellMini } from "./CellMini";
 import { useColumnStore, type ColumnStage } from "./column";
@@ -155,6 +156,7 @@ export function Cells() {
           settled: (
             <Rows
               label="Settled"
+              settled
               cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
               more={
                 shelves.settled.length > SETTLED_SHOWN ? (
@@ -331,6 +333,7 @@ function Rows(props: {
   cells: ReadonlyArray<Row>;
   more?: ReactNode;
   settles?: boolean;
+  settled?: boolean;
 }) {
   const settle = useSettleAtOnce();
   return (
@@ -339,6 +342,7 @@ function Rows(props: {
         <CellRow
           key={row.cell.threadId}
           row={row}
+          settled={props.settled === true}
           {...(props.settles ? { onSettle: () => void settle(row.cell) } : {})}
         />
       ))}
@@ -376,27 +380,64 @@ function Landed(props: { cells: ReadonlyArray<Row> }) {
   );
 }
 
-/** One Cell: its sprite on its own line with its title and project, then its own word, the column's full width. */
-function CellRow(props: { row: Row; onSettle?: () => void }) {
-  const { row } = props;
+/**
+ * One Cell in two lines, as upstream's rows: its sprite, title and age; under them its project
+ * and pull request. Hovering shows the thread's card, and Settle takes the age's place.
+ */
+function CellRow(props: { row: Row; settled?: boolean; onSettle?: () => void }) {
+  const { row, onSettle } = props;
   const open = useOpenCell();
   const ref = { ...row.cell, draftId: null };
-  const place = useCellPlace(ref);
+  const shell = useCellShell(ref);
+  const onOpen = () => open(row.cell);
   return (
     <li data-cells-row="" data-cells-thread={row.cell.threadId}>
-      <button type="button" data-cells-open="" onClick={() => open(row.cell)}>
-        <span data-cells-row-who="">
-          <CellMark cell={ref} />
-          <span data-cells-row-title="">{row.title}</span>
-          {place?.isProject ? <span data-cells-row-place="">{place.name}</span> : null}
+      <CellCard
+        shell={shell}
+        line={row.line}
+        trigger={
+          <div
+            role="button"
+            tabIndex={0}
+            data-cells-open=""
+            onClick={onOpen}
+            onKeyDown={(event) => {
+              if (event.target !== event.currentTarget) return;
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              onOpen();
+            }}
+          />
+        }
+      >
+        <CellMark cell={ref} />
+        <span data-cells-row-title="">{row.title}</span>
+        <span data-cells-row-end="">
+          <span data-cells-row-age="">
+            {shell === null ? null : <CellAge shell={shell} settled={props.settled === true} />}
+          </span>
+          {onSettle ? (
+            <button
+              type="button"
+              aria-label="Settle"
+              data-cells-settle=""
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSettle();
+              }}
+            >
+              <CheckIcon aria-hidden />
+            </button>
+          ) : null}
         </span>
-        {row.line ? <span data-cells-row-line="">{row.line}</span> : null}
-      </button>
-      {props.onSettle ? (
-        <button type="button" data-cells-settle="" onClick={props.onSettle}>
-          Settle
-        </button>
-      ) : null}
+        {shell === null ? null : (
+          <span data-cells-row-under="">
+            <CellProject shell={shell} />
+            <CellPullRequest shell={shell} onOpenCell={onOpen} />
+          </span>
+        )}
+      </CellCard>
     </li>
   );
 }

@@ -1,24 +1,14 @@
-/* The left column as the Cells' line (stemcells/tasks/left-column.md).
-   Colours, radii, spaces and motion are the design tokens; the width is the
-   column's own. It sets `data-stemcells-column="cells"` on the root while it
-   shows. */
+/* The left column as the Cells' line (stemcells/tasks/left-column-v3.md).
+   Colours, radii, spaces and motion are the design tokens. It sets
+   `data-stemcells-column="cells"` on the root while it shows. Its width is
+   upstream's sidebar's: its rail resizes it, and a double-click resets it. */
 
 :root {
-  /* Narrow: a sprite takes only its own line, so a card's text runs the
-     column's full width. */
-  --stemcells-cells-width: 288px;
-  --stemcells-cells-stage-height: 30px;
+  --stemcells-cells-stage-height: 1.875rem;
 }
 
-/* Upstream's sidebar takes the column's width, as it takes the rail's
-   (rail.css); one width, so no resize handle. */
-:root[data-stemcells-column="cells"] [data-slot="sidebar"]:has(> [data-app-sidebar]) {
-  --sidebar-width: var(--stemcells-cells-width);
-}
-:root[data-stemcells-column="cells"] [data-app-sidebar] [data-slot="sidebar-rail"] {
-  display: none;
-}
-
+/* Upstream's type scale, in rem so Settings › Interface size and ⌘± move the
+   column with the chat: titles at text-sm, the rest at text-xs. */
 [data-stemcells-cells] {
   display: flex;
   flex: 1;
@@ -27,6 +17,11 @@
   width: 100%;
   color: var(--sc-text);
   font-family: var(--sc-font-ui);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  /* The cards' meta is their body less a step (needs.css): text-xs here. */
+  --sc-body: 0.875rem;
+  --sc-meta-size: -0.125rem;
 }
 
 [data-cells-top] {
@@ -62,7 +57,7 @@
 [data-cells-search] > kbd {
   margin-inline-start: auto;
   font-family: var(--sc-font-ui);
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--sc-faint);
 }
 
@@ -108,7 +103,7 @@
   align-items: center;
   padding: 0 var(--sc-space-lg) var(--sc-space-xs);
   color: var(--sc-faint);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 [data-cells-head] > button {
   margin-inline-start: auto;
@@ -129,73 +124,107 @@
   color: var(--sc-faint);
 }
 [data-cells-row] {
-  position: relative;
+  list-style: none;
 }
+/* Two lines on one grid: the sprite, title and age; then the project and the
+   pull request under the title. */
 [data-cells-open] {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--sc-space-sm);
   width: 100%;
-  padding: var(--sc-space-sm) var(--sc-space-md);
+  padding: 0.375rem var(--sc-space-md);
   border-radius: var(--sc-radius-card);
   text-align: start;
   cursor: pointer;
 }
 [data-cells-open]:hover,
-[data-cells-open]:focus-visible {
+[data-cells-open]:focus-within {
   background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
+}
+[data-cells-open]:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
   outline: none;
 }
-/* The sprite takes only the title's line; the Cell's word under it runs
-   the full width. */
-[data-cells-row-who] {
+[data-cells-row-title] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-cells-row-end] {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-end;
+  min-width: 2rem;
+  color: var(--sc-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+[data-cells-row-age] {
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+/* Settle takes the age's place while the row is pointed at, as upstream's. */
+[data-cells-settle] {
+  position: absolute;
+  inset-block: -0.25rem;
+  inset-inline-end: -0.25rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.375rem;
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-dim);
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+  transition:
+    opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
+    color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-cells-settle] > svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+[data-cells-settle]:hover {
+  color: var(--sc-text);
+}
+[data-cells-open]:hover [data-cells-settle],
+[data-cells-settle]:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+[data-cells-open]:hover [data-cells-row-age]:has(+ [data-cells-settle]),
+[data-cells-open]:has([data-cells-settle]:focus-visible) [data-cells-row-age] {
+  opacity: 0;
+}
+[data-cells-row-under] {
   display: flex;
+  grid-column: 2 / 4;
   align-items: center;
   gap: var(--sc-space-sm);
   min-width: 0;
-}
-[data-cells-row-title] {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-[data-cells-row-place] {
-  flex-shrink: 0;
-  max-width: 40%;
-  overflow: hidden;
-  color: var(--sc-faint);
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-[data-cells-row-line] {
-  overflow: hidden;
   color: var(--sc-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+[data-cells-row-project] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+[data-cells-row-project] > span {
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-[data-cells-settle] {
-  position: absolute;
-  top: var(--sc-space-xs);
-  right: var(--sc-space-md);
-  display: none;
-  padding: 2px var(--sc-space-sm);
-  border-radius: var(--sc-radius-chip);
-  background: var(--sc-hot);
-  color: var(--sc-text);
-  font-size: 11px;
-}
-[data-cells-row]:hover [data-cells-settle],
-[data-cells-settle]:focus-visible {
-  display: block;
+[data-cells-row-under] > :not([data-cells-row-project]) {
+  flex-shrink: 0;
 }
 [data-cells-more] {
   padding: var(--sc-space-sm) var(--sc-space-md);
   color: var(--sc-faint);
-  font-size: 11px;
+  font-size: 0.75rem;
 }
 [data-cells-more]:hover {
   color: var(--sc-dim);
@@ -338,7 +367,7 @@
 }
 [data-cells-better-detail] {
   color: var(--sc-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 [data-cells-better-bar] {
