@@ -578,7 +578,9 @@ anything else.
 **The answer within a part,** the first that fits:
 
 1. **An option by number:** "go with N", "pick N", "option N", "take N",
-   "choose N", "the second", or a bare "N" as the whole part. The first
+   "choose N", "the second", "option B", or a bare "N" as the whole part.
+   A small letter counts only where the words end: "option a bit later"
+   isn't one. The first
    number after the anchor is the card; a number after these words is the
    option.
 2. **An option by title:** the part's content words all appear in exactly
@@ -597,13 +599,19 @@ anything else.
      kept. A Cell never sees our numbers.
    - On a card that takes words (prose, stopped, stuck): a reply, exactly
      as said, fillers like "let's" included.
-   - On a structured question: Aski's read maps it to an option, or keeps
-     it as the custom answer.
+   - On a structured question that takes the person's own answer: that
+     answer, as said (`aski-asks.md` decision 9). A bare "yes", "later"
+     or other fixed word it has no option for stays unresolved.
    - Otherwise: unresolved.
 
 **Always:**
 
 - A negation before an option ("don't go with 2") never picks that option.
+- Words after an answer that open with "but" say what it still needs, and
+  go to the Cell with it, never to Aski: on a card that takes words the
+  part is a reply as said ("yes, but only the README"); on a question that
+  takes its own answer, the answer is the option's title and those words
+  ("Remove it first, but check the size first").
 - A number with no open card ("for 5") is kept in the message.
 - After a card's number, the recommended option shows as a ghost, and
   typing narrows it to the option that starts so; Tab writes it. It offers

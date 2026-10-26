@@ -210,9 +210,12 @@ const PICKS = [
   "take",
   "choose",
 ].map((p) => p.split(" "));
-/** Free words that name one of our option numbers: a Cell can't read them. */
-const NAMES_A_NUMBER =
+const BY_NUMBER =
   /\b(?:go(?:ing)? (?:with|for)|pick|option|take|choose|number)\s+(?:the\s+)?(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth)\b|\bthe (?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth) (?:one|option)\b/i;
+/** A capital only: "option a" in a sentence is an article. */
+const BY_LETTER = /\b[Oo]ption [A-I]\b/;
+/** Free words that name one of our options by number or letter ("option B"): a Cell can't read them. */
+const namesOurOption = (text: string) => BY_NUMBER.test(text) || BY_LETTER.test(text);
 
 /**
  * Words that end a message by taking every other card's recommendation:
@@ -542,6 +545,16 @@ export function readAnswers(
     /** The words from the answer's start to the end of token j - 1. */
     const formTo = (j: number): Span | null =>
       j > k ? { start: tokens[k]!.start, end: last(j) } : null;
+    /** The person's own words as the answer to the card's one question, when it takes them. */
+    const ownAnswer = (words: string): Reading | null =>
+      question?.other == null
+        ? null
+        : {
+            kind: "answer",
+            answers: { [question.id]: question.multiSelect ? [words] : words },
+            label: `“${words}”`,
+            pick: null,
+          };
 
     /**
      * An answer of a fixed form that ends before token j, through the small
@@ -550,8 +563,17 @@ export function readAnswers(
      */
     const closed = (j: number, reading: Reading): Read | "free" => {
       while (inside(j) && TAILS.has(word(j) ?? "")) j++;
-      const stops = !inside(j) || /[,.;:!?—–]/.test(gapBefore(j)) || JOINERS.has(word(j) ?? "");
+      // "The second, but check the size first": what follows "but" says what the answer still
+      // needs, so it goes to the Cell with it (stemcells/tasks/aski-asks.md, decision 9).
+      const but = inside(j) && word(j) === "but";
+      const stops =
+        !but && (!inside(j) || /[,.;:!?—–]/.test(gapBefore(j)) || JOINERS.has(word(j) ?? ""));
       if (takesWords && !stops) return "free";
+      if (but && reading.kind === "answer" && reading.pick !== null) {
+        const more = wordsIn(tokens[j]!.start, limit);
+        const own = namesOurOption(more.text) ? null : ownAnswer(`${reading.label}, ${more.text}`);
+        if (own !== null) return { reading: own, end: more.end, free: false, form: formTo(j) };
+      }
       return { reading, end: last(j), free: false, form: formTo(j) };
     };
     /** An option, as words may choose it: never one that allows. */
@@ -559,7 +581,7 @@ export function readAnswers(
       if (option.allows) return closed(j, { kind: "click", option });
       if (option.words === null) return closed(j, { kind: "option", option, words: null });
       if (said === null || said.text === "") return closed(j, { kind: "words", option });
-      if (NAMES_A_NUMBER.test(said.text)) return kept("numbers", said.end);
+      if (namesOurOption(said.text)) return kept("numbers", said.end);
       return {
         reading: { kind: "option", option, words: said.text },
         end: said.end,
@@ -587,8 +609,14 @@ export function readAnswers(
       if (the) j++;
       if (pick && (word(j) === "option" || word(j) === "number")) j++;
       const said = inside(j) ? (word(j) ?? "") : "";
-      const ordinal = ORDINALS[said];
       const ends = !inside(j + 1) || /^\s*[,.;!?\n]/.test(gapAfter(j));
+      // "Option B" counts the options as a list's letters do; a small one only where the words
+      // end, so "option a bit later" is no letter.
+      const letter =
+        word(j - 1) === "option" &&
+        /^[a-i]$/.test(said) &&
+        (ends || /[A-I]/.test(text[tokens[j]!.start]!));
+      const ordinal = ORDINALS[said] ?? (letter ? said.charCodeAt(0) - 96 : undefined);
       const n = pick
         ? (ordinal ?? numberOf(said))
         : ordinal !== undefined && (ends || TAILS.has(word(j + 1) ?? ""))
@@ -707,36 +735,33 @@ export function readAnswers(
         const chosen = chose(reply, j, said);
         if (chosen !== "free") return chosen;
       }
-      if (question?.other != null && said?.text) {
-        if (NAMES_A_NUMBER.test(said.text)) return kept("numbers", said.end);
-        return {
-          reading: {
-            kind: "answer",
-            answers: { [question.id]: question.multiSelect ? [said.text] : said.text },
-            label: `“${said.text}”`,
-            pick: null,
-          },
-          end: said.end,
-          free: false,
-          form: formTo(j),
-        };
+      const own = said?.text ? ownAnswer(said.text) : null;
+      if (own !== null && said !== null) {
+        if (namesOurOption(said.text)) return kept("numbers", said.end);
+        return { reading: own, end: said.end, free: false, form: formTo(j) };
       }
       return kept("unread", said?.end ?? last(j));
     }
 
-    // 6. Free words: a reply, as said, to a card that takes one.
+    // 6. Free words: a reply, as said, to a card that takes one, or the answer to a question
+    // that takes the person's own (decision 9); but not a fixed answer it has no option for:
+    // "5 later" isn't an answer to "before or after?".
     const said = wordsIn(tokens[from]!.start, limit);
     const reply = has("reply") ?? has("stopAndReply");
-    const why: Kept | null = NAMES_A_NUMBER.test(said.text)
-      ? "numbers"
-      : reply === null
-        ? questions.length > 1
-          ? "questions"
-          : "unread"
-        : null;
+    const yesOrNo = YES.has(word(k) ?? "") || NO.has(word(k) ?? "");
+    let m = yesOrNo ? k + 1 : k + (VERBS.find((v) => reads(k, v.words, limit))?.words.length ?? 0);
+    while (m > k && inside(m) && TAILS.has(word(m) ?? "")) m++;
+    const onlyFixed = m > k && !inside(m);
+    const answered: Reading | null =
+      reply !== null
+        ? { kind: "option", option: reply, words: said.text }
+        : onlyFixed
+          ? null
+          : ownAnswer(said.text);
     return {
-      reading:
-        why === null ? { kind: "option", option: reply!, words: said.text } : { kind: "kept", why },
+      reading: namesOurOption(said.text)
+        ? { kind: "kept", why: "numbers" }
+        : (answered ?? { kind: "kept", why: questions.length > 1 ? "questions" : "unread" }),
       end: said.end,
       free: true,
       form: null,

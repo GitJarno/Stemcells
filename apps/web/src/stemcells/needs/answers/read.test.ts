@@ -174,7 +174,7 @@ const DOC_EXAMPLES: Array<[string, string]> = [
   ["1 and 2 later", `1 Floof: ${LATER.title} · 2 Bongo: ${kindOf(2, "wait")}`],
   ["for 2, go with 3", `2 Bongo: ${title(2, 3)}`],
   ["for 1 the safer one", "1 Floof: reply “the safer one”"],
-  ["for 5 the safer one", "5 Mochi: ? which option"],
+  ["for 5 the safer one", "5 Mochi: “the safer one”"],
   ["for 1 don't go with 2", "1 Floof: ? a Cell can't read option numbers"],
   ["for 12 go with 1", "no card 12"],
   ["5 go with 2 and what's Goose doing?", "5 Mochi: Remove it first · rest: what's Goose doing?"],
@@ -240,8 +240,8 @@ const ANSWERS: Array<[string, string]> = [
   // A structured question.
   ["5 go with the second one", "5 Mochi: Remove it first"],
   ["5 option 3", "5 Mochi: ? no option 3"],
-  // A title's start that runs on into other words isn't that option.
-  ["for 5 commit, then push", "5 Mochi: ? which option"],
+  // A title's start that runs on into other words isn't that option: the person's own answer.
+  ["for 5 commit, then push", "5 Mochi: “commit, then push”"],
   ["5 answer keep both", "5 Mochi: “keep both”"],
   // A plan.
   ["7 yes", `7 Kiwi: ${kindOf(7, "build")}`],
@@ -394,6 +394,35 @@ describe("optionCompletionAt: Tab completes an option", () => {
 
 describe("readAnswers: the doc's examples", () => {
   it.each(DOC_EXAMPLES)("%s", (text, expected) => {
+    expect(preview(text)).toBe(expected);
+  });
+});
+
+/** Words that need more reach the Cell, never Aski (stemcells/tasks/aski-asks.md, decision 9). */
+const NEED_MORE: Array<[string, string]> = [
+  ["5 go with option B", "5 Mochi: Remove it first"],
+  [
+    "5, the second, but check the size first",
+    "5 Mochi: “Remove it first, but check the size first”",
+  ],
+  [
+    "5, keep it simple but first I need to know how big the copy is",
+    "5 Mochi: “keep it simple but first I need to know how big the copy is”",
+  ],
+  ["6, yes, but only the README", "6 Gus: reply “yes, but only the README”"],
+  [
+    "5 go with option B. Start a Cell on the docs",
+    "5 Mochi: Remove it first · rest: Start a Cell on the docs",
+  ],
+  ["5, don't go with option B", "5 Mochi: ? a Cell can't read option numbers"],
+  ["5 go with option a bit later", "5 Mochi: “go with option a bit later”"],
+  // A fixed answer the question has no option for isn't its own answer.
+  ["5 later", "5 Mochi: ? which option"],
+  ["5 yes please", "5 Mochi: ? which option"],
+];
+
+describe("readAnswers: words that need more", () => {
+  it.each(NEED_MORE)("%s", (text, expected) => {
     expect(preview(text)).toBe(expected);
   });
 });
