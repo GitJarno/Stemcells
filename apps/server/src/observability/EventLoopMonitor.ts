@@ -6,11 +6,13 @@ import type { ServerEventLoopStall } from "@t3tools/contracts";
 import { RotatingFileSink } from "@t3tools/shared/logging";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Metric from "effect/Metric";
 import * as Path from "effect/Path";
 import * as Ref from "effect/Ref";
+import * as Schedule from "effect/Schedule";
 import * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
 import * as Semaphore from "effect/Semaphore";
@@ -63,7 +65,30 @@ export interface EventLoopReadings {
   readonly cpuCount: number;
 }
 
-// Node skips the first gap after a reset, so a stall right at a sample boundary can be missed.
+/**
+ * The longest gap between beats since the last read, counting one still open.
+ * A sample taken as the loop unblocks, as a reconnecting client's is, runs before
+ * the histogram's timer records the gap, and its reset loses it for good.
+ */
+export const makeLoopGaps = (now: () => number) => {
+  let beatAt = now();
+  let longest = 0;
+  return {
+    beat: () => {
+      const at = now();
+      longest = Math.max(longest, at - beatAt);
+      beatAt = at;
+    },
+    read: () => {
+      const at = now();
+      const gap = Math.max(longest, at - beatAt);
+      longest = 0;
+      beatAt = at;
+      return gap;
+    },
+  };
+};
+
 const makeNodeSampler = Effect.gen(function* () {
   const histogram = yield* Effect.acquireRelease(
     Effect.sync(() => {
@@ -72,6 +97,11 @@ const makeNodeSampler = Effect.gen(function* () {
       return histogram;
     }),
     (histogram) => Effect.sync(() => histogram.disable()),
+  );
+  const gaps = makeLoopGaps(() => NodePerfHooks.performance.now());
+  yield* Effect.sync(gaps.beat).pipe(
+    Effect.repeat(Schedule.spaced(Duration.millis(RESOLUTION_MS))),
+    Effect.forkScoped,
   );
   let elu = NodePerfHooks.performance.eventLoopUtilization();
   let usage = process.resourceUsage();
@@ -85,7 +115,7 @@ const makeNodeSampler = Effect.gen(function* () {
     const memory = process.memoryUsage();
     const loop = NodePerfHooks.performance.eventLoopUtilization(nextElu, elu);
     const readings: EventLoopReadings = {
-      delayMaxNs: histogram.max,
+      delayMaxNs: Math.max(histogram.max, gaps.read() * 1e6),
       activeMs: loop.active,
       utilization: loop.utilization,
       usage: {

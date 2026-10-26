@@ -34,4 +34,18 @@ describe("EventLoopMonitor", () => {
     assert.isUndefined(EventLoopMonitor.stallMs(asleep));
     assert.strictEqual(EventLoopMonitor.stallMs({ ...asleep, activeMs: 600_000 }), 599_000);
   });
+
+  it("counts a freeze no timer has seen yet, as when a client reconnects right after it", () => {
+    let now = 0;
+    const gaps = EventLoopMonitor.makeLoopGaps(() => now);
+    now = 1_000;
+    gaps.beat();
+    // The loop blocks for 30 s, and the reconnecting client samples before any beat.
+    now = 31_000;
+    assert.strictEqual(gaps.read(), 30_000);
+    // The beat that runs next does not report the same freeze again.
+    now = 31_010;
+    gaps.beat();
+    assert.strictEqual(gaps.read(), 10);
+  });
 });
