@@ -666,13 +666,17 @@ Left as they are:
 
 ### The left column's rail
 
-The left column has three states: the rail (the default, the smallest it
-goes), upstream's wide sidebar, and hidden. Hidden is upstream's own open
-and closed, so its shortcut and button keep working; rail or wide is ours,
-remembered in the browser (`stemcells.leftColumn`). While the rail shows,
-our sheet gives upstream's sidebar the rail's width through
+The left column has four states: the Cells' line (the default: what needs
+you, then a row per stage, `rail/Cells.tsx`), the rail (the smallest it
+goes), upstream's wide list, and hidden. Hidden is upstream's own open and
+closed, so its shortcut and button keep working; the other three are ours,
+remembered in the browser (`stemcells.leftColumn`), with the open stage
+beside it (`stemcells.leftColumn.stage`). While the Cells or the rail
+show, our sheet gives upstream's sidebar their width through
 `--sidebar-width`, on the element that holds the sidebar's gap and
-container; `rail.contract.test.ts` pins what that relies on.
+container; `rail.contract.test.ts` pins what that relies on. The Cells'
+line never reads the route, so moving between tabs leaves it as it is
+(`stemcells/tasks/left-column.md`).
 
 Not shadcn's icon mode: `collapsible="icon"` makes the one closed state
 the icon one, which takes hidden away, and it shrinks upstream's own list,

@@ -1,5 +1,9 @@
 # The left column's rail: the smallest it goes, and the default
 
+The column now opens on the Cells' line, and the rail is its narrow form;
+opening a chat lands where a new Cell would, never over the focused pane
+(`left-column.md`, decisions 5 and 9). What follows is the rail as built.
+
 T3's left column is either wide or gone. Stemcells adds the middle, a rail
 of icons, badges and the foot, and opens on it. Wide is T3's sidebar as it
 is; hidden is T3's own. The rail is the Swift app's slim column, ported.
