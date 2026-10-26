@@ -13,6 +13,7 @@ import { isAskisInstance } from "../aski/setup";
 export interface ShelvedCell {
   readonly environmentId: string;
   readonly threadId: string;
+  readonly projectId: string;
   readonly title: string;
 }
 
@@ -26,6 +27,7 @@ export interface Shelves {
 const shelved = (shell: EnvironmentThreadShell): ShelvedCell => ({
   environmentId: shell.environmentId,
   threadId: shell.id,
+  projectId: shell.projectId,
   title: shell.title,
 });
 

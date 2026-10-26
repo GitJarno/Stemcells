@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ChartNoAxesColumnIcon,
   CheckIcon,
+  ChevronDownIcon,
   ChevronsLeftIcon,
   ListIcon,
   PinIcon,
@@ -13,6 +14,7 @@ import { useEffect, useLayoutEffect, useState, useSyncExternalStore, type ReactN
 
 import { useAskiRoomInFront } from "../aski/inFront";
 import { CardList, useOnList } from "../needs/CardList";
+import type { Shown } from "../needs/display";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce } from "../needs/live";
 import { useNeeds } from "../needs/stream";
@@ -23,10 +25,27 @@ import { openNewCellPane } from "../tabs/commands";
 import { CellAge, CellCard, CellProject, CellPullRequest, useCellShell } from "../upstream/cellRow";
 import { useOpenCell, useShelves, type ShelvedCell } from "../upstream/column";
 import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
-import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
+import {
+  isElectron,
+  openSearch,
+  ProjectFavicon,
+  SidebarUpdatePill,
+  useRailProjects,
+  useShortcutLabel,
+  type RailProject,
+} from "../upstream/rail";
 import { useNavigateToMainApp } from "../upstream/settings";
-import { cn, useSidebar } from "../upstream/ui";
+import {
+  cn,
+  Menu,
+  MenuPopup,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuTrigger,
+  useSidebar,
+} from "../upstream/ui";
 import { useColumnStore, type ColumnStage } from "./column";
+import { elsewhere, elsewhereWords, shows } from "./filter";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
@@ -70,7 +89,7 @@ export function Cells() {
   const onUsage = lit === "usage";
   const backToWork = useNavigateToMainApp();
   const searchKeys = useShortcutLabel("commandPalette.toggle");
-  const { stage, setStage, setWidth } = useColumnStore();
+  const { stage, setStage, setWidth, project: projectKey, setProject } = useColumnStore();
   // The column, where a two-finger swipe turns its stages (StagePager.tsx).
   const [surface, setSurface] = useState<HTMLDivElement | null>(null);
   // The stage a swipe or a click is taking the column to, lit in the rows before it lands.
@@ -78,8 +97,17 @@ export function Cells() {
   const shownStage = aim ?? stage;
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
   const { cells } = useNeeds();
-  const shelves = useShelves();
+  const allShelves = useShelves();
   const environmentId = usePrimaryEnvironmentId();
+  const projects = useRailProjects();
+  // A project that's gone shows every one, as no filter does.
+  const project = projects.find((each) => each.key === projectKey) ?? null;
+  const here = (cell: { readonly projectId: string }) =>
+    project === null || (environmentId !== null && shows(project, environmentId, cell.projectId));
+  const shelves = {
+    settled: allShelves.settled.filter(here),
+    pinned: allShelves.pinned.filter(here),
+  };
   const update = useUpdateToTake();
   // The undo line stands above the stages; with the column hidden, the notice is a toast.
   // Settings and Usage have no ⌘Z to undo with.
@@ -98,12 +126,25 @@ export function Cells() {
   }, []);
 
   const standing = (of: CellStanding["stage"]) =>
-    (cells ?? []).filter((cell) => cell.stage === of && !settling.has(cell.threadId));
+    (cells ?? []).filter((cell) => cell.stage === of && !settling.has(cell.threadId) && here(cell));
   const toRef = (cell: CellStanding): Ref | null =>
     environmentId === null ? null : { environmentId, threadId: cell.threadId };
   const working = standing("working");
   const landed = standing("done");
-  const waiting = onList.filter((each) => each.goneAt === null).length;
+  // Asks never hide: Needs you counts every one, and says where those the filter leaves out are.
+  const asking = onList.filter((each) => each.goneAt === null);
+  const waiting = asking.length;
+  const askedElsewhere =
+    environmentId === null
+      ? null
+      : elsewhereWords(
+          elsewhere(
+            project,
+            projects,
+            environmentId,
+            asking.map((each) => each.need),
+          ),
+        );
   const counts: Record<ColumnStage, number> = {
     needs: waiting,
     working: working.length,
@@ -132,13 +173,25 @@ export function Cells() {
           <SquarePenIcon />
         </RailButton>
       </div>
+      {projects.length > 1 || project !== null ? (
+        <ProjectFilter projects={projects} project={project} onPick={setProject} />
+      ) : null}
       <StagePager
         stage={stage}
         onTurn={setStage}
         onAim={setAim}
         surface={surface}
         pages={{
-          needs: <NeedsHere waiting={waiting} />,
+          needs: (
+            <NeedsHere
+              waiting={waiting}
+              waitingHere={asking.filter((each) => here(each.need)).length}
+              only={project === null ? undefined : (each) => here(each.need)}
+              project={project?.name ?? null}
+              elsewhere={askedElsewhere}
+              onShowAll={() => setProject(null)}
+            />
+          ),
           working: (
             <Rows label="Working" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
           ),
@@ -180,7 +233,7 @@ export function Cells() {
         />
       </nav>
       <Hops
-        standings={cells === null ? NO_STANDINGS : standingsOf(cells, shelves.settled)}
+        standings={cells === null ? NO_STANDINGS : standingsOf(cells, allShelves.settled)}
         environmentId={environmentId}
       />
       {update ? <UpdateBanner update={update} /> : null}
@@ -233,6 +286,43 @@ const rowOfShelved = (cell: ShelvedCell): Row => ({
   line: null,
 });
 
+/** Which project the column shows, quiet until it's pointed at; every one by default. */
+function ProjectFilter(props: {
+  projects: ReadonlyArray<RailProject>;
+  project: RailProject | null;
+  onPick: (key: string | null) => void;
+}) {
+  const { project } = props;
+  return (
+    <div data-cells-filter="">
+      <Menu>
+        <MenuTrigger render={<button type="button" data-cells-filter-pick="" />}>
+          {project ? <ProjectFavicon project={project.record} className="size-3.5" /> : null}
+          <span>{project?.name ?? "All projects"}</span>
+          <ChevronDownIcon aria-hidden />
+        </MenuTrigger>
+        <MenuPopup align="start">
+          <MenuRadioGroup
+            value={project?.key ?? ALL_PROJECTS}
+            onValueChange={(key: string) => props.onPick(key === ALL_PROJECTS ? null : key)}
+          >
+            <MenuRadioItem value={ALL_PROJECTS} closeOnClick>
+              All projects
+            </MenuRadioItem>
+            {props.projects.map((each) => (
+              <MenuRadioItem key={each.key} value={each.key} closeOnClick>
+                {each.name}
+              </MenuRadioItem>
+            ))}
+          </MenuRadioGroup>
+        </MenuPopup>
+      </Menu>
+    </div>
+  );
+}
+
+const ALL_PROJECTS = "";
+
 /**
  * A stage's row at the foot: a label and a count (stemcells/tasks/left-column-v3.md, decision
  * 5), its mark in the stage's colour, as T3 marks a thread's status; the open one is lit.
@@ -265,7 +355,15 @@ function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onO
  * front of Aski's room, which shows every ask open, they fold to an index
  * of it (stemcells/tasks/aski-asks.md, decision 8).
  */
-function NeedsHere(props: { waiting: number }) {
+function NeedsHere(props: {
+  waiting: number;
+  waitingHere: number;
+  only: ((shown: Shown) => boolean) | undefined;
+  /** The project the column shows, when not every one. */
+  project: string | null;
+  elsewhere: string | null;
+  onShowAll: () => void;
+}) {
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
   const [pointerIn, setPointerIn] = useState(false);
   const [focusIn, setFocusIn] = useState(false);
@@ -289,16 +387,28 @@ function NeedsHere(props: { waiting: number }) {
       openChat={open.chat}
       queue
       reveal={index ? revealInRoom : undefined}
+      only={props.only}
       head={
         props.waiting === 0 && view.cleared === null ? (
           <div data-cells-calm="">
             <b>Nothing needs you.</b>
             <span>You’ll hear the moment a Cell does, here and on your phone.</span>
           </div>
-        ) : view.live ? null : (
+        ) : !view.live ? (
           <div data-needs-head="">
             <span data-needs-still="">Reconnecting…</span>
           </div>
+        ) : props.project !== null && props.waitingHere === 0 ? (
+          <div data-cells-calm="">
+            <b>Nothing in {props.project} needs you.</b>
+          </div>
+        ) : null
+      }
+      foot={
+        props.elsewhere === null ? null : (
+          <button type="button" data-cells-elsewhere="" onClick={props.onShowAll}>
+            {props.elsewhere}
+          </button>
         )
       }
     />

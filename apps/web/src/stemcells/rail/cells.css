@@ -58,6 +58,57 @@
   color: var(--sc-faint);
 }
 
+/* Which project the column shows: quiet words under the search, a menu on a click. */
+[data-cells-filter] {
+  flex-shrink: 0;
+  padding: 0 var(--sc-space-sm) var(--sc-space-xs);
+}
+[data-cells-filter-pick] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  padding: 0.125rem var(--sc-space-sm);
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-dim);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  cursor: pointer;
+  transition:
+    background-color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing),
+    color var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-cells-filter-pick]:hover,
+[data-cells-filter-pick][data-popup-open] {
+  background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
+  color: var(--sc-text);
+}
+[data-cells-filter-pick]:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
+  outline: none;
+}
+[data-cells-filter-pick] > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-cells-filter-pick] > svg:last-child {
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+/* The asks the filter leaves out, and where; a click shows every project. */
+[data-cells-elsewhere] {
+  padding: 0 var(--sc-space-sm) var(--sc-space-sm);
+  color: var(--sc-needs-you);
+  font-size: 0.75rem;
+  text-align: start;
+  cursor: pointer;
+}
+[data-cells-elsewhere]:hover {
+  text-decoration: underline;
+}
+
 /* The open stage fills the column between the top and the rows. The
    others wait beside it on one strip, a swipe away (StagePager.tsx). */
 [data-cells-pages] {

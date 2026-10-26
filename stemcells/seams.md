@@ -679,7 +679,8 @@ you, then a row per stage, `rail/Cells.tsx`), the rail (the smallest it
 goes), upstream's wide list, and hidden. Hidden is upstream's own open and
 closed, so its shortcut and button keep working; the other three are ours,
 remembered in the browser (`stemcells.leftColumn`), with the open stage
-beside it (`stemcells.leftColumn.stage`). While the Cells or the rail
+beside it (`stemcells.leftColumn.stage`) and the project it shows
+(`stemcells.leftColumn.project`, one of upstream's project groups). While the Cells or the rail
 show, our sheet gives upstream's sidebar their width through
 `--sidebar-width`, on the element that holds the sidebar's gap and
 container; `rail.contract.test.ts` pins what that relies on. The Cells'

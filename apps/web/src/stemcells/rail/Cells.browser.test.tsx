@@ -12,6 +12,7 @@ import { act, render } from "../upstream/testRender";
 import type { DesktopUpdateState } from "../upstream/updates";
 import { useUpdateWanted } from "../updates/wanted";
 import { Cells } from "./Cells";
+import { useColumnStore } from "./column";
 import { UpdateDriver } from "./UpdateBanner";
 
 const spies = vi.hoisted(() => ({
@@ -145,8 +146,17 @@ vi.mock("../upstream/needs", () => ({
 
 vi.mock("../upstream/column", () => ({
   useShelves: () => ({
-    settled: [{ environmentId: "env", threadId: "thread-s", title: "Bump dependencies" }],
-    pinned: [{ environmentId: "env", threadId: "thread-p", title: "Roadmap" }],
+    settled: [
+      {
+        environmentId: "env",
+        threadId: "thread-s",
+        projectId: "project-shop",
+        title: "Bump dependencies",
+      },
+    ],
+    pinned: [
+      { environmentId: "env", threadId: "thread-p", projectId: "project-harbor", title: "Roadmap" },
+    ],
   }),
   useOpenCell: () => spies.open,
 }));
@@ -176,6 +186,11 @@ vi.mock("../upstream/rail", () => ({
   openSearch: () => undefined,
   SidebarUpdatePill: () => <li data-testid="upstream-update-pill" />,
   useShortcutLabel: () => "⌘K",
+  ProjectFavicon: () => null,
+  useRailProjects: () => [
+    { key: "harbor", name: "Harbor", record: {}, memberKeys: ["env:project-harbor"] },
+    { key: "shop", name: "Shop", record: {}, memberKeys: ["env:project-shop"] },
+  ],
 }));
 vi.mock("../upstream/settings", () => ({ useNavigateToMainApp: () => async () => undefined }));
 vi.mock("../upstream/ui", async (importOriginal) => ({
@@ -243,6 +258,7 @@ const available: DesktopUpdateState = {
 
 function setup(update: DesktopUpdateState | null) {
   desktop.update = update;
+  useColumnStore.setState({ project: null, stage: "needs" });
   useUpdateWanted.setState({ wanted: false });
   spies.download.mockClear();
   spies.install.mockClear();
@@ -438,6 +454,33 @@ async function swipe(column: HTMLElement, dx: number) {
     await vi.waitFor(() => expect(strip.style.transform).not.toBe(drawn), { interval: 1 });
   }
 }
+
+describe("the column's project filter", () => {
+  it("shows one project's Cells, while Needs you counts every ask and says where they are", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    await userEvent.click(screen.getByRole("button", { name: "All projects" }));
+    // The menu opens in a portal, outside the column.
+    await userEvent.click(page.getByRole("menuitemradio", { name: "Shop" }));
+
+    // Both asks are Harbor's.
+    await expect.element(screen.getByText("Nothing in Shop needs you.")).toBeVisible();
+    await expect
+      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
+      .not.toBeInTheDocument();
+    await expect.element(screen.getByRole("button", { name: /Needs you\s*2/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Working\s*1/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Settled\s*1/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Pinned\s*0/ })).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Also 2 in Harbor" }));
+    await expect
+      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
+      .toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "All projects" })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Pinned\s*1/ })).toBeVisible();
+  });
+});
 
 describe("swiping the column", () => {
   it("turns its stages in the line's order, either way, and holds at the first", async () => {

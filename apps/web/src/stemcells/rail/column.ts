@@ -13,6 +13,7 @@ export type ColumnStage = "needs" | "working" | "landed" | "settled" | "pinned";
 
 const COLUMN_STORAGE_KEY = "stemcells.leftColumn";
 const STAGE_STORAGE_KEY = "stemcells.leftColumn.stage";
+const PROJECT_STORAGE_KEY = "stemcells.leftColumn.project";
 
 /** "wide" was upstream's list when the rail was the default: the wide column is the Cells' now. */
 export function parseColumnWidth(raw: string | null): ColumnWidth {
@@ -52,13 +53,17 @@ function store(key: string, value: string): void {
 interface ColumnStore {
   readonly width: ColumnWidth;
   readonly stage: ColumnStage;
+  /** The project the column shows, by upstream's group key (`filter.ts`); null for every one. */
+  readonly project: string | null;
   readonly setWidth: (width: ColumnWidth) => void;
   readonly setStage: (stage: ColumnStage) => void;
+  readonly setProject: (project: string | null) => void;
 }
 
 export const useColumnStore = create<ColumnStore>((set) => ({
   width: parseColumnWidth(readStored(COLUMN_STORAGE_KEY)),
   stage: parseColumnStage(readStored(STAGE_STORAGE_KEY)),
+  project: readStored(PROJECT_STORAGE_KEY) || null,
   setWidth: (width) => {
     set({ width });
     store(COLUMN_STORAGE_KEY, width);
@@ -66,5 +71,9 @@ export const useColumnStore = create<ColumnStore>((set) => ({
   setStage: (stage) => {
     set({ stage });
     store(STAGE_STORAGE_KEY, stage);
+  },
+  setProject: (project) => {
+    set({ project });
+    store(PROJECT_STORAGE_KEY, project ?? "");
   },
 }));

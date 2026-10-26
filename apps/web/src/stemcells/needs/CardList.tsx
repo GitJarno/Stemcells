@@ -93,10 +93,13 @@ export function CardList(props: {
    * calls this instead (stemcells/tasks/aski-asks.md, decision 8).
    */
   reveal?: ((key: string) => void) | undefined;
+  /** The asks this list shows, when not every one: the column's project filter. */
+  only?: ((shown: Shown) => boolean) | undefined;
 }) {
   const answers = useHolds(holds);
-  const { view, onPerson } = props;
-  const shown = useOnList(view);
+  const { view, onPerson, only } = props;
+  const onList = useOnList(view);
+  const shown = only ? onList.filter(only) : onList;
   const watch = watchPerson(onPerson);
   const [picked, setPicked] = useState<string | null>(null);
   const waiting = shown

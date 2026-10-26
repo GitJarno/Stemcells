@@ -31,8 +31,10 @@ settled, colour meant nothing, and the stages carried critters.
    still under the pointer only for what the server changes.
 8. **Undo is upstream's line** (#25270) above the stages, with ⌘Z. An answer
    is sent when the line goes.
-9. **Filters:** machine and project, two quiet dropdowns, as on the phone.
-   Asks never hide: Needs you counts the ones elsewhere.
+9. **Filters:** a project, one quiet dropdown under the search. A machine's
+   waits until the column lists Cells from more than this Mac (the person,
+   2026-10-27). Asks never hide: Needs you counts every one, and says where
+   those the filter leaves out are, a click away from all of them.
 10. **Resizable** with T3's rail, double-click resets.
 11. **The chat stays lifted** off the black canvas T3's redesign brings.
 
@@ -45,6 +47,6 @@ settled, colour meant nothing, and the stages carried critters.
 - [x] Asks: tags, the header row, grouped answers, keys (as `aski-asks.md`'s first step, #324)
 - [x] Two fingers swipe through the stages
 - [x] Stages as label and count; hops only for the person's acts
-- [ ] Filters
-- [ ] Docs
+- [x] Filters
+- [x] Docs
 - [ ] The phone's home follows (`phone-line.md`)
