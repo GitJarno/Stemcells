@@ -36,10 +36,13 @@
   overscroll-behavior: none;
 }
 /* Upstream's new design turns its own dark theme's canvas black, to match its sidebar
-   (index.css, `html.dark[data-redesign]:not([data-theme-id])`). The slate keeps the canvas
-   T3's dark theme gives it without the new design, so a chat stands off the black frame. */
-:root.dark[data-redesign]:not([data-theme-id]) [data-stemcells-slate] {
+   (index.css, `html.dark[data-redesign]:not([data-theme-id])`). The slate and Settings' modal,
+   which portals out of it, keep the canvas T3's dark theme gives them without the new design,
+   so they stand off the black frame. The terminal's ground is resolved once at the root, so
+   it is set again here too. */
+:root.dark[data-redesign]:not([data-theme-id]) :is([data-stemcells-slate], [data-app-modal]) {
   --background: var(--color-neutral-950);
+  --terminal-background: var(--color-neutral-950);
 }
 /* One quiet edge, drawn over the panes so none can paint across it. */
 [data-stemcells-slate]::after {

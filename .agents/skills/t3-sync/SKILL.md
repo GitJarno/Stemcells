@@ -44,6 +44,7 @@ runs before any other, and a failure stops the sync. Nothing merges past it.
    - **Listed in `outbound.txt`** with a reason the person would accept. "T3's
      own host" is never a reason, unless the person starts the contact
      themselves (opens a link, signs in, browses a registry).
+
 2. **Runtime, on every sync.** `stemcells/scripts/sync-upstream --gates
    outbound-live`, after `build`. It boots the built app in the desktop lab
    with fake CLIs in a scratch home, and no real account. It uses it for a
@@ -126,15 +127,15 @@ request number, the seams upstream touched, new dependencies and outbound
 hosts. Read each commit's title, and the diff wherever the title leaves the
 effect on us open. Sort each one into a bucket:
 
-| Bucket | What goes in it | What you do |
-|---|---|---|
-| **Comes free** | Fixes and features that just work through our layer | Nothing. Name the notable ones in the report |
-| **Adopt** | Upstream features that one of our substitutes or seams hides or restyles, so a person doesn't get them yet | One follow-up each: wire it into our surfaces, in our look and words |
-| **Retire ours** | Our features or code that upstream now covers | The main lever. Switch to theirs and delete ours, after the person sees the difference (step 6) |
+| Bucket                   | What goes in it                                                                                             | What you do                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Comes free**           | Fixes and features that just work through our layer                                                         | Nothing. Name the notable ones in the report                                                      |
+| **Adopt**                | Upstream features that one of our substitutes or seams hides or restyles, so a person doesn't get them yet  | One follow-up each: wire it into our surfaces, in our look and words                              |
+| **Retire ours**          | Our features or code that upstream now covers                                                               | The main lever. Switch to theirs and delete ours, after the person sees the difference (step 6)        |
 | **New extension points** | Upstream hooks, slots, exports, settings or registries that would let a seam become a substitute, or vanish | A follow-up that deletes the seam. Check `seam-debt.md`: one we've been carrying may have arrived |
-| **Touches our seams** | Files split, renamed, moved or un-exported where our seams are | Port the seam in the sync itself (step 3) |
-| **Skip** | Release infrastructure, T3 Connect and Clerk sign-in, marketing, upstream's dev tooling | Nothing |
-| **Watch** | Telemetry and network: a new host, id, feed, fetch, socket or reporting switch | Gate zero. Any new contact is a stop until it is substituted out or listed |
+| **Touches our seams**    | Files split, renamed, moved or un-exported where our seams are                                              | Port the seam in the sync itself (step 3)                                                         |
+| **Skip**                 | Release infrastructure, T3 Connect and Clerk sign-in, marketing, upstream's dev tooling                     | Nothing                                                                                           |
+| **Watch**                | Telemetry and network: a new host, id, feed, fetch, socket or reporting switch                              | Gate zero. Any new contact is a stop until it is substituted out or listed                        |
 
 How to find each:
 
@@ -175,6 +176,7 @@ Time it: the pull request says how many minutes resolving took
 
   The file's row in `seams.md` says what our edit was. Make that edit, and
   no more.
+
 - [ ] **When upstream moved the code** (split a file, renamed a function,
       stopped exporting a name), the seam moves with it. Edit the new file,
       rename it in its `seams.md` row, and point contract tests at the new
@@ -224,43 +226,52 @@ the adapter, the seam or the substitute, then in the test.
 
   ```markdown
   ## Outbound
+
   Static gate: passed / what was found, and how each was substituted out or listed.
   Runtime (outbound-live): hosts seen: loopback only / the list. Minutes run.
   Defaults: anything new that contacts anyone, and that it is off.
 
   ## In short
+
   What this takes, how many commits, and anything that needs the person.
 
   ## What upstream shipped, for us
-  | | |
-  |---|---|
-  | **Comes free** | … |
-  | **Adopt** | … (each becomes a follow-up) |
-  | **Retire ours** | … (each listed for the person before anything is deleted) |
-  | **New extension points** | … |
-  | **Touches our seams** | … (ported here) |
-  | **Skip** | … |
-  | **Watch** | … |
+
+  |                          |                                                      |
+  | ------------------------ | ---------------------------------------------------- |
+  | **Comes free**           | …                                                    |
+  | **Adopt**                | … (each becomes a follow-up)                         |
+  | **Retire ours**          | … (each listed for the person before anything is deleted) |
+  | **New extension points** | …                                                    |
+  | **Touches our seams**    | … (ported here)                                      |
+  | **Skip**                 | …                                                    |
+  | **Watch**                | …                                                    |
 
   ## Drift
+
   The drift --summary table, before and after, and the seams this sync added, moved or deleted.
 
   ## Conflicts
+
   Each file, which seam it held, and how it was resolved (theirs plus the seam / moved / substitute). Resolving took N minutes.
 
   ## Gates
+
   Each gate, passed or failed, with the head it ran on and the Node version.
 
   ## Follow-ups
+
   - [ ] adopt: … (#PR)
   - [ ] retire ours: … (listed for the person)
 
   ## Needs the person
+
   Only what only he can decide.
   ```
 
   The generated report (commits by kind, seams touched, new dependencies,
   tests) stays below.
+
 - [ ] While it waits, main moves: `git merge origin/main` (never a rebase),
       then the gates again. Main's newest work meets upstream's new rules
       here first.
@@ -268,6 +279,8 @@ the adapter, the seam or the substitute, then in the test.
       passed and `local-check` is green on its exact head. Never squash or
       rebase. If whoever started you merges, report the head and the gate
       results instead.
+- [ ] Right after the merge, `stemcells/scripts/sync-upstream --workflows-off`:
+      GitHub starts a workflow new to `main` switched on.
 
 ## 6. Follow-ups
 

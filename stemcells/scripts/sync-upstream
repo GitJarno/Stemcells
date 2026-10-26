@@ -19,6 +19,9 @@
 #                               after, dependencies, tests
 #   sync-upstream --issue CODE LOG   keep the issue for a run that ended with
 #                               CODE, quoting LOG's last lines
+#   sync-upstream --workflows-off    switch off every upstream workflow on
+#                               this repository; right after a sync merges,
+#                               since GitHub starts a new one switched on
 #
 # Exits 0 when done or already up to date, 3 on a conflict that needs a
 # person or a Cell (each file is printed with the seams it touches), 4 when a
@@ -132,14 +135,35 @@ gate_workflows() {
     case $file in */stemcells*.yml) continue ;; esac
     awk '{print $2}' <<< "$known" | grep -qxF "$file" || new="$new $file"
   done
-  # A workflow GitHub hasn't seen yet is switched off the first time it runs
-  # (stemcells.yml, upstream-workflows-off); the report names it.
-  [ -n "$new" ] && echo "new upstream workflows, switched off on their first run:$new"
+  # GitHub can't switch off a workflow before it reaches main, and starts a
+  # new one switched on, so the merge is followed by --workflows-off.
+  [ -n "$new" ] && echo "new upstream workflows, switched on once this merges; run sync-upstream --workflows-off right after:$new"
   if [ -n "$active" ]; then
-    echo "switched on: $active (stemcells.yml, upstream-workflows-off, switches them off on main)"
+    echo "switched on: $active (sync-upstream --workflows-off switches them off)"
     return 1
   fi
   echo "every upstream workflow is off"
+}
+
+# Switches off every upstream workflow GitHub has, and cancels their waiting
+# runs; ours (stemcells*.yml) stay as they are.
+workflows_off() {
+  local repo
+  repo=$(repo_slug)
+  gh api "repos/$repo/actions/workflows" --paginate \
+    --jq '.workflows[] | select(.state == "active") | select(.path | test("/stemcells[^/]*\\.yml$") | not) | "\(.id) \(.path)"' |
+    while read -r id path; do
+      echo "off: $path"
+      gh api -X PUT "repos/$repo/actions/workflows/$id/disable"
+    done
+  for status in queued in_progress waiting; do
+    gh api "repos/$repo/actions/runs?status=$status&per_page=100" \
+      --jq '.workflow_runs[] | select(.path | test("/stemcells[^/]*\\.yml") | not) | "\(.id) \(.path)"' |
+      while read -r run path; do
+        echo "cancel: $path run $run"
+        gh api -X POST "repos/$repo/actions/runs/$run/cancel" >/dev/null || true
+      done
+  done
 }
 
 run_gates() {
@@ -241,7 +265,7 @@ outbound_report() {
     echo "Not run on this tree yet: \`stemcells/scripts/sync-upstream --gates build outbound-live\`."
   fi
   workflows=$(git diff --name-only --diff-filter=A origin/main -- .github/workflows | grep -v '/stemcells' || true)
-  [ -n "$workflows" ] && echo && echo "New upstream workflows (switched off on their first run): ${workflows//$'\n'/, }"
+  [ -n "$workflows" ] && echo && echo "New upstream workflows, switched on once this merges (\`sync-upstream --workflows-off\` right after): ${workflows//$'\n'/, }"
   echo
 }
 
@@ -450,6 +474,10 @@ case "$mode" in
     report
     exit 0
     ;;
+  --workflows-off)
+    workflows_off
+    exit $?
+    ;;
   --pr)
     git fetch -q --no-tags upstream main
     git fetch -q --no-tags origin main
@@ -458,7 +486,7 @@ case "$mode" in
     ;;
   "" | --check) ;;
   *)
-    sed -n '2,21p' "$0"
+    sed -n '2,24p' "$0"
     exit 2
     ;;
 esac

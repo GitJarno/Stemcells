@@ -9,11 +9,13 @@ import * as NodeFS from "node:fs";
 
 import { describe, expect, it } from "vite-plus/test";
 
+import appRouteModal from "../../components/AppRouteModal.tsx?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
 import threadFind from "../../components/chat/ThreadFindProvider.tsx?raw";
 import threadTimeline from "../../components/chat/ThreadTimeline.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
 import threadRouteView from "../../components/ThreadRouteView.tsx?raw";
+import terminalDrawer from "../../components/ThreadTerminalDrawer.tsx?raw";
 import sidebar from "../../components/ui/sidebar.tsx?raw";
 
 const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import.meta.url), "utf8");
@@ -76,9 +78,15 @@ describe("the new design's black canvas stays off the slate", () => {
     expect(appStyles).toMatch(/@variant dark \{[^}]*?--background: var\(--color-neutral-950\);/);
   });
 
-  it("the slate takes the canvas back under the same selector", () => {
+  it("the slate and Settings' modal take the canvas back under the same selector", () => {
     expect(workspaceCss).toMatch(
-      /:root\.dark\[data-redesign\]:not\(\[data-theme-id\]\) \[data-stemcells-slate\] \{\s*--background: var\(--color-neutral-950\);\s*\}/,
+      /:root\.dark\[data-redesign\]:not\(\[data-theme-id\]\) :is\(\[data-stemcells-slate\], \[data-app-modal\]\) \{\s*--background: var\(--color-neutral-950\);\s*--terminal-background: var\(--color-neutral-950\);\s*\}/,
     );
+  });
+
+  it("Settings' modal paints the canvas, and the terminal's ground is the root's canvas", () => {
+    expect(appRouteModal).toMatch(/data-app-modal=""\s+className="[^"]*\bbg-background\b/);
+    expect(appStyles).toMatch(/\n {2}--terminal-background: var\(--background\);/);
+    expect(terminalDrawer).toContain("bg-(--terminal-background)");
   });
 });
