@@ -3,11 +3,25 @@ import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from
 import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
+import { CellMark } from "../tabs/CellMark";
 import { timing } from "../tokens/motion";
-import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { compactAge } from "../upstream/cellRow";
+import {
+  observeResize,
+  useNowMinuteMs,
+  useOpenFromNeeds,
+  usePrimaryEnvironmentId,
+} from "../upstream/needs";
 import { useCellPlace } from "../upstream/thread";
 import { commandsFor, type Given } from "./actions";
-import { cardOf, LATER, type CardOption, type CardQuestion } from "./card";
+import {
+  cardOf,
+  LATER,
+  NOTHING_TO_DO,
+  type Card,
+  type CardOption,
+  type CardQuestion,
+} from "./card";
 import type { Shown } from "./display";
 import type { Hold } from "./holds";
 import { holds, useSettleAtOnce } from "./live";
@@ -50,9 +64,10 @@ const backLine = (hold: Hold | undefined): string =>
   hold?.wordsBack ? " Your words are back in Aski's composer." : "";
 
 /**
- * One need: who and where, what is asked, and the options, each one app
- * action. A choice takes the card off the list at once, onto the undo line
- * (`holds.ts`); a need that is gone greys in place and says why.
+ * One need, as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6): its Cell, project
+ * and age on one line; what it asks; at most two lines of what you need to decide; the
+ * options, each one app action. A choice takes the card off the list at once, onto the undo
+ * line (`holds.ts`); a need that is gone greys in place and says why.
  */
 export function NeedCard(props: {
   shown: Shown;
@@ -66,12 +81,13 @@ export function NeedCard(props: {
 }) {
   const { need, goneAt } = props.shown;
   const hold = props.hold;
-  const card = cardOf(need, useNowMinuteMs());
+  const now = useNowMinuteMs();
+  const card = cardOf(need, now);
   const who = whoOf(need);
   const environmentId = usePrimaryEnvironmentId();
-  const place = useCellPlace(
-    environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null },
-  );
+  const cell =
+    environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null };
+  const place = useCellPlace(cell);
   const open = useOpenFromNeeds();
   const settle = useSettleAtOnce();
   // What the words in Aski's composer do to this card (answers/lit.ts).
@@ -129,17 +145,47 @@ export function NeedCard(props: {
     land(section.current);
   }, [collapsed]);
 
+  // Later, Settle and Open chat stand in the age's place while the person is on the ask.
+  const tail = (
+    <span data-need-tail="">
+      {card.later && answerable ? (
+        <button
+          type="button"
+          data-lit={lightOf(LATER.id, fromWords, asked)}
+          onClick={() => choose(LATER)}
+        >
+          Later
+        </button>
+      ) : null}
+      {need.kind === "sign-in" ? (
+        <button type="button" onClick={() => open.providerSetup(need.providerInstanceId)}>
+          Open provider setup
+        </button>
+      ) : null}
+      {environmentId !== null ? (
+        // Done with it, asked or not: it stops, then settles (upstream/settle.ts). Words that
+        // say "nothing to do" light it.
+        <button
+          type="button"
+          data-lit={lightOf(NOTHING_TO_DO, fromWords, asked)}
+          onClick={() => void settle({ environmentId, threadId: need.threadId })}
+        >
+          Settle
+        </button>
+      ) : null}
+      <button type="button" onClick={() => (props.openChat ?? openPeek)(need.threadId)}>
+        Open chat
+      </button>
+    </span>
+  );
   const head = (
     <>
-      <span data-need-number="">{need.number}</span>
+      {cell === null ? null : <CellMark cell={cell} />}
       <span data-need-who="">{who}</span>
       {place ? <span data-need-place="">{place.name}</span> : null}
-      <span data-need-tag="">{card.tag}</span>
+      <span data-need-age="">{compactAge(need.since, now)}</span>
     </>
   );
-
-  // What it asks, where the headline alone doesn't say: the question, the quote or the command.
-  const what = card.questions[0]?.question ?? card.quote ?? card.request;
 
   if (collapsed) {
     return (
@@ -152,7 +198,7 @@ export function NeedCard(props: {
         data-open=""
         data-queued=""
         data-blocks={need.blocks || undefined}
-        aria-label={`${need.number} ${who}: ${card.headline}`}
+        aria-label={`${who}: ${card.headline}`}
         onFocus={(event) => {
           if (event.target === event.currentTarget && keyedIn(event.currentTarget)) openQueued();
         }}
@@ -161,8 +207,7 @@ export function NeedCard(props: {
         <button type="button" data-need-head="" aria-expanded={false}>
           {head}
         </button>
-        <p data-need-headline="">{card.headline}</p>
-        {what ? <p data-need-what="">{what}</p> : null}
+        <p data-need-ask="">{card.headline}</p>
       </section>
     );
   }
@@ -177,12 +222,16 @@ export function NeedCard(props: {
       data-open={answerable || undefined}
       data-blocks={need.blocks || undefined}
       data-gone={gone || undefined}
-      aria-label={`${need.number} ${who}: ${card.headline}`}
+      aria-label={`${who}: ${card.headline}`}
+      onKeyDown={pickByNumber}
     >
-      <header data-need-head="">{head}</header>
-      <p data-need-headline="">{card.headline}</p>
+      <header data-need-head="">
+        {head}
+        {gone ? null : tail}
+      </header>
+      <p data-need-ask="">{card.headline}</p>
+      {card.quote ? <Context text={card.quote} /> : null}
       {card.request ? <pre data-need-request="">{card.request}</pre> : null}
-      {card.quote ? <blockquote data-need-quote="">{card.quote}</blockquote> : null}
       {card.steps.length > 0 ? (
         <ol data-need-steps="">
           {card.steps.map((step) => (
@@ -236,9 +285,9 @@ export function NeedCard(props: {
               }}
             />
           ) : null}
-          {card.options.length > 0 ? (
+          {shownOptions(card).length > 0 ? (
             <Options
-              options={card.options}
+              options={shownOptions(card)}
               allowReady={allowReady}
               lit={fromWords}
               asked={asked}
@@ -247,36 +296,56 @@ export function NeedCard(props: {
           ) : null}
         </>
       )}
-
-      <footer data-need-foot="">
-        {card.later && answerable ? (
-          <button
-            type="button"
-            data-lit={lightOf(LATER.id, fromWords, asked)}
-            onClick={() => choose(LATER)}
-          >
-            Later
-          </button>
-        ) : null}
-        {need.kind === "sign-in" ? (
-          <button type="button" onClick={() => open.providerSetup(need.providerInstanceId)}>
-            Open provider setup
-          </button>
-        ) : null}
-        {environmentId !== null ? (
-          // Done with it, asked or not: it stops, then settles (upstream/settle.ts).
-          <button
-            type="button"
-            onClick={() => void settle({ environmentId, threadId: need.threadId })}
-          >
-            Settle
-          </button>
-        ) : null}
-        <button type="button" onClick={() => (props.openChat ?? openPeek)(need.threadId)}>
-          Open chat
-        </button>
-      </footer>
     </section>
+  );
+}
+
+/** The options a card lists: "Nothing to do" is the head's Settle, which words still light. */
+const shownOptions = (card: Card): ReadonlyArray<CardOption> =>
+  card.options.filter((option) => option.id !== NOTHING_TO_DO);
+
+/**
+ * A number key picks that option, as a click on it would; an allow it only reaches, for a
+ * click to finish (aski-room.md, decision 6). A field's keys are its own.
+ */
+function pickByNumber(event: KeyboardEvent<HTMLElement>) {
+  if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  if (!/^[1-9]$/u.test(event.key)) return;
+  const target = event.target as HTMLElement;
+  if (target.closest("input, textarea, [contenteditable='true']")) return;
+  const rows = event.currentTarget.querySelectorAll<HTMLButtonElement>(
+    "[data-need-options] > button[data-need-option]",
+  );
+  const row = rows[Number(event.key) - 1];
+  if (row === undefined || row.disabled) return;
+  event.preventDefault();
+  row.focus();
+  if (!row.hasAttribute("data-allows")) row.click();
+}
+
+/**
+ * The Cell's own words around its question, two lines at most until More shows them all,
+ * in place: never a trip to its chat.
+ */
+function Context(props: { text: string }) {
+  const body = useRef<HTMLParagraphElement>(null);
+  const [long, setLong] = useState(false);
+  const [more, setMore] = useState(false);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Measure whether the words run past their two lines as the ask resizes.
+  useLayoutEffect(() => {
+    const element = body.current;
+    if (element === null || more) return;
+    return observeResize(element, () => setLong(element.scrollHeight > element.clientHeight + 1));
+  }, [more]);
+  return (
+    <div data-need-context="" data-more={more || undefined}>
+      <p ref={body}>{props.text}</p>
+      {long && !more ? (
+        <button type="button" onClick={() => setMore(true)}>
+          More
+        </button>
+      ) : null}
+    </div>
   );
 }
 
@@ -323,7 +392,7 @@ function Options(props: {
             onClick={() => (option.words ? setWriting(option.id) : props.onChoose(option))}
           >
             <span data-need-option-title="">{option.title}</span>
-            {option.recommended ? <span data-need-option-mark="">Recommended</span> : null}
+            {option.recommended ? <span className="sr-only">Recommended</span> : null}
             <LightLine light={lightOf(option.id, props.lit, props.asked)} />
             {option.consequence ? (
               <span data-need-option-consequence="">{option.consequence}</span>
@@ -412,12 +481,15 @@ function Questions(props: {
     <div data-need-questions="">
       {props.questions.map((question, index) => (
         <div key={question.id} data-need-question="">
+          {/* One question is the card's own line; several each say theirs. */}
           {props.questions.length > 1 ? (
-            <p data-need-question-head="">
-              {index + 1}. {question.header}
-            </p>
+            <>
+              <p data-need-question-head="">
+                {index + 1}. {question.header}
+              </p>
+              <p data-need-question-text="">{question.question}</p>
+            </>
           ) : null}
-          <p data-need-question-text="">{question.question}</p>
           <div data-need-options="">
             {question.options.map((choice) => {
               const chosen = (picked[question.id] ?? []).includes(choice.answer);
@@ -444,10 +516,11 @@ function Questions(props: {
                   }}
                 >
                   <span data-need-option-title="">{choice.label}</span>
-                  {choice.recommended ? <span data-need-option-mark="">Recommended</span> : null}
+                  {choice.recommended ? <span className="sr-only">Recommended</span> : null}
                   <LightLine light={lightOf(`answer:${choice.answer}`, props.lit, null)} />
+                  {/* The Cell's own words on a choice are what the person decides by. */}
                   {choice.description ? (
-                    <span data-need-option-consequence="">{choice.description}</span>
+                    <span data-need-option-says="">{choice.description}</span>
                   ) : null}
                 </button>
               );

@@ -19,9 +19,6 @@
   font-family: var(--sc-font-ui);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  /* The cards' meta is their body less a step (needs.css): text-xs here. */
-  --sc-body: 0.875rem;
-  --sc-meta-size: -0.125rem;
 }
 
 [data-cells-top] {

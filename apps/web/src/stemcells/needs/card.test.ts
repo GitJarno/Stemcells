@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { cardOf, whenOf } from "./card";
+import { askOf, cardOf, whenOf } from "./card";
 import type { Need } from "./wire";
 import { NOW, needFixture, requestFixture } from "./fixtures";
 
@@ -20,7 +20,7 @@ describe("a card says what the Cell asked, as it asked it", () => {
       }),
       NOW,
     );
-    expect(card.headline).toBe("Wants to run a command");
+    expect(card.headline).toBe("Run this command?");
     expect(card.request).toBe("git push --force-with-lease origin header-tokens");
     expect(titles(card)).toEqual([
       "Allow for this session",
@@ -96,7 +96,8 @@ describe("a card says what the Cell asked, as it asked it", () => {
       }),
       NOW,
     );
-    expect(card.headline).toBe("Database");
+    // The card's line is the Cell's own question, which its options answer.
+    expect(card.headline).toBe("Which database should the tests use?");
     expect(card.questions[0]?.options).toEqual([
       {
         label: "Staging",
@@ -140,7 +141,7 @@ describe("a card says what the Cell asked, as it asked it", () => {
       }),
       NOW,
     );
-    expect(card.headline).toBe("Has a question");
+    expect(card.headline).toBe("Which colour should the shed be?");
     expect(card.questions[0]?.options.map((each) => [each.label, each.description])).toEqual([
       ["Green", ""],
       ["Grey", ""],
@@ -197,7 +198,7 @@ describe("a card says what the Cell asked, as it asked it", () => {
         }),
         NOW,
       );
-    expect(plan("plan-1").headline).toBe("Plan ready: Move the header to tokens");
+    expect(plan("plan-1").headline).toBe("Build “Move the header to tokens”?");
     expect(plan("plan-1").options[0]).toMatchObject({ title: "Implement", recommended: true });
     expect(plan(null).options).toEqual([]);
   });
@@ -229,9 +230,19 @@ describe("cards read from a Cell's prose, with no model", () => {
       NOW,
     );
 
-  it("quotes the Cell's last paragraph word for word", () => {
-    expect(prose("offer").quote).toBe("Want me to push it?");
-    expect(prose("offer")).toMatchObject({ tag: "Question", headline: "Offers to go on" });
+  it("asks the Cell's own question, with the rest of its words as the context", () => {
+    expect(prose("offer")).toMatchObject({ headline: "Want me to push it?", quote: null });
+    expect(
+      prose("question", "Both suites pass. Staging or a fresh local copy? I'd take local."),
+    ).toMatchObject({
+      headline: "Staging or a fresh local copy?",
+      quote: "Both suites pass. I'd take local.",
+    });
+    // No sentence asks: the fixed line, and the Cell's words whole.
+    expect(prose("question", "Let me know which you'd like.")).toMatchObject({
+      headline: "Has a question",
+      quote: "Let me know which you'd like.",
+    });
   });
 
   it("offers Go ahead to an offer and a stop, recommending it only for the stop", () => {
@@ -239,12 +250,18 @@ describe("cards read from a Cell's prose, with no model", () => {
     expect(titles(prose("offer"))).toEqual(["Go ahead", "Reply…", "Nothing to do"]);
     expect(prose("offer").options[0]?.recommended).toBe(false);
     expect(prose("stopped").options[0]).toMatchObject({ title: "Go ahead", recommended: true });
-    expect(prose("stopped").tag).toBe("Stopped");
+    expect(prose("stopped", "2 of 5 done. Next I'll migrate the rest.")).toMatchObject({
+      headline: "Stopped short of done. Go on?",
+      quote: "2 of 5 done. Next I'll migrate the rest.",
+    });
   });
 
   it("asks the person to say they did the step a Cell left them, recommending nothing", () => {
     const left = prose("left", "run the sign-in with Drive access");
-    expect(left).toMatchObject({ tag: "Your step", quote: "run the sign-in with Drive access" });
+    expect(left).toMatchObject({
+      headline: "Left a step to you. Done it?",
+      quote: "run the sign-in with Drive access",
+    });
     expect(left.options.map((each) => [each.title, each.recommended])).toEqual([
       ["Done it", false],
       ["Reply…", false],
@@ -300,5 +317,23 @@ describe("when a reset comes, in the person's words", () => {
     expect(at("2026-10-22T09:00:00.000Z")).toBe("tomorrow 09:00");
     expect(at("2026-10-26T09:00:00.000Z")).toBe("Mon 09:00");
     expect(at("2026-11-02T09:00:00.000Z")).toBe("2 Nov 09:00");
+  });
+});
+
+describe("askOf", () => {
+  it("takes a list's question without its number, and keeps the rest in order", () => {
+    expect(
+      askOf(
+        "Decisions for you: 1. Approve the 6 held people. 2. Should the 5 companies be created now? I'd skip them.",
+      ),
+    ).toEqual({
+      ask: "Should the 5 companies be created now?",
+      context: "Decisions for you: 1. Approve the 6 held people. I'd skip them.",
+    });
+  });
+
+  it("reads a question mark inside a quote or a path as no ask", () => {
+    expect(askOf("Pushed to `feat/why?-not`. Done.")).toBeNull();
+    expect(askOf("Ship it (“today?”)")).toEqual({ ask: "Ship it (“today?”)", context: null });
   });
 });

@@ -102,11 +102,17 @@
   background: var(--sc-surface);
 }
 
+/* Upstream's type scale, in rem so Settings › Interface size and ⌘± move
+   the asks with the chat: text-sm, and the meta a step less at text-xs. */
 [data-stemcells-needs-list] {
+  --sc-body: 0.875rem;
+  --sc-meta-size: -0.125rem;
   display: flex;
   flex-direction: column;
   gap: var(--sc-space-md);
   padding: var(--sc-space-xl);
+  font-size: var(--sc-body);
+  line-height: 1.25rem;
 }
 /* In the column, its head shares the band's row with the pane's buttons,
    and the cards start under the band, as the chat's transcript does. */
@@ -137,16 +143,16 @@
   text-align: center;
 }
 
-/* A card. A request that blocks a running turn carries an amber edge:
-   urgency is ink, never position. */
+/* An ask, as a message (stemcells/tasks/aski-asks.md, decision 4): no box;
+   its Cell, project and age on one quiet line, the question, two lines of
+   context, then the options. One that blocks a running turn says so in its
+   age's amber: urgency is ink, never position. */
 [data-stemcells-need] {
   display: flex;
   flex-direction: column;
   gap: var(--sc-space-sm);
-  padding: var(--sc-space-lg) var(--sc-space-xl);
-  border: 1px solid var(--sc-hairline);
+  padding: var(--sc-space-md) var(--sc-space-sm);
   border-radius: var(--sc-radius-card);
-  background: var(--sc-raised);
   transition:
     opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing),
     filter var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
@@ -157,24 +163,19 @@
   outline: none;
   box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
 }
-[data-stemcells-need][data-blocks] {
-  border-inline-start: 2px solid var(--sc-needs-you);
-}
 /* Gone: it recedes in place until the page stops holding still. */
 [data-stemcells-need][data-gone] {
   opacity: var(--sc-receded);
   filter: saturate(var(--sc-receded-saturation));
 }
-/* Waiting its turn in a queue: who asks and what, opened by a click or the
-   walk (CardList). */
+/* Waiting its turn in a queue: who asks, and what, on one line each. */
 [data-stemcells-need][data-queued] {
-  gap: var(--sc-space-xs);
-  padding: var(--sc-space-md) var(--sc-space-lg);
-  background: transparent;
+  gap: 0.125rem;
+  padding: var(--sc-space-sm);
   cursor: pointer;
 }
 [data-stemcells-need][data-queued]:hover {
-  background: var(--sc-raised);
+  background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
 }
 [data-stemcells-need][data-queued] > button[data-need-head] {
   width: 100%;
@@ -185,13 +186,12 @@
   outline: none;
   text-decoration: underline;
 }
-[data-need-what] {
-  display: -webkit-box;
+[data-stemcells-need][data-queued] > [data-need-ask] {
   overflow: hidden;
   color: var(--sc-soft);
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 @keyframes stemcells-need-in {
   from {
@@ -207,31 +207,96 @@
 
 [data-need-head] {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--sc-space-sm);
   min-width: 0;
   color: var(--sc-dim);
   font-size: calc(var(--sc-body) + var(--sc-meta-size));
 }
-[data-need-number] {
+[data-need-who] {
+  flex-shrink: 0;
   color: var(--sc-text);
-  font-family: var(--sc-font-mono);
   font-weight: 600;
 }
-[data-need-who] {
-  color: var(--sc-text);
-}
 [data-need-place] {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-[data-need-tag] {
+[data-need-age] {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  color: var(--sc-faint);
+  font-variant-numeric: tabular-nums;
+}
+[data-stemcells-need][data-blocks] [data-need-age] {
+  color: var(--sc-needs-you);
+}
+/* Later, Settle and Open chat take the age's place while the person is on
+   the ask, or while words light one of them; the line keeps its height. */
+[data-need-tail] {
+  display: none;
+  flex-shrink: 0;
+  gap: 0.125rem;
+  margin-block: -0.125rem;
   margin-inline-start: auto;
 }
-[data-need-headline] {
+[data-stemcells-need]:is(:hover, :focus-within) [data-need-tail],
+[data-need-tail]:has([data-lit]) {
+  display: flex;
+}
+[data-stemcells-need]:is(:hover, :focus-within) [data-need-age],
+[data-need-head]:has([data-need-tail] [data-lit]) [data-need-age] {
+  display: none;
+}
+[data-need-tail] button {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-dim);
+}
+[data-need-tail] button:hover {
+  background: var(--sc-hot);
+  color: var(--sc-text);
+}
+[data-need-tail] button[data-lit] {
+  box-shadow: 0 0 0 1px var(--sc-accent);
+  color: var(--sc-text);
+}
+
+/* What it asks: the largest words in the message. */
+[data-need-ask] {
+  margin: 0;
   color: var(--sc-text);
   font-weight: 600;
+  overflow-wrap: anywhere;
+}
+/* What you need to decide, two lines until More shows the rest in place. */
+[data-need-context] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  color: var(--sc-dim);
+}
+[data-need-context] > p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+[data-need-context][data-more] > p {
+  display: block;
+  white-space: pre-line;
+}
+[data-need-context] > button {
+  color: var(--sc-soft);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-need-context] > button:hover {
+  color: var(--sc-text);
 }
 [data-need-request] {
   margin: 0;
@@ -243,16 +308,6 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-[data-need-quote] {
-  display: -webkit-box;
-  margin: 0;
-  padding-inline-start: var(--sc-space-md);
-  overflow: hidden;
-  border-inline-start: 2px solid var(--sc-hairline);
-  color: var(--sc-dim);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-}
 [data-need-steps] {
   margin: 0;
   padding-inline-start: 1.4em;
@@ -262,45 +317,61 @@
 [data-need-note],
 [data-need-why],
 [data-need-receipt] {
+  margin: 0;
   color: var(--sc-dim);
 }
 [data-need-receipt][data-warn] {
   color: var(--sc-error);
 }
 
+/* The options: rows, quiet until you're on one (decision 5). A Cell's own
+   words on each choice always show; our line on what an option does shows
+   on the lit one, the recommended before you move, then the one the
+   keyboard is on; a warning always shows. */
 [data-need-questions],
 [data-need-question],
 [data-need-options] {
   display: flex;
   flex-direction: column;
-  gap: var(--sc-space-xs);
+  gap: 0.125rem;
 }
 [data-need-questions] {
   gap: var(--sc-space-md);
 }
 [data-need-question-head] {
+  margin: 0;
   color: var(--sc-dim);
 }
 [data-need-question-text] {
+  margin: 0 0 var(--sc-space-xs);
   color: var(--sc-reading);
 }
 [data-need-option],
 [data-need-send] {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px var(--sc-space-md);
-  padding: var(--sc-space-sm) var(--sc-space-md);
-  border: 1px solid var(--sc-edge);
-  border-radius: var(--sc-radius-chip);
-  color: var(--sc-text);
+  gap: 0 var(--sc-space-md);
+  padding: 0.375rem var(--sc-space-md);
+  border-radius: var(--sc-radius-card);
+  color: var(--sc-soft);
   text-align: start;
+  cursor: pointer;
 }
 [data-need-option]:hover:not(:disabled),
 [data-need-send]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
+  color: var(--sc-text);
+}
+[data-need-options]:not(:has(> [data-need-option]:focus-visible))
+  > [data-need-option][data-recommended]:not([data-allows], :disabled),
+[data-need-option]:focus-visible {
   background: var(--sc-hot);
+  color: var(--sc-text);
+  outline: none;
 }
 [data-need-option][aria-pressed="true"] {
-  border-color: var(--sc-text);
+  box-shadow: inset 0 0 0 1px var(--sc-soft);
+  color: var(--sc-text);
 }
 [data-need-option]:disabled,
 [data-need-send]:disabled {
@@ -308,24 +379,35 @@
   cursor: default;
 }
 [data-need-option-title] {
-  font-weight: 600;
-}
-[data-need-option-mark] {
-  padding: 0 var(--sc-space-sm);
-  border-radius: var(--sc-radius-chip);
-  background: var(--sc-hot);
-  color: var(--sc-reading);
-  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  font-weight: 500;
 }
 [data-need-option-consequence] {
+  display: none;
   grid-column: 1 / -1;
   color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-need-options]:not(:has(> [data-need-option]:focus-visible))
+  > [data-need-option][data-recommended]:not([data-allows], :disabled)
+  > [data-need-option-consequence],
+[data-need-option]:focus-visible > [data-need-option-consequence],
+[data-need-option][data-warn] > [data-need-option-consequence],
+[data-need-options][data-explained] > [data-need-option] > [data-need-option-consequence] {
+  display: block;
 }
 [data-need-option][data-warn] [data-need-option-consequence] {
   color: var(--sc-needs-you);
 }
+[data-need-option-says] {
+  grid-column: 1 / -1;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
 [data-need-send] {
   justify-self: start;
+  margin-block-start: var(--sc-space-xs);
+  box-shadow: inset 0 0 0 1px var(--sc-edge);
+  color: var(--sc-text);
   font-weight: 600;
 }
 
@@ -334,17 +416,12 @@
    or one waiting for words, wears the needs-you ring and says so. A reply
    shows before it goes. */
 [data-need-option][data-lit] {
-  border-color: var(--sc-accent);
-  box-shadow: 0 0 0 1px var(--sc-accent);
+  box-shadow: inset 0 0 0 1px var(--sc-accent);
+  color: var(--sc-text);
 }
 [data-need-option][data-lit="click"],
 [data-need-option][data-lit="words"] {
-  border-color: var(--sc-needs-you);
-  box-shadow: 0 0 0 1px var(--sc-needs-you);
-}
-[data-need-foot] button[data-lit] {
-  box-shadow: 0 0 0 1px var(--sc-accent);
-  color: var(--sc-text);
+  box-shadow: inset 0 0 0 1px var(--sc-needs-you);
 }
 [data-need-option-lit] {
   grid-column: 1 / -1;
@@ -414,12 +491,6 @@
   }
 }
 
-[data-need-foot] {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sc-space-xs);
-}
-[data-need-foot] button,
 [data-need-held-row] button,
 [data-need-words] button,
 [data-needs-close] {
@@ -427,7 +498,6 @@
   border-radius: var(--sc-radius-chip);
   color: var(--sc-dim);
 }
-[data-need-foot] button:hover,
 [data-need-held-row] button:hover,
 [data-need-words] button:hover:not(:disabled),
 [data-needs-close]:hover {

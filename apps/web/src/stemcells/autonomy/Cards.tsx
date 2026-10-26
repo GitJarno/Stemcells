@@ -26,11 +26,11 @@ function Offer(props: { kind: Kind }) {
     <section tabIndex={-1} data-stemcells-need="" data-open="" aria-label={`Aski: ${words.ask}`}>
       <header data-need-head="">
         <span data-need-who="">Aski</span>
-        <span data-need-tag="">Offer</span>
       </header>
-      <p data-need-headline="">{words.ask}</p>
+      <p data-need-ask="">{words.ask}</p>
       <p data-need-note="">{words.offer}</p>
-      <div data-need-options="">
+      {/* A grant says what it does on every option, not only the lit one. */}
+      <div data-need-options="" data-explained="">
         <button
           type="button"
           data-need-option=""

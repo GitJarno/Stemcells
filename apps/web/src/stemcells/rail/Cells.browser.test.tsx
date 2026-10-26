@@ -161,6 +161,7 @@ vi.mock("../upstream/cellRow", async () => {
   return {
     useCellShell: (cell: { threadId: string }) => ({ id: cell.threadId }),
     CellAge: () => "5m",
+    compactAge: () => "12m",
     CellProject: () => <span data-cells-row-project="">shop</span>,
     CellPullRequest: () => null,
     CellCard: (props: { trigger: ReactElement; children: ReactNode }) =>
@@ -269,6 +270,10 @@ describe("the Cells' column", () => {
     setup(null);
     spies.openChat.mockClear();
     await using screen = await render(<Column />);
+    // Open chat stands in the age's place once the pointer is on the ask.
+    await userEvent.hover(
+      screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"),
+    );
     await userEvent.click(screen.getByRole("button", { name: "Open chat" }));
     expect(spies.openChat).toHaveBeenCalledWith("thread-a");
   });
