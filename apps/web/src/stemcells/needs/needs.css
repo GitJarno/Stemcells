@@ -165,6 +165,34 @@
   opacity: var(--sc-receded);
   filter: saturate(var(--sc-receded-saturation));
 }
+/* Waiting its turn in a queue: who asks and what, opened by a click or the
+   walk (CardList). */
+[data-stemcells-need][data-queued] {
+  gap: var(--sc-space-xs);
+  padding: var(--sc-space-md) var(--sc-space-lg);
+  background: transparent;
+  cursor: pointer;
+}
+[data-stemcells-need][data-queued]:hover {
+  background: var(--sc-raised);
+}
+[data-stemcells-need][data-queued] > button[data-need-head] {
+  width: 100%;
+  text-align: start;
+  cursor: inherit;
+}
+[data-stemcells-need][data-queued] > button[data-need-head]:focus-visible {
+  outline: none;
+  text-decoration: underline;
+}
+[data-need-what] {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--sc-soft);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
 @keyframes stemcells-need-in {
   from {
     opacity: 0;

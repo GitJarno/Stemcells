@@ -60,8 +60,9 @@ interactive draft in the chat that asked for it.
       route. Upstream's list stays one click away for what only it does
       (projects, environments). The cards move into it from Aski's room
       while it shows (decision 11's first half)
-- [ ] Asks in the column (6): `NeedCard` in Needs you, the next opening as
-      one is answered
+- [x] Asks in the column (6): one card open at a time, the rest folded to
+      who asks and what; answering one opens the next, and so does a click
+      or the keyboard's step onto a folded one
 - [ ] Motion (7): roll-up, hops, a stage taking a Cell in
 - [ ] Settling (2, 3, 4): closing a landed pane settles it; Settle from any
       stage; a pin turns auto-settle off; merge auto-settle off by default

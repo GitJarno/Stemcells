@@ -22,7 +22,8 @@ function landingOf(card: HTMLElement): HTMLElement {
   );
 }
 
-function land(card: HTMLElement): void {
+/** Puts the focus on a card where a step onto it lands. */
+export function land(card: HTMLElement): void {
   landingOf(card).focus();
 }
 

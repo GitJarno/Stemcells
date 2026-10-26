@@ -37,6 +37,31 @@ const needs: Need[] = [
       ],
     }),
   }),
+  needFixture({
+    key: "thread-b:request:2",
+    number: 2,
+    threadId: "thread-b",
+    title: "Hero images",
+    kind: "question",
+    request: requestFixture({
+      id: "2",
+      kind: "user_input",
+      prompt: null,
+      questions: [
+        {
+          id: "q",
+          header: "Format",
+          question: "Which format for the hero images?",
+          options: [
+            { label: "WebP", description: "Every browser shows it.", value: null },
+            { label: "AVIF", description: "A third smaller.", value: null },
+          ],
+          multiSelect: false,
+          allowCustomAnswer: true,
+        },
+      ],
+    }),
+  }),
 ];
 
 const standing = (threadId: string, stage: CellStanding["stage"], line: string): CellStanding => ({
@@ -50,6 +75,7 @@ const standing = (threadId: string, stage: CellStanding["stage"], line: string):
 
 const cells: CellStanding[] = [
   standing("thread-a", "needs-you", ""),
+  standing("thread-b", "needs-you", ""),
   standing("thread-w", "working", "Running benchmarks, 3 of 5"),
   standing("thread-l1", "done", "Done: #312 merged"),
   standing("thread-l2", "done", "Done: #309 merged"),
@@ -127,7 +153,7 @@ describe("the Cells' column", () => {
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .toBeVisible();
     await expect
-      .element(screen.getByRole("button", { name: /Needs you\s*1/ }))
+      .element(screen.getByRole("button", { name: /Needs you\s*2/ }))
       .toHaveAttribute("aria-pressed", "true");
   });
 
@@ -136,6 +162,42 @@ describe("the Cells' column", () => {
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: "Open chat" }));
     expect(spies.openChat).toHaveBeenCalledWith("thread-a");
+  });
+
+  it("opens one ask at a time, and answering it opens the next", async () => {
+    await using screen = await render(<Column />);
+    await expect.element(screen.getByRole("button", { name: /Keep them/ })).toBeVisible();
+    await expect.element(screen.getByText("Which format for the hero images?")).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /Keep them/ }));
+    await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
+
+    // Taking the answer back opens its card again, and the next waits.
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await expect.element(screen.getByRole("button", { name: /Keep them/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
+  });
+
+  it("opens a waiting ask when it is clicked", async () => {
+    await using screen = await render(<Column />);
+    await userEvent.click(screen.getByText("Which format for the hero images?"));
+    await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Keep them/ })).not.toBeInTheDocument();
+  });
+
+  it("opens the next ask as the keyboard steps onto it", async () => {
+    await using screen = await render(<Column />);
+    screen
+      .getByRole("button", { name: /Keep them/ })
+      .element()
+      .focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
+    // The focus went with it, so the next step or answer starts from there.
+    expect(document.activeElement?.closest("[data-stemcells-need]")?.textContent).toContain(
+      "Which format for the hero images?",
+    );
   });
 
   it("shows a stage's Cells when its row is chosen, each with its own word", async () => {

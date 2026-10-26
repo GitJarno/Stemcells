@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
@@ -13,7 +13,7 @@ import type { Hold } from "./holds";
 import { holds } from "./live";
 import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
-import { answering } from "./walk";
+import { answering, land } from "./walk";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
 export function whoOf(need: Shown["need"]): string {
@@ -28,6 +28,16 @@ const TAKEN: Partial<Record<Shown["need"]["kind"], Kind>> = {
   prose: "goAhead",
   plan: "implement",
 };
+
+/** Whether a card still takes an answer: live, and no answer of the person's held, sending or sent. */
+export function answerableOf(shown: Shown, hold: Hold | undefined): boolean {
+  if (shown.goneAt !== null || hold === undefined) return shown.goneAt === null;
+  return hold.state === "failed" || hold.state === "stale";
+}
+
+/** Whether the keyboard is on `card` or in it, as a walk's step leaves it (walk.ts). */
+const keyedIn = (card: HTMLElement): boolean =>
+  card.matches(":focus-visible") || card.querySelector(":focus-visible") !== null;
 
 /** What a held answer says it chose. */
 export const pickLabel = (option: CardOption, given: Given): string =>
@@ -55,6 +65,8 @@ export function NeedCard(props: {
   seenAt: number | null;
   /** Opens the asking chat; a peek beside the cards unless the list says otherwise. */
   openChat?: ((threadId: string) => void) | undefined;
+  /** In a queue, a card that isn't the open one shows only who asks and what. */
+  queued?: { readonly open: boolean; readonly onOpen: () => void } | undefined;
 }) {
   const { need, goneAt } = props.shown;
   const hold = props.hold;
@@ -103,7 +115,60 @@ export function NeedCard(props: {
 
   const gone = goneAt !== null;
   const folded = hold !== undefined && (hold.state === "holding" || hold.state === "sending");
-  const answerable = !gone && !folded && hold?.state !== "sent";
+  const answerable = answerableOf(props.shown, hold);
+  // A card Aski is about to take stays open, so its fuse can be seen and stopped.
+  const collapsed =
+    props.queued !== undefined && !props.queued.open && answerable && taking === null;
+
+  // Opened from the keyboard, the card lands the focus where a step would,
+  // once its options are there; opened by pointer, the focus stays put.
+  const landOnOpen = useRef(false);
+  const openQueued = () => {
+    landOnOpen.current = section.current !== null && keyedIn(section.current);
+    props.queued?.onOpen();
+  };
+  useLayoutEffect(() => {
+    if (collapsed || !landOnOpen.current || section.current === null) return;
+    landOnOpen.current = false;
+    land(section.current);
+  }, [collapsed]);
+
+  const head = (
+    <>
+      <span data-need-number="">{need.number}</span>
+      <span data-need-who="">{who}</span>
+      {place ? <span data-need-place="">{place.name}</span> : null}
+      <span data-need-tag="">{card.tag}</span>
+    </>
+  );
+
+  // What it asks, where the headline alone doesn't say: the question, the quote or the command.
+  const what = card.questions[0]?.question ?? card.quote ?? card.request;
+
+  if (collapsed) {
+    return (
+      <section
+        ref={section}
+        // The walk lands here, and the card opens (walk.ts).
+        tabIndex={-1}
+        data-stemcells-need=""
+        data-open=""
+        data-queued=""
+        data-blocks={need.blocks || undefined}
+        aria-label={`${need.number} ${who}: ${card.headline}`}
+        onFocus={(event) => {
+          if (event.target === event.currentTarget && keyedIn(event.currentTarget)) openQueued();
+        }}
+        onClick={openQueued}
+      >
+        <button type="button" data-need-head="" aria-expanded={false}>
+          {head}
+        </button>
+        <p data-need-headline="">{card.headline}</p>
+        {what ? <p data-need-what="">{what}</p> : null}
+      </section>
+    );
+  }
 
   return (
     <section
@@ -116,12 +181,7 @@ export function NeedCard(props: {
       data-gone={gone || undefined}
       aria-label={`${need.number} ${who}: ${card.headline}`}
     >
-      <header data-need-head="">
-        <span data-need-number="">{need.number}</span>
-        <span data-need-who="">{who}</span>
-        {place ? <span data-need-place="">{place.name}</span> : null}
-        <span data-need-tag="">{card.tag}</span>
-      </header>
+      <header data-need-head="">{head}</header>
       <p data-need-headline="">{card.headline}</p>
       {card.request ? <pre data-need-request="">{card.request}</pre> : null}
       {card.quote ? <blockquote data-need-quote="">{card.quote}</blockquote> : null}

@@ -1,9 +1,9 @@
-import { useEffect, type KeyboardEvent as KeyEvent, type ReactNode } from "react";
+import { useEffect, useState, type KeyboardEvent as KeyEvent, type ReactNode } from "react";
 
 import { AutonomyOffer } from "../autonomy/Cards";
 import { useHolds } from "./holds";
 import { holds } from "./live";
-import { NeedCard } from "./NeedCard";
+import { answerableOf, NeedCard } from "./NeedCard";
 import type { PageView } from "./page";
 import { leave, step } from "./walk";
 
@@ -85,10 +85,21 @@ export function CardList(props: {
   onPerson: (pointer: boolean | null, focus: boolean | null) => void;
   /** Where a card's Open chat goes: a peek, which only Aski's room shows, unless given. */
   openChat?: (threadId: string) => void;
+  /**
+   * One card open at a time: the one the person opened, else the first that
+   * takes an answer, so answering one opens the next. The rest show who
+   * asks and what (stemcells/tasks/left-column.md, decision 6).
+   */
+  queue?: boolean;
 }) {
   const answers = useHolds(holds);
   const { view, onPerson } = props;
   const watch = watchPerson(onPerson);
+  const [picked, setPicked] = useState<string | null>(null);
+  const waiting = view.shown
+    .filter((each) => answerableOf(each, answers.get(each.need.key)))
+    .map((each) => each.need.key);
+  const open = picked !== null && waiting.includes(picked) ? picked : (waiting[0] ?? null);
   return (
     <div ref={watch} data-stemcells-needs-list="" onKeyDown={walkKeys}>
       {props.head}
@@ -100,6 +111,11 @@ export function CardList(props: {
           hold={answers.get(each.need.key)}
           seenAt={view.seen.get(each.need.key) ?? null}
           openChat={props.openChat}
+          queued={
+            props.queue
+              ? { open: each.need.key === open, onOpen: () => setPicked(each.need.key) }
+              : undefined
+          }
         />
       ))}
       {view.cleared !== null ? <p data-needs-cleared="">{view.cleared}</p> : null}

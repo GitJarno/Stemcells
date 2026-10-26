@@ -241,6 +241,7 @@ function NeedsHere(props: { waiting: number }) {
       view={view}
       onPerson={onPerson}
       openChat={open.chat}
+      queue
       head={
         props.waiting === 0 && view.cleared === null ? (
           <div data-cells-calm="">
