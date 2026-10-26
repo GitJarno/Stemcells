@@ -12,6 +12,7 @@ import { Peek } from "../needs/Peek";
 import { usePeek } from "../needs/peeking";
 import { subscribeLaunches } from "../upstream/landing";
 import { Roster } from "../needs/Roster";
+import { useColumnShowsCards } from "../rail/LeftColumn";
 import { AskiFigure } from "./AskiFigure";
 import { copiesOut } from "./copies";
 import { AskiPerch } from "./AskiPerch";
@@ -87,6 +88,7 @@ export function AskiPane(props: {
   );
   const peeking = usePeek() !== null;
   const ownsInput = props.ownsWindowInput && !peeking;
+  const inColumn = useColumnShowsCards();
   return (
     <div
       ref={room}
@@ -125,8 +127,9 @@ export function AskiPane(props: {
             </Empty>
           )}
         </div>
-        {/* Every Cell's stage, under the chat (aski-manager.md, decision 10). */}
-        <Roster />
+        {/* Every Cell's stage, under the chat (aski-manager.md, decision 10),
+            while the Cells' column isn't showing them (left-column.md, decision 11). */}
+        {inColumn ? null : <Roster />}
       </NeedsFrame>
       <Peek ownsWindowInput={props.ownsWindowInput} />
     </div>

@@ -50,8 +50,10 @@ interactive draft in the chat that asked for it.
    chip still opens its chat beside the link.
 10. **Snooze and archive aren't shown.** A Cell waiting out a plan limit
     stays in Working, dimmed.
-11. **Asks live in one place.** Once the column ships, Aski's room keeps the
-    conversation, and its decision column and roster go.
+11. **Asks live in one place.** While the column shows the Cells, Aski's
+    room keeps only the conversation: its decision column and roster step
+    aside. Narrowed to the rail, switched to upstream's list, or on a narrow
+    window, the column shows no cards, so the room shows them as before.
 
 ## Plan
 
@@ -72,7 +74,8 @@ interactive draft in the chat that asked for it.
 - [ ] Settle from any stage (2): a Cell at work or asking stops first
 - [ ] Merge auto-settle off by default (3): once per server, never over the
       person's own choice
-- [ ] Aski's room (11): the decision column and roster go
+- [x] Aski's room (11): the decision column and roster step aside while
+      the column shows the Cells
 - [ ] Docs: `left-rail.md` and the user guides that describe the column
 - [ ] The phone's home (#298) follows the same line: a plan of its own
 
