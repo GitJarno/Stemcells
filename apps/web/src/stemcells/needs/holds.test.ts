@@ -6,7 +6,6 @@ import { needFixture } from "./fixtures";
 import { createHolds } from "./holds";
 import type { NeedsState } from "./stream";
 
-const WINDOW = 3_000;
 const decline: ThreadCommand = { type: "respond", requestId: "request-1", decision: "decline" };
 const note: ThreadCommand = { type: "message", text: "use staging" };
 
@@ -25,6 +24,7 @@ function setup(outcomes: CommandOutcome[] = []) {
   let state: NeedsState = { needs: [needFixture()], cells: null, live: true };
   const sent: ThreadCommand[] = [];
   let kept = 0;
+  const lines: Array<{ readonly undo: () => void; readonly send: () => void }> = [];
   const holds = createHolds({
     send: async (_threadId, command) => {
       sent.push(command);
@@ -32,21 +32,25 @@ function setup(outcomes: CommandOutcome[] = []) {
     },
     needs: () => state,
     keepLive: () => (kept++, () => void kept--),
-    // The fake timers' clock (each test installs them), so time moves only as a test advances it.
-    now: () => vi.getMockedSystemTime()!.getTime(),
-    window: () => WINDOW,
+    line: (_key, acts) => void lines.push(acts),
   });
   const hold = (commands: ThreadCommand[] = [decline], words?: Spoken) =>
     holds.hold({
       key: needFixture().key,
       threadId: "thread-floof",
-      label: "Decline",
       commands,
       ...(words === undefined ? {} : { words }),
     });
+  /** The undo line lets the newest answer go, and what it sends has gone. */
+  const letGo = async (line = lines.at(-1)) => {
+    line?.send();
+    await vi.advanceTimersByTimeAsync(0);
+  };
   return {
     holds,
     hold,
+    letGo,
+    lines,
     sent,
     kept: () => kept,
     setNeeds: (next: NeedsState) => void (state = next),
@@ -57,24 +61,37 @@ function setup(outcomes: CommandOutcome[] = []) {
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-describe("an answer waits out the undo window", () => {
-  it("sends nothing until the fuse ends, then sends every command in order", async () => {
+describe("an answer waits on the undo line", () => {
+  it("sends nothing until the line lets it go, then sends every command in order", async () => {
     const t = setup();
     t.hold([decline, note]);
-    await vi.advanceTimersByTimeAsync(WINDOW - 1);
+    await vi.advanceTimersByTimeAsync(60_000);
     expect(t.sent).toEqual([]);
-    await vi.advanceTimersByTimeAsync(1);
+    await t.letGo();
     expect(t.sent).toEqual([decline, note]);
     expect(t.stateOf()).toBe("sent");
   });
 
-  it("sends nothing once undone", async () => {
+  it("sends nothing once the line takes it back", async () => {
     const t = setup();
     t.hold();
-    expect(t.holds.undoNewest()).toBe(true);
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    t.lines[0]!.undo();
+    await t.letGo();
     expect(t.sent).toEqual([]);
     expect(t.stateOf()).toBeUndefined();
+  });
+
+  it("lets an older answer to the same need neither send nor take back the newer", async () => {
+    const t = setup();
+    t.hold([decline]);
+    t.hold([note]);
+    const [older, newer] = t.lines;
+    older!.undo();
+    expect(t.stateOf()).toBe("holding");
+    await t.letGo(older);
+    expect(t.sent).toEqual([]);
+    await t.letGo(newer);
+    expect(t.sent).toEqual([note]);
   });
 
   it("sends nothing when the need left meanwhile: answered elsewhere, or asked again", async () => {
@@ -85,7 +102,7 @@ describe("an answer waits out the undo window", () => {
       cells: null,
       live: true,
     });
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.sent).toEqual([]);
     expect(t.stateOf()).toBe("stale");
   });
@@ -94,7 +111,7 @@ describe("an answer waits out the undo window", () => {
     const t = setup();
     t.hold();
     t.setNeeds({ needs: [needFixture()], cells: null, live: false });
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.sent).toEqual([]);
     expect(t.stateOf()).toBe("failed");
   });
@@ -102,7 +119,7 @@ describe("an answer waits out the undo window", () => {
   it("stops at the first command that fails, so a note never follows a refused decline", async () => {
     const t = setup([{ ok: false, why: "already answered" }]);
     t.hold([decline, note]);
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.sent).toEqual([decline]);
     expect(t.holds.read().get(needFixture().key)?.why).toBe("Couldn't send: already answered");
   });
@@ -119,7 +136,7 @@ describe("an answer waits out the undo window", () => {
     const t = setup();
     t.hold();
     expect(t.kept()).toBe(1);
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.kept()).toBe(0);
   });
 });
@@ -131,7 +148,7 @@ describe("an answer read from words in Aski's composer", () => {
     const t = setup();
     t.hold([decline], NO);
     t.setNeeds({ needs: [], cells: null, live: true });
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.stateOf()).toBe("stale");
     expect(t.holds.takeWords(key)).toBe(NO);
     expect(t.holds.takeWords(key)).toBeNull();
@@ -141,14 +158,14 @@ describe("an answer read from words in Aski's composer", () => {
   it("gives them back when nothing could be sent", async () => {
     const t = setup([{ ok: false, why: "already answered" }]);
     t.hold([decline, note], NO_STAGING);
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.holds.takeWords(key)).toBe(NO_STAGING);
   });
 
   it("keeps none once a command went: they would answer twice", async () => {
     const t = setup([{ ok: true }, { ok: false, why: "the chat is gone" }]);
     t.hold([decline, note], NO_STAGING);
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.stateOf()).toBe("failed");
     expect(t.holds.takeWords(key)).toBeNull();
   });
@@ -157,7 +174,7 @@ describe("an answer read from words in Aski's composer", () => {
     const t = setup();
     t.hold([decline], NO);
     expect(t.holds.takeWords(key)).toBeNull();
-    await vi.advanceTimersByTimeAsync(WINDOW);
+    await t.letGo();
     expect(t.stateOf()).toBe("sent");
     expect(t.holds.takeWords(key)).toBeNull();
   });
@@ -166,7 +183,8 @@ describe("an answer read from words in Aski's composer", () => {
     const t = setup();
     t.hold([decline], NO);
     t.setNeeds({ needs: [], cells: null, live: true });
-    await vi.advanceTimersByTimeAsync(WINDOW + 10 * 60_000);
+    await t.letGo();
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
     expect(t.stateOf()).toBe("stale");
     expect(t.holds.takeWords(key)).toBe(NO);
     await vi.advanceTimersByTimeAsync(60_000);

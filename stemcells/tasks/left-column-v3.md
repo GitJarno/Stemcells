@@ -41,9 +41,9 @@ settled, colour meant nothing, and the stages carried critters.
 
 ## Steps
 
-- [ ] Take upstream with T3's redesign, the chat lifted (the sync PR)
+- [x] Take upstream with T3's redesign, the chat lifted (the sync PR)
 - [x] Settle clears a Failed, Limit or Plan card too
-- [ ] Your own answer or settle leaves at once, with upstream's undo line
+- [x] Your own answer or settle leaves at once, with upstream's undo line
 - [ ] Type, rows and resize
 - [ ] Asks: tags, the header row, grouped answers, keys
 - [ ] Stages as label and count; hops only for the person's acts

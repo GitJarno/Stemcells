@@ -188,11 +188,21 @@
 /* The stages, each a row with its count; the open one is lit, as a tab on
    the strip. What needs you counts in amber. */
 [data-cells-stages] {
+  position: relative;
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
   padding: var(--sc-space-xs) var(--sc-space-sm);
   border-top: 1px solid var(--sc-hairline);
+}
+/* The undo line (UndoLine.tsx) stands over the list's foot, so nothing moves under it. */
+[data-cells-undo] {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  /* Its words start where the stages' labels do. */
+  padding-inline: calc(var(--sc-space-sm) + var(--sc-space-md));
+  background: var(--sidebar);
 }
 [data-cells-stage] {
   display: flex;

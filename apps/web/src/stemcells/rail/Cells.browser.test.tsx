@@ -3,7 +3,7 @@ import "../tokens/stemcells.css";
 
 import type { ReactElement, ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { userEvent } from "vite-plus/test/browser";
+import { page, userEvent } from "vite-plus/test/browser";
 
 import { APP_NAME } from "../brand/name";
 import { needFixture, NOW, requestFixture } from "../needs/fixtures";
@@ -166,7 +166,10 @@ vi.mock("../upstream/updates", async (importOriginal) => ({
 }));
 vi.mock("./PlanRing", () => ({ PlanRing: () => null }));
 vi.mock("./DiskPlate", () => ({ DiskPlate: () => null }));
-vi.mock("./undoNotice", () => ({ useRailUndoNotice: () => undefined }));
+vi.mock("./undoNotice", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./undoNotice")>()),
+  useRailUndoNotice: () => undefined,
+}));
 
 const upToDate: DesktopUpdateState = {
   enabled: true,
@@ -247,11 +250,16 @@ describe("the Cells' column", () => {
     await expect.element(screen.getByText("Which format for the hero images?")).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
 
+    // The answer takes its card off at once, onto the undo line.
     await userEvent.click(screen.getByRole("button", { name: /Keep them/ }));
     await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
+    await expect
+      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
+      .not.toBeInTheDocument();
+    await expect.element(screen.getByText("Answered 1 Cell,")).toBeVisible();
 
     // Taking the answer back opens its card again, and the next waits.
-    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await userEvent.click(screen.getByRole("button", { name: /undo/i }));
     await expect.element(screen.getByRole("button", { name: /Keep them/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
   });
@@ -289,16 +297,33 @@ describe("the Cells' column", () => {
     await expect.element(screen.getByText("Bump dependencies")).toBeVisible();
   });
 
-  it("settles a landed Cell from its row, and all of them at once", async () => {
+  it("settles a landed Cell from its row, and all of them, each off the line at once", async () => {
     setup(null);
-    spies.settle.mockClear();
+    // Each settle runs until the test says how it ended.
+    const settling: Array<(settled: boolean) => void> = [];
+    spies.settle
+      .mockReset()
+      .mockImplementation(() => new Promise<boolean>((resolve) => settling.push(resolve)));
+    const refuse = () =>
+      act(async () => {
+        for (const end of settling.splice(0)) end(false);
+      });
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: /Landed\s*2/ }));
     await userEvent.hover(screen.getByText("Done: #312 merged"));
     await userEvent.click(screen.getByRole("button", { name: "Settle", exact: true }).first());
     expect(spies.settle).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-l1" });
+    await expect.element(screen.getByText("Done: #312 merged")).not.toBeInTheDocument();
+    await expect.element(screen.getByRole("button", { name: /Landed\s*1/ })).toBeVisible();
+
+    // A settle that fails puts its Cell back.
+    await refuse();
+    await expect.element(screen.getByText("Done: #312 merged")).toBeVisible();
+
     await userEvent.click(screen.getByRole("button", { name: "Settle all" }));
     expect(spies.settle).toHaveBeenCalledTimes(3);
+    await expect.element(screen.getByText("Nothing waits to be settled.")).toBeVisible();
+    await refuse();
   });
 
   it("opens a Cell's chat from its row", async () => {
@@ -325,13 +350,12 @@ describe("the column's word that Stemcells gets better", () => {
     setup(available);
     await using screen = await render(<Column />);
     await userEvent.hover(screen.getByRole("button", { name: /gets better/ }));
+    // The list is a popup, outside the column.
+    await expect.element(page.getByText("The left column is the Cells' line (#302)")).toBeVisible();
     await expect
-      .element(screen.getByText("The left column is the Cells' line (#302)"))
+      .element(page.getByText("Aski stands in the phone's new chat (#299)"))
       .toBeVisible();
-    await expect
-      .element(screen.getByText("Aski stands in the phone's new chat (#299)"))
-      .toBeVisible();
-    await expect.element(screen.getByRole("button", { name: "Download" })).toBeVisible();
+    await expect.element(page.getByRole("button", { name: "Download" })).toBeVisible();
   });
 
   it("is nowhere while the app is up to date, and the foot keeps upstream's pill", async () => {

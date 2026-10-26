@@ -8,17 +8,16 @@ import {
   useUndoNotice,
 } from "../upstream/undoNotice";
 
-/** Upstream's notice in our words: "Settled 1 Cell", "Discarded 2 drafts". */
+/** Upstream's notice in our words: "Settled 1 Cell", "Answered 2 Cells", "Discarded 2 drafts". */
 export function undoNoticeWords(notice: UndoNotice): string {
   const noun = notice.action === "Discarded" ? "draft" : "Cell";
   return `${notice.action} ${notice.count} ${noun}${notice.count === 1 ? "" : "s"}`;
 }
 
 /**
- * Upstream's undo notice, while the rail shows (`shown`). Upstream draws it
- * only in the wide sidebar, yet ⌘Z from the composer undoes it whenever its
- * sidebar is open, as it is under the rail: without this, ⌘Z after a settle
- * would undo it unseen. So the notice shows as a toast, and goes with it.
+ * Upstream's undo notice as a toast, while `shown`: where no undo line
+ * stands (the rail, or the column hidden), ⌘Z away from a text field
+ * still undoes it, and without this would undo it unseen.
  */
 export function useRailUndoNotice(shown: boolean): void {
   const notice = useUndoNotice();

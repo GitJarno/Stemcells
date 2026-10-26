@@ -52,7 +52,7 @@ export function motionTiming(name: string): { readonly duration: number; readonl
   };
 }
 
-/** A timing token in milliseconds: `readBeforeAllow`, `answerUndo`, … */
+/** A timing token in milliseconds: `readBeforeAllow`, `linger`, … */
 export function timing(name: string): number {
   const kebab = name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
   return ms(style().getPropertyValue(`--sc-timing-${kebab}`));

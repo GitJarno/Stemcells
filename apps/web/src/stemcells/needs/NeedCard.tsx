@@ -3,15 +3,14 @@ import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from
 import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
-import { motionTiming, reducedMotion, timing } from "../tokens/motion";
+import { timing } from "../tokens/motion";
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
-import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
 import { commandsFor, type Given } from "./actions";
 import { cardOf, LATER, type CardOption, type CardQuestion } from "./card";
 import type { Shown } from "./display";
 import type { Hold } from "./holds";
-import { holds } from "./live";
+import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
 import { answering, land } from "./walk";
@@ -40,10 +39,6 @@ export function answerableOf(shown: Shown, hold: Hold | undefined): boolean {
 const keyedIn = (card: HTMLElement): boolean =>
   card.matches(":focus-visible") || card.querySelector(":focus-visible") !== null;
 
-/** What a held answer says it chose. */
-export const pickLabel = (option: CardOption, given: Given): string =>
-  given.words ? `${option.title.replace(/…$/, "")}: “${given.words.trim()}”` : option.title;
-
 /** Why a held answer wasn't sent: the need changed under it. */
 const staleLine = (need: Shown["need"], who: string): string =>
   need.kind === "stuck"
@@ -56,8 +51,8 @@ const backLine = (hold: Hold | undefined): string =>
 
 /**
  * One need: who and where, what is asked, and the options, each one app
- * action. A choice folds the card to it for the undo window; a need that is
- * gone greys in place and says why.
+ * action. A choice takes the card off the list at once, onto the undo line
+ * (`holds.ts`); a need that is gone greys in place and says why.
  */
 export function NeedCard(props: {
   shown: Shown;
@@ -78,7 +73,7 @@ export function NeedCard(props: {
     environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null },
   );
   const open = useOpenFromNeeds();
-  const settle = useSettleCell();
+  const settle = useSettleAtOnce();
   // What the words in Aski's composer do to this card (answers/lit.ts).
   const lights = useLit();
   const fromWords = lights.reading.get(need.key) ?? null;
@@ -100,12 +95,8 @@ export function NeedCard(props: {
   }, [props.seenAt]);
 
   const section = useRef<HTMLElement>(null);
-  // The card's height as the person answered, for the fold to roll up from.
-  const rollFrom = useRef<number | null>(null);
-  const holdAnswer = (label: string, commands: ReturnType<typeof commandsFor>) => {
-    rollFrom.current = section.current?.offsetHeight ?? null;
-    holds.hold({ key: need.key, threadId: need.threadId, label, commands });
-  };
+  const holdAnswer = (commands: ReturnType<typeof commandsFor>) =>
+    holds.hold({ key: need.key, threadId: need.threadId, commands });
   // An answer of the person's own keeps the card from Aski's take.
   const keepFromAski = () => {
     if (taking !== null) void keepCard(need.key);
@@ -114,30 +105,11 @@ export function NeedCard(props: {
     keepFromAski();
     answering(section.current);
     lit.answered(need.key);
-    holdAnswer(pickLabel(option, given), commandsFor(need, option.choice, given, Date.now()));
+    holdAnswer(commandsFor(need, option.choice, given, Date.now()));
   };
 
   const gone = goneAt !== null;
-  const folded = hold !== undefined && (hold.state === "holding" || hold.state === "sending");
   const answerable = answerableOf(props.shown, hold);
-  // Answered, the card rolls up into its one line (left-column.md, decision 7).
-  // oxlint-disable-next-line t3code/react-effect-budget -- Roll the answered card's height up from its pre-fold size before paint.
-  useLayoutEffect(() => {
-    const card = section.current;
-    const from = rollFrom.current;
-    rollFrom.current = null;
-    if (!folded || card === null || from === null || reducedMotion()) return;
-    const to = card.offsetHeight;
-    if (to >= from) return;
-    const { duration, easing } = motionTiming("settle");
-    card.animate(
-      [
-        { height: `${from}px`, overflow: "hidden" },
-        { height: `${to}px`, overflow: "hidden" },
-      ],
-      { duration, easing },
-    );
-  }, [folded]);
 
   // A card Aski is about to take stays open, so its fuse can be seen and stopped.
   const collapsed =
@@ -223,22 +195,16 @@ export function NeedCard(props: {
 
       {gone ? (
         <p data-need-receipt="">
-          {hold?.state === "sent"
-            ? "Sent."
-            : tookIt
-              ? KINDS[took].took
-              : hold?.state === "stale"
-                ? staleLine(need, who) + backLine(hold)
-                : need.kind === "stuck"
-                  ? "It's moving again."
-                  : need.request !== null
-                    ? "Answered elsewhere."
-                    : "Taken care of elsewhere."}
+          {tookIt
+            ? KINDS[took].took
+            : hold?.state === "stale"
+              ? staleLine(need, who) + backLine(hold)
+              : need.kind === "stuck"
+                ? "It's moving again."
+                : need.request !== null
+                  ? "Answered elsewhere."
+                  : "Taken care of elsewhere."}
         </p>
-      ) : folded ? (
-        <HeldAnswer hold={hold} />
-      ) : hold?.state === "sent" ? (
-        <p data-need-receipt="">Sent.</p>
       ) : (
         <>
           {taking !== null ? (
@@ -262,11 +228,11 @@ export function NeedCard(props: {
             <Questions
               questions={card.questions}
               lit={fromWords}
-              onAnswer={(answers, label) => {
+              onAnswer={(answers) => {
                 keepFromAski();
                 answering(section.current);
                 lit.answered(need.key);
-                holdAnswer(label, commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
+                holdAnswer(commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
               }}
             />
           ) : null}
@@ -311,29 +277,6 @@ export function NeedCard(props: {
         </button>
       </footer>
     </section>
-  );
-}
-
-function HeldAnswer(props: { hold: Hold }) {
-  const sending = props.hold.state === "sending";
-  return (
-    <div data-need-held="">
-      <div data-need-held-row="">
-        <span data-need-held-what="">{props.hold.label}</span>
-        {sending ? (
-          <span data-need-held-sending="">Sending…</span>
-        ) : (
-          <button type="button" onClick={() => holds.undo(props.hold.key)}>
-            Undo
-          </button>
-        )}
-      </div>
-      {sending ? null : (
-        <div data-need-fuse="">
-          <i style={{ animationDuration: `${props.hold.endsAt - props.hold.startedAt}ms` }} />
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -440,7 +383,7 @@ function Words(props: {
 function Questions(props: {
   questions: ReadonlyArray<CardQuestion>;
   lit: Lit | null;
-  onAnswer: (answers: Record<string, string | string[]>, label: string) => void;
+  onAnswer: (answers: Record<string, string | string[]>) => void;
 }) {
   const [picked, setPicked] = useState<Record<string, string[]>>({});
   const [own, setOwn] = useState<Record<string, string>>({});
@@ -454,23 +397,14 @@ function Questions(props: {
     if (chosen.length === 0) return null;
     return question.multiSelect ? chosen : (chosen[0] ?? null);
   };
-  const labelFor = (question: CardQuestion, answer: string | string[]) =>
-    (Array.isArray(answer) ? answer : [answer])
-      .map(
-        (value) =>
-          question.options.find((choice) => choice.answer === value)?.label ?? `“${value}”`,
-      )
-      .join(", ");
   const send = () => {
     const answers: Record<string, string | string[]> = {};
-    const labels: string[] = [];
     for (const question of props.questions) {
       const answer = answerOf(question);
       if (answer === null) return;
       answers[question.id] = answer;
-      labels.push(labelFor(question, answer));
     }
-    props.onAnswer(answers, labels.join(" · "));
+    props.onAnswer(answers);
   };
   const complete = props.questions.every((question) => answerOf(question) !== null);
 
@@ -496,8 +430,7 @@ function Questions(props: {
                   data-lit={lightOf(`answer:${choice.answer}`, props.lit, null)}
                   aria-pressed={single ? undefined : chosen}
                   onClick={() => {
-                    if (single)
-                      return props.onAnswer({ [question.id]: choice.answer }, choice.label);
+                    if (single) return props.onAnswer({ [question.id]: choice.answer });
                     setOwn((all) => ({ ...all, [question.id]: "" }));
                     setPicked((all) => {
                       const now = all[question.id] ?? [];
@@ -523,8 +456,7 @@ function Questions(props: {
               <Words
                 placeholder={question.other}
                 onSend={(words) => {
-                  if (single)
-                    return props.onAnswer({ [question.id]: words.trim() }, `“${words.trim()}”`);
+                  if (single) return props.onAnswer({ [question.id]: words.trim() });
                   setOwn((all) => ({ ...all, [question.id]: words }));
                   setPicked((all) => ({ ...all, [question.id]: [] }));
                   setWriting(null);

@@ -10,7 +10,7 @@ import type { Span } from "../../words/text";
 import { commandsFor } from "../actions";
 import { useHolds } from "../holds";
 import { holds, page } from "../live";
-import { pickLabel, whoOf } from "../NeedCard";
+import { whoOf } from "../NeedCard";
 import type { Need } from "../wire";
 import { addresseesOf } from "./cards";
 import { type Enter, enterOf } from "./enter";
@@ -175,7 +175,6 @@ function act(
       holds.hold({
         key: need.key,
         threadId: need.threadId,
-        label: reading.label,
         commands: commandsFor(need, { kind: "answer" }, { answers: reading.answers }, now),
         words,
       });
@@ -185,7 +184,6 @@ function act(
     holds.hold({
       key: need.key,
       threadId: need.threadId,
-      label: pickLabel(reading.option, given),
       commands: commandsFor(need, reading.option.choice, given, now),
       words,
     });

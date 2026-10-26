@@ -9,8 +9,9 @@ import {
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 
-import { CardList, useUndoKey } from "../needs/CardList";
-import { page } from "../needs/live";
+import { CardList, useOnList } from "../needs/CardList";
+import { useLeaving } from "../needs/leaving";
+import { leaving, page, useSettleAtOnce } from "../needs/live";
 import { useNeeds } from "../needs/stream";
 import type { CellStanding } from "../needs/wire";
 import { CellMark } from "../tabs/CellMark";
@@ -19,7 +20,6 @@ import { useOpenCell, useShelves, type ShelvedCell } from "../upstream/column";
 import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
 import { useNavigateToMainApp } from "../upstream/settings";
-import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
 import { cn, useSidebar } from "../upstream/ui";
 import { CellMini } from "./CellMini";
@@ -31,6 +31,7 @@ import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { useRailUndoNotice } from "./undoNotice";
+import { UndoLine } from "./UndoLine";
 import { UpdateBanner, useUpdateToTake } from "./UpdateBanner";
 import "../tokens/stemcells.css";
 import "./rail.css";
@@ -74,9 +75,12 @@ export function Cells() {
   const shelves = useShelves();
   const environmentId = usePrimaryEnvironmentId();
   const update = useUpdateToTake();
-  // Upstream's toggle can hide the column, and Settings and Usage have no ⌘Z to undo with.
+  // The undo line stands above the stages; with the column hidden, the notice is a toast.
+  // Settings and Usage have no ⌘Z to undo with.
   const { open } = useSidebar();
-  useRailUndoNotice(open && lit === null);
+  useRailUndoNotice(!open && lit === null);
+  const onList = useOnList(view);
+  const settling = useLeaving(leaving);
 
   // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the Cells column while it is mounted.
   useLayoutEffect(() => {
@@ -87,12 +91,13 @@ export function Cells() {
     };
   }, []);
 
-  const standing = (of: CellStanding["stage"]) => (cells ?? []).filter((cell) => cell.stage === of);
+  const standing = (of: CellStanding["stage"]) =>
+    (cells ?? []).filter((cell) => cell.stage === of && !settling.has(cell.threadId));
   const toRef = (cell: CellStanding): Ref | null =>
     environmentId === null ? null : { environmentId, threadId: cell.threadId };
   const working = standing("working");
   const landed = standing("done");
-  const waiting = view.shown.filter((each) => each.goneAt === null).length;
+  const waiting = onList.filter((each) => each.goneAt === null).length;
   const counts: Record<ColumnStage, number> = {
     needs: waiting,
     working: working.length,
@@ -103,7 +108,7 @@ export function Cells() {
   const threads = (list: ReadonlyArray<{ threadId: string }>) =>
     [...new Set(list.map((each) => each.threadId))].slice(0, MINIS);
   const minis: Record<ColumnStage, ReadonlyArray<string>> = {
-    needs: threads(view.shown.filter((each) => each.goneAt === null).map((each) => each.need)),
+    needs: threads(onList.filter((each) => each.goneAt === null).map((each) => each.need)),
     working: threads(working),
     landed: threads(landed),
     settled: threads(shelves.settled),
@@ -156,6 +161,7 @@ export function Cells() {
         ) : null}
       </div>
       <nav data-cells-stages="" aria-label="Stages">
+        <UndoLine />
         {(["needs", "working", "landed", "settled"] as const).map((each) => (
           <StageRow
             key={each}
@@ -268,9 +274,10 @@ function StageRow(props: {
 }
 
 /**
- * What needs you: the cards, held still while you're among them, and ⌘Z
- * taking back the last answer meanwhile. The cards live here while the
- * column shows, and Aski's room shows the chat alone (`NeedsFrame`).
+ * What needs you: the cards, held still while you're among them for what
+ * the server changes; your own answer or settle takes one off at once. The
+ * cards live here while the column shows, and Aski's room shows the chat
+ * alone (`NeedsFrame`).
  */
 function NeedsHere(props: { waiting: number }) {
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
@@ -286,7 +293,6 @@ function NeedsHere(props: { waiting: number }) {
     page.setFrozen(held);
     return () => page.setFrozen(false);
   }, [held]);
-  useUndoKey(held);
   // A peek shows only in Aski's room; from here the chat opens where a Cell lands.
   const open = useOpenFromNeeds();
   return (
@@ -318,7 +324,7 @@ function Rows(props: {
   more?: ReactNode;
   settles?: boolean;
 }) {
-  const settle = useSettleCell();
+  const settle = useSettleAtOnce();
   return (
     <ol data-cells-rows="" aria-label={props.label}>
       {props.cells.map((row) => (
@@ -336,7 +342,7 @@ function Rows(props: {
 
 /** The Cells that say they're done: each settles on its own, or all at once. */
 function Landed(props: { cells: ReadonlyArray<Row> }) {
-  const settle = useSettleCell();
+  const settle = useSettleAtOnce();
   if (props.cells.length === 0) return <p data-cells-none="">Nothing waits to be settled.</p>;
   return (
     <>

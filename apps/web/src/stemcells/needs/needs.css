@@ -378,7 +378,7 @@
   color: var(--sc-text);
 }
 
-/* A held answer: the one chosen, a flat fuse, Undo. */
+/* A take Aski is about to make (autonomy/Cards.tsx): what it does, a flat fuse, Undo. */
 [data-need-held-row] {
   display: flex;
   align-items: center;

@@ -1,20 +1,47 @@
 /**
- * Upstream's undo notice, for the rail. After a settle, a snooze, an unpin,
- * an archive or a discarded draft, upstream keeps the action undoable for
- * five seconds and says so only in the wide sidebar. `undoNotice.contract.test.ts`
- * pins what this relies on.
+ * Upstream's undo notice, for the column and the rail: a settle, snooze, unpin, archive,
+ * discarded draft or (ours) answer stays undoable until five seconds after the newest act, and
+ * ⌘Z takes back the newest. `undoNotice.contract.test.ts` pins what this relies on.
  */
 import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/reactivity";
 
 import { toastManager } from "../../components/ui/toast";
-import { undoLatestThreadAction, useThreadUndoNotice } from "../../hooks/showThreadUndoNotice";
+import {
+  showThreadUndoNotice,
+  undoLatestThreadAction,
+  useThreadUndoNotice,
+} from "../../hooks/showThreadUndoNotice";
+import * as ThreadUndo from "../../hooks/threadUndo";
 import { shortcutLabelForCommand } from "../../keybindings";
 import { primaryServerKeybindingsAtom } from "../../state/server";
 
+export { undoLatestThreadAction };
+
 /** What can be undone now: what was done, and to how many. */
 export interface UndoNotice {
-  readonly action: "Settled" | "Snoozed" | "Unpinned" | "Archived" | "Discarded";
+  readonly action: "Settled" | "Snoozed" | "Unpinned" | "Archived" | "Discarded" | "Answered";
   readonly count: number;
+}
+
+/**
+ * An answer on the line: the line's Undo or ⌘Z calls `undo`, and once the
+ * line lets it go, `send`. A newer answer to the same need lets the older go.
+ */
+export function putAnswerOnUndoLine(
+  key: string,
+  acts: { readonly undo: () => void; readonly send: () => void },
+) {
+  showThreadUndoNotice({
+    action: "Answered",
+    claim: ThreadUndo.begin("stemcells-answer", key),
+    undo: async () => {
+      acts.undo();
+      return AsyncResult.success(undefined);
+    },
+    commit: acts.send,
+    failureTitle: "Couldn't take the answer back",
+  });
 }
 
 export function useUndoNotice(): UndoNotice | null {

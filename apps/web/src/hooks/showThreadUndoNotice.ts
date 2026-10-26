@@ -13,7 +13,7 @@ import { primaryServerKeybindingsAtom } from "../state/server";
 import * as ThreadUndo from "./threadUndo";
 
 type UndoOptions = {
-  action: "Settled" | "Snoozed" | "Unpinned" | "Archived" | "Discarded";
+  action: "Settled" | "Snoozed" | "Unpinned" | "Archived" | "Discarded" | "Answered";
   undo: () => Promise<AtomCommandResult<unknown, unknown>>;
   failureTitle: string;
   claim: ReturnType<typeof ThreadUndo.begin>;

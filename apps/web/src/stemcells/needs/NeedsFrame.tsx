@@ -12,7 +12,7 @@ import {
 
 import { useColumnShowsCards } from "../rail/LeftColumn";
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
-import { CardList, useUndoKey } from "./CardList";
+import { CardList, useOnList } from "./CardList";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
 import { page } from "./live";
 import { DoneList } from "./Roster";
@@ -84,8 +84,6 @@ const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
   aski: { readonly environmentId: string; readonly threadId: string } | null;
-  /** Whether Aski's pane has the keyboard, so ⌘Z is its to take. */
-  ownsWindowInput: boolean;
   children: ReactNode;
 }) {
   const root = useRef<HTMLDivElement>(null);
@@ -107,9 +105,7 @@ export function NeedsFrame(props: {
   useEffect(() => {
     if (!inColumn) page.setFrozen(frozen);
   }, [frozen, inColumn]);
-  useUndoKey(props.ownsWindowInput && !inColumn);
-
-  const waiting = view.shown.filter((each) => each.goneAt === null).length;
+  const waiting = useOnList(view).filter((each) => each.goneAt === null).length;
   // ↓ in Aski's empty composer steps onto the first open card.
   const enterKeys = (event: KeyEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowDown" || event.altKey || event.metaKey || event.ctrlKey) return;

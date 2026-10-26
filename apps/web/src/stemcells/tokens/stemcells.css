@@ -326,7 +326,6 @@
   --sc-timing-linger: 1200ms;
   --sc-timing-dwell: 400ms;
   --sc-timing-read-before-allow: 1000ms;
-  --sc-timing-answer-undo: 3000ms;
   --sc-timing-banner-stay: 5000ms;
   --sc-timing-banner-stale: 120000ms;
   --sc-timing-typing-pause: 1000ms;

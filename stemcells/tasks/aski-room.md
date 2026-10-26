@@ -188,28 +188,29 @@ draw the same line (`t3_pending_request_respond` answers questions and can't
 approve), and RiskFloor is the one floor shared with `tasks/prompting.md`
 (decision 15 there).
 
-### 7. Every answer waits out the undo window, then goes as T3's own command
+### 7. Every answer waits on the undo line, then goes as T3's own command
 
-- **A click or a confirmed dictation** puts the card into its hold:
-  - the options fold to the one chosen;
-  - a flat fuse runs under it, with Undo (and ⌘Z for the newest hold).
+- **A click or a confirmed dictation** puts the card into its hold, and the
+  card leaves the list at once. Upstream's undo line says "Answered 1
+  Cell", with Undo; ⌘Z takes back the newest act, answer or settle
+  (`left-column-v3.md`, decisions 7 and 8).
 - **From the keyboard**, ↓ in Aski's empty composer steps onto the first
   open card, ↓ and ↑ step card to card in their numbers' order, and Esc
   goes back to the composer. A step lands on the card's recommendation, so
   Enter takes it, or on the card itself when it recommends nothing or
   recommends an allow. An answer given from the keyboard steps on to the
   next card, and after the last, back to the composer.
-- **When the fuse ends**, the client re-reads the item from the live shell
+- **When the line lets it go**, the client re-reads the item from the live shell
   and checks its key: thread, kind, and the request, message, run or plan
   id. If the key still matches, it sends T3's own command. If not, nothing
   is sent and the card says why (see "Failure modes").
 - **Holds live in a store outside the page,** so switching tabs doesn't drop
   them. When the window closes, a hold is sent at once if the socket is up.
   Otherwise nothing was sent and the card is still there next time.
-- **The window** is 3 s by default (the `answerUndo` timing token), with
-  Off, 3 s and 10 s in Settings › Aski. A permission holds too: undoing a
-  mis-clicked Allow is the most valuable undo there is, and a blocked Cell
-  barely notices 3 s.
+- **The window** is upstream's: the line goes five seconds after the
+  person's newest act, and a newer answer to the same card lets the older
+  go unsent. A permission holds too: undoing a mis-clicked Allow is the
+  most valuable undo there is, and a blocked Cell barely notices.
 - **State actions** (Later, carry on at the reset) hold the same way, so
   Undo never has to send a reverse.
 
@@ -338,7 +339,7 @@ When it unfreezes, everything queued plays as one motion.
     card numbers and links every Cell.
   - It costs one tool call where today's persona needs a list per project.
 - **Settings questions.** Aski answers in a line and links the row
-  (`Settings › Aski › Undo window`). Changing a setting from the chat is a
+  (`Settings › Aski › At a usage limit`). Changing a setting from the chat is a
   later slice: it would come as an action card the person clicks, never a
   silent write.
 - **Past Cells.** Aski finds them with `t3_thread_search` and
@@ -362,7 +363,6 @@ This design owns the page. Its rows, in this order:
     Cell's own questions and permissions are never read."
   - Below that, what it cost this week: reads, tokens, and tokens per read.
   - When it's off, cards fall back to the Cell's own words.
-- **Undo window:** Off, 3 s or 10 s.
 - **At a usage limit:**
   - "Carry on at the reset" is on by default, through T3's `limitRecovery`.
   - With it on, a limit reaches the person only when the reset is more
@@ -655,7 +655,7 @@ Examples. The four cards are the prototype's:
 | What happens                                                         | What the person sees                                                                                                                                                 |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The Cell was answered elsewhere first (its own chat, another screen) | The card greys: "Answered in Floof's chat" or "on another screen". It leaves after 1.2 s, or when the page unfreezes                                                 |
-| …while the person's answer was in its hold                           | When the fuse ends the key no longer matches, so nothing is sent: "Floof already had an answer; yours wasn't sent". Dictated words come back to the composer         |
+| …while the person's answer was in its hold                           | When the line lets it go the key no longer matches, so nothing is sent: "Floof already had an answer; yours wasn't sent". Dictated words come back to the composer   |
 | An item resolves while it is being read                              | It stays in place, greyed, with its options disabled (decision 9), and leaves when the pointer leaves or the composer empties                                        |
 | The Cell asks again while the person types                           | Old key, new key: card 1 resolves ("Floof asked again") and the new ask joins as 5. The preview shows "1 is gone: Floof asked again as 5", and nothing is sent for 1 |
 | Aski's model is down, slow, off or over budget                       | Fallback card with the Cell's own words and the kind's fixed options, plus a dim line "Aski couldn't read this one". Settings says why                               |

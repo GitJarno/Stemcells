@@ -1,5 +1,5 @@
 /** Upstream's UI primitives and small helpers, as our views use them. */
-export { Button } from "../../components/ui/button";
+export { Button, InlineButton } from "../../components/ui/button";
 export { ComposerBanner } from "../../components/chat/ComposerBanner";
 export { PanelTabCloseButton } from "../../components/ui/panel-tab-close-button";
 export {

@@ -1,28 +1,25 @@
-import { useEffect, useState, type KeyboardEvent as KeyEvent, type ReactNode } from "react";
+import { useState, type KeyboardEvent as KeyEvent, type ReactNode } from "react";
 
 import { AutonomyOffer } from "../autonomy/Cards";
-import { useHolds } from "./holds";
-import { holds } from "./live";
+import type { Shown } from "./display";
+import { answered, useHolds } from "./holds";
+import { useLeaving } from "./leaving";
+import { holds, leaving } from "./live";
 import { answerableOf, NeedCard } from "./NeedCard";
 import type { PageView } from "./page";
 import { leave, step } from "./walk";
 
-/** ⌘Z takes back the newest held answer, unless the keys belong to a field. */
-export function useUndoKey(active: boolean) {
-  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for ⌘Z on the window while active, and remove the listener on change or unmount.
-  useEffect(() => {
-    if (!active) return;
-    const keydown = (event: KeyboardEvent) => {
-      if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.key.toLowerCase() !== "z") {
-        return;
-      }
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("input, textarea, [contenteditable='true']")) return;
-      if (holds.undoNewest()) event.preventDefault();
-    };
-    window.addEventListener("keydown", keydown);
-    return () => window.removeEventListener("keydown", keydown);
-  }, [active]);
+/**
+ * The cards still on the list: the person's own answer or settle takes one
+ * off at once (stemcells/tasks/left-column-v3.md, decision 7), while what
+ * the server changes lingers as the page keeps it.
+ */
+export function useOnList(view: PageView): ReadonlyArray<Shown> {
+  const answers = useHolds(holds);
+  const settling = useLeaving(leaving);
+  return view.shown.filter(
+    (each) => !answered(answers.get(each.need.key)) && !settling.has(each.need.threadId),
+  );
 }
 
 /**
@@ -94,9 +91,10 @@ export function CardList(props: {
 }) {
   const answers = useHolds(holds);
   const { view, onPerson } = props;
+  const shown = useOnList(view);
   const watch = watchPerson(onPerson);
   const [picked, setPicked] = useState<string | null>(null);
-  const waiting = view.shown
+  const waiting = shown
     .filter((each) => answerableOf(each, answers.get(each.need.key)))
     .map((each) => each.need.key);
   const open = picked !== null && waiting.includes(picked) ? picked : (waiting[0] ?? null);
@@ -104,7 +102,7 @@ export function CardList(props: {
     <div ref={watch} data-stemcells-needs-list="" onKeyDown={walkKeys}>
       {props.head}
       <AutonomyOffer />
-      {view.shown.map((each) => (
+      {shown.map((each) => (
         <NeedCard
           key={each.need.key}
           shown={each}

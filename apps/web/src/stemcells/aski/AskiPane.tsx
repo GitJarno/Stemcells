@@ -90,7 +90,7 @@ export function AskiPane(props: {
       data-aski-looks=""
       className="relative flex min-h-0 min-w-0 flex-1 flex-col"
     >
-      <NeedsFrame aski={aski} ownsWindowInput={ownsInput}>
+      <NeedsFrame aski={aski}>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
           {props.target ? (
             <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
