@@ -1,11 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
-// The stage at a Cell's right where its buds stand while its Subcells work
-// (`buds.ts`): a box the size of the Cell's, just past it, on the Cell's
-// clock. Each bud is its Subcell as the transcript draws it (`SubcellMark`),
-// dealt by its thread id, with its status for a face, at half the Cell's
-// size and with no dot. The stage takes no room, so the Cell's own box
-// still centres the Cell. Its parent places it: positioned, with the Cell's
-// box at its start.
+// The stage at a Cell's right where its buds stand while its Subcells work (`buds.ts`): a box
+// the Cell's size just past it, on the Cell's clock. Each bud is its Subcell as the transcript
+// draws it (`SubcellMark`), at half size with no dot. The stage takes no room, so the Cell's
+// box still centres the Cell; its parent positions it, with the Cell's box at its start.
 
 import { memo, useLayoutEffect, useRef, useState } from "react";
 
@@ -43,6 +40,7 @@ export function CellBuds(props: {
   const stage = useRef<HTMLSpanElement>(null);
   // The Subcells as text: the stage looks again when one of them changes, not as each item streams in.
   const heard = JSON.stringify(subcells);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe the bud row to the stage clock and unsubscribe when the Subcells change or unmount.
   useLayoutEffect(() => {
     const element = stage.current;
     if (element === null) return;

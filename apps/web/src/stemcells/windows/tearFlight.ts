@@ -1,16 +1,8 @@
 /**
- * What a tab torn off its strip looks like on the flight layer
- * (stemcells/tasks/windows.md, Tear a tab off): its chip in the hand, and
- * around it the window preview it unfolds into out in the open and folds
- * back into over a strip.
- *
- * Everything hangs from one group the hand moves (`HAND`), so a morph runs
- * its course while the hand goes on moving. Inside it, `CATCH` takes up the
- * distance the chip was from the hand at the tear. Inside that, the
- * preview's frame (`PREVIEW`, clipping the window's still and the band
- * that hides the other tabs) and, over it, the chip. The window's still
- * and the band keep their place on screen while the frame grows or shrinks
- * around them, so unfolding uncovers the window around the chip.
+ * A tab torn off its strip, on the flight layer (stemcells/tasks/windows.md, Tear a tab off):
+ * its chip in the hand, inside the window preview it unfolds into in the open. All hangs from
+ * one group the hand moves (`HAND`), so a morph runs its course while the hand moves; the
+ * window's still keeps its place on screen as the frame (`PREVIEW`) grows around the chip.
  */
 import { motionTiming, reducedMotion } from "../tokens/motion";
 import type { Rect } from "./arrangement";
@@ -331,11 +323,10 @@ export function windowRadius(): number {
 }
 
 /**
- * A one-tab window carried and sent home (stemcells/tasks/windows.md, A
- * one-tab window): its still flies from `from` back to `to` on `token` while
- * the window, hidden, already waits there, then it shows under the still and
- * the still goes. With Reduce Motion (`fade`) the window shows at home at
- * once and the still fades where it was. Resolves when the window is home.
+ * A one-tab window carried and sent home (stemcells/tasks/windows.md, A one-tab window): its
+ * still flies from `from` back to `to` on `token` while the hidden window waits there, then
+ * the window shows under it and the still goes. With Reduce Motion (`fade`) the window shows
+ * at once and the still fades where it was. Resolves when the window is home.
  */
 export async function flyWindowHome(
   bridge: WindowsBridge,

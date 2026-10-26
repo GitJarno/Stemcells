@@ -1,9 +1,7 @@
 /**
- * A setting in Aski's reply, as its live control (stemcells/tasks/aski-forward.md,
- * Move 2, slice E): Aski links it as
- * `[title](t3-context://v1/stemcells-setting/<id>)`, a link upstream's
- * markdown keeps, and the reply draws the setting's switch there. Upstream's
- * switches write through upstream's scope, every connected environment as
+ * A setting in Aski's reply, as its live control (stemcells/tasks/aski-forward.md, Move 2,
+ * slice E). Aski links it as `[title](t3-context://v1/stemcells-setting/<id>)`, a link
+ * upstream's markdown keeps. Upstream's switches write to every connected environment, as
  * Settings does by default; ours write where Settings › Aski does.
  */
 import type { ReactNode } from "react";

@@ -1,10 +1,7 @@
 /**
- * A tool row names the file it touched by its path, and in a narrow pane
- * the row's end is cut: the reader saw the start of a folder and never the
- * file. These split a row's label into the file's name and its folder, so
- * the row can name the file first. Only a label that is one path (a verb
- * before it, and upstream's "+N more" after it, may stay) splits; anything
- * else reads as it was.
+ * A narrow pane cuts a tool row's label at its end, so a path hides its file's name. These
+ * split a label that is one path (a verb before it and upstream's "+N more" after it may stay)
+ * into the file's name and its folder, so the row names the file first; other labels stay.
  */
 export interface PathLabel {
   /** A word before the path ("update"), kept first. */

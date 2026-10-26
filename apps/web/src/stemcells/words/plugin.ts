@@ -1,12 +1,8 @@
 /**
- * The composer's ink, as a ProseMirror plugin: it reads the document on
- * every change and decorates the words that set something up. It never
- * touches the document, so undo, selection and what the composer sends
- * stay upstream's. Tab writes a completion, as one undo step.
- *
- * A word blooms once in the accent when it is first read, and a word that
- * only moves (text typed before it) keeps its bloom's age, so nothing
- * flashes twice. `stemcells/tasks/prompting.md`, decisions 4 and 7.
+ * The composer's ink, as a ProseMirror plugin: it decorates the words that set something up and
+ * never touches the document, so undo, selection and what is sent stay upstream's. Tab writes a
+ * completion as one undo step. A word blooms once when first read and keeps its bloom's age as
+ * it moves, so nothing flashes twice. `stemcells/tasks/prompting.md`, decisions 4 and 7.
  */
 
 import type { Node as DocNode } from "@tiptap/pm/model";

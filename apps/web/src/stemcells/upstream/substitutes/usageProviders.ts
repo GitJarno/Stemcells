@@ -1,9 +1,7 @@
-// Replaces `components/usage/usageProviders.ts` (`plugin.ts`): the usage
-// page draws each provider in its own colour, the one the light in its
-// Cell's composer wears (`tokens/providers.ts`). Every mark that reads the
-// colour here follows: the legend's dots, each line and the area under it,
-// the models' bars, and the plan bars there, in the rail and over the
-// composer. A provider with no colour of its own is drawn neutral.
+// Replaces `components/usage/usageProviders.ts` (`plugin.ts`): the usage page draws each
+// provider in the colour the light in its Cell's composer wears (`tokens/providers.ts`), and
+// every mark reading it here follows: legend dots, lines and areas, model bars, and plan bars in
+// the rail and over the composer. A provider with no colour of its own is drawn neutral.
 import * as Upstream from "../../../components/usage/usageProviders";
 import { brandTokenOf } from "../../tokens/providers";
 

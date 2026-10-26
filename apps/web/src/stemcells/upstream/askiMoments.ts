@@ -1,9 +1,7 @@
 /**
- * What Aski's moments read from upstream besides what its eyes read: how
- * each chat's latest run went, who started each chat, Aski's own run, the
- * pull requests that merged, armed limit recoveries, and what a landed run
- * did (compacted, files added).
- * `askiMoments.contract.test.ts` pins what they rely on.
+ * What Aski's moments read from upstream besides its eyes: each chat's latest run and who
+ * started it, Aski's own run, merged pull requests, armed limit recoveries, and what a landed
+ * run did (compacted, files added). `askiMoments.contract.test.ts` pins what they rely on.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentThreadShell, ThreadRunSummary } from "@t3tools/client-runtime/state/shell";

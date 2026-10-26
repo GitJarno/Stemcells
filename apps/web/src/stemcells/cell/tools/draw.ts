@@ -24,11 +24,10 @@ export const SIZES: readonly Size[] = ["mini", "hero"];
 export const GROUNDS: readonly Ground[] = ["black", "light"];
 
 /**
- * A look by what the command line says: `bare`, a curated look (`builder`),
- * pack pieces (`gym/towel+gym/sweatband`), or a pack's outfit
- * (`outfit:gym/athlete`, `outfit:gym/athlete~sky` in a colourway); grown to
- * a strength after `@` (`bare@arms`), flexing for its cheer with `:flex`
- * (`bare@biceps:flex`).
+ * A look from the command line: `bare`, a curated look (`builder`), pack pieces
+ * (`gym/towel+gym/sweatband`) or a pack's outfit (`outfit:gym/athlete`, or
+ * `outfit:gym/athlete~sky` in a colourway); grown after `@` (`bare@arms`), flexing for its
+ * cheer with `:flex` (`bare@biceps:flex`).
  */
 export function lookOf(spec: string): CellLook {
   const [worn = "", growth] = spec.split("@");

@@ -1,9 +1,8 @@
 /**
- * The words' half of the spawn, as geometry and times
- * (`stemcells/docs/interaction.md`): the sent words leave the composer as
- * letters and pour into Aski; Aski divides, a copy flying to each Cell
- * (`aski/copies.ts`); over the Cell's box the copy condenses into glyphs,
- * and the Cell takes over (`cell/forming.ts`). Pure: `play.ts` draws it.
+ * The words' half of the spawn as geometry and times (`stemcells/docs/interaction.md`): the sent
+ * words leave the composer as letters and pour into Aski; Aski sends a copy to each Cell
+ * (`aski/copies.ts`), which condenses into glyphs over its box until the Cell takes over
+ * (`cell/forming.ts`). Pure: `play.ts` draws it.
  */
 
 /** A point on screen, in viewport CSS pixels. */

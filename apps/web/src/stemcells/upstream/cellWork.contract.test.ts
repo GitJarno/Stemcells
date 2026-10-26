@@ -1,10 +1,8 @@
 /**
- * What a Cell's acting relies on in upstream: the turn items a run's tool
- * calls become, the run a shell names, the desktop keeping running threads
- * live, the prompt cache's expiry Claude's turns carry, the runs and
- * requests its growth is read from, and the checkpoints that count a run's
- * lines. A failure here after a sync names the contract that moved; the fix
- * goes in `cellWork.ts`, not in the views.
+ * What a Cell's acting relies on in upstream: tool calls' turn items, a shell's run, the
+ * desktop keeping running threads live, Claude's prompt cache expiry, the runs and requests its
+ * growth reads, and the checkpoints that count a run's lines. A failure after a sync names the
+ * contract that moved; fix it in `cellWork.ts`, not in the views.
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import {

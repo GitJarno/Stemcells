@@ -1,9 +1,8 @@
 /**
- * Keeps an unsent draft in step with its words (`follow.ts` decides): it
- * points the draft at the project the words name, sets the model and
- * effort, puts back what the draft had when a word goes, and writes a
- * pick back into the words. Each word flies to the control it set, and the
- * control wears a mark that says the words set it.
+ * Keeps an unsent draft in step with its words (`follow.ts` decides): points it at the project
+ * the words name, sets model and effort, puts back what the draft had when a word goes, and
+ * writes a pick back into the words. Each word flies to the control it set, which wears a mark
+ * saying the words set it.
  */
 
 import type { EditorView } from "@tiptap/pm/view";

@@ -71,6 +71,7 @@ export function useSpringTabs(
   );
 
   // A drag let go or cancelled anywhere puts the light out.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hear drop and dragend on the window while a tab is lit.
   useEffect(() => {
     if (lit === null) return;
     const end = () => spring.out();
@@ -81,6 +82,7 @@ export function useSpringTabs(
       window.removeEventListener("dragend", end, true);
     };
   }, [lit, spring]);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Put the light out when the tabs unmount.
   useEffect(() => () => spring.out(), [spring]);
 
   return {

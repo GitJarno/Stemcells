@@ -1,10 +1,8 @@
 /**
- * A move of chats on stage, played as a glide (stemcells/tasks/chat-carry-polish.md):
- * each pane goes from where it stood to where it lands, on `land`, showing
- * its chat as it will be there (`glide.css`). A view transition: the
- * compositor moves the pictures, so a long chat lays out once, at its new
- * size, never on every frame. Under Reduce Motion, or without view
- * transitions, the move just happens.
+ * A move of chats on stage, played as a glide (stemcells/tasks/chat-carry-polish.md): each pane
+ * goes from where it stood to where it lands (`glide.css`). A view transition, so the compositor
+ * moves the pictures and a long chat lays out once at its new size, never every frame. Under
+ * Reduce Motion, or without view transitions, the move just happens.
  */
 import { motionTiming, reducedMotion } from "../tokens/motion";
 import { readWorkspace, useWorkspaceStore } from "./store";

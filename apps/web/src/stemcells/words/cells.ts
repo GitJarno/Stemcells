@@ -1,11 +1,8 @@
 /**
- * Several Cells from words alone (decision 9): when the words set every
- * Cell's place and share the work out themselves (a [bracket] each, a list
- * item each, a clause each), the Cells start at once, with no planner. This
- * says which Cells, each one's part, and what the readout reads back
- * (decision 10).
- * Anything else the words start several of, Aski's planner divides
- * (`plan/`).
+ * Several Cells from words alone (decision 9): when the words set every Cell's place and share
+ * the work out themselves (a [bracket], list item or clause each), the Cells start at once with
+ * no planner. This says which Cells, each one's part and the readout (decision 10); anything
+ * else that starts several, Aski's planner divides (`plan/`).
  */
 
 import { CHIP } from "./docText";
@@ -40,11 +37,9 @@ export function launchOf(facts: Facts): Launch | null {
 }
 
 /**
- * Cells the words start that only Aski's planner can share the work out
- * to: "Sol and Opus: fix the header", "fix the header in Harbor so it
- * matches the one in Atlas". Enter asks it first, and the message loses
- * no word while it thinks; with no planner to ask it holds, and the
- * readout says what the words still need.
+ * Cells the words start that only Aski's planner can share the work out to ("Sol and Opus: fix
+ * the header"). Enter asks it first, and the message loses no word while it thinks; with no
+ * planner to ask it holds, and the readout says what the words still need.
  */
 export function heldOf(facts: Facts): Launch | null {
   if (facts.cell !== null || facts.cells.length < 2 || launchOf(facts) !== null) return null;

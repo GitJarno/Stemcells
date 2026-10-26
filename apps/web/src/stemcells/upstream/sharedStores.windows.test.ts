@@ -1,9 +1,8 @@
 /**
- * Several windows sharing upstream's real stores (drafts, the right panel,
- * the terminal drawer) through one localStorage: each "window" is its own
- * copy of the store modules, and hears the others' writes as a page would,
- * in order, a little later. A window passing on what it heard must never
- * undo typing it hadn't heard yet, and the windows must settle.
+ * Several windows sharing upstream's real stores through one localStorage: each "window" is its
+ * own copy of the store modules and hears the others' writes as a page would, in order, a
+ * little later. Passing on what it heard must never undo typing it hadn't heard yet, and the
+ * windows must settle.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { EnvironmentId, ThreadId } from "@t3tools/contracts";

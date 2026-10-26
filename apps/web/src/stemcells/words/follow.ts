@@ -1,16 +1,8 @@
 /**
- * The words set up the draft they're typed in: its project, its model and
- * its effort follow them, so upstream's hero and pickers show what will
- * run and its send sends it. The text is the one truth:
- *
- * - A word acts once it is done (decision 5): something follows it, the
- *   caret left it, or the person paused.
- * - Deleting the word puts back what the draft had before the words set it.
- * - Picking from the hero or a picker while a word sets that thing
- *   rewrites the word: the pick goes into the text, not around it.
- *
- * This file decides; `ComposerWords` does. `stemcells/tasks/prompting.md`,
- * decisions 2, 5 and 14.
+ * The words set up the draft they're typed in (project, model, effort), so upstream's hero and
+ * pickers show what will run. The text is the one truth: a word acts once done (followed, left
+ * by the caret, or paused on), deleting it restores the draft, and a pick goes into the word.
+ * This decides; `ComposerWords` does. `stemcells/tasks/prompting.md`, decisions 2, 5 and 14.
  */
 
 import type { EffortHit, ModelHit } from "./models";

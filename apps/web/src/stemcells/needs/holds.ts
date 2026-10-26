@@ -1,12 +1,8 @@
 /**
- * Every answer waits out the undo window before it goes
- * (stemcells/tasks/aski-room.md, decision 7). A hold lives here, outside the
- * page, so switching tabs keeps it. When its fuse ends it checks the newest
- * list still holds the need, then sends upstream's commands in order; if the
- * need is gone (answered elsewhere, or asked again), nothing is sent. An
- * answer read from words in Aski's composer keeps them: if nothing was sent,
- * they go back there (`answers/giveBack.ts`), and the hold stays until they
- * have.
+ * Every answer waits out the undo window (stemcells/tasks/aski-room.md, decision 7) in a hold
+ * outside the page, so switching tabs keeps it. Its fuse sends upstream's commands only if the
+ * newest list still holds the need. Unsent words from Aski's composer go back there
+ * (`answers/giveBack.ts`), and the hold stays until they have.
  */
 import { useSyncExternalStore } from "react";
 

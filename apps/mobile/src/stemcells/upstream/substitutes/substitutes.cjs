@@ -1,13 +1,7 @@
-// The phone's substitutes for upstream modules: the web's
-// (`apps/web/src/stemcells/upstream/substitutes/plugin.ts`), for Metro and the
-// phone's tests. CommonJS, because Metro's config loads it with `require`.
-//
-// Upstream's code that imports one of these modules gets the module of the
-// same name in this folder; our own folder still gets upstream's, so a
-// substitute can re-export what it replaces. A package is named as upstream
-// imports it, and only upstream's own files get its substitute, never a
-// package's. `substitutes.contract.test.ts` proves both builds and the
-// exports.
+// The phone's substitutes for upstream modules, as the web's (`apps/web/src/stemcells/upstream/
+// substitutes/plugin.ts`); CommonJS for Metro's `require`. Only upstream's own files get the
+// same-named module in this folder, never a package's or ours, so a substitute can re-export
+// what it replaces. A package is named as upstream imports it.
 const path = require("node:path");
 
 /** Upstream module (from the repository's root) to its substitute in this folder. */
@@ -76,8 +70,7 @@ const packageSubstitute = (name, file) => {
 };
 
 /**
- * Metro: wraps the config's `resolveRequest` (or Metro's own), handing
- * upstream's importers the substitute.
+ * Metro: wraps the config's `resolveRequest` (or Metro's) so upstream's importers get substitutes.
  * @template {(context: any, moduleName: string, platform: string | null) => any} Resolve
  * @param {Resolve | undefined} resolveRequest
  * @returns {Resolve}

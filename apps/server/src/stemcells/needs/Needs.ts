@@ -22,12 +22,10 @@ export interface NeedsList {
 }
 
 /**
- * What needs the person, derived on the server from T3's thread shells each
- * time a thread changes, so every screen shows one list with one numbering
- * (stemcells/tasks/aski-room.md, decision 1). Holds no thread state of its
- * own beyond the shells it last read, the numbers it gave, the details it
- * read per card, and when it last heard from each Cell: the activity clock
- * a stuck run is timed on.
+ * What needs the person, derived on the server from T3's thread shells on each thread change,
+ * so every screen shows one list with one numbering (stemcells/tasks/aski-room.md, decision 1).
+ * It holds only the shells it last read, the numbers it gave, the details it read per card,
+ * and when it last heard from each Cell: the activity clock a stuck run is timed on.
  */
 export class Needs extends Context.Service<
   Needs,

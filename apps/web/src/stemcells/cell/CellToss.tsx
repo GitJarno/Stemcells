@@ -58,11 +58,9 @@ function drawStars(
 export type TossDraw = (toss: Toss, now: number) => void;
 
 /**
- * A Cell thrown, in its box at its size on the line: its pose each frame
- * its flight is stepped (`frames`, the flight's facts then, `toss.ts`), and
- * while it is dizzy, three stars round its head. Its look, colours and
- * frame behind it as `CellFigure` takes them. Under Reduce Motion its body
- * holds still.
+ * A thrown Cell, in its box at its size on the line: its pose each time its flight is stepped
+ * (`frames`, `toss.ts`), with three stars round its head while dizzy. Its look, colours and
+ * frame behind it as `CellFigure` takes them. Under Reduce Motion its body holds still.
  */
 export function CellToss(props: {
   readonly name: string;
@@ -90,6 +88,7 @@ export function CellToss(props: {
   const { frames } = props;
   const canvas = useRef<HTMLCanvasElement>(null);
   const sky = useRef<HTMLCanvasElement>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Paint the thrown Cell and its stars on each flight frame, unsubscribing from `frames` on change.
   useLayoutEffect(() => {
     const cell = canvas.current;
     const stars = sky.current;

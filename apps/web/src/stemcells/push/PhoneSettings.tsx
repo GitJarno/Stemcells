@@ -7,7 +7,7 @@ import {
   SettingsRow,
   SettingsSection,
   toastManager,
-  useRelativeTimeTick,
+  useNowMinuteMs,
 } from "../upstream/disk";
 import { forgetKey, forgetPhone, sendTest, setKey, usePushStatus } from "./push";
 
@@ -90,7 +90,7 @@ export function PhoneSettings() {
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
-  const nowMs = useRelativeTimeTick(30_000);
+  const nowMs = useNowMinuteMs();
   if (status === null) return null;
   const { key, devices, last } = status;
 

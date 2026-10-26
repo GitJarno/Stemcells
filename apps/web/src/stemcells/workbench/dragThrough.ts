@@ -1,11 +1,8 @@
 /**
- * A drag reaches the app wherever its pointer goes. The desktop browser is
- * an Electron `<webview>`: the moment a drag's pointer crosses it, it takes
- * the drag, so the workbench's edge dragged toward the browser stopped
- * there. While a drag is under way, or the pointer is over a separator
- * where one starts, browsers let the pointer through (`dragThrough.css`).
- * Waiting for the drag to start is too late: a move right after the press
- * can reach the browser before the page knows, and the browser keeps it.
+ * A drag reaches the app wherever its pointer goes. The desktop browser is an Electron
+ * `<webview>`, which takes a drag its pointer crosses, so while a drag is under way, or the
+ * pointer is over a separator where one starts, browsers let the pointer through
+ * (`dragThrough.css`). Waiting for the drag to start is too late: the browser keeps an early move.
  */
 import "./dragThrough.css";
 

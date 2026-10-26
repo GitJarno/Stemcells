@@ -1,15 +1,8 @@
 /**
- * A two-finger swipe, read from wheel events. The trackpad reports each
- * gesture in two parts: the fingers moving, then, once they lift, the
- * system's coast (momentum), which keeps scrolling with a decaying speed.
- * The pager follows the fingers and lets go when they lift, so it needs to
- * tell the two apart. DOM wheel events say neither which part an event
- * belongs to nor when the fingers lift; a `ContactSource` works it out.
- * `WheelContact` reads it from the deltas and their timing. A source that
- * reads the system's own phases can replace it without the pager changing.
- *
- * `SwipeLatch` then decides, once per gesture, whether the gesture is the
- * pager's: a horizontal move, not taken by a scroller under the fingers.
+ * A two-finger swipe, read from wheel events: the fingers moving, then, once they lift, the
+ * system's decaying coast. The pager lets go as the fingers lift, but DOM wheel events say neither
+ * which part an event is nor when they lift, so a `ContactSource` works it out (`WheelContact`, or
+ * the system's phases). `SwipeLatch` then decides, once per gesture, whether it is the pager's.
  */
 
 /** One wheel event: its deltas in pixels (scroll direction) and its time in milliseconds. */
@@ -18,11 +11,9 @@ export interface WheelSample {
   readonly dy: number;
   readonly t: number;
   /**
-   * Until when (ms) the page could hear wheel events before this one: the
-   * last frame it drew. A page busy rendering hears nothing, and the
-   * browser then hands it everything that came meanwhile as one event,
-   * stamped with the last one's time. So a gap between events is a silence
-   * only up to here; after it, the page was busy. Absent: it heard all along.
+   * Until when (ms) the page could hear wheel events before this one: the last frame it drew. A
+   * busy page hears nothing, then gets all that came as one event stamped with the last one's
+   * time, so a gap is a silence only up to here. Absent: it heard all along.
    */
   readonly heard?: number | undefined;
   /**
@@ -161,12 +152,10 @@ function carriesSteps(previous: WheelSample, next: WheelSample): boolean {
 }
 
 /**
- * The rate per frame at which `run` decays, if it decays the way a coast
- * does: every event slower than the one before, the same way, at a steady
- * rate per frame, as the system's physics produces it. Null for anything
- * else; fingers slowing down jitter, a coast doesn't. An event that came
- * after the page was busy carries several of the coast's steps: the decay
- * is read across it, and its distance must be what those steps add up to.
+ * The rate per frame at which `run` decays, if it decays as a coast does: each event slower than
+ * the last at a steady rate per frame. Null otherwise; slowing fingers jitter, a coast doesn't.
+ * An event after the page was busy carries several of the coast's steps: the decay is read
+ * across it, and its distance must be what those steps add up to.
  */
 export function coastRate(run: readonly WheelSample[]): number | null {
   if (run.length < 3 || speed(run[0]!) < COAST_FLOOR) return null;
@@ -225,11 +214,9 @@ export function coastRate(run: readonly WheelSample[]): number | null {
 }
 
 /**
- * A coast under way: the distance (px) it moves per event at its last
- * event, how often its events come (ms), and the share of its speed it
- * keeps per frame. Timestamps jitter by a few milliseconds while the
- * system steps a coast a frame at a time, so a coast is followed in events,
- * not milliseconds.
+ * A coast under way: its distance (px) per event at its last event, how often its events come
+ * (ms), and the share of its speed it keeps per frame. Followed in events, not milliseconds:
+ * timestamps jitter by a few ms while the system steps a coast a frame at a time.
  */
 interface Coast {
   readonly step: number;
@@ -267,15 +254,10 @@ function coastOf(run: readonly WheelSample[], rate: number): Coast {
 }
 
 /**
- * `coast` carried on to `next`, its last event being `previous`; null when
- * `next` is something new: fingers touching down. A coast goes on the same
- * way until it stops, covering about the distance its physics gives over
- * the events due in the time, however many of them the browser merged into
- * one. A pause doesn't tell: the browser can hold events back without the
- * page knowing, and hand them over merged, stamped as late as the last of
- * them. Fingers do otherwise: they start slower than a coast still running,
- * and speed up past it. The coast is followed as it goes, so a rate read
- * slightly off at its start doesn't add up.
+ * `coast` carried on to `next` after `previous`; null when `next` is fingers touching down. A
+ * coast goes on covering about its physics' distance over the events due, however many the
+ * browser merged, and is followed as it goes so an early misread rate doesn't add up. A pause
+ * doesn't tell (the browser holds events back); fingers start slower than the coast and speed up.
  */
 function carryOn(coast: Coast, previous: WheelSample, next: WheelSample): Coast | null {
   if (!sameWay(previous, next)) return null;
@@ -294,11 +276,10 @@ function carryOn(coast: Coast, previous: WheelSample, next: WheelSample): Coast 
 }
 
 /**
- * Whether `run`'s first event, where its decay starts, was the coast's own
- * first event rather than the fingers' last. The system can step a coast
- * at a slower pace than the trackpad reports fingers (a 60 Hz display, a
- * 120 Hz trackpad): then the coast's first event comes after a gap as long
- * as the coast's, where the fingers' events, `before` it, came closer.
+ * Whether `run`'s first event, where its decay starts, was the coast's first rather than the
+ * fingers' last. The system can step a coast slower than the trackpad reports fingers (60 Hz
+ * display, 120 Hz trackpad): then the coast's first event follows a gap as long as the coast's,
+ * where the fingers' events `before` it came closer.
  */
 function beganCoast(
   before: readonly WheelSample[],
@@ -315,15 +296,10 @@ function beganCoast(
 }
 
 /**
- * The coast `run` ends in, if its last two events are the coast's first
- * and the rest of what came of it while the browser held events back. The
- * browser merges what it held one kind at a time: the fingers' moves into
- * one event, the coast's first event alone, the rest of the coast into one.
- * So an event that carries several steps, after one that came alone though
- * the browser held it back, or after the fingers' merged moves in the same
- * backlog, is the coast's, and so is the one before it. A touch's first
- * event comes alone too, but small, and the fingers then speed up: the
- * decay read from the two must be a coast's.
+ * The coast `run` ends in, if its last two events are the coast's first and the rest the browser
+ * held back. It merges one kind at a time (the fingers' moves, the coast's first alone, the rest),
+ * so a multi-step event after a lone one or the fingers' merge is the coast's, as is the one
+ * before it. A touch's first event comes alone too, but small: the decay must be a coast's.
  */
 function backlogCoast(
   run: readonly WheelSample[],
@@ -386,11 +362,10 @@ function mergedMoves(run: readonly WheelSample[], next: WheelSample): boolean {
 }
 
 /**
- * Finger contact read from wheel events alone. A gesture begins with the
- * first event after a silence (or one that breaks a coast), and the fingers
- * lift at the first of: a silence of `LIFT_GAP`, or a run of events that
- * decays like a coast. Silences count only while the page could hear
- * (`WheelSample.heard`, `.got`): a backlog is no lift and no new touch.
+ * Finger contact read from wheel events alone. A gesture begins with the first event after a
+ * silence (or one breaking a coast); the fingers lift at the first of a `LIFT_GAP` silence or a
+ * run decaying like a coast. Silences count only while the page could hear (`WheelSample.heard`,
+ * `.got`): a backlog is no lift and no new touch.
  */
 export class WheelContact implements ContactSource {
   #last: WheelSample | null = null;
@@ -454,11 +429,9 @@ export class WheelContact implements ContactSource {
   }
 
   /**
-   * The coast the fingers' latest events show, if they show one, and those
-   * of them that were its. A backlog shows it at once (`backlogCoast`). A
-   * run with an event the page was too busy to hear carries more of the
-   * coast's steps than events, so its last four are enough: the coast can
-   * then be recognised before fingers touch again.
+   * The coast the fingers' latest events show, if any, and those of them that were its. A backlog
+   * shows it at once (`backlogCoast`). A run with an event the page was too busy to hear carries
+   * more coast steps than events, so its last four suffice to see the coast before fingers touch.
    */
   #readCoast(run: readonly WheelSample[]): { coast: Coast; coasted: WheelSample[] } | null {
     const backlog = backlogCoast(run);
@@ -502,11 +475,10 @@ export class WheelContact implements ContactSource {
 export const LATCH_DISTANCE = 8;
 
 /**
- * Who a gesture belongs to: undecided until it has moved `LATCH_DISTANCE`,
- * then the pager's (horizontal, nothing under the fingers scrolls that way),
- * or the page's (vertical, or a horizontal scroller with room takes it).
- * "spent" is a gesture the pager had and gave up, when the tabs turned by
- * other means while the fingers were down: the rest of it goes nowhere.
+ * Who a gesture belongs to: undecided until it has moved `LATCH_DISTANCE`, then the pager's
+ * (horizontal, nothing under the fingers scrolls that way) or the page's. "spent" is a gesture the
+ * pager gave up when the tabs turned by other means while the fingers were down: the rest of it
+ * goes nowhere.
  */
 export type SwipeOwner = "pending" | "pager" | "page" | "spent";
 

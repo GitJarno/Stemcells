@@ -1,19 +1,8 @@
 /**
- * What the line over a Cell's composer, the composer's halo and its one
- * height rely on in upstream: that the line stands right before the
- * composer's plate, inside the overlay whose height the transcript keeps
- * clear at its foot; that the line and the plate share a block that stacks
- * its own layers, so the halo lies under both; that the plate stacks its
- * own layers, its ::after free, with room kept under it, so the veil lies
- * under its glass and reaches the pane's foot; that the composer rests into
- * one line only through its scroll gesture, which a substitute turns off;
- * that its field's height is one class `workspace.css` can lower; that a
- * wheel over the composer reaches it; and that the chat's column, which the
- * halo reaches past, scrolls unless clipped. A failure here after a sync names the
- * contract that moved; the line likely covers the transcript's last row or
- * sits in a box of its own, the halo covers the plate or misses the ledge,
- * the veil covers the plate or stops short of the foot, the composer shrinks on a scroll or opens tall, a wheel over it stops
- * at the plate, or one scrolls the whole chat up.
+ * What the line over a Cell's composer, the composer's halo and its one height rely on in
+ * upstream: where the line and plate stand and stack (so halo and veil lie under them), the
+ * scroll gesture a substitute turns off, the field's one height class, a wheel's reach, and the
+ * chat's column scrolling. A failure after a sync names the contract that moved.
  */
 import { describe, expect, it } from "vite-plus/test";
 

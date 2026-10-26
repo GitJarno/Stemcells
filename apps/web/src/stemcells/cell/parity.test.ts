@@ -6,11 +6,10 @@ import parity from "./kit/fixtures/parity.json" with { type: "json" };
 import { type CellScene, curated, packLook, sceneOf } from "./scene.ts";
 
 /**
- * The port draws what the original Swift app drew: every scene of a matrix
- * of looks (bare, the curated ones, pack outfits that cover every slot,
- * animated pieces, masks, lenses, wraps and the tallest hats) and every pack
- * piece at rest, frame for frame at both sizes, with the hero detail and the
- * blink, against hashes of what the original compositor made.
+ * The port draws what the original Swift app drew: every scene of a matrix of looks (bare,
+ * curated, slot-covering pack outfits, animated pieces, masks, lenses, wraps, the tallest
+ * hats) and every pack piece at rest, frame for frame at both sizes, hero detail and blink
+ * included, against hashes of what the original compositor made.
  */
 
 const hash = (text: string) =>

@@ -1,13 +1,8 @@
 /**
- * The composer's document as the reader reads it: plain text, one line per
- * block, and where each character sits in the document. The reader works on
- * text; the ink goes back onto the document by these positions.
- *
- * Code (a code block, or an inline code mark in rich text) reads as blank,
- * since it is literal however it was written, and an inline chip (a file,
- * a skill, a citation) is one character no word is made of. A rich-text
- * list item reads with the "- " it was typed or pasted with, so a list
- * reads as a list; those two characters aren't in the document.
+ * The composer's document as the reader reads it: plain text, one line per block, with each
+ * character's document position, so ink maps back. Code reads as blank (it is literal however
+ * written), an inline chip (file, skill, citation) is one character no word is made of, and a
+ * rich-text list item reads with its "- " (not in the document), so a list reads as a list.
  */
 
 import type { Node as DocNode } from "@tiptap/pm/model";

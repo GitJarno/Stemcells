@@ -1,9 +1,8 @@
 /**
- * What a chat in a narrow pane relies on in upstream. A failure here after a
- * sync names the contract that moved: a chat may lose its end when its pane
- * narrows, the Scroll-to-end pill may sit on the Cell and its line, the
- * placeholder may run down over the controls, or a wide table may stop
- * saying it scrolls sideways.
+ * What a chat in a narrow pane relies on in upstream. A failure after a sync names the contract
+ * that moved: a chat may lose its end as its pane narrows, the Scroll-to-end pill may sit on the
+ * Cell and its line, the placeholder may run over the controls, or a wide table may stop saying
+ * it scrolls sideways.
  */
 import { describe, expect, it } from "vite-plus/test";
 

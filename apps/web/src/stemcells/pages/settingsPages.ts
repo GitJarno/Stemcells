@@ -1,9 +1,7 @@
 /**
- * Stemcells' own settings pages, as upstream's settings lists read them
- * (`stemcells/seams.md`, Settings pages of our own): each one's path, its
- * name in the list, and its scope. A new page adds itself here, its icon
- * in `settingsIcons.ts`, and its route file; upstream's lists take it from
- * these.
+ * Stemcells' own settings pages, as upstream's settings lists read them (`stemcells/seams.md`,
+ * Settings pages of our own). A new page adds itself here, its icon in `settingsIcons.ts`, and
+ * its route file.
  */
 
 export type StemcellsSettingsPath =

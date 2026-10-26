@@ -59,6 +59,7 @@ function useLayout(root: RefObject<HTMLElement | null>): {
   const [wide, setWide] = useState(true);
   const [hinge, setHinge] = useState<Hinge | null>(null);
   const twoScreens = useSyncExternalStore(subscribeSegments, onTwoScreens, onTwoScreens);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Track the frame's width and the two-screen hinge as it resizes; stop observing on unmount.
   useLayoutEffect(() => {
     const element = root.current;
     if (element === null) return;
@@ -75,12 +76,10 @@ function useLayout(root: RefObject<HTMLElement | null>): {
 const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need you`);
 
 /**
- * Aski's page around its chat: the column of what needs the person, always
- * on the right (stemcells/tasks/aski-manager.md, decision 1). Narrow, it is
- * a count over the chat that opens the list as a sheet; on two screens, the
- * list keeps the second screen. While the Cells' column shows the cards,
- * the page is the chat alone: the cards live in one place
- * (stemcells/tasks/left-column.md, decision 11).
+ * Aski's page around its chat, with what needs the person always on the right
+ * (stemcells/tasks/aski-manager.md, decision 1): narrow, a count that opens it as a sheet; on
+ * two screens, the second screen. While the Cells' column shows the cards, the page is the chat
+ * alone: the cards live in one place (stemcells/tasks/left-column.md, decision 11).
  */
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
@@ -104,6 +103,7 @@ export function NeedsFrame(props: {
   };
   const frozen = draft !== "" || pointerIn || focusIn;
   // The Cells' column holds the cards still while they're there.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Sync the shared page's frozen flag to this frame's draft, pointer and focus.
   useEffect(() => {
     if (!inColumn) page.setFrozen(frozen);
   }, [frozen, inColumn]);
@@ -186,6 +186,7 @@ export function NeedsFrame(props: {
  */
 function Sheet(props: { main: RefObject<HTMLElement | null>; children: ReactNode }) {
   const [bottom, setBottom] = useState<number | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the sheet's bottom above Aski's perch or the composer as the main pane resizes.
   useLayoutEffect(() => {
     const main = props.main.current;
     if (main === null) return;

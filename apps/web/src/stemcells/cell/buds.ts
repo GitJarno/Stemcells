@@ -1,10 +1,7 @@
-// The buds beside a Cell while its Subcells work: a row of small Cells at
-// its right, each one a Subcell at work, drawn as the transcript draws it
-// (`SubcellMark`). They stand, step and hop where the bud scenes put their
-// buds (`bud/1`, `bud/2` in `art/moves/work.json`): as a Subcell starts, its
-// bud steps out of the Cell's side (`bud/out/<n>`); once it has ended, its
-// bud hops home into it, the step played backwards. The row moves one bud
-// at a time, so two Subcells starting together step out in turn.
+// The buds beside a Cell while its Subcells work: small Cells at its right, each drawn as the
+// transcript draws it (`SubcellMark`), placed by the bud scenes (`bud/1`, `bud/2` in
+// `art/moves/work.json`). A bud steps out of the Cell's side as its Subcell starts and hops
+// home once it ends. The row moves one bud at a time, so two starting together step in turn.
 
 import { ACTIVITY_DEBOUNCE, BUDS_MOST } from "./activity.ts";
 import { REST, SCENES } from "./kit.ts";
@@ -169,12 +166,10 @@ export class BudRow {
   readonly #gone = new Map<string, number>();
 
   /**
-   * The buds the row shows at `seconds` (`clockSeconds`) for a Cell's
-   * `subcells`, oldest first, in the order they are drawn. A Subcell's bud
-   * steps out as it starts, while there is room (`BUDS_MOST`), and goes
-   * home once its Subcell has been at work no more for `STAYS`; it wears
-   * the last status heard for it. Held still (no `seconds`), the row stands
-   * the Subcells at work at once.
+   * The buds shown at `seconds` (`clockSeconds`) for a Cell's `subcells`, oldest first, in
+   * draw order. A bud steps out as its Subcell starts, while there is room (`BUDS_MOST`), and
+   * goes home once its Subcell has stopped working for `STAYS`, wearing the last status heard.
+   * Held still (no `seconds`), the row stands the Subcells at work at once.
    */
   at(subcells: readonly Bud[], seconds: number | undefined): readonly BudPlace[] {
     const heard = new Map(subcells.map((bud) => [bud.name, bud]));

@@ -1,10 +1,9 @@
 /**
- * What upstream's chat header did, for the line over a Cell's composer,
- * which does it in a pane: the thread's menu and rename, a new chat in its
- * project, the way back to its parent, and where it runs. Each is upstream's
- * own code or upstream's header ported as it is; `chatHeader.contract.test.ts`
- * pins what this leans on.
+ * Upstream's chat header jobs, for the line over a Cell's composer in a pane: the thread's menu
+ * and rename, a new chat in its project, the way back to its parent, and where it runs. Each is
+ * upstream's own code or its header ported as is; `chatHeader.contract.test.ts` pins it.
  */
+import { useAtomValue } from "@effect/atom-react";
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import {
   isAtomCommandInterrupted,
@@ -15,6 +14,7 @@ import {
   type EnvironmentId,
   type EnvironmentMachineKind,
 } from "@t3tools/contracts";
+import { Atom } from "effect/reactivity";
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 
 import {
@@ -23,6 +23,7 @@ import {
   shouldShowEnvironmentIndicator,
 } from "../../components/BranchToolbar.logic";
 import { resolveRenameCommit } from "../../components/chat/ChatHeader";
+import { canShareWithGuestAtom } from "../../components/chat/guestShareAvailability";
 import type { ProjectFaviconProject } from "../../components/ProjectFavicon";
 import { isTrailingDoubleClick } from "../../components/Sidebar.logic";
 import { toastManager } from "../../components/ui/toast";
@@ -60,12 +61,10 @@ export function canRenameCell(cell: CellRef | null): boolean {
 export const CANT_RENAME_CELL = "Can't rename this Cell here";
 
 /**
- * Renames the chat, as upstream's header does: an empty title is refused
- * with a word, the same title does nothing, a failure says so. Whatever
- * shows the chat's title takes the new one from the thread, in every window.
- * `commitRename` answers why when it couldn't apply the title at all (the
- * chat isn't loaded here, or this window may not change it), so what was
- * typed isn't dropped unsaid.
+ * Renames the chat as upstream's header does: an empty title is refused with a word, the same
+ * title does nothing, a failure says so; every window takes the new title from the thread.
+ * `commitRename` says why when it couldn't apply the title at all (chat not loaded here, or
+ * this window may not change it), so what was typed isn't dropped unsaid.
  */
 export function useCellRename(cell: CellRef | null) {
   const threadRef = cell ? threadRefOf(cell) : null;
@@ -105,6 +104,8 @@ export function useCellRename(cell: CellRef | null) {
   return { shell, canRename: canOperate && shell !== null, commitRename };
 }
 
+const NO_CHAT = Atom.make(false);
+
 /**
  * The chat's thread menu and rename, as upstream's header gives them from
  * its title: a click opens the menu under what was clicked, a double-click
@@ -117,6 +118,10 @@ export function useCellThreadMenu(cell: CellRef | null) {
   const [renamingKey, setRenamingKey] = useState<string | null>(null);
   const key = shell ? `${shell.environmentId}:${shell.id}` : null;
   const renaming = canRename && key !== null && renamingKey === key;
+  // "Share with guest", where upstream's header offers it.
+  const canShareWithGuest = useAtomValue(
+    threadRef ? canShareWithGuestAtom(threadRef.environmentId) : NO_CHAT,
+  );
 
   const startRename = () => {
     if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) return;
@@ -133,6 +138,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
     threadRef: shell ? threadRef : null,
     projectCwd: project?.workspaceRoot ?? null,
     onStartRename: startRename,
+    canShareWithGuest,
   });
   const pending = useRef<number | null>(null);
   const cancelPendingMenu = () => {
@@ -140,6 +146,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
     clearTimeout(pending.current);
     pending.current = null;
   };
+  // oxlint-disable-next-line t3code/react-effect-budget -- Cancel the menu's pending double-click wait when the chat changes or the line unmounts.
   useEffect(
     () => () => {
       if (pending.current === null) return;
@@ -228,11 +235,10 @@ export interface RunsOn {
 }
 
 /**
- * Where a sent chat runs, where upstream's context strip would say it: the
- * machine, when upstream would name it (another machine's, or the project
- * is on several), and a worktree, with upstream's words. A chat in the
- * project's own checkout on this machine says nothing. Null while the
- * person keeps upstream's strip under every chat, which says it there.
+ * Where a sent chat runs, where upstream's context strip would say it: the machine when
+ * upstream would name it (another machine's, or the project is on several), and a worktree, in
+ * upstream's words. Nothing for the project's own checkout here. Null while the person keeps
+ * upstream's strip under every chat, which says it there.
  */
 export function useCellRunsOn(cell: CellRef | null): RunsOn | null {
   const shell = useQuietThreadShell(cell ? threadRefOf(cell) : null);

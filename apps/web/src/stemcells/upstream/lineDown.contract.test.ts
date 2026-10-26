@@ -36,7 +36,9 @@ describe("a Cell's line is down while upstream's banners say so", () => {
     expect(systemBanners).toMatch(
       /const environmentReconnecting =\s*unavailableConnection !== null &&\s*\(unavailableConnection\.phase === "connecting" \|\|\s*unavailableConnection\.phase === "reconnecting"\);/,
     );
-    expect(systemBanners).toContain("scheduleEnvironmentReconnectWarning(");
+    expect(systemBanners).toMatch(
+      /useEnvironmentStateHeldFor\(\s*activeReconnectingEnvironmentId,\s*ENVIRONMENT_RECONNECT_WARNING_GRACE_MS,/,
+    );
     expect(systemBanners).toContain("id: `environment-unavailable:");
     // The provider's banner shows from the key `lineDownOf` reads.
     expect(chatView).toContain(

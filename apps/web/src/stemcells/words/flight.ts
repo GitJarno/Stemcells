@@ -1,10 +1,8 @@
 /**
- * Words go where they act: a ghost of a read word lifts off the field and
- * travels to the control it set (the hero's project, a picker), then lands
- * and fades as the control's new value settles in. Nothing flies when
- * something goes away, and under reduced motion nothing flies at all: the
- * control's own change is the news.
- * `stemcells/tasks/prompting.md`, decision 5.
+ * Words go where they act: a ghost of a read word lifts off the field, travels to the control
+ * it set (the hero's project, a picker), and fades as the control's new value settles in.
+ * Nothing flies when something goes away, nor under reduced motion: the control's own change is
+ * the news. `stemcells/tasks/prompting.md`, decision 5.
  */
 
 import { reducedMotion, timed } from "../tokens/motion";

@@ -13,7 +13,7 @@ import appSidebarLayout from "../../components/AppSidebarLayout.tsx?raw";
 import threadRouteView from "../../components/ThreadRouteView.tsx?raw";
 import settingsSidebarNav from "../../components/settings/SettingsSidebarNav.tsx?raw";
 import sidebar from "../../components/ui/sidebar.tsx?raw";
-import settingsRoute from "../../routes/settings.tsx?raw";
+import settingsRoute from "../../routes/_chat.settings.tsx?raw";
 
 /** CSS imports come in empty under test; the stylesheet is read as text. */
 const appStyles = NodeFS.readFileSync(new URL("../../index.css", import.meta.url), "utf8");
@@ -46,8 +46,8 @@ describe("a pane's chat inside the workspace's slate", () => {
   it("is an inset of its own, which the slate's rules leave to fill its pane", () => {
     // Matched, it took the slate's margins and kept upstream's w-full: every
     // pane's chat sat 8px right of centre and 36px down.
-    expect(threadRouteView).toContain(
-      '<SidebarInset className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh">',
+    expect(threadRouteView).toMatch(
+      /<SidebarInset\s+className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"\s+inert=\{background\}\s*>/,
     );
     const slateRules = frameStyles.match(/\[data-slot="sidebar-inset"\][^{]*\{/g) ?? [];
     expect(slateRules).toHaveLength(3);
@@ -57,7 +57,7 @@ describe("a pane's chat inside the workspace's slate", () => {
   });
 });
 
-describe("Settings on the slate", () => {
+describe("Settings over the chat", () => {
   it("the app's sidebar keeps the left column on every page", () => {
     expect(appSidebarLayout).toMatch(
       /\{legacySidebarEnabled \? \(\s*<LegacyThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\s*\) : \(\s*<LeftColumn wide=\{<ThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\} \/>\s*\)\}/,
@@ -65,9 +65,11 @@ describe("Settings on the slate", () => {
     expect(appSidebarLayout).not.toContain("<SettingsSidebarNav");
   });
 
-  it("the settings route lays its panel out on the slate, its outlet inside", () => {
-    expect(settingsRoute).toMatch(/<SettingsOnSlab[\s\S]*?<Outlet \/>[\s\S]*?<\/SettingsOnSlab>/);
-    expect(settingsRoute).not.toContain("<WorkspacePageHeader");
+  it("the settings route lays its panel out in upstream's modal, its close and outlet inside", () => {
+    expect(settingsRoute).toMatch(
+      /<AppRouteModal label="Settings">\s*<SettingsOnSlab[\s\S]*?<AppRouteModalClose \/>[\s\S]*?<Outlet \/>[\s\S]*?<\/SettingsOnSlab>\s*<\/AppRouteModal>/,
+    );
+    expect(settingsRoute).not.toContain("<SettingsBreadcrumb");
   });
 
   it("upstream's section list takes the page it lights", () => {

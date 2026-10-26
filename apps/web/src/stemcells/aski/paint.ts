@@ -1,11 +1,7 @@
-// A grid scene painted into one buffer that lasts as long as its stage. Each
-// frame repaints only the cells that changed, and the box around the eyes
-// when they moved or opened, by the reference's own rules for a glyph in its
-// cell and for the eyes over the grid (render.ts). So it draws, on a clear
-// ground and in the inks it is given, what renderGrid draws on the sky, at a
-// cost that follows what moved rather than the size of the stage. A glyph's
-// coverage of its cell is worked out once, and the eyes' coverage of each
-// pixel once for as long as they hold still.
+// A grid scene painted into one buffer that lasts as long as its stage. Each frame repaints only
+// the cells that changed, and the eyes' box when they moved or opened, by render.ts's own rules,
+// so it draws what renderGrid draws at a cost that follows what moved, not the stage's size.
+// Glyph coverage is worked out once, the eyes' once for as long as they hold still.
 
 import { eyeDistance } from "./eye.ts";
 import { BLANK, type Cell, type Grid, isEmpty, type Stage } from "./grid.ts";

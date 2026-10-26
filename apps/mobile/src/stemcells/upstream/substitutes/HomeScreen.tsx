@@ -1,13 +1,9 @@
-// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the home
-// shows one tab of Cells at a time (`home/tabs.ts`), under Aski. T3's list
-// keeps everything it does (swipes, menus, shelves, pending tasks); it is
-// handed the tab's Cells, and its header (`ThreadListFilters`) reads the
-// tabs from context. Where T3's list has no header (Android, outside the
-// workspace) and while searching, the home is T3's own. A tab with no Cells
-// keeps the header (`home/EmptyTab.tsx`); before a machine has answered, T3
-// says what it waits on. Copies of Aski fly over the list to Cells forming
-// in their cards (`home/CopyLayer.tsx`).
+// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the home shows one tab of Cells
+// at a time (`home/tabs.ts`), under Aski. T3's list keeps all it does, handed the tab's Cells,
+// and its header (`ThreadListFilters`) reads the tabs from context. Where T3's list has no
+// header (Android, outside the workspace) and while searching, the home is T3's own.
 import { useIsFocused } from "@react-navigation/native";
+import { use } from "react";
 import { Platform, View } from "react-native";
 
 import * as Upstream from "../../../features/home/HomeScreen";
@@ -17,13 +13,14 @@ import { CopyLayer } from "../../home/CopyLayer";
 import { EmptyTab } from "../../home/EmptyTab";
 import { chooseTab, HomeInFront, HomeTabsContext, useHomeTab, useMinute } from "../../home/state";
 import { countsOf, inTab } from "../../home/tabs";
-import { useWorkspaceTabs } from "../home";
+import { NativePrimaryColumnContext, useWorkspaceTabs } from "../home";
 import { buildHomeProjectScopes, findHomeProjectScope } from "../threads";
 
 export * from "../../../features/home/HomeScreen";
 
 export function HomeScreen(props: Parameters<typeof Upstream.HomeScreen>[0]) {
   const workspace = useWorkspaceTabs();
+  const primaryColumn = use(NativePrimaryColumnContext);
   const inFront = useIsFocused();
   const now = useMinute();
   const aski = askiChatsOf(props.threads);
@@ -68,6 +65,7 @@ export function HomeScreen(props: Parameters<typeof Upstream.HomeScreen>[0]) {
             tab={tab}
             filters={
               <ThreadListFilters
+                gutter={primaryColumn ? 8 : 0}
                 environments={props.environments}
                 projects={scopes.map((project) => ({ key: project.key, label: project.title }))}
                 selectedEnvironmentId={props.selectedEnvironmentId}

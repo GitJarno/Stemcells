@@ -30,16 +30,10 @@ interface Rows {
 }
 
 /**
- * A pane's buttons, floating at its top-right while the pointer or focus is
- * in it (`workspace.css`): the Look chip first, then upstream's own panel
- * toggles for the chat, then × to close the pane, in one row. The toggles
- * stay upstream's, with upstream's state; the chip, the … and × join their
- * row, so they read as one. Upstream splits its toggles in two while the
- * chat's right panel is open (thread details by the header, the rest at the
- * chat's root): the chip leads the header's row, which sits left of the
- * other. In a narrow pane upstream's toggles fold into the … menu. Until
- * the chat has drawn its toggles (or where it draws none), the chip and ×
- * float on their own.
+ * A pane's buttons at its top-right while the pointer or focus is in it (`workspace.css`): the
+ * Look chip, upstream's own panel toggles with upstream's state, then ×, in one row. While the
+ * chat's right panel is open upstream splits its toggles in two; the chip leads the header's row.
+ * Until the chat draws its toggles (or where it draws none), the chip and × float on their own.
  */
 export function PaneButtons(props: { cell: CellRef | null; onClose: (() => void) | null }) {
   const anchor = useRef<HTMLSpanElement>(null);
@@ -95,6 +89,7 @@ export function PaneButtons(props: { cell: CellRef | null; onClose: (() => void)
 function usePaneRows(anchor: RefObject<HTMLElement | null>): Rows | null {
   const [rows, setRows] = useState<Rows | null>(null);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Follow upstream's toggle rows in the pane; disconnect on unmount.
   useLayoutEffect(() => {
     const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
     if (!pane) return;
@@ -117,6 +112,7 @@ function usePaneRows(anchor: RefObject<HTMLElement | null>): Rows | null {
   }, [anchor]);
 
   // A split row sits left of the root's row, at its width from the edge.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Track the root row's width; disconnect and clear on change.
   useLayoutEffect(() => {
     const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
     if (!pane || !rows || rows.first === rows.last) return;

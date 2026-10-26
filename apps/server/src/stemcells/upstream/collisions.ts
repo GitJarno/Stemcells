@@ -1,9 +1,8 @@
 /**
- * What collisions take from upstream (stemcells/tasks/peers.md, decision 3):
- * every file edit a provider finished (a `file_change` turn item, which each
- * adapter records), the thread shells that say whose work an edit is and
- * where it landed, a project's root and repository, and the orchestrator's
- * dispatch, which queues the notice behind the Cell's running turn.
+ * What collisions take from upstream (stemcells/tasks/peers.md, decision 3): each finished
+ * file edit (a `file_change` turn item every adapter records), the thread shells that say
+ * whose an edit is and where it landed, a project's root and repository, and the dispatch
+ * that queues the notice behind the Cell's running turn.
  */
 import {
   CommandId,

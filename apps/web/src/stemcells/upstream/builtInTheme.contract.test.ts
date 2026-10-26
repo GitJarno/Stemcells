@@ -1,14 +1,8 @@
 /**
- * Stemcells' theme is built in (look.ts, substitutes/themePalettes.ts), so
- * the app wears it from its first frame. Published by the server only, it
- * resolved when the server's theme event came, a couple of seconds into a
- * launch in the desktop app, and until then T3's stock palette painted: a
- * lighter frame round the slate, the slate's edge and the column's border.
- * It is also what a launch with nothing stored opens on, where upstream
- * opened on T3's stock theme. These pin the parts: the theme module's first
- * paint, the boot script's splash before it (index.html), the default, the
- * server's copy left out, and Settings' card. A failure after a sync names
- * the part that moved.
+ * Stemcells' theme is built in (look.ts, substitutes/themePalettes.ts), so the app wears it from
+ * its first frame and on a launch with nothing stored, not T3's stock palette until the server's
+ * theme event. These pin the theme module's first paint, the boot splash (index.html), the
+ * default, the server's copy left out, and Settings' card.
  */
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 

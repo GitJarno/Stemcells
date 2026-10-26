@@ -5,25 +5,16 @@ import { lastActedAt } from "./acts";
 import { NAME_MAX_LENGTH } from "./limits";
 
 /**
- * A name open for a new one where it stood: Enter or leaving keeps it,
- * Escape doesn't, as in upstream's header. The one-liner over a Cell's
- * composer renames its chat with it (`composer/CellComposerLine.tsx`), and
- * a tab its name (`tabs/TabStrip.tsx`). It fills the room the name had, so
- * nothing around it moves; a longer name scrolls inside it.
- *
- * Only the person ends it. A double-click whose first click opened a tab
- * opens the field as the tab's chat puts the keyboard in its composer (a
- * frame after it shows: upstream's ChatView): a focus taken while the field
- * is new, before the person pressed or typed anything anywhere, is the
- * app's, and the field takes it back. Any key or press of theirs (⌘T
- * opening a Cell, a click elsewhere) ends that: the focus goes where they
- * sent it, and the name is kept as it stands.
- *
- * A name that can't be applied (`onCommit` answers why: its chat isn't
- * loaded here) keeps the field open with what was typed, and the field says
- * why under itself, as a tooltip would, until it is changed. Escape closes it.
+ * A name open for a new one where it stood: Enter or leaving keeps it, Escape doesn't, as in
+ * upstream's header. It fills the name's room, so nothing around it moves. A name that can't be
+ * applied (`onCommit` says why, e.g. its chat isn't loaded here) keeps the field open with what
+ * was typed, the reason under it until it changes.
  */
-/** How long after it opens a focus taken from the field may be the app's. */
+/**
+ * A focus taken this soon after the field opens, before the person pressed or typed anything,
+ * is the app's (a double-clicked tab focusing its composer, upstream's ChatView): the field
+ * takes it back. Any key or press of theirs ends that, keeping the name as it stands.
+ */
 const APP_FOCUS_WINDOW_MS = 500;
 
 export function RenameField(props: {
@@ -41,6 +32,7 @@ export function RenameField(props: {
   const field = useRef<HTMLInputElement>(null);
   const [refused, setRefused] = useState<string | null>(null);
   const noteId = useId();
+  // oxlint-disable-next-line t3code/react-effect-budget -- Stamp when the field opened, to tell the app's focus grabs from the person's.
   useLayoutEffect(() => {
     opened.current = performance.now();
   }, []);

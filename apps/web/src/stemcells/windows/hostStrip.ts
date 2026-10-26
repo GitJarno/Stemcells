@@ -1,11 +1,8 @@
 /**
- * A window's strip as the host of a tab carried from another window
- * (stemcells/tasks/windows.md, Into another window's strip), or of a chat
- * carried by its Cell to a new tab: it measures itself when a carry's
- * pick-up asks, makes room where the tab would land, and, once the tab is
- * in its workspace, keeps its chip hidden until what was carried has
- * landed on it. A chat carried from another window over one of its chips
- * lights that chip (stemcells/tasks/chip-drop.md).
+ * A window's strip as host of a tab carried from another window, or of a chat carried by its
+ * Cell to a new tab (stemcells/tasks/windows.md, Into another window's strip): it measures
+ * itself when a pick-up asks, makes room where the tab would land, and keeps the arrived tab's
+ * chip hidden until what was carried lands on it. A chat carried over a chip lights it.
  */
 import { useEffect, useRef, useSyncExternalStore, type RefObject } from "react";
 
@@ -79,10 +76,9 @@ const subscribe = (listener: () => void) => {
 const read = () => hosting;
 
 /**
- * What the strip does for a tab carried to it: each chip's offset as it
- * makes room (CSS pixels), how far the strip grows to hold the room, so
- * what follows the chips moves over too, the arrived tab's chip kept hidden
- * until what was carried lands on it, and whether the chips glide
+ * What the strip does for a tab carried to it: each chip's offset as it makes room (CSS
+ * pixels), how far the strip grows to hold the room so what follows moves over too, the
+ * arrived tab's chip hidden until what was carried lands on it, and whether the chips glide
  * (`travel`). And the chip a chat carried from another window lights.
  */
 export function useHosting(shownTabs: ReadonlyArray<Tab>): {
@@ -140,9 +136,11 @@ export function useStripMeasure(
   newCellTabId: string | null,
 ): void {
   const latest = useRef(tabs);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the latest tabs in a ref for the bridge's measure callback.
   useEffect(() => {
     latest.current = tabs;
   });
+  // oxlint-disable-next-line t3code/react-effect-budget -- Answer the desktop bridge's measure requests while mounted and unregister on unmount.
   useEffect(() => {
     if (!bridge) return;
     return bridge.onMeasure(() => {

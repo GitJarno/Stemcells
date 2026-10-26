@@ -1,10 +1,8 @@
 /**
- * What the line over a Cell's composer relies on in upstream, now that it
- * does the chat header's jobs (`chatHeader.ts`) and steps down by the pane's
- * width (`composer-line.css`). A failure here after a sync names the
- * contract that moved: the line's menu, rename, new chat, parent or where it
- * runs may have drifted from upstream's header, or a rung of the ladder no
- * longer reaches the composer control it hides.
+ * What the line over a Cell's composer relies on in upstream, as it does the chat header's
+ * jobs (`chatHeader.ts`) and steps down by pane width (`composer-line.css`). A failure after a
+ * sync names the contract that moved: the menu, rename, new chat, parent or where it runs
+ * drifted from upstream's header, or a rung no longer reaches the composer control it hides.
  */
 import { describe, expect, it } from "vite-plus/test";
 

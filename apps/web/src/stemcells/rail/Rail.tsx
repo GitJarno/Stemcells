@@ -40,6 +40,7 @@ export function Rail() {
   const { open } = useSidebar();
   useRailUndoNotice(open && lit !== "settings" && lit !== "disk");
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the rail column while it is mounted.
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.stemcellsColumn = "rail";

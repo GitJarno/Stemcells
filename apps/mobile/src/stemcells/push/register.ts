@@ -1,9 +1,8 @@
 /**
- * The phone asks each Mac it keeps a connection to for pushes
- * (stemcells/tasks/phone-push.md): its APNs token, which of Apple's
- * services that token is on, and the app's bundle id, posted to the Mac's
- * `/api/stemcells/push/devices` with the connection's own credentials. The
- * Mac sends to Apple itself; nothing goes through anyone else's service.
+ * The phone asks each Mac it keeps a connection to for pushes (stemcells/tasks/phone-push.md):
+ * it posts its APNs token, which of Apple's services the token is on, and the bundle id to the
+ * Mac's `/api/stemcells/push/devices` with the connection's own credentials. The Mac sends to
+ * Apple itself; nothing goes through anyone else's service.
  */
 
 export interface PhoneDevice {

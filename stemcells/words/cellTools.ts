@@ -1,9 +1,8 @@
 /**
- * T3's own tools in the words a person reads, where a T3 thread is a Cell.
- * The work log names each call to one from upstream's labels
- * (`packages/shared/src/t3McpToolPresentation.ts`) and sums up a run of
- * them (`packages/client-runtime/src/t3ToolSummary.ts`). The web's and the
- * phone's substitutes for those two modules say it with these instead.
+ * T3's own tools in the words a person reads, where a T3 thread is a Cell. The work log names
+ * each call from upstream's labels (`packages/shared/src/t3McpToolPresentation.ts`) and sums a
+ * run of them (`packages/client-runtime/src/t3ToolSummary.ts`); the web's and the phone's
+ * substitutes for those two modules say it with these instead.
  */
 
 /** A tool's words, in upstream's order: [action, running, completed, detail]. */

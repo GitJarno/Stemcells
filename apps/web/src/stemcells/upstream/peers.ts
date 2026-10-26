@@ -1,9 +1,7 @@
 /**
- * What messages between Cells take from upstream's chat
- * (stemcells/tasks/peers.md, decision 4): the row context every timeline
- * row reads (the chat's environment, the way to open another chat, find,
- * going back to a turn), a thread's shell, the markdown a message is drawn
- * in, and the time and copy a message's row shows under it.
+ * What messages between Cells take from upstream's chat (stemcells/tasks/peers.md, decision 4):
+ * the row context every timeline row reads (environment, opening another chat, find, going back
+ * to a turn), a thread's shell, the markdown a message is drawn in, and its row's time and copy.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { type EnvironmentId, ThreadId } from "@t3tools/contracts";

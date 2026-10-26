@@ -1,8 +1,7 @@
-// Aski's own chat on each machine, as the Mac and the server pick it (the
-// web's `askiChatAmong` in `aski/setup.ts`, the server's `askiThreadOf`):
-// the top-level chat on Aski's provider instance, the pinned one first,
-// else the first made. Another chat on that instance (a new chat opened
-// from Aski's page) is a Cell like any.
+// Aski's own chat on each machine, picked as the Mac and server pick it (the web's
+// `askiChatAmong` in `aski/setup.ts`, the server's `askiThreadOf`): the top-level chat on
+// Aski's provider instance, the pinned one first, else the first made. Another chat on that
+// instance (a new chat opened from Aski's page) is a Cell like any.
 
 import type { EnvironmentThreadShell } from "../upstream/threads";
 

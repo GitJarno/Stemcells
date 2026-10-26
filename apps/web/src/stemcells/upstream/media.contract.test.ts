@@ -1,11 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's markup on disk.
 /**
  * What the media viewer relies on in upstream: every thumbnail opens through
- * `openExpandedImagePreview`'s atom; a chat's timeline holds its pictures,
- * videos and the media its markdown embeds; and an item built from the
- * timeline names the same file the thumbnail on screen does, so a click
- * finds its place in the chat's reel and a picture finds its way home. If
- * one fails after a sync, `media.ts` follows upstream's new shape.
+ * `openExpandedImagePreview`'s atom; a chat's timeline holds its pictures, videos and embedded
+ * media; and an item built from the timeline names the thumbnail's file, so a click finds its
+ * place in the reel. If one fails after a sync, `media.ts` follows upstream's new shape.
  */
 import * as NodeFS from "node:fs";
 

@@ -1,10 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads style sheets and pele's build from disk.
 /**
- * What a Mermaid diagram in a reply relies on upstream. Upstream draws them
- * with pele, which reads its colours, type and corners from `--pele-*`
- * variables. A failure here after a sync names what moved: a diagram may
- * fetch a link or a picture it names, stop following Stemcells' look, or
- * lose our corners.
+ * What a Mermaid diagram in a reply relies on upstream: pele draws it, reading its colours,
+ * type and corners from `--pele-*` variables. A failure after a sync names what moved: a
+ * diagram may fetch a link or picture it names, stop following Stemcells' look, or lose our
+ * corners.
  */
 import * as NodeFS from "node:fs";
 import * as NodeModule from "node:module";

@@ -1,13 +1,8 @@
 /**
- * A Cell thrown (stemcells/docs/interaction.md, The toss): the carry
- * engine's other way to let go. A carried Cell let go with speed flies in
- * its own world (`throwWorld.ts`), bonks off its chat's sides and top,
- * lands on its line, and walks home; its chat stays where it was. As pure
- * functions, fed recorded hands and times, in the original's model and
- * numbers (the original app's `CritterToss.swift`, `CritterBonk.swift` and
- * `CritterTossView.swift`). The Cell draws what this says (`cell/toss.ts`).
- *
- * Positions are CSS px in the page, times `performance.now()` ms.
+ * A Cell thrown (stemcells/docs/interaction.md, The toss): a carried Cell let go with speed
+ * flies in its own world (`throwWorld.ts`), bonks off its chat's sides and top, lands on its
+ * line and walks home. Pure functions in the numbers of the original app's `CritterToss.swift` and
+ * kin. Positions are CSS px in the page, times `performance.now()` ms.
  */
 import { HOME_PACE, type Hit, type Surface, type Toss } from "../cell/toss";
 import type { Rect } from "./arrangement";
@@ -77,12 +72,10 @@ export function handVelocity(hand: ReadonlyArray<Sample>, at: number): Point {
 // ── Letting go of a carried chat
 
 /**
- * What letting go of a carried chat does. Held by its Cell inside its own
- * pane, the Cell is thrown as fast as the hand let go: a slow let-go sets
- * it down, to land and walk home, as the original's critter did let go
- * anywhere in its chat. Anywhere else (another pane, a chip, a tab sprung
- * open on the way) nothing is thrown: the chat drops where it is over, or
- * goes home. With Reduce Motion nothing is thrown.
+ * What letting go of a carried chat does. Held by its Cell inside its own pane, the Cell is
+ * thrown as fast as the hand let go; a slow let-go sets it down to land and walk home.
+ * Anywhere else (another pane, a chip, a tab sprung open on the way) nothing is thrown: the
+ * chat drops where it is over, or goes home. With Reduce Motion nothing is thrown.
  */
 export function letGoOf(
   over: boolean,

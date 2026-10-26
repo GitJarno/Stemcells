@@ -1,12 +1,8 @@
 /**
- * What needs the person, read from T3's thread shells: one signal per Cell
- * at most, the most blocking one (stemcells/tasks/aski-room.md, decision 2
- * and "Item types"). Pure: the service hands it shells and the time.
- *
- * The kinds T3 states outright come from the shell alone. A finished run
- * is a prose candidate, which the pre-read of its last reply keeps or drops,
- * and a running one that has been quiet too long is a stuck candidate,
- * which what it is in the middle of keeps or drops (`stuckFor`).
+ * What needs the person, read from T3's thread shells: at most one signal per Cell, the most
+ * blocking (stemcells/tasks/aski-room.md, decision 2 and "Item types"). Pure. A finished run
+ * is a prose candidate the pre-read of its last reply keeps or drops; a running one quiet too
+ * long is a stuck candidate, kept or dropped by what it is in the middle of (`stuckFor`).
  */
 import * as DateTime from "effect/DateTime";
 

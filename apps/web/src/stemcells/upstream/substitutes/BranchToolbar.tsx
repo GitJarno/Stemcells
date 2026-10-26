@@ -1,10 +1,7 @@
-// Replaces `components/BranchToolbar.tsx` (`plugin.ts`): in a Cell's pane,
-// upstream's branch toolbar stands in the menu under the Cell's ledge's
-// "project · branch ⌄" (`composer/slot.ts`), in upstream's panel layout,
-// never in a strip under the box; and only once the checkout is known to
-// be git (`upstream/checkout.ts`): a pending git status offers nothing,
-// never a guess. Upstream's branch shortcut opens that menu. Outside a
-// pane, and in the thread panel, it is upstream's.
+// Replaces `components/BranchToolbar.tsx` (`plugin.ts`): in a Cell's pane, upstream's toolbar
+// stands in panel layout in the menu under the ledge's "project · branch ⌄" (`composer/slot.ts`),
+// once the checkout is known to be git (`upstream/checkout.ts`), never on a guess; the branch
+// shortcut opens that menu. Outside a pane, and in the thread panel, it is upstream's.
 import {
   type ComponentProps,
   memo,
@@ -35,6 +32,7 @@ export const BranchToolbar = memo(function BranchToolbar({
   const inner = useRef<BranchToolbarHandle>(null);
   const setOffered = slot?.setOffered;
   const setOpen = slot?.setOpen;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the ledge's slot the toolbar is offered while it is, and withdraw it on change or unmount.
   useLayoutEffect(() => {
     if (!offered || setOffered === undefined) return;
     setOffered(true);

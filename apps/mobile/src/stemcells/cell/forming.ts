@@ -1,10 +1,7 @@
-// A Cell forming as its chat starts, as on the Mac (`apps/web/src/stemcells/
-// cell/forming.ts`; `stemcells/docs/interaction.md`, The spawn): Aski's
-// characters condense over its box, `. : + # @`, one a beat; then its
-// outline fills in blocks ░▒▓█; then its own pixels, a crouch and a hop
-// onto its line. On the phone a Cell forms when it is first seen within
-// moments of its chat starting, wherever it shows first (its card, its
-// ledge), and only once: shown again, it stands.
+// A Cell forming as its chat starts, as on the Mac (`apps/web/src/stemcells/cell/forming.ts`;
+// `stemcells/docs/interaction.md`, The spawn). On the phone it forms only once: when first seen
+// within moments of its chat starting, wherever it shows first (its card, its ledge). Shown
+// again, it stands.
 
 import { BEAT, clockSeconds, formingPart, GLYPHS } from "./kit";
 

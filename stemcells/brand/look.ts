@@ -1,17 +1,8 @@
 /**
- * Stemcells' look: T3's dark theme in a black frame, its slate a touch
- * lighter than T3's chat so it stands apart from the frame. The window chrome
- * and the sidebar are black. The slate is T3's canvas as it reads under T3's
- * grain, laid flat, as T3 lays its chat. What stands on the slate (cards, the
- * composer, code, popovers, the needs cards, hover) is T3's own colour for its
- * role lifted with it, so each keeps the step above the slate it has above
- * T3's. T3's sidebar roles are drawn for a black sidebar already, so its rows,
- * hover and borders read on the frame as they are.
- *
- * The one place it's written. The web ships it built in
- * (`apps/web/src/stemcells/upstream/look.ts`), so the app wears it from its
- * first frame; the server publishes it as a theme file for any other client
- * (`apps/server/src/stemcells/look`), whose tests pin its steps and floors.
+ * Stemcells' look, written only here: T3's dark theme in a black frame, its slate a touch
+ * lighter than T3's chat; what stands on the slate is lifted with it, keeping its step above.
+ * The web builds it in (`apps/web/src/stemcells/upstream/look.ts`) to wear it from the first
+ * frame; the server publishes it for other clients (`apps/server/src/stemcells/look`).
  */
 export const STEMCELLS_THEME_ID = "stemcells";
 

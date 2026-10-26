@@ -1,13 +1,7 @@
-// Springs as the motion tokens define them: a response (seconds) and a
-// damping ratio at unit mass, so stiffness = (2π / response)² and damping =
-// 2 × ratio × (2π / response). The web has no springs, so each one is
-// sampled here into a CSS linear() easing that runs for the spring's settled
-// duration; the compositor then plays it like any other easing.
-//
-// A spring is released from rest, or with a velocity: the share of its move
-// it covers per second at the moment of release. A page let go mid-swipe, or
-// a move taken over by a newer one, starts with the speed it already has,
-// so it carries on rather than stopping dead and setting off again.
+// Springs as the motion tokens define them: a response (s) and a damping ratio at unit mass, so
+// stiffness = (2π / response)² and damping = 2 × ratio × (2π / response). The web has no springs,
+// so each is sampled into a CSS linear() easing for the spring's settled duration. A release
+// velocity (share of the move per second) lets a move taken over mid-way carry on, not restart.
 
 export interface Spring {
   readonly response: number;

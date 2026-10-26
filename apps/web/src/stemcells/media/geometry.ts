@@ -1,8 +1,7 @@
 /**
- * Where the viewer puts a picture and how it moves it, as plain numbers in
- * window pixels. The picture rests at one rect; every other place it shows
- * (on its thumbnail, zoomed, swiped aside) is a pose: that rect moved and
- * scaled from its top-left corner, so each move is a transform the
+ * Where the viewer puts a picture and how it moves it, in window pixels. The picture rests
+ * at one rect; every other place it shows (on its thumbnail, zoomed, swiped aside) is a pose:
+ * that rect moved and scaled from its top-left corner, so each move is a transform the
  * compositor plays.
  */
 

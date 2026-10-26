@@ -52,15 +52,10 @@ describe("the composer ink's contracts with upstream", () => {
   });
 });
 
-// The words are read from the projects and the providers' models that
-// upstream's composer reads too, in the same render. Upstream opens a new
-// chat's composer only once its project is known, and sends only once a
-// provider is, so Enter never sends words that weren't read: not on a cold
-// start, a cached one, or with the projects in and the models still coming.
-// If either gate moves, the words need a wait of their own before a send.
-// A reply from Aski's room is sent as the composer would send its words
-// (`needs/answers/plugin.ts`). If this moves, a Cell is sent a chip as
-// "￼" or code without its backticks again.
+// Upstream opens a new chat's composer only once its project is known and sends only once a
+// provider is, so Enter never sends words read before the projects and models arrived; if either
+// gate moves, the words need their own wait. Aski's room sends a reply as the composer would
+// (`needs/answers/plugin.ts`); if this moves, a Cell gets a chip as "￼" or code without backticks.
 describe("part of the composer's document, as it sends it", () => {
   /** Upstream's node and mark names, as its serializer reads them. */
   const schema = new Schema({

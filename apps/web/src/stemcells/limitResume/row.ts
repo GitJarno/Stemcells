@@ -1,12 +1,8 @@
 /**
- * A Cell that carried on after a usage limit shows a row where its
- * continuation message would be: the line it was sent is the app's, not
- * words the person typed (stemcells/tasks/limit-resume.md).
- *
- * The server names each continuation it sends by why
- * (`apps/server/src/stemcells/upstream/limitResume.ts`, `continuedMessageId`):
- * `stemcells-continued:<reason>:<thread>:<run>:<nonce>`. Upstream's own
- * worker, once its resume is armed, names its `limit-resume:…`.
+ * A Cell that carried on after a usage limit shows a row where its continuation message would
+ * be: that line is the app's, not the person's (stemcells/tasks/limit-resume.md). The server's
+ * `continuedMessageId` names each by why: `stemcells-continued:<reason>:<thread>:<run>:<nonce>`.
+ * Upstream's own worker, once its resume is armed, names its `limit-resume:…`.
  */
 
 export const CONTINUED_WORDS = {

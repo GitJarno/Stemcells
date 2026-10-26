@@ -1,8 +1,7 @@
-// Aski standing in a new chat, over its headline, as on the Mac (`apps/web/
-// src/stemcells/aski/AskiStanding.tsx`): what you write here, Aski carries
-// into a Cell. Once it's sent, the Cell forms on its ledge out of Aski's
-// characters (`cell/forming.ts`). T3's draft hands control here at its seam
-// (`features/threads/NewTaskDraftScreen.tsx`, `stemcells/seams.md`).
+// Aski standing in a new chat over its headline, as on the Mac
+// (`apps/web/src/stemcells/aski/AskiStanding.tsx`): what you write here, Aski carries into
+// a Cell, which forms on its ledge out of Aski's characters (`cell/forming.ts`). T3's draft
+// hands control here (`features/threads/NewTaskDraftScreen.tsx`, `stemcells/seams.md`).
 
 import { Platform, View } from "react-native";
 import { useResolveClassNames } from "uniwind";

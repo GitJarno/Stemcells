@@ -25,14 +25,10 @@ import {
   type TailscaleStep,
 } from "./cli.ts";
 
-// A phone's way to this Mac over Tailscale (stemcells/tasks/devices.md): the
-// server stays on loopback, and Tailscale Serve answers for it on the
-// tailnet with HTTPS. Each step the person would otherwise take by hand,
-// this takes for them: it starts Tailscale, opens its sign-in, names the
-// page that turns HTTPS on for the tailnet, and puts Serve in front of this
-// server without a restart. Once on, it stays on: Serve is put back after a
-// restart or whenever Tailscale comes back, and taken down when the server
-// stops, so the tailnet name never answers for a port nobody holds.
+// A phone's way to this Mac over Tailscale (stemcells/tasks/devices.md): the server stays on
+// loopback and Tailscale Serve answers for it on the tailnet with HTTPS. Once on, Serve is put
+// back after a restart or whenever Tailscale returns, and taken down when the server stops,
+// so the tailnet name never answers for a port nobody holds.
 
 export interface TailscaleLook {
   readonly step: TailscaleStep;
@@ -203,9 +199,9 @@ const make = Effect.gen(function* () {
   }).pipe(lock.withPermits(1), Effect.repeat(Schedule.spaced(KEEP_EVERY)), Effect.forkScoped);
 
   return StemcellsTailscale.of({
-    look: () => lock.withPermits(1)(look()),
-    advance: () => lock.withPermits(1)(advance()),
-    turnOff: () => lock.withPermits(1)(turnOff()),
+    look: Effect.fn("StemcellsTailscale.look")(() => lock.withPermits(1)(look())),
+    advance: Effect.fn("StemcellsTailscale.advance")(() => lock.withPermits(1)(advance())),
+    turnOff: Effect.fn("StemcellsTailscale.turnOff")(() => lock.withPermits(1)(turnOff())),
   });
 });
 

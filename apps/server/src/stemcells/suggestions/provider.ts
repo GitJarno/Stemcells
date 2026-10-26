@@ -3,11 +3,10 @@ import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 
 /**
- * What a provider predicted the person would say next, the last for each
- * thread, held in memory and never stored: Claude Code makes one after each
- * turn (`upstream/claudeSuggestions.ts`). A provider that predicts the next
- * prompt itself hands it here; every other one is answered by the short
- * call (`http.ts`), so a new provider needs nothing to have suggestions.
+ * What a provider predicted the person would say next, the last per thread, in memory only.
+ * Claude Code makes one after each turn (`upstream/claudeSuggestions.ts`); a provider that
+ * predicts nothing is answered by the short call (`http.ts`), so a new provider needs nothing
+ * to have suggestions.
  */
 export interface ProviderSuggestion {
   readonly text: string;

@@ -24,12 +24,10 @@ import { ASSET_ROUTE_PREFIX, resolveAsset, type ResolvedAsset } from "../../asse
 import { openMediaFile } from "../../assets/MediaFile.ts";
 import * as ServerConfig from "../../config.ts";
 
-// What carrying a file into another chat takes from upstream: where a
-// pending attachment's bytes go and what it is called, how many bytes wait
-// there, the caps a message holds, a chat's signed asset URL read back to
-// the file it names (opened as upstream's own asset route opens one), and
-// the HTML renderer's check that an address is public.
-// `attachments.contract.test.ts` pins them.
+// What carrying a file into another chat takes from upstream: a pending attachment's path
+// and name, the bytes waiting, a message's caps, a chat's signed asset URL read back to its
+// file (opened as upstream's asset route opens one), and the HTML renderer's public-address
+// check. `attachments.contract.test.ts` pins them.
 
 /**
  * A host's addresses when every one is public (not this machine, its
@@ -84,13 +82,10 @@ export interface AssetFile {
 }
 
 /**
- * Runs `use` on the file a chat's signed asset URL (`/api/assets/<token>/<name>`,
- * or a full URL ending so) names, opened as upstream's asset route opens a
- * media file and read only through that open file: what was checked is
- * what is read. `use` gets a signal that aborts when the caller is
- * interrupted (the person went away). Null when the URL names nothing this
- * server gives, or something it makes rather than keeps (a tool's picture,
- * a GitHub image).
+ * Runs `use` on the file a signed asset URL (`/api/assets/<token>/<name>`, or a full URL
+ * ending so) names, opened as upstream's asset route opens media and read only through that
+ * handle: what was checked is what is read. `use`'s signal aborts if the caller is
+ * interrupted. Null unless the URL names a file this server keeps (not a tool's picture).
  */
 export const withAssetFile = <A>(
   assetUrl: string,

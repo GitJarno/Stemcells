@@ -1,11 +1,8 @@
 /**
- * Lands new Cells in their projects' tabs across the app's windows
- * (tabs/landing.ts), once their chats are known here. This window's
- * workspace takes its share through its own store, which keeps the unsent
- * new Cell's tab that the workspace it publishes leaves out; on the
- * desktop, the other windows take theirs in one transaction the desktop
- * app carries out, made again from a fresh snapshot if a window changed
- * meanwhile. Not a move: Undo Move doesn't take it back.
+ * Lands new Cells in their projects' tabs across the app's windows (tabs/landing.ts), once
+ * their chats are known. This window takes its share through its own store, which keeps the
+ * unsent new Cell's tab its published workspace leaves out; on the desktop, the others take
+ * theirs in one transaction, remade if a window changed meanwhile. Undo Move skips it.
  */
 import { useEffect } from "react";
 
@@ -25,6 +22,7 @@ const ATTEMPTS = 3;
 /** Each chat an agent launches lands as it arrives, placed by the lead window alone. */
 export function useLandsLaunches(): void {
   const lead = useLeadWindow();
+  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to agent launches while this is the lead window and unsubscribe when it isn't.
   useEffect(
     () => (lead ? subscribeLaunches((cells) => void landNewCells(cells)) : undefined),
     [lead],

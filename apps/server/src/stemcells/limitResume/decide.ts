@@ -1,23 +1,15 @@
 /**
- * When a Cell a usage limit stopped carries on, decided from what the server
- * sees: the stopped Cells, the account each Claude instance is signed in to,
- * the drafts the person's screens report, and the clock. Pure: the loop in
- * `LimitResume.ts` reads the world, asks `step`, and sends what it says.
- *
- * Only while the person has Settings' "Auto-resume limited threads" on
- * (upstream's `autoResumeLimitedThreads`, off by default): a resume is a
- * model call the person didn't start. Then a Cell carries on for one of two
- * reasons, and only these:
- * - **signed-in**: the person signs in again, and the Claude instance the
- *   Cell runs on is now signed in as someone other than when it stopped.
- *   Claude Code reads its login before every request, through a 30 s cache,
- *   so the next request goes out on the new login; nothing else sends it.
- * - **reset**: the limit's reset time, as the refusal stated it, has passed.
- *
- * Nothing here picks an account or suggests one: the person's own sign-in or
- * the clock is the only cause (stemcells/tasks/limit-resume.md).
+ * When a Cell a usage limit stopped carries on, decided purely: `LimitResume.ts` reads the world,
+ * asks `step`, and sends what it says. Only while "Auto-resume limited threads" is on: a resume is
+ * a model call the person didn't start. Nothing here picks or suggests an account; the person's
+ * own sign-in or the clock is the only cause (stemcells/tasks/limit-resume.md).
  */
 
+/**
+ * Why a Cell goes: `signed-in`, its Claude instance is now signed in as someone other than when
+ * it stopped (Claude Code reads its login before each request); `reset`, the limit's reset time,
+ * as the refusal stated it, has passed.
+ */
 export type Reason = "signed-in" | "reset";
 
 /** The drivers whose refusals this reads. Others keep upstream's own behaviour. */

@@ -1,10 +1,7 @@
 /**
- * Aski's instance is Aski's: only Aski's own chat offers it. A Cell's
- * composer never lists it, and a Cell's chat still on it (made before Cells
- * were kept off it) shows, and so sends with, the same model on its
- * driver's own instance. The send moves the chat quietly: upstream's server
- * hands a chat to another instance of its driver by resuming it there. The
- * server refuses a Cell's turn on Aski's instance
+ * Aski's instance is Aski's: a Cell's composer never lists it, and a Cell's chat still on it
+ * shows and sends with the same model on its driver's own instance, where upstream's server
+ * resumes it. The server refuses a Cell's turn on Aski's instance
  * (`apps/server/src/stemcells/upstream/askiInstance.ts`).
  */
 import { useAtomValue } from "@effect/atom-react";

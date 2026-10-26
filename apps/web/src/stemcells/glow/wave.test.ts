@@ -1,18 +1,8 @@
 /**
- * The wave a working Cell shows runs on the compositor: what loops on the
- * composer's glass, the work word's sheen and upstream's live overlays
- * moves by transform or opacity only, so no script and no paint runs per
- * frame. Animating a background's place, a gradient, a shadow or a filter
- * steps or stutters whenever the page is busy, which is what this keeps
- * from coming back. The one thing that must repaint, a shining label with
- * no copy of its words, repaints only while the crest passes over it.
- *
- * And it costs frames only when it moves: what never rests (the drift, the
- * breath) steps on the Cells' sprite clock rather than drawing every frame
- * of a 120 Hz display, and a label's shine runs only while the crest
- * crosses it. In a window beside another app the crest steps too, and in one
- * no one can see nothing loops. Three working Cells held the GPU near 35%
- * before.
+ * A working Cell's wave runs on the compositor: what loops on the glass, the work word and
+ * upstream's live overlays moves by transform or opacity only, since a background's place, a
+ * gradient, a shadow or a filter stutters on a busy page. What never rests steps on the sprite
+ * clock, a label repaints only while the crest crosses it, and unseen nothing loops.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 

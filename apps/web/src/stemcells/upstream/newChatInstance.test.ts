@@ -1,10 +1,8 @@
 /**
- * A new Cell never starts on Aski's provider instance, which carries Aski's
- * persona: a Cell opened from Aski's tab (+, ⌘T) ran as Aski. Upstream's new
- * chat takes its model from the chat on screen, else from the model last
- * picked; neither may be Aski's. Any other chat's model still carries. Nor
- * does it start in Aski's no-project: upstream's new chat takes the chat on
- * screen's project, and Aski lives in none.
+ * A new Cell never starts on Aski's provider instance, which carries Aski's persona: upstream's
+ * new chat takes its model from the chat on screen, else the model last picked, and neither may
+ * be Aski's; any other chat's model still carries. Nor does it start in Aski's no-project, as
+ * upstream's new chat takes the on-screen chat's project.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";

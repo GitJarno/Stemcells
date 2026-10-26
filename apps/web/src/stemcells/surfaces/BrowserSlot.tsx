@@ -16,6 +16,7 @@ export function BrowserSurfaceSlot(props: ComponentProps<typeof UpstreamBrowserS
   // A rest is a new layout version: upstream's slot presents its rect again.
   const [rests, setRests] = useState(0);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Ride the desktop browser view with its slot while the pages slide; stop on change or unmount.
   useLayoutEffect(() => {
     const anchor = host.current?.firstElementChild;
     if (!(anchor instanceof HTMLElement)) return;

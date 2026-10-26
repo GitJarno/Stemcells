@@ -15,12 +15,10 @@ import { PlanAnswer } from "./answer.ts";
 import { appendPlan, clearPlans, PlanRecord } from "./history.ts";
 import { firstParagraph, LINE_FILES, LINE_READ_MOST } from "./lines.ts";
 
-// POST /api/stemcells/planner: one lean structured call on the model the
-// request names, with the web's prompt, answering `PlanAnswer`; it spends,
-// so it takes the operate scope.
+// POST /api/stemcells/planner: one lean structured call on the model the request names, with
+// the web's prompt, answering `PlanAnswer`; it spends, so it takes the operate scope.
 // GET /api/stemcells/planner/lines?project=…: each project's one line.
-// POST /api/stemcells/planner/history: one plan, as the web saw it through,
-// added to the plan history; DELETE forgets them all (`history.ts`).
+// POST /api/stemcells/planner/history: one plan as the web saw it through; DELETE forgets all.
 
 export const PLANNER_PATH = "/api/stemcells/planner";
 const NO_STORE = { "cache-control": "private, no-store" };

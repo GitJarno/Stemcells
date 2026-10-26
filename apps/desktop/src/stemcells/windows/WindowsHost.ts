@@ -1,11 +1,10 @@
 // @effect-diagnostics nodeBuiltinImport:off -- The windows' file is written once more, synchronously, as the app quits.
 // @effect-diagnostics globalTimers:off -- Saving waits for a quiet moment, outside any Effect fiber.
 /**
- * Stemcells: more than one app window (stemcells/tasks/windows.md). Keeps
- * the book of windows (book.ts), answers each page's boot, publishes and
- * moves (windowsPreload.ts), opens and closes windows through upstream's
- * own window maker, passes the lead on when the lead window closes, and
- * keeps the book in the desktop state folder between launches.
+ * Stemcells: more than one app window (stemcells/tasks/windows.md). Keeps the book of
+ * windows (book.ts) in the desktop state folder, answers each page's boot, publishes and
+ * moves (windowsPreload.ts), and opens and closes windows through upstream's window maker.
+ * When the lead window closes, the lead passes on.
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
@@ -154,12 +153,10 @@ export const layer = Layer.effectDiscard(
     } | null = null;
 
     /**
-     * Whether the app is quitting, as the app's own flag says: the windows
-     * that close while it is open again at the next launch. The flag is up
-     * before anything closes a window to quit (`before-quit`, or an update,
-     * which closes every window before `before-quit`), and goes down again
-     * when an update can't install and the app carries on: then the windows
-     * kept meanwhile open again (`quitEnded`).
+     * The app's own quitting flag: windows that close while it is up reopen at next launch.
+     * It rises before anything closes a window to quit (`before-quit`, or an update, which
+     * closes every window first), and falls when an update can't install and the app carries
+     * on: then the windows kept meanwhile reopen (`quitEnded`).
      */
     const quittingNow = () => {
       const now = Ref.getUnsafe(desktopState.quitting);
@@ -274,11 +271,10 @@ export const layer = Layer.effectDiscard(
     };
 
     /**
-     * The person closed a window: its page closes it as a move, so Aski's tab
-     * goes home in the same step and Undo Move can reopen it. A page that
-     * doesn't in time, or the last window, closes as it always has. So does
-     * every window as the app quits, an update's quit too, which closes them
-     * before `before-quit`.
+     * The person closed a window: its page closes it as a move, so Aski's tab goes home in
+     * the same step and Undo Move can reopen it. A page that doesn't in time, the last window,
+     * and every window as the app quits (an update's quit too, which closes them before
+     * `before-quit`) close as they always have.
      */
     const closeAsMove = (id: string, window: Electron.BrowserWindow) => (event: Electron.Event) => {
       if (quittingNow() || letGo.has(window) || !book.get(id) || book.ids().length < 2) return;
@@ -496,11 +492,10 @@ export const layer = Layer.effectDiscard(
     };
 
     /**
-     * Every window kept in the book without one opens, once upstream's main
-     * window has loaded: at launch, and when it comes back after the app
-     * closed them all to quit and then didn't (an update that couldn't
-     * install). From the first, the displays are watched: plugging one in or
-     * out changes which memory Put back would use.
+     * Opens every window kept in the book without one, once upstream's main window has
+     * loaded: at launch, and when it returns after a quit that didn't happen (an update that
+     * couldn't install). From the first call the displays are watched: plugging one in or
+     * out changes which memory Put back uses.
      */
     const openTheRest = () => {
       if (!watchingDisplays) {

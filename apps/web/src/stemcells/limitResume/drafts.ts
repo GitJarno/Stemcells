@@ -1,9 +1,8 @@
 /**
- * Tells this Mac's server which chats have words in a composer here, so a
- * Cell stopped by a usage limit never carries on over what the person is
- * writing to it (`POST /api/stemcells/limit-resume/drafts`). The whole list
- * goes each time it changes, and again every `everyMs` while it isn't
- * empty: the server lets a screen's list lapse when it stops hearing.
+ * Tells this Mac's server which chats have words in a composer here
+ * (`POST /api/stemcells/limit-resume/drafts`), so a Cell stopped by a usage limit never carries
+ * on over what the person is writing. The whole list goes on each change, and every `everyMs`
+ * while non-empty: the server lets a screen's list lapse when it stops hearing.
  */
 
 export const DRAFTS_PATH = "/api/stemcells/limit-resume/drafts";

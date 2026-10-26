@@ -1,8 +1,7 @@
-// The phone's photo library, for Add to Chat: whether we may see it, its
-// newest photos, and a picked photo as T3's picker hands one over
-// (`staged.ts`). T3 never asks for the library (its picker needs no
-// access); the card asks when it first opens. A build made before the
-// library's module was added has none, and keeps T3's own menu.
+// The phone's photo library, for Add to Chat: access, the newest photos, and a picked photo as
+// T3's picker hands one over (`staged.ts`). T3 never asks for the library; the card asks when
+// it first opens. A build made before the library's module was added has none, and keeps T3's
+// own menu.
 
 import { requireOptionalNativeModule } from "expo";
 import type { ImagePickerAsset } from "expo-image-picker";
@@ -63,12 +62,10 @@ export function onLibraryChange(changed: () => void): () => void {
 }
 
 /**
- * The photo of `id` as T3's picker hands one over: its file as Photos
- * shows it, edits and all, downloaded from iCloud when it must be. T3
- * draws a HEIC photo again as a JPEG, which keeps none of its metadata,
- * but sends a JPEG as its own bytes, EXIF and all; so a JPEG is drawn
- * again here first, and where it was taken doesn't go with it. (The
- * system's picker lets the person leave the place out; this card can't.)
+ * The photo of `id` as T3's picker hands one over: its file as Photos shows it, edits and all,
+ * from iCloud when it must be. T3 redraws a HEIC as a JPEG, which drops its metadata, but sends
+ * a JPEG's own bytes, EXIF and all. So a JPEG is redrawn here too: unlike the system's picker,
+ * this card can't let the person leave out where it was taken.
  */
 export async function photoOf(id: string): Promise<ImagePickerAsset> {
   const { Asset } = await library();

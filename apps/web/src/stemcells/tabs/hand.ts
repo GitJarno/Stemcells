@@ -2,11 +2,10 @@ import { dragBy, dragPosition, releaseTarget, startDrag, type Drag } from "./pag
 import { SwipeLatch, WheelContact, type ContactSource, type WheelSample } from "./swipe";
 
 /**
- * The fingers on the page strip, one wheel event at a time: which gesture
- * an event belongs to (a `ContactSource`), whose that gesture is (a
- * `SwipeLatch`), where the strip follows the fingers, and the page it goes
- * to when they lift. It moves nothing itself; the strip it holds does, so
- * the same hand runs in the app and in a replay of a recorded swipe.
+ * The fingers on the page strip, one wheel event at a time: which gesture an event belongs to
+ * (`ContactSource`), whose that gesture is (`SwipeLatch`), where the strip follows, and the page
+ * it goes to on lift. It moves nothing itself; the strip it holds does, so the same hand runs in
+ * the app and in a replay of a recorded swipe.
  */
 export interface HeldStrip {
   /** Where the strip is on screen (pages), a slide included. */

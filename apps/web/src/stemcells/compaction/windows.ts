@@ -1,9 +1,7 @@
-// The windows a Claude Cell compacts at, as Settings › Providers offers them.
-// The window is a Claude instance's `autoCompactWindow`. Empty is the
-// default, 500k, which the server hands at launch (server
-// `stemcells/compaction/claudeWindow.ts`, whose default must match this
-// one); "1000000", the CLI's largest, is the model's own, since the CLI caps
-// the window at the model's context.
+// The windows a Claude Cell compacts at (a Claude instance's `autoCompactWindow`). Empty is the
+// 500k default the server hands at launch, which must match server
+// `stemcells/compaction/claudeWindow.ts`. "1000000", the CLI's largest, is the model's own,
+// since the CLI caps the window at the model's context.
 
 export const DEFAULT_COMPACT_WINDOW = "500000";
 export const MODEL_OWN_WINDOW = "1000000";

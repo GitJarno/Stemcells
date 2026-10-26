@@ -1,9 +1,8 @@
 /**
- * What the new Cell's draft (`newCell.ts`) relies on: it is made by the
- * same steps upstream's "new thread" takes for a fresh draft, without
- * going to it. A failure here after a sync names the step that moved; the
- * new Cell past the last tab would then start in another mode, model or
- * place than a new tab does, until `useNewCellDraftMaker` takes the step too.
+ * What the new Cell's draft (`newCell.ts`) relies on: it is made by the same steps upstream's
+ * "new thread" takes for a fresh draft, without going to it. A failure after a sync names the
+ * step that moved; until `useNewCellDraftMaker` takes it too, the new Cell past the last tab
+ * starts in another mode, model or place than a new tab does.
  */
 import { describe, expect, it } from "vite-plus/test";
 

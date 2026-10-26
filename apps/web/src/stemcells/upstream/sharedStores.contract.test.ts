@@ -1,11 +1,8 @@
 /**
- * Upstream behaviour the windows' merge relies on (`windows/storageMerge.ts`):
- * each shared store's persisted fields carry the state's own names, its own
- * hydration turns another window's write into state, its storage writes the
- * versions the merge gives it (the drafts' storage: a state it wasn't given
- * captured, as it is, when it writes) and hydrates past them, and its
- * debounced writes happen on `beforeunload`. If this fails after a sync, two
- * windows may overwrite each other's drafts again.
+ * Upstream behaviour the windows' merge relies on (`windows/storageMerge.ts`): each shared
+ * store persists fields under the state's own names, hydrates another window's write into
+ * state, writes and hydrates past the versions the merge gives it, and flushes debounced writes
+ * on `beforeunload`. If this fails after a sync, two windows may overwrite each other's drafts.
  */
 import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { EnvironmentId, ThreadId } from "@t3tools/contracts";

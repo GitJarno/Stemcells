@@ -164,13 +164,10 @@ describe("recorded swipes, as Chromium delivered them", () => {
   });
 });
 
-// Swipes shaped like a Mac trackpad's, delivered the way Chromium delivers
-// them: the fingers' events every 8 ms, then the system's coast every 17 ms
-// decaying 5 % a frame, in whole pixels, each reaching the page a little
-// after it came. A busy page hears nothing; what came meanwhile reaches it
-// as one event per kind (fingers, coast) when it is free again, stamped
-// with the last one's time. The browser, when busy itself, holds an event
-// back, and what comes behind it arrives merged the same way.
+// Swipes shaped like a Mac trackpad's, as Chromium delivers them: finger events every 8 ms, then
+// the system's coast every 17 ms decaying 5 % a frame, in whole pixels, each a little late. A busy
+// page or browser hears nothing meanwhile; what came reaches it as one event per kind (fingers,
+// coast) once free, stamped with the last one's time.
 
 /** One trackpad event: when, whether the fingers or the coast sent it, and how far (wheel sense). */
 interface Pad {
@@ -232,12 +229,10 @@ const DELIVERY = 12;
 const DRAIN = 8;
 
 /**
- * What the page gets of `pads` when it is busy (`page`, rendering a turn)
- * or the browser is (`browser`, holding back the event due next). What
- * comes meanwhile waits, each run of one kind (fingers, coast) merged into
- * one event stamped with its last one's time; the wait then drains one
- * event at a time, and what comes while it drains joins it. The first
- * event after the page was busy says when it went busy (`heard`).
+ * What the page gets of `pads` when it is busy (`page`, rendering a turn) or the browser is
+ * (`browser`, holding back the next event). Each run of one kind (fingers, coast) waits merged
+ * into one event stamped with its last one's time, then drains one at a time, joined by what
+ * comes meanwhile. The first event after the page was busy says when it went busy (`heard`).
  */
 function delivered(
   pads: readonly Pad[],
@@ -374,12 +369,10 @@ describe("swipes shaped like a trackpad's, on a page or browser that is sometime
   });
 });
 
-// The same swipes with macOS's own phases, as the desktop app hands them
-// to the page. The strip must let go as the fingers lift and follow none
-// of the coast after. The phases reach the page about a millisecond after
-// each event. While the page or the browser is busy they wait like the
-// wheel events, and come before those held back (as measured) or after
-// them.
+// The same swipes with macOS's own phases, as the desktop app hands them to the page, about a
+// millisecond after each event. The strip must let go as the fingers lift and follow none of the
+// coast. While the page or browser is busy, phases wait like the wheel events, and come before
+// those held back (as measured) or after them.
 
 /** The phases of `pads`' scroll events, as the system reports them, on the page's clock. */
 function phasesOf(pads: readonly Pad[]): ScrollPhases[] {

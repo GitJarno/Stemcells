@@ -26,13 +26,10 @@ import "../tokens/stemcells.css";
 import "./floater.css";
 
 /**
- * A chat's floating browser or device (upstream's mini player), as a card.
- * Where the chat has room beside its lane, it is upstream's live floater,
- * which lifts under the pointer and opens on a click. Where upstream would
- * lay it over the chat's words, which is most panes, it tucks instead: a
- * card at the chat's right edge, most of it behind the edge (`Tucked`). Either
- * way a click opens it in the workbench, and it flies there and back
- * (`flight.ts`).
+ * A chat's floating browser or device (upstream's mini player), as a card. Where the chat has
+ * room beside its lane it is upstream's live floater; where upstream would lay it over the chat's
+ * words, most panes, it tucks at the chat's right edge instead (`Tucked`). Either way a click
+ * opens it in the workbench, and it flies there and back (`flight.ts`).
  */
 export function ThreadPreviewMiniPlayer(
   props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>,
@@ -51,11 +48,9 @@ export function ThreadPreviewMiniPlayer(
 }
 
 /**
- * Upstream's floater, a live page beside the chat, made a card: a click on
- * the page opens it in the workbench rather than reaching the page (there it
- * is the whole Surface to work in), and pointed at, it lifts. Upstream's own
- * grip, edges and buttons stay above, to move it, size it, pop it out or
- * close it. The desktop browser's page is drawn at the app's root, over its
+ * Upstream's floater, a live page beside the chat, made a card: a click on the page opens it in
+ * the workbench rather than reaching the page, and pointed at, it lifts. Upstream's grip, edges
+ * and buttons stay above it. The desktop browser's page is drawn at the app's root, over its
  * slot, so it is lifted with the card by name.
  */
 function Card(props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>) {
@@ -72,6 +67,7 @@ function Card(props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>) {
     const up = hovered.current || focused.current;
     browserViewOf(threadKey, source)?.toggleAttribute("data-stemcells-lifted", up);
   };
+  // oxlint-disable-next-line t3code/react-effect-budget -- Clear the lifted mark from the desktop browser view when the card's source changes or unmounts.
   useEffect(
     () => () => browserViewOf(threadKey, source)?.removeAttribute("data-stemcells-lifted"),
     [threadKey, source],
@@ -111,14 +107,10 @@ function Card(props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>) {
 }
 
 /**
- * The tucked card. It stands on the Cell's shelf, showing its page's mark;
- * pointed at or focused it slides out to its name and ×. A touch has no
- * hover, so there the first tap brings it out and the next opens it, as
- * upstream's floater shows its buttons on a tap. A click opens it in
- * the chat's workbench as upstream's "Open in right panel" does: in a tab of
- * several Cells that is Look, half the slate. × ends the floater, as
- * upstream's own × does; the browser stays among the workbench's tabs.
- * Tucked, a browser shows no live page.
+ * The tucked card on the Cell's shelf, showing its page's mark; pointed at or focused it slides
+ * out to its name and ×. A touch has no hover, so there the first tap brings it out. A click
+ * opens it in the workbench as upstream's "Open in right panel" does (in a tab of several Cells,
+ * Look); × ends the floater, the browser staying in the workbench. Tucked, no live page shows.
  */
 function Tucked(
   props: Pick<ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>, "threadRef"> & {
@@ -133,6 +125,7 @@ function Tucked(
   const card = useRef<HTMLDivElement>(null);
   const [out, setOut] = useState(false);
   const pointer = useRef<string | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for a press outside the slid-out card to tuck it back, removing the listener when it tucks.
   useEffect(() => {
     if (!out) return;
     const away = (event: PointerEvent) => {
@@ -190,6 +183,7 @@ const COMPOSER = "[data-chat-composer-stack]";
  * as the composer grows, into a style property, never React state.
  */
 function useShelf(room: RefObject<HTMLElement | null>) {
+  // oxlint-disable-next-line t3code/react-effect-budget -- Measure the shelf's floor into a style property and observe the canvas and composer resizes.
   useLayoutEffect(() => {
     const element = room.current;
     const canvas = element?.closest<HTMLElement>("[data-chat-canvas]");

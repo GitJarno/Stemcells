@@ -36,6 +36,7 @@ export function AskiKeeper(props: { onChat: (chat: AskiChat) => void }) {
         ? `unavailable:${chat.reason}`
         : chat.status;
   const report = useEffectEvent((_key: string) => props.onChat(chat));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Report Aski's chat to the workspace each time its status changes.
   useEffect(() => report(key), [key]);
   return null;
 }
@@ -52,18 +53,10 @@ export const ASKI_UNAVAILABLE: Record<
 };
 
 /**
- * Aski's pane: its chat, with Aski in it, and beside them what needs the
- * person (NeedsFrame). The chat is upstream's thread view, bare: Aski has no
- * project, so no surface or terminal opens under it (aski-manager.md,
- * decision 1). Aski stands over its composer where a Cell's line would
- * (AskiPerch); until the chat exists, Aski stands over why. Aski's eyes
- * follow the pointer anywhere over the pane, and the caret in its chat's
- * field. A Cell opened from the roster or a card is peeked at over it
- * (needs/Peek.tsx), and has the window's input meanwhile; a link in Aski's
- * chat opens its chat in a tab of its own, as a chip does anywhere, so the
- * talk with Aski stays on screen.
- * Each Cell launched while the room shows, a copy of Aski flies to where
- * it landed (aski/copies.ts).
+ * Aski's pane: upstream's thread view, bare (Aski has no project, so no surface or terminal;
+ * aski-manager.md, decision 1), with what needs the person beside it (NeedsFrame). A Cell
+ * opened from the roster or a card is peeked at over it (needs/Peek.tsx) and has the window's
+ * input meanwhile; a link in Aski's chat opens a tab, so the talk with Aski stays on screen.
  */
 export function AskiPane(props: {
   chat: AskiChat;
@@ -74,6 +67,7 @@ export function AskiPane(props: {
 }) {
   const aski = props.chat.status === "ready" ? props.chat.cell : null;
   const room = useRef<HTMLDivElement>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Fly a copy of Aski to each Cell launched while the room shows; unsubscribe on unmount.
   useEffect(
     () =>
       subscribeLaunches((cells) => {

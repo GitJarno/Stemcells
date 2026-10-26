@@ -1,10 +1,8 @@
 /**
- * Whether a chat's checkout is a git repository, as far as anything has
- * said: the live git status, else what this session last heard for the same
- * checkout. Upstream's view assumes git until it hears (`isGitRepo` in
- * ChatView defaults to true), which draws a branch picker for a folder
- * without git; a Cell's line shows git only once it is known. And the
- * branch the line names, by upstream's own rule for its branch picker.
+ * Whether a chat's checkout is a git repository, as far as anything has said: the live git
+ * status, else what this session last heard for it. Upstream's view assumes git until it hears
+ * (`isGitRepo` defaults to true in ChatView), so a Cell's line shows git only once known. And
+ * the branch the line names, by upstream's own rule for its branch picker.
  */
 import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId, ProjectId, ThreadId } from "@t3tools/contracts";

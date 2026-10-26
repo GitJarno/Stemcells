@@ -92,6 +92,7 @@ export function NeedCard(props: {
   // An allow can't land in the card's first moment: a card arriving under
   // the pointer is read before it is clicked.
   const [allowReady, setAllowReady] = useState(false);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Time when an allow may land after the card was seen, and clear the timer on change.
   useEffect(() => {
     const allowAt = (props.seenAt ?? 0) + timing("readBeforeAllow");
     const timer = setTimeout(() => setAllowReady(true), Math.max(0, allowAt - Date.now()));
@@ -120,6 +121,7 @@ export function NeedCard(props: {
   const folded = hold !== undefined && (hold.state === "holding" || hold.state === "sending");
   const answerable = answerableOf(props.shown, hold);
   // Answered, the card rolls up into its one line (left-column.md, decision 7).
+  // oxlint-disable-next-line t3code/react-effect-budget -- Roll the answered card's height up from its pre-fold size before paint.
   useLayoutEffect(() => {
     const card = section.current;
     const from = rollFrom.current;
@@ -148,6 +150,7 @@ export function NeedCard(props: {
     landOnOpen.current = section.current !== null && keyedIn(section.current);
     props.queued?.onOpen();
   };
+  // oxlint-disable-next-line t3code/react-effect-budget -- Land keyboard focus in the card once a keyboard open has rendered its options.
   useLayoutEffect(() => {
     if (collapsed || !landOnOpen.current || section.current === null) return;
     landOnOpen.current = false;

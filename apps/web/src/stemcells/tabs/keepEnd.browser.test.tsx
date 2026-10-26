@@ -1,8 +1,6 @@
-// A terminal drawer opening under a chat read to its end shortened the
-// transcript, and the words stayed where they were while the composer rose
-// with the drawer: upstream's list kept the end a frame later, or gliding
-// while a Cell worked. Where the list will keep the end, the pane keeps it
-// in the same frame, and does no more than the list would.
+// A terminal drawer opening under a chat read to its end shortens the transcript, and upstream's
+// list keeps the end a frame late (gliding while a Cell works). Where the list will keep the end,
+// the pane keeps it in the same frame, and does no more than the list would.
 import { describe, expect, it } from "vite-plus/test";
 
 import { render } from "../upstream/testRender";

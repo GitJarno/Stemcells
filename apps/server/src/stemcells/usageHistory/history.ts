@@ -3,12 +3,10 @@
 import type { UsageProviderKind } from "@t3tools/contracts";
 import type { UsageRecord } from "@t3tools/provider-core/server/usage";
 
-// Usage kept from transcripts the provider CLIs have since deleted. Claude
-// keeps a transcript about 30 days and the Usage page's own cache 92, so
-// older months read as nothing; this store keeps their tokens for good.
-// Imported once from another app's ledger (the original app) by
-// `stemcells/scripts/import-usage-ledger`; no Effect here, so that script
-// runs it with plain Node.
+// Usage kept from transcripts the provider CLIs have since deleted: Claude keeps a transcript
+// about 30 days and the Usage page's cache 92, so older months would read as nothing. No Effect
+// here, so `stemcells/scripts/import-usage-ledger` can run it with plain Node to import
+// another app's ledger once.
 
 /** One transcript's tokens by hour and model. */
 export interface HistoryFile {

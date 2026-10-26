@@ -1,9 +1,8 @@
 /**
- * The composer floats over its transcript, so a wheel over it scrolls the
- * transcript, as one over the Swift app's floating plate does: a vertical
- * wheel over the line on it, or over the plate where nothing under the
- * pointer scrolls that way itself (the field does, while it has more to
- * show). A sideways swipe is the tab pager's and passes untouched.
+ * The composer floats over its transcript, so a vertical wheel over it scrolls the transcript,
+ * as over the Swift app's floating plate: over the line, or over the plate where nothing under
+ * the pointer scrolls that way itself (the field does, while it has more to show). A sideways
+ * swipe is the tab pager's and passes untouched.
  */
 export function scrollThrough(composer: HTMLElement): () => void {
   const onWheel = (event: WheelEvent) => {

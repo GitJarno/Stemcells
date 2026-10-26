@@ -1,9 +1,7 @@
 /**
- * Replaces `components/ThreadContextChip.tsx` (`plugin.ts`): a thread chip
- * (in a reply, a message or the composer) opens the chat it names in a new
- * pane beside the one it is in, so the chat being read stays on screen.
- * Upstream's chip routes to it, and the route fills the focused pane. A
- * click with a modifier, or outside the workspace, does what upstream's does.
+ * Replaces `components/ThreadContextChip.tsx` (`plugin.ts`): a thread chip opens its chat in a
+ * new pane beside its own, so the chat being read stays on screen, where upstream's route fills
+ * the focused pane. A click with a modifier, or outside the workspace, does what upstream's does.
  */
 import type { ComponentProps, MouseEvent } from "react";
 

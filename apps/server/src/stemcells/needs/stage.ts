@@ -1,10 +1,8 @@
 /**
- * Every Cell's stage, the same in Aski's roster, on its tab and in its chat
- * (stemcells/tasks/aski-manager.md, decision 7): at work, needs you, or
- * done. Facts first: what needs the person is the list's own cards, and a
- * run under way is at work. Only a Cell whose turn ended is read for its
- * own word (`closeOut.ts`), and done is what's left when nothing holds it.
- * Pure: the service hands it the shells, the cards and the stops it read.
+ * Every Cell's stage (stemcells/tasks/aski-manager.md, decision 7), the same in Aski's
+ * roster, its tab and its chat: at work, needs you, or done. Facts first: needs you is the
+ * list's own cards, a run under way is at work, and only a Cell whose turn ended is read for
+ * its own word (`closeOut.ts`); done is what's left. Pure.
  */
 import * as DateTime from "effect/DateTime";
 

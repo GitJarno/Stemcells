@@ -1,9 +1,7 @@
 /**
- * Upstream's thread details card: where the chat runs, Open in, project
- * scripts and Git. Upstream opens it beside every chat wide enough to hold
- * it; a Cell starts with it closed, and the pane's ≡ button opens it.
- * workspace.css hangs it below the pane's buttons
- * (threadDetails.contract.test.ts).
+ * Upstream's thread details card (where the chat runs, Open in, project scripts, Git) opens
+ * beside every chat wide enough; a Cell starts with it closed and the pane's ≡ button opens it.
+ * workspace.css hangs it below the pane's buttons (threadDetails.contract.test.ts).
  */
 import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId, ScopedThreadRef, ThreadId } from "@t3tools/contracts";
@@ -33,6 +31,7 @@ export function useDetailsClosedAtFirst(target: ThreadRouteTarget | null): void 
   const cell = useCellForRoute(target);
   const environmentId = cell?.environmentId ?? null;
   const threadId = cell?.threadId ?? null;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Close upstream's details card the first time this Cell's thread shows, before it paints.
   useLayoutEffect(() => {
     if (environmentId === null || threadId === null) return;
     closeDetailsOnFirstShow(scopeThreadRef(environmentId as EnvironmentId, threadId as ThreadId));

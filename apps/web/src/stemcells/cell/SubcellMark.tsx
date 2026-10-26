@@ -1,13 +1,7 @@
-// A Subcell in the transcript, where upstream draws a subagent's provider
-// logo: a Cell of its own, drawn as a tab draws its Cell (`CellFigure`), at
-// the size the composer's line draws one, about the logo's own.
-// It is dealt by its name, its thread's id, the deal its tab would get: the
-// crew's look while its thread is open in a tab, else the look its name is
-// dealt alone, so it wears the same one wherever it shows, reload after
-// reload. Its face comes from its status (`subcell.ts`), in its provider's
-// colours; upstream's status dot stays on it, as upstream draws it. Beside
-// its Cell on the composer's line it stands as a bud (`CellBuds`), half
-// the Cell's size, with no dot.
+// A Subcell in the transcript, where upstream draws a subagent's provider logo: a Cell of its
+// own, its face from its status (`subcell.ts`). It is dealt by its thread's id as its tab would
+// be (the crew's look while open in a tab, else its name's alone), so it wears one look
+// everywhere, reload after reload. Upstream's status dot stays, except on a bud (`CellBuds`).
 
 import { useCellGround } from "../upstream/appearance";
 import { useRosterLook } from "../tabs/roster";

@@ -65,11 +65,10 @@ function raster(art: readonly string[], body: string, ground: Ground): HTMLCanva
 }
 
 /**
- * Paints `frame` on `canvas` in `body`'s colours, `points` CSS pixels a
- * cell on a display of `dpr`, as the frame `ground` behind it draws it: the
- * hero detail where it lands on whole device pixels, else the miniature,
- * with the margin past the box (`MARGIN`). The canvas's CSS size is the
- * caller's: the box and its margin.
+ * Paints `frame` on `canvas` in `body`'s colours, `points` CSS pixels a cell at `dpr`, as the
+ * frame `ground` behind it draws it: the hero detail where it lands on whole device pixels,
+ * else the miniature, with the margin past the box (`MARGIN`). The canvas's CSS size (the box
+ * and its margin) is the caller's.
  */
 export function paint(
   canvas: HTMLCanvasElement,

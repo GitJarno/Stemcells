@@ -1,13 +1,8 @@
 /**
- * What a chat's Cell acts out, read from upstream's thread: the tool calls of
- * the run in progress, newest last, when anything last came into it, when its
- * last turn landed, when its prompt cache goes cold, how long it has worked
- * alone, and what its last run did to the lines of its files. A Cell reads
- * the turn items only while its chat works, and the thread's detail, once
- * the server lists the thread, as it is drawn and as a run starts or lands.
- * On the desktop app every running thread's items are live already
- * (upstream's `RunningThreadKeepAlive`); in a browser this keeps a working
- * chat's live while its Cell is mounted.
+ * What a chat's Cell acts out from upstream's thread: the run's tool calls, its latest news and
+ * landing, when its cache goes cold, how long it worked alone, and its lines. Turn items are
+ * read only while the chat works, its detail once the server lists the thread. In a browser
+ * this keeps a working chat live while its Cell is mounted (desktop: `RunningThreadKeepAlive`).
  */
 import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-label";
 import type {
@@ -139,11 +134,9 @@ export function budOf(item: OrchestrationV2TurnItem): Bud | undefined {
 }
 
 /**
- * The Subcells a chat's Cell stands its buds for, oldest first: those its
- * items name, at work or done (`budOf`), then those its upstream lists as
- * pending background work once its turn is over, at work. Both name a
- * Subcell by its thread's id, so a subagent handed to the background stays
- * the same bud.
+ * The Subcells a Cell stands buds for, oldest first: those its items name, at work or done
+ * (`budOf`), then those upstream lists as pending background work after its turn, at work.
+ * Both name a Subcell by its thread's id, so a subagent sent to the background stays one bud.
  */
 export function budsIn(
   items: ReadonlyArray<OrchestrationV2ProjectedTurnItem>,
@@ -163,11 +156,9 @@ export function budsIn(
 }
 
 /**
- * The Subcells a chat's Cell stands its buds for (`budsIn`). While it
- * works, those are its subagent items, in any run: a subagent sent to the
- * background keeps its item running past the turn that started it. Its
- * upstream lists them as pending background work too, which is all there
- * is to read once the chat stops working.
+ * The Subcells a Cell stands buds for (`budsIn`). While it works, those are its subagent items
+ * in any run, since a background subagent's item runs past its turn; once the chat stops,
+ * upstream's pending background work is all there is to read.
  */
 export function useCellBuds(cell: CellRef | null, working: boolean): readonly Bud[] {
   const ref = cell ? threadRefOf(cell) : null;
@@ -208,6 +199,7 @@ export function useCellDeep(cell: CellRef | null, working: boolean, quiet: boole
   const news = newsOf(items, shell?.runtime?.activeRunId ?? null);
   const [silent, setSilent] = useState<string | null>(null);
   // The silence counts from the last news, quiet or not, as the original's.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Time the hold after the latest news and clear the timer when news comes or work stops.
   useEffect(() => {
     if (!working) return;
     const timer = setTimeout(() => setSilent(news.key), ACTIVITY_HOLD);
@@ -223,11 +215,9 @@ export function useCellDeep(cell: CellRef | null, working: boolean, quiet: boole
 export const CODEX_CACHE_MS = 30 * 60_000;
 
 /**
- * When run `runId`'s prompt cache goes cold, from the thread's detail: the
- * expiry upstream's Claude adapter stamps on the turn's usage (an hour or five
- * minutes from the last request's start, by the tier that request wrote).
- * Undefined when the usage names none, as for a request served wholly from
- * cache; null until the detail has seen the run land.
+ * When run `runId`'s prompt cache goes cold: the expiry upstream's Claude adapter stamps on the
+ * turn's usage (an hour or five minutes from the last request's start, by its tier). Undefined
+ * when the usage names none, as for a fully cached request; null until the detail saw it land.
  */
 export function coldAtOf(
   projection: OrchestrationV2ThreadProjection,
@@ -267,11 +257,9 @@ export function coldAtFor(
 }
 
 /**
- * When the chat's last turn landed and when its prompt cache goes cold, in
- * milliseconds since the epoch. `landedAt` is null before a turn has landed
- * or while one runs; `coldAt` is undefined when the Cell makes no claim
- * (`coldAtFor`). Claude's expiry is read from the thread's detail once per
- * landing.
+ * When the chat's last turn landed and its prompt cache goes cold, in epoch ms. `landedAt` is
+ * null before a landing or while a run is on; `coldAt` is undefined when the Cell claims none
+ * (`coldAtFor`). Claude's expiry is read from the thread's detail once per landing.
  */
 export function useCellRest(
   cell: CellRef | null,
@@ -369,12 +357,10 @@ export function diffOf(
 const NO_DIFF: Diff = { added: false, removed: false };
 
 /**
- * When a Cell's landing is read again from its thread's detail: as the Cell
- * is drawn, as a run starts and as it lands. Never before the server lists
- * the thread, as upstream's own view waits (`resolveThreadDetailRef`): a
- * draft's thread read early keeps its detail empty while the read lasts, so
- * the chat its first send makes shows nothing of its own turn (no stop, no
- * working row) until a reload.
+ * When a Cell's landing is read again from the thread's detail: as the Cell is drawn, as a run
+ * starts and as it lands. Never before the server lists the thread, as upstream's view waits
+ * (`resolveThreadDetailRef`): a draft's thread read early keeps its detail empty, so its first
+ * send's chat shows nothing of its turn (no stop, no working row) until a reload.
  */
 export function landingKeyOf(
   cell: Pick<CellRef, "threadId"> | null,
@@ -386,11 +372,9 @@ export function landingKeyOf(
 }
 
 /**
- * What the chat's Cell carries from its landings: how strong it has grown,
- * and what its last landing cheers with, the flex (its run worked alone
- * `FLEX_MS` or more) and the marks of the lines the run added and removed.
- * Read from the thread's detail as the Cell is drawn, again as a run
- * starts, and as it lands.
+ * What the Cell carries from its landings: how strong it has grown, and what its last landing
+ * cheers with, the flex (its run worked alone `FLEX_MS` or more) and the lines the run added
+ * and removed. Read from the detail as the Cell is drawn, as a run starts and as it lands.
  */
 export function useCellLanding(cell: CellRef | null): {
   readonly strength: Strength | undefined;

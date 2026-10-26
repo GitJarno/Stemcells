@@ -33,22 +33,10 @@ const SEND_INSET = 32;
 const SEND_REACH = 48;
 
 /**
- * A Cell's composer says what the Cell is doing on its own glass. While it
- * works the glass fills with its provider's colour, washing out from the
- * send button, and the pane's one wave of light crosses it on the room's
- * beat (`motion/beat.ts`); when it is your turn the light gathers back into
- * the send button and blooms there once. Blocked on you, the tint turns
- * warm and breathes. The provider's mark sits faint in the corner it shares
- * with the send button, when the glass is tall enough to hold it clear of
- * the button.
- *
- * Behind the composer's words and over its glass. The words keep their ink:
- * the band's strength is set by them (`light.ts`). Under reduced motion
- * nothing sweeps, drifts or breathes: the tint holds still and leaves on a
- * fade. While no one can see the glass (`motion/sight.ts`) it holds as at
- * the beat's rest, and beside another app its band steps twelve times a
- * second. The plate itself is upstream's (`glow.css`); the light and the
- * mark are a Cell's only. Nothing outside our panes.
+ * A Cell's composer shows what the Cell is doing on its glass: its provider's light while it
+ * works, on the pane's beat (`motion/beat.ts`); a warm breath while blocked on you; a bloom at
+ * the send button on your turn. The words set the band's strength, so they keep their ink
+ * (`light.ts`). Unseen or with reduced motion it holds still; beside another app it steps.
  */
 export function CellComposerGlass(props: { readonly provider: string }) {
   const cell = use(PaneCellContext);
@@ -58,6 +46,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
   const lightRef = useRef<GlassLight | null>(null);
   const latest = useRef<{ glow: Glow; tone: string }>({ glow, tone });
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Push the latest glow and tone into the imperative glass light before paint.
   useLayoutEffect(() => {
     latest.current = { glow, tone };
     const root = rootRef.current;
@@ -69,6 +58,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
 
   // The composer floats over the transcript, in every pane of ours: a wheel
   // over it scrolls the chat (`scrollThrough`).
+  // oxlint-disable-next-line t3code/react-effect-budget -- Pass wheels over the floating composer to the transcript, detaching on unmount.
   useLayoutEffect(() => {
     const root = rootRef.current;
     const composer = root?.closest<HTMLElement>('[data-chat-composer-stack="true"]');
@@ -77,6 +67,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
   }, []);
 
   const hasCell = cell !== null;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Own the glass light's animations and its resize, theme, motion and sight watchers for a Cell.
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!hasCell || root === null) return;

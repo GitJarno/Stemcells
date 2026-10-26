@@ -1,9 +1,8 @@
 /**
- * A phone build under the person's own Apple team (stemcells/tasks/phone-push.md).
- * Upstream pins its builds to T3's team, which nobody else can sign with,
- * and its Personal Team build drops push. With a paid team and an App ID
- * of their own, the person's build keeps push, so their Mac's sender
- * reaches it. `app.config.ts` reads this; nothing at run time does.
+ * A phone build under the person's own Apple team (stemcells/tasks/phone-push.md). Upstream
+ * pins builds to T3's team, which nobody else can sign with, and its Personal Team build drops
+ * push; a paid team and an App ID of their own keep push, so their Mac's sender reaches it.
+ * `app.config.ts` reads this; nothing at run time does.
  */
 export interface OwnTeam {
   readonly teamId: string;

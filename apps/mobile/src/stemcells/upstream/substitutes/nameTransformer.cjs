@@ -1,19 +1,7 @@
-// The name transform on the phone (`stemcells/brand/nameTransform.ts`): Metro
-// hands every module to Expo's Babel transformer through this one, which
-// first says Stemcells where upstream's code says T3 Code, and every bundle
-// it writes passes through `nameCheckedSerializer`, which fails one with a
-// module that says T3's name outside its own file's kept words. CommonJS,
-// because Metro loads a transformer with `require`; the transform itself is
-// the web app's and the server's, loaded once per worker. It runs as Expo's
-// does, in step: upstream's tests call Metro's transformer and read its
-// result at once (`reactCompilerCoverage.test.ts`), so the transform is
-// loaded with `require`, which Node (upstream's `engines`) takes TypeScript
-// and ES modules through.
-//
-// `metro.config.js` hands its config to `withNameTransform` (below), which
-// sets this as Metro's `babelTransformerPath` in place of Expo's and wraps
-// its serializer. The phone's tests don't run Metro, so they see upstream's
-// words, as on the web.
+// The name transform on the phone (`stemcells/brand/nameTransform.ts`), wrapping Expo's Babel
+// transformer. CommonJS, with the transform loaded by a synchronous `require`: Metro requires a
+// transformer, and upstream's tests read its result at once (`reactCompilerCoverage.test.ts`).
+// The phone's tests don't run Metro, so they see upstream's words, as on the web.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -78,16 +66,14 @@ function nameTransformer(current) {
 }
 
 /**
- * The code a bundle is made of: each module's (by its path from the
- * repository), as Metro transformed and minified it, and the prelude before
- * them. A bundle is checked by its modules rather than its text because
- * `expo export` compiles the text to Hermes bytecode inside the serializer,
- * whose string table runs strings together.
+ * Each module's code (by its repository path) as Metro made it, and the prelude's.
  * @param {ReadonlyArray<unknown>} preModules
  * @param {{ dependencies: Map<string, unknown> }} graph
  * @returns {Array<[string, string]>}
  */
 function bundledCode(preModules, graph) {
+  // By module, not the bundle's text: `expo export` compiles that to Hermes bytecode inside the
+  // serializer, whose string table runs strings together.
   return [...preModules, ...graph.dependencies.values()].flatMap((module) =>
     module.output.map((output) => {
       if (typeof output.data?.code !== "string") {
@@ -107,11 +93,7 @@ function bundledCode(preModules, graph) {
 const BUILT = /^apps\/mobile\/\.generated\/(?:device|preview)-stream\//;
 
 /**
- * Metro's serializer, through the output check the web's and the server's
- * builds run (`unexplainedNames`): a bundle with a module that says "T3 Code"
- * outside its own file's kept words fails, however the phone is built (the
- * dev server, `expo export`, `expo run`, EAS), as each serializes through
- * here.
+ * Every phone build's serializer, failing a bundle that says "T3 Code" outside its kept words.
  * @template {(...args: any[]) => unknown} Serializer
  * @param {Serializer | null | undefined} serializer
  * @returns {Serializer}

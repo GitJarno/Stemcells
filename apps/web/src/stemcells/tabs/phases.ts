@@ -1,17 +1,10 @@
 import { WheelContact, type Contact, type ContactSource, type WheelSample } from "./swipe";
 
 /**
- * A two-finger swipe read with macOS's own phases, where the desktop app
- * has them. The system says when the fingers touch and when they lift, so
- * the strip lets go the moment they lift and never follows the coast that
- * runs after them. Wheel events still carry the moves. A wheel event's time
- * is its system event's time, so the phases at that time place it. With no
- * phases (in a browser, without the app's addon, or from a mouse wheel),
- * `WheelContact` reads the gesture from the wheel events alone.
- *
- * The desktop app reads the phases with an `NSEvent` monitor
- * (`stemcells/native/scroll-phases.m`) and hands them to the page, on the
- * page's clock, through `window.stemcellsScrollPhases`.
+ * A two-finger swipe read with macOS's own phases where the desktop app has them
+ * (`stemcells/native/scroll-phases.m`, via `window.stemcellsScrollPhases` on the page's clock):
+ * the strip lets go as the fingers lift, never following the coast. Wheel events still carry the
+ * moves, placed by their time. With no phases, `WheelContact` reads the gesture from wheel alone.
  */
 
 /** One scroll event's phases, as the system reported them. */

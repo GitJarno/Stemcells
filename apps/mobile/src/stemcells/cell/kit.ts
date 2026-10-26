@@ -1,7 +1,5 @@
-// A Cell's creature, as the Mac draws it. Everything from a thread id to a
-// frame of role letters is the web's own plain TypeScript, taken here and
-// nowhere else; the phone draws the frame itself (`figure.ts`), as the web
-// rasters it to a canvas. The web keeps these modules free of the DOM, and
+// A Cell's creature: the web's own plain TypeScript, imported here and nowhere else, so the
+// web must keep these modules free of the DOM. The phone draws the frame itself (`figure.ts`);
 // `figure.test.ts` draws every mood on every body through them.
 
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";

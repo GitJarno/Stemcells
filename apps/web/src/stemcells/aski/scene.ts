@@ -1,11 +1,7 @@
-// A scene is a card and a picture. The card says what it is: its beats, the one
-// moment reduced motion holds, the lines it may say. `frame(t, stage)` draws any
-// moment of it as a grid, and is pure: the same seed, stage and time always give
-// the same grid, and nothing is carried from one frame to the next, so a scene
-// plays, seeks, skips to its still and renders offline alike.
-//
-// What every scene shares lives here: where Aski stands on a stage, the field
-// its cloud is cut from, a form spelled in its own name, and the cloud at rest.
+// A scene is a card (its beats, the moment reduced motion holds, the lines it may say) and a
+// picture: `frame(t, stage)` draws any moment as a grid, and is pure. The same seed, stage and
+// time always give the same grid, and nothing carries between frames, so a scene plays, seeks,
+// skips to its still and renders offline alike. What every scene shares lives here.
 
 import { BODY_HEIGHT, LOBES } from "./canon.ts";
 import { RAMP } from "./font.ts";

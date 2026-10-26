@@ -1,8 +1,6 @@
-// A pull request merging at the end of a Cell's turn closed its chat under
-// its reader: upstream's auto-settle leaves the thread just as the person's
-// Settle does, and the pane took either for the person's. A pane now closes
-// only for a settle the person sent, whichever reaches the window first: the
-// settle's mark or the settled thread.
+// A pane closes only for a settle the person sent, whichever reaches the window first: the
+// settle's mark or the settled thread. Upstream's auto-settle (a pull request merging at a turn's
+// end) leaves the thread just as Settle does, and must not close the chat under its reader.
 import { useSyncExternalStore } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 

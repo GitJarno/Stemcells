@@ -1,9 +1,8 @@
 /**
- * What Aski takes for the person, from the server's autonomy
- * (stemcells/tasks/aski-autonomy.md): the kinds granted, the one it could
- * offer, and the cards it is about to take. One connection, shared by the
- * room, its cards and the switches; the server sends the whole view on
- * connect and on every change.
+ * What Aski takes for the person (stemcells/tasks/aski-autonomy.md): the kinds granted, the
+ * one it could offer, and the cards it is about to take, from the server's autonomy. One
+ * connection, shared by the room, its cards and the switches; the server sends the whole view
+ * on connect and on every change.
  */
 import { useSyncExternalStore } from "react";
 

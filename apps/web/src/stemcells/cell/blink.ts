@@ -1,8 +1,7 @@
-// When a Cell blinks: once in every four seconds, at a moment its name
-// picks for each window, so Cells side by side never blink in step. One that
-// waits on you blinks on a text caret's beat instead. Times count from the
-// original app's reference date (2001-01-01, UTC), as its clocks did, so a
-// Cell blinks at the same moment on every screen.
+// When a Cell blinks: once every four seconds, at a moment its name picks for each window, so
+// Cells side by side never blink in step; one waiting on you blinks on a caret's beat. Times
+// count from the original app's reference date (2001-01-01, UTC), so a Cell blinks at the
+// same moment on every screen.
 
 /** Milliseconds from the Unix epoch to the reference date. */
 const REFERENCE_MS = 978_307_200_000;

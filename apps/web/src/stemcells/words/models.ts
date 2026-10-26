@@ -1,10 +1,8 @@
 /**
- * Models and efforts named in a message. Writing a model's name doesn't
- * pick it: "write a haiku" and "the flash message" stay text. A model acts
- * only where the sentence anchors it (a cue, a Cell noun, a count after a
- * launch word, the address); an everyday effort word ("high", "max") only
- * with a qualifier, a cue in a message that routes, or right after a model.
- * Ported from the Swift app's `ModelRouter.facts`.
+ * Models and efforts named in a message. A model's name alone doesn't pick it ("write a haiku",
+ * "the flash message"): it acts only where the sentence anchors it (a cue, a Cell noun, a count
+ * after a launch word, the address); an everyday effort word ("high", "max") only with a
+ * qualifier, a cue in a routing message, or right after a model. Ported from `ModelRouter.facts`.
  */
 
 import type { ModelForm, ModelLexicon } from "./catalog";

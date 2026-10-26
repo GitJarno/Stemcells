@@ -1,16 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
- * What the stash on the Cell's ledge (`composer/LineStash.tsx`, through the
- * `ComposerStashBadge` substitute) relies on in upstream: that
- * `ComposerStashMenu` knows its trigger by `data-prompt-stash-badge`, so a
- * click on the ledge's stash toggles the menu instead of closing it on the
- * press and opening it again on the click; and that `ChatComposer` anchors
- * the menu on the composer's body, not on the trigger, so the menu opens
- * where upstream's does wherever the trigger stands, inset from the box's
- * sides by the shell's drawer inset, which the ledge stands in by too. A
- * failure here after a sync names the contract that moved; the stash on the
- * ledge likely can't close its menu, or the menu opens off the box or off
- * the ledge's edges.
+ * What the stash on the Cell's ledge (`composer/LineStash.tsx`, via the `ComposerStashBadge`
+ * substitute) relies on in upstream. A failure after a sync names the contract that moved; the
+ * ledge's stash likely can't close its menu (a click closes it on press and reopens it), or the
+ * menu opens off the box or off the ledge's edges.
  */
 import * as NodeFS from "node:fs";
 

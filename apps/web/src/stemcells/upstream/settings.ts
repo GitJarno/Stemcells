@@ -1,10 +1,8 @@
 /**
- * What Settings on the slate reads from upstream: its section list as
- * upstream's sidebar drew it, the sections' names and which of them a scope
- * shows, and the way back to where you were. `pages.contract.test.ts` pins
- * what the slate relies on. Our own pages (Settings › Aski) are laid out
- * with upstream's rows and switch, and a setting Aski shows in its reply
- * reads and writes through upstream's scope, as Settings does.
+ * What Settings on the slate reads from upstream: its section list as upstream's sidebar drew
+ * it, the sections' names and scopes, and the way back. `pages.contract.test.ts` pins it. Our
+ * own pages (Settings › Aski) use upstream's rows and switch, and a setting Aski shows in its
+ * reply reads and writes through upstream's scope, as Settings does.
  */
 import { useLocation } from "@tanstack/react-router";
 
@@ -20,8 +18,9 @@ export {
   SettingsPageContainer,
   SettingsRow,
   SettingsSection,
-  useRelativeTimeTick,
 } from "../../components/settings/settingsLayout";
+export { useNowSecond } from "../../hooks/useNowSecond";
+export { useNowMinuteMs } from "./needs";
 export { Switch } from "../../components/ui/switch";
 export { ScopedSwitch } from "../../components/settings/ScopedSwitch";
 export { SettingsScopeProvider } from "../../components/settings/SettingsScopeContext";

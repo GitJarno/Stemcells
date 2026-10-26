@@ -1,35 +1,16 @@
 /**
- * A native surface rides the page it sits on.
- *
- * The desktop browser is a view fixed over the app, at the rect its slot
- * last presented (`upstream/surfaces.ts`). Upstream presents again when the
- * slot resizes; a page sliding moves its slot without resizing it, so the
- * view stayed where the page had been, and the page slid away from it. While
- * the pages move (`data-moving` on `[data-stemcells-pages]`, the pager's),
- * the view's page follows its slot, moved by a transform, inside the pages'
- * frame: nothing for React to render, nothing for the guest to paint again
- * (it paints on a resize; a move is the compositor's). When the pages rest,
- * the slot presents where it is and the move goes.
- *
- * The fingers move the pages from the main thread, frame by frame, and the
- * page follows each frame there. A slide runs on the compositor, on through
- * a main thread busy with the turn it sets off, so the page gets a copy of
- * it: the same timing and start, moving it as the slide moves the slot. The
- * slide is the pager's, on its strip: what moves or fades inside a page (a
- * surface fading in as it arrives) is no slide.
- *
- * The cut to the pages' frame doesn't move: the view keeps still and is cut
- * to the frame, and only the box inside it, which holds the page, moves. A
- * cut that moved with the page ran a frame behind it on the compositor, and
- * the page showed over the rail while it sped past.
- *
- * A view that comes while the pages move, on the page arriving, fades in
- * on `fade`, over its page's ground, rather than popping in mid-slide.
+ * A native surface rides the page it sits on. The desktop browser is a view fixed over the app at
+ * its slot's last rect (`upstream/surfaces.ts`), presented again only on a resize, so a sliding
+ * page left it behind. While the pages move (`data-moving`), the view's page follows its slot by a
+ * transform, nothing for React or the guest to redraw; at rest the slot presents where it is.
  */
 
 /** A shown view, and the point upstream placed it at. */
 export interface PlacedView {
-  /** The view, fixed over the app: it is cut to the pages' frame. */
+  /**
+   * The view, fixed over the app: it is cut to the pages' frame and keeps still. A cut that moved
+   * with the page ran a frame behind it on the compositor, and the page showed over the rail.
+   */
   readonly element: HTMLElement;
   /** The box inside it at its top-left, holding the page: it is moved. */
   readonly content: HTMLElement;
@@ -269,7 +250,11 @@ export function mirroredKeys(
   }));
 }
 
-/** A copy of `slide` on the view's page, started with it; null when the slide can't be copied. */
+/**
+ * A copy of `slide` on the view's page, started with it; null when it can't be copied. A slide
+ * runs on the compositor, on through a main thread busy with the turn it sets off, so the page
+ * can't follow it frame by frame as it follows a finger.
+ */
 function mirror(
   slide: Animation,
   slot: DOMRect,

@@ -1,8 +1,7 @@
-// Replaces `components/chat/DraftHeroProjectHeading.tsx` (`plugin.ts`): when
-// a new chat's words start Cells in several places, the hero names them,
-// "What should we build in Harbor and Atlas?", or "Harbor and 2 more" past
-// two (`stemcells/words/heroPlaces.ts`). The draft's own project stays its
-// picker: the draft is the first Cell.
+// Replaces `components/chat/DraftHeroProjectHeading.tsx` (`plugin.ts`): when a new chat's words
+// start Cells in several places, the hero names them, "What should we build in Harbor and
+// Atlas?", or "Harbor and 2 more" past two (`stemcells/words/heroPlaces.ts`). The draft's own
+// project stays its picker: the draft is the first Cell.
 import { type ComponentProps, type ReactNode, use } from "react";
 
 import { DraftHeroProjectHeading as UpstreamHeading } from "../../../components/chat/DraftHeroProjectHeading";

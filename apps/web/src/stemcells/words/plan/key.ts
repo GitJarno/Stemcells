@@ -3,11 +3,9 @@ import type { Node as DocNode } from "@tiptap/pm/model";
 import { CHIP, type DocText } from "../docText";
 
 /**
- * What a plan was made from: the message as written, its code too, and
- * which chip stands at each chip's place. The reader's text blanks code
- * and reads every chip alike, so an edit inside code, or one chip swapped
- * for another, left it the same and a stale plan went out; this key
- * changes with them, and a plan whose key no longer matches is dropped.
+ * What a plan was made from: the message as written, code included, and which chip stands at
+ * each chip's place. The reader's text blanks code and reads every chip alike, so an edit in
+ * code or a swapped chip let a stale plan go out; a plan whose key no longer matches is dropped.
  */
 export function planKeyOf(doc: DocNode, text: DocText): string {
   const chips: string[] = [];

@@ -1,10 +1,7 @@
-// Draws Aski's scenes and moments off the main thread (work that can take
-// more than a frame moves to a web worker), into the stage's canvas handed
-// over once.
-// Each frame is the scene at the moment the clock says, painted where it
-// changed (GridPainter), at the rate the worker's animation frames come;
-// under Reduce Motion the scene's still is painted once. Nothing runs while
-// no scene plays or the stage is out of sight.
+// Draws Aski's scenes and moments off the main thread, into the stage's canvas handed over
+// once: each frame painted where it changed (GridPainter), at the worker's frame rate. Under
+// Reduce Motion the still is painted once; nothing runs while no scene plays or the stage is
+// out of sight.
 
 import { type MomentArgs, momentCard } from "../moments/cards.ts";
 import { MOODS } from "../mood.ts";

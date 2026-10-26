@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's stylesheet on disk.
 /**
- * What the pane's one wave relies on in upstream's live rows
- * (`glow/liveRows.ts`): upstream hands each box it lights to
- * `observeVisibleAnimation` (our substitute joins it to the wave), and
- * lights it one of two ways, an overlay or a shining label, in the shapes
- * the wave measures. A failure here after a sync names the contract that
- * moved; the row's shine is likely in the wrong place, off the crest, or
- * back on upstream's own clock.
+ * What the pane's one wave relies on in upstream's live rows (`glow/liveRows.ts`): each box it
+ * lights goes to `observeVisibleAnimation` (our substitute joins it to the wave), lit as an
+ * overlay or a shining label in the shapes the wave measures. A failure after a sync: the shine
+ * is likely misplaced, off the crest, or back on upstream's own clock.
  */
 import * as NodeFS from "node:fs";
 

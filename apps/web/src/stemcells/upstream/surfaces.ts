@@ -1,10 +1,8 @@
 /**
- * Upstream's native surfaces, as `stemcells/surfaces/` moves them. The
- * desktop browser is an Electron `<webview>` the app keeps once, at its root
- * (`HostedBrowserWebview`), in a wrapper fixed at the rect its slot in a
- * panel last presented (`BrowserSurfaceSlot`, `browserSurfaceStore`). Our
- * folder gets upstream's slot here; upstream's views get ours
- * (`substitutes/BrowserSurfaceSlot.tsx`).
+ * Upstream's native surfaces, as `stemcells/surfaces/` moves them: the desktop browser is an
+ * Electron `<webview>` kept once at the app's root, in a wrapper fixed at the rect its panel
+ * slot last presented (`BrowserSurfaceSlot`, `browserSurfaceStore`). Our folder gets upstream's
+ * slot here; upstream's views get ours (`substitutes/BrowserSurfaceSlot.tsx`).
  */
 import type { PlacedView } from "../surfaces/ride";
 

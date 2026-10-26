@@ -10,11 +10,9 @@ import { TabStrip } from "../tabs/TabStrip";
 import { render } from "./testRender";
 
 /**
- * The tab strip stood 8 pt above the traffic lights: its row was the top
- * 36 px of the window while the lights and upstream's sidebar button stand
- * on the middle of upstream's 52 px topbar. Its row now stands on that line
- * (`--stemcells-controls-line`, upstream/controlsLine.contract.test.ts),
- * whatever the topbar measures.
+ * The tab strip's row stands on the line the traffic lights and upstream's sidebar button
+ * share, the middle of upstream's topbar (`--stemcells-controls-line`,
+ * upstream/controlsLine.contract.test.ts), whatever the topbar measures.
  */
 function Frame(props: { topbar?: string }) {
   const style = props.topbar

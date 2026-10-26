@@ -1,11 +1,8 @@
 /**
- * Stemcells: hands the page macOS's phases for trackpad scrolls as
- * `window.stemcellsScrollPhases`, on the page's clock (read by
- * apps/web/src/stemcells/tabs/phases.ts). The main process sends them
- * (scrollPhases.ts) timed by the system's clock, with that clock's time as
- * it sent them. The page's clock runs at a fixed distance from it, which
- * each message shows to within the time it took to arrive: the quickest
- * one lines the two up.
+ * Stemcells: hands the page macOS's trackpad scroll phases as `window.stemcellsScrollPhases`
+ * (read by apps/web/src/stemcells/tabs/phases.ts), on the page's clock. The main process
+ * (scrollPhases.ts) stamps each with the system's clock; the page's clock sits a fixed distance
+ * from it, and the quickest message to arrive lines the two up.
  */
 import { contextBridge, ipcRenderer } from "electron";
 

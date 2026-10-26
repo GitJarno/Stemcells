@@ -17,6 +17,7 @@ import { threadRefOf } from "./routes";
 export const CELL_STATUSES = [
   "Pending Approval",
   "Awaiting Input",
+  "Guest Request",
   "Failed",
   "Working",
   "Connecting",

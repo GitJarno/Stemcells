@@ -20,11 +20,9 @@ export type { DesktopUpdateState };
 
 type ServerUpdateTarget = ReturnType<typeof collectServerUpdateTargets>["targets"][number];
 
-// What Update Everything offers to update. Stemcells offers a server update
-// only to a server its own app runs, which updates with the app. Any other
-// server updates itself by downloading T3's build (t3 from npm, or T3's
-// releases), and Stemcells never offers that, so it never asks npm whether
-// T3 published a version either. Those servers are listed as skipped.
+// What Update Everything offers. Stemcells offers a server update only to a server its own app
+// runs, which updates with the app. Any other server updates by downloading T3's build, which
+// Stemcells never offers, so it never asks npm for T3's version either; those are listed skipped.
 
 export function offeredServerUpdates(
   behind: ReadonlyArray<ServerUpdateTarget>,

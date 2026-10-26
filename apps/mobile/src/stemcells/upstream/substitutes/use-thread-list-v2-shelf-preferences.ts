@@ -1,8 +1,6 @@
-// Replaces `features/threads/use-thread-list-v2-shelf-preferences.ts`
-// (`substitutes.cjs`): on the home's tabs the tab is the shelf, so the
-// shelves it holds start open (Asleep's snoozed and settled ones,
-// Working's), and closing one holds while the home stands. Outside the tabs,
-// and on every other shelf, the person's own choice stands.
+// Replaces `features/threads/use-thread-list-v2-shelf-preferences.ts` (`substitutes.cjs`): on
+// the home's tabs the tab is the shelf, so its shelves start open (Asleep's snoozed and settled,
+// Working's) and closing one holds while the home stands. Elsewhere the person's choice stands.
 import { use, useState } from "react";
 
 import * as Upstream from "../../../features/threads/use-thread-list-v2-shelf-preferences";

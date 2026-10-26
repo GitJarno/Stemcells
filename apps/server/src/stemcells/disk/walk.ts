@@ -25,13 +25,10 @@ import {
   type GitMark,
 } from "./rules.ts";
 
-// One read-only walk of the folders worth measuring: caches, developer
-// data, package stores, toolchains, Cell data, apps, temporary folders and
-// the projects the person chose. Never follows a link, never leaves a
-// root's volume, never opens a file (a worktree's `.git` pointer excepted,
-// a few bytes), never deletes anything. Guarded folders are passed over
-// before they are touched (`mayEnter`). Sizes are allocated bytes, a hard
-// link counted where first met.
+// One read-only walk of the folders worth measuring. It never follows a link, leaves a root's
+// volume, opens a file (a worktree's `.git` pointer excepted) or deletes anything; guarded
+// folders are passed over before they are touched (`mayEnter`). Sizes are allocated bytes, a
+// hard link counted where first met.
 
 export interface WalkFs {
   readonly readdir: (path: string) => Promise<ReadonlyArray<NodeFS.Dirent>>;

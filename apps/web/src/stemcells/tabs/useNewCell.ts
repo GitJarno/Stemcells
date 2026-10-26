@@ -14,10 +14,9 @@ import { newIds, readWorkspace, useWorkspaceStore } from "./store";
 const AFTER_SEND = 800;
 
 /**
- * Keeps a new Cell ready past the last tab (`newCell.ts`), its draft made
- * ahead in the project a new tab would get. A draft kept from before (a
- * reload, or words left in it) comes back first. A blank one follows the
- * project of the last tab, while that tab is on stage and the pages rest.
+ * Keeps a new Cell ready past the last tab (`newCell.ts`), its draft made ahead in the project a
+ * new tab would get. A draft kept from before (a reload, words left in it) comes back first; a
+ * blank one follows the last tab's project while that tab is on stage and the pages rest.
  * `motion(moving)`: the pages started moving, or came to rest.
  */
 export function useNewCell(lastTabOnStage: boolean): { motion: (moving: boolean) => void } {
@@ -55,8 +54,10 @@ export function useNewCell(lastTabOnStage: boolean): { motion: (moving: boolean)
     }
   });
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hear the new Cell's draft store; unsubscribe on unmount.
   useEffect(() => subscribeNewCellDraft(() => check()), []);
   // Once there is a project to make one in, and again after one is sent.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Check the draft once a project exists; clear the timer on change.
   useEffect(() => {
     if (newCell !== null || project === null) return;
     const timer = setTimeout(check, readNewCellDraft() === null ? AFTER_SEND : 0);
@@ -71,6 +72,7 @@ export function useNewCell(lastTabOnStage: boolean): { motion: (moving: boolean)
     if (draftProject(current.cell) === project || draftHasWords(current.cell)) return;
     void makeOne();
   });
+  // oxlint-disable-next-line t3code/react-effect-budget -- Follow the last tab's project while it is on stage.
   useEffect(() => follow(project, lastTabOnStage), [project, lastTabOnStage]);
 
   return {

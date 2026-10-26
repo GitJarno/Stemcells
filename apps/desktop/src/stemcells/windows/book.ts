@@ -1,10 +1,8 @@
 /**
- * Stemcells: the main process's record of the app's windows
- * (stemcells/tasks/windows.md, "The model"). Each window's page is the one
- * writer of its own workspace and publishes it here; a move between windows
- * arrives as a transaction made from a snapshot, refused when a window it
- * touches has published since. Workspaces and memories are the page's
- * values, kept as they come: nothing here knows what a tab is.
+ * Stemcells: the main process's record of the app's windows (stemcells/tasks/windows.md,
+ * "The model"). Each page is the one writer of its workspace and publishes it here; a move
+ * is a transaction made from a snapshot, refused when a window it touches published since.
+ * Workspaces and memories are kept as the page sends them: nothing here knows what a tab is.
  */
 
 export interface Rect {

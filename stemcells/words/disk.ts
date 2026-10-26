@@ -1,9 +1,8 @@
 /**
- * Disk words every surface says the same: the size format, and the cleanup
- * Cell's ask, which the web and the phone put in a new Cell on any machine.
- * One copy, so a Cell started from the phone is asked exactly what one from
- * the desktop is; the measurement it starts from comes from the machine it
- * runs on (`stemcells_disk_report`), not from the client that opened it.
+ * Disk words every surface says the same: the size format, and the cleanup Cell's ask, which
+ * the web and the phone put in a new Cell on any machine. One copy, so a Cell started from the
+ * phone is asked what one from the desktop is; its measurement comes from the machine it runs
+ * on (`stemcells_disk_report`), not the client that opened it.
  */
 
 /** "107 GB", "940 MB", "1.2 TB": decimal units, as Finder counts. */

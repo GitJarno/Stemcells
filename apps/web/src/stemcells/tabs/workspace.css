@@ -35,6 +35,12 @@
   overflow: hidden;
   overscroll-behavior: none;
 }
+/* Upstream's new design turns its own dark theme's canvas black, to match its sidebar
+   (index.css, `html.dark[data-redesign]:not([data-theme-id])`). The slate keeps the canvas
+   T3's dark theme gives it without the new design, so a chat stands off the black frame. */
+:root.dark[data-redesign]:not([data-theme-id]) [data-stemcells-slate] {
+  --background: var(--color-neutral-950);
+}
 /* One quiet edge, drawn over the panes so none can paint across it. */
 [data-stemcells-slate]::after {
   content: "";

@@ -6,11 +6,9 @@ import { SuggestionGhost } from "./SuggestionGhost";
 import { PromptSuggestionContext } from "./usePromptSuggestion";
 
 /**
- * The composer's editor with its chat's suggestion: shown in place of
- * upstream's idle hint, and only there, while nothing is typed. Tab or →
- * takes it, as in Claude Code, and so does a tap on its key; Esc hides it.
- * Taking it is an edit like typing it, so the composer's draft, cursor and
- * menus follow as they would.
+ * The composer's editor with its chat's suggestion, shown in place of upstream's idle hint
+ * while nothing is typed. Tab, → or a tap on its key takes it; Esc hides it. Taking it is an
+ * edit like typing it, so the composer's draft, cursor and menus follow.
  */
 export function useEditorSuggestion(props: ComposerPromptEditorProps): {
   readonly props: ComposerPromptEditorProps;

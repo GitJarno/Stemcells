@@ -1,7 +1,6 @@
-// The Cell's art as grids of role letters ('.' clear), and the compositor
-// that dresses a body: every layer stamped with its hotspot on one of the
-// body's anchors, back to front by depth. A pose carries its anchors, so a
-// hat rides the crown and a tool the hand however the body moves. Letters
+// The Cell's art as grids of role letters ('.' clear), and the compositor that dresses a body:
+// each layer stamped by its hotspot on a body anchor, back to front by depth. A pose carries
+// its anchors, so a hat rides the crown and a tool the hand however the body moves. Letters
 // are roles, not colours: a palette paints them (`kit/palette.json`).
 
 /** The named points a layer attaches to, measured on each frame of the body. */

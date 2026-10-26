@@ -1,21 +1,8 @@
 /**
- * Which desktop browsers are awake: hosting a live webview.
- *
- * Upstream hosts a live webview for every browser it has loaded, on screen
- * or not (`ElectronBrowserHost`). Browsers outlive the app in the server, so
- * a launch brought back live, hidden browsers in Cells nobody was looking
- * at, a draft's among them. On the slate a browser sleeps, with no webview,
- * until it is first wanted this run:
- *
- * - something shows it: its Cell's Surface comes on stage on a browser, or
- *   it goes into the mini player (a slot claims it);
- * - upstream keeps it busy in the background (its activity);
- * - its Cell is working: the Cell's agent drives the desktop's webview, and
- *   the server waits only 10 s for it before it browses headless.
- *
- * Awake, it stays awake for the run, as upstream keeps it. Until the slate
- * first comes up (upstream's own views and their tests), every browser is
- * awake.
+ * Which desktop browsers host a live webview. Upstream hosts one per loaded browser, and browsers
+ * outlive the app, so a launch woke hidden ones nobody looked at. On the slate a browser sleeps
+ * until first wanted this run (shown, busy in upstream's background, or its Cell working: the
+ * server waits only 10 s for its webview), then stays awake. Before the slate, all are awake.
  */
 
 let slateUp = false;

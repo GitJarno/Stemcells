@@ -1,16 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheets (aski.css, cell.css), outside upstream's Tailwind entry. */
-// Aski's stage: Aski on its ground line, and every awake Cell around it
-// where `stage/stage.ts` puts it. Cells at work go round the orbit,
-// starting and landed ones stand on the ground line, one that needs you
-// steps out to the front, toward the cards; a Cell comes out of Aski as it
-// starts and hops back in when it is closed.
-//
-// Everything moves on transform and opacity alone, played by the
-// compositor at the display's refresh. The page's own code runs only when
-// a Cell changes place or the stage changes size: nothing here asks for a
-// frame, and the orbit holds still while the stage is out of sight, so a
-// stage where nothing moves costs nothing. A scene that is due plays over
-// the stage, drawn by its own worker (`stage/stage-scene.ts`).
+// Aski's stage: every awake Cell around Aski where `stage/stage.ts` puts it. Everything moves
+// on transform and opacity alone, played by the compositor; the page's code runs only when a
+// Cell changes place or the stage changes size, and the orbit holds still while the stage is
+// out of sight, so a stage where nothing moves costs nothing.
 
 import { type CSSProperties, useEffect, useLayoutEffect, useRef } from "react";
 import { BOX, POINTS_PER_PIXEL } from "../cell/look.ts";
@@ -117,10 +109,12 @@ export function AskiStage(props: AskiStageProps) {
 
   const standing = standingOf(props.cells);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the latest props for the stage's long-lived callbacks before any effect reads them.
   useLayoutEffect(() => {
     latest.current = props;
   });
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Own the stage's actors, scene worker, and size, sight and visibility watchers; tear down on unmount.
   useEffect(() => {
     const theater = theaterRef.current;
     const farLayer = farRef.current;
@@ -325,14 +319,17 @@ export function AskiStage(props: AskiStageProps) {
     };
   }, []);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hand changed standings to the imperative stage, which moves the Cells.
   useEffect(() => {
     stageRef.current?.restand(standing);
   }, [standing]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the imperative stage whether it is shown, so the orbit holds still out of sight.
   useEffect(() => {
     stageRef.current?.show(props.shown);
   }, [props.shown]);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hand a due scene to the stage's scene player.
   useEffect(() => {
     stageRef.current?.part(props.scene);
   }, [props.scene]);

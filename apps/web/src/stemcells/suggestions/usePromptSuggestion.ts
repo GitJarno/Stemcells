@@ -82,6 +82,7 @@ export function usePromptSuggestion(props: ChatComposerProps): PromptSuggestion 
   );
   const [, waved] = useReducer((count: number) => count + 1, 0);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Ask the server for the reply's suggestion and drop a late answer when the reply changes or unmounts.
   useEffect(() => {
     if (key === null || threadId === null || replyId === null) return;
     let live = true;

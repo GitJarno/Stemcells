@@ -134,11 +134,9 @@ interface Watched {
 export type Watching = ReadonlyMap<string, Watched>;
 
 /**
- * Each chat's run as the page sees it again at `now`, the page having been
- * open since `openedAt`. A run counts as watched whole when the page was
- * open before it was asked for. Says the hauls just ended: a run of an hour
- * or more, watched whole, that landed without asking the person anything,
- * in whole hours.
+ * Each chat's run as the page sees it at `now`, and the hauls just ended, in whole hours: runs
+ * of an hour or more that landed without asking the person anything, watched whole (the page
+ * open since `openedAt`, before the run was asked for).
  */
 export function hauled(
   watching: Watching,

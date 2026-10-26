@@ -1,17 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
- * Where a Cell runs sits on its ledge: "project · branch ⌄", the ⌄ opening
- * upstream's branch toolbar in its panel layout (a substitute,
- * `substitutes/BranchToolbar.tsx`), and git only once the checkout is known
- * to be a repository. What that relies on in upstream: the view assumes git
- * until it hears, so a guess has to be refused; it mounts the toolbar only
- * where it offers the controls; the toolbar has a panel layout and a handle
- * the branch shortcut calls; the branch picker names its branch from the
- * thread or draft and the checkout's status, as the ledge does; and the
- * shell's shape round a strip under the box. A failure here after a sync
- * names what moved; the ledge likely names a branch for a folder without
- * git, or a branch the picker doesn't, the shortcut opens nothing, or the
- * box keeps a gap for a strip that isn't under it.
+ * Where a Cell runs sits on its ledge: "project · branch ⌄", the ⌄ opening upstream's branch
+ * toolbar in its panel layout (`substitutes/BranchToolbar.tsx`), and git only once the checkout
+ * is known to be a repository. A failure after a sync names what upstream moved; the ledge
+ * likely names a wrong or guessed branch, the shortcut opens nothing, or the box keeps a gap.
  */
 import * as NodeFS from "node:fs";
 

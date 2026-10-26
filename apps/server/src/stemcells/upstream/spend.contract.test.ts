@@ -1,8 +1,7 @@
 /**
- * Settings › Lineage's spend reads what upstream's projection stores: each
- * provider turn's `turnTokenUsage`, joined through its run attempt to the
- * model its run asked for. The turns here are written by upstream's own
- * projection, from the events its adapters emit. A failure after a sync means
+ * Settings › Lineage's spend reads what upstream's projection stores: each provider turn's
+ * `turnTokenUsage`, joined through its run attempt to the model its run asked for, written
+ * here by upstream's own projection from its adapters' events. A failure after a sync means
  * the spend reads the store as it no longer is.
  */
 import { assert, it } from "@effect/vitest";

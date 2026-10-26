@@ -1,7 +1,6 @@
-// Aski at rest as SVG paths, in canon units (`aski/kit.ts`): the body is its
-// five lobes, which at rest meet almost edge to edge (the canon's join there
-// is a few units, under a point at the phone's sizes); the eyes are the
-// canon's blocks, or the characters a mood types into them, each drawn from
+// Aski at rest as SVG paths, in canon units (`aski/kit.ts`): the body is its five lobes,
+// which at rest nearly meet (the canon's join is under a point at the phone's sizes); the
+// eyes are the canon's blocks, or the characters a mood types into them, each drawn from
 // the web's own outlines.
 
 import { BLOCK_WIDTH, EYES, GLYPHS, LOBES, type Mood, MOODS } from "./kit";

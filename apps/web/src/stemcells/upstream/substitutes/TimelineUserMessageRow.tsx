@@ -1,11 +1,7 @@
-// Replaces `components/chat/TimelineUserMessageRow.tsx` (`plugin.ts`): a
-// message another Cell sent this one, here or from a linked machine, is mail
-// it received, drawn as a card
-// (`peers/PeerCard.tsx`), and a collision notice the app sent is a notice
-// (`peers/CollisionRow.tsx`). Neither wears the person's bubble. Every other
-// message is upstream's row (stemcells/tasks/peers.md, decision 4), and so
-// is a Cell's message the card can't draw: a workflow's opening, an
-// automation's run, or one with attachments.
+// Replaces `components/chat/TimelineUserMessageRow.tsx` (`plugin.ts`): mail from another Cell,
+// here or on a linked machine, is a card (`peers/PeerCard.tsx`) and the app's collision notice a
+// notice (`peers/CollisionRow.tsx`), not the person's bubble. All else is upstream's row, as is
+// mail the card can't draw: a workflow's opening, an automation's run, or one with attachments.
 import { resolveUserMessagePresentation } from "@t3tools/client-runtime/user-message";
 import { type ComponentProps, use } from "react";
 

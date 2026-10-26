@@ -7,14 +7,10 @@ import * as Schema from "effect/Schema";
 
 import * as UpstreamSettle from "../upstream/settle.ts";
 
-// Upstream settles a thread as soon as its pull request merges, on by
-// default. Cells merge their own pull requests, so a finished Cell would
-// skip the Landed shelf, where the person sees what landed, and go straight
-// to Settled. Stemcells turns it off once per server and never again: a
-// person who turns it back on keeps it on. The settings file keeps only what
-// differs from upstream's defaults, so "on by choice" and "never set" read
-// the same there; our own record of what we applied tells them apart.
-// Settling after idle days, and each project's own choice, stay upstream's.
+// Upstream settles a thread once its pull request merges. Cells merge their own, so a finished
+// Cell would skip the Landed shelf: Stemcells turns it off once per server, and a person who
+// turns it back on keeps it. The settings file keeps only what differs from upstream's
+// defaults, so only our record of what we applied tells "on by choice" from "never set".
 
 const KEY = "sidebarAutoSettleOnMerge";
 

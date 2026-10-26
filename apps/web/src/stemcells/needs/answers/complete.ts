@@ -1,9 +1,8 @@
 /**
- * Tab completes an option after a card's number (stemcells/tasks/aski-forward.md,
- * Move 2, slice C): "8 " shows what card 8 recommends as a ghost, "3 alw"
- * the rest of the option that starts so, and Tab writes it. A completion is
- * offered only when the reader reads the words back as that same option,
- * so the ghost never writes words that answer something else.
+ * Tab completes an option after a card's number (stemcells/tasks/aski-forward.md, Move 2,
+ * slice C): "8 " ghosts card 8's recommendation, "3 alw" the rest of that option. Offered only
+ * when the reader reads the completed words back as that same option, so the ghost never
+ * writes words that answer something else.
  */
 import { LATER } from "../card";
 import { type Addressee, type Reading, readAnswers } from "./read";

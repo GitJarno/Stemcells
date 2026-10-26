@@ -1,9 +1,8 @@
 /**
- * A catalog and a roster for the reader's tests. The models are shaped
- * like the providers' real catalogs (concise names, effort levels, an
- * older version beside the newest, variants); the projects are invented,
- * in the clusters a real roster has: cousins, two-word names, plural
- * folders, camel-cased names, names that are everyday words.
+ * A catalog and roster for the reader's tests. The models are shaped like the providers' real
+ * catalogs (concise names, effort levels, an older version beside the newest, variants); the
+ * invented projects come in a real roster's clusters: cousins, two-word names, plural folders,
+ * camel-cased names, everyday words.
  */
 
 import type { WordsCatalog } from "../catalog";

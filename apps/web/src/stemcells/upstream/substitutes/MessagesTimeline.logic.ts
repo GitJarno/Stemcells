@@ -1,15 +1,7 @@
-// Replaces `components/chat/MessagesTimeline.logic.ts` (`plugin.ts`):
-// - a row that reads another Cell names it, "Read Cell “Title”", where
-//   upstream's says "Read thread “…”". Upstream finds that row by how its
-//   label ends, and the label is now ours (`stemcells/words/cellTools.ts`).
-// - a Cell that carried on after a usage limit shows "Continued after …"
-//   where its continuation message would be: the line was the app's, not
-//   the person's (`stemcells/limitResume/row.ts`). The row is a notice, as
-//   Claude's own notices are. Why here, of all places: stemcells/seams.md,
-//   "A Cell carries on after a usage limit".
-// - a message this Cell sent another with `t3_thread_send` says what it did,
-//   to whom: "Asked Otter: Can I take 0043?" (stemcells/tasks/peers.md,
-//   decision 4).
+// Replaces `components/chat/MessagesTimeline.logic.ts` (`plugin.ts`). A row reading another
+// Cell says "Read Cell “Title”"; upstream finds it by its label's end, now ours. A Cell that
+// carried on after a usage limit shows "Continued after …" as a notice: the line was the app's
+// (seams.md, "A Cell carries on after a usage limit"). A `t3_thread_send` says "Asked Otter: …".
 import type * as Upstream from "../../../components/chat/MessagesTimeline.logic";
 import {
   deriveMessagesTimelineRowsWithState as upstreamRowsWithState,

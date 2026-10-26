@@ -1,11 +1,8 @@
 /**
- * The carry engine (stemcells/tasks/windows.md, The carry engine): a tab's
- * chip carried out of its strip, as pure functions. Hand samples go in, in
- * screen points, in the renderer where the press began; what is carried
- * comes out: a chip banding along its own strip, a window preview torn off
- * and hung from the hand, or a chip docked in a strip at a slot, and where
- * letting go lands it. The strips draw themselves from this; the flight
- * layer draws the rest.
+ * The carry engine (stemcells/tasks/windows.md): a tab's chip carried out of its strip, as
+ * pure functions. Hand samples go in, in screen points, in the renderer where the press began;
+ * out comes what is carried (a chip banding in its strip, a torn-off window preview, a chip
+ * docked at a slot) and where letting go lands it, for the strips and flight layer to draw.
  */
 import { SWAP_HYSTERESIS, clampOffset, nearestSlot } from "../tabs/tabDrag";
 import { displayOf, type Display, type Rect } from "./arrangement";

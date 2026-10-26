@@ -1,11 +1,10 @@
 import * as Schema from "effect/Schema";
 
 /**
- * What Aski's planner answers (stemcells/tasks/prompting.md, decision 11):
- * only what the words left open, for each numbered Cell. `project` is a
- * roster name, for a Cell whose place is open. Nothing here can change a
- * typed word; the web checks the answer against the facts before any Cell
- * starts.
+ * What Aski's planner answers (stemcells/tasks/prompting.md, decision 11): only what the words
+ * left open, for each numbered Cell. `project` is a roster name, for a Cell whose place is open.
+ * Nothing here can change a typed word; the web checks the answer against the facts before any
+ * Cell starts.
  */
 export const PlanAnswer = Schema.Struct({
   cells: Schema.Array(

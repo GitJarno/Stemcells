@@ -1,15 +1,8 @@
 /**
- * The words of an answer that wasn't sent, back in Aski's composer
- * (stemcells/tasks/aski-answers.md, follow-up). Each answer comes back on a
- * line of its own: a reply runs to its sentence's end, and a line ends one,
- * so no answer takes the next one's words.
- *
- * It comes back as "for 3 …" only while 3 is still its card and the line
- * reads as the same answer again. Otherwise it comes back after who it was
- * for, "Pip › no", which answers no card: numbers start again at 1 once the
- * list empties, and two Cells can share a name, so neither would be sure to
- * reach the Cell the words were for. Chips, code and line breaks come back
- * as the document held them.
+ * An unsent answer's words, back in Aski's composer (stemcells/tasks/aski-answers.md), each on
+ * its own line so no reply takes the next one's words. It comes back as "for 3 …" only while 3
+ * is still its card and reads as the same answer; else as "Pip › no", which answers no card,
+ * since numbers restart and names repeat. Chips, code and line breaks come back as they were.
  */
 import { Fragment, type Node as PmNode, type Schema } from "@tiptap/pm/model";
 import type { EditorState, Transaction } from "@tiptap/pm/state";

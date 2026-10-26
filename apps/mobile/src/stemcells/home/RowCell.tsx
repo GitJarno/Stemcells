@@ -1,8 +1,6 @@
-// A Cell in its card on the home, as the original app's cards had their critters:
-// it stands left of what its chat is about, its name under it; a settled
-// chat's slim row has it too, asleep. Aski's own chat, when the list shows
-// it, has Aski. T3's row hands control here at its seam
-// (`features/threads/thread-list-v2-items.tsx`, `stemcells/seams.md`).
+// A Cell in its card on the home, left of what its chat is about, its name under it; a settled
+// chat's slim row has it asleep, and Aski's own chat has Aski. T3's row hands control here at
+// its seam (`features/threads/thread-list-v2-items.tsx`, `stemcells/seams.md`).
 
 import { type ReactNode, use, useEffect, useRef } from "react";
 import { View, type ViewInstance } from "react-native";
@@ -38,6 +36,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
     });
   };
   // A list row is handed another chat as it scrolls, without a new layout.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Send a forming Cell's copy of Aski to this row when the row is handed another chat.
   useEffect(sendFor, [thread.id, forming]);
   if (aski) return <AskiFigure height={props.points * 14} ink={ink} ground={card} />;
   return (

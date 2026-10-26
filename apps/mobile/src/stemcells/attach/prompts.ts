@@ -1,11 +1,8 @@
 /**
- * What the phone's build says when Add to Chat asks for the photo library
- * and the camera (`app.config.ts` reads this; nothing at run time does).
- * T3 never asks for the library, so its image picker's plugin is told to
- * write no reason for it, which takes the reason out of the build and
- * would make iOS end the app when the card asks. Its camera's reason names
- * only pairing codes. Under limited access the card offers "Choose more"
- * itself, so iOS's own prompt to choose more stays away.
+ * The build's reasons for Add to Chat's photo library and camera asks (`app.config.ts` reads
+ * this). T3's image picker plugin writes no library reason, and iOS ends an app that asks
+ * without one; its camera reason names only pairing codes. Under limited access the card
+ * offers "Choose more" itself, so iOS's own prompt to choose more stays away.
  */
 import type { ExpoConfig } from "expo/config";
 

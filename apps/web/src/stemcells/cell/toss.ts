@@ -1,9 +1,7 @@
-// A thrown Cell as it looks at each moment: the original's soft Cell, flying in
-// a world of its own. It never tumbles; an off-centre throw rolls its face
-// round. Its body is springs a hit sets going (its height, its width, its
-// crown's lean, the hat's lag), and its face is what the body is going
-// through. The carry engine owns the flight and tells the Cell its facts
-// (`Toss`); this draws them (`stemcells/tasks/cell-toss.md`).
+// A thrown Cell as it looks at each moment: the original's soft Cell in a world of its own. It
+// never tumbles; an off-centre throw rolls its face round. Its body is springs a hit sets going
+// (height, width, crown lean, hat lag), its face what the body goes through. The carry engine
+// owns the flight and its facts (`Toss`); this only draws them (`stemcells/tasks/cell-toss.md`).
 
 import { type Pose, REST } from "./kit.ts";
 import { BOX, POINTS_PER_PIXEL } from "./look.ts";
@@ -283,11 +281,9 @@ interface Rect {
 }
 
 /**
- * Where the word's centre goes for a hit on `surface`: in from the edge it
- * hit, out of the body's way (`body` is pressed against that edge and about
- * to leave it, going `heading`), inside the chat (`bounds`); where the chat
- * has no room for it there, the next place that is clear. `extent` is half
- * the word at its largest.
+ * Where the word's centre goes for a hit on `surface`: in from the edge it hit, out of the
+ * body's way (`body` is pressed against that edge, leaving along `heading`), inside the chat
+ * (`bounds`), else the next clear place. `extent` is half the word at its largest.
  */
 export function wordCentre(
   surface: Surface,

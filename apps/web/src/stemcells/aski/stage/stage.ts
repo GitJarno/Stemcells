@@ -1,11 +1,7 @@
-// Aski's stage: where each awake Cell stands around Aski, worked out from
-// the stages core sends. A Cell at work orbits Aski, one starting or landed
-// stands on its ground line, one that needs you steps out to the front,
-// toward the cards. Pure, so the rules are tested without a browser;
-// `AskiStage.tsx` moves the Cells to where this puts them.
-//
-// The stage's numbers are theater: hand-set for this one composition, in
-// shares of Aski's size, and used nowhere else.
+// Where each awake Cell stands around Aski: at work it orbits, starting or landed it stands on
+// the ground line, needing you it steps out to the front. Pure, so the rules are tested without
+// a browser; `AskiStage.tsx` moves the Cells. The numbers are theater: hand-set for this one
+// composition, in shares of Aski's size.
 
 /** What the stage reads of a Cell. */
 export interface StageCell {
@@ -74,12 +70,10 @@ const byNeed = (a: StageCell, b: StageCell): number =>
   (a.needSince ?? a.bornAt) - (b.needSince ?? b.bornAt) || byBirth(a, b);
 
 /**
- * Puts the Cells on the stage, starting from `before` (absent on the first
- * casting, when every Cell appears where it stands so nothing already there
- * animates). A Cell keeps its spot while its place holds; one arriving on
- * the ground line stands at the outer end of the side with fewer Cells, the
- * trailing side on a tie, and one leaving closes the gap on its own side, so
- * no Cell crosses Aski. The front keeps the order the needs began in.
+ * Puts the Cells on the stage from `before` (absent on the first casting: each appears in
+ * place, nothing animates). A Cell keeps its spot while its place holds; one arriving on the
+ * ground line takes the outer end of the side with fewer (trailing on a tie), one leaving closes
+ * its side's gap, so no Cell crosses Aski. The front keeps the order the needs began in.
  */
 export function cast(before: Cast | undefined, cells: readonly StageCell[]): Casting {
   const was = before ?? { ground: { trailing: [], leading: [] }, front: [], orbit: [], inside: [] };
@@ -247,12 +241,10 @@ const apart = (a: number, b: number): number => {
 };
 
 /**
- * The angle a Cell joins the orbit at, coming from `from`: in the near half,
- * in front of Aski, as close to where it comes from as the Cells already
- * there (`taken`, their angles at the same moment) leave room for, at least
- * `ORBIT.gap` from each; with no such room, the angle furthest from them.
- * `anywhere` lets it join in the far half too, for a Cell that appears in
- * the orbit rather than travelling into it.
+ * The angle a Cell coming from `from` joins the orbit at: in the near half, in front of Aski,
+ * as close to `from` as leaves `ORBIT.gap` from each of `taken`, else the angle furthest from
+ * them. `anywhere` allows the far half too, for a Cell that appears in the orbit rather than
+ * travelling into it.
  */
 export function joinAngle(
   o: Orbit,

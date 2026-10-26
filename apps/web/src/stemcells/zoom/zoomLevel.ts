@@ -1,8 +1,7 @@
-// The page's zoom, read where it changes. A zoom changes the CSS viewport,
-// so each one arrives as a resize: the desktop app's own (⌘+, ⌘−, ⌘0, the
-// View menu, a pinch, all through `webContents.setZoomLevel`) and a
-// browser's. The level shown is the one the page is at, never a guess from
-// the keys pressed.
+// The page's zoom, read where it changes. A zoom changes the CSS viewport, so each arrives as
+// a resize: the desktop app's own (⌘+, ⌘−, ⌘0, the View menu, a pinch, all through
+// `webContents.setZoomLevel`) and a browser's. The level shown is the one the page is at,
+// never a guess from the keys pressed.
 
 /** What a resize lets the page read about its zoom. */
 export interface ZoomView {
@@ -14,12 +13,10 @@ export interface ZoomView {
 }
 
 /**
- * The page's zoom in percent: the desktop app's own, else a browser's. A
- * browser's pixel ratio is its zoom times the display's own scale, a
- * quarter step; the window's width in screen points over its width in CSS
- * pixels tells which. That reads true only while nothing sits beside the
- * page (a docked inspector, a side panel); when what it leaves of the ratio
- * is no quarter step, the zoom is unreadable: null.
+ * The page's zoom in percent: the desktop app's own, else a browser's. A browser's pixel ratio
+ * is its zoom times the display's scale, a quarter step; window width in screen points over
+ * CSS pixels tells which. That holds only while nothing sits beside the page (a docked
+ * inspector); when the rest of the ratio is no quarter step, the zoom is unreadable: null.
  */
 export function zoomOf(view: ZoomView): number | null {
   if (view.appZoomFactor !== undefined) {

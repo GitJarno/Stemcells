@@ -7,11 +7,9 @@ import { allowPushes, usePushState } from "./push/PushCoordinator";
 import { openSettings, type SettingsRow } from "./upstream/disk";
 import { useSavedRemoteConnections } from "./upstream/push";
 
-// Our settings pages on the phone. Upstream's Settings pages are root
-// routes: its list of them spreads these, with its own page options
-// (`Stack.tsx`), and its index lists these rows at the end of Server
-// settings, where its search finds them (`SettingsRouteScreen.tsx`): a line
-// in each (seams.md).
+// Our settings pages on the phone. Upstream's Settings routes spread these with its own page
+// options (`Stack.tsx`), and its index lists these rows at the end of Server settings, where
+// its search finds them (`SettingsRouteScreen.tsx`): a line in each (seams.md).
 
 export const stemcellsSettingsScreens = <Options extends object>(pageOptions: Options) => ({
   SettingsDisk: createNativeStackScreen({

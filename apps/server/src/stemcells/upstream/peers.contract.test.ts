@@ -1,12 +1,8 @@
 /**
- * What the peer frame and the roster lean on (stemcells/tasks/peers.md,
- * decisions 2 and 6): a message one thread sends another keeps its
- * `senderThreadId` all the way to the provider adapter, and the text the
- * adapter reads is the text `text` (a turn's start) and `providerText` (a
- * steer) make of it. A failure here after a sync means another Cell's words
- * may reach a model as the person's, or a Cell no longer knows who's here.
- * Both go on the wire only while Stemcells' server layer runs
- * (`peers/onTheWire.ts`), so upstream's own suites see upstream's text.
+ * What the peer frame and roster lean on (stemcells/tasks/peers.md, decisions 2 and 6): a
+ * message between threads keeps its `senderThreadId` to the provider adapter, which reads the
+ * text `text` (a turn's start) and `providerText` (a steer) make. A failure means another
+ * Cell's words may reach a model as the person's, or a Cell no longer knows who's here.
  */
 import { assert, it } from "@effect/vitest";
 import {

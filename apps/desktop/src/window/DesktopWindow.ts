@@ -959,8 +959,9 @@ export const make = Effect.gen(function* () {
 
   return DesktopWindow.of({
     createMain: createMain.pipe(Effect.flatMap(requireWindow)),
-    createExtra: (bounds, show) =>
+    createExtra: Effect.fn("desktop.window.createExtra")((bounds, show) =>
       createWindow({ bounds, show }).pipe(Effect.flatMap(requireWindow)),
+    ),
     ensureMain: ensureMain.pipe(Effect.flatMap(requireWindow)),
     revealOrCreateMain,
     prepareCaptureReveal: Effect.gen(function* () {

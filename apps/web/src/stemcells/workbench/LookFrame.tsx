@@ -33,21 +33,10 @@ import "../tokens/stemcells.css";
 import "./look.css";
 
 /**
- * Look on a tab's page (`look.ts`). Rendered before the page's grid and
- * workbench, it is there only while the tab is in Look, and its stylesheet
- * folds the page around it: the Look Cell steps out of its column and stack,
- * the other Cells hide, and the workbench takes the other half. It draws the
- * rail of the other Cells and, in the workbench, its ×, and ends Look when
- * the user sends from the Cell or presses Esc.
- *
- * Only the page on stage fills its workbench with the Cell's surfaces. Off
- * stage the workbench keeps the panel's frame (`upstream/chatPanel.tsx`), so
- * a page off stage lays out as Look too, and nothing jumps as a swipe brings
- * it on or takes it off: the surfaces arrive and leave inside a box already
- * there.
- *
- * Outside Look, the workbench keeps its × for an empty one only
- * (`EmptyWorkbenchClose`).
+ * Look on a tab's page (`look.ts`): rendered before the page's grid and workbench, only while the
+ * tab is in Look; its stylesheet folds the page around it. Only the page on stage fills its
+ * workbench with surfaces; off stage it keeps the panel's frame (`upstream/chatPanel.tsx`), so
+ * nothing jumps as a swipe brings a page on. Outside Look, only an empty workbench keeps its ×.
  */
 export function Look(props: {
   tab: Tab;
@@ -204,6 +193,7 @@ function useEndOnSend(cell: CellRef | null, end: () => void) {
   const onSent = useEffectEvent(end);
   const key = cell === null ? null : `${cell.environmentId}/${cell.threadId}`;
   const watched = useRef<{ key: string | null; seen: LastSent }>({ key: null, seen: undefined });
+  // oxlint-disable-next-line t3code/react-effect-budget -- End Look once the chat records a new message from the user.
   useEffect(() => {
     const current = watched.current;
     if (current.key !== key) {
@@ -216,14 +206,13 @@ function useEndOnSend(cell: CellRef | null, end: () => void) {
 }
 
 /**
- * Esc ends Look (or closes an empty workbench) when nothing else used it.
- * What was open is read as the key goes down (window, capture), before
- * anyone answers it; the decision is
- * made where the key comes back up (window, bubble), which a handler that
- * used the key stops it from reaching.
+ * Esc ends Look (or closes an empty workbench) when nothing else used it. What was open is read
+ * as the key goes down (window, capture), before anyone answers it; the decision is made as it
+ * comes back up (window, bubble), which a handler that used the key stops it from reaching.
  */
 function useEndOnEscape(active: boolean, end: () => void) {
   const onEscape = useEffectEvent(end);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hear Esc on the window while active; remove on change.
   useEffect(() => {
     if (!active) return;
     let heldElsewhere = false;

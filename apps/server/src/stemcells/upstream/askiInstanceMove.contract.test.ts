@@ -1,11 +1,8 @@
 /**
- * Upstream behaviour the web relies on to move a Cell's chat off Aski's
- * instance at its next send, with no error to show
- * (`apps/web/src/stemcells/upstream/cellInstance.ts`): a turn sent on the
- * driver's own instance carries the chat over, resumed in place when Aski's
- * instance shares the driver's home, else handed off, and nothing refuses it
- * while that instance is up. A failure here after a sync means a chat left on
- * Aski's instance needs a way to move that the composer offers.
+ * Upstream behaviour the web relies on to move a Cell's chat off Aski's instance at its next
+ * send, with no error (`apps/web/src/stemcells/upstream/cellInstance.ts`): a turn sent on the
+ * driver's own instance carries the chat over (resumed in place when the homes match, else
+ * handed off), and nothing refuses it while that instance is up.
  */
 import {
   type OrchestrationV2ProviderCapabilities,

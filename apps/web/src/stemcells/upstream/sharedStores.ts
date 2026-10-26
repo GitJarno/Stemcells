@@ -1,11 +1,8 @@
 /**
- * Upstream's stores that keep one localStorage entry for the whole app and
- * hold something per chat: drafts, the right panel and the terminal drawer.
- * With more than one window, each window merges the others' writes into its
- * own copy by the versions each write carries (`windows/storageMerge.ts`);
- * this is how each store is read and written for that, through zustand's
- * own persist options. `sharedStores.contract.test.ts` pins what this
- * relies on.
+ * Upstream's stores that keep one localStorage entry for the app but hold something per chat:
+ * drafts, the right panel and the terminal drawer. With several windows, each merges the
+ * others' writes into its own copy by each write's versions (`windows/storageMerge.ts`), through
+ * zustand's persist options here. `sharedStores.contract.test.ts` pins what this relies on.
  */
 import type { StoreApi } from "zustand";
 import type { PersistStorage, StorageValue } from "zustand/middleware";

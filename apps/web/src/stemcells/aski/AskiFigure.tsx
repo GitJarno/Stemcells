@@ -1,11 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (aski.css), outside upstream's Tailwind entry. */
-// Aski on its page: drawn by Aski's own renderer in a worker, at the
-// canvas's size in device pixels, in the skin's ink over the ground it
-// stands on, and drawn again only when that size or those colours change.
-// Each eye lies over the body on canvases of its own, open and shut, which
-// blink and look without a new drawing (eyes.ts); a mood draws them again,
-// typed (attention.ts says which). Where no worker can run, the page draws
-// it once itself, after the frame it is in.
+// Aski on its page, drawn in a worker at the canvas's device-pixel size in the skin's ink, and
+// drawn again only when that size or those colours change, or a mood is typed into the eyes
+// (attention.ts). The eyes blink and look on canvases of their own without a new drawing
+// (eyes.ts). Where no worker can run, the page draws it once, after the frame it is in.
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
@@ -82,11 +79,10 @@ function paint(
 }
 
 /**
- * Aski, standing on its canvas's foot. `aski` is Aski's chat: its answers
- * make Aski think, and a failed one puzzles it; without one, the eyes still
- * say how this Mac and its chats stand. Its eyes follow the caret of the
- * composer in the box round it that `field` names, `[data-aski-looks]`
- * unless told.
+ * Aski, standing on its canvas's foot. `aski` is Aski's chat: its answers make Aski think, and
+ * a failed one puzzles it; without one, the eyes still say how this Mac and its chats stand.
+ * Its eyes follow the caret of the composer in the enclosing box `field` names
+ * (`[data-aski-looks]` unless told).
  */
 export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
   const aski = props.aski ?? null;
@@ -121,6 +117,7 @@ export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
 
   // Aski's figure as drawn, its eyes laid over it; drawn again when its size, the skin or the mood changes.
   const askRef = useRef<(mood: Mood | undefined) => void>(() => undefined);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Own the figure's drawing, resize and skin observers, blinking and looking; stop them on unmount.
   useEffect(() => {
     const figure = figureRef.current;
     const canvas = canvasRef.current;
@@ -217,8 +214,10 @@ export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
   }, []);
 
   // A mood is typed into the eyes, which hold it without a blink.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hand a new mood to the figure's drawing, which lives outside React.
   useEffect(() => askRef.current(mood), [mood]);
   // Aski beginning to think turns its eyes up and to the left, and lets the caret go.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the imperative eye tracker when Aski starts or stops thinking.
   useEffect(() => lookingRef.current?.thought(thinking), [thinking]);
 
   return (

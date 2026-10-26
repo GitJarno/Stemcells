@@ -1,8 +1,7 @@
-// The ledge over a Cell's composer, as on the Mac (`apps/web/src/stemcells/
-// composer/CellComposerLine.tsx`) and on the original app's roof: the Cell stands
-// on the composer, playing what it's doing, with what its chat is about
-// beside it, quiet. The header above says who it is; this says on what. A
-// chat just sent from the phone shows here first, so its Cell forms here.
+// The ledge over a Cell's composer, as on the Mac (`apps/web/src/stemcells/composer/
+// CellComposerLine.tsx`): the Cell stands on the composer, playing what it's doing, beside
+// what its chat is about. The header says who it is; this says on what. A chat just sent
+// from the phone shows here first, so its Cell forms here.
 
 import { View } from "react-native";
 

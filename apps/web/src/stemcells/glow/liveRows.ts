@@ -1,30 +1,8 @@
 /**
- * Upstream's live rows in a pane of ours ride the pane's one wave. Upstream
- * lights a row that is still going with a shine of its own, 2.2 s across
- * the row's own box in 30 steps, from whenever the row mounted: next to our
- * wave it stepped, ran at its own pace and fell out of phase. In our panes
- * `glow.css` stops upstream's shine and this one drives it instead, on the
- * beat's wall clock, its crest riding the pane's crest (`motion/beat.ts`),
- * so a row lights with the work word and the composer's glass as one wave
- * passes, and a row that mounts mid-beat joins mid-stride.
- *
- * Upstream lights a row two ways (`upstream/liveRows.contract.test.ts`):
- *
- * - **An overlay** ("Thinking" between steps, a compaction, a worktree being
- *   set up): a copy of the row in a box one band wider each side, its band
- *   at the box's left edge, with the copy sliding the other way inside so
- *   the words stay put. Slid by transforms, on the compositor.
- * - **A shining label** (a running tool, a reasoning step's "Thinking"):
- *   the text's own background, a band over its ink, clipped to the glyphs.
- *   It has no copy to slide, so its band's place is repainted, but only
- *   while the crest passes over the label (`paintedCrossing`): the rest of
- *   the beat no animation runs for it, and the band waits off the label.
- *
- * Upstream hands every box it lights to `observeVisibleAnimation` as it
- * starts and takes it back as it stops; our substitute for that module
- * (`upstream/substitutes/visibleAnimation.ts`) joins each one here. A row
- * no one can see holds, and one in a window beside another app steps on the
- * Cells' sprite clock (`motion/sight.ts`).
+ * Upstream's live rows in our panes ride the pane's one wave: upstream's own shine ran from each
+ * row's mount and fell out of phase, so `glow.css` stops it and this drives it on the beat's wall
+ * clock (`motion/beat.ts`). Our `observeVisibleAnimation` substitute joins each box upstream
+ * lights here; the two ways it lights a row are pinned in `upstream/liveRows.contract.test.ts`.
  */
 import {
   crossing,
@@ -98,6 +76,8 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
         return;
       }
       const stepped = sight === "unfocused";
+      // An overlay is a copy of the row one band wider each side, slid against its box so the
+      // words stay put: transforms only, on the compositor.
       for (const overlay of overlays) {
         const copy = overlay.querySelector<HTMLElement>(`.${COPY}`);
         const holder = overlay.offsetParent;
@@ -108,6 +88,8 @@ export function joinLiveRow(box: HTMLElement): (() => void) | undefined {
         slide(overlay, from, to, stepped);
         slide(copy, -from, -to, stepped);
       }
+      // A shining label has no copy to slide, so its band is repainted, and only while the
+      // crest passes over it (`paintedCrossing`).
       for (const label of shines) {
         const band = Number.parseFloat(getComputedStyle(label).backgroundSize) || 0;
         const { left, width } = standing(label);

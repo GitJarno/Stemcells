@@ -1,11 +1,8 @@
 /**
- * The guard a stopped Cell's resume leans on so it never fires twice
- * (stemcells/tasks/limit-resume.md): the orchestrator takes our continuation
- * (`continueCommand`, upstream's `manualContinuationOfRunId`) only while the
- * run the limit stopped is still the thread's latest. Once anything ran after
- * it (our own resume, Claude Code, upstream's worker, or the person), the same
- * continuation is refused. A failure here after a sync means our resume could
- * land on top of another one.
+ * The guard that stops a Cell's resume firing twice (stemcells/tasks/limit-resume.md): the
+ * orchestrator takes our continuation (`continueCommand`, upstream's
+ * `manualContinuationOfRunId`) only while the stopped run is still the thread's latest. Once
+ * anything ran after it, it is refused; a failure means our resume could land on another.
  */
 import { assert, it } from "@effect/vitest";
 import {

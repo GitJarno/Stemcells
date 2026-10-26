@@ -10,15 +10,10 @@ import { APP_NAME } from "../brand/name";
 import { SUBSTITUTES } from "./substitutes/substitutes.cjs";
 
 /**
- * Contract: the phone says Stemcells where it said T3 Code: its name on the
- * home screen, its widgets, its permission prompts, and every screen's text.
- * Only the words change: its ids, schemes and bundle ids stay upstream's, or
- * an installed app and its pairing break. The config says it through
- * `withStemcellsName`; the screens' text through the name transform, which
- * Metro runs on every module (`stemcells/brand/nameTransform.ts`). If this
- * fails after a sync, upstream wrote its name somewhere the transform can't
- * rename: keep it there, with why, or say `APP_NAME` (`stemcells/seams.md`,
- * "The app's name").
+ * Contract: the phone says Stemcells where it said T3 Code; its ids, schemes and bundle ids
+ * stay upstream's, or an installed app and its pairing break. If this fails after a sync,
+ * upstream wrote its name where `withStemcellsName` and the name transform can't rename it:
+ * keep it there, with why, or say `APP_NAME` (`stemcells/seams.md`, "The app's name").
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

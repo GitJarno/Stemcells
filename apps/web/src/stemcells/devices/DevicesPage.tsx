@@ -10,7 +10,7 @@ import {
   SettingsSection,
   Spinner,
   toastManager,
-  useRelativeTimeTick,
+  useNowMinuteMs,
 } from "../upstream/disk";
 import {
   AddEnvironmentDialog,
@@ -44,7 +44,7 @@ function seenLabel(device: Device, nowMs: number) {
 export function DevicesPanel() {
   const here = useThisMachine();
   const computers = useComputers();
-  const nowMs = useRelativeTimeTick(30_000);
+  const nowMs = useNowMinuteMs();
   const [adding, setAdding] = useState<"phone" | "computer" | null>(null);
   const [computerError, setComputerError] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);

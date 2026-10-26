@@ -1,19 +1,8 @@
 /**
- * The room's working beat: one wave of light, its crossing and the rest
- * after it, on one wall clock. Everything lit by a working Cell crosses on
- * it: the band over its composer's glass, the sheen over its working word,
- * upstream's live rows ("Thinking"), and anything else that wants to light
- * up in step. Every pane keeps the same beat, and one mounted later lands
- * mid-beat instead of restarting.
- *
- * One wave, not several in time: the crest crosses its pane once per beat,
- * and every lit surface in the pane shows it as it passes over that
- * surface (`crossing`), as if one light passed over the pane.
- *
- * On the web the wall clock is the document timeline: an endless animation
- * whose start sits on the shared phase (`onBeat`) is in step with every
- * other one, set once and then the browser's. What moves is a transform,
- * so the compositor runs it and no script or paint runs per frame.
+ * The room's working beat: one wave of light crossing each pane once per beat on one wall
+ * clock, shown by every lit surface as it passes (`crossing`). A pane mounted later lands
+ * mid-beat. On the web the clock is the document timeline: an animation started on the shared
+ * phase (`onBeat`) stays in step, and moves a transform, so no script or paint runs per frame.
  */
 import { timing } from "../tokens/motion";
 
@@ -157,12 +146,10 @@ export function sweepFrames(
 }
 
 /**
- * Frames for a loop that never rests (a drift, a breath), stepping `step`
- * ms apart instead of gliding: the compositor still runs it, but draws only
- * when a step lands, where a glide that never rests drew every frame the
- * display shows, 120 a second on a fast one. `frame` takes how far along the
- * loop is, 0 to 1, already eased by `ease`; play the frames with a linear
- * easing, on the beat.
+ * Frames for a loop that never rests (a drift, a breath), stepping `step` ms apart: the
+ * compositor draws only when a step lands, where a glide drew every frame, 120 a second on a
+ * fast display. `frame` takes the loop's progress, 0 to 1, already eased by `ease`; play the
+ * frames with a linear easing, on the beat.
  */
 export function steppedFrames(
   duration: number,
@@ -214,16 +201,10 @@ export function beatWhen(progress: number): number {
 }
 
 /**
- * A crossing for a band drawn by repainting (a background's place, not a
- * transform): only the stretch of the beat the crest spends over the box it
- * lights, when its band leaves `low` and reaches `high`, the places where it
- * is just off the box. Its value runs `from` to `to` as a sweep's does, in
- * twelve straight pieces along the curve, or `stepped`, holding each place
- * for a beat of the Cells' sprite clock; `start` is how far into the beat
- * the stretch begins and `span` how long it lasts, in milliseconds. Play it
- * with `eachBeat`: outside the stretch nothing runs, where an endless
- * animation holding still for the rest of the beat still woke the page on
- * every frame.
+ * A crossing for a band drawn by repainting (a background's place, not a transform): only the
+ * stretch of the beat its crest spends over the box, between `low` and `high`, running `from`
+ * to `to` in twelve pieces or `stepped` on the sprite clock; `start` and `span` in ms. Play it
+ * with `eachBeat`: an endless animation idle for the rest of the beat still woke every frame.
  */
 export function paintedCrossing(
   from: number,

@@ -40,12 +40,10 @@ function digits(value: number, precision: number): string {
 }
 
 /**
- * Stemcells' look (`stemcells/brand/look.ts`) as a built-in theme: first
- * among T3's (`substitutes/themePalettes.ts`) and first in Settings' list
- * of them (`ThemeSettings.tsx`). Built in, it resolves when the app's theme
- * module loads, before its first frame. Published by the server only, it
- * waited for the server's theme event, and every launch painted T3's stock
- * palette until then.
+ * Stemcells' look (`stemcells/brand/look.ts`) as a built-in theme, first among T3's
+ * (`substitutes/themePalettes.ts`) and in Settings' list (`ThemeSettings.tsx`). Built in, it
+ * resolves when the theme module loads, before the first frame, rather than on the server's
+ * theme event with T3's stock palette painted until then.
  */
 export const STEMCELLS_THEME: ThemeDefinition = {
   id: STEMCELLS_THEME_ID,

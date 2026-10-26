@@ -1,10 +1,8 @@
 // @effect-diagnostics nodeBuiltinImport:off - runs drift in a scratch git repository.
 /**
- * drift's guard on hot files: in a file upstream edits about daily, our
- * lines and hunks may only grow with a row in seams.md's "Hot-file budget"
- * that says why (stemcells/docs/fork.md, rule 7). Each case builds a small
- * repository with an upstream history, our seam on top, and runs the real
- * script there, with "hot" lowered to two commits.
+ * drift's guard on hot files: our lines and hunks in a file upstream edits about daily grow
+ * only with a seams.md "Hot-file budget" row that says why (stemcells/docs/fork.md, rule 7).
+ * Each case runs the real script in a small repository, with "hot" lowered to two commits.
  */
 import * as NodeChildProcess from "node:child_process";
 import * as NodeFS from "node:fs";

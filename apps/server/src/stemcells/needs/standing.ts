@@ -1,8 +1,7 @@
 /**
- * The room in words, for Aski (`stemcells_standing`): what needs the person
- * under the numbers its cards show, then the Cells at work and the done ones
- * not yet settled, every Cell linked. One read answers "what needs me?",
- * where the persona would otherwise list each project's chats
+ * The room in words, for Aski (`stemcells_standing`): what needs the person under its cards'
+ * numbers, then the Cells at work and the done ones not yet settled, every Cell linked. One
+ * read answers "what needs me?" instead of the persona listing each project's chats
  * (stemcells/tasks/aski-forward.md, Move 1). Pure.
  */
 import type { NeedsList } from "./Needs.ts";

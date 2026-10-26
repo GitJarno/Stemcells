@@ -216,11 +216,10 @@ function focusedCellOf(tab: Tab): CellRef | null {
 }
 
 /**
- * The tab's focused Cell: its character, then its name. A tab of one Cell
- * is that chat, and named by its title; a tab of more is named by the name
- * it was given, else by its focused chat's title, and counts its Cells.
- * Double-clicked, the name opens for a new one in place, as the one-liner's
- * does: in a tab of one Cell it renames the chat, wherever the chat shows.
+ * The tab's focused Cell: its character, then its name. A tab of one Cell is that chat, named by
+ * its title; a tab of more is named by its given name, else its focused chat's title, and counts
+ * its Cells. Double-clicked, the name opens for a new one in place; in a tab of one Cell that
+ * renames the chat, wherever it shows.
  */
 function TabTitle(props: {
   tab: Tab;

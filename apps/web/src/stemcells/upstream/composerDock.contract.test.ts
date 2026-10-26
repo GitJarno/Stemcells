@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
- * What the dock's CSS (`tabs/workspace.css`) relies on in upstream's
- * composer: that an approval drops the controls row, whose height the box
- * keeps; and that T3's banners attach above the box inside the form, as
- * insets with their own outline colour, over a box with a rounded outline
- * of its own. A failure here after a sync names the contract that moved;
- * the box likely shrinks under an approval again, or a banner and the box
- * read as two pieces.
+ * What the dock's CSS (`tabs/workspace.css`) relies on in upstream's composer: an approval drops
+ * the controls row, whose height the box keeps; T3's banners attach above the box inside the
+ * form as insets with their own outline colour, over a box with its own rounded outline. A
+ * failure after a sync: the box shrinks under an approval, or a banner and box read as two.
  */
 import * as NodeFS from "node:fs";
 

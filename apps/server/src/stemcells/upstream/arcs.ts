@@ -1,10 +1,8 @@
 /**
- * What the arcs read from upstream's projection: each Cell's runs with the
- * reply that ended them, the person's own messages to it (not the server's
- * in their name, as a card Aski took, nor a scheduled task's), and the requests
- * it raised, from a given time. Only top-level Cells: not Aski's chat, not a
- * subagent's thread. Read only, and only these fields; a Cell's transcript is
- * read for its last reply alone, as the needs list reads it.
+ * What the arcs read from upstream's projection, from a given time: each Cell's runs with the
+ * reply that ended them, the person's own messages (not the server's in their name, as a card
+ * Aski took, nor a scheduled task's), and its requests. Top-level Cells only, not Aski's chat
+ * or a subagent's thread. Read only; a transcript is read for its last reply alone.
  */
 import * as Effect from "effect/Effect";
 import * as SqlClient from "effect/sql/SqlClient";

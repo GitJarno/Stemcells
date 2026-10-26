@@ -1,8 +1,7 @@
 /**
- * `stemcells_disk_report`: the cleanup Cell's measurement, from the machine
- * it runs on. Every client sends the same ask to any machine, so the Cell
- * fetches the walk here instead of a client carrying it, which only the
- * client on this machine could. Registered beside upstream's toolkits, as
+ * `stemcells_disk_report`: the cleanup Cell's measurement, from the machine it runs on. Every
+ * client sends the same ask to any machine, so the walk runs here, not in a client, where
+ * only the client on this machine could run it. Registered beside upstream's toolkits, as
  * `peerTool.ts` is.
  */
 import { OrchestratorMcpFailure } from "@t3tools/contracts";

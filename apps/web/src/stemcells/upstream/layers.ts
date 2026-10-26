@@ -1,10 +1,8 @@
 /**
- * Upstream's open layers: a dialog, menu, select, popover or list that is
- * open, or still leaving. A closed one kept mounted (Base UI's
- * `keepMounted`, as the composer line's popover and the right panel's
- * sheet are) doesn't count. Upstream keeps this rule to itself, for its
- * panel's shortcuts (`components/RightPanelTabs.tsx`); this is the same
- * rule, and `layers.contract.test.ts` holds the two together.
+ * Upstream's open layers: a dialog, menu, select, popover or list open or still leaving; one
+ * kept mounted closed (Base UI's `keepMounted`) doesn't count. Upstream keeps this rule private
+ * to its panel's shortcuts (`components/RightPanelTabs.tsx`); `layers.contract.test.ts` holds
+ * the two together.
  */
 export const LAYER_SLOTS = [
   "dialog-popup",

@@ -13,13 +13,10 @@ import "../tokens/stemcells.css";
 import "./perch.css";
 
 /**
- * Aski in its own chat, where the person speaks to it
- * (stemcells/tasks/aski-room.md, decision 10). It stands over the
- * composer, where a Cell's line stands in a Cell's pane. In a chat not yet
- * started it floats, whole, in the middle of the empty transcript; once the
- * chat has started it perches on the composer's edge at half its size, and
- * leans in while it answers. One figure in one theater: a pose is only a
- * transform, so the figure, its eyes and its moments never remount.
+ * Aski over the composer of its own chat (stemcells/tasks/aski-room.md, decision 10): whole in
+ * the middle of an empty chat, then perched on the composer's edge at half size, leaning in
+ * while it answers. A pose is only a transform, so the figure, its eyes and its moments never
+ * remount.
  */
 export function AskiPerch(props: { aski: CellRef }) {
   const perch = useRef<HTMLDivElement>(null);
@@ -51,6 +48,7 @@ export function AskiPerch(props: { aski: CellRef }) {
  */
 function useRise(perch: { current: HTMLDivElement | null }): number {
   const [rise, setRise] = useState(0);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Measure Aski's rise as the chat canvas and composer resize, and stop observing on unmount.
   useLayoutEffect(() => {
     const element = perch.current;
     const stage = element?.firstElementChild;

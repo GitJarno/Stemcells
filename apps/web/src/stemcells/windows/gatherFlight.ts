@@ -1,14 +1,8 @@
 /**
- * Gather's and Put back's motion (stemcells/tasks/windows.md, Gather and
- * Put back). Gather: each other window comes onto the flight layer as its
- * still and closes under it; the still shrinks into the place its tabs take
- * in the home strip on `travel`, fading in its last stretch (`fade`), one
- * `beat` after the window before it, nearest first. Put back plays it the
- * other way: each window's chips lift off the strip and its frame unfolds
- * from them to where the window was, farthest first; the windows open
- * under their frames, and each frame fades once its window has drawn.
- * Chips on the layer are hidden in the strip. Under Reduce Motion, Gather's
- * stills fade where they are and Put back's windows just open.
+ * Gather's and Put back's motion (stemcells/tasks/windows.md, Gather and Put back). Gather:
+ * each other window closes under its still on the flight layer, which shrinks into its tabs'
+ * place in the home strip, nearest first. Put back plays it the other way, farthest first,
+ * each frame fading once its window has drawn. Chips on the layer are hidden in the strip.
  */
 import { useSyncExternalStore } from "react";
 

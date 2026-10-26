@@ -1,12 +1,8 @@
 /**
- * Projects named in a message, and where the sentence points them. Ported
- * from the Swift app's `PlaceResolver`, without its ear: a name is found
- * only as the project is named (the sidebar's name, or an alias learned
- * from the person's own pick), whole words, case aside. Anything less
- * (a prefix, a part, a near spelling, a sound-alike, the other number)
- * is no name at all: "in plain prose" never reads as plain-project. Then
- * the name is graded by its anchor, and only an anchored name routes; see
- * `anchorOf`.
+ * Projects named in a message, and where the sentence points them; the Swift app's
+ * `PlaceResolver` without its ear. A name counts only as the project is named (its sidebar name
+ * or a learned alias), whole words, any case: a prefix, part, near spelling or sound-alike is no
+ * name ("in plain prose" is never plain-project). Only an anchored name routes (`anchorOf`).
  */
 
 import {

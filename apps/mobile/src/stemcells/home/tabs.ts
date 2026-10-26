@@ -1,8 +1,7 @@
-// The home's tabs, as the original app's board had them: Asleep (put away: settled
-// or snoozed), Active (the rest), and two views of Active, Working (T3's row
-// says it works, or it waits on another chat) and Input (an approval, a
-// question or a plan waits on you). A Cell is in a tab when its face says so
-// (`cell/mood.ts`), so the "?" over a Cell and the Input tab never disagree.
+// The home's tabs: Asleep (settled or snoozed), Active (the rest), and two views of Active,
+// Working (it works, or waits on another chat) and Input (an approval, a question or a plan
+// waits on you). A Cell is in a tab when its face says so (`cell/mood.ts`), so the "?" over a
+// Cell and the Input tab never disagree.
 
 import { faceOf } from "../cell/mood";
 import { asksYou } from "../cell/kit";

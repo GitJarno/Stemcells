@@ -1,11 +1,7 @@
-// Replaces `components/chat/ProviderModelPicker.tsx` (`plugin.ts`): when a
-// new chat's words start several Cells, their readout stands in the
-// composer's model picker's place (`stemcells/words/readoutSlot.ts`), and
-// so does what Enter does with words that answer cards in Aski's chat
-// (`stemcells/needs/answers/room.tsx`). Upstream's fitting of the controls
-// row measures either as the picker.
-// Everywhere else, and in a composer whose words start one Cell, it is
-// upstream's picker.
+// Replaces `components/chat/ProviderModelPicker.tsx` (`plugin.ts`): when a new chat's words
+// start several Cells, their readout stands in the model picker's place
+// (`stemcells/words/readoutSlot.ts`), as does Enter's action on card answers in Aski's chat
+// (`stemcells/needs/answers/room.tsx`); upstream's controls row measures either as the picker.
 import { type ComponentProps, memo, use } from "react";
 
 import { ProviderModelPicker as UpstreamPicker } from "../../../components/chat/ProviderModelPicker";

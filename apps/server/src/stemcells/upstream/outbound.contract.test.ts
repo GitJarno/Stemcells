@@ -5,12 +5,10 @@ import * as NodeURL from "node:url";
 
 import { describe, expect, it } from "vite-plus/test";
 
-// Contract: what Stemcells keeps from leaving the machine besides analytics.
-// The server never reads the provider logins to name the install's owners,
-// the command line has no `t3 update` (it installs T3's release), and a phone
-// build checks no over-the-air update source unless the build turns it on
-// (the configured one is T3's). If this fails after a sync, one of them is
-// back.
+// Contract: what Stemcells keeps from leaving the machine besides analytics. The server never
+// reads provider logins to name the install's owners, the CLI has no `t3 update` (it installs
+// T3's release), and a phone build checks no over-the-air update source unless the build
+// turns it on (the configured one is T3's). If this fails after a sync, one of them is back.
 
 const serverSrc = NodePath.resolve(
   NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)),

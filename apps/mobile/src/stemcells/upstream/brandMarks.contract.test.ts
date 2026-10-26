@@ -10,11 +10,10 @@ import { APP_NAME } from "../brand/name";
 import { SUBSTITUTES } from "./substitutes/substitutes.cjs";
 
 /**
- * Contract: the phone shows no T3 mark. Its build takes our icon, splash and
- * Android art for every channel, the Live Activity's logo is ours, and no
- * upstream view it runs draws T3's wordmark or shows a T3 image, unless we
- * substitute that view. If this fails after a sync, upstream added or moved
- * a mark: give it ours (`stemcells/seams.md`, "Stemcells' mark").
+ * Contract: the phone shows no T3 mark. Its icon, splash, Android art and Live Activity logo
+ * are ours on every channel, and no upstream view it runs draws T3's wordmark or image unless
+ * we substitute that view. If this fails after a sync, upstream added or moved a mark: give
+ * it ours (`stemcells/seams.md`, "Stemcells' mark").
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

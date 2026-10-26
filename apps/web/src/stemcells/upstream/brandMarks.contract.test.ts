@@ -19,12 +19,10 @@ import webConfig from "../../../vite.config";
 import { PUBLIC_SUBSTITUTES } from "./substitutes/plugin";
 
 /**
- * Contract: no T3 mark ships as Stemcells'. Every brand file upstream's
- * builds read is ours (the desktop app's icon, the web icons the server and
- * desktop builds copy in, the phone's icon and splash), the web serves and
- * builds ours at every icon path a page asks for, and no upstream view draws
- * T3's mark itself. A failure after a sync names a T3 mark that came back:
- * give it ours (`stemcells/seams.md`, "Stemcells' mark").
+ * Contract: no T3 mark ships as Stemcells'. Every brand file upstream's builds read is ours
+ * (desktop icon, web icons, the phone's icon and splash), the web serves ours at every icon
+ * path, and no upstream view draws T3's mark. A failure after a sync names a T3 mark that came
+ * back: give it ours (`stemcells/seams.md`, "Stemcells' mark").
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

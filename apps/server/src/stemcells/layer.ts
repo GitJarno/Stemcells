@@ -20,20 +20,8 @@ import * as SuggestionHttp from "./suggestions/http.ts";
 import * as TailscaleHttp from "./tailscale/http.ts";
 import * as ModelList from "./upstream/modelList.ts";
 
-// Everything Stemcells adds to the server, mounted by one line in server.ts:
-// a file one chat shows brought into another's draft, Settings › Disk's
-// routes, whether somebody is at this Mac for Aski's eyes, what needs the
-// person for Aski's page, Aski's planner, Cells carrying on after a usage
-// limit (and the drafts that hold them), Cells told when they step on each
-// other, another Cell's words framed and who's here on a provider's wire
-// (`peers/onTheWire.ts`), the routes of linked environments, what the person would say
-// next to a Cell, a phone's way in over Tailscale, what each chat has spent for Settings › Lineage, the
-// theme published on start, settling on merge turned off once (a Cell
-// that merged its own pull request lands, for the person to settle), the
-// telemetry id upstream left behind, removed on start, how the person's
-// work with Cells went, week by week, the cards Aski takes for the person
-// once they've granted it, and the pushes to their phone when a card waits
-// and they're away.
+// Everything Stemcells adds to the server, mounted by one line in server.ts. Each module
+// says what it adds.
 
 export const layer = Layer.mergeAll(
   ArcsHttp.layer,

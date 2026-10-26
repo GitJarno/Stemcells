@@ -12,26 +12,16 @@ import "../tokens/stemcells.css";
 import "./glow.css";
 
 /**
- * The working row's word, lit by the pane's one wave: a soft band of
- * brighter ink crosses it as the wave's crest passes over it, on the same
- * pass, rest, curve and wall clock as the band crossing the composer's
- * glass, so the word and the glass light up as one wave passing over the
- * pane and nothing else in the row moves (`motion/beat.ts`). The band is
- * the chat's provider's colour, as the glass's light is, lifted to at least
- * the interface ink's lightness so it is always a light over the word,
- * never a shade. Under reduced motion, and while no one can see the word
- * (`motion/sight.ts`), it holds its ink; in a window beside another app
- * the band crosses on the Cells' sprite clock, twelve steps a second.
- *
- * The light is a copy of the word seen through a moving window: the window
- * slides and the copy slides back under it, so the glyphs stay put and only
- * transforms move. A resize re-aims the slide in flight, and a recolour
- * only repaints the copy: neither restarts it.
+ * The working row's word, lit by the pane's one wave: a band of the provider's colour (at least
+ * the ink's lightness, so it is never a shade) crosses it on the glass's clock (`motion/beat.ts`).
+ * The light is a copy of the word under a sliding window, so only transforms move; a resize
+ * re-aims the slide in flight. It holds unseen or with reduced motion (`motion/sight.ts`).
  */
 export function WorkingSheen(props: { readonly children: string }) {
   const tone = toneTokenOf(useCellDriver(use(PaneCellContext)));
   const wordRef = useRef<HTMLSpanElement>(null);
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Own the sheen's crossing animations and its resize, theme, motion and sight watchers.
   useLayoutEffect(() => {
     const word = wordRef.current;
     if (word === null) return;

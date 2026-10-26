@@ -33,11 +33,9 @@ export function useCellForRoute(target: ThreadRouteTarget | null): CellRef | nul
 const PANE_DRAFT_KEY_PREFIX = "stemcells:pane:";
 
 /**
- * Upstream keeps one blank draft per project and hands it to every "new
- * thread" there, so two new Cells in one project would share it. Filing a
- * pane's draft under the pane instead of the project gives each pane its own;
- * and when a pane takes another draft, upstream's rule for the slot drops the
- * old one if it was left blank.
+ * Upstream hands a project's one blank draft to every new thread there, so two new Cells in a
+ * project would share it. Filing a pane's draft under the pane gives each its own; when a pane
+ * takes another draft, upstream's slot rule drops the old one if it was left blank.
  */
 export function fileDraftUnderPane(draftId: string, paneId: string): void {
   const store = useComposerDraftStore.getState();

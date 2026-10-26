@@ -58,11 +58,9 @@ function range({ before, after, floorBefore, floorAfter }: Neighbours) {
 const AT_EVEN = 0.5;
 
 /**
- * The neighbours' lengths with their border moved by `delta` from where the
- * press found it: 1:1 with the pointer, but for the detent at even, and
- * never past a floor. The press moves nothing: a border found at even or
- * past the detent meets the detent as it goes, and one found inside the
- * detent but off even, which the detent would pull to even at once,
+ * The neighbours' lengths with their border moved by `delta` from where the press found it: 1:1
+ * with the pointer, but for the detent at even, and never past a floor. The press moves nothing:
+ * a border found inside the detent but off even, which the detent would pull to even at once,
  * follows the pointer 1:1 for that drag.
  */
 export function moveBorder(neighbours: Neighbours, delta: number): Lengths {

@@ -1,24 +1,8 @@
 /**
- * Carrying a chat by its Cell or its pane's top (stemcells/tasks/windows.md,
- * Carry a chat). The Cell over the composer is a handle, and so is the grip
- * at the pane's top. Past 4 px, taken by its Cell, the Cell itself hangs from
- * the hand; taken by the grip, a card of the chat appears under the hand on
- * `flick`, and the pane stays in its place, receding. The half of another
- * pane the hand is nearest lights with the wash, which moves the frame the
- * hand crosses to another half. Another tab's chip under the hand lights, and
- * opens its tab after `spring-load`; past the last chip the strip makes room
- * for a new tab. Let go on a half or in the room, the chat goes there; on a
- * chip, it goes to the end of that tab and the person stays where they are
- * (stemcells/tasks/chip-drop.md). Each is a move Undo Move takes back; on a
- * half the card fades from the hand as the chat takes its place, on a chip it
- * lands into the chip on `land`. On the desktop the card leaves the window
- * onto the flight layer, and another window's chips light and take it as this
- * window's do. Let go anywhere else, or Esc, and the card fades from the hand
- * and the pane comes back, its tab on stage again. Held by its Cell and let
- * go inside its own pane, the chat stays and its Cell is thrown from the hand
- * as fast as the hand went, to fly in that pane (`CellThrow.tsx`); a Cell let
- * go on a half goes home to its line in the chat's new place. Under Reduce
- * Motion what is in the hand only fades.
+ * Carrying a chat by its Cell or its pane's top grip (stemcells/tasks/windows.md, Carry a
+ * chat; chip-drop.md). Let go on another pane's half, the strip's room or a chip, the chat
+ * goes there as a move Undo Move takes back; anywhere else, or Esc, the pane comes back. A
+ * Cell let go inside its own pane is thrown from the hand (`CellThrow.tsx`).
  */
 import {
   useEffect,
@@ -815,10 +799,12 @@ export function ChatCarry(props: {
   const card = useRef<HTMLDivElement>(null);
   const wash = useRef<HTMLDivElement>(null);
   const openTab = useRef(props.onOpenTab);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the carrier's tab-opening callback ref current after each render.
   useEffect(() => {
     openTab.current = props.onOpenTab;
   });
   const [own] = useState(() => new WindowCarrier({ outer, card, wash, openTab }, setHeld));
+  // oxlint-disable-next-line t3code/react-effect-budget -- Register this window's carrier while mounted and drop any carry on unmount.
   useEffect(() => {
     carrier = own;
     return () => {
@@ -826,6 +812,7 @@ export function ChatCarry(props: {
       own.drop();
     };
   }, [own]);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the carrier the chat was lifted before the held render paints.
   useLayoutEffect(() => {
     if (held) own.lifted();
   }, [held, own]);

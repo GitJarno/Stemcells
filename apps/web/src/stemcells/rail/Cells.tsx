@@ -78,6 +78,7 @@ export function Cells() {
   const { open } = useSidebar();
   useRailUndoNotice(open && lit !== "settings" && lit !== "disk");
 
+  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the Cells column while it is mounted.
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.stemcellsColumn = "cells";
@@ -280,6 +281,7 @@ function NeedsHere(props: { waiting: number }) {
     if (focus !== null) setFocusIn(focus);
   };
   const held = pointerIn || focusIn;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Hold the needs page's cards still while the pointer or focus is among them, releasing on unmount.
   useEffect(() => {
     page.setFrozen(held);
     return () => page.setFrozen(false);

@@ -15,11 +15,10 @@ import { makeDrafts, type Drafts } from "./drafts.ts";
 import { loginKey, readAccount, readLoginMark, type ClaudeLogin } from "./login.ts";
 
 /**
- * Carries on Cells a usage limit stopped (stemcells/tasks/limit-resume.md),
- * only while Settings' "Auto-resume limited threads" is on: follows the
- * thread shells as Aski's needs list does, and every `TICK` while a Cell is
- * stopped asks `decide.ts` whether one goes now. Logins are read only then,
- * and only those a sign-in could still carry a Cell on from.
+ * Carries on Cells a usage limit stopped (stemcells/tasks/limit-resume.md), only while
+ * Settings' "Auto-resume limited threads" is on. Every `TICK` while a Cell is stopped asks
+ * `decide.ts` whether one goes now; logins are read only then, and only those a sign-in could
+ * still carry a Cell on from.
  */
 export class LimitResume extends Context.Service<
   LimitResume,

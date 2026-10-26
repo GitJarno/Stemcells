@@ -1,11 +1,8 @@
 // @effect-diagnostics nodeBuiltinImport:off - runs Metro's config and Expo's transformer on files on disk.
 /**
- * The name transform on the phone: Metro hands every module to Expo's Babel
- * transformer through `nameTransformer.cjs`, which says Stemcells where
- * upstream's code says T3 Code (`stemcells/brand/nameTransform.ts`), and
- * every bundle through its serializer, which fails one that says T3's name
- * outside a kept line's words. These run the config, the transformer and the
- * serializer Metro runs.
+ * The name transform on the phone (`nameTransformer.cjs`): its transformer says Stemcells where
+ * upstream's code says T3 Code, and its serializer fails a bundle that says T3's name outside a
+ * kept line's words. These run the config, the transformer and the serializer Metro runs.
  */
 import * as NodeFS from "node:fs";
 import * as NodeModule from "node:module";

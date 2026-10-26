@@ -1,10 +1,8 @@
 /**
- * The answers in a message to Aski: which cards it answers, and how
- * (stemcells/tasks/aski-room.md, decision 8 and "The dictation grammar").
- * It reads as the person types, the same way every time, and the cards
- * light up from what it finds. Words can say no; only a click says yes: an
- * option that allows anything reads as "needs your click", never as an
- * answer to send. A Cell never sees our numbers.
+ * Which cards a message to Aski answers, and how (stemcells/tasks/aski-room.md, decision 8 and
+ * "The dictation grammar"). Words can say no; only a click says yes: an option that allows
+ * anything reads as "needs your click", never as an answer to send. A Cell never sees our
+ * numbers.
  */
 import { literalSpans, type Span, tokenize } from "../../words/text";
 import { type Card, type CardOption, type CardQuestion, type Choice, LATER } from "../card";

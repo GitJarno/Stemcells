@@ -1,10 +1,8 @@
 /**
- * What a pane relies on in upstream's thread details card (threadDetails.ts,
- * workspace.css). The card opens by default, which a Cell undoes on first
- * showing; it floats at the chat's top-right, where workspace.css moves it,
- * and the find bar above it, below the pane's buttons. A failure here after
- * a sync names the contract that moved; a new Cell likely shows the card
- * again, or the card sits under the pane's buttons.
+ * What a pane relies on in upstream's thread details card (threadDetails.ts, workspace.css): it
+ * opens by default, which a Cell undoes on first showing, and floats at the chat's top-right,
+ * the find bar above it, where workspace.css drops it below the pane's buttons. A failure after
+ * a sync: a new Cell likely shows the card again, or it sits under the pane's buttons.
  */
 import { describe, expect, it } from "vite-plus/test";
 

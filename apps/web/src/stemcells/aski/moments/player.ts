@@ -1,8 +1,6 @@
-// Plays Aski's moments over its figure: a canvas over the theater, placed
-// so the moment's cloud stands where the figure stands (the scenes' own
-// placing), drawn by the scene worker. While one plays, the figure fades
-// away under it; as it ends the figure fades back over its last frame,
-// Aski at rest, and the canvas is cleared. The page types the line.
+// Plays Aski's moments on a canvas over the figure, drawn by the scene worker and placed so the
+// moment's cloud stands where the figure stands. The figure fades out under it, and back over
+// its last frame, Aski at rest, as it ends. The page types the line.
 
 import { reducedMotion, timed } from "../../tokens/motion.ts";
 import { channels, inkOf } from "../stage/colour.ts";

@@ -2,19 +2,10 @@
 import * as NodeChildProcess from "node:child_process";
 
 /**
- * Where a phone's way to this Mac over Tailscale stands, read from the CLI
- * (stemcells/tasks/devices.md). Each kind but `ready` names the next step,
- * which `StemcellsTailscale.advance` takes for the person where it can:
- * - `missing`: no Tailscale on this computer.
- * - `stopped`: the app isn't running, or its switch is off.
- * - `signed-out`: running, nobody signed in (or the tailnet hasn't approved it).
- * - `starting`: connecting; look again shortly.
- * - `https-off`: the tailnet hasn't turned on HTTPS certificates, which only
- *   its admin can, on a page Tailscale names (`consentUrlOf`).
- * - `not-serving`: everything's on, but Tailscale Serve isn't in front of this server.
- * - `port-taken`: Serve answers on the tailnet port for something else on
- *   this computer, which is never taken over.
- * - `ready`: phones on the tailnet reach this server at `baseUrl`.
+ * Where a phone's way to this Mac over Tailscale stands, read from the CLI. Each kind but
+ * `ready` names the next step, which `StemcellsTailscale.advance` takes where it can.
+ * `signed-out` includes a tailnet that hasn't approved this computer; only the tailnet's admin
+ * can fix `https-off` (`consentUrlOf`); a `port-taken` port is never taken over.
  */
 export type TailscaleStep =
   | { readonly kind: "missing" }

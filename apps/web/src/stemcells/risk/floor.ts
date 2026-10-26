@@ -1,14 +1,8 @@
 /**
- * The risk floor (stemcells/tasks/prompting.md, decision 17): a reading of
- * a message for the acts that can't be taken back, or that reach outside
- * the Mac. It reads verb × object × scope, never with a model, at once and
- * offline: a classifier may add a doubt, never clear one of these.
- * Everyday code chores pass ("delete the unused import", "rm -rf
- * node_modules"). Pure: text in, findings out. Ported from the Swift app's
- * `RiskFloor`, with its match and miss fixtures (`floor.test.ts`).
- *
- * What the floor flags is a question, not a refusal: whoever calls it
- * decides who is asked (`hold.ts`).
+ * The risk floor (stemcells/tasks/prompting.md, decision 17): a model-free reading of a
+ * message, verb × object × scope, for acts that can't be taken back or reach outside the Mac.
+ * A classifier may add a doubt, never clear one. Code chores pass ("rm -rf node_modules"). A
+ * finding is a question, not a refusal: the caller decides who is asked (`hold.ts`).
  */
 
 export type RiskKind =

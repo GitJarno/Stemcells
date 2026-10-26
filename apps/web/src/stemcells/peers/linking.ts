@@ -1,8 +1,7 @@
-// Linking this app's machine with another the person is connected to
-// (stemcells/tasks/peers.md, "Across environments", decision 2): each side
-// mints a token for the other, then each keeps the other's token and
-// address and says hello with it. The client is already connected to both,
-// so it carries the tokens; if either way fails, both sides are undone.
+// Linking this machine with another the person is connected to (stemcells/tasks/peers.md,
+// "Across environments", decision 2): each side mints a token for the other, keeps the other's
+// token and address and says hello. The client, connected to both, carries the tokens; if
+// either way fails, both sides are undone.
 
 import {
   callMachine,

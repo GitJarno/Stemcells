@@ -1,12 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
- * Upstream behaviour the slate's one ground relies on (tabs/workspace.css):
- * a pane's chat is upstream's inset, painted `bg-background` under its
- * grain, holding ChatView's root and, in the chat's canvas, the timeline's
- * wrapper, each `bg-background` again and each the size of the slate. The
- * sheet clears all three, so a chat paints nothing over the slate. A
- * failure after a sync names the layer that moved: a chat may paint its own
- * ground over the slate again.
+ * Upstream behaviour the slate's one ground relies on (tabs/workspace.css): a pane's chat is
+ * upstream's inset, `bg-background` under its grain, holding ChatView's root and the timeline's
+ * wrapper, each `bg-background` and slate-sized. The sheet clears all three; a failure after a
+ * sync names the layer that moved, which may paint its own ground over the slate again.
  */
 import * as NodeFS from "node:fs";
 
@@ -20,6 +17,7 @@ import threadRouteView from "../../components/ThreadRouteView.tsx?raw";
 import sidebar from "../../components/ui/sidebar.tsx?raw";
 
 const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import.meta.url), "utf8");
+const appStyles = NodeFS.readFileSync(new URL("../../index.css", import.meta.url), "utf8");
 
 const CLEARED = [
   '[data-stemcells-pane] [data-slot="sidebar-inset"]',
@@ -43,7 +41,9 @@ describe("a chat paints nothing over the slate", () => {
   });
 
   it("a pane's chat is upstream's inset, its ground under its grain", () => {
-    expect(threadRouteView).toMatch(/<SidebarInset [^>]*>\s*\{view\}\s*<\/SidebarInset>/);
+    expect(threadRouteView).toMatch(
+      /<SidebarInset\s[^>]*>\s*<BackgroundThreadContext value=\{background\}>\{view\}<\/BackgroundThreadContext>\s*<\/SidebarInset>/,
+    );
     expect(sidebar).toMatch(
       /<main\s+className=\{cn\(\s*"relative flex min-w-0 w-full flex-1 flex-col bg-background surface-grain",[\s\S]*?\)\}\s+data-slot="sidebar-inset"/,
     );
@@ -65,5 +65,20 @@ describe("a chat paints nothing over the slate", () => {
     expect(threadTimeline).toMatch(/return <MessagesTimeline [^>]*\/>;/);
     expect(threadFind).toContain("<ChatCanvas {...canvasProps} />");
     expect(chatCanvas).toMatch(/data-chat-canvas[\s\S]*?\{children\}\s*<\/div>/);
+  });
+});
+
+describe("the new design's black canvas stays off the slate", () => {
+  it("upstream blackens only its own dark theme, whose canvas was neutral-950", () => {
+    expect(appStyles).toMatch(
+      /\nhtml\.dark\[data-redesign\]:not\(\[data-theme-id\]\) \{\s*--background: #000;/,
+    );
+    expect(appStyles).toMatch(/@variant dark \{[^}]*?--background: var\(--color-neutral-950\);/);
+  });
+
+  it("the slate takes the canvas back under the same selector", () => {
+    expect(workspaceCss).toMatch(
+      /:root\.dark\[data-redesign\]:not\(\[data-theme-id\]\) \[data-stemcells-slate\] \{\s*--background: var\(--color-neutral-950\);\s*\}/,
+    );
   });
 });

@@ -1,12 +1,8 @@
 /**
- * The chats with words in a composer, as the person's screens report them
- * (`POST /api/stemcells/limit-resume/drafts`). A Cell with a draft never
- * carries on by itself: the person is about to say something to it.
- *
- * Each screen reports its whole list, and again while it isn't empty, so a
- * closed window's list lapses on its own. The lapse is wall time, which a
- * sleeping Mac spends without anyone reporting: after a wake, `standing` and
- * `heard` say which screens to hear from again before a list is trusted.
+ * The chats with words in a composer, as the person's screens report them; a Cell with a draft
+ * never carries on by itself. Each screen reports its whole list, again while it isn't empty, so
+ * a closed window's list lapses. A sleeping Mac spends that wall time unreported: after a wake,
+ * `standing` and `heard` say which screens to hear from again before a list is trusted.
  */
 
 /**

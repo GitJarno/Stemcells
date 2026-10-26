@@ -4,13 +4,10 @@ import { ChevronDownIcon, GitBranchIcon } from "lucide-react";
 import { MiddleTruncate, Popover, PopoverPopup, PopoverTrigger } from "../upstream/ui";
 
 /**
- * The "· branch" after the project on the Cell's ledge: the branch the chat
- * is on (`upstream/checkout.ts`). Where upstream offers its branch toolbar
- * in the composer (a draft, or a chat whose person keeps it after it
- * starts), the branch carries a ⌄ and opens a menu holding that toolbar, in
- * upstream's panel layout (`upstream/substitutes/BranchToolbar.tsx`). The
- * menu stays mounted while closed, so the toolbar keeps its state as it
- * did under the box.
+ * The "· branch" after the project on the Cell's ledge (`upstream/checkout.ts`). Where upstream
+ * offers its branch toolbar in the composer, the branch carries a ⌄ and opens a menu holding
+ * that toolbar (`upstream/substitutes/BranchToolbar.tsx`). The menu stays mounted while closed,
+ * so the toolbar keeps its state as it did under the box.
  */
 export function LineEnv({
   host,

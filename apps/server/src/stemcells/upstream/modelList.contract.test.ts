@@ -17,12 +17,10 @@ import * as ModelManifest from "../../provider/ModelManifest.ts";
 import * as ServerSettings from "../../serverSettings.ts";
 import { modelList as stemcellsModelList } from "../layer.ts";
 
-// Contract: Stemcells never fetches the model list from T3's GitHub
-// repository. The server runs the list bundled at build time, which each
-// upstream sync refreshes; upstream's own service, which the server no
-// longer provides, asks T3's repository for a newer one. If this fails after
-// a sync, a request to T3 is open again (stemcells/seams.md, No model list
-// from T3; stemcells/outbound.txt forbids the address).
+// Contract: Stemcells never fetches the model list from T3's GitHub repository. The server
+// runs the list bundled at build time, which each sync refreshes; upstream's own service,
+// no longer provided, asks T3 for a newer one. If this fails, a request to T3 is open again
+// (stemcells/seams.md, No model list from T3; stemcells/outbound.txt forbids the address).
 
 const serverSrc = NodePath.resolve(
   NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)),

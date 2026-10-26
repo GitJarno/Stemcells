@@ -1,9 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
-// What a thrown Cell says when it hits something hard: "BONK!", one plain
-// word in the interface's type, ringed in the page's colour so it reads over
-// whatever is under it. It lands a touch large, stands, and fades where it
-// was said (`cell.css`). A tap says nothing; the carry engine says when a
-// hit counts (`toss.ts`).
+// What a thrown Cell says when it hits something hard: "BONK!", in the interface's type,
+// ringed in the page's colour so it reads over whatever is under it; it lands, stands and
+// fades where it was said (`cell.css`). A tap says nothing; the carry engine says when a hit
+// counts (`toss.ts`).
 
 import "../tokens/stemcells.css";
 import "./cell.css";

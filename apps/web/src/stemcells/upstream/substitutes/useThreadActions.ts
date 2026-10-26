@@ -1,9 +1,7 @@
-// Replaces `hooks/useThreadActions.ts` (`plugin.ts`): a settle the person
-// sends leaves its mark first (`tabs/handSettles.ts`), so the Cell's pane
-// closes for it and never for upstream's auto-settle, which leaves the
-// thread just as this settle does. The sidebar, its menu and the settle key
-// all settle through this hook, and so do the Cell's line and Aski's column
-// (`upstream/settle.ts`).
+// Replaces `hooks/useThreadActions.ts` (`plugin.ts`): a settle the person sends leaves its mark
+// first (`tabs/handSettles.ts`), so the Cell's pane closes for it and never for upstream's
+// auto-settle, which leaves the thread the same. The sidebar, its menu, the settle key, the
+// Cell's line and Aski's column all settle through this hook (`upstream/settle.ts`).
 import { useThreadActions as useUpstreamThreadActions } from "../../../hooks/useThreadActions";
 import { markHandSettle, unmarkHandSettle } from "../../tabs/handSettles";
 

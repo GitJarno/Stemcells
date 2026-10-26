@@ -1,7 +1,6 @@
-// What Settings › Devices takes from upstream, all of it what Settings ›
-// Connections already uses: this machine's addresses and the two switches
-// that add one (Tailscale HTTPS, Network access), its one-time pairing
-// links and the devices they paired, the computers this app reaches, and
+// What Settings › Devices takes from upstream, all of it what Settings › Connections uses:
+// this machine's addresses and the switches that add one (Tailscale HTTPS, Network access),
+// its one-time pairing links and the devices they paired, the computers this app reaches, and
 // upstream's dialog that adds one.
 
 import {
@@ -97,11 +96,9 @@ export { formatExpiresInLabel } from "~/timestampFormat";
 const NO_ENDPOINTS: ReadonlyArray<AdvertisedEndpoint> = [];
 
 /**
- * This app's own machine as a phone would pair with it: who may pair and
- * switch its routes, the routes it has, the devices it has paired and the
- * links still open.
- * `desktop` is false in a browser, where the switches are the desktop
- * app's and the page's own address is the route.
+ * This app's own machine as a phone would pair with it: who may pair and switch its routes, its
+ * routes, paired devices and open links. `desktop` is false in a browser, where the switches
+ * are the desktop app's and the page's own address is the route.
  */
 export function useThisMachine() {
   const primaryId = usePrimaryEnvironmentId();

@@ -1,11 +1,9 @@
 // @effect-diagnostics nodeBuiltinImport:off globalDate:off - the test writes a transcript tree on disk.
 /**
  * The usage history adds to upstream's Usage page through the seam in
- * `UsageService.collectDirs`: a transcript the page's own scan or cache holds
- * counts once, from the page; one it never saw counts from the history. Run
- * against upstream's own service, Claude transcript reader and scan cache. A
- * failure after a sync means the seam moved, or the page's cache keeps
- * transcripts on other terms.
+ * `UsageService.collectDirs`: a transcript the page's scan or cache holds counts once, from
+ * the page; one it never saw counts from the history. A failure after a sync means the seam
+ * moved, or the page's cache keeps transcripts on other terms.
  */
 import * as NodeFSP from "node:fs/promises";
 import * as NodeOS from "node:os";
@@ -23,6 +21,7 @@ import * as HostProcess from "@t3tools/shared/HostProcess";
 import * as CursorAccountReader from "@t3tools/provider-cursor/server/CursorAccountReader";
 import * as CursorKeychain from "@t3tools/provider-cursor/server/CursorKeychain";
 import * as CursorUsageAccounts from "@t3tools/provider-cursor/server/CursorUsageAccounts";
+import { MuseUsageHome } from "@t3tools/provider-muse/server";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import { HttpClient, HttpClientResponse } from "effect/http";
@@ -49,6 +48,10 @@ const layerService = (home: string) =>
   Layer.fresh(CursorUsageAccounts.layer).pipe(
     Layer.provide(CursorAccountReader.layer.pipe(Layer.provide(CursorKeychain.layer))),
     Layer.provideMerge(AntigravityUsage.layer),
+    // No Muse install here: its usage home would start Muse to ask.
+    Layer.provideMerge(
+      Layer.mock(MuseUsageHome.MuseUsageHome)({ resolve: () => Effect.undefined }),
+    ),
     Layer.provideMerge(ProviderHostLive.layer),
     Layer.provideMerge(CodexUsageHistory.layer.pipe(Layer.provideMerge(Sqlite.layerMemory))),
     Layer.provideMerge(Layer.mock(BackgroundPolicy.BackgroundPolicy)({})),

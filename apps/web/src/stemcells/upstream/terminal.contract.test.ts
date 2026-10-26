@@ -1,10 +1,8 @@
 /**
- * What the terminal drawer's opening height and its buttons' row rely on in
- * upstream (`substitutes/ThreadTerminalDrawer.tsx`, `terminal.ts`,
- * `stemcells/terminal`). A failure here after a sync names the contract that
- * moved; the drawer likely opens at upstream's 280px again, at a height off
- * by a row, with its buttons back over the terminal's text, or without
- * moving, or with the words over it a frame behind its edge.
+ * What the terminal drawer's opening height and buttons' row rely on in upstream
+ * (`substitutes/ThreadTerminalDrawer.tsx`, `terminal.ts`, `stemcells/terminal`). A failure after
+ * a sync names the contract that moved; the drawer likely opens at 280px or a row off, its
+ * buttons over the text, without moving, or with the words over it a frame behind its edge.
  */
 import { resolveChatListAnchoredEndSpace } from "@t3tools/shared/chatList";
 import { describe, expect, it } from "vite-plus/test";

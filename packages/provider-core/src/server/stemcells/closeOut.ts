@@ -1,14 +1,8 @@
 /**
- * Stemcells' close-out (stemcells/tasks/aski-manager.md, decisions 7 and 8):
- * one section of the instructions upstream gives every chat, so a Cell asks
- * its choices through its question tool and ends each stop saying where it
- * stands, for code to read (apps/server/src/stemcells/needs/closeOut.ts)
- * rather than a model to guess. Ported from the Swift app's close-out, whose
- * eval it took to no false "done". Text the app wrote, never a Cell's or a
- * model's words. It grants nothing: the Cell's mode and its project's rules
- * still decide what it may do.
- *
- * Kept well under the 4,000 bytes a Codex instruction entry holds whole.
+ * Stemcells' close-out (stemcells/tasks/aski-manager.md, decisions 7 and 8): a Cell asks its
+ * choices through its question tool and ends each stop saying where it stands, for code to read
+ * (`apps/server/src/stemcells/needs/closeOut.ts`). It grants nothing: mode and project rules
+ * still decide. Kept well under the 4,000 bytes a Codex instruction entry holds whole.
  */
 export const STEMCELLS_CLOSE_OUT_SECTION = `## Stemcells: say where you stand
 

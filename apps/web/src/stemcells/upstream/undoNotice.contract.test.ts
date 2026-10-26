@@ -1,10 +1,8 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's components and Base UI's toast store from disk.
 /**
- * What the rail's undo notice relies on upstream. After a settle (⌘⇧S), a
- * snooze, an unpin, an archive or a discarded draft, upstream lets ⌘Z undo
- * it, even from the composer, and says so only in the wide sidebar. Under
- * the rail, ⌘Z would undo unseen, so the rail shows the notice as a toast
- * (`rail/undoNotice.ts`). A failure here after a sync names what moved; when
+ * What the rail's undo notice relies on upstream: after a settle (⌘⇧S), snooze, unpin, archive
+ * or discarded draft, ⌘Z undoes it, even from the composer, said only in the wide sidebar. Under
+ * the rail it would undo unseen, so the rail toasts the notice (`rail/undoNotice.ts`). When
  * upstream draws its notice where the rail shows, ours goes.
  */
 import * as NodeFS from "node:fs";

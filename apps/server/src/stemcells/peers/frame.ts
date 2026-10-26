@@ -21,13 +21,12 @@ export interface ThreadFacts {
 /** Longest title the frame quotes; titles are a line, not a message. */
 const TITLE_CAP = 80;
 
-// Characters that can hide or reorder text: C0 and C1 controls but tab and
-// newline, the soft hyphen, bidi marks and isolates, zero-width characters,
-// the word joiner, blank fillers, variation selectors, interlinear
-// annotation marks, the byte-order mark, and the tag characters that can
-// spell out words no screen shows.
+// Characters that can hide or reorder text: C0 and C1 controls but tab and newline, the
+// soft hyphen, bidi marks and isolates, zero-width characters, the word joiner, blank
+// fillers, variation selectors, interlinear annotation marks, the byte-order mark, and
+// the tag characters that can spell out words no screen shows.
 const HIDDEN =
-  // oxlint-disable-next-line no-control-regex, no-misleading-character-class -- matching these characters is the point.
+  // oxlint-disable-next-line no-misleading-character-class -- matching these characters is the point.
   /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u00AD\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF9-\uFFFB\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/gu;
 
 /**
@@ -59,12 +58,10 @@ function whereOf(sender: ThreadFacts, recipient: ThreadFacts): string {
 }
 
 /**
- * Whether the sender gives the recipient its work: a Subcell's parent, or
- * Aski, who passes on what the person asks. Their messages reach the
- * provider as upstream sends them. A fork's source is a peer: the person
- * forked it to try another way. So is a Cell that launched another: a
- * launch records no launcher, so a claim to be one can't be checked, and
- * its task arrives framed like any peer's words.
+ * Whether the sender gives the recipient its work: a Subcell's parent, or Aski, who passes on
+ * what the person asks; their messages reach the provider as upstream sends them. A fork's
+ * source is a peer, and so is a Cell that launched another: a launch records no launcher, so
+ * the claim can't be checked and its task arrives framed like any peer's words.
  */
 function isPrincipal(sender: ThreadFacts, recipient: ThreadFacts): boolean {
   return (

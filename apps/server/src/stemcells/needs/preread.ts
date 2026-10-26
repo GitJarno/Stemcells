@@ -1,10 +1,8 @@
 /**
- * The pre-read (stemcells/tasks/aski-room.md, "Item types"): free code that
- * says whether a Cell's finished reply leaves something to the person,
- * reading its last paragraph. A question, an offer to go on, or a stop short
- * of done makes a card; anything else is a report, which T3 already shows
- * as done. Aski's read, in a later slice, reads the same replies more
- * finely; until then, or with it off, this decides alone.
+ * The pre-read (stemcells/tasks/aski-room.md, "Item types"): free code that says whether a
+ * Cell's finished reply leaves something to the person, from its last paragraph. A question,
+ * an offer to go on, or a stop short of done makes a card; anything else is a report, which
+ * T3 already shows as done.
  */
 
 /** "left": the Cell's own close-out names a step that is the person's (`closeOut.ts`). */

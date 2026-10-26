@@ -1,10 +1,8 @@
 /**
- * What a card says and offers, from the need the server sent
- * (stemcells/tasks/aski-room.md, "Item types" and decision 5). Structured
- * asks show as the Cell asked: a permission's request whole, a question's
- * own options in the Cell's order. Every option is one app action, and what
- * reaches the Cell is the Cell's own words, a fixed phrase shown on the
- * option, or the person's own words.
+ * What a card says and offers, from the need the server sent (stemcells/tasks/aski-room.md,
+ * "Item types" and decision 5). Asks show as the Cell asked them. Every option is one app
+ * action, and what reaches the Cell is its own words, a fixed phrase shown on the option, or
+ * the person's own words.
  */
 import type { ApprovalDecision, AskedQuestion, Need, NeedRequest } from "./wire";
 
@@ -151,7 +149,7 @@ const option = (
 });
 
 /** Snoozes the Cell for an hour, through upstream's snooze. */
-/** Why a Cell with full access still asks, by the kind upstream reports (#22546). */
+/** Why a Cell with full access still asks, by the kind upstream reports. */
 const FULL_ACCESS_WHY: Record<NonNullable<NeedRequest["fullAccessOverride"]>, string> = {
   ask_rule: "Asked despite full access: an ask rule in the provider's settings matches this.",
   provider_check:

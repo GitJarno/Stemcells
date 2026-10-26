@@ -17,7 +17,7 @@ function hanging() {
 const said = (end: WaitEnd) => `none (${end})`;
 
 // The composer froze: a planner request that never answered held Enter
-// forever (#173's review). Every wait ends.
+// forever. Every wait ends.
 describe("a wait on the planner", () => {
   it("gives the work's answer when it comes in time", async () => {
     const answer = await within(async () => "lines", said, new AbortController().signal, 1_000);

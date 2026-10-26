@@ -8,11 +8,10 @@ import { describe, expect, it } from "vite-plus/test";
 import { resolveThreadListV2Status } from "../../features/threads/threadListV2";
 
 /**
- * Contracts a Cell on the phone leans on. Its face is read from T3's list
- * status (`cell/mood.ts`): which shells it calls asking, working and
- * waiting. Its ledge adds its height to what the composer reports, and the
- * chat clears its feed by that report (`ledge/CellLedge.tsx`); if the chat
- * stopped reading it, the ledge would cover the last message.
+ * Contracts a Cell on the phone leans on. Its face reads T3's list status (`cell/mood.ts`):
+ * which shells it calls asking, working and waiting. Its ledge adds its height to what the
+ * composer reports, and the chat clears its feed by that report (`ledge/CellLedge.tsx`); if
+ * the chat stopped reading it, the ledge would cover the last message.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));

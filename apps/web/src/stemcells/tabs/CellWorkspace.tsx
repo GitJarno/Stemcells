@@ -23,12 +23,7 @@ import { Separator, type Axis } from "../split/Separator";
 import { raiseSlate } from "../surfaces/awake";
 import { readNeeds } from "../needs/stream";
 import type { AskiChat } from "../upstream/aski";
-import {
-  ChatPaneView,
-  ChatsInBackground,
-  useCellPresence,
-  useOpenNewCell,
-} from "../upstream/chat";
+import { ChatPaneView, ChatsInBackground, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import { usePrimaryEnvironmentId } from "../upstream/needs";
@@ -112,11 +107,9 @@ function isNewCellDraft(cell: CellRef, newCell: NewCell | null): boolean {
 }
 
 /**
- * The chat area as tabs of panes. The URL names the chat the focused pane
- * shows: going to a chat (sidebar, new thread, a link) fills the focused
- * pane, or focuses the pane already showing it; focusing a pane routes to
- * its chat. `target` is the route's chat; `fallback` is upstream's page for
- * routes without one.
+ * The chat area as tabs of panes. The URL names the focused pane's chat: going to a chat fills
+ * the focused pane, or focuses the pane already showing it; focusing a pane routes to its chat.
+ * `target` is the route's chat; `fallback` is upstream's page for routes without one.
  */
 /**
  * `background` is set while Settings or Usage is open over the workspace:
@@ -148,6 +141,7 @@ export function CellWorkspace(props: {
   // A swipe grants no user activation the way a click or a key does, so it
   // is counted here: either means the person has acted since the app opened.
   const swiped = useRef(false);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Note the first wheel as acting; remove the listener on unmount.
   useEffect(() => {
     const onWheel = () => {
       swiped.current = true;
@@ -156,6 +150,7 @@ export function CellWorkspace(props: {
     return () => window.removeEventListener("wheel", onWheel);
   }, []);
   // A surface flies between its card and the workbench (stemcells/surfaces).
+  // oxlint-disable-next-line t3code/react-effect-budget -- Watch surface flights for the workspace's life.
   useEffect(() => watchFlights(), []);
   const newTabRef = useRef<HTMLDivElement>(null);
   const newCellIsTaken = newCellTaken(workspace, newCell);
@@ -167,6 +162,7 @@ export function CellWorkspace(props: {
   // stage meanwhile, so the strip doesn't slide back while the move lands.
   const [askiComing, setAskiComing] = useState(false);
   // From here on, a browser off stage sleeps until it is wanted (`awake.ts`).
+  // oxlint-disable-next-line t3code/react-effect-budget -- Raise the slate once, before the workspace's first paint.
   useLayoutEffect(raiseSlate, []);
 
   const routeToFocused = () => {
@@ -213,6 +209,7 @@ export function CellWorkspace(props: {
   const routeEnvironmentId = routeCell?.environmentId ?? null;
   const routeThreadId = routeCell?.threadId ?? null;
   const routeDraftId = routeCell?.draftId ?? null;
+  // oxlint-disable-next-line t3code/react-effect-budget -- Fill or focus a pane when the router names a new chat.
   useEffect(() => {
     if (routeEnvironmentId === null || routeThreadId === null) return;
     onRoute({ environmentId: routeEnvironmentId, threadId: routeThreadId, draftId: routeDraftId });
@@ -223,6 +220,7 @@ export function CellWorkspace(props: {
   const returnToFocused =
     props.target === null && isIndexRoute && focusedPresence.liveness === "alive";
   const goToFocused = useEffectEvent(routeToFocused);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Route back to the focused Cell once the index route shows.
   useEffect(() => {
     if (returnToFocused) goToFocused();
   }, [returnToFocused]);
@@ -230,6 +228,7 @@ export function CellWorkspace(props: {
   // A draft that left every pane goes too, unless something was written in
   // it. The new Cell's stays, for the next swipe past the last tab. One a
   // move took to another window hasn't left.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Drop drafts that left every pane; unsubscribe on unmount.
   useEffect(
     () =>
       useWorkspaceStore.subscribe((state, previous) => {
@@ -308,11 +307,13 @@ export function CellWorkspace(props: {
 
   const openNewTab = () => openCellInto((current) => openTab(current, newIds(), null));
   const provideNewTab = useEffectEvent(openNewTab);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Provide the new-tab command while mounted.
   useEffect(() => provideNewCellTab(() => provideNewTab()), []);
 
   const openNewPane = () =>
     openCellInto((current) => addPaneOutsideAski(current, newIds(), gridWidth()));
   const provideNewPane = useEffectEvent(openNewPane);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Provide the new-pane command while mounted.
   useEffect(() => provideNewCellPane(() => provideNewPane()), []);
 
   const openBeside = (cell: CellRef) => {
@@ -324,6 +325,7 @@ export function CellWorkspace(props: {
     routeToFocused();
   };
   const provideBeside = useEffectEvent(openBeside);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Provide the open-beside command while mounted.
   useEffect(() => provideCellBeside((cell) => provideBeside(cell)), []);
 
   /**
@@ -380,42 +382,45 @@ export function CellWorkspace(props: {
     return current.tabs.length === 1 && panesOf(current.tabs[0]!).length === 1;
   };
 
-  useWorkspaceKeys({
-    newCell: () => {
-      openNewPane();
-      return true;
-    },
-    closeTab: () => {
-      const current = readWorkspace();
-      if (!current.activeTabId || current.tabs.length < 2 || inAskiTab()) return false;
-      closeTabAndRoute(current.activeTabId);
-      return true;
-    },
-    splitRight: () => {
-      if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
-      const width = gridWidth();
-      openCellInto((current) => splitRightOutsideAski(current, newIds(), width));
-      return true;
-    },
-    splitDown: () => {
-      if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
-      openCellInto((current) => splitDownOutsideAski(current, newIds()));
-      return true;
-    },
-    closePane: () => {
-      const pane = focusedPane(readWorkspace());
-      // Aski never closes, nor lets the key close the window under it.
-      if (inAskiTab()) {
-        showAskiStays();
+  useWorkspaceKeys(
+    {
+      newCell: () => {
+        openNewPane();
         return true;
-      }
-      // The last pane of the last tab is left to upstream: on the desktop, ⌘W
-      // closes the window.
-      if (!pane || isLastPane()) return false;
-      closePaneAndRoute(pane.id);
-      return true;
+      },
+      closeTab: () => {
+        const current = readWorkspace();
+        if (!current.activeTabId || current.tabs.length < 2 || inAskiTab()) return false;
+        closeTabAndRoute(current.activeTabId);
+        return true;
+      },
+      splitRight: () => {
+        if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
+        const width = gridWidth();
+        openCellInto((current) => splitRightOutsideAski(current, newIds(), width));
+        return true;
+      },
+      splitDown: () => {
+        if (!focusedPane(readWorkspace()) || inAskiTab()) return false;
+        openCellInto((current) => splitDownOutsideAski(current, newIds()));
+        return true;
+      },
+      closePane: () => {
+        const pane = focusedPane(readWorkspace());
+        // Aski never closes, nor lets the key close the window under it.
+        if (inAskiTab()) {
+          showAskiStays();
+          return true;
+        }
+        // The last pane of the last tab is left to upstream: on the desktop, ⌘W
+        // closes the window.
+        if (!pane || isLastPane()) return false;
+        closePaneAndRoute(pane.id);
+        return true;
+      },
     },
-  }, props.background !== true);
+    props.background !== true,
+  );
 
   // On the index route Aski's chat is on its way: the grid waits for it
   // rather than letting upstream's index start a draft beside it.
@@ -478,77 +483,77 @@ export function CellWorkspace(props: {
       inert={props.background}
     >
       <ChatsInBackground value={props.background === true}>
-      {keeper}
-      <TabStrip
-        tabs={cellTabs}
-        activeTabId={stageId}
-        aski={{
-          active: askiShown !== null && stageId === ASKI_TAB_ID,
-          cell: askiShown ? (panesOf(askiShown)[0]?.cell ?? null) : null,
-          chat: askiChat,
-        }}
-        newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}
-        newTabRef={newTabRef}
-        windowTabs={workspace.tabs.length}
-        onActivate={activateTabAndRoute}
-        onClose={(tabId) => {
-          if (readWorkspace().tabs.length > 1) closeTabAndRoute(tabId);
-        }}
-        onMove={(tabId, toIndex) =>
-          // The strip counts the Cells' tabs; Aski's comes before them.
-          updateWorkspace((current) =>
-            moveTabAfterAski(current, tabId, toIndex + (askiTab ? 1 : 0)),
-          )
-        }
-        onNew={openNewTab}
-        onRename={(tabId, name) => updateWorkspace((current) => nameTab(current, tabId, name))}
-      />
-      <div data-stemcells-slate="">
-        {tab === null ? (
-          <div data-stemcells-page="">
-            <div data-stemcells-grid="">
-              <AskiPane chat={askiChat} target={null} ownsWindowInput={false} focused={false} />
+        {keeper}
+        <TabStrip
+          tabs={cellTabs}
+          activeTabId={stageId}
+          aski={{
+            active: askiShown !== null && stageId === ASKI_TAB_ID,
+            cell: askiShown ? (panesOf(askiShown)[0]?.cell ?? null) : null,
+            chat: askiChat,
+          }}
+          newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}
+          newTabRef={newTabRef}
+          windowTabs={workspace.tabs.length}
+          onActivate={activateTabAndRoute}
+          onClose={(tabId) => {
+            if (readWorkspace().tabs.length > 1) closeTabAndRoute(tabId);
+          }}
+          onMove={(tabId, toIndex) =>
+            // The strip counts the Cells' tabs; Aski's comes before them.
+            updateWorkspace((current) =>
+              moveTabAfterAski(current, tabId, toIndex + (askiTab ? 1 : 0)),
+            )
+          }
+          onNew={openNewTab}
+          onRename={(tabId, name) => updateWorkspace((current) => nameTab(current, tabId, name))}
+        />
+        <div data-stemcells-slate="">
+          {tab === null ? (
+            <div data-stemcells-page="">
+              <div data-stemcells-grid="">
+                <AskiPane chat={askiChat} target={null} ownsWindowInput={false} focused={false} />
+              </div>
             </div>
-          </div>
-        ) : (
-          <TabPager
-            tabIds={tabIds}
-            activeId={stageId ?? tab.id}
-            onTurn={activateTabAndRoute}
-            newCellId={newCell?.ids.tab ?? null}
-            newTabRef={newTabRef}
-            onMotion={newCellMotion}
-          >
-            {mountedTabs(tabIds, stageId ?? tab.id, settledTabId, visited).map((tabId) => {
-              const pageTab = tabOf(tabId);
-              if (!pageTab) return null;
-              const onStage = tabId === tab.id;
-              return (
-                <PagerPage key={tabId} tabId={tabId} onStage={onStage}>
-                  <TabPage
-                    tab={pageTab}
-                    onStage={onStage}
-                    aski={isAskiTab(pageTab) ? askiChat : null}
-                    routeOwnerId={routeOwnerId ?? null}
-                    routeTarget={props.target}
-                    gridRef={gridRef}
-                    onFocus={focusPaneAndRoute}
-                    onClose={
-                      // Aski's pane never closes, nor the last pane of the last tab.
-                      isAskiTab(pageTab) ||
-                      (workspace.tabs.length === 1 && panesOf(pageTab).length === 1)
-                        ? null
-                        : closePaneAndRoute
-                    }
-                  />
-                </PagerPage>
-              );
-            })}
-          </TabPager>
-        )}
-        <DropWash />
-        <ChatCarry onOpenTab={activateTabAndRoute} />
-      </div>
+          ) : (
+            <TabPager
+              tabIds={tabIds}
+              activeId={stageId ?? tab.id}
+              onTurn={activateTabAndRoute}
+              newCellId={newCell?.ids.tab ?? null}
+              newTabRef={newTabRef}
+              onMotion={newCellMotion}
+            >
+              {mountedTabs(tabIds, stageId ?? tab.id, settledTabId, visited).map((tabId) => {
+                const pageTab = tabOf(tabId);
+                if (!pageTab) return null;
+                const onStage = tabId === tab.id;
+                return (
+                  <PagerPage key={tabId} tabId={tabId} onStage={onStage}>
+                    <TabPage
+                      tab={pageTab}
+                      onStage={onStage}
+                      aski={isAskiTab(pageTab) ? askiChat : null}
+                      routeOwnerId={routeOwnerId ?? null}
+                      routeTarget={props.target}
+                      gridRef={gridRef}
+                      onFocus={focusPaneAndRoute}
+                      onClose={
+                        // Aski's pane never closes, nor the last pane of the last tab.
+                        isAskiTab(pageTab) ||
+                        (workspace.tabs.length === 1 && panesOf(pageTab).length === 1)
+                          ? null
+                          : closePaneAndRoute
+                      }
+                    />
+                  </PagerPage>
+                );
+              })}
+            </TabPager>
+          )}
+          <DropWash />
+          <ChatCarry onOpenTab={activateTabAndRoute} />
+        </div>
       </ChatsInBackground>
     </SidebarInset>
   );

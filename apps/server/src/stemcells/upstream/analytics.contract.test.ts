@@ -20,12 +20,10 @@ import * as UpstreamAnalyticsService from "../../telemetry/AnalyticsService.ts";
 import { analytics as stemcellsAnalytics } from "../layer.ts";
 import { forgetTelemetryId } from "../privacy/telemetry.ts";
 
-// Contract: Stemcells sends no telemetry. The server runs Stemcells' analytics
-// service, which records nothing; upstream's own service, if a sync wired it
-// back, has nowhere to send by default; and an SSH environment, which runs
-// upstream's released server on the remote machine, starts with its
-// telemetry off. If this fails after a sync, a path to T3's analytics is
-// open again.
+// Contract: Stemcells sends no telemetry. The server runs Stemcells' analytics service,
+// which records nothing; upstream's, if a sync wired it back, has nowhere to send by default;
+// and an SSH environment, running upstream's released server remotely, starts with
+// telemetry off. If this fails after a sync, a path to T3's analytics is open again.
 
 const serverSrc = NodePath.resolve(
   NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)),

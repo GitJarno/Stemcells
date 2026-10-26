@@ -21,12 +21,10 @@ export interface LineSlot {
 export const ComposerStashSlot = createContext<LineSlot | null>(null);
 
 /**
- * Where the Cell's line takes upstream's branch toolbar: the menu under
- * the ledge's "project · branch ⌄" (`upstream/substitutes/BranchToolbar.tsx`),
- * in upstream's panel layout. `offered` while upstream offers the controls
- * in the composer (a draft, or a chat whose person keeps them after it
- * starts) and the checkout is known to be git; `open` is the menu's, which
- * upstream's branch shortcut opens too. Null outside a Cell's pane.
+ * Where the Cell's line takes upstream's branch toolbar: the menu under the ledge's
+ * "project · branch ⌄" (`upstream/substitutes/BranchToolbar.tsx`). `offered` while upstream
+ * offers the controls in the composer and the checkout is known to be git; `open` is the
+ * menu's, which upstream's branch shortcut opens too. Null outside a Cell's pane.
  */
 export interface EnvSlot extends LineSlot {
   readonly offered: boolean;

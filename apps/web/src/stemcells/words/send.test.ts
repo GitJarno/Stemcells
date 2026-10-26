@@ -64,7 +64,7 @@ function wait() {
 }
 
 // The composer froze: a send waiting on Aski's plan whose wait failed held
-// every later Enter, since nothing let go (#173's review).
+// every later Enter, since nothing let go.
 describe("a composer's sends, one at a time", () => {
   it("goes at once with nothing to wait for", () => {
     const queue = oneSendAtATime();

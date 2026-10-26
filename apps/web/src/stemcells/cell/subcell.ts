@@ -1,8 +1,7 @@
-// A Subcell, the subagent a Cell starts for a piece of its work, is drawn as
-// a Cell of its own (`SubcellMark`). Its face comes from the status upstream
-// gives the subagent, as a Cell's comes from its chat's (`tabs/cellMood.ts`):
-// it thinks while it works, waits while it waits, and wears the crash when
-// its run failed. Done, stopped or idle, it stands awake.
+// A Subcell, the subagent a Cell starts for part of its work, is drawn as a Cell of its own
+// (`SubcellMark`), its face from the status upstream gives the subagent, as a Cell's comes
+// from its chat's (`tabs/cellMood.ts`): it thinks while it works, waits while it waits, wears
+// the crash when its run failed, and stands awake otherwise.
 
 import type { Activity } from "./activity.ts";
 import type { Mood } from "./look.ts";

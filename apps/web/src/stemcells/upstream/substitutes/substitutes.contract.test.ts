@@ -52,7 +52,6 @@ import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
-import * as UpstreamComposerStash from "../../../components/chat/useComposerStash";
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
@@ -101,21 +100,19 @@ import * as OurVisibleAnimation from "./visibleAnimation";
 import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
 import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
-import * as OurComposerStash from "./useComposerStash";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 import * as OurUserMessageRow from "./TimelineUserMessageRow";
 
 // Upstream's timeline loads the diff worker, which only a browser can start;
 // these tests read its module's exports, never draw it.
-vi.mock("@pierre/diffs/worker/worker.js?worker", () => ({ default: class {} }));
+vi.mock("@pierre/diffs/worker/worker.js?worker", () => ({ default: function DiffWorker() {} }));
 
 /**
- * Contract: every build of the web app hands upstream's code our substitute
- * for each module in `SUBSTITUTES`, and each substitute still exports what its
- * upstream module does. If this fails after a sync, upstream's views have
- * quietly gone back to upstream's module (favicons fetched, vendor words in
- * model names), or a substitute is missing a name upstream now exports.
+ * Contract: every web build hands upstream's code our substitute for each module in
+ * `SUBSTITUTES`, and each still exports what its upstream module does. If this fails after a
+ * sync, upstream's views went quietly back to upstream's module (favicons fetched, vendor words
+ * in model names), or a substitute lacks a name upstream now exports.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -716,14 +713,6 @@ const CASES: Readonly<Record<string, Case>> = {
         "./chat/usePasteToFocusComposer",
         ["usePasteToFocusComposer"],
       ],
-    },
-  },
-  "apps/web/src/components/chat/useComposerStash.ts": {
-    upstream: UpstreamComposerStash,
-    substitute: OurComposerStash satisfies typeof UpstreamComposerStash,
-    importers: {
-      // The stash and its shortcut, gated by the window's input.
-      "apps/web/src/components/chat/ChatComposer.tsx": ["./useComposerStash", ["useComposerStash"]],
     },
   },
   "apps/web/src/hooks/useThreadActions.ts": {

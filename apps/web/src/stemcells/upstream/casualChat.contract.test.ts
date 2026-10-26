@@ -1,10 +1,8 @@
 /**
- * What a casual chat relies on in upstream's views (`stemcells/seams.md`, A
- * casual chat). Upstream's chat in no project is offered and headed as a
- * casual chat: under a new chat's headline, on the hero with no projects, and
- * in the command palette, whose action passes through our substitute of its
- * logic. A failure here after a sync names the place that went back to
- * upstream's words: say the casual chat's words there again.
+ * What a casual chat relies on in upstream's views (`stemcells/seams.md`, A casual chat): a chat
+ * in no project is offered and headed as one under a new chat's headline, on the hero with no
+ * projects, and in the command palette (via our substitute of its logic). A failure after a
+ * sync names the place back on upstream's words: say the casual chat's words there again.
  */
 import { describe, expect, it } from "vite-plus/test";
 

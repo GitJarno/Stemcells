@@ -23,7 +23,7 @@ const doc = (...inline: ReturnType<typeof t>[]) =>
 const keyOf = (d: ReturnType<typeof doc>) => planKeyOf(d, docText(d));
 
 // A plan survived edits the reader can't see, and replaced the message
-// with one built from older text (#173's review). Its key sees them.
+// with one built from older text. Its key sees them.
 describe("what a plan was made from", () => {
   it("is the same for the same message", () => {
     const a = doc(t("2 Cells: fix "), chip("src/a.ts"), t(" with "), t("npm test", true));

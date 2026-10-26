@@ -1,13 +1,7 @@
-// Whether somebody is at this Mac, as its server says
-// (`GET /api/stemcells/presence`), for Aski's eyes. Asked only while the
-// page is in sight: every few seconds while somebody is at the Mac, and
-// seldom while nobody is, since each answer reads the Mac's registry. A
-// return shows itself here first: while nobody was there, the pointer
-// moving, a key or the window coming forward asks again at once. A server
-// that stops answering leaves its last word standing: a Mac that said
-// nobody was at it and then went quiet is taken to be asleep. Back from a
-// while away, the server also says how long the person was gone. Every
-// part of the page that wants it shares one watch.
+// Whether somebody is at this Mac (`GET /api/stemcells/presence`), for Aski's eyes. Asked only
+// while the page is in sight, seldom while nobody is, as each answer reads the Mac's registry;
+// then a pointer move, a key or the window coming forward asks at once. A silent server leaves
+// its last word: a Mac that said nobody was there and went quiet is taken to be asleep.
 
 import { useSyncExternalStore } from "react";
 

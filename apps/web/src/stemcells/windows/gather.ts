@@ -176,12 +176,10 @@ export function pressGather(
 }
 
 /**
- * The windows after the displays change, or at launch against the displays
- * last seen. A display set that returns puts back what its unplugging
- * gathered. Windows on a display that's gone gather into the front window on
- * the displays left (or, if none is, the front one of them moves to the
- * first display), remembered for the set they left. Every frame ends inside
- * its display.
+ * The windows after the displays change, or at launch against the displays last seen. A
+ * display set that returns puts back what its unplugging gathered. Windows on a gone display
+ * gather into the front window on those left (if none is, the front one moves to the first
+ * display), remembered for the set they left. Every frame ends inside its display.
  */
 export function displaysChanged(
   arrangement: Arrangement,

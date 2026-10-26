@@ -1,8 +1,7 @@
 /**
- * Stemcells: hands the page its window (`window.stemcellsWindows`, read by
- * apps/web/src/stemcells/windows/bridge.ts): who it is and the workspace it
- * starts from, read synchronously before the page's scripts run, and the
- * way to publish its workspace, take one a move gave it, and make moves
+ * Stemcells: hands the page its window as `window.stemcellsWindows` (web `windows/bridge.ts`):
+ * who it is and its starting workspace, read synchronously before the page's scripts run, and
+ * the way to publish its workspace, take one a move gave it, and make moves
  * (stemcells/tasks/windows.md).
  */
 import { contextBridge, ipcRenderer, webFrame } from "electron";

@@ -19,6 +19,8 @@ export type Glow = "quiet" | "working" | "needsYou";
 const GLOW_BY_STATUS: Readonly<Record<CellStatus, Glow>> = {
   "Pending Approval": "needsYou",
   "Awaiting Input": "needsYou",
+  // A guest's message waits on the person to let it through.
+  "Guest Request": "needsYou",
   "Plan Ready": "needsYou",
   // A turn in flight, one on its way, or background work holding it.
   Working: "working",
@@ -126,12 +128,10 @@ function washed(tone: Rgb, glass: Rgb): number[] {
 }
 
 /**
- * The alpha at which the band's core, `tone` itself laid over the washed
- * glass, lights it by `LIGHT`. A pale tone tints the glass more to begin
- * with, so its band is drawn thinner. On dark glass (`lightInk`) the core
- * adds `LIGHT` to the glass's luminance, as the Swift app's rule says; on
- * light glass it takes the same share of the words' contrast that rule
- * takes on the Swift app's own glass, so the band is one you find in either.
+ * The alpha at which the band's core, `tone` over the washed glass, lights it by `LIGHT`; a pale
+ * tone already tints the glass more, so its band is thinner. On dark glass (`lightInk`) the core
+ * adds `LIGHT` to the luminance, as the Swift app's rule says; on light glass it takes the same
+ * share of the words' contrast that rule takes on the Swift app's glass.
  */
 export function strength(tone: Rgb, glass: Rgb, lightInk: boolean): number {
   const ground = washed(tone, glass);

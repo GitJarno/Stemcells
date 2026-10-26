@@ -1,11 +1,8 @@
 /**
- * The cards' keyboard walk (stemcells/tasks/aski-forward.md, Move 2, slice
- * D): ↓ in Aski's empty composer steps onto the first open card, ↓ and ↑
- * step card to card in their numbers' order, an answer given from the
- * keyboard steps on to the next, and Esc goes back to the composer. A step
- * lands on the card's recommendation, so Enter takes it; never on an option
- * that allows, and on the card itself when it recommends nothing. The focus
- * in the list holds it still (NeedsFrame), so nothing moves under it.
+ * The cards' keyboard walk (stemcells/tasks/aski-forward.md, Move 2, slice D): ↓ from Aski's
+ * empty composer, then ↓ and ↑ by number, Esc back. A step lands on the card's recommendation,
+ * so Enter takes it; never on an option that allows, and on the card itself when it recommends
+ * nothing. Focus in the list holds it still (NeedsFrame), so nothing moves under it.
  */
 
 /** A card that still takes an answer. */

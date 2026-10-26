@@ -1,29 +1,8 @@
 /**
- * The name transform: the builds of the web app, the server, the phone and
- * the desktop app say Stemcells where upstream's code says "T3 Code", so
- * upstream's files keep their own words and a sync never conflicts over the
- * name (`stemcells/docs/fork.md`, "The name transform").
- *
- * It is keyed on content, never on positions: each build reads upstream's
- * source as it is that day, and renames the exact words "T3 Code" (and its
- * possessive) everywhere this file doesn't keep them. A kept place is
- * named by its file and its words (ones only it says), with why; no file is
- * kept whole, so a name upstream adds says Stemcells like the rest. A word
- * that only contains the name (a path, an id) is left, and the build fails
- * until an entry here keeps it. Tests run upstream's code as upstream wrote
- * it: the transform is a build step, not a source edit.
- *
- * - `upstreamNamePlugin` does it in a build: the web app's (through
- *   `apps/web/src/stemcells/upstream/substitutes/plugin.ts`), the server's
- *   (`apps/server/vite.config.ts`) and the desktop app's main process
- *   (`apps/desktop/vite.config.ts`). The build fails if the transform renamed
- *   nothing, or if a module it bundles says "T3 Code" outside its own file's
- *   kept words.
- * - The phone's Metro build does both through
- *   `apps/mobile/src/stemcells/upstream/substitutes/nameTransformer.cjs`.
- * - `stemcells/scripts/check-app-name.ts` checks a built app's files against
- *   every entry's words.
- * - `nameTransform.test.ts` holds the list to the sources.
+ * The name transform: builds say Stemcells where upstream's code says "T3 Code", so upstream's
+ * files keep their words and a sync never conflicts (`stemcells/docs/fork.md`, "The name
+ * transform"). Keyed on content, not positions; no file is kept whole, and a word that only
+ * contains the name (a path, an id) fails the build until an entry here keeps it.
  */
 // @effect-diagnostics nodeBuiltinImport:off - a build step: it reads upstream's sources on disk.
 import * as NodeFS from "node:fs";
@@ -59,11 +38,9 @@ export function isRenamedIn(file: string): boolean {
 export interface Kept {
   readonly file: RegExp;
   /**
-   * The kept words: the name and the words around it that only this place
-   * says (a sentence, or a distinctive key, string or identifier, across
-   * lines if need be), never the name in generic words (`label`, `name`,
-   * `children`). A name in its file with these words around it is kept; a
-   * built module from its file may say the name only inside them.
+   * The name and the words around it that only this place says (a sentence, or a distinctive
+   * key, string or identifier, across lines if need be), never generic words (`label`, `name`).
+   * A built module from its file may say the name only inside them.
    */
   readonly words: string;
   /** How many times its files say the words (1 unless given): one upstream adds fails the test. */
@@ -602,11 +579,9 @@ function sourcesUnder(root: string, dir: string): string[] {
 const REACH = 2000;
 
 /**
- * Each "T3 Code" in `output` (built code) that the words of none of `kept`
- * stand around, with what surrounds it. A build checks each module against
- * its own file's entries (`keptIn`), so no other file can borrow them;
- * `check-app-name.ts`, reading an app with no modules to go by, checks
- * against them all.
+ * Each "T3 Code" in built `output` that no `kept` entry's words stand around, with what
+ * surrounds it. A build passes each module only its own file's entries (`keptIn`), so no file
+ * borrows another's; `check-app-name.ts`, with no modules to go by, checks against them all.
  */
 export function unexplainedNames(output: string, kept: ReadonlyArray<Kept> = KEPT): string[] {
   const words = evenWords(kept);
@@ -662,11 +637,9 @@ const SCRIPT = /\.[cm]?[jt]sx?$/;
 const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 
 /**
- * The transform in a build: the web app's (Vite), the server's and the
- * desktop app's (tsdown), and the phone's WebView scripts (Vite). Tests
- * never run it: the web's plugin leaves it out under Vitest, and the other
- * apps' tests don't build. `mustRename: false` is for a small build that may
- * bundle nothing upstream names the app in (a WebView script).
+ * The transform in a Vite or tsdown build (web, server, desktop main, the phone's WebView
+ * scripts). Tests never run it, so they run upstream's code as written. `mustRename: false`
+ * is for a small build that may bundle nothing upstream names the app in (a WebView script).
  */
 export function upstreamNamePlugin(
   options: { readonly root?: string; readonly mustRename?: boolean } = {},

@@ -1,14 +1,8 @@
 /**
- * What the words rely on to set up a draft through upstream: the hero moves
- * a draft the way `moveDraft` does, the draft store keeps a model where
- * `restoreDraftModelState` puts it back, upstream's send reads the prompt
- * when it sends (so the words' edit lands), and the controls the words fly
- * to and mark carry the attributes they're found by, the readout is fitted
- * where the model picker is, and a spawn finds the draft's headline. A
- * failure here after a sync names the contract that moved: the draft would
- * land in the wrong project or model, the setup words would be sent, the
- * flights would land nowhere, the readout would never fold, or Aski would
- * play no spawn.
+ * What the words rely on to set up a draft through upstream: the hero moves a draft as
+ * `moveDraft` does, the store keeps a model where `restoreDraftModelState` restores it, send
+ * reads the prompt when it sends, the controls carry the attributes the words find them by, the
+ * readout fits where the model picker is, and a spawn finds the draft's headline.
  */
 import { describe, expect, it } from "vite-plus/test";
 

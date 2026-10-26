@@ -1,10 +1,8 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's source files on disk.
 /**
- * What the chat's scroll indicator (`scrollIndicator/`) relies on in
- * upstream: T3's ask marks (its timeline minimap), found by the attributes
- * upstream's own code and tests find them by, whichever file draws them. A
- * failure here after a sync names the contract that moved: the marks may
- * show at rest again, never show, or stand at the left.
+ * What the chat's scroll indicator (`scrollIndicator/`) relies on in upstream: T3's ask marks
+ * (its timeline minimap), found by the attributes upstream's own code and tests use, whichever
+ * file draws them. A failure after a sync: the marks may show at rest, never show, or sit left.
  */
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";

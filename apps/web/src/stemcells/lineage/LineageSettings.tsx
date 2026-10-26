@@ -10,7 +10,7 @@ import {
   SettingsSection,
   Toggle,
   ToggleGroup,
-  useRelativeTimeTick,
+  useNowMinuteMs,
 } from "../upstream/settings";
 import {
   type Avatar,
@@ -29,12 +29,10 @@ import {
 import { ProviderCell } from "./ProviderCell";
 import { useSpend } from "./spend";
 
-// Settings › Lineage: every name a Cell has been dealt, and the lives lived
-// under it. A name comes back, so each chat that drew it is a new life of
-// the same avatar, in the look it was dealt the day it was born. The page
-// shows a face, a name, how many lives and what they spent; a face opens its
-// card with every life. The Cells here stand still: a page of many costs no
-// frames.
+// Settings › Lineage: every name a Cell has been dealt, and the lives lived under it. A name
+// comes back, so each chat that drew it is a new life of the same avatar, in the look it was
+// dealt the day it was born. A face opens its card with every life. The Cells here stand
+// still: a page of many costs no frames.
 
 /** What a life wore: the look its Cell is dealt alone, on the day it was born. */
 const lookOfLife = (life: Life): readonly string[] =>
@@ -77,7 +75,7 @@ export function LineageSettingsPanel() {
           const spent = spend.byKey.get(life.key);
           return spent === undefined ? life : { ...life, spend: spent };
         });
-  const now = useRelativeTimeTick(60_000);
+  const now = useNowMinuteMs();
   const ground = useCellGround();
   const [order, setOrder] = useState<Order>("lives");
   const [open, setOpen] = useState<string | null>(null);

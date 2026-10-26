@@ -1,9 +1,7 @@
-// Messages between Cells, as one chat shows them (stemcells/tasks/peers.md,
-// decision 4): what came in from another Cell, here or on a linked machine,
-// what this Cell sent with `t3_thread_send` or `stemcells_peer_send`, and
-// how they answer each other. All of it reads from
-// this chat's own timeline: an ask is a message whose first sentence asks,
-// and a reply is the next message back to a Cell with an open ask.
+// Messages between Cells, as one chat shows them (stemcells/tasks/peers.md, decision 4): what
+// came in, what this Cell sent with `t3_thread_send` or `stemcells_peer_send`, and how they
+// answer each other, all read from this chat's own timeline. An ask is a message whose first
+// sentence asks; a reply is the next message back to a Cell with an open ask.
 
 import { resolveT3McpToolId } from "../upstream/t3Tools";
 

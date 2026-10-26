@@ -50,8 +50,8 @@ describe("the Surface's width comes from the person, never from itself", () => {
     const chat = {
       closest: (selector: string) => (selector === "[data-stemcells-page]" ? page : null),
     };
-    usePreviewPanelInlineSize(undefined, { container: chat as never, widthStorageKey: "w" });
-    expect(vi.mocked(useUpstreamInlineSize)).toHaveBeenLastCalledWith(undefined, {
+    usePreviewPanelInlineSize({ container: chat as never, widthStorageKey: "w" });
+    expect(vi.mocked(useUpstreamInlineSize)).toHaveBeenLastCalledWith({
       container: page,
       widthStorageKey: "w",
     });
@@ -59,8 +59,8 @@ describe("the Surface's width comes from the person, never from itself", () => {
 
   it("outside a pane, upstream measures what it always did", () => {
     const chat = { closest: () => null };
-    usePreviewPanelInlineSize(undefined, { container: chat as never });
-    expect(vi.mocked(useUpstreamInlineSize)).toHaveBeenLastCalledWith(undefined, {
+    usePreviewPanelInlineSize({ container: chat as never });
+    expect(vi.mocked(useUpstreamInlineSize)).toHaveBeenLastCalledWith({
       container: chat,
     });
   });

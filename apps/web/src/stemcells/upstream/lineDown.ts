@@ -6,10 +6,10 @@
  */
 import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connection";
 import { resolveThreadProviderStack } from "@t3tools/client-runtime/state/models";
-import { useEffect, useState } from "react";
 
-import { scheduleEnvironmentReconnectWarning } from "../../components/ChatView.logic";
+import { ENVIRONMENT_RECONNECT_WARNING_GRACE_MS } from "../../components/ChatView.logic";
 import { getProviderStatusBannerKey } from "../../components/chat/ProviderStatusBanner";
+import { useEnvironmentStateHeldFor } from "../../hooks/useEnvironmentDisconnectDelay";
 import { useEnvironment, useEnvironmentProviders } from "../../state/environments";
 import { useQuietThreadShell } from "../../state/entities";
 import type { CellRef } from "../tabs/layout";
@@ -39,14 +39,11 @@ export function useCellLineDown(cell: CellRef | null): boolean {
   const environment = useEnvironment(ref?.environmentId ?? null);
   const providersByEnvironment = useEnvironmentProviders();
   const phase = environment?.connection.phase ?? null;
-  const waiting = reconnecting(phase);
-  const [graceOver, setGraceOver] = useState(false);
   // Each reconnect gets its own grace, as upstream's banner does.
-  if (!waiting && graceOver) setGraceOver(false);
-  useEffect(() => {
-    if (!waiting) return;
-    return scheduleEnvironmentReconnectWarning(() => setGraceOver(true));
-  }, [waiting]);
+  const graceOver = useEnvironmentStateHeldFor(
+    reconnecting(phase) ? (ref?.environmentId ?? null) : null,
+    ENVIRONMENT_RECONNECT_WARNING_GRACE_MS,
+  );
   const instanceId = shell === null ? null : (resolveThreadProviderStack(shell).at(-1) ?? null);
   const provider =
     instanceId === null || ref === null

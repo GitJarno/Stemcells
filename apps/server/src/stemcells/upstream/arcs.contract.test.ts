@@ -1,9 +1,8 @@
 /**
- * The arcs read what upstream's projection stores, written here by upstream's
- * own projection from its events: runs, the reply that ended each, the
- * person's messages and a Cell's requests. Autonomy reads a Cell's messages
- * through the same store (`upstream/autonomy.ts`). A failure after a sync
- * means they read the store as it no longer is.
+ * The arcs read what upstream's own projection stores from its events: runs, the reply that
+ * ended each, the person's messages and a Cell's requests. Autonomy reads a Cell's messages
+ * through the same store (`upstream/autonomy.ts`). A failure after a sync means they read
+ * the store as it no longer is.
  */
 import { assert, it } from "@effect/vitest";
 import {

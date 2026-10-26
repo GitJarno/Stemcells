@@ -7,16 +7,10 @@ import type { Plugin } from "vite-plus";
 import { upstreamNamePlugin } from "../../../../../../stemcells/brand/nameTransform.ts";
 
 /**
- * Upstream modules Stemcells replaces at build time, each with the module of
- * the same name in this folder. Upstream's code imports them as it always has
- * and gets ours, so the upstream file that imports one stays untouched: no
- * seam. Our own folder still gets upstream's, which is how a substitute
- * re-exports the module it replaces and changes only what it must.
- *
- * Every build of the web app reads this: dev, the production build the
- * desktop app ships, and both test projects. `substitutes.contract.test.ts`
- * proves each one, and that every substitute exports what its upstream
- * module does.
+ * Upstream modules Stemcells replaces at build time with the same-named module in this folder,
+ * so the upstream file importing one stays untouched: no seam. Our own folder still gets
+ * upstream's, so a substitute can re-export what it replaces. Every web build reads this (dev,
+ * the desktop's production build, both test projects); `substitutes.contract.test.ts` proves it.
  */
 export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // No favicon fetched: a link or a page shows the app's own mark.
@@ -93,12 +87,11 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // The usage page lists every plan a row each, as the rail's hover does.
   "apps/web/src/components/usage/UsageLimitsPooled.tsx": "UsageLimitsPooled.tsx",
   // ChatView safe to render twice: a chat's window shortcuts, its open-in
-  // shortcut, paste-to-focus and the stash shortcut act only in the chat
-  // that owns the window's input.
+  // shortcut and paste-to-focus act only in the chat that owns the window's
+  // input (the stash shortcut stands down through `../windowInput.tsx`).
   "apps/web/src/components/chat/useChatShortcuts.ts": "useChatShortcuts.ts",
   "apps/web/src/components/chat/OpenInPicker.tsx": "OpenInPicker.tsx",
   "apps/web/src/components/chat/usePasteToFocusComposer.ts": "usePasteToFocusComposer.ts",
-  "apps/web/src/components/chat/useComposerStash.ts": "useComposerStash.ts",
   // Windows: one window notifies of a chat's turns, the focused one or else the lead.
   "apps/web/src/components/ThreadNotificationCoordinator.tsx": "ThreadNotificationCoordinator.tsx",
   // A thread chip opens its chat in a new pane beside the one it is in.
@@ -130,14 +123,10 @@ export const SCOPED_SUBSTITUTES: Readonly<
 };
 
 /**
- * Upstream's public files Stemcells serves its own in place of, by the path
- * a page asks for, each with our file (from the repository's root). These
- * are the web icons, which carry T3's mark: the tab's favicon, and the
- * touch icon the boot screen shows. Upstream's files in `apps/web/public`
- * stay as they are: the dev server answers these paths with ours, and the
- * production build writes ours over its copies of them.
- * `brandMarks.contract.test.ts` holds this to upstream's own list of web
- * icons and to the files its builds copy in.
+ * Upstream's public files Stemcells serves its own in place of, by request path, each with our
+ * file from the repository's root: the web icons carrying T3's mark. Upstream's files in
+ * `apps/web/public` stay; dev answers these paths with ours and the production build overwrites
+ * its copies. `brandMarks.contract.test.ts` holds this to upstream's icon list and build copies.
  */
 export const PUBLIC_SUBSTITUTES: Readonly<Record<string, string>> = {
   "/favicon.ico": "stemcells/brand/web-favicon.ico",
@@ -176,11 +165,10 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 };
 
 /**
- * Resolves upstream's imports of a substituted module to ours, and serves
- * and builds our public files in place of upstream's. In dev and the
- * production build, not in tests, it also says Stemcells where upstream's
- * code says T3 Code (`stemcells/brand/nameTransform.ts`): tests run
- * upstream's code as upstream wrote it.
+ * Resolves upstream's imports of a substituted module to ours, and serves and builds our public
+ * files in place of upstream's. In dev and production builds, not tests, it also says Stemcells
+ * where upstream's code says T3 Code (`stemcells/brand/nameTransform.ts`): tests run upstream's
+ * code as upstream wrote it.
  */
 export function substituteUpstreamModules(): Plugin {
   const naming = process.env.VITEST ? null : upstreamNamePlugin({ root: repoRoot });

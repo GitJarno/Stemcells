@@ -1,9 +1,8 @@
 /**
- * Each plan's limits as the rail's ring, its hover and the Usage page show
- * them (`stemcells/tasks/plan-limits.md`): a plan is an account, with a
- * session window (5h) and a long one (7d, else a month), each read for
- * what is left, when it resets and whether the pace so far runs it out
- * first.
+ * Each plan's limits as the rail's ring, its hover and the Usage page show them
+ * (`stemcells/tasks/plan-limits.md`): a plan is an account, with a session window (5h) and a long
+ * one (7d, else a month), each read for what is left, when it resets and whether the pace so far
+ * runs it out first.
  */
 import type { ChatWork, InstanceKey, LimitAccount, LimitWindow } from "../upstream/limits";
 
@@ -137,12 +136,10 @@ function worse(left: PlanTone, right: PlanTone): PlanTone {
 }
 
 /**
- * A plan's windows of one kind, as one reading. The plan's own window (a
- * label with no scope, or the only one) is the reading. A model's own
- * window ("Weekly · Fable") stops that model, not the plan: running short it
- * only marks the reading short and names itself ("Fable 9%"). With only
- * scoped windows (Antigravity's families, Cursor's pools), the tightest
- * stands in, short at worst, never out.
+ * A plan's windows of one kind as one reading: the plan's own (unscoped, or the only one). A
+ * model's window ("Weekly · Fable") stops that model, not the plan: running short it only marks
+ * the reading short and names itself ("Fable 9%"). With only scoped windows (Antigravity's
+ * families, Cursor's pools), the tightest stands in, short at worst, never out.
  */
 function windowOfKind(
   windows: ReadonlyArray<LimitWindow>,

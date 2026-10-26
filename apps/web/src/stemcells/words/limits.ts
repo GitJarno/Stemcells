@@ -1,9 +1,8 @@
 /**
- * A note in the readout for each provider the Cells would start on whose
- * plan runs short (decision 10): "Claude Code Weekly: 6% left". It warns
- * and nothing more: the Cells start where the words say, and never move
- * to another account by themselves. Short is a tenth or less left
- * (`plans.ts`); spending ahead of pace alone stays off the readout.
+ * A readout note for each provider the Cells would start on whose plan runs short (decision 10):
+ * "Claude Code Weekly: 6% left". It only warns: the Cells start where the words say and never
+ * move to another account by themselves. Short is a tenth or less left (`plans.ts`); spending
+ * ahead of pace alone stays off the readout.
  */
 import { bindingPlan, type PlanTone, planTone } from "./plans";
 import { formatDuration, type LimitPool, providerLook } from "../upstream/rail";

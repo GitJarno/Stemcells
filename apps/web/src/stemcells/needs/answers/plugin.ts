@@ -1,10 +1,7 @@
 /**
- * The answers' ink in Aski's composer, as a ProseMirror plugin: it reads the
- * document against the open cards on every change and marks what it read. A
- * card's number or Cell wears the Cell tone, the words that answer it wear
- * the token plate, and words that answer nothing are dotted, in the warning
- * tone. It never touches the document, so undo and the caret stay upstream's.
- * The composer's own reader (`words/`) reads our parts as blank
+ * The answers' ink in Aski's composer: a ProseMirror plugin that reads the document against the
+ * open cards on every change and decorates what it read. It never touches the document, so undo
+ * and the caret stay upstream's. The composer's own reader (`words/`) reads our parts as blank
  * (`readAnswers(text, openCards()).spans`).
  */
 import { closeHistory } from "@tiptap/pm/history";

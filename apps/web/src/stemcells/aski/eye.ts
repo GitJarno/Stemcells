@@ -1,8 +1,6 @@
-// The eye is a block cursor, the █ of SC█, as the canon types it: an upright
-// box with squared ends, a terminal cell across and a line down, no taper and
-// no point. It is drawn here as Aski's own outline, not taken from any
-// typeface, so it is identical on every machine; the phone and the Watch wear
-// it as drawn here.
+// The eye is a block cursor, the █ of SC█: an upright box with squared ends, a terminal cell
+// across and a line down. It is drawn as Aski's own outline, not taken from a typeface, so it
+// is identical on every machine; the phone and the Watch wear it as drawn here.
 
 import { sdPolygon } from "./math.ts";
 

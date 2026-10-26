@@ -1,8 +1,7 @@
-// When two Cells step on each other (stemcells/tasks/peers.md, decision 3):
-// both edited one file within the window, in any checkout of the repository,
-// or both edited in one checkout. Said once, when it starts; a pair is told
-// again only after it has been apart for a whole window. A Cell's next file
-// in a collision already said is not news.
+// When two Cells step on each other (stemcells/tasks/peers.md, decision 3): both edited one
+// file within the window, in any checkout of the repository, or both edited in one checkout.
+// Said once, when it starts; a pair is told again only after a whole window apart. A Cell's
+// next file in a collision already said is not news.
 
 import { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
 import { titleOf } from "./frame.ts";

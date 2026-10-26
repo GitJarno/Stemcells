@@ -1,11 +1,8 @@
 /**
- * What a Cell started from words is sent: the message without its setup
- * words ("Harbor fix the header with Opus at max" sends "Fix the header"),
- * or its [bracket] word for word. The draft's text becomes that just
- * before upstream's send reads it, and comes back if nothing was sent.
- * When the words start several Cells, the draft's own is the first, and
- * the rest start beside it once it has (`cells.ts`).
- * `stemcells/tasks/prompting.md`, decision 9.
+ * What a Cell started from words is sent: the message without its setup words ("Harbor fix the
+ * header with Opus at max" sends "Fix the header"), or its [bracket] word for word. The draft's
+ * text becomes that just before upstream's send reads it, and comes back if nothing was sent.
+ * The draft's own Cell starts first (`cells.ts`). See `stemcells/tasks/prompting.md`, decision 9.
  */
 
 import { createContext } from "react";
@@ -156,12 +153,10 @@ const DANGLING = /[,;:—-]/;
 const BEFORE_STOP = /[,.;:!?)]/;
 
 /**
- * The edits that leave the setup words out (the spans the reader read as
- * setup: an address, a cue and its place, a model or an effort phrase, a
- * count). Only those spans go, with the space or the dangling punctuation
- * a span leaves behind, and the first letter is raised when the words
- * before it went. A mention, quoted words and code are never setup, and
- * no edit touches a character `kept` names. Null when no span goes.
+ * The edits that leave the setup words out (the spans the reader read as setup: an address, a
+ * cue and its place, a model or effort phrase, a count), with the space or dangling punctuation
+ * each leaves, raising the first letter when words before it went. A mention, quoted words and
+ * code are never setup; no edit touches a character `kept` names. Null when no span goes.
  */
 export function setupEdits(text: string, grammar: readonly Span[], kept: Kept): Outgoing | null {
   const keep = (i: number) => kept.code.has(i) || kept.markers.has(i);

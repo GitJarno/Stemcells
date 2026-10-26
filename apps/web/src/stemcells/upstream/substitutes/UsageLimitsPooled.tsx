@@ -1,10 +1,8 @@
 /**
- * Substitutes upstream's `components/usage/UsageLimitsPooled.tsx`
- * (`plugin.ts`): the Usage page lists every plan a row each, as the rail's
- * hover does (`limits/PlanBoard.tsx`), where upstream pools each provider's
- * accounts into one card per window. Upstream's section still picks the
- * environments and providers shown; its notices, its "Manage usage" links,
- * its Cursor prompt and its reset credits stay as upstream draws them.
+ * Substitutes upstream's `components/usage/UsageLimitsPooled.tsx` (`plugin.ts`): the Usage page
+ * lists each plan a row, as the rail's hover does (`limits/PlanBoard.tsx`), where upstream pools
+ * a provider's accounts into one card per window. Upstream still picks the environments and
+ * providers shown and draws its notices, "Manage usage" links, Cursor prompt and reset credits.
  */
 import {
   CHATGPT_USAGE_URL,
