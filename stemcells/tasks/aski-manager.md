@@ -25,10 +25,11 @@ Everything on Aski's tab serves 1, 3 and 4. Anything else is noise there.
 
 ### 1. Aski's tab is one fixed room
 
-- Three parts: Aski's chat, the roster under it, and the decision column on
-  the right.
-- **The column is always there** on a wide pane, with its head ("Nothing
-  needs you" when empty). It no longer slides in and out: a room whose
+- Two halves: Aski's chat, and what needs you on the right
+  (`aski-asks.md`, decision 2). The roster that stood under the chat is
+  gone: the Cells' column says who is where.
+- **The asks are always there** on a wide pane ("Nothing needs you" when
+  there are none). It no longer slides in and out: a room whose
   furniture moves isn't a room. Narrow, it stays the count and the sheet,
   as there is no room beside the chat.
 - **No surfaces, no terminal, no splits.** Aski has no project and runs no
@@ -183,12 +184,9 @@ fits, Reply… sends the person's.
 
 ### 10. Done, and settling, look the same everywhere
 
-- **The roster** (under Aski's chat): one row per Cell, newest first: its
-  dot, its name, its one-liner (the chat's title), its project. A click
-  peeks.
-- **The column**: what needs you (numbered cards), then "Done": one line
-  per done Cell with its `Done:` line and Settle. "Settle all" when two or
-  more are done.
+- **The Cells' column** (`left-column-v3.md`): each Cell on its stage's
+  row, Landed with Settle on each and "Settle all". Aski's room shows only
+  what needs you (`aski-asks.md`, decision 2).
 - **The Cell's own tab**: the line the Cell stands on above its composer
   turns green when it is done, with Settle at its end.
 - **Settle** puts the Cell away: upstream's settle, and its pane closes

@@ -13,15 +13,11 @@ settled, colour meant nothing, and the stages carried critters.
 2. **A row is two lines.** The Cell, title and time; then the project's icon
    and name, and the PR (state icon in its colour, number grey). Hover gives
    T3's thread card; Settle takes the time's place.
-3. **An ask says only what's new.** Folded: the Cell beside who, project and
-   tag, then what it asks and its age. Open: one header row with the Cell,
-   then the ask across the full width, no headline restating the tag, its
-   answers as one group (number keys pick, Return takes the recommended),
-   and a foot with its age, Later, Settle and Open chat.
-4. **Tags take T3's status colours, in five families.** Answer (indigo:
-   Question, Input, Offers to go on), Allow or check (amber: Permission,
-   Sign-in, Limit, Stopped, Stuck), Plan (violet), Your step (emerald),
-   Failed (red). A new kind joins a family; none gets a colour of its own.
+3. **An ask says only what's new.** It reads as a message:
+   `aski-asks.md`, decisions 4 to 6, set its look.
+4. **No tags.** An ask says what it asks in its Cell's words, and one that
+   holds up a running turn says so in its age's amber (`aski-asks.md`,
+   decision 4).
 5. **Stages are a label and a count.** T3's status icon in its colour; no
    critters, no chevron (a stage switches the list, it doesn't expand). The
    open one is filled. Two fingers swipe from stage to stage in the line's

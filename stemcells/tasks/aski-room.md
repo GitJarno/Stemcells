@@ -300,10 +300,9 @@ When it unfreezes, everything queued plays as one motion.
   shares the band's row, with its cards below it; the narrow count sits at
   the band's left end; the sheet hangs from the band's foot.
 - **Wide (Aski's pane ≥ 880 px):**
-  - The chat keeps its reading width.
-  - The column (380 px; 420 px past 1,400 px) always stands on the right
-    (`aski-manager.md`, decision 1), its head saying "Nothing needs you"
-    when it's empty.
+  - Two halves: the chat on the left, every ask open on the right with a
+    hairline between them, "Nothing needs you" when there are none
+    (`aski-asks.md`, decisions 2 and 3).
   - After the last card, one line: "All clear · 4 answered in 1 min 12 s".
     That is a true fact and the page's one beat of reward.
 - **Narrow:**

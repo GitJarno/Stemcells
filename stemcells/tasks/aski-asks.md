@@ -88,4 +88,4 @@ says yes, the undo window.
 - [x] The column as the index in Aski's room (decision 8)
 - [ ] The flag, and the local measure in Settings › Aski (decisions 11, 12)
 - [ ] Asks show more where they were flagged; flagged asks as the evaluation set (decision 13)
-- [ ] Docs
+- [x] Docs
