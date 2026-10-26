@@ -276,6 +276,18 @@
   background: var(--sc-hot);
   color: var(--sc-text);
 }
+/* The flag: "Not enough to decide" (decision 11), lit once said. */
+[data-need-tail] [data-need-flag] {
+  display: inline-flex;
+  align-items: center;
+}
+[data-need-tail] [data-need-flag] > svg {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+}
+[data-need-tail] [data-need-flag][aria-pressed="true"] {
+  color: var(--sc-needs-you);
+}
 [data-need-tail] button[data-lit] {
   box-shadow: 0 0 0 1px var(--sc-accent);
   color: var(--sc-text);

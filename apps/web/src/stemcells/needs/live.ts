@@ -12,12 +12,14 @@ import { createHolds } from "./holds";
 import { createLeaving } from "./leaving";
 import { createPage } from "./page";
 import { readNeeds, subscribeNeeds } from "./stream";
+import { tellAsk } from "./told";
 
 export const holds = createHolds({
   send: sendThreadCommand,
   needs: readNeeds,
   keepLive: () => subscribeNeeds(() => {}),
   line: putAnswerOnUndoLine,
+  sent: (key) => tellAsk(key, "answered"),
 });
 
 export const leaving = createLeaving({ needs: readNeeds, subscribeNeeds });

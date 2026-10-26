@@ -1,6 +1,7 @@
 import * as Layer from "effect/Layer";
 
 import * as ArcsHttp from "./arcs/http.ts";
+import * as AsksHttp from "./asks/http.ts";
 import * as AttachmentsHttp from "./attachments/http.ts";
 import * as AutonomyHttp from "./autonomy/http.ts";
 import * as DiskHttp from "./disk/http.ts";
@@ -25,6 +26,7 @@ import * as ModelList from "./upstream/modelList.ts";
 
 export const layer = Layer.mergeAll(
   ArcsHttp.layer,
+  AsksHttp.layer,
   AttachmentsHttp.layer,
   AutonomyHttp.layer,
   DiskHttp.layer,

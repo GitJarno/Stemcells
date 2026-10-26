@@ -1,3 +1,4 @@
+import { FlagIcon } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
@@ -13,6 +14,7 @@ import {
   usePrimaryEnvironmentId,
 } from "../upstream/needs";
 import { useCellPlace } from "../upstream/thread";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { commandsFor, type Given } from "./actions";
 import {
   cardOf,
@@ -27,6 +29,7 @@ import type { Hold } from "./holds";
 import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
+import { tellAsk } from "./told";
 import { answering, land } from "./walk";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
@@ -110,6 +113,14 @@ export function NeedCard(props: {
     return () => clearTimeout(timer);
   }, [props.seenAt]);
 
+  // "Not enough to decide" (decision 11): the Cell's own words open, and a line of what was
+  // missing waits for the person, who may leave it empty.
+  const [flag, setFlag] = useState<"asking" | "said" | null>(null);
+  const flagIt = () => {
+    if (flag === null) tellAsk(need.key, "flagged");
+    setFlag("asking");
+  };
+
   const section = useRef<HTMLElement>(null);
   const holdAnswer = (commands: ReturnType<typeof commandsFor>) =>
     holds.hold({ key: need.key, threadId: need.threadId, commands });
@@ -168,14 +179,39 @@ export function NeedCard(props: {
         <button
           type="button"
           data-lit={lightOf(NOTHING_TO_DO, fromWords, asked)}
-          onClick={() => void settle({ environmentId, threadId: need.threadId })}
+          onClick={() => {
+            tellAsk(need.key, "answered");
+            void settle({ environmentId, threadId: need.threadId });
+          }}
         >
           Settle
         </button>
       ) : null}
-      <button type="button" onClick={() => (props.openChat ?? openPeek)(need.threadId)}>
+      <button
+        type="button"
+        onClick={() => {
+          tellAsk(need.key, "opened");
+          (props.openChat ?? openPeek)(need.threadId);
+        }}
+      >
         Open chat
       </button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              type="button"
+              data-need-flag=""
+              aria-label="Not enough to decide"
+              aria-pressed={flag !== null}
+              onClick={flagIt}
+            >
+              <FlagIcon aria-hidden="true" />
+            </button>
+          }
+        />
+        <TooltipPopup side="bottom">Not enough to decide</TooltipPopup>
+      </Tooltip>
     </span>
   );
   const head = (
@@ -233,7 +269,7 @@ export function NeedCard(props: {
         {gone ? null : tail}
       </header>
       <p data-need-ask="">{card.headline}</p>
-      {card.quote ? <Context text={card.quote} /> : null}
+      {card.quote ? <Context text={card.quote} open={flag !== null} /> : null}
       {card.request ? <pre data-need-request="">{card.request}</pre> : null}
       {card.steps.length > 0 ? (
         <ol data-need-steps="">
@@ -244,6 +280,17 @@ export function NeedCard(props: {
       ) : null}
       {card.why ? <p data-need-why="">{card.why}</p> : null}
       {card.note ? <p data-need-note="">{card.note}</p> : null}
+      {flag === "asking" ? (
+        <Words
+          placeholder="What was missing? Kept on this Mac"
+          action="Note it"
+          onSend={(note) => {
+            tellAsk(need.key, "flagged", note);
+            setFlag("said");
+          }}
+          onCancel={() => setFlag("said")}
+        />
+      ) : null}
 
       {gone ? (
         <p data-need-receipt="">
@@ -330,10 +377,12 @@ function pickByNumber(event: KeyboardEvent<HTMLElement>) {
  * The Cell's own words around its question, two lines at most until More shows them all,
  * in place: never a trip to its chat.
  */
-function Context(props: { text: string }) {
+/** The Cell's words, two lines until More, or `open` (a flag), shows them all. */
+function Context(props: { text: string; open: boolean }) {
   const body = useRef<HTMLParagraphElement>(null);
   const [long, setLong] = useState(false);
-  const [more, setMore] = useState(false);
+  const [opened, setOpened] = useState(false);
+  const more = opened || props.open;
   // oxlint-disable-next-line t3code/react-effect-budget -- Measure whether the words run past their two lines as the ask resizes.
   useLayoutEffect(() => {
     const element = body.current;
@@ -344,7 +393,7 @@ function Context(props: { text: string }) {
     <div data-need-context="" data-more={more || undefined}>
       <p ref={body}>{props.text}</p>
       {long && !more ? (
-        <button type="button" onClick={() => setMore(true)}>
+        <button type="button" onClick={() => setOpened(true)}>
           More
         </button>
       ) : null}
@@ -415,6 +464,8 @@ function LightLine(props: { light: keyof typeof LIGHT_LINES | undefined }) {
 
 function Words(props: {
   placeholder: string;
+  /** What its button says; "Send" when the words go to the Cell. */
+  action?: string;
   onSend: (words: string) => void;
   onCancel: () => void;
 }) {
@@ -442,7 +493,7 @@ function Words(props: {
         onKeyDown={keys}
       />
       <button type="button" disabled={text.trim() === ""} onClick={send}>
-        Send
+        {props.action ?? "Send"}
       </button>
     </div>
   );

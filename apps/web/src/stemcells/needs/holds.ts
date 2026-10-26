@@ -35,6 +35,8 @@ export interface HoldsDeps {
   readonly needs: () => NeedsState;
   /** Keeps the list live while a hold waits on it; returns the release. */
   readonly keepLive: () => () => void;
+  /** An answer went to its Cell. */
+  readonly sent: (key: string) => void;
   /** Puts an answer on the undo line, which takes it back or, once it goes, sends it. */
   readonly line: (
     key: string,
@@ -112,6 +114,7 @@ export function createHolds(deps: HoldsDeps) {
       if (!outcome.ok) return finish(key, "failed", `Couldn't send: ${outcome.why}`, index === 0);
     }
     finish(key, "sent", null, false);
+    deps.sent(key);
   }
 
   /** Takes an answer back while it waits. */

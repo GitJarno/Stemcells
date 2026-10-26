@@ -25,6 +25,7 @@ function setup(outcomes: CommandOutcome[] = []) {
   const sent: ThreadCommand[] = [];
   let kept = 0;
   const lines: Array<{ readonly undo: () => void; readonly send: () => void }> = [];
+  const went: string[] = [];
   const holds = createHolds({
     send: async (_threadId, command) => {
       sent.push(command);
@@ -33,6 +34,7 @@ function setup(outcomes: CommandOutcome[] = []) {
     needs: () => state,
     keepLive: () => (kept++, () => void kept--),
     line: (_key, acts) => void lines.push(acts),
+    sent: (key) => void went.push(key),
   });
   const hold = (commands: ThreadCommand[] = [decline], words?: Spoken) =>
     holds.hold({
@@ -52,6 +54,7 @@ function setup(outcomes: CommandOutcome[] = []) {
     letGo,
     lines,
     sent,
+    went,
     kept: () => kept,
     setNeeds: (next: NeedsState) => void (state = next),
     stateOf: () => holds.read().get(needFixture().key)?.state,
@@ -114,6 +117,22 @@ describe("an answer waits on the undo line", () => {
     await t.letGo();
     expect(t.sent).toEqual([]);
     expect(t.stateOf()).toBe("failed");
+  });
+
+  it("tells the asks' ledger only of an answer that went whole", async () => {
+    const taken = setup();
+    taken.hold();
+    taken.lines[0]!.undo();
+    await taken.letGo();
+    const refused = setup([{ ok: true }, { ok: false, why: "the Cell stopped" }]);
+    refused.hold([decline, note]);
+    await refused.letGo();
+    expect([...taken.went, ...refused.went]).toEqual([]);
+
+    const went = setup();
+    went.hold([decline, note]);
+    await went.letGo();
+    expect(went.went).toEqual([needFixture().key]);
   });
 
   it("stops at the first command that fails, so a note never follows a refused decline", async () => {

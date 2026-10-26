@@ -10,6 +10,7 @@ import type { Span } from "../../words/text";
 import { commandsFor } from "../actions";
 import { useHolds } from "../holds";
 import { holds, page } from "../live";
+import { tellAsk } from "../told";
 import { whoOf } from "../NeedCard";
 import type { Need } from "../wire";
 import { addresseesOf } from "./cards";
@@ -190,7 +191,9 @@ function act(
   }
   for (const number of enter.opens) {
     const need = needs.get(number);
-    if (need !== undefined) openChat(need.threadId);
+    if (need === undefined) continue;
+    tellAsk(need.key, "opened");
+    openChat(need.threadId);
   }
   lit.ask(
     enter.clicks.flatMap(({ number, option }) => {

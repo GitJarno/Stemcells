@@ -86,6 +86,6 @@ says yes, the undo window.
 - [x] Aski's room: two halves, every ask open, the undo line (decisions 2, 3, 7)
 - [x] Words that need more reach the Cell as its question (decision 9)
 - [x] The column as the index in Aski's room (decision 8)
-- [ ] The flag, and the local measure in Settings › Aski (decisions 11, 12)
+- [x] The flag, and the local measure in Settings › Aski (decisions 11, 12)
 - [ ] Asks show more where they were flagged; flagged asks as the evaluation set (decision 13)
 - [x] Docs
