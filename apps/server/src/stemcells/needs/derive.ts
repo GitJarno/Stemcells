@@ -216,7 +216,9 @@ export function signalOf(shell: Shell, now: number, heardAt: number = now): Sign
   }
 
   const runId = shell.latestRunId;
-  if (runId === null) return null;
+  // What a run left (a limit, a failure, a plan, its reply) is the person's to
+  // settle; the next run clears the settle, and what it leaves shows again.
+  if (runId === null || shell.settledOverride === "settled") return null;
   const ended = { shell, since: runEnded(shell), blocks: false } as const;
 
   if (shell.status === "failed" && shell.lastErrorClass === "usage_limit") {
@@ -230,11 +232,10 @@ export function signalOf(shell: Shell, now: number, heardAt: number = now): Sign
   if (shell.hasActionableProposedPlan && shell.interactionMode === "plan" && runSettled(shell)) {
     return { ...ended, key: `${shell.id}:plan:${runId}`, kind: "plan" };
   }
-  // A subagent's reply is its parent's to read, and a settled Cell is done.
+  // A subagent's reply is its parent's to read.
   if (
     shell.status === "completed" &&
     runSettled(shell) &&
-    shell.settledOverride !== "settled" &&
     shell.lineage.parentThreadId === null &&
     !waitsOnItsOwn(shell)
   ) {

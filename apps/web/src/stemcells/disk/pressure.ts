@@ -14,9 +14,9 @@ export function diskPressure(free: number): DiskPressure {
   return free < NOW_BELOW ? "now" : free < SOON_BELOW ? "soon" : "calm";
 }
 
-/** The sidebar foot's figure in the theme's green, yellow or red. */
+/** The foot's disk: quiet while there's room, then the theme's amber and red. */
 export const FOOT_TONE: Readonly<Record<DiskPressure, string>> = {
-  calm: "text-success-foreground",
+  calm: "",
   soon: "text-warning-foreground",
   now: "text-error-foreground",
 };

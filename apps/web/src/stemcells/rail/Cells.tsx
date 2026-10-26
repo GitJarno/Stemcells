@@ -26,7 +26,7 @@ import { CellMini } from "./CellMini";
 import { useColumnStore, type ColumnStage } from "./column";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
-import { DiskGauge } from "./DiskGauge";
+import { DiskPlate } from "./DiskPlate";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
@@ -201,7 +201,7 @@ export function Cells() {
           <ChartNoAxesColumnIcon />
         </RailButton>
         <PlanRing on={onUsage} />
-        <DiskGauge on={lit === "disk"} />
+        <DiskPlate on={lit === "disk"} wide />
         <span data-cells-foot-gap="" />
         <RailButton label="All chats, by project" onClick={() => setWidth("list")}>
           <ListIcon />

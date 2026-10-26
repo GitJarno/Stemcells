@@ -170,7 +170,16 @@ describe("what needs the person, from a Cell's shell", () => {
     expect(kindOf({ blockedOnThreadWait: true })).toBeNull();
   });
 
-  it("keeps a structured ask on a settled Cell: settling hides only what was read from prose", () => {
+  it("needs nothing more of a settled Cell's limit, failure or plan: the person is done with it", () => {
+    const settled = { settledOverride: "settled", settledAt: at(-MINUTE) } as const;
+    expect(kindOf({ ...limited, ...settled })).toBeNull();
+    expect(kindOf({ status: "failed", lastErrorClass: "provider_error", ...settled })).toBeNull();
+    expect(
+      kindOf({ hasActionableProposedPlan: true, interactionMode: "plan", ...settled }),
+    ).toBeNull();
+  });
+
+  it("keeps a structured ask on a settled Cell: settling hides what its run left, not what it asks", () => {
     expect(
       kindOf({
         settledOverride: "settled",

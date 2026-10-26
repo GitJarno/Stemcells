@@ -159,7 +159,7 @@
   }
 }
 
-/* The disk: an arc of how full it is, the gigabytes left inside it. */
+/* The plan's rings (PlanRing.tsx). */
 [data-stemcells-gauge] {
   position: relative;
   display: grid;
@@ -185,12 +185,42 @@
 [data-stemcells-gauge-fill] {
   stroke: currentColor;
 }
-[data-stemcells-gauge-figure] {
+/* The disk: a drive and the gigabytes left, side by side in the wide
+   column's foot, the figure under the drive on the rail. */
+[data-stemcells-disk="wide"] {
+  width: auto;
+  padding-inline: 7px;
+}
+[data-stemcells-disk-body] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+[data-stemcells-disk-body] > svg {
+  width: var(--stemcells-rail-glyph);
+  height: var(--stemcells-rail-glyph);
+}
+[data-stemcells-disk-figure] {
   font-family: var(--sc-font-ui);
-  font-size: 9.5px;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+}
+[data-stemcells-disk-unit] {
+  opacity: 0.7;
+}
+[data-stemcells-disk="rail"] [data-stemcells-disk-body] {
+  flex-direction: column;
+  gap: 2px;
+}
+[data-stemcells-disk="rail"] [data-stemcells-disk-body] > svg {
+  width: 13px;
+  height: 13px;
+}
+[data-stemcells-disk="rail"] [data-stemcells-disk-figure] {
+  font-size: 9.5px;
+  font-weight: 600;
 }
 
 [data-stemcells-rail-tip-detail] {
