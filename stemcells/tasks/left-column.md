@@ -68,7 +68,10 @@ interactive draft in the chat that asked for it.
 - [x] Asks in the column (6): one card open at a time, the rest folded to
       who asks and what; answering one opens the next, and so does a click
       or the keyboard's step onto a folded one
-- [ ] Motion (7): roll-up, hops, a stage taking a Cell in
+- [x] Motion (7): an answered card rolls up into its one line; a Cell that
+      changes stage hops from its card, row or old stage's Cells to its place
+      in the new row, whose count bumps; each stage's row shows a few of its
+      Cells, held still (5)
 - [x] Closing a landed pane settles it (3); a pin already keeps a Cell out
       of auto-settle (4)
 - [x] Settle from any stage (2): a Cell at work or asking stops first, and

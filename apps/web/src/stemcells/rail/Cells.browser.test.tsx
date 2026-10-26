@@ -8,11 +8,27 @@ import { userEvent } from "vite-plus/test/browser";
 import { APP_NAME } from "../brand/name";
 import { needFixture, NOW, requestFixture } from "../needs/fixtures";
 import type { CellStanding, Need } from "../needs/wire";
-import { render } from "../upstream/testRender";
+import { act, render } from "../upstream/testRender";
 import type { DesktopUpdateState } from "../upstream/updates";
 import { Cells } from "./Cells";
 
 const spies = vi.hoisted(() => ({ settle: vi.fn(), open: vi.fn(), openChat: vi.fn() }));
+/** Tells the column the stream changed, as the live stream does. */
+const changes = vi.hoisted(() => {
+  const listeners = new Set<() => void>();
+  let version = 0;
+  return {
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    read: () => version,
+    tell: () => {
+      version += 1;
+      for (const listener of listeners) listener();
+    },
+  };
+});
 /** The app's update as the desktop reports it; each test sets it in `setup`. */
 const desktop = vi.hoisted(() => ({ update: null as DesktopUpdateState | null }));
 
@@ -92,12 +108,18 @@ function streamState() {
   return stream;
 }
 
-vi.mock("../needs/stream", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../needs/stream")>()),
-  readNeeds: () => streamState(),
-  subscribeNeeds: () => () => undefined,
-  useNeeds: () => streamState(),
-}));
+vi.mock("../needs/stream", async (importOriginal) => {
+  const { useSyncExternalStore } = await import("react");
+  return {
+    ...(await importOriginal<typeof import("../needs/stream")>()),
+    readNeeds: () => streamState(),
+    subscribeNeeds: () => () => undefined,
+    useNeeds: () => {
+      useSyncExternalStore(changes.subscribe, changes.read);
+      return streamState();
+    },
+  };
+});
 
 vi.mock("../upstream/needs", () => ({
   COMPOSER_SURFACE_SELECTOR: '[data-chat-composer-surface="true"]',
@@ -319,5 +341,29 @@ describe("the column's word that Stemcells gets better", () => {
     await expect
       .element(screen.getByRole("button", { name: /gets better/ }))
       .not.toBeInTheDocument();
+  });
+});
+
+describe("a Cell moving along the line", () => {
+  it("hops from its old stage's row down to its new one, and is gone once it lands", async () => {
+    await using screen = await render(<Column />);
+    await using stack = new AsyncDisposableStack();
+    const before = streamState();
+    stack.defer(() => {
+      stream = before;
+    });
+    await expect.element(screen.getByRole("button", { name: /Landed\s*2/ })).toBeVisible();
+    await act(() => {
+      stream = {
+        ...before,
+        cells: before.cells.map((cell) =>
+          cell.threadId === "thread-w" ? { ...cell, stage: "done" as const } : cell,
+        ),
+      };
+      changes.tell();
+    });
+    await expect.element(screen.getByRole("button", { name: /Landed\s*3/ })).toBeVisible();
+    await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).not.toBeNull());
+    await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).toBeNull());
   });
 });

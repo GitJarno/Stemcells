@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from
 import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
-import { timing } from "../tokens/motion";
+import { motionTiming, reducedMotion, timing } from "../tokens/motion";
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
@@ -99,6 +99,12 @@ export function NeedCard(props: {
   }, [props.seenAt]);
 
   const section = useRef<HTMLElement>(null);
+  // The card's height as the person answered, for the fold to roll up from.
+  const rollFrom = useRef<number | null>(null);
+  const holdAnswer = (label: string, commands: ReturnType<typeof commandsFor>) => {
+    rollFrom.current = section.current?.offsetHeight ?? null;
+    holds.hold({ key: need.key, threadId: need.threadId, label, commands });
+  };
   // An answer of the person's own keeps the card from Aski's take.
   const keepFromAski = () => {
     if (taking !== null) void keepCard(need.key);
@@ -107,17 +113,30 @@ export function NeedCard(props: {
     keepFromAski();
     answering(section.current);
     lit.answered(need.key);
-    holds.hold({
-      key: need.key,
-      threadId: need.threadId,
-      label: pickLabel(option, given),
-      commands: commandsFor(need, option.choice, given, Date.now()),
-    });
+    holdAnswer(pickLabel(option, given), commandsFor(need, option.choice, given, Date.now()));
   };
 
   const gone = goneAt !== null;
   const folded = hold !== undefined && (hold.state === "holding" || hold.state === "sending");
   const answerable = answerableOf(props.shown, hold);
+  // Answered, the card rolls up into its one line (left-column.md, decision 7).
+  useLayoutEffect(() => {
+    const card = section.current;
+    const from = rollFrom.current;
+    rollFrom.current = null;
+    if (!folded || card === null || from === null || reducedMotion()) return;
+    const to = card.offsetHeight;
+    if (to >= from) return;
+    const { duration, easing } = motionTiming("settle");
+    card.animate(
+      [
+        { height: `${from}px`, overflow: "hidden" },
+        { height: `${to}px`, overflow: "hidden" },
+      ],
+      { duration, easing },
+    );
+  }, [folded]);
+
   // A card Aski is about to take stays open, so its fuse can be seen and stopped.
   const collapsed =
     props.queued !== undefined && !props.queued.open && answerable && taking === null;
@@ -154,6 +173,7 @@ export function NeedCard(props: {
         // The walk lands here, and the card opens (walk.ts).
         tabIndex={-1}
         data-stemcells-need=""
+        data-need-thread={need.threadId}
         data-open=""
         data-queued=""
         data-blocks={need.blocks || undefined}
@@ -178,6 +198,7 @@ export function NeedCard(props: {
       // The walk lands here when the card recommends nothing (walk.ts).
       tabIndex={-1}
       data-stemcells-need=""
+      data-need-thread={need.threadId}
       data-open={answerable || undefined}
       data-blocks={need.blocks || undefined}
       data-gone={gone || undefined}
@@ -242,12 +263,7 @@ export function NeedCard(props: {
                 keepFromAski();
                 answering(section.current);
                 lit.answered(need.key);
-                holds.hold({
-                  key: need.key,
-                  threadId: need.threadId,
-                  label,
-                  commands: commandsFor(need, { kind: "answer" }, { answers }, Date.now()),
-                });
+                holdAnswer(label, commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
               }}
             />
           ) : null}

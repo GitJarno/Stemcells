@@ -22,7 +22,10 @@ import { useNavigateToMainApp } from "../upstream/settings";
 import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
 import { cn, useSidebar } from "../upstream/ui";
+import { CellMini } from "./CellMini";
 import { useColumnStore, type ColumnStage } from "./column";
+import { Hops } from "./Hops";
+import { standingsOf, type Standings } from "./moves";
 import { DiskGauge } from "./DiskGauge";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
@@ -33,6 +36,11 @@ import "../tokens/stemcells.css";
 import "./rail.css";
 import "../needs/needs.css";
 import "./cells.css";
+
+/** Cells a stage's row shows beside its count. */
+const MINIS = 3;
+
+const NO_STANDINGS: Standings = new Map();
 
 /** Settled Cells the list shows before search takes over. */
 const SETTLED_SHOWN = 30;
@@ -91,6 +99,15 @@ export function Cells() {
     settled: shelves.settled.length,
     pinned: shelves.pinned.length,
   };
+  const threads = (list: ReadonlyArray<{ threadId: string }>) =>
+    [...new Set(list.map((each) => each.threadId))].slice(0, MINIS);
+  const minis: Record<ColumnStage, ReadonlyArray<string>> = {
+    needs: threads(view.shown.filter((each) => each.goneAt === null).map((each) => each.need)),
+    working: threads(working),
+    landed: threads(landed),
+    settled: threads(shelves.settled),
+    pinned: threads(shelves.pinned),
+  };
 
   return (
     <div data-stemcells-cells="">
@@ -143,6 +160,8 @@ export function Cells() {
             key={each}
             stage={each}
             count={counts[each]}
+            minis={minis[each]}
+            environmentId={environmentId}
             open={stage === each}
             onOpen={() => setStage(each)}
           />
@@ -151,10 +170,16 @@ export function Cells() {
         <StageRow
           stage="pinned"
           count={counts.pinned}
+          minis={minis.pinned}
+          environmentId={environmentId}
           open={stage === "pinned"}
           onOpen={() => setStage("pinned")}
         />
       </nav>
+      <Hops
+        standings={cells === null ? NO_STANDINGS : standingsOf(cells, shelves.settled)}
+        environmentId={environmentId}
+      />
       {update ? <UpdateBanner update={update} /> : null}
       <div data-cells-foot="">
         {/* Beside the banner the pill would say the same update twice; without
@@ -206,7 +231,16 @@ const rowOfShelved = (cell: ShelvedCell): Row => ({
 });
 
 /** A stage's row at the foot: its name and how many are there; the open one is lit. */
-function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onOpen: () => void }) {
+function StageRow(props: {
+  stage: ColumnStage;
+  count: number;
+  /** A few of its Cells' threads, the newest first. */
+  minis: ReadonlyArray<string>;
+  environmentId: string | null;
+  open: boolean;
+  onOpen: () => void;
+}) {
+  const { environmentId } = props;
   return (
     <button
       type="button"
@@ -217,6 +251,16 @@ function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onO
       onClick={props.onOpen}
     >
       <span data-cells-stage-label="">{LABEL[props.stage]}</span>
+      {/* Where a hop lands (Hops.tsx), so it's there with no Cells too. */}
+      <span data-cells-stage-minis="" aria-hidden>
+        {environmentId === null
+          ? null
+          : props.minis.map((threadId) => (
+              <span key={threadId} data-cells-mini={threadId}>
+                <CellMini environmentId={environmentId} threadId={threadId} />
+              </span>
+            ))}
+      </span>
       <span data-cells-stage-count="">{props.count}</span>
     </button>
   );
@@ -323,7 +367,7 @@ function CellRow(props: { row: Row; onSettle?: () => void }) {
   const ref = { ...row.cell, draftId: null };
   const place = useCellPlace(ref);
   return (
-    <li data-cells-row="">
+    <li data-cells-row="" data-cells-thread={row.cell.threadId}>
       <button type="button" data-cells-open="" onClick={() => open(row.cell)}>
         <span data-cells-row-who="">
           <CellMark cell={ref} />
