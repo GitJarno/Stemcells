@@ -532,7 +532,8 @@ const exceedsSizeLimit = () =>
   journalSizeLimit >= 0 && statSync(workerData.filename + "-wal").size > journalSizeLimit;
 const schedule = (state, blocked) => {
   if (blocked || state.log - state.checkpointed >= workerData.frames) {
-    idle = setTimeout(() => check(undefined, undefined, true), workerData.idleMs);
+    // The parent holds its writer during each check, so it starts the retry.
+    idle = setTimeout(() => parentPort.postMessage({ type: "retry" }), workerData.idleMs);
   }
 };
 const check = (id, nextJournalSizeLimit, force, nextGeneration = generation) => {
@@ -669,17 +670,25 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
   let checkpointed = 0;
   let unknown = false;
   let truncate: { id: number; acknowledged: boolean } | undefined;
-  type Waiter = { resume: () => void; cancelled: boolean };
+  type Waiter = { resume: () => void; cancelled: boolean; write: boolean };
   const waiters: Array<Waiter> = [];
   let elected: Waiter | undefined;
   const gated = () =>
     !stopped &&
     !writer.isTransaction &&
     (unknown || blocked || truncate !== undefined || log >= CHECKPOINT_BACKPRESSURE_FRAMES);
+  // macOS holds every reader of a file while a write to it is stuck, and only the
+  // worker writes the database file. A writer statement during a check could block
+  // the event loop for as long as a slow disk takes; waiting for the reply cannot.
+  const checking = () => !stopped && !writer.isTransaction && inFlight !== undefined;
+  const holds = (write: boolean) => checking() || (write && gated());
   const wake = () => {
-    if (!gated() && elected === undefined) {
-      elected = waiters.shift();
-      elected?.resume();
+    if (elected === undefined) {
+      const next = waiters.findIndex((waiter) => !holds(waiter.write));
+      if (next !== -1) {
+        elected = waiters.splice(next, 1)[0];
+        elected?.resume();
+      }
     }
     if (waiters.length === 0 && elected === undefined) worker.unref();
   };
@@ -762,6 +771,10 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
   worker.on("exit", (code) => handBack(`exited with code ${code}`));
   worker.on("message", (message: unknown) => {
     if (stopped || typeof message !== "object" || message === null || !("type" in message)) return;
+    if (message.type === "retry") {
+      request(true);
+      return;
+    }
     if (
       message.type === "truncate-request" &&
       "truncateId" in message &&
@@ -813,10 +826,11 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
 
   const runWithAdmission = <A, E>(
     execute: () => Exit.Exit<A, E>,
+    write: boolean,
     admitted?: Waiter,
   ): Effect.Effect<A, E> =>
     Effect.suspend(() => {
-      if (!gated()) {
+      if (!holds(write)) {
         // Release the election after executing; its successor must see the new WAL state.
         try {
           return execute();
@@ -825,7 +839,7 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
         }
       }
       if (admitted !== undefined) release(admitted);
-      const waiter: Waiter = { resume: () => {}, cancelled: false };
+      const waiter: Waiter = { resume: () => {}, cancelled: false, write };
       const wait = Effect.uninterruptibleMask((restore) =>
         Effect.withFiber((fiber) =>
           (fiber.getRef(TransactionAcquire)?.restore ?? restore)(
@@ -838,7 +852,8 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
               };
               waiters.push(waiter);
               worker.ref();
-              request(true);
+              // Only backpressure needs another checkpoint; asking during a check would chain them.
+              if (write && gated()) request(true);
               wake();
               return Effect.sync(() => release(waiter));
             }),
@@ -846,7 +861,7 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
         ),
       );
       return wait.pipe(
-        Effect.flatMap(() => runWithAdmission(execute, waiter)),
+        Effect.flatMap(() => runWithAdmission(execute, write, waiter)),
         Effect.onInterrupt(() => Effect.sync(() => release(waiter))),
       );
     });
@@ -1042,8 +1057,8 @@ const make = Effect.fn("makeWithDatabase")(function* (
           }
           return result;
         };
-        return checkpoint !== undefined && classification?.backpressure
-          ? checkpoint.runWithAdmission(execute)
+        return checkpoint !== undefined
+          ? checkpoint.runWithAdmission(execute, classification?.backpressure === true)
           : execute();
       });
 
