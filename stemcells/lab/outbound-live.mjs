@@ -622,9 +622,9 @@ async function drive(port, until, drove, ended, step) {
     drove.push("a chat opened on its composer and was sent a message");
     await page.waitForTimeout(5_000);
 
-    // Every settings page, and the usage page.
+    // Every settings page, and the usage page; upstream opens them over the chat (`_chat.`).
     const routes = NodeFS.readdirSync(NodePath.join(root, "apps/web/src/routes"))
-      .map((file) => /^(settings\.[\w-]+|usage)\.tsx$/.exec(file)?.[1])
+      .map((file) => /^(?:_chat\.)?(settings\.[\w-]+|usage)\.tsx$/.exec(file)?.[1])
       .filter(Boolean)
       .map((name) => `/${name.replace(".", "/")}`);
     let visited = 0;
