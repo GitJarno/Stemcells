@@ -14,7 +14,9 @@ import {
   findPane,
   insertTab,
   joinTab,
+  panesOf,
   paneShowing,
+  sameChat,
   type CellRef,
   type NewIds,
   type Workspace,
@@ -38,6 +40,25 @@ export function leavesForSettle(input: {
     input.markedAt !== null &&
     input.now - input.markedAt < HAND_SETTLE_MS
   );
+}
+
+/**
+ * The Cell a pane's close settles (stemcells/tasks/left-column.md, decision
+ * 3): a landed one no other pane here shows, so closing it is the person
+ * putting it away. Null for a draft, a Cell still at work or asking, and one
+ * another pane keeps.
+ */
+export function settlesOnClose(
+  workspace: Workspace,
+  paneId: string,
+  landed: (cell: CellRef) => boolean,
+): CellRef | null {
+  const cell = findPane(workspace, (pane) => pane.id === paneId)?.pane.cell ?? null;
+  if (cell === null || cell.draftId !== null) return null;
+  const showing = workspace.tabs
+    .flatMap(panesOf)
+    .filter((pane) => pane.cell !== null && sameChat(pane.cell, cell));
+  return showing.length === 1 && landed(cell) ? cell : null;
 }
 
 /** Where a settled Cell stood, kept while its settle can be undone. */

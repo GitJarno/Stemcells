@@ -49,7 +49,9 @@ export function useLeavesWhenSettled(pane: Pane, enabled: boolean): void {
 
 /**
  * Watches each Cell that left the slate while its settle can be undone,
- * and brings it back where it stood once it is unsettled.
+ * and brings it back where it stood once it is unsettled. A pane closed by
+ * its × leaves before its settle lands, so the Cell comes back only once it
+ * was seen settled.
  */
 export function SettledComeBack(props: { rowWidth: () => number }) {
   return useLeft().map((left) => (
@@ -60,8 +62,10 @@ export function SettledComeBack(props: { rowWidth: () => number }) {
 function ComeBack(props: { left: Left; rowWidth: () => number }) {
   const { left, rowWidth } = props;
   const settled = useCellSettled(left.cell);
+  const sawSettled = useRef(false);
   useEffect(() => {
-    if (settled !== false) return;
+    if (settled === true) sawSettled.current = true;
+    if (settled !== false || !sawSettled.current) return;
     updateWorkspace((workspace) => comeBack(workspace, left, newIds(), rowWidth()));
     forgetLeft(left.cell.threadId);
   }, [settled, left, rowWidth]);

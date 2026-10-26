@@ -11,7 +11,7 @@ import {
   type Workspace,
 } from "./layout";
 import { HAND_SETTLE_MS, markedAt, withMark, withoutMark } from "./handSettles";
-import { comeBack, leaveSlate, leavesForSettle } from "./settled";
+import { comeBack, leaveSlate, leavesForSettle, settlesOnClose } from "./settled";
 
 let counter = 0;
 function ids(): NewIds {
@@ -81,6 +81,29 @@ describe("a settled Cell leaving the slate", () => {
     const otter = leaveSlate(workspace, paneOf(workspace, "otter").id, 1);
     const reopened = openTab(otter.workspace, ids(), thread("otter"));
     expect(comeBack(reopened, otter.left!, ids(), WIDE)).toBe(reopened);
+  });
+});
+
+describe("which close settles a Cell", () => {
+  const landed = (cell: CellRef) => cell.threadId !== "pip";
+
+  it("settles a landed Cell whose pane closes, and nothing still at work", () => {
+    const { workspace } = slate();
+    expect(settlesOnClose(workspace, paneOf(workspace, "floof").id, landed)).toEqual(
+      thread("floof"),
+    );
+    expect(settlesOnClose(workspace, paneOf(workspace, "pip").id, landed)).toBeNull();
+  });
+
+  it("leaves a Cell another pane still shows, and an unsent draft", () => {
+    const { workspace } = slate();
+    const twice = openTab(workspace, ids(), thread("floof"));
+    expect(settlesOnClose(twice, paneOf(workspace, "floof").id, landed)).toBeNull();
+    const draft = setCell(workspace, paneOf(workspace, "otter").id, {
+      ...thread("otter"),
+      draftId: "draft-1",
+    });
+    expect(settlesOnClose(draft, paneOf(workspace, "otter").id, landed)).toBeNull();
   });
 });
 

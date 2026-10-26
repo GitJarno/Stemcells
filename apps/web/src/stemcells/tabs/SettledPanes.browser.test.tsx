@@ -8,8 +8,9 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { act, render } from "../upstream/testRender";
 import { markHandSettle, unmarkHandSettle } from "./handSettles";
-import type { CellRef, Pane, Tab } from "./layout";
-import { useLeavesWhenSettled } from "./SettledPanes";
+import { panesOf, type CellRef, type Pane, type Tab } from "./layout";
+import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
+import { forgetLeft, keepLeft, leaveSlate } from "./settled";
 import { readWorkspace, useWorkspaceStore } from "./store";
 
 const shell = vi.hoisted(() => {
@@ -24,6 +25,10 @@ const shell = vi.hoisted(() => {
       state.settled = true;
       for (const listener of listeners) listener();
     },
+    unsettle: () => {
+      state.settled = false;
+      for (const listener of listeners) listener();
+    },
     subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
@@ -35,6 +40,7 @@ vi.mock("../upstream/thread", () => ({
   useCellSettled: () => useSyncExternalStore(shell.subscribe, shell.read),
 }));
 
+const NOW = Date.parse("2026-10-26T12:00:00.000Z");
 const otter: CellRef = { environmentId: "env", threadId: "otter", draftId: null };
 const pane: Pane = { id: "otter-pane", cell: otter };
 const tab: Tab = {
@@ -49,6 +55,10 @@ function OtterPane() {
 }
 
 const showing = () => readWorkspace().tabs.some((each) => each.id === tab.id);
+const otterShows = () =>
+  readWorkspace()
+    .tabs.flatMap(panesOf)
+    .some((each) => each.cell?.threadId === otter.threadId);
 
 /** Otter's pane on stage, at work, with no settle marked. */
 async function slate() {
@@ -86,5 +96,24 @@ describe("a pane whose Cell is settled", () => {
     expect(showing()).toBe(true);
     await act(() => markHandSettle(otter));
     expect(showing()).toBe(false);
+  });
+});
+
+describe("a Cell whose pane closed as it settled", () => {
+  it("comes back on Undo, not while its settle is on its way", async () => {
+    await using _slate = await slate();
+    await using stack = new AsyncDisposableStack();
+    stack.defer(() => forgetLeft(otter.threadId));
+    // Its place is kept from now: the watcher forgets it 10 s on.
+    stack.use(vi.spyOn(Date, "now").mockReturnValue(NOW));
+    const left = leaveSlate(readWorkspace(), pane.id, NOW);
+    useWorkspaceStore.setState({ workspace: left.workspace });
+    keepLeft(left.left!);
+    await using _back = await render(<SettledComeBack rowWidth={() => 1_200} />);
+    expect(otterShows()).toBe(false);
+    await act(() => shell.settle());
+    expect(otterShows()).toBe(false);
+    await act(() => shell.unsettle());
+    expect(otterShows()).toBe(true);
   });
 });

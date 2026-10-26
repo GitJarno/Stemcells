@@ -20,11 +20,14 @@ import { showMarksWhileScrolling } from "../scrollIndicator/scrollIndicator";
 import { growSides } from "../split/grow";
 import { Separator, type Axis } from "../split/Separator";
 import { raiseSlate } from "../surfaces/awake";
+import { readNeeds } from "../needs/stream";
 import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
+import { usePrimaryEnvironmentId } from "../upstream/needs";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
+import { useSettleCell } from "../upstream/settle";
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
 import { cn, Empty, EmptyDescription, EmptyHeader, EmptyTitle, SidebarInset } from "../upstream/ui";
 import { seatAskiHere } from "../windows/askiHome";
@@ -35,6 +38,7 @@ import { landHere, useLandsLaunches } from "../windows/landing";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
+import { keepLeft, leaveSlate, settlesOnClose, type Left } from "./settled";
 import {
   addPaneOutsideAski,
   ASKI_TAB_ID,
@@ -322,9 +326,37 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
     });
   };
 
+  const settleCell = useSettleCell();
+  const primaryEnvironmentId = usePrimaryEnvironmentId();
+  /** Done and not settled, as the needs stream stands each Cell on this machine. */
+  const landed = (cell: CellRef) =>
+    cell.environmentId === primaryEnvironmentId &&
+    readNeeds().cells?.some((each) => each.threadId === cell.threadId && each.stage === "done") ===
+      true;
+
+  /**
+   * Closes a pane. A landed Cell's close settles it: the pane leaves as a
+   * settle's does, so upstream's Undo brings it back (`settled.ts`).
+   */
+  const closeOrSettle = (paneId: string) => {
+    const cell = settlesOnClose(readWorkspace(), paneId, landed);
+    if (cell === null) {
+      updateWorkspace((current) => closePane(current, paneId));
+      return;
+    }
+    const out: { left: Left | null } = { left: null };
+    updateWorkspace((current) => {
+      const next = leaveSlate(current, paneId, Date.now());
+      out.left = next.left;
+      return next.workspace;
+    });
+    if (out.left !== null) keepLeft(out.left);
+    void settleCell(cell);
+  };
+
   /** A pane's ×: closes it, and the route follows the pane focused after. */
   const closePaneAndRoute = (paneId: string) => {
-    updateWorkspace((current) => closePane(current, paneId));
+    closeOrSettle(paneId);
     routeToFocused();
   };
 
@@ -365,8 +397,7 @@ export function CellWorkspace(props: { target: ThreadRouteTarget | null; fallbac
       // The last pane of the last tab is left to upstream: on the desktop, ⌘W
       // closes the window.
       if (!pane || isLastPane()) return false;
-      updateWorkspace((current) => closePane(current, pane.id));
-      routeToFocused();
+      closePaneAndRoute(pane.id);
       return true;
     },
   });

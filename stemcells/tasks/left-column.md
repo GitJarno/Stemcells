@@ -17,13 +17,16 @@ interactive draft in the chat that asked for it.
    Cell still working or asking it stops it first. Writing to any Cell,
    a settled one too, sends it back to Working.
 3. **Landed is the Cell's word, Settled the person's.** Closing a landed
-   Cell's pane settles it, with Undo; this reverses `useLeavesWhenSettled`'s
-   "closing never settles". Upstream's auto-settle on a merged pull request
-   goes off by default, since Cells merge their own and would skip Landed;
-   three idle days stays.
-4. **Pinned is a bookmark, not a stage.** It keeps a Cell one click away and
-   out of auto-settle (upstream's per-thread "Auto-settle behavior:
-   Disabled"); the Cell still makes the trip.
+   Cell's pane (its × or ⌘W) settles it, and upstream's Undo brings the pane
+   back where it stood; a Cell another pane still shows stays as it is.
+   Closing a tab closes its panes without settling: one gesture doesn't put
+   several Cells away. Upstream's auto-settle on a merged pull request goes
+   off by default, since Cells merge their own and would skip Landed; three
+   idle days stays.
+4. **Pinned is a bookmark, not a stage.** It keeps a Cell one click away,
+   and upstream already keeps a pinned Cell out of auto-settle. The Cell
+   still makes the trip. Upstream's rule stays: settling a pinned Cell takes
+   its pin off, and pinning a settled one brings it back.
 5. **The column:** search and New Cell on top; the open stage's list; the
    stages' rows at the bottom, each with its count and a few sprites,
    Pinned set apart. Needs you is open by default, and there is no filter
@@ -64,8 +67,11 @@ interactive draft in the chat that asked for it.
       who asks and what; answering one opens the next, and so does a click
       or the keyboard's step onto a folded one
 - [ ] Motion (7): roll-up, hops, a stage taking a Cell in
-- [ ] Settling (2, 3, 4): closing a landed pane settles it; Settle from any
-      stage; a pin turns auto-settle off; merge auto-settle off by default
+- [x] Closing a landed pane settles it (3); a pin already keeps a Cell out
+      of auto-settle (4)
+- [ ] Settle from any stage (2): a Cell at work or asking stops first
+- [ ] Merge auto-settle off by default (3): once per server, never over the
+      person's own choice
 - [ ] Aski's room (11): the decision column and roster go
 - [ ] Docs: `left-rail.md` and the user guides that describe the column
 - [ ] The phone's home (#298) follows the same line: a plan of its own
