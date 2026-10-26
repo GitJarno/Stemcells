@@ -25,7 +25,9 @@ says yes, the undo window.
    in Aski's chat, often dictating while they read down the list: "1, go
    with the second; 2, do that; 3, this and this, but first I need to know
    X". So every ask on the right is open, oldest first, with a hairline
-   between and nothing else: no boxes, no numbers, no hints. Ten asks stay
+   between and nothing else: no boxes and no hints, only each ask's quiet
+   number, which is what those words address it by and which it keeps
+   while it lives (`aski-room.md` decision 3). Ten asks stay
    calm because each says only its Cell, its question, two lines and its
    options. As the person types, each ask shows what their words do to it
    (`aski-room.md` decision 8). The narrow column keeps one open at a time.

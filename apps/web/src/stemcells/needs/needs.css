@@ -218,6 +218,18 @@
   color: var(--sc-dim);
   font-size: calc(var(--sc-body) + var(--sc-meta-size));
 }
+/* The ask's number is what words in Aski's composer address it by ("2, go
+   with AVIF": answers/read.ts), and it keeps it while it lives, so only
+   Aski's room shows it. */
+[data-need-number] {
+  display: none;
+}
+[data-stemcells-needs-frame] [data-need-number] {
+  display: inline;
+  flex-shrink: 0;
+  color: var(--sc-faint);
+  font-variant-numeric: tabular-nums;
+}
 [data-need-who] {
   flex-shrink: 0;
   color: var(--sc-text);

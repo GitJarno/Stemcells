@@ -180,6 +180,7 @@ export function NeedCard(props: {
   );
   const head = (
     <>
+      <span data-need-number="">{need.number}</span>
       {cell === null ? null : <CellMark cell={cell} />}
       <span data-need-who="">{who}</span>
       {place ? <span data-need-place="">{place.name}</span> : null}
