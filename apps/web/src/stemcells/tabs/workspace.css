@@ -265,7 +265,7 @@
 }
 /* Its placeholder keeps to that row at every width, so it never runs down
    over the controls or under send. */
-[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder\/75 {
+[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -308,7 +308,7 @@
     :has([data-slot="composer-context-strip"])
   )::before {
   clip-path: none;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-2xl);
 }
 [data-stemcells-pane]
   [data-slot="composer-shell"][data-with-context]:not(:has([data-slot="composer-context-strip"]))

@@ -14,19 +14,22 @@ import { describe, expect, it } from "vite-plus/test";
 
 import appSidebarLayoutSource from "../../components/AppSidebarLayout.tsx?raw";
 import sidebarChromeSource from "../../components/sidebar/SidebarChrome.tsx?raw";
+import sidebarListMarkersSource from "../../components/sidebar/SidebarListMarkers.tsx?raw";
+import { isAppModalPage } from "../../components/sidebar/mainAppLocation";
 import undoNoticeStoreSource from "../../hooks/showThreadUndoNotice.ts?raw";
+import cellsSource from "../rail/Cells.tsx?raw";
+import { litFor } from "../rail/lit";
 import railSource from "../rail/Rail.tsx?raw";
 import ourUndoNoticeSource from "./undoNotice.ts?raw";
 
 const webSource = NodeURL.fileURLToPath(new URL("../..", import.meta.url));
-const upstreamFilesDrawingTheNotice = NodeFS.readdirSync(webSource, { recursive: true })
+const upstreamViews = NodeFS.readdirSync(webSource, { recursive: true })
   .map(String)
-  .filter((file) => /\.tsx$/.test(file) && !file.startsWith("stemcells") && !/\.test\./.test(file))
-  .filter((file) =>
-    NodeFS.readFileSync(NodePath.join(webSource, file), "utf8").includes(
-      "<SidebarThreadUndoNotice",
-    ),
-  );
+  .filter((file) => /\.tsx$/.test(file) && !file.startsWith("stemcells") && !/\.test\./.test(file));
+const upstreamViewsDrawing = (element: string) =>
+  upstreamViews
+    .filter((file) => NodeFS.readFileSync(NodePath.join(webSource, file), "utf8").includes(element))
+    .toSorted();
 const baseUiToastStore = NodeFS.readFileSync(
   NodePath.join(
     NodePath.dirname(
@@ -38,20 +41,38 @@ const baseUiToastStore = NodeFS.readFileSync(
 );
 
 describe("upstream's undo notice", () => {
-  it("is drawn only in the wide sidebar's foot, which the rail stands in for", () => {
-    expect(upstreamFilesDrawingTheNotice).toEqual([
+  it("is drawn only in the wide sidebar, which the rail stands in for", () => {
+    // Over the list's first bottom shelf, or in the foot when no shelf hosts it.
+    expect(upstreamViewsDrawing("<SidebarThreadUndoNotice")).toEqual([
       NodePath.join("components", "sidebar", "SidebarChrome.tsx"),
+      NodePath.join("components", "sidebar", "SidebarListMarkers.tsx"),
     ]);
-    expect(sidebarChromeSource).toContain("<SidebarThreadUndoNotice />");
+    expect(sidebarChromeSource).toContain("{showUndoNotice ? <SidebarThreadUndoNotice /> : null}");
+    expect(sidebarListMarkersSource).toMatch(
+      /\{props\.hostsUndoNotice \? \(\s*<SidebarThreadUndoNotice /,
+    );
+    expect(upstreamViewsDrawing("<SidebarChromeFooter")).toEqual([
+      NodePath.join("components", "LegacySidebar.tsx"),
+      NodePath.join("components", "Sidebar.tsx"),
+    ]);
+    expect(upstreamViewsDrawing("<SidebarSectionHeader")).toEqual([
+      NodePath.join("components", "Sidebar.tsx"),
+    ]);
   });
 
   it("claims ⌘Z from a text field whenever upstream's sidebar is open, as it is under the rail", () => {
-    expect(appSidebarLayoutSource).toContain("const noticeVisible = useSidebarVisibility();");
-    expect(appSidebarLayoutSource).toContain(
-      "isEditableFocused(event.target) && !(noticeVisible && threadUndoClaimsShortcut()),",
+    expect(appSidebarLayoutSource).toMatch(
+      /isEditableFocused\(event\.target\) &&\s*!\(readSidebarVisible\(\) && threadUndoClaimsShortcut\(\)\),/,
     );
-    // Not on Settings: the rail's toast stays off there too.
-    expect(appSidebarLayoutSource).toContain("{isOnSettings ? null : <ThreadUndoShortcut />}");
+    // Open is the sidebar wrapper's state, which the rail, inside upstream's sidebar, keeps.
+    expect(appSidebarLayoutSource).toMatch(
+      /const readSidebarVisible = \(\) =>\s*shellElement\.closest\('\[data-slot="sidebar-wrapper"\]'\)\?\.getAttribute\("data-sidebar-state"\) ===\s*"expanded";/,
+    );
+    // Not on Settings or Usage: the rail's toast stays off there too.
+    expect(appSidebarLayoutSource).toContain(
+      "const threadSidebarShown = () => !isAppModalPage(router.state.location.pathname);",
+    );
+    expect(appSidebarLayoutSource).toMatch(/capture: true,\s*when: threadSidebarShown,/);
   });
 
   it("is one store the rail reads, which empties when it times out or is undone", () => {
@@ -78,9 +99,19 @@ describe("the rail's undo toast", () => {
     );
   });
 
-  it("shows while the rail does, off Settings", () => {
-    expect(railSource).toContain(
-      'useRailUndoNotice(open && lit !== "settings" && lit !== "disk");',
-    );
+  it("shows while the rail does, off Settings and Usage, as upstream's ⌘Z claim does", () => {
+    for (const column of [railSource, cellsSource]) {
+      expect(column).toContain("useRailUndoNotice(open && lit === null);");
+    }
+    for (const path of [
+      "/",
+      "/env/thread",
+      "/pull-requests",
+      "/settings",
+      "/settings/disk",
+      "/usage",
+    ]) {
+      expect(litFor(path) === null, path).toBe(!isAppModalPage(path));
+    }
   });
 });

@@ -74,9 +74,9 @@ export function Cells() {
   const shelves = useShelves();
   const environmentId = usePrimaryEnvironmentId();
   const update = useUpdateToTake();
-  // Upstream's toggle can hide the column, and Settings has no ⌘Z to undo with.
+  // Upstream's toggle can hide the column, and Settings and Usage have no ⌘Z to undo with.
   const { open } = useSidebar();
-  useRailUndoNotice(open && lit !== "settings" && lit !== "disk");
+  useRailUndoNotice(open && lit === null);
 
   // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the Cells column while it is mounted.
   useLayoutEffect(() => {

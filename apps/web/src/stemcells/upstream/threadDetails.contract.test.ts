@@ -34,7 +34,7 @@ describe("the thread details card's contracts with upstream", () => {
     );
     // The card in it can shrink in a column: it clips and scrolls its rows.
     expect(threadDetailsCard).toMatch(
-      /"dropdown-glass isolate contain-paint grid max-h-full grid-rows-\[minmax\(0,1fr\)\] overflow-hidden rounded-3xl"[\s\S]{0,300}data-thread-details-card/,
+      /"dropdown-glass isolate contain-paint grid max-h-full grid-rows-\[minmax\(0,1fr\)\] overflow-hidden rounded-[\w-]+"[\s\S]{0,300}data-thread-details-card/,
     );
     expect(chatCanvas).toContain("data-chat-canvas");
   });

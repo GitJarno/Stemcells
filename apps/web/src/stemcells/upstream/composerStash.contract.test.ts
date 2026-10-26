@@ -27,7 +27,7 @@ describe("the ledge's stash's contracts with upstream", () => {
 
   it("ChatComposer anchors the stash menu on the composer's body", () => {
     expect(chatComposer).toMatch(
-      /ref=\{setComposerMenuAnchor\}\s*data-chat-composer-body="true"[\s\S]{0,600}?<ComposerCommandMenuLayer anchor=\{composerMenuAnchor\}>\s*<ComposerStashMenu\b/,
+      /ref=\{\(node\) => \{\s*setComposerMenuAnchor\(node\);[\s\S]{0,300}?\}\}\s*data-chat-composer-body="true"[\s\S]{0,600}?<ComposerCommandMenuLayer anchor=\{composerMenuAnchor\}>\s*<ComposerStashMenu\b/,
     );
   });
 

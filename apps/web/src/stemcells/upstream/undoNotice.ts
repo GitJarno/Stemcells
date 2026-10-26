@@ -1,7 +1,7 @@
 /**
  * Upstream's undo notice, for the rail. After a settle, a snooze, an unpin,
  * an archive or a discarded draft, upstream keeps the action undoable for
- * five seconds and says so in the wide sidebar's foot. `undoNotice.contract.test.ts`
+ * five seconds and says so only in the wide sidebar. `undoNotice.contract.test.ts`
  * pins what this relies on.
  */
 import { useAtomValue } from "@effect/atom-react";

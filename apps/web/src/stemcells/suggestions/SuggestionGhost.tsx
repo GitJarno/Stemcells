@@ -21,7 +21,7 @@ export function SuggestionGhost(props: {
       aria-hidden
       data-stemcells-suggestion=""
       className={cn(
-        "pointer-events-none absolute inset-0 leading-relaxed text-placeholder/75",
+        "pointer-events-none absolute inset-0 leading-relaxed text-placeholder",
         props.className,
       )}
     >

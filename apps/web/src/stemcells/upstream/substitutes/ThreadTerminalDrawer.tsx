@@ -43,8 +43,8 @@ function StemcellsTerminalDrawer(props: ComponentProps<typeof UpstreamThreadTerm
     return () => cancelAnimationFrame(frame);
   }, []);
   const hostRef = useRef<HTMLDivElement | null>(null);
-  // Measured once, before the drawer first draws: upstream reads the height
-  // it is given when it mounts, and keeps it until the person drags.
+  // Measured once, before the drawer first draws: upstream draws whatever
+  // height it is given, so it never shows 280px, and holds still until a drag.
   const [opening, setOpening] = useState<number | null>(null);
   // oxlint-disable-next-line t3code/react-effect-budget -- Measure the opening height from the host's styles and pane once, before the drawer first draws.
   useLayoutEffect(() => {

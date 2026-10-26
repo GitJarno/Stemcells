@@ -23,7 +23,7 @@ describe("the composer line's contracts with upstream", () => {
     // ChatView measures the overlay holding the composer, line and all, and
     // reserves that height under the transcript's last row.
     expect(chatView).toMatch(
-      /ref=\{setComposerOverlayElement\}[\s\S]*?data-chat-composer-overlay="true"[\s\S]*?<Stemcells\.CellComposerLine \/>/,
+      /ref=\{\(overlay: HTMLDivElement \| null\) => \{\s*setComposerOverlayElement\(overlay\);[\s\S]{0,200}?data-chat-composer-overlay="true"[\s\S]*?<Stemcells\.CellComposerLine \/>/,
     );
     expect(chatView).toContain(
       "publishComposerOverlayHeightStable(composerOverlayElement.getBoundingClientRect().height);",
@@ -71,11 +71,11 @@ describe("the composer line's contracts with upstream", () => {
     );
   });
 
-  it("the field's height is one class, and it grows to a cap as text is typed", () => {
-    // workspace.css lowers the field to one row; upstream's cap and scroll
-    // still let it grow with what is typed.
+  it("the field's height is its classes alone, and it grows to a cap as text is typed", () => {
+    // workspace.css lowers the field to one row over both designs' minimums;
+    // upstream's cap and scroll still let it grow with what is typed.
     expect(promptEditor).toContain(
-      '"composer-tiptap -m-1 block max-h-52 min-h-19.5 overflow-y-auto p-1 ',
+      '"composer-tiptap -m-1 block max-h-52 min-h-19.5 redesign:min-h-12 overflow-y-auto p-1 ',
     );
   });
 

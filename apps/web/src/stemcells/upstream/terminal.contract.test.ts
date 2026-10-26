@@ -29,12 +29,13 @@ describe("the terminal drawer's contracts with upstream", () => {
     );
   });
 
-  it("the drawer reads its height when it mounts and keeps it until a drag", () => {
-    expect(drawer).toMatch(
-      /useState\(\(\) => \(\{\s*threadId,\s*height: controlledDrawerHeight,\s*\}\)\)/,
+  it("the drawer draws at the height it is given, and a drag stores its height once, at its end", () => {
+    expect(drawer).toContain("const drawerHeight = clampDrawerHeight(height, maxDrawerHeight);");
+    expect(drawer).toContain(
+      "style={isPanel ? undefined : { height: `var(${DRAG_HEIGHT_PROPERTY}, ${drawerHeight}px)` }}",
     );
     expect(drawer).toMatch(
-      /const preferredDrawerHeight =\s*drawerHeightState\.threadId === threadId \? drawerHeightState\.height : controlledDrawerHeight;/,
+      /if \(resizeState\.height === resizeState\.startHeight \|\| resizeState\.height === height\) return;\s*onHeightChange\(resizeState\.height\);/,
     );
   });
 

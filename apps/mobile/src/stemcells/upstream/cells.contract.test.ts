@@ -51,7 +51,11 @@ describe("what a Cell's face is read from", () => {
       NodePath.join(here, "../../features/threads/ThreadDetailScreen.tsx"),
       "utf8",
     );
-    expect(screen).toMatch(/onHeightChange=\{setComposerHeight\}/);
+    // Upstream settles the report before it lays the feed out again, but still lays it out by it.
+    expect(screen).toMatch(/onHeightChange=\{handleComposerHeightChange\}/);
+    expect(screen).toMatch(
+      /const handleComposerHeightChange = useCallback\(\(height: number\) => \{[\s\S]*?setComposerHeight\(height\);/,
+    );
     expect(screen).toMatch(/const composerOverlapHeight =\s*composerHeight \?\?/);
   });
 });

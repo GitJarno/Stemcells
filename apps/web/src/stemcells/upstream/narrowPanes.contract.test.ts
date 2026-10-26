@@ -1,9 +1,12 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
  * What a chat in a narrow pane relies on in upstream. A failure after a sync names the contract
  * that moved: a chat may lose its end as its pane narrows, the Scroll-to-end pill may sit on the
  * Cell and its line, the placeholder may run over the controls, or a wide table may stop saying
  * it scrolls sideways.
  */
+import * as NodeFS from "node:fs";
+
 import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
@@ -14,6 +17,9 @@ import markdownTable from "../../components/chat/MarkdownTable.tsx?raw";
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 import scrollArea from "../../components/ui/scroll-area.tsx?raw";
 import timelineOverlays from "../../components/chat/TimelineOverlays.tsx?raw";
+
+/** CSS imports come in empty under test; the stylesheet is read as text. */
+const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import.meta.url), "utf8");
 
 describe("a chat in a narrow pane, against upstream", () => {
   it("the transcript holds its end only through growth within a screen, so the pane holds it across a width change", () => {
@@ -32,9 +38,14 @@ describe("a chat in a narrow pane, against upstream", () => {
 
   it("the placeholder is one element the composer can keep to its one row", () => {
     expect(promptEditor).toMatch(
-      /\{isEmpty && contextRecords\.size === 0 && placeholder \? \(\s*<div\s*className=\{cn\(\s*"pointer-events-none absolute inset-0 leading-relaxed text-placeholder\/75",/,
+      /\{isEmpty && contextRecords\.size === 0 && placeholder \? \(\s*<div\s*className=\{cn\(\s*"pointer-events-none absolute inset-0 leading-relaxed text-placeholder",/,
     );
     expect(chatComposer).toContain('data-chat-composer-body="true"');
+    // workspace.css finds it by that colour class: a selector off by a class
+    // matches nothing, and the placeholder runs over the controls again.
+    expect(workspaceCss).toContain(
+      '[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder {',
+    );
   });
 
   it("a table scrolls sideways in an area with an edge fade sized by --fade-size", () => {

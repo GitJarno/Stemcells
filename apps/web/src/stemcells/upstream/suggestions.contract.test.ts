@@ -13,7 +13,7 @@ import { SUBSTITUTES } from "./substitutes/plugin";
 import { DEFAULT_COMPOSER_PLACEHOLDER } from "../../composerPlaceholder";
 import { IDLE_PLACEHOLDER } from "./suggestions";
 
-const PLACEHOLDER_LOOK = "pointer-events-none absolute inset-0 leading-relaxed text-placeholder/75";
+const PLACEHOLDER_LOOK = "pointer-events-none absolute inset-0 leading-relaxed text-placeholder";
 
 describe("the suggestion's contracts with upstream's web", () => {
   it("upstream's composer gives the idle hint last, after everything that asks of the person", () => {
@@ -24,8 +24,9 @@ describe("the suggestion's contracts with upstream's web", () => {
   });
 
   it("the ghost draws in the look of upstream's placeholder", () => {
-    expect(editorSource).toContain(PLACEHOLDER_LOOK);
-    expect(ghostSource).toContain(PLACEHOLDER_LOOK);
+    // Quoted whole, so a tint added to upstream's (`/75`, say) fails here.
+    expect(editorSource).toContain(`"${PLACEHOLDER_LOOK}",`);
+    expect(ghostSource).toContain(`"${PLACEHOLDER_LOOK}",`);
   });
 
   it("the composer and its editor are ours to join", () => {

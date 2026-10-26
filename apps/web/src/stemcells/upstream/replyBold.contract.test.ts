@@ -18,9 +18,9 @@ const replyCss = read("../transcript/reply.css");
 const tokensCss = read("../tokens/stemcells.css");
 
 describe("bold in a reply, against upstream", () => {
-  it("upstream sets a reply's body in its ink at 80 %, the step bold climbs", () => {
+  it("upstream sets a reply's body in its ink at 90 %, the step bold climbs", () => {
     expect(chatMarkdown).toContain(
-      '"text-sm leading-relaxed text-foreground/[calc(80%+var(--appearance-contrast-boost)/5)]"',
+      '"text-sm leading-relaxed text-foreground/[calc(90%+var(--appearance-contrast-boost)/10)]"',
     );
     expect(indexCss).toContain("--color-foreground: var(--contrast-foreground);");
   });
@@ -35,7 +35,8 @@ describe("bold in a reply, against upstream", () => {
   });
 
   it("upstream leaves bold's colour alone, in its sheet and in how it renders a reply", () => {
-    expect(indexCss).not.toContain("strong");
+    // Upstream sets bold's weight (`.chat-markdown strong`); no rule for it sets a colour.
+    expect(indexCss).not.toMatch(/\bstrong\b[^{}]*\{[^}]*(?<![\w-])color\s*:/);
     expect(chatMarkdown).not.toContain("strong");
   });
 });

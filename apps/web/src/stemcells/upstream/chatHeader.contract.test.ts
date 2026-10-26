@@ -20,7 +20,11 @@ describe("the line's contracts with upstream's chat header", () => {
   it("the header's title opens the thread menu, waits out a double-click, and renames through one commit rule", () => {
     expect(chatHeader).toContain("export function resolveRenameCommit(");
     expect(chatHeader).toMatch(
-      /useThreadActionMenu\(\{\s*threadRef: isServerThread \? activeThreadRef : null,\s*projectCwd: activeProjectCwd,\s*onStartRename: startRename,\s*\}\)/,
+      /useThreadActionMenu\(\{\s*threadRef: isServerThread \? activeThreadRef : null,\s*projectCwd: activeProjectCwd,\s*onStartRename: startRename,\s*canShareWithGuest,?\s*\}\)/,
+    );
+    // `useCellThreadMenu` offers "Share with guest" by the same rule.
+    expect(chatHeader).toContain(
+      "const canShareWithGuest = useAtomValue(canShareWithGuestAtom(activeThreadEnvironmentId));",
     );
     expect(chatHeader).toContain("const TITLE_MENU_OPEN_DELAY_MS = 500;");
     expect(chatHeader).toMatch(

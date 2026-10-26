@@ -76,10 +76,12 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
   });
 
   it("the server copies an upload into each thread that claims it, so one serves every Cell on a machine", () => {
-    expect(attachmentClaims).toContain("A copy, not a move");
     expect(attachmentClaims).toMatch(
       /fileSystem\.copyFile\(claim\.currentPath, claim\.finalPath\)/,
     );
+    // Nothing moves, links or removes the upload itself: the next Cell claims it too.
+    expect(attachmentClaims).not.toMatch(/\.(rename|link|symlink)\(/);
+    expect(attachmentClaims).not.toMatch(/\.remove\(claim\.currentPath/);
   });
 
   it("a chip's context reaches the model only where the text has the chip", () => {

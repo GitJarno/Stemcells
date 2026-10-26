@@ -33,7 +33,7 @@ describe("the composer light's contracts with upstream", () => {
     // under the words only because the surface stacks its children.
     const main = body(composerSurface, "Main");
     expect(main).toContain('data-chat-composer-main-surface="true"');
-    expect(main).toMatch(/"group relative z-10 rounded-3xl p-px"/);
+    expect(main).toMatch(/"group relative z-10 rounded-2xl p-px"/);
     expect(main).toContain("{...props}");
   });
 

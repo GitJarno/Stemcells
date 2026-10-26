@@ -71,10 +71,6 @@ const CASES: Readonly<Record<string, Case>> = {
       Object.keys(OurFavicon satisfies typeof UpstreamFavicon),
     ],
     importers: {
-      "apps/mobile/src/features/threads/ThreadFeed.tsx": [
-        "@t3tools/shared/favicon",
-        ["faviconUrlForOrigin"],
-      ],
       "apps/mobile/src/features/threads/thread-work-log.tsx": [
         "@t3tools/shared/favicon",
         ["toolActivityFaviconUrl"],

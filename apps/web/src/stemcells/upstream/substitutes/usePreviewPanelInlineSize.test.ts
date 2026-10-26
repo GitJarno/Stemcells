@@ -7,6 +7,7 @@ import {
 import { usePreviewPanelInlineSize } from "./usePreviewPanelInlineSize";
 
 import panelShell from "../../../components/preview/PreviewPanelShell.tsx?raw";
+import inlineSize from "../../../hooks/usePreviewPanelInlineSize.ts?raw";
 import resizableWidth from "../../../hooks/useResizableWidth.ts?raw";
 
 vi.mock("../../../hooks/usePreviewPanelInlineSize", async (original) => ({
@@ -55,6 +56,10 @@ describe("the Surface's width comes from the person, never from itself", () => {
       container: page,
       widthStorageKey: "w",
     });
+    // Upstream caps against the container it is handed, ahead of the panel's own row.
+    expect(inlineSize).toContain(
+      "const row = container ?? (enabled ? host.parentElement : null) ?? null;",
+    );
   });
 
   it("outside a pane, upstream measures what it always did", () => {
@@ -72,8 +77,12 @@ describe("the Surface's width comes from the person, never from itself", () => {
     expect(panelShell).toContain('"shrink-0 border-l border-border"');
     expect(panelShell).toMatch(/: `var\(\$\{RESIZABLE_WIDTH_PROPERTY\}\)`/);
     // ...and only the person's drag, or the stored width, writes it.
-    expect(resizableWidth).toContain(
-      "setLocalStorageItem(latestOptions.current.storageKey, finalWidth",
+    expect(resizableWidth.match(/setWidthState\(\{[^}]*\}\)/g)).toEqual([
+      "setWidthState({ storageKey, width: readWidth() })",
+      "setWidthState({ storageKey: startStorageKey, width: finalWidth })",
+    ]);
+    expect(resizableWidth).toMatch(
+      /finish\(finalWidth\) \{\s*setWidthState\([^)]*\);\s*try \{\s*setLocalStorageItem\(startStorageKey, finalWidth, WidthSchema\);/,
     );
   });
 });

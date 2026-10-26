@@ -288,13 +288,12 @@ const CASES: Readonly<Record<string, Case>> = {
   },
   "apps/web/src/components/ThreadNotificationCoordinator.tsx": {
     upstream: UpstreamThreadNotificationCoordinator,
-    substitute: OurThreadNotificationCoordinator satisfies RendersOrNothing<
-      typeof UpstreamThreadNotificationCoordinator
-    >,
+    substitute:
+      OurThreadNotificationCoordinator satisfies typeof UpstreamThreadNotificationCoordinator,
     importers: {
-      "apps/web/src/routes/__root.tsx": [
-        "../components/ThreadNotificationCoordinator",
-        ["ThreadNotificationCoordinator"],
+      "apps/web/src/appInit.tsx": [
+        "./components/ThreadNotificationCoordinator",
+        ["startThreadNotifications"],
       ],
     },
   },
@@ -391,15 +390,16 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamSettingsSearch,
     substitute: OurSettingsSearch satisfies typeof UpstreamSettingsSearch,
     importers: {
+      // The palette matches the list below itself, so it skips what that list does.
       "apps/web/src/components/CommandPalette.tsx": [
         "./settings/settingsSearch",
-        ["searchSettings"],
+        ["settingsForThisPlatform"],
       ],
       "apps/web/src/components/settings/SettingsSidebarNav.tsx": [
         "./settingsSearch",
         ["searchSettings"],
       ],
-      // The list both searches above search in.
+      // The list the palette and Settings' search search in.
       "apps/web/src/components/settings/useAvailableSettingsSearchItems.ts": [
         "./settingsSearch",
         ["filterAvailableSettingsSearchItems"],

@@ -10,7 +10,6 @@ import { T3_CODE_DARK_THEME_COLORS } from "@t3tools/shared/themePalettes";
 
 import indexHtml from "../../../index.html?raw";
 import themeSettings from "../../components/settings/ThemeSettings.tsx?raw";
-import useEnvironmentTheme from "../../hooks/useEnvironmentTheme.ts?raw";
 import { STEMCELLS_OVER_T3_DARK } from "../../../../../stemcells/brand/look.ts";
 import { STEMCELLS_THEME } from "./look";
 
@@ -156,7 +155,17 @@ describe("Stemcells' theme is built in", () => {
     const { palette } = await loadTheme({}, true);
     expect(palette.isReservedThemeId("stemcells")).toBe(true);
     expect(palette.getThemeDefinition("stemcells")).toEqual(STEMCELLS_THEME);
-    expect(useEnvironmentTheme).toContain("if (isReservedThemeId(theme.id)) return false;");
+    const copy = {
+      name: "Published",
+      appearance: "dark",
+      canvas: "#101010",
+      accent: "#ff6600",
+    } as const;
+    const kept = palette.publishedThemeDefinitions([
+      { id: "stemcells", ...copy },
+      { id: "machine", ...copy },
+    ]);
+    expect(kept.map((theme) => theme.id)).toEqual(["machine"]);
   });
 
   it("Settings lists it first among T3's themes", () => {
