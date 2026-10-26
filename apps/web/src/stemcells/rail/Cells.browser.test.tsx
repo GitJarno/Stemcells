@@ -538,7 +538,19 @@ describe("the column's word that Stemcells gets better", () => {
 });
 
 describe("a Cell moving along the line", () => {
-  it("hops from its old stage's row down to its new one, and is gone once it lands", async () => {
+  /** The stream with each listed Cell at `stage`, and the asks of those that left Needs you gone. */
+  const moved = (
+    before: ReturnType<typeof streamState>,
+    to: Record<string, CellStanding["stage"]>,
+  ) => ({
+    ...before,
+    needs: before.needs.filter((need) => to[need.threadId] === undefined),
+    cells: before.cells.map((cell) =>
+      to[cell.threadId] === undefined ? cell : { ...cell, stage: to[cell.threadId]! },
+    ),
+  });
+
+  it("only changes the count when the person didn't move it", async () => {
     await using screen = await render(<Column />);
     await using stack = new AsyncDisposableStack();
     const before = streamState();
@@ -547,15 +559,26 @@ describe("a Cell moving along the line", () => {
     });
     await expect.element(screen.getByRole("button", { name: /Landed\s*2/ })).toBeVisible();
     await act(() => {
-      stream = {
-        ...before,
-        cells: before.cells.map((cell) =>
-          cell.threadId === "thread-w" ? { ...cell, stage: "done" as const } : cell,
-        ),
-      };
+      stream = moved(before, { "thread-w": "done" });
       changes.tell();
     });
     await expect.element(screen.getByRole("button", { name: /Landed\s*3/ })).toBeVisible();
+    expect(document.querySelector("[data-cells-hop]")).toBeNull();
+  });
+
+  it("hops a Cell the person answered into its new stage's count, and is gone once it lands", async () => {
+    await using screen = await render(<Column />);
+    await using stack = new AsyncDisposableStack();
+    const before = streamState();
+    stack.defer(() => {
+      stream = before;
+    });
+    await userEvent.click(screen.getByRole("button", { name: /Keep them/ }));
+    await act(() => {
+      stream = moved(before, { "thread-a": "working" });
+      changes.tell();
+    });
+    await expect.element(screen.getByRole("button", { name: /Working\s*2/ })).toBeVisible();
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).not.toBeNull());
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).toBeNull());
   });

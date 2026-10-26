@@ -42,9 +42,9 @@ settled, colour meant nothing, and the stages carried critters.
 - [x] Settle clears a Failed, Limit or Plan card too
 - [x] Your own answer or settle leaves at once, with upstream's undo line
 - [x] Type, rows and resize
-- [ ] Asks: tags, the header row, grouped answers, keys
+- [x] Asks: tags, the header row, grouped answers, keys (as `aski-asks.md`'s first step, #324)
 - [x] Two fingers swipe through the stages
-- [ ] Stages as label and count; hops only for the person's acts
+- [x] Stages as label and count; hops only for the person's acts
 - [ ] Filters
 - [ ] Docs
 - [ ] The phone's home follows (`phone-line.md`)

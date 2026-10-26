@@ -1,8 +1,7 @@
 /**
- * Which Cells moved along the column's line between two readings
- * (stemcells/tasks/left-column.md, decision 7): each one hops from where it
- * stood to its new stage's row. Pinned is a bookmark, not a stage, so it
- * takes no hops.
+ * Which Cells moved along the column's line between two readings: each the
+ * person moved hops from where it stood into its new stage's count. Pinned
+ * is a bookmark, not a stage, so it takes no hops.
  */
 import type { CellStanding } from "../needs/wire";
 import type { ColumnStage } from "./column";
@@ -37,10 +36,18 @@ export function standingsOf(
   return standings;
 }
 
-/** The Cells whose stage changed; one new to the column, or gone from it, didn't hop. */
-export function hopsOf(before: Standings, after: Standings): Hop[] {
+/**
+ * The Cells the person moved whose stage changed (stemcells/tasks/left-column-v3.md, decision
+ * 6); one new to the column, or gone from it, didn't hop, and a move the server made only
+ * changes the counts.
+ */
+export function hopsOf(
+  before: Standings,
+  after: Standings,
+  byHand: (threadId: string) => boolean,
+): Hop[] {
   return [...after].flatMap(([threadId, to]): Hop[] => {
     const from = before.get(threadId);
-    return from === undefined || from === to ? [] : [{ threadId, from, to }];
+    return from === undefined || from === to || !byHand(threadId) ? [] : [{ threadId, from, to }];
   });
 }

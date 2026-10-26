@@ -1,6 +1,7 @@
 import { useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { takeMovedByHand } from "../needs/byHand";
 import { motionTiming, reducedMotion } from "../tokens/motion";
 import { CellMini } from "./CellMini";
 import { hopsOf, type Hop, type Standings } from "./moves";
@@ -35,22 +36,20 @@ const startOf = (hop: Hop) => {
     const box = own.getBoundingClientRect();
     return { x: box.left + 16, y: box.top + Math.min(box.height, 32) / 2 };
   }
-  const row = inColumn(`[data-cells-stage="${hop.from}"] [data-cells-stage-minis]`);
-  return row === null ? null : centre(row.getBoundingClientRect());
+  const mark = inColumn(`[data-cells-stage="${hop.from}"] [data-cells-stage-mark]`);
+  return mark === null ? null : centre(mark.getBoundingClientRect());
 };
 
-/** The Cell's own place among its new stage's few, else where they stand. */
-const landingOf = (hop: Hop) =>
-  inColumn(`[data-cells-stage="${hop.to}"] [data-cells-mini="${CSS.escape(hop.threadId)}"]`) ??
-  inColumn(`[data-cells-stage="${hop.to}"] [data-cells-stage-minis]`);
+/** It dives into its new stage's count. */
+const landingOf = (hop: Hop) => inColumn(`[data-cells-stage="${hop.to}"] [data-cells-stage-count]`);
 
 let flown = 0;
 
 /**
- * Each Cell that moves along the line hops there (stemcells/tasks/
- * left-column.md, decision 7): from its card or row, or its old stage's row,
- * down to its new stage's row, whose count bumps as it lands. One arc each,
- * then nothing runs; with less motion the counts just change.
+ * Each Cell the person moved along the line hops there (stemcells/tasks/left-column-v3.md,
+ * decision 6): from its card or row, or its old stage's mark, into its new stage's count, and
+ * the stage catches it. One arc each, then nothing runs; with less motion, or a move the
+ * person didn't make, the counts just change.
  */
 export function Hops(props: { standings: Standings; environmentId: string | null }) {
   const before = useRef<Standings | null>(null);
@@ -63,7 +62,10 @@ export function Hops(props: { standings: Standings; environmentId: string | null
     before.current = standings;
     // The first reading has nothing to move from.
     if (previous === null || previous.size === 0 || reducedMotion()) return;
-    const hops = hopsOf(previous, standings).slice(0, MOST_AT_ONCE);
+    const hops = hopsOf(previous, standings, (threadId) => takeMovedByHand(threadId)).slice(
+      0,
+      MOST_AT_ONCE,
+    );
     const launched = hops.flatMap((hop, index): Flight[] => {
       const start = startOf(hop);
       const end = landingOf(hop);
@@ -111,11 +113,6 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
     const y0 = flight.from.y - box.height / 2;
     const x1 = flight.to.x - box.width / 2;
     const y1 = flight.to.y - box.height / 2;
-    // Its place in the new row waits empty until it lands there.
-    const place = inColumn(
-      `[data-cells-stage="${flight.toStage}"] [data-cells-mini="${CSS.escape(flight.threadId)}"]`,
-    );
-    place?.style.setProperty("visibility", "hidden");
     const peak = Math.min(y0, y1) - RISE_PX;
     const at = (x: number, y: number, scale = 1) => ({
       transform: `translate(${x}px, ${y}px) scale(${scale})`,
@@ -134,15 +131,13 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
     void hop.finished.then(
       () => {
         if (!live) return;
-        place?.style.removeProperty("visibility");
-        bump(flight.toStage);
+        catchIt(flight.toStage);
         landed();
       },
       () => undefined,
     );
     return () => {
       live = false;
-      place?.style.removeProperty("visibility");
       hop.cancel();
     };
   }, [flight]);
@@ -154,13 +149,33 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
   );
 }
 
-/** The stage's count takes the Cell in: one bump. */
-function bump(stage: Hop["to"]) {
-  const count = inColumn(`[data-cells-stage="${stage}"] [data-cells-stage-count]`);
-  if (count === null) return;
+/** The stage catches the Cell, once: its mark nods, the row glows, the count ticks up. */
+function catchIt(stage: Hop["to"]) {
+  const row = inColumn(`[data-cells-stage="${stage}"]`);
+  if (row === null) return;
   const { duration, easing } = motionTiming("settle");
-  count.animate(
-    [{ transform: "scale(1)" }, { transform: "scale(1.35)" }, { transform: "scale(1)" }],
-    { duration, easing },
+  const once = { duration, easing };
+  row
+    .querySelector("[data-cells-stage-mark]")
+    ?.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.5) translateY(-1px)" },
+        { transform: "scale(1)" },
+      ],
+      once,
+    );
+  row
+    .querySelector("[data-cells-stage-count]")
+    ?.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.35)" }, { transform: "scale(1)" }],
+      once,
+    );
+  row.animate(
+    [
+      { boxShadow: "inset 0 0 0 999px var(--sc-hot)" },
+      { boxShadow: "inset 0 0 0 999px transparent" },
+    ],
+    { duration: duration * 2, easing },
   );
 }

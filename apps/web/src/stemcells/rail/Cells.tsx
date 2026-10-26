@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ChevronsLeftIcon,
   ListIcon,
+  PinIcon,
   SearchIcon,
   SettingsIcon,
   SquarePenIcon,
@@ -25,7 +26,6 @@ import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import { isElectron, openSearch, SidebarUpdatePill, useShortcutLabel } from "../upstream/rail";
 import { useNavigateToMainApp } from "../upstream/settings";
 import { cn, useSidebar } from "../upstream/ui";
-import { CellMini } from "./CellMini";
 import { useColumnStore, type ColumnStage } from "./column";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
@@ -41,9 +41,6 @@ import "../tokens/stemcells.css";
 import "./rail.css";
 import "../needs/needs.css";
 import "./cells.css";
-
-/** Cells a stage's row shows beside its count. */
-const MINIS = 3;
 
 const NO_STANDINGS: Standings = new Map();
 
@@ -114,15 +111,6 @@ export function Cells() {
     settled: shelves.settled.length,
     pinned: shelves.pinned.length,
   };
-  const threads = (list: ReadonlyArray<{ threadId: string }>) =>
-    [...new Set(list.map((each) => each.threadId))].slice(0, MINIS);
-  const minis: Record<ColumnStage, ReadonlyArray<string>> = {
-    needs: threads(onList.filter((each) => each.goneAt === null).map((each) => each.need)),
-    working: threads(working),
-    landed: threads(landed),
-    settled: threads(shelves.settled),
-    pinned: threads(shelves.pinned),
-  };
 
   return (
     <div ref={setSurface} data-stemcells-cells="">
@@ -179,8 +167,6 @@ export function Cells() {
             key={each}
             stage={each}
             count={counts[each]}
-            minis={minis[each]}
-            environmentId={environmentId}
             open={shownStage === each}
             onOpen={() => setStage(each)}
           />
@@ -189,8 +175,6 @@ export function Cells() {
         <StageRow
           stage="pinned"
           count={counts.pinned}
-          minis={minis.pinned}
-          environmentId={environmentId}
           open={shownStage === "pinned"}
           onOpen={() => setStage("pinned")}
         />
@@ -249,17 +233,11 @@ const rowOfShelved = (cell: ShelvedCell): Row => ({
   line: null,
 });
 
-/** A stage's row at the foot: its name and how many are there; the open one is lit. */
-function StageRow(props: {
-  stage: ColumnStage;
-  count: number;
-  /** A few of its Cells' threads, the newest first. */
-  minis: ReadonlyArray<string>;
-  environmentId: string | null;
-  open: boolean;
-  onOpen: () => void;
-}) {
-  const { environmentId } = props;
+/**
+ * A stage's row at the foot: a label and a count (stemcells/tasks/left-column-v3.md, decision
+ * 5), its mark in the stage's colour, as T3 marks a thread's status; the open one is lit.
+ */
+function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onOpen: () => void }) {
   return (
     <button
       type="button"
@@ -269,17 +247,13 @@ function StageRow(props: {
       aria-pressed={props.open}
       onClick={props.onOpen}
     >
+      {props.stage === "pinned" ? (
+        <PinIcon data-cells-stage-mark="" aria-hidden />
+      ) : (
+        <span data-cells-stage-mark="" aria-hidden />
+      )}
       <span data-cells-stage-label="">{LABEL[props.stage]}</span>
-      {/* Where a hop lands (Hops.tsx), so it's there with no Cells too. */}
-      <span data-cells-stage-minis="" aria-hidden>
-        {environmentId === null
-          ? null
-          : props.minis.map((threadId) => (
-              <span key={threadId} data-cells-mini={threadId}>
-                <CellMini environmentId={environmentId} threadId={threadId} />
-              </span>
-            ))}
-      </span>
+      {/* A hop dives in here (Hops.tsx). */}
       <span data-cells-stage-count="">{props.count}</span>
     </button>
   );

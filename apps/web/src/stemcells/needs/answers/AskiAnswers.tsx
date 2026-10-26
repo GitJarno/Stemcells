@@ -8,6 +8,7 @@ import type { DocText } from "../../words/docText";
 import { type BeforeSend, WordsSendSlot } from "../../words/send";
 import type { Span } from "../../words/text";
 import { commandsFor } from "../actions";
+import { movedByHand } from "../byHand";
 import { useHolds } from "../holds";
 import { holds, page } from "../live";
 import { tellAsk } from "../told";
@@ -171,6 +172,7 @@ function act(
     const { number, reading } = answer;
     const need = needs.get(number);
     if (need === undefined) continue;
+    movedByHand(need.threadId);
     const words = spokenOf(state.doc, state.text, answer, { key: need.key, who: whoOf(need) });
     if (reading.kind === "answer") {
       holds.hold({

@@ -24,6 +24,7 @@ import {
   type CardOption,
   type CardQuestion,
 } from "./card";
+import { movedByHand } from "./byHand";
 import type { Shown } from "./display";
 import type { Hold } from "./holds";
 import { holds, useSettleAtOnce } from "./live";
@@ -122,8 +123,10 @@ export function NeedCard(props: {
   };
 
   const section = useRef<HTMLElement>(null);
-  const holdAnswer = (commands: ReturnType<typeof commandsFor>) =>
+  const holdAnswer = (commands: ReturnType<typeof commandsFor>) => {
+    movedByHand(need.threadId);
     holds.hold({ key: need.key, threadId: need.threadId, commands });
+  };
   // An answer of the person's own keeps the card from Aski's take.
   const keepFromAski = () => {
     if (taking !== null) void keepCard(need.key);

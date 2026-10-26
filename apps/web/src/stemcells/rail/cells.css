@@ -270,22 +270,39 @@
   box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
   outline: none;
 }
-/* A few of the stage's Cells, held still; a hop lands among them. */
-[data-cells-stage-minis] {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  min-width: 1px;
-  margin-inline-start: auto;
+/* Each stage's mark, in its colour as T3 marks a thread's status. */
+[data-cells-stage-mark] {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
 }
-[data-cells-mini] {
-  display: inline-flex;
+span[data-cells-stage-mark]::before {
+  content: "";
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
 }
-[data-cells-stage="settled"] [data-cells-stage-minis] {
-  opacity: var(--sc-receded);
+[data-cells-stage="needs"] [data-cells-stage-mark] {
+  color: var(--sc-needs-you);
+}
+[data-cells-stage="working"] [data-cells-stage-mark] {
+  color: var(--sc-working);
+}
+[data-cells-stage="landed"] [data-cells-stage-mark] {
+  color: var(--sc-success);
+}
+[data-cells-stage="settled"] [data-cells-stage-mark] {
+  color: var(--sc-dim);
+}
+svg[data-cells-stage-mark] {
+  color: var(--sc-dim);
 }
 [data-cells-stage-count] {
   min-width: 1.5ch;
+  margin-inline-start: auto;
   color: var(--sc-dim);
   font-variant-numeric: tabular-nums;
   text-align: end;

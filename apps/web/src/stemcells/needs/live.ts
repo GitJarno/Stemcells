@@ -8,6 +8,7 @@ import { sendThreadCommand } from "../upstream/needs";
 import { useSettleCell } from "../upstream/settle";
 import { putAnswerOnUndoLine } from "../upstream/undoNotice";
 import { timing } from "../tokens/motion";
+import { movedByHand } from "./byHand";
 import { createHolds } from "./holds";
 import { createLeaving } from "./leaving";
 import { createPage } from "./page";
@@ -40,5 +41,8 @@ export function useSettleAtOnce(): (cell: {
   readonly threadId: string;
 }) => Promise<boolean> {
   const settle = useSettleCell();
-  return (cell) => leaving.leaveWhile(cell.threadId, settle(cell));
+  return (cell) => {
+    movedByHand(cell.threadId);
+    return leaving.leaveWhile(cell.threadId, settle(cell));
+  };
 }
