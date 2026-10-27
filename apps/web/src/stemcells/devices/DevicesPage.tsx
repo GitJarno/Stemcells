@@ -32,7 +32,7 @@ import { turnOffTailnet, useTailnet } from "./tailnet";
 // Settings › Your devices (stemcells/tasks/devices.md): the person's devices in
 // one list, the computers this app reaches and the phones, browsers and
 // computers that reach this one, each with its way in (Add) and its way out
-// (Remove). Settings › Connections, upstream's, keeps the details.
+// (Remove). Upstream's Environments and Sharing & access keep the details.
 
 function seenLabel(device: Device, nowMs: number) {
   if (device.connected) return "online";
