@@ -394,7 +394,7 @@ svg[data-cells-stage-mark] {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: var(--sc-space-sm);
-  row-gap: 2px;
+  row-gap: 0.125rem;
   width: 100%;
   padding: var(--sc-space-sm) var(--sc-space-md);
   border-radius: var(--sc-radius-card);

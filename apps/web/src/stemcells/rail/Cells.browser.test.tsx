@@ -482,6 +482,34 @@ describe("the column's project filter", () => {
   });
 });
 
+/** Settings › Interface size as upstream applies it (appearanceFonts.ts): the root's font size. */
+function interfaceSize(px: number): Disposable {
+  const root = document.documentElement;
+  const before = root.style.fontSize;
+  root.style.fontSize = `${px}px`;
+  return { [Symbol.dispose]: () => void (root.style.fontSize = before) };
+}
+
+describe("the column at another interface size", () => {
+  it("grows its plates, spaces and words together with the app's type", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    const search = screen.container.querySelector<HTMLElement>("[data-cells-search]")!;
+    const stage = screen.getByRole("button", { name: /Needs you\s*2/ }).element();
+    const measure = () => ({
+      plate: search.getBoundingClientRect().height,
+      inset: Number.parseFloat(getComputedStyle(search).paddingInlineStart),
+      corner: Number.parseFloat(getComputedStyle(search).borderTopLeftRadius),
+      row: stage.getBoundingClientRect().height,
+      words: Number.parseFloat(getComputedStyle(stage).fontSize),
+    });
+    expect(measure()).toEqual({ plate: 32, inset: 8, corner: 12, row: 30, words: 14 });
+
+    using _size = interfaceSize(20);
+    expect(measure()).toEqual({ plate: 40, inset: 10, corner: 15, row: 37.5, words: 17.5 });
+  });
+});
+
 describe("swiping the column", () => {
   it("turns its stages in the line's order, either way, and holds at the first", async () => {
     setup(null);
