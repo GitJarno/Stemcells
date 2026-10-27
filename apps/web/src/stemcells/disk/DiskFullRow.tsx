@@ -2,7 +2,7 @@ import { HardDriveIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
-import { useMachineDisk, useOpenCellWithDraft, type EnvironmentId } from "../upstream/disk";
+import { useMachineDisk, useOpenDiskCell, type EnvironmentId } from "../upstream/disk";
 import {
   Button,
   Spinner,
@@ -25,7 +25,7 @@ export function DiskFullRow(props: {
   readonly fallback: ReactNode;
 }) {
   const disk = useMachineDisk(props.environmentId);
-  const openCell = useOpenCellWithDraft(props.environmentId);
+  const openCell = useOpenDiskCell(props.environmentId);
   const [opening, setOpening] = useState(false);
   const failure = disk == null ? null : diskFailure(props.entryId, disk.free);
   if (failure === null) return props.fallback;

@@ -10,7 +10,7 @@ import {
   SettingsSection,
   Spinner,
   useMachineDisk,
-  useOpenCellWithDraft,
+  useOpenDiskCell,
   useOtherMachines,
   usePrimaryEnvironmentId,
   useNowMinuteMs,
@@ -22,8 +22,8 @@ import { useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure } from "./pressure";
 
 // Settings › Disk: how full each machine's disk is, what is large on this one, and a Cell to
-// free space with. The app deletes nothing itself: "Free space" opens a new Cell without a
-// project on that machine with the ask in its composer, for the person to send; the Cell
+// free space with. The app deletes nothing itself: "Free space" opens a new Cell in that
+// machine's Disk project with the ask in its composer, for the person to send; the Cell
 // reads that machine's measurement itself.
 
 const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
@@ -61,11 +61,7 @@ const Size = ({ bytes }: { readonly bytes: number }) => (
   <span className="text-sm text-foreground tabular-nums">{diskBytes(bytes)}</span>
 );
 
-function FreeSpaceButton({
-  openCell,
-}: {
-  readonly openCell: ReturnType<typeof useOpenCellWithDraft>;
-}) {
+function FreeSpaceButton({ openCell }: { readonly openCell: ReturnType<typeof useOpenDiskCell> }) {
   const [opening, setOpening] = useState(false);
   const freeSpace = async () => {
     if (openCell === null) return;
@@ -89,7 +85,7 @@ function OtherMachineRow({
   readonly label: string;
 }) {
   const disk = useMachineDisk(environmentId);
-  const openCell = useOpenCellWithDraft(environmentId);
+  const openCell = useOpenDiskCell(environmentId);
   const space =
     disk === undefined
       ? "Reading the disk…"
@@ -99,7 +95,7 @@ function OtherMachineRow({
   return (
     <SettingsRow
       title={label}
-      description={openCell ? space : `${space} · It can't start a Cell without a project.`}
+      description={openCell ? space : `${space} · It can't start a Cell to free space.`}
       control={<FreeSpaceButton openCell={openCell} />}
     >
       {disk ? <DiskGauge volume={disk} /> : null}
@@ -109,7 +105,7 @@ function OtherMachineRow({
 
 export function DiskSettingsPanel() {
   const { reading, failed, measureAgain } = useDiskReading();
-  const openCell = useOpenCellWithDraft(usePrimaryEnvironmentId());
+  const openCell = useOpenDiskCell(usePrimaryEnvironmentId());
   const otherMachines = useOtherMachines();
   const nowMs = useNowMinuteMs();
   const map = reading?.map ?? null;
@@ -127,7 +123,7 @@ export function DiskSettingsPanel() {
                 : "Reading the disk…"
           }
           description={
-            openCell ? CLEANUP_PROMISE : "This machine can't start a Cell without a project."
+            openCell ? CLEANUP_PROMISE : "This machine can't start a Cell to free space."
           }
           control={<FreeSpaceButton openCell={openCell} />}
         >

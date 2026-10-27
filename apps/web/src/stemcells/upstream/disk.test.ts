@@ -1,5 +1,6 @@
 import { scopedProjectKey, scopeProjectRef } from "@t3tools/client-runtime/environment";
-import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
+import { canCreateProjectInEnvironment } from "@t3tools/client-runtime/operations/projects";
+import { findProjectByPath } from "@t3tools/client-runtime/state/projects";
 import { EnvironmentId, ProjectId, ThreadId } from "@t3tools/contracts";
 import { beforeEach, expect, it } from "vite-plus/test";
 
@@ -36,11 +37,17 @@ it("a new thread's draft holds the text placed in it, and is no longer an empty 
   expect(after.getDraftSession(draftId)?.threadId).toBe("thread-disk");
 });
 
-// Contract: a machine offers a Cell without a project only while connected
-// and while its server names the folder those Cells run in.
-it("a machine offers a Cell without a project only when connected and its server has the folder", () => {
-  const config = { scratchWorkspaceRoot: "/home/cells/scratch" };
-  expect(availableScratchWorkspaceRoot("connected", config)).toBe("/home/cells/scratch");
-  expect(availableScratchWorkspaceRoot("connecting", config)).toBeNull();
-  expect(availableScratchWorkspaceRoot("connected", {})).toBeNull();
+// Contract: a machine makes a project only while connected, and a project is
+// found by its folder whatever it is called, as the Disk project is.
+it("a machine makes a project only while connected, and its project is found by its folder", () => {
+  expect(canCreateProjectInEnvironment("connected")).toBe(true);
+  expect(canCreateProjectInEnvironment("connecting")).toBe(false);
+  const projects = [
+    { title: "Disk", workspaceRoot: "/home/cells/.stemcells/projects/disk-2" },
+    { title: "Cleanup", workspaceRoot: "/home/cells/.stemcells/projects/disk" },
+  ];
+  expect(findProjectByPath(projects, "/home/cells/.stemcells/projects/disk/")?.title).toBe(
+    "Cleanup",
+  );
+  expect(findProjectByPath(projects, "/home/cells/.stemcells/projects/other")).toBeUndefined();
 });

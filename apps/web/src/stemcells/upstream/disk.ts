@@ -1,11 +1,12 @@
 // What Settings › Disk takes from upstream: its settings layout and
 // controls, a request to the primary environment as upstream authenticates
 // one, the connected environments and each one's host resources, and its
-// way to open a Cell without a project, with a draft in the composer.
+// project commands, to open a Cell in a machine's Disk project with a draft.
 
 import { RegistryContext, useAtomValue } from "@effect/atom-react";
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
+import { canCreateProjectInEnvironment } from "@t3tools/client-runtime/operations/projects";
+import { findProjectByPath } from "@t3tools/client-runtime/state/projects";
 import type { EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";
 import { AsyncResult } from "effect/reactivity";
@@ -15,6 +16,8 @@ import { useComposerDraftStore } from "~/composerDraftStore";
 import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
 import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAuth";
 import { useNewThreadHandler } from "~/hooks/useHandleNewThread";
+import { newProjectId } from "~/lib/utils";
+import { readProjects, waitForProject } from "~/state/entities";
 import {
   useConnectedEnvironmentIds,
   useEnvironments,
@@ -24,6 +27,7 @@ import { projectEnvironment } from "~/state/projects";
 import { serverEnvironment } from "~/state/server";
 import { useAtomCommand } from "~/state/use-atom-command";
 import { formatRelativeTimeLabel } from "~/timestampFormat";
+import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
 
 export type { EnvironmentId };
 export { usePrimaryEnvironmentId };
@@ -75,30 +79,48 @@ export async function sendToPrimary(
 }
 
 /**
- * Opens a new Cell on `environmentId` without a project, in that machine's
- * folder for such Cells, with `text` waiting in its composer, unsent. Null
- * when that machine offers no Cells without a project (not connected, or a
- * server without the folder).
+ * Opens a new Cell in `environmentId`'s Disk project, made there when the machine has none, with
+ * `text` waiting in its composer, unsent. Null when that machine can't make a project now: not
+ * connected, or a server without a folder for new projects.
  */
-export function useOpenCellWithDraft(
+export function useOpenDiskCell(
   environmentId: EnvironmentId | null,
 ): ((text: string) => Promise<boolean>) | null {
   const { environments } = useEnvironments();
-  const openScratch = useAtomCommand(projectEnvironment.openScratch, { reportFailure: false });
+  const createProject = useAtomCommand(projectEnvironment.create, { reportFailure: false });
+  const writeFile = useAtomCommand(projectEnvironment.writeFile, { reportFailure: false });
+  const updateProject = useAtomCommand(projectEnvironment.update, { reportFailure: false });
   const handleNewThread = useNewThreadHandler();
   const environment = environments.find((entry) => entry.environmentId === environmentId);
-  if (
-    environmentId === null ||
-    availableScratchWorkspaceRoot(environment?.connection.phase, environment?.serverConfig) === null
-  ) {
-    return null;
-  }
+  const projectsRoot = canCreateProjectInEnvironment(environment?.connection.phase)
+    ? environment?.serverConfig?.newProjectsRoot
+    : undefined;
+  if (environmentId === null || projectsRoot === undefined) return null;
   return async (text) => {
-    const result = await openScratch({ environmentId, input: {} });
-    if (result._tag !== "Success") return false;
-    const opened = await handleNewThread(
-      scopeProjectRef(result.value.environmentId, result.value.id),
-    ).catch(() => null);
+    const project = await openDiskProject(projectsRoot, {
+      projectIn: (folder) =>
+        findProjectByPath(
+          readProjects().filter((candidate) => candidate.environmentId === environmentId),
+          folder,
+        ) ?? null,
+      create: async (input) => {
+        const projectId = newProjectId();
+        const result = await createProject({
+          environmentId,
+          input: { projectId, ...input, createWorkspaceRootIfMissing: true },
+        });
+        return result._tag === "Success" ? projectId : null;
+      },
+      writeFile: async (input) => (await writeFile({ environmentId, input }))._tag === "Success",
+      setIcon: (projectId, faviconPath) =>
+        updateProject({ environmentId, input: { projectId, faviconPath } }),
+      arrived: (projectId) =>
+        waitForProject(scopeProjectRef(environmentId, projectId)).catch(() => null),
+    });
+    if (project === null) return false;
+    const opened = await handleNewThread(scopeProjectRef(project.environmentId, project.id)).catch(
+      () => null,
+    );
     if (opened === null) return false;
     useComposerDraftStore.getState().setPrompt(opened.draftId, text);
     return true;

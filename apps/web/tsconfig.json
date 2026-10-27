@@ -41,6 +41,7 @@
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/nameTransform.ts",
     "../../stemcells/brand/upstreamName.ts",
+    "../../stemcells/disk/project.ts",
     "../../stemcells/words/casualChat.ts",
     "../../stemcells/words/cellNames.ts",
     "../../stemcells/words/cellTools.ts",

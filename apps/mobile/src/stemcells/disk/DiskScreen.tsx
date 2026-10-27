@@ -12,11 +12,11 @@ import {
   SettingsSection,
   useMachineDisk,
   useMachines,
-  useOpenCellWithDraft,
+  useOpenDiskCell,
 } from "../upstream/disk";
 
 // Settings › Disk on the phone: each machine's free space, and a tap that opens a new Cell
-// without a project on that machine, the cleanup ask waiting unsent. The phone deletes and
+// in that machine's Disk project, the cleanup ask waiting unsent. The phone deletes and
 // measures nothing; the Cell does both, on the machine, after the person names what goes.
 
 type Machine = ReturnType<typeof useMachines>[number];
@@ -69,7 +69,7 @@ export function DiskScreen() {
 
 function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
   const disk = useMachineDisk(machine.environmentId);
-  const openCell = useOpenCellWithDraft(machine.environmentId);
+  const openCell = useOpenDiskCell(machine.environmentId);
   // One Cell per tap: a second tap while the first opens would leave a
   // second draft with the whole ask behind it, unseen.
   const [opening, setOpening] = useState(false);
@@ -83,7 +83,7 @@ function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
     <SettingsRow
       icon={machine.icon}
       label={machine.label}
-      value={openCell ? space : `${space} · It can't start a Cell without a project.`}
+      value={openCell ? space : `${space} · It can't start a Cell to free space.`}
       valuePosition="below"
       disabled={openCell === null || opening}
       onPress={() => {
@@ -95,9 +95,7 @@ function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
   );
 }
 
-async function freeSpace(
-  openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
-): Promise<void> {
+async function freeSpace(openCell: NonNullable<ReturnType<typeof useOpenDiskCell>>): Promise<void> {
   if (!(await openCell(CLEANUP_ASK))) {
     Dialog.alert("Couldn't start a Cell", "Try again in a moment.");
   }

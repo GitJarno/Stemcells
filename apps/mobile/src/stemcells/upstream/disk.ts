@@ -1,15 +1,19 @@
 import { RegistryContext, useAtomValue } from "@effect/atom-react";
 import { StackActions, useNavigation } from "@react-navigation/native";
-import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
-import { resolveEnvironmentMachineKind, type EnvironmentId } from "@t3tools/contracts";
+import { scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { canCreateProjectInEnvironment } from "@t3tools/client-runtime/operations/projects";
+import { findProjectByPath } from "@t3tools/client-runtime/state/projects";
+import { ProjectId, resolveEnvironmentMachineKind, type EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";
 import { AsyncResult } from "effect/reactivity";
 import { useContext, useEffect } from "react";
 import { AppState } from "react-native";
 
 import { ENVIRONMENT_MACHINE_SYMBOLS } from "../../components/EnvironmentMachineSymbol";
-import { useServerConfigs } from "../../state/entities";
-import { projectEnvironment } from "../../state/projects";
+import { uuidv4 } from "../../lib/uuid";
+import { appAtomRegistry } from "../../state/atom-registry";
+import { useServerConfigs, waitForProject } from "../../state/entities";
+import { environmentProjects, projectEnvironment } from "../../state/projects";
 import { serverEnvironment } from "../../state/server";
 import { useAtomCommand } from "../../state/use-atom-command";
 import {
@@ -20,10 +24,11 @@ import {
 import { useRemoteConnectionStatus } from "../../state/use-remote-environment-registry";
 import { useWorkspaceEnvironments } from "../../state/workspace";
 import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
+import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
 
 // Settings › Disk on the phone reads each machine's free space from its
-// server and opens a new Cell there without a project; the phone measures
-// nothing itself.
+// server and opens a new Cell in that machine's Disk project; the phone
+// measures nothing itself.
 
 export { AppText } from "../../components/ui/AppText";
 export * as Dialog from "../../components/ui/Dialog";
@@ -86,33 +91,54 @@ export function useMachineDisk(
 }
 
 /**
- * Opens a new Cell on `environmentId` without a project, in that machine's
- * folder for such Cells, with `text` waiting in the composer, unsent. Null
- * when that machine offers no Cells without a project (not connected, or a
- * server without the folder); false when it couldn't open one.
+ * Opens a new Cell in `environmentId`'s Disk project, made there when the machine has none, with
+ * `text` waiting in the composer, unsent. Null when that machine can't make a project now (not
+ * connected, or a server without a folder for new projects); false when it couldn't open one.
  */
-export function useOpenCellWithDraft(
+export function useOpenDiskCell(
   environmentId: EnvironmentId,
 ): ((text: string) => Promise<boolean>) | null {
   const navigation = useNavigation();
-  const openScratch = useAtomCommand(projectEnvironment.openScratch, { reportFailure: false });
+  const createProject = useAtomCommand(projectEnvironment.create, { reportFailure: false });
+  const writeFile = useAtomCommand(projectEnvironment.writeFile, { reportFailure: false });
+  const updateProject = useAtomCommand(projectEnvironment.update, { reportFailure: false });
   const { connectedEnvironments } = useRemoteConnectionStatus();
   const serverConfig = useServerConfigs().get(environmentId);
   const environment = connectedEnvironments.find(
     (candidate) => candidate.environmentId === environmentId,
   );
-  if (availableScratchWorkspaceRoot(environment?.connectionState, serverConfig) === null) {
-    return null;
-  }
+  const projectsRoot = canCreateProjectInEnvironment(environment?.connectionState)
+    ? serverConfig?.newProjectsRoot
+    : undefined;
+  if (projectsRoot === undefined) return null;
   return async (text) => {
     try {
       await waitForComposerDraftsLoaded();
     } catch {
       return false;
     }
-    const result = await openScratch({ environmentId, input: {} });
-    if (result._tag !== "Success") return false;
-    const project = result.value;
+    const project = await openDiskProject(projectsRoot, {
+      projectIn: (folder) =>
+        findProjectByPath(
+          appAtomRegistry
+            .get(environmentProjects.projectsAtom)
+            .filter((candidate) => candidate.environmentId === environmentId),
+          folder,
+        ) ?? null,
+      create: async (input) => {
+        const projectId = ProjectId.make(uuidv4());
+        const result = await createProject({
+          environmentId,
+          input: { projectId, ...input, createWorkspaceRootIfMissing: true },
+        });
+        return result._tag === "Success" ? projectId : null;
+      },
+      writeFile: async (input) => (await writeFile({ environmentId, input }))._tag === "Success",
+      setIcon: (projectId, faviconPath) =>
+        updateProject({ environmentId, input: { projectId, faviconPath } }),
+      arrived: (projectId) => waitForProject(scopeProjectRef(environmentId, projectId)),
+    });
+    if (project === null) return false;
     const draftId = createNewTaskDraft({
       environmentId: project.environmentId,
       projectId: project.id,

@@ -22,7 +22,7 @@ const machine = vi.hoisted(() => {
 vi.mock("../upstream/disk", () => ({
   toastManager: { add: () => undefined },
   useMachineDisk: () => ({ free: machine.state.free, total: 500e9 }),
-  useOpenCellWithDraft: () => async (text: string) => {
+  useOpenDiskCell: () => async (text: string) => {
     machine.state.opened.push(text);
     return true;
   },
