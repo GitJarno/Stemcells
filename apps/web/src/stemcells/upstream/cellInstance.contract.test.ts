@@ -151,7 +151,7 @@ describe("a Cell's composer", () => {
 describe("the composer's contracts with upstream", () => {
   it("the substitute hands upstream's composer the instances it may offer", () => {
     expect(composerSubstitute).toMatch(
-      /<UpstreamChatComposer \{\.\.\.props\} \{\.\.\.instances\} onSend=\{send\} \/>/,
+      /<UpstreamChatComposer\s+\{\.\.\.props\}\s+\{\.\.\.instances\}\s+providerStatuses=\{withLoginCommand\(instances\.providerStatuses\)\}/,
     );
   });
 

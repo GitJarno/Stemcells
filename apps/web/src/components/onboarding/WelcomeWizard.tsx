@@ -630,7 +630,7 @@ function PairingForm({
 const PRIMARY_AGENT_DRIVERS = ["codex", "claudeAgent"] as const;
 type OnboardingAgentDriver = (typeof PRIMARY_AGENT_DRIVERS)[number];
 
-interface AgentTerminalSession {
+export interface AgentTerminalSession {
   readonly environmentId: EnvironmentId;
   readonly driver: OnboardingAgentDriver;
   readonly providerInstanceId: ServerProvider["instanceId"];
@@ -984,7 +984,7 @@ function AgentCard({
   );
 }
 
-function AgentInstallTerminal({
+export function AgentInstallTerminal({
   session,
   onClose,
 }: {

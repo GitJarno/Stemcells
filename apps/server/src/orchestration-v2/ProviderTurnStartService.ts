@@ -1,4 +1,5 @@
 import * as Stemcells from "../stemcells/upstream/peers.ts";
+import { resumeWithTranscript } from "../stemcells/upstream/claudeAccounts.ts";
 import { modelSelectionsEqual } from "@t3tools/shared/model";
 import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
 import {
@@ -822,7 +823,7 @@ export const layer: Layer.Layer<
                   cause: "Uncertain native history injection",
                 }),
               )
-            : session.resumeThread({
+            : resumeWithTranscript({ session, fileSystem, path })({
                 providerThread,
                 threadId: projection.thread.id,
                 modelSelection: run.modelSelection,
