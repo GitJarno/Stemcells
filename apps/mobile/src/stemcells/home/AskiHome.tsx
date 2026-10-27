@@ -60,7 +60,7 @@ export function AskiHome() {
       style={{ paddingTop: ROOM_OVER }}
       onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
     >
-      {night ? <Night above={NIGHT_ABOVE + insets.top} screen={screen} /> : null}
+      {night ? <Night above={NIGHT_ABOVE + insets.top} screen={screen} height={height} /> : null}
       <Pressable
         ref={askiStandsIn}
         accessibilityRole="button"

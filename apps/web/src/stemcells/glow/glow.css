@@ -43,10 +43,10 @@
    The transcript runs on behind it and out through the pane's foot. It is
    the ::before of the block upstream holds the line and the box in, which
    stacks its own layers, so the halo lies under both; its top follows the
-   dock's top (below). */
-[data-stemcells-pane]
-  [data-chat-composer-stack="true"]
-  > :has(> [data-slot="composer-shell"])::before {
+   dock's top (below). That block is the stack's child that isn't the
+   draft's headline: a `:has()` naming it ran on every element of the page
+   (`restyle.test.ts`). */
+[data-stemcells-pane] [data-chat-composer-stack="true"] > :not(.bottom-full)::before {
   content: "";
   position: absolute;
   inset: calc(-1 * (var(--sc-halo-reach) + var(--sc-halo-fade)));

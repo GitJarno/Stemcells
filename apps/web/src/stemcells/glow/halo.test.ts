@@ -28,8 +28,7 @@ const ruleOf = (css: string, selector: string) => {
 };
 
 /** The halo's rule: the ::before of the block upstream holds the line and the box in. */
-const HALO =
-  '[data-chat-composer-stack="true"]\n  > :has(> [data-slot="composer-shell"])::before {';
+const HALO = '[data-chat-composer-stack="true"] > :not(.bottom-full)::before {';
 const VEIL = '[data-stemcells-pane] [data-slot="composer-shell"]::after {';
 
 describe("the halo covers the dock, never frosted", () => {

@@ -14,7 +14,7 @@ import { cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
 import { sendCopy } from "./copies";
-import { HomeInFront, useMinute } from "./state";
+import { HomeCellsHeld, HomeInFront, useMinute } from "./state";
 import { isAway } from "./tabs";
 
 function Figure(props: { readonly thread: EnvironmentThreadShell; readonly points: number }) {
@@ -25,6 +25,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
   const card = useResolveClassNames("bg-grouped-card").backgroundColor;
   const reduced = useReducedMotion();
   const inFront = use(HomeInFront);
+  const held = use(HomeCellsHeld);
   const box = useRef<ViewInstance>(null);
   // Asked on every draw, not kept: a list row is handed another chat as it scrolls. A Cell about to form here gets its copy of Aski (`copies.ts`).
   const forming =
@@ -47,6 +48,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
         plays
         away={isAway(thread, now)}
         formingFrom={forming}
+        held={held}
       />
     </View>
   );

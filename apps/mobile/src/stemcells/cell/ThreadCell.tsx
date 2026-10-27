@@ -25,6 +25,8 @@ export function ThreadCell(props: {
   readonly lineDown?: boolean;
   /** When it forms, if the view showing it is where it's first seen (`forming.ts`). */
   readonly formingFrom?: number | undefined;
+  /** Out of sight: it stands still and reads no clock (`CellFigure`). */
+  readonly held?: boolean;
 }) {
   const { thread } = props;
   const providers = useEnvironmentProviders().get(thread.environmentId);
@@ -57,6 +59,7 @@ export function ThreadCell(props: {
       plays={props.plays === true && (face.activity !== undefined || face.mood === "pleased")}
       ground={ground}
       formingFrom={props.formingFrom}
+      held={props.held}
     />
   );
 }

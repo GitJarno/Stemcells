@@ -3,7 +3,7 @@
 // only while the app is in front, and not at all under Reduce Motion.
 
 import { useEffect, useState } from "react";
-import { AppState, type ColorValue, View } from "react-native";
+import { AppState, type ColorValue, useWindowDimensions, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -112,12 +112,19 @@ function ShootingStar(props: {
 }
 
 /**
- * The night behind the home's header, filling it and reaching `above`
- * points over it (the status bar, and a pull past the top). `screen` is the
- * colour it fades into at the header's foot.
+ * The night behind the home's header, reaching `above` points over it and
+ * fading into `screen` at its foot. Given the header's measured `height`, it
+ * draws in its first frame, across the window, until its own layout lands.
  */
-export function Night(props: { readonly above: number; readonly screen: ColorValue | undefined }) {
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+export function Night(props: {
+  readonly above: number;
+  readonly screen: ColorValue | undefined;
+  readonly height: number;
+}) {
+  const window = useWindowDimensions();
+  const [measured, setSize] = useState<{ width: number; height: number } | null>(null);
+  const size =
+    measured ?? (props.height > 0 ? { width: window.width, height: props.height } : null);
   const reduced = useReducedMotion();
   const phase = moonPhase(Date.parse(useMinute()));
   const { above } = props;

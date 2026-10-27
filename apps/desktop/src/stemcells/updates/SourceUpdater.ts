@@ -201,16 +201,34 @@ export const make = Effect.gen(function* () {
     events.emit("update-available", { version: target.version, releaseNotes });
   });
 
-  /** Drops the staged build and the worktree it came from. */
+  /**
+   * Drops the staged build and the worktree it came from. Off the main
+   * thread: a worktree a build has filled is gigabytes, and deleting it in
+   * one synchronous call held the whole app for as long as that took.
+   */
   const dropStaged = git(["worktree", "remove", "--force", places.worktree]).pipe(
     Effect.ignore,
     Effect.andThen(
-      Effect.sync(() => {
-        NodeFS.rmSync(places.worktree, { recursive: true, force: true });
-        NodeFS.rmSync(places.stage, { recursive: true, force: true });
-        NodeFS.rmSync(places.staged, { force: true });
-      }),
+      Effect.promise(() =>
+        Promise.all([
+          NodeFS.promises.rm(places.worktree, { recursive: true, force: true }),
+          NodeFS.promises.rm(places.stage, { recursive: true, force: true }),
+          NodeFS.promises.rm(places.staged, { force: true }),
+        ]),
+      ),
     ),
+  );
+
+  /**
+   * Empties the worktree of what the build made (dependencies, artifacts),
+   * about 4 GB, once the app is staged. The swap needs only its tracked
+   * install-app. Only in a checkout of its own: `git -C` on a folder without
+   * one would clean whatever repository holds it.
+   */
+  const emptyBuild = Effect.suspend(() =>
+    NodeFS.existsSync(NodePath.join(places.worktree, ".git"))
+      ? run("git", ["-C", places.worktree, "clean", "-ffdxq"]).pipe(Effect.ignore)
+      : Effect.void,
   );
 
   const check = Effect.gen(function* () {
@@ -321,6 +339,7 @@ export const make = Effect.gen(function* () {
       Effect.mapError((cause) => new UpdateStepError({ message: cause.message })),
     );
     yield* Effect.sync(() => NodeFS.writeFileSync(places.staged, staged));
+    yield* emptyBuild;
   });
 
   const download = Effect.gen(function* () {

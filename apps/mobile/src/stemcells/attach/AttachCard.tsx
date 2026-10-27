@@ -14,6 +14,7 @@ import {
   Linking,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Animated, {
@@ -48,6 +49,13 @@ const BAR = 56;
 /** How long the Add pill says the cap after a refused tap, ms. */
 const SAYS_CAP_FOR = 1600;
 const CAP = `Up to ${GO} at a time`;
+
+/**
+ * What the last card showed: the access the person gave and the newest page.
+ * The card opens on them and asks the library again behind them, so its
+ * photos are there as it comes up rather than popping in after it.
+ */
+const lastSeen: { access: Access | null; ids: readonly string[] } = { access: null, ids: [] };
 
 type Tile =
   | { readonly kind: "camera" }
@@ -106,11 +114,14 @@ function Card(props: {
   readonly leave: (then: () => Promise<void>) => void;
 }) {
   const insets = useSafeAreaInsets();
-  const [access, setAccess] = useState<Access | null>(null);
-  const [ids, setIds] = useState<readonly string[]>([]);
+  const [access, setAccess] = useState<Access | null>(lastSeen.access);
+  const [ids, setIds] = useState<readonly string[]>(lastSeen.ids);
   const [more, setMore] = useState(true);
   const [picks, setPicks] = useState<readonly string[]>([]);
-  const [width, setWidth] = useState(0);
+  // The sheet is the window's width on a phone: its first frame lays out at
+  // that, until its own layout says otherwise.
+  const window = useWindowDimensions();
+  const [width, setWidth] = useState(window.width);
   const [sayingCap, setSayingCap] = useState(false);
   const list = useRef<FlatList<Tile>>(null);
   const loading = useRef(false);
@@ -123,10 +134,16 @@ function Card(props: {
     let live = true;
     void (async () => {
       const granted = await accessTo(true);
+      lastSeen.access = granted;
       if (!live) return;
       setAccess(granted);
-      if (granted !== "all" && granted !== "limited") return;
+      if (granted !== "all" && granted !== "limited") {
+        lastSeen.ids = [];
+        setIds([]);
+        return;
+      }
       const page = await photosFrom(0, PAGE);
+      lastSeen.ids = page;
       if (!live) return;
       setIds(page);
       setMore(page.length === PAGE);
@@ -142,6 +159,7 @@ function Card(props: {
     () =>
       onLibraryChange(() => {
         void photosFrom(0, PAGE).then((page) => {
+          lastSeen.ids = page;
           setIds(page);
           setMore(page.length === PAGE);
         });

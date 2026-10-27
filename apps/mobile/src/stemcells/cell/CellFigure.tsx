@@ -2,7 +2,7 @@
 // Its box is the miniature's (13 × 14 cells), hats and all, so every Cell stands on the same
 // line; its picture reaches past the box by the margin, taking no room.
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Text, View } from "react-native";
 import Animated, { useReducedMotion, ZoomIn, ZoomOut } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Text as SvgText } from "react-native-svg";
@@ -33,6 +33,15 @@ import {
   sceneOf,
   wornLook,
 } from "./kit";
+
+/** A look composed and drawn: what a Cell wears, its mood and act, and whether it forms. */
+interface Standing {
+  readonly key: string;
+  readonly worn: string;
+  readonly mood: Mood;
+  readonly activity: Activity | undefined;
+  readonly forms: boolean;
+}
 
 /** The frames a Cell forms through: its box empty, its blocks, its hop; none when its kit has no hop. */
 interface Formed {
@@ -100,6 +109,8 @@ export function CellFigure(props: {
   readonly points?: number | undefined;
   /** Acts out its scene; held still, it only blinks. */
   readonly plays?: boolean | undefined;
+  /** Out of sight (the home under a chat): it stands on its first frame and reads no clock. */
+  readonly held?: boolean | undefined;
   readonly ground?: Ground | undefined;
   /** When its glyphs start, on the clock, as it forms (`forming.ts`); it just stands without. */
   readonly formingFrom?: number | undefined;
@@ -110,24 +121,33 @@ export function CellFigure(props: {
   const plays = props.plays ?? false;
   const pleading = asksYou(mood);
   const reduced = useReducedMotion();
-  const look = wornLook(worn === "" ? [] : worn.split("+"));
+  const still = reduced || props.held === true;
   const forms = props.formingFrom !== undefined && !reduced;
-  const ready = useComposed(`${worn}|${mood}|${activity ?? ""}|${forms}`, () => {
-    sceneFor(look, mood, activity, 0);
+  const key = `${worn}|${mood}|${activity ?? ""}|${forms}`;
+  const ready = useComposed(key, () => {
+    sceneFor(wornLook(worn === "" ? [] : worn.split("+")), mood, activity, 0);
     if (forms) formedOf(worn);
   });
-  const shown = useSyncExternalStore(ready && !reduced ? onBeat : never, () => {
-    if (!ready) return null;
-    const seconds = reduced ? undefined : now();
-    const forming = forms ? formingShown(formedOf(worn), props.formingFrom, seconds) : undefined;
+  // The last look composed stands while the next one composes: a Cell
+  // turning to a new mood or act no longer drops out for a frame or more.
+  const [standing, setStanding] = useState<Standing | null>(null);
+  if (ready && standing?.key !== key) setStanding({ key, worn, mood, activity, forms });
+  const drawn: Standing | null = ready ? { key, worn, mood, activity, forms } : standing;
+  const look = drawn === null ? null : wornLook(drawn.worn === "" ? [] : drawn.worn.split("+"));
+  const shown = useSyncExternalStore(drawn !== null && !still ? onBeat : never, () => {
+    if (drawn === null || look === null) return null;
+    const seconds = still ? undefined : now();
+    const forming = drawn.forms
+      ? formingShown(formedOf(drawn.worn), props.formingFrom, seconds)
+      : undefined;
     return (
       forming ??
       frameAt(
-        sceneFor(look, mood, activity, plays ? (seconds ?? 0) : 0),
+        sceneFor(look, drawn.mood, drawn.activity, plays ? (seconds ?? 0) : 0),
         name,
         seconds,
         plays,
-        pleading,
+        asksYou(drawn.mood),
       )
     );
   });
@@ -137,7 +157,7 @@ export function CellFigure(props: {
     shown === null
       ? null
       : typeof shown === "string"
-        ? outlineOf(formedOf(worn)!.hop[0]!, body)
+        ? outlineOf(formedOf(drawn!.worn)!.hop[0]!, body)
         : drawFrame(shown, body, ground);
   const cell = points / 2;
   return (

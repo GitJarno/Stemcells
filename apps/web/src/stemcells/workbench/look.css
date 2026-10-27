@@ -26,9 +26,11 @@
 }
 
 /* The Look Cell steps out of its row, its column and its stack: the rest
-   of the grid hides, and none of the grid's rules show around it. */
-[data-stemcells-look-rail] ~ [data-stemcells-grid] > :not(:has([data-focused="true"])),
-[data-stemcells-look-rail] ~ [data-stemcells-grid] > * > :not(:has([data-focused="true"])),
+   of the grid hides, and none of the grid's rules show around it. The row
+   and column holding it say so (CellWorkspace.tsx): a `:has()` here ran on
+   every element of the page (`restyle.test.ts`). */
+[data-stemcells-look-rail] ~ [data-stemcells-grid] > :not([data-holds-focus]),
+[data-stemcells-look-rail] ~ [data-stemcells-grid] > * > :not([data-holds-focus]),
 [data-stemcells-look-rail] ~ [data-stemcells-grid] [data-stemcells-pane][data-focused="false"] {
   display: none;
 }

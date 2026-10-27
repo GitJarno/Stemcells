@@ -34,6 +34,13 @@ export const HomeTabsContext = createContext<HomeTabs | null>(null);
  */
 export const HomeInFront = createContext(false);
 
+/**
+ * Set while the home is under a chat: its Cells stand still and read no
+ * clock. Each one drawing on the sprite clock re-rendered its picture on the
+ * JS thread up to 12 times a second, under the chat in front.
+ */
+export const HomeCellsHeld = createContext(false);
+
 /** One set of tabs' choice: the person's, else where the home opens, held once known. */
 export function tabChoice<Tab extends string>() {
   let chosen: Tab | null = null;

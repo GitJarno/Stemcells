@@ -15,15 +15,18 @@ import type {
   OrchestrationV2ThreadProjection,
   OrchestrationV2TurnItem,
 } from "@t3tools/contracts";
+import type { ThreadStructureVisibleTurnItem } from "@t3tools/client-runtime/state/shell";
 import { DateTime } from "effect";
 import { useEffect, useState } from "react";
 
 import { latestProviderTurnTokenUsage } from "../../lib/contextWindow";
+import { appAtomRegistry } from "../../rpc/atomRegistry";
 import {
   useQuietThreadShell,
+  useQuietThreadVisibleTurnItems,
   useThreadProjection,
-  useThreadVisibleTurnItems,
 } from "../../state/entities";
+import { environmentThreadDetails } from "../../state/threads";
 import { ACTIVITY_HOLD, activityOf, type ToolBeat } from "../cell/activity";
 import type { Bud } from "../cell/buds";
 import { aloneIn, FLEX_MS, type Span, strengthOf } from "../cell/growth";
@@ -31,6 +34,9 @@ import type { Strength } from "../cell/kit";
 import type { Diff } from "../cell/marks";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
+
+/** A turn item as the Cell reads it: held through streamed words, as a full one is too. */
+type TurnItem = ThreadStructureVisibleTurnItem["item"];
 
 /** Where a call stands: still running, returned, or gone wrong. */
 function stateOf(status: OrchestrationV2TurnItem["status"]): ToolBeat["state"] {
@@ -61,7 +67,7 @@ function commandIn(input: unknown): string {
  * (`cell/activity.ts`) reads tools; undefined for what is no call (words,
  * reasoning, notices).
  */
-export function beatOf(item: OrchestrationV2TurnItem): ToolBeat | undefined {
+export function beatOf(item: TurnItem): ToolBeat | undefined {
   const state = stateOf(item.status);
   switch (item.type) {
     case "command_execution":
@@ -84,7 +90,7 @@ export function beatOf(item: OrchestrationV2TurnItem): ToolBeat | undefined {
 
 /** The calls of run `runId`, in the order the turn made them. */
 export function beatsOf(
-  items: ReadonlyArray<OrchestrationV2ProjectedTurnItem>,
+  items: ReadonlyArray<ThreadStructureVisibleTurnItem>,
   runId: string | null,
 ): ToolBeat[] {
   return items.flatMap(({ item }) => {
@@ -94,10 +100,12 @@ export function beatsOf(
 }
 
 /** The calls of the chat's run in progress while `working`; none otherwise. */
+// A mark stands in the tab strip, column, pane and composer line: its calls and buds read the
+// turn items held through streamed words, so a word re-renders none of them.
 export function useCellCalls(cell: CellRef | null, working: boolean): ToolBeat[] {
   const ref = cell ? threadRefOf(cell) : null;
   const shell = useQuietThreadShell(ref);
-  const items = useThreadVisibleTurnItems(working ? ref : null);
+  const items = useQuietThreadVisibleTurnItems(working ? ref : null);
   return working ? beatsOf(items, shell?.runtime?.activeRunId ?? null) : [];
 }
 
@@ -120,7 +128,7 @@ export function useCellSubagentsAway(cell: CellRef | null): number {
  * the transcript is (`SubcellMark`); a delegating call by its item's id.
  * Undefined for anything else.
  */
-export function budOf(item: OrchestrationV2TurnItem): Bud | undefined {
+export function budOf(item: TurnItem): Bud | undefined {
   if (item.type === "subagent")
     return {
       name: item.childThreadId ?? item.subagentId,
@@ -139,7 +147,7 @@ export function budOf(item: OrchestrationV2TurnItem): Bud | undefined {
  * Both name a Subcell by its thread's id, so a subagent sent to the background stays one bud.
  */
 export function budsIn(
-  items: ReadonlyArray<OrchestrationV2ProjectedTurnItem>,
+  items: ReadonlyArray<ThreadStructureVisibleTurnItem>,
   tasks: ReadonlyArray<OrchestrationV2PendingBackgroundTask> | undefined,
 ): Bud[] {
   const buds = new Map<string, Bud>();
@@ -163,7 +171,7 @@ export function budsIn(
 export function useCellBuds(cell: CellRef | null, working: boolean): readonly Bud[] {
   const ref = cell ? threadRefOf(cell) : null;
   const shell = useQuietThreadShell(ref);
-  const items = useThreadVisibleTurnItems(working ? ref : null);
+  const items = useQuietThreadVisibleTurnItems(working ? ref : null);
   return budsIn(working ? items : [], shell?.pendingBackgroundTasks);
 }
 
@@ -194,18 +202,35 @@ export function newsOf(
  */
 export function useCellDeep(cell: CellRef | null, working: boolean, quiet: boolean): boolean {
   const ref = cell ? threadRefOf(cell) : null;
-  const shell = useQuietThreadShell(ref);
-  const items = useThreadVisibleTurnItems(working ? ref : null);
-  const news = newsOf(items, shell?.runtime?.activeRunId ?? null);
-  const [silent, setSilent] = useState<string | null>(null);
-  // The silence counts from the last news, quiet or not, as the original's.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Time the hold after the latest news and clear the timer when news comes or work stops.
+  // One atom per thread, so the same one each render.
+  const news = ref === null ? null : environmentThreadDetails.visibleTurnItemsAtom(ref);
+  const runId = useQuietThreadShell(ref)?.runtime?.activeRunId ?? null;
+  // Set once the run's last news has stood for the hold. Each word is news,
+  // so words are heard outside render, which re-rendered the mark per word.
+  const [silence, setSilence] = useState<{ readonly compacting: boolean } | null>(null);
+  // oxlint-disable-next-line t3code/react-effect-budget -- Listen to the run's news while it works; the silence counts from the last news, quiet or not, as the original's.
   useEffect(() => {
-    if (!working) return;
-    const timer = setTimeout(() => setSilent(news.key), ACTIVITY_HOLD);
-    return () => clearTimeout(timer);
-  }, [working, news.key]);
-  return working && quiet && !news.compacting && silent === news.key;
+    if (!working || news === null) return;
+    let heard: string | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const stop = appAtomRegistry.subscribe(
+      news,
+      (items) => {
+        const latest = newsOf(items, runId);
+        if (latest.key === heard) return;
+        heard = latest.key;
+        setSilence(null);
+        clearTimeout(timer);
+        timer = setTimeout(() => setSilence({ compacting: latest.compacting }), ACTIVITY_HOLD);
+      },
+      { immediate: true },
+    );
+    return () => {
+      stop();
+      clearTimeout(timer);
+    };
+  }, [working, news, runId]);
+  return working && quiet && silence !== null && !silence.compacting;
 }
 
 /**

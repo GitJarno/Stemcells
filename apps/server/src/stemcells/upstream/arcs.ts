@@ -4,6 +4,7 @@
  * Aski took, nor a scheduled task's), and its requests. Top-level Cells only, not Aski's chat
  * or a subagent's thread. Read only; a transcript is read for its last reply alone.
  */
+import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
 import * as Effect from "effect/Effect";
 import * as SqlClient from "effect/sql/SqlClient";
 
@@ -45,6 +46,10 @@ const CELLS = `
     AND coalesce(provider_instance_id, '') <> '${ASKI_INSTANCE_ID}'
 `;
 
+/**
+ * Read on SQLite's reader, as upstream's long reads are: on the server's own
+ * connection, a cold read from a busy disk held its event loop for seconds.
+ */
 export const readArcRecords = Effect.fn("StemcellsArcs.readRecords")(function* (since: string) {
   const sql = yield* SqlClient.SqlClient;
   const runs = yield* sql<ArcRun>`
@@ -62,7 +67,7 @@ export const readArcRecords = Effect.fn("StemcellsArcs.readRecords")(function* (
       ) AS reply
     FROM orchestration_v2_projection_runs AS run
     WHERE run.requested_at >= ${since} AND run.thread_id IN (${sql.unsafe(CELLS)})
-  `;
+  `.pipe(NodeSqliteClient.readOnly);
   const turns = yield* sql<ArcTurn>`
     SELECT thread_id AS "threadId", created_at AS at
     FROM orchestration_v2_projection_messages
@@ -72,7 +77,7 @@ export const readArcRecords = Effect.fn("StemcellsArcs.readRecords")(function* (
       AND json_extract(payload_json, '$.creationSource') IS NOT 'server'
       AND json_extract(payload_json, '$.scheduledTaskId') IS NULL
       AND thread_id IN (${sql.unsafe(CELLS)})
-  `;
+  `.pipe(NodeSqliteClient.readOnly);
   const requests = yield* sql<ArcRequest>`
     SELECT
       thread_id AS "threadId",
@@ -82,6 +87,6 @@ export const readArcRecords = Effect.fn("StemcellsArcs.readRecords")(function* (
       resolved_at AS "resolvedAt"
     FROM orchestration_v2_projection_runtime_requests
     WHERE created_at >= ${since} AND thread_id IN (${sql.unsafe(CELLS)})
-  `;
+  `.pipe(NodeSqliteClient.readOnly);
   return { runs, turns, requests } satisfies ArcRecords;
 });

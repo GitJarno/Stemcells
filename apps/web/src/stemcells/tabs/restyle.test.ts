@@ -117,6 +117,21 @@ describe("a frame of a drag restyles only what changed", () => {
     expect(anchored).toEqual([]);
   });
 
+  // Chrome matches a selector from its subject: a subject that names nothing
+  // runs its `:has()` against every element on the page, and marks each one
+  // for a recheck whenever what is inside it changes.
+  it("puts no `:has()` on a subject that names nothing", () => {
+    const unnamed = sheets.flatMap(({ path, css }) =>
+      selectorsOf(css)
+        .filter((selector) => {
+          const subject = compoundsOf(selector).at(-1)!;
+          return subject.includes(":has(") && !namesSomething(subject);
+        })
+        .map((selector) => `${path}: ${selector}`),
+    );
+    expect(unnamed).toEqual([]);
+  });
+
   it("styles under a drag's marks name what they style", () => {
     const universal = sheets.flatMap(({ path, css }) =>
       selectorsOf(css)
