@@ -21,9 +21,9 @@ describe("takeUpdateStep", () => {
     let finish = (_through: boolean) => {};
     const download = vi.fn(() => new Promise<boolean>((resolve) => (finish = resolve)));
     const install = vi.fn(async () => true);
-    const downloading = takeUpdateStep("download", download);
+    const downloading = takeUpdateStep("download", "1.0.1", download);
     // The state says the update is ready before the download's call returns.
-    await takeUpdateStep("restart", install);
+    await takeUpdateStep("restart", "1.0.1", install);
     expect(install).not.toHaveBeenCalled();
     finish(false);
     await downloading;
@@ -33,11 +33,21 @@ describe("takeUpdateStep", () => {
   it("never takes a step twice for one click, even when the state says it's due again", async () => {
     wantUpdate();
     const download = vi.fn(async () => true);
-    await takeUpdateStep("download", download);
+    await takeUpdateStep("download", "1.0.1", download);
     expect(useUpdateWanted.getState().wanted).toBe(true);
-    await takeUpdateStep("download", download);
+    await takeUpdateStep("download", "1.0.1", download);
     expect(download).toHaveBeenCalledOnce();
     expect(useUpdateWanted.getState().wanted).toBe(false);
+  });
+
+  it("carries one click on to a newer main, so it lands the newest", async () => {
+    wantUpdate();
+    const download = vi.fn(async () => true);
+    await takeUpdateStep("download", "1.0.1", download);
+    // Main moved on while the build waited: the update offered is the newer one.
+    await takeUpdateStep("download", "1.0.2", download);
+    expect(download).toHaveBeenCalledTimes(2);
+    expect(useUpdateWanted.getState().wanted).toBe(true);
   });
 });
 

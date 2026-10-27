@@ -242,38 +242,35 @@ export const make = Effect.gen(function* () {
     const built = yield* git(["rev-parse", `${builtCommit}^{commit}`]);
     const on = channel;
 
-    // A build waits for its restart until it has one: a newer main makes
-    // the next update, so the person isn't asked to build again. On Stable
-    // it may be the step back to a release they switched to, which brings
-    // nothing newer.
-    const staged = readFile(StagedFile, places.staged);
-    if (staged !== null) {
-      const waiting = staged.channel === on && staged.sha !== built;
-      const changes = waiting
-        ? yield* changesTo(built, staged.sha).pipe(Effect.orElseSucceed(() => []))
-        : [];
-      if (waiting && (changes.length > 0 || on === "latest")) {
-        pending = Option.some(staged);
-        yield* announce(staged, changes);
-        events.emit("update-downloaded", { version: staged.version });
-        return;
-      }
-      yield* dropStaged;
-    }
-
     const tip = yield* tipOf(on);
     const changes = Option.isSome(tip) ? yield* changesTo(built, tip.value.sha) : [];
+    const staged = readFile(StagedFile, places.staged);
     // Stable steps back to its release when someone switches to it (upstream
-    // allows a downgrade then); Nightly never takes a build back to main.
+    // allows a downgrade then, and its build waits for the restart); Nightly
+    // never takes a build back to main.
     const steppingBack =
-      Option.isSome(tip) && tip.value.sha !== built && allowDowngrade && on === "latest";
-    if (Option.isNone(tip) || (changes.length === 0 && !steppingBack)) {
+      Option.isSome(tip) &&
+      tip.value.sha !== built &&
+      on === "latest" &&
+      (allowDowngrade || staged?.sha === tip.value.sha);
+    const offered = changes.length > 0 || steppingBack ? tip : Option.none<Target>();
+    // A built update waits for its restart only while it's still the tip: a
+    // newer main replaces it, so the update offered is always the newest.
+    const ready =
+      staged !== null &&
+      Option.isSome(offered) &&
+      staged.sha === offered.value.sha &&
+      staged.channel === on &&
+      NodeFS.existsSync(places.stage);
+    if (staged !== null && !ready) yield* dropStaged;
+    if (Option.isNone(offered)) {
       pending = Option.none();
       events.emit("update-not-available");
       return;
     }
-    pending = tip;
-    yield* announce(tip.value, changes);
+    pending = offered;
+    yield* announce(offered.value, changes);
+    if (ready) events.emit("update-downloaded", { version: offered.value.version });
   });
 
   /** Builds `target` with its own install-app, in the updater's worktree. */
@@ -358,8 +355,18 @@ export const make = Effect.gen(function* () {
    * notification says if the update didn't go in.
    */
   const swap = Effect.gen(function* () {
-    if (readFile(StagedFile, places.staged) === null || !NodeFS.existsSync(places.stage)) {
+    const staged = readFile(StagedFile, places.staged);
+    if (staged === null || !NodeFS.existsSync(places.stage)) {
       return yield* new UpdateStepError({ message: "The built update is gone." });
+    }
+    // Main may have moved since the last check; offline, the last fetch's tip stands.
+    yield* fetch.pipe(Effect.ignore);
+    const tip = yield* tipOf(staged.channel);
+    if (Option.isNone(tip) || tip.value.sha !== staged.sha) {
+      yield* dropStaged;
+      return yield* new UpdateStepError({
+        message: "Main moved on while the update waited. The next check offers the newest.",
+      });
     }
     const log = NodeFS.openSync(places.swapLog, "a");
     const child = yield* Effect.try({

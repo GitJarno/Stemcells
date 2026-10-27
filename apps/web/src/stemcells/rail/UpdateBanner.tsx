@@ -107,7 +107,7 @@ export function UpdateBanner(props: { update: UpdateToTake }) {
           aria-label="What got better"
         >
           <WhatGotBetter state={state} total={total} />
-          <UpdateAct view={view} />
+          <UpdateAct view={view} version={state.downloadedVersion} />
         </PopoverPopup>
       </Popover>
     </div>
@@ -152,7 +152,7 @@ function WhatGotBetter(props: { state: DesktopUpdateState; total: number }) {
 }
 
 /** The popover's one action, with a sentence over it when what happens next isn't plain. */
-function UpdateAct(props: { view: UpdateView }) {
+function UpdateAct(props: { view: UpdateView; version: string | null }) {
   const { view } = props;
   if (view.act === null && view.note === null) return null;
   return (
@@ -162,7 +162,7 @@ function UpdateAct(props: { view: UpdateView }) {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => void takeUpdateStep("restart", installUpdate)}
+          onClick={() => void takeUpdateStep("restart", props.version, installUpdate)}
         >
           Restart now
         </Button>
@@ -184,10 +184,14 @@ export function UpdateDriver() {
   const atWork = useCellsAtWork();
   const taking = useUpdateWanted((store) => store.taking !== null);
   const act = update === null || taking ? null : nextUpdateAct(update.step, atWork);
+  const version =
+    act === "restart"
+      ? (update?.state.downloadedVersion ?? null)
+      : (update?.state.availableVersion ?? null);
   // oxlint-disable-next-line t3code/react-effect-budget -- Start the update's next bridge step once, when where it stands calls for it.
   useEffect(() => {
-    if (act === "download") void takeUpdateStep(act, downloadUpdate);
-    if (act === "restart") void takeUpdateStep(act, installUpdate);
-  }, [act]);
+    if (act === "download") void takeUpdateStep(act, version, downloadUpdate);
+    if (act === "restart") void takeUpdateStep(act, version, installUpdate);
+  }, [act, version]);
   return null;
 }

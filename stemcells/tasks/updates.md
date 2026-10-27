@@ -55,7 +55,9 @@ process tree.
       `ElectronUpdater`: fetch and list, `--stage` in a worktree of its
       own, `--swap-in` as the app quits. Upstream's `DesktopUpdates` runs
       on it unchanged.
-- [x] A built update waits for its restart while `main` moves on.
+- [x] A built update stands only while it's the tip: a newer `main`
+      replaces it, and the swap never puts in a build `main` moved past
+      (the person, 2026-10-27: an update that isn't the newest can't be).
 - [x] Stable reads `origin`'s tags only; T3's share the repository.
 - [x] The web draws upstream's pill, notes, toast and words. A nightly is a
       day's merges, as T3's are. Two substitutes: the count on upstream's

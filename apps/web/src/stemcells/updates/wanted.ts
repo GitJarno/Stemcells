@@ -13,8 +13,8 @@ export const useUpdateWanted = create<{
   readonly wanted: boolean;
   /** The bridge step under way. */
   readonly taking: UpdateAct | null;
-  /** The last step that went through, for this want. */
-  readonly taken: UpdateAct | null;
+  /** The last step that went through for this want, and the version it took. */
+  readonly taken: { readonly act: UpdateAct; readonly version: string | null } | null;
 }>(() => ({ wanted: false, taking: null, taken: null }));
 
 export function wantUpdate(): void {
@@ -22,15 +22,18 @@ export function wantUpdate(): void {
 }
 
 /**
- * One bridge step at a time: the update's state can say the next step is due before the last
- * one's call returns, and the desktop refuses a step while another runs. A step that doesn't go
- * through, or comes due again after it did, drops the want: the column offers its button again
- * rather than trying on its own.
+ * One bridge step at a time: the desktop refuses a step while another runs. A step that fails,
+ * or comes due again for the version it took, drops the want, so the column offers its button
+ * rather than retrying; a newer main is a new version, and the one click carries on to it.
  */
-export async function takeUpdateStep(act: UpdateAct, run: () => Promise<boolean>): Promise<void> {
+export async function takeUpdateStep(
+  act: UpdateAct,
+  version: string | null,
+  run: () => Promise<boolean>,
+): Promise<void> {
   const { taking, taken } = useUpdateWanted.getState();
   if (taking !== null) return;
-  if (taken === act) {
+  if (taken?.act === act && taken.version === version) {
     useUpdateWanted.setState({ wanted: false });
     return;
   }
@@ -40,7 +43,7 @@ export async function takeUpdateStep(act: UpdateAct, run: () => Promise<boolean>
     through = await run();
   } finally {
     useUpdateWanted.setState(
-      through ? { taking: null, taken: act } : { taking: null, wanted: false },
+      through ? { taking: null, taken: { act, version } } : { taking: null, wanted: false },
     );
   }
 }

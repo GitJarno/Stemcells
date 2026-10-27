@@ -1031,8 +1031,12 @@ seam, above), with git and `install-app`:
   with the version its last commit carries.
 - **Download**: `install-app --stage` builds that commit in a worktree of
   the updater's own, in the app's data folder, while the app runs. A built
-  update waits for its restart however far `main` moves on.
-- **Install**: `install-app --swap-in`, on its own, puts the build in once
+  update stands only while it is the track's tip: once `main` moves on,
+  the next check drops it and offers the newest, with every change since
+  the running build, and the one click to Update carries on to it.
+- **Install**: the swap fetches first and refuses a build `main` has moved
+  past since the last check, so what goes in is always the newest.
+  `install-app --swap-in`, on its own, puts the build in once
   the app has quit, and opens whichever app it ends with; the app quits
   itself, as electron-updater's does.
 

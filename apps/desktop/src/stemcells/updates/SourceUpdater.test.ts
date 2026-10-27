@@ -379,18 +379,39 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
     ),
   );
 
-  it.live("keeps a finished build for its restart while main moves on", () =>
+  it.live("offers the newest once main moves past a finished build, never the older one", () =>
     withFixture({}, (fixture) =>
       Effect.gen(function* () {
         const updates = yield* DesktopUpdates.DesktopUpdates;
         yield* updates.configure;
         yield* reaching("available", updates.check("test"));
-        const built = yield* reaching("downloaded", updates.download);
+        yield* reaching("downloaded", updates.download);
 
         git(fixture.work, "commit", "-q", "--allow-empty", "-m", "Merged after the build (#5)");
-        const later = yield* reaching("downloaded", updates.check("poll"));
-        assert.equal(later.downloadedVersion, built.downloadedVersion);
-        assert.equal(later.releaseNotes.flatMap((note) => note.items).length, 3);
+        const later = yield* reaching("available", updates.check("poll"));
+        assert.equal(later.availableVersion, nightlyOf(fixture, "HEAD"));
+        assert.isNull(later.downloadedVersion);
+        assert.equal(later.releaseNotes.flatMap((note) => note.items).length, 4);
+        assert.isFalse(NodeFS.existsSync(NodePath.join(fixture.updates, "staged")));
+      }),
+    ),
+  );
+
+  it.live("never swaps in a build main moved past since the last check", () =>
+    withFixture({}, (fixture, quits) =>
+      Effect.gen(function* () {
+        const updates = yield* DesktopUpdates.DesktopUpdates;
+        yield* updates.configure;
+        yield* reaching("available", updates.check("test"));
+        yield* reaching("downloaded", updates.download);
+
+        git(fixture.work, "commit", "-q", "--allow-empty", "-m", "Merged while it waited (#5)");
+        const installed = yield* updates.install;
+        assert.equal(installed.state.errorContext, "install");
+        assert.equal(quits.count, 0);
+        assert.isFalse(NodeFS.existsSync(NodePath.join(fixture.updates, "staged")));
+        const next = yield* reaching("available", updates.check("poll"));
+        assert.equal(next.availableVersion, nightlyOf(fixture, "HEAD"));
       }),
     ),
   );
