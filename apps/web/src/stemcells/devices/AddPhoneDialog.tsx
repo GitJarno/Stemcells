@@ -117,7 +117,7 @@ const STEP_COPY: Record<
     failed: "Tailscale didn't put this computer on your tailnet.",
   },
   "port-taken": {
-    hint: "Tailscale's HTTPS port already serves something else on this computer. Give Stemcells another under Tailscale HTTPS in Settings › Connections.",
+    hint: "Tailscale's HTTPS port already serves something else on this computer. Give Stemcells another under Tailscale HTTPS in Settings › Sharing & access.",
     action: null,
     failed: "",
   },
@@ -279,7 +279,7 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
         type: "error",
         title: "Couldn't turn it on",
         description:
-          error instanceof Error ? error.message : "Try again from Settings › Connections.",
+          error instanceof Error ? error.message : "Try again from Settings › Sharing & access.",
       });
     }
     setBusy(false);
@@ -495,8 +495,8 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
           Wi-Fi only
         </Button>
         {current === "port-taken" ? (
-          <Button render={<Link to="/settings/connections" />} onClick={onDone}>
-            Open Connections
+          <Button render={<Link to="/settings/access" />} onClick={onDone}>
+            Open Sharing &amp; access
           </Button>
         ) : null}
         {copy?.action != null || (current === "not-serving" && waitingOnPerson) ? (

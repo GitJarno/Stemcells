@@ -78,7 +78,7 @@ export async function linkMachines(
   const hereAt =
     isLoopbackAddress(thereAt.url) && "url" in hereLocal ? hereLocal.url : hereOnNetwork;
   if (hereAt === null)
-    return `${there.label} has no way to reach this machine: turn on network access in Settings › Connections.`;
+    return `${there.label} has no way to reach this machine: turn on network access in Settings › Sharing & access.`;
 
   const undo = () =>
     Promise.all([

@@ -172,8 +172,8 @@ export function DevicesPanel() {
         cloud. Cells on two computers see each other only when you switch them on; a message from
         another computer can&apos;t approve anything here. Addresses, permissions and network access
         are in{" "}
-        <Link to="/settings/connections" className="underline underline-offset-2">
-          Connections
+        <Link to="/settings/access" className="underline underline-offset-2">
+          Sharing &amp; access
         </Link>
         .
       </p>
