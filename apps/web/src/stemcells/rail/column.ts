@@ -2,9 +2,11 @@
  * What the left column shows when it shows: the Cells' column (the default, which also keeps
  * which stage is open), the rail (its narrowest) or upstream's list, for what only it does
  * (projects, environments). Hidden is upstream's own open and closed, so its shortcut and
- * button hide and show whichever this says. Remembered in this browser.
+ * button hide and show whichever this says. Remembered in this browser, by its lead window.
  */
 import { create } from "zustand";
+
+import { windowsBridge } from "../windows/bridge";
 
 export type ColumnWidth = "cells" | "rail" | "list";
 
@@ -19,6 +21,16 @@ const PROJECT_STORAGE_KEY = "stemcells.leftColumn.project";
 export function parseColumnWidth(raw: string | null): ColumnWidth {
   return raw === "rail" || raw === "list" ? raw : "cells";
 }
+
+/**
+ * A window torn off or opened beside the lead window starts on the rail, whatever was
+ * remembered, and its own changes stay its own: the remembered width is the lead window's.
+ */
+export function startingWidth(stored: string | null, leads: boolean): ColumnWidth {
+  return leads ? parseColumnWidth(stored) : "rail";
+}
+
+const leadsAtStart = windowsBridge()?.boot.lead ?? true;
 
 /** The stages in the line's order, the pins last: the order a swipe goes through them. */
 export const COLUMN_STAGES: ReadonlyArray<ColumnStage> = [
@@ -61,12 +73,12 @@ interface ColumnStore {
 }
 
 export const useColumnStore = create<ColumnStore>((set) => ({
-  width: parseColumnWidth(readStored(COLUMN_STORAGE_KEY)),
+  width: startingWidth(readStored(COLUMN_STORAGE_KEY), leadsAtStart),
   stage: parseColumnStage(readStored(STAGE_STORAGE_KEY)),
   project: readStored(PROJECT_STORAGE_KEY) || null,
   setWidth: (width) => {
     set({ width });
-    store(COLUMN_STORAGE_KEY, width);
+    if (leadsAtStart) store(COLUMN_STORAGE_KEY, width);
   },
   setStage: (stage) => {
     set({ stage });
