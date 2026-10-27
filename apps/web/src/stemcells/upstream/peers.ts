@@ -13,6 +13,7 @@ export type { ThreadId } from "@t3tools/contracts";
 export { default as ChatMarkdown } from "../../components/ChatMarkdown";
 export { findRevealRef } from "../../components/chat/markdownFindContext";
 export { MessageCopyButton } from "../../components/chat/MessageCopyButton";
+export { MessageAuthorHeading } from "../../components/chat/TimelineRowParts";
 export { TimelineRowActivityCtx, TimelineRowCtx } from "../../components/chat/timelineRowContext";
 export { formatChatTimestampTooltip, formatDayAwareTimestamp } from "../../timestampFormat";
 

@@ -39,7 +39,7 @@ describe("the composer's dock and upstream", () => {
       "[data-chat-composer-form]>[data-slot=composer-banner-attachment]",
     );
     // A banner's outline is one variable, its tone another.
-    expect(composerBanner).toContain("data-composer-banner-surface={placement}");
+    expect(composerBanner).toContain('data-composer-banner-surface="attached"');
     expect(composerBanner).toContain(
       "before:border before:border-(--chat-composer-attached-outline)",
     );

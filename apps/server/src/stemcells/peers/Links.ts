@@ -62,7 +62,7 @@ export class PeerRefusal extends Schema.TaggedError<PeerRefusal>()("PeerRefusal"
   reason: Schema.String,
 }) {}
 
-/** A link as Settings › Devices shows it. */
+/** A link as Settings › Your devices shows it. */
 export interface LinkView {
   readonly environmentId: string;
   readonly label: string;

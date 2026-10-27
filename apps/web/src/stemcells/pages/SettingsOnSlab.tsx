@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDownIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { SettingsSidebarNav, useSettingsSections } from "../upstream/settings";
+import { SETTINGS_SECTIONS, SettingsSidebarNav } from "../upstream/settings";
 import {
   Button,
   Menu,
@@ -39,14 +39,17 @@ export function SettingsOnSlab(props: {
   );
 }
 
+const DETAIL_PAGE_PARENTS: Readonly<Record<string, string>> = {
+  "/settings/diagnostics": "/settings/maintenance",
+  "/settings/open-source-licenses": "/settings/about",
+};
+
 /** The list, folded: the section you are in, and the others to go to. */
 function SectionMenu(props: { pathname: string }) {
-  const sections = useSettingsSections();
   const navigate = useNavigate();
-  // The licenses are a page of General's, as upstream's list lights them.
-  const pathname =
-    props.pathname === "/settings/open-source-licenses" ? "/settings/general" : props.pathname;
-  const current = sections.find(
+  // A detail page lights the page that links to it, as upstream's list does.
+  const pathname = DETAIL_PAGE_PARENTS[props.pathname] ?? props.pathname;
+  const current = SETTINGS_SECTIONS.find(
     (section) => pathname === section.to || pathname.startsWith(`${section.to}/`),
   );
   return (
@@ -58,11 +61,11 @@ function SectionMenu(props: { pathname: string }) {
       <MenuPopup align="start">
         <MenuRadioGroup
           value={current?.to ?? null}
-          onValueChange={(to: (typeof sections)[number]["to"]) =>
+          onValueChange={(to: (typeof SETTINGS_SECTIONS)[number]["to"]) =>
             void navigate({ to, hash: "", replace: true, hashScrollIntoView: false })
           }
         >
-          {sections.map((section) => (
+          {SETTINGS_SECTIONS.map((section) => (
             <MenuRadioItem key={section.to} value={section.to}>
               {section.label}
             </MenuRadioItem>

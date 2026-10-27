@@ -9,7 +9,7 @@ import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Wire from "./link.ts";
 import * as Links from "./Links.ts";
 
-// The person's routes, on their own session: GET /links (Settings › Devices), POST /invite,
+// The person's routes, on their own session: GET /links (Settings › Your devices), POST /invite,
 // /link and /unlink (who may reach this environment, so upstream's access:write, as pairing
 // a device asks). A linked environment's routes, on the token this one minted for it, and
 // nothing else: POST /peer/hello, /peer/roster, /peer/deliver, /peer/goodbye.

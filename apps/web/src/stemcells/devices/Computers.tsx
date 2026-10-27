@@ -20,7 +20,7 @@ import {
 } from "../upstream/machines";
 import { Switch } from "../upstream/settings";
 
-// Settings › Devices, the computers (stemcells/tasks/devices.md): the ones this app reaches, the
+// Settings › Your devices, the computers (stemcells/tasks/devices.md): the ones this app reaches, the
 // way to forget each, and whether this one's Cells and theirs see each other
 // (stemcells/tasks/peers.md, "Across environments"). A link is made here, both ways in one
 // action; ended here or from the other computer, it ends on both.
@@ -54,7 +54,7 @@ function cellsOf(link: MachineLink | undefined, nowMs: number): string {
 }
 
 /**
- * The computers' rows of Settings › Devices. `alone` says the page has no
+ * The computers' rows of Settings › Your devices. `alone` says the page has no
  * other device to show, so with no computer either, this says what Add does.
  */
 export function ComputerRows({ alone }: { readonly alone: boolean }) {

@@ -64,7 +64,7 @@ describe("linking this machine with another", () => {
 
   it("asks for network access when the other machine has no way to reach this one", async () => {
     setup({ here: "http://127.0.0.1:3773", there: "http://studio.tail.example:3773" });
-    expect(await linkMachines(here, there, null)).toContain("Settings › Connections");
+    expect(await linkMachines(here, there, null)).toContain("Settings › Sharing & access");
     expect(calls.made).toEqual([]);
   });
 

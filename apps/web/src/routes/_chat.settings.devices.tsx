@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DevicesPanel } from "../stemcells/devices/DevicesPage";
+import { DevicesSettingsPanel } from "../components/settings/IntegrationsSettings";
 
 export const Route = createFileRoute("/_chat/settings/devices")({
-  component: DevicesPanel,
+  component: DevicesSettingsPanel,
 });

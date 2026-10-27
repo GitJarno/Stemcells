@@ -44,7 +44,7 @@ describe("a chat paints nothing over the slate", () => {
 
   it("a pane's chat is upstream's inset, its ground under its grain", () => {
     expect(threadRouteView).toMatch(
-      /<SidebarInset\s[^>]*>\s*<BackgroundThreadContext value=\{background\}>\{view\}<\/BackgroundThreadContext>\s*<\/SidebarInset>/,
+      /<SidebarInset\s[^>]*>\s*<BackgroundThreadContext value=\{background\}>\{view\}<\/BackgroundThreadContext>\s*\{background \? null : redirect\}\s*<\/SidebarInset>/,
     );
     expect(sidebar).toMatch(
       /<main\s+className=\{cn\(\s*"relative flex min-w-0 w-full flex-1 flex-col bg-background surface-grain",[\s\S]*?\)\}\s+data-slot="sidebar-inset"/,

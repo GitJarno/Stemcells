@@ -12,8 +12,10 @@ import { describe, expect, it } from "vite-plus/test";
 import settingsLayout from "../../../components/settings/settingsLayout.tsx?raw";
 import settingsPanels from "../../../components/settings/SettingsPanels.tsx?raw";
 import * as Upstream from "../../../components/settings/settingsSearch";
+import { STEMCELLS_SETTINGS_LABELS } from "../../pages/settingsPages";
 import {
   filterAvailableSettingsSearchItems,
+  SETTINGS_NAV_GROUPS,
   searchableSetting,
   searchSettings,
 } from "./settingsSearch";
@@ -75,6 +77,26 @@ describe("Settings never offers upstream's privacy row", () => {
     expect(searchableSetting("app-version")).toEqual(Upstream.searchableSetting("app-version"));
     expect(settingsPanels).toMatch(
       /<SettingsRow\s*\{\.\.\.searchableSetting\("privacy-policy"\)\}/,
+    );
+  });
+});
+
+describe("Settings lists our pages in upstream's groups", () => {
+  // Upstream's sidebar lists only what its groups name, and once took a path of ours for a
+  // page of its own: each of our pages stands in the list once, beside all of upstream's.
+  it("every page of ours, once, and every page of upstream's", () => {
+    const listed = SETTINGS_NAV_GROUPS.flatMap((group) => group.paths);
+    for (const path of Object.keys(STEMCELLS_SETTINGS_LABELS)) {
+      expect(
+        listed.filter((page) => page === path),
+        path,
+      ).toHaveLength(1);
+    }
+    for (const path of Upstream.SETTINGS_NAV_GROUPS.flatMap((group) => group.paths)) {
+      expect(listed, path).toContain(path);
+    }
+    expect(SETTINGS_NAV_GROUPS.map((group) => group.heading)).toEqual(
+      Upstream.SETTINGS_NAV_GROUPS.map((group) => group.heading),
     );
   });
 });

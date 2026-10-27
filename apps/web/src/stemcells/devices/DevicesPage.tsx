@@ -29,10 +29,10 @@ import { ComputerRows } from "./Computers";
 import { deviceKind, deviceName } from "./devices";
 import { turnOffTailnet, useTailnet } from "./tailnet";
 
-// Settings › Devices (stemcells/tasks/devices.md): the person's devices in
+// Settings › Your devices (stemcells/tasks/devices.md): the person's devices in
 // one list, the computers this app reaches and the phones, browsers and
 // computers that reach this one, each with its way in (Add) and its way out
-// (Remove). Settings › Connections, upstream's, keeps the details.
+// (Remove). Upstream's Environments and Sharing & access keep the details.
 
 function seenLabel(device: Device, nowMs: number) {
   if (device.connected) return "online";
@@ -172,8 +172,8 @@ export function DevicesPanel() {
         cloud. Cells on two computers see each other only when you switch them on; a message from
         another computer can&apos;t approve anything here. Addresses, permissions and network access
         are in{" "}
-        <Link to="/settings/connections" className="underline underline-offset-2">
-          Connections
+        <Link to="/settings/access" className="underline underline-offset-2">
+          Sharing &amp; access
         </Link>
         .
       </p>

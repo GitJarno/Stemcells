@@ -231,7 +231,7 @@ export function DiskSettingsPanel() {
                   {finding.kind === "worktrees" ? (
                     <>
                       {" · "}
-                      <Link to="/settings/storage" className="underline underline-offset-2">
+                      <Link to="/settings/worktrees" className="underline underline-offset-2">
                         Worktree cleanup
                       </Link>
                     </>

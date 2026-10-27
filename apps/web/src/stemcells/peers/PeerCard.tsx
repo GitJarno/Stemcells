@@ -8,6 +8,7 @@ import {
   findRevealRef,
   formatChatTimestampTooltip,
   formatDayAwareTimestamp,
+  MessageAuthorHeading,
   MessageCopyButton,
   type MessageRow,
   threadIdOf,
@@ -64,6 +65,10 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
         className="sc-peer-card"
         aria-label={`${name}${sender.machine === null ? "" : ` on ${machine}`} ${WAY[note.kind]}`}
       >
+        {/* As upstream's rows have: a screen reader moves between messages by their headings. */}
+        <MessageAuthorHeading>
+          {sender.machine === null ? name : `${name} on ${machine}`}
+        </MessageAuthorHeading>
         <header className="sc-peer-head">
           {sender.machine === null ? (
             <CellDoor

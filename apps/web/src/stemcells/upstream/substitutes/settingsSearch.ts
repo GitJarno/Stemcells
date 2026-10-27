@@ -1,8 +1,9 @@
-// Replaces `components/settings/settingsSearch.ts` (`plugin.ts`). Two upstream rows keep their
-// place in its panels but are never offered, and search, the palette's too, skips both:
-// "Collapse composer on scroll" has nothing to turn on (`settingsSearch.css` hides it), and
-// "Privacy policy" accounts for usage data Stemcells never sends (`seams.md`, No telemetry).
+// Replaces `components/settings/settingsSearch.ts` (`plugin.ts`). Search, the palette's too,
+// never offers "Collapse composer on scroll" (nothing to turn on; `settingsSearch.css` hides it)
+// or "Privacy policy" (usage data Stemcells never sends; `seams.md`, No telemetry). Our own
+// pages stand in its sidebar's groups, each where `settingsPages.ts` places it.
 import * as Upstream from "../../../components/settings/settingsSearch";
+import { STEMCELLS_SETTINGS_NAV_AFTER } from "../../pages/settingsPages";
 import "./settingsSearch.css";
 
 export * from "../../../components/settings/settingsSearch";
@@ -38,3 +39,19 @@ export function filterAvailableSettingsSearchItems(
     (item) => !NEVER_OFFERED.has(item.id),
   );
 }
+
+export const SETTINGS_NAV_GROUPS: typeof Upstream.SETTINGS_NAV_GROUPS = (() => {
+  const groups = Upstream.SETTINGS_NAV_GROUPS.map((group) => ({
+    ...group,
+    paths: [...group.paths],
+  }));
+  for (const [path, after] of Object.entries(STEMCELLS_SETTINGS_NAV_AFTER) as Array<
+    [keyof typeof STEMCELLS_SETTINGS_NAV_AFTER, string]
+  >) {
+    const group = groups.find((each) => each.paths.some((page) => page === after)) ?? groups.at(-1);
+    if (group === undefined) continue;
+    const index = group.paths.findIndex((page) => page === after);
+    group.paths.splice(index === -1 ? group.paths.length : index + 1, 0, path);
+  }
+  return groups;
+})();

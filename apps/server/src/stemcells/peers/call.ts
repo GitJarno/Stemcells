@@ -7,7 +7,7 @@ import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
 import { PEER_BODY_MOST, PEERS_PATH } from "./link.ts";
 
 // One server calling a linked one's peer route, with the token that one
-// minted for it. The address is the person's (Settings › Devices), so the call
+// minted for it. The address is the person's (Settings › Your devices), so the call
 // follows no redirect, the bearer token goes nowhere else, and the answer is
 // read no further than a peer route ever sends.
 
