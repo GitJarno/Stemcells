@@ -142,17 +142,31 @@ describe("a hand catching the strip as it settles", () => {
 describe("which pages stay mounted", () => {
   const tabs = ["a", "b", "c", "d", "e", "f", "g"];
 
-  it("the active page and those either side", () => {
-    expect(mountedTabs(tabs, "d", "d", ["d"])).toEqual(["c", "d", "e"]);
-    expect(mountedTabs(tabs, "a", "a", ["a"])).toEqual(["a", "b"]);
+  it("the active page and two either side", () => {
+    expect(mountedTabs(tabs, "d", "d", ["d"])).toEqual(["b", "c", "d", "e", "f"]);
+    expect(mountedTabs(tabs, "a", "a", ["a"])).toEqual(["a", "b", "c"]);
   });
 
   it("and the last few visited, so a swipe back finds them as they were", () => {
-    expect(mountedTabs(tabs, "g", "g", ["g", "a", "d"])).toEqual(["a", "d", "f", "g"]);
+    expect(mountedTabs(tabs, "g", "g", ["g", "a", "d"])).toEqual(["a", "d", "e", "f", "g"]);
   });
 
   it("the active page at once; its new neighbours once the turn has settled in", () => {
-    expect(mountedTabs(tabs, "e", "d", ["e", "d"])).toEqual(["c", "d", "e"]);
+    expect(mountedTabs(tabs, "e", "d", ["e", "d"])).toEqual(["b", "c", "d", "e", "f"]);
+  });
+
+  // The pages that become a turn's neighbours mount after it, in a render a
+  // busy stream can hold back; a second swipe can set off before then.
+  it("every page a second swipe can reach before the first has settled in", () => {
+    tabs.forEach((settled, at) => {
+      const first = reach(at, tabs.length);
+      for (const heading of [first.lo, first.hi]) {
+        const second = reach(heading, tabs.length);
+        expect(mountedTabs(tabs, tabs[heading]!, settled, [settled])).toEqual(
+          expect.arrayContaining([tabs[second.lo], tabs[second.hi]]),
+        );
+      }
+    });
   });
 
   it("the visited list keeps the most recent few, of tabs that still exist", () => {

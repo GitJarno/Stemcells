@@ -132,6 +132,14 @@ export function releaseVelocity(
 /** How many tabs, besides those beside the active one, stay mounted after a visit. */
 export const KEEP_VISITED = 4;
 
+/**
+ * How many pages either side of the settled tab stay mounted: two, so the
+ * page a second quick swipe reaches (one past where the first is going)
+ * was mounted a turn earlier, its chats loaded and laid out, and never
+ * mounts as it slides in.
+ */
+const MOUNTED_NEAR = 2;
+
 /** `visited` (most recent first) after a visit to `tabId`, keeping only `tabIds`. */
 export function visit(
   visited: readonly string[],
@@ -143,7 +151,7 @@ export function visit(
 }
 
 /**
- * The tabs whose pages are mounted: the active one, those either side of
+ * The tabs whose pages are mounted: the active one, two either side of
  * `settled` (the active tab once a turn has settled in), and the last few
  * visited, so a swipe back finds its chats as it left them. In a stable
  * order, so a page joining never moves the others in the document.
@@ -158,7 +166,7 @@ export function mountedTabs(
   if (active !== null) mounted.add(active);
   const index = settled === null ? -1 : tabIds.indexOf(settled);
   if (index >= 0) {
-    for (const near of [index - 1, index, index + 1]) {
+    for (let near = index - MOUNTED_NEAR; near <= index + MOUNTED_NEAR; near++) {
       const id = tabIds[near];
       if (id !== undefined) mounted.add(id);
     }

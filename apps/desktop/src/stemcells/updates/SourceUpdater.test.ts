@@ -38,6 +38,9 @@ case "$1" in
   --stage)
     echo "==> Installing dependencies"
     echo "[desktop-artifact] Staging release app..."
+    mkdir -p node_modules/dep release
+    echo "module.exports = 1" > node_modules/dep/index.js
+    echo "dmg" > release/Stemcells.dmg
     mkdir -p "$2/Stemcells.app"
     echo "$4" > "$2/Stemcells.app/version"
     echo "Stemcells is built at $2/Stemcells.app." ;;
@@ -357,6 +360,12 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
         assert.equal(downloaded.downloadedVersion, tip);
         const built = NodePath.join(fixture.updates, "staged/Stemcells.app/version");
         assert.equal(NodeFS.readFileSync(built, "utf8").trim(), tip);
+        // What the build made leaves the worktree once the app is staged;
+        // the install-app the swap runs stays.
+        const worktree = NodePath.join(fixture.updates, "source");
+        assert.isFalse(NodeFS.existsSync(NodePath.join(worktree, "node_modules")));
+        assert.isFalse(NodeFS.existsSync(NodePath.join(worktree, "release")));
+        assert.isTrue(NodeFS.existsSync(NodePath.join(worktree, "stemcells/scripts/install-app")));
 
         const installed = yield* updates.install;
         assert.isTrue(installed.accepted);

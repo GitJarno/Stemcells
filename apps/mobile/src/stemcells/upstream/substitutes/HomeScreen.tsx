@@ -11,7 +11,8 @@ import { ThreadListFilters } from "../../../features/home/ThreadListFilters";
 import { askiChatsOf } from "../../aski/chat";
 import { CopyLayer } from "../../home/CopyLayer";
 import { EmptyTab } from "../../home/EmptyTab";
-import { HomeInFront, HomeTabsContext, tabChoice, useMinute } from "../../home/state";
+import { HomeFront } from "../../home/HomeFront";
+import { HomeTabsContext, tabChoice, useMinute } from "../../home/state";
 import { countsOf, HOME_TABS, type HomeTab, inTab } from "../../home/tabs";
 import { movedByHand } from "../../line/kit";
 import { lineApplies } from "../../line/line";
@@ -45,9 +46,9 @@ export function HomeScreen(props: Props) {
   useKeepReading(props.threads, now, inFront && tabbed);
   if (!tabbed)
     return (
-      <HomeInFront value={inFront}>
+      <HomeFront inFront={inFront}>
         <Upstream.HomeScreen {...props} />
-      </HomeInFront>
+      </HomeFront>
     );
 
   const aski = askiChatsOf(props.threads);
@@ -111,7 +112,7 @@ export function HomeScreen(props: Props) {
       (environment) => environment.environmentId === props.selectedEnvironmentId,
     );
     return (
-      <HomeInFront value={inFront}>
+      <HomeFront inFront={inFront}>
         <LineHome
           cells={cells}
           readings={readings}
@@ -140,12 +141,12 @@ export function HomeScreen(props: Props) {
           pending={props.pendingTasks.length}
           renderList={list}
         />
-      </HomeInFront>
+      </HomeFront>
     );
   }
 
   return (
-    <HomeInFront value={inFront}>
+    <HomeFront inFront={inFront}>
       <Tabs
         cells={cells.filter(inView)}
         now={now}
@@ -159,7 +160,7 @@ export function HomeScreen(props: Props) {
         )}
         pending={props.pendingTasks.length}
       />
-    </HomeInFront>
+    </HomeFront>
   );
 }
 

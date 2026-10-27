@@ -4,6 +4,7 @@
  * the usage page's price table and the person's price settings. Read only: nothing here
  * writes, and no transcript is opened.
  */
+import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
@@ -45,6 +46,7 @@ const usage = (field: string) => `json_extract(turn.payload_json, '$.turnTokenUs
 /**
  * Every thread's turns, summed by model and speed, and when the first counted
  * turn started. One indexed pass over the turns: the page asks once as it opens.
+ * On SQLite's reader, so a cold pass never holds the server's event loop.
  */
 export const readSpendRows = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient;
@@ -101,7 +103,7 @@ export const readSpendRows = Effect.gen(function* () {
       min(started_at) AS "firstStartedAt"
     FROM counted
     GROUP BY thread_id, model, fast
-  `;
+  `.pipe(NodeSqliteClient.readOnly);
   const firstStarted = rows
     .map((row) => row.firstStartedAt)
     .filter((at): at is string => at !== null)

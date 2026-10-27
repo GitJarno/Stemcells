@@ -32,9 +32,14 @@ describe("the composer line's contracts with upstream", () => {
   });
 
   it("the line and the plate share a block that stacks its own layers, so the halo lies under both", () => {
-    // glow.css draws the halo as that block's ::before at z-index -1: under
-    // the line and the plate only while the block is a stacking context, and
-    // the ::before is free only while upstream draws nothing there.
+    // glow.css finds the block as the stack's child that isn't the draft's
+    // headline (`.bottom-full`).
+    expect(chatView).toMatch(
+      /data-chat-composer-stack="true"[^>]*>\s*\{isDraftHeroState \? \([\s\S]*?\) : null\}\s*<div\s+ref=\{draftHeroComposerAnchorRef\}/,
+    );
+    // It draws the halo as the block's ::before at z-index -1: under the line
+    // and the plate only while the block stacks its own layers and upstream
+    // draws nothing in its ::before.
     const block = chatView.slice(chatView.indexOf("ref={draftHeroComposerAnchorRef}"));
     expect(block).toMatch(
       /^ref=\{draftHeroComposerAnchorRef\}\s*className="relative z-10"[\s\S]{0,400}?>\s*<Stemcells\.CellComposerLine \/>\s*<ComposerSurface\.Shell\b/,

@@ -64,17 +64,28 @@
   opacity: 0;
 }
 
-/* The bob is a sine: each half of its period is a sine's half wave. */
+/* The bob steps a sprite pixel at a time, up, level, down, level, as the
+   Cell's own frames do. A glide drew every frame for as long as a Cell
+   waited, 120 a second on a fast display, in each place its mark stands;
+   stepped, the compositor draws four times a bob. Off stage it rests. */
 .ask-mark[data-active="true"] {
-  animation: sc-ask-bob calc(var(--sc-timing-bob) / 2) cubic-bezier(0.37, 0, 0.63, 1) infinite
-    alternate;
+  animation: sc-ask-bob var(--sc-timing-bob) step-end infinite;
+}
+
+[data-stemcells-page][inert] .ask-mark {
+  animation-play-state: paused;
 }
 
 @keyframes sc-ask-bob {
-  from {
+  0%,
+  100% {
     translate: 0 calc(var(--ask-pixel) * -1);
   }
-  to {
+  25%,
+  75% {
+    translate: 0 0;
+  }
+  50% {
     translate: 0 var(--ask-pixel);
   }
 }

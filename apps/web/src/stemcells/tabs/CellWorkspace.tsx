@@ -74,6 +74,7 @@ import {
   sharesOf,
   showRoute,
   type CellRef,
+  type Column,
   type Pane,
   type Tab,
   type Workspace,
@@ -584,13 +585,15 @@ function TabPage(props: {
   // counted so that a hand-over from one chat to another never drops it.
   const [maximized, setMaximized] = useState(0);
   const rowShares = sharesOf(tab.rows);
+  const holdsFocus = (column: Column) => column.panes.some((pane) => pane.id === tab.focusedPaneId);
   return (
     <PanelMaximizedContext value={(on) => setMaximized((count) => count + (on ? 1 : -1))}>
       {/* Look: the focused Cell and its workbench take the page (stemcells/workbench). */}
       <Look tab={tab} onStage={props.onStage} workbench={workbench} onFocus={props.onFocus} />
       <EmptyWorkbenchClose tab={tab} onStage={props.onStage} workbench={workbench} />
       {/* Each row, column and pane grows by its share; between each two, a border resizes them.
-          Its attributes say what `:has()` would find, which restyled it all (`workspace.css`). */}
+          Its attributes say what `:has()` would find, which restyled it all (`workspace.css`):
+          the row and column holding the focused pane say so, for Look (`look.css`). */}
       <div
         ref={props.onStage ? props.gridRef : undefined}
         data-stemcells-grid=""
@@ -612,6 +615,7 @@ function TabPage(props: {
               ) : null}
               <div
                 data-stemcells-share=""
+                data-holds-focus={row.columns.some(holdsFocus) ? "" : undefined}
                 className={cn("flex min-h-0 flex-1", rowIndex > 0 && "border-t")}
                 style={{ flexGrow: rowShares[rowIndex] }}
               >
@@ -630,6 +634,7 @@ function TabPage(props: {
                       ) : null}
                       <div
                         data-stemcells-share=""
+                        data-holds-focus={holdsFocus(column) ? "" : undefined}
                         className={cn(
                           "flex min-w-0 flex-1 flex-col",
                           columnIndex > 0 && "border-l",
