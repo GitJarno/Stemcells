@@ -70,7 +70,6 @@ describe("messages between Cells, from one chat", () => {
       kind: "reply",
       answers: "Can I take migration 0043?",
       gist: "Yes, take it.",
-      rest: "I'm on 0044.",
     });
     expect(notes.has("m2")).toBe(false);
   });

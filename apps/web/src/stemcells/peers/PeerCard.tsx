@@ -11,6 +11,7 @@ import {
   MessageAuthorHeading,
   MessageCopyButton,
   type MessageRow,
+  shouldCollapseUserMessage,
   threadIdOf,
   TimelineRowActivityCtx,
   TimelineRowCtx,
@@ -19,16 +20,16 @@ import {
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { CellDoor } from "./CellDoor";
 import { useMachineLabel } from "../upstream/machines";
-import { gistOf, type Kind, type Sender } from "./exchange";
+import { bodyOf, type Kind, type Sender } from "./exchange";
 import { cellNameOf } from "../cell/name";
 import { isAskiChat, peerNameOf } from "./names";
 import { usePeerNote } from "./PeerExchange";
 
 import "./peers.css";
 
-// A message another Cell sent this one (stemcells/tasks/peers.md, decision 4): mail the Cell
-// received, so it never wears the person's bubble. A sender here opens its chat; one on a
-// linked machine is named with its machine and opens nothing.
+// A message another Cell sent this one (stemcells/tasks/peers.md, decision 4): a note in the
+// transcript's own column and type, under its sender's name, never the person's bubble. A sender
+// here opens its chat; one on a linked machine is named with its machine and opens nothing.
 
 const WAY: Readonly<Record<Kind, string>> = {
   ask: "asks you",
@@ -45,98 +46,84 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
   // A Cell elsewhere goes by the name its frame gave it: its own tab's.
   const name = sender.machine === null ? peerNameOf(sender.cell, shell) : cellNameOf(sender.cell);
   const aski = sender.machine === null && isAskiChat(sender.cell, shell);
-  const note = usePeerNote(message.id) ?? {
-    kind: "says" as const,
-    answers: null,
-    answered: false,
-    ...gistOf(message.text),
-  };
+  const note = usePeerNote(message.id) ?? { kind: "says" as const, answers: null, answered: false };
+  const text = bodyOf(message.text);
+  const long = shouldCollapseUserMessage(text);
   const [open, setOpen] = useState(false);
   const revealRef = findRevealRef(() => setOpen(true));
-  // Find reads the DOM, so the folded rest stays mounted, hidden, while find is open.
-  const restMounted = note.rest !== "" && (open || ctx.findActive);
-
-  const steered =
-    message.inputIntent === "steer" || message.inputIntent === "promoted_queued_to_steer";
+  const folded = long && !open;
 
   return (
-    <div className="flex flex-col items-end gap-1" data-stemcells-peer="in">
-      <article
-        className="sc-peer-card"
-        aria-label={`${name}${sender.machine === null ? "" : ` on ${machine}`} ${WAY[note.kind]}`}
+    <article
+      className="sc-peer-note px-1"
+      data-stemcells-peer="in"
+      aria-label={`${name}${sender.machine === null ? "" : ` on ${machine}`} ${WAY[note.kind]}`}
+    >
+      {/* As upstream's rows have: a screen reader moves between messages by their headings. */}
+      <MessageAuthorHeading>
+        {sender.machine === null ? name : `${name} on ${machine}`}
+      </MessageAuthorHeading>
+      <span className="sc-peer-figure">
+        {aski ? null : <SubcellMark name={sender.cell} points={1} />}
+      </span>
+      <header className="sc-peer-head text-xs">
+        {sender.machine === null ? (
+          <CellDoor
+            name={name}
+            title={shell?.title}
+            className="sc-peer-door"
+            onOpen={() => ctx.onOpenThread(threadIdOf(sender.cell))}
+          />
+        ) : (
+          <span className="sc-peer-from">
+            <span className="sc-peer-name">{name}</span> on {machine}
+          </span>
+        )}
+        {note.kind === "ask" ? <span className="flex-none">asks you</span> : null}
+        {note.kind === "ask" && note.answered ? (
+          <span className="sc-peer-answered">
+            <span aria-hidden>· </span>answered
+          </span>
+        ) : null}
+        {note.kind === "reply" ? <span className="flex-none">replied to</span> : null}
+        {note.answers === null ? null : <span className="sc-peer-re">“{note.answers}”</span>}
+        <PeerMeta row={row} />
+      </header>
+      <div
+        ref={revealRef}
+        className="sc-peer-body"
+        data-thread-find-text="true"
+        data-thread-find-fold={folded ? "" : undefined}
+        data-folded={folded ? "" : undefined}
       >
-        {/* As upstream's rows have: a screen reader moves between messages by their headings. */}
-        <MessageAuthorHeading>
-          {sender.machine === null ? name : `${name} on ${machine}`}
-        </MessageAuthorHeading>
-        <header className="sc-peer-head">
-          {sender.machine === null ? (
-            <CellDoor
-              name={name}
-              title={shell?.title}
-              onOpen={() => ctx.onOpenThread(threadIdOf(sender.cell))}
-            >
-              {aski ? null : <SubcellMark name={sender.cell} />}
-            </CellDoor>
-          ) : (
-            <span className="sc-peer-who">
-              <SubcellMark name={sender.cell} />
-              <span className="sc-peer-name">{name}</span>
-              <span className="sc-peer-way">on {machine}</span>
-            </span>
-          )}
-          <span className="sc-peer-way">{WAY[note.kind]}</span>
-          {steered ? <span className="sc-peer-way">mid-turn</span> : null}
-          {note.kind === "ask" && note.answered ? (
-            <span className="sc-peer-answered">Answered</span>
-          ) : null}
-        </header>
-        {note.answers === null ? null : (
-          <p className="sc-peer-re">
-            <span aria-hidden>↩ </span>
-            {note.answers}
-          </p>
-        )}
-        <p className="sc-peer-gist" data-thread-find-text="true">
-          {note.gist}
-        </p>
-        {note.rest === "" ? null : (
-          <>
-            {open ? null : (
-              <button
-                type="button"
-                className="sc-peer-more"
-                aria-expanded={false}
-                onClick={() => setOpen(true)}
-              >
-                {note.rest.split("\n", 1)[0]}
-              </button>
-            )}
-            {restMounted ? (
-              <div
-                ref={revealRef}
-                hidden={!open}
-                className="sc-peer-rest"
-                data-thread-find-text="true"
-              >
-                <ChatMarkdown
-                  text={note.rest}
-                  cwd={ctx.markdownCwd}
-                  threadRef={ctx.threadRef ?? undefined}
-                  lineBreaks
-                  parseRawHtml={false}
-                />
-              </div>
-            ) : null}
-          </>
-        )}
-      </article>
-      <PeerFoot row={row} />
-    </div>
+        <ChatMarkdown
+          text={text}
+          cwd={ctx.markdownCwd}
+          threadRef={ctx.threadRef ?? undefined}
+          lineBreaks
+          parseRawHtml={false}
+        />
+      </div>
+      {long ? (
+        <div className="sc-peer-fold">
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost-muted"
+            aria-expanded={open}
+            data-scroll-anchor-ignore
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? "Show less" : "Show full message"}
+          </Button>
+        </div>
+      ) : null}
+    </article>
   );
 }
 
-function PeerFoot({ row }: { readonly row: MessageRow }) {
+/** When, going back to it, copy: at the end of the name's line, shown on hover and to touch. */
+function PeerMeta({ row }: { readonly row: MessageRow }) {
   const ctx = use(TimelineRowCtx);
   const activity = use(TimelineRowActivityCtx);
   const { message } = row;
@@ -144,37 +131,42 @@ function PeerFoot({ row }: { readonly row: MessageRow }) {
   const status = row.projectedItem?.item.status;
   const failed =
     status !== undefined && status !== "completed" && status !== "pending" && status !== "waiting";
+  const steered =
+    message.inputIntent === "steer" || message.inputIntent === "promoted_queued_to_steer";
   return (
-    <div className="sc-peer-foot">
+    <span className="sc-peer-meta">
       {failed ? <span className="sc-peer-status">{status}</span> : null}
-      <Tooltip>
-        <TooltipTrigger render={<span className="tabular-nums" />}>
-          {formatDayAwareTimestamp(message.createdAt, ctx.timestampFormat)}
-        </TooltipTrigger>
-        <TooltipPopup>
-          {formatChatTimestampTooltip(message.createdAt, ctx.timestampFormat)}
-        </TooltipPopup>
-      </Tooltip>
-      {typeof turns === "number" ? (
+      <span className="sc-peer-hover">
+        {steered ? <span>mid-turn ·</span> : null}
         <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                type="button"
-                size="xs"
-                variant="ghost"
-                disabled={activity.isRevertingCheckpoint || activity.isWorking}
-                onClick={() => ctx.onRevertToTurnCount(turns, message.id)}
-                aria-label="Edit from here"
-              />
-            }
-          >
-            <Undo2Icon className="size-3" />
+          <TooltipTrigger render={<span className="tabular-nums" />}>
+            {formatDayAwareTimestamp(message.createdAt, ctx.timestampFormat)}
           </TooltipTrigger>
-          <TooltipPopup side="top">Edit from here</TooltipPopup>
+          <TooltipPopup>
+            {formatChatTimestampTooltip(message.createdAt, ctx.timestampFormat)}
+          </TooltipPopup>
         </Tooltip>
-      ) : null}
-      <MessageCopyButton text={message.text} variant="ghost" />
-    </div>
+        {typeof turns === "number" ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  disabled={activity.isRevertingCheckpoint || activity.isWorking}
+                  onClick={() => ctx.onRevertToTurnCount(turns, message.id)}
+                  aria-label="Edit from here"
+                />
+              }
+            >
+              <Undo2Icon className="size-3" />
+            </TooltipTrigger>
+            <TooltipPopup side="top">Edit from here</TooltipPopup>
+          </Tooltip>
+        ) : null}
+        <MessageCopyButton text={message.text} variant="ghost" />
+      </span>
+    </span>
   );
 }

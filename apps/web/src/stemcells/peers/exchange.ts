@@ -31,8 +31,6 @@ export interface PeerNote {
   readonly cell: string;
   readonly kind: Kind;
   readonly gist: string;
-  /** The words after the gist; empty when the gist is all of it. */
-  readonly rest: string;
   /** A reply's question, in its own gist. */
   readonly answers: string | null;
   /** An ask the other side has written back to since. */
@@ -46,13 +44,16 @@ const GIST_SLACK = 30;
 /** "Otter here." and the like: the card names the sender already. */
 const SELF_INTRODUCTION = /^(?:this is\s+)?[\p{L}\p{N}_-]+\s+here\s*[.:,—–-]\s*/iu;
 
+/** A message's words, without the greeting that names its sender. */
+export const bodyOf = (text: string): string => text.trim().replace(SELF_INTRODUCTION, "");
+
 /**
  * A message's gist and the rest: its first sentence (to `.`, `?`, `!` before
  * a space, or a line's end), cut at a word near `GIST_CAP` characters when
  * it runs long.
  */
 export function gistOf(text: string): { readonly gist: string; readonly rest: string } {
-  const words = text.trim().replace(SELF_INTRODUCTION, "");
+  const words = bodyOf(text);
   const end = /[.?!](?=\s|$)|\n/.exec(words);
   const sentenceEnd = end === null ? words.length : end.index + (end[0] === "\n" ? 0 : 1);
   if (sentenceEnd <= GIST_CAP + GIST_SLACK) {
@@ -120,7 +121,6 @@ interface Draft {
   cell: string;
   kind: Kind;
   gist: string;
-  rest: string;
   answers: string | null;
   answered: boolean;
 }
@@ -146,7 +146,7 @@ export function exchangeOf(entries: ReadonlyArray<Entry>): ReadonlyMap<string, P
         kind: "says",
         answers: null,
         answered: false,
-        ...gistOf(entry.message.text),
+        gist: gistOf(entry.message.text).gist,
       };
     } else if (entry.kind === "work" && "entry" in entry) {
       const sent = sentOf(entry.entry.structuredPayload);
@@ -158,7 +158,7 @@ export function exchangeOf(entries: ReadonlyArray<Entry>): ReadonlyMap<string, P
         kind: "says",
         answers: null,
         answered: false,
-        ...gistOf(sent.text),
+        gist: gistOf(sent.text).gist,
       };
     } else continue;
 

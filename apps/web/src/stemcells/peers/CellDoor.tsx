@@ -5,17 +5,24 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 
 import "./peers.css";
 
-/** Another Cell, named as a token in the Cell tone: a door to its chat. */
+/** Another Cell, named in the Cell tone (as a token unless told): a door to its chat. */
 export function CellDoor(props: {
   readonly name: string;
   readonly title: string | null | undefined;
   readonly onOpen: () => void;
+  readonly className?: string;
   readonly children?: ReactNode;
 }) {
   return (
     <Tooltip>
       <TooltipTrigger
-        render={<button type="button" className="sc-peer-who" onClick={props.onOpen} />}
+        render={
+          <button
+            type="button"
+            className={props.className ?? "sc-peer-who"}
+            onClick={props.onOpen}
+          />
+        }
       >
         {props.children}
         <span className="sc-peer-name">{props.name}</span>

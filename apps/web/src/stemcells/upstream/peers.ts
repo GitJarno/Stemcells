@@ -1,7 +1,8 @@
 /**
  * What messages between Cells take from upstream's chat (stemcells/tasks/peers.md, decision 4):
  * the row context every timeline row reads (environment, opening another chat, find, going back
- * to a turn), a thread's shell, the markdown a message is drawn in, and its row's time and copy.
+ * to a turn), a thread's shell, the markdown a message is drawn in and when a long one folds, and
+ * its row's time and copy.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { type EnvironmentId, ThreadId } from "@t3tools/contracts";
@@ -14,6 +15,7 @@ export { default as ChatMarkdown } from "../../components/ChatMarkdown";
 export { findRevealRef } from "../../components/chat/markdownFindContext";
 export { MessageCopyButton } from "../../components/chat/MessageCopyButton";
 export { MessageAuthorHeading } from "../../components/chat/TimelineRowParts";
+export { shouldCollapseUserMessage } from "../../components/chat/MessagesTimeline.logic";
 export { TimelineRowActivityCtx, TimelineRowCtx } from "../../components/chat/timelineRowContext";
 export { formatChatTimestampTooltip, formatDayAwareTimestamp } from "../../timestampFormat";
 

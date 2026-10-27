@@ -17,8 +17,7 @@ const sameNotes = (a: ReadonlyMap<string, PeerNote>, b: ReadonlyMap<string, Peer
       other.kind === note.kind &&
       other.answered === note.answered &&
       other.answers === note.answers &&
-      other.gist === note.gist &&
-      other.rest === note.rest
+      other.gist === note.gist
     );
   });
 

@@ -26,7 +26,7 @@ export function CollisionRow(props: {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="sc-collision" data-stemcells-peer="collision">
+    <div className="sc-collision text-xs" data-stemcells-peer="collision">
       <div className="sc-collision-line">
         <span className="sc-collision-mark" aria-hidden>
           ⚠

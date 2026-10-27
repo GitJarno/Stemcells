@@ -110,11 +110,12 @@ What it lacks:
    idle Cell spends a turn on news it can't use.
 4. **Chat: mail, not conversation** (the original app's cards, kept to what one
    transcript shows):
-   - **The recipient** sees a card in place of the person's bubble: the
-     sender's Cell (its figure and name, a door to its chat), which way
-     ("asks you", "replied", "says"), the gist (the first sentence) and the
-     rest folded. A reply shows the question it answers; an ask shows
-     "Answered" once this Cell has written back.
+   - **The recipient** sees a note in place of the person's bubble, in the
+     transcript's own column and type: a line with the sender's Cell (its
+     figure and name, a door to its chat) and which way ("asks you",
+     "replied to"), then the message whole, folded only when long, as the
+     person's own long message folds. A reply quotes the question it
+     answers; an ask shows "answered" once this Cell has written back.
    - **The asker's** tool row says what it did, to whom: "Asked Otter: Can
      I take 0043?", "Wrote to Otter: …".
    - **Both from one transcript.** An ask is a message to a Cell whose
@@ -122,9 +123,9 @@ What it lacks:
      to this one earlier. Nothing is stored, nothing read from another
      chat.
    - **What the card can't draw stays upstream's row**: a workflow's
-     opening, an automation's run, a message with attachments. Under the
-     card, as under the person's own message: when, "Edit from here",
-     copy; a steer says "mid-turn".
+     opening, an automation's run, a message with attachments. At the end
+     of the note's name line, on hover as under the person's own message:
+     when, "Edit from here", copy; a steer says "mid-turn".
    - **A collision** is a notice row: "Same file as Badger:
      `apps/web/src/x.ts`", the rest folded.
    - **No Answer field.** the original app let the person answer as the agent.
