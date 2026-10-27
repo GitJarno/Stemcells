@@ -1,4 +1,4 @@
-// What Settings › Devices takes from upstream, all of it what Settings › Connections uses:
+// What Settings › Your devices takes from upstream, all of it what Settings › Connections uses:
 // this machine's addresses and the switches that add one (Tailscale HTTPS, Network access),
 // its one-time pairing links and the devices they paired, the computers this app reaches, and
 // upstream's dialog that adds one.

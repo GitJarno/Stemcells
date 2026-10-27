@@ -27,7 +27,7 @@ import { deviceName, pairedBy } from "./devices";
 import { advanceTailnet, type TailnetLook, type TailnetStep, useTailnet } from "./tailnet";
 import { wifiRoute } from "./wifiRoute";
 
-// Settings › Devices › Add › Phone or tablet (stemcells/tasks/devices.md): a one-time link to
+// Settings › Your devices › Add › Phone or tablet (stemcells/tasks/devices.md): a one-time link to
 // this computer as a QR code, and "Paired" once the phone used it. This computer stays on
 // loopback and Tailscale Serve answers for it on the tailnet; the dialog sets that up, opening a
 // page where the person's click is needed. Wi-Fi only is the way without Tailscale.
@@ -388,8 +388,8 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
         <DialogHeader>
           <DialogTitle>Add a phone</DialogTitle>
           <DialogDescription>
-            Open Settings › Devices in the Stemcells app on this computer, which sets up the way in
-            for your phone.
+            Open Settings › Your devices in the Stemcells app on this computer, which sets up the
+            way in for your phone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter variant="bare">

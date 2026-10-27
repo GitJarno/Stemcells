@@ -12,6 +12,6 @@ export const STEMCELLS_SETTINGS_ICONS: Readonly<
 > = {
   "/settings/disk": DiskSettingsIcon,
   "/settings/aski": AskiSettingsIcon,
-  "/settings/devices": DevicesIcon,
+  "/settings/your-devices": DevicesIcon,
   "/settings/lineage": LineageSettingsIcon,
 };

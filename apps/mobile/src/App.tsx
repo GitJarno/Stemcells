@@ -1,4 +1,6 @@
 import { installPermissionUpdateNotice } from "./features/connection/permissionUpdateNotice";
+import { installComposerAttachmentUploads } from "./state/composer-attachment-uploads";
+import { installThreadOutboxDelivery } from "./state/threadOutboxDelivery";
 import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
@@ -41,7 +43,6 @@ import { useMobileNavigationTheme } from "./lib/useMobileNavigationTheme";
 import { useUiRuntimeMemoryWarningGc } from "./lib/useUiRuntimeMemoryWarningGc";
 import { SubscriptionUsageCoordinator } from "./widgets/SubscriptionUsageCoordinator";
 import { PushCoordinator } from "./stemcells/push/PushCoordinator";
-import { VoiceInputProvider } from "./features/voice-input/VoiceInputProvider";
 import { GlobalVoiceInputControl } from "./features/voice-input/GlobalVoiceInputControl";
 import { restoreSettingsLinkState } from "./features/settings/settings-navigation";
 import {
@@ -88,11 +89,14 @@ const navigationRef = createNavigationContainerRef();
 
 declare const module: { readonly hot?: FoundationHotModule } | undefined;
 
-const disposePermissionUpdateNotice = installPermissionUpdateNotice();
-disposeOnFoundationReplace(
-  typeof module === "undefined" ? undefined : module.hot,
-  disposePermissionUpdateNotice,
-);
+const appServiceDisposers = [
+  installPermissionUpdateNotice(),
+  installThreadOutboxDelivery(),
+  installComposerAttachmentUploads(),
+];
+disposeOnFoundationReplace(typeof module === "undefined" ? undefined : module.hot, () => {
+  for (const dispose of appServiceDisposers) dispose();
+});
 
 function SplashScreenCoordinator() {
   const { isReady } = useAppearancePreferences();
@@ -140,27 +144,25 @@ function AppContent() {
       <GestureHandlerRootView className="flex-1">
         <KeyboardProvider statusBarTranslucent>
           <SafeAreaProvider>
-            <VoiceInputProvider>
-              <StatusBar barStyle={themeAppearance === "dark" ? "light-content" : "dark-content"} />
-              {/* native-stack needs the theme's dark flag to select dark native headers. */}
-              <GlobalVoiceInputControl>
-                <NativeLayoutMetricsProvider>
-                  <IncomingShareProvider>
-                    <Navigation
-                      ref={navigationRef}
-                      linking={appLinking}
-                      onReady={() => recordWorkspaceSelections(navigationRef.getRootState())}
-                      theme={navigationTheme}
-                      onStateChange={recordWorkspaceSelections}
-                    />
-                  </IncomingShareProvider>
-                  <Dialog.Host />
-                  <ThreadArrangementHost />
-                  <ProjectChipIconRasterizer />
-                </NativeLayoutMetricsProvider>
-              </GlobalVoiceInputControl>
-              <OverlayPortalHost />
-            </VoiceInputProvider>
+            <StatusBar barStyle={themeAppearance === "dark" ? "light-content" : "dark-content"} />
+            {/* native-stack needs the theme's dark flag to select dark native headers. */}
+            <GlobalVoiceInputControl>
+              <NativeLayoutMetricsProvider>
+                <IncomingShareProvider>
+                  <Navigation
+                    ref={navigationRef}
+                    linking={appLinking}
+                    onReady={() => recordWorkspaceSelections(navigationRef.getRootState())}
+                    theme={navigationTheme}
+                    onStateChange={recordWorkspaceSelections}
+                  />
+                </IncomingShareProvider>
+                <Dialog.Host />
+                <ThreadArrangementHost />
+                <ProjectChipIconRasterizer />
+              </NativeLayoutMetricsProvider>
+            </GlobalVoiceInputControl>
+            <OverlayPortalHost />
           </SafeAreaProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>

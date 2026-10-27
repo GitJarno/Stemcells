@@ -90,8 +90,8 @@ side.
 
 ## Your phone and other computers
 
-Settings › Devices lists your devices: the computers this app reaches, and
-the phones, browsers and computers that reach this one. Each computer
+Settings › Your devices lists them: the computers this app reaches, and the
+phones, browsers and computers that reach this one. Each computer
 running Stemcells is its own environment, and every app (the desktop app,
 the phone app, a browser) can reach several of them. They reach each other
 through Tailscale, at home and away, and nothing goes through anyone's
@@ -100,7 +100,7 @@ Stemcells.
 
 1. Install Tailscale on your phone, signed in to the account your
    computers use.
-2. On each computer, open **Settings › Devices › Add › Phone or tablet**.
+2. On each computer, open **Settings › Your devices › Add › Phone or tablet**.
    Stemcells sets up Tailscale step by step: it starts Tailscale, opens
    its sign-in, and the first time on a tailnet opens Tailscale's page to
    turn on HTTPS, where you confirm once. Nothing restarts.
