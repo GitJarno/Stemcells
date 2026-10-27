@@ -255,7 +255,8 @@ To offer upstream: register a settings page from a module. Our pages
 (Disk, Aski) take five seams: their route files, the regenerated route
 tree, three lists in `settingsSearch.ts`, the icons in
 `SettingsSidebarNav.tsx` and the device-only list in
-`SettingsScopeSentence.tsx`. Those lists now spread ours from
+`SettingsScopeSentence.tsx`; the sidebar's groups take them through the
+`settingsSearch` substitute. Those lists now spread ours from
 `stemcells/pages/`, so a new page of ours adds a route file and a line
 there. One registration (path, label, icon, scope, component) read by all
 of upstream's lists would make a module's settings page one line.

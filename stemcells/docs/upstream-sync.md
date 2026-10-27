@@ -163,3 +163,10 @@ timing out under the load; `check-local` and the nightly set it themselves.
   the gates unset it, and `GIT_DIR`, which `git bisect run` exports in a
   worktree: upstream's tests' own `git init` then set `core.bare` on this
   repository.
+- 2026-10-27 (45 commits): upstream regrouped Settings (#25651). Its sidebar
+  now lists only the pages its groups name, so ours left it silently until
+  the `settingsSearch` substitute placed them (`settingsPages.ts`, pinned by
+  its test). It also took `/settings/devices` for a page of its own, so ours
+  moved to `/settings/your-devices`. Words of ours that name upstream's pages
+  went stale with no test failing: after a settings move, grep our folders
+  for `Settings ›` and for links to the pages it moved.
