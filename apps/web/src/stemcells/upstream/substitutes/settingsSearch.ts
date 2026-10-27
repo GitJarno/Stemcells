@@ -1,8 +1,7 @@
-// Replaces `components/settings/settingsSearch.ts` (`plugin.ts`). Two upstream rows keep their
-// place in its panels but are never offered, and search, the palette's too, skips both:
-// "Collapse composer on scroll" has nothing to turn on (`settingsSearch.css` hides it), and
-// "Privacy policy" accounts for usage data Stemcells never sends (`seams.md`, No telemetry).
-// Our own pages stand in its sidebar's groups, each where `settingsPages.ts` places it.
+// Replaces `components/settings/settingsSearch.ts` (`plugin.ts`). Search, the palette's too,
+// never offers "Collapse composer on scroll" (nothing to turn on; `settingsSearch.css` hides it)
+// or "Privacy policy" (usage data Stemcells never sends; `seams.md`, No telemetry). Our own
+// pages stand in its sidebar's groups, each where `settingsPages.ts` places it.
 import * as Upstream from "../../../components/settings/settingsSearch";
 import { STEMCELLS_SETTINGS_NAV_AFTER } from "../../pages/settingsPages";
 import "./settingsSearch.css";

@@ -499,7 +499,10 @@ const CASES: Readonly<Record<string, Case>> = {
         "../lib/chatThreadActions",
         ["startNewThreadFromContext"],
       ],
-      "apps/web/src/routes/_chat.tsx": ["../lib/chatThreadActions", ["startNewThreadFromContext"]],
+      "apps/web/src/shortcuts/chatRouteCommands.ts": [
+        "../lib/chatThreadActions",
+        ["startNewThreadFromContext"],
+      ],
       "apps/web/src/components/desktop/SnapShotCoordinator.tsx": [
         "../../lib/chatThreadActions",
         ["resolveThreadActionProjectRef"],

@@ -82,8 +82,8 @@ describe("Settings never offers upstream's privacy row", () => {
 });
 
 describe("Settings lists our pages in upstream's groups", () => {
-  // Upstream's sidebar lists only what its groups name (#25651), and once took a path of ours
-  // for a page of its own: each of our pages stands in the list once, beside all of upstream's.
+  // Upstream's sidebar lists only what its groups name, and once took a path of ours for a
+  // page of its own: each of our pages stands in the list once, beside all of upstream's.
   it("every page of ours, once, and every page of upstream's", () => {
     const listed = SETTINGS_NAV_GROUPS.flatMap((group) => group.paths);
     for (const path of Object.keys(STEMCELLS_SETTINGS_LABELS)) {

@@ -31,8 +31,8 @@ export const STEMCELLS_SETTINGS_SCOPES: Readonly<Record<StemcellsSettingsPath, n
 };
 
 /**
- * Where each page stands in upstream's grouped settings list (#25651): after the page named,
- * by concern. Upstream's Devices is the devices agents drive, so the person's own are Your
+ * Where each page stands in upstream's grouped settings list: after the page named, by
+ * concern. Upstream's Devices is the devices agents drive, so the person's own are Your
  * devices, beside Environments. A page whose neighbour upstream drops goes to the list's end.
  */
 export const STEMCELLS_SETTINGS_NAV_AFTER: Readonly<Record<StemcellsSettingsPath, string>> = {
