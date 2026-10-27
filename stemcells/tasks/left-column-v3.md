@@ -49,4 +49,21 @@ settled, colour meant nothing, and the stages carried critters.
 - [x] Stages as label and count; hops only for the person's acts
 - [x] Filters
 - [x] Docs
-- [ ] The phone's home follows (`phone-line.md`)
+- [x] The phone's home follows (`phone-line.md`)
+
+## Review
+
+Landed in the sync that took T3's redesign, #313 (Settle clears any card),
+#320 (your act leaves at once, with upstream's undo line), #321 (two
+fingers swipe the stages), #323 (type, two-line rows, resize), #324 (an
+ask reads as a message), #330 (stages as label and count, hops only by
+hand), #333 (the project filter) and #334 (the phone's home on the line).
+
+- **Asks have no tags.** The room's redesign (`aski-asks.md`) made an ask
+  a message; decisions 3 and 4 say so, and the phone follows.
+- **One filter, not two.** The column lists only this Mac's Cells, so the
+  machine's dropdown waits for a column that spans machines (decision 9).
+- **Not yet seen by the person:** the filter and the stages were checked
+  in headless captures and tests; the phone's home only in tests, since
+  this Mac has no iOS simulator runtime. The person looks at it on their
+  phone (`phone-line.md`, step 7).
