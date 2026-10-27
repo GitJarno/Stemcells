@@ -10,6 +10,25 @@ export type DiskPressure = "calm" | "soon" | "now";
 export const SOON_BELOW = 20_000_000_000;
 export const NOW_BELOW = 10_000_000_000;
 
+/** Below this the disk is full: Cells, and the server's own database, fail to write. */
+export const FULL_BELOW = 2_000_000_000;
+
+const seenFull = new Set<string>();
+
+/**
+ * Whether a failed turn is the disk's: "full" while its machine has under
+ * `FULL_BELOW` free, "freed" once there's room again after it was seen full
+ * in this window, else null (the failure was something else, or happened
+ * before this window last saw the disk full).
+ */
+export function diskFailure(entryId: string, free: number): "full" | "freed" | null {
+  if (free < FULL_BELOW) {
+    seenFull.add(entryId);
+    return "full";
+  }
+  return seenFull.has(entryId) ? "freed" : null;
+}
+
 export function diskPressure(free: number): DiskPressure {
   return free < NOW_BELOW ? "now" : free < SOON_BELOW ? "soon" : "calm";
 }

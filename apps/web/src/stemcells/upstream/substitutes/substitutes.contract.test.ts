@@ -55,6 +55,7 @@ import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePaste
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
+import * as UpstreamWorkEntryRow from "../../../components/chat/TimelineWorkEntryRow";
 import * as UpstreamWorkspaceFileDrop from "../../../components/chat/workspaceFileDrop";
 import * as UpstreamMediaActions from "../../../components/media/MediaActions";
 import * as OurBranchToolbar from "./BranchToolbar";
@@ -105,6 +106,7 @@ import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 import * as OurUserMessageRow from "./TimelineUserMessageRow";
+import * as OurWorkEntryRow from "./TimelineWorkEntryRow";
 import * as OurWorkspaceFileDrop from "./workspaceFileDrop";
 import * as OurMediaActions from "./MediaActions";
 
@@ -746,6 +748,17 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/MessagesTimeline.tsx": [
         "./TimelineUserMessageRow",
         ["UserMessageRow"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": {
+    upstream: UpstreamWorkEntryRow,
+    substitute: OurWorkEntryRow satisfies typeof UpstreamWorkEntryRow,
+    importers: {
+      // The timeline's work rows draw a failed turn, and every other entry, through it.
+      "apps/web/src/components/chat/TimelineWorkGroupRows.tsx": [
+        "./TimelineWorkEntryRow",
+        ["SimpleWorkEntryRow"],
       ],
     },
   },

@@ -9,7 +9,6 @@ import {
   SettingsRow,
   SettingsSection,
   Spinner,
-  toastManager,
   useMachineDisk,
   useOpenCellWithDraft,
   useOtherMachines,
@@ -17,7 +16,8 @@ import {
   useNowMinuteMs,
   type EnvironmentId,
 } from "../upstream/disk";
-import { CLEANUP_ASK, CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { openCleanupCell } from "./cleanupCell";
 import { useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure } from "./pressure";
 
@@ -60,18 +60,6 @@ function DiskGauge({ volume }: { readonly volume: Pick<DiskReading["volume"], "f
 const Size = ({ bytes }: { readonly bytes: number }) => (
   <span className="text-sm text-foreground tabular-nums">{diskBytes(bytes)}</span>
 );
-
-/** Opens the cleanup Cell with its ask, or says it couldn't. */
-async function openCleanupCell(
-  openCell: NonNullable<ReturnType<typeof useOpenCellWithDraft>>,
-): Promise<void> {
-  if (await openCell(CLEANUP_ASK)) return;
-  toastManager.add({
-    type: "error",
-    title: "Couldn't start a Cell",
-    description: "Try Free space again in a moment.",
-  });
-}
 
 function FreeSpaceButton({
   openCell,

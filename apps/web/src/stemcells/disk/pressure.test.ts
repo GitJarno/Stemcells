@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { diskPressure, FOOT_TONE, freeFigure, NOW_BELOW, SOON_BELOW } from "./pressure";
+import {
+  diskFailure,
+  diskPressure,
+  FOOT_TONE,
+  freeFigure,
+  FULL_BELOW,
+  NOW_BELOW,
+  SOON_BELOW,
+} from "./pressure";
 
 const GB = 1e9;
 
@@ -29,5 +37,18 @@ describe("the foot's figure", () => {
     expect(freeFigure(0.94 * GB)).toBe("0.9 GB");
     expect(freeFigure(0.05 * GB)).toBe("<0.1 GB");
     expect(freeFigure(0)).toBe("0 GB");
+  });
+});
+
+describe("a failed turn and the disk", () => {
+  it("is the disk's while under 2 GB are free, and stays so once there's room again", () => {
+    expect(diskFailure("turn-a", FULL_BELOW - 1)).toBe("full");
+    expect(diskFailure("turn-a", 0)).toBe("full");
+    expect(diskFailure("turn-a", 40 * GB)).toBe("freed");
+  });
+
+  it("is never the disk's when it was never seen full", () => {
+    expect(diskFailure("turn-b", FULL_BELOW)).toBeNull();
+    expect(diskFailure("turn-b", 3 * GB)).toBeNull();
   });
 });
