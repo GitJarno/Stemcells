@@ -104,7 +104,9 @@ function openMenu(source: MediaActionSource) {
     if (Array.isArray(node)) return node.map(find).find((handler) => handler !== undefined);
     if (!isValidElement<{ children?: ReactNode; onContextMenu?: (event: unknown) => void }>(node))
       return undefined;
-    return node.props.onContextMenu ?? find(node.props.children);
+    return typeof node.type === "function"
+      ? find((node.type as (props: object) => ReactNode)(node.props))
+      : (node.props.onContextMenu ?? find(node.props.children));
   };
   const handler = find(MediaActions({ source, children: createElement("img") }));
   if (!handler) throw new Error("Media menu handler missing");
