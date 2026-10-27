@@ -3,17 +3,26 @@
    top-right, where a long prompt or line of output runs under them. Here
    they get a row of their own over the terminal, on the terminal's ground,
    as tall as a pane's button. The drawer's opening height counts the row
-   (upstream/terminal.contract.test.ts pins the buttons' markup). */
+   (upstream/terminal.contract.test.ts pins the buttons' markup).
+   The drawer runs along the slate's foot, whose corners are round: its
+   sides keep the terminal's text, already 4px in, a corner's width from
+   the slate's edge, so no glyph is cut by a corner or reads as running
+   under the column beside it. */
 [data-stemcells-terminal] {
   --sc-terminal-band: var(--sc-pane-button);
+  --sc-terminal-side: 0px;
+}
+[data-stemcells-terminal="drawer"] {
+  --sc-terminal-side: calc(var(--stemcells-slate-corner, var(--sc-radius-sheet)) - 4px);
 }
 [data-stemcells-terminal] [data-thread-terminal-drawer]:has(> div > div > button[aria-label]) {
   padding-top: var(--sc-terminal-band);
+  padding-inline: var(--sc-terminal-side);
   background-color: var(--terminal-background);
 }
 [data-stemcells-terminal] [data-thread-terminal-drawer] > div:has(> div > button[aria-label]) {
   top: 0;
-  right: var(--sc-space-md);
+  right: max(var(--sc-space-md), var(--sc-terminal-side));
   display: flex;
   align-items: center;
   height: var(--sc-terminal-band);

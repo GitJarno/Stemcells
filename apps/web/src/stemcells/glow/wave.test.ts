@@ -1,8 +1,8 @@
 /**
  * A working Cell's wave runs on the compositor: what loops on the glass, the work word and
  * upstream's live overlays moves by transform or opacity only, since a background's place, a
- * gradient, a shadow or a filter stutters on a busy page. What never rests steps on the sprite
- * clock, a label repaints only while the crest crosses it, and unseen nothing loops.
+ * gradient, a shadow or a filter stutters on a busy page. The glass's drift and breath glide, a
+ * label repaints only while the crest crosses it, and unseen nothing loops.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -295,27 +295,27 @@ function expectStepped(frames: Keyframe[], duration: number): void {
   }
 }
 
-describe("what never rests steps on the Cells' sprite clock", () => {
-  const stepped = (entry: Played) => {
-    expect(entry.options.easing ?? "linear").toBe("linear");
-    expectStepped(entry.frames, Number(entry.options.duration));
+describe("what never rests on the glass glides", () => {
+  // Stepped twelve times a second, the drift's cross-fade flickered beside the band's glide.
+  const glides = (entry: Played) => {
+    expect(entry.frames).toHaveLength(2);
+    expect(entry.frames.every((frame) => frame.easing === undefined)).toBe(true);
+    expect(entry.options).toMatchObject({ easing: "ease-in-out", direction: "alternate" });
   };
 
-  it("the working glass's drift changes twelve times a second, on its curve and period", () => {
+  it("the working glass's drift cross-fades its two ends on its period", () => {
     const light = glass();
     light.layout({ width: 736, height: 98 }, { x: 704, y: 66 }, 32, { left: 240, width: 1216 });
     light.configure("working", INK, false, true);
     const drifts = endless().filter(({ frames }) => property(frames[0]!) === "opacity");
-    expect(drifts).toHaveLength(2);
+    expect(drifts.map(({ frames }) => frames.map((frame) => frame.opacity))).toEqual([
+      [1, 0],
+      [0, 1],
+    ]);
     for (const drift of drifts) {
-      stepped(drift);
-      expect(drift.options).toMatchObject({ duration: 4500, direction: "alternate" });
+      glides(drift);
+      expect(drift.options.duration).toBe(4500);
     }
-    const near = drifts[0]!.frames.map((frame) => Number(frame.opacity));
-    expect(near[0]).toBe(1);
-    expect(near.at(-1)).toBe(0);
-    // Eased in and out: slow at the ends, quicker through the middle.
-    expect(near[0]! - near[1]!).toBeLessThan(near[26]! - near[27]!);
   });
 
   it("the breath of a glass that asks for you does the same", () => {
@@ -324,7 +324,8 @@ describe("what never rests steps on the Cells' sprite clock", () => {
     light.configure("needsYou", INK, false, true);
     const breaths = endless();
     expect(breaths).toHaveLength(1);
-    stepped(breaths[0]!);
+    glides(breaths[0]!);
+    expect(breaths[0]!.frames.map((frame) => frame.opacity)).toEqual([0.7, 1]);
   });
 });
 

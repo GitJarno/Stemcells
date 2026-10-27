@@ -32,7 +32,9 @@
   margin: 0 var(--sc-space-md) var(--sc-space-md);
   border-radius: var(--stemcells-slate-corner);
   background: var(--background);
-  overflow: hidden;
+  /* Clipped, not hidden, as the pages below: nothing a focus or a caret
+     brings into view can scroll what it holds out of line with its edges. */
+  overflow: clip;
   overscroll-behavior: none;
 }
 /* Upstream's new design turns its own dark theme's canvas black, to match its sidebar

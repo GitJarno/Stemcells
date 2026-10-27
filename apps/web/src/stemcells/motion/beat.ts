@@ -146,12 +146,11 @@ export function sweepFrames(
 }
 
 /**
- * Frames for a loop that never rests (a drift, a breath), stepping `step` ms apart: the
- * compositor draws only when a step lands, where a glide drew every frame, 120 a second on a
- * fast display. `frame` takes the loop's progress, 0 to 1, already eased by `ease`; play the
- * frames with a linear easing, on the beat.
+ * Frames stepping `step` ms apart, for a crossing beside another app: the compositor draws only
+ * when a step lands, where a glide drew every frame, 120 a second on a fast display. `frame`
+ * takes the progress, 0 to 1, already eased by `ease`; play the frames with a linear easing.
  */
-export function steppedFrames(
+function steppedFrames(
   duration: number,
   step: number,
   ease: (time: number) => number,
@@ -184,7 +183,7 @@ function solve(value: number, a: number, b: number): number {
 }
 
 /** A `cubic-bezier(x1, y1, x2, y2)` easing at `time`, both 0 to 1. */
-export function cubicEase(points: readonly [number, number, number, number], time: number): number {
+function cubicEase(points: readonly [number, number, number, number], time: number): number {
   const [x1, y1, x2, y2] = points;
   return bezier(solve(time, x1, x2), y1, y2);
 }
