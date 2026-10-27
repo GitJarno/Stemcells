@@ -6,10 +6,9 @@ import * as NodeURL from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 /**
- * The lint's Hermes rule (`t3code/no-hermes-unsupported-apis`) reads only the phone's own
- * folder, but the phone runs the web's creature and Aski modules (`kit.ts`, `aski/kit.ts`).
- * A call Hermes lacks there crashes the app as the first Cell is drawn, so this reads every
- * module the phone takes from outside its folder for the rule's calls.
+ * The lint's Hermes rule reads only the phone's folder, but the phone runs the web's creature,
+ * Aski and asks modules (the three `kit.ts`). A call Hermes lacks there crashes the app as it
+ * draws, so this reads every module the phone takes from outside its folder for the rule's calls.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -44,6 +43,7 @@ describe("what the phone takes from the web", () => {
     const taken = [
       ...modulesFrom(NodePath.join(here, "kit.ts")),
       ...modulesFrom(NodePath.join(here, "../aski/kit.ts")),
+      ...modulesFrom(NodePath.join(here, "../line/kit.ts")),
     ].filter((file) => !file.startsWith(phone + NodePath.sep));
     expect(taken.length).toBeGreaterThan(5);
     const offending = taken.flatMap((file) =>

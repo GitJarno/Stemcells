@@ -1,16 +1,24 @@
-// The home's tab for the views T3's home renders inside it (its header, its
-// shelves): which tab shows and how many each holds. The tab is the
-// person's for the app's run; until they pick one, the home opens on Input
-// when anything waits on them, else on Active, and holds it from there.
+// The home's tab for the views T3's home renders inside it (its header, its shelves): the
+// line's segments (`line/line.ts`), or Asleep, Active, Working and Input where a machine has no
+// line (`tabs.ts`). The tab is the person's for the app's run; until they pick one, the home
+// opens where `opens` says, and holds it from there.
 
 import { createContext, useEffect, useSyncExternalStore } from "react";
 
-import type { HomeTab, TabCounts } from "./tabs";
+import type { TabCounts } from "./tabs";
 
 export interface HomeTabs {
-  readonly tab: HomeTab;
+  readonly tab: string;
+  readonly options: ReadonlyArray<{
+    readonly id: string;
+    readonly label: string;
+    readonly count: number;
+  }>;
+  /** The home in Aski's terms, for its line (`greeting.ts`). */
   readonly counts: TabCounts;
-  readonly choose: (tab: HomeTab) => void;
+  /** The night comes over Aski: the tab of Cells put away. */
+  readonly night: boolean;
+  readonly choose: (tab: string) => void;
   /** The machine the list is narrowed to, whose Aski the header opens. */
   readonly environmentId: string | null;
 }
@@ -26,29 +34,31 @@ export const HomeTabsContext = createContext<HomeTabs | null>(null);
  */
 export const HomeInFront = createContext(false);
 
-let chosen: HomeTab | null = null;
-const listeners = new Set<() => void>();
-
-export function chooseTab(tab: HomeTab): void {
-  if (chosen === tab) return;
-  chosen = tab;
-  for (const listener of listeners) listener();
-}
-
-const subscribe = (listener: () => void) => {
-  listeners.add(listener);
-  return () => void listeners.delete(listener);
-};
-
-/** The tab shown: the person's, else where the home opens with `counts`, held once `known`. */
-export function useHomeTab(counts: TabCounts, known: boolean): HomeTab {
-  const tab = useSyncExternalStore(subscribe, () => chosen);
-  const opens: HomeTab = counts.input > 0 ? "input" : "active";
-  // oxlint-disable-next-line t3code/react-effect-budget -- Choose the opening tab in the shared tab store once the counts are known.
-  useEffect(() => {
-    if (known && chosen === null) chooseTab(opens);
-  }, [known, opens]);
-  return tab ?? opens;
+/** One set of tabs' choice: the person's, else where the home opens, held once known. */
+export function tabChoice<Tab extends string>() {
+  let chosen: Tab | null = null;
+  const listeners = new Set<() => void>();
+  const choose = (tab: Tab) => {
+    if (chosen === tab) return;
+    chosen = tab;
+    for (const listener of listeners) listener();
+  };
+  const subscribe = (listener: () => void) => {
+    listeners.add(listener);
+    return () => void listeners.delete(listener);
+  };
+  return {
+    choose,
+    /** The tab shown: the person's, else `opens`, chosen for good once `known`. */
+    useTab(opens: Tab, known: boolean): Tab {
+      const tab = useSyncExternalStore(subscribe, () => chosen);
+      // oxlint-disable-next-line t3code/react-effect-budget -- Choose the opening tab in the shared tab store once the counts are known.
+      useEffect(() => {
+        if (known && chosen === null) choose(opens);
+      }, [known, opens]);
+      return tab ?? opens;
+    },
+  };
 }
 
 let minute = new Date().toISOString();

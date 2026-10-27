@@ -1,11 +1,42 @@
 /**
  * A card's choice as upstream's thread commands (stemcells/tasks/aski-room.md,
  * "Action catalogue"). Pure: the hold sends what this returns, in order, once
- * its fuse ends and the need is still there.
+ * its fuse ends and the need is still there. The phone sends the same commands
+ * (`apps/mobile/src/stemcells/line/kit.ts`), so nothing here reaches upstream.
  */
-import type { ThreadCommand } from "../upstream/needs";
 import { PHRASES, WAIT_MS, type Choice } from "./card";
-import type { Need } from "./wire";
+import type { ApprovalDecision, Need } from "./wire";
+
+/** One of upstream's thread commands, as a card's option sends it. */
+export type ThreadCommand =
+  | {
+      readonly type: "respond";
+      readonly requestId: string;
+      readonly decision: ApprovalDecision;
+    }
+  | {
+      readonly type: "answer";
+      readonly requestId: string;
+      readonly answers: Readonly<Record<string, string | ReadonlyArray<string>>>;
+    }
+  | { readonly type: "dismissQuestion"; readonly requestId: string }
+  | {
+      /** A message to the Cell, as its own composer sends one. */
+      readonly type: "message";
+      readonly text: string;
+      readonly interactionMode?: "default" | "plan";
+      /** Picks up a run stopped by a limit, as upstream's "Resume thread" does. */
+      readonly continuationOfRunId?: string;
+      /** Into the running turn ("steer"), or stopping it to start again ("restart"). */
+      readonly delivery?: "steer" | "restart";
+    }
+  /** Upstream's "Implement": out of plan mode, and the plan sent back to build. */
+  | { readonly type: "build"; readonly planId: string; readonly markdown: string }
+  | { readonly type: "carryOnAtReset"; readonly runId: string; readonly resetAt: string }
+  | { readonly type: "snooze"; readonly until: string }
+  | { readonly type: "visit"; readonly visitedAt: string }
+  /** Done with: the Cell moves to settled, as the sidebar's own Settle does. */
+  | { readonly type: "settle" };
 
 const LATER_MS = 60 * 60 * 1000;
 

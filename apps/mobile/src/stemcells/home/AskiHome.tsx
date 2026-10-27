@@ -1,7 +1,7 @@
 // Aski greeting you over the home's tabs. A tap on Aski opens its chat; a tap on its line
 // rolls another (`greeting.ts`). Its eyes are `^ ^` once every Cell has landed and none works
-// or waits on you, and while its copies fly to forming Cells (`copies.ts`). On the Asleep tab
-// the night comes over it.
+// or waits on you, and while its copies fly to forming Cells (`copies.ts`). On the tab of
+// Cells put away (Settled, or Asleep) the night comes over it.
 
 import { use, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -18,12 +18,12 @@ import {
   SegmentedControl,
   useHomeThreadSelection,
 } from "../upstream/home";
+import { segmentsStandIn } from "../line/Hops";
 import { askiStandsIn, useCopies } from "./copies";
 import { greetingAt } from "./greeting";
 import { Night } from "./Night";
 import { NIGHT_INK, NIGHT_TEXT, skyAt } from "./sky";
 import { HomeTabsContext } from "./state";
-import { HOME_TABS } from "./tabs";
 
 /** Aski's height, points, and the room over it. */
 const ASKI_HEIGHT = 92;
@@ -47,8 +47,7 @@ export function AskiHome() {
   const ink = useResolveClassNames("text-foreground").color;
   const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
   if (home === null) return null;
-  const { counts, tab } = home;
-  const night = tab === "asleep";
+  const { counts, night } = home;
   const eyesAt = ROOM_OVER + ((EYE_LINE - VIEW.y) / VIEW.height) * ASKI_HEIGHT;
   const ground = night ? skyAt(height > 0 ? eyesAt / height : 0) : screen;
   const line = greetingAt(counts, rolls, seed);
@@ -96,17 +95,19 @@ export function AskiHome() {
           </AppText>
         </Animated.View>
       </Pressable>
-      <SegmentedControl
-        className="mt-5 self-stretch px-4"
-        role="tab"
-        options={HOME_TABS.map(({ id, label }) => ({
-          value: id,
-          label: counts[id] > 0 ? `${label} ${counts[id]}` : label,
-          accessibilityLabel: `${label}, ${counts[id]}`,
-        }))}
-        selected={tab}
-        onSelect={home.choose}
-      />
+      {/* A hop lands on its segment (`line/Hops.tsx`). */}
+      <View ref={segmentsStandIn} className="mt-5 self-stretch px-4">
+        <SegmentedControl
+          role="tab"
+          options={home.options.map(({ id, label, count }) => ({
+            value: id,
+            label: count > 0 ? `${label} ${count}` : label,
+            accessibilityLabel: `${label}, ${count}`,
+          }))}
+          selected={home.tab}
+          onSelect={home.choose}
+        />
+      </View>
     </View>
   );
 }

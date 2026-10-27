@@ -532,12 +532,17 @@ library's dependency (above); the rest are substitutes:
   headed by its name, Aski's by Aski; a draft keeps upstream's title.
   Aski's chat is the one the Mac and the server pick (`aski/chat.ts`):
   another chat on Aski's instance is a Cell.
-- **The home.** A substitute wraps `HomeScreen` and hands T3's list one tab
-  of Cells (`home/tabs.ts`); everything the list does stays T3's. The list's
-  header (`ThreadListFilters`, substituted) puts Aski, its line and the
-  tabs over T3's filters, reading the tabs from context. Where the list has
-  no header (Android, outside the workspace) and while searching, the home
-  is T3's own. Two more substitutes: the row tokens make cards on the
+- **The home.** A substitute wraps `HomeScreen` and hands T3's list one
+  segment of the Cells' line (`line/LineHome.tsx`, `stemcells/tasks/
+  phone-line.md`) where the machines in view serve their needs
+  (`line/read.ts`), else one tab of Cells (`home/tabs.ts`); everything the
+  list does stays T3's. Needs you is the asks themselves, sent as T3's own
+  thread commands (`upstream/needs.ts`, which takes the web's
+  `proposedPlan.ts` for a plan's build), and an answer's undo line stands
+  in T3's notice, one at a time. The list's header (`ThreadListFilters`,
+  substituted) puts Aski, its line and the tabs over T3's filters, reading
+  the tabs from context. Where the list has no header (Android, outside the
+  workspace) and while searching, the home is T3's own. Two more substitutes: the row tokens make cards on the
   phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
   and the iPad's sidebar stay T3's), and the shelves a tab holds start open
   (`use-thread-list-v2-shelf-preferences.ts`). The seam in the row puts the

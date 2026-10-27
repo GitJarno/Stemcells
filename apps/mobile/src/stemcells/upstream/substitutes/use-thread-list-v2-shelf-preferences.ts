@@ -1,6 +1,7 @@
 // Replaces `features/threads/use-thread-list-v2-shelf-preferences.ts` (`substitutes.cjs`): on
-// the home's tabs the tab is the shelf, so its shelves start open (Asleep's snoozed and settled,
-// Working's) and closing one holds while the home stands. Elsewhere the person's choice stands.
+// the home's tabs the tab is the shelf, so its shelves start open, and closing one holds while
+// the home stands. Settled's snoozed shelf starts closed: those Cells are off the line until
+// they wake. Elsewhere the person's choice stands.
 import { use, useState } from "react";
 
 import * as Upstream from "../../../features/threads/use-thread-list-v2-shelf-preferences";
@@ -16,11 +17,11 @@ export function useThreadListV2ShelfPreferences(): ReturnType<
   const [shut, setShut] = useState({ settled: false, snoozed: false, working: false });
   const toggle = (shelf: keyof typeof shut) => () =>
     setShut((now) => ({ ...now, [shelf]: !now[shelf] }));
-  if (tab === "asleep")
+  if (tab === "asleep" || tab === "settled")
     return {
       ...kept,
       settledShelfExpanded: !shut.settled,
-      snoozedShelfExpanded: !shut.snoozed,
+      snoozedShelfExpanded: tab === "asleep" ? !shut.snoozed : shut.snoozed,
       toggleSettledShelf: toggle("settled"),
       toggleSnoozedShelf: toggle("snoozed"),
     };

@@ -34,6 +34,7 @@ import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
 import { readEnvironmentScope } from "~/state/session";
 import { threadEnvironment } from "~/state/threads";
 
+import type { ThreadCommand } from "../needs/actions";
 import { markHandSettle, unmarkHandSettle } from "../tabs/handSettles";
 
 export type ApprovalDecision = ProviderApprovalDecision;
@@ -77,36 +78,7 @@ export async function openPrimaryStream(pathname: string, signal: AbortSignal): 
   });
 }
 
-/** One of upstream's thread commands, as a card's option sends it. */
-export type ThreadCommand =
-  | {
-      readonly type: "respond";
-      readonly requestId: string;
-      readonly decision: ApprovalDecision;
-    }
-  | {
-      readonly type: "answer";
-      readonly requestId: string;
-      readonly answers: Readonly<Record<string, string | ReadonlyArray<string>>>;
-    }
-  | { readonly type: "dismissQuestion"; readonly requestId: string }
-  | {
-      /** A message to the Cell, as its own composer sends one. */
-      readonly type: "message";
-      readonly text: string;
-      readonly interactionMode?: "default" | "plan";
-      /** Picks up a run stopped by a limit, as upstream's "Resume thread" does. */
-      readonly continuationOfRunId?: string;
-      /** Into the running turn ("steer"), or stopping it to start again ("restart"). */
-      readonly delivery?: "steer" | "restart";
-    }
-  /** Upstream's "Implement": out of plan mode, and the plan sent back to build. */
-  | { readonly type: "build"; readonly planId: string; readonly markdown: string }
-  | { readonly type: "carryOnAtReset"; readonly runId: string; readonly resetAt: string }
-  | { readonly type: "snooze"; readonly until: string }
-  | { readonly type: "visit"; readonly visitedAt: string }
-  /** Done with: the Cell moves to settled, as the sidebar's own Settle does. */
-  | { readonly type: "settle" };
+export type { ThreadCommand };
 
 export type CommandOutcome = { readonly ok: true } | { readonly ok: false; readonly why: string };
 

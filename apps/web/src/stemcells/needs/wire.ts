@@ -1,7 +1,7 @@
 /**
  * What needs the person, as the server sends it (`GET /api/stemcells/needs`
  * and its stream; apps/server/src/stemcells/needs/derive.ts keeps the other
- * copy of these types).
+ * copy of these types, and `wire.contract.test.ts` there holds the two together).
  */
 
 export type NeedKind =
@@ -57,7 +57,7 @@ export interface NeedRequest {
   readonly options: ReadonlyArray<{
     readonly decision: ApprovalDecision;
     readonly label: string;
-    readonly warning?: string;
+    readonly warning?: string | undefined;
   }>;
   readonly questions: ReadonlyArray<AskedQuestion>;
   readonly responseMode: "message" | null;
@@ -138,4 +138,34 @@ export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
   /** Every Cell in reach and its stage; absent from a server before stages. */
   readonly cells?: ReadonlyArray<CellStanding>;
+}
+
+const isText = (value: unknown): value is string => typeof value === "string";
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+/**
+ * The list, when `json` has the fields a reader keys on: each need's identity, kind, place and
+ * age, and each Cell's stage. Null for anything else, such as another server's answer.
+ */
+export function needsListOf(json: unknown): NeedsList | null {
+  if (!isRecord(json) || !Array.isArray(json.needs)) return null;
+  const needs = json.needs.every(
+    (need: unknown) =>
+      isRecord(need) &&
+      isText(need.key) &&
+      typeof need.number === "number" &&
+      isText(need.kind) &&
+      isText(need.threadId) &&
+      isText(need.projectId) &&
+      isText(need.since),
+  );
+  const cells =
+    json.cells === undefined ||
+    (Array.isArray(json.cells) &&
+      json.cells.every(
+        (cell: unknown) =>
+          isRecord(cell) && isText(cell.threadId) && isText(cell.projectId) && isText(cell.stage),
+      ));
+  return needs && cells ? (json as unknown as NeedsList) : null;
 }
