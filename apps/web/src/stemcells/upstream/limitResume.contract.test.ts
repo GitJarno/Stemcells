@@ -19,7 +19,6 @@ import {
   resetToWaitFor,
 } from "../limitResume/LimitActions";
 import leftColumn from "../rail/LeftColumn.tsx?raw";
-import legacySidebar from "../../components/LegacySidebar.tsx?raw";
 import cellWorkspace from "../tabs/CellWorkspace.tsx?raw";
 import { CONTINUE_LINE } from "./limitResume";
 import { deriveMessagesTimelineRowsWithState } from "./substitutes/MessagesTimeline.logic";
@@ -197,13 +196,5 @@ describe("where the drafts are reported from", () => {
     );
     expect(sidebar).not.toContain("DraftReport");
     expect(leftColumn).not.toContain("useDraftReport");
-  });
-
-  it("legacy sidebar: not in what the setting swaps, so the legacy list reports too", () => {
-    expect(sidebar).toMatch(
-      /\{legacySidebarEnabled \? \(\s*<LegacyThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\s*\) :/,
-    );
-    expect(legacySidebar).not.toContain("DraftReport");
-    expect(besideSidebar).not.toContain("legacySidebarEnabled");
   });
 });

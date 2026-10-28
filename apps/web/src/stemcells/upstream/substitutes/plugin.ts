@@ -52,6 +52,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/CommandPalette.logic.ts": "CommandPalette.logic.ts",
   // Stemcells' mark: where upstream draws T3's wordmark as an icon.
   "apps/web/src/components/T3Wordmark.tsx": "T3Wordmark.tsx",
+  // T3's GitHub app, which Stemcells never offers, keeps T3's icon out of the bundle.
+  "apps/web/src/components/T3AppIcon.tsx": "T3AppIcon.tsx",
   // Updates built from the repository: the pill counts the changes, and a
   // nightly's notes link the day's merged pull requests, not a release.
   "apps/web/src/components/desktopUpdate.logic.ts": "desktopUpdate.logic.ts",

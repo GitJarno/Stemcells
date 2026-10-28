@@ -27,6 +27,7 @@ const DRIVERS = {
   antigravity: { binary: "binaryPath", byDefault: true },
   pi: { binary: "binaryPath", byDefault: true },
   muse: { binary: "binaryPath", byDefault: true },
+  fx: { binary: "binaryPath", byDefault: true },
   acpRegistry: { binary: "commandPath", byDefault: false },
 };
 
@@ -46,6 +47,7 @@ const PROVIDER_CLIS = new Set([
   "opencode",
   "pi",
   "muse",
+  "fx",
   "gemini",
   "agy_acp_server.par",
   "localharness_external",

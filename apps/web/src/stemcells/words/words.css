@@ -109,14 +109,14 @@
 [data-draft-project-trigger][data-stemcells-from-words],
 [data-chat-provider-model-picker][data-stemcells-from-words]
   [data-chat-provider-model-picker-label],
-[data-composer-shortcut="composer.effort"][data-stemcells-from-words]
+[data-composer-shortcut~="composer.effort"][data-stemcells-from-words]
   [data-composer-control-label] {
   transition: opacity var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
 }
 
 [data-draft-project-trigger][data-stemcells-landing],
 [data-chat-provider-model-picker][data-stemcells-landing] [data-chat-provider-model-picker-label],
-[data-composer-shortcut="composer.effort"][data-stemcells-landing] [data-composer-control-label] {
+[data-composer-shortcut~="composer.effort"][data-stemcells-landing] [data-composer-control-label] {
   opacity: 0;
   transition: none;
 }
@@ -126,7 +126,7 @@
 [data-draft-project-trigger][data-stemcells-from-words],
 [data-chat-provider-model-picker][data-stemcells-from-words]
   [data-chat-provider-model-picker-label],
-[data-composer-shortcut="composer.effort"][data-stemcells-from-words]
+[data-composer-shortcut~="composer.effort"][data-stemcells-from-words]
   [data-composer-control-label] {
   --token-share: 50%;
   --token-reach: 0.08em;
@@ -334,7 +334,7 @@
 
 /* The readout says each Cell's effort, so the effort picker makes way. */
 [data-chat-composer-stack][data-stemcells-cells]
-  [data-resting-block]:has([data-composer-shortcut="composer.effort"]) {
+  [data-resting-block]:has([data-composer-shortcut~="composer.effort"]) {
   display: none;
 }
 

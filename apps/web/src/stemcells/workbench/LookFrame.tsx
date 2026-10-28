@@ -50,7 +50,7 @@ export function Look(props: {
   const { tab } = props;
   const focused = panesOf(tab).find((pane) => pane.id === tab.focusedPaneId) ?? null;
   const focusedPanelOpen = useCellPanelOpen(focused?.cell ?? null);
-  const inline = useInlinePanels();
+  const inline = useInlinePanels(focused?.cell ?? null);
   const lookId = lookPaneId(tab, { focusedPanelOpen, inline });
   const lookCell = lookId === null ? null : (focused?.cell ?? null);
 
@@ -101,7 +101,7 @@ export function EmptyWorkbenchClose(props: {
   const focused = panesOf(tab).find((pane) => pane.id === tab.focusedPaneId) ?? null;
   const focusedPanelOpen = useCellPanelOpen(focused?.cell ?? null);
   const focusedPanelEmpty = useCellPanelEmpty(focused?.cell ?? null);
-  const inline = useInlinePanels();
+  const inline = useInlinePanels(focused?.cell ?? null);
   const cell = emptyWorkbenchCell(tab, { focusedPanelOpen, focusedPanelEmpty, inline });
   const close = () => {
     if (cell !== null) closeCellPanel(cell);

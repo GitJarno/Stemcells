@@ -110,15 +110,11 @@ export const KEPT: ReadonlyArray<Kept> = [
     "and T3 Code wakes you on the next change",
   ),
   ...keep(
-    /^apps\/server\/src\/provider\/CodexDeveloperInstructions\.ts$/,
-    FOR_THE_MODEL,
-    "## T3 Code devices",
-  ),
-  ...keep(
     /^packages\/provider-core\/src\/server\/orchestrationInstructions\.ts$/,
     FOR_THE_MODEL,
     "## T3 Code orchestration",
     "## T3 Code browser",
+    "## T3 Code devices",
     ["## T3 Code interaction mode: ", 2],
     ["active until T3 Code supplies a different interaction-mode", 2],
   ),
@@ -235,7 +231,7 @@ export const KEPT: ReadonlyArray<Kept> = [
   ),
   // T3's own: what names T3's product, service or files, not this app.
   ...keep(
-    /^apps\/server\/src\/cli\/(?:triage|triagePrompt)\.ts$/,
+    /^apps\/server\/src\/(?:cli\/triage|triage\/triagePrompt)\.ts$/,
     `${T3S_OWN}: \`t3 triage\` helps file an issue on T3's own repository`,
     "Investigate a T3 Code problem on this machine",
     "# T3 Code triage playbook",

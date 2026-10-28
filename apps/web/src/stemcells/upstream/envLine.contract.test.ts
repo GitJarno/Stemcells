@@ -1,12 +1,9 @@
-// @effect-diagnostics nodeBuiltinImport:off - reads the stylesheet on disk.
 /**
  * Where a Cell runs sits on its ledge: "project · branch ⌄", the ⌄ opening upstream's branch
  * toolbar in its panel layout (`substitutes/BranchToolbar.tsx`), and git only once the checkout
  * is known to be a repository. A failure after a sync names what upstream moved; the ledge
  * likely names a wrong or guessed branch, the shortcut opens nothing, or the box keeps a gap.
  */
-import * as NodeFS from "node:fs";
-
 import { describe, expect, it } from "vite-plus/test";
 
 import branchToolbar from "../../components/BranchToolbar.tsx?raw";
@@ -15,9 +12,6 @@ import chatView from "../../components/ChatView.tsx?raw";
 import composerShortcuts from "../../components/chat/composerShortcuts.ts?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 import { knownRepoOf } from "./checkout";
-
-/** CSS imports come in empty under test; the stylesheet is read as text. */
-const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import.meta.url), "utf8");
 
 describe("a Cell's env on its ledge", () => {
   it("is git only once known: heard live, else heard this session; pending is not git", () => {
@@ -44,10 +38,10 @@ describe("a Cell's env on its ledge", () => {
 
   it("offers the controls where upstream mounts the toolbar: a draft, or kept after the chat starts", () => {
     expect(chatView).toMatch(
-      /const mountComposerContextStrip = shouldShowComposerContextStrip\(\{\s*isDraftHeroState,\s*persistInActiveThreads: settings\.persistComposerContextStrip,/,
+      /const showComposerContextStrip = shouldShowComposerContextStrip\(\{\s*isDraftHeroState,\s*persistInActiveThreads: settings\.persistComposerContextStrip,/,
     );
     expect(chatView).toMatch(
-      /\{mountComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,120}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}[\s\S]{0,100}?showGitControls=\{isGitRepo\}/,
+      /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,120}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}[\s\S]{0,100}?showGitControls=\{isGitRepo\}/,
     );
   });
 
@@ -76,15 +70,11 @@ describe("a Cell's env on its ledge", () => {
   });
 
   it("leaves the box whole where no strip is under it", () => {
-    // Upstream cuts the shell's glass and opens the box's bottom edge for a
-    // strip under it whenever the shell is told it has one.
-    expect(composerSurface).toContain("data-with-context={contextStrip || undefined}");
-    expect(composerSurface).toContain("before:[clip-path:shape(");
-    expect(composerSurface).toContain(
-      "group-data-with-context/composer-surface:after:[clip-path:polygon(",
-    );
-    expect(workspaceCss).toMatch(
-      /\[data-slot="composer-shell"\]\[data-with-context\]:not\(\s*:has\(\[data-slot="composer-context-strip"\]\)\s*\)::before \{\s*clip-path: none;/,
-    );
+    // Told it has a strip, the shell drops its glass and the box paints its
+    // own, round and uncut, so a Cell's box is whole with its strip on the ledge.
+    expect(composerSurface).toContain("data-context-row={contextRow || undefined}");
+    expect(composerSurface).toContain('"data-context-row:before:hidden",');
+    expect(composerSurface).toContain("group-data-context-row/composer-surface:before:rounded-2xl");
+    expect(composerSurface).not.toContain("clip-path");
   });
 });

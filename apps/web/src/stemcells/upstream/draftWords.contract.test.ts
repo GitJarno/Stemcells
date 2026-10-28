@@ -70,8 +70,9 @@ describe("the words' contracts with upstream's drafts", () => {
     expect(draftHeroHeadline).toContain('data-draft-project-trigger=""');
     expect(providerModelPicker).toContain('data-chat-provider-model-picker="true"');
     expect(providerModelPicker).toContain('data-chat-provider-model-picker-label="true"');
-    expect(traitsPicker).toContain(
-      'data-composer-shortcut={isComposerOwned ? "composer.effort" : undefined}',
+    // The words find it by "composer.effort" as a word: it can carry "composer.mode" too.
+    expect(traitsPicker).toMatch(
+      /data-composer-shortcut=\{\s*isComposerOwned\s*\?\s*extraMenuOwnsModeShortcut\s*\?\s*"composer\.effort composer\.mode"\s*:\s*"composer\.effort"\s*:\s*undefined\s*\}/,
     );
     expect(traitsPicker).toContain("<span data-composer-control-label");
     expect(chatView).toContain('data-chat-composer-stack="true"');

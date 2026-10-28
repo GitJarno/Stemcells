@@ -7,11 +7,9 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
-import activityBanners from "../../components/chat/ThreadActivityBanners.tsx?raw";
 import v2EventRow from "../../components/chat/TimelineV2EventRow.tsx?raw";
 import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import relationships from "../../components/chat/ThreadRelationshipsControl.tsx?raw";
-import inspector from "../../components/chat/V2ItemInspector.tsx?raw";
 import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
 import workflowOpening from "../../components/chat/WorkflowOpeningBlock.tsx?raw";
 import { inSubcellWords, SUBCELL, subcellCount } from "../../../../../stemcells/words/subcells.ts";
@@ -32,7 +30,7 @@ describe("Subcells in upstream's views", () => {
     // `seams/oneImport.contract.test.ts` holds each to one import of ours.
     expect(SeamsChat.SUBCELL).toBe(SUBCELL);
     expect(SeamsChat.subcellCount).toBe(subcellCount);
-    for (const source of [v2EventRow, workEntryRow, activityBanners]) {
+    for (const source of [v2EventRow, workEntryRow]) {
       expect(source).toMatch(
         /^import \* as Stemcells from "\.\.\/\.\.\/stemcells\/upstream\/seams\/chat";$/m,
       );
@@ -48,14 +46,11 @@ describe("Subcells in upstream's views", () => {
     );
   });
 
-  it("a notification row's button, and a spawn's screen-reader label, open a Subcell", () => {
+  it("a notification row's button opens a Subcell", () => {
     expect(workEntryRow).toMatch(
       /aria-label=\{Stemcells\.SUBCELL\.open\}[\s\S]{0,240}\{Stemcells\.SUBCELL\.open\}\s*<\/InlineButton>/,
     );
     expect(workEntryRow).not.toMatch(/Open subagent/);
-    expect(activityBanners).toContain(
-      'aria-label={`${presentation.items.length === 1 ? "Show" : "Open"} ${Stemcells.SUBCELL.one} ${item.label}`}',
-    );
   });
 
   it("an avatar given its Subcell draws it as a Cell, its face its status, with upstream's status dot", () => {
@@ -64,9 +59,13 @@ describe("Subcells in upstream's views", () => {
       "subcell?: { readonly name: string; readonly status?: string | undefined } | undefined;",
     );
     expect(avatar).toContain("subagentStatusVisual(props.status).dotClass");
-    expect(avatar).toMatch(
-      /<SubcellMark\s+name=\{subcell\.name\}\s+provider=\{props\.driver\}\s+status=\{subcell\.status \?\? props\.status\}/,
-    );
+    const mark =
+      /<SubcellMark\s+name=\{subcell\.name\}\s+provider=\{([^}]+)\}\s+status=\{subcell\.status \?\? props\.status\}/.exec(
+        avatar,
+      );
+    expect(mark).not.toBeNull();
+    // In the colours of the driver upstream's avatar draws.
+    expect(avatar).toContain(`driver={${mark![1]}}`);
   });
 
   it("a Subcell's row and a workflow's member hand their avatar the Subcell's thread", () => {
@@ -94,7 +93,6 @@ describe("Subcells in upstream's views", () => {
       '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
     ])
       expect(relationships).toContain(words);
-    expect(inspector).toContain("Open Subcell\n");
   });
 });
 

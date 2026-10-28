@@ -165,8 +165,8 @@ one import there, from its own module in
 `apps/web/src/stemcells/upstream/seams/`:
 `import * as Stemcells from "../stemcells/upstream/seams/ChatView";`, each
 use reading `Stemcells.…`, which also marks every seam in the file.
-The timeline's and the banners' files upstream split out of
-`MessagesTimeline.tsx` and `ChatView.tsx` on 2026-10-21 share
+The timeline's files upstream split out of `MessagesTimeline.tsx` and
+`ChatView.tsx` on 2026-10-21 share
 `seams/chat.ts`: new files have no heat yet, but they carry their old
 file's churn. `seams/oneImport.contract.test.ts` fails on a second import
 of ours in a file it lists.

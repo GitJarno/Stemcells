@@ -150,11 +150,18 @@ describe("Look's contracts with upstream's right panel", () => {
     ).toBe("localhost:5173");
   });
 
-  it("the thread view puts its panel in a sheet below upstream's breakpoint", () => {
+  it("the thread view puts its panel in a sheet below upstream's breakpoint, unless maximized", () => {
     expect(RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY).toBe("(max-width: 980px)");
     expect(chatView).toContain(
-      "const shouldUsePlanSidebarSheet = useMediaQuery(RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY);",
+      "const prefersPlanSidebarSheet = useMediaQuery(RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY);",
     );
+    expect(chatView).toMatch(
+      /const rightPanelState = useRightPanelStore\(\(state\) =>\s*selectThreadRightPanelState\(state\.byThreadKey, activeThreadRef\),?\s*\);/,
+    );
+    expect(chatView).toContain(
+      "const shouldUsePlanSidebarSheet = prefersPlanSidebarSheet && rightPanelState.maximized !== true;",
+    );
+    expect(chatView).toContain("sheet={shouldUsePlanSidebarSheet}");
   });
 });
 

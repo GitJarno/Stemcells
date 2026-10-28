@@ -53,7 +53,6 @@ describe("upstream's undo notice", () => {
       /\{props\.hostsUndoNotice \? \(\s*<SidebarThreadUndoNotice /,
     );
     expect(upstreamViewsDrawing("<SidebarChromeFooter")).toEqual([
-      NodePath.join("components", "LegacySidebar.tsx"),
       NodePath.join("components", "Sidebar.tsx"),
     ]);
     expect(upstreamViewsDrawing("<SidebarSectionHeader")).toEqual([

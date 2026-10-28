@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import canvasStore from "../../components/chat/canvasStore.ts?raw";
 import chatCanvas from "../../components/chat/ChatCanvas.tsx?raw";
 import threadDetailsCard from "../../components/chat/ThreadDetailsCard.tsx?raw";
 import threadDetailsCardLayout from "../../components/chat/threadDetailsCardLayout.ts?raw";
@@ -43,7 +44,11 @@ describe("the thread details card's contracts with upstream", () => {
     expect(threadFindBar).toMatch(/data-thread-find-bar\s*className="absolute top-3 right-3 z-40 /);
     expect(chatCanvas).toContain('element.querySelector<HTMLElement>("[data-thread-find-bar]")');
     expect(chatCanvas).toContain(
-      "findBarBottom: findBarBounds ? findBarBounds.bottom - canvasBounds.top : 0,",
+      "bottom: findBarBounds ? findBarBounds.bottom - canvasBounds.top : 0,",
+    );
+    expect(canvasStore).toContain("const detailsCardTopInset = findBar?.bottom ?? 0;");
+    expect(canvasStore).toMatch(
+      /const detailsCardPlacement = resolveThreadDetailsCardLayout\(\{[^}]*topInset: detailsCardTopInset,/,
     );
     expect(threadDetailsCardLayout).toContain("const y = gap + topInset;");
   });

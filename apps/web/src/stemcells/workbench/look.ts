@@ -9,7 +9,7 @@ import { panesOf, type CellRef, type Pane, type Tab } from "../tabs/layout";
 export interface LookFacts {
   /** Whether the focused Cell's right panel is open. */
   readonly focusedPanelOpen: boolean;
-  /** Whether the window is wide enough for upstream's panel to sit inline (not its sheet). */
+  /** Whether upstream's panel sits inline, not in its sheet (`useInlinePanels`). */
   readonly inline: boolean;
 }
 

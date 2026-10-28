@@ -38,9 +38,9 @@ describe("upstream's live rows, as the wave reads them", () => {
       );
     }
     const timeline = [messagesTimeline, workGroupRows].join("\n");
-    // The live rows' boxes, the working label's, a separator's and a work group's header.
+    // The live rows' boxes, the working label's and a separator's.
     const refs = timeline.match(/ref=\{[^}]*\? observeVisibleAnimation : undefined\}/g) ?? [];
-    expect(refs.length).toBeGreaterThanOrEqual(4);
+    expect(refs.length).toBeGreaterThanOrEqual(3);
   });
 
   it("an overlay is the box's own child: a copy of the row sliding the other way inside it", () => {

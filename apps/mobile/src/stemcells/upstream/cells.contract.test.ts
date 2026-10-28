@@ -54,7 +54,7 @@ describe("what a Cell's face is read from", () => {
     // Upstream settles the report before it lays the feed out again, but still lays it out by it.
     expect(screen).toMatch(/onHeightChange=\{handleComposerHeightChange\}/);
     expect(screen).toMatch(
-      /const handleComposerHeightChange = useCallback\(\(height: number\) => \{[\s\S]*?setComposerHeight\(height\);/,
+      /const handleComposerHeightChange = \(height: number\) => \{[\s\S]*?setComposerHeight\(height\);/,
     );
     expect(screen).toMatch(/const composerOverlapHeight =\s*composerHeight \?\?/);
   });

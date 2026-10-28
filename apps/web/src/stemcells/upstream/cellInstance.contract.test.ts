@@ -147,7 +147,7 @@ describe("the composer's contracts with upstream", () => {
 
   it("upstream's composer offers its providerStatuses and resolves from the thread's model", () => {
     expect(composerProviderModel).toMatch(
-      /applyProviderInstanceSettings\(\s*deriveProviderInstanceEntries\(providerStatuses\),/,
+      /providerInstanceEntriesFor\(\s*providerStatuses,\s*settings,\s*activeProjectId,?\s*\)/,
     );
     expect(chatComposer).toMatch(
       /threadModelSelection: activeThreadModelSelection,[\s\S]{0,300}candidateInstanceIds: \[\s*composerDraft\.activeProvider \?\? null,\s*activeThread\?\.runtime\?\.providerInstanceId,\s*activeThreadModelSelection\?\.instanceId,\s*activeProjectDefaultModelSelection\?\.instanceId,\s*\],/,

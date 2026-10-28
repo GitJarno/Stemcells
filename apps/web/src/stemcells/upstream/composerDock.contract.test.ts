@@ -56,9 +56,7 @@ describe("the composer's dock and upstream", () => {
     );
     expect(composerSurface).toMatch(/"group relative z-10 rounded-2xl p-px"/);
     expect(chatComposer).toMatch(/data-chat-composer-surface="true"[\s\S]{0,200}?"rounded-2xl /);
-    // Where workspace.css makes the box whole again, the glass it uncuts
-    // takes the box's own corners back.
+    // The glass takes the box's own corners: no strip cuts it.
     expect(composerSurface).toContain("before:inset-0 before:z-0 before:rounded-2xl ");
-    expect(workspaceCss).toMatch(/clip-path: none;\s*border-radius: var\(--radius-2xl\);/);
   });
 });

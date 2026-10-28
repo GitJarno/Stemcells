@@ -60,7 +60,7 @@ describe("a pane's chat inside the workspace's slate", () => {
 describe("Settings over the chat", () => {
   it("the app's sidebar keeps the left column on every page", () => {
     expect(appSidebarLayout).toMatch(
-      /\{legacySidebarEnabled \? \(\s*<LegacyThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\s*\) : \(\s*<LeftColumn wide=\{<ThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\} \/>\s*\)\}/,
+      /<Sidebar[\s\S]*?>\s*<LeftColumn wide=\{<ThreadSidebar routeReveal=\{sidebarRouteReveal\} \/>\} \/>\s*<SidebarRail/,
     );
     expect(appSidebarLayout).not.toContain("<SettingsSidebarNav");
   });

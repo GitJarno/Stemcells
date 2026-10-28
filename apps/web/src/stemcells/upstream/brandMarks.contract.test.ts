@@ -125,7 +125,8 @@ describe("Stemcells' mark, in place of T3's", () => {
       const source = read(file);
       return (
         (source.includes(T3_WORDMARK_PATH) && !file.endsWith("components/T3Wordmark.tsx")) ||
-        /\bassets\/(?:dev|nightly|prod)\//.test(source)
+        (/\bassets\/(?:dev|nightly|prod)\//.test(source) &&
+          !file.endsWith("components/T3AppIcon.tsx"))
       );
     });
     expect(offenders).toEqual([]);

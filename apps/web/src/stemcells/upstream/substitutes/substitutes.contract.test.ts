@@ -23,6 +23,7 @@ import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerSt
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
+import * as UpstreamT3AppIcon from "../../../components/T3AppIcon";
 import * as UpstreamDesktopUpdateLogic from "../../../components/desktopUpdate.logic";
 import * as UpstreamDesktopUpdateStatusIcon from "../../../components/sidebar/DesktopUpdateStatusIcon";
 import * as UpstreamThreadContextChip from "../../../components/ThreadContextChip";
@@ -84,6 +85,7 @@ import * as OurSubagentDisplay from "./subagentDisplay";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
+import * as OurT3AppIcon from "./T3AppIcon";
 import * as OurDesktopUpdateLogic from "./desktopUpdate.logic";
 import * as OurDesktopUpdateStatusIcon from "./DesktopUpdateStatusIcon";
 import * as OurThemePalettes from "./themePalettes";
@@ -448,6 +450,17 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
     },
   },
+  "apps/web/src/components/T3AppIcon.tsx": {
+    upstream: UpstreamT3AppIcon,
+    substitute: OurT3AppIcon satisfies RendersOrNothing<typeof UpstreamT3AppIcon>,
+    importers: {
+      "apps/web/src/components/SourceControlAppAccessNotice.tsx": ["./T3AppIcon", ["T3AppIcon"]],
+      "apps/web/src/components/settings/SourceControlAppSignInSettings.tsx": [
+        "~/components/T3AppIcon",
+        ["T3AppIcon"],
+      ],
+    },
+  },
   "apps/web/src/components/desktopUpdate.logic.ts": {
     upstream: UpstreamDesktopUpdateLogic,
     substitute: OurDesktopUpdateLogic satisfies typeof UpstreamDesktopUpdateLogic,
@@ -772,10 +785,6 @@ const CASES: Readonly<Record<string, Case>> = {
       // A thread in the sidebar, which takes one into its draft.
       "apps/web/src/components/sidebar/SidebarThreadRow.tsx": [
         "../chat/workspaceFileDrop",
-        ["makeWorkspaceFileDropHandlers"],
-      ],
-      "apps/web/src/components/LegacySidebar.tsx": [
-        "./chat/workspaceFileDrop",
         ["makeWorkspaceFileDropHandlers"],
       ],
     },
