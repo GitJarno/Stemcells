@@ -9,6 +9,7 @@ import { describe, expect, it } from "vite-plus/test";
 import branchToolbar from "../../components/BranchToolbar.tsx?raw";
 import branchSelector from "../../components/BranchToolbarBranchSelector.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
+import composerControlsBar from "../../components/chat/ComposerControlsBar.tsx?raw";
 import composerShortcuts from "../../components/chat/composerShortcuts.ts?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 import { knownRepoOf } from "./checkout";
@@ -43,6 +44,23 @@ describe("a Cell's env on its ledge", () => {
     expect(chatView).toMatch(
       /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,120}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}[\s\S]{0,100}?showGitControls=\{isGitRepo\}/,
     );
+  });
+
+  it("keeps a draft's permissions in the strip: the menu's panel layout drops them, and the controls stop naming them", () => {
+    expect(chatView).toMatch(
+      /\{\.\.\.\(isServerThread\s*\?\s*\{\}\s*:\s*\{\s*trailing: \(\s*<ComposerContextPermissions\b/,
+    );
+    expect(chatView).toContain(
+      "permissionsShownInStrip={showComposerContextStrip && !isServerThread}",
+    );
+    expect(composerControlsBar).toContain(
+      "const permissionsChipHidden = accessMatchesDefault || props.permissionsShownInStrip;",
+    );
+    const panel = branchToolbar.slice(
+      branchToolbar.indexOf('if (layout === "panel") {'),
+      branchToolbar.indexOf("<ComposerSurface.ContextStrip"),
+    );
+    expect(panel).not.toContain("{trailing}");
   });
 
   it("draws upstream's panel layout in the menu, and the branch shortcut calls the handle", () => {

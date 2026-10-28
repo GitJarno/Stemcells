@@ -1,7 +1,7 @@
 // Replaces `components/BranchToolbar.tsx` (`plugin.ts`): in a Cell's pane, upstream's toolbar
 // stands in panel layout in the menu under the ledge's "project · branch ⌄" (`composer/slot.ts`),
-// once the checkout is known to be git (`upstream/checkout.ts`), never on a guess; the branch
-// shortcut opens that menu. Outside a pane, and in the thread panel, it is upstream's.
+// once the checkout is known to be git (`upstream/checkout.ts`); the branch shortcut opens that
+// menu, and a draft's permissions stay under the box. Elsewhere it is upstream's.
 import {
   type ComponentProps,
   memo,
@@ -16,6 +16,7 @@ import {
   type BranchToolbarHandle,
   BranchToolbar as UpstreamBranchToolbar,
 } from "../../../components/BranchToolbar";
+import { ComposerSurface } from "../../../components/chat/ComposerSurface";
 import { ComposerEnvSlot } from "../../composer/slot";
 import { useCheckoutKnownRepo } from "../checkout";
 
@@ -43,9 +44,19 @@ export const BranchToolbar = memo(function BranchToolbar({
     usePreviousWorktree: () => inner.current?.usePreviousWorktree(),
   }));
   if (!ours) return <UpstreamBranchToolbar {...props} {...(ref ? { ref } : {})} />;
-  if (!offered || slot.element === null) return null;
-  return createPortal(
-    <UpstreamBranchToolbar {...props} ref={inner} layout="panel" />,
-    slot.element,
+  // The strip keeps what the menu can't hold: a draft's permissions, which the
+  // composer's controls stop naming once ChatView says the strip names them.
+  const strip =
+    props.trailing === undefined ? null : (
+      <ComposerSurface.ContextStrip className="text-xs">
+        {props.trailing}
+      </ComposerSurface.ContextStrip>
+    );
+  if (!offered || slot.element === null) return strip;
+  return (
+    <>
+      {createPortal(<UpstreamBranchToolbar {...props} ref={inner} layout="panel" />, slot.element)}
+      {strip}
+    </>
   );
 });
