@@ -55,6 +55,19 @@ describe("T3's own tools in the phone's work log", () => {
     }
   });
 
+  // An action tool's call reads as the tool its action replaced.
+  it.each([
+    ["fork", "Requested a fork of this Cell"],
+    ["merge_back", "Requested a merge of a Cell's context"],
+    ["status", "Read a Cell's transfers"],
+  ])("a transfer's %s reads as that action", (action, label) => {
+    const transfer = {
+      ...call("t3_thread_transfer", "completed"),
+      toolData: { input: { action }, output: {} },
+    };
+    expect(workEntryRowLabel(transfer)).toBe(label);
+  });
+
   it.each(tools)("%s: a run of calls sums up in Cell words", (tool) => {
     const runs = [
       [call(tool, "completed", "a")],
