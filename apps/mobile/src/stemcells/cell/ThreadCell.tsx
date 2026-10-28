@@ -42,7 +42,7 @@ export function ThreadCell(props: {
     lineDown: props.lineDown,
   });
   const turnsAt = faceTurnsAt(thread, driver, now);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Rerender when the face next turns; clear the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Rerender when the face next turns; clear the timer on change.
   useEffect(() => {
     if (turnsAt === undefined) return;
     const timer = setTimeout(() => setNow(Date.now()), Math.max(0, turnsAt - Date.now()));

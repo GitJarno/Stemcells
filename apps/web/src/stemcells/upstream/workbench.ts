@@ -164,9 +164,18 @@ export function browserName(status: PreviewNavStatus | null): string {
   }
 }
 
-/** Whether the window is wide enough for upstream to put a panel beside its chat, not in a sheet. */
-export function useInlinePanels(): boolean {
-  return !useMediaQuery(RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY);
+/**
+ * Whether upstream puts the Cell's panel beside its chat, not in its sheet: the window is wide
+ * enough, or the panel is maximized, which a narrow window keeps inline too.
+ */
+export function useInlinePanels(cell: CellRef | null): boolean {
+  const narrow = useMediaQuery(RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY);
+  const maximized = useRightPanelStore((state) =>
+    cell
+      ? selectThreadRightPanelState(state.byThreadKey, threadRefOf(cell)).maximized === true
+      : false,
+  );
+  return !narrow || maximized;
 }
 
 /**

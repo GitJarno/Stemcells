@@ -24,7 +24,7 @@ export function AnswersReadout(props: { readonly shown: ShownAnswers }) {
   const root = useRef<HTMLButtonElement>(null);
   const [pop, setPop] = useState<Pop | null>(null);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Close the open popover on Escape or an outside pointerdown; remove the listeners when it closes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Close the open popover on Escape or an outside pointerdown; remove the listeners when it closes.
   useEffect(() => {
     if (pop === null) return;
     const close = (event: Event) => {

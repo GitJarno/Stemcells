@@ -14,6 +14,7 @@ import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Ref from "effect/Ref";
+import * as SubscriptionRef from "effect/SubscriptionRef";
 import { expect, vi } from "vite-plus/test";
 
 const electron = vi.hoisted(() => {
@@ -288,7 +289,13 @@ const startHost = Effect.fn("startHost")(function* (
     Layer.succeed(PreviewManager.PreviewManager, {
       setMainWindow: () => Effect.void,
     } as never),
-    Layer.succeed(DesktopState.DesktopState, { backendReady: yield* Ref.make(true), quitting }),
+    Layer.succeed(DesktopState.DesktopState, {
+      backendReady: yield* Ref.make(true),
+      quitting,
+      primaryBackendStartup: yield* SubscriptionRef.make<DesktopState.PrimaryBackendStartup>({
+        _tag: "Ready",
+      }),
+    }),
   );
   yield* Layer.build(WindowsHost.layer.pipe(Layer.provide(services)));
   return {

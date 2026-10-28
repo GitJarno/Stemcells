@@ -53,7 +53,7 @@ export function MediaViewer(props: {
 
   const [viewer] = useState(() => new Viewer({ source: props.source, opener: props.opener }));
   const { onClosed } = props;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the imperative viewer its step and close callbacks before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the imperative viewer its step and close callbacks before paint.
   useLayoutEffect(() => {
     viewer.listen({
       onStep: (next) => setAt((current) => ({ item: next, step: current.step + 1 })),
@@ -72,7 +72,7 @@ export function MediaViewer(props: {
   const failed = resolved.failed || (key !== null && failedKey === key);
 
   // The portal mounts its contents a beat after the viewer: attach once they are there.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the viewer to the portal's nodes, detach on change or unmount, and restore focus after close.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Attach the viewer to the portal's nodes, detach on change or unmount, and restore focus after close.
   useLayoutEffect(() => {
     const figure = figureRef.current;
     const scrim = scrimRef.current;
@@ -88,14 +88,14 @@ export function MediaViewer(props: {
     };
   }, [popup, viewer]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Report the item's measured or unavailable size to the imperative viewer before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Report the item's measured or unavailable size to the imperative viewer before paint.
   useLayoutEffect(() => {
     if (key === null) return;
     if (failed) viewer.measured(key, UNAVAILABLE_SIZE);
     else if (resolved.size) viewer.measured(key, resolved.size);
   }, [viewer, key, failed, resolved.size]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Sync the imperative viewer with this render's items, index, source and scope before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Sync the imperative viewer with this render's items, index, source and scope before paint.
   useLayoutEffect(() => {
     viewer.sync({ items, index, src: resolved.src, scope });
   });
@@ -271,11 +271,11 @@ function Ahead(props: { item: MediaItem; viewer: Viewer }) {
   const key = itemKey(item);
   const { src, size } = useResolvedMedia(item);
   const isVideo = item.type === "video";
-  // oxlint-disable-next-line t3code/react-effect-budget -- Report the resolved media size to the imperative viewer when it changes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Report the resolved media size to the imperative viewer when it changes.
   useEffect(() => {
     if (size) viewer.measured(key, size);
   }, [viewer, key, size]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Probe the media's natural size off-DOM and drop the probe when the source changes or unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Probe the media's natural size off-DOM and drop the probe when the source changes or unmounts.
   useEffect(() => {
     if (src === null) return;
     if (isVideo) {

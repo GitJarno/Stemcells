@@ -10,7 +10,6 @@ import type {
   OrchestrationMessageContext,
 } from "@t3tools/contracts";
 import type { UploadChatAttachment } from "@t3tools/contracts";
-import { serializeLegacyContextMessage } from "@t3tools/shared/composerContextLegacySend";
 import { threadContextsOutsideEnvironment } from "@t3tools/shared/composerContextReferences";
 
 import { fileAttachmentCapabilityBlockReason } from "../../components/chat/composerAttachmentFiles";
@@ -92,6 +91,8 @@ export function readCarry(draftId: string): Carry | null {
       text,
       records: threadContexts,
       environmentId,
+      // Upstream lets a linked machine read the chat; a carry doesn't look links up yet.
+      linkedEnvironments: new Map(),
     })[0];
     if (stranded)
       return { ok: false, error: `A Cell on another machine can't read "${stranded.title}".` };
@@ -138,12 +139,6 @@ export function readCarry(draftId: string): Carry | null {
       })),
     });
     if (context === undefined) return { ok: true, text, attachments: sent };
-    if (config?.environment.capabilities.inlineMessageContext !== true)
-      return {
-        ok: true,
-        text: serializeLegacyContextMessage({ text, records: context.records }),
-        attachments: sent,
-      };
     return { ok: true, text, attachments: sent, context };
   };
 

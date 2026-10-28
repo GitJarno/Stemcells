@@ -26,7 +26,7 @@ const ATTEMPTS = 3;
  */
 export function useLandsNewChats(): void {
   const lead = useLeadWindow();
-  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to new chats while this is the lead window and unsubscribe when it isn't.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Subscribe to new chats while this is the lead window and unsubscribe when it isn't.
   useEffect(
     () => (lead ? subscribeArrivals((cells) => void landNewCells(cells)) : undefined),
     [lead],

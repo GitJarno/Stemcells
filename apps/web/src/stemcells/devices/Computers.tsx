@@ -71,7 +71,7 @@ export function ComputerRows({ alone }: { readonly alone: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
   const othersKey = others.map((other) => other.environmentId).join(" ");
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Poll this computer's links; stop the timer on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Poll this computer's links; stop the timer on unmount.
   useEffect(() => {
     if (primaryId === null) return;
     let live = true;
@@ -87,7 +87,7 @@ export function ComputerRows({ alone }: { readonly alone: boolean }) {
     };
   }, [primaryId]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Ask each other computer if it runs Stemcells; drop stale answers.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Ask each other computer if it runs Stemcells; drop stale answers.
   useEffect(() => {
     let live = true;
     for (const environmentId of othersKey.split(" ").filter(Boolean)) {

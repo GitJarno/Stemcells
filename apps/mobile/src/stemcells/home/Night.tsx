@@ -55,7 +55,7 @@ function ShootingStar(props: {
 }) {
   const flight = useSharedValue(0);
   const [from, setFrom] = useState({ x: 0, y: 0 });
-  // oxlint-disable-next-line t3code/react-effect-budget -- Schedule shooting stars while the app is active, and clear the timer and AppState listener on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Schedule shooting stars while the app is active, and clear the timer and AppState listener on unmount.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let shots = 0;

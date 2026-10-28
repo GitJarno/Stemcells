@@ -431,13 +431,13 @@ function FlyingCell(props: { readonly launch: Launch }) {
   const [words, setWords] = useState<ReadonlyArray<Word>>([]);
   const [flight] = useState(() => new Flight(launch, box, setWords));
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Start the flight before paint and send the Cell home when it unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Start the flight before paint and send the Cell home when it unmounts.
   useLayoutEffect(() => {
     flight.start();
     return () => flight.leave();
   }, [flight]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Watch resizes, the active tab and Reduce Motion while the Cell flies; unsubscribe on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Watch resizes, the active tab and Reduce Motion while the Cell flies; unsubscribe on unmount.
   useEffect(() => {
     const resized = () => flight.measure();
     // Another tab on stage, or Reduce Motion turned on: it is home at once.

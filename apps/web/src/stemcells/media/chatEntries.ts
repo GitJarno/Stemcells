@@ -48,12 +48,12 @@ export function chatEntriesOf(threadKey: string): TimelineEntries {
 /** Publishes the entries a timeline draws, while it's mounted. */
 export function usePublishChatEntries(threadKey: string, entries: TimelineEntries): void {
   const [timeline] = useState(() => ({}));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Publish what the timeline draws to the media viewer's store before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Publish what the timeline draws to the media viewer's store before paint.
   useLayoutEffect(
     () => publishChatEntries(threadKey, timeline, entries),
     [timeline, threadKey, entries],
   );
-  // oxlint-disable-next-line t3code/react-effect-budget -- Withdraw this timeline's entries when its thread changes or it unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Withdraw this timeline's entries when its thread changes or it unmounts.
   useLayoutEffect(() => () => withdrawChatEntries(threadKey, timeline), [timeline, threadKey]);
 }
 

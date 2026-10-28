@@ -40,7 +40,7 @@ export function CellBuds(props: {
   const stage = useRef<HTMLSpanElement>(null);
   // The Subcells as text: the stage looks again when one of them changes, not as each item streams in.
   const heard = JSON.stringify(subcells);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe the bud row to the stage clock and unsubscribe when the Subcells change or unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Subscribe the bud row to the stage clock and unsubscribe when the Subcells change or unmount.
   useLayoutEffect(() => {
     const element = stage.current;
     if (element === null) return;

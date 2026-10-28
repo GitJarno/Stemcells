@@ -56,7 +56,7 @@ export interface DriverSource {
 const CONTROL = {
   project: "[data-draft-project-trigger]",
   model: '[data-chat-provider-model-picker="true"]',
-  effort: '[data-composer-shortcut="composer.effort"]',
+  effort: '[data-composer-shortcut~="composer.effort"]',
 } as const;
 
 export class WordsDriver {

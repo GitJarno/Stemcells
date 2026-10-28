@@ -6,6 +6,7 @@ import * as NodeURL from "node:url";
 import * as UpstreamUpdateNotice from "@t3tools/client-runtime/providerUpdateRequiredModels";
 import * as UpstreamSubagentDisplay from "@t3tools/client-runtime/state/subagent-display";
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
+import { resolveWorkEntryToolPresentation } from "@t3tools/client-runtime/work-log/presentation";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
 import * as UpstreamThemePalettes from "@t3tools/shared/themePalettes";
@@ -16,12 +17,13 @@ import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
 import * as UpstreamBranchToolbar from "../../../components/BranchToolbar";
 import * as UpstreamHostedBrowserWebview from "../../../browser/HostedBrowserWebview";
-import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditor";
+import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditorTiptap";
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
 import * as UpstreamComposerStashBadge from "../../../components/chat/ComposerStashBadge";
 import * as UpstreamRightPanelSheet from "../../../components/RightPanelSheet";
 import * as UpstreamRightPanelTabs from "../../../components/RightPanelTabs";
 import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
+import * as UpstreamT3AppIcon from "../../../components/T3AppIcon";
 import * as UpstreamDesktopUpdateLogic from "../../../components/desktopUpdate.logic";
 import * as UpstreamDesktopUpdateStatusIcon from "../../../components/sidebar/DesktopUpdateStatusIcon";
 import * as UpstreamThreadContextChip from "../../../components/ThreadContextChip";
@@ -32,7 +34,6 @@ import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/Th
 import * as UpstreamUsageLimitsPooled from "../../../components/usage/UsageLimitsPooled";
 import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
-import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
 import * as UpstreamCommandPaletteLogic from "../../../components/CommandPalette.logic";
@@ -47,7 +48,6 @@ import * as UpstreamUsageLimitRecoveryBanner from "../../../components/chat/Usag
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
-import * as UpstreamFaviconReexport from "../../../lib/favicon";
 import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
@@ -63,8 +63,7 @@ import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurChatThreadActions from "./chatThreadActions";
-import * as OurComposerPromptEditor from "./ComposerPromptEditor";
-import * as OurComposerScrollGesture from "./composerScrollGesture";
+import * as OurComposerPromptEditor from "./ComposerPromptEditorTiptap";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
@@ -86,6 +85,7 @@ import * as OurSubagentDisplay from "./subagentDisplay";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
+import * as OurT3AppIcon from "./T3AppIcon";
 import * as OurDesktopUpdateLogic from "./desktopUpdate.logic";
 import * as OurDesktopUpdateStatusIcon from "./DesktopUpdateStatusIcon";
 import * as OurThemePalettes from "./themePalettes";
@@ -162,7 +162,6 @@ const CASES: Readonly<Record<string, Case>> = {
         "@t3tools/shared/favicon",
         ["toolActivityFaviconUrl"],
       ],
-      "apps/web/src/lib/favicon.ts": ["@t3tools/shared/favicon", ["faviconUrlForOrigin"]],
     },
   },
   "packages/client-runtime/src/providerUpdateRequiredModels.ts": {
@@ -199,15 +198,15 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
       "apps/web/src/components/sidebar/SidebarThreadRow.tsx": [
         "../chat/providerIconUtils",
-        ["getTriggerDisplayModelLabel"],
+        ["getTriggerDisplayModelName"],
       ],
       "apps/web/src/components/chat/ModelListRow.tsx": [
         "./providerIconUtils",
-        ["getDisplayModelName", "getTriggerDisplayModelLabel"],
+        ["getDisplayModelName"],
       ],
       "apps/web/src/components/chat/ProviderModelPicker.tsx": [
         "./providerIconUtils",
-        ["getTriggerDisplayModelLabel", "getTriggerDisplayModelName"],
+        ["getDisplayModelName", "getTriggerDisplayModelName"],
       ],
       "apps/web/src/components/chat/V2LifecycleRow.tsx": [
         "./providerIconUtils",
@@ -215,7 +214,7 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
       "apps/web/src/components/chat/ContextWindowMeter.logic.ts": [
         "./providerIconUtils",
-        ["getTriggerDisplayModelName"],
+        ["getDisplayModelName"],
       ],
     },
   },
@@ -355,29 +354,19 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
-  "apps/web/src/components/ComposerPromptEditor.tsx": {
+  "apps/web/src/components/ComposerPromptEditorTiptap.tsx": {
     upstream: UpstreamComposerPromptEditor,
     substitute: OurComposerPromptEditor satisfies RendersOrNothing<
       typeof UpstreamComposerPromptEditor
     >,
     importers: {
       "apps/web/src/components/chat/ChatComposer.tsx": [
-        "../ComposerPromptEditor",
-        ["ComposerPromptEditor"],
+        "../ComposerPromptEditorTiptap",
+        ["ComposerPromptEditorTiptap"],
       ],
       "apps/web/src/components/settings/SettingsFontPreviews.tsx": [
-        "../ComposerPromptEditor",
-        ["ComposerPromptEditor"],
-      ],
-    },
-  },
-  "apps/web/src/components/chat/composerScrollGesture.ts": {
-    upstream: UpstreamComposerScrollGesture,
-    substitute: OurComposerScrollGesture satisfies typeof UpstreamComposerScrollGesture,
-    importers: {
-      "apps/web/src/components/chat/ChatComposer.tsx": [
-        "./composerScrollGesture",
-        ["recordComposerScrollGestureEvent", "shouldCollapseComposerForScrollKey"],
+        "../ComposerPromptEditorTiptap",
+        ["ComposerPromptEditorTiptap"],
       ],
     },
   },
@@ -459,6 +448,17 @@ const CASES: Readonly<Record<string, Case>> = {
         ["T3Wordmark"],
       ],
       "apps/web/src/components/chat/V2LifecycleRow.tsx": ["../T3Wordmark", ["T3Wordmark"]],
+    },
+  },
+  "apps/web/src/components/T3AppIcon.tsx": {
+    upstream: UpstreamT3AppIcon,
+    substitute: OurT3AppIcon satisfies RendersOrNothing<typeof UpstreamT3AppIcon>,
+    importers: {
+      "apps/web/src/components/SourceControlAppAccessNotice.tsx": ["./T3AppIcon", ["T3AppIcon"]],
+      "apps/web/src/components/settings/SourceControlAppSignInSettings.tsx": [
+        "~/components/T3AppIcon",
+        ["T3AppIcon"],
+      ],
     },
   },
   "apps/web/src/components/desktopUpdate.logic.ts": {
@@ -787,10 +787,6 @@ const CASES: Readonly<Record<string, Case>> = {
         "../chat/workspaceFileDrop",
         ["makeWorkspaceFileDropHandlers"],
       ],
-      "apps/web/src/components/LegacySidebar.tsx": [
-        "./chat/workspaceFileDrop",
-        ["makeWorkspaceFileDropHandlers"],
-      ],
     },
   },
   "apps/web/src/components/media/MediaActions.tsx": {
@@ -832,7 +828,12 @@ function importedNames(source: string, specifier: string): string[] {
   const from = specifier.replaceAll(/[/.]/g, (char) => `\\${char}`);
   const pattern = new RegExp(`(?:import|export)\\s*\\{([^}]*)\\}\\s*from\\s*["']${from}["']`, "g");
   return [...source.matchAll(pattern)].flatMap((match) =>
-    match[1]!.split(",").map((name) => name.trim().replace(/^type\s+/, "")),
+    match[1]!.split(",").map((name) =>
+      name
+        .trim()
+        .replace(/^type\s+/, "")
+        .replace(/\s+as\s+\w+$/, ""),
+    ),
   );
 }
 
@@ -893,11 +894,16 @@ describe("Stemcells' substitutes for upstream modules", () => {
   });
 
   it("vitest: this test run hands upstream's code the substitute", () => {
-    // `lib/favicon.ts` is upstream's: it re-exports `@t3tools/shared/favicon`.
+    // Upstream's work log names T3's tools through `@t3tools/shared/t3McpToolPresentation`.
+    const read = resolveWorkEntryToolPresentation({
+      label: "t3_thread_read",
+      toolTitle: "mcp__t3-code__t3_thread_read",
+      toolData: {},
+    });
     expect(
-      UpstreamFaviconReexport.faviconUrlForOrigin,
+      read?.displayName,
       "run the web's tests with apps/web's config: pnpm --filter @t3tools/web exec vp test run …",
-    ).toBe(OurFavicon.faviconUrlForOrigin);
+    ).toMatch(/\bCell\b/);
   });
 
   it("dev: the dev server resolves upstream's imports to the substitutes", async () => {
@@ -918,7 +924,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
         // Our own folder gets upstream's module, so a substitute can wrap it.
         expect((await container.resolveId(ownSpecifier, ours))?.id, key).toBe(upstream);
       }
-      const served = await server.transformRequest("/src/lib/favicon.ts");
+      const served = await server.transformRequest("/src/components/chat/MarkdownExternalLink.tsx");
       expect(served?.code).toContain("/src/stemcells/upstream/substitutes/favicon.ts");
     } finally {
       await server.close();
@@ -954,7 +960,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
         manifest: false,
         emptyOutDir: false,
         rollupOptions: {
-          input: NodePath.join(webRoot, "src/lib/favicon.ts"),
+          input: NodePath.join(webRoot, "src/components/chat/MarkdownExternalLink.tsx"),
           preserveEntrySignatures: "strict",
         },
       },

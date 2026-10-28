@@ -6,5 +6,14 @@
 export { supportsAgentAwarenessPush } from "../../features/agent-awareness/capabilities";
 export { requestAgentNotificationPermission } from "../../features/agent-awareness/notificationPermissions";
 export { resolveApsEnvironment } from "../../features/agent-awareness/registrationPayload";
-export { isRelayManagedConnection, type SavedRemoteConnection } from "../../lib/connection";
+import type { SavedRemoteConnection } from "../../lib/connection";
+
+export type { SavedRemoteConnection };
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
+
+/** A connection T3's relay manages: marked so, or signed with DPoP, which only the relay issues. */
+export function isRelayManagedConnection(
+  connection: Pick<SavedRemoteConnection, "authenticationMethod" | "relayManaged">,
+): boolean {
+  return connection.relayManaged === true || connection.authenticationMethod === "dpop";
+}

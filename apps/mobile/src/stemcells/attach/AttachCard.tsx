@@ -129,7 +129,7 @@ function Card(props: {
   const shake = useSharedValue(0);
   const reduced = useReducedMotion();
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Ask for photo access and load the newest page once; drop late answers and the cap timer on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Ask for photo access and load the newest page once; drop late answers and the cap timer on unmount.
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -154,7 +154,7 @@ function Card(props: {
     };
   }, []);
   // New photos, or more chosen under limited access: the newest page again.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to photo library changes and unsubscribe on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Subscribe to photo library changes and unsubscribe on unmount.
   useEffect(
     () =>
       onLibraryChange(() => {

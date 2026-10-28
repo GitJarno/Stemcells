@@ -12,7 +12,7 @@ import {
   undoLatestThreadAction,
   useThreadUndoNotice,
 } from "../../hooks/showThreadUndoNotice";
-import * as ThreadUndo from "../../hooks/threadUndo";
+import * as ThreadUndo from "@t3tools/client-runtime/state/thread-undo";
 import { shortcutLabelForCommand } from "../../keybindings";
 import { primaryServerKeybindingsAtom } from "../../state/server";
 

@@ -89,7 +89,7 @@ export function PaneButtons(props: { cell: CellRef | null; onClose: (() => void)
 function usePaneRows(anchor: RefObject<HTMLElement | null>): Rows | null {
   const [rows, setRows] = useState<Rows | null>(null);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Follow upstream's toggle rows in the pane; disconnect on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow upstream's toggle rows in the pane; disconnect on unmount.
   useLayoutEffect(() => {
     const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
     if (!pane) return;
@@ -112,7 +112,7 @@ function usePaneRows(anchor: RefObject<HTMLElement | null>): Rows | null {
   }, [anchor]);
 
   // A split row sits left of the root's row, at its width from the edge.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Track the root row's width; disconnect and clear on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Track the root row's width; disconnect and clear on change.
   useLayoutEffect(() => {
     const pane = anchor.current?.closest<HTMLElement>("[data-stemcells-pane]");
     if (!pane || !rows || rows.first === rows.last) return;

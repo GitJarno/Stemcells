@@ -132,7 +132,7 @@ export function useTabCarry(options: {
   const live = useRef<Live | null>(null);
   // What the handlers read, as of the last render.
   const latest = useRef(options);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the carry handlers' options ref current before the next event.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the carry handlers' options ref current before the next event.
   useLayoutEffect(() => {
     latest.current = options;
   });
@@ -468,7 +468,7 @@ export function useTabCarry(options: {
 
   // A strip that goes mid-carry (its window's view changed under it) takes
   // the carry with it: the layer goes, and the tab is where it always was.
-  // oxlint-disable-next-line t3code/react-effect-budget -- End a live carry and its flight when the strip unmounts mid-carry.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- End a live carry and its flight when the strip unmounts mid-carry.
   useEffect(
     () => () => {
       const at = live.current;
@@ -484,7 +484,7 @@ export function useTabCarry(options: {
 
   // Esc sends a carry home.
   const sendHome = useEffectEvent((at: Live) => void goHome(at));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for Esc while a tab is picked up and remove the listener when it is let go.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen for Esc while a tab is picked up and remove the listener when it is let go.
   useEffect(() => {
     if (!view?.picked) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -512,7 +512,7 @@ export function useTabCarry(options: {
     if (at && !at.done) lose(at);
   });
   const held = view !== null;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Lose the carry when the window blurs while a tab is held; remove the listener after.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Lose the carry when the window blurs while a tab is held; remove the listener after.
   useEffect(() => {
     if (!held) return;
     const onBlur = () => loseLive();

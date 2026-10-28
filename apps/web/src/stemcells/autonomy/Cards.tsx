@@ -17,7 +17,7 @@ export function AutonomyOffer() {
 function Offer(props: { kind: Kind }) {
   const words = KINDS[props.kind];
   const [ready, setReady] = useState(false);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Arm the read-before-allow timer on mount and clear it on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Arm the read-before-allow timer on mount and clear it on unmount.
   useEffect(() => {
     const timer = setTimeout(() => setReady(true), timing("readBeforeAllow"));
     return () => clearTimeout(timer);

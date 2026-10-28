@@ -184,7 +184,7 @@ can't make Aski send or allow anything.
 Why: we can't tell typed words from dictated or pasted ones once they're in
 the field. A rule that holds for all three is simpler than trusting any one
 of them. Denying fails safe; allowing doesn't. The orchestration MCP tools
-draw the same line (`t3_pending_request_respond` answers questions and can't
+draw the same line (`t3_pending_request`'s `respond` answers questions and can't
 approve), and RiskFloor is the one floor shared with `tasks/prompting.md`
 (decision 15 there).
 
@@ -745,7 +745,7 @@ Examples. The four cards are the prototype's:
   `thread.metadata.update` (`limitRecovery`), `thread.snooze`,
   `thread.settle`, `thread.visit`, `prepared-run.retry`.
 - **Aski's tools:** `t3_thread_search`, `t3_thread_list`,
-  `t3_thread_organize`, `t3_thread_read`, and `t3_pending_request_*`, which
+  `t3_thread_organize`, `t3_thread_read`, and `t3_pending_request`, which
   answer questions only.
 - **One-shot calls:** `TextGeneration`, shared with `tasks/prompting.md`'s
   split.

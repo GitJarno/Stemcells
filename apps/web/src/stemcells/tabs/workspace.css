@@ -37,12 +37,12 @@
   overflow: clip;
   overscroll-behavior: none;
 }
-/* Upstream's new design turns its own dark theme's canvas black, to match its sidebar
-   (index.css, `html.dark[data-redesign]:not([data-theme-id])`). The slate and Settings' modal,
-   which portals out of it, keep the canvas T3's dark theme gives them without the new design,
-   so they stand off the black frame. The terminal's ground is resolved once at the root, so
-   it is set again here too. */
-:root.dark[data-redesign]:not([data-theme-id]) :is([data-stemcells-slate], [data-app-modal]) {
+/* Upstream's own dark theme turns its canvas black, to match its sidebar (index.css,
+   `:root`'s dark variant; a theme with an id paints its own). The slate and Settings' modal,
+   which portals out of it, keep the neutral-950 canvas that theme had before, so they stand
+   off the black frame. The terminal's ground is resolved once at the root, so it is set
+   again here too. */
+:root.dark:not([data-theme-id]) :is([data-stemcells-slate], [data-app-modal]) {
   --background: var(--color-neutral-950);
   --terminal-background: var(--color-neutral-950);
 }
@@ -263,8 +263,7 @@
   margin-inline-start: calc(100% - var(--sc-still-width));
 }
 /* The composer keeps one height: a row of text over its controls, lower
-   than upstream's open field, growing only with what is typed. It never
-   rests into one line on a scroll (`substitutes/composerScrollGesture.ts`). */
+   than upstream's open field, growing only with what is typed. */
 [data-stemcells-pane] .composer-tiptap {
   min-height: calc(var(--spacing) * 8);
 }
@@ -303,22 +302,6 @@
   )
   [data-chat-composer-main-surface="true"]::after {
   border-block-start-width: 0;
-}
-/* Upstream shapes the box round a strip under it (the shell's glass cut to
-   a drawer, the box's bottom edge left open for the strip's). A Cell's
-   strip is on its line (`composer/slot.ts`), so where none is under the
-   box, the box is whole again. */
-[data-stemcells-pane]
-  [data-slot="composer-shell"][data-with-context]:not(
-    :has([data-slot="composer-context-strip"])
-  )::before {
-  clip-path: none;
-  border-radius: var(--radius-2xl);
-}
-[data-stemcells-pane]
-  [data-slot="composer-shell"][data-with-context]:not(:has([data-slot="composer-context-strip"]))
-  :is([data-slot="composer-host"], [data-chat-composer-main-surface="true"])::after {
-  clip-path: none;
 }
 /* A draft waits at the foot like every chat, so a tab's composers line up
    along the bottom. Upstream centres a draft's composer: the overlay fills

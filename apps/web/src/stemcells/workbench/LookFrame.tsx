@@ -50,7 +50,7 @@ export function Look(props: {
   const { tab } = props;
   const focused = panesOf(tab).find((pane) => pane.id === tab.focusedPaneId) ?? null;
   const focusedPanelOpen = useCellPanelOpen(focused?.cell ?? null);
-  const inline = useInlinePanels();
+  const inline = useInlinePanels(focused?.cell ?? null);
   const lookId = lookPaneId(tab, { focusedPanelOpen, inline });
   const lookCell = lookId === null ? null : (focused?.cell ?? null);
 
@@ -101,7 +101,7 @@ export function EmptyWorkbenchClose(props: {
   const focused = panesOf(tab).find((pane) => pane.id === tab.focusedPaneId) ?? null;
   const focusedPanelOpen = useCellPanelOpen(focused?.cell ?? null);
   const focusedPanelEmpty = useCellPanelEmpty(focused?.cell ?? null);
-  const inline = useInlinePanels();
+  const inline = useInlinePanels(focused?.cell ?? null);
   const cell = emptyWorkbenchCell(tab, { focusedPanelOpen, focusedPanelEmpty, inline });
   const close = () => {
     if (cell !== null) closeCellPanel(cell);
@@ -193,7 +193,7 @@ function useEndOnSend(cell: CellRef | null, end: () => void) {
   const onSent = useEffectEvent(end);
   const key = cell === null ? null : `${cell.environmentId}/${cell.threadId}`;
   const watched = useRef<{ key: string | null; seen: LastSent }>({ key: null, seen: undefined });
-  // oxlint-disable-next-line t3code/react-effect-budget -- End Look once the chat records a new message from the user.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- End Look once the chat records a new message from the user.
   useEffect(() => {
     const current = watched.current;
     if (current.key !== key) {
@@ -212,7 +212,7 @@ function useEndOnSend(cell: CellRef | null, end: () => void) {
  */
 function useEndOnEscape(active: boolean, end: () => void) {
   const onEscape = useEffectEvent(end);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hear Esc on the window while active; remove on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hear Esc on the window while active; remove on change.
   useEffect(() => {
     if (!active) return;
     let heldElsewhere = false;

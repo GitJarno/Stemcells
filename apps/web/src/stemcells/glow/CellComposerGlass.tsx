@@ -46,7 +46,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
   const lightRef = useRef<GlassLight | null>(null);
   const latest = useRef<{ glow: Glow; tone: string }>({ glow, tone });
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Push the latest glow and tone into the imperative glass light before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Push the latest glow and tone into the imperative glass light before paint.
   useLayoutEffect(() => {
     latest.current = { glow, tone };
     const root = rootRef.current;
@@ -58,7 +58,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
 
   // The composer floats over the transcript, in every pane of ours: a wheel
   // over it scrolls the chat (`scrollThrough`).
-  // oxlint-disable-next-line t3code/react-effect-budget -- Pass wheels over the floating composer to the transcript, detaching on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Pass wheels over the floating composer to the transcript, detaching on unmount.
   useLayoutEffect(() => {
     const root = rootRef.current;
     const composer = root?.closest<HTMLElement>('[data-chat-composer-stack="true"]');
@@ -67,7 +67,7 @@ export function CellComposerGlass(props: { readonly provider: string }) {
   }, []);
 
   const hasCell = cell !== null;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Own the glass light's animations and its resize, theme, motion and sight watchers for a Cell.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the glass light's animations and its resize, theme, motion and sight watchers for a Cell.
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!hasCell || root === null) return;

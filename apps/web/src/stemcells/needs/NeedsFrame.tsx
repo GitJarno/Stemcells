@@ -58,7 +58,7 @@ function useLayout(root: RefObject<HTMLElement | null>): {
   const [wide, setWide] = useState(true);
   const [hinge, setHinge] = useState<Hinge | null>(null);
   const twoScreens = useSyncExternalStore(subscribeSegments, onTwoScreens, onTwoScreens);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Track the frame's width and the two-screen hinge as it resizes; stop observing on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Track the frame's width and the two-screen hinge as it resizes; stop observing on unmount.
   useLayoutEffect(() => {
     const element = root.current;
     if (element === null) return;
@@ -101,7 +101,7 @@ export function NeedsFrame(props: {
   const frozen = draft !== "" || pointerIn || focusIn;
   // The room holds the asks still only while it is in front: a draft left in Aski's composer
   // doesn't hold them while the person works elsewhere.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hold the shared page still for this room's draft, pointer and focus while it is in front; let go on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hold the shared page still for this room's draft, pointer and focus while it is in front; let go on unmount.
   useEffect(() => {
     page.holdStill("room", inFront && frozen);
     return () => page.holdStill("room", false);
@@ -184,7 +184,7 @@ export function NeedsFrame(props: {
  */
 function Sheet(props: { main: RefObject<HTMLElement | null>; children: ReactNode }) {
   const [bottom, setBottom] = useState<number | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the sheet's bottom above Aski's perch or the composer as the main pane resizes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the sheet's bottom above Aski's perch or the composer as the main pane resizes.
   useLayoutEffect(() => {
     const main = props.main.current;
     if (main === null) return;

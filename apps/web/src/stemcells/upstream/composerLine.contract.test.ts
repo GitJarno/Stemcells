@@ -1,8 +1,8 @@
 /**
  * What the line over a Cell's composer, the composer's halo and its one height rely on in
- * upstream: where the line and plate stand and stack (so halo and veil lie under them), the
- * scroll gesture a substitute turns off, the field's one height class, a wheel's reach, and the
- * chat's column scrolling. A failure after a sync names the contract that moved.
+ * upstream: where the line and plate stand and stack (so halo and veil lie under them), no
+ * collapse on a scroll, the field's one height class, a wheel's reach, and the chat's column
+ * scrolling. A failure after a sync names the contract that moved.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -28,7 +28,10 @@ describe("the composer line's contracts with upstream", () => {
     expect(chatView).toContain(
       "publishComposerOverlayHeightStable(composerOverlayElement.getBoundingClientRect().height);",
     );
-    expect(chatView).toMatch(/const nextInset = resolveComposerTimelineInset\(\{/);
+    expect(chatView).toMatch(
+      /const publishComposerOverlayHeight = \(height: number\) => \{\s*const nextHeight = Math\.ceil\(height\);[\s\S]{0,200}?setComposerTimelineInset\(nextHeight\);/,
+    );
+    expect(chatView).toContain("contentInsetEndAdjustment={composerTimelineInset}");
   });
 
   it("the line and the plate share a block that stacks its own layers, so the halo lies under both", () => {
@@ -64,23 +67,16 @@ describe("the composer line's contracts with upstream", () => {
     );
   });
 
-  it("the composer rests into one line only when its scroll gesture says so", () => {
-    // substitutes/composerScrollGesture.ts answers both gestures with "no";
-    // a third way to rest would bring the shrinking back.
-    expect(chatComposer.match(/setIsComposerScrollCollapsed\(true\)/g)).toHaveLength(2);
-    expect(chatComposer).toMatch(
-      /const shouldCollapse = recordComposerScrollGestureEvent\([\s\S]{0,500}?if \(!shouldCollapse\) \{\s*return;\s*\}\s*setIsComposerScrollCollapsed\(true\);/,
-    );
-    expect(chatComposer).toMatch(
-      /shouldCollapseComposerForScrollKey\(\{[\s\S]{0,300}?\}\)\s*\)\s*\{\s*setIsComposerScrollCollapsed\(true\);/,
-    );
+  it("the composer never rests into one line on a scroll", () => {
+    // Upstream dropped its scroll collapse; one coming back would shrink ours again.
+    expect(chatComposer).not.toMatch(/ScrollCollapsed|composerScrollGesture/);
   });
 
   it("the field's height is its classes alone, and it grows to a cap as text is typed", () => {
-    // workspace.css lowers the field to one row over both designs' minimums;
-    // upstream's cap and scroll still let it grow with what is typed.
+    // workspace.css lowers the field to one row over upstream's two-line
+    // minimum; upstream's cap and scroll still let it grow with what is typed.
     expect(promptEditor).toContain(
-      '"composer-tiptap -m-1 block max-h-52 min-h-19.5 redesign:min-h-12 overflow-y-auto p-1 ',
+      '"composer-tiptap -m-1 block max-h-52 min-h-[calc(2lh+--spacing(2))] overflow-y-auto p-1 ',
     );
   });
 

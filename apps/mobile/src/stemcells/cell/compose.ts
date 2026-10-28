@@ -34,7 +34,7 @@ function drain(): void {
 export function useComposed(key: string, compose: () => void): boolean {
   const [, wake] = useState(0);
   const ready = done.has(key);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Queue this key's compose; drop its waiter on change or unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Queue this key's compose; drop its waiter on change or unmount.
   useEffect(() => {
     if (done.has(key)) return;
     const listener = () => wake((n) => n + 1);

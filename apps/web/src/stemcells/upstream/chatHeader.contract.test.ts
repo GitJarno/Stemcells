@@ -11,7 +11,6 @@ import branchToolbarLogic from "../../components/BranchToolbar.logic.ts?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import attachmentStrip from "../../components/chat/ComposerAttachmentStrip.tsx?raw";
 import chatHeader from "../../components/chat/ChatHeader.tsx?raw";
-import composerControl from "../../components/chat/ComposerControl.tsx?raw";
 import composerControlsBar from "../../components/chat/ComposerControlsBar.tsx?raw";
 import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
@@ -72,22 +71,22 @@ describe("where the line says a Cell runs, as upstream's context strip says it",
       'return activeWorktreePath || preparingWorktree ? "worktree" : "local";',
     );
     expect(branchToolbar).toMatch(/effectiveEnvMode === "worktree"\s*\?\s*FolderGit2Icon/);
-    expect(branchToolbarLogic).toContain(
-      "(input.isDraftHeroState || input.persistInActiveThreads)",
+    expect(branchToolbarLogic).toMatch(
+      /\(input\.isDraftHeroState \|\|\s*\(input\.persistInActiveThreads && \(input\.isGitRepo \|\| input\.showEnvironmentIndicator\)\)\)/,
     );
     expect(chatView).toContain("persistInActiveThreads: settings.persistComposerContextStrip,");
   });
 });
 
 describe("the composer controls the ladder steps down", () => {
-  it("the model picker's trigger, label and chevron, and the attach button, carry the marks the ladder hides them by", () => {
+  it("the model picker's trigger and label, and the attach button, carry the marks the ladder hides them by", () => {
     expect(providerModelPicker).toContain('data-chat-provider-model-picker="true"');
     expect(providerModelPicker).toContain('data-chat-provider-model-picker-label="true"');
-    expect(providerModelPicker).toContain("<ComposerControlChevron size={size} />");
-    expect(composerControl).toContain("data-composer-control-chevron");
     expect(chatComposer).toContain('data-chat-composer-footer="true"');
     expect(attachmentStrip).toContain('aria-label="Attach files"');
-    // The collapsed picker keeps a minimum width the narrowest rung lets go.
-    expect(composerControlsBar).toContain('"min-w-13 shrink text-xs!",');
+    // The picker keeps a minimum width the narrowest rung lets go.
+    expect(composerControlsBar).toContain(
+      'composerControlsCollapsed ? "min-w-13 shrink text-xs!" : "min-w-13",',
+    );
   });
 });

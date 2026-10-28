@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 
 import { type ComposerPromptEditorHandle, IDLE_PLACEHOLDER } from "../upstream/suggestions";
-import { ComposerPromptEditor } from "../upstream/substitutes/ComposerPromptEditor";
+import { ComposerPromptEditorTiptap as ComposerPromptEditor } from "../upstream/substitutes/ComposerPromptEditorTiptap";
 import { render } from "../upstream/testRender";
 import { type PromptSuggestion, PromptSuggestionContext } from "./usePromptSuggestion";
 

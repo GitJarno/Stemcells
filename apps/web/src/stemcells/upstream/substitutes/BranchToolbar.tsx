@@ -32,7 +32,7 @@ export const BranchToolbar = memo(function BranchToolbar({
   const inner = useRef<BranchToolbarHandle>(null);
   const setOffered = slot?.setOffered;
   const setOpen = slot?.setOpen;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the ledge's slot the toolbar is offered while it is, and withdraw it on change or unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the ledge's slot the toolbar is offered while it is, and withdraw it on change or unmount.
   useLayoutEffect(() => {
     if (!offered || setOffered === undefined) return;
     setOffered(true);

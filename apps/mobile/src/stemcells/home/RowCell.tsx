@@ -47,7 +47,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
     });
   };
   // A list row is handed another chat as it scrolls, without a new layout.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Send a forming Cell's copy of Aski to this row when the row is handed another chat.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Send a forming Cell's copy of Aski to this row when the row is handed another chat.
   useEffect(sendFor, [thread.id, forming]);
   if (aski) return <AskiFigure height={props.points * 14} ink={ink} ground={card} />;
   return (

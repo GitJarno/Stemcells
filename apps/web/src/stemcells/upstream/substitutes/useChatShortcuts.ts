@@ -8,7 +8,6 @@ import { useOwnsChatWindowInput } from "../../../components/chat/chatWindowInput
 import {
   useChatShortcuts as useUpstreamChatShortcuts,
   type ChatShortcutCommands,
-  type ChatShortcutsInput,
 } from "../../../components/chat/useChatShortcuts";
 import { ChatPanelHostContext } from "../chatPanel";
 
@@ -17,7 +16,7 @@ export * from "../../../components/chat/useChatShortcuts";
 /** The commands that open, close or drive a chat's surfaces and terminal. */
 const SURFACE_COMMAND = /^(terminal|rightPanel|threadPanel|diff|preview)\.|^view\.reopenClosed$/;
 
-export function useChatShortcuts(input: ChatShortcutsInput) {
+export function useChatShortcuts(input: Parameters<typeof useUpstreamChatShortcuts>[0]) {
   const ownsWindowInput = useOwnsChatWindowInput();
   const bare = use(ChatPanelHostContext)?.bare === true;
   return useUpstreamChatShortcuts({

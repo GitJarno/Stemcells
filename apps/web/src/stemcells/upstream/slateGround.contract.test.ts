@@ -62,7 +62,7 @@ describe("a chat paints nothing over the slate", () => {
     // which renders upstream's ChatCanvas, whose canvas holds its children.
     // ThreadTimeline renders the timeline itself, with no box of its own.
     expect(chatView).toMatch(
-      /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div className="relative flex min-h-0 flex-1 flex-col bg-background">\s*<ThreadTimeline/,
+      /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div\s+\{\.\.\.conversationArea\}\s+className="relative flex min-h-0 flex-1 flex-col bg-background"\s*>\s*<ThreadTimeline/,
     );
     expect(threadTimeline).toMatch(/return <MessagesTimeline [^>]*\/>;/);
     expect(threadFind).toContain("<ChatCanvas {...canvasProps} />");
@@ -71,16 +71,18 @@ describe("a chat paints nothing over the slate", () => {
 });
 
 describe("the new design's black canvas stays off the slate", () => {
-  it("upstream blackens only its own dark theme, whose canvas was neutral-950", () => {
+  it("upstream blackens only its own dark theme; a theme with an id paints its own canvas", () => {
     expect(appStyles).toMatch(
-      /\nhtml\.dark\[data-redesign\]:not\(\[data-theme-id\]\) \{\s*--background: #000;/,
+      /\n:root \{[^}]*?\n {2}@variant dark \{[^}]*?\n {4}--background: #000;/,
     );
-    expect(appStyles).toMatch(/@variant dark \{[^}]*?--background: var\(--color-neutral-950\);/);
+    expect(appStyles).toMatch(
+      /\nhtml\[data-theme-id\]:not\(\[data-theme-id=""\]\) \{\s*--background: var\(--app-theme-canvas\);/,
+    );
   });
 
   it("the slate and Settings' modal take the canvas back under the same selector", () => {
     expect(workspaceCss).toMatch(
-      /:root\.dark\[data-redesign\]:not\(\[data-theme-id\]\) :is\(\[data-stemcells-slate\], \[data-app-modal\]\) \{\s*--background: var\(--color-neutral-950\);\s*--terminal-background: var\(--color-neutral-950\);\s*\}/,
+      /:root\.dark:not\(\[data-theme-id\]\) :is\(\[data-stemcells-slate\], \[data-app-modal\]\) \{\s*--background: var\(--color-neutral-950\);\s*--terminal-background: var\(--color-neutral-950\);\s*\}/,
     );
   });
 

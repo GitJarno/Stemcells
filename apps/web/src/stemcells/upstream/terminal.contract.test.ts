@@ -52,7 +52,7 @@ describe("the terminal drawer's contracts with upstream", () => {
   it("the buttons float in a box of their own at the drawer's top-right, each labelled", () => {
     // terminal.css finds the box as the drawer's child holding labelled buttons.
     expect(drawer).toMatch(
-      /<aside\s+ref=\{drawerRef\}\s+data-thread-terminal-drawer[\s\S]*?<div className="pointer-events-none absolute right-2 top-2 z-20">\s*<div className="pointer-events-auto inline-flex items-center [^"]*">\s*<TerminalActionButton/,
+      /<aside\s+ref=\{drawerRef\}[^>]*?\sdata-thread-terminal-drawer[\s\S]*?<div className="pointer-events-none absolute right-2 top-2 z-20">\s*<div className="pointer-events-auto inline-flex items-center [^"]*">\s*<TerminalActionButton/,
     );
     expect(drawer).toMatch(/render=\{\s*<button[^>]*aria-label=\{label\}/);
   });

@@ -53,7 +53,7 @@ export function WindowsKeeper(props: {
   const onMoved = useEffectEvent(props.onMoved);
   const onFocusPane = useEffectEvent(props.onFocusPane);
   // A layout effect, so the key is heard before any chat's own listeners.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Own the window-move shortcuts and the desktop bridge's adopt, focus, close and return listeners.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the window-move shortcuts and the desktop bridge's adopt, focus, close and return listeners.
   useLayoutEffect(() => {
     const bridge = windowsBridge();
     if (!bridge) return;
@@ -98,7 +98,7 @@ export function WindowsKeeper(props: {
   }, []);
   // Drawn, and drawn again once a window started hidden shows: a window a
   // tab was carried out to has its still taken away now.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the desktop bridge the page drew, at mount and on each show; cancel frames on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the desktop bridge the page drew, at mount and on each show; cancel frames on unmount.
   useEffect(() => {
     const bridge = windowsBridge();
     if (!bridge) return;

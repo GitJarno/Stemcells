@@ -21,7 +21,7 @@ export function useSpend(): {
 } | null {
   const primaryId = usePrimaryEnvironmentId();
   const [reading, setReading] = useState<SpendReading | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Fetch the spend once on mount and drop the answer if it arrives after unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Fetch the spend once on mount and drop the answer if it arrives after unmount.
   useEffect(() => {
     let cancelled = false;
     void getFromPrimary("/api/stemcells/spend")

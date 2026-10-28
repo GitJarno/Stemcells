@@ -67,7 +67,7 @@ function Card(props: ComponentProps<typeof UpstreamThreadPreviewMiniPlayer>) {
     const up = hovered.current || focused.current;
     browserViewOf(threadKey, source)?.toggleAttribute("data-stemcells-lifted", up);
   };
-  // oxlint-disable-next-line t3code/react-effect-budget -- Clear the lifted mark from the desktop browser view when the card's source changes or unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Clear the lifted mark from the desktop browser view when the card's source changes or unmounts.
   useEffect(
     () => () => browserViewOf(threadKey, source)?.removeAttribute("data-stemcells-lifted"),
     [threadKey, source],
@@ -125,7 +125,7 @@ function Tucked(
   const card = useRef<HTMLDivElement>(null);
   const [out, setOut] = useState(false);
   const pointer = useRef<string | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for a press outside the slid-out card to tuck it back, removing the listener when it tucks.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen for a press outside the slid-out card to tuck it back, removing the listener when it tucks.
   useEffect(() => {
     if (!out) return;
     const away = (event: PointerEvent) => {
@@ -183,7 +183,7 @@ const COMPOSER = "[data-chat-composer-stack]";
  * as the composer grows, into a style property, never React state.
  */
 function useShelf(room: RefObject<HTMLElement | null>) {
-  // oxlint-disable-next-line t3code/react-effect-budget -- Measure the shelf's floor into a style property and observe the canvas and composer resizes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure the shelf's floor into a style property and observe the canvas and composer resizes.
   useLayoutEffect(() => {
     const element = room.current;
     const canvas = element?.closest<HTMLElement>("[data-chat-canvas]");

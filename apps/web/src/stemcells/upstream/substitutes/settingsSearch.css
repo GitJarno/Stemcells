@@ -1,7 +1,0 @@
-/* Upstream's "Collapse composer on scroll" does nothing in Stemcells: the
-   composer never rests into one line (`composerScrollGesture.ts`). Its
-   row, anchored by its search id, is hidden; search skips it too
-   (`settingsSearch.ts`). */
-[data-slot="settings-row"]#composer-collapse {
-  display: none;
-}

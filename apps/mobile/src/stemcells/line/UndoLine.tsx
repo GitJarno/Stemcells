@@ -21,11 +21,11 @@ export function UndoLine(props: { readonly held: HeldStore }) {
   const notice = useThreadUndoNotice();
   const insets = useSafeAreaInsets();
   const workspace = useWorkspaceTabs();
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep one undo line: T3's notice lets ours go.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: T3's notice lets ours go.
   useEffect(() => {
     if (notice !== null) void held.letGo();
   }, [notice, held]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep one undo line: an answer's line takes the place of T3's notice.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: an answer's line takes the place of T3's notice.
   useEffect(() => {
     if (line?.kind === "held") dismissThreadUndoNotice();
   }, [line]);

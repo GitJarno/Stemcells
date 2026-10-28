@@ -86,7 +86,7 @@ export function useKeepReading(
   const { savedConnectionsById } = useSavedRemoteConnections();
   const seen = useRef(new Map<string, ReadonlyArray<unknown>>());
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Follow the saved connections into the reader, forgetting removed machines and reading new ones.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow the saved connections into the reader, forgetting removed machines and reading new ones.
   useEffect(() => {
     const saved = Object.values(savedConnectionsById);
     for (const id of connections.keys())
@@ -107,7 +107,7 @@ export function useKeepReading(
 
   // Each minute while in front; none behind a chat.
   const tick = inFront ? minute : null;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Read every machine on coming to the front, each minute, and on the app's return; remove the AppState listener on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read every machine on coming to the front, each minute, and on the app's return; remove the AppState listener on change.
   useEffect(() => {
     if (tick === null) return;
     for (const id of connections.keys()) void readMachine(id);
@@ -117,7 +117,7 @@ export function useKeepReading(
     return () => subscription.remove();
   }, [tick]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Read a machine again once one of its chats changed in T3's live data.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read a machine again once one of its chats changed in T3's live data.
   useEffect(() => {
     const byMachine = new Map<string, unknown[]>();
     for (const chat of chats) {

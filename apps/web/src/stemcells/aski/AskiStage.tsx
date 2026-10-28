@@ -109,12 +109,12 @@ export function AskiStage(props: AskiStageProps) {
 
   const standing = standingOf(props.cells);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the latest props for the stage's long-lived callbacks before any effect reads them.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the latest props for the stage's long-lived callbacks before any effect reads them.
   useLayoutEffect(() => {
     latest.current = props;
   });
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Own the stage's actors, scene worker, and size, sight and visibility watchers; tear down on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the stage's actors, scene worker, and size, sight and visibility watchers; tear down on unmount.
   useEffect(() => {
     const theater = theaterRef.current;
     const farLayer = farRef.current;
@@ -319,17 +319,17 @@ export function AskiStage(props: AskiStageProps) {
     };
   }, []);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand changed standings to the imperative stage, which moves the Cells.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand changed standings to the imperative stage, which moves the Cells.
   useEffect(() => {
     stageRef.current?.restand(standing);
   }, [standing]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the imperative stage whether it is shown, so the orbit holds still out of sight.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the imperative stage whether it is shown, so the orbit holds still out of sight.
   useEffect(() => {
     stageRef.current?.show(props.shown);
   }, [props.shown]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand a due scene to the stage's scene player.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand a due scene to the stage's scene player.
   useEffect(() => {
     stageRef.current?.part(props.scene);
   }, [props.scene]);

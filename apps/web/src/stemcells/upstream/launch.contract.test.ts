@@ -60,12 +60,7 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
       multipleModelSend.indexOf("const starts = Promise.all("),
     );
     expect(fanout).toMatch(
-      /message: \{\s*messageId: newMessageId\(\),\s*role: "user",\s*attachments,\s*\.\.\.withMessageContext\(\{\s*text: target\.text,\s*context,\s*supportsInlineMessageContext,\s*\}\),/,
-    );
-    // A machine that can't take the context apart gets it written into the
-    // text, as `carry.ts` does for the Cells beside.
-    expect(chatViewLogic).toMatch(
-      /if \(!input\.supportsInlineMessageContext\) \{\s*return \{ text: serializeLegacyContextMessage\(\{ text, records: context\.records \}\) \};/,
+      /message: \{\s*messageId: newMessageId\(\),\s*role: "user",\s*attachments,\s*\.\.\.withMessageContext\(\{\s*text: target\.text,\s*context,\s*\}\),/,
     );
   });
 

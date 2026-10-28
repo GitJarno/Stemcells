@@ -67,7 +67,7 @@ export function useTailnet(watch: boolean) {
   const phoneOnline = look?.phones.some((phone) => phone.online) === true;
   const readNow = useRef<() => void>(() => undefined);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Read Tailscale on mount, focus and a watch timer; detach on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read Tailscale on mount, focus and a watch timer; detach on change.
   useEffect(() => {
     let stopped = false;
     let served = false;

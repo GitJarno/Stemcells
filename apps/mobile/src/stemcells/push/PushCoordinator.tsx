@@ -104,7 +104,7 @@ export function usePushState(): PushState {
 /** Mounted once for the app: asks the Macs on start, when the saved ones change, and on each return to the front. */
 export function PushCoordinator() {
   const { savedConnectionsById } = useSavedRemoteConnections();
-  // oxlint-disable-next-line t3code/react-effect-budget -- Register with the saved Macs now and on each return to the front, removing the AppState listener on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Register with the saved Macs now and on each return to the front, removing the AppState listener on change.
   useEffect(() => {
     const connections = Object.values(savedConnectionsById);
     void refresh(connections);

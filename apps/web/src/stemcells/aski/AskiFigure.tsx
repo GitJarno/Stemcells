@@ -117,7 +117,7 @@ export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
 
   // Aski's figure as drawn, its eyes laid over it; drawn again when its size, the skin or the mood changes.
   const askRef = useRef<(mood: Mood | undefined) => void>(() => undefined);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Own the figure's drawing, resize and skin observers, blinking and looking; stop them on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the figure's drawing, resize and skin observers, blinking and looking; stop them on unmount.
   useEffect(() => {
     const figure = figureRef.current;
     const canvas = canvasRef.current;
@@ -214,10 +214,10 @@ export function AskiFigure(props: { aski?: CellRef | null; field?: string }) {
   }, []);
 
   // A mood is typed into the eyes, which hold it without a blink.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand a new mood to the figure's drawing, which lives outside React.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand a new mood to the figure's drawing, which lives outside React.
   useEffect(() => askRef.current(mood), [mood]);
   // Aski beginning to think turns its eyes up and to the left, and lets the caret go.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the imperative eye tracker when Aski starts or stops thinking.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the imperative eye tracker when Aski starts or stops thinking.
   useEffect(() => lookingRef.current?.thought(thinking), [thinking]);
 
   return (

@@ -211,12 +211,12 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
       : null;
   const expired = link !== null && Date.parse(link.expiresAt) <= nowMs;
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Ask the desktop app for its advertised routes once on open.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Ask the desktop app for its advertised routes once on open.
   useEffect(() => {
     refreshRoutes();
   }, []);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Mint one pairing link once its route and scopes are known.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mint one pairing link once its route and scopes are known.
   useEffect(() => {
     const scopesKnown = here.delegatable.length > 0;
     if (!ready || !here.canPair || !scopesKnown || devices === null) return;
@@ -238,11 +238,11 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
   }, [ready, here.canPair, here.delegatable, devices, link, problem]);
 
   // A link nobody used goes back when the dialog closes, not five minutes later.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Mirror the unused link's id for the unmount cleanup.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mirror the unused link's id for the unmount cleanup.
   useEffect(() => {
     unused.current = link !== null && paired === null && !expired ? link.id : null;
   }, [link, paired, expired]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Revoke the unused pairing link when the dialog unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Revoke the unused pairing link when the dialog unmounts.
   useEffect(() => {
     mounted.current = true;
     return () => {

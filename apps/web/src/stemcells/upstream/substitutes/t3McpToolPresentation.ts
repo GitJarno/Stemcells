@@ -8,17 +8,25 @@ import { withCellWords } from "../../../../../../stemcells/words/cellTools.ts";
 
 export * from "@t3tools/shared/t3McpToolPresentation";
 
-export const resolveT3McpToolDefinition: typeof Upstream.resolveT3McpToolDefinition = (toolName) =>
-  withCellWords(
-    Upstream.resolveT3McpToolId(toolName),
-    Upstream.resolveT3McpToolDefinition(toolName),
-  );
+// An action tool's call resolves to the definition of the tool its action replaced; this names it.
+const idOf = new Map(
+  [...Upstream.T3_MCP_TOOL_NAMES].map((name) => [Upstream.resolveT3McpToolDefinition(name), name]),
+);
+
+export const resolveT3McpToolDefinition: typeof Upstream.resolveT3McpToolDefinition = (
+  toolName,
+  input,
+) => {
+  const definition = Upstream.resolveT3McpToolDefinition(toolName, input);
+  return withCellWords(definition && (idOf.get(definition) ?? null), definition);
+};
 
 export const resolveT3McpToolPresentation: typeof Upstream.resolveT3McpToolPresentation = (
   toolName,
+  input,
 ) => {
-  const presentation = Upstream.resolveT3McpToolPresentation(toolName);
-  const definition = resolveT3McpToolDefinition(toolName);
+  const presentation = Upstream.resolveT3McpToolPresentation(toolName, input);
+  const definition = resolveT3McpToolDefinition(toolName, input);
   return presentation === null || definition === null
     ? presentation
     : { ...presentation, displayName: definition.displayName };

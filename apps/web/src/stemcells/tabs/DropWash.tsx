@@ -13,7 +13,7 @@ import "./drop.css";
  */
 export function DropWash() {
   const ref = useRef<HTMLDivElement>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the wash's drag listeners to its slate; detach on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Attach the wash's drag listeners to its slate; detach on unmount.
   useEffect(() => {
     const wash = ref.current;
     const slate = wash?.parentElement;

@@ -81,7 +81,7 @@ export function Hops(props: {
   const [flights, setFlights] = useState<ReadonlyArray<Flight>>([]);
   const { standings, cellOf } = props;
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Launch a hop for each Cell the person moved whose segment changed since the last draw.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Launch a hop for each Cell the person moved whose segment changed since the last draw.
   useEffect(() => {
     const previous = before.current;
     before.current = standings;
@@ -137,7 +137,7 @@ function HopFlight(props: { readonly flight: Flight; readonly onLanded: () => vo
   const progress = useSharedValue(0);
   // The list draws again while a Cell is in the air; its arc runs once, whatever the list does.
   const land = useEffectEvent(props.onLanded);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Run the hop's one arc and drop it once it lands.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Run the hop's one arc and drop it once it lands.
   useEffect(() => {
     progress.set(
       withDelay(

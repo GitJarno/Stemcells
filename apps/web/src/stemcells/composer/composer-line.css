@@ -187,11 +187,10 @@
    chat is about, the branch, where it runs and its parent go (a draft
    keeps its branch, all its ledge holds), and the model in the composer
    shows its mark alone (upstream folds its own controls into its overflow
-   before that). Last the project, the model's chevron and the attach
-   button go (dropping and pasting still attach). The Cell, its name, the
-   stash, the field and send or stop stay at every width; at the last rung
-   a long name ends in an ellipsis before it pushes the stash off the
-   ledge. */
+   before that). Last the project and the attach button go (dropping and
+   pasting still attach). The Cell, its name, the stash, the field and
+   send or stop stay at every width; at the last rung a long name ends in
+   an ellipsis before it pushes the stash off the ledge. */
 [data-stemcells-composer-line] :is(.composer-line-project-mark, .composer-line-branch-mark) {
   display: none;
 }
@@ -229,11 +228,7 @@
     flex-shrink: 1;
     min-width: 0;
   }
-  [data-chat-composer-footer="true"]
-    :is(
-      [aria-label="Attach files"],
-      [data-chat-provider-model-picker] [data-composer-control-chevron]
-    ) {
+  [data-chat-composer-footer="true"] [aria-label="Attach files"] {
     display: none;
   }
   [data-chat-composer-footer="true"] [data-chat-provider-model-picker] {

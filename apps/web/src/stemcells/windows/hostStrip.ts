@@ -136,11 +136,11 @@ export function useStripMeasure(
   newCellTabId: string | null,
 ): void {
   const latest = useRef(tabs);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the latest tabs in a ref for the bridge's measure callback.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the latest tabs in a ref for the bridge's measure callback.
   useEffect(() => {
     latest.current = tabs;
   });
-  // oxlint-disable-next-line t3code/react-effect-budget -- Answer the desktop bridge's measure requests while mounted and unregister on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Answer the desktop bridge's measure requests while mounted and unregister on unmount.
   useEffect(() => {
     if (!bridge) return;
     return bridge.onMeasure(() => {

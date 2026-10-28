@@ -154,7 +154,7 @@ describe("what the Cells beside the draft's take", () => {
     ]);
   });
 
-  it("puts pictures and context in the message for a machine that takes no uploads", async () => {
+  it("puts pictures in the message for a machine that takes no uploads, its chip bound to them", async () => {
     state.configs.set("desk", machine({}));
     const chip = formatComposerContextReference({
       kind: "image",
@@ -168,9 +168,10 @@ describe("what the Cells beside the draft's take", () => {
     expect(carried.attachments).toEqual([
       expect.objectContaining({ id: "picture-1", dataUrl: "data:image/png;base64,AAAA" }),
     ]);
-    expect(carried.context).toBeUndefined();
-    expect(carried.text).toMatch(/^Match /);
-    expect(carried.text).not.toContain("t3-context:");
+    expect(carried.context?.records).toEqual([
+      expect.objectContaining({ kind: "image", attachmentId: "picture-1" }),
+    ]);
+    expect(carried.text).toBe(`Match ${chip}`);
   });
 
   it("stops only the Cell on another machine when its text points at a chat it can't read", async () => {

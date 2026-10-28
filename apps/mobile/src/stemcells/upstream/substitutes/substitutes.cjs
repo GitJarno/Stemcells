@@ -42,6 +42,8 @@ const PACKAGES = {
   // The photos picked on Add to Chat reach T3's photo picking as its
   // picker's own.
   "expo-image-picker": "expo-image-picker.ts",
+  // T3's crash reporter records nothing, and sends nothing.
+  "expo-observe": "expo-observe.ts",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

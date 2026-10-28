@@ -25,7 +25,7 @@ export function HostedBrowserWebview(props: ComponentProps<typeof UpstreamHosted
   const working = useChatWorking(threadRef);
   const wanted = useBrowserWanted(runtimeTabId) || shown || working;
   useSyncExternalStore(subscribeToWakes, wakes, wakes);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Wake the desktop browser in the shared wake store once it is shown, busy or its Cell works.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Wake the desktop browser in the shared wake store once it is shown, busy or its Cell works.
   useEffect(() => {
     if (wanted) wakeBrowser(runtimeTabId);
   }, [runtimeTabId, wanted]);

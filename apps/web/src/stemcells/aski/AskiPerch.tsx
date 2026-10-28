@@ -48,7 +48,7 @@ export function AskiPerch(props: { aski: CellRef }) {
  */
 function useRise(perch: { current: HTMLDivElement | null }): number {
   const [rise, setRise] = useState(0);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Measure Aski's rise as the chat canvas and composer resize, and stop observing on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure Aski's rise as the chat canvas and composer resize, and stop observing on unmount.
   useLayoutEffect(() => {
     const element = perch.current;
     const stage = element?.firstElementChild;

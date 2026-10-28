@@ -107,7 +107,7 @@ export function useMachineDisk(
       ? NO_MACHINE
       : serverEnvironment.hostResources({ environmentId, input: {} }),
   );
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the machine's disk figures read on an interval while anything shows them.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the machine's disk figures read on an interval while anything shows them.
   useEffect(
     () => (environmentId === null ? undefined : readEvery(registry, environmentId)),
     [registry, environmentId],

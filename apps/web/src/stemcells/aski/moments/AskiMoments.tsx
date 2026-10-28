@@ -155,7 +155,7 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
     if (next.seven) earn({ id: "bits", line: words["moment.bits"], at: now });
   });
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Own the moment canvas, its player, size observer, click and earned listeners; clean up on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the moment canvas, its player, size observer, click and earned listeners; clean up on unmount.
   useEffect(() => {
     const theater = theaterRef.current;
     if (theater === null) return;
@@ -190,7 +190,7 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
     };
   }, []);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Run or pause the moment player as Aski comes into or out of sight, and reschedule what's due.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Run or pause the moment player as Aski comes into or out of sight, and reschedule what's due.
   useEffect(() => {
     playerRef.current?.run(shown);
     shownSince.current = shown ? Date.now() : null;
@@ -198,7 +198,7 @@ export function AskiMoments(props: { aski: CellRef | null; children: ReactNode }
   }, [shown]);
 
   // The night shift: the first look at Aski tonight while Cells work.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Earn the night shift when Aski is in sight at night while Cells work.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Earn the night shift when Aski is in sight at night while Cells work.
   useEffect(() => {
     if (!shown || !present || working === 0) return;
     const night = nightOf(new Date(minute));

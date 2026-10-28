@@ -23,7 +23,7 @@ export function StagePager(props: {
   const stripRef = useRef<HTMLDivElement>(null);
   const { surface } = props;
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the stage strip to its viewport and the column's surface; detach on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Attach the stage strip to its viewport and the column's surface; detach on unmount.
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (viewport === null || stripRef.current === null) return;
@@ -31,7 +31,7 @@ export function StagePager(props: {
     return () => strip.detach();
   }, [strip, surface]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the strip this render's open stage and turn before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the strip this render's open stage and turn before paint.
   useLayoutEffect(() => {
     strip.aimed((stage) => props.onAim(parseColumnStage(stage)));
     strip.sync(COLUMN_STAGES, props.stage, (stage) => props.onTurn(parseColumnStage(stage)));

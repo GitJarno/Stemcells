@@ -21,17 +21,17 @@ const read = (file: string) => NodeFS.readFileSync(NodePath.join(threads, file),
 const SAID = {
   "thread-subagent-group.tsx": [
     "const label = `${agents.length} Subcells`;",
-    'threadId === null ? "Provider-managed Subcell" : "Opens this Subcell"',
+    '? "Opens this Subcell"',
+    ': "Provider-managed Subcell"',
   ],
   "ThreadAgentsSheet.tsx": [
     'title="Subcells"',
     "No Subcells in this turn.",
-    'accessibilityHint="Provider-managed Subcell. Its work appears in the transcript."',
+    '"Provider-managed Subcell. Its work appears in the transcript."',
     'accessibilityHint="Opens this Subcell"',
   ],
   "threadAgentsPresentation.ts": ['if (prompt.length === 0) return "Subcell";'],
   "floating-working-control.tsx": ['accessibilityHint="Opens this turn\'s Subcells"'],
-  "thread-work-log.tsx": ['${memberCount === 1 ? "Subcell" : "Subcells"}'],
   "ProviderSubagentBar.tsx": ["accessibilityLabel={`${modelDescription} Subcell, ${statusLabel}."],
 } as const;
 

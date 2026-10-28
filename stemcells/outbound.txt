@@ -36,6 +36,10 @@ host tailwindcss.com the license comment in generated CSS
 host docs.github.com a comment in the GitHub GraphQL config
 host www.nayuki.io the QR code library's credit
 host hub.example.ts.net a placeholder in the usage-source dialog
+host machine.tailnet.ts.net a placeholder in a link request's address field, on the web and the phone
+host box.example.ts.net a placeholder in Settings' linked environments address field
+host gateway.example.ts.net a placeholder in Settings' Simlock gateway field and its hint
+host incubator.callstack.com Labs' link to Simlock, and a comment naming it; the gateway Settings leases devices from is the person's own, off until they add one
 host moonbase.tail9f3a.ts.net made-up showcase rows on the phone
 host aurora-gpu.t3.sh made-up showcase rows on the phone
 host pocket-pi.t3.sh made-up showcase rows on the phone
@@ -43,6 +47,7 @@ host suspense-vps.hel1.t3.sh made-up showcase rows on the phone
 
 # Links a person opens in their own browser.
 host app.t3.codes T3's hosted app: T3 Connect's sign-in page and hosted pairing and prompt links, used only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
+host t3.chat the T3 Chat subscription link on T3 Connect's account page, shown only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
 host t3.codes legal and download links, a README credit line and t3.json's schema url; nothing fetches it
 host apps.apple.com the phone app's store link
 host play.google.com the phone app's store link
@@ -124,7 +129,7 @@ id apps/desktop/src/stemcells/updates/SourceUpdater.ts ours: electron-updater's 
 # build time, which each upstream sync refreshes (seams.md, No model list from T3).
 forbid raw.githubusercontent.com/pingdotgg/ T3's repository on GitHub, read raw: upstream's server fetched its model list from it every hour
 cut apps/server/src/provider/ModelManifest.ts upstream's fetching model list; server.ts provides Stemcells' bundled one instead (modelList.contract.test.ts)
-cut apps/server/src/cli/triagePrompt.ts the instructions `t3 triage` hands the person's own agent; the app fetches nothing
+cut apps/server/src/triage/triagePrompt.ts the instructions `t3 triage` hands the person's own agent when they run it; server.ts provides Stemcells' no-op in place of upstream's in-app triage (triage.contract.test.ts)
 
 # The running app, with no one asking (outbound-live, 2026-10-22). None goes
 # to T3 or carries anything of the person's; each waits on the person's call to go

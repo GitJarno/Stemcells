@@ -215,7 +215,7 @@ function Options(props: {
 }) {
   const [writing, setWriting] = useState<string | null>(null);
   const [allowReady, setAllowReady] = useState(false);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Let an allow land once the ask has been open long enough to read; clear the timer on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Let an allow land once the ask has been open long enough to read; clear the timer on unmount.
   useEffect(() => {
     const timer = setTimeout(() => setAllowReady(true), READ_BEFORE_ALLOW_MS);
     return () => clearTimeout(timer);

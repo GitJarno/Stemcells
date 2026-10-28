@@ -155,7 +155,7 @@ export function useAskiChat(setsUp = true): AskiChat {
   const adopted = adoptedChat?.threadId ?? null;
   const adoptedPinned = adoptedChat?.pinned ?? false;
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Remember Aski's chat in this browser, to show before the server's chats load, and ask once per page to pin it.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Remember Aski's chat in this browser, to show before the server's chats load, and ask once per page to pin it.
   useEffect(() => {
     if (environmentId === null || adopted === null) return;
     rememberAskiThread(environmentId, adopted);
@@ -168,7 +168,7 @@ export function useAskiChat(setsUp = true): AskiChat {
     });
   }, [environmentId, adopted, adoptedPinned, pinThread]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Set Aski up on the server one step at a time: write its instance, then make, pin or move its chat.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Set Aski up on the server one step at a time: write its instance, then make, pin or move its chat.
   useEffect(() => {
     if (!setsUp || environmentId === null || failed || stepInFlight !== null) return;
     if (instanceKey === null) return;

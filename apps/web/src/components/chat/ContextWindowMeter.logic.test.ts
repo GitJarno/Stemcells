@@ -99,7 +99,7 @@ describe("resolveContextWindowModelDisplayName", () => {
         },
         modelOptionsByInstance,
       ),
-    ).toBe("5.6 Sol");
+    ).toBe("Sol 5.6");
   });
 });
 

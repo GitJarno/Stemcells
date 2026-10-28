@@ -252,7 +252,7 @@ An independent review found seven problems; six are fixed, with tests:
 
 Left for upstream, since it lives in upstream's orchestrator and is any T3
 user's problem: an agent with write access to a thread can rewrite the
-person's queued message (`t3_queue_edit`), and it stays the person's
+person's queued message (`t3_queue`, action `edit`), and it stays the person's
 (`createdBy: "user"`, no sender), so neither the frame nor the `/logout`
 guard sees it. The fix is to stamp the editing thread on an edit made by
 another thread, or refuse it. Offered upstream once we ask.
@@ -292,6 +292,6 @@ fixed, with tests:
 - Who's at work was read whole on every ask. A linked machine asks at
   most every ten seconds.
 
-Left for upstream, as with `t3_queue_edit`: a `t3_thread_send` reading
+Left for upstream, as with `t3_queue`'s `edit`: a `t3_thread_send` reading
 `/compact` or `/logout` runs it on the recipient on one machine too. The
 fix belongs in upstream's send, any T3 user's problem.

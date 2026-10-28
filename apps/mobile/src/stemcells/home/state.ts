@@ -62,7 +62,7 @@ export function tabChoice<Tab extends string>() {
     /** The tab shown: the person's, else `opens`, chosen for good once `known`. */
     useTab(opens: Tab, known: boolean): Tab {
       const tab = useSyncExternalStore(subscribe, () => chosen);
-      // oxlint-disable-next-line t3code/react-effect-budget -- Choose the opening tab in the shared tab store once the counts are known.
+      // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Choose the opening tab in the shared tab store once the counts are known.
       useEffect(() => {
         if (known && chosen === null) choose(opens);
       }, [known, opens]);

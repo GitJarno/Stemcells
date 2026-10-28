@@ -20,6 +20,7 @@ import * as SpendHttp from "./spend/http.ts";
 import * as SuggestionHttp from "./suggestions/http.ts";
 import * as TailscaleHttp from "./tailscale/http.ts";
 import * as ModelList from "./upstream/modelList.ts";
+import * as Triage from "./upstream/triage.ts";
 
 // Everything Stemcells adds to the server, mounted by one line in server.ts. Each module
 // says what it adds.
@@ -51,3 +52,6 @@ export const analytics = Privacy.analytics;
 
 /** The model list server.ts provides in place of upstream's: the bundled one, never fetched. */
 export const modelList = ModelList.bundledModelList;
+
+/** The triage service server.ts provides in place of upstream's: prepares nothing. */
+export const triage = Triage.noTriage;

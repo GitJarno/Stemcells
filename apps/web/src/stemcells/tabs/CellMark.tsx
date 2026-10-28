@@ -49,7 +49,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
   const mood = moodAt(status, landedAt, coldAt, now, useCellLineDown(props.cell));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Rerender when the mood next turns; clear the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Rerender when the mood next turns; clear the timer on change.
   useEffect(() => {
     if (turnsAt === undefined) return;
     const timer = setTimeout(() => setNow(Date.now()), Math.max(0, turnsAt - Date.now()));

@@ -88,7 +88,7 @@ export function CellToss(props: {
   const { frames } = props;
   const canvas = useRef<HTMLCanvasElement>(null);
   const sky = useRef<HTMLCanvasElement>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Paint the thrown Cell and its stars on each flight frame, unsubscribing from `frames` on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Paint the thrown Cell and its stars on each flight frame, unsubscribing from `frames` on change.
   useLayoutEffect(() => {
     const cell = canvas.current;
     const stars = sky.current;

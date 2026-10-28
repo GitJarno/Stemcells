@@ -42,7 +42,7 @@ export function AskiFigure(props: {
   const width = VIEW.width * scale;
   const open = useSharedValue(1);
   const holds = useReducedMotion() || props.mood !== undefined;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to the shared blink clock while the eyes may blink, and unsubscribe on change or unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Subscribe to the shared blink clock while the eyes may blink, and unsubscribe on change or unmount.
   useEffect(() => {
     if (holds) return;
     return onBlink(() => {

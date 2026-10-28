@@ -11,7 +11,7 @@ import { DRAFTS_PATH, startDraftReport } from "./drafts";
  * page, in any layout, keeps a draft holding its Cell.
  */
 export function useDraftReport() {
-  // oxlint-disable-next-line t3code/react-effect-budget -- Report this screen's drafts to the server while mounted, and stop the report on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Report this screen's drafts to the server while mounted, and stop the report on unmount.
   useEffect(() => {
     const screen = randomUUID();
     return startDraftReport({
