@@ -1,3 +1,4 @@
+import { STEMCELLS_OVER_T3_DARK } from "../../../stemcells/brand/look.ts";
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import { describe, expect, it } from "vite-plus/test";
@@ -29,10 +30,10 @@ describe("generate mobile Uniwind themes", () => {
         ),
         name,
       ).toEqual({
-        "--color-clerk-page": isDark ? "#0a0a0a" : "#fcfcfc",
+        "--color-clerk-page": isDark ? STEMCELLS_OVER_T3_DARK.canvas : "#fcfcfc",
         "--color-clerk-foreground": isDark ? "#f5f5f5" : "#27272a",
         "--color-clerk-foreground-muted": isDark ? "#818181" : "#71717b",
-        "--color-clerk-border": isDark ? "#191919" : "#e4e4e7",
+        "--color-clerk-border": isDark ? STEMCELLS_OVER_T3_DARK.border : "#e4e4e7",
         "--color-clerk-danger": isDark ? "#ff6467" : "#c10007",
       });
     }

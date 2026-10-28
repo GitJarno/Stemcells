@@ -178,6 +178,34 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/thread-header-appearance.ts": {
+    exports: view(
+      "apps/mobile/src/features/threads/thread-header-appearance.ts",
+      "thread-header-appearance.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx": [
+        "./thread-header-appearance",
+        ["threadHeaderAppearance"],
+      ],
+      "apps/mobile/src/features/threads/NewTaskDraftScreen.tsx": [
+        "./thread-header-appearance",
+        ["threadHeaderAppearance"],
+      ],
+    },
+  },
+  "apps/mobile/src/native/NativeScrollViewMarker.tsx": {
+    exports: view(
+      "apps/mobile/src/native/NativeScrollViewMarker.tsx",
+      "NativeScrollViewMarker.tsx",
+    ),
+    importers: {
+      "apps/mobile/src/features/home/HomeScreen.tsx": [
+        "../../native/NativeScrollViewMarker",
+        ["NativeScrollViewMarker"],
+      ],
+    },
+  },
   "apps/mobile/src/features/home/HomeScreen.tsx": {
     exports: view("apps/mobile/src/features/home/HomeScreen.tsx", "HomeScreen.tsx"),
     importers: {
@@ -296,7 +324,13 @@ function importedNames(source: string, specifier: string): string[] {
   const from = specifier.replaceAll(/[/.]/g, (char) => `\\${char}`);
   const pattern = new RegExp(`(?:import|export)\\s*\\{([^}]*)\\}\\s*from\\s*["']${from}["']`, "g");
   return [...source.matchAll(pattern)].flatMap((match) =>
-    match[1]!.split(",").map((name) => name.trim().replace(/^type\s+/, "")),
+    // An import renamed locally (`a as b`) still imports `a`.
+    match[1]!.split(",").map((name) =>
+      name
+        .trim()
+        .replace(/^type\s+/, "")
+        .replace(/\s+as\s+\w+$/, ""),
+    ),
   );
 }
 
@@ -359,6 +393,12 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadHeader")>().toEqualTypeOf<
       typeof import("../../../features/threads/ThreadHeader")
+    >();
+    expectTypeOf<typeof import("./thread-header-appearance")>().toEqualTypeOf<
+      typeof import("../../../features/threads/thread-header-appearance")
+    >();
+    expectTypeOf<typeof import("./NativeScrollViewMarker")>().toEqualTypeOf<
+      typeof import("../../../native/NativeScrollViewMarker")
     >();
     expectTypeOf<typeof import("./HomeScreen")>().toEqualTypeOf<
       typeof import("../../../features/home/HomeScreen")

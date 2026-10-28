@@ -23,6 +23,9 @@ export interface HomeTabs {
   readonly environmentId: string | null;
 }
 
+/** Set inside the home: its scroll views draw no band under the header (`upstream/substitutes/NativeScrollViewMarker.tsx`). */
+export const NoHeaderBand = createContext(false);
+
 /** Set while the home shows its tabs: T3's own home, searching, shows none. */
 export const HomeTabsContext = createContext<HomeTabs | null>(null);
 

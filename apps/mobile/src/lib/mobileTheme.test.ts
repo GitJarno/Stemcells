@@ -1,3 +1,4 @@
+import * as Stemcells from "../stemcells/upstream/look.ts";
 import { describe, expect, it } from "vite-plus/test";
 import {
   BUILT_IN_THEME_IDS,
@@ -73,7 +74,7 @@ describe("mobile themes", () => {
       const colors = theme
         ? getThemeColorsForAppearance(theme, appearance)!
         : appearance === "dark"
-          ? T3_CODE_DARK_THEME_COLORS
+          ? Stemcells.overT3Dark(T3_CODE_DARK_THEME_COLORS)
           : T3_CODE_LIGHT_THEME_COLORS;
       const variables =
         themeId === DEFAULT_MOBILE_THEME_ID

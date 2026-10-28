@@ -18,6 +18,7 @@ import { useAdaptiveWorkspaceLayout } from "../layout/AdaptiveWorkspaceLayout";
 import { useWorkspaceTabs } from "./WorkspaceTabsContext";
 import { useCompactWorkspaceTabs, useSidebarWorkspaceTabs } from "./useSystemWorkspaceTabBar";
 import { WorkspaceTabToolbarButtons } from "./WorkspaceSectionToolbar";
+import { useHomeScopeItems } from "../../stemcells/home/scope";
 
 const SEARCH_LABELS = {
   threads: "Search threads",
@@ -47,6 +48,7 @@ export function WorkspaceToolbar(props: {
   const focused = useIsFocused();
   const { panes, togglePrimarySidebar } = useAdaptiveWorkspaceLayout();
   const searchRef = useRef<SearchBarCommands>(null);
+  const homeScope = useHomeScopeItems();
   // The Settings list takes the selected tab's place, so search follows it.
   const selectedTab = workspace.settingsOpen ? "settings" : workspace.state.selectedTab;
   const tab = workspace.state.tabs[selectedTab];
@@ -205,6 +207,7 @@ export function WorkspaceToolbar(props: {
               onPress={focusSearch}
             />
           )}
+          {selectedTab === "threads" ? homeScope : null}
         </Toolbar>
       )}
       <Toolbar placement="bottom">

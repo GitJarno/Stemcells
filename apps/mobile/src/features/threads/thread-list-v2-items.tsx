@@ -1,6 +1,7 @@
+import { inDoneColour, inStageColours } from "../../stemcells/home/stages";
 import * as Dialog from "../../components/ui/Dialog";
 import { FailureWords } from "../../stemcells/disk/FailureWords";
-import { CellBesideRow, SlimRowCell } from "../../stemcells/home/RowCell";
+import { cardLines, CellBesideRow, SlimRowCell } from "../../stemcells/home/RowCell";
 import type { ThreadRowProviderInstance } from "./thread-provider-instance";
 import {
   THREAD_LIST_V2_MONO_FONT as MONO_FONT,
@@ -88,7 +89,7 @@ interface StatusLabel {
   readonly className: string;
   readonly iconTintClassName: string;
 }
-const STATUS_LABEL_BY_STATUS: Partial<Record<ThreadListV2Status, StatusLabel>> = {
+const STATUS_LABEL_BY_STATUS: Partial<Record<ThreadListV2Status, StatusLabel>> = inStageColours({
   approval: {
     label: "Approval",
     icon: "exclamationmark.shield",
@@ -131,13 +132,13 @@ const STATUS_LABEL_BY_STATUS: Partial<Record<ThreadListV2Status, StatusLabel>> =
     className: "text-warning-foreground",
     iconTintClassName: "accent-warning-foreground",
   },
-};
-const DONE_STATUS_LABEL: StatusLabel = {
+});
+const DONE_STATUS_LABEL: StatusLabel = inDoneColour({
   label: "Done",
   icon: "checkmark.circle",
   className: "text-adaptive-emerald-700-300",
   iconTintClassName: "accent-adaptive-emerald-700-300",
-};
+});
 
 function ThreadListV2Duration(props: { readonly startedAt: string | null }) {
   const startedAtMs = Date.parse(props.startedAt ?? "");
@@ -1040,6 +1041,20 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
       : `Opens the thread. Swipe left for ${primaryAction.label.toLowerCase()} and snooze actions.`;
 
   const titleTextInset = props.project ? projectIconSize + 8 : 0;
+  const marks = {
+    machine: props.environmentLabel ? (props.environmentMachine ?? null) : null,
+    machineLabel: props.environmentLabel ?? null,
+    pr,
+    prLabel: prBadgeLabel,
+    onOpenPullRequests: handleOpenPullRequests,
+    provider: providerInstance?.driverKind ?? null,
+    providerIconUrl,
+  };
+  const card = cardLines(
+    variant === "card" && !sidebarPane,
+    Boolean((status === "failed" || status === "limited") && thread.runtime?.lastError),
+    marks,
+  );
   const cardContent = (
     <>
       <View className="flex-row items-start gap-2">
@@ -1063,11 +1078,14 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               ? selectedThreadRowColors.foregroundClassName
               : rowAppearance.foregroundClassName,
           )}
-          numberOfLines={2}
+          numberOfLines={card.titleLines}
         >
           {thread.title}
         </Text>
-        <View className="flex-row items-center gap-1.5" style={{ minHeight: titleLineHeight }}>
+        <View
+          className="flex-row items-center gap-1.5"
+          style={[{ minHeight: titleLineHeight }, card.trailing]}
+        >
           {props.hasQueuedMessages ? <QueuedMessageIcon selected={selected} /> : null}
           {pinnedRow ? (
             <SymbolView
@@ -1158,7 +1176,10 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           />
         </View>
       ) : null}
-      <View className="mt-1 flex-row items-center gap-2" style={{ paddingLeft: titleTextInset }}>
+      <View
+        className="mt-1 flex-row items-center gap-2"
+        style={[{ paddingLeft: titleTextInset }, card.meta]}
+      >
         {(status === "failed" || status === "limited") && thread.runtime?.lastError ? (
           <Text
             className={cn(
@@ -1206,7 +1227,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         ) : (
           <View className="flex-1" />
         )}
-        {pr ? (
+        {pr && !card.beside ? (
           <Pressable
             // Padding cancelled by negative margin grows the touch target into
             // the row padding without moving the badge.
@@ -1246,7 +1267,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
             </Text>
           </Pressable>
         ) : null}
-        {providerInstance ? (
+        {providerInstance && !card.beside ? (
           <View className="flex-row items-center">
             {providerDrivers.slice(0, -1).map(
               (driver, index) => (
@@ -1308,7 +1329,9 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         ) : (
           <View>
             <View className={THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME}>
-              <CellBesideRow thread={thread}>{fadedCardContent}</CellBesideRow>
+              <CellBesideRow thread={thread} marks={marks}>
+                {fadedCardContent}
+              </CellBesideRow>
             </View>
             {THREAD_LIST_V2_ROW_DIVIDERS && props.showTrailingDivider !== false ? (
               <View className="ml-5 h-px bg-border-subtle" />
