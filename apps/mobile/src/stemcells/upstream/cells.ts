@@ -13,6 +13,11 @@ import type { EnvironmentThreadShell } from "./threads";
 export * from "./threads";
 export { AppText } from "../../components/ui/AppText";
 export { useProject } from "../../state/entities";
+export { SymbolView } from "../../components/ui/AppSymbol";
+export { ProviderIcon } from "../../components/ProviderIcon";
+export { PullRequestGlyph } from "../../features/pull-requests/pullRequestGlyphs";
+export { pullRequestStatus } from "../../features/pull-requests/pullRequestStatus";
+export type { ThreadPrPresentation } from "../../state/thread-pr-presentation";
 
 /** What `select` reads from every chat the phone knows; the caller draws again only when that changes. */
 export function useThreadShellsSelected<A>(

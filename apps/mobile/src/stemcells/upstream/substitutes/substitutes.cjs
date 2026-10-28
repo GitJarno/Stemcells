@@ -22,6 +22,9 @@ const SUBSTITUTES = {
   // The Cell stands on its composer's ledge, and heads its chat by name.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
+  // A chat's header, and the home's, float over what scrolls, no band behind them.
+  "apps/mobile/src/features/threads/thread-header-appearance.ts": "thread-header-appearance.ts",
+  "apps/mobile/src/native/NativeScrollViewMarker.tsx": "NativeScrollViewMarker.tsx",
   // The home: one tab of Cells at a time under Aski, in cards, each tab's
   // shelves open.
   "apps/mobile/src/features/home/HomeScreen.tsx": "HomeScreen.tsx",
