@@ -10,7 +10,7 @@ import { landCells, type LandingWindow } from "../tabs/landing";
 import type { CellRef, Land, Workspace } from "../tabs/layout";
 import { newCellTaken } from "../tabs/newCell";
 import { newIds, updateWorkspace, useWorkspaceStore } from "../tabs/store";
-import { cellProject, cellsKnown, subscribeLaunches } from "../upstream/landing";
+import { cellProject, cellsKnown, subscribeArrivals } from "../upstream/landing";
 import type { Placed } from "./arrangement";
 import { windowsBridge, type StripPlace } from "./bridge";
 import { tabRowWidth } from "./hostStrip";
@@ -19,12 +19,16 @@ import { readSnapshot, writeTransaction } from "./wire";
 
 const ATTEMPTS = 3;
 
-/** Each chat an agent launches lands as it arrives, placed by the lead window alone. */
-export function useLandsLaunches(): void {
+/**
+ * Each chat started elsewhere (the phone, another Mac, an agent) lands as it
+ * arrives, or at the next start if the app was closed, placed by the lead
+ * window alone.
+ */
+export function useLandsNewChats(): void {
   const lead = useLeadWindow();
-  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to agent launches while this is the lead window and unsubscribe when it isn't.
+  // oxlint-disable-next-line t3code/react-effect-budget -- Subscribe to new chats while this is the lead window and unsubscribe when it isn't.
   useEffect(
-    () => (lead ? subscribeLaunches((cells) => void landNewCells(cells)) : undefined),
+    () => (lead ? subscribeArrivals((cells) => void landNewCells(cells)) : undefined),
     [lead],
   );
 }

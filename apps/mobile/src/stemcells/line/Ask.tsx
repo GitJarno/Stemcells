@@ -7,9 +7,11 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 
 import { cellNameOf } from "../cell/kit";
+import { diskFailure } from "../disk/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { CODE_FONT, NEEDS_YOU } from "../tokens";
 import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
+import { useMachineDisk } from "../upstream/disk";
 import { AppTextInput, relativeTime } from "../upstream/needs";
 import {
   cardOf,
@@ -49,7 +51,8 @@ export function AskCard(props: {
   readonly acts: AskActs;
 }) {
   const { need } = props.ask;
-  const card = cardOf(need, props.now);
+  const disk = useMachineDisk(need.kind === "failed" ? props.ask.environmentId : null);
+  const card = cardOf(need, props.now, disk ? diskFailure(need.key, disk.free) : null);
   const head = (
     <View className="flex-row items-center gap-2">
       {props.cell ? <ThreadCell thread={props.cell} points={1} /> : null}

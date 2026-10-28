@@ -1,4 +1,5 @@
 import * as Dialog from "../../components/ui/Dialog";
+import { FailureWords } from "../../stemcells/disk/FailureWords";
 import { CellBesideRow, SlimRowCell } from "../../stemcells/home/RowCell";
 import type { ThreadRowProviderInstance } from "./thread-provider-instance";
 import {
@@ -1170,7 +1171,12 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
             )}
             numberOfLines={1}
           >
-            {thread.runtime.lastError}
+            <FailureWords
+              failed={status === "failed"}
+              environmentId={thread.environmentId}
+              runId={thread.latestRun?.runId ?? thread.id}
+              words={thread.runtime.lastError}
+            />
           </Text>
         ) : props.environmentLabel ? (
           <View className="min-w-0 flex-1 flex-row items-center gap-1">

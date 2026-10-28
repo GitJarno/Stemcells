@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   diskFailure,
   diskPressure,
+  lastDiskFailure,
   FOOT_TONE,
   freeFigure,
   FULL_BELOW,
@@ -50,5 +51,15 @@ describe("a failed turn and the disk", () => {
   it("is never the disk's when it was never seen full", () => {
     expect(diskFailure("turn-b", FULL_BELOW)).toBeNull();
     expect(diskFailure("turn-b", 3 * GB)).toBeNull();
+  });
+
+  // Aski's composer reads the cards outside React: "as recommended" must not
+  // retry a Cell its card says the full disk stopped.
+  it("is read again as the card last said it", () => {
+    expect(lastDiskFailure("turn-c")).toBeNull();
+    diskFailure("turn-c", 0);
+    expect(lastDiskFailure("turn-c")).toBe("full");
+    diskFailure("turn-c", 40 * GB);
+    expect(lastDiskFailure("turn-c")).toBe("freed");
   });
 });

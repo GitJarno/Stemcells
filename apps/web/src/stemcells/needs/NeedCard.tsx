@@ -5,8 +5,10 @@ import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
 import { CellMark } from "../tabs/CellMark";
+import { diskFailure } from "../disk/pressure";
 import { timing } from "../tokens/motion";
 import { compactAge } from "../upstream/cellRow";
+import { useMachineDisk } from "../upstream/disk";
 import {
   observeResize,
   useNowMinuteMs,
@@ -87,9 +89,10 @@ export function NeedCard(props: {
   const { need, goneAt } = props.shown;
   const hold = props.hold;
   const now = useNowMinuteMs();
-  const card = cardOf(need, now);
-  const who = whoOf(need);
   const environmentId = usePrimaryEnvironmentId();
+  const disk = useMachineDisk(need.kind === "failed" ? environmentId : null);
+  const card = cardOf(need, now, disk ? diskFailure(need.key, disk.free) : null);
+  const who = whoOf(need);
   const cell =
     environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null };
   const place = useCellPlace(cell);

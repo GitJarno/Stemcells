@@ -4,6 +4,7 @@
  * answer to it is already on its way.
  */
 import { cellNameOf } from "../../cell/name";
+import { lastDiskFailure } from "../../disk/pressure";
 import { cardOf } from "../card";
 import type { Shown } from "../display";
 import type { Hold } from "../holds";
@@ -26,7 +27,8 @@ export function addresseesOf(
       name: need.parentThreadId === null ? cellNameOf(need.threadId) : null,
       kind: need.kind,
       cue: need.prose?.cue ?? null,
-      card: cardOf(need, now),
+      // As its card reads the disk, so "as recommended" never retries a Cell the full disk stopped.
+      card: cardOf(need, now, need.kind === "failed" ? lastDiskFailure(need.key) : null),
       gone: goneAt !== null,
       held: hold !== undefined && HELD.has(hold),
     };

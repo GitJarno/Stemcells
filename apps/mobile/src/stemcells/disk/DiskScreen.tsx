@@ -2,18 +2,17 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CLEANUP_ASK, CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
 import {
   AppText,
-  Dialog,
   ScreenScrollView,
   SettingsRow,
   SettingsScreen,
   SettingsSection,
   useMachineDisk,
   useMachines,
-  useOpenDiskCell,
 } from "../upstream/disk";
+import { useFreeSpace } from "./useFreeSpace";
 
 // Settings › Disk on the phone: each machine's free space, and a tap that opens a new Cell
 // in that machine's Disk project, the cleanup ask waiting unsent. The phone deletes and
@@ -69,7 +68,7 @@ export function DiskScreen() {
 
 function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
   const disk = useMachineDisk(machine.environmentId);
-  const openCell = useOpenDiskCell(machine.environmentId);
+  const freeSpace = useFreeSpace(machine.environmentId, "replace");
   // One Cell per tap: a second tap while the first opens would leave a
   // second draft with the whole ask behind it, unseen.
   const [opening, setOpening] = useState(false);
@@ -83,20 +82,14 @@ function ConnectedMachineRow({ machine }: { readonly machine: Machine }) {
     <SettingsRow
       icon={machine.icon}
       label={machine.label}
-      value={openCell ? space : `${space} · It can't start a Cell to free space.`}
+      value={freeSpace ? space : `${space} · It can't start a Cell to free space.`}
       valuePosition="below"
-      disabled={openCell === null || opening}
+      disabled={freeSpace === null || opening}
       onPress={() => {
-        if (openCell === null) return;
+        if (freeSpace === null) return;
         setOpening(true);
-        void freeSpace(openCell).finally(() => setOpening(false));
+        void freeSpace().finally(() => setOpening(false));
       }}
     />
   );
-}
-
-async function freeSpace(openCell: NonNullable<ReturnType<typeof useOpenDiskCell>>): Promise<void> {
-  if (!(await openCell(CLEANUP_ASK))) {
-    Dialog.alert("Couldn't start a Cell", "Try again in a moment.");
-  }
 }
