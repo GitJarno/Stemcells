@@ -182,6 +182,28 @@ describe("a card says what the Cell asked, as it asked it", () => {
     expect(failed("transport_error").quote).toBe("socket closed");
   });
 
+  it("says a turn the full disk stopped was the disk's, and retries once there's room", () => {
+    const failed = (disk: "full" | "freed" | null) =>
+      cardOf(
+        needFixture({
+          kind: "failed",
+          request: null,
+          failure: {
+            runId: "run-1",
+            errorClass: "provider_error",
+            message: "Provider turn failed.",
+          },
+        }),
+        NOW,
+        disk,
+      );
+    expect(failed("full")).toMatchObject({ headline: "The disk is full" });
+    expect(failed("full").options[0]?.recommended).toBe(false);
+    expect(failed("freed")).toMatchObject({ headline: "The disk was full" });
+    expect(failed("freed").options[0]?.recommended).toBe(true);
+    expect(failed(null).quote).toBe("Provider turn failed.");
+  });
+
   it("builds a plan it could read, and only opens the chat for one it couldn't", () => {
     const plan = (id: string | null) =>
       cardOf(

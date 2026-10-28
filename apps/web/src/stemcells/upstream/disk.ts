@@ -9,7 +9,7 @@ import { canCreateProjectInEnvironment } from "@t3tools/client-runtime/operation
 import { findProjectByPath } from "@t3tools/client-runtime/state/projects";
 import type { EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";
-import { AsyncResult } from "effect/reactivity";
+import { AsyncResult, Atom, type AtomRegistry } from "effect/reactivity";
 import { useContext, useEffect } from "react";
 
 import { useComposerDraftStore } from "~/composerDraftStore";
@@ -143,28 +143,55 @@ export function useOtherMachines(): ReadonlyArray<{
     .map(({ environmentId, label }) => ({ environmentId, label }));
 }
 
-/** How often a machine's free space is read again while its row shows. */
+/** How often a machine's free space is read again while anything shows it. */
 const MACHINE_DISK_EVERY_MS = 30_000;
 
-/**
- * An environment's home volume, from its host resources: undefined until
- * the first answer, null when it gave none (an older server, an unreadable
- * volume, no answer yet that succeeded). Read on mount and every 30 s while
- * visible.
- */
-export function useMachineDisk(
-  environmentId: EnvironmentId,
-): { readonly free: number; readonly total: number } | null | undefined {
-  const registry = useContext(RegistryContext);
-  const result = useAtomValue(serverEnvironment.hostResources({ environmentId, input: {} }));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Refresh the machine's disk figures on an interval while the page is visible, and clear it on unmount.
-  useEffect(() => {
+/** No machine: never read. */
+const NO_MACHINE = Atom.make(AsyncResult.initial());
+
+/** Each machine's one reader, however many rows and cards show its disk. */
+const readers = new Map<EnvironmentId, { count: number; readonly stop: () => void }>();
+
+function readEvery(registry: AtomRegistry.AtomRegistry, environmentId: EnvironmentId): () => void {
+  const reader = readers.get(environmentId);
+  if (reader) reader.count += 1;
+  else {
     const timer = setInterval(() => {
       if (document.visibilityState !== "visible") return;
       registry.refresh(serverEnvironment.hostResources({ environmentId, input: {} }));
     }, MACHINE_DISK_EVERY_MS);
-    return () => clearInterval(timer);
-  }, [registry, environmentId]);
+    readers.set(environmentId, { count: 1, stop: () => clearInterval(timer) });
+  }
+  return () => {
+    const held = readers.get(environmentId);
+    if (held === undefined) return;
+    held.count -= 1;
+    if (held.count > 0) return;
+    held.stop();
+    readers.delete(environmentId);
+  };
+}
+
+/**
+ * A machine's home volume, from its host resources: undefined until the
+ * first answer (and for no machine), null when it gave none (an older
+ * server, an unreadable volume). Read on mount and every 30 s while
+ * visible, once per machine however many ask.
+ */
+export function useMachineDisk(
+  environmentId: EnvironmentId | null,
+): { readonly free: number; readonly total: number } | null | undefined {
+  const registry = useContext(RegistryContext);
+  const result = useAtomValue(
+    environmentId === null
+      ? NO_MACHINE
+      : serverEnvironment.hostResources({ environmentId, input: {} }),
+  );
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the machine's disk figures read on an interval while anything shows them.
+  useEffect(
+    () => (environmentId === null ? undefined : readEvery(registry, environmentId)),
+    [registry, environmentId],
+  );
   if (result._tag === "Initial") return undefined;
   // A failed refresh keeps the last figure.
   const snapshot = Option.getOrNull(AsyncResult.value(result));

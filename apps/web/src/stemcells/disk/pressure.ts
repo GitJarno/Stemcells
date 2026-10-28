@@ -15,18 +15,29 @@ export const FULL_BELOW = 2_000_000_000;
 
 const seenFull = new Set<string>();
 
+export type DiskFailure = "full" | "freed" | null;
+
 /**
  * Whether a failed turn is the disk's: "full" while its machine has under
  * `FULL_BELOW` free, "freed" once there's room again after it was seen full
  * in this window, else null (the failure was something else, or happened
  * before this window last saw the disk full).
  */
-export function diskFailure(entryId: string, free: number): "full" | "freed" | null {
-  if (free < FULL_BELOW) {
-    seenFull.add(entryId);
-    return "full";
-  }
-  return seenFull.has(entryId) ? "freed" : null;
+export function diskFailure(entryId: string, free: number): DiskFailure {
+  if (free < FULL_BELOW) seenFull.add(entryId);
+  const failure = free < FULL_BELOW ? "full" : seenFull.has(entryId) ? "freed" : null;
+  lastRead.set(entryId, failure);
+  return failure;
+}
+
+const lastRead = new Map<string, DiskFailure>();
+
+/**
+ * What `diskFailure` last said of `entryId`, null before it was asked: what
+ * reads a card outside React (Aski's composer) says what the card shows.
+ */
+export function lastDiskFailure(entryId: string): DiskFailure {
+  return lastRead.get(entryId) ?? null;
 }
 
 export function diskPressure(free: number): DiskPressure {

@@ -1,0 +1,74 @@
+import { useState } from "react";
+import { View } from "react-native";
+
+import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
+import { AppText, Button, SymbolView, useMachineDisk, useMachines } from "../upstream/disk";
+import { diskPressure, freeFigure, FULL_BELOW } from "./kit";
+import { useFreeSpace } from "./useFreeSpace";
+
+// The home's disk: the Mac's column ends on its disk, grey while there's room, amber, then red;
+// on the phone, whose home is for its Cells, a machine shows only once its disk wants
+// attention, with Free space beside it.
+
+export function DiskPlates() {
+  const machines = useMachines().filter((machine) => machine.connection === "connected");
+  return machines.map((machine) => (
+    <DiskPlate
+      key={machine.environmentId}
+      environmentId={machine.environmentId}
+      label={machine.label}
+    />
+  ));
+}
+
+function DiskPlate(props: {
+  readonly environmentId: string;
+  /** Its machine's name, even when it's the only one: the phone is never it. */
+  readonly label: string;
+}) {
+  const disk = useMachineDisk(props.environmentId);
+  const freeSpace = useFreeSpace(props.environmentId);
+  const [opening, setOpening] = useState(false);
+  if (disk == null) return null;
+  const pressure = diskPressure(disk.free);
+  if (pressure === "calm") return null;
+  const urgent = pressure === "now";
+  const headline = disk.free < FULL_BELOW ? DISK_FULL.title : `${freeFigure(disk.free)} left`;
+  return (
+    <View className="mx-4 mt-2 flex-row items-center gap-3 rounded-2xl bg-grouped-card px-4 py-3">
+      <SymbolView
+        name="internaldrive"
+        size={18}
+        weight="medium"
+        tintColorClassName={urgent ? "accent-danger-foreground" : "accent-warning-foreground"}
+        type="monochrome"
+      />
+      <View className="min-w-0 flex-1">
+        <AppText
+          className={
+            urgent
+              ? "font-t3-medium text-sm text-danger-foreground"
+              : "font-t3-medium text-sm text-warning-foreground"
+          }
+          numberOfLines={1}
+        >
+          {headline}
+        </AppText>
+        <AppText className="text-xs text-foreground-muted" numberOfLines={1}>
+          {props.label}
+        </AppText>
+      </View>
+      {freeSpace === null ? null : (
+        <Button
+          label={DISK_FULL.action}
+          tone="secondary"
+          loading={opening}
+          onPress={() => {
+            setOpening(true);
+            void freeSpace().finally(() => setOpening(false));
+          }}
+        />
+      )}
+    </View>
+  );
+}

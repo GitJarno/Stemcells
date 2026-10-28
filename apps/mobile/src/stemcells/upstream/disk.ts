@@ -5,7 +5,7 @@ import { canCreateProjectInEnvironment } from "@t3tools/client-runtime/operation
 import { findProjectByPath } from "@t3tools/client-runtime/state/projects";
 import { ProjectId, resolveEnvironmentMachineKind, type EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";
-import { AsyncResult } from "effect/reactivity";
+import { AsyncResult, Atom, type AtomRegistry } from "effect/reactivity";
 import { useContext, useEffect } from "react";
 import { AppState } from "react-native";
 
@@ -26,11 +26,13 @@ import { useWorkspaceEnvironments } from "../../state/workspace";
 import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
 import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
 
-// Settings › Disk on the phone reads each machine's free space from its
-// server and opens a new Cell in that machine's Disk project; the phone
+// Settings › Disk, the home's disk plate and a Cell the full disk stopped read each machine's
+// free space from its server and open a new Cell in that machine's Disk project; the phone
 // measures nothing itself.
 
 export { AppText } from "../../components/ui/AppText";
+export { SymbolView } from "../../components/ui/AppSymbol";
+export { Button } from "../../components/ui/Button";
 export * as Dialog from "../../components/ui/Dialog";
 export { ScreenScrollView } from "../../components/ui/ScreenScrollView";
 export { SettingsRow } from "../../features/settings/components/SettingsRow";
@@ -60,28 +62,56 @@ export function useMachines() {
     }));
 }
 
-/** How often a machine's free space is read again while its row shows. */
+/** How often a machine's free space is read again while anything shows it. */
 const MACHINE_DISK_EVERY_MS = 30_000;
 
-/**
- * A connected machine's home volume, from its host resources: undefined
- * until the first answer, null when it gave none (a server without the
- * fields, an unreadable volume). Read on mount and every 30 s while the app
- * is in front.
- */
-export function useMachineDisk(
-  environmentId: EnvironmentId,
-): { readonly free: number; readonly total: number } | null | undefined {
-  const registry = useContext(RegistryContext);
-  const result = useAtomValue(serverEnvironment.hostResources({ environmentId, input: {} }));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Poll host resources every 30 s while active; stop on unmount.
-  useEffect(() => {
+/** No machine: never read. */
+const NO_MACHINE = Atom.make(AsyncResult.initial());
+
+/** Each machine's one reader, however many rows and cards show its disk. */
+const readers = new Map<EnvironmentId, { count: number; readonly stop: () => void }>();
+
+function readEvery(registry: AtomRegistry.AtomRegistry, environmentId: EnvironmentId): () => void {
+  const reader = readers.get(environmentId);
+  if (reader) reader.count += 1;
+  else {
     const timer = setInterval(() => {
       if (AppState.currentState !== "active") return;
       registry.refresh(serverEnvironment.hostResources({ environmentId, input: {} }));
     }, MACHINE_DISK_EVERY_MS);
-    return () => clearInterval(timer);
-  }, [registry, environmentId]);
+    readers.set(environmentId, { count: 1, stop: () => clearInterval(timer) });
+  }
+  return () => {
+    const held = readers.get(environmentId);
+    if (held === undefined) return;
+    held.count -= 1;
+    if (held.count > 0) return;
+    held.stop();
+    readers.delete(environmentId);
+  };
+}
+
+/**
+ * A machine's home volume, from its host resources: undefined until the
+ * first answer (and for no machine), null when it gave none (an older
+ * server, an unreadable volume). Read on mount and every 30 s while
+ * the app is in front, once per machine however many ask.
+ */
+export function useMachineDisk(
+  environmentIdText: string | null,
+): { readonly free: number; readonly total: number } | null | undefined {
+  const environmentId = environmentIdText as EnvironmentId | null;
+  const registry = useContext(RegistryContext);
+  const result = useAtomValue(
+    environmentId === null
+      ? NO_MACHINE
+      : serverEnvironment.hostResources({ environmentId, input: {} }),
+  );
+  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the machine's disk figures read on an interval while anything shows them.
+  useEffect(
+    () => (environmentId === null ? undefined : readEvery(registry, environmentId)),
+    [registry, environmentId],
+  );
   if (result._tag === "Initial") return undefined;
   // A failed refresh keeps the last figure.
   const snapshot = Option.getOrNull(AsyncResult.value(result));
@@ -96,8 +126,11 @@ export function useMachineDisk(
  * connected, or a server without a folder for new projects); false when it couldn't open one.
  */
 export function useOpenDiskCell(
-  environmentId: EnvironmentId,
+  environmentIdText: string,
+  /** Over the Cells it was opened from, or in Settings' place (`replace`). */
+  how: "push" | "replace" = "replace",
 ): ((text: string) => Promise<boolean>) | null {
+  const environmentId = environmentIdText as EnvironmentId;
   const navigation = useNavigation();
   const createProject = useAtomCommand(projectEnvironment.create, { reportFailure: false });
   const writeFile = useAtomCommand(projectEnvironment.writeFile, { reportFailure: false });
@@ -144,8 +177,9 @@ export function useOpenDiskCell(
       projectId: project.id,
     });
     setComposerDraftText(draftId, text);
-    // In place of Settings, on the root stack: opened over the Settings
-    // sheet, the Cell it becomes on sending would show inside that sheet.
+    // On the root stack: opened over the Settings sheet, the Cell it
+    // becomes on sending would show inside that sheet, so it takes the
+    // sheet's place; from a chat or the home, it goes over them.
     let root = navigation;
     for (let parent = root.getParent(); parent; parent = root.getParent()) root = parent;
     // A draft is the root's Thread route, as upstream opens one.
@@ -155,7 +189,11 @@ export function useOpenDiskCell(
       draftId,
       title: project.title,
     } satisfies NewTaskDraftRouteParams;
-    root.dispatch(StackActions.replace("Thread", { draft }));
+    root.dispatch(
+      how === "replace"
+        ? StackActions.replace("Thread", { draft })
+        : StackActions.push("Thread", { draft }),
+    );
     return true;
   };
 }

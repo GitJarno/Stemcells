@@ -105,6 +105,7 @@ import Animated, {
 import { useAssetUrl } from "../../state/assets";
 import { PullRequestGlyph } from "../pull-requests/pullRequestGlyphs";
 import { useOpenLinkedThread } from "./useOpenLinkedThread";
+import { DiskFullRow } from "../../stemcells/disk/DiskFullRow";
 
 const SHIMMER_WIDTH = 72;
 const SHIMMER_SWEEP_MS = 1_350;
@@ -893,7 +894,7 @@ const ThreadWorkLogRow = function ThreadWorkLogRow(
     const label = warning
       ? `Usage limit reached.${resetTime ? ` Retry after ${resetTime}.` : ""}`
       : row.summary;
-    return (
+    const failureRow = (
       <WorkLogPressable
         accessibilityLabel={warning ? label : `${row.summary}: ${failureItem.failure.message}`}
         accessibilityHint="Long press to copy."
@@ -949,6 +950,17 @@ const ThreadWorkLogRow = function ThreadWorkLogRow(
           ) : null}
         </View>
       </WorkLogPressable>
+    );
+    return warning ||
+      failureItem.failure.code === ORCHESTRATION_V2_WORKSPACE_PREPARATION_FAILURE_CODE ? (
+      failureRow
+    ) : (
+      <DiskFullRow
+        entryId={row.id}
+        environmentId={props.environmentId}
+        createdAt={row.createdAt}
+        fallback={failureRow}
+      />
     );
   }
   const notifiedSubagentThreadId =

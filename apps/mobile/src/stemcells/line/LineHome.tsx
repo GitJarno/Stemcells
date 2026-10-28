@@ -6,6 +6,7 @@
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
 
+import { DiskPlates } from "../disk/DiskPlate";
 import { CopyLayer } from "../home/CopyLayer";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
 import { HomeTabsContext, tabChoice } from "../home/state";
@@ -171,6 +172,7 @@ export function LineHome(props: {
   return (
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>
+        <DiskPlates />
         {tab === "needs" ? (
           <NeedsYou
             asks={line.asks.filter((ask) =>

@@ -4,6 +4,8 @@
  * action, and what reaches the Cell is its own words, a fixed phrase shown on the option, or
  * the person's own words.
  */
+import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
+import type { DiskFailure } from "../disk/pressure";
 import type { ApprovalDecision, AskedQuestion, Need, NeedRequest } from "./wire";
 
 /** What choosing an option does; `actions.ts` turns it into upstream's commands. */
@@ -262,8 +264,12 @@ const base = (need: Need) => ({
   later: need.request === null,
 });
 
-/** The card for a need, as of `now`. */
-export function cardOf(need: Need, now: number): Card {
+/**
+ * The card for a need, as of `now`. `disk` is a failure's reading against
+ * its machine's free space (`diskFailure`): a turn the full disk stopped
+ * says so, and a retry is worth it only once there's room again.
+ */
+export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card {
   const request = need.request;
   switch (need.kind) {
     case "permission": {
@@ -390,10 +396,21 @@ export function cardOf(need: Need, now: number): Card {
     }
     case "failed": {
       const errorClass = need.failure?.errorClass ?? "unknown";
+      // A limit is the provider's say, whatever the disk.
+      const reading = errorClass === "usage_limit" ? null : disk;
+      const full = reading === "full";
       return {
         ...base(need),
-        headline: FAILURES[errorClass],
-        quote: need.failure?.message ?? null,
+        headline: full
+          ? DISK_FULL.title
+          : reading === "freed"
+            ? DISK_FULL.freedTitle
+            : FAILURES[errorClass],
+        quote: full
+          ? DISK_FULL.note
+          : reading === "freed"
+            ? DISK_FULL.freedNote
+            : (need.failure?.message ?? null),
         options: [
           option(
             "retry",
@@ -401,7 +418,11 @@ export function cardOf(need: Need, now: number): Card {
             { kind: "retry" },
             {
               consequence: `Sends “${PHRASES.retry}”`,
-              recommended: errorClass === "transport_error" || errorClass === "provider_error",
+              recommended:
+                !full &&
+                (reading === "freed" ||
+                  errorClass === "transport_error" ||
+                  errorClass === "provider_error"),
             },
           ),
           reply("Tell it what to do…"),
