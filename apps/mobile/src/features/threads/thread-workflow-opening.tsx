@@ -92,7 +92,7 @@ export function ThreadWorkflowOpening(props: {
       <Pressable
         key={member.id}
         accessibilityRole={threadId === null ? undefined : "link"}
-        accessibilityHint={threadId === null ? undefined : "Opens this agent's thread"}
+        accessibilityHint={threadId === null ? undefined : "Opens this Subcell"}
         disabled={threadId === null}
         onPress={() => {
           if (threadId !== null)

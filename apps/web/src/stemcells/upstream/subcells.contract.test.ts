@@ -10,6 +10,7 @@ import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
 import v2EventRow from "../../components/chat/TimelineV2EventRow.tsx?raw";
 import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import relationships from "../../components/chat/ThreadRelationshipsControl.tsx?raw";
+import lineageWorkflow from "../../components/chat/ThreadLineageWorkflowRow.tsx?raw";
 import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
 import workflowOpening from "../../components/chat/WorkflowOpeningBlock.tsx?raw";
 import { inSubcellWords, SUBCELL, subcellCount } from "../../../../../stemcells/words/subcells.ts";
@@ -93,6 +94,7 @@ describe("Subcells in upstream's views", () => {
       '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
     ])
       expect(relationships).toContain(words);
+    expect(lineageWorkflow).toContain(">No Subcells yet</li>");
   });
 });
 

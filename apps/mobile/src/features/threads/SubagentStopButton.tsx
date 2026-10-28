@@ -39,7 +39,7 @@ export function SubagentStopButton(props: {
         : interruptTurn({ environmentId: props.environmentId, input: target.input })
     ).finally(() => setStopping(false));
     if (result._tag === "Failure") {
-      Dialog.alert(workflow ? "Could not stop workflow" : "Could not stop agent");
+      Dialog.alert(workflow ? "Could not stop workflow" : "Could not stop Subcell");
     }
   };
 
@@ -48,12 +48,12 @@ export function SubagentStopButton(props: {
       <IconButton
         icon="stop.fill"
         variant="danger"
-        accessibilityLabel={`${stopping ? "Stopping" : "Stop"} ${workflow ? "workflow" : "agent"} ${label}`}
+        accessibilityLabel={`${stopping ? "Stopping" : "Stop"} ${workflow ? "workflow" : "Subcell"} ${label}`}
         disabled={stopping}
         onPress={() =>
           Dialog.confirm({
-            title: workflow ? "Stop workflow?" : "Stop agent?",
-            message: workflow ? `Every running agent in ${label} stops.` : `Stop ${label}?`,
+            title: workflow ? "Stop workflow?" : "Stop Subcell?",
+            message: workflow ? `Every running Subcell in ${label} stops.` : `Stop ${label}?`,
             confirmText: "Stop",
             destructive: true,
             onConfirm: () => void stop(),

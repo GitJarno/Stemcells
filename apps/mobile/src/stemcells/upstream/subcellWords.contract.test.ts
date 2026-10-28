@@ -33,6 +33,14 @@ const SAID = {
   "threadAgentsPresentation.ts": ['if (prompt.length === 0) return "Subcell";'],
   "floating-working-control.tsx": ['accessibilityHint="Opens this turn\'s Subcells"'],
   "ProviderSubagentBar.tsx": ["accessibilityLabel={`${modelDescription} Subcell, ${statusLabel}."],
+  "SubagentStopButton.tsx": [
+    '"Could not stop Subcell"',
+    '${workflow ? "workflow" : "Subcell"} ${label}',
+    '"Stop Subcell?"',
+    "`Every running Subcell in ${label} stops.`",
+  ],
+  "ThreadWorkflowGroup.tsx": ["No Subcells yet", '"Opens this Subcell"'],
+  "thread-workflow-opening.tsx": ['threadId === null ? undefined : "Opens this Subcell"'],
 } as const;
 
 describe("Subcells on the phone", () => {
