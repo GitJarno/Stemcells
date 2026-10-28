@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { STAGE_COLOURS } from "../src/stemcells/home/stageColours.ts";
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import tailwindColors from "tailwindcss/colors";
@@ -155,6 +156,7 @@ const ADAPTIVE_COLORS: Readonly<Record<string, readonly [light: string, dark: st
   "--color-adaptive-zinc-500-a12-a16": [color("zinc", 500, 0.12), color("zinc", 500, 0.16)],
   "--color-adaptive-zinc-500-400": [color("zinc", 500), color("zinc", 400)],
   "--color-adaptive-zinc-600-300": [color("zinc", 600), color("zinc", 300)],
+  ...STAGE_COLOURS,
 };
 
 export const customThemeNames = BUILT_IN_THEME_IDS.flatMap((themeId) =>

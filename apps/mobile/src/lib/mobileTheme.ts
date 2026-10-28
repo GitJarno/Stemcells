@@ -1,3 +1,4 @@
+import * as Stemcells from "../stemcells/upstream/look.ts";
 import {
   BUILT_IN_THEMES,
   T3_CHAT_THEME,
@@ -451,7 +452,9 @@ export function getMobileThemeColors(
   appearance: MobileThemeAppearance,
 ): ThemeColors {
   if (themeId === DEFAULT_MOBILE_THEME_ID) {
-    return appearance === "dark" ? T3_CODE_DARK_THEME_COLORS : T3_CODE_LIGHT_THEME_COLORS;
+    return appearance === "dark"
+      ? Stemcells.overT3Dark(T3_CODE_DARK_THEME_COLORS)
+      : T3_CODE_LIGHT_THEME_COLORS;
   }
   const theme = BUILT_IN_THEMES.find((candidate) => candidate.id === themeId) ?? T3_CHAT_THEME;
   return getThemeColorsForAppearance(theme, appearance) ?? theme.colors;
@@ -497,7 +500,8 @@ export function getMobileThemeVariables(
         : undefined,
   );
 
-  return overrides ? ({ ...baseVariables, ...overrides } as MobileThemeVariables) : baseVariables;
+  const stemcells = Stemcells.withStemcellsInk(themeId, appearance, baseVariables);
+  return overrides ? ({ ...stemcells, ...overrides } as MobileThemeVariables) : stemcells;
 }
 
 export function getMobileThemePreviewColors(

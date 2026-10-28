@@ -1,3 +1,4 @@
+import { inDoneColour, inStageColours } from "../../stemcells/home/stages";
 import * as Dialog from "../../components/ui/Dialog";
 import { FailureWords } from "../../stemcells/disk/FailureWords";
 import { CellBesideRow, SlimRowCell } from "../../stemcells/home/RowCell";
@@ -83,7 +84,7 @@ interface StatusLabel {
   readonly className: string;
   readonly iconTintClassName: string;
 }
-const STATUS_LABEL_BY_STATUS: Partial<Record<ThreadListV2Status, StatusLabel>> = {
+const STATUS_LABEL_BY_STATUS: Partial<Record<ThreadListV2Status, StatusLabel>> = inStageColours({
   approval: {
     label: "Approval",
     icon: "exclamationmark.shield",
@@ -126,13 +127,13 @@ const STATUS_LABEL_BY_STATUS: Partial<Record<ThreadListV2Status, StatusLabel>> =
     className: "text-warning-foreground",
     iconTintClassName: "accent-warning-foreground",
   },
-};
-const DONE_STATUS_LABEL: StatusLabel = {
+});
+const DONE_STATUS_LABEL: StatusLabel = inDoneColour({
   label: "Done",
   icon: "checkmark.circle",
   className: "text-adaptive-emerald-700-300",
   iconTintClassName: "accent-adaptive-emerald-700-300",
-};
+});
 
 function ThreadListV2Duration(props: { readonly startedAt: string | null }) {
   const startedAtMs = Date.parse(props.startedAt ?? "");
