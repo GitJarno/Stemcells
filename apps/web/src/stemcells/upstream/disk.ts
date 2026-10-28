@@ -37,7 +37,8 @@ export {
   SettingsRow,
   SettingsSection,
 } from "~/components/settings/settingsLayout";
-export { useNowMinuteMs, useNowSecond } from "./settings";
+export { useNowSecond } from "~/hooks/useNowSecond";
+export { useNowMinuteMs } from "./needs";
 export { Badge } from "~/components/ui/badge";
 export { Button } from "~/components/ui/button";
 export { Input } from "~/components/ui/input";
