@@ -32,7 +32,7 @@ describe("the suggestion's contracts with upstream's web", () => {
   it("the composer and its editor are ours to join", () => {
     expect(SUBSTITUTES).toMatchObject({
       "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
-      "apps/web/src/components/ComposerPromptEditor.tsx": "ComposerPromptEditor.tsx",
+      "apps/web/src/components/ComposerPromptEditorTiptap.tsx": "ComposerPromptEditorTiptap.tsx",
     });
   });
 });

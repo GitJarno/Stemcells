@@ -13,6 +13,8 @@ import { useAndroidControlSizing } from "../../../components/ui/useAndroidContro
 import { resolveMobileStageLabel } from "../../../lib/mobileBranding";
 import { APP_NAME } from "../../brand/name";
 
+const BRAND_MAX_FONT_SCALE = 1.4;
+
 export { brandTitleOffset };
 
 export function CompactBrandTitle(
@@ -53,6 +55,7 @@ export function CompactBrandTitle(
     >
       <Text
         allowFontScaling={props.allowFontScaling}
+        maxFontSizeMultiplier={BRAND_MAX_FONT_SCALE}
         className="font-t3-medium text-foreground"
         style={{ fontSize: 21 * scale, letterSpacing: -0.5 * scale }}
       >
@@ -69,6 +72,7 @@ export function CompactBrandTitle(
         >
           <Text
             allowFontScaling={props.allowFontScaling}
+            maxFontSizeMultiplier={BRAND_MAX_FONT_SCALE}
             className="font-t3-bold text-foreground-muted uppercase"
             style={{ fontSize: 9 * scale, letterSpacing: 0.9 * scale }}
           >
@@ -91,7 +95,7 @@ export function CompactBrandTitle(
   );
 }
 
-export function renderCompactBrandTitle() {
+function renderCompactBrandTitle() {
   return <CompactBrandTitle allowFontScaling={Platform.OS === "ios"} />;
 }
 

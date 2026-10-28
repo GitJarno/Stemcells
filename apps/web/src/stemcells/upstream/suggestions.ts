@@ -8,7 +8,7 @@ import { type EnvironmentId, MessageId, type ThreadId } from "@t3tools/contracts
 import type {
   ComposerPromptEditorHandle,
   ComposerPromptEditorProps,
-} from "../../components/ComposerPromptEditor";
+} from "../../components/ComposerPromptEditorTiptap";
 import type { ChatComposerProps } from "../../components/chat/ChatComposer";
 import type { ChatMessage, SessionPhase } from "../../types";
 import { callMachine } from "./machines";

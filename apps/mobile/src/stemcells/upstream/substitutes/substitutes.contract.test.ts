@@ -259,6 +259,10 @@ const PACKAGE_CASES: Readonly<
     importer: "apps/mobile/src/lib/composerImages.ts",
     calls: ["launchImageLibraryAsync"],
   },
+  "expo-observe": {
+    importer: "apps/mobile/src/features/observability/observe.ts",
+    calls: ["configure", "dispatchEvents", "reportError"],
+  },
 };
 const packages: Readonly<Record<string, string>> = PACKAGES;
 const packageExpectations = Object.entries(PACKAGE_CASES).map(([name, { importer }]) => ({

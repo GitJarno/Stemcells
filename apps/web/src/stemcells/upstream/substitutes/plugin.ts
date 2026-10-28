@@ -37,7 +37,7 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/preview/ThreadPreviewMiniPlayer.tsx": "ThreadPreviewMiniPlayer.tsx",
   // Smart prompting: the composer inks the words that set a new chat up,
   // and sends the Cell its message without them.
-  "apps/web/src/components/ComposerPromptEditor.tsx": "ComposerPromptEditor.tsx",
+  "apps/web/src/components/ComposerPromptEditorTiptap.tsx": "ComposerPromptEditorTiptap.tsx",
   "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
   // One composer height: it never rests into one line on a scroll, and
   // Settings has no "Collapse composer on scroll" to offer.

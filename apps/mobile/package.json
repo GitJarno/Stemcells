@@ -179,9 +179,15 @@
         "expo-video",
         "expo-network"
       ],
+      "exclude": [
+        "expo-observe",
+        "expo-app-metrics"
+      ],
       "android": {
         "exclude": [
-          "expo-media-library"
+          "expo-media-library",
+          "expo-observe",
+          "expo-app-metrics"
         ]
       }
     }
