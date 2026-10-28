@@ -251,12 +251,16 @@ function SubagentAvatar({
 export function EnvironmentSubagentAvatar({
   environmentId,
   providerInstanceId,
+  driver,
+  remote,
   subcell,
   ...props
 }: {
   environmentId: EnvironmentId;
   providerInstanceId: ProviderInstanceId;
   driver?: ProviderDriverKind | undefined;
+  /** A task in a linked environment runs a provider instance there; its driver here is only a label. */
+  remote?: OrchestrationV2RemoteTaskChild | undefined;
   status?: OrchestrationV2TurnItem["status"] | undefined;
   /**
    * Stemcells: the subagent's thread id, else its id, to draw it as its
@@ -265,7 +269,14 @@ export function EnvironmentSubagentAvatar({
    */
   subcell?: { readonly name: string; readonly status?: string | undefined } | undefined;
 }) {
-  const providersAtom = serverEnvironment.providersValueAtom(environmentId);
+  const providersAtom = serverEnvironment.providersValueAtom(
+    remote?.environmentId ?? environmentId,
+  );
+  const providerDriver = useAtomValue(
+    providersAtom,
+    (providers) =>
+      providers?.find((provider) => provider.instanceId === providerInstanceId)?.driver,
+  );
   const displayName = useAtomValue(
     providersAtom,
     (providers) =>
@@ -281,13 +292,20 @@ export function EnvironmentSubagentAvatar({
     return (
       <SubcellMark
         name={subcell.name}
-        provider={props.driver}
+        provider={providerDriver ?? (remote === undefined ? driver : undefined)}
         status={subcell.status ?? props.status}
         dot={dot}
       />
     );
   }
-  return <SubagentAvatar {...props} displayName={displayName} iconUrl={iconUrl} />;
+  return (
+    <SubagentAvatar
+      {...props}
+      driver={providerDriver ?? (remote === undefined ? driver : undefined)}
+      displayName={displayName}
+      iconUrl={iconUrl}
+    />
+  );
 }
 
 const NOTIFICATION_OUTCOME_STATUS: Record<
@@ -418,6 +436,7 @@ function SubagentTimelineLink(props: {
         environmentId={props.parentRef.environmentId}
         providerInstanceId={props.providerInstanceId}
         driver={props.driver}
+        remote={remote}
         status={status ?? undefined}
         subcell={{ name: props.threadId ?? props.subagentId }}
       />
