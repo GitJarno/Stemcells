@@ -35,7 +35,7 @@ import { seatAskiHere } from "../windows/askiHome";
 import { ChatCarry, useCarriedPane } from "../windows/ChatCarry";
 import { askiElsewhere, revealElsewhere, useAskiElsewhere } from "../windows/elsewhere";
 import { bringAskiHere } from "../windows/joinWindow";
-import { landHere, useLandsLaunches } from "../windows/landing";
+import { landHere, useLandsNewChats } from "../windows/landing";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
 import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
@@ -133,7 +133,7 @@ export function CellWorkspace(props: {
   const isIndexRoute = useIsIndexRoute();
   const navigateToCell = useNavigateToCell();
   const openNewCell = useOpenNewCell();
-  useLandsLaunches();
+  useLandsNewChats();
   const gridRef = useRef<HTMLDivElement>(null);
   const tab = activeTab(workspace);
   const focused = focusedPane(workspace);

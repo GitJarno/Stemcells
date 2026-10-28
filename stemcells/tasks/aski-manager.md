@@ -100,8 +100,10 @@ Everything on Aski's tab serves 1, 3 and 4. Anything else is noise there.
   columns, 4 panes). When the project's tabs are full, a new one opens
   after them. A project with no tab gets a new tab at the end of the strip
   Aski's tab heads, so Cells keep the order they started in.
-- Cells an agent launches through the tools land as their chats arrive,
-  placed once, by the lead window.
+- Every chat started anywhere else lands as it arrives, placed once, by
+  the lead window: one an agent launches through the tools, one the person
+  starts on the phone or another Mac. One started while the app was closed
+  lands when it next starts (`landing-elsewhere.md`).
 - From a new tab's chat, the first Cell takes that chat, wherever its
   project's tab is: the person is looking at it.
 - Aski's tab never takes a Cell. You stay where you are; the spawn shows
