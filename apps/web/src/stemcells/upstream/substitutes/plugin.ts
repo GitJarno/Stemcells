@@ -39,9 +39,7 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // and sends the Cell its message without them.
   "apps/web/src/components/ComposerPromptEditorTiptap.tsx": "ComposerPromptEditorTiptap.tsx",
   "apps/web/src/components/chat/ChatComposer.tsx": "ChatComposer.tsx",
-  // One composer height: it never rests into one line on a scroll, and
-  // Settings has no "Collapse composer on scroll" to offer.
-  "apps/web/src/components/chat/composerScrollGesture.ts": "composerScrollGesture.ts",
+  // Settings never offers T3's privacy row, and our pages stand in its groups.
   "apps/web/src/components/settings/settingsSearch.ts": "settingsSearch.ts",
   // Where a Cell runs: upstream's branch toolbar in the menu under the
   // ledge's "branch ⌄", never under the box; git only once known.

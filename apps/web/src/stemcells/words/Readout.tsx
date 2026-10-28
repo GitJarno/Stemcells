@@ -69,7 +69,7 @@ export function Readout(props: {
     setFolded(!holds);
     if (holds) setPop(null);
   });
-  // oxlint-disable-next-line t3code/react-effect-budget -- Observe the row and the controls beside it to refit the sentence, disconnecting on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Observe the row and the controls beside it to refit the sentence, disconnecting on unmount.
   useLayoutEffect(() => {
     const at = root.current;
     const row = at?.parentElement;
@@ -78,12 +78,12 @@ export function Readout(props: {
     return observeResize([at, row, ...row.querySelectorAll("[data-resting-block]")], () => fit());
   }, []);
   // The words changed: the sentence may be longer or shorter now.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Refit the sentence against the row's measured width before paint after each render.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Refit the sentence against the row's measured width before paint after each render.
   useLayoutEffect(() => fit());
 
   // The sentence closes on Esc and on a press outside it (a token's menu
   // counts as inside, and takes Esc first).
-  // oxlint-disable-next-line t3code/react-effect-budget -- Listen for Esc and outside presses while the sentence is open, removing them on close.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen for Esc and outside presses while the sentence is open, removing them on close.
   useEffect(() => {
     if (shown === null) return;
     const close = (event: Event) => {

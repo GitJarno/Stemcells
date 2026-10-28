@@ -11,5 +11,9 @@ import { TriageService } from "../../triage/TriageService.ts";
 /** Upstream's triage service, preparing nothing. It needs no service, so it can't reach git. */
 export const noTriage: Layer.Layer<TriageService> = Layer.succeed(
   TriageService,
-  TriageService.of({ prepare: () => Effect.fail(new ServerPrepareTriageError({})) }),
+  TriageService.of({
+    prepare: Effect.fn("TriageService.prepare")(() =>
+      Effect.fail(new ServerPrepareTriageError({})),
+    ),
+  }),
 );

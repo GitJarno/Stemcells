@@ -27,7 +27,7 @@ export function useLeavesWhenSettled(pane: Pane, enabled: boolean): void {
   const threadId = pane.cell?.threadId ?? null;
   // The thread this pane has shown unsettled.
   const sawUnsettled = useRef<string | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Close the pane when the person's settle of its Cell arrives.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Close the pane when the person's settle of its Cell arrives.
   useEffect(() => {
     if (settled === false) sawUnsettled.current = threadId;
     const leaves = leavesForSettle({
@@ -63,14 +63,14 @@ function ComeBack(props: { left: Left; rowWidth: () => number }) {
   const { left, rowWidth } = props;
   const settled = useCellSettled(left.cell);
   const sawSettled = useRef(false);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Bring the Cell back once it is unsettled after being seen settled.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Bring the Cell back once it is unsettled after being seen settled.
   useEffect(() => {
     if (settled === true) sawSettled.current = true;
     if (settled !== false || !sawSettled.current) return;
     updateWorkspace((workspace) => comeBack(workspace, left, newIds(), rowWidth()));
     forgetLeft(left.cell.threadId);
   }, [settled, left, rowWidth]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Forget the Cell once its come-back window ends; clear the timer.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Forget the Cell once its come-back window ends; clear the timer.
   useEffect(() => {
     const timer = setTimeout(
       () => forgetLeft(left.cell.threadId),

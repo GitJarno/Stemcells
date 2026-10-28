@@ -93,7 +93,7 @@ export function LineHome(props: {
   const openChat = useHomeThreadSelection();
   const cellOf = (threadId: string) => props.cells.find((cell) => cell.id === threadId);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Forget answered asks the machines stopped asking, as each reading comes in.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Forget answered asks the machines stopped asking, as each reading comes in.
   useEffect(() => {
     const asked = new Set<string>();
     for (const [environmentId, reading] of props.readings)
@@ -101,7 +101,7 @@ export function LineHome(props: {
         for (const need of reading.list?.needs ?? []) asked.add(`${environmentId}:${need.key}`);
     held.keepOnly(asked, Date.now());
   }, [props.readings]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Send a held answer as the app leaves the front: the person chose it.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Send a held answer as the app leaves the front: the person chose it.
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (next) => {
       if (next !== "active") void held.letGo();

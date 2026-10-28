@@ -37,7 +37,7 @@ function StemcellsTerminalDrawer(props: ComponentProps<typeof UpstreamThreadTerm
   // back with the terminal open, it is simply there, and moves from then on.
   const [slidesIn] = useState(() => terminalJustOpened(props.threadRef));
   const [drawn, setDrawn] = useState(false);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the drawer drawn on the frame after it mounts, and cancel that frame on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mark the drawer drawn on the frame after it mounts, and cancel that frame on unmount.
   useEffect(() => {
     const frame = requestAnimationFrame(() => setDrawn(true));
     return () => cancelAnimationFrame(frame);
@@ -46,7 +46,7 @@ function StemcellsTerminalDrawer(props: ComponentProps<typeof UpstreamThreadTerm
   // Measured once, before the drawer first draws: upstream draws whatever
   // height it is given, so it never shows 280px, and holds still until a drag.
   const [opening, setOpening] = useState<number | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Measure the opening height from the host's styles and pane once, before the drawer first draws.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure the opening height from the host's styles and pane once, before the drawer first draws.
   useLayoutEffect(() => {
     const host = hostRef.current;
     if (opening !== null || host === null) return;

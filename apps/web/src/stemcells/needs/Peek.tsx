@@ -55,14 +55,14 @@ function PeekSheet(props: { cell: CellRef; ownsWindowInput: boolean }) {
     openedWith !== null &&
     ((lastSent !== undefined && lastSent !== openedWith.sent) ||
       (openedWith.stage === "needs-you" && stage !== null && stage !== "needs-you"));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Close the peek a beat after the person's message lands, and clear the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Close the peek a beat after the person's message lands, and clear the timer on change.
   useEffect(() => {
     if (!said) return;
     const timer = setTimeout(closePeek, timing("sendLanded"));
     return () => clearTimeout(timer);
   }, [said]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Close the peek on Esc or a pointerdown elsewhere in the room; remove both listeners on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Close the peek on Esc or a pointerdown elsewhere in the room; remove both listeners on unmount.
   useEffect(() => {
     const room = sheet.current?.closest<HTMLElement>("[data-stemcells-aski]");
     // Esc the chat hasn't taken (a menu, a mention, a word being composed),

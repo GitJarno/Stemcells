@@ -64,16 +64,9 @@ describe("the composer line's contracts with upstream", () => {
     );
   });
 
-  it("the composer rests into one line only when its scroll gesture says so", () => {
-    // substitutes/composerScrollGesture.ts answers both gestures with "no";
-    // a third way to rest would bring the shrinking back.
-    expect(chatComposer.match(/setIsComposerScrollCollapsed\(true\)/g)).toHaveLength(2);
-    expect(chatComposer).toMatch(
-      /const shouldCollapse = recordComposerScrollGestureEvent\([\s\S]{0,500}?if \(!shouldCollapse\) \{\s*return;\s*\}\s*setIsComposerScrollCollapsed\(true\);/,
-    );
-    expect(chatComposer).toMatch(
-      /shouldCollapseComposerForScrollKey\(\{[\s\S]{0,300}?\}\)\s*\)\s*\{\s*setIsComposerScrollCollapsed\(true\);/,
-    );
+  it("the composer never rests into one line on a scroll", () => {
+    // Upstream dropped its scroll collapse; one coming back would shrink ours again.
+    expect(chatComposer).not.toMatch(/ScrollCollapsed|composerScrollGesture/);
   });
 
   it("the field's height is its classes alone, and it grows to a cap as text is typed", () => {

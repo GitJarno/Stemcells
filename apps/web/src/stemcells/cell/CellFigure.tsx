@@ -78,7 +78,7 @@ export function CellFigure(props: {
   const canvas = useRef<HTMLCanvasElement>(null);
   /** The landing whose marks it has raised, and from when (`clockSeconds`). */
   const rising = useRef<{ landing: number; from: number } | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Paint the figure's canvas on each stage clock tick, unsubscribing when what it shows changes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Paint the figure's canvas on each stage clock tick, unsubscribing when what it shows changes.
   useLayoutEffect(() => {
     const element = canvas.current;
     if (element === null) return;

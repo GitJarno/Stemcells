@@ -54,10 +54,10 @@ export function useNewCell(lastTabOnStage: boolean): { motion: (moving: boolean)
     }
   });
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hear the new Cell's draft store; unsubscribe on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hear the new Cell's draft store; unsubscribe on unmount.
   useEffect(() => subscribeNewCellDraft(() => check()), []);
   // Once there is a project to make one in, and again after one is sent.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Check the draft once a project exists; clear the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Check the draft once a project exists; clear the timer on change.
   useEffect(() => {
     if (newCell !== null || project === null) return;
     const timer = setTimeout(check, readNewCellDraft() === null ? AFTER_SEND : 0);
@@ -72,7 +72,7 @@ export function useNewCell(lastTabOnStage: boolean): { motion: (moving: boolean)
     if (draftProject(current.cell) === project || draftHasWords(current.cell)) return;
     void makeOne();
   });
-  // oxlint-disable-next-line t3code/react-effect-budget -- Follow the last tab's project while it is on stage.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow the last tab's project while it is on stage.
   useEffect(() => follow(project, lastTabOnStage), [project, lastTabOnStage]);
 
   return {

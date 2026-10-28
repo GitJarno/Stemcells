@@ -32,7 +32,7 @@ export function RenameField(props: {
   const field = useRef<HTMLInputElement>(null);
   const [refused, setRefused] = useState<string | null>(null);
   const noteId = useId();
-  // oxlint-disable-next-line t3code/react-effect-budget -- Stamp when the field opened, to tell the app's focus grabs from the person's.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Stamp when the field opened, to tell the app's focus grabs from the person's.
   useLayoutEffect(() => {
     opened.current = performance.now();
   }, []);

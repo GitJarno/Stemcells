@@ -799,12 +799,12 @@ export function ChatCarry(props: {
   const card = useRef<HTMLDivElement>(null);
   const wash = useRef<HTMLDivElement>(null);
   const openTab = useRef(props.onOpenTab);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Keep the carrier's tab-opening callback ref current after each render.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the carrier's tab-opening callback ref current after each render.
   useEffect(() => {
     openTab.current = props.onOpenTab;
   });
   const [own] = useState(() => new WindowCarrier({ outer, card, wash, openTab }, setHeld));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Register this window's carrier while mounted and drop any carry on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Register this window's carrier while mounted and drop any carry on unmount.
   useEffect(() => {
     carrier = own;
     return () => {
@@ -812,7 +812,7 @@ export function ChatCarry(props: {
       own.drop();
     };
   }, [own]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the carrier the chat was lifted before the held render paints.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the carrier the chat was lifted before the held render paints.
   useLayoutEffect(() => {
     if (held) own.lifted();
   }, [held, own]);

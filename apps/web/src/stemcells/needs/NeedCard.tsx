@@ -111,7 +111,7 @@ export function NeedCard(props: {
   // An allow can't land in the card's first moment: a card arriving under
   // the pointer is read before it is clicked.
   const [allowReady, setAllowReady] = useState(false);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Time when an allow may land after the card was seen, and clear the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Time when an allow may land after the card was seen, and clear the timer on change.
   useEffect(() => {
     const allowAt = (props.seenAt ?? 0) + timing("readBeforeAllow");
     const timer = setTimeout(() => setAllowReady(true), Math.max(0, allowAt - Date.now()));
@@ -161,7 +161,7 @@ export function NeedCard(props: {
     landOnOpen.current = section.current !== null && keyedIn(section.current);
     props.queued?.onOpen();
   };
-  // oxlint-disable-next-line t3code/react-effect-budget -- Land keyboard focus in the card once a keyboard open has rendered its options.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Land keyboard focus in the card once a keyboard open has rendered its options.
   useLayoutEffect(() => {
     if (collapsed || !landOnOpen.current || section.current === null) return;
     landOnOpen.current = false;
@@ -395,7 +395,7 @@ function Context(props: { text: string; open: boolean }) {
   const [long, setLong] = useState(false);
   const [opened, setOpened] = useState(false);
   const more = opened || props.open;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Measure whether the words run past their two lines as the ask resizes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure whether the words run past their two lines as the ask resizes.
   useLayoutEffect(() => {
     const element = body.current;
     if (element === null || more) return;

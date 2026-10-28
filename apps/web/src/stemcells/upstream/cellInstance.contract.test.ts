@@ -21,11 +21,7 @@ import composerSelection from "../../components/chat/useComposerSelection.ts?raw
 import composerSend from "../../components/chat/useComposerSend.ts?raw";
 import { resolveComposerProviderSelection } from "../../components/ChatView.logic";
 import { deriveEffectiveComposerModelState } from "../../composerDraftStore";
-import {
-  applyProviderInstanceSettings,
-  deriveProviderInstanceEntries,
-  sortProviderInstanceEntries,
-} from "../../providerInstances";
+import { providerInstanceEntriesFor } from "../../providerInstances";
 import { ASKI_INSTANCE_ID, askiInstance } from "../aski/setup";
 import composerSubstitute from "./substitutes/ChatComposer.tsx?raw";
 import { cellInstances, type ComposerInstances } from "./cellInstance";
@@ -71,13 +67,7 @@ function composerResolves(
   composer: ComposerInstances,
   started: { runtimeInstanceId: ProviderInstanceId; lockedProvider: "claudeAgent" | null },
 ) {
-  const entries = sortProviderInstanceEntries(
-    applyProviderInstanceSettings(
-      deriveProviderInstanceEntries(composer.providerStatuses),
-      settings,
-      null,
-    ),
-  );
+  const entries = providerInstanceEntriesFor(composer.providerStatuses, settings, null);
   const { selectedProviderEntry } = resolveComposerProviderSelection({
     entries,
     candidateInstanceIds: [

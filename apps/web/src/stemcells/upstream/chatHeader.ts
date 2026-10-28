@@ -146,7 +146,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
     clearTimeout(pending.current);
     pending.current = null;
   };
-  // oxlint-disable-next-line t3code/react-effect-budget -- Cancel the menu's pending double-click wait when the chat changes or the line unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Cancel the menu's pending double-click wait when the chat changes or the line unmounts.
   useEffect(
     () => () => {
       if (pending.current === null) return;

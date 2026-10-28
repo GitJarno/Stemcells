@@ -18,7 +18,7 @@ import * as Option from "effect/Option";
 
 import * as ServerSecretStore from "../../auth/ServerSecretStore.ts";
 import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
-import { resolveInteractionMode, resolveRuntimeMode } from "../../mcp/OrchestratorMcpService.ts";
+import { resolveInteractionMode, resolveRuntimeMode } from "../../mcp/delegatedTaskModes.ts";
 import { isNativeMaintenanceCommand } from "../../orchestration-v2/CommandPolicy.ts";
 import * as Orchestrator from "../../orchestration-v2/Orchestrator.ts";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";

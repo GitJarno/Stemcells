@@ -40,7 +40,7 @@ export function Rail() {
   const { open } = useSidebar();
   useRailUndoNotice(open && lit === null);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the rail column while it is mounted.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mark the document root with the rail column while it is mounted.
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.stemcellsColumn = "rail";

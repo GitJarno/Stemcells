@@ -33,7 +33,6 @@ import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/Th
 import * as UpstreamUsageLimitsPooled from "../../../components/usage/UsageLimitsPooled";
 import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
 import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
-import * as UpstreamComposerScrollGesture from "../../../components/chat/composerScrollGesture";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
 import * as UpstreamCommandPaletteLogic from "../../../components/CommandPalette.logic";
@@ -64,7 +63,6 @@ import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
 import * as OurChatComposer from "./ChatComposer";
 import * as OurChatThreadActions from "./chatThreadActions";
 import * as OurComposerPromptEditor from "./ComposerPromptEditorTiptap";
-import * as OurComposerScrollGesture from "./composerScrollGesture";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
@@ -367,16 +365,6 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/settings/SettingsFontPreviews.tsx": [
         "../ComposerPromptEditorTiptap",
         ["ComposerPromptEditorTiptap"],
-      ],
-    },
-  },
-  "apps/web/src/components/chat/composerScrollGesture.ts": {
-    upstream: UpstreamComposerScrollGesture,
-    substitute: OurComposerScrollGesture satisfies typeof UpstreamComposerScrollGesture,
-    importers: {
-      "apps/web/src/components/chat/ChatComposer.tsx": [
-        "./composerScrollGesture",
-        ["recordComposerScrollGestureEvent", "shouldCollapseComposerForScrollKey"],
       ],
     },
   },

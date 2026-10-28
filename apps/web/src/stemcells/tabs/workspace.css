@@ -263,8 +263,7 @@
   margin-inline-start: calc(100% - var(--sc-still-width));
 }
 /* The composer keeps one height: a row of text over its controls, lower
-   than upstream's open field, growing only with what is typed. It never
-   rests into one line on a scroll (`substitutes/composerScrollGesture.ts`). */
+   than upstream's open field, growing only with what is typed. */
 [data-stemcells-pane] .composer-tiptap {
   min-height: calc(var(--spacing) * 8);
 }

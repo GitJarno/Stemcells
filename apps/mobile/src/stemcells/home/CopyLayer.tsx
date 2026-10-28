@@ -30,7 +30,7 @@ function Copy(props: { readonly flight: Flight; readonly origin: { x: number; y:
   const ink = useResolveClassNames("text-foreground").color;
   const ground = useResolveClassNames("bg-screen").backgroundColor;
   const progress = useSharedValue(0);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Start the copy's flight toward its landing time and report it landed when the timing finishes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Start the copy's flight toward its landing time and report it landed when the timing finishes.
   useEffect(() => {
     const duration = Math.max(150, (flight.lands - clockSeconds()) * 1000);
     progress.set(

@@ -116,7 +116,7 @@ export function Cells() {
   const onList = useOnList(view);
   const settling = useLeaving(leaving);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Mark the document root with the Cells column while it is mounted.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mark the document root with the Cells column while it is mounted.
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.stemcellsColumn = "cells";
@@ -372,7 +372,7 @@ function NeedsHere(props: {
     if (focus !== null) setFocusIn(focus);
   };
   const held = pointerIn || focusIn;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hold the needs page's cards still while the pointer or focus is among them, releasing on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hold the needs page's cards still while the pointer or focus is among them, releasing on unmount.
   useEffect(() => {
     page.holdStill("column", held);
     return () => page.holdStill("column", false);

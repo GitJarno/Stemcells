@@ -54,11 +54,10 @@ describe("concise model names' contracts with upstream", () => {
       }),
     ).toBe("Opus 5.5");
     expect(
-      getTriggerDisplayModelName({
-        slug: "gemini-3.8-flash-high",
-        name: "x",
-        shortName: "Gemini 3.8 Flash (High)",
-      }),
+      getTriggerDisplayModelName(
+        { slug: "gemini-3.8-flash-high", name: "x", shortName: "Gemini 3.8 Flash (High)" },
+        null,
+      ),
     ).toBe("Flash 3.8 High");
   });
 

@@ -38,6 +38,8 @@ host www.nayuki.io the QR code library's credit
 host hub.example.ts.net a placeholder in the usage-source dialog
 host machine.tailnet.ts.net a placeholder in a link request's address field, on the web and the phone
 host box.example.ts.net a placeholder in Settings' linked environments address field
+host gateway.example.ts.net a placeholder in Settings' Simlock gateway field and its hint
+host incubator.callstack.com Labs' link to Simlock, and a comment naming it; the gateway Settings leases devices from is the person's own, off until they add one
 host moonbase.tail9f3a.ts.net made-up showcase rows on the phone
 host aurora-gpu.t3.sh made-up showcase rows on the phone
 host pocket-pi.t3.sh made-up showcase rows on the phone
@@ -45,6 +47,7 @@ host suspense-vps.hel1.t3.sh made-up showcase rows on the phone
 
 # Links a person opens in their own browser.
 host app.t3.codes T3's hosted app: T3 Connect's sign-in page and hosted pairing and prompt links, used only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
+host t3.chat the T3 Chat subscription link on T3 Connect's account page, shown only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
 host t3.codes legal and download links, a README credit line and t3.json's schema url; nothing fetches it
 host apps.apple.com the phone app's store link
 host play.google.com the phone app's store link

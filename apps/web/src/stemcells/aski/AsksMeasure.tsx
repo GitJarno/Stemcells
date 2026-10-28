@@ -32,7 +32,7 @@ const share = (alone: number, ended: number) => `${alone} of ${ended}`;
 /** This week's asks, read once as the page opens; null until it answers, or when it can't. */
 function useMeasure(): Measure | null {
   const [measure, setMeasure] = useState<Measure | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Fetch the measure once on mount and drop the answer if it arrives after unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Fetch the measure once on mount and drop the answer if it arrives after unmount.
   useEffect(() => {
     let cancelled = false;
     void getFromPrimary("/api/stemcells/asks/measure")

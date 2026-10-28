@@ -4,6 +4,7 @@
  * query, as Settings › Archive reads it), with its project, its provider and
  * whether its turn runs, each as one life of the name its id deals.
  */
+import { useAtomValue } from "@effect/atom-react";
 import {
   type EnvironmentThreadShell,
   presentThreadShell,
@@ -16,7 +17,8 @@ import { isSidebarSubagentThread } from "../../components/Sidebar.logic";
 import { providerClients } from "../../components/settings/providerDriverMeta";
 import { useArchivedThreadSnapshots } from "../../lib/archivedThreadsState";
 import { useProjects, useThreadShells } from "../../state/entities";
-import { useEnvironmentIds, useEnvironmentProviders } from "../../state/environments";
+import { useEnvironmentProviders } from "../../state/environments";
+import { environmentSummaries } from "../../state/presentation";
 import { cellNameOf } from "../cell/name";
 import type { Life } from "../lineage/lineage";
 
@@ -28,7 +30,7 @@ const msOf = (iso: string | null): number => {
 /** Every life the person's chats have lived, and whether the archive is still being read. */
 export function useLives(): { readonly lives: readonly Life[]; readonly loading: boolean } {
   const open = useThreadShells();
-  const environmentIds = useEnvironmentIds();
+  const environmentIds = useAtomValue(environmentSummaries.environmentIdsAtom);
   const archive = useArchivedThreadSnapshots(environmentIds);
   const projects = useProjects();
   const providers = useEnvironmentProviders();

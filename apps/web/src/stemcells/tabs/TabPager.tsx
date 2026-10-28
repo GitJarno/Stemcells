@@ -35,14 +35,14 @@ export function TabPager(props: {
   const viewportRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Attach the page strip to its viewport; detach on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Attach the page strip to its viewport; detach on unmount.
   useLayoutEffect(() => {
     if (viewportRef.current === null || stripRef.current === null) return;
     strip.attach(viewportRef.current, stripRef.current);
     return () => strip.detach();
   }, [strip]);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the strip this render's tabs and callbacks before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the strip this render's tabs and callbacks before paint.
   useLayoutEffect(() => {
     strip.sync(props.tabIds, props.activeId, props.onTurn, {
       id: props.newCellId ?? NO_NEW_CELL.id,

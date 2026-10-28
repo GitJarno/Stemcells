@@ -188,7 +188,7 @@ export function UpdateDriver() {
     act === "restart"
       ? (update?.state.downloadedVersion ?? null)
       : (update?.state.availableVersion ?? null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Start the update's next bridge step once, when where it stands calls for it.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Start the update's next bridge step once, when where it stands calls for it.
   useEffect(() => {
     if (act === "download") void takeUpdateStep(act, version, downloadUpdate);
     if (act === "restart") void takeUpdateStep(act, version, installUpdate);

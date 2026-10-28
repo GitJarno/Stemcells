@@ -177,7 +177,7 @@ export function useSeparator(
 
   // Gone mid-drag or mid-glide (its Cell closed, its tab unmounted), the
   // border lets go of what it held still: those transcripts stayed frozen.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Release a drag or glide in progress when the border unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Release a drag or glide in progress when the border unmounts.
   useEffect(
     () => () => {
       const gliding = glide.current;

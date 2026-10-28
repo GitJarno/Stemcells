@@ -21,7 +21,7 @@ export function WorkingSheen(props: { readonly children: string }) {
   const tone = toneTokenOf(useCellDriver(use(PaneCellContext)));
   const wordRef = useRef<HTMLSpanElement>(null);
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Own the sheen's crossing animations and its resize, theme, motion and sight watchers.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the sheen's crossing animations and its resize, theme, motion and sight watchers.
   useLayoutEffect(() => {
     const word = wordRef.current;
     if (word === null) return;

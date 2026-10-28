@@ -223,7 +223,7 @@ export function CellComposerLine() {
 /** The line stands over a composer: drawn, it tells its pane one is (`PaneComposerContext`). */
 function useTellComposerDrawn() {
   const tell = use(PaneComposerContext);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the pane a composer line is drawn before paint, and take it back on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the pane a composer line is drawn before paint, and take it back on unmount.
   useLayoutEffect(() => {
     if (tell === null) return;
     tell(true);

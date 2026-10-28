@@ -91,6 +91,8 @@ export function readCarry(draftId: string): Carry | null {
       text,
       records: threadContexts,
       environmentId,
+      // Upstream lets a linked machine read the chat; a carry doesn't look links up yet.
+      linkedEnvironments: new Map(),
     })[0];
     if (stranded)
       return { ok: false, error: `A Cell on another machine can't read "${stranded.title}".` };

@@ -38,7 +38,7 @@ export function TokenMenu(props: {
   // A word near the composer's right edge: the menu keeps its least width
   // and moves left by what it would overhang, so it stays in the pane.
   const [shift, setShift] = useState(0);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Measure the menu before paint to keep it in the pane and centre the current item.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure the menu before paint to keep it in the pane and centre the current item.
   useLayoutEffect(() => {
     const element = menu.current;
     if (!element) return;

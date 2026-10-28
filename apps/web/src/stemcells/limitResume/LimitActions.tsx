@@ -72,7 +72,7 @@ function CellCarriesOn(props: { readonly reset: number; readonly cell: CellRef }
   const switchOn = useAutoResume(props.cell.environmentId);
   // Read again once the reset passes, so the line goes with it.
   const [now, setNow] = useState(() => Date.now());
-  // oxlint-disable-next-line t3code/react-effect-budget -- Wake once the limit's reset passes so the line goes with it, clearing the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Wake once the limit's reset passes so the line goes with it, clearing the timer on change.
   useEffect(() => {
     if (now >= props.reset) return;
     const wait = Math.min(Math.max(props.reset - Date.now(), 0) + 1, MAX_TIMER_MS);

@@ -59,7 +59,7 @@ function Answering(props: {
     lit.show(answers === null ? new Map() : litOf(answers, needs.current));
   };
 
-  // oxlint-disable-next-line t3code/react-effect-budget -- Hand the editor plugin the newest cards before paint and re-read the composer against them.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the editor plugin the newest cards before paint and re-read the composer against them.
   useLayoutEffect(() => {
     current.current = cards;
     // The live card holds its number over one still leaving (`read.ts`).
@@ -74,7 +74,7 @@ function Answering(props: {
 
   // The editor remounts when its chat or its text mode changes, so every
   // render looks for the one wearing the anchor now.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Join the answers plugin to the composer's editor, which remounts outside this component.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Join the answers plugin to the composer's editor, which remounts outside this component.
   useEffect(() => {
     const element = document.querySelector<TiptapEditorHTMLElement>(`.${props.anchor}`);
     const editor = element?.editor ?? null;
@@ -102,9 +102,9 @@ function Answering(props: {
         editor.view.dispatch(giveBack(editor.view.state, spoken, shown, current.current));
     }
   };
-  // oxlint-disable-next-line t3code/react-effect-budget -- Give unsent answers' words back to the composer once it has joined and the list is live.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Give unsent answers' words back to the composer once it has joined and the list is live.
   useEffect(giveBackWaiting);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Detach the answers plugin from the composer when `show` changes or this unmounts.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Detach the answers plugin from the composer when `show` changes or this unmounts.
   useEffect(
     () => () => {
       leave(joined.current, show);
@@ -115,7 +115,7 @@ function Answering(props: {
 
   // Enter: answers into their holds, clicks lit on their cards, and the
   // words that answered nothing kept in the composer; the rest goes to Aski.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Register the composer's before-send hook for answers, and unregister it on each change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Register the composer's before-send hook for answers, and unregister it on each change.
   useEffect(() => {
     if (sendSlot === null) return;
     const beforeSend: BeforeSend = () => {

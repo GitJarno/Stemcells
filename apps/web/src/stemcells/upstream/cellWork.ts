@@ -208,7 +208,7 @@ export function useCellDeep(cell: CellRef | null, working: boolean, quiet: boole
   // Set once the run's last news has stood for the hold. Each word is news,
   // so words are heard outside render, which re-rendered the mark per word.
   const [silence, setSilence] = useState<{ readonly compacting: boolean } | null>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Listen to the run's news while it works; the silence counts from the last news, quiet or not, as the original's.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen to the run's news while it works; the silence counts from the last news, quiet or not, as the original's.
   useEffect(() => {
     if (!working || news === null) return;
     let heard: string | null = null;

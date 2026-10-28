@@ -98,7 +98,7 @@ function RunLooker(props: { look: Look; onDone: (lookKey: string) => void }): nu
   const { look } = props;
   const { compacted, diff } = useRunLook(look.environmentId, look.threadId, look.runId);
   const done = useEffectEvent(() => props.onDone(lookKey(look)));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Give up on the run's look after its wait, and clear the timer on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Give up on the run's look after its wait, and clear the timer on unmount.
   useEffect(() => {
     const giveUp = setTimeout(() => done(), LOOKS.waitFor);
     return () => clearTimeout(giveUp);
@@ -120,7 +120,7 @@ function RunLooker(props: { look: Look; onDone: (lookKey: string) => void }): nu
     done();
   });
   const launched = look.launched;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell what the landed run did once its compaction and diff have loaded.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell what the landed run did once its compaction and diff have loaded.
   useEffect(() => {
     if (compacted === null || (launched && diff === null)) return;
     tell(compacted, diff);
@@ -142,7 +142,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
 
   // Back: the server answers again after a silence in which no run was lost.
   const droppedNow = useEffectEvent(() => dropped);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Track the server's silences across renders to earn `back` when one ends.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Track the server's silences across renders to earn `back` when one ends.
   useEffect(() => {
     const at = Date.now();
     if (!home.answers) {
@@ -159,7 +159,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
   const backFrom = presence.back?.from;
   const backTo = presence.back?.to;
   const landedOut = landedWhileOut(presence.back, chats);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Earn `news` once per return when Cells landed while the person was away.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Earn `news` once per return when Cells landed while the person was away.
   useEffect(() => {
     if (backFrom === undefined || backTo === undefined || landedOut === 0) return;
     const once = String(backFrom);
@@ -173,7 +173,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
   const askiLanded = askiRun?.ended === "landed";
   const started = startedBy(askiLanded ? askiRun : null, chats, minute);
   const startedTitles = started.length >= MANY ? started.map((chat) => chat.title).join("\n") : "";
-  // oxlint-disable-next-line t3code/react-effect-budget -- Earn `many` once when Aski's newest run lands having started many Cells.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Earn `many` once when Aski's newest run lands having started many Cells.
   useEffect(() => {
     const run = askiRunNow();
     if (startedTitles === "" || run === null || run.id !== askiRunId || run.endedAt === null)
@@ -189,7 +189,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
   }, [askiRunId, startedTitles]);
 
   // All clear: three or more asks answered down to none, soon.
-  // oxlint-disable-next-line t3code/react-effect-budget -- Track waiting asks across renders to earn `clear` once they are all answered.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Track waiting asks across renders to earn `clear` once they are all answered.
   useEffect(() => {
     const at = Date.now();
     const next = waited(seen.waiting, needsYou, at);
@@ -205,7 +205,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
   const runs = chats
     .map((chat) => `${chat.key}:${chat.standing}:${chat.run?.id}:${chat.run?.ended}`)
     .join("|");
-  // oxlint-disable-next-line t3code/react-effect-budget -- Track runs across renders to earn hauls and queue looks into runs that just landed.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Track runs across renders to earn hauls and queue looks into runs that just landed.
   useEffect(() => {
     if (runs === "") {
       seen.watching = new Map();
@@ -244,7 +244,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
   const merges = useMerges(props.aski);
   const mergeKeys = merges.map(({ key, mergedAt }) => `${key}@${mergedAt}`).join("|");
   const mergesNow = useEffectEvent(() => merges);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Earn `zipped` when a new merge arrives: the day's first, or a big one.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Earn `zipped` when a new merge arrives: the day's first, or a big one.
   useEffect(() => {
     if (mergeKeys === "") return;
     const at = Date.now(),
@@ -274,7 +274,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
       (chat) => `${chat.key}:${chat.recovery?.runId}:${chat.recovery?.autoResume}:${chat.run?.id}`,
     )
     .join("|");
-  // oxlint-disable-next-line t3code/react-effect-budget -- Track limit recoveries across renders and earn `window` once a reset's Cells carry on.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Track limit recoveries across renders and earn `window` once a reset's Cells carry on.
   useEffect(() => {
     if (recoveries === "") return;
     const next = carriedOn(seen.armed, chatsNow(), Date.now());
@@ -290,7 +290,7 @@ export function AskiMomentWatch(props: { aski: CellRef | null }) {
       earn({ id: "window", line: windowLine(n), at: Date.now(), args: { n } });
     }, CARRY_SETTLES);
   }, [recoveries]);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Clear the pending carried-on timer on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Clear the pending carried-on timer on unmount.
   useEffect(() => () => clearTimeout(carried.current.timer), []);
 
   return (

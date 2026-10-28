@@ -16,8 +16,6 @@ const target = (id: string, selfUpdate: Target["selfUpdate"]): Target => ({
   selfUpdate,
   installation: undefined,
   desktopAppUpdate: true,
-  threadContinuation: false,
-  continueThreadsAfterServerUpdate: false,
   targetVersion: "1.2.3",
 });
 

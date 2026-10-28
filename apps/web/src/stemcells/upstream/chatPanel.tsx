@@ -116,7 +116,7 @@ export function WorkbenchPanel<P extends { children?: ReactNode }>(props: {
 /** Tells the page while `maximized` holds. */
 function useTellMaximized(maximized: boolean) {
   const tell = use(PanelMaximizedContext);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Tell the page while the panel is maximized, and take it back on change or unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the page while the panel is maximized, and take it back on change or unmount.
   useLayoutEffect(() => {
     if (!maximized || tell === null) return;
     tell(true);

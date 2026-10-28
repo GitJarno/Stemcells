@@ -34,7 +34,7 @@ export function AskiKeeper(props: { onChat: (chat: AskiChat) => void }) {
         ? `unavailable:${chat.reason}`
         : chat.status;
   const report = useEffectEvent((_key: string) => props.onChat(chat));
-  // oxlint-disable-next-line t3code/react-effect-budget -- Report Aski's chat to the workspace each time its status changes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Report Aski's chat to the workspace each time its status changes.
   useEffect(() => report(key), [key]);
   return null;
 }
@@ -65,7 +65,7 @@ export function AskiPane(props: {
 }) {
   const aski = props.chat.status === "ready" ? props.chat.cell : null;
   const room = useRef<HTMLDivElement>(null);
-  // oxlint-disable-next-line t3code/react-effect-budget -- Fly a copy of Aski to each Cell launched while the room shows; unsubscribe on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Fly a copy of Aski to each Cell launched while the room shows; unsubscribe on unmount.
   useEffect(
     () =>
       subscribeLaunches((cells) => {

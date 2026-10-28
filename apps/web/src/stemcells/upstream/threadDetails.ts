@@ -31,7 +31,7 @@ export function useDetailsClosedAtFirst(target: ThreadRouteTarget | null): void 
   const cell = useCellForRoute(target);
   const environmentId = cell?.environmentId ?? null;
   const threadId = cell?.threadId ?? null;
-  // oxlint-disable-next-line t3code/react-effect-budget -- Close upstream's details card the first time this Cell's thread shows, before it paints.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Close upstream's details card the first time this Cell's thread shows, before it paints.
   useLayoutEffect(() => {
     if (environmentId === null || threadId === null) return;
     closeDetailsOnFirstShow(scopeThreadRef(environmentId as EnvironmentId, threadId as ThreadId));
