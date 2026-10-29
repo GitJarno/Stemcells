@@ -37,6 +37,7 @@ import {
 } from "./composerEditorRevision";
 import { DEFAULT_COMPOSER_ENTER_BEHAVIOR } from "../lib/composerEnterBehavior";
 import type { ComposerEditorProps, ComposerEditorSelection } from "./T3ComposerEditor.types";
+import { mediaChipLabel } from "../stemcells/upstream/attachments";
 
 const NATIVE_MODULE_NAME = "T3ComposerEditor";
 const EMPTY_SKILLS: NonNullable<ComposerEditorProps["skills"]> = [];
@@ -201,9 +202,12 @@ export function ComposerEditor({
             token.type === "skill"
               ? (skillLabels.get(token.value) ?? token.value)
               : token.type === "context"
-                ? `${token.label}${props.context?.records.some((record) => record.contextId === token.contextId) ? "" : " · unavailable"}`
+                ? `${mediaChipLabel(record, props.context?.records) ?? token.label}${props.context?.records.some((record) => record.contextId === token.contextId) ? "" : " · unavailable"}`
                 : basename(token.value),
-          detail: token.type === "context" ? composerChipSizeSuffix(record) : "",
+          detail:
+            token.type === "context" && !mediaChipLabel(record, props.context?.records)
+              ? composerChipSizeSuffix(record)
+              : "",
           iconUri: contextChipIconUri(icon),
           tintsIcon: icon.kind === "chip",
         };

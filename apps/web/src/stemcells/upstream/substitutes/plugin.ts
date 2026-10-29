@@ -113,6 +113,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // by dragging them (`payloads/`).
   "apps/web/src/components/chat/workspaceFileDrop.ts": "workspaceFileDrop.ts",
   "apps/web/src/components/media/MediaActions.tsx": "MediaActions.tsx",
+  // Attachments read "Image 1", "Video 2": a picture's and a video's chip, in
+  // the composer and in a sent message, says its label, not its file's name.
+  "apps/web/src/components/composerContextPresentation.tsx": "composerContextPresentation.tsx",
+  "apps/web/src/components/chat/UserMessageContextChips.tsx": "UserMessageContextChips.tsx",
 };
 
 /**

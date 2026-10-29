@@ -10,3 +10,5 @@ export { ToolRowLabel } from "../../transcript/ToolRowLabel";
 export { useDrawerMotion } from "../terminal";
 export { SUBCELL, subcellCount } from "../../../../../../stemcells/words/subcells";
 export { attachedCarry, chipCarry } from "../../payloads/sources";
+export { useAttachmentLabels } from "../../attachments/AttachmentLabels";
+export { attachmentLabeller } from "../attachmentLabels";

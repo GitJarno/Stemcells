@@ -151,6 +151,7 @@ export function ComposerAttachmentMediaRow({
   const uploadsByImageId = useAttachmentUploadStore((state) => state.uploadsByImageId);
   const pendingSnapShotIdSet = new Set(pendingSnapShotIds);
   const nonPersistedImageIdSet = new Set(nonPersistedImageIds);
+  const label = Stemcells.attachmentLabeller([...images, ...videos], preparingImages);
   return (
     <div
       className={cn(
@@ -198,7 +199,7 @@ export function ComposerAttachmentMediaRow({
                 <button
                   type="button"
                   className={cn("h-full w-full", ready && "cursor-zoom-in")}
-                  aria-label={`Preview ${image.name}`}
+                  aria-label={`Preview ${label(image)}`}
                   disabled={!ready}
                   onClick={() => {
                     const preview = buildExpandedImagePreview(images, image.id);
@@ -208,7 +209,7 @@ export function ComposerAttachmentMediaRow({
                 >
                   <ComposerImageThumbnail
                     file={image.file}
-                    alt={image.name}
+                    alt={label(image)}
                     className="h-full w-full object-cover"
                     fallback={
                       ready && isHeicImageFile({ name: ready.name, type: ready.mimeType }) ? (
@@ -216,12 +217,12 @@ export function ComposerAttachmentMediaRow({
                           name={ready.name}
                           mimeType={ready.mimeType}
                           src={ready.previewUrl}
-                          alt={image.name}
+                          alt={label(image)}
                           className="h-full w-full object-cover"
                         />
                       ) : (
                         <span className="flex h-full items-center justify-center px-1 text-3xs text-secondary-label">
-                          {image.name}
+                          {label(image)}
                         </span>
                       )
                     }
@@ -229,7 +230,7 @@ export function ComposerAttachmentMediaRow({
                 </button>
               ) : (
                 <div className="flex h-full w-full items-center justify-center px-1 text-center text-3xs text-secondary-label">
-                  {image.name}
+                  {label(image)}
                 </div>
               )}
               {source?.kind === "snap-shot" ? (
@@ -282,7 +283,7 @@ export function ComposerAttachmentMediaRow({
                           })
                         }
                         disabled={!canOperateThread}
-                        aria-label={`Retry upload for ${image.name}`}
+                        aria-label={`Retry upload for ${label(image)}`}
                       />
                     }
                   >
@@ -302,7 +303,7 @@ export function ComposerAttachmentMediaRow({
                   variant="media-close"
                   size="icon-xs"
                   onClick={() => onRemoveImage(image.id)}
-                  aria-label={`Remove ${image.name}`}
+                  aria-label={`Remove ${label(image)}`}
                 >
                   <XIcon />
                 </Button>
@@ -341,7 +342,7 @@ export function ComposerAttachmentMediaRow({
             <button
               type="button"
               className="flex h-full w-full cursor-zoom-in flex-col items-center justify-center gap-1 px-1 text-white"
-              aria-label={`Play ${file.name}`}
+              aria-label={`Play ${label(file)}`}
               onClick={() => {
                 if (file.file !== null) {
                   const preview = buildExpandedImagePreview([file], file.id);
@@ -381,7 +382,7 @@ export function ComposerAttachmentMediaRow({
                         })
                       }
                       disabled={!canOperateThread}
-                      aria-label={`Retry upload for ${file.name}`}
+                      aria-label={`Retry upload for ${label(file)}`}
                     />
                   }
                 >
@@ -395,7 +396,7 @@ export function ComposerAttachmentMediaRow({
               size="icon-xs"
               className="absolute right-1 top-1"
               onClick={() => onRemoveFile(file.id)}
-              aria-label={`Remove ${file.name}`}
+              aria-label={`Remove ${label(file)}`}
             >
               <XIcon />
             </Button>
@@ -569,6 +570,7 @@ export function ComposerRestingImagePreviews({
 }) {
   const counts = getRestingComposerImagePreviewCounts(images.length);
   const visibleImages = images.slice(0, counts.visibleCount);
+  const label = Stemcells.attachmentLabeller(allImages);
   return (
     <div data-chat-composer-resting-images="true" className="flex shrink-0 items-center gap-1 ps-1">
       {visibleImages.map((image) => (
@@ -576,7 +578,7 @@ export function ComposerRestingImagePreviews({
           key={image.id}
           type="button"
           className="relative size-7 shrink-0 cursor-zoom-in overflow-hidden rounded-md border border-border/70 bg-muted/60"
-          aria-label={`Preview ${image.name}`}
+          aria-label={`Preview ${label(image)}`}
           onPointerDown={(event) => event.preventDefault()}
           onClick={() => {
             const preview = buildExpandedImagePreview(allImages, image.id);
@@ -643,6 +645,7 @@ export function ComposerQueuedAttachmentRow({
   }>;
   readonly onRemove: (attachmentId: string) => void;
 }) {
+  const label = Stemcells.attachmentLabeller(attachments.map(({ attachment }) => attachment));
   return (
     <div className="mb-3 flex flex-wrap gap-2">
       {attachments.map(({ attachment, url }) => (
@@ -651,10 +654,10 @@ export function ComposerQueuedAttachmentRow({
           className="relative h-16 w-16 overflow-hidden rounded-lg border border-border/80 bg-background"
         >
           {attachment.type === "image" && url ? (
-            <img src={url} alt={attachment.name} className="h-full w-full object-cover" />
+            <img src={url} alt={label(attachment)} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center px-1 text-center text-3xs text-secondary-label">
-              {attachment.name}
+              {label(attachment)}
             </div>
           )}
           <Button
@@ -662,7 +665,7 @@ export function ComposerQueuedAttachmentRow({
             size="icon-xs"
             className="absolute right-1 top-1"
             onClick={() => onRemove(attachment.id)}
-            aria-label={`Remove ${attachment.name}`}
+            aria-label={`Remove ${label(attachment)}`}
           >
             <XIcon />
           </Button>

@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import type { ChatAttachment } from "@t3tools/contracts";
 import { formatAttachmentSize } from "@t3tools/client-runtime/state/attachments";
 
@@ -27,6 +28,7 @@ export function GuestMessageAttachments(props: {
   const { resolvedTheme } = useTheme();
   const images = props.attachments.filter(isImageAttachment);
   const files = props.attachments.filter(isFileAttachment);
+  const label = Stemcells.attachmentLabeller(props.attachments);
   if (images.length === 0 && files.length === 0) return null;
   return (
     <div className="flex flex-col items-end gap-2">
@@ -40,7 +42,7 @@ export function GuestMessageAttachments(props: {
                   <button
                     type="button"
                     className="block size-full cursor-zoom-in"
-                    aria-label={`Preview ${image.name}`}
+                    aria-label={`Preview ${label(image)}`}
                     onClick={() => props.onOpenImage(image)}
                   >
                     {/* Isolate the thumbnail raster from nearby activity repaints in Chromium. */}
@@ -48,14 +50,14 @@ export function GuestMessageAttachments(props: {
                       name={image.name}
                       mimeType={image.mimeType}
                       src={src}
-                      alt={image.name}
+                      alt={label(image)}
                       decoding="async"
                       className="block size-full transform-gpu object-cover"
                     />
                   </button>
                 ) : (
                   <div className="flex size-full items-center justify-center px-2 text-center text-2xs text-muted-foreground/70">
-                    {image.name}
+                    {label(image)}
                   </div>
                 )}
               </div>

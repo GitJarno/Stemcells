@@ -328,6 +328,16 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/lib/enrichedLinkPresentation.ts": {
+    exports: view("apps/mobile/src/lib/enrichedLinkPresentation.ts", "enrichedLinkPresentation.ts"),
+    importers: {
+      // A message's chips, and the composer's read-only markdown, draw through it.
+      "apps/mobile/src/native/useEnrichedLinkVariants.ts": [
+        "../lib/enrichedLinkPresentation",
+        ["enrichedContextLinkPresentation"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -492,6 +502,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ComposerAttachmentButton")>().toEqualTypeOf<
       typeof import("../../../features/threads/ComposerAttachmentButton")
+    >();
+    expectTypeOf<typeof import("./enrichedLinkPresentation")>().toEqualTypeOf<
+      typeof import("../../../lib/enrichedLinkPresentation")
     >();
     expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
       typeof import("expo-image-picker")

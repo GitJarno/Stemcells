@@ -7,6 +7,7 @@ import { AppText as Text } from "../../components/ui/AppText";
 import { SymbolView } from "../../components/ui/AppSymbol";
 import { useAssetUrl } from "../../state/assets";
 import { assetImageSource } from "../../lib/assetImageSource";
+import { attachmentLabeller } from "../../stemcells/upstream/attachments";
 
 export function ComposerQueuedEditBanner(props: {
   readonly saving: boolean;
@@ -36,6 +37,7 @@ export function ComposerQueuedEditAttachments(props: {
   readonly onRemove: (attachmentId: string) => void;
 }) {
   if (props.attachments.length === 0) return null;
+  const label = attachmentLabeller(props.attachments);
   return (
     <ScrollView
       horizontal
@@ -49,6 +51,7 @@ export function ComposerQueuedEditAttachments(props: {
           key={attachment.id}
           environmentId={props.environmentId}
           attachment={attachment}
+          label={label(attachment)}
           disabled={props.disabled}
           onRemove={props.onRemove}
         />
@@ -60,6 +63,7 @@ export function ComposerQueuedEditAttachments(props: {
 function QueuedEditAttachmentChip(props: {
   readonly environmentId: EnvironmentId;
   readonly attachment: ChatAttachment;
+  readonly label: string;
   readonly disabled: boolean;
   readonly onRemove: (attachmentId: string) => void;
 }) {
@@ -94,11 +98,11 @@ function QueuedEditAttachmentChip(props: {
         </View>
       )}
       <Text className="min-w-0 shrink text-xs text-foreground" numberOfLines={1}>
-        {attachment.name}
+        {props.label}
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Remove ${attachment.name}`}
+        accessibilityLabel={`Remove ${props.label}`}
         disabled={props.disabled}
         hitSlop={8}
         onPress={() => props.onRemove(attachment.id)}

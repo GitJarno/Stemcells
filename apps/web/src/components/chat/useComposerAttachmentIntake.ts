@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/chat";
 import type { ChatComposerProps } from "./ChatComposer";
 import {
   type ChatFileAttachment,
@@ -344,7 +345,7 @@ export function useComposerAttachmentIntake(input: {
       return;
     }
     const confirmation = requestConfirmDialog(
-      `Remove ${image?.name ?? "this image"} from the message?\nIt is referenced in your text; removing it also removes every reference.`,
+      `Remove ${image ? Stemcells.attachmentLabeller(composerImagesRef.current)(image) : "this image"} from the message?\nIt is referenced in your text; removing it also removes every reference.`,
       { variant: "destructive" },
     );
     if (!confirmation) {

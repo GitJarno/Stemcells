@@ -99,11 +99,12 @@ function UserVideoAttachment({ file }: { readonly file: ChatFileAttachment }) {
   const assetUrl = useAssetUrlState(ctx.activeThreadEnvironmentId, resource);
   const refreshAssetUrl = useAssetUrlRefresh(ctx.activeThreadEnvironmentId, resource);
   const src = assetUrl._tag === "Success" ? assetUrl.url : (file.previewUrl ?? null);
+  const label = Stemcells.useAttachmentLabels()(file);
 
   if (asset === null && src === null) {
     return (
       <div className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-border/80 bg-black px-2 py-3 text-center text-2xs text-white/70">
-        {file.name}
+        {label}
       </div>
     );
   }
@@ -114,7 +115,7 @@ function UserVideoAttachment({ file }: { readonly file: ChatFileAttachment }) {
       sourceFailed={
         file.previewUrl === undefined && resource !== null && assetUrl._tag === "Failure"
       }
-      label={file.name}
+      label={label}
       preload="visible"
       onOpen={() => {
         const preview = buildAttachmentVideoPreview(ctx.activeThreadEnvironmentId, file);
@@ -292,6 +293,7 @@ function UserMessageProjectedStatus({ row }: { row: Extract<TimelineRow, { kind:
 function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" }> }) {
   const ctx = use(TimelineRowCtx);
   const { onImageExpand, onFileOpen } = ctx;
+  const label = Stemcells.useAttachmentLabels();
   const senderThreadId = row.message.senderThreadId;
   const resources = selectMessageImageResources(row.message.attachments);
   const previewUrls = useAssetUrls(ctx.activeThreadEnvironmentId, resources);
@@ -522,7 +524,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
                       <button
                         type="button"
                         className="block h-full w-full cursor-zoom-in"
-                        aria-label={`Preview ${image.name}`}
+                        aria-label={`Preview ${label(image)}`}
                         onClick={() => {
                           const preview = buildExpandedImagePreview(regularImages, image.id);
                           if (!preview) return;
@@ -534,7 +536,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
                           name={image.name}
                           mimeType={image.mimeType}
                           src={image.previewUrl}
-                          alt={image.name}
+                          alt={label(image)}
                           decoding="async"
                           loading="lazy"
                           className="block size-full transform-gpu object-cover"
@@ -542,7 +544,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
                       </button>
                     ) : (
                       <div className="flex min-h-[72px] items-center justify-center px-2 py-3 text-center text-2xs text-muted-foreground/70">
-                        {image.name}
+                        {label(image)}
                       </div>
                     )}
                     {image.previewUrl && image.source?.kind === "snap-shot" ? (

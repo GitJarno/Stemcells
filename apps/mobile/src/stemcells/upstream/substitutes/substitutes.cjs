@@ -45,6 +45,8 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/usage/usageProviders.ts": "usageProviders.ts",
   // The + opens Add to Chat: your photos, the camera first, picks in order.
   "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx": "ComposerAttachmentButton.tsx",
+  // A message's picture and video chips read "Image 1", "Video 2", as on the Mac.
+  "apps/mobile/src/lib/enrichedLinkPresentation.ts": "enrichedLinkPresentation.ts",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

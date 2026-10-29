@@ -59,6 +59,8 @@ import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMe
 import * as UpstreamWorkEntryRow from "../../../components/chat/TimelineWorkEntryRow";
 import * as UpstreamWorkspaceFileDrop from "../../../components/chat/workspaceFileDrop";
 import * as UpstreamMediaActions from "../../../components/media/MediaActions";
+import * as UpstreamComposerContextPresentation from "../../../components/composerContextPresentation";
+import * as UpstreamUserMessageContextChips from "../../../components/chat/UserMessageContextChips";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurSidebar from "./Sidebar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
@@ -111,6 +113,8 @@ import * as OurUserMessageRow from "./TimelineUserMessageRow";
 import * as OurWorkEntryRow from "./TimelineWorkEntryRow";
 import * as OurWorkspaceFileDrop from "./workspaceFileDrop";
 import * as OurMediaActions from "./MediaActions";
+import * as OurComposerContextPresentation from "./composerContextPresentation";
+import * as OurUserMessageContextChips from "./UserMessageContextChips";
 
 // Upstream's timeline loads the diff worker, which only a browser can start;
 // these tests read its module's exports, never draw it.
@@ -809,6 +813,28 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
       // A message's videos.
       "apps/web/src/components/media/MediaVideoPlayer.tsx": ["./MediaActions", ["MediaActions"]],
+    },
+  },
+  "apps/web/src/components/composerContextPresentation.tsx": {
+    upstream: UpstreamComposerContextPresentation,
+    substitute: OurComposerContextPresentation satisfies typeof UpstreamComposerContextPresentation,
+    importers: {
+      // The composer's editor draws each chip in the prompt through it.
+      "apps/web/src/components/ComposerPromptEditorTiptap.tsx": [
+        "./composerContextPresentation",
+        ["ComposerContextReferenceChip", "ComposerContextRecordsContext"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/UserMessageContextChips.tsx": {
+    upstream: UpstreamUserMessageContextChips,
+    substitute: OurUserMessageContextChips satisfies typeof UpstreamUserMessageContextChips,
+    importers: {
+      // A sent message draws each chip in its words through it.
+      "apps/web/src/components/chat/TimelineUserMessageRow.tsx": [
+        "./UserMessageContextChips",
+        ["UserMessageContextReferenceChip"],
+      ],
     },
   },
 };
