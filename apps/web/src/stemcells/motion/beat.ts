@@ -7,7 +7,7 @@
 import { timing } from "../tokens/motion";
 
 /** The crossing's curve's control points: nearly even across, softened where the light meets and leaves. */
-const BEAT_POINTS = [0.3, 0.1, 0.7, 0.9] as const;
+export const BEAT_POINTS = [0.3, 0.1, 0.7, 0.9] as const;
 
 /** The crossing's curve: it glides, never lunges. */
 export const BEAT_CURVE = `cubic-bezier(${BEAT_POINTS.join(", ")})`;

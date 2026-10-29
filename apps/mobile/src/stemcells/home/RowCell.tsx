@@ -13,6 +13,7 @@ import { useIsAskiChat } from "../aski/useAskiChat";
 import { formingFrom } from "../cell/forming";
 import { cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
+import { CardLight } from "../glow/CardLight";
 import {
   AppText,
   type EnvironmentProject,
@@ -93,6 +94,7 @@ export function CellBesideRow(props: {
   const { machine, pr, project } = props.marks;
   return (
     <View className="flex-row items-stretch gap-3">
+      <CardLight thread={props.thread} />
       <View className="w-[52px] items-center">
         <Figure thread={props.thread} points={2} />
         <AppText

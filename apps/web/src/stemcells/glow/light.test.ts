@@ -2,12 +2,12 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { crossing } from "../motion/beat";
 import { CELL_STATUSES } from "../upstream/status";
+import { glowOf } from "./glow";
 import {
   axial,
   bandReach,
   bandStops,
   bandWidth,
-  glowOf,
   imprintShows,
   imprintSide,
   irisRadius,

@@ -13,6 +13,13 @@ import { CellFigure } from "./CellFigure";
 import { faceOf, faceTurnsAt } from "./mood";
 import { useCellLook } from "./roster";
 
+/** The driver of the provider a chat runs on (`claudeAgent`, `codex`, …), as its machine names it. */
+export function useDriverOf(thread: EnvironmentThreadShell): string | null {
+  const providers = useEnvironmentProviders().get(thread.environmentId);
+  const instanceId = thread.runtime?.providerInstanceId ?? thread.modelSelection.instanceId;
+  return providers?.find((provider) => provider.instanceId === instanceId)?.driver ?? null;
+}
+
 export function ThreadCell(props: {
   readonly thread: EnvironmentThreadShell;
   /** Points a cell of the miniature is drawn. */
@@ -29,9 +36,7 @@ export function ThreadCell(props: {
   readonly held?: boolean;
 }) {
   const { thread } = props;
-  const providers = useEnvironmentProviders().get(thread.environmentId);
-  const instanceId = thread.runtime?.providerInstanceId ?? thread.modelSelection.instanceId;
-  const driver = providers?.find((provider) => provider.instanceId === instanceId)?.driver ?? null;
+  const driver = useDriverOf(thread);
   const look = useCellLook(thread.id);
   const ground = useThemeAppearance() === "light" ? "light" : "black";
   const [now, setNow] = useState(Date.now);

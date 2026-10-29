@@ -7,6 +7,7 @@
 import { crossing, onBeat, resweep, sweep } from "../motion/beat";
 import type { Sight } from "../motion/sight";
 import { timing } from "../tokens/motion";
+import { type Glow } from "./glow";
 import {
   axial,
   BAND_LEAN,
@@ -14,7 +15,6 @@ import {
   bandWidth,
   BLOOM_REACH,
   bloomStops,
-  type Glow,
   IRIS_SOLID,
   irisRadius,
   type Point,
