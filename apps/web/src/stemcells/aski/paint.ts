@@ -3,11 +3,10 @@
 // so it draws what renderGrid draws at a cost that follows what moved, not the stage's size.
 // Glyph coverage is worked out once, the eyes' once for as long as they hold still.
 
-import { eyeDistance } from "./eye.ts";
 import { BLANK, type Cell, type Grid, isEmpty, type Stage } from "./grid.ts";
 import { clamp } from "./math.ts";
-import { type GridLook, glyphInCell, gridEyes } from "./render.ts";
-import { CELL_ASPECT, cellToCanon } from "./scene.ts";
+import { eyesOver, type GridLook, glyphInCell, gridEyes } from "./render.ts";
+import { CELL_ASPECT } from "./scene.ts";
 
 export type Rgb = readonly [number, number, number];
 
@@ -44,8 +43,9 @@ export class GridPainter {
   readonly #glyphs = new Map<string, Float32Array>();
   #eyes = "";
   #eyeBox: Box | undefined;
-  /** The eyes' coverage of each pixel in their box, NaN until a frame needs it. */
+  /** The eyes' coverage of each pixel in their box, NaN until a frame needs it, and which is ink. */
   #eyeCover = new Float32Array(0);
+  #eyeInk = new Uint8Array(0);
 
   constructor(stage: Stage, look: PaintLook) {
     this.#stage = stage;
@@ -65,7 +65,8 @@ export class GridPainter {
       throw new RangeError("A painter paints the stage it was made for");
     const poses = gridEyes(eyes);
     const fit = poses.length > 0 ? eyes!.fit : null;
-    const key = fit === null ? "" : JSON.stringify([poses, fit]);
+    const over = fit === null ? null : eyesOver(g, fit, poses);
+    const key = fit === null ? "" : JSON.stringify([poses, fit, over!.inks]);
     const box = fit === null ? undefined : this.#boxOf(poses, fit);
 
     const dirty = new Uint8Array(cols * rows);
@@ -73,19 +74,14 @@ export class GridPainter {
       if (!sameCell(g.cells[k]!, this.#cells[k]!)) dirty[k] = 1;
     if (key !== this.#eyes) {
       for (const b of [this.#eyeBox, box]) if (b !== undefined) this.#mark(dirty, b);
-      this.#eyeCover = new Float32Array(box === undefined ? 0 : box.width * box.height).fill(
-        Number.NaN,
-      );
+      const size = box === undefined ? 0 : box.width * box.height;
+      this.#eyeCover = new Float32Array(size).fill(Number.NaN);
+      this.#eyeInk = new Uint8Array(size);
     }
     this.#cells = g.cells;
     this.#eyes = key;
     this.#eyeBox = box;
 
-    const eyeAt = (x: number, y: number): number => {
-      let d = Infinity;
-      for (const e of poses) d = Math.min(d, eyeDistance(x, y, e));
-      return d;
-    };
     let x0 = Infinity;
     let y0 = Infinity;
     let x1 = -Infinity;
@@ -94,9 +90,12 @@ export class GridPainter {
       for (let i = 0; i < cols; i++) {
         if (dirty[j * cols + i] === 0) continue;
         const c = g.cells[j * cols + i]!;
-        const drawn =
-          !isEmpty(c) && !(fit !== null && eyeAt(...cellToCanon(fit, i, j)) < 0.35 / fit.ky);
-        this.#paintCell(i, j, drawn ? c : BLANK, fit === null ? undefined : { fit, eyeAt });
+        this.#paintCell(
+          i,
+          j,
+          isEmpty(c) ? BLANK : c,
+          fit === null ? undefined : { fit, eyeAt: over!.at },
+        );
         x0 = Math.min(x0, i);
         y0 = Math.min(y0, j);
         x1 = Math.max(x1, i + 1);
@@ -154,7 +153,10 @@ export class GridPainter {
     j: number,
     c: Cell,
     eyes:
-      | { fit: NonNullable<GridLook["eyes"]>["fit"]; eyeAt: (x: number, y: number) => number }
+      | {
+          fit: NonNullable<GridLook["eyes"]>["fit"];
+          eyeAt: ReturnType<typeof eyesOver>["at"];
+        }
       | undefined,
   ): void {
     const cw = this.#cw;
@@ -167,6 +169,7 @@ export class GridPainter {
     const y0 = j * chh;
     const box = eyes === undefined ? undefined : this.#eyeBox;
     const cover = this.#eyeCover;
+    const inkEye = this.#eyeInk;
     for (let py = 0; py < chh; py++) {
       const Y = y0 + py;
       let o = (Y * this.width + x0) * 4;
@@ -174,6 +177,7 @@ export class GridPainter {
         const X = x0 + px;
         const mark = coverage === undefined ? 0 : coverage[py * cw + px]! * c.ink;
         let e = 0;
+        let inked = false;
         if (
           box !== undefined &&
           X >= box.x &&
@@ -186,17 +190,21 @@ export class GridPainter {
           if (Number.isNaN(e)) {
             const { fit, eyeAt } = eyes!;
             const y = ((Y + 0.5) / chh - fit.ground) / fit.ky;
-            e = clamp(0.5 - eyeAt(((X + 0.5) / cw - fit.cx) / fit.kx, y) * fit.kx * cw, 0, 1);
+            const near = eyeAt(((X + 0.5) / cw - fit.cx) / fit.kx, y);
+            e = clamp(0.5 - near.distance * fit.kx * cw, 0, 1);
             cover[k] = e;
+            inkEye[k] = near.ink ? 1 : 0;
           }
+          inked = inkEye[k] === 1;
         }
         const m = mark * (1 - e);
-        // The eyes are always plain ink.
-        const colour = tone && m > e ? warm : ink;
+        // An eye over nothing is plain ink; on something, a hole in it (`eyesOver`).
+        const eyeInk = inked ? e : 0;
+        const colour = tone && m > eyeInk ? warm : ink;
         pixels[o] = colour[0];
         pixels[o + 1] = colour[1];
         pixels[o + 2] = colour[2];
-        pixels[o + 3] = Math.max(m, e) * 255;
+        pixels[o + 3] = Math.max(m, eyeInk) * 255;
       }
     }
   }

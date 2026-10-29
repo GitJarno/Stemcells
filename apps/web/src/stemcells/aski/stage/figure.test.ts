@@ -10,7 +10,7 @@ const inked = (pixels: ArrayBuffer): number => alpha(pixels).filter((a) => a > 1
 const same = (a: ArrayBuffer, b: ArrayBuffer): boolean =>
   new Uint8ClampedArray(a).every((v, i) => v === new Uint8ClampedArray(b)[i]);
 
-test("Aski's eyes come on layers of their own, two blocks, each open and shut, level, cut in the ground's colour from solid ink in its skin of characters", () => {
+test("Aski's eyes come on layers of their own, two blocks, each open and shut, level, holes in the ground's colour in its skin of characters", () => {
   const drawn = drawFigure({ width: 160, height: 160, ink, ground });
   const [left, right] = drawn.eyes.each;
   NodeAssert.ok(left && right && drawn.eyes.each.length === 2);
@@ -21,11 +21,14 @@ test("Aski's eyes come on layers of their own, two blocks, each open and shut, l
     NodeAssert.ok(Math.abs(eye.width / eye.height - 0.55) < 0.15, `${eye.width}x${eye.height}`);
     const rgba = new Uint8ClampedArray(eye.open);
     NodeAssert.deepEqual([...rgba.subarray(0, 3)], [...ground]);
-    // The body under an eye is solid ink, open or shut, so it reads as cut out.
+    // Under an eye is the skin, characters with room between them, no band of ink: a shut eye shows it.
     const body = alpha(drawn.pixels);
-    for (let y = eye.y; y < eye.y + eye.height; y++)
-      for (let x = eye.x; x < eye.x + eye.width; x++)
-        NodeAssert.equal(body[y * drawn.width + x], 255, `${x},${y}`);
+    const under = Array.from({ length: eye.width * eye.height }, (_, n) => {
+      const x = eye.x + (n % eye.width),
+        y = eye.y + Math.floor(n / eye.width);
+      return body[y * drawn.width + x]!;
+    });
+    NodeAssert.ok(under.filter((a) => a < 128).length > under.length / 4, "characters under it");
     // A shut eye is a sliver of the open one.
     NodeAssert.ok(inked(eye.shut) < inked(eye.open) / 4);
   }

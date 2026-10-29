@@ -1,14 +1,14 @@
 // Aski's skin of characters, a cell at a time, worked out from its lobes: the character each cell
-// of its body wears, or solid ink round the eyes for them to be cut from. The reference renderer
-// draws it pixel by pixel (render.ts); Aski's figure wears it at rest, on the Mac (stage/figure.ts)
-// and on the phone (`restingInk`), wherever a cell is large enough to read.
+// of its body wears, right up to the eyes, which are holes in it. The reference renderer draws it
+// pixel by pixel (render.ts); Aski's figure wears it at rest, on the Mac (stage/figure.ts) and on
+// the phone (`restingInk`), wherever a cell is large enough to read.
 
-import { Aski, type Frame, GAZE } from "./aski.ts";
+import { Aski, type Frame } from "./aski.ts";
 import { EYES } from "./canon.ts";
 import { BODY_CHARS, FONT_H, FONT_W, glyphBit, RAMP } from "./font.ts";
 import { clamp, hash } from "./math.ts";
 import { CELL } from "./particles.ts";
-import { bodyDistance, eyesDistance, limbChar, sceneDistance } from "./sdf.ts";
+import { bodyDistance, limbChar, sceneDistance } from "./sdf.ts";
 
 /** The seed of Aski at rest; a resting frame needs only one. */
 const SEED = 1;
@@ -16,8 +16,6 @@ const SEED = 1;
 const READS_FROM = 6;
 /** How tall an eye must be, in device pixels, to read a character typed into it; a smaller one keeps its block. */
 const TYPED_FROM = 8;
-/** How far round the eyes the skin is solid ink: as far as a look moves them, so they never look out of it. */
-const SOCKET = Math.hypot(GAZE.x, GAZE.y);
 const EYE_MID_X = (EYES.centers[0][0] + EYES.centers[1][0]) / 2,
   EYE_MID_Y = (EYES.centers[0][1] + EYES.centers[1][1]) / 2;
 
@@ -28,7 +26,7 @@ const MARGIN = { left: 1.5, top: 0.5 } as const;
 /** A dot's side, canon units. */
 export const DOT = CELL / DOTS.across;
 
-/** A cell's body ink: the cells round the eyes, and those the skin has yet to reach. */
+/** A cell's body ink: one the skin has yet to reach. */
 export const SOLID = "solid";
 
 /** A cell of the skin: its character and how strongly it is inked. */
@@ -68,7 +66,7 @@ export function skinCell(f: Frame, gx: number, gy: number): Mark | typeof SOLID 
     ccy = (gy + 0.5) * CELL,
     h = hash(f.seed, gx, gy, 5);
   const val = c.live * 1.6 - Math.hypot(ccx - EYE_MID_X, ccy - EYE_MID_Y) / 240 - h * 0.35;
-  if (val <= 0 || eyesDistance(f, ccx, ccy) < SOCKET) return SOLID;
+  if (val <= 0) return SOLID;
   const limb = limbChar(f, ccx, ccy);
   if (limb.d < CELL * 0.55 && limb.d < bodyDistance(f, ccx, ccy)) return { ch: limb.ch, ink: 1 };
   const cov = clamp(0.5 - (sceneDistance(f, ccx, ccy) / CELL) * 1.1, 0, 1);
