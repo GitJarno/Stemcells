@@ -15,3 +15,13 @@ export const CODE_FONT = "Menlo";
  * body on the web, `text-foreground/90`) and the interface's own words (`--sc-soft`).
  */
 export const INK = { reply: 0.9, interface: 0.83 } as const;
+
+/** A working Cell's light (`glow/CardLight.tsx`): the band's crossing and the rest after it, ms. */
+export const GLOW = { pass: 3200, rest: 1000 } as const;
+
+/** The light's colour by the web's token for it (`toneTokenOf`): a provider's own, else the accent. */
+export const TONES: Readonly<Record<string, string>> = {
+  "--sc-provider-claude": "#D97757",
+  "--sc-provider-codex": "#10A37F",
+  "--sc-accent": "#3D40EE",
+};

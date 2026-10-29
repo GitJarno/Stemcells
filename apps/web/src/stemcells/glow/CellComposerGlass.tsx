@@ -10,9 +10,8 @@ import { PaneCellContext } from "../tabs/paneCell";
 import { reducedMotion } from "../tokens/motion";
 import { ProviderLogo } from "../upstream/providers";
 import { useCellStatus } from "../upstream/status";
+import { type Glow, glowOf } from "./glow";
 import {
-  type Glow,
-  glowOf,
   IMPRINT_OVERHANG,
   imprintShows,
   imprintSide,

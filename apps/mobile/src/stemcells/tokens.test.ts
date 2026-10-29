@@ -3,7 +3,7 @@ import * as NodeFS from "node:fs";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { DONE, INK, NEEDS_YOU, WORKING } from "./tokens";
+import { DONE, GLOW, INK, NEEDS_YOU, TONES, WORKING } from "./tokens";
 
 const web = (path: string) =>
   NodeFS.readFileSync(new URL(`../../../web/src/${path}`, import.meta.url), "utf8");
@@ -26,6 +26,13 @@ describe("the phone's tokens, against the web's", () => {
       NEEDS_YOU: webColour("needs-you"),
       DONE: webColour("success"),
     });
+  });
+
+  it("lights a working Cell in the web's tones, on the web's beat", () => {
+    for (const [token, hex] of Object.entries(TONES))
+      expect(hex, token).toBe(webColour(token.replace("--sc-", "")));
+    expect(tokensCss).toContain(`--sc-timing-glow-pass: ${GLOW.pass}ms;`);
+    expect(tokensCss).toContain(`--sc-timing-glow-rest: ${GLOW.rest}ms;`);
   });
 
   it("mixes the interface's and a reply's ink at the web's shares", () => {

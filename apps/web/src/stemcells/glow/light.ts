@@ -1,38 +1,10 @@
 /**
- * The light in a Cell's composer, as numbers: what state it says, the
- * colours of its wash, band and bloom, where the band travels and how wide
- * the iris opens, and the beat every lit surface keeps. Ported from the
- * Swift app's glow; the DOM side is `motion.ts`.
+ * The light in a Cell's composer, as numbers: its wash, band and bloom, the band's travel and the
+ * iris, ported from the Swift app's glow. The DOM side is `motion.ts`, the state it says `glow.ts`;
+ * plain numbers, so the phone draws the same light (`apps/mobile/src/stemcells/glow/kit.ts`).
  */
 import { CREST_REACH } from "../motion/beat";
 import { brandTokenOf } from "../tokens/providers";
-import type { CellStatus } from "../upstream/status";
-
-/**
- * What a composer's glass says about its Cell: plain glass is your turn;
- * working fills it with the provider's colour and sweeps a band across it;
- * needs you tints it warm and breathes, no sweep, because nothing moves
- * until you do.
- */
-export type Glow = "quiet" | "working" | "needsYou";
-
-const GLOW_BY_STATUS: Readonly<Record<CellStatus, Glow>> = {
-  "Pending Approval": "needsYou",
-  "Awaiting Input": "needsYou",
-  // A guest's message waits on the person to let it through.
-  "Guest Request": "needsYou",
-  "Plan Ready": "needsYou",
-  // A turn in flight, one on its way, or background work holding it.
-  Working: "working",
-  Connecting: "working",
-  Waiting: "working",
-  Failed: "quiet",
-  Completed: "quiet",
-};
-
-export function glowOf(status: CellStatus | null): Glow {
-  return status === null ? "quiet" : GLOW_BY_STATUS[status];
-}
 
 /** A provider's brand token (`tokens/providers.ts`); any other wears the accent. */
 export function toneTokenOf(driver: string | null): string {
