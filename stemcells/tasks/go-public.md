@@ -14,11 +14,26 @@ the person keeps working on it in the open with their Cells.
       checked on every push and in `check-local`.
 - [x] Names of other projects and people out of the tree.
 - [x] Startup recovery's Reinstall and Releases point at our repository.
-- [ ] Settings: Actions off, private vulnerability reporting on, `main`
+- [x] Settings: Actions off, private vulnerability reporting on, `main`
       protected, merged branches deleted (and deleted on merge), wiki off.
-- [ ] Old pull request text that names something private.
-- [ ] Visibility: public, once the person decides how the history goes.
-- [ ] stemcells.sh live.
+- [x] Old pull request text that names something private.
+- [x] Visibility: public, once the person decides how the history goes.
+- [x] stemcells.sh live.
+
+## Review
+
+- The history went public fresh: our commits were rewritten with the same
+  word list `publishable` checks, upstream's kept their SHAs, so syncs
+  still merge, and the final tree matched byte for byte. The old history
+  and its pull requests stay in a private archive.
+- `main` takes changes only through a pull request whose head carries
+  `local-check`; deleting it and force-pushing to it are blocked. Secret
+  scanning with push protection and Dependabot alerts are on.
+- An app built from the old history updates itself once: its built commit
+  still resolves locally, so the next check offers the new main, with every
+  rewritten commit in that one update's notes.
+- stemcells.sh is a single static page with a strict content policy; `curl
+  stemcells.sh` prints Aski. Its source lives outside this repository.
 
 ## Later
 
