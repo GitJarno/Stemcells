@@ -43,6 +43,8 @@ if [ "$want" != "$have" ]; then
 fi
 path=$(tr ':' '\n' <<< "$PATH" |
   grep -vE "^$HOME/(Documents|Desktop|Downloads)(/|$)" | awk 'NF && !seen[$0]++' | paste -sd: -)
+origin="https://github.com/$(git -C "$here" remote get-url origin |
+  sed -E 's#^.*github\.com[:/]##; s#\.git$##').git"
 
 job() {
   cat << EOF
@@ -66,7 +68,9 @@ job() {
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>$path</string>$(
+    <string>$path</string>
+    <key>STEMCELLS_SYNC_ORIGIN</key>
+    <string>$origin</string>$(
     [ -n "${STEMCELLS_SYNC_MAX_LOAD:-}" ] &&
       printf '\n    <key>STEMCELLS_SYNC_MAX_LOAD</key>\n    <string>%s</string>' "$STEMCELLS_SYNC_MAX_LOAD"
   )

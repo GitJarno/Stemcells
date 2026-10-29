@@ -18,12 +18,13 @@
 #
 # STEMCELLS_SYNC_MAX_LOAD: the load average over which the Mac counts as busy
 # (its number of cores by default: every core taken). VITEST_MAX_WORKERS: test
-# workers (2).
+# workers (2). STEMCELLS_SYNC_ORIGIN: the repository its clone takes, which
+# the installer sets to its checkout's origin.
 set -euo pipefail
 
 home="$HOME/Library/Application Support/sh.stemcells.nightly-sync"
 repo="$home/repo"
-origin=https://github.com/GitJarno/Stemcells.git
+origin=${STEMCELLS_SYNC_ORIGIN:-}
 upstream=https://github.com/pingdotgg/t3code.git
 dry=0
 [ "${1:-}" = --dry-run ] && dry=1
@@ -71,7 +72,7 @@ trap cleanup EXIT
 # Its own clone, through gh's credential; upstream is only ever read.
 git_gh=(git -c credential.helper= -c 'credential.helper=!gh auth git-credential')
 if [ ! -d "$repo/.git" ]; then
-  "${git_gh[@]}" clone -q "$origin" "$repo"
+  "${git_gh[@]}" clone -q "${origin:?install the job with stemcells/scripts/install-nightly-sync}" "$repo"
   git -C "$repo" remote add upstream "$upstream"
 fi
 "${git_gh[@]}" -C "$repo" fetch -q --no-tags origin main

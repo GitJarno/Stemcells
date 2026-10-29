@@ -8,7 +8,7 @@ describe("an update's changes", () => {
   it("reads each squashed pull request's title and number, a sync of T3's work, and a plain commit", () => {
     const log = [
       "20261023\t⌘W in Aski's tab no longer closes the window: Aski says it stays, in a toast (#260)",
-      "20261023\tMerge pull request #217 from GitJarno/sync/upstream-3b95e7831",
+      "20261023\tMerge pull request #217 from owner/sync/upstream-3b95e7831",
       "20261022\tMerge pull request #12 from someone/their-branch",
       "20261022\tA commit pushed straight to main",
       "",
