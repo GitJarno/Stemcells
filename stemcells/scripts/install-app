@@ -73,6 +73,9 @@ release_locks() {
 # The app at $dest, as macOS knows it: not the helpers and command line
 # tools that run its binary.
 app_running() { [ -n "$(lsappinfo find bundlepath="$dest" 2>/dev/null)" ]; }
+# A server can outlive its app's quit, and the new app's can't start while it
+# holds the home's lock (apps/server/src/serverOwnership.ts).
+home_held() { [ -n "$(lsof -t "$HOME/.stemcells/userdata/server-owner.sqlite" 2>/dev/null)" ]; }
 
 # As `ps` shows the running app's path, which the check for it below matches.
 [ -d "$dest_dir" ] && dest_dir=$(cd "$dest_dir" && pwd -P)
@@ -107,6 +110,11 @@ swap_in() {
     # It stops its servers first, which can take a while.
     for _ in $(seq 1 120); do app_running || break; sleep 1; done
     app_running && { rm -rf "$next"; fail "Stemcells didn't quit." "quit it yourself, then run again"; }
+  fi
+  if home_held; then
+    step "Waiting for its server to stop"
+    for _ in $(seq 1 60); do home_held || break; sleep 1; done
+    home_held && { rm -rf "$next"; fail "a Stemcells server still holds ~/.stemcells." "wait for it to stop, then run again"; }
   fi
   if [ -e "$dest" ]; then
     trashed="$HOME/.Trash/Stemcells $(date '+%Y-%m-%d %H.%M.%S').app"

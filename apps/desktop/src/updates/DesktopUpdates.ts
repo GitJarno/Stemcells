@@ -744,7 +744,8 @@ export const make = Effect.gen(function* () {
           yield* Ref.set(installRunningBackendsRef, runningInstances);
           yield* Effect.forEach(
             instances,
-            (instance) => instance.stop({ timeout: Duration.seconds(5) }),
+            // Past the backend's 5s SIGTERM grace, so its SIGKILL lands before the app exits.
+            (instance) => instance.stop({ timeout: Duration.seconds(7) }),
             { concurrency: "unbounded" },
           );
           yield* electronUpdater.quitAndInstall({
