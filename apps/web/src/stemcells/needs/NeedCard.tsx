@@ -75,6 +75,8 @@ type NeedCardProps = {
   leaving: boolean;
   /** When this page first saw the need. */
   seenAt: number | null;
+  /** It just landed in front of a room of one ask at a time: an allow waits from now. */
+  landed?: boolean;
   /** Opens the asking chat; a peek beside the cards unless the list says otherwise. */
   openChat?: ((threadId: string) => void) | undefined;
   /** In a queue, a card that isn't the open one shows only who asks and what. */
@@ -128,10 +130,11 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
   const [allowReady, setAllowReady] = useState(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Time when an allow may land after the card was seen, and clear the timer on change.
   useEffect(() => {
-    const allowAt = (props.seenAt ?? 0) + timing("readBeforeAllow");
+    const from = Math.max(props.seenAt ?? 0, props.landed ? Date.now() : 0);
+    const allowAt = from + timing("readBeforeAllow");
     const timer = setTimeout(() => setAllowReady(true), Math.max(0, allowAt - Date.now()));
     return () => clearTimeout(timer);
-  }, [props.seenAt]);
+  }, [props.seenAt, props.landed]);
 
   // "Not enough to decide" (decision 11): the Cell's own words open, and a line of what was
   // missing waits for the person, who may leave it empty.
@@ -247,7 +250,11 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
   const head = (
     <>
       <span data-need-number="">{need.number}</span>
-      {cell === null ? null : <CellMark cell={cell} />}
+      {cell === null ? null : (
+        <span data-need-mark="">
+          <CellMark cell={cell} />
+        </span>
+      )}
       <span data-need-who="">{who}</span>
       {place ? <span data-need-place="">{place.name}</span> : null}
       <span data-need-age="">{compactAge(need.since, now)}</span>
@@ -427,7 +434,7 @@ function Words(props: WordsProps) {
 }
 
 /** A folded ask's one line: its words without their markup. */
-const plainOf = (text: string): string =>
+export const plainOf = (text: string): string =>
   text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");
 
 /** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */

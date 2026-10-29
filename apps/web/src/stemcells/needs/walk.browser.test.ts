@@ -83,6 +83,27 @@ describe("the cards' walk", () => {
     page.composer.focus();
   });
 
+  it("one ask at a time: an answer from the keyboard, or a reveal from the line, lands on the next ask once it walks in", () => {
+    using page = frame("r");
+    const one = document.createElement("div");
+    one.dataset.needsOne = "";
+    page.card(1).before(one);
+    one.append(page.card(1));
+    const seat = document.createElement("button");
+    seat.dataset.needSeat = "ask:2";
+    let picked = 0;
+    seat.addEventListener("click", () => (picked += 1));
+    one.append(seat);
+    enter(page.composer);
+    answering(page.card(1));
+    expect(focus()).toBe("1 Take");
+    expect(one.hasAttribute("data-land-next")).toBe(true);
+    one.removeAttribute("data-land-next");
+    expect(reveal("ask:2")).toBe(true);
+    expect(picked).toBe(1);
+    expect(one.hasAttribute("data-land-next")).toBe(true);
+  });
+
   it("has nowhere to go with no card open", () => {
     using page = frame("x");
     expect(enter(page.composer)).toBe(false);

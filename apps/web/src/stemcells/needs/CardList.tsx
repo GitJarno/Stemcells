@@ -5,6 +5,7 @@ import type { Shown } from "./display";
 import { useHolds } from "./holds";
 import { holds } from "./live";
 import { answerableOf, NeedCard } from "./NeedCard";
+import { OneAsk } from "./OneAsk";
 import type { PageView } from "./page";
 import { leave, step } from "./walk";
 
@@ -54,6 +55,8 @@ export function CardList(props: {
   reveal?: ((key: string) => void) | undefined;
   /** The asks this list shows, when not every one: the column's project filter. */
   only?: ((shown: Shown) => boolean) | undefined;
+  /** One ask whole, the rest a line of their Cells: Aski's room (stemcells/tasks/one-ask.md). */
+  one?: boolean;
 }) {
   const answers = useHolds(holds);
   const { view, only } = props;
@@ -67,7 +70,10 @@ export function CardList(props: {
     <div data-stemcells-needs-list="" onKeyDown={walkKeys}>
       {props.head}
       <AutonomyOffer />
-      {shown.map((each) => (
+      {props.one ? (
+        <OneAsk shown={shown} answers={answers} seen={view.seen} openChat={props.openChat} />
+      ) : null}
+      {(props.one ? [] : shown).map((each) => (
         <NeedCard
           key={each.need.key}
           shown={each}
