@@ -95,7 +95,6 @@ export function drawFigure(ask: FigureAsk): FigureDrawn {
   const solid = render(frame, { ...camera, eyes: false });
   const open = holes(solid, render(frame, camera));
   const closed = holes(solid, render(shut, camera));
-  // The skin is solid round the blocks, whatever mood is typed into them, for the eyes to be cut from.
   const body = wearsSkin(scale) ? render(inSkin(resting), { ...camera, eyes: false }) : solid;
   // The ink over the body's whole silhouette in the ground's colour, as the eyes' layers are under their edge.
   const pixels = new Uint8ClampedArray(body.length);

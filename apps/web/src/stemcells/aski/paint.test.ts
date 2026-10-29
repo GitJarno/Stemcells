@@ -1,9 +1,10 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
-import { PALETTE } from "./canon.ts";
+import { EYES, PALETTE } from "./canon.ts";
+import { makeGrid, put } from "./grid.ts";
 import { GridPainter } from "./paint.ts";
 import { renderGrid } from "./render.ts";
-import { homeFit } from "./scene.ts";
+import { CELL_ASPECT, homeFit } from "./scene.ts";
 import { SCENE_CARDS } from "./scenes.ts";
 
 const STAGE = { cols: 32, rows: 10 };
@@ -52,4 +53,25 @@ test("a frame that draws as the last changes no pixel", () => {
   const eyes = { open: card.eyes(card.still), fit, at: card.eyesAt?.(card.still, STAGE) ?? null };
   NodeAssert.ok(painter.paint(card.frame(card.still, STAGE), eyes) !== undefined);
   NodeAssert.equal(painter.paint(card.frame(card.still, STAGE), eyes), undefined);
+});
+
+test("Aski's eyes are holes in whatever is under them, and ink over nothing", () => {
+  const fit = homeFit(STAGE);
+  const full = makeGrid(STAGE);
+  for (let j = 0; j < STAGE.rows; j++) for (let i = 0; i < STAGE.cols; i++) put(full, i, j, "#", 1);
+  const look = { cell: CELL, eyes: { open: 1, fit } };
+  const centres = EYES.centers.map(([x, y]) => [
+    Math.floor((x * fit.kx + fit.cx) * CELL),
+    Math.floor(((y * fit.ky + fit.ground) * CELL) / CELL_ASPECT),
+  ]);
+  for (const [grid, want] of [
+    [full, PALETTE.sky],
+    [makeGrid(STAGE), PALETTE.ink],
+  ] as const) {
+    const { rgba, width } = renderGrid(grid, look);
+    for (const [x, y] of centres) {
+      const at = (y! * width + x!) * 4;
+      NodeAssert.deepEqual([...rgba.subarray(at, at + 3)], [...want], `${x},${y}`);
+    }
+  }
 });

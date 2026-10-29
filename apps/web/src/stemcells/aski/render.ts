@@ -8,7 +8,7 @@ import { FONT_H, FONT_W, glyphBit } from "./font.ts";
 import { type Grid, isEmpty } from "./grid.ts";
 import { clamp } from "./math.ts";
 import { CELL, fillOf, particleAt, particleChar, restHomes } from "./particles.ts";
-import { CELL_ASPECT, cellToCanon, type EyePlace, type Fit } from "./scene.ts";
+import { CELL_ASPECT, type EyePlace, type Fit } from "./scene.ts";
 import { eyesDistance, sceneDistance } from "./sdf.ts";
 import { glyphAt, skinCell, SOLID } from "./skin.ts";
 
@@ -31,11 +31,12 @@ export function render(f: Frame, cam: Camera): Uint8ClampedArray {
   const { width: W, height: H, scale: k, ground } = cam,
     cx = cam.centerX ?? 0,
     sky = cam.background !== "clear";
-  // Two ink layers: `ink` is cut by the eyes (solid ink, resolving pixels); `marks` (characters,
-  // pixels) step aside for them. Either way the eyes always read.
+  // Two ink layers: `ink` (solid ink, resolving pixels) and `marks` (characters, pixels). The eyes
+  // are the opposite of what's under them: holes in the body however it is drawn, ink off it.
   const ink = new Float32Array(W * H),
     marks = new Float32Array(W * H),
-    eye = new Float32Array(W * H);
+    eye = new Float32Array(W * H),
+    body = new Float32Array(W * H);
   const toBodyX = (px: number) => (px + 0.5 - W / 2) / k + cx - f.x;
   const toBodyY = (py: number) => (py + 0.5 - ground) / k;
   const c = f.controls;
@@ -78,6 +79,7 @@ export function render(f: Frame, cam: Camera): Uint8ClampedArray {
       const bx = toBodyX(px),
         i = py * W + px;
       eye[i] = cam.eyes === false ? 0 : aa(eyesDistance(f, bx, by));
+      if (eye[i]! > 0) body[i] = aa(sceneDistance(f, bx, by));
       let a = 0;
       if (c.solid > 0) a = c.solid * aa(sceneDistance(f, bx, by));
       if (resolving) {
@@ -106,7 +108,7 @@ export function render(f: Frame, cam: Camera): Uint8ClampedArray {
 
   if (c.particles > 0 && !resolving) stampParticles(f, cam, marks);
 
-  // Compose: eyes are always the opposite of what's under them.
+  // Compose: the eyes cut both layers, and are ink only where there's no body under them.
   const out = new Uint8ClampedArray(W * H * 4);
   const [ir, ig, ib] = PALETTE.ink,
     [sr, sg, sb] = PALETTE.sky,
@@ -120,7 +122,7 @@ export function render(f: Frame, cam: Camera): Uint8ClampedArray {
     for (let px = 0; px < W; px++, i++) {
       const b = ink[i]!,
         e = eye[i]!,
-        a = Math.max(b + e - 2 * b * e, marks[i]! * (1 - e)),
+        a = Math.max(b, marks[i]!) * (1 - e) + e * (1 - body[i]!),
         o = i * 4;
       if (!sky) {
         out[o] = ir;
@@ -231,9 +233,34 @@ export function gridEyes(eyes: GridLook["eyes"]): EyePose[] {
 }
 
 /**
+ * The eyes over grid `g`: which are ink, and `at(x, y)`, how far (x, y) is from the nearest, canon
+ * units, and whether it's ink. An eye is the opposite of what's under it: a hole where its middle
+ * is on a cell that holds something, ink over nothing. `at` reuses its answer: read it at once.
+ */
+export function eyesOver(g: Grid, fit: Fit, poses: readonly EyePose[]) {
+  const inks = poses.map(({ x, y }) => {
+    const i = Math.floor(x * fit.kx + fit.cx),
+      j = Math.floor(y * fit.ky + fit.ground);
+    return i < 0 || j < 0 || i >= g.cols || j >= g.rows || isEmpty(g.cells[j * g.cols + i]!);
+  });
+  const near = { distance: Infinity, ink: false };
+  const at = (x: number, y: number) => {
+    near.distance = Infinity;
+    for (let n = 0; n < poses.length; n++) {
+      const d = eyeDistance(x, y, poses[n]!);
+      if (d < near.distance) {
+        near.distance = d;
+        near.ink = inks[n]!;
+      }
+    }
+    return near;
+  };
+  return { inks, at };
+}
+
+/**
  * A scene's grid to RGBA pixels: each cell's character in Aski's own font at its
- * ink, on the sky. Aski's eyes are drawn in ink over it, and the cells under them
- * step aside, so the eyes read in every form.
+ * ink, on the sky, Aski's eyes over it (`eyesOver`).
  */
 export function renderGrid(
   g: Grid,
@@ -245,16 +272,16 @@ export function renderGrid(
     H = g.rows * chh;
   const marks = new Float32Array(W * H),
     eye = new Float32Array(W * H),
+    inkEye = new Uint8Array(W * H),
     warm = new Uint8Array(W * H);
   const fit = look.eyes && look.eyes.open > 0 ? look.eyes.fit : null;
   const poses = gridEyes(look.eyes);
-  const eyeAt = (x: number, y: number) => Math.min(...poses.map((e) => eyeDistance(x, y, e)));
+  const eyeAt = fit === null ? null : eyesOver(g, fit, poses).at;
 
   for (let j = 0; j < g.rows; j++) {
     for (let i = 0; i < g.cols; i++) {
       const c = g.cells[j * g.cols + i]!;
       if (isEmpty(c)) continue;
-      if (fit && eyeAt(...cellToCanon(fit, i, j)) < 0.35 / fit.ky) continue;
       for (let py = 0; py < chh; py++) {
         for (let px = 0; px < cw; px++) {
           const n = (j * chh + py) * W + i * cw + px;
@@ -264,7 +291,7 @@ export function renderGrid(
       }
     }
   }
-  if (fit) {
+  if (fit && eyeAt) {
     const k = fit.kx * cw; // pixels per canon unit, the same down as across
     const toPx = (x: number) => (x * fit.kx + fit.cx) * cw,
       toPy = (y: number) => (y * fit.ky + fit.ground) * chh;
@@ -275,8 +302,11 @@ export function renderGrid(
       Y1 = clamp(Math.ceil(toPy(Math.max(...poses.map((e) => e.y)) + reach)), 0, H);
     for (let py = Y0; py < Y1; py++) {
       const y = ((py + 0.5) / chh - fit.ground) / fit.ky;
-      for (let px = X0; px < X1; px++)
-        eye[py * W + px] = clamp(0.5 - eyeAt(((px + 0.5) / cw - fit.cx) / fit.kx, y) * k, 0, 1);
+      for (let px = X0; px < X1; px++) {
+        const near = eyeAt(((px + 0.5) / cw - fit.cx) / fit.kx, y);
+        eye[py * W + px] = clamp(0.5 - near.distance * k, 0, 1);
+        inkEye[py * W + px] = near.ink ? 1 : 0;
+      }
     }
   }
 
@@ -285,9 +315,10 @@ export function renderGrid(
   for (let n = 0; n < W * H; n++) {
     const e = eye[n]!,
       m = marks[n]! * (1 - e),
-      a = Math.max(m, e),
+      ink = inkEye[n] ? e : 0,
+      a = Math.max(m, ink),
       o = n * 4;
-    const [ir, ig, ib] = warm[n] && m > e ? PALETTE.warm : PALETTE.ink; // the eyes are always ink
+    const [ir, ig, ib] = warm[n] && m > ink ? PALETTE.warm : PALETTE.ink;
     rgba[o] = sr + (ir - sr) * a;
     rgba[o + 1] = sg + (ig - sg) * a;
     rgba[o + 2] = sb + (ib - sb) * a;

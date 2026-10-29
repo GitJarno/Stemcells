@@ -36,10 +36,10 @@ The person's list (2026-10-29), from two phone screenshots: the home and a Cell'
    in the header; the Cell beside it is the pair the Mac's ledge shows, kept where the phone
    keeps who you talk to, and it stays in view with the keyboard up.
 9. **Aski.** One skin on the Mac's Cmd+T home and the phone, from one source
-   (`apps/web/src/stemcells/aski/skin.ts`); its eyes are the ground's (black), never the
-   ink's white, open, shut or blinking. A black eye can't sit in the skin's empty ring round
-   it, so the cells round both eyes are one solid band the eyes are cut from. Aski's scenes
-   (`paint.ts`, its own reference images) still draw ink eyes while one plays.
+   (`apps/web/src/stemcells/aski/skin.ts`); its eyes are holes in it, open, shut or
+   blinking, with no ink round them. One rule for every renderer, the figure, the phone and
+   the scenes alike: an eye is the opposite of what's under it, a hole in Aski's body or a
+   scene's ink, and ink only over nothing (the news's eye that types its line).
 10. **Shelves.** On the rail's tabs the list draws no shelf headers ("Flying ⌃",
     "Settled (365) ⌄"): the rail already says which Cells these are, and every shelf is open.
 
