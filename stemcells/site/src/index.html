@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Stemcells — words become things</title>
+    <meta
+      name="description"
+      content="Stemcells is a fun, efficient way to work with your agents, on your Mac. Tell Aski what you want; it divides the work into Cells and brings back only what needs you. Open source."
+    />
+    <meta name="theme-color" content="#0B0B0C" />
+    <meta property="og:title" content="Stemcells — words become things" />
+    <meta
+      property="og:description"
+      content="Talk to one. Run many. A fun, efficient way to work with your agents."
+    />
+    <meta property="og:url" content="https://stemcells.sh" />
+    <meta property="og:image" content="https://stemcells.sh/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0B0C'/%3E%3Ctext x='8' y='42' font-family='Menlo,monospace' font-size='26' font-weight='700' fill='%23EDE9E0'%3ESC%3C/text%3E%3Crect x='46' y='22' width='9' height='22' fill='%23EDE9E0'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="top">
+      <a class="mark" href="/" aria-label="Stemcells home"
+        >stemcells<span class="cursor">█</span></a
+      >
+      <nav>
+        <a href="#how">How it works</a><a href="https://github.com/GitJarno/Stemcells">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="hero" class="hero">
+        <canvas class="field" aria-hidden="true"></canvas>
+        <div class="hero-stage">
+          <div class="say" aria-live="polite"></div>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">A fun, efficient way to work with your agents</p>
+          <h1>
+            <span class="sr">Words become things.</span
+            ><span class="swap" aria-hidden="true"
+              ><span class="w a">things</span> become <span class="w b">words</span>.</span
+            >
+          </h1>
+          <p class="lede">
+            Tell Aski what you want. It divides the work into Cells, agents that each take a part,
+            and brings back only what needs you.
+          </p>
+          <div class="ctas">
+            <a class="btn primary" href="#get">Get Stemcells</a
+            ><a class="btn" href="#how">How it works</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" class="act">
+        <div class="copy">
+          <p class="kicker">01 · Talk to one. Run many.</p>
+          <h2>One sentence in.<br />A crew out.</h2>
+          <p>
+            You talk to Aski. It divides your words into Cells, one for each part of the job, and
+            keeps them all moving.
+          </p>
+          <p>
+            Your context stays clear. Aski holds the whole crew in its head, so you don't have to.
+          </p>
+        </div>
+        <div class="stage" id="birth">
+          <form class="tell" autocomplete="off">
+            <label class="sr" for="tell">Tell Aski</label>
+            <input id="tell" maxlength="48" placeholder="Tell Aski…" spellcheck="false" />
+            <button type="submit" aria-label="Send">↵</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="act flip">
+        <div class="copy">
+          <p class="kicker">02 · Grow your agents</p>
+          <h2>The longer they work alone, the stronger they get.</h2>
+          <p>
+            A frontier model is pluripotent. Give it a repo, a brief, tests and memory, and it
+            becomes a builder, a reviewer, a researcher: whatever its niche asks for.
+          </p>
+          <p>
+            Stemcells tends that niche. Month by month your Cells need you less, and you can watch
+            them grow.
+          </p>
+        </div>
+        <div class="stage short" id="grow"></div>
+      </section>
+
+      <section class="act">
+        <div class="copy">
+          <p class="kicker">03 · Only what needs you</p>
+          <h2>You still make the calls.</h2>
+          <p>
+            When a Cell falls short, it waits for your word, and Aski brings you the question.
+            Everything else keeps flying.
+          </p>
+          <p class="aside">
+            ASCII 7 is <code>BEL</code>, the one character made to call a human. Stemcells rings it
+            only when it should.
+          </p>
+        </div>
+        <div class="stage short" id="calls"></div>
+      </section>
+
+      <section class="act flip">
+        <div class="copy">
+          <p class="kicker">04 · Nothing is lost</p>
+          <h2>Every character comes home.</h2>
+          <p>
+            When a Cell is done, it says its last words, comes apart into letters, and the letters
+            go home to Aski.
+          </p>
+          <p>The next Cell is made from them.</p>
+        </div>
+        <div class="stage" id="home"></div>
+      </section>
+
+      <section id="get" class="get">
+        <h2>Bring your own agents.</h2>
+        <p>
+          Stemcells runs the coding agents you already use, on your subscriptions and your machine:
+          Claude Code, Codex, Cursor, OpenCode and more. No telemetry. Open source.
+        </p>
+        <div class="ctas">
+          <a class="btn primary" href="https://github.com/GitJarno/Stemcells#get-it"
+            >Get Stemcells for macOS</a
+          ><a class="btn" href="https://github.com/GitJarno/Stemcells">Read the source</a>
+        </div>
+        <p class="fine">
+          Built on <a href="https://github.com/pingdotgg/t3code">T3 Code</a>. MIT licensed.
+        </p>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>stemcells.sh</span><span>made of 95 characters</span
+      ><a href="https://github.com/GitJarno/Stemcells">GitHub</a>
+    </footer>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

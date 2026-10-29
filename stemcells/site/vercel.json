@@ -1,0 +1,38 @@
+{
+  "buildCommand": "node build.mjs",
+  "outputDirectory": "dist",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+      },
+      "continue": true
+    },
+    {
+      "src": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "^(curl|Wget|wget|HTTPie|httpie|xh)/.*"
+        }
+      ],
+      "dest": "/aski.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Vary": "User-Agent"
+      }
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "/404.html"
+    }
+  ]
+}
