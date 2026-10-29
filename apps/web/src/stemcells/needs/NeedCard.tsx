@@ -530,8 +530,7 @@ function Options(props: {
         ))}
       </div>
       {lined.length > 0 ? (
-        // Each button reads its own line; this is what the eye gets.
-        <p data-need-option-says="" aria-hidden="true">
+        <p data-need-option-says="">
           {lined.map((option) => (
             <span
               key={option.id}
