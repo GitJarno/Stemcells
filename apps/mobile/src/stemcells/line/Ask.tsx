@@ -1,16 +1,16 @@
-// An ask as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6, and unblocking.md): who,
-// project and age; what to do, largest; what the Cell did, two lines until More; what waits on it
-// and where its reply points; the options side by side, Reply… last, which opens a full-width
-// field. A Cell's own choices to a question stay rows. Closed, an ask says only who asks and what.
+// An ask (stemcells/tasks/aski-asks.md, unblocking.md), in Flying's and Landed's card: the Cell
+// and its name left, what to do as the title, its age top right, its project bottom right. Open,
+// it grows under that head: what the Cell did, what waits on it, the options, Reply… last, which
+// opens a full-width field. A Cell's own choices to a question stay rows.
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Linking, Pressable, View } from "react-native";
 
 import { cellNameOf } from "../cell/kit";
 import { diskFailure } from "../disk/kit";
-import { ThreadCell } from "../cell/ThreadCell";
+import { CellBesideRow, type CardMarks, marksWidth } from "../home/RowCell";
 import { CODE_FONT, NEEDS_YOU } from "../tokens";
-import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
+import { AppText, type EnvironmentThreadShell, useProject } from "../upstream/cells";
 import { useFreeSpace } from "../disk/useFreeSpace";
 import { useMachineDisk } from "../upstream/disk";
 import { AppTextInput, relativeTime } from "../upstream/needs";
@@ -46,7 +46,6 @@ export interface AskActs {
 type AskCardProps = {
   readonly ask: Ask;
   readonly cell: EnvironmentThreadShell | undefined;
-  readonly project: string | null;
   readonly now: number;
   readonly open: boolean;
   readonly onOpen: () => void;
@@ -88,40 +87,36 @@ function AskBody(
       ? void props.freeSpace?.()
       : props.acts.choose(option, given);
   const head = (
-    <View className="flex-row items-center gap-2">
-      {props.cell ? <ThreadCell thread={props.cell} points={1} /> : null}
-      <AppText className="shrink text-xs text-foreground-secondary" numberOfLines={1}>
-        {whoOf(need)}
-      </AppText>
-      {props.project ? (
-        <AppText className="shrink text-xs text-foreground-muted" numberOfLines={1}>
-          {props.project}
-        </AppText>
-      ) : null}
-      <View className="flex-1" />
-      {/* An ask that holds up a running turn says so in its age's amber. */}
-      <AppText
-        className="text-xs text-foreground-muted"
-        style={need.blocks ? { color: NEEDS_YOU } : undefined}
-      >
-        {relativeTime(need.since)}
-      </AppText>
-    </View>
+    <AskHead
+      cell={props.cell}
+      name={whoOf(need)}
+      // A Subcell's ask names it over its parent's title.
+      over={need.parentThreadId === null ? null : `› ${need.title}`}
+      title={
+        props.open ? (
+          <Words text={card.headline} />
+        ) : (
+          spansOf(card.headline)
+            .map((span) => span.text)
+            .join("")
+        )
+      }
+      open={props.open}
+      corner={relativeTime(need.since)}
+      // An ask that holds up a running turn says so in its age's amber.
+      urgent={need.blocks}
+    />
   );
   if (!props.open)
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={`${whoOf(need)} asks`}
         accessibilityHint="Opens this ask"
         onPress={props.onOpen}
-        className="mx-3 mb-2 gap-1.5 rounded-[20px] bg-grouped-card px-4 py-3 active:opacity-70"
+        className={`${CARD} active:opacity-70`}
       >
         {head}
-        <AppText className="text-base text-foreground" numberOfLines={2}>
-          {spansOf(card.headline)
-            .map((span) => span.text)
-            .join("")}
-        </AppText>
       </Pressable>
     );
   // "Nothing to do" is the foot's Settle; a reply comes last.
@@ -131,11 +126,8 @@ function AskBody(
     ...options.filter((option) => option.choice.kind === "reply"),
   ];
   return (
-    <View className="mx-3 mb-2 gap-3 rounded-[20px] bg-grouped-card px-4 py-3.5">
+    <View className={`${CARD} gap-3`}>
       {head}
-      <AppText accessibilityRole="header" className="font-t3-bold text-xl text-foreground">
-        <Words text={card.headline} />
-      </AppText>
       {card.steps.map((step, index) => (
         <AppText key={step} className="text-base text-foreground">
           {index + 1}. <Words text={step} />
@@ -179,6 +171,83 @@ function AskBody(
         <Quiet label="Open chat" onPress={props.acts.openChat} />
       </View>
     </View>
+  );
+}
+
+/** A card as T3's rows are on the home (`upstream/substitutes/thread-list-v2-row-appearance.ts`). */
+const CARD = "mx-3 mb-2 rounded-[20px] bg-grouped-card py-3 pl-3 pr-4";
+
+const NO_PULL_REQUEST = () => undefined;
+
+/**
+ * An ask's head, as a card row's: its Cell and name on the left, the title beside them, the
+ * corner's words top right, the project's mark bottom right. A Cell whose chat isn't on the
+ * phone has its name alone.
+ */
+export function AskHead(props: {
+  readonly cell: EnvironmentThreadShell | undefined;
+  readonly name?: string;
+  readonly over: string | null;
+  readonly title: ReactNode;
+  readonly open: boolean;
+  readonly corner: string;
+  readonly urgent: boolean;
+}) {
+  const { cell } = props;
+  const project = useProject(
+    cell ? { environmentId: cell.environmentId, projectId: cell.projectId } : null,
+  );
+  const marks: CardMarks = {
+    machine: null,
+    machineLabel: null,
+    pr: null,
+    prLabel: null,
+    onOpenPullRequests: NO_PULL_REQUEST,
+    project,
+  };
+  const body = (
+    <View className="flex-row items-start gap-2">
+      <View className="min-w-0 flex-1 gap-0.5">
+        {props.over ? (
+          <AppText className="text-xs text-foreground-muted" numberOfLines={1}>
+            {props.over}
+          </AppText>
+        ) : null}
+        <AppText
+          accessibilityRole={props.open ? "header" : undefined}
+          className={
+            props.open
+              ? "font-t3-bold text-lg text-foreground"
+              : "font-t3-medium text-base text-foreground"
+          }
+          numberOfLines={props.open ? undefined : 2}
+        >
+          {props.title}
+        </AppText>
+      </View>
+      {/* As wide as the marks under it, so the title's second line never runs beneath them. */}
+      <View className="items-end" style={{ minWidth: marksWidth(marks), paddingTop: 2 }}>
+        <AppText
+          className="text-xs font-t3-bold tabular-nums text-foreground-muted"
+          style={props.urgent ? { color: NEEDS_YOU } : undefined}
+        >
+          {props.corner}
+        </AppText>
+      </View>
+    </View>
+  );
+  if (cell === undefined)
+    return (
+      <View className="gap-1 pl-1">
+        <AppText className="text-[10px] text-foreground-muted">{props.name}</AppText>
+        {body}
+      </View>
+    );
+  return (
+    <CellBesideRow thread={cell} marks={marks}>
+      {/* Room under a one-line title for the marks, as a card row keeps. */}
+      <View style={{ minHeight: 40 }}>{body}</View>
+    </CellBesideRow>
   );
 }
 

@@ -88,12 +88,12 @@ function UsageScreen(props: {
   const insets = useSafeAreaInsets();
   const [selection, setSelection] = useState(() => ({
     params: props.tabParam,
-    view: (props.tabParam === "usage" ? "cost" : "limits") as UsageView,
+    view: (props.tabParam === "limits" ? "limits" : "cost") as UsageView,
   }));
   if (selection.params !== props.tabParam) {
     setSelection({
       params: props.tabParam,
-      view: props.tabParam === "usage" ? "cost" : "limits",
+      view: props.tabParam === "limits" ? "limits" : "cost",
     });
   }
   const { view } = selection;
@@ -672,15 +672,13 @@ function UsageSummary(props: { readonly merged: MergedUsage; readonly metric: Us
   return (
     <View className="gap-0.5">
       <Text className="text-sm text-foreground-muted">
-        {metric === "cost" ? "Raw token cost" : "Processed tokens"}
+        {metric === "cost" ? "Raw token cost (API rate)" : "Processed tokens"}
       </Text>
       <Text className="text-4xl font-t3-bold tabular-nums text-foreground">
-        {metric === "cost" ? `${formatUsd(merged.costUsd)}*` : formatTokens(merged.totalTokens)}
+        {metric === "cost" ? formatUsd(merged.costUsd) : formatTokens(merged.totalTokens)}
       </Text>
       <Text className="text-sm text-foreground-muted">
-        {metric === "cost"
-          ? "* if billed at full API rate"
-          : `Across ${formatCount(merged.sessions)} sessions`}
+        {`Across ${formatCount(merged.sessions)} sessions`}
       </Text>
     </View>
   );

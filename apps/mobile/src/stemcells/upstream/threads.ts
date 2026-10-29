@@ -4,6 +4,7 @@
 // home's list by project. `cells.ts` hands these on to the views.
 
 export type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+export type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
 export { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
 export {
   resolveThreadListV2Status,

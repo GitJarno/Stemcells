@@ -1,7 +1,7 @@
-// Aski greeting you over the home's tabs. A tap on Aski opens its chat; a tap on its line
-// rolls another (`greeting.ts`). Its eyes are `^ ^` once every Cell has landed and none works
-// or waits on you, and while its copies fly to forming Cells (`copies.ts`). On the tab of
-// Cells put away (Settled, or Asleep) the night comes over it.
+// Aski over the home's tabs: a tap on Aski opens its chat, a tap on its line rolls another
+// (`greeting.ts`). Eyes `^ ^` once every Cell has landed, and while its copies fly (`copies.ts`).
+// Night comes over it on the tab of Cells put away. A disk that wants attention shows under the
+// tabs, in the header's flow, so it never moves Aski or the tabs.
 
 import { use, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
+import { DiskPlates } from "../disk/DiskPlate";
 import { EYE_LINE, VIEW } from "../aski/drawing";
 import { useAskiChat } from "../aski/useAskiChat";
 import { AppText } from "../upstream/cells";
@@ -107,6 +108,9 @@ export function AskiHome() {
           selected={home.tab}
           onSelect={home.choose}
         />
+      </View>
+      <View className="self-stretch">
+        <DiskPlates />
       </View>
     </View>
   );

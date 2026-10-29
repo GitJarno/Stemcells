@@ -1,15 +1,15 @@
-// Aski at rest as pixels, by its reference renderer (`../render.ts`), the eyes on layers of
-// their own, open and shut, so blinks and looks never redraw. Where a body cell can be read it
-// wears its ASCII skin, eyes in ink; smaller, it is solid ink, eyes cut in the ground's colour,
-// so a Cell behind Aski never shows through them. Runs in a worker wherever one can run.
+// Aski at rest as pixels, by its reference renderer (`../render.ts`), the eyes on layers of their
+// own, open and shut, so blinks and looks never redraw. Where a body cell reads it wears its skin
+// (`../skin.ts`), else solid ink; the eyes are cut in the ground's colour either way, so a Cell
+// behind Aski never shows through them. Runs in a worker wherever one can run.
 
 import { BLINK } from "../acts.ts";
-import { Aski, type Frame, GAZE } from "../aski.ts";
+import { type Frame, GAZE } from "../aski.ts";
 import { BODY_HEIGHT, EYES } from "../canon.ts";
-import { CELL } from "../particles.ts";
 import { type Mood, typed } from "../mood.ts";
 import { render } from "../render.ts";
 import { BODY_MID, BODY_WIDTH } from "../scene.ts";
+import { atRest, eyesType, inSkin, wearsSkin } from "../skin.ts";
 
 /** What the page asks for: a canvas's size in device pixels, the ink and the ground under Aski as 0–255 channels, and the mood typed into its eyes. */
 export interface FigureAsk {
@@ -45,13 +45,6 @@ export interface FigureDrawn extends FigureAsk {
   readonly travel: { readonly x: number; readonly y: number };
 }
 
-/** The seed of the frame drawn; a resting frame needs only one. */
-const SEED = 1;
-/** How tall an eye must be, in device pixels, to read a character typed into it; a smaller one keeps its block. */
-const TYPED_FROM = 8;
-/** How wide a cell of the body must be, in device pixels, for its character to read: the font's 5 dots and their margin. */
-const READS_FROM = 6;
-
 /** How much of each pixel the eyes cut out of the body, given the alpha of the body whole and of the body they cut. */
 function holes(body: Uint8ClampedArray, cut: Uint8ClampedArray): Float32Array {
   const out = new Float32Array(body.length / 4);
@@ -82,8 +75,8 @@ export function drawFigure(ask: FigureAsk): FigureDrawn {
   const { width, height, ink, ground } = ask;
   // Aski stands on the canvas's foot, as large as fits.
   const scale = Math.min(width / BODY_WIDTH, height / BODY_HEIGHT);
-  const resting = new Aski({ seed: SEED, cues: [] }).frameAt(0);
-  const frame = typed(resting, resting.eyes[0].height * scale >= TYPED_FROM ? ask.mood : undefined);
+  const resting = atRest();
+  const frame = typed(resting, eyesType(scale) ? ask.mood : undefined);
   const shut: Frame = {
     ...frame,
     eyes: [
@@ -102,13 +95,8 @@ export function drawFigure(ask: FigureAsk): FigureDrawn {
   const solid = render(frame, { ...camera, eyes: false });
   const open = holes(solid, render(frame, camera));
   const closed = holes(solid, render(shut, camera));
-  // The skin leaves the eyes' cells and a ring round them empty, so solid eyes in ink read inside it. The
-  // ring is the blocks', whatever mood is typed into them.
-  const reads = CELL * scale >= READS_FROM;
-  const body = reads
-    ? render({ ...resting, controls: { ...resting.controls, live: 1 } }, { ...camera, eyes: false })
-    : solid;
-  const eyeInk = reads ? ink : ground;
+  // The skin is solid round the blocks, whatever mood is typed into them, for the eyes to be cut from.
+  const body = wearsSkin(scale) ? render(inSkin(resting), { ...camera, eyes: false }) : solid;
   // The ink over the body's whole silhouette in the ground's colour, as the eyes' layers are under their edge.
   const pixels = new Uint8ClampedArray(body.length);
   for (let i = 0; i < body.length; i += 4) {
@@ -164,8 +152,8 @@ export function drawFigure(ask: FigureAsk): FigureDrawn {
       ...box,
       each: boxes.map((b) => ({
         ...b,
-        open: eyesIn(open, width, b, eyeInk),
-        shut: eyesIn(closed, width, b, eyeInk),
+        open: eyesIn(open, width, b, ground),
+        shut: eyesIn(closed, width, b, ground),
       })),
     },
     middle: { x: toX((left.x + right.x) / 2), y: toY((left.y + right.y) / 2) },

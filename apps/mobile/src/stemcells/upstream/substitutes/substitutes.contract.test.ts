@@ -178,6 +178,53 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/usage/UsageDailyChart.ios.tsx": {
+    exports: view("apps/mobile/src/features/usage/UsageDailyChart.ios.tsx", "UsageDailyChart.tsx"),
+    importers: {
+      "apps/mobile/src/features/usage/UsageRouteScreen.tsx": [
+        "./UsageDailyChart",
+        ["UsageDailyChart"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/usage/UsageDailyChart.tsx": {
+    exports: view("apps/mobile/src/features/usage/UsageDailyChart.tsx", "UsageDailyChart.tsx"),
+    importers: {
+      "apps/mobile/src/features/usage/UsageRouteScreen.tsx": [
+        "./UsageDailyChart",
+        ["UsageDailyChart"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/usage/usageProviders.ts": {
+    exports: view("apps/mobile/src/features/usage/usageProviders.ts", "usageProviders.ts"),
+    importers: {
+      "apps/mobile/src/features/usage/UsageRouteScreen.tsx": [
+        "./usageProviders",
+        ["useProviderColors"],
+      ],
+      "apps/mobile/src/features/usage/UsageLimitsSection.tsx": [
+        "./usageProviders",
+        ["useProviderColors"],
+      ],
+      "apps/mobile/src/features/usage/UsageLimitsPooled.tsx": [
+        "./usageProviders",
+        ["useProviderColors"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx": {
+    exports: view(
+      "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx",
+      "useThreadHeaderOptions.tsx",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/ThreadHeader.tsx": [
+        "./useThreadHeaderOptions",
+        ["useThreadHeaderOptions"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/thread-header-appearance.ts": {
     exports: view(
       "apps/mobile/src/features/threads/thread-header-appearance.ts",
@@ -201,6 +248,10 @@ const CASES: Readonly<Record<string, Case>> = {
     ),
     importers: {
       "apps/mobile/src/features/home/HomeScreen.tsx": [
+        "../../native/NativeScrollViewMarker",
+        ["NativeScrollViewMarker"],
+      ],
+      "apps/mobile/src/features/threads/ThreadFeed.tsx": [
         "../../native/NativeScrollViewMarker",
         ["NativeScrollViewMarker"],
       ],
@@ -393,6 +444,15 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadHeader")>().toEqualTypeOf<
       typeof import("../../../features/threads/ThreadHeader")
+    >();
+    expectTypeOf<typeof import("./useThreadHeaderOptions")>().toEqualTypeOf<
+      typeof import("../../../features/threads/useThreadHeaderOptions")
+    >();
+    expectTypeOf<typeof import("./UsageDailyChart")>().toEqualTypeOf<
+      typeof import("../../../features/usage/UsageDailyChart")
+    >();
+    expectTypeOf<typeof import("./usageProviders")>().toEqualTypeOf<
+      typeof import("../../../features/usage/usageProviders")
     >();
     expectTypeOf<typeof import("./thread-header-appearance")>().toEqualTypeOf<
       typeof import("../../../features/threads/thread-header-appearance")

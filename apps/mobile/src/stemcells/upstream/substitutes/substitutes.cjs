@@ -19,10 +19,13 @@ const SUBSTITUTES = {
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
   // A subagent with no title of its own is a Subcell.
   "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
-  // The Cell stands on its composer's ledge, and heads its chat by name.
+  // The Cell heads its chat, beside its name; the feed fades under the
+  // composer.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
-  // A chat's header, and the home's, float over what scrolls, no band behind them.
+  "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx": "useThreadHeaderOptions.tsx",
+  // A chat's header, and the home's, float over what scrolls, no band behind
+  // them; what scrolls fades into the ground under them.
   "apps/mobile/src/features/threads/thread-header-appearance.ts": "thread-header-appearance.ts",
   "apps/mobile/src/native/NativeScrollViewMarker.tsx": "NativeScrollViewMarker.tsx",
   // The home: one tab of Cells at a time under Aski, in cards, each tab's
@@ -33,6 +36,11 @@ const SUBSTITUTES = {
     "thread-list-v2-row-appearance.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
+  // The usage chart is the Mac's, a smoothed line per agent over a faint fill,
+  // and an agent whose Cells wear a body of their own is drawn in its colour.
+  "apps/mobile/src/features/usage/UsageDailyChart.ios.tsx": "UsageDailyChart.tsx",
+  "apps/mobile/src/features/usage/UsageDailyChart.tsx": "UsageDailyChart.tsx",
+  "apps/mobile/src/features/usage/usageProviders.ts": "usageProviders.ts",
   // The + opens Add to Chat: your photos, the camera first, picks in order.
   "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx": "ComposerAttachmentButton.tsx",
 };

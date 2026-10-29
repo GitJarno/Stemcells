@@ -1,12 +1,11 @@
-// The phone's home on the Cells' line (stemcells/tasks/phone-line.md), under Aski with T3's
-// pickers. Needs you is the asks themselves, one open at a time; Working, Landed and Settled
-// hand T3's list their Cells, so its rows, swipes and shelves stay T3's. Asks never hide: Needs
-// you counts every one, and says where those the pickers leave out are.
+// The phone's home on the Cells' line (stemcells/tasks/phone-line.md), under Aski, narrowed by
+// the header's picks. Needs you is the asks themselves, one open at a time; Flying, Landed and
+// Settled hand T3's list their Cells, so its rows and swipes stay T3's. Asks never hide: Needs
+// you counts every one, and says where those the picks leave out are.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
 
-import { DiskPlates } from "../disk/DiskPlate";
 import { CopyLayer } from "../home/CopyLayer";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
 import { HomeTabsContext, tabChoice } from "../home/state";
@@ -15,7 +14,7 @@ import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
 import { useHomeThreadSelection } from "../upstream/home";
 import { sendThreadCommand, settleFromAnyStage } from "../upstream/needs";
 import { type Act, createHeld } from "./held";
-import { AskCard, type AskActs, whoOf } from "./Ask";
+import { AskCard, type AskActs, AskHead, whoOf } from "./Ask";
 import { Hops } from "./Hops";
 import {
   commandsFor,
@@ -71,11 +70,11 @@ export function LineHome(props: {
   readonly inView: (place: Place) => boolean;
   /** T3's project groups across every machine, for where the asks left out are. */
   readonly projects: ReadonlyArray<FilterProject>;
-  readonly projectName: (place: Place) => string | null;
-  /** What the pickers show, when they narrow the home: "in Harbor", "on Studio". */
+  /** What the picks show, when they narrow the home: "in Harbor", "on Studio". */
   readonly narrowedTo: string | null;
   readonly environmentId: string | null;
-  readonly filters: ReactNode;
+  /** Its machines haven't sent their Cells yet. */
+  readonly connecting: boolean;
   readonly onShowAll: () => void;
   readonly settle: (cell: EnvironmentThreadShell) => Promise<boolean>;
   /** New chats on their way, which Working lists first. */
@@ -172,8 +171,9 @@ export function LineHome(props: {
   return (
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>
-        <DiskPlates />
-        {tab === "needs" ? (
+        {props.connecting ? (
+          <EmptyTab words="Connecting…" />
+        ) : tab === "needs" ? (
           <NeedsYou
             asks={line.asks.filter((ask) =>
               props.inView({ ...ask, projectId: ask.need.projectId }),
@@ -184,14 +184,12 @@ export function LineHome(props: {
             elsewhere={elsewhereWords(elsewhereOf(line.asks, props.inView, props.projects))}
             narrowedTo={props.narrowedTo}
             onShowAll={props.onShowAll}
-            filters={props.filters}
             now={Date.parse(props.now)}
             cellOf={cellOf}
-            projectName={props.projectName}
             actsFor={actsFor}
           />
         ) : shown.length === 0 && (tab !== "working" || props.pending === 0) ? (
-          <EmptyTab words={EMPTY[tab]} filters={props.filters} />
+          <EmptyTab words={EMPTY[tab]} />
         ) : (
           <View style={{ flex: 1 }}>
             {props.renderList(shown, tab === "working")}
@@ -216,10 +214,8 @@ function NeedsYou(props: {
   readonly elsewhere: string | null;
   readonly narrowedTo: string | null;
   readonly onShowAll: () => void;
-  readonly filters: ReactNode;
   readonly now: number;
   readonly cellOf: (threadId: string) => EnvironmentThreadShell | undefined;
-  readonly projectName: (place: Place) => string | null;
   readonly actsFor: (ask: Ask, done: () => void) => AskActs;
 }) {
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -227,7 +223,7 @@ function NeedsYou(props: {
   // The open ask stays under a finger: a reading that brings an older ask doesn't open in its place.
   if (open !== undefined && open.key !== openKey) setOpenKey(open.key);
   return (
-    <HomePage filters={props.filters}>
+    <HomePage>
       <View className="pt-3">
         {props.asks.length === 0 && props.unread.length === 0 ? (
           <View className="mt-5 items-center gap-1 px-8">
@@ -248,7 +244,6 @@ function NeedsYou(props: {
             key={ask.key}
             ask={ask}
             cell={props.cellOf(ask.need.parentThreadId ?? ask.need.threadId)}
-            project={props.projectName({ ...ask, projectId: ask.need.projectId })}
             now={props.now}
             open={ask.key === open?.key}
             onOpen={() => setOpenKey(ask.key)}
@@ -263,11 +258,18 @@ function NeedsYou(props: {
             accessibilityRole="button"
             accessibilityHint="Opens its chat"
             onPress={() => props.onOpenChat(cell)}
-            className="mx-4 mt-2 gap-0.5 px-4 py-3 active:opacity-70"
+            className="mx-3 mb-2 rounded-[20px] bg-grouped-card py-3 pl-3 pr-4 active:opacity-70"
           >
-            <AppText className="text-base text-foreground">{cell.title}</AppText>
-            <AppText className="text-sm text-foreground-muted">
-              Asks you. Its machine hasn’t answered yet.
+            <AskHead
+              cell={cell}
+              over={null}
+              title={cell.title}
+              open={false}
+              corner="Asks you"
+              urgent
+            />
+            <AppText className="ml-16 text-xs text-foreground-muted">
+              Its machine hasn’t answered yet.
             </AppText>
           </Pressable>
         ))}

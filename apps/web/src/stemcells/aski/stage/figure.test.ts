@@ -10,7 +10,7 @@ const inked = (pixels: ArrayBuffer): number => alpha(pixels).filter((a) => a > 1
 const same = (a: ArrayBuffer, b: ArrayBuffer): boolean =>
   new Uint8ClampedArray(a).every((v, i) => v === new Uint8ClampedArray(b)[i]);
 
-test("Aski's eyes come on layers of their own, two blocks, each open and shut, level, in ink in its skin of characters", () => {
+test("Aski's eyes come on layers of their own, two blocks, each open and shut, level, cut in the ground's colour from solid ink in its skin of characters", () => {
   const drawn = drawFigure({ width: 160, height: 160, ink, ground });
   const [left, right] = drawn.eyes.each;
   NodeAssert.ok(left && right && drawn.eyes.each.length === 2);
@@ -20,7 +20,12 @@ test("Aski's eyes come on layers of their own, two blocks, each open and shut, l
   for (const eye of [left, right]) {
     NodeAssert.ok(Math.abs(eye.width / eye.height - 0.55) < 0.15, `${eye.width}x${eye.height}`);
     const rgba = new Uint8ClampedArray(eye.open);
-    NodeAssert.deepEqual([...rgba.subarray(0, 3)], [...ink]);
+    NodeAssert.deepEqual([...rgba.subarray(0, 3)], [...ground]);
+    // The body under an eye is solid ink, open or shut, so it reads as cut out.
+    const body = alpha(drawn.pixels);
+    for (let y = eye.y; y < eye.y + eye.height; y++)
+      for (let x = eye.x; x < eye.x + eye.width; x++)
+        NodeAssert.equal(body[y * drawn.width + x], 255, `${x},${y}`);
     // A shut eye is a sliver of the open one.
     NodeAssert.ok(inked(eye.shut) < inked(eye.open) / 4);
   }
@@ -57,7 +62,7 @@ test("Aski is made of characters where they read, and solid ink where they don't
     inked(drawFigure({ width: size, height: size, ink, ground }).pixels) / (size * size);
   NodeAssert.ok(share(240) < 0.3, `characters: ${share(240)}`);
   NodeAssert.ok(share(60) > 0.45, `solid: ${share(60)}`);
-  // Too small to read a character, the eyes are cut in the ground's colour.
+  // Solid too, the eyes are cut in the ground's colour.
   const small = drawFigure({ width: 60, height: 60, ink, ground }).eyes.each[0]!;
   NodeAssert.deepEqual([...new Uint8ClampedArray(small.open).subarray(0, 3)], [...ground]);
 });

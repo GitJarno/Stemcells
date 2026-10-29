@@ -1,11 +1,13 @@
 // What the phone's home takes from upstream's: its segmented control (the
 // tabs), how it opens a chat, which column it stands in, whether it stands
 // in the workspace (where its list has a header), the header's items, and the
-// machines and projects its list is narrowed to.
+// machines and projects its list is narrowed to, and where the phone keeps its picks.
 
 import { useAtomValue } from "@effect/atom-react";
+import { Directory, File, Paths } from "expo-file-system";
 
 import { useSelectWorkspaceDetail } from "../../features/workspace/useSelectWorkspaceDetail";
+import { writeFileAtomically } from "../../lib/atomic-file";
 import { threadListEnvironmentsAtom } from "../../state/server";
 
 export type { EnvironmentMachineKind } from "@t3tools/contracts";
@@ -43,4 +45,21 @@ export function useHomeThreadSelection() {
       name: "Thread",
       params: { environmentId: String(thread.environmentId), threadId: String(thread.id) },
     });
+}
+
+const keptFile = (name: string) => new File(new Directory(Paths.document, "stemcells"), name);
+
+/** A small file of ours on the phone, read whole; null when there's none yet. */
+export function readKept(name: string): string | null {
+  try {
+    const file = keptFile(name);
+    return file.exists ? file.textSync() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Writes a small file of ours whole, so a crash mid-write leaves the last one. */
+export function writeKept(name: string, text: string): Promise<void> {
+  return writeFileAtomically(keptFile(name), text).catch(() => undefined);
 }

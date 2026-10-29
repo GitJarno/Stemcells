@@ -1,10 +1,10 @@
-// Aski on the phone, at rest, as the Mac draws it: body in the text's ink, eyes in the colour
-// beneath, so they read as cut out. The eyes blink with every Aski (`blinks.ts`) by squashing
-// on the UI thread, so a blink redraws nothing; eyes wearing a mood hold it, and under Reduce
-// Motion they don't blink.
+// Aski on the phone, at rest, as the Mac draws it, by the Mac's sizes: body in the text's ink, in
+// its skin of characters where they read; eyes in the colour beneath, so they read as cut out.
+// The eyes blink with every Aski (`blinks.ts`) by squashing on the UI thread, so a blink redraws
+// nothing; eyes wearing a mood hold it, and under Reduce Motion they don't blink.
 
 import { useEffect } from "react";
-import { type ColorValue, View } from "react-native";
+import { type ColorValue, PixelRatio, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -15,7 +15,7 @@ import Animated, {
 import Svg, { Path } from "react-native-svg";
 
 import { onBlink } from "./blinks";
-import { BODY, EYE_LINE, eyesPath, VIEW } from "./drawing";
+import { EYE_LINE, eyesPath, figureAt, VIEW } from "./drawing";
 import { BLINK, EYES, type Mood } from "./kit";
 
 /** The eyes' band, canon units: room for a typed character's reach either side of the line. */
@@ -40,6 +40,7 @@ export function AskiFigure(props: {
 }) {
   const scale = props.height / VIEW.height;
   const width = VIEW.width * scale;
+  const figure = figureAt(props.height, PixelRatio.get());
   const open = useSharedValue(1);
   const holds = useReducedMotion() || props.mood !== undefined;
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Subscribe to the shared blink clock while the eyes may blink, and unsubscribe on change or unmount.
@@ -62,12 +63,8 @@ export function AskiFigure(props: {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Svg
-        width={width}
-        height={props.height}
-        viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.width} ${VIEW.height}`}
-      >
-        <Path d={BODY} fill={props.ink} />
+      <Svg width={width} height={props.height} viewBox={figure.viewBox}>
+        <Path d={figure.body} fill={props.ink} />
       </Svg>
       <Animated.View
         style={[
@@ -86,7 +83,7 @@ export function AskiFigure(props: {
           height={BAND * scale}
           viewBox={`${VIEW.x} ${EYE_LINE - BAND / 2} ${VIEW.width} ${BAND}`}
         >
-          <Path d={eyesOf(props.mood)} fill={props.ground} />
+          <Path d={eyesOf(figure.typed ? props.mood : undefined)} fill={props.ground} />
         </Svg>
       </Animated.View>
     </View>

@@ -1,7 +1,13 @@
 import { inDoneColour, inStageColours } from "../../stemcells/home/stages";
 import * as Dialog from "../../components/ui/Dialog";
 import { FailureWords } from "../../stemcells/disk/FailureWords";
-import { cardLines, CellBesideRow, SlimRowCell } from "../../stemcells/home/RowCell";
+import {
+  cardLines,
+  CellBesideRow,
+  SlimRowCell,
+  SlimRowProject,
+  useShelfHeadersShown,
+} from "../../stemcells/home/RowCell";
 import type { ThreadRowProviderInstance } from "./thread-provider-instance";
 import {
   THREAD_LIST_V2_MONO_FONT as MONO_FONT,
@@ -265,6 +271,7 @@ function ThreadListV2ShelfHeader(
   props: ThreadListV2ShelfHeaderProps & { readonly kind: keyof typeof SHELF_LABEL },
 ) {
   const label = SHELF_LABEL[props.kind];
+  if (!useShelfHeadersShown()) return null;
   return (
     <ThreadListV2Section
       label={props.expanded ? label : `${label} (${props.count})`}
@@ -1047,8 +1054,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
     pr,
     prLabel: prBadgeLabel,
     onOpenPullRequests: handleOpenPullRequests,
-    provider: providerInstance?.driverKind ?? null,
-    providerIconUrl,
+    project: props.project,
   };
   const card = cardLines(
     variant === "card" && !sidebarPane,
@@ -1058,7 +1064,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
   const cardContent = (
     <>
       <View className="flex-row items-start gap-2">
-        {props.project ? (
+        {props.project && !card.beside ? (
           <View className="justify-center" style={{ height: titleLineHeight }}>
             <ProjectFavicon
               environmentId={thread.environmentId}
@@ -1167,7 +1173,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         </View>
       </View>
       {props.searchMatch ? (
-        <View className="mt-1" style={{ paddingLeft: titleTextInset }}>
+        <View className="mt-1" style={{ paddingLeft: card.beside ? 0 : titleTextInset }}>
           <ThreadSearchMatchExcerpt
             sidebar={sidebarPane}
             match={props.searchMatch}
@@ -1364,7 +1370,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           )}
         >
           <SlimRowCell thread={thread} sidebar={sidebarPane} />
-          {props.project ? (
+          {props.project && sidebarPane ? (
             <View className="opacity-40">
               <ProjectFavicon
                 environmentId={thread.environmentId}
@@ -1398,6 +1404,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
             ) : null}
           </View>
           {props.hasQueuedMessages ? <QueuedMessageIcon selected={selected} /> : null}
+          <SlimRowProject project={props.project} sidebar={sidebarPane} />
           <Text
             className={cn(
               "text-sm tabular-nums",

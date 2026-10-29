@@ -8,7 +8,7 @@ import { useFreeSpace } from "./useFreeSpace";
 
 // The home's disk: the Mac's column ends on its disk, grey while there's room, amber, then red;
 // on the phone, whose home is for its Cells, a machine shows only once its disk wants
-// attention, with Free space beside it.
+// attention, with Free space beside it: a card under the tabs (`home/AskiHome.tsx`).
 
 export function DiskPlates() {
   const machines = useMachines().filter((machine) => machine.connection === "connected");
@@ -35,7 +35,7 @@ function DiskPlate(props: {
   const urgent = pressure === "now";
   const headline = disk.free < FULL_BELOW ? DISK_FULL.title : `${freeFigure(disk.free)} left`;
   return (
-    <View className="mx-4 mt-2 flex-row items-center gap-3 rounded-2xl bg-grouped-card px-4 py-3">
+    <View className="mx-3 mt-3 flex-row items-center gap-3 rounded-[20px] bg-grouped-card px-4 py-3">
       <SymbolView
         name="internaldrive"
         size={18}

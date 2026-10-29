@@ -51,13 +51,15 @@ export interface Line<S extends Shell> {
   readonly standings: Standings;
 }
 
-/** Whether the home is the line: some machine in view reads, and none in view has no line. */
+/**
+ * Whether the home is the line: until a machine in view says it has none. One asleep or not yet
+ * read stands its Cells where their records do, so the home doesn't swap as machines answer.
+ */
 export function lineApplies(
   readings: ReadonlyMap<string, Reading>,
   environmentIds: ReadonlyArray<string>,
 ): boolean {
-  const states = environmentIds.map((id) => readings.get(id)?.state);
-  return states.includes("read") && !states.includes("none");
+  return environmentIds.every((id) => readings.get(id)?.state !== "none");
 }
 
 /**

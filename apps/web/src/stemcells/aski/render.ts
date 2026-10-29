@@ -4,12 +4,13 @@
 import type { Frame } from "./aski.ts";
 import { EYES, PALETTE } from "./canon.ts";
 import { type EyePose, eyeDistance } from "./eye.ts";
-import { BODY_CHARS, FONT_H, FONT_W, glyphBit, RAMP } from "./font.ts";
+import { FONT_H, FONT_W, glyphBit } from "./font.ts";
 import { type Grid, isEmpty } from "./grid.ts";
-import { clamp, hash } from "./math.ts";
+import { clamp } from "./math.ts";
 import { CELL, fillOf, particleAt, particleChar, restHomes } from "./particles.ts";
 import { CELL_ASPECT, cellToCanon, type EyePlace, type Fit } from "./scene.ts";
-import { bodyDistance, eyesDistance, limbChar, sceneDistance } from "./sdf.ts";
+import { eyesDistance, sceneDistance } from "./sdf.ts";
+import { glyphAt, skinCell, SOLID } from "./skin.ts";
 
 export interface Camera {
   readonly width: number;
@@ -25,9 +26,6 @@ export interface Camera {
   /** False draws the body whole, its eyes left out: the silhouette a page backs the eyes with. */
   readonly eyes?: boolean;
 }
-
-const EYE_MID_X = (EYES.centers[0][0] + EYES.centers[1][0]) / 2,
-  EYE_MID_Y = (EYES.centers[0][1] + EYES.centers[1][1]) / 2;
 
 export function render(f: Frame, cam: Camera): Uint8ClampedArray {
   const { width: W, height: H, scale: k, ground } = cam,
@@ -146,35 +144,13 @@ export function render(f: Frame, cam: Camera): Uint8ClampedArray {
   return out;
 }
 
-/** The glyph's ink at (fx, fy) inside its cell, both 0..1, with a margin around the 5×7 grid. */
-function glyphAt(ch: string, fx: number, fy: number): number {
-  return glyphBit(ch, Math.floor(fx * (FONT_W + 3) - 1.5), Math.floor(fy * (FONT_H + 1) - 0.5));
-}
-
-/** The live ASCII skin: cells switch on outward from the eyes; limbs draw in line characters. -1 where still ink. */
+/** The live ASCII skin at (bx, by), by its cell (skin.ts): -1 where still ink. */
 function liveCell(f: Frame, bx: number, by: number): number {
-  const c = f.controls,
-    gx = Math.floor(bx / CELL),
+  const gx = Math.floor(bx / CELL),
     gy = Math.floor(by / CELL);
-  const ccx = (gx + 0.5) * CELL,
-    ccy = (gy + 0.5) * CELL,
-    h = hash(f.seed, gx, gy, 5);
-  const val = c.live * 1.6 - Math.hypot(ccx - EYE_MID_X, ccy - EYE_MID_Y) / 240 - h * 0.35;
-  if (val <= 0) return -1;
-  const fx = bx / CELL - gx,
-    fy = by / CELL - gy;
-  if (eyesDistance(f, ccx, ccy) < 6) return 0;
-  const limb = limbChar(f, ccx, ccy);
-  if (limb.d < CELL * 0.55 && limb.d < bodyDistance(f, ccx, ccy)) return glyphAt(limb.ch, fx, fy);
-  const cov = clamp(0.5 - (sceneDistance(f, ccx, ccy) / CELL) * 1.1, 0, 1);
-  if (cov < 0.03) return 0;
-  const front = clamp(val / 0.3, 0, 1);
-  const roll = Math.floor(f.t * (front < 1 ? 20 : 1.5) + h * 10);
-  const ch =
-    cov < 0.9
-      ? RAMP[Math.min(RAMP.length - 1, 1 + Math.floor(cov * (RAMP.length - 1)))]!
-      : BODY_CHARS[Math.floor(hash(f.seed, gx, gy, roll) * BODY_CHARS.length)]!;
-  return glyphAt(ch, fx, fy) * (0.55 + 0.45 * front);
+  const cell = skinCell(f, gx, gy);
+  if (cell === SOLID) return -1;
+  return cell === null ? 0 : glyphAt(cell.ch, bx / CELL - gx, by / CELL - gy) * cell.ink;
 }
 
 function stampParticles(f: Frame, cam: Camera, ink: Float32Array): void {

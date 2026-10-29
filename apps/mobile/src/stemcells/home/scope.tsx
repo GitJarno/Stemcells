@@ -1,7 +1,7 @@
-// The home's scope in its header's top right, where T3 had chips over the list: the project,
-// and with two machines or more, the machine. Unchosen, a button shows a plain glyph; chosen, the
-// project's own icon or the machine's own symbol, tinted. T3's workspace toolbar hands its
-// trailing items here at its seam (`features/workspace/WorkspaceToolbar.ios.tsx`).
+// The home's scope in its header's top right: projects, and with two machines or more, machines,
+// each a menu that stays open while you tick any number (`picks.ts`). Unticked, a plain glyph;
+// ticked, the projects' own icons or the machine's symbol, tinted. T3's workspace toolbar hands
+// its trailing items here at its seam (`features/workspace/WorkspaceToolbar.ios.tsx`).
 
 import { type ReactElement } from "react";
 import { View } from "react-native";
@@ -18,85 +18,126 @@ import {
   useProjects,
   useSavedRemoteConnections,
 } from "../upstream/home";
+import { inEffect, toggled } from "./picks";
+import { setPicks, usePicks } from "./usePicks";
 
 const ALL = "all";
 
-export function useHomeScopeItems(): ReactElement[] {
-  const projects = useProjects();
+/** The machines the phone knows, by name. */
+function useMachineList() {
   const { savedConnectionsById } = useSavedRemoteConnections();
   const kinds = useMachineKinds();
-  const machines = Object.values(savedConnectionsById)
+  return Object.values(savedConnectionsById)
     .map((connection) => ({
       id: connection.environmentId,
       label: connection.environmentLabel,
       kind: kinds.get(connection.environmentId),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
-  const { options, setSelectedEnvironmentId, setSelectedProjectKey } = useHomeListOptions(
-    new Set(machines.map((machine) => machine.id)),
-  );
+}
+
+export function useHomeScopeItems(): ReactElement[] {
+  const projects = useProjects();
+  const machines = useMachineList();
+  const { options } = useHomeListOptions(new Set(machines.map((machine) => machine.id)));
+  const picks = usePicks();
+  const machineIds = machines.map((machine) => String(machine.id));
+  const pickedMachines = inEffect(picks.machines, machineIds);
+  // Keys from every machine's projects, so a pick holds as machines are ticked.
   const scopes = buildHomeProjectScopes({
     projects,
-    environmentId: options.selectedEnvironmentId,
+    environmentId: null,
     projectGroupingMode: options.projectGroupingMode,
   });
-  const chosen = scopes.find((scope) => scope.key === options.selectedProjectKey);
-  const project = chosen?.representative;
+  const listed = scopes.filter(
+    (scope) =>
+      pickedMachines.length === 0 ||
+      scope.projectRefs.some((ref) => pickedMachines.includes(String(ref.environmentId))),
+  );
+  const listedKeys = listed.map((scope) => scope.key);
+  // A project on none of the machines picked narrows nothing, as the home reads it.
+  const pickedProjects = inEffect(picks.projects, listedKeys);
+  const chosen = listed.filter((scope) => pickedProjects.includes(scope.key));
 
   const items = [
     <Toolbar.Custom key="project">
       <ScopeButton
         title="Projects"
-        label={chosen ? `Project: ${chosen.title}` : "All projects"}
+        label={
+          chosen.length === 0
+            ? "All projects"
+            : `Projects: ${chosen.map((scope) => scope.title).join(", ")}`
+        }
         actions={[
-          { id: ALL, title: "All projects", state: chosen ? "off" : "on" },
-          ...scopes.map((scope) => ({
+          { id: ALL, title: "All projects", state: chosen.length === 0 ? "on" : "off" },
+          ...listed.map((scope) => ({
             id: scope.key,
             title: scope.title,
-            state: scope === chosen ? ("on" as const) : ("off" as const),
+            state: pickedProjects.includes(scope.key) ? ("on" as const) : ("off" as const),
           })),
         ]}
-        onSelect={(id) => setSelectedProjectKey(id === ALL ? null : id)}
+        onSelect={(id) =>
+          setPicks((now) => ({
+            ...now,
+            projects: id === ALL ? [] : toggled(inEffect(now.projects, listedKeys), id, listedKeys),
+          }))
+        }
       >
-        {chosen && project ? (
-          <ProjectFavicon
-            environmentId={project.environmentId}
-            faviconPath={project.faviconPath}
-            projectIcon={project.projectIcon}
-            projectTitle={chosen.title}
-            workspaceRoot={project.workspaceRoot}
-            size={20}
-          />
-        ) : (
+        {chosen.length === 0 ? (
           <SymbolView name="folder" size={18} tintColorClassName="accent-icon" />
+        ) : (
+          <View className="flex-row items-center">
+            {chosen.slice(0, 2).map((scope, index) => (
+              <View key={scope.key} style={index > 0 ? { marginLeft: -8 } : undefined}>
+                <ProjectFavicon
+                  environmentId={scope.representative.environmentId}
+                  faviconPath={scope.representative.faviconPath}
+                  projectIcon={scope.representative.projectIcon}
+                  projectTitle={scope.title}
+                  workspaceRoot={scope.representative.workspaceRoot}
+                  size={chosen.length > 1 ? 16 : 20}
+                />
+              </View>
+            ))}
+          </View>
         )}
       </ScopeButton>
     </Toolbar.Custom>,
   ];
   if (machines.length < 2) return items;
-  const machine = machines.find((option) => option.id === options.selectedEnvironmentId);
+  const first = machines.find((machine) => pickedMachines.includes(String(machine.id)));
   items.push(
     <Toolbar.Custom key="machine">
       <ScopeButton
         title="Machines"
-        label={machine ? `Machine: ${machine.label}` : "All machines"}
+        label={
+          pickedMachines.length === 0
+            ? "All machines"
+            : `Machines: ${machines
+                .filter((machine) => pickedMachines.includes(String(machine.id)))
+                .map((machine) => machine.label)
+                .join(", ")}`
+        }
         actions={[
-          { id: ALL, title: "All machines", state: machine ? "off" : "on" },
-          ...machines.map((option) => ({
-            id: option.id,
-            title: option.label,
-            image: ENVIRONMENT_MACHINE_SYMBOLS[option.kind ?? "desktop"],
-            state: option.id === machine?.id ? ("on" as const) : ("off" as const),
+          { id: ALL, title: "All machines", state: pickedMachines.length === 0 ? "on" : "off" },
+          ...machines.map((machine) => ({
+            id: String(machine.id),
+            title: machine.label,
+            image: ENVIRONMENT_MACHINE_SYMBOLS[machine.kind ?? "desktop"],
+            state: pickedMachines.includes(String(machine.id)) ? ("on" as const) : ("off" as const),
           })),
         ]}
         onSelect={(id) =>
-          setSelectedEnvironmentId(machines.find((option) => option.id === id)?.id ?? null)
+          setPicks((now) => ({
+            ...now,
+            machines: id === ALL ? [] : toggled(inEffect(now.machines, machineIds), id, machineIds),
+          }))
         }
       >
         <SymbolView
-          name={ENVIRONMENT_MACHINE_SYMBOLS[machine?.kind ?? "desktop"]}
+          name={ENVIRONMENT_MACHINE_SYMBOLS[first?.kind ?? "desktop"]}
           size={18}
-          tintColorClassName={machine ? "accent-primary" : "accent-icon"}
+          tintColorClassName={first ? "accent-primary" : "accent-icon"}
         />
       </ScopeButton>
     </Toolbar.Custom>,
@@ -119,7 +160,11 @@ function ScopeButton(props: {
   return (
     <Menu
       title={props.title}
-      actions={[...props.actions]}
+      // Ticking leaves the menu open for the next tick; "All" closes it, being done.
+      actions={props.actions.map((action) => ({
+        ...action,
+        attributes: { keepsMenuPresented: action.id !== ALL },
+      }))}
       onPressAction={({ nativeEvent }) => props.onSelect(nativeEvent.event)}
       accessibilityLabel={props.label}
       accessibilityRole="button"

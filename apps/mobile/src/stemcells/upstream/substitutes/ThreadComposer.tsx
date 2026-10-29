@@ -1,44 +1,27 @@
-// Replaces `features/threads/ThreadComposer.tsx` (`substitutes.cjs`): the
-// Cell's ledge stands over upstream's composer (`ledge/CellLedge.tsx`). The
-// chat sizes its feed from the composer's height, so the height it hears is
-// the ledge's and the composer's together.
-import { useRef } from "react";
+// Replaces `features/threads/ThreadComposer.tsx` (`substitutes.cjs`): the feed fades into the
+// ground under the composer (`edge/Scrim.tsx`), so what scrolls past it never reads through
+// beside the glass, nor under it by the home indicator. The Cell stands in the header
+// (`chat/CellTitle.tsx`), so the room over the composer is upstream's.
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useResolveClassNames } from "uniwind";
 
 import * as Upstream from "../../../features/threads/ThreadComposer";
-import { useIsAskiChat } from "../../aski/useAskiChat";
-import { CellLedge, LEDGE_OVERLAP } from "../../ledge/CellLedge";
+import { Scrim } from "../../edge/Scrim";
 
 export * from "../../../features/threads/ThreadComposer";
 
+/** Above the composer's box, a short reach, mostly clear, into what stacks on it. */
+const OVER = 16;
+/** From there, fading in to whole by about the middle of the composer's field. */
+const FADE = 48;
+
 export const ThreadComposer: typeof Upstream.ThreadComposer = (props) => {
-  const thread = props.selectedThread;
-  const aski = useIsAskiChat(thread.id);
-  const shows = props.isDraft !== true && !aski;
-  // Both heights are kept as they come: the one reported second adds the
-  // first, whichever it is, so the feed's inset is right on the first try.
-  const ledge = useRef(0);
-  const composer = useRef<number | null>(null);
-  const report = props.onHeightChange;
-  const reach = (height: number) => (shows ? Math.max(0, height - LEDGE_OVERLAP) : 0);
+  const insets = useSafeAreaInsets();
+  const ground = useResolveClassNames("bg-screen").backgroundColor;
   return (
     <>
-      {shows ? (
-        <CellLedge
-          thread={thread}
-          contentMaxWidth={props.contentMaxWidth}
-          onHeightChange={(height) => {
-            ledge.current = height;
-            if (composer.current !== null) report?.(composer.current + reach(height));
-          }}
-        />
-      ) : null}
-      <Upstream.ThreadComposer
-        {...props}
-        onHeightChange={(height) => {
-          composer.current = height;
-          report?.(height + reach(ledge.current));
-        }}
-      />
+      <Scrim edge="bottom" color={ground} fade={FADE} over={OVER} beyond={insets.bottom} />
+      <Upstream.ThreadComposer {...props} />
     </>
   );
 };

@@ -1,7 +1,7 @@
-// A Cell in its card on the home, left of what its chat is about, its name under it; a settled
-// chat's slim row has it asleep, and Aski's own chat has Aski. A card is two lines at most: the
-// pull request and the agent's mark stand under the time, beside the title's second line. T3's
-// row hands control here at its seam (`features/threads/thread-list-v2-items.tsx`, `seams.md`).
+// A Cell in its card on the home, its name under it; a settled chat's slim row has it asleep,
+// Aski's own chat has Aski. A card is two lines; its marks (machine, pull request, project, not
+// the agent: the Cell's colour says that) stand under the time. T3's row hands control here at
+// its seam (`features/threads/thread-list-v2-items.tsx`), and on the home's tabs draws no shelf.
 
 import { type ReactNode, use, useEffect, useRef } from "react";
 import { Pressable, View, type ViewInstance, type ViewStyle } from "react-native";
@@ -15,16 +15,20 @@ import { cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import {
   AppText,
+  type EnvironmentProject,
   type EnvironmentThreadShell,
-  ProviderIcon,
   PullRequestGlyph,
   pullRequestStatus,
   SymbolView,
   type ThreadPrPresentation,
 } from "../upstream/cells";
-import { ENVIRONMENT_MACHINE_SYMBOLS, type EnvironmentMachineKind } from "../upstream/home";
+import {
+  ENVIRONMENT_MACHINE_SYMBOLS,
+  type EnvironmentMachineKind,
+  ProjectFavicon,
+} from "../upstream/home";
 import { sendCopy } from "./copies";
-import { HomeCellsHeld, HomeInFront, useMinute } from "./state";
+import { HomeCellsHeld, HomeInFront, HomeTabsContext, useMinute } from "./state";
 import { isAway } from "./tabs";
 
 function Figure(props: { readonly thread: EnvironmentThreadShell; readonly points: number }) {
@@ -64,15 +68,19 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
   );
 }
 
-/** What a card shows in its bottom right: its machine, its pull request and its agent. */
+/** What a card shows in its bottom right: its machine, its pull request and its project. */
 export interface CardMarks {
   readonly machine: EnvironmentMachineKind | null;
   readonly machineLabel: string | null;
   readonly pr: ThreadPrPresentation | null;
   readonly prLabel: string | null;
   readonly onOpenPullRequests: () => void;
-  readonly provider: string | null;
-  readonly providerIconUrl: string | null | undefined;
+  readonly project: EnvironmentProject | null;
+}
+
+/** Whether T3's list draws its shelves' headers: not on the home's tabs, which are the shelves. */
+export function useShelfHeadersShown(): boolean {
+  return use(HomeTabsContext) === null;
 }
 
 /** A card row's content with its Cell beside it, and its marks in its bottom right. */
@@ -82,7 +90,7 @@ export function CellBesideRow(props: {
   readonly children: ReactNode;
 }) {
   const aski = useIsAskiChat(props.thread.id);
-  const { machine, pr, provider } = props.marks;
+  const { machine, pr, project } = props.marks;
   return (
     <View className="flex-row items-stretch gap-3">
       <View className="w-[52px] items-center">
@@ -121,13 +129,7 @@ export function CellBesideRow(props: {
               <SymbolView name={glyphOf(pr)} size={MARK} tintColorClassName={tintOf(pr)} />
             </Pressable>
           ) : null}
-          {provider ? (
-            <ProviderIcon
-              provider={provider}
-              iconUrl={props.marks.providerIconUrl}
-              size={AGENT_MARK}
-            />
-          ) : null}
+          {project ? <ProjectMark project={project} /> : null}
         </View>
       </View>
     </View>
@@ -135,8 +137,23 @@ export function CellBesideRow(props: {
 }
 
 const MARK = 12;
-const AGENT_MARK = 14;
+const PROJECT_MARK = 14;
 const MARK_GAP = 6;
+
+/** A project's own icon, small, among a row's marks. */
+export function ProjectMark(props: { readonly project: EnvironmentProject }) {
+  const { project } = props;
+  return (
+    <ProjectFavicon
+      environmentId={project.environmentId}
+      faviconPath={project.faviconPath}
+      projectIcon={project.projectIcon}
+      projectTitle={project.title}
+      workspaceRoot={project.workspaceRoot}
+      size={PROJECT_MARK}
+    />
+  );
+}
 
 function glyphOf(pr: ThreadPrPresentation) {
   if (pr.kind === "stack") return PullRequestGlyph.stack;
@@ -153,11 +170,11 @@ function tintOf(pr: ThreadPrPresentation) {
 }
 
 /** The width the marks take: each mark is a fixed size, so the title knows it before layout. */
-function marksWidth(marks: CardMarks) {
+export function marksWidth(marks: CardMarks) {
   const widths = [
     marks.machine ? MARK : 0,
     marks.pr ? MARK : 0,
-    marks.provider ? AGENT_MARK : 0,
+    marks.project ? PROJECT_MARK : 0,
   ].filter((width) => width > 0);
   return widths.reduce((sum, width) => sum + width, 0) + MARK_GAP * Math.max(widths.length - 1, 0);
 }
@@ -177,7 +194,8 @@ export function cardLines(beside: boolean, error: boolean, marks: CardMarks) {
     beside,
     titleLines: error ? 1 : 2,
     trailing: { minWidth: width, justifyContent: "flex-end" } satisfies ViewStyle,
-    meta: error ? { paddingRight: width + MARK_GAP } : HIDDEN,
+    // The project's icon is a mark here, so nothing stands in front of the title to inset past.
+    meta: error ? { paddingLeft: 0, paddingRight: width + MARK_GAP } : HIDDEN,
   };
 }
 
@@ -187,4 +205,16 @@ export function SlimRowCell(props: {
   readonly sidebar: boolean;
 }) {
   return props.sidebar ? null : <Figure thread={props.thread} points={2} />;
+}
+
+/** A slim row's project, at its end beside the time, as a card's is among its marks. */
+export function SlimRowProject(props: {
+  readonly project: EnvironmentProject | null;
+  readonly sidebar: boolean;
+}) {
+  return props.project && !props.sidebar ? (
+    <View className="opacity-40">
+      <ProjectMark project={props.project} />
+    </View>
+  ) : null;
 }

@@ -1,29 +1,31 @@
-// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski
-// (`line/LineHome.tsx`) where the machines in view read it, else one tab of Cells at a time
-// (`home/tabs.ts`); T3's list keeps all it does, handed the tab's Cells. Where it has no header
-// (Android, outside the workspace) and while searching, the home is T3's own.
+// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski until a
+// machine says it has none, else one tab at a time (`home/tabs.ts`); T3's list gets the tab's
+// Cells. In the iOS workspace our picks narrow it (`home/scope.tsx`) and T3's own pick stays
+// unset. Where it has no header (Android, outside the workspace) and searching, it's T3's home.
 import { useIsFocused } from "@react-navigation/native";
-import { use, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Platform, View } from "react-native";
 
 import * as Upstream from "../../../features/home/HomeScreen";
-import { ThreadListFilters } from "../../../features/home/ThreadListFilters";
 import { askiChatsOf } from "../../aski/chat";
 import { CopyLayer } from "../../home/CopyLayer";
 import { EmptyTab } from "../../home/EmptyTab";
 import { HomeFront } from "../../home/HomeFront";
+import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
 import { HomeTabsContext, tabChoice, useMinute } from "../../home/state";
 import { countsOf, HOME_TABS, type HomeTab, inTab } from "../../home/tabs";
+import { setPicks, usePicks } from "../../home/usePicks";
 import { movedByHand } from "../../line/kit";
 import { lineApplies } from "../../line/line";
 import { LineHome } from "../../line/LineHome";
 import { useKeepReading, useReadings } from "../../line/readings";
-import { NativePrimaryColumnContext, useWorkspaceTabs } from "../home";
-import { buildHomeProjectScopes, findHomeProjectScope } from "../threads";
+import { useWorkspaceTabs } from "../home";
+import { buildHomeProjectScopes } from "../threads";
 
 export * from "../../../features/home/HomeScreen";
 
 type Props = Parameters<typeof Upstream.HomeScreen>[0];
+type Place = { readonly environmentId: string; readonly projectId: string };
 
 const tabs = tabChoice<HomeTab>();
 
@@ -36,18 +38,32 @@ const EMPTY: Readonly<Record<HomeTab, string>> = {
 
 export function HomeScreen(props: Props) {
   const workspace = useWorkspaceTabs();
-  const primaryColumn = use(NativePrimaryColumnContext);
   const inFront = useIsFocused();
   const now = useMinute();
   const readings = useReadings();
-  const ready = props.catalogState.hasLoadedShellSnapshot && props.projects.length > 0;
-  const tabbed =
-    Platform.OS === "ios" && workspace !== null && ready && props.searchQuery.trim() === "";
+  const picked = usePicks();
+  const ours = Platform.OS === "ios" && workspace !== null;
+  const scope = scopeOf(ours ? picked : NO_PICKS, props);
+  const { catalogState } = props;
+  const ready = catalogState.hasLoadedShellSnapshot && props.projects.length > 0;
+  // A saved machine on its way: the home stands as it will, so nothing swaps in under it.
+  const connecting =
+    catalogState.hasConnectingEnvironment &&
+    !catalogState.hasLoadedShellSnapshot &&
+    catalogState.connectionError === null;
+  const tabbed = ours && (ready || connecting) && props.searchQuery.trim() === "";
   useKeepReading(props.threads, now, inFront && tabbed);
+  // T3's own pick narrows nothing where ours do, or a pick made before ours hides Cells unseen.
+  const upstream = ours
+    ? { ...props, selectedEnvironmentId: null, selectedProjectKey: null }
+    : props;
   if (!tabbed)
     return (
       <HomeFront inFront={inFront}>
-        <Upstream.HomeScreen {...props} />
+        <Upstream.HomeScreen
+          {...upstream}
+          threads={ours ? props.threads.filter((thread) => scope.inView(thread)) : props.threads}
+        />
       </HomeFront>
     );
 
@@ -58,32 +74,9 @@ export function HomeScreen(props: Props) {
       thread.lineage.relationshipToParent !== "subagent" &&
       !aski.has(thread.id),
   );
-  const scopes = buildHomeProjectScopes({
-    projects: props.projects,
-    environmentId: props.selectedEnvironmentId,
-    projectGroupingMode: props.projectGroupingMode,
-  });
-  const scope = findHomeProjectScope(scopes, props.selectedProjectKey);
-  const inView = (place: { readonly environmentId: string; readonly projectId: string }) =>
-    (props.selectedEnvironmentId === null || place.environmentId === props.selectedEnvironmentId) &&
-    (scope === null ||
-      scope.projectRefs.some(
-        (ref) => ref.environmentId === place.environmentId && ref.projectId === place.projectId,
-      ));
-  const filters = (
-    <ThreadListFilters
-      gutter={primaryColumn ? 8 : 0}
-      environments={props.environments}
-      projects={scopes.map((project) => ({ key: project.key, label: project.title }))}
-      selectedEnvironmentId={props.selectedEnvironmentId}
-      selectedProjectKey={props.selectedProjectKey}
-      onEnvironmentChange={props.onEnvironmentChange}
-      onProjectChange={props.onProjectChange}
-    />
-  );
   const list = (threads: Props["threads"], pending: boolean) => (
     <Upstream.HomeScreen
-      {...props}
+      {...upstream}
       threads={threads}
       pendingTasks={pending ? props.pendingTasks : []}
       // A settle or its undo from T3's own rows is the person's move: its Cell hops.
@@ -97,46 +90,25 @@ export function HomeScreen(props: Props) {
       }}
     />
   );
-  const machines =
-    props.selectedEnvironmentId === null
-      ? props.environments.map((environment) => environment.environmentId)
-      : [props.selectedEnvironmentId];
 
-  if (lineApplies(readings, machines)) {
-    const everywhere = buildHomeProjectScopes({
-      projects: props.projects,
-      environmentId: null,
-      projectGroupingMode: props.projectGroupingMode,
-    });
-    const machine = props.environments.find(
-      (environment) => environment.environmentId === props.selectedEnvironmentId,
-    );
+  if (lineApplies(readings, scope.machines)) {
     return (
       <HomeFront inFront={inFront}>
         <LineHome
           cells={cells}
           readings={readings}
-          known={machines.every((id) => readings.has(id))}
+          known={scope.machines.every((id) => readings.has(id))}
+          connecting={!ready}
           now={now}
-          inView={inView}
-          projects={everywhere.map((project) => ({
+          inView={scope.inView}
+          projects={scope.everywhere.map((project) => ({
             key: project.key,
             name: project.title,
             memberKeys: project.projectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
           }))}
-          projectName={(place) =>
-            props.projects.find(
-              (project) =>
-                project.environmentId === place.environmentId && project.id === place.projectId,
-            )?.title ?? null
-          }
-          narrowedTo={scope !== null ? `in ${scope.title}` : machine ? `on ${machine.label}` : null}
-          environmentId={props.selectedEnvironmentId}
-          filters={filters}
-          onShowAll={() => {
-            props.onEnvironmentChange(null);
-            props.onProjectChange(null);
-          }}
+          narrowedTo={scope.narrowedTo}
+          environmentId={scope.machine}
+          onShowAll={() => setPicks(NO_PICKS)}
           settle={props.onSettleThread}
           pending={props.pendingTasks.length}
           renderList={list}
@@ -148,10 +120,9 @@ export function HomeScreen(props: Props) {
   return (
     <HomeFront inFront={inFront}>
       <Tabs
-        cells={cells.filter(inView)}
+        cells={cells.filter(scope.inView)}
         now={now}
-        environmentId={props.selectedEnvironmentId}
-        filters={filters}
+        environmentId={scope.machine}
         renderList={(threads, pending) => (
           <View style={{ flex: 1 }}>
             {list(threads, pending)}
@@ -164,12 +135,61 @@ export function HomeScreen(props: Props) {
   );
 }
 
+/** What the picks narrow the home to, from the machines and projects that still exist. */
+function scopeOf(picks: Picks, props: Props) {
+  const allMachines = props.environments.map((environment) => String(environment.environmentId));
+  const pickedMachines = inEffect(picks.machines, allMachines);
+  const everywhere = buildHomeProjectScopes({
+    projects: props.projects,
+    environmentId: null,
+    projectGroupingMode: props.projectGroupingMode,
+  });
+  // As the header lists them: the projects on the machines picked; one on none narrows nothing.
+  const listed = everywhere.filter(
+    (project) =>
+      pickedMachines.length === 0 ||
+      project.projectRefs.some((ref) => pickedMachines.includes(String(ref.environmentId))),
+  );
+  const pickedProjects = inEffect(
+    picks.projects,
+    listed.map((project) => project.key),
+  );
+  const chosen = listed.filter((project) => pickedProjects.includes(project.key));
+  const projectKeys = new Set(
+    chosen.flatMap((project) =>
+      project.projectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
+    ),
+  );
+  const machineLabels = props.environments
+    .filter((environment) => pickedMachines.includes(String(environment.environmentId)))
+    .map((environment) => environment.label);
+  return {
+    everywhere,
+    machines: pickedMachines.length > 0 ? pickedMachines : allMachines,
+    /** The one machine picked, whose Aski the header opens. */
+    machine: pickedMachines.length === 1 ? (pickedMachines[0] ?? null) : null,
+    inView: (place: Place) =>
+      (pickedMachines.length === 0 || pickedMachines.includes(String(place.environmentId))) &&
+      (projectKeys.size === 0 || projectKeys.has(`${place.environmentId}:${place.projectId}`)),
+    /** What the pickers show, when they narrow the home: "in Harbor", "on Studio". */
+    narrowedTo:
+      chosen.length === 1
+        ? `in ${chosen[0]?.title}`
+        : chosen.length > 1
+          ? "in these projects"
+          : machineLabels.length === 1
+            ? `on ${machineLabels[0]}`
+            : machineLabels.length > 1
+              ? "on these machines"
+              : null,
+  };
+}
+
 /** A machine without the line: Asleep, Active, Working and Input, from the chats' shells. */
 function Tabs(props: {
   readonly cells: Props["threads"];
   readonly now: string;
   readonly environmentId: string | null;
-  readonly filters: ReactNode;
   readonly renderList: (threads: Props["threads"], pending: boolean) => ReactNode;
   readonly pending: number;
 }) {
@@ -188,7 +208,7 @@ function Tabs(props: {
   return (
     <HomeTabsContext value={home}>
       {shown.length === 0 && !pending ? (
-        <EmptyTab words={EMPTY[tab]} filters={props.filters} />
+        <EmptyTab words={EMPTY[tab]} />
       ) : (
         props.renderList(shown, pending)
       )}
