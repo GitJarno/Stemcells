@@ -9,6 +9,8 @@
 const OPEN = "[data-stemcells-need][data-open]";
 const LIST = "[data-stemcells-needs-list]";
 const FRAME = "[data-stemcells-needs-frame]";
+/** The room one ask at a time (OneAsk.tsx): the next ask lands after the answer renders. */
+const ONE = "[data-needs-one]";
 
 /** Where a step onto a card lands. */
 function landingOf(card: HTMLElement): HTMLElement {
@@ -61,8 +63,17 @@ export function reveal(key: string): boolean {
   const card = document.querySelector<HTMLElement>(
     `${FRAME} ${LIST} [data-need-key="${CSS.escape(key)}"]`,
   );
-  if (card === null) return false;
-  land(card);
+  if (card !== null) {
+    land(card);
+    return true;
+  }
+  // Waiting in the line: it comes to the front, and the focus meets it there.
+  const seat = document.querySelector<HTMLElement>(
+    `${FRAME} ${LIST} [data-need-seat="${CSS.escape(key)}"]`,
+  );
+  if (seat === null) return false;
+  seat.closest(ONE)?.setAttribute("data-land-next", "");
+  seat.click();
   return true;
 }
 
@@ -81,5 +92,7 @@ export function leave(from: Element): void {
  */
 export function answering(card: HTMLElement | null): void {
   if (card === null || card.querySelector(":focus-visible") === null) return;
-  if (!step(card, 1)) leave(card);
+  const one = card.closest(ONE);
+  if (one !== null) one.setAttribute("data-land-next", "");
+  else if (!step(card, 1)) leave(card);
 }

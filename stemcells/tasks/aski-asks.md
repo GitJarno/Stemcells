@@ -21,16 +21,12 @@ says yes, the undo window.
 2. **Aski's room is two halves.** The chat on the left, what needs you on
    the right, at any width the room has two halves for. No roster under the
    chat and no done list: the column's stages say both.
-3. **Every ask open, a line between.** The person answers several at once
-   in Aski's chat, often dictating while they read down the list: "1, go
-   with the second; 2, do that; 3, this and this, but first I need to know
-   X". So every ask on the right is open, oldest first, with a hairline
-   between and nothing else: no boxes and no hints, only each ask's quiet
-   number, which is what those words address it by and which it keeps
-   while it lives (`aski-room.md` decision 3). Ten asks stay
-   calm because each says only its Cell, its question, two lines and its
-   options. As the person types, each ask shows what their words do to it
-   (`aski-room.md` decision 8). The narrow column keeps one open at a time.
+3. **One ask at a time** (`one-ask.md`, which replaced "every ask open"
+   on 2026-10-29): the ask in front whole, the rest a line of their Cells.
+   Each ask keeps its quiet number while it lives, which is what words in
+   Aski's chat address it by (`aski-room.md` decision 3), and as the
+   person types, each ask shows what their words do to it (`aski-room.md`
+   decision 8).
 4. **An ask is a message.** Its Cell (sprite and name), the project and the
    age on one quiet line; the question, the largest words on the page; at
    most two lines of what you need to decide, with More showing the Cell's

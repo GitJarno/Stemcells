@@ -73,10 +73,10 @@ function useLayout(root: RefObject<HTMLElement | null>): {
 const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need you`);
 
 /**
- * Aski's room: its chat on the left half, every ask open on the right
- * (stemcells/tasks/aski-asks.md, decisions 2 and 3); narrow, a count that opens them as a
+ * Aski's room: its chat on the left half, the ask in front on the right and the rest in line
+ * (stemcells/tasks/aski-asks.md, decision 2; one-ask.md); narrow, a count that opens them as a
  * sheet; on two screens, the second screen. The Cells' column lists the same asks as an index
- * meanwhile (decision 8).
+ * meanwhile (aski-asks.md, decision 8).
  */
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
@@ -100,6 +100,7 @@ export function NeedsFrame(props: {
   const list = (
     <CardList
       view={view}
+      one
       head={
         // Wide, the asks speak for themselves: only what isn't plain from them is said.
         layout === "narrow" || waiting === 0 || !view.live ? (

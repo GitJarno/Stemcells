@@ -21,8 +21,8 @@
 }
 
 /* Wide: the asks take the right half, on the chat's own ground, with a
-   hairline between the halves and between the asks, and nothing else
-   (decision 3). */
+   hairline between the halves, the one in front whole and the rest in line
+   (stemcells/tasks/one-ask.md). */
 [data-stemcells-needs-column] {
   flex: 1 1 0;
   min-width: 0;
@@ -37,9 +37,6 @@
 [data-stemcells-needs-column] [data-stemcells-need] {
   padding: var(--sc-space-xl) 0;
   border-radius: 0;
-}
-[data-stemcells-needs-column] [data-stemcells-need] + [data-stemcells-need] {
-  border-block-start: 1px solid var(--sc-hairline);
 }
 [data-stemcells-needs-column] [data-need-ask] {
   font-size: 1rem;
@@ -249,6 +246,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+[data-needs-peek] > [data-need-number] {
+  margin-inline-end: var(--sc-space-sm);
 }
 [data-need-age] {
   flex-shrink: 0;
@@ -644,4 +644,134 @@
   color: var(--sc-needs-you);
   font-family: var(--sc-font-mono);
   font-weight: 600;
+}
+
+/* Aski's room one ask at a time (stemcells/tasks/one-ask.md): the ask in
+   front whole, the line of the rest's Cells along the bottom of the half.
+   The Cells walk in a script (stroll.ts); here the words fade, once. */
+[data-stemcells-needs-list]:has(> [data-needs-one]) {
+  min-block-size: 100%;
+}
+[data-needs-one] {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--sc-need-gap);
+}
+[data-need-front] {
+  position: relative;
+}
+[data-need-mark] {
+  display: flex;
+  flex-shrink: 0;
+}
+/* The words come in as their Cell arrives, and the one answered lifts away,
+   its Cell walking off over the new one. */
+[data-need-front] > [data-stemcells-need],
+[data-need-exit] > [data-stemcells-need] {
+  animation: none;
+}
+[data-need-front] > [data-stemcells-need] > :not([data-need-head]),
+[data-need-front] > [data-stemcells-need] [data-need-head] > :not([data-need-mark]) {
+  animation: stemcells-ask-rise var(--sc-motion-settle-duration) var(--sc-motion-settle-easing)
+    var(--sc-motion-leave-duration) backwards;
+}
+[data-need-exit] {
+  position: absolute;
+  inset: 0 0 auto;
+  pointer-events: none;
+}
+[data-need-exit] > [data-stemcells-need] > :not([data-need-head]),
+[data-need-exit] [data-need-head] > :not([data-need-mark]) {
+  animation: stemcells-ask-lift var(--sc-motion-leave-duration) var(--sc-motion-leave-easing)
+    forwards;
+}
+[data-need-exit][data-back] > [data-stemcells-need] > :not([data-need-head]),
+[data-need-exit][data-back] [data-need-head] > :not([data-need-mark]) {
+  animation-name: stemcells-ask-drop;
+}
+@keyframes stemcells-ask-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--sc-space-sm));
+  }
+}
+@keyframes stemcells-ask-lift {
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--sc-space-sm) * -1));
+  }
+}
+@keyframes stemcells-ask-drop {
+  to {
+    opacity: 0;
+    transform: translateY(var(--sc-space-sm));
+  }
+}
+@keyframes stemcells-ask-fade {
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-need-front] > [data-stemcells-need] > :not([data-need-head]),
+  [data-need-front] > [data-stemcells-need] [data-need-head] > :not([data-need-mark]) {
+    animation-name: none;
+  }
+  [data-need-exit] > [data-stemcells-need] > :not([data-need-head]),
+  [data-need-exit] [data-need-head] > :not([data-need-mark]) {
+    animation-name: stemcells-ask-fade;
+  }
+  [data-need-exit] {
+    animation: stemcells-ask-fade var(--sc-motion-leave-duration) var(--sc-motion-leave-easing)
+      forwards;
+  }
+}
+
+/* The line: the Cells waiting, then how many, and under them a quiet line
+   naming the one the pointer or the keyboard is on. */
+[data-needs-line] {
+  margin-block-start: auto;
+  padding-block-start: var(--sc-space-xl);
+  border-block-start: 1px solid var(--sc-hairline);
+}
+[data-needs-line][data-empty] {
+  border-color: transparent;
+}
+[data-needs-seats] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-md);
+  min-block-size: 1.5rem;
+}
+[data-need-seat] {
+  display: flex;
+  padding: 0.125rem;
+  border-radius: var(--sc-radius-chip);
+}
+[data-need-seat]:hover,
+[data-need-seat]:focus-visible {
+  outline: none;
+  background: var(--sc-hot);
+}
+/* The one in front keeps its seat, unseen, to walk off the line from it. */
+[data-need-seat][data-in-front] {
+  position: absolute;
+  inset-inline-start: 0;
+  opacity: 0;
+}
+[data-needs-more] {
+  margin-inline-start: var(--sc-space-xs);
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-needs-peek] {
+  min-block-size: 1.25rem;
+  margin: var(--sc-space-sm) 0 0;
+  overflow: hidden;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
