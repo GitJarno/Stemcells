@@ -131,7 +131,7 @@ effect on us open. Sort each one into a bucket:
 | ------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **Comes free**           | Fixes and features that just work through our layer                                                         | Nothing. Name the notable ones in the report                                                      |
 | **Adopt**                | Upstream features that one of our substitutes or seams hides or restyles, so a person doesn't get them yet  | One follow-up each: wire it into our surfaces, in our look and words                              |
-| **Retire ours**          | Our features or code that upstream now covers                                                               | The main lever. Switch to theirs and delete ours, after the person sees the difference (step 6)        |
+| **Retire ours**          | Our features or code that upstream now covers                                                               | The main lever. Switch to theirs and delete ours, after the person sees the difference (step 6)   |
 | **New extension points** | Upstream hooks, slots, exports, settings or registries that would let a seam become a substitute, or vanish | A follow-up that deletes the seam. Check `seam-debt.md`: one we've been carrying may have arrived |
 | **Touches our seams**    | Files split, renamed, moved or un-exported where our seams are                                              | Port the seam in the sync itself (step 3)                                                         |
 | **Skip**                 | Release infrastructure, T3 Connect and Clerk sign-in, marketing, upstream's dev tooling                     | Nothing                                                                                           |
@@ -237,15 +237,15 @@ the adapter, the seam or the substitute, then in the test.
 
   ## What upstream shipped, for us
 
-  |                          |                                                      |
-  | ------------------------ | ---------------------------------------------------- |
-  | **Comes free**           | …                                                    |
-  | **Adopt**                | … (each becomes a follow-up)                         |
+  |                          |                                                           |
+  | ------------------------ | --------------------------------------------------------- |
+  | **Comes free**           | …                                                         |
+  | **Adopt**                | … (each becomes a follow-up)                              |
   | **Retire ours**          | … (each listed for the person before anything is deleted) |
-  | **New extension points** | …                                                    |
-  | **Touches our seams**    | … (ported here)                                      |
-  | **Skip**                 | …                                                    |
-  | **Watch**                | …                                                    |
+  | **New extension points** | …                                                         |
+  | **Touches our seams**    | … (ported here)                                           |
+  | **Skip**                 | …                                                         |
+  | **Watch**                | …                                                         |
 
   ## Drift
 
@@ -297,7 +297,7 @@ merged, `sync-upstream --gates check` before each push, and
   else reaches.
 - **Retire ours:** before deleting, list each candidate for the person: what
   ours does, what upstream's does, how the look and behaviour change (lab
-  screenshots, before and after), and the drift it removes. the person cares
+  screenshots, before and after), and the drift it removes. The person cares
   about the look. Delete only after his yes. Plain adoptions go ahead
   without asking.
 - **Visual proof** comes from the desktop lab only:

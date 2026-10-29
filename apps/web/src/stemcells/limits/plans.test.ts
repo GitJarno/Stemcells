@@ -144,9 +144,9 @@ describe("a plan's windows", () => {
       name: "Work",
       named: true,
     });
-    expect(readPlan(account("a", [], { email: "someone@example.com" }), 0, "Claude", NOW).name).toBe(
-      "so…@example.com",
-    );
+    expect(
+      readPlan(account("a", [], { email: "someone@example.com" }), 0, "Claude", NOW).name,
+    ).toBe("so…@example.com");
     expect(maskedEmail("j@example.com")).toBe("j…@example.com");
   });
 });

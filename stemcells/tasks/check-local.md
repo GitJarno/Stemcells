@@ -1,6 +1,6 @@
 # Checks and the nightly on a Mac (2026-10-22)
 
-the person turned GitHub Actions off for Stemcells; merges go on local checks.
+The person turned GitHub Actions off for Stemcells; merges go on local checks.
 The checks and the nightly sync move onto the Mac, lean, as it's busy.
 
 - [x] `stemcells/scripts/check-local <pr|sha>`: the `check` gates on a clean

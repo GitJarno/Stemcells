@@ -1,6 +1,6 @@
 # /t3-sync: the skill, and its first run
 
-the person (2026-10-21): "Do a smart sync of T3 Code's new things. This should be
+The person (2026-10-21): "Do a smart sync of T3 Code's new things. This should be
 a skill or something that adopts their new stuff and does it well to avoid
 drift so we can piggy back as much as possible and for as long as possible."
 And: the sync never brings tracking or telemetry to T3 for people using
@@ -26,12 +26,12 @@ Stemcells; that is the skill's first hard gate.
 
 ## Follow-ups from #193 (upstream at 680152e27)
 
-| Item | Bucket | Verdict |
-|---|---|---|
-| ⌘Z undoes a settle from the composer (upstream #22607) | Adopt (#215) | The shortcut claims ⌘Z whenever upstream's sidebar counts as open, which it does under our rail, but only the wide sidebar shows the notice: ⌘Z after ⌘⇧S undid the settle unseen (lab). Under the rail the notice now shows as a toast, "Settled 1 Cell", and goes with upstream's |
-| Mermaid through pele, no network | Adopt (#214) | Colours and type already follow our look (index.css maps `--pele-*` to the theme; the lab reads the app's font in the diagram). Only the corners differed: a node takes a chip's radius. Contract test pins the no-network mount |
-| `t3 thread` for Aski | Comes free | Nothing to wire: the CLI calls the same MCP tools Aski's persona already uses (`t3_thread_launch`, `_send`, `_read`, `_wait`, `_list`) |
-| Mobile parity fixes | Comes free, one word | Free, except `ThreadBackgroundWorkSheet.tsx`, which says "Subagent" where our phone says Subcell; waits for the name transform (#211) to see if it can carry the word |
+| Item                                                   | Bucket               | Verdict                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ⌘Z undoes a settle from the composer (upstream #22607) | Adopt (#215)         | The shortcut claims ⌘Z whenever upstream's sidebar counts as open, which it does under our rail, but only the wide sidebar shows the notice: ⌘Z after ⌘⇧S undid the settle unseen (lab). Under the rail the notice now shows as a toast, "Settled 1 Cell", and goes with upstream's |
+| Mermaid through pele, no network                       | Adopt (#214)         | Colours and type already follow our look (index.css maps `--pele-*` to the theme; the lab reads the app's font in the diagram). Only the corners differed: a node takes a chip's radius. Contract test pins the no-network mount                                                    |
+| `t3 thread` for Aski                                   | Comes free           | Nothing to wire: the CLI calls the same MCP tools Aski's persona already uses (`t3_thread_launch`, `_send`, `_read`, `_wait`, `_list`)                                                                                                                                              |
+| Mobile parity fixes                                    | Comes free, one word | Free, except `ThreadBackgroundWorkSheet.tsx`, which says "Subagent" where our phone says Subcell; waits for the name transform (#211) to see if it can carry the word                                                                                                               |
 
 Retire ours: none of the leads holds. Upstream's idle compaction is when to
 compact, ours is the window's size; its short model list is what agents

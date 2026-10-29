@@ -1,6 +1,6 @@
 # The dock's halo stops at the ledge
 
-the person, on the dark fade above a chat's composer: "The shadow overlay to make
+The person, on the dark fade above a chat's composer: "The shadow overlay to make
 the critter more visible is too tall imo, it feels distracting." The halo
 covered the box, the ledge and the Cell, and reached 24 px past the Cell's
 head: a band of dimmed text the pane's width, 52 px above the ledge.

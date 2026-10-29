@@ -1,6 +1,6 @@
 # Carrying media and stashes between chats
 
-the person (2026-10-21): drag stashes from tab to tab; drag a composer's
+The person (2026-10-21): drag stashes from tab to tab; drag a composer's
 attachments into another chat; grab a picture, video or file shown in a
 chat and drop it in another chat, where it lands as an attachment.
 Scalable, and right in the details.

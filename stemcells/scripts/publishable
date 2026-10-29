@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Fails when a change names something private. The repository is public, and
+# a pushed commit or a pull request's text stays public for good, so this
+# runs before anything leaves: on every push (.vite-hooks/pre-push), on a
+# pull request's text before it's opened, and again in check-local.
+#
+# What's private is the person's own list, kept outside the repository so the
+# list itself is never published: private-terms in Stemcells' state folder
+# (~/.stemcells), or the file $STEMCELLS_PRIVATE_TERMS names. One extended regular expression per
+# line, matched without case; a line starting with # is a comment. Without
+# the list there's nothing to check, and it passes.
+#
+#   stemcells/scripts/publishable [<base> [<head>]]   lines added since base
+#                                                     (origin/main) up to head
+#                                                     (HEAD), and their commit
+#                                                     messages
+#   stemcells/scripts/publishable --pr <number>       a pull request's title,
+#                                                     body and commits
+#   stemcells/scripts/publishable -                   text on stdin (a pull
+#                                                     request's title and body
+#                                                     before it's opened)
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+list=${STEMCELLS_PRIVATE_TERMS:-$HOME/.stemcells/private-terms}
+[ -f "$list" ] || exit 0
+patterns=$(mktemp)
+trap 'rm -f "$patterns"' EXIT
+grep -v -E '^[[:space:]]*(#|$)' "$list" > "$patterns" || true
+[ -s "$patterns" ] || exit 0
+
+# Every line to check, prefixed with where it came from.
+lines() {
+  case "${1:-}" in
+    -)
+      sed 's/^/text: /'
+      ;;
+    --pr)
+      local repo
+      repo=$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')
+      gh pr view "$2" --repo "$repo" --json title,body --jq '.title, .body' | sed "s/^/#$2: /"
+      gh api "repos/$repo/pulls/$2/commits" --paginate --jq '.[].commit.message' | sed "s/^/#$2 commit: /"
+      ;;
+    *)
+      local from
+      from=$(git merge-base "${1:-origin/main}" "${2:-HEAD}")
+      git log --format=%B "$from..${2:-HEAD}" | sed 's/^/commit message: /'
+      git diff --no-color --no-ext-diff --unified=0 "$from" "${2:-HEAD}" |
+        awk '/^\+\+\+ / { file = substr($0, 7); next } /^\+/ { print file ": " substr($0, 2) }'
+      ;;
+  esac
+}
+
+if found=$(lines "$@" | grep -i -E -f "$patterns"); then
+  while IFS= read -r line; do echo "publishable: $line" >&2; done <<< "$found"
+  echo "publishable: these name something on the private list; reword them before they leave (stemcells/AGENTS.md, In public)" >&2
+  exit 1
+fi

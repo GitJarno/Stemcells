@@ -29,7 +29,7 @@ composer. What it settled:
   threads it's given), its header slot (`ThreadListFilters`, quiet), its
   row tokens (`thread-list-v2-row-appearance`, quiet: cards), and one
   seam in the row for the creature.
-- **Tabs.** the original app had Asleep · Awake · Working · Decide (replaced
+- **Tabs.** The original app had Asleep · Awake · Working · Decide (replaced
   there on 2026-10-18 by pages). Ours, as asked: Asleep (settled or
   snoozed) · Active (the rest) · Working (T3's row says Working) · Input
   (an approval or a question waits). A Cell is in a tab when its face says
@@ -75,7 +75,7 @@ project and model.
 
 ### 4. The attachment card
 
-the original app's "Add to Chat" (`AttachSheet.swift`): the album is the card, the
+The original app's "Add to Chat" (`AttachSheet.swift`): the album is the card, the
 camera first, a tap numbers a photo in the order picked, and "Add N" puts
 them in the composer in that order. T3's + opens a menu, then the system's
 picker. A grid of your photos needs the photo library (`expo-media-library`,

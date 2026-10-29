@@ -27,4 +27,4 @@ slightly apart from the frame. What stands on it keeps its step above it.
 The frame stays black under its grain (#030303 as it reads). The slate
 goes from #0a0a0a to #0d0d0d, and the composer from #111111 to #151515.
 A lighter Magma gray (#161616) was ported first and dropped for this,
-the person's later pick.
+The person's later pick.

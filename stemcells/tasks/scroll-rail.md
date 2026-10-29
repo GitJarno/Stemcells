@@ -3,7 +3,7 @@
 Superseded by `scroll-indicator-only.md`: the rail is gone, and no bar
 draws anywhere.
 
-the person's chat showed the system's scroll bar: on a Mac set to show scroll
+The person's chat showed the system's scroll bar: on a Mac set to show scroll
 bars always (or with a mouse attached), a wide gray track the chat's whole
 height, running into the slab's rounded corner, under the pane's buttons and
 past the composer. `scrollbars.css` set `scrollbar-color` on the root, so

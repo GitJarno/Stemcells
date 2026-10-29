@@ -26,9 +26,7 @@ describe("an ask's words", () => {
   });
 
   it("splits links, code and bold for the phone, in order", () => {
-    expect(
-      spansOf("Open [DomainShop](https://domainshop.com), click **Buy**, run `ls`."),
-    ).toEqual([
+    expect(spansOf("Open [DomainShop](https://domainshop.com), click **Buy**, run `ls`.")).toEqual([
       { kind: "text", text: "Open " },
       { kind: "link", text: "DomainShop", url: "https://domainshop.com" },
       { kind: "text", text: ", click " },

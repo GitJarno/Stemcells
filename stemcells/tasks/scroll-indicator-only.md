@@ -1,6 +1,6 @@
 # No scroll bar; T3's indicator only
 
-the person: "We should only have the T3 scroll indicator, no scroll bar at all.
+The person: "We should only have the T3 scroll indicator, no scroll bar at all.
 Show the indicator on scroll and make it go away after while the scroll
 stops." The rail of #163 (a 3px thumb at the chat's right edge) goes, and
 so does every other bar in the app. T3's ask marks (its timeline minimap)

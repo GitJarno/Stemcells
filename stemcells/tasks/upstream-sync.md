@@ -1,6 +1,6 @@
 # Upstream sync as a standard process (2026-10-21)
 
-the person: take what T3 shipped since we forked, check the test slimming, and
+The person: take what T3 shipped since we forked, check the test slimming, and
 make the sync scalable and safe for our layer, with no telemetry to T3.
 Runbook: `stemcells/docs/upstream-sync.md`.
 

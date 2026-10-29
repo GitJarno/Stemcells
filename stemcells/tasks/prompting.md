@@ -16,6 +16,7 @@ slices are at the end, with what each built.
 ## Decisions
 
 ### 1. Only an anchored word acts; a mention stays quiet
+
 A project name switches the destination only where the sentence points it:
 
 - **The address**: the first words of the message or of a line, after
@@ -73,6 +74,7 @@ here either: "release notes for Atlas" may be about Atlas, not in it. The
 quiet underline keeps the easy case one click away without guessing.
 
 ### 2. The text is the one truth; the draft's project sits under it
+
 - The destination is the place the words point to, or else the draft's own
   project (the one the hero names when the draft opens, or picked there).
 - Picking from a menu edits the words when the words set that thing: picking
@@ -98,13 +100,14 @@ dictation, the server) carries text already, and a hidden pin drifts from
 it.
 
 ### 3. What the composer reads
-| Kind | Examples | Anchored by |
-|---|---|---|
-| Place | "Harbor …", "in Atlas", "a Cell for Ledger" | address, cue, whole message |
-| Model | "with Opus 5.5", "using Codex", "2 Sol", "Fable Cells", "Opus: …" | a cue (with, using, use, via, on, run, be, meant) when the model ends the phrase ("with Opus at max", not "with haiku structure"); a following Cell noun; a count after a launch word or at the address; plural; at the address when followed by ":", a connector, a place or an effort |
-| Effort | "at max", "max effort", "xhigh", "extra high", "Opus 5.5 high" | the unambiguous words (xhigh, ultracode) anywhere; everyday words (low, medium, high, max) only with a qualifier ("effort", "reasoning", "thinking"), after "at/with" in a message that routes, or right after a model |
-| Count | "2 Sol", "3 Harbor: …", "Harbor ×3", "spawn 3 Cells" | joined to a model, a Cell noun or an address place; a counted Cell noun at the head of a sentence, after a launch word or a cue, or joined to Cells before it ("Opus and 2 Cells"), never mid-sentence prose ("explain how two cells divide") |
-| Plan mode | "plan first", "just plan" | the address or the end |
+
+| Kind      | Examples                                                          | Anchored by                                                                                                                                                                                                                                                                             |
+| --------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Place     | "Harbor …", "in Atlas", "a Cell for Ledger"                       | address, cue, whole message                                                                                                                                                                                                                                                             |
+| Model     | "with Opus 5.5", "using Codex", "2 Sol", "Fable Cells", "Opus: …" | a cue (with, using, use, via, on, run, be, meant) when the model ends the phrase ("with Opus at max", not "with haiku structure"); a following Cell noun; a count after a launch word or at the address; plural; at the address when followed by ":", a connector, a place or an effort |
+| Effort    | "at max", "max effort", "xhigh", "extra high", "Opus 5.5 high"    | the unambiguous words (xhigh, ultracode) anywhere; everyday words (low, medium, high, max) only with a qualifier ("effort", "reasoning", "thinking"), after "at/with" in a message that routes, or right after a model                                                                  |
+| Count     | "2 Sol", "3 Harbor: …", "Harbor ×3", "spawn 3 Cells"              | joined to a model, a Cell noun or an address place; a counted Cell noun at the head of a sentence, after a launch word or a cue, or joined to Cells before it ("Opus and 2 Cells"), never mid-sentence prose ("explain how two cells divide")                                           |
+| Plan mode | "plan first", "just plan"                                         | the address or the end                                                                                                                                                                                                                                                                  |
 
 - **Several Cells come only from typed words that ask for them**: a count,
   more than one model, a counted Cell noun ("3 Cells"; "Fable Cells" is two),
@@ -126,6 +129,7 @@ it.
   address, in the Cell tone (`--sc-peer`).
 
 ### 4. How a word the composer read looks
+
 - **One shape for every token**: the house token plate (corner 0.3 of 1.95
   caps, a wash at half the skin's tint, edge at half the tint edge). It's
   drawn round the editor's own text with what never moves a word: block
@@ -147,6 +151,7 @@ it.
   one that routes and its menu lists the others.
 
 ### 5. Words go where they act: the flight
+
 When an anchored word is complete (a space, punctuation, the caret leaving,
 or 500 ms idle, never mid-word), a ghost of the token lifts off the field
 and travels to the control it sets:
@@ -169,6 +174,7 @@ Why: the person sees cause and effect in one glance, and it's the spawn's
 own language ("in, around, out") at the size of one word.
 
 ### 6. A click on a token
+
 The click places the caret as usual, and a small menu opens at the word:
 under it, or over it when the composer sits too low. It never takes focus:
 typing closes it, and it opens on what the word says now.
@@ -187,6 +193,7 @@ Picking replaces the word. An alias is a name the person gives a
 project; the reader never learns one from a guess.
 
 ### 7. Tab completes a project at the address
+
 Port of the Swift `PlaceCompletion`. After 3 letters at the address with the
 caret at the end of the word, the rest of the best name shows as a ghost in
 `--sc-mute` with "⇥" in `--sc-faint`. Tab inserts it plus a space, as one
@@ -195,6 +202,7 @@ ghost hides during IME composition, with a selection, or when the field
 isn't focused.
 
 ### 8. Models come from the providers' own lists
+
 - Keywords are derived, never hand-kept, from each provider's catalog (the
   manifest and the Codex `model/list`): each model's name and aliases, its
   concise name ("Opus 5.5", "Sol 6.1"), its family alone ("opus", "sol") and
@@ -209,6 +217,7 @@ isn't focused.
   at Extra High".
 
 ### 9. One path from words to Cells
+
 Every message that starts Cells, from a new chat or from Aski's tab, goes
 through the same steps:
 
@@ -242,6 +251,7 @@ fill Aski's chat with dispatches. The Swift app's draft worked this way and
 was right. Its placeholder was "Tell Aski what you need…".
 
 ### 10. The readout: what Send will do
+
 - **One Cell**: the hero and the footer pickers are the readout. The hero
   names the destination; the model and effort pickers show what will run.
   No new line.
@@ -280,6 +290,7 @@ starts, in the words they already typed. That costs less than closing three
 wrong Cells.
 
 ### 11. Aski's planner fills only what the words left open
+
 **When.** Only for a gap:
 
 - several Cells, and the words don't share out the work (no list, no
@@ -361,6 +372,7 @@ place in 2 of 6 Swift runs. For the same reason, the planner's
 instructions are run through the reader against the roster in a test.
 
 ### 12. Checking a plan Aski filled
+
 When Aski chose a place, or the floor came back, the plan shows as rows
 under the words before anything starts, one row per Cell:
 
@@ -398,6 +410,7 @@ no check at all. One is needed here because Aski now picks places the
 words never named.
 
 ### 13. Aski's chat uses the same reading and the same path
+
 - Aski's composer inks the same words, plus the names of live Cells ("Otter,
   rebase"), in the Cell tone (`--sc-peer`).
 - Aski's page reads its own words first (`tasks/aski-room.md`, decision 14):
@@ -424,6 +437,7 @@ words never named.
   default".
 
 ### 14. Defaults, and where the person sets them
+
 A Cell's model, effort and account resolve in one order: **your words,
 then your pick in this draft, then the project's defaults, then the global
 defaults.**
@@ -454,6 +468,7 @@ count, model and effort are now facts. So the fast tier (Sonnet 5.5) may
 well match it, and the first eval runs both. "Recommended" means measured.
 
 ### 15. Where the Cells land
+
 - The first Cell takes the draft's pane.
 - The others land in their project's tab, in any window
   (`aski-manager.md`, decision 6): as a column of the project's tab used
@@ -467,6 +482,7 @@ the siblings follow right after it in birth order), with the column floor
 raised for this slate.
 
 ### 16. The spawn: in, around, out
+
 Several Cells play the spawn. One Cell from a draft plays only the last
 beats (its figure forms on its line), so a single prompt never waits on a
 show. The timeline, its owners and its tokens live in one place:
@@ -491,6 +507,7 @@ check, Enter doesn't play the spawn yet; if the send is called off, the
 letters stop and Aski goes. Under Reduce Motion none of it plays.
 
 ### 17. One safety floor for risky sentences
+
 This ports `RiskFloor`: six classes (history, deletion, access, outreach,
 money, release), each a verb and its object, with match and miss fixtures
 ("don't force-push" doesn't match).
@@ -503,6 +520,7 @@ money, release), each a verb and its object, with match and miss fixtures
   Cell's own permission mode is the guard there.
 
 ### 18. Narrow panes (300 px)
+
 - Tokens are the text itself, so they wrap with it. Plates never widen a
   line.
 - The hero already moves the project name under "What should we build?",
@@ -522,6 +540,7 @@ money, release), each a verb and its object, with match and miss fixtures
   inside the pane.
 
 ### 19. Evals and the plan history
+
 - **Facts tests run in CI**, on every PR, with no model. A corpus of
   sentences with their golden facts (count, places, models, efforts, how
   the work is shared) must match exactly, every case. The corpus is
@@ -540,11 +559,11 @@ money, release), each a verb and its object, with match and miss fixtures
   It runs for the strong tier and the fast one. The "Recommended" label in
   Settings › Aski reads the latest report, and the default model changes
   only on a report.
+
 - **There are two corpora.** The repo holds invented sentences and plans
   only. The person's machine holds real prompts the person chose to keep,
-  in `a folder outside every repo`, outside every repo. They come from
-  the person's own past chats and the Swift app's birth log, with plans the
-  person confirmed. Reports show numbers only.
+  in a folder outside every repo. They come from the person's own past
+  chats, with plans the person confirmed. Reports show numbers only.
 - **The plan history** records every plan, one line each: the words, the
   facts, the planner's answer, the checks, the time and tokens, the
   person's edits, and what launched. It lives in the app's own data folder
@@ -556,22 +575,23 @@ money, release), each a verb and its object, with match and miss fixtures
   messages that need a plan.
 
 ## Ported from the Swift app, and what's new
-| Swift | Here |
-|---|---|
-| `PlaceResolver` anchor ladder (address > cue > whole), determiner veto, Metaphone + Jaro-Winkler, no gram across a sentence | Ported without the ear: only exact names and aliases, whole words (decision 1). The weak "for/on/at X" tier no longer routes (a quiet underline); one Cell takes one place by the ladder |
-| `Places` roster, labels for shared names, `lastBirth` ranking, blurbs | The projects store (T3's projects, sidebar names), ranked by last thread; a project's line from its AGENTS.md, CLAUDE.md or README |
-| `ModelRouter.facts`: anchors, counts, `[brackets]` → ⟦Pn⟧, literal spans, list items, `newProjectName`, effort anchors and mends | Ported. Model keywords come from the catalog, not provider aliases kept by hand |
-| `SpawnKeywords` + `SpawnInk`: one detector, one style on every screen | Ported, with a plate drawn outside the glyphs |
-| `PlaceCompletion` (ghost + Tab, `choose` edits the text) | Ported |
-| `PlaceChip` in the draft's foot | Replaced by the hero name, which T3 already has |
-| `AgentSplit` + `judge` + floor, `needsAski` | Ported as the planner. It fills only the gaps (parts, open places); the judge becomes the checks; the floor shows as rows and never starts by itself |
-| `ChatPlacement` | Ported, with a 300 px column floor, at most 4 panes per tab, then new tabs |
-| `AskiSpawn` in / around / out | Ported to the slate. Panes open once the plan is good |
-| `RiskFloor` + `RiskHold` | Ported |
-| `tasks/aski-models.md`: tiers, "Recommended means measured", facts only at a limit | Kept. The planner's model is a Settings choice, defaulting to the strong tier |
-| `AskiEval` (manual, labels as ids and offsets, private copies outside the repo) | Grown into the eval harness: facts tests in CI, planner evals by hand or nightly, a private corpus |
-| Decree after Send ("4 Cells · …") | **New**: the readout before Send; the decree is the readout frozen |
-| (none) | **New**: the flight (words go where they act), quiet mentions, "Just a word", the count on Send, checking a plan Aski filled, the plan history, one set of checks for every launch |
+
+| Swift                                                                                                                            | Here                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PlaceResolver` anchor ladder (address > cue > whole), determiner veto, Metaphone + Jaro-Winkler, no gram across a sentence      | Ported without the ear: only exact names and aliases, whole words (decision 1). The weak "for/on/at X" tier no longer routes (a quiet underline); one Cell takes one place by the ladder |
+| `Places` roster, labels for shared names, `lastBirth` ranking, blurbs                                                            | The projects store (T3's projects, sidebar names), ranked by last thread; a project's line from its AGENTS.md, CLAUDE.md or README                                                       |
+| `ModelRouter.facts`: anchors, counts, `[brackets]` → ⟦Pn⟧, literal spans, list items, `newProjectName`, effort anchors and mends | Ported. Model keywords come from the catalog, not provider aliases kept by hand                                                                                                          |
+| `SpawnKeywords` + `SpawnInk`: one detector, one style on every screen                                                            | Ported, with a plate drawn outside the glyphs                                                                                                                                            |
+| `PlaceCompletion` (ghost + Tab, `choose` edits the text)                                                                         | Ported                                                                                                                                                                                   |
+| `PlaceChip` in the draft's foot                                                                                                  | Replaced by the hero name, which T3 already has                                                                                                                                          |
+| `AgentSplit` + `judge` + floor, `needsAski`                                                                                      | Ported as the planner. It fills only the gaps (parts, open places); the judge becomes the checks; the floor shows as rows and never starts by itself                                     |
+| `ChatPlacement`                                                                                                                  | Ported, with a 300 px column floor, at most 4 panes per tab, then new tabs                                                                                                               |
+| `AskiSpawn` in / around / out                                                                                                    | Ported to the slate. Panes open once the plan is good                                                                                                                                    |
+| `RiskFloor` + `RiskHold`                                                                                                         | Ported                                                                                                                                                                                   |
+| `tasks/aski-models.md`: tiers, "Recommended means measured", facts only at a limit                                               | Kept. The planner's model is a Settings choice, defaulting to the strong tier                                                                                                            |
+| `AskiEval` (manual, labels as ids and offsets, private copies outside the repo)                                                  | Grown into the eval harness: facts tests in CI, planner evals by hand or nightly, a private corpus                                                                                       |
+| Decree after Send ("4 Cells · …")                                                                                                | **New**: the readout before Send; the decree is the readout frozen                                                                                                                       |
+| (none)                                                                                                                           | **New**: the flight (words go where they act), quiet mentions, "Just a word", the count on Send, checking a plan Aski filled, the plan history, one set of checks for every launch       |
 
 From the TypeScript rebuild (`SC-legacy`), keep:
 
@@ -582,6 +602,7 @@ From the TypeScript rebuild (`SC-legacy`), keep:
 - the risk lexicon has match and miss fixtures.
 
 ## What T3 gives us to build on
+
 - **Composer**: Tiptap (`ComposerPromptEditorTiptap.tsx`), with inline chips
   re-derived from the text (`composerInlineTokens.ts`). Our ink is a
   ProseMirror decoration plugin. It never touches the doc, so undo,
@@ -626,6 +647,7 @@ From the TypeScript rebuild (`SC-legacy`), keep:
   `tokens/stemcells.css` and `tokens/motion.ts`.
 
 ## PR slices
+
 1. **The reader.** Built: `apps/web/src/stemcells/words/`.
    - It lives in the web app until the server needs it (slice 5), then
      moves to `packages/stemcells-words`. A package before two apps share
@@ -782,6 +804,7 @@ Slices 1 to 3 stand alone and make the new chat smart for one Cell. Slices
 4 to 7 make it many, and 8 says how good it is.
 
 ## Open
+
 - Codex efforts come from the live `model/list` for each model. The clamp
   reads them there, never from a table.
 - A project's line comes from its first paragraph today. If that reads
@@ -789,6 +812,7 @@ Slices 1 to 3 stand alone and make the new chat smart for one Cell. Slices
   the person can edit.
 
 ## Appendix: a suspected bug in the Swift reader
+
 The Swift resolver probably hears "review the" as the Reviews project, at
 the address of "review the showtime parser". From reading the code:
 

@@ -2,7 +2,7 @@
 // page's scan no longer finds. Rerun freely: the newest ledger replaces each transcript it
 // names. Reads only the ledger, writes only the history.
 //
-//   node stemcells/scripts/import-usage-ledger.ts [--home-dir <folder>] [--ledger <file>]
+//   node stemcells/scripts/import-usage-ledger.ts --ledger <file> [--home-dir <folder>]
 import * as NodeFS from "node:fs";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
@@ -20,8 +20,13 @@ function option(name: string): string | undefined {
 }
 
 const home = option("--home-dir") ?? NodePath.join(NodeOS.homedir(), ".stemcells");
-const ledgerPath =
-  option("--ledger") ?? NodePath.join(NodeOS.homedir(), "<ledger file>");
+const ledgerPath = option("--ledger");
+if (!ledgerPath) {
+  console.error(
+    "usage: node stemcells/scripts/import-usage-ledger.ts --ledger <file> [--home-dir <folder>]",
+  );
+  process.exit(2);
+}
 const target = NodePath.join(home, "userdata", "stemcells", HISTORY_FILE_NAME);
 
 const incoming = fromLedger(JSON.parse(NodeFS.readFileSync(ledgerPath, "utf8")));

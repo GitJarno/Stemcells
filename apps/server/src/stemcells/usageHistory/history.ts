@@ -44,14 +44,14 @@ function localHourStart(key: string): number | null {
 }
 
 /**
- * the original app's usage ledger (`<ledger file>`, version 1)
+ * An earlier app's usage ledger (version 1)
  * as a store. Its counts are Anthropic-shaped already: `i` is the uncached
  * input, `r` cache reads, `w` every cache write, `o` output. Hours are read in
  * this machine's time zone, the one the ledger wrote them in.
  */
 export function fromLedger(ledger: unknown): HistoryStore {
   if (!isObject(ledger) || ledger["version"] !== 1 || !isObject(ledger["records"])) {
-    throw new Error("Not a the original app usage ledger (version 1).");
+    throw new Error("Not a usage ledger (version 1).");
   }
   const files: Record<string, HistoryFile> = {};
   for (const record of Object.values(ledger["records"])) {

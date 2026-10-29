@@ -93,7 +93,7 @@ What the numbers say:
    (heat 2). The heat still goes from 143 to 8, and an `expo export` showed
    the bundle using the substitute.
 5. **Upstream extension points (rule 5): carried, upstream not asked.**
-   the person (2026-10-21): nothing is posted upstream. Each stays a seam the
+   The person (2026-10-21): nothing is posted upstream. Each stays a seam the
    fork carries, listed here, until he decides to offer one. Ranked by what
    each would retire:
    - "`ChatView` safe to render twice" (the window-input context): 6 files,

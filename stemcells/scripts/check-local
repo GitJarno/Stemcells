@@ -18,12 +18,25 @@ cd "$(git rev-parse --show-toplevel)"
 repo=$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')
 
 # The exact commit: a pull request's head as GitHub has it, or a commit.
+# The repository is public and this runs the code it checks with this Mac's
+# accounts, so it runs only our own: a pull request opened by the account
+# running it from a branch of this repository, or a commit on one of
+# origin's branches. Anyone else's change is read, never run here.
 if [[ $1 =~ ^[0-9]+$ ]]; then
-  sha=$(gh api "repos/$repo/pulls/$1" --jq .head.sha)
+  IFS=$'\t' read -r sha head_repo author < <(gh api "repos/$repo/pulls/$1" --jq '[.head.sha, (.head.repo.full_name // ""), .user.login] | @tsv')
+  me=$(gh api user --jq .login)
+  if [ "$head_repo" != "$repo" ] || [ "$author" != "$me" ]; then
+    echo "check-local: #$1 is $author's, from ${head_repo:-a deleted fork}; it runs only pull requests $me opened from $repo" >&2
+    exit 1
+  fi
   git fetch -q --no-tags origin "pull/$1/head"
 else
   git fetch -q --no-tags origin
   sha=$(git rev-parse --verify "$1^{commit}")
+  if [ -z "$(git branch -r --contains "$sha" 'origin/*' 2> /dev/null)" ]; then
+    echo "check-local: $1 is on none of origin's branches; push it first" >&2
+    exit 1
+  fi
 fi
 git cat-file -e "$sha^{commit}"
 short=$(git rev-parse --short=9 "$sha")
@@ -61,6 +74,13 @@ status() {
   gh api "repos/$repo/statuses/$sha" -f state="$1" -f context=local-check \
     -f description="$2" > /dev/null
 }
+
+# Nothing private merges either; a pull request's text was public once opened,
+# so this is the backstop to the pre-push hook and the check before opening.
+if [[ $1 =~ ^[0-9]+$ ]] && ! stemcells/scripts/publishable --pr "$1"; then
+  status failure "names something private; run stemcells/scripts/publishable --pr $1"
+  exit 1
+fi
 
 echo "check-local: $short in $tree"
 started=$SECONDS

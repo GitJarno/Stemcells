@@ -1,7 +1,7 @@
 # Peers: Cells that know each other
 
 Cells working in one repository can step on each other: one file, one
-checkout, one migration number. the original app gave its sessions a peer bus
+checkout, one migration number. The original app gave its sessions a peer bus
 (`notch ask`, `send`, `reply`), told them who else was there and when they
 collided. Stemcells had none of it. This adopts what worked there, on T3's
 own messaging, in two pull requests: everything within one environment
@@ -10,7 +10,7 @@ environments").
 
 ## What the original app built, and what it learned
 
-the original app watched sessions it didn't own, so most of its machinery was
+The original app watched sessions it didn't own, so most of its machinery was
 there to find out who was speaking:
 
 - **Identity** from the caller's tty or a session id attested at
@@ -128,7 +128,7 @@ What it lacks:
      when, "Edit from here", copy; a steer says "mid-turn".
    - **A past collision notice** is a notice row: "Same file as Badger:
      `apps/web/src/x.ts`", the rest folded.
-   - **No Answer field.** the original app let the person answer as the agent.
+   - **No Answer field.** The original app let the person answer as the agent.
      Here the person answers as themself: the sender's name opens its chat.
 5. **Scoped by repository, not project.** A project is one environment's
    record of a folder; a repository is what Cells share. Projects whose
@@ -139,7 +139,7 @@ What it lacks:
    own name and one-liner (its title), and the other Cells at work in its
    repository: name, one-liner, branch and state, eight at most, then "and
    N more". Told only when the names, one-liners or branches changed since
-   it was last told; a state alone is not news. the original app's roster rode
+   it was last told; a state alone is not news. The original app's roster rode
    every tool call (41,214 times, 6 to 8M tokens, used about ten times);
    this is a few lines per change. "At work" is under way, or active in the
    last two hours. A Subcell isn't listed or told: its Cell is. Titles are
