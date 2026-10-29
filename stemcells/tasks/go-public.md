@@ -32,8 +32,8 @@ the person keeps working on it in the open with their Cells.
 - An app built from the old history updates itself once: its built commit
   still resolves locally, so the next check offers the new main, with every
   rewritten commit in that one update's notes.
-- stemcells.sh is a single static page with a strict content policy; `curl
-  stemcells.sh` prints Aski. Its source lives outside this repository.
+- stemcells.sh is a static page with a strict content policy; `curl
+  stemcells.sh` prints Aski. Its source is `stemcells/site/`.
 
 ## Later
 

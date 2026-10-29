@@ -6,13 +6,13 @@
     <title>Stemcells — words become things</title>
     <meta
       name="description"
-      content="Stemcells is a Mac app for coding agents. Tell Aski what you want; it divides the work into Cells and brings back only what needs you. Open source."
+      content="Stemcells is a fun, efficient way to work with your agents, on your Mac. Tell Aski what you want; it divides the work into Cells and brings back only what needs you. Open source."
     />
     <meta name="theme-color" content="#0B0B0C" />
     <meta property="og:title" content="Stemcells — words become things" />
     <meta
       property="og:description"
-      content="Talk to one. Run many. A Mac app that grows your coding agents."
+      content="Talk to one. Run many. A fun, efficient way to work with your agents."
     />
     <meta property="og:url" content="https://stemcells.sh" />
     <meta property="og:image" content="https://stemcells.sh/og.png" />
@@ -21,7 +21,6 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0B0C'/%3E%3Ctext x='8' y='42' font-family='Menlo,monospace' font-size='26' font-weight='700' fill='%23EDE9E0'%3ESC%3C/text%3E%3Crect x='46' y='22' width='9' height='22' fill='%23EDE9E0'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="site.css" />
   </head>
   <body>
     <header class="top">
@@ -35,27 +34,27 @@
 
     <main>
       <section id="hero" class="hero">
-        <canvas id="hero-cv" aria-hidden="true"></canvas>
+        <canvas class="field" aria-hidden="true"></canvas>
+        <div class="hero-stage">
+          <div class="say" aria-live="polite"></div>
+        </div>
         <div class="hero-copy">
-          <p class="eyebrow hole">A Mac app for coding agents</p>
-          <h1 class="hole">
+          <p class="eyebrow">A fun, efficient way to work with your agents</p>
+          <h1>
             <span class="sr">Words become things.</span
             ><span class="swap" aria-hidden="true"
-              ><span class="w" data-w="a">things</span> <span class="w">become</span>
-              <span class="w" data-w="b">words</span>.</span
+              ><span class="w a">things</span> become <span class="w b">words</span>.</span
             >
           </h1>
-          <p class="lede hole">
-            Tell Aski what you want. It divides the work into Cells, coding agents that each take a
-            part, and brings back only what needs you.
+          <p class="lede">
+            Tell Aski what you want. It divides the work into Cells, agents that each take a part,
+            and brings back only what needs you.
           </p>
-          <div class="ctas hole">
+          <div class="ctas">
             <a class="btn primary" href="#get">Get Stemcells</a
             ><a class="btn" href="#how">How it works</a>
           </div>
         </div>
-        <div class="say" id="hero-say" aria-live="polite"></div>
-        <div class="hint" id="hero-hint">click Aski</div>
       </section>
 
       <section id="how" class="act">
@@ -71,7 +70,6 @@
           </p>
         </div>
         <div class="stage" id="birth">
-          <canvas aria-hidden="true"></canvas>
           <form class="tell" autocomplete="off">
             <label class="sr" for="tell">Tell Aski</label>
             <input id="tell" maxlength="48" placeholder="Tell Aski…" spellcheck="false" />
@@ -93,7 +91,7 @@
             them grow.
           </p>
         </div>
-        <div class="stage short" id="grow"><canvas aria-hidden="true"></canvas></div>
+        <div class="stage short" id="grow"></div>
       </section>
 
       <section class="act">
@@ -109,7 +107,7 @@
             only when it should.
           </p>
         </div>
-        <div class="stage short" id="ask"><canvas aria-hidden="true"></canvas></div>
+        <div class="stage short" id="calls"></div>
       </section>
 
       <section class="act flip">
@@ -122,7 +120,7 @@
           </p>
           <p>The next Cell is made from them.</p>
         </div>
-        <div class="stage" id="home"><canvas aria-hidden="true"></canvas></div>
+        <div class="stage" id="home"></div>
       </section>
 
       <section id="get" class="get">
@@ -147,9 +145,6 @@
       ><a href="https://github.com/GitJarno/Stemcells">GitHub</a>
     </footer>
 
-    <script src="art.js"></script>
-    <script src="kit.js"></script>
-    <script src="hero.js"></script>
-    <script src="story.js"></script>
+    <script type="module" src="./main.ts"></script>
   </body>
 </html>

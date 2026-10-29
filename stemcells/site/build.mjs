@@ -1,39 +1,29 @@
-// Builds dist/: one self-contained index.html (styles, scripts and the
-// public-domain art inlined), the 404 page, and the terminal greeting.
+// Builds dist/: the page, bundled from src/ with the app's own Aski and Cells
+// (apps/web/src/stemcells), and aski.txt, what `curl stemcells.sh` prints.
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
+import * as NodeURL from "node:url";
+import { build } from "vite-plus";
+import { askiCloud, askiText } from "./src/text.ts";
 
-const src = (p) => NodeFS.readFileSync(NodePath.join("src", p), "utf8");
-const art = Object.fromEntries(
-  NodeFS.readdirSync("art")
-    .filter((f) => f.endsWith(".jpg"))
-    .map((f) => [
-      f.replace(".jpg", "").replace("-", ""),
-      "data:image/jpeg;base64," + NodeFS.readFileSync(NodePath.join("art", f)).toString("base64"),
-    ]),
-);
-const files = {
-  "art.js": `const ART = ${JSON.stringify(art)};`,
-  "kit.js": src("kit.js"),
-  "hero.js": src("hero.js"),
-  "story.js": src("story.js"),
-};
+const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
+const dist = NodePath.join(here, "dist");
 
-function inline(html) {
-  return html
-    .replace(
-      /<link rel="stylesheet" href="site.css"\s*\/?>/,
-      () => `<style>${src("site.css")}</style>`,
-    )
-    .replace(/<script src="([\w.]+)"><\/script>/g, (_, f) => `<script>${files[f]}</script>`);
-}
-NodeFS.mkdirSync("dist", { recursive: true });
-NodeFS.writeFileSync("dist/index.html", inline(src("index.html")));
-NodeFS.writeFileSync("dist/404.html", src("404.html"));
-NodeFS.copyFileSync("src/aski.txt", "dist/aski.txt");
-for (const f of NodeFS.readdirSync("public"))
-  NodeFS.copyFileSync(NodePath.join("public", f), NodePath.join("dist", f));
-console.log(
-  "dist/index.html",
-  (NodeFS.readFileSync("dist/index.html").length / 1024).toFixed(0) + " KB",
+await build({
+  root: NodePath.join(here, "src"),
+  publicDir: NodePath.join(here, "public"),
+  configFile: false,
+  logLevel: "warn",
+  build: { outDir: dist, emptyOutDir: true, target: "es2022", assetsInlineLimit: 0 },
+});
+NodeFS.writeFileSync(NodePath.join(dist, "aski.txt"), askiText());
+const notFound = NodePath.join(dist, "404.html");
+NodeFS.writeFileSync(
+  notFound,
+  NodeFS.readFileSync(notFound, "utf8").replace("<!-- aski -->", `\n${askiCloud()}\n`),
 );
+const page = NodeFS.statSync(NodePath.join(dist, "index.html")).size;
+const scripts = NodeFS.readdirSync(NodePath.join(dist, "assets"))
+  .map((f) => NodeFS.statSync(NodePath.join(dist, "assets", f)).size)
+  .reduce((a, b) => a + b, 0);
+console.log(`dist: page ${(page / 1024).toFixed(0)} KB, assets ${(scripts / 1024).toFixed(0)} KB`);
