@@ -2,8 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { collisionOf, filesOf } from "./notice";
 
-// The id the server gives a collision notice (`noticeMessageId`); its own
-// test pins the same id from the other side.
+// The id the server gave a collision notice, as past chats keep it.
 const NOTICE_ID = "stemcells-collision:file:thread%3Abadger:nonce-1";
 
 describe("a collision notice, read off its message", () => {

@@ -8,7 +8,7 @@ import { filesOf } from "./notice";
 
 import "./peers.css";
 
-// The app's notice that this Cell and another stepped on each other
+// A past notice that this Cell and another stepped on each other
 // (stemcells/tasks/peers.md, decision 3): the other Cell a door to its
 // chat, the files its first line names, and the rest, what the Cell was
 // told to do, under "More".

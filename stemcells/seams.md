@@ -1142,18 +1142,11 @@ delivers it and guards permission modes; Stemcells adds what it lacks:
   while `stemcells/layer.ts` runs (`peers/onTheWire.ts`). Upstream's suites
   build its components without it, and pin upstream's text byte for byte
   in recorded provider replays; a sync runs them on our tree.
-- **Collisions.** `apps/server/src/stemcells/peers/Collisions.ts`, mounted
-  through `stemcells/layer.ts`, follows every finished `file_change` and
-  queues a notice behind the running turn of each Cell in a new collision
-  (same file within 30 minutes, any checkout of the repository; or one
-  checkout). The notice
-  is the app's (`createdBy: "agent"`, `creationSource: "server"`), its id
-  names the kind and the other Cell.
 - **The chat** (substitutes, no edits): `TimelineUserMessageRow.tsx` draws
   another Cell's message, here or from a linked machine, as a card
   (upstream's row still draws a
-  workflow's opening, an automation's run and attachments) and a collision
-  notice as a notice
+  workflow's opening, an automation's run and attachments) and a past
+  collision notice as a notice
   (`apps/web/src/stemcells/peers/`); `MessagesTimeline.logic.ts`'s
   `workEntryDisplayLabel` says what a `t3_thread_send` or
   `stemcells_peer_send` did ("Asked Otter: …"); `MessagesTimeline.tsx` hands the rows the chat's exchange

@@ -95,19 +95,19 @@ What it lacks:
    - **Prompt commands are the person's.** `/logout` (Cursor, Antigravity)
      runs only from a message the person sent. Framing alone already keeps
      a peer's `/skill` from running.
-3. **Collisions are said once, to the Cells that are working.** When two
-   Cells of one repository edited the same repo-relative file within 30
-   minutes (any checkout, any of its projects), or
-   both edited in one checkout, each of them that has a run going is told
-   once: who, which files (three, then "and N more"), the other's worktree
-   and branch, and what to do. A Subcell's edits count as its top Cell's,
-   so a parent and its own Subcell never collide, and the top Cell hears
-   while it's working (a notice queued on a Subcell would run it again and
-   wake its parent). Said again only after the pair has been apart for 30
-   minutes. Each notice is a turn, so an edit that runs into several Cells
-   is one notice naming them all. The notice queues behind the running
-   turn: Claude's steer cancels the tool calls in flight, and waking an
-   idle Cell spends a turn on news it can't use.
+3. **No collision notices.** We built them (two Cells that edited one
+   file within 30 minutes, or both in one checkout, were each told once,
+   in a message queued behind their turn) and took them out on
+   2026-10-29. In six days they fired 73 times and caught no real hazard.
+   "Checkout" meant the chat's starting folder, not where an edit landed.
+   Cells here make their own worktrees with `git worktree add`, so any two
+   Cells of one project that wrote anything, anywhere, "shared a
+   checkout", and one file in two worktrees never matched. Each notice
+   cost a turn after the work it warned about, its reply took the place
+   of the Cell's close-out, and the person saw the model's words in the
+   queue. The real hazard, two Cells with uncommitted changes in one git
+   working tree, never occurred. If it does, it belongs in who's here
+   (decision 6), worked out from git: no message, no turn.
 4. **Chat: mail, not conversation** (the original app's cards, kept to what one
    transcript shows):
    - **The recipient** sees a note in place of the person's bubble, in the
@@ -126,7 +126,7 @@ What it lacks:
      opening, an automation's run, a message with attachments. At the end
      of the note's name line, on hover as under the person's own message:
      when, "Edit from here", copy; a steer says "mid-turn".
-   - **A collision** is a notice row: "Same file as Badger:
+   - **A past collision notice** is a notice row: "Same file as Badger:
      `apps/web/src/x.ts`", the rest folded.
    - **No Answer field.** the original app let the person answer as the agent.
      Here the person answers as themself: the sender's name opens its chat.
@@ -207,8 +207,7 @@ any agent here able to read our state could use.
    delivers the message as the app's (no sender thread of its own), its id
    naming the sending environment and Cell, so the frame and the card name
    both. The frame always applies: no Cell elsewhere is a principal.
-5. **Not across the link:** collisions (each environment sees its own
-   checkouts' edits), and a door into the other environment's chat.
+5. **Not across the link:** a door into the other environment's chat.
 
 - [x] Server: links and their store (`peers/Links.ts`, upstream's secret
       store); tests
@@ -256,9 +255,6 @@ person's queued message (`t3_queue`, action `edit`), and it stays the person's
 (`createdBy: "user"`, no sender), so neither the frame nor the `/logout`
 guard sees it. The fix is to stamp the editing thread on an edit made by
 another thread, or refuse it. Offered upstream once we ask.
-
-Collisions live in memory: after a restart the room knows only the edits
-since.
 
 A second review, of who's here and the repository scope, found five.
 Four are fixed, with tests: the note stopped `/compact` (upstream matches

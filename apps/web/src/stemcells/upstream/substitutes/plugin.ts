@@ -69,7 +69,7 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
   "apps/web/src/components/chat/MessagesTimeline.logic.ts": "MessagesTimeline.logic.ts",
   // Messages between Cells: another Cell's message is a card, not the
-  // person's bubble, and the app's collision notice a notice.
+  // person's bubble, and a past collision notice a notice.
   "apps/web/src/components/chat/TimelineUserMessageRow.tsx": "TimelineUserMessageRow.tsx",
   // A turn the full disk stopped says so, with Free space, not "Provider error".
   "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": "TimelineWorkEntryRow.tsx",

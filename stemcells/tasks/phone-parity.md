@@ -21,16 +21,16 @@ one thumb, a glance, and only what needs the person.
 
 Behaviour, phone-relevant, not on the phone:
 
-| Drift                                                   | Mac                                         | Phone                    | Here            |
-| ------------------------------------------------------- | ------------------------------------------- | ------------------------ | --------------- |
-| A Cell the full disk stopped                            | "The disk is full" with Free space (#339)   | "Provider turn failed."  | this PR         |
-| The disk wanting attention                              | The column's foot: grey, amber, red         | Settings › Disk only     | this PR         |
-| Look: palette, hairlines, ink, stage colours, rhythm    | `stemcells/brand/look.ts`                   | stock T3 dark            | `phone-look.md` |
-| Plan limits: board and ring                             | `limits/PlanBoard.tsx`, `rail/PlanRing.tsx` | upstream's usage section | next            |
-| Switching a Cell's Claude account, `/login` (#341)      | `login/`                                    | no                       | next            |
-| A limit's "Continued after…" row                        | `limitResume/row.ts`                        | the raw message          | next            |
-| Collision notices, a Cell's mail as a quiet note (#340) | `peers/`                                    | no                       | later           |
-| Settings › Aski's answer counts                         | `needs/answers/`                            | no                       | later           |
+| Drift                                                | Mac                                         | Phone                    | Here            |
+| ---------------------------------------------------- | ------------------------------------------- | ------------------------ | --------------- |
+| A Cell the full disk stopped                         | "The disk is full" with Free space (#339)   | "Provider turn failed."  | this PR         |
+| The disk wanting attention                           | The column's foot: grey, amber, red         | Settings › Disk only     | this PR         |
+| Look: palette, hairlines, ink, stage colours, rhythm | `stemcells/brand/look.ts`                   | stock T3 dark            | `phone-look.md` |
+| Plan limits: board and ring                          | `limits/PlanBoard.tsx`, `rail/PlanRing.tsx` | upstream's usage section | next            |
+| Switching a Cell's Claude account, `/login` (#341)   | `login/`                                    | no                       | next            |
+| A limit's "Continued after…" row                     | `limitResume/row.ts`                        | the raw message          | next            |
+| A Cell's mail as a quiet note (#340)                 | `peers/`                                    | no                       | later           |
+| Settings › Aski's answer counts                      | `needs/answers/`                            | no                       | later           |
 
 Duplicated logic, which drifts on its own: the line's stage names
 (`line/line.ts` `SEGMENTS` against `rail/Cells.tsx`); the Cell's mood

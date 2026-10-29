@@ -8,7 +8,6 @@ import * as DiskHttp from "./disk/http.ts";
 import * as LimitResumeHttp from "./limitResume/http.ts";
 import * as Look from "./look/publish.ts";
 import * as NeedsHttp from "./needs/http.ts";
-import * as Collisions from "./peers/Collisions.ts";
 import * as OnTheWire from "./peers/onTheWire.ts";
 import * as PeersHttp from "./peers/http.ts";
 import * as PlannerHttp from "./planner/http.ts";
@@ -36,7 +35,6 @@ export const layer = Layer.mergeAll(
   NeedsHttp.layer,
   PlannerHttp.layer,
   LimitResumeHttp.layer,
-  Collisions.layer,
   PeersHttp.layer,
   OnTheWire.layer,
   SuggestionHttp.layer,

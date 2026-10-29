@@ -1,6 +1,6 @@
-// What a collision notice is, read off the message the server sent
-// (`apps/server/src/stemcells/upstream/collisions.ts`, `noticeMessageId`):
-// its id names the kind and the other Cell, its first line the files.
+// The app no longer sends collision notices (stemcells/tasks/peers.md, decision 3), but chats
+// from before keep theirs: the id (`stemcells-collision:<kind>:<other Cell>:<nonce>`) names
+// the kind and the other Cell, the first line the files.
 
 const COLLISION_ID = /^stemcells-collision:(file|checkout):([^:]+):/;
 

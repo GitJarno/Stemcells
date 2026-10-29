@@ -1,5 +1,5 @@
 // Replaces `components/chat/TimelineUserMessageRow.tsx` (`plugin.ts`): mail from another Cell,
-// here or on a linked machine, is a card (`peers/PeerCard.tsx`) and the app's collision notice a
+// here or on a linked machine, is a card (`peers/PeerCard.tsx`) and a past collision notice a
 // notice (`peers/CollisionRow.tsx`), not the person's bubble. All else is upstream's row, as is
 // mail the card can't draw: a workflow's opening, an automation's run, or one with attachments.
 import { resolveUserMessagePresentation } from "@t3tools/client-runtime/user-message";
