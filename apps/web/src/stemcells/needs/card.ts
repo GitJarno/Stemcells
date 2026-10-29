@@ -6,6 +6,7 @@
  */
 import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
 import type { DiskFailure } from "../disk/pressure";
+import { sentenceCase } from "./inline";
 import type { ApprovalDecision, AskedQuestion, Need, NeedRequest } from "./wire";
 
 /** What choosing an option does; `actions.ts` turns it into upstream's commands. */
@@ -27,7 +28,9 @@ export type Choice =
   | { readonly kind: "nothingToDo" }
   | { readonly kind: "nudge" }
   | { readonly kind: "stopAndReply" }
-  | { readonly kind: "wait" };
+  | { readonly kind: "wait" }
+  /** Starts the cleanup Cell on the full disk's machine: nothing goes to the asking Cell. */
+  | { readonly kind: "freeSpace" };
 
 export interface CardOption {
   readonly id: string;
@@ -67,6 +70,10 @@ export interface Card {
   /** The Cell's or provider's own words, quoted. */
   readonly quote: string | null;
   readonly steps: ReadonlyArray<string>;
+  /** The Cell's own step that waits on the person's: what answering unblocks. */
+  readonly next: string | null;
+  /** Where the Cell's reply points, beside the ask. */
+  readonly links: ReadonlyArray<{ readonly label: string; readonly url: string }>;
   readonly questions: ReadonlyArray<CardQuestion>;
   readonly options: ReadonlyArray<CardOption>;
   /** Why the card offers no answer of its own, when it doesn't. */
@@ -148,6 +155,18 @@ const FULL_ACCESS_WHY: Record<NonNullable<NeedRequest["fullAccessOverride"]>, st
 
 export const LATER: CardOption = option("later", "Later", { kind: "later" });
 
+/** Starts the cleanup Cell, as the chat's own full-disk row does (`disk/DiskFullRow.tsx`). */
+const freeSpace = (recommended: boolean) =>
+  option(
+    "free-space",
+    DISK_FULL.action,
+    { kind: "freeSpace" },
+    {
+      consequence: "Starts a Cell that shows what can go, and removes only what you name.",
+      recommended,
+    },
+  );
+
 /** "Go ahead" and "Nothing to do", the fixed ways out of a reply that asks or stops short. */
 const goAhead = (recommended: boolean) =>
   option(
@@ -172,6 +191,7 @@ const PROSE: Record<NonNullable<Need["prose"]>["cue"], string> = {
   question: "Has a question",
   offer: "Offers to go on",
   stopped: "Stopped short of done. Go on?",
+  // Only when the Cell's close-out gave no step to show.
   left: "Left a step to you. Done it?",
 };
 
@@ -197,13 +217,18 @@ export function askOf(
   return { ask: sentences[at]!, context: rest.length === 0 ? null : rest.join(" ") };
 }
 
-/** The person did the step a Cell left them, and tells it so. */
-const didIt = option(
-  "did-it",
-  "Done it",
-  { kind: "didIt" },
-  { consequence: `Sends “${PHRASES.didIt}”` },
-);
+/**
+ * The person did the steps a Cell left them. With a step of its own waiting, it hears so and
+ * goes on; with none, it settles: a turn only to say thanks is cost.
+ */
+const didIt = (steps: number, next: string | null) =>
+  option(
+    "did-it",
+    steps > 1 ? "All done" : "Done it",
+    { kind: "didIt" },
+    // Never recommended: "ok the rest" mustn't say the person did what only they can do.
+    { consequence: next === null ? "Settles it. Nothing is sent." : `Sends “${PHRASES.didIt}”` },
+  );
 
 function questionOf(question: AskedQuestion): CardQuestion {
   return {
@@ -257,6 +282,8 @@ const base = (need: Need) => ({
   request: null,
   quote: null,
   steps: [],
+  next: null,
+  links: [],
   questions: [],
   options: [],
   note: null,
@@ -362,37 +389,39 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
         note: "Its chat has the form to fill in.",
       };
     case "limit": {
+      // With auto-resume on, a known reset makes no card (the server's `carriesOn`): this is
+      // one the person turned off, one whose reset nobody knows, or one past it.
       const resetAt = need.limit?.resetAt ?? null;
-      const reset = resetAt === null ? null : Date.parse(resetAt);
+      const reset = resetAt === null ? Number.NaN : Date.parse(resetAt);
       const when = resetAt === null ? null : whenOf(resetAt, now);
-      return {
-        ...base(need),
-        headline: when === null ? "Hit its usage limit" : `Hit its usage limit · resets ${when}`,
-        options:
-          reset === null || Number.isNaN(reset)
-            ? []
-            : reset > now
-              ? [
-                  option(
-                    "carry-on",
-                    "Carry on at the reset",
-                    { kind: "carryOn" },
-                    {
-                      consequence: `Snoozes it until ${when}, then it goes on by itself.`,
-                    },
-                  ),
-                ]
-              : [
-                  option(
-                    "continue",
-                    "Continue now",
-                    { kind: "continueNow" },
-                    {
-                      consequence: `Sends “${PHRASES.continueNow}”`,
-                    },
-                  ),
-                ],
-      };
+      const continueNow = option(
+        "continue",
+        "Continue now",
+        { kind: "continueNow" },
+        { consequence: `Sends “${PHRASES.continueNow}”` },
+      );
+      if (Number.isNaN(reset)) {
+        return {
+          ...base(need),
+          headline: "Hit its usage limit",
+          note: "Its provider didn't say when the limit resets.",
+          options: [continueNow],
+        };
+      }
+      return reset > now
+        ? {
+            ...base(need),
+            headline: `Hit its usage limit · resets ${when}`,
+            options: [
+              option(
+                "carry-on",
+                "Carry on at the reset",
+                { kind: "carryOn" },
+                { consequence: `Snoozes it until ${when}, then it goes on by itself.` },
+              ),
+            ],
+          }
+        : { ...base(need), headline: `Its usage limit reset ${when}`, options: [continueNow] };
     }
     case "failed": {
       const errorClass = need.failure?.errorClass ?? "unknown";
@@ -412,6 +441,8 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
             ? DISK_FULL.freedNote
             : (need.failure?.message ?? null),
         options: [
+          // The fix first while the disk is full; once there's room, after the retry.
+          ...(full ? [freeSpace(true)] : []),
           option(
             "retry",
             "Retry",
@@ -425,6 +456,7 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
                   errorClass === "provider_error"),
             },
           ),
+          ...(reading === "freed" ? [freeSpace(false)] : []),
           reply("Tell it what to do…"),
           option(
             "dismiss",
@@ -462,21 +494,41 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
       };
     }
     case "prose": {
-      // With no read of its own, the card quotes the Cell and offers the kind's fixed ways out.
-      const cue = need.prose?.cue ?? "question";
-      const text = need.prose?.text ?? null;
-      // A question or an offer asks in a sentence of its own; a stop or a step left says the fixed line.
+      const prose = need.prose;
+      const cue = prose?.cue ?? "question";
+      const text = prose?.text ?? null;
+      const links = prose?.links ?? [];
+      if (cue === "left") {
+        // The step is the ask; what the Cell did, and what waits on the step, are its context.
+        const given = prose !== null && prose.steps.length > 0 ? prose.steps : text ? [text] : [];
+        const steps = given.map(sentenceCase);
+        const next = prose?.next ?? null;
+        return {
+          ...base(need),
+          headline:
+            steps.length === 1
+              ? steps[0]!
+              : steps.length > 1
+                ? `${steps.length} steps for you`
+                : PROSE.left,
+          steps: steps.length > 1 ? steps : [],
+          quote: prose?.lead ?? null,
+          next,
+          links,
+          options: [didIt(steps.length, next), reply("Tell it what you did…"), nothingToDo],
+        };
+      }
+      // A question or an offer asks in a sentence of its own; a stop says the fixed line.
       const asked = text !== null && (cue === "question" || cue === "offer") ? askOf(text) : null;
       return {
         ...base(need),
         headline: asked?.ask ?? PROSE[cue],
-        quote: asked === null ? text : asked.context,
+        quote: (asked === null ? text : asked.context) ?? prose?.lead ?? null,
+        links,
         options:
           cue === "question"
             ? [reply("Your answer…"), nothingToDo]
-            : cue === "left"
-              ? [didIt, reply("Tell it what you did…"), nothingToDo]
-              : [goAhead(cue === "stopped"), reply("Tell it what to do…"), nothingToDo],
+            : [goAhead(cue === "stopped"), reply("Tell it what to do…"), nothingToDo],
       };
     }
     case "stuck": {

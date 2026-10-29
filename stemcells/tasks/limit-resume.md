@@ -41,18 +41,18 @@ app's `LimitLift`.
 - [x] Dev-app proof with a simulated refusal
 - [x] PRs: the server, then the web
 - [x] Review fixes (2026-10-21): the switch gates both paths; cancel wins
-  over a snooze; snooze and a 12 h horizon on the sign-in path; logins read
-  only for Cells that could go; the guard pinned in our tree; a timeout on
-  the login read, wake from wall against monotonic time, fresh ids per
-  send; drafts reported from every page; the banner per the switch; no
-  unbounded row cache; the trigger worded as signing in again
+      over a snooze; snooze and a 12 h horizon on the sign-in path; logins read
+      only for Cells that could go; the guard pinned in our tree; a timeout on
+      the login read, wake from wall against monotonic time, fresh ids per
+      send; drafts reported from every page; the banner per the switch; no
+      unbounded row cache; the trigger worded as signing in again
 - [x] Re-proof in the dev app: switch on, sign-in, one resume; switch off, nothing
 - [x] Second review: a wake is a gap between looks (hrtime runs through a Mac's
-  sleep), and draft lists are heard again after it; single-flight login
-  reads; the banner says what will happen; drafts reported beside the
-  sidebar, for every layout; upstream's banner actions always shown
+      sleep), and draft lists are heard again after it; single-flight login
+      reads; the banner says what will happen; drafts reported beside the
+      sidebar, for every layout; upstream's banner actions always shown
 - [x] The banner names the reset only, "Carries on by itself at the reset.",
-  and only while it will: switch on, not cancelled, a reset still ahead
+      and only while it will: switch on, not cancelled, a reset still ahead
 
 ## Decisions
 
@@ -63,7 +63,9 @@ app's `LimitLift`.
 - Only with Settings' "Auto-resume limited threads" on (upstream's
   `autoResumeLimitedThreads`, off by default), for both causes: a resume is
   a model call the person didn't start (the house rule of 2026-10-14). One
-  switch, upstream's, already in Settings; its default stays upstream's.
+  switch, upstream's, already in Settings. Stemcells turns it on once per
+  server since 2026-10-29: the person asked that a limit never wait on
+  them (`unblocking.md`, decision 1).
 - Bounds: one Cell at a time; never over a draft or a snooze; after a start
   or a wake, nothing for 30 s nor before the screens that had drafts have
   reported again (90 s at most); a sign-in only within 12 h of the stop, the

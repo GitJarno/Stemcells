@@ -10,6 +10,7 @@ import * as Stream from "effect/Stream";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 
 import * as UpstreamNeeds from "../upstream/needs.ts";
+import { briefOf } from "./brief.ts";
 import { stopOf, type Stop } from "./closeOut.ts";
 import { needOf, signalsOf, stuckFor, type Need, type NeedDetail, type Signal } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
@@ -75,7 +76,9 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
           : signal.kind === "prose"
             ? Effect.map(source.reply(shell.id, runId), (reply) => {
                 const stop = reply === null ? null : stopOf(reply);
-                return { prose: stop?.ask ?? null, stop };
+                const ask = stop?.ask ?? null;
+                const brief = reply === null || ask === null ? null : briefOf(reply, [ask.text]);
+                return { prose: ask, stop, brief };
               })
             : signal.kind === "stuck"
               ? Effect.map(source.inFlight(shell.id, runId), (inFlight) => ({ inFlight }))
@@ -107,7 +110,8 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       for (const id of heard.keys()) heard.set(id, now);
     }
     lookedAt = now;
-    const candidates = signalsOf([...shells.values()], now, heard);
+    const autoResume = yield* source.autoResume;
+    const candidates = signalsOf([...shells.values()], now, heard, autoResume);
     const live = new Set(candidates.map((signal) => signal.key));
     for (const key of details.keys()) if (!live.has(key)) details.delete(key);
     const read = yield* Effect.forEach(
@@ -129,7 +133,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     }
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
-      cells: standingsOf([...shells.values()], needs, stops, now),
+      cells: standingsOf([...shells.values()], needs, stops, now, autoResume),
     };
     if (sent !== null && Equal.equals(list, sent)) return;
     sent = list;

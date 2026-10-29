@@ -24,7 +24,12 @@ describe("a Cell's close-out", () => {
 
   it("makes the person's step a card, and a step with no owner too", () => {
     expect(stopOf("Built it.\n\n**Left:** you — run the sign-in with Drive access")).toEqual({
-      ask: { cue: "left", text: "run the sign-in with Drive access" },
+      ask: {
+        cue: "left",
+        text: "run the sign-in with Drive access",
+        steps: ["run the sign-in with Drive access"],
+        next: null,
+      },
       waits: false,
       line: "run the sign-in with Drive access",
     });
@@ -45,7 +50,8 @@ describe("a Cell's close-out", () => {
     });
   });
 
-  // "A line per owner" reads as a list under a bare label: the form Cells write most.
+  // "A line per owner" reads as a list under a bare label: the form Cells write most. The
+  // Cell's own step after the person's is what their step unblocks.
   it("reads a Left set out as a list, one owner a line", () => {
     const reply = [
       "Both fixes are drafted.",
@@ -55,7 +61,12 @@ describe("a Cell's close-out", () => {
       "- **me:** confirm the page once the publish job finishes",
     ].join("\n");
     expect(stopOf(reply)).toEqual({
-      ask: { cue: "left", text: "say whether to build fixes 1 and 2" },
+      ask: {
+        cue: "left",
+        text: "say whether to build fixes 1 and 2",
+        steps: ["say whether to build fixes 1 and 2"],
+        next: "confirm the page once the publish job finishes",
+      },
       waits: false,
       line: "say whether to build fixes 1 and 2",
     });
@@ -80,6 +91,11 @@ describe("a Cell's close-out", () => {
     expect(stopOf(reply).ask).toEqual({
       cue: "left",
       text: "send the reply (draft in `tasks/launch.md`) · tell the store its invoice reference",
+      steps: [
+        "send the reply (draft in `tasks/launch.md`)",
+        "tell the store its invoice reference",
+      ],
+      next: "archive the old branch · check the import's log",
     });
   });
 
@@ -89,9 +105,9 @@ describe("a Cell's close-out", () => {
     expect(stopOf(own)).toMatchObject({ ask: null, waits: true });
     const theirs =
       "Wired.\n\n**Left:**\n- **you:**\n  - give node Full Disk Access\n  - pick the aggregator\n- **me:** follow the first post";
-    expect(stopOf(theirs).ask).toEqual({
-      cue: "left",
-      text: "give node Full Disk Access · pick the aggregator",
+    expect(stopOf(theirs).ask).toMatchObject({
+      steps: ["give node Full Disk Access", "pick the aggregator"],
+      next: "follow the first post",
     });
   });
 
@@ -103,7 +119,7 @@ describe("a Cell's close-out", () => {
       "**Left:** you — approve the billing change",
       "**Done:** the migration",
     ].join("\n");
-    expect(stopOf(reply).ask).toEqual({ cue: "left", text: "approve the billing change" });
+    expect(stopOf(reply).ask).toMatchObject({ cue: "left", text: "approve the billing change" });
   });
 
   it("lets a real question beat a Done, but not an offer of more work", () => {

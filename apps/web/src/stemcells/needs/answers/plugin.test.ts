@@ -3,7 +3,7 @@ import { EditorState, TextSelection } from "@tiptap/pm/state";
 import { describe, expect, it } from "vite-plus/test";
 
 import { cardOf } from "../card";
-import { NOW, needFixture, requestFixture } from "../fixtures";
+import { NOW, needFixture, proseFixture, requestFixture } from "../fixtures";
 import type { Need } from "../wire";
 import { enterOf } from "./enter";
 import { answersKey, answersOf, answersPlugin, readDoc } from "./plugin";
@@ -27,7 +27,7 @@ const CARDS: Addressee[] = [
       number: 1,
       kind: "prose",
       threadId: "thread-floof",
-      prose: { runId: "run-1", cue: "question", text: "Staging, or a fresh local copy?" },
+      prose: proseFixture("question", "Staging, or a fresh local copy?"),
     }),
     "Floof",
   ),

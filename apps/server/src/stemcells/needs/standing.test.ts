@@ -41,7 +41,15 @@ describe("the room in words", () => {
             threadId: "t-review",
             parentThreadId: "t-floof",
             title: "reviewer",
-            prose: { runId: "r1", cue: "left", text: "approve the billing change" },
+            prose: {
+              runId: "r1",
+              cue: "left",
+              text: "approve the billing change",
+              steps: ["approve the billing change"],
+              next: null,
+              lead: null,
+              links: [],
+            },
           }),
           need({
             number: 1,

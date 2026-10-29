@@ -5,7 +5,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { docText } from "../../words/docText";
 import { cardOf, LATER } from "../card";
 import type { Shown } from "../display";
-import { NOW, needFixture, requestFixture } from "../fixtures";
+import { NOW, needFixture, proseFixture, requestFixture } from "../fixtures";
 import type { Need } from "../wire";
 import { optionCompletionAt } from "./complete";
 import { enterOf } from "./enter";
@@ -33,7 +33,7 @@ const NEEDS: ReadonlyArray<readonly [Need, string]> = [
       number: 1,
       kind: "prose",
       threadId: "thread-floof",
-      prose: { runId: "run-1", cue: "question", text: "Staging, or a fresh local copy?" },
+      prose: proseFixture("question", "Staging, or a fresh local copy?"),
     }),
     "Floof",
   ],
@@ -95,7 +95,7 @@ const NEEDS: ReadonlyArray<readonly [Need, string]> = [
       number: 6,
       kind: "prose",
       threadId: "thread-gus",
-      prose: { runId: "run-6", cue: "offer", text: "Want me to update the docs too?" },
+      prose: proseFixture("offer", "Want me to update the docs too?", { runId: "run-6" }),
     }),
     "Gus",
   ],
@@ -347,7 +347,7 @@ describe("readAnswers: the rest", () => {
       number: 2,
       kind: "prose",
       threadId: "thread-gus",
-      prose: { runId: "run-2", cue: "stopped", text: "Tests pass; the docs are left." },
+      prose: proseFixture("stopped", "Tests pass; the docs are left.", { runId: "run-2" }),
     });
     expect(preview("ok to all", [addressee(question, "Mochi"), addressee(stopped, "Gus")])).toBe(
       "1 Mochi: Staging · 2 Gus: Go ahead",

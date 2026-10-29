@@ -30,7 +30,7 @@
   border-inline-start: 1px solid var(--sc-hairline);
 }
 [data-stemcells-needs-column] > [data-stemcells-needs-list] {
-  gap: 0;
+  --sc-need-gap: 0px;
   max-inline-size: 42rem;
   padding: var(--sc-space-lg) var(--sc-space-xxl);
 }
@@ -116,9 +116,10 @@
 [data-stemcells-needs-list] {
   --sc-body: 0.875rem;
   --sc-meta-size: -0.125rem;
+  --sc-need-gap: var(--sc-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--sc-space-md);
+  gap: var(--sc-need-gap);
   padding: var(--sc-space-xl);
   font-size: var(--sc-body);
   line-height: 1.25rem;
@@ -153,14 +154,15 @@
    context, then the options. One that blocks a running turn says so in its
    age's amber: urgency is ink, never position. */
 [data-stemcells-need] {
+  interpolate-size: allow-keywords;
   display: flex;
   flex-direction: column;
   gap: var(--sc-space-sm);
   padding: var(--sc-space-md) var(--sc-space-sm);
   border-radius: var(--sc-radius-card);
-  transition:
-    opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing),
-    filter var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+  transition-property: opacity, block-size, padding-block, margin-block-end;
+  transition-duration: var(--sc-motion-fade-duration);
+  transition-timing-function: var(--sc-motion-fade-easing);
   animation: stemcells-need-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
 }
 /* The walk landed on a card that recommends nothing (walk.ts). */
@@ -168,12 +170,17 @@
   outline: none;
   box-shadow: inset 0 0 0 2px var(--sc-accent-ink);
 }
-/* Gone: it recedes in place until the page stops holding still. */
-[data-stemcells-need][data-gone] {
-  opacity: var(--sc-receded);
-  filter: saturate(var(--sc-receded-saturation));
+/* On its way off, answered, settled or gone: it folds within the page's
+   `fold` timing, and the list closes up over it (unblocking.md, decision 7). */
+[data-stemcells-need][data-leaving] {
+  block-size: 0;
+  padding-block: 0;
+  margin-block-end: calc(var(--sc-need-gap) * -1);
+  overflow: clip;
+  border-color: transparent;
+  opacity: 0;
 }
-/* Waiting its turn in a queue: who asks, and what, on one line each. */
+/* Waiting its turn in a queue: who asks, then what, up to two lines. */
 [data-stemcells-need][data-queued] {
   gap: 0.125rem;
   padding: var(--sc-space-sm);
@@ -192,11 +199,12 @@
   text-decoration: underline;
 }
 [data-stemcells-need][data-queued] > [data-need-ask] {
+  display: -webkit-box;
   overflow: hidden;
-  color: var(--sc-soft);
+  color: var(--sc-reading);
   font-weight: 400;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 @keyframes stemcells-need-in {
   from {
@@ -206,6 +214,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   [data-stemcells-need] {
+    transition-property: opacity;
     animation: none;
   }
 }
@@ -300,6 +309,26 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+/* An ask's words drawn by upstream's markdown (inline.ts) run on as one line of text. */
+[data-stemcells-need] .chat-markdown p {
+  display: inline;
+  margin: 0;
+}
+/* What answering unblocks: the Cell's own next step, under its name. */
+[data-need-next] {
+  color: var(--sc-dim);
+  overflow-wrap: anywhere;
+}
+[data-need-next] > span:first-child {
+  color: var(--sc-soft);
+  font-weight: 500;
+}
+/* Where the Cell's reply points, a click from the ask. */
+[data-need-links] {
+  color: var(--sc-faint);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  overflow-wrap: anywhere;
+}
 /* What you need to decide, two lines until More shows the rest in place. */
 [data-need-context] {
   display: flex;
@@ -308,15 +337,14 @@
   gap: 0.125rem;
   color: var(--sc-dim);
 }
-[data-need-context] > p {
+[data-need-context] > div {
   display: -webkit-box;
-  margin: 0;
   overflow: hidden;
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-[data-need-context][data-more] > p {
+[data-need-context][data-more] > div {
   display: block;
   white-space: pre-line;
 }
@@ -391,7 +419,8 @@
   background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
   color: var(--sc-text);
 }
-[data-need-options]:not(:has(> [data-need-option]:focus-visible))
+[data-need-questions]
+  [data-need-options]:not(:has(> [data-need-option]:focus-visible))
   > [data-need-option][data-recommended]:not([data-allows], :disabled),
 [data-need-option]:focus-visible {
   background: var(--sc-hot);
@@ -429,8 +458,64 @@
 }
 [data-need-option-says] {
   grid-column: 1 / -1;
+  margin: 0;
   color: var(--sc-dim);
   font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+
+/* A card's own options, side by side (unblocking.md, decision 6): the
+   recommended one filled, the rest outlined; the line under them says what
+   the one you're on does. */
+[data-need-acts] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+  margin-block-start: var(--sc-space-xs);
+}
+[data-need-acts] > [data-need-options] {
+  flex-flow: row wrap;
+  gap: var(--sc-space-sm);
+}
+[data-need-acts] [data-need-option] {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3125rem var(--sc-space-md);
+  border-radius: var(--sc-radius-chip);
+  box-shadow: inset 0 0 0 1px var(--sc-edge);
+  color: var(--sc-text);
+  font-weight: 500;
+}
+[data-need-acts] [data-need-option]:hover:not(:disabled),
+[data-need-acts] [data-need-option]:focus-visible {
+  background: var(--sc-hot);
+  box-shadow: inset 0 0 0 1px var(--sc-soft);
+  outline: none;
+}
+[data-need-acts] [data-need-option][data-recommended]:not([data-allows], :disabled) {
+  background: var(--sc-inverse);
+  box-shadow: none;
+  color: var(--sc-on-text);
+}
+[data-need-acts] [data-need-option][data-recommended]:not([data-allows], :disabled):hover,
+[data-need-acts] [data-need-option][data-recommended]:not([data-allows], :disabled):focus-visible {
+  background: var(--sc-text);
+  box-shadow: 0 0 0 2px var(--sc-hot);
+}
+[data-need-acts] [data-need-option][data-warn] {
+  box-shadow: inset 0 0 0 1px var(--sc-needs-you);
+}
+[data-need-acts] [data-need-option]:disabled {
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+[data-need-option-says][data-warn] {
+  color: var(--sc-needs-you);
+}
+[data-need-option-says] > [data-need-option-lit] {
+  margin-inline-end: 0.5ch;
+}
+[data-need-option-says] > [data-need-option-lit="click"],
+[data-need-option-says] > [data-need-option-lit="words"] {
+  color: var(--sc-needs-you);
 }
 [data-need-send] {
   justify-self: start;
@@ -470,18 +555,25 @@
   color: var(--sc-text);
 }
 
+/* The person's own words: the row's whole width, focused as it opens. */
 [data-need-words] {
   display: flex;
   gap: var(--sc-space-sm);
+  inline-size: 100%;
+  margin-block-start: var(--sc-space-xs);
 }
 [data-need-words] input {
   flex: 1;
   min-width: 0;
-  padding: var(--sc-space-xs) var(--sc-space-md);
+  padding: var(--sc-space-sm) var(--sc-space-md);
   border: 1px solid var(--sc-edge);
   border-radius: var(--sc-radius-chip);
   background: var(--sc-field);
   color: var(--sc-text);
+}
+[data-need-words] input:focus-visible {
+  border-color: var(--sc-soft);
+  outline: none;
 }
 
 /* A take Aski is about to make (autonomy/Cards.tsx): what it does, a flat fuse, Undo. */

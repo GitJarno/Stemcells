@@ -3,44 +3,37 @@ import { describe, expect, it } from "vite-plus/test";
 import { clearedLine, nextEpisode, nextShown, type Shown } from "./display";
 import { needFixture } from "./fixtures";
 
-const LINGER = 1_200;
+const FOLD = 240;
 const floof = needFixture({ key: "floof", number: 1 });
 const bongo = needFixture({ key: "bongo", number: 2, threadId: "thread-bongo" });
 const pip = needFixture({ key: "pip", number: 3, threadId: "thread-pip" });
 const keys = (shown: ReadonlyArray<Shown>) =>
   shown.map((each) => `${each.need.key}${each.goneAt === null ? "" : " (gone)"}`);
 
-describe("the cards hold still while the person works", () => {
+describe("the cards on the page", () => {
   it("adds new cards at the bottom and never re-sorts", () => {
-    const first = nextShown([], [bongo, floof], { frozen: false, now: 0, linger: LINGER });
+    const first = nextShown([], [bongo, floof], { now: 0, linger: FOLD });
     expect(keys(first)).toEqual(["floof", "bongo"]);
     const reset = needFixture({ key: "otter", number: 1, threadId: "thread-otter" });
-    const later = nextShown(first, [reset, bongo, floof], {
-      frozen: false,
-      now: 0,
-      linger: LINGER,
-    });
+    const later = nextShown(first, [reset, bongo, floof], { now: 0, linger: FOLD });
     expect(keys(later)).toEqual(["floof", "bongo", "otter"]);
   });
 
-  it("greys a gone card in place, and keeps it while frozen however long", () => {
-    const shown = nextShown([], [floof, bongo, pip], { frozen: false, now: 0, linger: LINGER });
-    const gone = nextShown(shown, [floof, pip], { frozen: true, now: 100, linger: LINGER });
+  // The person: an answered card "stays there for a duration that feels random". It used to
+  // stay greyed for as long as the pointer was over the list.
+  it("keeps a gone card only while it folds, then lets it go", () => {
+    const shown = nextShown([], [floof, bongo, pip], { now: 0, linger: FOLD });
+    const gone = nextShown(shown, [floof, pip], { now: 100, linger: FOLD });
     expect(keys(gone)).toEqual(["floof", "bongo (gone)", "pip"]);
-    expect(
-      keys(nextShown(gone, [floof, pip], { frozen: true, now: 60_000, linger: LINGER })),
-    ).toEqual(["floof", "bongo (gone)", "pip"]);
-  });
-
-  it("lets a gone card leave a beat after, once the page unfreezes", () => {
-    const shown = nextShown([], [floof, bongo], { frozen: false, now: 0, linger: LINGER });
-    const gone = nextShown(shown, [floof], { frozen: false, now: 100, linger: LINGER });
-    expect(
-      keys(nextShown(gone, [floof], { frozen: false, now: 100 + LINGER - 1, linger: LINGER })),
-    ).toEqual(["floof", "bongo (gone)"]);
-    expect(
-      keys(nextShown(gone, [floof], { frozen: false, now: 100 + LINGER, linger: LINGER })),
-    ).toEqual(["floof"]);
+    expect(keys(nextShown(gone, [floof, pip], { now: 100 + FOLD - 1, linger: FOLD }))).toEqual([
+      "floof",
+      "bongo (gone)",
+      "pip",
+    ]);
+    expect(keys(nextShown(gone, [floof, pip], { now: 100 + FOLD, linger: FOLD }))).toEqual([
+      "floof",
+      "pip",
+    ]);
   });
 });
 

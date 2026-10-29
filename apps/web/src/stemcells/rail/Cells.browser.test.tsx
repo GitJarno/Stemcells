@@ -142,6 +142,8 @@ vi.mock("../upstream/needs", () => ({
   observeResize: () => () => undefined,
   openPrimaryStream: () => new Promise(() => undefined),
   sendThreadCommand: async () => ({ ok: true }),
+  ChatMarkdown: (props: { text: string }) => props.text,
+  cellRef: () => null,
 }));
 
 vi.mock("../upstream/column", () => ({
@@ -326,12 +328,13 @@ describe("the Cells' column", () => {
     await expect.element(screen.getByText("Which format for the hero images?")).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
 
-    // The answer takes its card off at once, onto the undo line.
+    // The answer folds its card away at once, onto the undo line.
     await userEvent.click(screen.getByRole("button", { name: /Keep them/ }));
     await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
-    await expect
-      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .not.toBeInTheDocument();
+    // Folded to nothing, it stays in place only while Undo can bring it back.
+    await vi.waitFor(() =>
+      expect(document.querySelector('[data-need-thread="thread-a"]')?.clientHeight).toBe(0),
+    );
     await expect.element(screen.getByText("Answered 1 Cell,")).toBeVisible();
 
     // Taking the answer back opens its card again, and the next waits.

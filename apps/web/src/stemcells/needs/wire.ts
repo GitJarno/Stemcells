@@ -95,8 +95,16 @@ export interface Need {
      * of done; or the Cell's own close-out naming a step that is the person's.
      */
     readonly cue: "question" | "offer" | "stopped" | "left";
-    /** The reply's last paragraph, word for word. */
+    /** The reply's last paragraph, word for word; a left's steps read as one. */
     readonly text: string;
+    /** A left's steps, each as the Cell wrote it; empty for any other cue. */
+    readonly steps: ReadonlyArray<string>;
+    /** The Cell's own step that waits on the person's; null when it named none. */
+    readonly next: string | null;
+    /** The reply's opening paragraph: what the Cell did. */
+    readonly lead: string | null;
+    /** The reply's links the ask's words don't carry. */
+    readonly links: ReadonlyArray<{ readonly label: string; readonly url: string }>;
   } | null;
   readonly stuck: {
     readonly runId: string;

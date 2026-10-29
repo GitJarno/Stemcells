@@ -35,7 +35,17 @@ const need = (key: string, threadId: string, kind: "failed" | "prose", since = L
   failure:
     kind === "failed" ? { runId: "run-1", errorClass: "transport_error", message: null } : null,
   prose:
-    kind === "prose" ? { runId: "run-1", cue: "stopped", text: "Next, I'll add the tests." } : null,
+    kind === "prose"
+      ? {
+          runId: "run-1",
+          cue: "stopped",
+          text: "Next, I'll add the tests.",
+          steps: [],
+          next: null,
+          lead: null,
+          links: [],
+        }
+      : null,
   stuck: null,
 });
 

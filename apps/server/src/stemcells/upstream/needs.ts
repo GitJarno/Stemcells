@@ -23,6 +23,7 @@ import { loadShellSnapshotParts } from "../../orchestration-v2/ShellStream.ts";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";
 import * as OrchestrationEventStore from "../../persistence/OrchestrationEventStore.ts";
 import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
+import * as ServerSettings from "../../serverSettings.ts";
 
 export type Shell = OrchestrationV2ThreadShell;
 export type ShellThreadId = ThreadId;
@@ -125,6 +126,8 @@ export interface NeedsSource {
   readonly reply: (threadId: ThreadId, runId: string) => Effect.Effect<string | null>;
   /** What a running run is in the middle of; null when it can't be read. */
   readonly inFlight: (threadId: ThreadId, runId: string) => Effect.Effect<InFlight | null>;
+  /** Settings' "Auto-resume limited threads": a limit's Cell carries on at the reset. */
+  readonly autoResume: Effect.Effect<boolean>;
 }
 
 /** Items a run is in the middle of that are the model's own words, not a tool call. */
@@ -142,6 +145,7 @@ export const makeNeedsSource = Effect.gen(function* () {
   const threads = yield* ThreadManagementService.ThreadManagementService;
   const events = yield* OrchestrationEventStore.OrchestrationEventStore;
   const startup = yield* ServerRuntimeStartup.ServerRuntimeStartup;
+  const settings = yield* ServerSettings.ServerSettingsService;
 
   const ready = startup.awaitCommandReady.pipe(Effect.orDie);
 
@@ -304,5 +308,9 @@ export const makeNeedsSource = Effect.gen(function* () {
     plan,
     reply,
     inFlight,
+    autoResume: settings.getSettings.pipe(
+      Effect.map((current) => current.autoResumeLimitedThreads),
+      Effect.orElseSucceed(() => false),
+    ),
   } satisfies NeedsSource;
 });

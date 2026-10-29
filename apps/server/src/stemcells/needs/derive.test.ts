@@ -115,21 +115,26 @@ describe("what needs the person, from a Cell's shell", () => {
     expect(kindOf({ ...failed, snoozedUntil: at(-MINUTE), snoozedAt: at(-HOUR) })).toBe("failed");
   });
 
-  it("shows a limit until T3 will carry the Cell on at a reset within 5 hours", () => {
+  it("shows a limit only when nothing will carry the Cell on at a known reset", () => {
     expect(kindOf(limited)).toBe("limit");
-    const recovery = (resetIn: number, run = "run-1") => ({
+    const recovery = (resetIn: number, run = "run-1", autoResume = true) => ({
       ...limited,
-      limitRecovery: {
-        runId: runId(run),
-        resetAt: DateTime.formatIso(at(resetIn)),
-        autoResume: true,
-      },
+      limitRecovery: { runId: runId(run), resetAt: DateTime.formatIso(at(resetIn)), autoResume },
     });
     expect(kindOf(recovery(2 * HOUR))).toBeNull();
-    expect(kindOf(recovery(8 * HOUR))).toBe("limit");
+    // However far off: waiting for a reset is the app's, not the person's.
+    expect(kindOf(recovery(3 * 24 * HOUR))).toBeNull();
     expect(kindOf(recovery(2 * HOUR, "run-0"))).toBe("limit");
     // The reset passed and the run never went on: the carry-on failed.
     expect(kindOf(recovery(-20 * MINUTE))).toBe("limit");
+
+    // Settings' auto-resume carries it before upstream's worker arms the run…
+    const onReset = (shell: Parameters<typeof shellFixture>[0]) =>
+      signalOf(shellFixture(shell), NOW, NOW, true)?.kind ?? null;
+    expect(onReset({ ...limited, usageLimitResetAt: DateTime.formatIso(at(HOUR)) })).toBeNull();
+    // …but not over a run the person cancelled, nor with no reset to wait for.
+    expect(onReset(recovery(HOUR, "run-1", false))).toBe("limit");
+    expect(onReset({ ...limited, usageLimitResetAt: null })).toBe("limit");
   });
 
   it("shows a failure only until the person has opened the Cell since it ended", () => {

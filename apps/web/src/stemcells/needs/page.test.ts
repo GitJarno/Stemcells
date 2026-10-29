@@ -4,7 +4,7 @@ import { needFixture } from "./fixtures";
 import { createPage } from "./page";
 import type { NeedsState } from "./stream";
 
-const LINGER = 1_200;
+const LINGER = 240;
 const CLEARED_FOR = 5_000;
 const floof = needFixture({ key: "floof", number: 1 });
 
@@ -17,6 +17,7 @@ function setup() {
     // The fake timers' clock (each test installs them), so time moves only as a test advances it.
     now: () => vi.getMockedSystemTime()!.getTime(),
     linger: () => LINGER,
+    keep: () => false,
     clearedFor: () => CLEARED_FOR,
   });
   page.subscribe(() => {});
@@ -33,18 +34,12 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe("Aski's page around the list", () => {
-  it("holds a gone card while any place holds it, and lets it leave once none does", () => {
+  it("lets a gone card go once it has folded, then says all is clear", () => {
     const t = setup();
     t.push([floof]);
-    t.page.holdStill("room", true);
-    t.page.holdStill("column", true);
     t.push([]);
-    vi.advanceTimersByTime(10 * LINGER);
     expect(t.page.read().shown.map((each) => each.goneAt !== null)).toEqual([true]);
-    // Held while either place holds it.
-    t.page.holdStill("room", false);
-    expect(t.page.read().shown.map((each) => each.goneAt !== null)).toEqual([true]);
-    t.page.holdStill("column", false);
+    vi.advanceTimersByTime(LINGER);
     expect(t.page.read().shown).toEqual([]);
     expect(t.page.read().cleared).toMatch(/^All clear · 1 answered in /);
   });

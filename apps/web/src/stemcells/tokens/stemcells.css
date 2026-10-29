@@ -324,6 +324,8 @@
   --sc-motion-cut-easing: linear;
   --sc-timing-beat: 120ms;
   --sc-timing-linger: 1200ms;
+  /* An ask folding away once it's answered or gone; the list keeps it that long. */
+  --sc-timing-fold: 240ms;
   --sc-timing-dwell: 400ms;
   --sc-timing-read-before-allow: 1000ms;
   --sc-timing-banner-stay: 5000ms;

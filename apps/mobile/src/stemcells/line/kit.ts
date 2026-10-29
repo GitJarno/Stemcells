@@ -17,6 +17,7 @@ export {
   type CardOption,
   type CardQuestion,
 } from "../../../../web/src/stemcells/needs/card.ts";
+export { sentenceCase, spansOf, type Span } from "../../../../web/src/stemcells/needs/inline.ts";
 export {
   commandsFor,
   type Given,

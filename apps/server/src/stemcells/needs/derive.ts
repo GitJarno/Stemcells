@@ -17,6 +17,7 @@ import type {
   RequestKind,
   Shell,
 } from "../upstream/needs.ts";
+import type { Brief, Link } from "./brief.ts";
 import type { Stop } from "./closeOut.ts";
 import type { Cue, PreRead } from "./preread.ts";
 
@@ -70,11 +71,6 @@ export const REQUEST_KINDS: Readonly<Record<RequestKind, NeedKind>> = {
   dynamic_tool_call: "input",
 };
 
-/**
- * With "carry on at the reset" set, a limit needs nobody when the reset is
- * this close: the Cell goes on by itself.
- */
-export const CARRY_ON_WITHIN_MS = 5 * 60 * 60 * 1000;
 /** A carry-on still not under way this long after the reset has failed. */
 export const CARRY_ON_GRACE_MS = 15 * 60 * 1000;
 
@@ -130,7 +126,7 @@ export function isSnoozed(shell: Shell, now: number): boolean {
 }
 
 /** T3's sidebar rule: a failed latest run nobody has opened the Cell to see since it ended. */
-export function isUnseenFailure(shell: Shell): boolean {
+function isUnseenFailure(shell: Shell): boolean {
   if (shell.status !== "failed") return false;
   const visitedAt = millis(shell.lastVisitedAt);
   const completedAt = millis(shell.latestRunCompletedAt);
@@ -144,15 +140,17 @@ export function limitResetAt(shell: Shell): string | null {
   return shell.usageLimitResetAt ?? null;
 }
 
-/** Whether T3 will carry the Cell on at a reset close enough that nobody needs to look. */
-export function carriesOn(shell: Shell, now: number): boolean {
+/**
+ * Whether the Cell carries on at its reset by itself, so nobody needs to look: armed for its
+ * run (by the person, or by Settings' auto-resume, `autoResume`, before upstream's worker arms
+ * it), with a known reset not long past.
+ */
+export function carriesOn(shell: Shell, now: number, autoResume: boolean): boolean {
   const recovery = shell.limitRecovery;
-  if (recovery == null || !recovery.autoResume || recovery.runId !== shell.latestRunId) {
-    return false;
-  }
-  const resetAt = Date.parse(recovery.resetAt);
-  if (Number.isNaN(resetAt)) return false;
-  return resetAt - now <= CARRY_ON_WITHIN_MS && now - resetAt <= CARRY_ON_GRACE_MS;
+  const armed =
+    recovery != null && recovery.runId === shell.latestRunId ? recovery.autoResume : autoResume;
+  const resetAt = Date.parse(limitResetAt(shell) ?? "");
+  return armed && !Number.isNaN(resetAt) && now - resetAt <= CARRY_ON_GRACE_MS;
 }
 
 function runSettled(shell: Shell): boolean {
@@ -185,9 +183,14 @@ export function stuckFor(signal: Signal, inFlight: InFlight | null, now: number)
 /**
  * The one thing this Cell needs from the person now, or null. `heardAt` is
  * the last time the Cell showed life: an event of its own work, as the
- * service hears them.
+ * service hears them. `autoResume` is Settings' "Auto-resume limited threads".
  */
-export function signalOf(shell: Shell, now: number, heardAt: number = now): Signal | null {
+export function signalOf(
+  shell: Shell,
+  now: number,
+  heardAt: number = now,
+  autoResume = false,
+): Signal | null {
   if (shell.deletedAt !== null || shell.archivedAt !== null) return null;
   if (isSnoozed(shell, now)) return null;
 
@@ -222,7 +225,7 @@ export function signalOf(shell: Shell, now: number, heardAt: number = now): Sign
   const ended = { shell, since: runEnded(shell), blocks: false } as const;
 
   if (shell.status === "failed" && shell.lastErrorClass === "usage_limit") {
-    return carriesOn(shell, now)
+    return carriesOn(shell, now, autoResume)
       ? null
       : { ...ended, key: `${shell.id}:limit:${runId}`, kind: "limit" };
   }
@@ -252,12 +255,13 @@ export function signalsOf(
   shells: ReadonlyArray<Shell>,
   now: number,
   heard: ReadonlyMap<string, number> = new Map(),
+  autoResume = false,
 ): ReadonlyArray<Signal> {
   const aski = askiThreadOf(shells);
   return shells.flatMap((shell) =>
     shell.id === aski || shell.lineage.rootThreadId === aski
       ? []
-      : (signalOf(shell, now, heard.get(shell.id) ?? now) ?? []),
+      : (signalOf(shell, now, heard.get(shell.id) ?? now, autoResume) ?? []),
   );
 }
 
@@ -318,7 +322,7 @@ export interface NeedPlan {
 export interface NeedLimit {
   readonly runId: string;
   readonly resetAt: string | null;
-  /** "Carry on at the reset" is set, but the reset is too far off, unknown or past. */
+  /** "Carry on at the reset" is set, but the reset is unknown or past. */
   readonly autoResume: boolean;
 }
 
@@ -330,10 +334,18 @@ export interface NeedFailure {
 
 export interface NeedProse {
   readonly runId: string;
-  /** What the pre-read found: a question, an offer to go on, or a stop short of done. */
+  /** What the pre-read found: a question, an offer to go on, a stop short of done, or a step left. */
   readonly cue: Cue;
-  /** The reply's last paragraph, word for word. */
+  /** The reply's last paragraph, word for word; a left's steps read as one. */
   readonly text: string;
+  /** A left's steps, each as the Cell wrote it; empty for any other cue. */
+  readonly steps: ReadonlyArray<string>;
+  /** The Cell's own step that waits on the person's; null when it named none. */
+  readonly next: string | null;
+  /** The reply's opening paragraph: what the Cell did. Null when the ask already shows it. */
+  readonly lead: string | null;
+  /** The reply's links the ask's words don't carry. */
+  readonly links: ReadonlyArray<Link>;
 }
 
 export interface NeedStuck {
@@ -373,6 +385,8 @@ export interface NeedDetail {
   readonly prose?: PreRead | null;
   /** What the finished reply says of where the Cell stands; null when it couldn't be read. */
   readonly stop?: Stop | null;
+  /** What the ask carries from the rest of the reply. */
+  readonly brief?: Brief | null;
   readonly inFlight?: InFlight | null;
 }
 
@@ -433,7 +447,15 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
         : null,
     prose:
       signal.kind === "prose" && detail.prose != null
-        ? { runId, cue: detail.prose.cue, text: detail.prose.text }
+        ? {
+            runId,
+            cue: detail.prose.cue,
+            text: detail.prose.text,
+            steps: detail.prose.cue === "left" ? detail.prose.steps : [],
+            next: detail.prose.cue === "left" ? detail.prose.next : null,
+            lead: detail.brief?.lead ?? null,
+            links: detail.brief?.links ?? [],
+          }
         : null,
     stuck:
       signal.kind === "stuck"

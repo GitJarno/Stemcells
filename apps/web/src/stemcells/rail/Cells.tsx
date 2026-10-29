@@ -10,10 +10,10 @@ import {
   SettingsIcon,
   SquarePenIcon,
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { useAskiRoomInFront } from "../aski/inFront";
-import { CardList, useOnList } from "../needs/CardList";
+import { CardList, onListOf } from "../needs/CardList";
 import type { Shown } from "../needs/display";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce } from "../needs/live";
@@ -113,7 +113,7 @@ export function Cells() {
   // Settings and Usage have no ⌘Z to undo with.
   const { open } = useSidebar();
   useRailUndoNotice(!open && lit === null);
-  const onList = useOnList(view);
+  const onList = onListOf(view);
   const settling = useLeaving(leaving);
 
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mark the document root with the Cells column while it is mounted.
@@ -350,10 +350,9 @@ function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onO
 }
 
 /**
- * What needs you: the cards, held still while you're among them for what
- * the server changes; your own answer or settle takes one off at once. In
- * front of Aski's room, which shows every ask open, they fold to an index
- * of it (stemcells/tasks/aski-asks.md, decision 8).
+ * What needs you: the cards, each folding away the moment it's answered,
+ * settled or gone. In front of Aski's room, which shows every ask open, they
+ * fold to an index of it (stemcells/tasks/aski-asks.md, decision 8).
  */
 function NeedsHere(props: {
   waiting: number;
@@ -365,25 +364,12 @@ function NeedsHere(props: {
   onShowAll: () => void;
 }) {
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
-  const [pointerIn, setPointerIn] = useState(false);
-  const [focusIn, setFocusIn] = useState(false);
-  const onPerson = (pointer: boolean | null, focus: boolean | null) => {
-    if (pointer !== null) setPointerIn(pointer);
-    if (focus !== null) setFocusIn(focus);
-  };
-  const held = pointerIn || focusIn;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hold the needs page's cards still while the pointer or focus is among them, releasing on unmount.
-  useEffect(() => {
-    page.holdStill("column", held);
-    return () => page.holdStill("column", false);
-  }, [held]);
   const index = useAskiRoomInFront();
   // A peek shows only in Aski's room; from here the chat opens where a Cell lands.
   const open = useOpenFromNeeds();
   return (
     <CardList
       view={view}
-      onPerson={onPerson}
       openChat={open.chat}
       queue
       reveal={index ? revealInRoom : undefined}

@@ -1,15 +1,18 @@
 import { FlagIcon } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 
-import { keepCard, KINDS, useAutonomy, type Kind } from "../autonomy/autonomy";
+import { keepCard, useAutonomy } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
 import { CellMark } from "../tabs/CellMark";
-import { diskFailure } from "../disk/pressure";
+import { openCleanupCell } from "../disk/cleanupCell";
+import { diskFailure, type DiskFailure } from "../disk/pressure";
 import { timing } from "../tokens/motion";
 import { compactAge } from "../upstream/cellRow";
-import { useMachineDisk } from "../upstream/disk";
+import { useMachineDisk, useOpenDiskCell } from "../upstream/disk";
 import {
+  cellRef,
+  ChatMarkdown,
   observeResize,
   useNowMinuteMs,
   useOpenFromNeeds,
@@ -32,6 +35,7 @@ import type { Hold } from "./holds";
 import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { type Lit, lit, useLit } from "./answers/lit";
+import { linkAddresses, marksUp } from "./inline";
 import { tellAsk } from "./told";
 import { rereadWholeKinds, useShowsWhole } from "./whole";
 import { answering, land } from "./walk";
@@ -43,13 +47,6 @@ export function whoOf(need: Shown["need"]): string {
     : `${cellNameOf(need.parentThreadId)} › ${need.title}`;
 }
 
-/** The kind of take a card Aski took was, by its need (the server's `autonomy/kinds.ts`). */
-const TAKEN: Partial<Record<Shown["need"]["kind"], Kind>> = {
-  failed: "retry",
-  prose: "goAhead",
-  plan: "implement",
-};
-
 /** Whether a card still takes an answer: live, and no answer of the person's held, sending or sent. */
 export function answerableOf(shown: Shown, hold: Hold | undefined): boolean {
   if (shown.goneAt !== null || hold === undefined) return shown.goneAt === null;
@@ -60,38 +57,57 @@ export function answerableOf(shown: Shown, hold: Hold | undefined): boolean {
 const keyedIn = (card: HTMLElement): boolean =>
   card.matches(":focus-visible") || card.querySelector(":focus-visible") !== null;
 
-/** Why a held answer wasn't sent: the need changed under it. */
-const staleLine = (need: Shown["need"], who: string): string =>
-  need.kind === "stuck"
-    ? `${who} moved again before yours went. Yours wasn't sent.`
-    : `${who} already had an answer. Yours wasn't sent.`;
-
 /** Where the words of an answer that wasn't sent went. */
 const backLine = (hold: Hold | undefined): string =>
   hold?.wordsBack ? " Your words are back in Aski's composer." : "";
 
 /**
- * One need, as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6): its Cell, project
- * and age on one line; what it asks; at most two lines of what you need to decide; the
- * options, each one app action. A choice takes the card off the list at once, onto the undo
- * line (`holds.ts`); a need that is gone greys in place and says why.
+ * One need, as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6, and unblocking.md):
+ * its Cell, project and age on one line; what to do; what the Cell did, two lines until More;
+ * what waits on it and where its reply points; the options side by side, each one app action.
+ * Answered (onto the undo line, `holds.ts`), settled or gone, it folds away at once.
  */
-export function NeedCard(props: {
+type NeedCardProps = {
   shown: Shown;
   hold: Hold | undefined;
+  /** Answered, settled or gone: it folds away, and takes no more input. */
+  leaving: boolean;
   /** When this page first saw the need. */
   seenAt: number | null;
   /** Opens the asking chat; a peek beside the cards unless the list says otherwise. */
   openChat?: ((threadId: string) => void) | undefined;
   /** In a queue, a card that isn't the open one shows only who asks and what. */
   queued?: { readonly open: boolean; readonly onOpen: () => void } | undefined;
-}) {
-  const { need, goneAt } = props.shown;
+};
+
+export function NeedCard(props: NeedCardProps) {
+  return props.shown.need.kind === "failed" ? (
+    <FailedCard {...props} />
+  ) : (
+    <Card {...props} disk={null} freeSpace={null} />
+  );
+}
+
+/** A failed turn reads its machine's disk: a full one says so, and offers the cleanup Cell. */
+function FailedCard(props: NeedCardProps) {
+  const environmentId = usePrimaryEnvironmentId();
+  const disk = useMachineDisk(environmentId);
+  const openDiskCell = useOpenDiskCell(environmentId);
+  return (
+    <Card
+      {...props}
+      disk={disk ? diskFailure(props.shown.need.key, disk.free) : null}
+      freeSpace={openDiskCell === null ? null : () => void openCleanupCell(openDiskCell)}
+    />
+  );
+}
+
+function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void) | null }) {
+  const { need } = props.shown;
   const hold = props.hold;
   const now = useNowMinuteMs();
   const environmentId = usePrimaryEnvironmentId();
-  const disk = useMachineDisk(need.kind === "failed" ? environmentId : null);
-  const card = cardOf(need, now, disk ? diskFailure(need.key, disk.free) : null);
+  const card = cardOf(need, now, props.disk);
   const who = whoOf(need);
   const cell =
     environmentId === null ? null : { environmentId, threadId: need.threadId, draftId: null };
@@ -102,11 +118,9 @@ export function NeedCard(props: {
   const lights = useLit();
   const fromWords = lights.reading.get(need.key) ?? null;
   const asked = lights.asked.get(need.key) ?? null;
-  // Whether Aski is about to take this card for the person, or took it.
+  // Whether Aski is about to take this card for the person.
   const autonomy = useAutonomy();
   const taking = autonomy?.taking.find((each) => each.key === need.key) ?? null;
-  const took = TAKEN[need.kind];
-  const tookIt = took !== undefined && autonomy?.took.includes(need.key) === true;
 
   // An allow can't land in the card's first moment: a card arriving under
   // the pointer is read before it is clicked.
@@ -141,14 +155,16 @@ export function NeedCard(props: {
     if (taking !== null) void keepCard(need.key);
   };
   const choose = (option: CardOption, given: Given = {}) => {
+    // The cleanup Cell is a new Cell on the full machine: the card stays until it retries.
+    if (option.choice.kind === "freeSpace") return props.freeSpace?.();
     keepFromAski();
     answering(section.current);
     lit.answered(need.key);
     holdAnswer(commandsFor(need, option.choice, given, Date.now()));
   };
 
-  const gone = goneAt !== null;
-  const answerable = answerableOf(props.shown, hold);
+  const answerable = answerableOf(props.shown, hold) && !props.leaving;
+  const ref = cell === null ? null : cellRef(cell.environmentId, cell.threadId);
 
   // A card Aski is about to take stays open, so its fuse can be seen and stopped.
   const collapsed =
@@ -248,6 +264,8 @@ export function NeedCard(props: {
         data-open=""
         data-queued=""
         data-blocks={need.blocks || undefined}
+        data-leaving={props.leaving || undefined}
+        inert={props.leaving}
         aria-label={`${who}: ${card.headline}`}
         onFocus={(event) => {
           if (event.target === event.currentTarget && keyedIn(event.currentTarget)) openQueued();
@@ -257,7 +275,7 @@ export function NeedCard(props: {
         <button type="button" data-need-head="" aria-expanded={false}>
           {head}
         </button>
-        <p data-need-ask="">{card.headline}</p>
+        <p data-need-ask="">{plainOf(card.headline)}</p>
       </section>
     );
   }
@@ -272,28 +290,47 @@ export function NeedCard(props: {
       data-need-thread={need.threadId}
       data-open={answerable || undefined}
       data-blocks={need.blocks || undefined}
-      data-gone={gone || undefined}
+      data-leaving={props.leaving || undefined}
+      inert={props.leaving}
       aria-label={`${who}: ${card.headline}`}
       onKeyDown={pickByNumber}
     >
       <header data-need-head="">
         {head}
-        {gone ? null : tail}
+        {tail}
       </header>
-      <p data-need-ask="">{card.headline}</p>
-      {card.quote ? <Context text={card.quote} open={flag !== null || whole} /> : null}
-      {card.request ? <pre data-need-request="">{card.request}</pre> : null}
+      <div data-need-ask="">
+        <Words text={card.headline} cell={ref} />
+      </div>
       {card.steps.length > 0 ? (
         <ol data-need-steps="">
           {card.steps.map((step) => (
-            <li key={step}>{step}</li>
+            <li key={step}>
+              <Words text={step} cell={ref} />
+            </li>
           ))}
         </ol>
+      ) : null}
+      {card.quote ? <Context text={card.quote} cell={ref} open={flag !== null || whole} /> : null}
+      {card.request ? <pre data-need-request="">{card.request}</pre> : null}
+      {card.next ? (
+        <div data-need-next="">
+          <span>Then {cellNameOf(need.parentThreadId ?? need.threadId)}:</span>{" "}
+          <Words text={card.next} cell={ref} />
+        </div>
+      ) : null}
+      {card.links.length > 0 ? (
+        <div data-need-links="">
+          <Words
+            text={card.links.map((link) => `[${link.label}](${link.url})`).join(" · ")}
+            cell={ref}
+          />
+        </div>
       ) : null}
       {card.why ? <p data-need-why="">{card.why}</p> : null}
       {card.note ? <p data-need-note="">{card.note}</p> : null}
       {flag === "asking" ? (
-        <Words
+        <Field
           placeholder="What was missing? Kept on this Mac"
           action="Note it"
           onSend={(note) => {
@@ -303,61 +340,44 @@ export function NeedCard(props: {
           onCancel={() => setFlag("said")}
         />
       ) : null}
-
-      {gone ? (
-        <p data-need-receipt="">
-          {tookIt
-            ? KINDS[took].took
-            : hold?.state === "stale"
-              ? staleLine(need, who) + backLine(hold)
-              : need.kind === "stuck"
-                ? "It's moving again."
-                : need.request !== null
-                  ? "Answered elsewhere."
-                  : "Taken care of elsewhere."}
+      {taking !== null ? (
+        <TakingFuse
+          key={taking.at}
+          kind={taking.kind}
+          from={taking.from}
+          at={taking.at}
+          onUndo={() => keepCard(need.key)}
+        />
+      ) : null}
+      {hold?.state === "failed" ? (
+        <p data-need-receipt="" data-warn="">
+          {hold.why + backLine(hold)}
         </p>
-      ) : (
-        <>
-          {taking !== null ? (
-            <TakingFuse
-              key={taking.at}
-              kind={taking.kind}
-              from={taking.from}
-              at={taking.at}
-              onUndo={() => keepCard(need.key)}
-            />
-          ) : null}
-          {hold?.state === "failed" || hold?.state === "stale" ? (
-            <p data-need-receipt="" data-warn="">
-              {(hold.state === "stale" ? staleLine(need, who) : hold.why) + backLine(hold)}
-            </p>
-          ) : null}
-          {fromWords?.kind === "chosen" && fromWords.words !== null ? (
-            <p data-need-pending="">“{fromWords.words}”</p>
-          ) : null}
-          {card.questions.length > 0 ? (
-            <Questions
-              questions={card.questions}
-              lit={fromWords}
-              onAnswer={(answers) => {
-                keepFromAski();
-                answering(section.current);
-                lit.answered(need.key);
-                holdAnswer(commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
-              }}
-            />
-          ) : null}
-          {shownOptions(card).length > 0 ? (
-            <Options
-              options={shownOptions(card)}
-              allowReady={allowReady}
-              lit={fromWords}
-              asked={asked}
-              onChoose={choose}
-            />
-          ) : null}
-        </>
-      )}
+      ) : null}
+      {fromWords?.kind === "chosen" && fromWords.words !== null ? (
+        <p data-need-pending="">“{fromWords.words}”</p>
+      ) : null}
+      {card.questions.length > 0 ? (
+        <Questions
+          questions={card.questions}
+          lit={fromWords}
+          onAnswer={(answers) => {
+            keepFromAski();
+            answering(section.current);
+            lit.answered(need.key);
+            holdAnswer(commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
+          }}
+        />
+      ) : null}
+      {shownOptions(card).length > 0 ? (
+        <Options
+          options={shownOptions(card)}
+          allowReady={allowReady}
+          lit={fromWords}
+          asked={asked}
+          onChoose={choose}
+        />
+      ) : null}
     </section>
   );
 }
@@ -386,12 +406,29 @@ function pickByNumber(event: KeyboardEvent<HTMLElement>) {
 }
 
 /**
- * The Cell's own words around its question, two lines at most until More shows them all,
- * in place: never a trip to its chat.
+ * Words of an ask, as the chat draws them: links, code and bold through upstream's markdown,
+ * a bare web address linked (`inline.ts`); plain words stay plain text, which costs nothing.
  */
-/** The Cell's words, two lines until More, or `open` (a flag), shows them all. */
-function Context(props: { text: string; open: boolean }) {
-  const body = useRef<HTMLParagraphElement>(null);
+function Words(props: { text: string; cell: ReturnType<typeof cellRef> | null }) {
+  if (!marksUp(props.text)) return props.text;
+  return (
+    <ChatMarkdown
+      inline
+      text={linkAddresses(props.text)}
+      cwd={undefined}
+      threadRef={props.cell ?? undefined}
+      parseRawHtml={false}
+    />
+  );
+}
+
+/** A folded ask's one line: its words without their markup. */
+const plainOf = (text: string): string =>
+  text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");
+
+/** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */
+function Context(props: { text: string; cell: ReturnType<typeof cellRef> | null; open: boolean }) {
+  const body = useRef<HTMLDivElement>(null);
   const [long, setLong] = useState(false);
   const [opened, setOpened] = useState(false);
   const more = opened || props.open;
@@ -403,7 +440,9 @@ function Context(props: { text: string; open: boolean }) {
   }, [more]);
   return (
     <div data-need-context="" data-more={more || undefined}>
-      <p ref={body}>{props.text}</p>
+      <div ref={body}>
+        <Words text={props.text} cell={props.cell} />
+      </div>
       {long && !more ? (
         <button type="button" onClick={() => setOpened(true)}>
           More
@@ -425,6 +464,11 @@ const LIGHT_LINES = {
   words: "say what, or click",
 } as const;
 
+/**
+ * The card's options side by side (unblocking.md, decision 6). The line under them says what
+ * the one you're on does, else the lit, warned or recommended one. An option that takes words
+ * turns the row into one full-width field, focused; Esc brings the buttons back.
+ */
 function Options(props: {
   options: ReadonlyArray<CardOption>;
   allowReady: boolean;
@@ -432,18 +476,29 @@ function Options(props: {
   asked: string | null;
   onChoose: (option: CardOption, given?: Given) => void;
 }) {
-  const [writing, setWriting] = useState<string | null>(null);
+  const [writing, setWriting] = useState<CardOption | null>(null);
+  const [on, setOn] = useState<string | null>(null);
+  if (writing !== null) {
+    return (
+      <Field
+        placeholder={writing.words ?? ""}
+        onSend={(words) => props.onChoose(writing, { words })}
+        onCancel={() => setWriting(null)}
+      />
+    );
+  }
+  const lit = props.options.find(
+    (option) => lightOf(option.id, props.lit, props.asked) !== undefined,
+  );
+  const said =
+    props.options.find((option) => option.id === on) ??
+    lit ??
+    props.options.find((option) => option.warn) ??
+    props.options.find((option) => option.recommended && !option.allows);
   return (
-    <div data-need-options="">
-      {props.options.map((option) =>
-        writing === option.id ? (
-          <Words
-            key={option.id}
-            placeholder={option.words ?? ""}
-            onSend={(words) => props.onChoose(option, { words })}
-            onCancel={() => setWriting(null)}
-          />
-        ) : (
+    <div data-need-acts="" onPointerLeave={() => setOn(null)}>
+      <div data-need-options="">
+        {props.options.map((option) => (
           <button
             key={option.id}
             type="button"
@@ -453,28 +508,34 @@ function Options(props: {
             data-warn={option.warn || undefined}
             data-lit={lightOf(option.id, props.lit, props.asked)}
             disabled={option.allows && !props.allowReady}
-            onClick={() => (option.words ? setWriting(option.id) : props.onChoose(option))}
+            onPointerEnter={() => setOn(option.id)}
+            onFocus={() => setOn(option.id)}
+            onBlur={() => setOn(null)}
+            onClick={() => (option.words ? setWriting(option) : props.onChoose(option))}
           >
-            <span data-need-option-title="">{option.title}</span>
-            {option.recommended ? <span className="sr-only">Recommended</span> : null}
-            <LightLine light={lightOf(option.id, props.lit, props.asked)} />
-            {option.consequence ? (
-              <span data-need-option-consequence="">{option.consequence}</span>
-            ) : null}
+            {option.title}
+            {option.recommended ? <span className="sr-only"> (recommended)</span> : null}
           </button>
-        ),
-      )}
+        ))}
+      </div>
+      {said !== undefined && (said.consequence !== null || said === lit) ? (
+        <p data-need-option-says="" data-warn={said.warn || undefined}>
+          <LightLine light={lightOf(said.id, props.lit, props.asked)} />
+          {said.consequence}
+        </p>
+      ) : null}
     </div>
   );
 }
 
 function LightLine(props: { light: keyof typeof LIGHT_LINES | undefined }) {
   return props.light === undefined ? null : (
-    <span data-need-option-lit="">{LIGHT_LINES[props.light]}</span>
+    <span data-need-option-lit={props.light}>{LIGHT_LINES[props.light]}</span>
   );
 }
 
-function Words(props: {
+/** A field for the person's own words, full width, focused as it opens. */
+function Field(props: {
   placeholder: string;
   /** What its button says; "Send" when the words go to the Cell. */
   action?: string;
@@ -592,7 +653,7 @@ function Questions(props: {
               );
             })}
             {question.other === null ? null : writing === question.id ? (
-              <Words
+              <Field
                 placeholder={question.other}
                 onSend={(words) => {
                   if (single) return props.onAnswer({ [question.id]: words.trim() });

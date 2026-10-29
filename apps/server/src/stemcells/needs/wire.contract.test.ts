@@ -48,6 +48,7 @@ const source: NeedsSource = {
   plan: () => Effect.succeed(null),
   reply: () => Effect.succeed(null),
   inFlight: () => Effect.succeed({ tool: null }),
+  autoResume: Effect.succeed(false),
 };
 
 it.effect("the JSON the server sends is what the phone reads", () =>

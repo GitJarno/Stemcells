@@ -40,3 +40,12 @@ export function requestFixture(overrides: Partial<NeedRequest> = {}): NeedReques
     ...overrides,
   };
 }
+
+/** A finished reply's ask: its cue and words, and nothing else of the reply unless given. */
+export function proseFixture(
+  cue: NonNullable<Need["prose"]>["cue"],
+  text: string,
+  more: Partial<NonNullable<Need["prose"]>> = {},
+): NonNullable<Need["prose"]> {
+  return { runId: "run-1", cue, text, steps: [], next: null, lead: null, links: [], ...more };
+}

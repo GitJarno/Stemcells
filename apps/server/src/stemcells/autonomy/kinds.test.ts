@@ -22,10 +22,11 @@ const base: Need = {
   stuck: null,
 };
 
-const stopped = (text: string): Need => ({
+const prose = (cue: "stopped" | "offer", text: string): Need => ({
   ...base,
-  prose: { runId: "run-1", cue: "stopped", text },
+  prose: { runId: "run-1", cue, text, steps: [], next: null, lead: null, links: [] },
 });
+const stopped = (text: string) => prose("stopped", text);
 const plan = (markdown: string): Need => ({
   ...base,
   kind: "plan",
@@ -44,9 +45,7 @@ describe("kindOf", () => {
     expect(kindOf(failed("permission_error"))).toBeNull();
     expect(kindOf(failed("validation_error"))).toBeNull();
     expect(kindOf(stopped("Next, I'll add the tests."))).toBe("goAhead");
-    expect(kindOf({ ...base, prose: { runId: "run-1", cue: "offer", text: "Want me to?" } })).toBe(
-      null,
-    );
+    expect(kindOf(prose("offer", "Want me to?"))).toBeNull();
     expect(kindOf(plan("# Tidy the list\n- Sort it\n- Test it"))).toBe("implement");
     expect(kindOf({ ...base, kind: "permission" })).toBeNull();
   });

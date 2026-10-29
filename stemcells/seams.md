@@ -1314,12 +1314,14 @@ the marks in whichever file draws them, as upstream moved them out of
 ### A Cell carries on after a usage limit
 
 With Settings' "Auto-resume limited threads" on (upstream's
-`autoResumeLimitedThreads`, off by default), a Cell a usage limit stopped
+`autoResumeLimitedThreads`, off in upstream, which Stemcells turns on once
+per server: `stemcells/defaults/`), a Cell a usage limit stopped
 carries on by itself when the limit's reset passes, or when the person
 signs in again (`/login`, `claude auth login`), with upstream's own line,
 "Continue where you left off." (`stemcells/tasks/limit-resume.md`). A
 resume is a model call the person didn't start, so it is that switch's to
-allow: one switch, upstream's, already in Settings. No upstream file
+allow: one switch, upstream's, already in Settings, and a person who turns
+it off keeps it off. No upstream file
 changes:
 
 - **The server** (`apps/server/src/stemcells/limitResume/`, mounted through

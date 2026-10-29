@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -10,9 +9,8 @@ import {
   type RefObject,
 } from "react";
 
-import { useAskiRoomInFront } from "../aski/inFront";
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
-import { CardList, useOnList } from "./CardList";
+import { CardList, onListOf } from "./CardList";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
 import { page } from "./live";
 import { enter } from "./walk";
@@ -90,23 +88,7 @@ export function NeedsFrame(props: {
   const { layout, hinge } = useLayout(root);
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
   const draft = useDraftText(props.aski);
-  const inFront = useAskiRoomInFront();
-  const [pointerIn, setPointerIn] = useState(false);
-  const [focusIn, setFocusIn] = useState(false);
-  // The pointer or keyboard focus in the list holds it still; a click's focus doesn't.
-  const onPerson = (pointer: boolean | null, focus: boolean | null) => {
-    if (pointer !== null) setPointerIn(pointer);
-    if (focus !== null) setFocusIn(focus);
-  };
-  const frozen = draft !== "" || pointerIn || focusIn;
-  // The room holds the asks still only while it is in front: a draft left in Aski's composer
-  // doesn't hold them while the person works elsewhere.
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hold the shared page still for this room's draft, pointer and focus while it is in front; let go on unmount.
-  useEffect(() => {
-    page.holdStill("room", inFront && frozen);
-    return () => page.holdStill("room", false);
-  }, [frozen, inFront]);
-  const waiting = useOnList(view).filter((each) => each.goneAt === null).length;
+  const waiting = onListOf(view).filter((each) => each.goneAt === null).length;
   // ↓ in Aski's empty composer steps onto the first open card.
   const enterKeys = (event: KeyEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowDown" || event.altKey || event.metaKey || event.ctrlKey) return;
@@ -118,7 +100,6 @@ export function NeedsFrame(props: {
   const list = (
     <CardList
       view={view}
-      onPerson={onPerson}
       head={
         // Wide, the asks speak for themselves: only what isn't plain from them is said.
         layout === "narrow" || waiting === 0 || !view.live ? (

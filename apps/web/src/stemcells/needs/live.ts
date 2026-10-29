@@ -9,7 +9,7 @@ import { useSettleCell } from "../upstream/settle";
 import { putAnswerOnUndoLine } from "../upstream/undoNotice";
 import { timing } from "../tokens/motion";
 import { movedByHand } from "./byHand";
-import { createHolds } from "./holds";
+import { answered, createHolds } from "./holds";
 import { createLeaving } from "./leaving";
 import { createPage } from "./page";
 import { readNeeds, subscribeNeeds } from "./stream";
@@ -25,11 +25,34 @@ export const holds = createHolds({
 
 export const leaving = createLeaving({ needs: readNeeds, subscribeNeeds });
 
+/**
+ * The list the page shows: the server's, less what the person answered or is settling. Theirs
+ * leaves the page as the server's gone ones do, folding away at once (unblocking.md, 7).
+ */
+function needsLeft() {
+  const state = readNeeds();
+  if (state.needs === null) return state;
+  const answers = holds.read();
+  const settling = leaving.read();
+  const left = state.needs.filter(
+    (need) => !answered(answers.get(need.key)) && !settling.has(need.threadId),
+  );
+  return left.length === state.needs.length ? state : { ...state, needs: left };
+}
+
 export const page = createPage({
-  needs: readNeeds,
-  subscribeNeeds,
+  needs: needsLeft,
+  subscribeNeeds: (listener) => {
+    const unsubscribes = [
+      subscribeNeeds(listener),
+      holds.subscribe(listener),
+      leaving.subscribe(listener),
+    ];
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+  },
   now: () => Date.now(),
-  linger: () => timing("linger"),
+  linger: () => timing("fold"),
+  keep: (key) => holds.read().get(key)?.state === "holding",
   clearedFor: () => timing("bannerStay"),
 });
 

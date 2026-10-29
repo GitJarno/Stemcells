@@ -49,6 +49,12 @@ export const minuteMs = (minute: string): number => Date.parse(`${minute}:00Z`);
 /** The current minute in ms, ticking each minute, on upstream's clock. */
 export const useNowMinuteMs = (): number => minuteMs(useNowMinute());
 export { observeResize } from "~/lib/observeResize";
+/** Upstream's chat markdown, which draws an ask's words and opens its links as the chat does. */
+export { default as ChatMarkdown } from "~/components/ChatMarkdown";
+
+/** A Cell's chat as upstream's markdown takes it: its links open in that chat's browser. */
+export const cellRef = (environmentId: string, threadId: string) =>
+  scopeThreadRef(environmentId as EnvironmentId, ThreadId.make(threadId));
 
 /** Upstream's composer, inside a chat pane: the sheet over Aski's chat stops above it. */
 export const COMPOSER_SURFACE_SELECTOR = '[data-chat-composer-surface="true"]';

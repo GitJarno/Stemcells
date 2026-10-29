@@ -8,11 +8,21 @@
 /** "left": the Cell's own close-out names a step that is the person's (`closeOut.ts`). */
 export type Cue = "question" | "offer" | "stopped" | "left";
 
-export interface PreRead {
-  readonly cue: Cue;
-  /** The reply's last paragraph, word for word: what the card quotes. */
-  readonly text: string;
-}
+export type PreRead =
+  | {
+      readonly cue: Exclude<Cue, "left">;
+      /** The reply's last paragraph, word for word: what the card quotes. */
+      readonly text: string;
+    }
+  | {
+      readonly cue: "left";
+      /** The steps read as one. */
+      readonly text: string;
+      /** Each step, as the Cell wrote it. */
+      readonly steps: ReadonlyArray<string>;
+      /** The Cell's own step that waits on the person's, if it named one. */
+      readonly next: string | null;
+    };
 
 /** A card quotes at most this much, from the end, where the ask is. */
 export const QUOTE_CAP = 1_000;

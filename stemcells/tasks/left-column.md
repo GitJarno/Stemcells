@@ -96,7 +96,7 @@ interactive draft in the chat that asked for it.
   hops (`Cells.browser.test.tsx`); which close settles and that Undo waits
   for the settle (`settled.test.ts`, `SettledPanes.browser.test.tsx`);
   stop-then-settle (`upstream/settle.test.ts`); the hops' detection
-  (`moves.test.ts`); the merge default, once (`mergeDefault.test.ts`).
+  (`moves.test.ts`); the merge default, once (`defaults.test.ts`).
 - Seen in headless captures: the column at 288 px, the queue folding one
   card and opening the next, and a hop from Working's Cells to Landed's.
 - Not seen in the real app: the hop and roll-up at full speed on the

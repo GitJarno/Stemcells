@@ -14,7 +14,7 @@ import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as PushHttp from "./push/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
-import * as MergeDefault from "./settle/mergeDefault.ts";
+import * as Defaults from "./defaults/defaults.ts";
 import * as SpendHttp from "./spend/http.ts";
 import * as SuggestionHttp from "./suggestions/http.ts";
 import * as TailscaleHttp from "./tailscale/http.ts";
@@ -41,7 +41,7 @@ export const layer = Layer.mergeAll(
   SpendHttp.layer,
   TailscaleHttp.layer,
   Look.layer,
-  MergeDefault.layer,
+  Defaults.layer,
   Privacy.layer,
 );
 

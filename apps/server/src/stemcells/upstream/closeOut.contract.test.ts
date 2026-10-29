@@ -40,7 +40,7 @@ describe("the close-out every Cell is given", () => {
     expect(example).toContain("**Left:**");
     expect(stopOf(`Pushed it.\n\n${example}`)).toMatchObject({ ask: null, waits: true });
     for (const owner of ["you", "me", "waiting"] as const) {
-      expect(readCloseOut(`**Left:** ${owner}: the step`).closeOut).toEqual({
+      expect(readCloseOut(`**Left:** ${owner}: the step`).closeOut).toMatchObject({
         kind: "left",
         owner,
         text: "the step",

@@ -64,6 +64,7 @@ const fakeSource = Effect.gen(function* () {
         return replies.get(threadId) ?? null;
       }),
     inFlight: (threadId) => Effect.succeed({ tool: tools.get(threadId) ?? null }),
+    autoResume: Effect.succeed(false),
   };
   const put = (shell: Shell) => shells.set(shell.id, shell);
   /** The Cells' own work changed these threads. */
@@ -194,6 +195,10 @@ it.effect(
           runId: "run-1",
           cue: "offer",
           text: "Want me to push it?",
+          steps: [],
+          next: null,
+          lead: "The fix is in.",
+          links: [],
         });
 
         // Each reply is read once for its run, though the list is derived again.

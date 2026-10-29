@@ -1,7 +1,7 @@
 /**
  * The cards on the page, from the newest list (stemcells/tasks/aski-room.md, decisions 3 and
- * 9). Cards never re-sort: a new one joins at the bottom. A card whose need is gone greys in
- * place and leaves after a beat, but waits while the person types, points or focuses the list.
+ * 9). Cards never re-sort: a new one joins at the bottom. A card whose need is gone folds away
+ * at once and leaves the list once it has (stemcells/tasks/unblocking.md, decision 7).
  */
 import type { Need } from "./wire";
 
@@ -14,14 +14,20 @@ export interface Shown {
 export function nextShown(
   previous: ReadonlyArray<Shown>,
   latest: ReadonlyArray<Need>,
-  options: { readonly frozen: boolean; readonly now: number; readonly linger: number },
+  options: {
+    readonly now: number;
+    readonly linger: number;
+    /** A gone card kept folded past its linger: an answer still on the undo line. */
+    readonly keep?: (key: string) => boolean;
+  },
 ): ReadonlyArray<Shown> {
   const byKey = new Map(latest.map((need) => [need.key, need]));
   const kept = previous.flatMap((shown): Shown[] => {
     const live = byKey.get(shown.need.key);
     if (live !== undefined) return [{ need: live, goneAt: null }];
     const goneAt = shown.goneAt ?? options.now;
-    const leaving = !options.frozen && options.now - goneAt >= options.linger;
+    const leaving =
+      options.now - goneAt >= options.linger && options.keep?.(shown.need.key) !== true;
     return leaving ? [] : [{ need: shown.need, goneAt }];
   });
   const seen = new Set(previous.map((shown) => shown.need.key));
@@ -39,9 +45,15 @@ export function nextShown(
   return same ? previous : next;
 }
 
-/** When the next gone card may leave, if the page stays unfrozen. */
-export function nextLeaveAt(shown: ReadonlyArray<Shown>, linger: number): number | null {
-  const times = shown.flatMap((each) => (each.goneAt === null ? [] : [each.goneAt + linger]));
+/** When the next gone card leaves the list; a kept one waits for what keeps it to change. */
+export function nextLeaveAt(
+  shown: ReadonlyArray<Shown>,
+  linger: number,
+  keep: (key: string) => boolean = () => false,
+): number | null {
+  const times = shown.flatMap((each) =>
+    each.goneAt === null || keep(each.need.key) ? [] : [each.goneAt + linger],
+  );
   return times.length === 0 ? null : Math.min(...times);
 }
 

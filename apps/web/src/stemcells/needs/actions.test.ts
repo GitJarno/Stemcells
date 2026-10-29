@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { commandsFor } from "./actions";
-import { NOW, needFixture, requestFixture } from "./fixtures";
+import { NOW, needFixture, proseFixture, requestFixture } from "./fixtures";
 
 const permission = needFixture({ request: requestFixture() });
 
@@ -66,15 +66,25 @@ describe("a choice as upstream's commands", () => {
     const prose = needFixture({
       kind: "prose",
       request: null,
-      prose: { runId: "run-1", cue: "offer", text: "Want me to push it?" },
+      prose: proseFixture("offer", "Want me to push it?"),
     });
     expect(commandsFor(prose, { kind: "goAhead" }, {}, NOW)).toEqual([
       { type: "message", text: "Go ahead." },
     ]);
     expect(commandsFor(prose, { kind: "nothingToDo" }, {}, NOW)).toEqual([{ type: "settle" }]);
-    expect(commandsFor(prose, { kind: "didIt" }, {}, NOW)).toEqual([
+  });
+
+  it("says a step is done only to a Cell with its own step waiting, and settles one without", () => {
+    const left = (next: string | null) =>
+      needFixture({
+        kind: "prose",
+        request: null,
+        prose: proseFixture("left", "sign in", { next }),
+      });
+    expect(commandsFor(left("merge it"), { kind: "didIt" }, {}, NOW)).toEqual([
       { type: "message", text: "Done. Carry on." },
     ]);
+    expect(commandsFor(left(null), { kind: "didIt" }, {}, NOW)).toEqual([{ type: "settle" }]);
   });
 
   it("nudges a stuck run without stopping it, or stops it to start again from the person's words", () => {

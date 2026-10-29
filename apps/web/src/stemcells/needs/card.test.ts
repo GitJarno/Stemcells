@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { askOf, cardOf, whenOf } from "./card";
 import type { Need } from "./wire";
-import { NOW, needFixture, requestFixture } from "./fixtures";
+import { NOW, needFixture, proseFixture, requestFixture } from "./fixtures";
 
 const titles = (card: ReturnType<typeof cardOf>) => card.options.map((option) => option.title);
 
@@ -159,8 +159,10 @@ describe("a card says what the Cell asked, as it asked it", () => {
         NOW,
       );
     expect(titles(limit("2026-10-21T18:00:00.000Z"))).toEqual(["Carry on at the reset"]);
+    expect(limit("2026-10-21T11:00:00.000Z").headline).toMatch(/^Its usage limit reset today /);
     expect(titles(limit("2026-10-21T11:00:00.000Z"))).toEqual(["Continue now"]);
-    expect(titles(limit(null))).toEqual([]);
+    // With no reset to wait for, trying again is the only way on.
+    expect(titles(limit(null))).toEqual(["Continue now"]);
     expect(limit("2026-10-21T18:00:00.000Z").options[0]?.recommended).toBe(false);
   });
 
@@ -197,10 +199,22 @@ describe("a card says what the Cell asked, as it asked it", () => {
         NOW,
         disk,
       );
+    // The fix first while the disk is full: the cleanup Cell, as the chat's own row offers.
     expect(failed("full")).toMatchObject({ headline: "The disk is full" });
-    expect(failed("full").options[0]?.recommended).toBe(false);
+    expect(failed("full").options.map((each) => [each.title, each.recommended])).toEqual([
+      ["Free space", true],
+      ["Retry", false],
+      ["Reply…", false],
+      ["Dismiss", false],
+    ]);
     expect(failed("freed")).toMatchObject({ headline: "The disk was full" });
-    expect(failed("freed").options[0]?.recommended).toBe(true);
+    expect(failed("freed").options.map((each) => [each.title, each.recommended])).toEqual([
+      ["Retry", true],
+      ["Free space", false],
+      ["Reply…", false],
+      ["Dismiss", false],
+    ]);
+    expect(titles(failed(null))).not.toContain("Free space");
     expect(failed(null).quote).toBe("Provider turn failed.");
   });
 
@@ -241,13 +255,17 @@ describe("a card says what the Cell asked, as it asked it", () => {
 });
 
 describe("cards read from a Cell's prose, with no model", () => {
-  const prose = (cue: "question" | "offer" | "stopped" | "left", text = "Want me to push it?") =>
+  const prose = (
+    cue: "question" | "offer" | "stopped" | "left",
+    text = "Want me to push it?",
+    more: Partial<NonNullable<Need["prose"]>> = {},
+  ) =>
     cardOf(
       needFixture({
         kind: "prose",
         request: null,
         blocks: false,
-        prose: { runId: "run-1", cue, text },
+        prose: proseFixture(cue, text, more),
       }),
       NOW,
     );
@@ -278,17 +296,47 @@ describe("cards read from a Cell's prose, with no model", () => {
     });
   });
 
-  it("asks the person to say they did the step a Cell left them, recommending nothing", () => {
-    const left = prose("left", "run the sign-in with Drive access");
-    expect(left).toMatchObject({
-      headline: "Left a step to you. Done it?",
-      quote: "run the sign-in with Drive access",
+  // Flagged: nearly every ask read "Left a step to you. Done it?", the step itself grey under it.
+  it("asks the step a Cell left, under what it did and over what waits on it", () => {
+    const lead = "Everything is merged as 11 PRs.";
+    const left = prose("left", "quit and reopen the desktop app", {
+      steps: ["quit and reopen the desktop app"],
+      lead,
     });
-    expect(left.options.map((each) => [each.title, each.recommended])).toEqual([
-      ["Done it", false],
-      ["Reply…", false],
-      ["Nothing to do", false],
+    expect(left).toMatchObject({
+      headline: "Quit and reopen the desktop app",
+      steps: [],
+      quote: lead,
+      next: null,
+    });
+    // Recommending nothing: "ok the rest" mustn't say the person did what only they can do.
+    expect(left.options.map((each) => [each.title, each.consequence, each.recommended])).toEqual([
+      ["Done it", "Settles it. Nothing is sent.", false],
+      ["Reply…", null, false],
+      ["Nothing to do", "Settles the Cell. Nothing is sent.", false],
     ]);
+
+    const several = prose("left", "sign in · pick the plan", {
+      steps: ["sign in", "pick the plan"],
+      next: "deploy it once you have",
+    });
+    expect(several).toMatchObject({
+      headline: "2 steps for you",
+      steps: ["Sign in", "Pick the plan"],
+      next: "deploy it once you have",
+    });
+    expect(several.options[0]).toMatchObject({
+      title: "All done",
+      consequence: "Sends “Done. Carry on.”",
+    });
+  });
+
+  it("carries the reply's links, and its opening where the ask has no words of its own", () => {
+    const links = [{ label: "domainshop.com", url: "https://domainshop.com" }];
+    expect(prose("offer", "Want me to push it?", { lead: "Fixed.", links })).toMatchObject({
+      quote: "Fixed.",
+      links,
+    });
   });
 
   it("answers a question only in the person's words: Go ahead can't answer one", () => {

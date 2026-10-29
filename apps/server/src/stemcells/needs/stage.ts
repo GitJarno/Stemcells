@@ -41,6 +41,7 @@ export function standingsOf(
   needs: ReadonlyArray<Need>,
   stops: ReadonlyMap<string, Stop>,
   now: number,
+  autoResume = false,
 ): ReadonlyArray<CellStanding> {
   const aski = askiThreadOf(shells);
   const needsYou = new Set(needs.flatMap((need) => [need.parentThreadId ?? need.threadId]));
@@ -56,7 +57,7 @@ export function standingsOf(
       ACTIVE_RUN.has(shell.status) ||
       shell.activeRunId !== null ||
       waitsOnItsOwn(shell) ||
-      carriesOn(shell, now) ||
+      carriesOn(shell, now, autoResume) ||
       stop?.waits === true;
     const stage: Stage = needsYou.has(shell.id) ? "needs-you" : atWork ? "working" : "done";
     return [

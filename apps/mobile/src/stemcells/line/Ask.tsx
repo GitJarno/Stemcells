@@ -1,16 +1,17 @@
-// An ask as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6): who, project and age;
-// the question, largest; two lines of context until More; the options as rows. The Cell's words
-// on a choice always show; ours on what it does only on the lit row, the recommended one, and a
-// permission lights none. Reply… comes last. Closed, an ask says only who asks and what.
+// An ask as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6, and unblocking.md): who,
+// project and age; what to do, largest; what the Cell did, two lines until More; what waits on it
+// and where its reply points; the options side by side, Reply… last, which opens a full-width
+// field. A Cell's own choices to a question stay rows. Closed, an ask says only who asks and what.
 
 import { useEffect, useState, type ReactNode } from "react";
-import { Pressable, View } from "react-native";
+import { Linking, Pressable, View } from "react-native";
 
 import { cellNameOf } from "../cell/kit";
 import { diskFailure } from "../disk/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { CODE_FONT, NEEDS_YOU } from "../tokens";
 import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
+import { useFreeSpace } from "../disk/useFreeSpace";
 import { useMachineDisk } from "../upstream/disk";
 import { AppTextInput, relativeTime } from "../upstream/needs";
 import {
@@ -21,6 +22,7 @@ import {
   LATER,
   type Need,
   NOTHING_TO_DO,
+  spansOf,
 } from "./kit";
 import type { Ask } from "./line";
 
@@ -41,7 +43,7 @@ export interface AskActs {
   readonly openChat: () => void;
 }
 
-export function AskCard(props: {
+type AskCardProps = {
   readonly ask: Ask;
   readonly cell: EnvironmentThreadShell | undefined;
   readonly project: string | null;
@@ -49,10 +51,42 @@ export function AskCard(props: {
   readonly open: boolean;
   readonly onOpen: () => void;
   readonly acts: AskActs;
-}) {
+};
+
+export function AskCard(props: AskCardProps) {
+  return props.ask.need.kind === "failed" ? (
+    <FailedAsk {...props} />
+  ) : (
+    <AskBody {...props} disk={null} freeSpace={null} />
+  );
+}
+
+/** A failed turn reads its machine's disk: a full one says so, and offers the cleanup Cell. */
+function FailedAsk(props: AskCardProps) {
+  const disk = useMachineDisk(props.ask.environmentId);
+  const freeSpace = useFreeSpace(props.ask.environmentId);
+  return (
+    <AskBody
+      {...props}
+      disk={disk ? diskFailure(props.ask.need.key, disk.free) : null}
+      freeSpace={freeSpace}
+    />
+  );
+}
+
+function AskBody(
+  props: AskCardProps & {
+    readonly disk: ReturnType<typeof diskFailure> | null;
+    readonly freeSpace: (() => Promise<void>) | null;
+  },
+) {
   const { need } = props.ask;
-  const disk = useMachineDisk(need.kind === "failed" ? props.ask.environmentId : null);
-  const card = cardOf(need, props.now, disk ? diskFailure(need.key, disk.free) : null);
+  const card = cardOf(need, props.now, props.disk);
+  // The cleanup Cell is a new Cell on the full machine: the ask stays until it retries.
+  const choose = (option: CardOption, given?: Given) =>
+    option.choice.kind === "freeSpace"
+      ? void props.freeSpace?.()
+      : props.acts.choose(option, given);
   const head = (
     <View className="flex-row items-center gap-2">
       {props.cell ? <ThreadCell thread={props.cell} points={1} /> : null}
@@ -84,7 +118,9 @@ export function AskCard(props: {
       >
         {head}
         <AppText className="text-base text-foreground" numberOfLines={2}>
-          {card.headline}
+          {spansOf(card.headline)
+            .map((span) => span.text)
+            .join("")}
         </AppText>
       </Pressable>
     );
@@ -98,8 +134,13 @@ export function AskCard(props: {
     <View className="mx-3 mb-2 gap-3 rounded-[20px] bg-grouped-card px-4 py-3.5">
       {head}
       <AppText accessibilityRole="header" className="font-t3-bold text-xl text-foreground">
-        {card.headline}
+        <Words text={card.headline} />
       </AppText>
+      {card.steps.map((step, index) => (
+        <AppText key={step} className="text-base text-foreground">
+          {index + 1}. <Words text={step} />
+        </AppText>
+      ))}
       {card.quote ? <Context text={card.quote} /> : null}
       {card.request ? (
         <AppText
@@ -110,11 +151,19 @@ export function AskCard(props: {
           {card.request}
         </AppText>
       ) : null}
-      {card.steps.map((step, index) => (
-        <AppText key={step} className="text-sm text-foreground-secondary">
-          {index + 1}. {step}
+      {card.next ? (
+        <AppText className="text-sm text-foreground-secondary">
+          <AppText className="font-t3-medium text-sm text-foreground">
+            Then {cellNameOf(need.parentThreadId ?? need.threadId)}:
+          </AppText>{" "}
+          <Words text={card.next} />
         </AppText>
-      ))}
+      ) : null}
+      {card.links.length > 0 ? (
+        <AppText className="text-sm text-foreground-muted">
+          <Words text={card.links.map((link) => `[${link.label}](${link.url})`).join(" · ")} />
+        </AppText>
+      ) : null}
       {card.why ? <AppText className="text-xs text-foreground-muted">{card.why}</AppText> : null}
       {card.note ? <AppText className="text-sm text-foreground-muted">{card.note}</AppText> : null}
       {card.questions.length > 0 ? (
@@ -123,7 +172,7 @@ export function AskCard(props: {
           onAnswer={(answers) => props.acts.choose(ANSWER, { answers })}
         />
       ) : null}
-      {rows.length > 0 ? <Options options={rows} onChoose={props.acts.choose} /> : null}
+      {rows.length > 0 ? <Options options={rows} onChoose={choose} /> : null}
       <View className="flex-row gap-5 pt-1">
         {card.later ? <Quiet label={LATER.title} onPress={props.acts.later} /> : null}
         {props.acts.settle ? <Quiet label="Settle" onPress={props.acts.settle} /> : null}
@@ -160,7 +209,7 @@ function Context(props: { readonly text: string }) {
   return (
     <View>
       <AppText className="text-sm text-foreground-secondary" numberOfLines={more ? undefined : 2}>
-        {props.text}
+        <Words text={props.text} />
       </AppText>
       {/* The words unclamped, unseen, to tell whether they run past two lines. */}
       <AppText
@@ -209,54 +258,110 @@ function Row(props: {
   );
 }
 
+/**
+ * The ask's options side by side (unblocking.md, decision 6), the recommended one filled. What
+ * the recommended or a warned one does shows under them. One that takes words turns the row
+ * into a full-width field, focused.
+ */
 function Options(props: {
   readonly options: ReadonlyArray<CardOption>;
   readonly onChoose: (option: CardOption, given?: Given) => void;
 }) {
-  const [writing, setWriting] = useState<string | null>(null);
+  const [writing, setWriting] = useState<CardOption | null>(null);
   const [allowReady, setAllowReady] = useState(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Let an allow land once the ask has been open long enough to read; clear the timer on unmount.
   useEffect(() => {
     const timer = setTimeout(() => setAllowReady(true), READ_BEFORE_ALLOW_MS);
     return () => clearTimeout(timer);
   }, []);
+  if (writing !== null)
+    return (
+      <Field
+        placeholder={writing.words ?? ""}
+        onSend={(words) => props.onChoose(writing, { words })}
+        onCancel={() => setWriting(null)}
+      />
+    );
+  const said =
+    props.options.find((option) => option.warn) ??
+    props.options.find((option) => option.recommended && !option.allows);
   return (
-    <View className="gap-1">
-      {props.options.map((option) => {
-        if (writing === option.id)
+    <View className="gap-1.5">
+      <View className="flex-row flex-wrap gap-2">
+        {props.options.map((option) => {
+          const filled = option.recommended && !option.allows;
+          const disabled = option.allows && !allowReady;
           return (
-            <Words
+            <Pressable
               key={option.id}
-              placeholder={option.words ?? ""}
-              onSend={(words) => props.onChoose(option, { words })}
-              onCancel={() => setWriting(null)}
-            />
-          );
-        const lit = option.recommended && !option.allows;
-        return (
-          <Row
-            key={option.id}
-            title={option.title}
-            lit={lit}
-            disabled={option.allows && !allowReady}
-            onPress={() => (option.words ? setWriting(option.id) : props.onChoose(option))}
-          >
-            {option.consequence && (lit || option.warn) ? (
+              accessibilityRole="button"
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              onPress={() => (option.words ? setWriting(option) : props.onChoose(option))}
+              className={
+                filled
+                  ? "rounded-full bg-foreground px-4 py-2 active:opacity-70"
+                  : "rounded-full border border-border px-4 py-2 active:bg-subtle"
+              }
+              style={option.warn ? { borderColor: NEEDS_YOU } : undefined}
+            >
               <AppText
-                className="text-sm text-foreground-muted"
-                style={option.warn ? { color: NEEDS_YOU } : undefined}
+                className={
+                  filled
+                    ? "font-t3-medium text-base text-background"
+                    : disabled
+                      ? "text-base text-foreground-muted"
+                      : "font-t3-medium text-base text-foreground"
+                }
               >
-                {option.consequence}
+                {option.title}
               </AppText>
-            ) : null}
-          </Row>
-        );
-      })}
+            </Pressable>
+          );
+        })}
+      </View>
+      {said?.consequence ? (
+        <AppText
+          className="text-sm text-foreground-muted"
+          style={said.warn ? { color: NEEDS_YOU } : undefined}
+        >
+          {said.consequence}
+        </AppText>
+      ) : null}
     </View>
   );
 }
 
-function Words(props: {
+/** An ask's words: links open where the phone opens them, code in the code face, bold bold. */
+function Words(props: { readonly text: string }) {
+  return spansOf(props.text).map((span, index) =>
+    span.kind === "link" ? (
+      <AppText
+        // oxlint-disable-next-line react/no-array-index-key -- spans have no identity but their place
+        key={index}
+        accessibilityRole="link"
+        className="text-primary-text underline"
+        onPress={() => void Linking.openURL(span.url).catch(() => undefined)}
+      >
+        {span.text}
+      </AppText>
+    ) : span.kind === "code" ? (
+      // oxlint-disable-next-line react/no-array-index-key -- spans have no identity but their place
+      <AppText key={index} style={{ fontFamily: CODE_FONT }}>
+        {span.text}
+      </AppText>
+    ) : span.kind === "strong" ? (
+      // oxlint-disable-next-line react/no-array-index-key -- spans have no identity but their place
+      <AppText key={index} className="font-t3-bold">
+        {span.text}
+      </AppText>
+    ) : (
+      span.text
+    ),
+  );
+}
+
+function Field(props: {
   readonly placeholder: string;
   readonly onSend: (words: string) => void;
   readonly onCancel: () => void;
@@ -360,7 +465,7 @@ function Questions(props: {
             );
           })}
           {question.other === null ? null : writing === question.id ? (
-            <Words
+            <Field
               placeholder={question.other}
               onSend={(words) => {
                 if (single) return props.onAnswer({ [question.id]: words.trim() });
