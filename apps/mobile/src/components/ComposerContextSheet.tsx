@@ -30,6 +30,7 @@ import { AppText as Text } from "./ui/AppText";
 import { Sheet } from "./ui/Sheet";
 import { useAppearancePreferences } from "../features/settings/appearance/AppearancePreferencesProvider";
 import { getMobileTerminalTheme } from "../features/terminal/terminalTheme";
+import { mediaChipLabel } from "../stemcells/upstream/attachments";
 
 function ContextField(props: { label: string; value: string | null | undefined; code?: boolean }) {
   if (!props.value) return null;
@@ -189,7 +190,10 @@ export function ComposerContextSheet(props: {
   ).changeRequest.singular;
   const terminal = record?.kind === "terminal" && !("payload" in record) ? record : null;
   return (
-    <Sheet title={terminal?.terminalLabel ?? props.label} onClose={props.onClose}>
+    <Sheet
+      title={terminal?.terminalLabel ?? mediaChipLabel(record, props.records) ?? props.label}
+      onClose={props.onClose}
+    >
       <ScrollView
         nestedScrollEnabled
         className="flex-1"
@@ -355,6 +359,7 @@ export function ComposerContextSheet(props: {
                 ?.fileUri,
             ])}
             record={attachmentRecord}
+            label={mediaChipLabel(attachmentRecord, props.records)}
             environmentId={props.environmentId}
             attachment={props.attachments?.find(
               (entry) => entry.id === attachmentRecord.attachmentId,

@@ -23,6 +23,7 @@ export function ComposerContextAttachment(props: {
   record: Extract<ComposerContextRecord, { attachmentId: string }>;
   environmentId?: EnvironmentId;
   attachment?: DraftComposerAttachment;
+  label?: string | undefined;
 }) {
   const { record, attachment } = props;
   const shareSourceIdentifier = useId();
@@ -83,7 +84,7 @@ export function ComposerContextAttachment(props: {
       {record.kind === "image" && uri ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Preview ${record.name}`}
+          accessibilityLabel={`Preview ${props.label ?? record.name}`}
           onPress={() => setPreviewOpen(true)}
         >
           <Image
@@ -94,7 +95,7 @@ export function ComposerContextAttachment(props: {
             }
             style={{ width: "100%", height: 280 }}
             contentFit="contain"
-            accessibilityLabel={record.name}
+            accessibilityLabel={props.label ?? record.name}
           />
         </Pressable>
       ) : null}

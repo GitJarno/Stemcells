@@ -111,7 +111,7 @@ describe("a composer's chip carried to another chat", () => {
         </Chat>
       </div>,
     );
-    const tile = screen.getByRole("button", { name: "Preview sky.png" });
+    const tile = screen.getByRole("button", { name: "Preview Image 1" });
 
     // Back onto its own chat first: were it taken, it would land before the other chat's.
     await userEvent.dragAndDrop(tile, screen.getByTestId("chat-a"));
@@ -140,7 +140,7 @@ describe("a composer's chip carried to another chat", () => {
         </Chat>
       </div>,
     );
-    const tile = screen.getByRole("button", { name: "Preview sky.png" });
+    const tile = screen.getByRole("button", { name: "Preview Image 1" });
 
     await userEvent.dragAndDrop(tile, screen.getByTestId("chat-row-a"));
     await userEvent.dragAndDrop(tile, screen.getByTestId("chat-b"));

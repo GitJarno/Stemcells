@@ -28,6 +28,7 @@ import {
   retryComposerAttachmentUpload,
   useComposerAttachmentUploadState,
 } from "../state/composer-attachment-uploads";
+import { attachmentLabeller } from "../stemcells/upstream/attachments";
 
 export interface ComposerAttachmentStripProps {
   readonly environmentId?: EnvironmentId;
@@ -47,6 +48,7 @@ export interface ComposerAttachmentStripProps {
 type ComposerAttachmentThumbnailProps = {
   readonly environmentId?: EnvironmentId;
   readonly attachment: DraftComposerAttachment;
+  readonly label?: string;
   readonly size: number;
   readonly borderRadius: number;
   readonly compact?: boolean;
@@ -68,8 +70,8 @@ export function ComposerAttachmentThumbnail(props: ComposerAttachmentThumbnailPr
           accessibilityRole={upload.status === "failed" ? "button" : "text"}
           accessibilityLabel={
             upload.status === "failed"
-              ? `Retry uploading ${props.attachment.name}`
-              : `Uploading ${props.attachment.name}, ${Math.floor(upload.progress * 100)}%`
+              ? `Retry uploading ${props.label ?? props.attachment.name}`
+              : `Uploading ${props.label ?? props.attachment.name}, ${Math.floor(upload.progress * 100)}%`
           }
           accessibilityHint={upload.status === "failed" ? upload.reason : undefined}
           disabled={upload.status !== "failed"}
@@ -139,7 +141,7 @@ function ComposerImageAttachment(
     <PresentationSource identifier={sourceIdentifier}>
       <Pressable
         accessibilityRole="imagebutton"
-        accessibilityLabel={`Open ${attachment.name}`}
+        accessibilityLabel={`Open ${props.label ?? attachment.name}`}
         disabled={!props.onPressPreview}
         onPress={() =>
           props.onPressPreview?.(
@@ -238,6 +240,7 @@ function ComposerFileAttachment(
 
 function ComposerVideoAttachment(props: {
   readonly attachment: DraftComposerFileAttachment;
+  readonly label?: string;
   readonly size: number;
   readonly borderRadius: number;
   readonly compact?: boolean;
@@ -258,7 +261,7 @@ function ComposerVideoAttachment(props: {
 
   return (
     <VideoAttachmentTile
-      name={attachment.name}
+      name={props.label ?? attachment.name}
       sourceIdentifier={sourceIdentifier}
       thumbnailSource={attachment}
       compact={props.compact}
@@ -271,6 +274,7 @@ function ComposerVideoAttachment(props: {
 
 export function ComposerAttachmentStrip(props: ComposerAttachmentStripProps) {
   const gallery = composerImageGallery(props.attachments);
+  const label = attachmentLabeller(props.attachments);
   const size = props.imageSize ?? 72;
   const radius = props.imageBorderRadius ?? 16;
   const removeButtonPlacement = props.removeButtonPlacement ?? "overlay";
@@ -301,6 +305,7 @@ export function ComposerAttachmentStrip(props: ComposerAttachmentStripProps) {
               <ComposerAttachmentThumbnail
                 environmentId={props.environmentId}
                 attachment={attachment}
+                label={label(attachment)}
                 size={size}
                 borderRadius={radius}
                 onPressPreview={props.onPressPreview}
@@ -309,7 +314,7 @@ export function ComposerAttachmentStrip(props: ComposerAttachmentStripProps) {
               />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Remove ${attachment.name}`}
+                accessibilityLabel={`Remove ${label(attachment)}`}
                 className="absolute h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-black/55"
                 style={{
                   top: removeButtonPlacement === "gutter" ? 0 : 4,
