@@ -22,6 +22,7 @@ import {
   LATER,
   type Need,
   NOTHING_TO_DO,
+  repositoryUrlOf,
   spansOf,
 } from "./kit";
 import type { Ask } from "./line";
@@ -81,6 +82,11 @@ function AskBody(
 ) {
   const { need } = props.ask;
   const card = cardOf(need, props.now, props.disk);
+  const { cell } = props;
+  const repo = repositoryUrlOf(
+    useProject(cell ? { environmentId: cell.environmentId, projectId: cell.projectId } : null)
+      ?.repositoryIdentity,
+  );
   // The cleanup Cell is a new Cell on the full machine: the ask stays until it retries.
   const choose = (option: CardOption, given?: Given) =>
     option.choice.kind === "freeSpace"
@@ -94,7 +100,7 @@ function AskBody(
       over={need.parentThreadId === null ? null : `› ${need.title}`}
       title={
         props.open ? (
-          <Words text={card.headline} />
+          <Words text={card.headline} repo={repo} />
         ) : (
           spansOf(card.headline)
             .map((span) => span.text)
@@ -130,10 +136,10 @@ function AskBody(
       {head}
       {card.steps.map((step, index) => (
         <AppText key={step} className="text-base text-foreground">
-          {index + 1}. <Words text={step} />
+          {index + 1}. <Words text={step} repo={repo} />
         </AppText>
       ))}
-      {card.quote ? <Context text={card.quote} /> : null}
+      {card.quote ? <Context text={card.quote} repo={repo} /> : null}
       {card.request ? (
         <AppText
           selectable
@@ -148,12 +154,7 @@ function AskBody(
           <AppText className="font-t3-medium text-sm text-foreground">
             Then {cellNameOf(need.parentThreadId ?? need.threadId)}:
           </AppText>{" "}
-          <Words text={card.next} />
-        </AppText>
-      ) : null}
-      {card.links.length > 0 ? (
-        <AppText className="text-sm text-foreground-muted">
-          <Words text={card.links.map((link) => `[${link.label}](${link.url})`).join(" · ")} />
+          <Words text={card.next} repo={repo} />
         </AppText>
       ) : null}
       {card.why ? <AppText className="text-xs text-foreground-muted">{card.why}</AppText> : null}
@@ -272,13 +273,13 @@ function Quiet(props: { readonly label: string; readonly onPress: () => void }) 
 }
 
 /** The Cell's words, two lines until More shows them all, in place. */
-function Context(props: { readonly text: string }) {
+function Context(props: { readonly text: string; readonly repo: string | null }) {
   const [long, setLong] = useState(false);
   const [more, setMore] = useState(false);
   return (
     <View>
       <AppText className="text-sm text-foreground-secondary" numberOfLines={more ? undefined : 2}>
-        <Words text={props.text} />
+        <Words text={props.text} repo={props.repo} />
       </AppText>
       {/* The words unclamped, unseen, to tell whether they run past two lines. */}
       <AppText
@@ -402,8 +403,8 @@ function Options(props: {
 }
 
 /** An ask's words: links open where the phone opens them, code in the code face, bold bold. */
-function Words(props: { readonly text: string }) {
-  return spansOf(props.text).map((span, index) =>
+function Words(props: { readonly text: string; readonly repo: string | null }) {
+  return spansOf(props.text, props.repo).map((span, index) =>
     span.kind === "link" ? (
       <AppText
         // oxlint-disable-next-line react/no-array-index-key -- spans have no identity but their place

@@ -198,7 +198,6 @@ it.effect(
           steps: [],
           next: null,
           lead: "The fix is in.",
-          links: [],
         });
 
         // Each reply is read once for its run, though the list is derived again.

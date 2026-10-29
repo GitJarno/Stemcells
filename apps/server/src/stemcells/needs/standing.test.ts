@@ -48,7 +48,6 @@ describe("the room in words", () => {
               steps: ["approve the billing change"],
               next: null,
               lead: null,
-              links: [],
             },
           }),
           need({

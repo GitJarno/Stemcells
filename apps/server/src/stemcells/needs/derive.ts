@@ -17,7 +17,6 @@ import type {
   RequestKind,
   Shell,
 } from "../upstream/needs.ts";
-import type { Brief, Link } from "./brief.ts";
 import type { Stop } from "./closeOut.ts";
 import type { Cue, PreRead } from "./preread.ts";
 
@@ -344,8 +343,6 @@ export interface NeedProse {
   readonly next: string | null;
   /** The reply's opening paragraph: what the Cell did. Null when the ask already shows it. */
   readonly lead: string | null;
-  /** The reply's links the ask's words don't carry. */
-  readonly links: ReadonlyArray<Link>;
 }
 
 export interface NeedStuck {
@@ -385,8 +382,8 @@ export interface NeedDetail {
   readonly prose?: PreRead | null;
   /** What the finished reply says of where the Cell stands; null when it couldn't be read. */
   readonly stop?: Stop | null;
-  /** What the ask carries from the rest of the reply. */
-  readonly brief?: Brief | null;
+  /** The reply's opening paragraph, beside the ask (`brief.ts`). */
+  readonly lead?: string | null;
   readonly inFlight?: InFlight | null;
 }
 
@@ -453,8 +450,7 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             text: detail.prose.text,
             steps: detail.prose.cue === "left" ? detail.prose.steps : [],
             next: detail.prose.cue === "left" ? detail.prose.next : null,
-            lead: detail.brief?.lead ?? null,
-            links: detail.brief?.links ?? [],
+            lead: detail.lead ?? null,
           }
         : null,
     stuck:

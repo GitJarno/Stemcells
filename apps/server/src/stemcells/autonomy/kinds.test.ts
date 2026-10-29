@@ -24,7 +24,7 @@ const base: Need = {
 
 const prose = (cue: "stopped" | "offer", text: string): Need => ({
   ...base,
-  prose: { runId: "run-1", cue, text, steps: [], next: null, lead: null, links: [] },
+  prose: { runId: "run-1", cue, text, steps: [], next: null, lead: null },
 });
 const stopped = (text: string) => prose("stopped", text);
 const plan = (markdown: string): Need => ({

@@ -47,5 +47,5 @@ export function proseFixture(
   text: string,
   more: Partial<NonNullable<Need["prose"]>> = {},
 ): NonNullable<Need["prose"]> {
-  return { runId: "run-1", cue, text, steps: [], next: null, lead: null, links: [], ...more };
+  return { runId: "run-1", cue, text, steps: [], next: null, lead: null, ...more };
 }

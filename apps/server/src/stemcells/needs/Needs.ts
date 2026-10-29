@@ -10,7 +10,7 @@ import * as Stream from "effect/Stream";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 
 import * as UpstreamNeeds from "../upstream/needs.ts";
-import { briefOf } from "./brief.ts";
+import { leadOf } from "./brief.ts";
 import { stopOf, type Stop } from "./closeOut.ts";
 import { needOf, signalsOf, stuckFor, type Need, type NeedDetail, type Signal } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
@@ -77,8 +77,8 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
             ? Effect.map(source.reply(shell.id, runId), (reply) => {
                 const stop = reply === null ? null : stopOf(reply);
                 const ask = stop?.ask ?? null;
-                const brief = reply === null || ask === null ? null : briefOf(reply, [ask.text]);
-                return { prose: ask, stop, brief };
+                const lead = reply === null || ask === null ? null : leadOf(reply, [ask.text]);
+                return { prose: ask, stop, lead };
               })
             : signal.kind === "stuck"
               ? Effect.map(source.inFlight(shell.id, runId), (inFlight) => ({ inFlight }))
