@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import type { NeedsList } from "./kit";
+import { cardOf, type NeedsList } from "./kit";
 import { readNeeds, type NeedsConnection } from "./read";
 
 const list: NeedsList = {
@@ -80,6 +80,15 @@ describe("what a machine says of its asks", () => {
       throw new TypeError("Network request failed");
     }) as typeof fetch;
     expect(await readNeeds(mac, list, offline)).toEqual({ state: "unreachable", list });
+  });
+
+  it("reads an ask from a server before an ask's steps, its words the step", async () => {
+    const need = list.needs[0]!;
+    const prose = { runId: "r1", cue: "left", text: "Sign in to the store." };
+    const before = answering(200, { ...list, needs: [{ ...need, kind: "prose", prose }] });
+    const reading = await readNeeds(mac, null, before.request);
+    if (reading.state !== "read") throw new Error(reading.state);
+    expect(cardOf(reading.list.needs[0]!, 0).headline).toBe("Sign in to the store.");
   });
 
   it("takes only a list with the fields the line reads", async () => {

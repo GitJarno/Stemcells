@@ -32,6 +32,8 @@ const SUBSTITUTES = {
   // shelves open.
   "apps/mobile/src/features/home/HomeScreen.tsx": "HomeScreen.tsx",
   "apps/mobile/src/features/home/ThreadListFilters.tsx": "ThreadListFilters.tsx",
+  // The header says Cells while the phone loads or syncs them.
+  "apps/mobile/src/features/home/workspace-connection-status.ts": "workspace-connection-status.ts",
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":
     "thread-list-v2-row-appearance.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
@@ -67,6 +69,12 @@ const substituteOf = new Map(
 
 /** @param {string} file */
 const isOurs = (file) => file.startsWith(ourRoot + path.sep);
+
+/**
+ * The module `file` tests, without its extension, when `file` is a test.
+ * @param {string} file
+ */
+const testOf = (file) => /^(.*)\.test\.[^./]+$/.exec(file)?.[1];
 
 /**
  * The substitute for package `name` imported from `file`, when `file` is upstream's.
@@ -118,6 +126,8 @@ function substituteUpstreamModules() {
       if (ours !== undefined) return ours;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (resolved === null || resolved.external) return resolved;
+      // Upstream's test of a module tests upstream's module.
+      if (testOf(importer) === resolved.id.replace(/\.[^./]+$/, "")) return resolved;
       return substituteOf.get(resolved.id) ?? resolved;
     },
   };

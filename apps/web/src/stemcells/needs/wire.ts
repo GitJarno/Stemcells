@@ -152,9 +152,13 @@ const isText = (value: unknown): value is string => typeof value === "string";
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
+/** A reply's ask from a server before its steps, lead and links, with none of them. */
+const PROSE_BEFORE_STEPS = { steps: [], next: null, lead: null, links: [] };
+
 /**
  * The list, when `json` has the fields a reader keys on: each need's identity, kind, place and
- * age, and each Cell's stage. Null for anything else, such as another server's answer.
+ * age, and each Cell's stage. Null for anything else, such as another server's answer. A phone
+ * meets older servers, so what an ask gained since is filled in.
  */
 export function needsListOf(json: unknown): NeedsList | null {
   if (!isRecord(json) || !Array.isArray(json.needs)) return null;
@@ -175,5 +179,11 @@ export function needsListOf(json: unknown): NeedsList | null {
         (cell: unknown) =>
           isRecord(cell) && isText(cell.threadId) && isText(cell.projectId) && isText(cell.stage),
       ));
-  return needs && cells ? (json as unknown as NeedsList) : null;
+  if (!needs || !cells) return null;
+  return {
+    ...json,
+    needs: json.needs.map((need: Record<string, unknown>) =>
+      isRecord(need.prose) ? { ...need, prose: { ...PROSE_BEFORE_STEPS, ...need.prose } } : need,
+    ),
+  } as unknown as NeedsList;
 }

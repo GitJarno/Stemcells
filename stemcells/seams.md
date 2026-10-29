@@ -569,7 +569,7 @@ library's dependency (above); the rest are substitutes:
   and a substitute of `ThreadComposer` fades the feed under the composer.
 - **The home.** A substitute wraps `HomeScreen` and hands T3's list one
   segment of the Cells' line (`line/LineHome.tsx`, `stemcells/tasks/
-  phone-line.md`) until a machine in view says it has none
+  phone-line.md`) unless every machine in view says it has none
   (`line/read.ts`), else one tab of Cells (`home/tabs.ts`); everything the
   list does stays T3's. In the iOS workspace the header's picks narrow it,
   any number of projects and machines (`home/picks.ts`, kept on the phone),
@@ -586,7 +586,9 @@ library's dependency (above); the rest are substitutes:
   phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
   and the iPad's sidebar stay T3's), and on the home's tabs every shelf stays open
   (`use-thread-list-v2-shelf-preferences.ts`) and, at the row's seam, draws
-  no header: the tab is the shelf. The seam in the row puts the
+  no header: the tab is the shelf. One of `workspace-connection-status.ts`
+  has the header say Cells while the phone loads or syncs them; upstream's
+  own test of a module still gets upstream's (`substitutes.cjs`). The seam in the row puts the
   Cell beside its card's content and keeps the card to two lines, its
   marks (machine, pull request, project, each a fixed size) under the time:
   the row is the only place that knows its thread, its left edge and its

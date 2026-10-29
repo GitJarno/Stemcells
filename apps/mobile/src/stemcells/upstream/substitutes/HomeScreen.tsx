@@ -1,5 +1,5 @@
-// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski until a
-// machine says it has none, else one tab at a time (`home/tabs.ts`); T3's list gets the tab's
+// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski unless
+// every machine says it has none, else one tab at a time (`home/tabs.ts`); T3's list gets the tab's
 // Cells. In the iOS workspace our picks narrow it (`home/scope.tsx`) and T3's own pick stays
 // unset. Where it has no header (Android, outside the workspace) and searching, it's T3's home.
 import { useIsFocused } from "@react-navigation/native";

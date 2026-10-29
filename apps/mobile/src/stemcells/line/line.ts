@@ -52,14 +52,16 @@ export interface Line<S extends Shell> {
 }
 
 /**
- * Whether the home is the line: until a machine in view says it has none. One asleep or not yet
- * read stands its Cells where their records do, so the home doesn't swap as machines answer.
+ * Whether the home is the line: unless every machine in view says it has none. One asleep, not
+ * yet read, or without the line stands its Cells where their records do (`lineOf`).
  */
 export function lineApplies(
   readings: ReadonlyMap<string, Reading>,
   environmentIds: ReadonlyArray<string>,
 ): boolean {
-  return environmentIds.every((id) => readings.get(id)?.state !== "none");
+  return (
+    environmentIds.length === 0 || environmentIds.some((id) => readings.get(id)?.state !== "none")
+  );
 }
 
 /**

@@ -272,6 +272,18 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/home/workspace-connection-status.ts": {
+    exports: view(
+      "apps/mobile/src/features/home/workspace-connection-status.ts",
+      "workspace-connection-status.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/home/WorkspaceConnectionTitle.tsx": [
+        "./workspace-connection-status",
+        ["workspaceConnectionStatusPresentation"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts": {
     exports: view(
       "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts",
@@ -466,6 +478,9 @@ describe("the phone's substitutes for upstream modules", () => {
     expectTypeOf<typeof import("./ThreadListFilters")>().toEqualTypeOf<
       typeof import("../../../features/home/ThreadListFilters")
     >();
+    expectTypeOf<typeof import("./workspace-connection-status")>().toEqualTypeOf<
+      typeof import("../../../features/home/workspace-connection-status")
+    >();
     // Its tokens are other strings and flags, of the same kinds.
     expectTypeOf<
       typeof import("./thread-list-v2-row-appearance").getThreadListV2RowAppearance
@@ -555,6 +570,13 @@ describe("the phone's substitutes for upstream modules", () => {
         expect((await container.resolveId(specifier, importer))?.id, key).toBe(substitute);
         const ours = NodePath.join(here, "favicon.ts");
         expect((await container.resolveId(specifierFromOurs, ours))?.id, key).toBe(upstream);
+        // Upstream's own test of the module runs upstream's.
+        const module = upstream.replace(/\.[^./]+$/, "");
+        const fromOwnTest = await container.resolveId(
+          `./${NodePath.basename(module)}`,
+          `${module}.test.ts`,
+        );
+        expect(fromOwnTest?.id, key).toBe(upstream);
       }
       for (const { name, importer, substitute } of packageExpectations) {
         expect((await container.resolveId(name, importer))?.id, name).toBe(substitute);

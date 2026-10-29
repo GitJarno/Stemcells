@@ -9,7 +9,7 @@ The person's list (2026-10-29), from two phone screenshots: the home and a Cell'
    tab, both homes, never over the clock.
 2. **Opening and jank.** The home swapped trees as the machines answered: T3's home, then
    the four-tab home, then the line, each a new list with Aski remounted. The line now
-   applies until a machine says it has none, so the home opens on the line and stays there.
+   applies unless every machine says it has none, so the home opens on the line and stays there.
    While a saved machine connects, the home already stands as it will. Every page of the
    home scrolls the same way (`automatic` insets under the header), so Aski and the rail
    stand at one height on every tab.
@@ -56,3 +56,12 @@ The person's list (2026-10-29), from two phone screenshots: the home and a Cell'
 - [x] 9 Aski's skin and eyes (helper)
 - [x] 10 No shelf headers on the rail's tabs
 - [ ] seams.md, tests, typecheck, lint, drift
+
+## After the first install
+
+- [x] The home crashed on an ask from a Mac older than an ask's steps (#357): the phone's reader
+      now fills what an ask gained since (`needs/wire.ts`, `line/read.test.ts`).
+- [x] One machine without the line took it away from all of them, back to the four old tabs:
+      now only every machine saying so does (`line/line.ts`).
+- [x] The header said "Syncing threads...": it says Cells (a substitute of
+      `workspace-connection-status.ts`).

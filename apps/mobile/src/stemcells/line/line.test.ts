@@ -147,14 +147,16 @@ describe("the phone's home on the Cells' line", () => {
     expect(elsewhereWords(elsewhereOf(asks, () => true, [shop, blog]))).toBeNull();
   });
 
-  it("is the home until a machine in view says it has no line", () => {
+  it("is the home unless every machine in view says it has no line", () => {
     const readings = new Map<string, Reading>([
       ["mac", read([], [])],
       ["t3", { state: "none" }],
       ["away", { state: "unreachable", list: null }],
     ]);
     expect(lineApplies(readings, ["mac", "away"])).toBe(true);
-    expect(lineApplies(readings, ["mac", "t3"])).toBe(false);
+    // A machine without the line stands its Cells by their records; it doesn't take the line away.
+    expect(lineApplies(readings, ["mac", "t3"])).toBe(true);
+    expect(lineApplies(readings, ["t3"])).toBe(false);
     // Asleep, or not read yet: its Cells stand where their records do, and the home holds still.
     expect(lineApplies(readings, ["away"])).toBe(true);
     expect(lineApplies(readings, ["unread"])).toBe(true);
