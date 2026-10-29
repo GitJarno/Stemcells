@@ -19,6 +19,8 @@ label, a count, an empty state, a line that counts Cells in the air.
 | Phone line's tab, and the tabs without the line       | Working                               | Flying                               |
 | Phone empty tab                                       | No Cells working.                     | No Cells flying.                     |
 | Aski's status line (persona and the phone's greeting) | N Cells at work. Your hands are free. | N Cells flying. Your hands are free. |
+| Phone chat's timer, over the composer                 | Working 2m 50s, Working for 2m        | Flying 2m 50s, Flying for 2m         |
+| Phone Subcells sheet, a running Subcell's status      | Working                               | Flying                               |
 
 ## Kept, and why
 
