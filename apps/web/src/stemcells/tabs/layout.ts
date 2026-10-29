@@ -297,6 +297,27 @@ export function focusPane(workspace: Workspace, paneId: string): Workspace {
   return { ...focused, activeTabId: found.tab.id };
 }
 
+/**
+ * Each pane's draft `held` no longer has, as its thread: sent, or lost, which the thread being
+ * listed or not tells apart, as for any chat. Only at start: a draft moving in from another
+ * window may come before its words.
+ */
+export function goneDraftsAsThreads(
+  workspace: Workspace,
+  held: (draftId: string) => boolean,
+): Workspace {
+  const gone = (pane: Pane) => pane.cell?.draftId != null && !held(pane.cell.draftId);
+  if (!workspace.tabs.some((tab) => panesOf(tab).some(gone))) return workspace;
+  return {
+    ...workspace,
+    tabs: workspace.tabs.map((tab) =>
+      mapPanes(tab, (pane) =>
+        gone(pane) && pane.cell ? { ...pane, cell: { ...pane.cell, draftId: null } } : pane,
+      ),
+    ),
+  };
+}
+
 export function setCell(workspace: Workspace, paneId: string, cell: CellRef | null): Workspace {
   const found = findPane(workspace, (pane) => pane.id === paneId);
   if (!found) return workspace;

@@ -30,6 +30,11 @@ export function useCellForRoute(target: ThreadRouteTarget | null): CellRef | nul
   return { environmentId: session.environmentId, threadId: session.threadId, draftId };
 }
 
+/** Whether this client still has `draftId`'s draft: an unsent chat, or one sent but not let go. */
+export function draftHeld(draftId: string): boolean {
+  return useComposerDraftStore.getState().getDraftSession(draftId as DraftId) !== null;
+}
+
 const PANE_DRAFT_KEY_PREFIX = "stemcells:pane:";
 
 /**

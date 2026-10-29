@@ -1,11 +1,12 @@
 import { create } from "zustand";
 
-import { fileDraftUnderPane } from "../upstream/drafts";
+import { draftHeld, fileDraftUnderPane } from "../upstream/drafts";
 import { draftSent, readNewCellDraft } from "../upstream/newCell";
 import { randomUUID } from "../upstream/ui";
 import { windowsBridge } from "../windows/bridge";
 import {
   EMPTY_WORKSPACE,
+  goneDraftsAsThreads,
   panesOf,
   parseWorkspace,
   serializeWorkspace,
@@ -75,7 +76,7 @@ interface WorkspaceStore {
 const tabIdsOf = (workspace: Workspace): string[] => workspace.tabs.map((tab) => tab.id);
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
-  const workspace = readStartingWorkspace();
+  const workspace = goneDraftsAsThreads(readStartingWorkspace(), draftHeld);
   return {
     workspace,
     takenRoute: null,
