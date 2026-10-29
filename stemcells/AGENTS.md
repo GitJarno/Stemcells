@@ -38,7 +38,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 - Ours lives in `apps/web/src/stemcells/`, `apps/server/src/stemcells/`,
   `apps/mobile/src/stemcells/`, `apps/desktop/src/stemcells/`, and
   `stemcells/` for docs, plans
-  (`stemcells/tasks/`) and scripts. A `packages/stemcells-*` package only
+  (`stemcells/tasks/`), scripts and the site (`stemcells/site/`). A `packages/stemcells-*` package only
   once two apps share the code: every new package rewrites upstream's
   `pnpm-lock.yaml`, the file every sync touches.
 - An upstream file changes only at a **seam**: the smallest edit that hands

@@ -1,0 +1,30 @@
+
+  
+                     stemcellsst
+                  emcellsstemcellss
+                temcellsstemcellsstem
+               cellsstemcellsstemcellsstemc
+              ellsstemcel    lsste     mcells
+         stemcellsstemcel      lss     temcell
+      sstemcellsstemcellss   temcel   lsstemcel
+    lsstemcellsstemcellss   temcel  lsstemcells
+    stemcellsstemcellsste mcellsst emcellsstem
+   cellsstemcellsstemcel lsstemcellsstemcells
+   stemcellsstemcellsstemcellsstemcellsstem
+    cellsstemcellsstemcellsstemcellsstemcell
+     sstemcellsstemcellsstemcellsstemcellsste
+       mcellsstemcellsstemcellsstemcellsstemce
+        llsstemcellsstemcellsstemcellsstemcell
+        sstemcellsstemcellsstemcellsstemcells
+         stemcellsstemcellsstemcellsstemcell
+          sstemcellsstemc ellsstemcellsstem
+             cellsstem       cellsstemce
+
+  Hey there. I'm Aski.
+
+  Words become things. Tell me what you want,
+  and I'll divide it into Cells that make it real.
+
+  Stemcells: a Mac app for coding agents.
+  https://github.com/GitJarno/Stemcells
+
