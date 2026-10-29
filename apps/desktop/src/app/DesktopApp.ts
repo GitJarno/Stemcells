@@ -154,7 +154,8 @@ const stopAllPoolInstances = Effect.fn("desktop.app.stopAllPoolInstances")(
     const instances = yield* pool.list;
     yield* Effect.forEach(
       instances,
-      (instance) => instance.stop({ timeout: Duration.seconds(5) }),
+      // Past the backend's 5s SIGTERM grace, so its SIGKILL lands before the app exits.
+      (instance) => instance.stop({ timeout: Duration.seconds(7) }),
       { concurrency: "unbounded" },
     );
   },
