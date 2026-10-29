@@ -52,10 +52,12 @@ itself is not an ask.
    Free space, which starts the cleanup Cell, as the chat's own row does:
    first while the disk is full, after Retry once there's room again.
 6. **Options sit side by side.** Buttons in a row, the recommended one
-   filled; what an option does shows under the row, for the one you're on
-   or else the recommended. Reply… turns into a full-width field in the
-   row's place, focused; Esc brings the buttons back. A Cell's own choices
-   to a question stay rows: their words are what the person decides by.
+   filled; what an option does shows beside the row (under it when there's
+   no room), for the one you're on or else the recommended, in a place sized
+   for the longest so moving between options never moves the card. Reply…
+   turns into a full-width field in the row's place, focused; Esc brings
+   the buttons back. A Cell's own choices to a question stay rows: their
+   words are what the person decides by.
 7. **A card goes when its need goes.** Answered, settled or taken care of
    anywhere, it folds away at once and the list closes the gap. No greying
    in place and no holding still under the pointer: that hold is what made
