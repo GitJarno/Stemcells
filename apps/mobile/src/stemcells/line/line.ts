@@ -17,7 +17,7 @@ import type { Reading } from "./read";
 
 export const SEGMENTS: ReadonlyArray<{ readonly id: LineStage; readonly label: string }> = [
   { id: "needs", label: "Needs you" },
-  { id: "working", label: "Working" },
+  { id: "working", label: "Flying" },
   { id: "landed", label: "Landed" },
   { id: "settled", label: "Settled" },
 ];

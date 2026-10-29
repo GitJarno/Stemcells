@@ -13,6 +13,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 `stemcells/docs/fork.md`; read it before your first change. The rules:
 
 ## Where you work
+
 - In your own worktree, never in the main checkout. From the main
   checkout: `git worktree add ../Stemcells-wt/<task> -b stemcells/<task>
   origin/main`, then `pnpm install --frozen-lockfile --prefer-offline`
@@ -20,6 +21,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 - Remove your worktree once its pull request merges.
 
 ## Landing
+
 - GitHub Actions is off for Stemcells; checks run on the Mac. A pull request
   merges only when its exact head carries the commit status `local-check` =
   success. `stemcells/scripts/check-local <pull request>` records it: the
@@ -32,6 +34,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   pull requests to T3 (`stemcells/docs/fork.md`, rule 5).
 
 ## Where code goes
+
 - Ours lives in `apps/web/src/stemcells/`, `apps/server/src/stemcells/`,
   `apps/mobile/src/stemcells/`, `apps/desktop/src/stemcells/`, and
   `stemcells/` for docs, plans
@@ -58,6 +61,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   to T3 unless the person asks: we carry it as a seam.
 
 ## Taking upstream's work
+
 - `stemcells/scripts/sync-upstream` merges `upstream/main` on a branch,
   runs the gates and opens a pull request; a Mac's nightly runs it, once
   someone opts in (`stemcells/scripts/install-nightly-sync`), and
@@ -68,6 +72,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   `stemcells/scripts/sync-stats` lists each sync's conflicts.
 
 ## Nothing leaves for anyone else's cloud
+
 - No telemetry or usage data, to T3 or anyone else: the server's analytics
   service is a no-op (`seams.md`, No telemetry). Turn off anything a sync
   adds that reports on the person.
@@ -79,15 +84,22 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   `~/Library/Application Support/sh.stemcells.app`. Never touch `~/.t3`.
 
 ## Words
+
 - Words a person reads in our layer say Cell and Aski. Upstream's strings
   stay until one of our views replaces the one that shows them.
+- A Cell is thrown at a problem and flies until it lands: the stage a
+  person reads is Flying (then Needs you, Landed, Settled), never Working.
+  Code, wire values and text only models read keep `working`
+  (`stemcells/tasks/flying.md`).
 
 ## Keeping it publishable
+
 - Write every file as if the repo went public tomorrow: no real people,
   accounts, devices or private folders in code, tests, docs or images.
 - `LICENSE` stays exactly as upstream ships it.
 
 ## Dev loop
+
 Upstream's `AGENTS.md` covers the toolchain (pnpm, `vp`, Effect). In short:
 `pnpm install`, `stemcells/lab/electron dev --home-dir <folder>` (the
 desktop dev app, below),

@@ -16,7 +16,7 @@ export type HomeTab = "asleep" | "active" | "working" | "input";
 export const HOME_TABS: ReadonlyArray<{ readonly id: HomeTab; readonly label: string }> = [
   { id: "asleep", label: "Asleep" },
   { id: "active", label: "Active" },
-  { id: "working", label: "Working" },
+  { id: "working", label: "Flying" },
   { id: "input", label: "Input" },
 ];
 

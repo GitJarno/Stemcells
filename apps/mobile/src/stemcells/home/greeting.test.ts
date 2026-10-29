@@ -35,10 +35,10 @@ describe("what Aski says over the home", () => {
     expect(BANK.slice(0, 4)).toContain(greetingAt(working, 0, 5));
     const rolled = [1, 2, 3, 4, 5, 6].map((rolls) => greetingAt(working, rolls, 5));
     expect(new Set(rolled).size).toBe(6);
-    expect(rolled).toContain("Two Cells at work. Your hands are free.");
+    expect(rolled).toContain("Two Cells flying. Your hands are free.");
     expect(rolled).toContain("All hands busy. Except yours.");
     expect(greetingAt(counts({ active: 1, working: 1 }), 1, 0)).toBe(
-      "One Cell at work. Your hands are free.",
+      "One Cell flying. Your hands are free.",
     );
   });
 });

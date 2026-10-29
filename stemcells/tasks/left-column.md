@@ -1,14 +1,14 @@
 # The left column: one line to Settled
 
 The left column shows what needs the person, and every Cell travels one
-line from Working to Settled. It never follows the tabs, and opening a
+line from Flying to Settled. It never follows the tabs, and opening a
 Cell from it never takes another Cell's pane. Agreed on 2026-10-26 over an
 interactive draft in the chat that asked for it.
 
 ## Decisions
 
-1. **One line of stages: Needs you, Working, Landed, Settled.** Every Cell
-   is in exactly one. Needs you, Working and Landed are the stages
+1. **One line of stages: Needs you, Flying, Landed, Settled.** Every Cell
+   is in exactly one. Needs you, Flying and Landed are the stages
    `stage.ts` reads (`needs-you`, `working`, `done`); Settled is upstream's
    `settledAt`. Settled is not a second axis: upstream refuses to settle a
    thread that runs or asks, and a new message un-settles one, so the only

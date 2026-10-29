@@ -121,7 +121,7 @@ describe("the rail's badges", () => {
 describe("a badge's words", () => {
   it("say what its chats are doing, leaving out what is none", () => {
     expect(tileSummary({ needsYou: 2, working: 1, done: 3 })).toBe(
-      "2 need you · 1 working · 3 done",
+      "2 need you · 1 flying · 3 done",
     );
     expect(tileSummary({ needsYou: 1, working: 0, done: 0 })).toBe("1 needs you");
     expect(tileSummary({ needsYou: 0, working: 0, done: 0 })).toBe("");

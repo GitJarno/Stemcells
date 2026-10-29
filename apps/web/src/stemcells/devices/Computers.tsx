@@ -46,8 +46,8 @@ function cellsOf(link: MachineLink | undefined, nowMs: number): string {
   if (link.problem !== null) return `Cells see each other · not answering: ${link.problem}`;
   const atWork =
     link.cells === 0
-      ? "none at work in your repositories"
-      : `${link.cells} at work in your repositories`;
+      ? "none flying in your repositories"
+      : `${link.cells} flying in your repositories`;
   return link.seenAt === null
     ? `Cells see each other · ${atWork}`
     : `Cells see each other · ${atWork} · seen ${formatRelativeTimeLabel(new Date(link.seenAt).toISOString(), nowMs)}`;

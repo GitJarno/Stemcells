@@ -385,8 +385,8 @@ describe("the Cells' column", () => {
   it("shows a stage's Cells when its row is chosen, each with its age and project", async () => {
     setup(null);
     await using screen = await render(<Column />);
-    await userEvent.click(screen.getByRole("button", { name: /Working\s*1/ }));
-    const working = screen.getByRole("list", { name: "Working" });
+    await userEvent.click(screen.getByRole("button", { name: /Flying\s*1/ }));
+    const working = screen.getByRole("list", { name: "Flying" });
     await expect.element(working.getByText("Chat thread-w")).toBeInViewport();
     await expect.element(working.getByText("5m")).toBeVisible();
     await expect.element(working.getByText("shop")).toBeVisible();
@@ -472,7 +472,7 @@ describe("the column's project filter", () => {
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .not.toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: /Needs you\s*2/ })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Working\s*1/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Flying\s*1/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Settled\s*1/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Pinned\s*0/ })).toBeVisible();
 
@@ -523,12 +523,12 @@ describe("swiping the column", () => {
       expect.element(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "true");
 
     await swipe(column, 300);
-    await open(/Working\s*1/);
+    await open(/Flying\s*1/);
     await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
     await swipe(column, 300);
     await open(/Landed\s*2/);
     await swipe(column, -300);
-    await open(/Working\s*1/);
+    await open(/Flying\s*1/);
     await swipe(column, -300);
     await open(/Needs you\s*2/);
 
@@ -594,7 +594,7 @@ describe("the column's word that Stemcells gets better", () => {
       .element(screen.getByRole("button", { name: /Restarts once your Cells finish/ }))
       .toBeVisible();
     await expect
-      .element(page.getByText("3 Cells are at work, and a restart would stop them."))
+      .element(page.getByText("3 Cells are flying, and a restart would stop them."))
       .toBeVisible();
     expect(spies.install).not.toHaveBeenCalled();
     await userEvent.click(page.getByRole("button", { name: "Restart now" }));
@@ -652,7 +652,7 @@ describe("a Cell moving along the line", () => {
       stream = moved(before, { "thread-a": "working" });
       changes.tell();
     });
-    await expect.element(screen.getByRole("button", { name: /Working\s*2/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Flying\s*2/ })).toBeVisible();
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).not.toBeNull());
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).toBeNull());
   });

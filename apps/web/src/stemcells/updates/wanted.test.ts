@@ -74,7 +74,7 @@ describe("updateViewOf", () => {
     expect(view({ status: "downloaded", step: "restart", wanted: true, atWork: 1 })).toEqual({
       line: "Restarts once your Cells finish",
       percent: null,
-      note: "1 Cell is at work, and a restart would stop them.",
+      note: "1 Cell is flying, and a restart would stop them.",
       act: "restart-now",
     });
     expect(view({ status: "downloaded", step: "restart", wanted: true, atWork: 0 })).toMatchObject({

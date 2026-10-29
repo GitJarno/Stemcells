@@ -1,7 +1,7 @@
 # The phone's home on the Cells' line
 
 The column (`left-column-v3.md`) stands each Cell on one line: Needs you,
-Working, Landed, Settled. The phone's home still sorts them its own way
+Flying, Landed, Settled. The phone's home still sorts them its own way
 (Asleep · Active · Working · Input, `phone-cells.md`), and its Input tab is
 a list of rows, so an ask has to be opened to be answered. This brings the
 column's line and its asks to the phone, in the phone's own shape.
@@ -29,7 +29,7 @@ Research (2026-10-26) settled where things come from:
 
 ## Decisions
 
-1. **The tabs become the line.** Needs you · Working · Landed · Settled,
+1. **The tabs become the line.** Needs you · Flying · Landed · Settled,
    T3's segmented control with counts, as now. A Cell stands where the
    column stands it, so the Mac and the phone never disagree. Pinned stays
    T3's: a pinned Cell heads its own segment's list, as T3 lists pins, not

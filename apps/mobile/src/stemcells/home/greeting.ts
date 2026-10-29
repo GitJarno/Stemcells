@@ -14,7 +14,7 @@ const GREETINGS = [
 
 /** Cells at work and nothing for you. `N` is written out, as the persona has it. */
 const AT_WORK = [
-  "N Cells at work. Your hands are free.",
+  "N Cells flying. Your hands are free.",
   "The Cells have it.",
   "Quiet means it's working.",
   "I'll call you if anything needs you.",

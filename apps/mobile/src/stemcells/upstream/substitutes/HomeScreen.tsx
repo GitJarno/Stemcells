@@ -30,7 +30,7 @@ const tabs = tabChoice<HomeTab>();
 const EMPTY: Readonly<Record<HomeTab, string>> = {
   asleep: "No Cells asleep.",
   active: "No Cells awake.",
-  working: "No Cells working.",
+  working: "No Cells flying.",
   input: "Nothing waits on you.",
 };
 

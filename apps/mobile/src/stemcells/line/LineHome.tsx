@@ -46,7 +46,7 @@ export const held = createHeld({
 });
 
 const EMPTY: Readonly<Record<Exclude<LineStage, "needs">, string>> = {
-  working: "No Cells working.",
+  working: "No Cells flying.",
   landed: "Nothing waits to be settled.",
   settled: "No Cells settled.",
 };

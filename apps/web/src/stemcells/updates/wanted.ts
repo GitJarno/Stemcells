@@ -91,11 +91,7 @@ export function updateViewOf(input: {
     return {
       line: percent === null ? "Updating…" : `Updating… ${percent}%`,
       percent: percent ?? 0,
-      note: !wanted
-        ? null
-        : busy
-          ? `${cells(atWork)} at work: it restarts once they finish.`
-          : null,
+      note: !wanted ? null : busy ? `${cells(atWork)} flying: it restarts once they finish.` : null,
       act: wanted ? null : "update",
     };
   }
@@ -104,7 +100,7 @@ export function updateViewOf(input: {
       ? {
           line: "Restarts once your Cells finish",
           percent: null,
-          note: `${cells(atWork)} at work, and a restart would stop them.`,
+          note: `${cells(atWork)} flying, and a restart would stop them.`,
           act: "restart-now",
         }
       : { line: "Restarting…", percent: null, note: null, act: null };

@@ -68,7 +68,7 @@ const SETTLED_SHOWN = 30;
 
 const LABEL: Record<ColumnStage, string> = {
   needs: "Needs you",
-  working: "Working",
+  working: "Flying",
   landed: "Landed",
   settled: "Settled",
   pinned: "Pinned",
@@ -193,7 +193,7 @@ export function Cells() {
             />
           ),
           working: (
-            <Rows label="Working" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
+            <Rows label="Flying" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
           ),
           landed: <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />,
           settled: (
