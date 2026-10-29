@@ -331,6 +331,26 @@ describe("cards read from a Cell's prose, with no model", () => {
     });
   });
 
+  // About 1 in 5 steps Cells left asked for a decision, which Done it answers with nothing.
+  it("takes the person's words for a step that asks them to decide", () => {
+    const titles = (...steps: ReadonlyArray<string>) =>
+      prose("left", steps.join(" · "), { steps }).options.map((each) => each.title);
+    for (const step of [
+      "decide whether exact counts are OK on the public page",
+      "say whether I should install it on your phone",
+      "merge #5, or tell me what to change",
+      "pick one of the three layouts",
+    ]) {
+      expect(titles(step)).toEqual(["Reply…", "Nothing to do"]);
+    }
+    expect(titles("pick up the signed form")).toEqual(["Done it", "Reply…", "Nothing to do"]);
+    expect(titles("sign in", "decide whether to keep the old plan")).toEqual([
+      "All done",
+      "Reply…",
+      "Nothing to do",
+    ]);
+  });
+
   it("carries the reply's opening where the ask has no words of its own", () => {
     expect(prose("offer", "Want me to push it?", { lead: "Fixed." })).toMatchObject({
       quote: "Fixed.",
