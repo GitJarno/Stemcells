@@ -458,13 +458,31 @@
 }
 
 /* A card's own options, side by side (unblocking.md, decision 6): the
-   recommended one filled, the rest outlined; the line under them says what
-   the one you're on does. */
+   recommended one filled, the rest outlined; the line beside them says what
+   the one you're on does, and drops under them when the row has no room. */
 [data-need-acts] {
   display: flex;
-  flex-direction: column;
-  gap: var(--sc-space-xs);
+  flex-flow: row wrap;
+  align-items: center;
+  gap: var(--sc-space-xs) var(--sc-space-xl);
   margin-block-start: var(--sc-space-xs);
+}
+/* Every option's line in one cell, sized to the longest: which one shows
+   changes, the card never moves. */
+[data-need-acts] > [data-need-option-says] {
+  display: grid;
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+}
+[data-need-acts] > [data-need-option-says] > span {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  opacity: 0;
+}
+[data-need-acts] > [data-need-option-says] > [data-shown] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
 }
 [data-need-acts] > [data-need-options] {
   flex-flow: row wrap;
@@ -501,14 +519,14 @@
 [data-need-acts] [data-need-option]:disabled {
   box-shadow: inset 0 0 0 1px var(--sc-hairline);
 }
-[data-need-option-says][data-warn] {
+[data-need-option-says] > [data-warn] {
   color: var(--sc-needs-you);
 }
-[data-need-option-says] > [data-need-option-lit] {
+[data-need-option-says] [data-need-option-lit] {
   margin-inline-end: 0.5ch;
 }
-[data-need-option-says] > [data-need-option-lit="click"],
-[data-need-option-says] > [data-need-option-lit="words"] {
+[data-need-option-says] [data-need-option-lit="click"],
+[data-need-option-says] [data-need-option-lit="words"] {
   color: var(--sc-needs-you);
 }
 [data-need-send] {

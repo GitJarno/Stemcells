@@ -1,5 +1,5 @@
 import { FlagIcon } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { keepCard, useAutonomy } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
@@ -469,9 +469,10 @@ const LIGHT_LINES = {
 } as const;
 
 /**
- * The card's options side by side (unblocking.md, decision 6). The line under them says what
- * the one you're on does, else the lit, warned or recommended one. An option that takes words
- * turns the row into one full-width field, focused; Esc brings the buttons back.
+ * The card's options side by side (unblocking.md, decision 6). The line beside them says what
+ * the one you're on does, else the lit, warned or recommended one; every option's line is laid
+ * out in the same place, so moving between them never moves the card. An option that takes
+ * words turns the row into one full-width field, focused; Esc brings the buttons back.
  */
 function Options(props: {
   options: ReadonlyArray<CardOption>;
@@ -482,6 +483,7 @@ function Options(props: {
 }) {
   const [writing, setWriting] = useState<CardOption | null>(null);
   const [on, setOn] = useState<string | null>(null);
+  const lineId = useId();
   if (writing !== null) {
     return (
       <Field
@@ -499,6 +501,10 @@ function Options(props: {
     lit ??
     props.options.find((option) => option.warn) ??
     props.options.find((option) => option.recommended && !option.allows);
+  const lined = props.options.filter(
+    (option) =>
+      option.consequence !== null || lightOf(option.id, props.lit, props.asked) !== undefined,
+  );
   return (
     <div data-need-acts="" onPointerLeave={() => setOn(null)}>
       <div data-need-options="">
@@ -511,6 +517,7 @@ function Options(props: {
             data-allows={option.allows || undefined}
             data-warn={option.warn || undefined}
             data-lit={lightOf(option.id, props.lit, props.asked)}
+            aria-describedby={lined.includes(option) ? lineId + option.id : undefined}
             disabled={option.allows && !props.allowReady}
             onPointerEnter={() => setOn(option.id)}
             onFocus={() => setOn(option.id)}
@@ -522,10 +529,19 @@ function Options(props: {
           </button>
         ))}
       </div>
-      {said !== undefined && (said.consequence !== null || said === lit) ? (
-        <p data-need-option-says="" data-warn={said.warn || undefined}>
-          <LightLine light={lightOf(said.id, props.lit, props.asked)} />
-          {said.consequence}
+      {lined.length > 0 ? (
+        <p data-need-option-says="">
+          {lined.map((option) => (
+            <span
+              key={option.id}
+              id={lineId + option.id}
+              data-shown={option === said || undefined}
+              data-warn={option.warn || undefined}
+            >
+              <LightLine light={lightOf(option.id, props.lit, props.asked)} />
+              {option.consequence}
+            </span>
+          ))}
         </p>
       ) : null}
     </div>
