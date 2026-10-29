@@ -103,16 +103,6 @@ once no Cell is mid-turn. Settings › About › Update track picks **Stable**
 
 From a terminal, `stemcells/scripts/install-app --pull` does the same.
 
-## Built on T3 Code
-
-Stemcells is a fork of [T3 Code](https://github.com/pingdotgg/t3code) by
-T3 Tools, which supplies the engine: providers, threads, the server and
-remote access. Stemcells keeps taking upstream's work as it lands and keeps
-its own layer apart, so the two stay easy to merge.
-[stemcells/docs/fork.md](../stemcells/docs/fork.md) explains how, and
-[README.md](../README.md) is T3 Code's own readme. Stemcells is not
-affiliated with or endorsed by T3 Tools.
-
 ## Contributing
 
 Stemcells is built mostly by coding agents, in the open. Agents and people
@@ -123,3 +113,10 @@ alike start with [stemcells/AGENTS.md](../stemcells/AGENTS.md);
 ## License
 
 [MIT](../LICENSE), as upstream ships it.
+
+---
+
+<sub>Stemcells is built on [T3 Code](https://github.com/pingdotgg/t3code) by
+T3 Tools, and keeps taking its work as it lands
+([how](../stemcells/docs/fork.md)); [README.md](../README.md) is T3 Code's
+own readme. Not affiliated with or endorsed by T3 Tools.</sub>
