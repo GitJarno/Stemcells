@@ -144,6 +144,7 @@ vi.mock("../upstream/needs", () => ({
   sendThreadCommand: async () => ({ ok: true }),
   ChatMarkdown: (props: { text: string }) => props.text,
   cellRef: () => null,
+  useRepositoryUrl: () => null,
 }));
 
 vi.mock("../upstream/column", () => ({

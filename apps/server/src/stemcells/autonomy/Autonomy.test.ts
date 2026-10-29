@@ -43,7 +43,6 @@ const need = (key: string, threadId: string, kind: "failed" | "prose", since = L
           steps: [],
           next: null,
           lead: null,
-          links: [],
         }
       : null,
   stuck: null,

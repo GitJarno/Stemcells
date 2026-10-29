@@ -5,7 +5,7 @@ on the column (2026-10-29):
 
 - Nearly every ask read "Left a step to you. Done it?", with the step
   itself in grey under it and nothing of what the Cell did.
-- A step that names a place ("buy acmecoffee.com, through Escrow.com") had no
+- A step that names a place ("buy the domain, through Escrow.com") had no
   link, though the Cell's reply had one.
 - "Hit its usage limit" asked the person to do what the app can do itself.
 - "The disk was full" offered no way to free it.
@@ -46,7 +46,7 @@ itself is not an ask.
    only cost.
 4. **Links are one click.** An ask's words draw as the chat draws them
    (upstream's markdown, inline): links, code, bold. A bare web address
-   ("acmecoffee.com") is a link. The reply's other links show under the ask,
+   ("acme.dev") is a link. The reply's other links show under the ask,
    up to three, so a step that says "buy it" sits next to where to buy it.
 5. **A full disk offers its fix.** A turn the full disk stopped offers
    Free space, which starts the cleanup Cell, as the chat's own row does:

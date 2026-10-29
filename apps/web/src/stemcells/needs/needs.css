@@ -323,12 +323,6 @@
   color: var(--sc-soft);
   font-weight: 500;
 }
-/* Where the Cell's reply points, a click from the ask. */
-[data-need-links] {
-  color: var(--sc-faint);
-  font-size: calc(var(--sc-body) + var(--sc-meta-size));
-  overflow-wrap: anywhere;
-}
 /* What you need to decide, two lines until More shows the rest in place. */
 [data-need-context] {
   display: flex;

@@ -103,9 +103,7 @@ export function commandsFor(
     case "goAhead":
       return [{ type: "message", text: PHRASES.goAhead }];
     case "didIt":
-      return need.prose?.next == null
-        ? [{ type: "settle" }]
-        : [{ type: "message", text: PHRASES.didIt }];
+      return [{ type: "message", text: PHRASES.didIt }];
     case "freeSpace":
       return [];
     case "nothingToDo":

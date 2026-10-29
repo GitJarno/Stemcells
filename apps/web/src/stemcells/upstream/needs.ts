@@ -4,7 +4,7 @@
  * shell, and upstream's own chat's thread commands, run as it runs them. Only `respond` with an
  * allow decision can approve, and only a click on Aski's page reaches it.
  */
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import {
   runAtomCommand,
   squashAtomCommandFailure,
@@ -16,6 +16,7 @@ import {
   ProviderInstanceId,
   RunId,
   RuntimeRequestId,
+  ProjectId,
   ThreadId,
   type EnvironmentId,
   type ProviderApprovalDecision,
@@ -29,12 +30,13 @@ import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAut
 import { newMessageId } from "~/lib/utils";
 import { buildPlanImplementationPrompt } from "~/proposedPlan";
 import { appAtomRegistry } from "~/rpc/atomRegistry";
-import { readThreadShell } from "~/state/entities";
+import { readThreadShell, useProject } from "~/state/entities";
 import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
 import { readEnvironmentScope } from "~/state/session";
 import { threadEnvironment } from "~/state/threads";
 
 import type { ThreadCommand } from "../needs/actions";
+import { repositoryUrlOf } from "../needs/inline";
 import { markHandSettle, unmarkHandSettle } from "../tabs/handSettles";
 
 export type ApprovalDecision = ProviderApprovalDecision;
@@ -55,6 +57,16 @@ export { default as ChatMarkdown } from "~/components/ChatMarkdown";
 /** A Cell's chat as upstream's markdown takes it: its links open in that chat's browser. */
 export const cellRef = (environmentId: string, threadId: string) =>
   scopeThreadRef(environmentId as EnvironmentId, ThreadId.make(threadId));
+
+/** Where an issue number in a Cell's words points: its project's repository, on GitHub. */
+export function useRepositoryUrl(environmentId: string | null, projectId: string): string | null {
+  const project = useProject(
+    environmentId === null
+      ? null
+      : scopeProjectRef(environmentId as EnvironmentId, ProjectId.make(projectId)),
+  );
+  return repositoryUrlOf(project?.repositoryIdentity);
+}
 
 /** Upstream's composer, inside a chat pane: the sheet over Aski's chat stops above it. */
 export const COMPOSER_SURFACE_SELECTOR = '[data-chat-composer-surface="true"]';

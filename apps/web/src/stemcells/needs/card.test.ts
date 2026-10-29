@@ -311,7 +311,7 @@ describe("cards read from a Cell's prose, with no model", () => {
     });
     // Recommending nothing: "ok the rest" mustn't say the person did what only they can do.
     expect(left.options.map((each) => [each.title, each.consequence, each.recommended])).toEqual([
-      ["Done it", "Settles it. Nothing is sent.", false],
+      ["Done it", "Sends “Done. Carry on.”", false],
       ["Reply…", null, false],
       ["Nothing to do", "Settles the Cell. Nothing is sent.", false],
     ]);
@@ -331,11 +331,9 @@ describe("cards read from a Cell's prose, with no model", () => {
     });
   });
 
-  it("carries the reply's links, and its opening where the ask has no words of its own", () => {
-    const links = [{ label: "domainshop.com", url: "https://domainshop.com" }];
-    expect(prose("offer", "Want me to push it?", { lead: "Fixed.", links })).toMatchObject({
+  it("carries the reply's opening where the ask has no words of its own", () => {
+    expect(prose("offer", "Want me to push it?", { lead: "Fixed." })).toMatchObject({
       quote: "Fixed.",
-      links,
     });
   });
 

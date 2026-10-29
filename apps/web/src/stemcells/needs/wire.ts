@@ -103,8 +103,6 @@ export interface Need {
     readonly next: string | null;
     /** The reply's opening paragraph: what the Cell did. */
     readonly lead: string | null;
-    /** The reply's links the ask's words don't carry. */
-    readonly links: ReadonlyArray<{ readonly label: string; readonly url: string }>;
   } | null;
   readonly stuck: {
     readonly runId: string;
@@ -152,8 +150,8 @@ const isText = (value: unknown): value is string => typeof value === "string";
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-/** A reply's ask from a server before its steps, lead and links, with none of them. */
-const PROSE_BEFORE_STEPS = { steps: [], next: null, lead: null, links: [] };
+/** A reply's ask from a server before its steps and lead, with neither. */
+const PROSE_BEFORE_STEPS = { steps: [], next: null, lead: null };
 
 /**
  * The list, when `json` has the fields a reader keys on: each need's identity, kind, place and

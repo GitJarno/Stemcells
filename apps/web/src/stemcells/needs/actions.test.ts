@@ -74,17 +74,19 @@ describe("a choice as upstream's commands", () => {
     expect(commandsFor(prose, { kind: "nothingToDo" }, {}, NOW)).toEqual([{ type: "settle" }]);
   });
 
-  it("says a step is done only to a Cell with its own step waiting, and settles one without", () => {
+  // Settling from the ask skipped Landed: the Cell carries on to its own Done, and lands there.
+  it("tells a Cell its step is done, with or without a step of its own waiting", () => {
     const left = (next: string | null) =>
       needFixture({
         kind: "prose",
         request: null,
         prose: proseFixture("left", "sign in", { next }),
       });
-    expect(commandsFor(left("merge it"), { kind: "didIt" }, {}, NOW)).toEqual([
-      { type: "message", text: "Done. Carry on." },
-    ]);
-    expect(commandsFor(left(null), { kind: "didIt" }, {}, NOW)).toEqual([{ type: "settle" }]);
+    for (const next of ["merge it", null]) {
+      expect(commandsFor(left(next), { kind: "didIt" }, {}, NOW)).toEqual([
+        { type: "message", text: "Done. Carry on." },
+      ]);
+    }
   });
 
   it("nudges a stuck run without stopping it, or stops it to start again from the person's words", () => {

@@ -72,8 +72,6 @@ export interface Card {
   readonly steps: ReadonlyArray<string>;
   /** The Cell's own step that waits on the person's: what answering unblocks. */
   readonly next: string | null;
-  /** Where the Cell's reply points, beside the ask. */
-  readonly links: ReadonlyArray<{ readonly label: string; readonly url: string }>;
   readonly questions: ReadonlyArray<CardQuestion>;
   readonly options: ReadonlyArray<CardOption>;
   /** Why the card offers no answer of its own, when it doesn't. */
@@ -218,16 +216,16 @@ export function askOf(
 }
 
 /**
- * The person did the steps a Cell left them. With a step of its own waiting, it hears so and
- * goes on; with none, it settles: a turn only to say thanks is cost.
+ * The person did the steps a Cell left them. The Cell hears so and carries on to its own
+ * **Done:**, which lands it where the person settles it (stemcells/tasks/landing-asks.md, 2).
  */
-const didIt = (steps: number, next: string | null) =>
+const didIt = (steps: number) =>
   option(
     "did-it",
     steps > 1 ? "All done" : "Done it",
     { kind: "didIt" },
     // Never recommended: "ok the rest" mustn't say the person did what only they can do.
-    { consequence: next === null ? "Settles it. Nothing is sent." : `Sends “${PHRASES.didIt}”` },
+    { consequence: `Sends “${PHRASES.didIt}”` },
   );
 
 function questionOf(question: AskedQuestion): CardQuestion {
@@ -283,7 +281,6 @@ const base = (need: Need) => ({
   quote: null,
   steps: [],
   next: null,
-  links: [],
   questions: [],
   options: [],
   note: null,
@@ -497,7 +494,6 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
       const prose = need.prose;
       const cue = prose?.cue ?? "question";
       const text = prose?.text ?? null;
-      const links = prose?.links ?? [];
       if (cue === "left") {
         // The step is the ask; what the Cell did, and what waits on the step, are its context.
         const given = prose !== null && prose.steps.length > 0 ? prose.steps : text ? [text] : [];
@@ -514,8 +510,7 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
           steps: steps.length > 1 ? steps : [],
           quote: prose?.lead ?? null,
           next,
-          links,
-          options: [didIt(steps.length, next), reply("Tell it what you did…"), nothingToDo],
+          options: [didIt(steps.length), reply("Tell it what you did…"), nothingToDo],
         };
       }
       // A question or an offer asks in a sentence of its own; a stop says the fixed line.
@@ -524,7 +519,6 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
         ...base(need),
         headline: asked?.ask ?? PROSE[cue],
         quote: (asked === null ? text : asked.context) ?? prose?.lead ?? null,
-        links,
         options:
           cue === "question"
             ? [reply("Your answer…"), nothingToDo]

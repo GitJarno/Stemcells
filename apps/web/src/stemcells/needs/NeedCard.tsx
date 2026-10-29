@@ -17,6 +17,7 @@ import {
   useNowMinuteMs,
   useOpenFromNeeds,
   usePrimaryEnvironmentId,
+  useRepositoryUrl,
 } from "../upstream/needs";
 import { useCellPlace } from "../upstream/thread";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
@@ -165,6 +166,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
 
   const answerable = answerableOf(props.shown, hold) && !props.leaving;
   const ref = cell === null ? null : cellRef(cell.environmentId, cell.threadId);
+  const repo = useRepositoryUrl(environmentId, need.projectId);
 
   // A card Aski is about to take stays open, so its fuse can be seen and stopped.
   const collapsed =
@@ -300,31 +302,25 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
         {tail}
       </header>
       <div data-need-ask="">
-        <Words text={card.headline} cell={ref} />
+        <Words text={card.headline} cell={ref} repo={repo} />
       </div>
       {card.steps.length > 0 ? (
         <ol data-need-steps="">
           {card.steps.map((step) => (
             <li key={step}>
-              <Words text={step} cell={ref} />
+              <Words text={step} cell={ref} repo={repo} />
             </li>
           ))}
         </ol>
       ) : null}
-      {card.quote ? <Context text={card.quote} cell={ref} open={flag !== null || whole} /> : null}
+      {card.quote ? (
+        <Context text={card.quote} cell={ref} repo={repo} open={flag !== null || whole} />
+      ) : null}
       {card.request ? <pre data-need-request="">{card.request}</pre> : null}
       {card.next ? (
         <div data-need-next="">
           <span>Then {cellNameOf(need.parentThreadId ?? need.threadId)}:</span>{" "}
-          <Words text={card.next} cell={ref} />
-        </div>
-      ) : null}
-      {card.links.length > 0 ? (
-        <div data-need-links="">
-          <Words
-            text={card.links.map((link) => `[${link.label}](${link.url})`).join(" · ")}
-            cell={ref}
-          />
+          <Words text={card.next} cell={ref} repo={repo} />
         </div>
       ) : null}
       {card.why ? <p data-need-why="">{card.why}</p> : null}
@@ -405,16 +401,24 @@ function pickByNumber(event: KeyboardEvent<HTMLElement>) {
   if (!row.hasAttribute("data-allows")) row.click();
 }
 
+interface WordsProps {
+  readonly text: string;
+  readonly cell: ReturnType<typeof cellRef> | null;
+  /** The Cell's repository on the web, where its words' issue numbers link. */
+  readonly repo: string | null;
+}
+
 /**
  * Words of an ask, as the chat draws them: links, code and bold through upstream's markdown,
- * a bare web address linked (`inline.ts`); plain words stay plain text, which costs nothing.
+ * a bare web address and an issue number linked (`inline.ts`); plain words stay plain text, which
+ * costs nothing.
  */
-function Words(props: { text: string; cell: ReturnType<typeof cellRef> | null }) {
-  if (!marksUp(props.text)) return props.text;
+function Words(props: WordsProps) {
+  if (!marksUp(props.text, props.repo)) return props.text;
   return (
     <ChatMarkdown
       inline
-      text={linkAddresses(props.text)}
+      text={linkAddresses(props.text, props.repo)}
       cwd={undefined}
       threadRef={props.cell ?? undefined}
       parseRawHtml={false}
@@ -427,7 +431,7 @@ const plainOf = (text: string): string =>
   text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");
 
 /** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */
-function Context(props: { text: string; cell: ReturnType<typeof cellRef> | null; open: boolean }) {
+function Context(props: WordsProps & { open: boolean }) {
   const body = useRef<HTMLDivElement>(null);
   const [long, setLong] = useState(false);
   const [opened, setOpened] = useState(false);
@@ -441,7 +445,7 @@ function Context(props: { text: string; cell: ReturnType<typeof cellRef> | null;
   return (
     <div data-need-context="" data-more={more || undefined}>
       <div ref={body}>
-        <Words text={props.text} cell={props.cell} />
+        <Words text={props.text} cell={props.cell} repo={props.repo} />
       </div>
       {long && !more ? (
         <button type="button" onClick={() => setOpened(true)}>
