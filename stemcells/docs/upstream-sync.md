@@ -170,3 +170,14 @@ timing out under the load; `check-local` and the nightly set it themselves.
   moved to `/settings/your-devices`. Words of ours that name upstream's pages
   went stale with no test failing: after a settings move, grep our folders
   for `Settings ›` and for links to the pages it moved.
+- 2026-10-28 (260 commits, #351): upstream rewrote the composer (#25869) and
+  replaced the `react-effect-budget` lint rule with `no-unreasoned-state-sync`
+  (#26161), so every reasoned effect of ours took the new directive. Its new
+  tests pin upstream's model names, which our substitutes rename: they get a
+  test seam ("Expects"), as `desktopUpdate.logic.test.ts` does. Two of
+  upstream's failures came from the Mac, not our tree: Homebrew's SQLite (the
+  `026` migration) and a checkout path with a space, which relay infra's
+  `ManagedTunnelLimits.test.ts` reads from an undecoded URL (`AI%20Projects`).
+  A panel layout of upstream's can drop what its strip shows (the draft's
+  permissions chip, #353): when a substitute moves a component into a menu,
+  check which props the moved layout leaves out.
