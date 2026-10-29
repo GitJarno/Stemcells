@@ -10,5 +10,5 @@ asks in `src/field.ts`) and the four acts (`src/act-*.ts`).
   (what `curl stemcells.sh` prints) and the 404's Aski from the same canon.
 - Preview `dist/` with any static server; module scripts don't load from
   `file://`.
-- Deploys are the maintainer's: `vercel build --prod`, then
-  `vercel deploy --prebuilt --prod`, from this folder.
+- Deploys are the maintainer's: `node deploy.mjs` builds and puts it on
+  stemcells.sh (`vercel link` once first).
