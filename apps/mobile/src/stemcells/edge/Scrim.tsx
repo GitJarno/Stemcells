@@ -1,7 +1,6 @@
 // An edge of the screen fading into its ground where content scrolls under the header or the
-// composer (stemcells/tasks/phone-polish.md, decision 5). Darkened, not blurred: a blur keeps
-// bright words bright behind the clock and the glass, and samples again on every scrolled frame;
-// this is one still layer. Eased stops, so no line shows where the fade starts.
+// composer, where the page can't blur (`Veil.tsx`; stemcells/tasks/phone-polish.md, decision 5).
+// Eased stops, so no line shows where the fade starts.
 
 import { useState } from "react";
 import { type ColorValue, View } from "react-native";

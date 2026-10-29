@@ -51,7 +51,7 @@ export function WorktreeSetupCard(props: WorktreeSetupCardProps) {
     snapshot.phase === "failed" || snapshot.stages.some((stage) => stage.status === "failed");
   const label =
     handedOff && working
-      ? `Working for ${elapsed(turnStartedAt, null, now) ?? "0s"}`
+      ? `Flying for ${elapsed(turnStartedAt, null, now) ?? "0s"}`
       : running
         ? handedOff
           ? "Setup continues…"
@@ -152,7 +152,7 @@ export function WorktreeWorkingHeader({ startedAt }: { startedAt: string }) {
   return (
     <View className="py-1">
       <View className="min-h-11 flex-row items-center border-b border-border px-1">
-        <HeaderLabel label={`Working for ${elapsed(startedAt, null, now) ?? "0s"}`} active />
+        <HeaderLabel label={`Flying for ${elapsed(startedAt, null, now) ?? "0s"}`} active />
       </View>
     </View>
   );

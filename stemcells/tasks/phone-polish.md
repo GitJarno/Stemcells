@@ -21,10 +21,12 @@ The person's list (2026-10-29), from two phone screenshots: the home and a Cell'
    The project's mark leaves the title's left, where it cost every title its first 28
    points, for the bottom right where the agent's stood, beside the pull request: the marks
    say where, the title says what. A settled row's project moves beside its time, too.
-5. **Edges.** Darken, not blur: an eased scrim to the page's colour under the header and
-   under the composer. A blur keeps bright text bright behind the clock and the glass
-   buttons; a scrim takes it away. A scrim is one static layer, where a blur re-samples
-   every scrolled frame. Eased stops, so no band shows where it starts.
+5. **Edges.** Blur, not darken (the person, 2026-10-29: a scrim read as a dark band): the
+   page blurs progressively as it slides under the header and the composer, heaviest at
+   the screen's edge and clear by the chrome's inner side, nothing painted over it. Core
+   Animation's variable blur, the one the system's bars use: 3.4 pt at the edge, the last
+   quarter clear. Where it can't (Android, an app built before it), the eased scrim to the
+   page's colour stays.
 6. **Needs you.** An ask is a card like the others: its Cell on the left with its name,
    the question as the title, its age top right, its project's mark bottom right. Open, it
    grows the options and the reply under the same head.
@@ -49,7 +51,7 @@ The person's list (2026-10-29), from two phone screenshots: the home and a Cell'
 - [x] 2 `lineApplies` holds the line until a machine says none; `HomePage` scrolls as T3's list
 - [x] 3 Scope store + multi-select menus; HomeScreen filters by it; no chips on pages
 - [x] 4 Card marks: project bottom right, no agent mark
-- [x] 5 Top and bottom scrims
+- [x] 5 Top and bottom scrims, then the variable blur in their place
 - [x] 6 Ask cards in the row's shape
 - [x] 7 Usage: Cost, 30d, API rate label, Mac's chart (helper)
 - [x] 8 Cell in the chat's header; no ledge

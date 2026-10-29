@@ -570,7 +570,7 @@ function WorkingTimer(props: { readonly startedAt: string }) {
       numberOfLines={1}
       style={{ fontVariant: ["tabular-nums"], fontWeight: "500" }}
     >
-      Working {formatWorkingDuration(props.startedAt, nowMs)}
+      Flying {formatWorkingDuration(props.startedAt, nowMs)}
     </SystemText>
   );
 }
