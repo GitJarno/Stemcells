@@ -9,6 +9,7 @@ import {
   EMPTY_WORKSPACE,
   focusedPane,
   focusPane,
+  goneDraftsAsThreads,
   MIN_COLUMN_WIDTH,
   moveTab,
   openTab,
@@ -255,6 +256,14 @@ describe("routes", () => {
     expect(panesOf(workspace.tabs[0]!).find((pane) => pane.id === paneA)?.cell).toEqual(
       thread("a"),
     );
+  });
+
+  // Sent since upstream lets a draft go before its route moves on, a pane kept the draft for good.
+  it("at start, a pane's draft upstream no longer holds is its thread", () => {
+    let workspace = showRoute(EMPTY_WORKSPACE, draft("a"), ids());
+    workspace = fill(splitRight(workspace, ids(), 1200), draft("b"));
+    const started = goneDraftsAsThreads(workspace, (draftId) => draftId === "draft-b");
+    expect(panesOf(started.tabs[0]!).map((pane) => pane.cell)).toEqual([thread("a"), draft("b")]);
   });
 
   it("an empty pane whose new Cell landed in another pane is dropped", () => {

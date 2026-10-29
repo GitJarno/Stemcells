@@ -25,9 +25,9 @@ import { resolveThreadActionProjectRef } from "./substitutes/chatThreadActions";
 type CellLiveness = "alive" | "gone" | "unknown";
 
 /**
- * Whether a chat can still be shown, and the route that shows it: the thread
- * once the server lists it, else the draft. "unknown" until its environment's
- * thread list has loaded.
+ * Whether a chat can still be shown, and the route that shows it: the thread once the server
+ * lists it, else the draft; "unknown" until its environment's thread list has loaded. A draft
+ * upstream let go once sent stays its draft's route: upstream's view moves that on to the thread.
  */
 export function useCellPresence(cell: CellRef | null): {
   readonly liveness: CellLiveness;
@@ -38,10 +38,14 @@ export function useCellPresence(cell: CellRef | null): {
   const draftExists = useComposerDraftStore((store) =>
     draftId === null ? false : store.getDraftSession(draftId as DraftId) !== null,
   );
+  const draftLetGo = useComposerDraftStore((store) =>
+    draftId === null ? false : store.getPromotedDraftRedirect(draftId as DraftId) !== null,
+  );
   const shellStatus = useEnvironmentShellStatus(
     cell ? (cell.environmentId as EnvironmentId) : null,
   );
   if (cell === null) return { liveness: "gone", target: null };
+  if (draftLetGo) return { liveness: "alive", target: routeTargetForCell(cell) };
   if (shell !== null && shell.deletedAt == null) {
     return { liveness: "alive", target: { kind: "server", threadRef: threadRefOf(cell) } };
   }
