@@ -688,7 +688,11 @@ export function readAnswers(
         );
         if (no && decline) return chose(decline, k + 1, null);
       }
-      const offer = card.kind === "prose" && card.cue !== "question";
+      // A step that asks for a decision has neither: its yes or no is the answer itself.
+      const offer =
+        card.kind === "prose" &&
+        card.cue !== "question" &&
+        (has("goAhead") ?? has("didIt")) !== null;
       const yesTo = offer
         ? (has("goAhead") ?? has("didIt"))
         : card.kind === "plan"

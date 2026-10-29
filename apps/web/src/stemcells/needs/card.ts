@@ -216,6 +216,13 @@ export function askOf(
 }
 
 /**
+ * A step that asks the person to decide ("decide whether…", "say which…", "merge it or tell
+ * me"): Done it would answer nothing, so it takes the person's words (landing-asks.md, 4).
+ */
+const DECIDES =
+  /\b(?:decide|choose)\b|\bpick (?:one|between|which|option|\d)|\b(?:say|tell me) (?:whether|which|if|what)\b|\bor (?:tell me|say)\b|\b(?:say|give the) go\b/i;
+
+/**
  * The person did the steps a Cell left them. The Cell hears so and carries on to its own
  * **Done:**, which lands it where the person settles it (stemcells/tasks/landing-asks.md, 2).
  */
@@ -510,7 +517,10 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
           steps: steps.length > 1 ? steps : [],
           quote: prose?.lead ?? null,
           next,
-          options: [didIt(steps.length), reply("Tell it what you did…"), nothingToDo],
+          options:
+            steps.length > 0 && steps.every((step) => DECIDES.test(step))
+              ? [reply("Your answer…"), nothingToDo]
+              : [didIt(steps.length), reply("Tell it what you did…"), nothingToDo],
         };
       }
       // A question or an offer asks in a sentence of its own; a stop says the fixed line.

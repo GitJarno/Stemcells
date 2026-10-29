@@ -128,6 +128,19 @@ const NEEDS: ReadonlyArray<readonly [Need, string]> = [
     }),
     "Yeti",
   ],
+  [
+    needFixture({
+      key: "thread-rue:prose:run-10",
+      number: 10,
+      kind: "prose",
+      threadId: "thread-rue",
+      prose: proseFixture("left", "decide whether to keep the old plan", {
+        runId: "run-10",
+        steps: ["decide whether to keep the old plan"],
+      }),
+    }),
+    "Rue",
+  ],
 ];
 const CARDS: Addressee[] = NEEDS.map(([need, who]) => addressee(need, who));
 
@@ -227,6 +240,9 @@ const ANSWERS: Array<[string, string]> = [
   ["for 1 yes", "1 Floof: reply “yes”"],
   ["for 1 nothing", `1 Floof: ${kindOf(1, "nothingToDo")}`],
   ["for 1 wait for the tests to finish", "1 Floof: reply “wait for the tests to finish”"],
+  // So does a step that asks for a decision: its no is the answer, not nothing to do.
+  ["10 no", "10 Rue: reply “no”"],
+  ["10 yes", "10 Rue: reply “yes”"],
   ["1 reply", `1 Floof: ${kindOf(1, "reply")} (say what)`],
   ['for 1 "staging. Then run it"', "1 Floof: reply “staging. Then run it”"],
   [
