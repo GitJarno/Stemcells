@@ -44,6 +44,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // Where a Cell runs: upstream's branch toolbar in the menu under the
   // ledge's "branch ⌄", never under the box; git only once known.
   "apps/web/src/components/BranchToolbar.tsx": "BranchToolbar.tsx",
+  // The sidebar's slot holds the left column: the Cells, the rail, or upstream's list.
+  "apps/web/src/components/Sidebar.tsx": "Sidebar.tsx",
   // Aski stands over every new chat's headline, in a project or in none.
   "apps/web/src/components/chat/DraftHeroHeadline.tsx": "DraftHeroHeadline.tsx",
   // The hero names every place the words start Cells in.

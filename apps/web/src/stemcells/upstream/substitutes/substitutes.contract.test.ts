@@ -16,6 +16,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
 import * as UpstreamBranchToolbar from "../../../components/BranchToolbar";
+import * as UpstreamSidebar from "../../../components/Sidebar";
 import * as UpstreamHostedBrowserWebview from "../../../browser/HostedBrowserWebview";
 import * as UpstreamComposerPromptEditor from "../../../components/ComposerPromptEditorTiptap";
 import * as UpstreamChatComposer from "../../../components/chat/ChatComposer";
@@ -59,6 +60,7 @@ import * as UpstreamWorkEntryRow from "../../../components/chat/TimelineWorkEntr
 import * as UpstreamWorkspaceFileDrop from "../../../components/chat/workspaceFileDrop";
 import * as UpstreamMediaActions from "../../../components/media/MediaActions";
 import * as OurBranchToolbar from "./BranchToolbar";
+import * as OurSidebar from "./Sidebar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
 import * as OurHostedBrowserWebview from "./HostedBrowserWebview";
 import * as OurChatComposer from "./ChatComposer";
@@ -379,6 +381,13 @@ const CASES: Readonly<Record<string, Case>> = {
         "../BranchToolbar",
         ["BranchToolbar"],
       ],
+    },
+  },
+  "apps/web/src/components/Sidebar.tsx": {
+    upstream: UpstreamSidebar,
+    substitute: OurSidebar satisfies RendersOrNothing<typeof UpstreamSidebar>,
+    importers: {
+      "apps/web/src/components/AppSidebarLayout.tsx": ["./Sidebar", ["default"]],
     },
   },
   "apps/web/src/components/settings/settingsSearch.ts": {
@@ -827,14 +836,18 @@ async function configFor(command: ConfigEnv["command"]): Promise<UserConfig> {
 function importedNames(source: string, specifier: string): string[] {
   const from = specifier.replaceAll(/[/.]/g, (char) => `\\${char}`);
   const pattern = new RegExp(`(?:import|export)\\s*\\{([^}]*)\\}\\s*from\\s*["']${from}["']`, "g");
-  return [...source.matchAll(pattern)].flatMap((match) =>
-    match[1]!.split(",").map((name) =>
-      name
-        .trim()
-        .replace(/^type\s+/, "")
-        .replace(/\s+as\s+\w+$/, ""),
+  const byDefault = new RegExp(`import\\s+\\w+\\s+from\\s*["']${from}["']`).test(source);
+  return [
+    ...(byDefault ? ["default"] : []),
+    ...[...source.matchAll(pattern)].flatMap((match) =>
+      match[1]!.split(",").map((name) =>
+        name
+          .trim()
+          .replace(/^type\s+/, "")
+          .replace(/\s+as\s+\w+$/, ""),
+      ),
     ),
-  );
+  ];
 }
 
 describe("Stemcells' substitutes for upstream modules", () => {

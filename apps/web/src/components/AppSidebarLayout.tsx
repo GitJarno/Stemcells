@@ -63,7 +63,6 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "./ui/tooltip";
 import { appAtomRegistry } from "../rpc/atomRegistry";
 import { registerCommands, registerMenuAction } from "../shortcuts/dispatcher";
 import { resolveThreadRouteRef } from "../threadRoutes";
-import { LeftColumn } from "../stemcells/rail/LeftColumn";
 import { DraftReport } from "../stemcells/limitResume/DraftReport";
 
 const MACOS_TRAFFIC_LIGHTS_LEFT_INSET = "var(--desktop-window-controls-inset, 90px)";
@@ -470,7 +469,7 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
           }}
           style={windowControlsInsetStyle}
         >
-          <LeftColumn wide={<ThreadSidebar routeReveal={sidebarRouteReveal} />} />
+          <ThreadSidebar routeReveal={sidebarRouteReveal} />
           <SidebarRail onDoubleClick={resetSidebarWidth} />
         </Sidebar>
         {children}

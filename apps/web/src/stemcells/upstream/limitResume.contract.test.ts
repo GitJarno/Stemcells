@@ -19,6 +19,7 @@ import {
   resetToWaitFor,
 } from "../limitResume/LimitActions";
 import leftColumn from "../rail/LeftColumn.tsx?raw";
+import sidebarSubstitute from "./substitutes/Sidebar.tsx?raw";
 import cellWorkspace from "../tabs/CellWorkspace.tsx?raw";
 import { CONTINUE_LINE } from "./limitResume";
 import { deriveMessagesTimelineRowsWithState } from "./substitutes/MessagesTimeline.logic";
@@ -191,10 +192,9 @@ describe("where the drafts are reported from", () => {
   });
 
   it("narrow layout: not in the sidebar, which a narrow window draws as a sheet only while open", () => {
-    expect(sidebar).toContain(
-      "<LeftColumn wide={<ThreadSidebar routeReveal={sidebarRouteReveal} />} />",
-    );
+    expect(sidebar).toContain("<ThreadSidebar routeReveal={sidebarRouteReveal} />");
     expect(sidebar).not.toContain("DraftReport");
+    expect(sidebarSubstitute).not.toContain("DraftReport");
     expect(leftColumn).not.toContain("useDraftReport");
   });
 });

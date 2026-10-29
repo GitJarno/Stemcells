@@ -16,6 +16,8 @@ import browserZoomSource from "../../browser/useBrowserLayoutZoomFactor.ts?raw";
 import desktopWindowSource from "../../../../desktop/src/window/DesktopWindow.ts?raw";
 import preloadSource from "../../../../desktop/src/preload.ts?raw";
 import leftColumnSource from "../rail/LeftColumn.tsx?raw";
+import { SUBSTITUTES } from "./substitutes/plugin";
+import sidebarSubstituteSource from "./substitutes/Sidebar.tsx?raw";
 import zoomNoticeSource from "./zoomNotice.tsx?raw";
 
 const zoomCss = NodeFS.readFileSync(new URL("../zoom/zoom.css", import.meta.url), "utf8");
@@ -53,8 +55,11 @@ describe("a zoom, where it happens", () => {
   });
 
   it("the column that listens is on every page", () => {
-    expect(appSidebarLayoutSource).toContain(
-      'import { LeftColumn } from "../stemcells/rail/LeftColumn";',
+    // The app's sidebar slot renders `components/Sidebar.tsx`, which our substitute wraps in the column.
+    expect(appSidebarLayoutSource).toContain('import ThreadSidebar from "./Sidebar";');
+    expect(SUBSTITUTES["apps/web/src/components/Sidebar.tsx"]).toBe("Sidebar.tsx");
+    expect(sidebarSubstituteSource).toContain(
+      "<LeftColumn wide={<UpstreamSidebar {...props} />} />",
     );
     expect(leftColumnSource).toMatch(
       /export function LeftColumn\([^)]*\) \{\s*\/\/[^\n]*\n\s*useZoomNotice\(\);/,

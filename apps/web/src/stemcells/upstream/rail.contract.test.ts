@@ -11,10 +11,9 @@ import sidebar from "../../components/ui/sidebar.tsx?raw";
 import { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
 
 describe("the rail's seams", () => {
-  it("the app's sidebar renders the left column where it rendered its thread list", () => {
-    expect(appSidebarLayout).toContain(
-      "<LeftColumn wide={<ThreadSidebar routeReveal={sidebarRouteReveal} />} />",
-    );
+  it("the app's sidebar renders its thread list from the module our substitute stands in the left column", () => {
+    expect(appSidebarLayout).toContain('import ThreadSidebar from "./Sidebar";');
+    expect(appSidebarLayout).toContain("<ThreadSidebar routeReveal={sidebarRouteReveal} />");
     expect(appSidebarLayout).toMatch(/<Sidebar\s[^>]*data-app-sidebar=""/);
   });
 
