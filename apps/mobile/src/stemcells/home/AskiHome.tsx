@@ -19,7 +19,6 @@ import {
   SegmentedControl,
   useHomeThreadSelection,
 } from "../upstream/home";
-import { segmentsStandIn } from "../line/Hops";
 import { askiStandsIn, useCopies } from "./copies";
 import { greetingAt } from "./greeting";
 import { Night } from "./Night";
@@ -110,8 +109,7 @@ export function AskiHome() {
           </Animated.View>
         </LayoutAnimationConfig>
       </Pressable>
-      {/* A hop lands on its segment (`line/Hops.tsx`). */}
-      <View ref={segmentsStandIn} className="mt-5 self-stretch px-4">
+      <View className="mt-5 self-stretch px-4">
         <SegmentedControl
           role="tab"
           options={home.options.map(({ id, label, count }) => ({

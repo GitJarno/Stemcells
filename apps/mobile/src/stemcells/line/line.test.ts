@@ -70,12 +70,6 @@ describe("the phone's home on the Cells' line", () => {
     expect(line.landed.map((each) => each.id)).toEqual(["finished"]);
     expect(line.settled.map((each) => each.id)).toEqual(["done-with"]);
     expect(line.snoozed.map((each) => each.id)).toEqual(["later"]);
-    expect([...line.standings]).toEqual([
-      ["asking", "needs"],
-      ["busy", "working"],
-      ["finished", "landed"],
-      ["done-with", "settled"],
-    ]);
   });
 
   it("stands a machine's Cells by their own records until it answers, so none drops off", () => {

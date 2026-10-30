@@ -47,8 +47,6 @@ export interface Line<S extends Shell> {
   readonly settled: ReadonlyArray<S>;
   /** Off the line until they wake; Settled holds T3's shelf of them. */
   readonly snoozed: ReadonlyArray<S>;
-  /** Where each Cell stands, by its thread: what a hop moves between. */
-  readonly standings: Standings;
 }
 
 /**
@@ -83,7 +81,6 @@ export function lineOf<S extends Shell>(
     landed: [] as S[],
     settled: [] as S[],
     snoozed: [] as S[],
-    standings: new Map<string, LineStage>(),
   };
   for (const cell of cells) {
     // T3's own order: a snoozed Cell is on its shelf even once settled.
@@ -99,7 +96,6 @@ export function lineOf<S extends Shell>(
           ? ownStage(cell)
           : stages.get(cell.id);
     if (stage === undefined) continue;
-    line.standings.set(cell.id, stage);
     if (stage !== "needs") line[stage].push(cell);
     else if (stages === undefined) line.unread.push(cell);
   }
