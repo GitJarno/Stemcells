@@ -242,3 +242,8 @@ export function looksOf(
   }
   return new Map([...dealt].map(([codename, worn]) => [codename, { worn }]));
 }
+
+/** What a Cell named `name` wears on `day` when dealt alone: its own first item of each theme worn. */
+export function lookOf(name: string, day: string): readonly string[] {
+  return looksOf([name], day).get(name)?.worn ?? [];
+}

@@ -5,13 +5,16 @@ import * as NodeURL from "node:url";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { formatSubagentDisplayTitle } from "./substitutes/subagentDisplay";
+import {
+  formatSubagentDisplayTitle,
+  summarizeSubagentStatuses,
+} from "./substitutes/subagentDisplay";
 
 /**
  * Contract: the phone says Subcell where it said subagent: the card grouping a turn's
  * subagents, the sheet listing them, and the words read aloud (`stemcells/seams.md`,
- * Subcells). Its marks stay the provider's: the phone has no Cell figure of its own yet.
- * If this fails after a sync, upstream rewrote one of these lines: say Subcell there again.
+ * Subcells). The card's header draws each Subcell as its Cell, those at work flying, as the
+ * Mac does. If this fails after a sync, upstream rewrote one of these lines: say it again.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -21,6 +24,9 @@ const read = (file: string) => NodeFS.readFileSync(NodePath.join(threads, file),
 const SAID = {
   "thread-subagent-group.tsx": [
     "const label = `${agents.length} Subcells`;",
+    "summarizeSubagentStatuses(agents.map((agent) => agent.status))",
+    "name={props.item.childThreadId ?? props.item.subagentId}",
+    "status={agent.status}",
     '? "Opens this Subcell"',
     ': "Provider-managed Subcell"',
   ],
@@ -52,5 +58,11 @@ describe("Subcells on the phone", () => {
   it("a subagent with no title of its own is a Subcell; a titled one keeps its title", () => {
     expect(formatSubagentDisplayTitle("Subagent")).toBe("Subcell");
     expect(formatSubagentDisplayTitle("Subagent: Audit the docs")).toBe("Audit the docs");
+  });
+
+  it("a card's Subcells at work are flying", () => {
+    expect(summarizeSubagentStatuses(["running", "pending", "waiting", "completed"])).toBe(
+      "3 flying · 1 done",
+    );
   });
 });

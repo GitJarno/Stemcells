@@ -14,17 +14,12 @@ import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./formi
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
 import { asksYou, BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
-import { dayOf, looksOf } from "./looks.ts";
+import { dayOf, lookOf } from "./looks.ts";
 import { type Diff, withMarks } from "./marks.ts";
 import { paint } from "./paint.ts";
 import { BEAT, type CellLook, grown, MARGIN, type MiniFrame, sceneOf, wornLook } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
-
-/** What a Cell named `name` wears on `day` when dealt alone: its own first item of each theme worn. */
-export function lookOf(name: string, day: string): readonly string[] {
-  return looksOf([name], day).get(name)?.worn ?? [];
-}
 
 /** The frames a Cell in `look` forms through: its box empty, its blocks, its hop; none when the kit has no hop. */
 function formedOf(look: CellLook) {

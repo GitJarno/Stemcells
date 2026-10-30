@@ -6,11 +6,10 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { reducedMotion, timing } from "../tokens/motion.ts";
 import { bodyOf } from "./cast.ts";
-import { lookOf } from "./CellFigure.tsx";
 import type { Ground } from "./keyline.ts";
 import { paletteOf, type Strength } from "./kit.ts";
 import { BOX, POINTS_PER_PIXEL } from "./look.ts";
-import { dayOf } from "./looks.ts";
+import { dayOf, lookOf } from "./looks.ts";
 import { paint } from "./paint.ts";
 import { grown, MARGIN, type MiniFrame, wornLook } from "./scene.ts";
 import { dizzyStars, type Star, type Toss, tossFrame } from "./toss.ts";

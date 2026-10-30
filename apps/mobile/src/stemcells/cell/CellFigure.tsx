@@ -109,7 +109,7 @@ export function CellFigure(props: {
   readonly points?: number | undefined;
   /** Acts out its scene; held still, it only blinks. */
   readonly plays?: boolean | undefined;
-  /** Out of sight (the home under a chat): it stands on its first frame and reads no clock. */
+  /** Out of sight (the home under a chat), or one of several in a row: it stands on its first frame and reads no clock. */
   readonly held?: boolean | undefined;
   readonly ground?: Ground | undefined;
   /** When its glyphs start, on the clock, as it forms (`forming.ts`); it just stands without. */
