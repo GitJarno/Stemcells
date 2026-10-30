@@ -1,7 +1,6 @@
 // The home's tab for the views T3's home renders inside it (its header, its shelves): the
-// line's segments (`line/line.ts`), or Asleep, Active, Working and Input where a machine has no
-// line (`tabs.ts`). The tab is the person's for the app's run; until they pick one, the home
-// opens where `opens` says, and holds it from there.
+// line's segments (`line/line.ts`). The tab is the person's for the app's run; until they pick
+// one, the home opens where `opens` says, and holds it from there.
 
 import { createContext, useEffect, useSyncExternalStore } from "react";
 

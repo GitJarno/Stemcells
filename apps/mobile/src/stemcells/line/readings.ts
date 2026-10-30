@@ -95,13 +95,22 @@ export function useKeepReading(
         publish(id, null);
       }
     for (const connection of saved) {
-      const known = connections.has(connection.environmentId);
-      connections.set(connection.environmentId, {
+      const before = connections.get(connection.environmentId);
+      const next: NeedsConnection = {
         httpBaseUrl: connection.httpBaseUrl,
         bearerToken: connection.bearerToken,
         ...(isRelayManagedConnection(connection) ? { relayManaged: true as const } : {}),
-      });
-      if (!known && inFront) void readMachine(connection.environmentId);
+      };
+      connections.set(connection.environmentId, next);
+      if (!inFront) continue;
+      if (before === undefined) void readMachine(connection.environmentId);
+      // A route that just connected, or another route taken: read it with what it carries now.
+      else if (
+        before.bearerToken !== next.bearerToken ||
+        before.httpBaseUrl !== next.httpBaseUrl ||
+        before.relayManaged !== next.relayManaged
+      )
+        readSoon(connection.environmentId);
     }
   }, [savedConnectionsById, inFront]);
 

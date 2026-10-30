@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { elsewhereWords, type CellStanding, type Need } from "./kit";
-import { countsOf, elsewhereOf, lineApplies, lineOf, opensOn } from "./line";
+import { countsOf, elsewhereOf, lineOf, opensOn } from "./line";
 import type { Reading } from "./read";
 
 const NOW = "2026-10-27T12:00:00.000Z";
@@ -79,20 +79,25 @@ describe("the phone's home on the Cells' line", () => {
   });
 
   it("stands a machine's Cells by their own records until it answers, so none drops off", () => {
-    // The Mac answered; the Mini is asleep and hasn't been read yet.
+    // The Mac answered; the Mini is asleep and hasn't been read yet; T3's server has no line.
     const readings = new Map<string, Reading>([
       ["mac", read([], [standing("busy", "working")])],
       ["mini", { state: "unreachable", list: null }],
+      ["t3", { state: "none" }],
     ]);
     const own = { "m-asks": "needs", "m-works": "working", "m-done": "landed" } as const;
     const line = lineOf(
-      [cell("busy"), ...Object.keys(own).map((id) => cell(id, { environmentId: "mini" }))],
+      [
+        cell("busy"),
+        ...Object.keys(own).map((id) => cell(id, { environmentId: "mini" })),
+        cell("t-works", { environmentId: "t3" }),
+      ],
       readings,
       NOW,
       new Set(),
-      (each) => own[each.id as keyof typeof own],
+      (each) => (each.id === "t-works" ? "working" : own[each.id as keyof typeof own]),
     );
-    expect(line.working.map((each) => each.id)).toEqual(["busy", "m-works"]);
+    expect(line.working.map((each) => each.id)).toEqual(["busy", "m-works", "t-works"]);
     expect(line.landed.map((each) => each.id)).toEqual(["m-done"]);
     expect(line.unread.map((each) => each.id)).toEqual(["m-asks"]);
     expect(countsOf(line, () => true).needs).toBe(1);
@@ -145,21 +150,6 @@ describe("the phone's home on the Cells' line", () => {
       "Also 1 in Shop and 1 elsewhere",
     );
     expect(elsewhereWords(elsewhereOf(asks, () => true, [shop, blog]))).toBeNull();
-  });
-
-  it("is the home unless every machine in view says it has no line", () => {
-    const readings = new Map<string, Reading>([
-      ["mac", read([], [])],
-      ["t3", { state: "none" }],
-      ["away", { state: "unreachable", list: null }],
-    ]);
-    expect(lineApplies(readings, ["mac", "away"])).toBe(true);
-    // A machine without the line stands its Cells by their records; it doesn't take the line away.
-    expect(lineApplies(readings, ["mac", "t3"])).toBe(true);
-    expect(lineApplies(readings, ["t3"])).toBe(false);
-    // Asleep, or not read yet: its Cells stand where their records do, and the home holds still.
-    expect(lineApplies(readings, ["away"])).toBe(true);
-    expect(lineApplies(readings, ["unread"])).toBe(true);
   });
 
   it("opens on Needs you when anything waits, else where Cells are", () => {

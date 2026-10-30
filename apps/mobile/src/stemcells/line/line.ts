@@ -52,22 +52,10 @@ export interface Line<S extends Shell> {
 }
 
 /**
- * Whether the home is the line: unless every machine in view says it has none. One asleep, not
- * yet read, or without the line stands its Cells where their records do (`lineOf`).
- */
-export function lineApplies(
-  readings: ReadonlyMap<string, Reading>,
-  environmentIds: ReadonlyArray<string>,
-): boolean {
-  return (
-    environmentIds.length === 0 || environmentIds.some((id) => readings.get(id)?.state !== "none")
-  );
-}
-
-/**
  * The line at `now` (an ISO time), from the Cells the home lists and each machine's reading. A
- * machine that hasn't answered yet (asleep, or still being read) stands its Cells where their
- * own records do (`ownStage`, as T3's tabs read them), so none drops off the line meanwhile.
+ * machine that hasn't answered (asleep, connecting, still being read, or without the line) stands
+ * its Cells where their own records do (`ownStage`), so none drops off the line. Keep it the only
+ * home: until they answer, every machine looks like one without the line.
  */
 export function lineOf<S extends Shell>(
   cells: ReadonlyArray<S>,

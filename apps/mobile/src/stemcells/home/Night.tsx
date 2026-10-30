@@ -1,4 +1,4 @@
-// The night over the Asleep tab: a dark sky, stars, the moon at tonight's phase, and now and
+// The night over Settled: a dark sky, stars, the moon at tonight's phase, and now and
 // then a shooting star. It stands still between shooting stars (nothing repaints); they come
 // only while the app is in front, and not at all under Reduce Motion.
 

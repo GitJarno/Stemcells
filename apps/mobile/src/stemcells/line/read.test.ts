@@ -57,16 +57,13 @@ describe("what a machine says of its asks", () => {
     ]);
   });
 
-  it("has no line for T3's server, T3's relay, a connection without a token, or one from before the stages", async () => {
+  it("has no line for T3's server, T3's relay, or one from before the stages", async () => {
     expect(await readNeeds(mac, null, answering(404, {}).request)).toEqual({ state: "none" });
     const relayed = answering(200, list);
     expect(await readNeeds({ ...mac, relayManaged: true }, null, relayed.request)).toEqual({
       state: "none",
     });
     expect(relayed.asked).toEqual([]);
-    expect(await readNeeds({ ...mac, bearerToken: null }, null, relayed.request)).toEqual({
-      state: "none",
-    });
     const before = answering(200, { needs: list.needs });
     expect(await readNeeds(mac, null, before.request)).toEqual({ state: "none" });
   });
@@ -76,6 +73,13 @@ describe("what a machine says of its asks", () => {
       state: "unreachable",
       list,
     });
+    // Connecting, or reconnecting, T3's saved connection has no token yet.
+    const connecting = answering(200, list);
+    expect(await readNeeds({ ...mac, bearerToken: null }, list, connecting.request)).toEqual({
+      state: "unreachable",
+      list,
+    });
+    expect(connecting.asked).toEqual([]);
     const offline = (async () => {
       throw new TypeError("Network request failed");
     }) as typeof fetch;

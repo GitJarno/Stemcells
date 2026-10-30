@@ -591,9 +591,9 @@ library's dependency (above); the rest are substitutes:
   and a substitute of `ThreadComposer` fades the feed under the composer.
 - **The home.** A substitute wraps `HomeScreen` and hands T3's list one
   segment of the Cells' line (`line/LineHome.tsx`, `stemcells/tasks/
-  phone-line.md`) unless every machine in view says it has none
-  (`line/read.ts`), else one tab of Cells (`home/tabs.ts`); everything the
-  list does stays T3's. Each segment is a list of its own that opens at its
+  phone-line.md`); a machine that hasn't answered, or has no line, stands
+  its Cells where their records do (`stemcells/tasks/phone-one-home.md`);
+  everything the list does stays T3's. Each segment is a list of its own that opens at its
   top: the list is handed a workspace whose Threads offset stays 0, as T3's
   one offset per workspace tab opened each segment where another was
   scrolled. In the iOS workspace the header's picks narrow it,

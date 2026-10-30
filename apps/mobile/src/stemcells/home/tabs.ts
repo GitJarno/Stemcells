@@ -1,7 +1,7 @@
-// The home's tabs: Asleep (settled or snoozed), Active (the rest), and two views of Active,
-// Working (it works, or waits on another chat) and Input (an approval, a question or a plan
-// waits on you). A Cell is in a tab when its face says so (`cell/mood.ts`), so the "?" over a
-// Cell and the Input tab never disagree.
+// Where a Cell's own record puts it, for the line while its machine hasn't said: Asleep (settled
+// or snoozed), Active (the rest), and within Active, Working (it works, or waits on another chat)
+// and Input (an approval, a question or a plan waits). It follows the Cell's face (`cell/mood.ts`),
+// so the "?" over a Cell and Needs you never disagree.
 
 import { faceOf } from "../cell/mood";
 import { asksYou } from "../cell/kit";
@@ -11,14 +11,7 @@ import {
   resolveThreadListV2Status,
 } from "../upstream/threads";
 
-export type HomeTab = "asleep" | "active" | "working" | "input";
-
-export const HOME_TABS: ReadonlyArray<{ readonly id: HomeTab; readonly label: string }> = [
-  { id: "asleep", label: "Asleep" },
-  { id: "active", label: "Active" },
-  { id: "working", label: "Flying" },
-  { id: "input", label: "Input" },
-];
+type HomeTab = "asleep" | "active" | "working" | "input";
 
 export type TabCounts = Readonly<Record<HomeTab, number>>;
 
@@ -43,12 +36,4 @@ export function inTab(thread: TabShell, tab: HomeTab, now: string): boolean {
     driver: null,
   });
   return tab === "input" ? asksYou(face.mood) : face.activity !== undefined;
-}
-
-/** How many of `threads` each tab holds at `now`. */
-export function countsOf(threads: ReadonlyArray<TabShell>, now: string): TabCounts {
-  const counts = { asleep: 0, active: 0, working: 0, input: 0 };
-  for (const thread of threads)
-    for (const { id } of HOME_TABS) if (inTab(thread, id, now)) counts[id] += 1;
-  return counts;
 }
