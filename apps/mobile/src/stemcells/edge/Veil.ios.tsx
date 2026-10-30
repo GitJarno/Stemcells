@@ -26,6 +26,9 @@ function resolveNativeVeil() {
 
 const NativeVeil = resolveNativeVeil();
 
+/** Whether the veil blurs, so takes no colour, rather than fading into its ground. */
+export const blurs = NativeVeil !== null;
+
 export function Veil(props: ComponentProps<typeof Scrim>) {
   if (NativeVeil === null) return <Scrim {...props} />;
   const beyond = props.beyond ?? 0;

@@ -8,9 +8,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import * as Upstream from "../../../native/NativeScrollViewMarker";
-import { Veil } from "../../edge/Veil";
+import { blurs, Veil } from "../../edge/Veil";
+import { AtNight } from "../../home/Night";
 import { skyAt } from "../../home/sky";
 import { HomeTabsContext, NoHeaderBand } from "../../home/state";
+import { useNight } from "../../home/useNight";
 import { NativePrimaryColumnContext, NO_HEADER_BAND } from "../home";
 
 export * from "../../../native/NativeScrollViewMarker";
@@ -25,7 +27,8 @@ export function NativeScrollViewMarker(
 ) {
   const noBand = use(NoHeaderBand);
   const fromScreen = use(Upstream.NativeScrollEdgeEffectsContext);
-  const night = use(HomeTabsContext)?.night === true;
+  const home = use(HomeTabsContext);
+  const dusk = useNight(home === null ? null : home.night);
   const primaryColumn = use(NativePrimaryColumnContext);
   const insets = useSafeAreaInsets();
   const ground = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
@@ -46,7 +49,25 @@ export function NativeScrollViewMarker(
   return (
     <>
       {marker}
-      <Veil edge="top" color={night ? skyAt(0) : ground} solid={insets.top} fade={HEADER_FADE} />
+      <Veil
+        edge="top"
+        color={dusk === "night" ? skyAt(0) : ground}
+        solid={insets.top}
+        fade={HEADER_FADE}
+      />
+      {dusk === "turning" && !blurs ? (
+        <AtNight
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: insets.top + HEADER_FADE,
+          }}
+        >
+          <Veil edge="top" color={skyAt(0)} solid={insets.top} fade={HEADER_FADE} />
+        </AtNight>
+      ) : null}
       {noBand ? (
         <Veil edge="bottom" color={ground} solid={insets.bottom} fade={TAB_BAR_FADE} />
       ) : null}

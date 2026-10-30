@@ -6,6 +6,7 @@
 import { useEffect } from "react";
 import { type ColorValue, PixelRatio, View } from "react-native";
 import Animated, {
+  type SharedValue,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -37,12 +38,15 @@ export function AskiFigure(props: {
   readonly ground: ColorValue | undefined;
   /** What its eyes type, in place of the blocks. */
   readonly mood?: Mood | undefined;
+  /** How far its eyes are shut on another's cue, 0 to 1, besides its own blinks. */
+  readonly shut?: SharedValue<number> | undefined;
 }) {
   const scale = props.height / VIEW.height;
   const width = VIEW.width * scale;
   const figure = figureAt(props.height, PixelRatio.get());
   const open = useSharedValue(1);
   const holds = useReducedMotion() || props.mood !== undefined;
+  const { shut } = props;
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Subscribe to the shared blink clock while the eyes may blink, and unsubscribe on change or unmount.
   useEffect(() => {
     if (holds) return;
@@ -55,7 +59,10 @@ export function AskiFigure(props: {
       );
     });
   }, [holds, open]);
-  const blinking = useAnimatedStyle(() => ({ transform: [{ scaleY: open.get() }] }));
+  const blinking = useAnimatedStyle(() => {
+    const cued = holds ? 0 : (shut?.get() ?? 0);
+    return { transform: [{ scaleY: open.get() * (1 - (1 - BLINK.shut) * cued) }] };
+  });
   return (
     <View
       pointerEvents="none"

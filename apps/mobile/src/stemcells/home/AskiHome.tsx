@@ -1,10 +1,10 @@
 // Aski over the home's tabs: a tap on Aski opens its chat, a tap on its line rolls another
 // (`greeting.ts`). Eyes `^ ^` once every Cell has landed, and while its copies fly (`copies.ts`).
-// Night comes over it on the tab of Cells put away. A disk that wants attention shows under the
-// tabs, in the header's flow, so it never moves Aski or the tabs.
+// Night falls on the tab of Cells put away (`useNight.ts`). A disk that wants attention shows
+// under the tabs, in the header's flow, so it never moves Aski or the tabs.
 
 import { use, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, LayoutAnimationConfig } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
@@ -21,12 +21,14 @@ import {
 } from "../upstream/home";
 import { askiStandsIn, useCopies } from "./copies";
 import { greetingAt } from "./greeting";
-import { Night } from "./Night";
+import { AtNight, Night } from "./Night";
 import { NIGHT_INK, NIGHT_TEXT, skyAt } from "./sky";
 import { HomeTabsContext } from "./state";
+import { noticing, useNight } from "./useNight";
 
 /** Aski's height, points, and the room over it. */
 const ASKI_HEIGHT = 92;
+const ASKI_WIDTH = (VIEW.width / VIEW.height) * ASKI_HEIGHT;
 const ROOM_OVER = 14;
 /** How far the night reaches over the header: the status bar, and a pull past the top. */
 const NIGHT_ABOVE = 600;
@@ -52,14 +54,16 @@ export function AskiHome() {
   const copies = useCopies();
   const ink = useResolveClassNames("text-foreground").color;
   const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
+  const dusk = useNight(home === null ? null : home.night);
   if (home === null) return null;
-  const { counts, night } = home;
+  const { counts } = home;
   const eyesAt = ROOM_OVER + ((EYE_LINE - VIEW.y) / VIEW.height) * ASKI_HEIGHT;
-  const ground = night ? skyAt(height > 0 ? eyesAt / height : 0) : screen;
+  const skyAtEyes = skyAt(height > 0 ? eyesAt / height : 0);
   const line = greetingAt(counts, rolls, seed);
   // While its copies fly, and once every Cell has landed with none waiting.
   const pleased =
     copies.length > 0 || (counts.input === 0 && counts.working === 0 && counts.active > 0);
+  const mood = pleased ? "pleased" : undefined;
   return (
     <View
       className="items-center pb-4"
@@ -69,7 +73,14 @@ export function AskiHome() {
         setHeight(kept.height);
       }}
     >
-      {night ? <Night above={NIGHT_ABOVE + insets.top} screen={screen} height={height} /> : null}
+      {dusk === "day" ? null : (
+        <Night
+          above={NIGHT_ABOVE + insets.top}
+          screen={screen}
+          height={height}
+          shooting={home.night}
+        />
+      )}
       <Pressable
         ref={askiStandsIn}
         accessibilityRole="button"
@@ -79,12 +90,22 @@ export function AskiHome() {
         onPress={() => aski !== null && openChat(aski)}
         hitSlop={8}
       >
-        <AskiFigure
-          height={ASKI_HEIGHT}
-          ink={night ? NIGHT_INK : ink}
-          ground={ground}
-          mood={pleased ? "pleased" : undefined}
-        />
+        <View style={{ width: ASKI_WIDTH, height: ASKI_HEIGHT }}>
+          {dusk === "night" ? null : (
+            <AskiFigure height={ASKI_HEIGHT} ink={ink} ground={screen} mood={mood} />
+          )}
+          {dusk === "day" ? null : (
+            <AtNight style={StyleSheet.absoluteFill}>
+              <AskiFigure
+                height={ASKI_HEIGHT}
+                ink={NIGHT_INK}
+                ground={skyAtEyes}
+                mood={mood}
+                shut={noticing}
+              />
+            </AtNight>
+          )}
+        </View>
       </Pressable>
       <Pressable
         accessibilityRole="button"
@@ -101,11 +122,22 @@ export function AskiHome() {
           <Animated.View key={line} entering={FadeIn.duration(220)}>
             <AppText
               className="text-center text-xl"
-              style={night ? { color: NIGHT_TEXT } : undefined}
+              style={dusk === "night" ? { color: NIGHT_TEXT } : undefined}
               numberOfLines={2}
             >
               {line}
             </AppText>
+            {dusk === "turning" ? (
+              <AtNight style={StyleSheet.absoluteFill}>
+                <AppText
+                  className="text-center text-xl"
+                  style={{ color: NIGHT_TEXT }}
+                  numberOfLines={2}
+                >
+                  {line}
+                </AppText>
+              </AtNight>
+            ) : null}
           </Animated.View>
         </LayoutAnimationConfig>
       </Pressable>
