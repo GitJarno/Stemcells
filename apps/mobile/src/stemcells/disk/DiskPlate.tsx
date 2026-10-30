@@ -13,15 +13,31 @@ import { WarnMenu } from "./WarnMenu";
 // attention, with Free space beside it and a cog for when it should: a card under the tabs
 // (`home/AskiHome.tsx`).
 
+const useConnected = () => useMachines().filter((machine) => machine.connection === "connected");
+
 export function DiskPlates() {
-  const machines = useMachines().filter((machine) => machine.connection === "connected");
-  return machines.map((machine) => (
+  return useConnected().map((machine) => (
     <DiskPlate
       key={machine.environmentId}
       environmentId={machine.environmentId}
       label={machine.label}
     />
   ));
+}
+
+/**
+ * Reads each machine's disk while the home is up. The plates mount again with each tab's list,
+ * and with no reader between two lists, a machine's figures were let go and read again.
+ */
+export function DiskReaders() {
+  return useConnected().map((machine) => (
+    <DiskReader key={machine.environmentId} environmentId={machine.environmentId} />
+  ));
+}
+
+function DiskReader(props: { readonly environmentId: string }) {
+  useMachineDisk(props.environmentId);
+  return null;
 }
 
 function DiskPlate(props: {
