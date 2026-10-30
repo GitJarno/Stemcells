@@ -104,15 +104,29 @@ describe("what needs the person, from a Cell's shell", () => {
     expect(askiThreadOf([askiChat, { ...later, pinnedAt: at(-MINUTE) }])).toBe("aski-later");
   });
 
-  it("holds a snoozed Cell back until its time, unless it asks or fails after the snooze", () => {
+  it("puts a snoozed Cell's ask off until its time, unless it asks or fails after the snooze", () => {
     const snoozed = { snoozedUntil: at(HOUR), snoozedAt: at(-5 * MINUTE) };
     const failed = { status: "failed", lastErrorClass: "transport_error" } as const;
-    expect(kindOf({ ...snoozed, ...failed, latestRunCompletedAt: at(-10 * MINUTE) })).toBeNull();
-    expect(kindOf({ ...snoozed, ...failed, latestRunCompletedAt: at(-MINUTE) })).toBe("failed");
-    expect(kindOf({ ...snoozed, pendingRuntimeRequest: pendingRequest("command") })).toBe(
+    const putOff = (...args: Parameters<typeof shellFixture>) => {
+      const signal = signalOf(shellFixture(...args), NOW);
+      return signal === null ? null : [signal.kind, signal.later];
+    };
+    expect(putOff({ ...snoozed, ...failed, latestRunCompletedAt: at(-10 * MINUTE) })).toEqual([
+      "failed",
+      NOW + HOUR,
+    ]);
+    expect(putOff({ ...snoozed, ...failed, latestRunCompletedAt: at(-MINUTE) })).toEqual([
+      "failed",
+      null,
+    ]);
+    expect(putOff({ ...snoozed, pendingRuntimeRequest: pendingRequest("command") })).toEqual([
       "permission",
-    );
-    expect(kindOf({ ...failed, snoozedUntil: at(-MINUTE), snoozedAt: at(-HOUR) })).toBe("failed");
+      null,
+    ]);
+    expect(putOff({ ...failed, snoozedUntil: at(-MINUTE), snoozedAt: at(-HOUR) })).toEqual([
+      "failed",
+      null,
+    ]);
   });
 
   it("shows a limit only when nothing will carry the Cell on at a known reset", () => {

@@ -2,13 +2,15 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import { CellMark } from "../tabs/CellMark";
 import { useNowMinuteMs, usePrimaryEnvironmentId } from "../upstream/needs";
-import { cardOf } from "./card";
+import { cardOf, whenOf } from "./card";
 import type { Shown } from "./display";
 import { lineUp } from "./front";
 import type { Hold } from "./holds";
+import { pullBack, useLater } from "./live";
 import { answerableOf, NeedCard, plainOf, whoOf } from "./NeedCard";
 import { bowOut, offLeft, offRight, slide, walk, walkMs } from "./stroll";
 import { land, leave } from "./walk";
+import type { Need } from "./wire";
 
 /** Between one Cell's step up the line and the next's, front first. */
 const STAGGER_MS = 45;
@@ -24,8 +26,9 @@ interface Seat {
 
 /**
  * Aski's room one ask at a time (stemcells/tasks/one-ask.md): the ask in front whole, the rest
- * a line of their Cells along the bottom, and every seat change on foot. The front's own seat
- * stays in the line, unseen, so the Cell that leaves the line for the front walks off it.
+ * a line of their Cells along the bottom, those put off dimmed at its end, and every seat
+ * change on foot. The front's own seat stays in the line, unseen, so the Cell that leaves the
+ * line for the front walks off it.
  */
 export function OneAsk(props: {
   shown: ReadonlyArray<Shown>;
@@ -43,12 +46,13 @@ export function OneAsk(props: {
   const frontKey = front?.need.key ?? null;
   if (frontKey !== seat.front) setSeat({ front: frontKey, left: seat.front });
   const [peek, setPeek] = useState<string | null>(null);
+  const later = useLater();
 
   const leaving =
     seat.left === null || waiting.some((each) => each.need.key === seat.left)
       ? null
       : (props.shown.find((each) => each.need.key === seat.left) ?? null);
-  // Later sends it back the way it came; anything else is off to work.
+  // Later sends it off the way it came, round to the end of the line; anything else is off to work.
   const back =
     leaving !== null &&
     props.answers.get(leaving.need.key)?.commands.some((command) => command.type === "snooze");
@@ -57,6 +61,7 @@ export function OneAsk(props: {
   const placed = useRef<ReadonlyMap<string, number> | null>(null);
   const stood = useRef<string | null>(null);
   const seats = [...(front === null ? [] : [front]), ...line];
+  const bringForward = (key: string) => setSeat({ front: key, left: seat.front });
   // Each render reads where the seats stand; only a Cell whose seat moved walks.
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Walk the Cells to their new seats before paint, from where the last layout stood them.
   useLayoutEffect(() => {
@@ -80,6 +85,7 @@ export function OneAsk(props: {
       "[data-need-front] > [data-stemcells-need] [data-need-mark]",
     );
     let arrives = 0;
+    let gone = 0;
     if (frontKey !== was) {
       const from = frontKey === null ? undefined : before.get(frontKey);
       const chair = chairs.find((each) => each.hasAttribute("data-in-front"));
@@ -91,9 +97,12 @@ export function OneAsk(props: {
         arrives = walkMs(off);
       }
       if (mark !== null) walk(mark, { from: offLeft(mark, stage), to: 0, delay: arrives });
-      const gone = element.querySelector("[data-need-exit] [data-need-mark]");
-      if (gone !== null && back) walk(gone, { from: 0, to: offLeft(gone, stage), off: true });
-      else if (gone !== null) bowOut(gone);
+      const exit = element.querySelector("[data-need-exit] [data-need-mark]");
+      if (exit !== null && back) {
+        const off = offLeft(exit, stage);
+        walk(exit, { from: 0, to: off, off: true });
+        gone = walkMs(off);
+      } else if (exit !== null) bowOut(exit);
       // The keyboard answered the last one: it meets the next where it lands.
       if (element.hasAttribute("data-land-next")) {
         element.removeAttribute("data-land-next");
@@ -111,15 +120,30 @@ export function OneAsk(props: {
       if (chair.hasAttribute("data-in-front")) return;
       const from = before.get(chair.dataset.needSeat!);
       if (from === undefined)
-        walk(chair, { from: offRight(chair, stage), to: 0, delay: arrives + STAGGER_MS });
+        walk(chair, {
+          from: offRight(chair, stage),
+          to: 0,
+          delay: Math.max(arrives, gone) + STAGGER_MS,
+        });
       else if (Math.abs(from - chair.offsetLeft) > 0.5)
         walk(chair, { from: from - chair.offsetLeft, to: 0, delay: index * STAGGER_MS });
     });
   });
 
-  const cellOf = (threadId: string) =>
-    environmentId === null ? null : { environmentId, threadId, draftId: null };
+  const markOf = (need: Need) =>
+    environmentId === null ? (
+      need.number
+    ) : (
+      <CellMark cell={{ environmentId, threadId: need.threadId, draftId: null }} />
+    );
+  const peekOn = (key: string) => ({
+    onPointerEnter: () => setPeek(key),
+    onPointerLeave: () => setPeek(null),
+    onFocus: () => setPeek(key),
+    onBlur: () => setPeek(null),
+  });
   const peeked = line.find((each) => each.need.key === peek) ?? null;
+  const peekedLater = later.find((need) => need.key === peek) ?? null;
   return (
     <div ref={root} data-needs-one="">
       <div data-need-front="">
@@ -146,12 +170,11 @@ export function OneAsk(props: {
           />
         ) : null}
       </div>
-      {seats.length > 0 ? (
+      {seats.length + later.length > 0 ? (
         <div data-needs-line="" data-empty={line.length === 0 || undefined}>
           <div data-needs-seats="">
             {seats.map((each) => {
               const inFront = each === front;
-              const cell = cellOf(each.need.threadId);
               return (
                 <button
                   key={each.need.key}
@@ -160,25 +183,40 @@ export function OneAsk(props: {
                   data-in-front={inFront || undefined}
                   inert={inFront}
                   aria-label={`${each.need.number} ${whoOf(each.need)}`}
-                  onClick={() => setSeat({ front: each.need.key, left: seat.front })}
-                  onPointerEnter={() => setPeek(each.need.key)}
-                  onPointerLeave={() => setPeek(null)}
-                  onFocus={() => setPeek(each.need.key)}
-                  onBlur={() => setPeek(null)}
+                  onClick={() => bringForward(each.need.key)}
+                  {...peekOn(each.need.key)}
                 >
-                  {cell === null ? each.need.number : <CellMark cell={cell} />}
+                  {markOf(each.need)}
                 </button>
               );
             })}
             {line.length > 0 ? <span data-needs-more="">{line.length} more</span> : null}
+            {later.map((need) => (
+              <button
+                key={need.key}
+                type="button"
+                data-need-seat={need.key}
+                data-later=""
+                aria-label={`${whoOf(need)}, later, back ${whenOf(need.until, now)}`}
+                onClick={() => {
+                  pullBack(need);
+                  bringForward(need.key);
+                }}
+                {...peekOn(need.key)}
+              >
+                {markOf(need)}
+              </button>
+            ))}
           </div>
           <p data-needs-peek="" aria-live="polite">
-            {peeked === null ? null : (
+            {peeked !== null ? (
               <>
                 <span data-need-number="">{peeked.need.number}</span>
                 {`${whoOf(peeked.need)} · ${plainOf(cardOf(peeked.need, now, null).headline)}`}
               </>
-            )}
+            ) : peekedLater !== null ? (
+              `${whoOf(peekedLater)} · ${plainOf(cardOf(peekedLater, now, null).headline)} · back ${whenOf(peekedLater.until, now)}`
+            ) : null}
           </p>
         </div>
       ) : null}

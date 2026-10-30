@@ -146,7 +146,7 @@ it.effect("starts over from a snapshot after a failed read, keeping the numbers"
   ),
 );
 
-it.effect("shows a snoozed Cell when its snooze ends, with no event to say so", () =>
+it.effect("puts a snoozed Cell's ask off, back with its number when the snooze ends", () =>
   Effect.scoped(
     Effect.gen(function* () {
       yield* TestClock.setTime(NOW);
@@ -161,12 +161,19 @@ it.effect("shows a snoozed Cell when its snooze ends, with no event to say so", 
           snoozedUntil: at(30 * MINUTE),
         }),
       );
+      fake.put(asking("bongo", MINUTE));
       const needs = yield* make(fake.source);
-      assert.deepStrictEqual(numbered(yield* needs.list), []);
+      const first = yield* needs.list;
+      assert.deepStrictEqual(numbered(first), ["2 bongo"]);
+      assert.deepStrictEqual(
+        first.later.map((need) => [need.number, need.threadId, need.kind, need.until]),
+        [[1, "otter", "failed", "2026-10-21T12:30:00.000Z"]],
+      );
 
-      const woke = yield* listWhere(needs.changes, (list) => list.needs.length === 1);
-      assert.deepStrictEqual(numbered(woke), ["1 otter"]);
-      assert.strictEqual(woke.needs[0]?.kind, "failed");
+      // With no event to say so.
+      const woke = yield* listWhere(needs.changes, (list) => list.needs.length === 2);
+      assert.deepStrictEqual(numbered(woke), ["1 otter", "2 bongo"]);
+      assert.deepStrictEqual(woke.later, []);
     }),
   ),
 );

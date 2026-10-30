@@ -142,6 +142,7 @@ vi.mock("../upstream/needs", () => ({
   observeResize: () => () => undefined,
   openPrimaryStream: () => new Promise(() => undefined),
   sendThreadCommand: async () => ({ ok: true }),
+  unsnoozeCell: async () => ({ ok: true }),
   ChatMarkdown: (props: { text: string }) => props.text,
   cellRef: () => null,
   useRepositoryUrl: () => null,

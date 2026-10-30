@@ -140,8 +140,15 @@ export interface CellStanding {
   readonly createdAt: string;
 }
 
+/** An ask the person put off: its Cell is snoozed until `until`, then it is back. */
+export interface LaterNeed extends Need {
+  readonly until: string;
+}
+
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
+  /** What the person put off, soonest back first; absent from a server before Later's seats. */
+  readonly later?: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage; absent from a server before stages. */
   readonly cells?: ReadonlyArray<CellStanding>;
 }

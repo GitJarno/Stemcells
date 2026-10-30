@@ -27,7 +27,7 @@ const need = (key: string, kind: Need["kind"]): Need => ({
   stuck: null,
 });
 
-const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, cells: [] });
+const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, later: [], cells: [] });
 
 const world = Effect.gen(function* () {
   const lists = yield* Queue.unbounded<NeedsList>();

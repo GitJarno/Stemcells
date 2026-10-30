@@ -4,16 +4,18 @@
  * window sends what is still held: the person chose it, and the line was only
  * there to take it back.
  */
-import { sendThreadCommand } from "../upstream/needs";
+import { sendThreadCommand, unsnoozeCell } from "../upstream/needs";
 import { useSettleCell } from "../upstream/settle";
-import { putAnswerOnUndoLine } from "../upstream/undoNotice";
+import { putAnswerOnUndoLine, takeOffUndoLine } from "../upstream/undoNotice";
 import { timing } from "../tokens/motion";
 import { movedByHand } from "./byHand";
-import { answered, createHolds } from "./holds";
+import { answered, createHolds, useHolds } from "./holds";
+import { createPulling, laterOf, usePulling } from "./later";
 import { createLeaving } from "./leaving";
 import { createPage } from "./page";
-import { readNeeds, subscribeNeeds } from "./stream";
+import { readNeeds, subscribeNeeds, useNeeds } from "./stream";
 import { tellAsk } from "./told";
+import type { LaterNeed } from "./wire";
 
 export const holds = createHolds({
   send: sendThreadCommand,
@@ -25,9 +27,12 @@ export const holds = createHolds({
 
 export const leaving = createLeaving({ needs: readNeeds, subscribeNeeds });
 
+const pulling = createPulling({ needs: readNeeds, subscribeNeeds, unsnooze: unsnoozeCell });
+
 /**
- * The list the page shows: the server's, less what the person answered or is settling. Theirs
- * leaves the page as the server's gone ones do, folding away at once (unblocking.md, 7).
+ * The list the page shows: the server's, less what the person answered or is settling, and
+ * with what they pulled back from Later. Theirs leaves the page as the server's gone ones do,
+ * folding away at once (unblocking.md, 7).
  */
 function needsLeft() {
   const state = readNeeds();
@@ -37,7 +42,12 @@ function needsLeft() {
   const left = state.needs.filter(
     (need) => !answered(answers.get(need.key)) && !settling.has(need.threadId),
   );
-  return left.length === state.needs.length ? state : { ...state, needs: left };
+  const back = [...pulling.read().values()].filter(
+    (need) => !state.needs?.some((each) => each.key === need.key),
+  );
+  return left.length === state.needs.length && back.length === 0
+    ? state
+    : { ...state, needs: [...left, ...back] };
 }
 
 export const page = createPage({
@@ -47,6 +57,7 @@ export const page = createPage({
       subscribeNeeds(listener),
       holds.subscribe(listener),
       leaving.subscribe(listener),
+      pulling.subscribe(listener),
     ];
     return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
   },
@@ -68,4 +79,19 @@ export function useSettleAtOnce(): (cell: {
     movedByHand(cell.threadId);
     return leaving.leaveWhile(cell.threadId, settle(cell));
   };
+}
+
+/** What the person put off, soonest back first (`later.ts`). */
+export function useLater(): ReadonlyArray<LaterNeed> {
+  return laterOf(useNeeds(), useHolds(holds), usePulling(pulling));
+}
+
+/**
+ * Brings a put-off ask back now: a Later still on the undo line is taken back, and one sent
+ * is undone with upstream's unsnooze.
+ */
+export function pullBack(need: LaterNeed): void {
+  if (holds.undo(need.key)) return takeOffUndoLine(need.key);
+  holds.forget(need.key);
+  void pulling.pull(need);
 }

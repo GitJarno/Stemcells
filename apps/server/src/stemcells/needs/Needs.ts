@@ -1,6 +1,7 @@
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
+import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Equal from "effect/Equal";
@@ -12,12 +13,22 @@ import * as SubscriptionRef from "effect/SubscriptionRef";
 import * as UpstreamNeeds from "../upstream/needs.ts";
 import { leadOf } from "./brief.ts";
 import { stopOf, type Stop } from "./closeOut.ts";
-import { needOf, signalsOf, stuckFor, type Need, type NeedDetail, type Signal } from "./derive.ts";
+import {
+  needOf,
+  signalsOf,
+  stuckFor,
+  type LaterNeed,
+  type Need,
+  type NeedDetail,
+  type Signal,
+} from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
 import { standingsOf, type CellStanding } from "./stage.ts";
 
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
+  /** What the person put off, soonest back first; each keeps its number for when it is back. */
+  readonly later: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage, for Aski's roster (stage.ts). */
   readonly cells: ReadonlyArray<CellStanding>;
 }
@@ -124,15 +135,20 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       numbering,
       kept.map(({ signal }) => signal),
     );
-    const needs = kept.map(({ signal, detail }) =>
-      needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0),
-    );
+    const needs: Array<Need> = [];
+    const later: Array<LaterNeed> = [];
+    for (const { signal, detail } of kept) {
+      const need = needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0);
+      if (signal.later === null) needs.push(need);
+      else later.push({ ...need, until: DateTime.formatIso(DateTime.makeUnsafe(signal.later)) });
+    }
     const stops = new Map<string, Stop>();
     for (const { signal, detail } of read) {
       if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
     }
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
+      later: later.toSorted((a, b) => a.until.localeCompare(b.until) || a.number - b.number),
       cells: standingsOf([...shells.values()], needs, stops, now, autoResume),
     };
     if (sent !== null && Equal.equals(list, sent)) return;
@@ -192,7 +208,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     Stream.filter((list): list is NeedsList => list !== null),
   );
   const list = Stream.runHead(changes).pipe(
-    Effect.map(Option.getOrElse((): NeedsList => ({ needs: [], cells: [] }))),
+    Effect.map(Option.getOrElse((): NeedsList => ({ needs: [], later: [], cells: [] }))),
   );
   return Needs.of({ list, changes });
 });
