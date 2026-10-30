@@ -18,9 +18,9 @@ The person's list (2026-10-29), from two phone screenshots: the home and a Cell'
    open while you tick: any number of projects, any number of machines; none ticked is all.
    The choice is ours, kept on the phone (`home/picks.ts`), and T3's single pick stays unset.
 4. **A card's marks.** The Cell's colour already says its agent, so the agent's mark goes.
-   The project's mark leaves the title's left, where it cost every title its first 28
-   points, for the bottom right where the agent's stood, beside the pull request: the marks
-   say where, the title says what. A settled row's project moves beside its time, too.
+   The project's mark left the title's left column, where it cost every title its first 28
+   points. Since 2026-10-30 it is the title's first glyph, inline, on cards and settled rows
+   alike (`project-first.md`).
 5. **Edges.** Blur, not darken (the person, 2026-10-29: a scrim read as a dark band): the
    page blurs progressively as it slides under the header and the composer, heaviest at
    the screen's edge and clear by the chrome's inner side, nothing painted over it. Core

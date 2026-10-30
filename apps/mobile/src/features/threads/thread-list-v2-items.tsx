@@ -1088,6 +1088,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           )}
           numberOfLines={card.titleLines}
         >
+          {card.lead}
           {thread.title}
         </Text>
         <View
@@ -1394,6 +1395,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               )}
               numberOfLines={1}
             >
+              <SlimRowProject project={props.project} sidebar={sidebarPane} />
               {thread.title}
             </Text>
             {props.searchMatch ? (
@@ -1406,7 +1408,6 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
             ) : null}
           </View>
           {props.hasQueuedMessages ? <QueuedMessageIcon selected={selected} /> : null}
-          <SlimRowProject project={props.project} sidebar={sidebarPane} />
           <Text
             className={cn(
               "text-sm tabular-nums",

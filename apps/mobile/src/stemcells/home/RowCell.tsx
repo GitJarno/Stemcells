@@ -1,7 +1,7 @@
-// A Cell in its card on the home, its name under it; a settled chat's slim row has it asleep,
-// Aski's own chat has Aski. A card is two lines; its marks (machine, pull request, project, not
-// the agent: the Cell's colour says that) stand under the time. T3's row hands control here at
-// its seam (`features/threads/thread-list-v2-items.tsx`), and on the home's tabs draws no shelf.
+// A Cell in its card on the home, its name under it (asleep on a settled row, Aski in Aski's
+// chat). A title starts with its project's mark (`stemcells/tasks/project-first.md`); the machine
+// and pull request stand under the time, no agent mark: the Cell's colour says that. T3's row
+// hands control here (`features/threads/thread-list-v2-items.tsx`); the home's tabs draw no shelf.
 
 import { type ReactNode, use, useEffect, useRef } from "react";
 import { Pressable, View, type ViewInstance, type ViewStyle } from "react-native";
@@ -69,7 +69,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
   );
 }
 
-/** What a card shows in its bottom right: its machine, its pull request and its project. */
+/** A card's marks: its machine and pull request in its bottom right, its project before its title. */
 export interface CardMarks {
   readonly machine: EnvironmentMachineKind | null;
   readonly machineLabel: string | null;
@@ -92,14 +92,14 @@ export function useSaysNothing(status: string): boolean {
   return use(HomeTabsContext)?.tab === "working" && (status === "working" || status === "waiting");
 }
 
-/** A card row's content with its Cell beside it, and its marks in its bottom right. */
+/** A card row's content with its Cell beside it, and its machine and pull request in its bottom right. */
 export function CellBesideRow(props: {
   readonly thread: EnvironmentThreadShell;
   readonly marks: CardMarks;
   readonly children: ReactNode;
 }) {
   const aski = useIsAskiChat(props.thread.id);
-  const { machine, pr, project } = props.marks;
+  const { machine, pr } = props.marks;
   return (
     <View className="flex-row items-stretch gap-3">
       <CardLight thread={props.thread} />
@@ -139,7 +139,6 @@ export function CellBesideRow(props: {
               <SymbolView name={glyphOf(pr)} size={MARK} tintColorClassName={tintOf(pr)} />
             </Pressable>
           ) : null}
-          {project ? <ProjectMark project={project} /> : null}
         </View>
       </View>
     </View>
@@ -147,11 +146,18 @@ export function CellBesideRow(props: {
 }
 
 const MARK = 12;
-const PROJECT_MARK = 14;
 const MARK_GAP = 6;
+/** A title's project mark: the size of the title's capitals and a little over, and the gap after it. */
+const TITLE_MARK = 16;
+const TITLE_MARK_GAP = 7;
+/** An inline view sits on the text's baseline; this centres the mark on the capitals instead. */
+const TITLE_MARK_DROP = 2.5;
 
-/** A project's own icon, small, among a row's marks. */
-export function ProjectMark(props: { readonly project: EnvironmentProject }) {
+/** A project's own icon. */
+export function ProjectMark(props: {
+  readonly project: EnvironmentProject;
+  readonly size: number;
+}) {
   const { project } = props;
   return (
     <ProjectFavicon
@@ -160,8 +166,26 @@ export function ProjectMark(props: { readonly project: EnvironmentProject }) {
       projectIcon={project.projectIcon}
       projectTitle={project.title}
       workspaceRoot={project.workspaceRoot}
-      size={PROJECT_MARK}
+      size={props.size}
     />
+  );
+}
+
+const TITLE_MARK_STYLE: ViewStyle = {
+  width: TITLE_MARK + TITLE_MARK_GAP,
+  height: TITLE_MARK,
+  transform: [{ translateY: TITLE_MARK_DROP }],
+};
+
+/**
+ * The project's mark as a title's first glyph, inside its text: it takes room on the first line
+ * only, and a second line runs under it, so no column of its own costs every line.
+ */
+function TitleMark(props: { readonly project: EnvironmentProject; readonly faint?: boolean }) {
+  return (
+    <View style={props.faint ? [TITLE_MARK_STYLE, { opacity: 0.4 }] : TITLE_MARK_STYLE}>
+      <ProjectMark project={props.project} size={TITLE_MARK} />
+    </View>
   );
 }
 
@@ -181,11 +205,7 @@ function tintOf(pr: ThreadPrPresentation) {
 
 /** The width the marks take: each mark is a fixed size, so the title knows it before layout. */
 export function marksWidth(marks: CardMarks) {
-  const widths = [
-    marks.machine ? MARK : 0,
-    marks.pr ? MARK : 0,
-    marks.project ? PROJECT_MARK : 0,
-  ].filter((width) => width > 0);
+  const widths = [marks.machine ? MARK : 0, marks.pr ? MARK : 0].filter((width) => width > 0);
   return widths.reduce((sum, width) => sum + width, 0) + MARK_GAP * Math.max(widths.length - 1, 0);
 }
 
@@ -193,19 +213,20 @@ const NOTHING: ViewStyle = {};
 const HIDDEN: ViewStyle = { display: "none" };
 
 /**
- * How T3's card lays out beside a Cell, two lines at most: the time keeps the width of the marks
- * under it, so the title's second line never runs beneath them. A failed chat's error takes the
- * second line, and the title one.
+ * How T3's card lays out beside a Cell, two lines at most: its project's mark leads the title
+ * (`lead`), and the time keeps the width of the marks under it, so the title's second line never
+ * runs beneath them. A failed chat's error takes the second line, and the title one.
  */
 export function cardLines(beside: boolean, error: boolean, marks: CardMarks) {
-  if (!beside) return { beside, titleLines: 2, trailing: NOTHING, meta: NOTHING };
+  if (!beside) return { beside, titleLines: 2, trailing: NOTHING, meta: NOTHING, lead: null };
   const width = marksWidth(marks);
   return {
     beside,
     titleLines: error ? 1 : 2,
     trailing: { minWidth: width, justifyContent: "flex-end" } satisfies ViewStyle,
-    // The project's icon is a mark here, so nothing stands in front of the title to inset past.
+    // The project's mark is inside the title, so nothing stands in front of it to inset past.
     meta: error ? { paddingLeft: 0, paddingRight: width + MARK_GAP } : HIDDEN,
+    lead: marks.project ? <TitleMark project={marks.project} /> : null,
   };
 }
 
@@ -217,14 +238,10 @@ export function SlimRowCell(props: {
   return props.sidebar ? null : <Figure thread={props.thread} points={2} />;
 }
 
-/** A slim row's project, at its end beside the time, as a card's is among its marks. */
+/** A slim row's project, leading its title, faint as the settled row is, as a card's leads its. */
 export function SlimRowProject(props: {
   readonly project: EnvironmentProject | null;
   readonly sidebar: boolean;
 }) {
-  return props.project && !props.sidebar ? (
-    <View className="opacity-40">
-      <ProjectMark project={props.project} />
-    </View>
-  ) : null;
+  return props.project && !props.sidebar ? <TitleMark project={props.project} faint /> : null;
 }

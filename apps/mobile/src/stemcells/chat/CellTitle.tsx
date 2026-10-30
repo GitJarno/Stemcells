@@ -1,7 +1,7 @@
 // A chat's header on the phone (stemcells/tasks/phone-polish.md, decision 8): the Cell beside its
-// name, playing what it does, with what its chat is about under it. The Mac keeps the pair on the
-// composer's ledge; the phone keeps it where it keeps who you talk to, leaving the room over the
-// composer to what wants an answer. Aski's chat has Aski. A chat sent from here forms here.
+// name, playing what it does, with its project's mark and what its chat is about under it, as its
+// card on the home reads (`stemcells/tasks/project-first.md`). Aski's chat has Aski. A chat sent
+// from here forms here.
 
 import { View } from "react-native";
 import { useResolveClassNames } from "uniwind";
@@ -11,6 +11,7 @@ import { useIsAskiChat } from "../aski/useAskiChat";
 import { formingFrom } from "../cell/forming";
 import { cellNameOf, oneLinerOf } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
+import { ProjectMark } from "../home/RowCell";
 import {
   AppText,
   type EnvironmentThreadShell,
@@ -20,6 +21,8 @@ import {
 
 /** The Cell's points per cell of its miniature: about the height of the two lines beside it. */
 const POINTS = 2;
+/** The project's mark beside the one-liner: its capitals' height and a little over. */
+const MARK = 14;
 
 /** Reads its chat itself: the header keeps the element it was handed until the chat changes. */
 export function CellTitle(props: { readonly threadId: string }) {
@@ -60,9 +63,12 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
           {name}
         </AppText>
         {about === null ? null : (
-          <AppText className="text-xs text-foreground-muted" numberOfLines={1}>
-            {about}
-          </AppText>
+          <View className="min-w-0 flex-row items-center gap-1.5">
+            {project === null ? null : <ProjectMark project={project} size={MARK} />}
+            <AppText className="min-w-0 shrink text-xs text-foreground-muted" numberOfLines={1}>
+              {about}
+            </AppText>
+          </View>
         )}
       </View>
     </View>
