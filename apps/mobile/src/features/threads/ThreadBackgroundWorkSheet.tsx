@@ -22,7 +22,7 @@ import { useAdaptiveWorkspaceLayout } from "../layout/AdaptiveWorkspaceLayout";
 
 const HEADER_SCROLL_EDGE_EFFECTS = nativeHeaderScrollEdgeEffects(Platform.OS, Platform.Version);
 const KIND_LABELS = {
-  subagent: "Subagent",
+  subagent: "Subcell",
   command: "Command",
   monitor: "Monitor",
   background_task: "Background task",
@@ -133,7 +133,7 @@ function BackgroundWorkRow(props: {
   ) : (
     <Pressable
       accessibilityRole="link"
-      accessibilityLabel={`Open subagent ${item.label}`}
+      accessibilityLabel={`Open Subcell ${item.label}`}
       onPress={() => props.onOpen(childThreadId)}
       className="active:opacity-70"
     >

@@ -17,8 +17,14 @@ const SUBSTITUTES = {
   // T3's own tools in the work log say Cell, not thread.
   "packages/shared/src/t3McpToolPresentation.ts": "t3McpToolPresentation.ts",
   "packages/client-runtime/src/t3ToolSummary.ts": "t3ToolSummary.ts",
-  // A subagent with no title of its own is a Subcell.
+  // A subagent is a Subcell: one with no title of its own, and in the
+  // background-work line, the line over those waiting on the person, a
+  // workflow's count and the composer's pill.
   "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
+  "packages/client-runtime/src/state/threadExecution.ts": "threadExecution.ts",
+  "packages/client-runtime/src/state/threads.ts": "threads.ts",
+  "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
+  "packages/client-runtime/src/state/threadSubagents.ts": "threadSubagents.ts",
   // The Cell heads its chat, beside its name; the feed fades under the
   // composer.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",

@@ -22,6 +22,12 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/providerIconUtils.ts": "providerIconUtils.ts",
   "apps/web/src/components/chat/ProviderSubagentBar.tsx": "ProviderSubagentBar.tsx",
   "apps/web/src/components/chat/TimelineSystemDivider.tsx": "TimelineSystemDivider.tsx",
+  // A subagent is a Subcell: in the background-work line, the line over those
+  // waiting on the person, a workflow's count and the jump-to-end summary.
+  "packages/client-runtime/src/state/threadExecution.ts": "threadExecution.ts",
+  "packages/client-runtime/src/state/threads.ts": "threads.ts",
+  "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
+  "apps/web/src/components/chat/TimelineOverlays.tsx": "TimelineOverlays.tsx",
   // The auto-compact window: the context meter fills toward where it compacts.
   "apps/web/src/components/chat/ContextWindowMeter.tsx": "ContextWindowMeter.tsx",
   // The workbench: a pane's chat draws its panel and sheet at the tab's edge.

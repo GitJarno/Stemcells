@@ -5,6 +5,9 @@ import * as NodeURL from "node:url";
 
 import * as UpstreamUpdateNotice from "@t3tools/client-runtime/providerUpdateRequiredModels";
 import * as UpstreamSubagentDisplay from "@t3tools/client-runtime/state/subagent-display";
+import * as UpstreamSubagentRuntime from "@t3tools/client-runtime/state/subagentRuntime";
+import * as UpstreamThreadExecution from "@t3tools/client-runtime/state/thread-execution";
+import * as UpstreamThreads from "@t3tools/client-runtime/state/threads";
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
 import { resolveWorkEntryToolPresentation } from "@t3tools/client-runtime/work-log/presentation";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
@@ -45,6 +48,7 @@ import * as UpstreamProviderInstanceIcon from "../../../components/chat/Provider
 import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamTimelineSystemDivider from "../../../components/chat/TimelineSystemDivider";
+import * as UpstreamTimelineOverlays from "../../../components/chat/TimelineOverlays";
 import * as UpstreamUsageLimitRecoveryBanner from "../../../components/chat/UsageLimitRecoveryBanner";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
@@ -86,6 +90,9 @@ import * as OurRightPanelSheet from "./RightPanelSheet";
 import * as OurRightPanelTabs from "./RightPanelTabs";
 import * as OurSettingsSearch from "./settingsSearch";
 import * as OurSubagentDisplay from "./subagentDisplay";
+import * as OurSubagentRuntime from "./subagentRuntime";
+import * as OurThreadExecution from "./threadExecution";
+import * as OurThreads from "./threads";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurT3Wordmark from "./T3Wordmark";
@@ -99,6 +106,7 @@ import * as OurThreadNotificationCoordinator from "./ThreadNotificationCoordinat
 import * as OurThreadTerminalDrawer from "./ThreadTerminalDrawer";
 import * as OurThreadPreviewMiniPlayer from "./ThreadPreviewMiniPlayer";
 import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
+import * as OurTimelineOverlays from "./TimelineOverlays";
 import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
 import * as OurUsageProviders from "./usageProviders";
@@ -242,6 +250,46 @@ const CASES: Readonly<Record<string, Case>> = {
         "./TimelineSystemDivider",
         ["TimelineSystemDivider"],
       ],
+    },
+  },
+  "packages/client-runtime/src/state/threadExecution.ts": {
+    upstream: UpstreamThreadExecution,
+    substitute: OurThreadExecution satisfies typeof UpstreamThreadExecution,
+    importers: {
+      // The background-work line at a chat's end.
+      "apps/web/src/components/chat/ThreadActivityBanners.tsx": [
+        "@t3tools/client-runtime/state/thread-execution",
+        ["presentPendingBackgroundWork"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/threads.ts": {
+    upstream: UpstreamThreads,
+    substitute: OurThreads satisfies typeof UpstreamThreads,
+    importers: {
+      // The line over Subcells waiting on the person.
+      "apps/web/src/components/chat/ThreadActivityBanners.tsx": [
+        "@t3tools/client-runtime/state/threads",
+        ["childThreadInputsTitle"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/subagentRuntime.ts": {
+    upstream: UpstreamSubagentRuntime,
+    substitute: OurSubagentRuntime satisfies typeof UpstreamSubagentRuntime,
+    importers: {
+      "apps/web/src/components/chat/WorkflowOpeningBlock.tsx": [
+        "@t3tools/client-runtime/state/subagentRuntime",
+        ["workflowOpeningHeadline"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/TimelineOverlays.tsx": {
+    upstream: UpstreamTimelineOverlays,
+    substitute: OurTimelineOverlays satisfies typeof UpstreamTimelineOverlays,
+    importers: {
+      // The summary on the button back to a chat's end.
+      "apps/web/src/components/ChatView.tsx": ["./chat/TimelineOverlays", ["ScrollToEndButton"]],
     },
   },
   "apps/web/src/components/chat/ContextWindowMeter.tsx": {

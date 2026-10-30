@@ -4,6 +4,8 @@
  * is a Cell (`SubcellMark`) where upstream drew a logo. A failure after a sync names the line
  * that moved: say Subcell, or give the avatar back.
  */
+import type { SubagentWorkflowGroup } from "@t3tools/client-runtime/state/subagentRuntime";
+import type { OrchestrationV2PendingBackgroundTask } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
@@ -12,13 +14,22 @@ import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import relationships from "../../components/chat/ThreadRelationshipsControl.tsx?raw";
 import lineageWorkflow from "../../components/chat/ThreadLineageWorkflowRow.tsx?raw";
 import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
+import subagentBar from "../../components/chat/ProviderSubagentBar.tsx?raw";
 import workflowOpening from "../../components/chat/WorkflowOpeningBlock.tsx?raw";
-import { inSubcellWords, SUBCELL, subcellCount } from "../../../../../stemcells/words/subcells.ts";
+import {
+  inSubcellCountWords,
+  inSubcellWords,
+  SUBCELL,
+  subcellCount,
+} from "../../../../../stemcells/words/subcells.ts";
 import * as SeamsChat from "./seams/chat";
 import {
   formatSubagentDisplayTitle,
   summarizeSubagentStatuses,
 } from "./substitutes/subagentDisplay";
+import { workflowOpeningHeadline } from "./substitutes/subagentRuntime";
+import { presentPendingBackgroundWork } from "./substitutes/threadExecution";
+import { childThreadInputsTitle } from "./substitutes/threads";
 
 /** The source of the top-level function or const named `name`, up to the next top-level declaration. */
 function body(source: string, name: string): string {
@@ -96,9 +107,12 @@ describe("Subcells in upstream's views", () => {
       'title: "Could not stop Subcell"',
       "aria-label={`Stop Subcell ${threadTitle}`}",
       '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
+      ': "Open parent Cell"}',
     ])
       expect(relationships).toContain(words);
     expect(lineageWorkflow).toContain(">No Subcells yet</li>");
+    expect(lineageWorkflow).toContain('{phase.members.length === 1 ? "Subcell" : "Subcells"}');
+    expect(subagentBar).toContain("{`${modelDescription} Subcell: ${announcement}`}");
   });
 });
 
@@ -125,5 +139,67 @@ describe("Subcell words", () => {
     expect(inSubcellWords("Ran 2 subagents")).toBe("Ran 2 Subcells");
     expect(inSubcellWords("1 subagent batch")).toBe("1 Subcell batch");
     expect(inSubcellWords("Parent thread")).toBe("Parent thread");
+    expect(inSubcellWords("Subagent waiting · 2 queued")).toBe("Subcell waiting · 2 queued");
+
+    // The line about a chat's background work, through upstream's own sentence.
+    let id = 0;
+    const task = (
+      kind: OrchestrationV2PendingBackgroundTask["kind"],
+      description?: string,
+    ): OrchestrationV2PendingBackgroundTask => ({
+      taskId: `task-${(id += 1)}`,
+      kind,
+      ...(description === undefined ? {} : { description }),
+    });
+    const sub = (description?: string) => task("subagent", description);
+    const command = (description?: string) => task("command", description);
+    for (const [tasks, title] of [
+      [[sub()], "Waiting on a Subcell"],
+      [[sub("Audit the subagent docs")], "Waiting on Subcell Audit the subagent docs"],
+      [[sub(), command()], "Waiting on 1 Subcell and 1 command"],
+      [[sub(), sub(), command()], "Waiting on 2 Subcells and 1 command"],
+      [[sub(), sub(), command(), command()], "Waiting on 2 Subcells and 2 commands"],
+      [[sub(), command(), task("monitor")], "Waiting on 1 Subcell, 1 command and 1 monitor"],
+      [[command(), command()], "Running 2 commands"],
+      [[command()], "Running a command"],
+    ] as const)
+      expect(presentPendingBackgroundWork(tasks)?.title).toBe(title);
+    expect(
+      presentPendingBackgroundWork([sub(), sub("Audit"), command("npm test")])?.items.map(
+        ({ label }) => label,
+      ),
+    ).toEqual([SUBCELL.one, "Audit", "npm test"]);
+
+    // The line over those waiting on the person.
+    expect(childThreadInputsTitle([{ hasPendingApprovals: false }])).toBe("Subcell needs input");
+    expect(
+      childThreadInputsTitle([{ hasPendingApprovals: true }, { hasPendingApprovals: true }]),
+    ).toBe("2 Subcells need approval");
+    expect(
+      childThreadInputsTitle([{ hasPendingApprovals: true }, { hasPendingApprovals: false }]),
+    ).toBe("2 Subcells need you");
+  });
+
+  it("a count of agents counts Subcells, those at work flying", () => {
+    expect(inSubcellCountWords("1 agent · 1 working")).toBe("1 Subcell · 1 flying");
+    expect(inSubcellCountWords("2 of 3 agents working")).toBe("2 of 3 Subcells flying");
+    expect(inSubcellCountWords("1 agent done")).toBe("1 Subcell done");
+    // A workflow's heading, through upstream's own count.
+    const group = {
+      phases: [],
+      unphasedMembers: [{ status: "running" }, { status: "pending" }, { status: "completed" }],
+    } as unknown as SubagentWorkflowGroup;
+    const opening = {
+      messageId: "message",
+      script: "",
+      name: "Review",
+      description: null,
+      driver: null,
+      providerInstanceId: null,
+    };
+    expect(workflowOpeningHeadline({ ...opening, group }).agents).toBe(
+      "3 Subcells · 2 flying · 1 done",
+    );
+    expect(workflowOpeningHeadline({ ...opening, group: null }).agents).toBeNull();
   });
 });

@@ -137,7 +137,7 @@ export function workflowRail(group: SubagentWorkflowGroup): ReadonlyArray<Workfl
   if (group.unphasedMembers.length > 0) {
     items.push({
       key: "unphased",
-      title: items.length === 0 ? "Agents" : "Other",
+      title: items.length === 0 ? "Subcells" : "Other",
       members: group.unphasedMembers,
     });
   }
