@@ -94,7 +94,7 @@ describe("resolveQueuedEditPayload", () => {
 });
 
 describe("beginQueuedRunEdit", () => {
-  it("ends a changed edit when its run starts, without the thread's composer mounted", () => {
+  it("keeps a changed edit beside other work when its run starts, without the composer mounted", () => {
     const threadKey = "env-exit:thread-exit";
     const runId = RunId.make("run-1");
     const runs = Atom.make<ReadonlyArray<{ readonly id: RunId; readonly status: string }> | null>([
@@ -107,9 +107,8 @@ describe("beginQueuedRunEdit", () => {
     appAtomRegistry.set(runs, [{ id: runId, status: "running" }]);
 
     expect(getQueuedRunEdit(threadKey)).toBeNull();
-    expect(getComposerDraftSnapshot(threadKey).text).toBe("other work");
     expect(appAtomRegistry.get(threadComposerErrorsAtom)[threadKey]?.message).toBe(
-      "That message already started, so the edit was discarded.",
+      "That message already started. Your edit is back in the composer.",
     );
   });
 
@@ -145,7 +144,7 @@ describe("beginQueuedRunEdit", () => {
 
     expect(getQueuedRunEdit(threadKey)).toBeNull();
     expect(appAtomRegistry.get(threadComposerErrorsAtom)[threadKey]?.message).toBe(
-      "That message already started, so the edit was discarded.",
+      "That message already started. Your edit is back in the composer.",
     );
   });
 });

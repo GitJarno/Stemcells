@@ -4079,8 +4079,12 @@ const composerDraftStore = create<ComposerDraftStoreState>()(
               });
             const movedFileIds = new Set(movedFiles.map((file) => file.id));
             const retainedFiles = source.files.filter((file) => !movedFileIds.has(file.id));
+            const sourcePrompt = stripInlineContextReferences(source.prompt);
+            // Words already in the destination stay; the moved ones follow them.
             const movedPrompt = ensureInlineContextReferences(
-              stripInlineContextReferences(source.prompt),
+              destination.prompt.trim().length === 0
+                ? sourcePrompt
+                : `${destination.prompt}\n\n${sourcePrompt}`,
               destination.terminalContexts.map(terminalContextReference),
             );
             const nextDestination: ComposerThreadDraftState = {
