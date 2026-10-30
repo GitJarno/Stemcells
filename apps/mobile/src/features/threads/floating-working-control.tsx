@@ -228,7 +228,7 @@ export function FloatingWorkingControl(props: {
       {agents !== null ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Open agents, ${agents.accessibilityLabel}`}
+          accessibilityLabel={`Open Subcells, ${agents.accessibilityLabel}`}
           accessibilityHint="Opens this turn's Subcells"
           onPress={props.onOpenAgents}
           onLayout={(event) => setAgentsWidth(settleWidth(event.nativeEvent.layout.width))}

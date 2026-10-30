@@ -3,18 +3,21 @@ import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
+import type { ThreadTurnSubagents } from "@t3tools/client-runtime/state/thread-subagents";
+import type { OrchestrationV2Subagent } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
   formatSubagentDisplayTitle,
   summarizeSubagentStatuses,
 } from "./substitutes/subagentDisplay";
+import { resolveSubagentPillSegment } from "./substitutes/threadSubagents";
 
 /**
- * Contract: the phone says Subcell where it said subagent: the card grouping a turn's
- * subagents, the sheet listing them, and the words read aloud (`stemcells/seams.md`,
- * Subcells). The card's header draws each Subcell as its Cell, those at work flying, as the
- * Mac does. If this fails after a sync, upstream rewrote one of these lines: say it again.
+ * Contract: the phone says Subcell where it said subagent or agent: the card grouping a turn's
+ * subagents, the sheets listing them and the background work, a chat's header, and the words
+ * read aloud (`stemcells/seams.md`, Subcells). The card's header draws each as its Cell, those
+ * at work flying, as the Mac does. A failure after a sync: upstream rewrote a line; say it again.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -36,8 +39,20 @@ const SAID = {
     '"Provider-managed Subcell. Its work appears in the transcript."',
     'accessibilityHint="Opens this Subcell"',
   ],
-  "threadAgentsPresentation.ts": ['if (prompt.length === 0) return "Subcell";'],
-  "floating-working-control.tsx": ['accessibilityHint="Opens this turn\'s Subcells"'],
+  "threadAgentsPresentation.ts": [
+    'if (prompt.length === 0) return "Subcell";',
+    'title: items.length === 0 ? "Subcells" : "Other",',
+  ],
+  "floating-working-control.tsx": [
+    "accessibilityLabel={`Open Subcells, ${agents.accessibilityLabel}`}",
+    'accessibilityHint="Opens this turn\'s Subcells"',
+  ],
+  "ThreadBackgroundWorkSheet.tsx": [
+    'subagent: "Subcell",',
+    "accessibilityLabel={`Open Subcell ${item.label}`}",
+  ],
+  "ThreadRouteScreen.tsx": ["? `Subcell of ${delegatedFromThread?.title ?? delegatedFrom.title}`"],
+  "thread-work-log.tsx": ['? "Opens this Subcell. Long press to copy."'],
   "ProviderSubagentBar.tsx": ["accessibilityLabel={`${modelDescription} Subcell, ${statusLabel}."],
   "SubagentStopButton.tsx": [
     '"Could not stop Subcell"',
@@ -64,5 +79,23 @@ describe("Subcells on the phone", () => {
     expect(summarizeSubagentStatuses(["running", "pending", "waiting", "completed"])).toBe(
       "3 flying · 1 done",
     );
+  });
+
+  it("the composer's pill reads a turn's Subcells aloud, through upstream's own count", () => {
+    const turn = (liveCount: number, settledCount: number): ThreadTurnSubagents => ({
+      runId: null,
+      turnActive: true,
+      latestTurn: true,
+      subagents: Array.from(
+        { length: liveCount + settledCount },
+        () => ({}) as OrchestrationV2Subagent,
+      ),
+      liveCount,
+      settledCount,
+    });
+    expect(resolveSubagentPillSegment(turn(2, 1))?.accessibilityLabel).toBe(
+      "2 of 3 Subcells flying",
+    );
+    expect(resolveSubagentPillSegment(turn(0, 1))?.accessibilityLabel).toBe("1 Subcell done");
   });
 });

@@ -5,6 +5,10 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
 import * as UpstreamSubagentDisplay from "@t3tools/client-runtime/state/subagent-display";
+import * as UpstreamSubagentRuntime from "@t3tools/client-runtime/state/subagentRuntime";
+import * as UpstreamThreadExecution from "@t3tools/client-runtime/state/thread-execution";
+import * as UpstreamThreadSubagents from "@t3tools/client-runtime/state/thread-subagents";
+import * as UpstreamThreads from "@t3tools/client-runtime/state/threads";
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
@@ -14,9 +18,13 @@ import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 import phoneTestConfig from "../../../../vite.config";
 import * as OurFavicon from "./favicon";
 import * as OurSubagentDisplay from "./subagentDisplay";
+import * as OurSubagentRuntime from "./subagentRuntime";
 import { PACKAGES, SUBSTITUTES } from "./substitutes.cjs";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
+import * as OurThreadExecution from "./threadExecution";
+import * as OurThreads from "./threads";
+import * as OurThreadSubagents from "./threadSubagents";
 
 /**
  * Contract: the phone's builds (Metro, for the app; Vite, for its tests) hand
@@ -386,6 +394,60 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/mobile/src/lib/threadActivity.ts": [
         "@t3tools/client-runtime/state/subagent-display",
         ["formatSubagentDisplayTitle"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/threadExecution.ts": {
+    exports: [
+      Object.keys(UpstreamThreadExecution),
+      Object.keys(OurThreadExecution satisfies typeof UpstreamThreadExecution),
+    ],
+    importers: {
+      // The background-work line over the composer, and its sheet.
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": [
+        "@t3tools/client-runtime/state/thread-execution",
+        ["presentPendingBackgroundWork"],
+      ],
+      "apps/mobile/src/features/threads/ThreadBackgroundWorkSheet.tsx": [
+        "@t3tools/client-runtime/state/thread-execution",
+        ["presentPendingBackgroundWork"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/threads.ts": {
+    exports: [
+      Object.keys(UpstreamThreads),
+      Object.keys(OurThreads satisfies typeof UpstreamThreads),
+    ],
+    importers: {
+      // The line over Subcells waiting on the person.
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": [
+        "@t3tools/client-runtime/state/threads",
+        ["childThreadInputsTitle"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/subagentRuntime.ts": {
+    exports: [
+      Object.keys(UpstreamSubagentRuntime),
+      Object.keys(OurSubagentRuntime satisfies typeof UpstreamSubagentRuntime),
+    ],
+    importers: {
+      "apps/mobile/src/features/threads/thread-workflow-opening.tsx": [
+        "@t3tools/client-runtime/state/subagentRuntime",
+        ["workflowOpeningHeadline"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/state/threadSubagents.ts": {
+    exports: [
+      Object.keys(UpstreamThreadSubagents),
+      Object.keys(OurThreadSubagents satisfies typeof UpstreamThreadSubagents),
+    ],
+    importers: {
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": [
+        "@t3tools/client-runtime/state/thread-subagents",
+        ["resolveSubagentPillSegment"],
       ],
     },
   },
