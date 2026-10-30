@@ -28,6 +28,7 @@ import {
 import { useWorkspaceEnvironments } from "../../state/workspace";
 import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
 import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
+import { type DiskFigures, keptDisks } from "../disk/kept";
 
 // Settings › Disk, the home's disk plate and a Cell the full disk stopped read each machine's
 // free space from its server and open a new Cell in that machine's Disk project; the phone
@@ -72,6 +73,8 @@ const MACHINE_DISK_EVERY_MS = 30_000;
 /** No machine: never read. */
 const NO_MACHINE = Atom.make(AsyncResult.initial());
 
+const kept = keptDisks();
+
 /** Each machine's one reader, however many rows and cards show its disk. */
 const readers = new Map<EnvironmentId, { count: number; readonly stop: () => void }>();
 
@@ -96,17 +99,12 @@ function readEvery(registry: AtomRegistry.AtomRegistry, environmentId: Environme
 }
 
 /**
- * A machine's home volume, from its host resources: undefined until the
- * first answer (and for no machine), null when it gave none (an older
- * server, an unreadable volume). Read on mount and every 30 s while
+ * A machine's home volume, from its host resources: undefined until its
+ * first answer of the app's run (and for no machine), null when it gave none
+ * (an older server, an unreadable volume). Read on mount and every 30 s while
  * the app is in front, once per machine however many ask.
  */
-export function useMachineDisk(
-  environmentIdText: string | null,
-):
-  | { readonly free: number; readonly total: number; readonly warnBelow?: number }
-  | null
-  | undefined {
+export function useMachineDisk(environmentIdText: string | null): DiskFigures | null | undefined {
   const environmentId = environmentIdText as EnvironmentId | null;
   const registry = useContext(RegistryContext);
   const result = useAtomValue(
@@ -119,18 +117,22 @@ export function useMachineDisk(
     () => (environmentId === null ? undefined : readEvery(registry, environmentId)),
     [registry, environmentId],
   );
-  if (result._tag === "Initial") return undefined;
+  if (environmentId === null) return undefined;
+  if (result._tag === "Initial") return kept(environmentId, undefined);
   // A failed refresh keeps the last figure.
   const snapshot = Option.getOrNull(AsyncResult.value(result));
-  return snapshot?.diskFreeBytes === undefined || snapshot.diskTotalBytes === undefined
-    ? null
-    : {
-        free: snapshot.diskFreeBytes,
-        total: snapshot.diskTotalBytes,
-        ...(snapshot.diskWarnBelowBytes === undefined
-          ? {}
-          : { warnBelow: snapshot.diskWarnBelowBytes }),
-      };
+  return kept(
+    environmentId,
+    snapshot?.diskFreeBytes === undefined || snapshot.diskTotalBytes === undefined
+      ? null
+      : {
+          free: snapshot.diskFreeBytes,
+          total: snapshot.diskTotalBytes,
+          ...(snapshot.diskWarnBelowBytes === undefined
+            ? {}
+            : { warnBelow: snapshot.diskWarnBelowBytes }),
+        },
+  );
 }
 
 /** Where a machine's own server answers and the token the phone paired with, as push reads it. */

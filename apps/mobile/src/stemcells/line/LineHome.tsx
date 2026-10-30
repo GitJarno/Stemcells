@@ -6,6 +6,7 @@
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
 
+import { DiskReaders } from "../disk/DiskPlate";
 import { CopyLayer } from "../home/CopyLayer";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
 import { HomeTabsContext, tabChoice } from "../home/state";
@@ -195,6 +196,7 @@ export function LineHome(props: {
           <EmptyTab words={EMPTY[tab]} />
         )}
         <UndoLine held={held} />
+        <DiskReaders />
       </View>
     </HomeTabsContext>
   );
