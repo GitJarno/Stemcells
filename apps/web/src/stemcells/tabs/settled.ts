@@ -5,6 +5,8 @@
  */
 import { useSyncExternalStore } from "react";
 
+import type { HandSettle } from "../needs/wire";
+import { isAskiTab } from "./askiTab";
 import { HAND_SETTLE_MS } from "./handSettles";
 import {
   arriving,
@@ -90,6 +92,50 @@ export function leaveSlate(
       at,
     },
   };
+}
+
+/**
+ * The workspace without every pane showing one of `cells`, and where each stood. Aski's tab
+ * keeps its pane, and the window its last one.
+ */
+export function leaveSlateOf(
+  workspace: Workspace,
+  cells: ReadonlyArray<CellRef>,
+  at: number,
+): { readonly workspace: Workspace; readonly left: ReadonlyArray<Left> } {
+  const showing = workspace.tabs
+    .filter((tab) => !isAskiTab(tab))
+    .flatMap(panesOf)
+    .filter(
+      (pane) =>
+        pane.cell?.draftId === null && cells.some((cell) => pane.cell && sameChat(pane.cell, cell)),
+    );
+  let next = workspace;
+  const left: Left[] = [];
+  for (const pane of showing) {
+    if (next.tabs.length === 1 && panesOf(next.tabs[0]!).length === 1) break;
+    const out = leaveSlate(next, pane.id, at);
+    next = out.workspace;
+    if (out.left !== null) left.push(out.left);
+  }
+  return { workspace: next, left };
+}
+
+/**
+ * The Cells one machine's `settles` name that this window hasn't acted on: settled by hand after
+ * the newest settle `through` holds for the machine, or after `since` on one it holds none for.
+ * `through` moves past each, and holds the machine from its first list on.
+ */
+export function settlesAmong(
+  environmentId: string,
+  settles: ReadonlyArray<HandSettle>,
+  through: Map<string, number>,
+  since: number,
+): CellRef[] {
+  const mark = through.get(environmentId) ?? since;
+  const after = settles.filter((settle) => Date.parse(settle.at) > mark);
+  through.set(environmentId, Math.max(mark, ...after.map((settle) => Date.parse(settle.at))));
+  return after.map((settle) => ({ environmentId, threadId: settle.threadId, draftId: null }));
 }
 
 /** The Cell back where it stood, unless it already shows somewhere. */

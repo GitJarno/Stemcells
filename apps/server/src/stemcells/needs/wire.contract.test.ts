@@ -47,6 +47,7 @@ const source: NeedsSource = {
   // The person settled one by hand, from the phone.
   changedThreads: () =>
     Stream.make([{ threadId: shells[3]!.id, lively: false, settledByHandAt: NOW + MINUTE }]),
+  handSettles: () => Effect.succeed([]),
   shell: (id) => Effect.succeed(shells.find((shell) => shell.id === id) ?? null),
   request: (_threadId, requestId) => Effect.succeed(detail(requestId)),
   plan: () => Effect.succeed(null),

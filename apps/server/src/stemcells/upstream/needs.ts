@@ -18,6 +18,7 @@ import type {
 import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
 import * as Stream from "effect/Stream";
 import * as SqlClient from "effect/sql/SqlClient";
 
@@ -120,6 +121,13 @@ export interface NeedsSource {
   }>;
   /** The threads that changed after `afterSequence`, a batch at a time. */
   readonly changedThreads: (afterSequence: number) => Stream.Stream<ReadonlyArray<Changed>>;
+  /**
+   * The latest settle by hand of each thread, from the event log, for a restart, which forgets
+   * the day's: a thread whose latest settle was upstream's own has none.
+   */
+  readonly handSettles: (
+    threadIds: ReadonlyArray<ThreadId>,
+  ) => Effect.Effect<ReadonlyArray<{ readonly threadId: ThreadId; readonly at: number }>>;
   /** One thread's shell now; null once it is gone. A failed read dies. */
   readonly shell: (threadId: ThreadId) => Effect.Effect<Shell | null>;
   /** The pending request in full; null when it was answered meanwhile or can't be read. */
@@ -161,6 +169,22 @@ export function byThread(batch: ReadonlyArray<Changed>): ReadonlyArray<Changed> 
   }
   return [...merged.values()];
 }
+
+/** Each thread's latest settle by hand, read back from the event log; a failed read has none. */
+export const latestHandSettles = (
+  events: OrchestrationEventStore.OrchestrationEventStore["Service"],
+  threadIds: ReadonlyArray<ThreadId>,
+) =>
+  Effect.forEach(threadIds, (threadId) =>
+    events.readAgentEvents({ threadId, eventType: "thread.settled" }).pipe(
+      Stream.runLast,
+      Effect.map((last) => {
+        const at = Option.isSome(last) ? settledByHandAt(last.value) : null;
+        return at === null ? [] : [{ threadId, at }];
+      }),
+      Effect.orElseSucceed(() => []),
+    ),
+  ).pipe(Effect.map((each) => each.flat()));
 
 /** Items a run is in the middle of that are the model's own words, not a tool call. */
 const OWN_WORDS: ReadonlySet<OrchestrationV2TurnItem["type"]> = new Set([
@@ -331,6 +355,7 @@ export const makeNeedsSource = Effect.gen(function* () {
     ready,
     snapshot,
     changedThreads,
+    handSettles: (threadIds) => latestHandSettles(events, threadIds),
     shell,
     request,
     plan,

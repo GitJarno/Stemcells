@@ -1,8 +1,8 @@
 /**
- * What Aski's page takes from upstream to answer a Cell (stemcells/tasks/aski-room.md, "Action
- * catalogue"): the primary environment's stream of what needs the person, a thread's live
- * shell, and upstream's own chat's thread commands, run as it runs them. Only `respond` with an
- * allow decision can approve, and only a click on Aski's page reaches it.
+ * What Aski's page takes from upstream (stemcells/tasks/aski-room.md, "Action catalogue"): the
+ * primary's stream of what needs the person, any connected server's settles, a thread's shell,
+ * and upstream's own chat's thread commands, run as it runs them. Only `respond` with an allow
+ * decision can approve, and only a click on Aski's page reaches it.
  */
 import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import {
@@ -22,6 +22,7 @@ import {
   type ProviderApprovalDecision,
 } from "@t3tools/contracts";
 import { useNavigate } from "@tanstack/react-router";
+import * as Option from "effect/Option";
 
 import { composerDraftHasUserContent, useComposerDraftStore } from "~/composerDraftStore";
 import { useNowMinute } from "~/hooks/useNowMinute";
@@ -31,8 +32,9 @@ import { newMessageId } from "~/lib/utils";
 import { buildPlanImplementationPrompt } from "~/proposedPlan";
 import { appAtomRegistry } from "~/rpc/atomRegistry";
 import { readThreadShell, useProject } from "~/state/entities";
+import { environmentSummaries } from "~/state/presentation";
 import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
-import { readEnvironmentScope } from "~/state/session";
+import { environmentSession, readEnvironmentScope } from "~/state/session";
 import { threadEnvironment } from "~/state/threads";
 
 import type { ThreadCommand } from "../needs/actions";
@@ -94,6 +96,42 @@ export async function openPrimaryStream(pathname: string, signal: AbortSignal): 
     credentials: bearerToken ? "omit" : "include",
     headers: bearerToken ? { authorization: `Bearer ${bearerToken}` } : {},
   });
+}
+
+/**
+ * The same to any connected environment's server: the primary's as above, another's at its
+ * address with the bearer token it paired with. Null for one not connected, or reached through
+ * T3's relay, whose requests only upstream's own client signs.
+ */
+export async function openEnvironmentStream(
+  environmentId: string,
+  pathname: string,
+  signal: AbortSignal,
+): Promise<Response | null> {
+  if (environmentId === appAtomRegistry.get(primaryEnvironmentIdAtom)) {
+    return openPrimaryStream(pathname, signal);
+  }
+  const prepared = Option.getOrNull(
+    appAtomRegistry.get(
+      environmentSession.preparedConnectionValueAtom(environmentId as EnvironmentId),
+    ),
+  );
+  if (prepared === null || prepared.httpAuthorization?._tag === "Dpop") return null;
+  const token =
+    prepared.httpAuthorization?._tag === "Bearer" ? prepared.httpAuthorization.token : null;
+  return fetch(new URL(pathname, prepared.httpBaseUrl).href, {
+    signal,
+    credentials: token === null ? "include" : "omit",
+    headers: token === null ? {} : { authorization: `Bearer ${token}` },
+  });
+}
+
+/** Calls `listener` with the environments connected now, and again each time that changes. */
+export function subscribeConnectedEnvironments(
+  listener: (environmentIds: ReadonlyArray<string>) => void,
+): () => void {
+  listener(appAtomRegistry.get(environmentSummaries.connectedEnvironmentIdsAtom));
+  return appAtomRegistry.subscribe(environmentSummaries.connectedEnvironmentIdsAtom, listener);
 }
 
 export type { ThreadCommand };

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef } from "react";
 
-import { readNeeds, subscribeNeeds } from "../needs/stream";
 import { useCellSettled } from "../upstream/thread";
-import { handSettledAtFrom, useHandSettledAt } from "./handSettles";
+import { useHandSettledAt } from "./handSettles";
 import type { Left } from "./settled";
 import {
   COME_BACK_MS,
@@ -13,30 +12,18 @@ import {
   leavesForSettle,
   useLeft,
 } from "./settled";
-import type { CellRef, Pane } from "./layout";
+import type { Pane } from "./layout";
 import { newIds, updateWorkspace } from "./store";
 
 /**
- * When the person last settled the Cell by hand: this device's mark, which is at once, or the
- * server's word of a settle on any device, whichever is later.
- */
-function useSettledByHandAt(cell: CellRef | null): number | null {
-  const marked = useHandSettledAt(cell);
-  const threadId = cell !== null && cell.draftId === null ? cell.threadId : null;
-  const heardAt = () => handSettledAtFrom(readNeeds().settles, threadId);
-  const heard = useSyncExternalStore(subscribeNeeds, heardAt, heardAt);
-  return marked === null ? heard : heard === null ? marked : Math.max(marked, heard);
-}
-
-/**
- * Closes the pane once the person settles its Cell from anywhere, on this device or another.
- * An auto-settle (a merged pull request) never pulls a chat from under its reader, and a settled
- * Cell opened on purpose stays open (`leavesForSettle`). `enabled` is false where the pane may
- * not close.
+ * Closes the pane at once when the person settles its Cell on this device; a settle anywhere
+ * closes it as the server's word arrives (`windows/settling.ts`). An auto-settle never pulls a
+ * chat from under its reader, and a settled Cell opened on purpose stays open
+ * (`leavesForSettle`). `enabled` is false where the pane may not close.
  */
 export function useLeavesWhenSettled(pane: Pane, enabled: boolean): void {
   const settled = useCellSettled(pane.cell);
-  const markedAt = useSettledByHandAt(pane.cell);
+  const markedAt = useHandSettledAt(pane.cell);
   const threadId = pane.cell?.threadId ?? null;
   // The thread this pane has shown unsettled.
   const sawUnsettled = useRef<string | null>(null);

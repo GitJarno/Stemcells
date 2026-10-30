@@ -82,29 +82,35 @@ const pause = (ms: number, signal: AbortSignal) =>
     signal.addEventListener("abort", () => (clearTimeout(timer), resolve()), { once: true });
   });
 
-async function follow(signal: AbortSignal) {
+/**
+ * Follows a server's event stream until `signal` aborts: the JSON of each whole event `accept`
+ * takes goes to `take`, a batch at a time. A drop, a refusal or no answer calls `dropped` and
+ * tries again, a second on and doubling to half a minute; `open` answering null means there is
+ * nothing there to follow.
+ */
+export async function followEvents<T>(input: {
+  readonly open: (signal: AbortSignal) => Promise<Response | null>;
+  readonly accept: (data: unknown) => data is T;
+  readonly take: (values: ReadonlyArray<T>) => void;
+  readonly dropped: () => void;
+  readonly signal: AbortSignal;
+}): Promise<void> {
+  const { signal } = input;
   let retry = RETRY_FIRST_MS;
   while (!signal.aborted) {
     try {
-      const response = await openPrimaryStream(STREAM_PATH, signal);
-      if (!response.ok || response.body === null)
-        throw new Error(`needs stream: ${response.status}`);
+      const response = await input.open(signal);
+      if (response === null) return;
+      if (!response.ok || response.body === null) throw new Error(`stream: ${response.status}`);
       const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
       let buffer = "";
       for (;;) {
         const { value, done } = await reader.read();
         if (done) break;
-        const { lists, rest } = readEvents(buffer + value);
+        const { values, rest } = readJsonEvents(buffer + value, input.accept);
         buffer = rest;
-        const newest = lists.at(-1);
-        if (newest !== undefined) {
-          publish({
-            needs: newest.needs,
-            later: newest.later ?? [],
-            cells: newest.cells ?? [],
-            settles: newest.settles ?? [],
-            live: true,
-          });
+        if (values.length > 0) {
+          input.take(values);
           retry = RETRY_FIRST_MS;
         }
       }
@@ -112,11 +118,31 @@ async function follow(signal: AbortSignal) {
       // Dropped, refused or not yet reachable: try again below.
     }
     if (signal.aborted) return;
-    if (state.live) publish({ ...state, live: false });
+    input.dropped();
     await pause(retry, signal);
     retry = Math.min(retry * 2, RETRY_MAX_MS);
   }
 }
+
+const follow = (signal: AbortSignal) =>
+  followEvents({
+    open: (signal) => openPrimaryStream(STREAM_PATH, signal),
+    accept: isList,
+    take: (lists) => {
+      const newest = lists.at(-1)!;
+      publish({
+        needs: newest.needs,
+        later: newest.later ?? [],
+        cells: newest.cells ?? [],
+        settles: newest.settles ?? [],
+        live: true,
+      });
+    },
+    dropped: () => {
+      if (state.live) publish({ ...state, live: false });
+    },
+    signal,
+  });
 
 /** Keeps the connection open while anything listens. */
 export function subscribeNeeds(listener: () => void): () => void {
