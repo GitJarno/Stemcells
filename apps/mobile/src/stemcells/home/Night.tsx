@@ -1,9 +1,18 @@
-// The night over Settled: a dark sky, stars, the moon at tonight's phase, and now and
-// then a shooting star. It stands still between shooting stars (nothing repaints); they come
-// only while the app is in front, and not at all under Reduce Motion.
+// The night over Settled: a dark sky, stars, the moon at tonight's phase, and now and then a
+// shooting star. It falls and lifts in layers, each on its span of one progress (`nightfall.ts`),
+// redrawing nothing, and stands still between shooting stars, which come only while the app is
+// in front, and not under Reduce Motion.
 
-import { useEffect, useState } from "react";
-import { AppState, type ColorValue, useWindowDimensions, View } from "react-native";
+import { type ReactNode, useEffect, useState } from "react";
+import {
+  AppState,
+  type ColorValue,
+  type StyleProp,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,29 +31,120 @@ import Svg, {
 } from "react-native-svg";
 
 import { litPath, moonPhase } from "./moon";
+import { type Part, PARTS, shown } from "./nightfall";
 import { DEEP, DEEP_AT, hex, skyAt, TOP } from "./sky";
 import { useMinute } from "./state";
+import { fallen } from "./useNight";
 
 /** The moon: across the header's width, points down from its top, its radius. */
 const MOON = { x: 0.8, y: 34, r: 13 };
 const MOONLIGHT = "#F2EFE6";
 /** The moon's unlit part, a little lighter than the sky it crosses. */
 const MOON_DARK = "#1A1D3A";
+/** How far the moon's glow reaches from its centre, and how far the moon rises into place. */
+const GLOW = MOON.r * 2.6;
+const RISE = 8;
 
+/** How far down the header the stars reach, of its height. */
+const STARS_REACH = 0.62;
 const STARS = (() => {
   let seed = 46;
   const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   return Array.from({ length: 46 }, () => ({
     x: random(),
-    y: random() * 0.62,
+    y: random() * STARS_REACH,
     r: 0.4 + random() * 0.7,
     alpha: 0.1 + random() * 0.32,
   }));
 })();
 
+/** The stars by brightness, one group to each of their spans: the brightest come out first. */
+const STAR_GROUPS = (() => {
+  const brightest = [...STARS].sort((a, b) => b.alpha - a.alpha);
+  const size = Math.ceil(brightest.length / PARTS.stars.length);
+  return PARTS.stars.map((part, n) => ({
+    part,
+    stars: brightest.slice(n * size, (n + 1) * size),
+  }));
+})();
+/** Room round the stars' layers for the largest star. */
+const STAR_ROOM = 2;
+
 /** How long between shooting stars, and how long one lasts, in ms. */
 const SHOOTS_EVERY = 9_000;
 const SHOOTS_FOR = 850;
+
+/**
+ * What the night brings, as far as its `part` (the sky's, unless said) has come: over the
+ * day's own look, they cross as the sky comes in. Drawn as one layer, untouched and unread.
+ */
+export function AtNight(props: {
+  readonly part?: Part;
+  readonly style?: StyleProp<ViewStyle>;
+  readonly children: ReactNode;
+}) {
+  const part = props.part ?? PARTS.sky;
+  const reduced = useReducedMotion();
+  const comes = useAnimatedStyle(() => ({ opacity: shown(fallen.get(), part, reduced) }));
+  return (
+    <Animated.View
+      pointerEvents="none"
+      // Android fades each view alone; the eyes over the ink must fade as one picture.
+      needsOffscreenAlphaCompositing
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[props.style, comes]}
+    >
+      {props.children}
+    </Animated.View>
+  );
+}
+
+/** The moon centred at (`x`, `y`), rising into place as it comes out, its glow after it. */
+function Moon(props: { readonly x: number; readonly y: number }) {
+  const phase = moonPhase(Date.parse(useMinute()));
+  const reduced = useReducedMotion();
+  const rises = useAnimatedStyle(() => {
+    const out = shown(fallen.get(), PARTS.moon, reduced);
+    return { opacity: out, transform: [{ translateY: reduced ? 0 : (1 - out) * RISE }] };
+  });
+  const box = 2 * GLOW;
+  return (
+    <Animated.View
+      needsOffscreenAlphaCompositing
+      style={[
+        {
+          position: "absolute",
+          left: props.x - GLOW,
+          top: props.y - GLOW,
+          width: box,
+          height: box,
+        },
+        rises,
+      ]}
+    >
+      <AtNight part={PARTS.glow} style={StyleSheet.absoluteFill}>
+        <Svg width={box} height={box}>
+          <Defs>
+            <RadialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <Stop offset="0" stopColor={MOONLIGHT} stopOpacity={0.22} />
+              <Stop offset="1" stopColor={MOONLIGHT} stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Circle cx={GLOW} cy={GLOW} r={GLOW} fill="url(#glow)" />
+        </Svg>
+      </AtNight>
+      <Svg width={box} height={box}>
+        <Circle cx={GLOW} cy={GLOW} r={MOON.r} fill={MOON_DARK} />
+        <Path
+          d={litPath(phase, MOON.r)}
+          fill={MOONLIGHT}
+          transform={`translate(${GLOW} ${GLOW})`}
+        />
+      </Svg>
+    </Animated.View>
+  );
+}
 
 /** Shooting stars across the box from (`left`, `top`), `width` by `height`. */
 function ShootingStar(props: {
@@ -115,18 +215,19 @@ function ShootingStar(props: {
  * The night behind the home's header, reaching `above` points over it and
  * fading into `screen` at its foot. Given the header's measured `height`, it
  * draws in its first frame, across the window, until its own layout lands.
+ * Shooting stars come only while it is `shooting`: the first a while after it falls.
  */
 export function Night(props: {
   readonly above: number;
   readonly screen: ColorValue | undefined;
   readonly height: number;
+  readonly shooting: boolean;
 }) {
   const window = useWindowDimensions();
   const [measured, setSize] = useState<{ width: number; height: number } | null>(null);
   const size =
     measured ?? (props.height > 0 ? { width: window.width, height: props.height } : null);
   const reduced = useReducedMotion();
-  const phase = moonPhase(Date.parse(useMinute()));
   const { above } = props;
   return (
     <View
@@ -138,44 +239,41 @@ export function Night(props: {
     >
       {size === null ? null : (
         <>
-          <Svg width={size.width} height={above + size.height}>
-            <Defs>
-              <LinearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset={0} stopColor={hex(TOP)} />
-                <Stop offset={DEEP_AT} stopColor={hex(DEEP)} />
-                <Stop offset={1} stopColor={props.screen} />
-              </LinearGradient>
-              <RadialGradient id="glow" cx="50%" cy="50%" r="50%">
-                <Stop offset="0" stopColor={MOONLIGHT} stopOpacity={0.22} />
-                <Stop offset="1" stopColor={MOONLIGHT} stopOpacity={0} />
-              </RadialGradient>
-            </Defs>
-            <Rect width={size.width} height={above} fill={skyAt(0)} />
-            <Rect y={above} width={size.width} height={size.height} fill="url(#sky)" />
-            {STARS.map((star) => (
-              <Circle
-                key={`${star.x}:${star.y}`}
-                cx={star.x * size.width}
-                cy={above + star.y * size.height}
-                r={star.r}
-                fill="#FFFFFF"
-                fillOpacity={star.alpha}
-              />
-            ))}
-            <Circle
-              cx={MOON.x * size.width}
-              cy={above + MOON.y}
-              r={MOON.r * 2.6}
-              fill="url(#glow)"
-            />
-            <Circle cx={MOON.x * size.width} cy={above + MOON.y} r={MOON.r} fill={MOON_DARK} />
-            <Path
-              d={litPath(phase, MOON.r)}
-              fill={MOONLIGHT}
-              transform={`translate(${MOON.x * size.width} ${above + MOON.y})`}
-            />
-          </Svg>
-          {reduced ? null : (
+          <AtNight style={StyleSheet.absoluteFill}>
+            <Svg width={size.width} height={above + size.height}>
+              <Defs>
+                <LinearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset={0} stopColor={hex(TOP)} />
+                  <Stop offset={DEEP_AT} stopColor={hex(DEEP)} />
+                  <Stop offset={1} stopColor={props.screen} />
+                </LinearGradient>
+              </Defs>
+              <Rect width={size.width} height={above} fill={skyAt(0)} />
+              <Rect y={above} width={size.width} height={size.height} fill="url(#sky)" />
+            </Svg>
+          </AtNight>
+          {STAR_GROUPS.map(({ part, stars }) => (
+            <AtNight
+              key={part[0]}
+              part={part}
+              style={{ position: "absolute", left: 0, top: above - STAR_ROOM }}
+            >
+              <Svg width={size.width} height={STARS_REACH * size.height + 2 * STAR_ROOM}>
+                {stars.map((star) => (
+                  <Circle
+                    key={`${star.x}:${star.y}`}
+                    cx={star.x * size.width}
+                    cy={STAR_ROOM + star.y * size.height}
+                    r={star.r}
+                    fill="#FFFFFF"
+                    fillOpacity={star.alpha}
+                  />
+                ))}
+              </Svg>
+            </AtNight>
+          ))}
+          <Moon x={MOON.x * size.width} y={above + MOON.y} />
+          {reduced || !props.shooting ? null : (
             <ShootingStar
               left={size.width * 0.05}
               top={above + size.height * 0.08}
