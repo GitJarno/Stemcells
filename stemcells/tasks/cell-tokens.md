@@ -76,13 +76,18 @@ foldable, then both ways.
 - [x] The markdown substitute draws the token in a chat's own words and in
       Cells' mail; the person's messages keep their words.
 - [x] Tests: the linking rules; the token in a reply, which opens beside.
-- [ ] Phone: the token in a Cell's reply, tap with the figure's flight,
+- [x] Phone: the rules shared with the Mac (`stemcells/words/cellNames.ts`);
+      a name in a chat's words is upstream's thread link, a pill in the Cell
+      tone, and a tap opens it as any thread link does: pushed, or in the
+      pane beside where the screen holds two (iPad, the open foldable).
+- [ ] Phone: the figure in the pill, its flight into the header, the
       long-press preview, "‹ Otter".
-- [ ] Two columns: iPad and the open foldable put it beside.
 - [ ] Both ways: why you're here, in touch, mail and notices as tokens.
 
 ## Review
 
 The Mac and web draw a named Cell as its token in replies and mail, peek
 on hover, open it beside or bring it forward, and ring its pane once. The
-phone, two-column layouts and the reverse pieces are still open (above).
+phone draws it as a pill that opens it, beside on a wide screen. The
+phone's figure, flight, preview and back label, and both ways, are still
+open (above).

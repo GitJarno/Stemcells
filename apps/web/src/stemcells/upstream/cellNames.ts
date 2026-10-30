@@ -7,8 +7,7 @@ import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell
 import type { ScopedThreadRef } from "@t3tools/contracts";
 
 import { useQuietThreadShells } from "../../state/entities";
-import { cellNameOf } from "../cell/name";
-import { namesOf } from "../peers/mentions";
+import { type MentionChat, namesFor, signatureOf } from "../peers/mentions";
 import { isAskiChat } from "../peers/names";
 
 export interface NamedCells {
@@ -21,35 +20,20 @@ const NONE: NamedCells = { signature: "", names: new Map() };
 const byShells = new WeakMap<ReadonlyArray<EnvironmentThreadShell>, Map<string, NamedCells>>();
 const lastByChat = new Map<string, NamedCells>();
 
-const factsOf = (shell: EnvironmentThreadShell) => ({
-  providerInstanceId: shell.providerInstanceId,
-  parentThreadId: shell.lineage.parentThreadId,
+const chatOf = (shell: EnvironmentThreadShell): MentionChat => ({
+  environmentId: shell.environmentId,
+  id: shell.id,
+  projectId: shell.projectId,
+  gone:
+    shell.lineage.relationshipToParent === "subagent" ||
+    shell.archivedAt !== null ||
+    shell.deletedAt !== null,
+  aski: isAskiChat(shell.id, {
+    providerInstanceId: shell.providerInstanceId,
+    parentThreadId: shell.lineage.parentThreadId,
+  }),
+  updatedAt: shell.updatedAt,
 });
-
-function namedBy(
-  shells: ReadonlyArray<EnvironmentThreadShell>,
-  ref: ScopedThreadRef,
-): ReadonlyMap<string, string> {
-  const self = shells.find(
-    (shell) => shell.id === ref.threadId && shell.environmentId === ref.environmentId,
-  );
-  if (self === undefined) return NONE.names;
-  const aski = isAskiChat(self.id, factsOf(self));
-  return namesOf(
-    shells
-      .filter(
-        (shell) =>
-          shell.environmentId === self.environmentId &&
-          shell.id !== self.id &&
-          shell.lineage.relationshipToParent !== "subagent" &&
-          shell.archivedAt === null &&
-          shell.deletedAt === null &&
-          !isAskiChat(shell.id, factsOf(shell)) &&
-          (aski || shell.projectId === self.projectId),
-      )
-      .map((shell) => ({ id: shell.id, name: cellNameOf(shell.id), updatedAt: shell.updatedAt })),
-  );
-}
 
 /** The Cells the chat may name, by name; none without a chat. */
 export function useNamedCells(ref: ScopedThreadRef | null | undefined): NamedCells {
@@ -60,11 +44,11 @@ export function useNamedCells(ref: ScopedThreadRef | null | undefined): NamedCel
   if (cache === undefined) byShells.set(shells, (cache = new Map()));
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
-  const names = namedBy(shells, ref);
-  const signature = [...names]
-    .map(([name, id]) => `${name}=${id}`)
-    .toSorted()
-    .join(",");
+  const self = shells.find(
+    (shell) => shell.id === ref.threadId && shell.environmentId === ref.environmentId,
+  );
+  const names = self === undefined ? NONE.names : namesFor(chatOf(self), shells.map(chatOf));
+  const signature = signatureOf(names);
   const last = lastByChat.get(key);
   const named = last?.signature === signature ? last : { signature, names };
   lastByChat.set(key, named);
