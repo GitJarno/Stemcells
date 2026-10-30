@@ -13,7 +13,7 @@ import { expectTypeOf } from "vite-plus/test";
 
 import * as Wire from "../../../../web/src/stemcells/needs/wire.ts";
 import type { NeedsSource, RequestDetail, Shell } from "../upstream/needs.ts";
-import { MINUTE, NOW, pendingRequest, runId, shellFixture } from "../upstream/needs.fixture.ts";
+import { MINUTE, NOW, at, pendingRequest, runId, shellFixture } from "../upstream/needs.fixture.ts";
 import { make, type NeedsList } from "./Needs.ts";
 
 it("the server's list has the wire's types", () => {
@@ -33,19 +33,20 @@ const detail = (id: string): RequestDetail => ({
   capability: "live",
 });
 
-/** A machine with one Cell asking, one at work and one done. */
+/** A machine with one Cell asking, one at work, one done and one settled. */
 const shells: ReadonlyArray<Shell> = [
   shellFixture({ id: "asking", pendingRuntimeRequest: pendingRequest("command", { id: "r1" }) }),
   shellFixture({ id: "busy", status: "running", activeRunId: runId("run-2") }),
   shellFixture({ id: "finished" }),
+  shellFixture({ id: "put-away", settledAt: at(MINUTE) }),
 ];
 
 const source: NeedsSource = {
   ready: Effect.void,
   snapshot: Effect.succeed({ shells, sequence: 0 }),
-  // The person settles the finished one by hand, from the phone.
+  // The person settled one by hand, from the phone.
   changedThreads: () =>
-    Stream.make([{ threadId: shells[2]!.id, lively: false, settledByHandAt: NOW + MINUTE }]),
+    Stream.make([{ threadId: shells[3]!.id, lively: false, settledByHandAt: NOW + MINUTE }]),
   shell: (id) => Effect.succeed(shells.find((shell) => shell.id === id) ?? null),
   request: (_threadId, requestId) => Effect.succeed(detail(requestId)),
   plan: () => Effect.succeed(null),
@@ -76,9 +77,9 @@ it.effect("the JSON the server sends is what the phone reads", () =>
         ["busy", "working"],
         ["finished", "done"],
       ]);
-      // A Mac closes the settled Cell's panes on this.
+      // A Mac closes the settled Cell's panes on this, and a phone back from away its chat.
       assert.deepStrictEqual(read?.settles, [
-        { threadId: "finished", at: "2026-10-21T12:01:00.000Z" },
+        { threadId: "put-away", at: "2026-10-21T12:01:00.000Z" },
       ]);
     }),
   ),

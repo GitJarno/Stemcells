@@ -1,14 +1,17 @@
 // The Cells' line and its asks: the web's own plain TypeScript, imported here and nowhere
 // else, as the creature is (`cell/kit.ts`). What a card says and offers, the commands a choice
-// sends, the line's stages and the filter's words are the Mac's, so the two never disagree.
+// sends, the line's stages, the filter's words and a Cell's latest settle by hand are the Mac's,
+// so the two never disagree.
 
 export {
   type CellStanding,
+  type HandSettle,
   type Need,
   type NeedKind,
   type NeedsList,
   needsListOf,
 } from "../../../../web/src/stemcells/needs/wire.ts";
+export { handSettledAtFrom } from "../../../../web/src/stemcells/tabs/handSettles.ts";
 export {
   cardOf,
   LATER,

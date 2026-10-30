@@ -37,15 +37,18 @@ export interface NeedsList {
   readonly later: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage, for Aski's roster (stage.ts). */
   readonly cells: ReadonlyArray<CellStanding>;
-  /** The last minute's, for every Mac to close those Cells' panes (settle-everywhere.md). */
+  /**
+   * The latest settle by hand of each Cell still settled, for a day: every Mac closes the Cell's
+   * panes, and a phone back from away its chat (settle-everywhere.md).
+   */
   readonly settles?: ReadonlyArray<HandSettle>;
 }
 
 /**
  * What needs the person, derived on the server from T3's thread shells on each thread change,
  * so every screen shows one list with one numbering (stemcells/tasks/aski-room.md, decision 1).
- * It holds only the shells, numbers and card details it last read, the last minute's settles by
- * hand, and when it last heard from each Cell: the activity clock a stuck run is timed on.
+ * It holds only the shells, numbers and card details it last read, the day's settles by hand,
+ * and when it last heard from each Cell: the activity clock a stuck run is timed on.
  */
 export class Needs extends Context.Service<
   Needs,
@@ -68,8 +71,10 @@ const READS = 4;
  * activity clock starts again rather than count time nobody saw.
  */
 const ABSENCE_MS = 3 * 60 * 1000;
-/** A Mac closes a pane only for a settle under 10 s old; a minute covers a slow reconnect. */
-const SETTLES_KEPT_MS = 60 * 1000;
+/** A Mac closes a pane only for a settle under 10 s old; a phone away for hours, on its return. */
+const SETTLES_KEPT_MS = 24 * 60 * 60 * 1000;
+/** A bound on what each list carries: a busy day's settles fit well under it. */
+const SETTLES_HELD = 200;
 
 export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.NeedsSource) {
   const latest = yield* SubscriptionRef.make<NeedsList | null>(null);
@@ -192,13 +197,21 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
           for (const { threadId, lively, settledByHandAt } of changed) {
             if (lively) heard.set(threadId, heardAt);
             if (settledByHandAt !== undefined) {
-              settles = [...settles, { threadId, at: settledByHandAt }];
+              settles = [
+                ...settles.filter((settle) => settle.threadId !== threadId),
+                { threadId, at: settledByHandAt },
+              ].slice(-SETTLES_HELD);
             }
           }
           yield* Effect.forEach(
             changed,
             ({ threadId }) =>
               Effect.map(source.shell(threadId), (shell) => {
+                // Unsettled since, or gone: its settle by hand no longer stands.
+                const unsettled = shell === null || shell.settledAt === null;
+                if (unsettled && settles.some((settle) => settle.threadId === threadId)) {
+                  settles = settles.filter((settle) => settle.threadId !== threadId);
+                }
                 if (shell !== null && shell.archivedAt === null) {
                   shells.set(threadId, shell);
                   return;

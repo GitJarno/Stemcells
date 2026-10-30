@@ -1,11 +1,14 @@
 // What the phone's home takes from upstream's: its segmented control (the tabs), how it opens a
-// chat, which column it stands in, whether it stands in the workspace (where its list has a
-// header), the header's items, the machines and projects its list is narrowed to, how many older
-// settled chats the servers keep, and where the phone keeps its picks.
+// chat and comes back, which column it stands in, whether it stands in the workspace (where its
+// list has a header), the header's items, the machines and projects its list is narrowed to, how
+// many older settled chats the servers keep, and where the phone keeps its picks.
 
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
+import { Keyboard } from "react-native";
 
+import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
+import { useWorkspaceTabs } from "../../features/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/workspace/useSelectWorkspaceDetail";
 import { writeFileAtomically } from "../../lib/atomic-file";
 import { threadListEnvironmentsAtom } from "../../state/server";
@@ -50,6 +53,20 @@ export function useHomeThreadSelection() {
       name: "Thread",
       params: { environmentId: String(thread.environmentId), threadId: String(thread.id) },
     });
+}
+
+/**
+ * Brings the home to the front as its tab does (`useSelectWorkspaceTab`), with no page beside it:
+ * on a phone the chat leaves the stack, in columns the detail stands empty beside the home.
+ */
+export function useShowHome() {
+  const { openWorkspaceTab } = useAdaptiveWorkspaceLayout();
+  const dispatch = useWorkspaceTabs()?.dispatch;
+  return () => {
+    Keyboard.dismiss();
+    openWorkspaceTab("threads", { columns: false });
+    dispatch?.({ type: "select", tab: "threads" });
+  };
 }
 
 const keptFile = (name: string) => new File(new Directory(Paths.document, "stemcells"), name);
