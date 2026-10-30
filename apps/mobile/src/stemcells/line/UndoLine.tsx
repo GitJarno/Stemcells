@@ -25,9 +25,9 @@ export function UndoLine(props: { readonly held: HeldStore }) {
   useEffect(() => {
     if (notice !== null) void held.letGo();
   }, [notice, held]);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: an answer's line takes the place of T3's notice.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: an act's line takes the place of T3's notice.
   useEffect(() => {
-    if (line?.kind === "held") dismissThreadUndoNotice();
+    if (line !== null && line.kind !== "said") dismissThreadUndoNotice();
   }, [line]);
   if (line === null) return null;
   // Where T3's own notice stands over the home's search bar.
@@ -39,10 +39,10 @@ export function UndoLine(props: { readonly held: HeldStore }) {
       style={{ bottom, left: 29, right: 23 }}
       pointerEvents="box-none"
     >
-      {line.kind === "held" ? (
+      {line.kind !== "said" ? (
         <Toast
-          key={line.act.key}
-          message={line.act.words}
+          key={line.kind === "held" ? line.act.key : line.key}
+          message={line.kind === "held" ? line.act.words : line.words}
           singleLine
           action={{ label: "Undo", onPress: held.undo }}
           dismissMode="swipe"

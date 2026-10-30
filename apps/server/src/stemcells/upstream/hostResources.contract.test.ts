@@ -10,12 +10,14 @@ import * as TestClock from "effect/testing/TestClock";
 
 import * as ServerConfig from "../../config.ts";
 import * as HostResources from "../../resourceTelemetry/HostResources.ts";
+import { writeHiddenAt } from "../disk/notice.ts";
 import { writeWarnBelow } from "../disk/warn.ts";
 import * as UpstreamDiskWarn from "./diskWarn.ts";
 
 // Contract: every environment's `server.getHostResources` carries its home volume's free and
-// total bytes, and how little free space warns the person once they chose (seams.md, Disk on
-// every machine). A server that can't read the volume, or predates the fields, still answers.
+// total bytes, how little free space warns the person once they chose, and the free space they
+// hid the disk's notice at while that stands (seams.md, Disk on every machine). A server that
+// can't read the volume, or predates the fields, still answers.
 
 const decodeSnapshot = Schema.decodeUnknownSync(HostResourcesSnapshot);
 
@@ -64,6 +66,29 @@ it.effect("host resources carry how little free space warns the person, once the
               Layer.provide(NodeServices.layer),
             ),
           ),
+        ),
+      ),
+    ),
+  ),
+);
+
+it.effect("host resources carry the notice's hide while it stands, and forget it once calm", () =>
+  Effect.gen(function* () {
+    const fields = yield* UpstreamDiskWarn.hostResourcesWarnField;
+    yield* writeHiddenAt(yield* UpstreamDiskWarn.diskNoticeFile, 8_000_000_000);
+    assert.deepStrictEqual(yield* fields({ diskFreeBytes: 6_000_000_000 }), {
+      diskHiddenAtBytes: 8_000_000_000,
+    });
+    assert.deepStrictEqual(yield* fields({}), {});
+    assert.deepStrictEqual(yield* fields({ diskFreeBytes: 30_000_000_000 }), {});
+    // The next time the disk runs low, the notice shows.
+    assert.deepStrictEqual(yield* fields({ diskFreeBytes: 6_000_000_000 }), {});
+  }).pipe(
+    Effect.provide(
+      Layer.mergeAll(
+        NodeServices.layer,
+        ServerConfig.layerTest(process.cwd(), { prefix: "stemcells-disk-notice-" }).pipe(
+          Layer.provide(NodeServices.layer),
         ),
       ),
     ),

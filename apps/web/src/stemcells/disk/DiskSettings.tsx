@@ -23,7 +23,12 @@ import {
   useNowMinuteMs,
   type EnvironmentId,
 } from "../upstream/disk";
-import { CLEANUP_PROMISE, DISK_WARN, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import {
+  CLEANUP_PROMISE,
+  DISK_NOTICE,
+  DISK_WARN,
+  diskBytes,
+} from "../../../../../stemcells/words/disk.ts";
 import { openCleanupCell } from "./cleanupCell";
 import { useDiskReading, type DiskReading } from "./diskReading";
 import { diskPressure, type DiskPressure, SOON_BELOW, WARN_CHOICES } from "./pressure";
@@ -134,6 +139,31 @@ function WarnRow(props: {
   );
 }
 
+/** While the phone's notice for this machine is swiped away: the way to show it again. */
+function NoticeRow(props: { readonly onShown: () => void }) {
+  const [showing, setShowing] = useState(false);
+  const show = async () => {
+    setShowing(true);
+    const answer = await sendToPrimary("POST", "/api/stemcells/disk/notice", {
+      hiddenAt: null,
+    }).catch(() => null);
+    setShowing(false);
+    if (answer?.ok) props.onShown();
+    else toastManager.add({ type: "error", title: DISK_NOTICE.showFailed });
+  };
+  return (
+    <SettingsRow
+      title={DISK_NOTICE.hidden}
+      description={`${DISK_NOTICE.until}.`}
+      control={
+        <Button size="sm" variant="outline" disabled={showing} onClick={() => void show()}>
+          {DISK_NOTICE.showAgain}
+        </Button>
+      }
+    />
+  );
+}
+
 /** Another machine's free space, and a Cell there to free some. */
 function OtherMachineRow({
   environmentId,
@@ -171,6 +201,9 @@ export function DiskSettingsPanel() {
   // The choice stands from the moment it's made; the next reading carries it.
   const [chosen, setChosen] = useState<number | null>(null);
   const warnBelow = chosen ?? reading?.volume.warnBelow ?? SOON_BELOW;
+  // A hide shown again stays shown here; a later hide is at another figure.
+  const [shownAgain, setShownAgain] = useState<number | null>(null);
+  const hiddenAt = reading?.volume.hiddenAt;
 
   return (
     <SettingsPageContainer>
@@ -191,6 +224,9 @@ export function DiskSettingsPanel() {
           {reading ? <DiskGauge volume={{ ...reading.volume, warnBelow }} /> : null}
         </SettingsRow>
         <WarnRow warnBelow={warnBelow} onChosen={setChosen} />
+        {hiddenAt === undefined || hiddenAt === shownAgain ? null : (
+          <NoticeRow onShown={() => setShownAgain(hiddenAt)} />
+        )}
       </SettingsSection>
 
       {otherMachines.length > 0 ? (

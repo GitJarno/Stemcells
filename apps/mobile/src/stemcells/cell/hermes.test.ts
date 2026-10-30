@@ -7,7 +7,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 /**
  * The lint's Hermes rule reads only the phone's folder, but the phone runs the web's creature,
- * Aski, asks and light modules (the four `kit.ts`). A call Hermes lacks there crashes the app as it
+ * Aski, asks, light and disk modules (the five `kit.ts`). A call Hermes lacks there crashes the app as it
  * draws, so this reads every module the phone takes from outside its folder for the rule's calls.
  */
 
@@ -45,6 +45,7 @@ describe("what the phone takes from the web", () => {
       ...modulesFrom(NodePath.join(here, "../aski/kit.ts")),
       ...modulesFrom(NodePath.join(here, "../line/kit.ts")),
       ...modulesFrom(NodePath.join(here, "../glow/kit.ts")),
+      ...modulesFrom(NodePath.join(here, "../disk/kit.ts")),
     ].filter((file) => !file.startsWith(phone + NodePath.sep));
     expect(taken.length).toBeGreaterThan(5);
     const offending = taken.flatMap((file) =>

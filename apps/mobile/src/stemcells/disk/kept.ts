@@ -5,6 +5,7 @@ export type DiskFigures = {
   readonly free: number;
   readonly total: number;
   readonly warnBelow?: number;
+  readonly hiddenAt?: number;
 };
 
 /** What a machine's disk shows: its answer, kept; while it's still reading (undefined), the one kept. */

@@ -87,7 +87,7 @@ const make = Effect.fn("makeHostResources")(function* () {
     );
     return {
       ...disk,
-      ...(yield* diskWarn),
+      ...(yield* diskWarn(disk)),
       sampledAt: DateTime.toEpochMillis(yield* DateTime.now),
       cpuUtilization,
       cpuCount: cpu.count,

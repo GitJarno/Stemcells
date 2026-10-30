@@ -117,6 +117,29 @@ describe("your own act never waits", () => {
     });
   });
 
+  it("takes an act already done back on Undo, and lets it go untouched for the next act", async () => {
+    let takenBack = 0;
+    const done = { key: "disk:mac", words: "Disk notice hidden", takeBack: () => takenBack++ };
+    const { held, sent } = setup();
+    void held.did(done);
+    expect(held.read().line).toEqual({ kind: "done", ...done });
+    held.undo();
+    expect(takenBack).toBe(1);
+    expect(held.read().line).toBeNull();
+
+    void held.did(done);
+    await held.hold(act("a", yes));
+    expect(takenBack).toBe(1);
+    expect(held.read().line).toEqual({ kind: "held", act: act("a", yes) });
+
+    // What became of the answer before doesn't take the done act's place.
+    const late = setup({ asked: false });
+    void late.held.hold(act("Harbor", yes));
+    await late.held.did(done);
+    expect(late.held.read().line).toEqual({ kind: "done", ...done });
+    expect([...sent, ...late.sent]).toEqual([]);
+  });
+
   it("shows an ask again that is still asked long after its answer went", () => {
     const { held } = setup();
     void held.hold(act("a", yes));

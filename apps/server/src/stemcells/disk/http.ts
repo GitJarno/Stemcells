@@ -7,6 +7,7 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as UpstreamDiskWarn from "../upstream/diskWarn.ts";
+import { diskChoices, HiddenAt, writeHiddenAt } from "./notice.ts";
 import {
   DISK_KIND_TITLES,
   FINDING_NOTES,
@@ -17,14 +18,21 @@ import {
 } from "./rules.ts";
 import * as StemcellsDisk from "./StemcellsDisk.ts";
 import type { DiskItem, DiskVolume } from "./walk.ts";
-import { readWarnBelow, WarnBelow, writeWarnBelow } from "./warn.ts";
+import { WarnBelow, writeWarnBelow } from "./warn.ts";
 
 // GET /api/stemcells/disk: the disk now and the last measurement (`?measure=again` measures
-// anew). GET .../volume: free space alone, one statfs, never a walk. Both carry `warnBelow`
-// once the person chose it; POST .../warn `{ warnBelow }` chooses how little free space warns.
+// anew); GET .../volume: free space alone, never a walk. Both carry `warnBelow` and `hiddenAt`
+// once chosen. POST .../warn `{ warnBelow }` chooses how little free space warns; POST
+// .../notice `{ hiddenAt }` hides the phone's notice at that much free, null shows it again.
 
 const DISK_PATH = "/api/stemcells/disk";
 const NO_STORE = { "cache-control": "private, no-store" };
+
+type Choices = Effect.Success<ReturnType<typeof diskChoices>>;
+const wireChoices = ({ warnBelow, hiddenAt }: Choices) => ({
+  ...(warnBelow === null ? {} : { warnBelow }),
+  ...(hiddenAt === null ? {} : { hiddenAt }),
+});
 
 /** "Xcode" for `/Applications/Xcode.app`: a folder's own name, an app without its extension. */
 const itemName = (path: string) => {
@@ -32,16 +40,16 @@ const itemName = (path: string) => {
   return name.endsWith(".app") ? name.slice(0, -4) : name;
 };
 const wireItem = (item: DiskItem) => ({ ...item, name: itemName(item.path) });
-const wireVolume = (volume: DiskVolume, warnBelow: number | null) => ({
+const wireVolume = (volume: DiskVolume, choices: Choices) => ({
   ...volume,
   used: Math.max(0, volume.total - volume.free),
-  ...(warnBelow === null ? {} : { warnBelow }),
+  ...wireChoices(choices),
 });
 
-function toWire(look: StemcellsDisk.DiskLook, warnBelow: number | null) {
+function toWire(look: StemcellsDisk.DiskLook, choices: Choices) {
   const { volume, map } = look;
   return {
-    volume: wireVolume(volume, warnBelow),
+    volume: wireVolume(volume, choices),
     scanning: look.scanning,
     counted: look.counted,
     map:
@@ -76,70 +84,99 @@ function toWire(look: StemcellsDisk.DiskLook, warnBelow: number | null) {
 const volumeUnreadable = () =>
   Effect.succeed(HttpServerResponse.text("Could not read the size of the disk.", { status: 503 }));
 
-const lookRoute = Effect.fn("DiskHttp.look")(function* (warnBelow: Effect.Effect<number | null>) {
+type ChoicesFor = (free: number) => Effect.Effect<Choices>;
+
+const lookRoute = Effect.fn("DiskHttp.look")(function* (choices: ChoicesFor) {
   const request = yield* HttpServerRequest.HttpServerRequest;
   const again = Option.exists(
     HttpServerRequest.toURL(request),
     (url) => url.searchParams.get("measure") === "again",
   );
   const disk = yield* StemcellsDisk.StemcellsDisk;
-  const chosen = yield* warnBelow;
   return yield* disk.look({ again }).pipe(
-    Effect.map((look) =>
-      HttpServerResponse.jsonUnsafe(toWire(look, chosen), { headers: NO_STORE }),
+    Effect.flatMap((look) =>
+      Effect.map(choices(look.volume.free), (chosen) =>
+        HttpServerResponse.jsonUnsafe(toWire(look, chosen), { headers: NO_STORE }),
+      ),
     ),
     Effect.catchTags({ DiskVolumeError: volumeUnreadable }),
   );
 });
 
-const volumeRoute = Effect.fn("DiskHttp.volume")(function* (
-  warnBelow: Effect.Effect<number | null>,
-) {
+const volumeRoute = Effect.fn("DiskHttp.volume")(function* (choices: ChoicesFor) {
   const disk = yield* StemcellsDisk.StemcellsDisk;
-  const chosen = yield* warnBelow;
   return yield* disk.volume().pipe(
-    Effect.map((volume) =>
-      HttpServerResponse.jsonUnsafe(wireVolume(volume, chosen), { headers: NO_STORE }),
+    Effect.flatMap((volume) =>
+      Effect.map(choices(volume.free), (chosen) =>
+        HttpServerResponse.jsonUnsafe(wireVolume(volume, chosen), { headers: NO_STORE }),
+      ),
     ),
     Effect.catchTags({ DiskVolumeError: volumeUnreadable }),
   );
 });
 
 const Warn = Schema.Struct({ warnBelow: WarnBelow });
+const Notice = Schema.Struct({ hiddenAt: Schema.NullOr(HiddenAt) });
 
-const warnRoute = Effect.fn("DiskHttp.warn")(function* <E>(
-  keep: (warnBelow: number) => Effect.Effect<void, E>,
+/** Keeps the choice a body carries and answers it back; 400 for a body that isn't one. */
+const choiceRoute = Effect.fn("DiskHttp.choose")(function* <A, E>(
+  body: Schema.ConstraintDecoder<A, never>,
+  expected: string,
+  keep: (choice: A) => Effect.Effect<void, E>,
 ) {
-  const body = yield* HttpServerRequest.schemaBodyJson(Warn).pipe(Effect.option);
-  if (Option.isNone(body)) {
-    return HttpServerResponse.text("Expected { warnBelow }: whole bytes, 1 GB to 1 TB.", {
-      status: 400,
-    });
-  }
-  return yield* keep(body.value.warnBelow).pipe(
-    Effect.as(HttpServerResponse.jsonUnsafe(body.value, { headers: NO_STORE })),
+  const choice = yield* HttpServerRequest.schemaBodyJson(body).pipe(Effect.option);
+  if (Option.isNone(choice)) return HttpServerResponse.text(expected, { status: 400 });
+  return yield* keep(choice.value).pipe(
+    Effect.as(HttpServerResponse.jsonUnsafe(choice.value, { headers: NO_STORE })),
     Effect.catchCause((cause) =>
-      Effect.logWarning("Couldn't keep the disk's warning", cause).pipe(
+      Effect.logWarning("Couldn't keep a choice about the disk", cause).pipe(
         Effect.as(HttpServerResponse.text("Couldn't keep the choice.", { status: 500 })),
       ),
     ),
   );
 });
 
-export const layer = HttpRouter.use((router) =>
+/** The person's choices about this machine's disk, for any of their devices to change. */
+export const choicesLayer = HttpRouter.use((router) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const warnFile = yield* UpstreamDiskWarn.diskWarnFile;
+    const noticeFile = yield* UpstreamDiskWarn.diskNoticeFile;
+    const keepWarn = ({ warnBelow }: typeof Warn.Type) =>
+      writeWarnBelow(warnFile, warnBelow).pipe(Effect.provideService(FileSystem.FileSystem, fs));
+    const keepNotice = ({ hiddenAt }: typeof Notice.Type) =>
+      writeHiddenAt(noticeFile, hiddenAt).pipe(Effect.provideService(FileSystem.FileSystem, fs));
+    yield* router.add(
+      "POST",
+      `${DISK_PATH}/warn`,
+      UpstreamDisk.withOperateAccess(
+        choiceRoute(Warn, "Expected { warnBelow }: whole bytes, 1 GB to 1 TB.", keepWarn),
+      ),
+    );
+    yield* router.add(
+      "POST",
+      `${DISK_PATH}/notice`,
+      UpstreamDisk.withOperateAccess(
+        choiceRoute(Notice, "Expected { hiddenAt }: whole bytes free, or null.", keepNotice),
+      ),
+    );
+  }),
+);
+
+const readLayer = HttpRouter.use((router) =>
   Effect.gen(function* () {
     const disk = yield* StemcellsDisk.StemcellsDisk;
     const fs = yield* FileSystem.FileSystem;
-    const file = yield* UpstreamDiskWarn.diskWarnFile;
-    const warnBelow = readWarnBelow(file).pipe(Effect.provideService(FileSystem.FileSystem, fs));
-    const keep = (choice: number) =>
-      writeWarnBelow(file, choice).pipe(Effect.provideService(FileSystem.FileSystem, fs));
+    const stateDir = yield* UpstreamDiskWarn.diskStateDir;
+    const choices: ChoicesFor = (free) =>
+      diskChoices(stateDir, free).pipe(Effect.provideService(FileSystem.FileSystem, fs));
     const serve = <E, R>(route: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>) =>
       UpstreamDisk.withReadAccess(
         route.pipe(Effect.provideService(StemcellsDisk.StemcellsDisk, disk)),
       );
-    yield* router.add("GET", DISK_PATH, serve(lookRoute(warnBelow)));
-    yield* router.add("GET", `${DISK_PATH}/volume`, serve(volumeRoute(warnBelow)));
-    yield* router.add("POST", `${DISK_PATH}/warn`, UpstreamDisk.withOperateAccess(warnRoute(keep)));
+    yield* router.add("GET", DISK_PATH, serve(lookRoute(choices)));
+    yield* router.add("GET", `${DISK_PATH}/volume`, serve(volumeRoute(choices)));
   }),
 ).pipe(Layer.provide(StemcellsDisk.layer));
+
+export const layer = Layer.mergeAll(readLayer, choicesLayer);

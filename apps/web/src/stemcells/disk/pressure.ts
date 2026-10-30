@@ -1,3 +1,7 @@
+import { FULL_BELOW, SOON_BELOW } from "../../../../../stemcells/disk/notice.ts";
+
+export { FULL_BELOW, noticeShown, SOON_BELOW } from "../../../../../stemcells/disk/notice.ts";
+
 /**
  * How urgently the disk wants attention, from the bytes left free: calm
  * while there is room, soon while there is still room to act, now when it
@@ -6,15 +10,8 @@
  */
 export type DiskPressure = "calm" | "soon" | "now";
 
-/**
- * Below this, free space wants attention soon, and now below half of it: unless the person
- * chose another `warnBelow` for that machine, one of `WARN_CHOICES`.
- */
-export const SOON_BELOW = 20_000_000_000;
+/** What the person may choose for `warnBelow`, in place of `SOON_BELOW`. */
 export const WARN_CHOICES = [5e9, 10e9, 20e9, 50e9] as const;
-
-/** Below this the disk is full: Cells, and the server's own database, fail to write. */
-export const FULL_BELOW = 2_000_000_000;
 
 const seenFull = new Set<string>();
 
