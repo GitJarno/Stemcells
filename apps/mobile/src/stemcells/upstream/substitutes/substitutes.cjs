@@ -49,6 +49,7 @@ const SUBSTITUTES = {
   "apps/mobile/src/lib/enrichedLinkPresentation.ts": "enrichedLinkPresentation.ts",
   "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": "ThreadDetailScreen.tsx",
   "apps/mobile/src/native/SelectableMarkdownText.tsx": "SelectableMarkdownText.tsx",
+  "apps/mobile/src/features/threads/floating-working-control.tsx": "floating-working-control.tsx",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */
