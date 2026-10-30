@@ -21,7 +21,10 @@ import {
   setComposerDraftText,
   waitForComposerDraftsLoaded,
 } from "../../state/use-composer-drafts";
-import { useRemoteConnectionStatus } from "../../state/use-remote-environment-registry";
+import {
+  useRemoteConnectionStatus,
+  useSavedRemoteConnection,
+} from "../../state/use-remote-environment-registry";
 import { useWorkspaceEnvironments } from "../../state/workspace";
 import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
 import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
@@ -33,6 +36,7 @@ import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
 export { AppText } from "../../components/ui/AppText";
 export { SymbolView } from "../../components/ui/AppSymbol";
 export { Button } from "../../components/ui/Button";
+export { Menu } from "../../components/ui/Menu";
 export * as Dialog from "../../components/ui/Dialog";
 export { ScreenScrollView } from "../../components/ui/ScreenScrollView";
 export { SettingsRow } from "../../features/settings/components/SettingsRow";
@@ -99,7 +103,10 @@ function readEvery(registry: AtomRegistry.AtomRegistry, environmentId: Environme
  */
 export function useMachineDisk(
   environmentIdText: string | null,
-): { readonly free: number; readonly total: number } | null | undefined {
+):
+  | { readonly free: number; readonly total: number; readonly warnBelow?: number }
+  | null
+  | undefined {
   const environmentId = environmentIdText as EnvironmentId | null;
   const registry = useContext(RegistryContext);
   const result = useAtomValue(
@@ -117,7 +124,20 @@ export function useMachineDisk(
   const snapshot = Option.getOrNull(AsyncResult.value(result));
   return snapshot?.diskFreeBytes === undefined || snapshot.diskTotalBytes === undefined
     ? null
-    : { free: snapshot.diskFreeBytes, total: snapshot.diskTotalBytes };
+    : {
+        free: snapshot.diskFreeBytes,
+        total: snapshot.diskTotalBytes,
+        ...(snapshot.diskWarnBelowBytes === undefined
+          ? {}
+          : { warnBelow: snapshot.diskWarnBelowBytes }),
+      };
+}
+
+/** Where a machine's own server answers and the token the phone paired with, as push reads it. */
+export function useMachineConnection(
+  environmentIdText: string,
+): { readonly httpBaseUrl: string; readonly bearerToken: string | null } | null {
+  return useSavedRemoteConnection(environmentIdText as EnvironmentId);
 }
 
 /**

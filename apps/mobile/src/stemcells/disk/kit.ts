@@ -6,5 +6,7 @@ export {
   diskPressure,
   freeFigure,
   FULL_BELOW,
+  SOON_BELOW,
+  WARN_CHOICES,
   type DiskFailure,
 } from "../../../../web/src/stemcells/disk/pressure.ts";

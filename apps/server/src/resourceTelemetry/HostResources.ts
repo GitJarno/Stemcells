@@ -11,6 +11,8 @@ import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 
+import * as StemcellsDiskWarn from "../stemcells/upstream/diskWarn.ts";
+
 export class HostResources extends Context.Service<
   HostResources,
   { readonly read: Effect.Effect<HostResourcesSnapshot> }
@@ -44,6 +46,7 @@ const make = Effect.fn("makeHostResources")(function* () {
   const platform = yield* HostProcess.Platform;
   const home = yield* HostProcess.HomeDirectory;
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
+  const diskWarn = yield* StemcellsDiskWarn.hostResourcesWarnField;
 
   const sample = Effect.fn("HostResources.sample")(function* () {
     const previousCpu = readCpu();
@@ -84,6 +87,7 @@ const make = Effect.fn("makeHostResources")(function* () {
     );
     return {
       ...disk,
+      ...(yield* diskWarn),
       sampledAt: DateTime.toEpochMillis(yield* DateTime.now),
       cpuUtilization,
       cpuCount: cpu.count,

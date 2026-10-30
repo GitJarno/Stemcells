@@ -15,6 +15,8 @@ export const HostResourcesSnapshot = Schema.Struct({
   // The home volume's; absent from servers that don't read it.
   diskFreeBytes: Schema.optionalKey(NonNegativeInt),
   diskTotalBytes: Schema.optionalKey(NonNegativeInt),
+  // Stemcells: how little free space warns the person, once they chose.
+  diskWarnBelowBytes: Schema.optionalKey(NonNegativeInt),
 });
 export type HostResourcesSnapshot = typeof HostResourcesSnapshot.Type;
 

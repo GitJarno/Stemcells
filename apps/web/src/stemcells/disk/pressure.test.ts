@@ -7,7 +7,6 @@ import {
   FOOT_TONE,
   freeFigure,
   FULL_BELOW,
-  NOW_BELOW,
   SOON_BELOW,
 } from "./pressure";
 
@@ -18,9 +17,16 @@ describe("the disk's pressure from its free space", () => {
     expect(diskPressure(500 * GB)).toBe("calm");
     expect(diskPressure(SOON_BELOW)).toBe("calm");
     expect(diskPressure(SOON_BELOW - 1)).toBe("soon");
-    expect(diskPressure(NOW_BELOW)).toBe("soon");
-    expect(diskPressure(NOW_BELOW - 1)).toBe("now");
+    expect(diskPressure(10 * GB)).toBe("soon");
+    expect(diskPressure(10 * GB - 1)).toBe("now");
     expect(diskPressure(0)).toBe("now");
+  });
+
+  it("wants attention below the person's choice, and now below half of it", () => {
+    expect(diskPressure(19 * GB, 10 * GB)).toBe("calm");
+    expect(diskPressure(9 * GB, 10 * GB)).toBe("soon");
+    expect(diskPressure(4 * GB, 10 * GB)).toBe("now");
+    expect(diskPressure(30 * GB, 50 * GB)).toBe("soon");
   });
 
   it("keeps the foot quiet while there is room, then amber, then red", () => {

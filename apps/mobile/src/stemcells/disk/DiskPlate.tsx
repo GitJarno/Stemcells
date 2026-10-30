@@ -5,10 +5,13 @@ import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
 import { AppText, Button, SymbolView, useMachineDisk, useMachines } from "../upstream/disk";
 import { diskPressure, freeFigure, FULL_BELOW } from "./kit";
 import { useFreeSpace } from "./useFreeSpace";
+import { useWarnBelow } from "./warn";
+import { WarnMenu } from "./WarnMenu";
 
 // The home's disk: the Mac's column ends on its disk, grey while there's room, amber, then red;
 // on the phone, whose home is for its Cells, a machine shows only once its disk wants
-// attention, with Free space beside it: a card under the tabs (`home/AskiHome.tsx`).
+// attention, with Free space beside it and a cog for when it should: a card under the tabs
+// (`home/AskiHome.tsx`).
 
 export function DiskPlates() {
   const machines = useMachines().filter((machine) => machine.connection === "connected");
@@ -28,9 +31,10 @@ function DiskPlate(props: {
 }) {
   const disk = useMachineDisk(props.environmentId);
   const freeSpace = useFreeSpace(props.environmentId);
+  const warnBelow = useWarnBelow(props.environmentId, disk?.warnBelow);
   const [opening, setOpening] = useState(false);
   if (disk == null) return null;
-  const pressure = diskPressure(disk.free);
+  const pressure = diskPressure(disk.free, warnBelow);
   if (pressure === "calm") return null;
   const urgent = pressure === "now";
   const headline = disk.free < FULL_BELOW ? DISK_FULL.title : `${freeFigure(disk.free)} left`;
@@ -69,6 +73,16 @@ function DiskPlate(props: {
           }}
         />
       )}
+      <WarnMenu environmentId={props.environmentId} warnBelow={warnBelow}>
+        <View className="size-9 items-center justify-center">
+          <SymbolView
+            name="gearshape"
+            size={18}
+            tintColorClassName="accent-icon"
+            type="monochrome"
+          />
+        </View>
+      </WarnMenu>
     </View>
   );
 }

@@ -37,7 +37,9 @@ export function DiskFoot() {
           render={
             <SidebarMenuButton aria-label={`Disk: ${label}`} className="w-auto" onClick={open}>
               <HardDriveIcon />
-              <span className={`text-xs tabular-nums ${FOOT_TONE[diskPressure(volume.free)]}`}>
+              <span
+                className={`text-xs tabular-nums ${FOOT_TONE[diskPressure(volume.free, volume.warnBelow)]}`}
+              >
                 {figure}
               </span>
             </SidebarMenuButton>

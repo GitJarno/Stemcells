@@ -42,6 +42,13 @@ export { useNowMinuteMs } from "./needs";
 export { Badge } from "~/components/ui/badge";
 export { Button } from "~/components/ui/button";
 export { Input } from "~/components/ui/input";
+export {
+  Select,
+  SelectItem,
+  SelectPopup,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 export { Spinner } from "~/components/ui/spinner";
 export { toastManager } from "~/components/ui/toast";
 export { formatRelativeTimeLabel };
@@ -181,7 +188,10 @@ function readEvery(registry: AtomRegistry.AtomRegistry, environmentId: Environme
  */
 export function useMachineDisk(
   environmentId: EnvironmentId | null,
-): { readonly free: number; readonly total: number } | null | undefined {
+):
+  | { readonly free: number; readonly total: number; readonly warnBelow?: number }
+  | null
+  | undefined {
   const registry = useContext(RegistryContext);
   const result = useAtomValue(
     environmentId === null
@@ -198,5 +208,11 @@ export function useMachineDisk(
   const snapshot = Option.getOrNull(AsyncResult.value(result));
   return snapshot?.diskFreeBytes === undefined || snapshot.diskTotalBytes === undefined
     ? null
-    : { free: snapshot.diskFreeBytes, total: snapshot.diskTotalBytes };
+    : {
+        free: snapshot.diskFreeBytes,
+        total: snapshot.diskTotalBytes,
+        ...(snapshot.diskWarnBelowBytes === undefined
+          ? {}
+          : { warnBelow: snapshot.diskWarnBelowBytes }),
+      };
 }
