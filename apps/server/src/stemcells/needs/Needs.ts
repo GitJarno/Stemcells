@@ -186,6 +186,17 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       shells.set(shell.id, shell);
       if (!heard.has(shell.id)) heard.set(shell.id, readAt);
     }
+    // After a restart the day's settles by hand are read back, so a Mac away meanwhile still closes them.
+    const settledLately = snapshot.shells
+      .flatMap((shell) =>
+        shell.settledAt === null
+          ? []
+          : [{ threadId: shell.id, at: DateTime.toEpochMillis(shell.settledAt) }],
+      )
+      .filter((shell) => readAt - shell.at < SETTLES_KEPT_MS)
+      .toSorted((a, b) => a.at - b.at)
+      .slice(-SETTLES_HELD);
+    settles = yield* source.handSettles(settledLately.map((shell) => shell.threadId));
     yield* publish;
     yield* Stream.merge(
       source.changedThreads(snapshot.sequence),

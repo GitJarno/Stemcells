@@ -1,5 +1,5 @@
-// A pane closes only for a settle the person sent, whichever reaches the window first: the
-// settle's mark (or the server's word of a settle on another device) or the settled thread.
+// A pane closes at once only for a settle the person sent here, whichever reaches the window
+// first: the settle's mark or the settled thread.
 // Upstream's auto-settle (a pull request merging at a turn's end) leaves the thread just as Settle
 // does, and must not close the chat under its reader.
 import { useSyncExternalStore } from "react";
@@ -39,29 +39,6 @@ vi.mock("../upstream/thread", () => ({
   useCellSettled: () => useSyncExternalStore(shell.subscribe, shell.read),
 }));
 
-const needs = vi.hoisted(() => {
-  const listeners = new Set<() => void>();
-  const state: { list: { settles?: ReadonlyArray<{ threadId: string; at: string }> } } = {
-    list: {},
-  };
-  return {
-    setup: () => {
-      state.list = {};
-    },
-    read: () => state.list,
-    hear: (threadId: string, at: number) => {
-      state.list = { settles: [{ threadId, at: new Date(at).toISOString() }] };
-      for (const listener of listeners) listener();
-    },
-    subscribe: (listener: () => void) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-  };
-});
-
-vi.mock("../needs/stream", () => ({ readNeeds: needs.read, subscribeNeeds: needs.subscribe }));
-
 const NOW = Date.parse("2026-10-26T12:00:00.000Z");
 const otter: CellRef = { environmentId: "env", threadId: "otter", draftId: null };
 const pane: Pane = { id: "otter-pane", cell: otter };
@@ -86,7 +63,6 @@ const otterShows = () =>
 async function slate() {
   await using stack = new AsyncDisposableStack();
   shell.setup();
-  needs.setup();
   const before = useWorkspaceStore.getState().workspace;
   stack.defer(() => {
     unmarkHandSettle(otter);
@@ -118,15 +94,6 @@ describe("a pane whose Cell is settled", () => {
     await act(() => shell.settle());
     expect(showing()).toBe(true);
     await act(() => markHandSettle(otter));
-    expect(showing()).toBe(false);
-  });
-
-  it("closes for the person's settle on another device, which only the server tells", async () => {
-    await using _slate = await slate();
-    using _now = vi.spyOn(Date, "now").mockReturnValue(NOW);
-    await act(() => shell.settle());
-    expect(showing()).toBe(true);
-    await act(() => needs.hear(otter.threadId, NOW - 1));
     expect(showing()).toBe(false);
   });
 });

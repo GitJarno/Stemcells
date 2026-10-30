@@ -20,9 +20,10 @@ a settle at all.
       every Mac and a phone's read finds it hours later. A restart loses them
 - [x] Wire: `settles` optional on the web's copy, which the phone reads
       through its kit; an older server omits it and nothing closes
-- [x] Mac: a pane's settle time is the later of this device's mark (at once)
-      and the server's entry for its thread; everything else stays: the
-      10 s window, a Cell opened settled stays open, Undo brings it back
+- [x] Mac: a pane closes at once for this device's mark; the server's
+      entries close panes as each window hears them, once
+      (`landing-elsewhere.md`); a Cell opened settled stays open, Undo
+      brings it back
 - [x] Phone: a chat open when the app comes back to the front reads its
       machine's list; a settle by hand of its Cell later than when the app
       went to the background shows the home instead
@@ -44,10 +45,10 @@ a settle at all.
 
 ## Decisions
 
-- No new endpoint and no store: the needs stream already reaches every
-  window, and the phone already reads the list on its return. A day in
-  memory covers a phone away for hours; the Mac still closes only for a
-  settle under 10 s old.
+- No store: the phone reads the list on its return, and each Mac follows
+  every connected server's settles (`landing-elsewhere.md`). A day in
+  memory covers a phone away for hours, and a restart reads it back from
+  the event log.
 - Time is the settle's own (`settledAt`, else when it happened), sent as ISO
   like the list's other times. The phone compares it with its own clock's
   time of leaving; clocks a second apart change nothing a person sees.
@@ -65,8 +66,7 @@ a settle at all.
 
 Each new test fails without the change (the wire test by its timeout, as
 the list never carries `settles`; the unsettle case the same way) and passes
-with it. Left as it is: a Mac hears settles only from its own server's
-list, so a pane showing a linked machine's Cell doesn't close for a settle
-made on another device. Only a device shows the close itself: the app
+with it. A Mac away, or showing a linked machine's Cell, closes it too since
+2026-10-30 (`landing-elsewhere.md`). Only a device shows the close itself: the app
 backgrounded for a while, the Cell settled on the Mac, the app brought back,
 on a phone and on an iPad.

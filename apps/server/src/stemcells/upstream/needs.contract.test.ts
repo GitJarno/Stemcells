@@ -15,12 +15,17 @@ import {
   OrchestrationV2TurnItem,
   ProviderApprovalFullAccessOverride,
 } from "@t3tools/contracts";
+import { it as effectIt } from "@effect/vitest";
 import * as DateTime from "effect/DateTime";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
+import * as OrchestrationEventStore from "../../persistence/OrchestrationEventStore.ts";
+import * as SqlitePersistence from "../../persistence/Sqlite.ts";
 import { REQUEST_KINDS } from "../needs/derive.ts";
-import { byThread, settledByHandAt } from "./needs.ts";
+import { byThread, latestHandSettles, settledByHandAt } from "./needs.ts";
 import {
   HOUR,
   MINUTE,
@@ -126,4 +131,44 @@ describe("upstream's settle, as the needs list reads it", () => {
       ]),
     ).toEqual([{ threadId: otter, lively: true, settledByHandAt: NOW }]);
   });
+});
+
+describe("upstream's event log, as a restarted needs list reads its settles back", () => {
+  const settle = (id: string, commandId: string, offset: number) => ({
+    commandId: CommandId.make(commandId),
+    events: [
+      {
+        id: EventId.make(`event-${commandId}`),
+        type: "thread.settled" as const,
+        threadId: threadId(id),
+        occurredAt: at(offset),
+        payload: {
+          ...shellFixture({ id }),
+          lastVisitedAt: null,
+          settledOverride: "settled" as const,
+          settledAt: at(offset),
+        },
+      },
+    ],
+  });
+
+  effectIt.effect("finds each thread's latest settle, and only the person's counts", () =>
+    Effect.gen(function* () {
+      const store = yield* OrchestrationEventStore.OrchestrationEventStore;
+      yield* store.appendAgentEvents(settle("otter", "client-1", 0));
+      yield* store.appendAgentEvents(settle("otter", "client-2", MINUTE));
+      yield* store.appendAgentEvents(settle("pip", "client-3", 0));
+      yield* store.appendAgentEvents(settle("pip", "server:auto-settle:pip:1", MINUTE));
+      const read = yield* latestHandSettles(store, [
+        threadId("otter"),
+        threadId("pip"),
+        threadId("gone"),
+      ]);
+      expect(read).toEqual([{ threadId: "otter", at: NOW + MINUTE }]);
+    }).pipe(
+      Effect.provide(
+        OrchestrationEventStore.layer.pipe(Layer.provideMerge(SqlitePersistence.layerMemory)),
+      ),
+    ),
+  );
 });

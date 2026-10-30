@@ -24,6 +24,8 @@ const fakeSource = Effect.gen(function* () {
   const shells = new Map<string, Shell>();
   const replies = new Map<string, string>();
   const tools = new Map<string, InFlight["tool"]>();
+  /** The event log's latest settle by hand of each thread. */
+  const logged = new Map<string, number>();
   const changes = yield* Queue.unbounded<ReadonlyArray<Changed>>();
   const counts = { snapshots: 0, requestReads: 0, replyReads: 0 };
   let failNextRead = false;
@@ -45,6 +47,10 @@ const fakeSource = Effect.gen(function* () {
       return { shells: [...shells.values()], sequence: 0 };
     }),
     changedThreads: () => Stream.fromQueue(changes),
+    handSettles: (ids) =>
+      Effect.sync(() =>
+        ids.flatMap((id) => (logged.has(id) ? [{ threadId: id, at: logged.get(id)! }] : [])),
+      ),
     shell: (threadId) =>
       Effect.suspend(() => {
         if (!failNextRead) return Effect.succeed(shells.get(threadId) ?? null);
@@ -84,6 +90,7 @@ const fakeSource = Effect.gen(function* () {
     counts,
     replies,
     tools,
+    logged,
     touch,
     settleByHand,
     failNext: () => (failNextRead = true),
@@ -302,4 +309,23 @@ it.effect(
         yield* listWhere(needs.changes, (list) => list.settles?.length === 0);
       }),
     ),
+);
+
+it.effect("reads the day's settles by hand back from the event log after a restart", () =>
+  Effect.scoped(
+    Effect.gen(function* () {
+      yield* TestClock.setTime(NOW);
+      const fake = yield* fakeSource;
+      fake.put(shellFixture({ id: "otter", settledAt: at(-HOUR) }));
+      // Its latest settle was upstream's own: the log has none by hand.
+      fake.put(shellFixture({ id: "pip", settledAt: at(-HOUR) }));
+      fake.put(shellFixture({ id: "old", settledAt: at(-25 * HOUR) }));
+      fake.logged.set("otter", NOW - HOUR);
+      fake.logged.set("old", NOW - 25 * HOUR);
+      const needs = yield* make(fake.source);
+      assert.deepStrictEqual((yield* needs.list).settles, [
+        { threadId: "otter", at: "2026-10-21T11:00:00.000Z" },
+      ]);
+    }),
+  ),
 );

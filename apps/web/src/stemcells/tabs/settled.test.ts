@@ -10,8 +10,9 @@ import {
   type NewIds,
   type Workspace,
 } from "./layout";
-import { HAND_SETTLE_MS, handSettledAtFrom, markedAt, withMark, withoutMark } from "./handSettles";
-import { comeBack, leaveSlate, leavesForSettle, settlesOnClose } from "./settled";
+import { ASKI_TAB_ID } from "./askiTab";
+import { HAND_SETTLE_MS, markedAt, withMark, withoutMark } from "./handSettles";
+import { comeBack, leaveSlate, leaveSlateOf, leavesForSettle, settlesOnClose } from "./settled";
 
 let counter = 0;
 function ids(): NewIds {
@@ -84,6 +85,31 @@ describe("a settled Cell leaving the slate", () => {
   });
 });
 
+describe("a Cell settled on any machine leaving this window", () => {
+  const onMini = (threadId: string): CellRef => ({ ...thread(threadId), environmentId: "mini" });
+
+  it("closes each pane showing it, of its own machine, and keeps where each stood", () => {
+    const { workspace } = slate();
+    const twice = openTab(workspace, ids(), thread("floof"));
+    const elsewhere = openTab(twice, ids(), onMini("pip"));
+    const out = leaveSlateOf(elsewhere, [thread("floof"), onMini("pip")], 1);
+    expect(shape(out.workspace)).toEqual([["aski"], ["pip"], ["otter"]]);
+    expect(out.left.map((left) => left.cell)).toEqual([
+      thread("floof"),
+      thread("floof"),
+      onMini("pip"),
+    ]);
+  });
+
+  it("leaves Aski's pane, and a window's last", () => {
+    const { workspace } = slate();
+    const asks = { ...workspace, tabs: [{ ...workspace.tabs[0]!, id: ASKI_TAB_ID }] };
+    expect(leaveSlateOf(asks, [thread("aski")], 1).workspace).toBe(asks);
+    const alone = openTab(EMPTY_WORKSPACE, ids(), thread("otter"));
+    expect(leaveSlateOf(alone, [thread("otter")], 1).workspace).toBe(alone);
+  });
+});
+
 describe("which close settles a Cell", () => {
   const landed = (cell: CellRef) => cell.threadId !== "pip";
 
@@ -122,19 +148,6 @@ describe("which settle closes a pane", () => {
     expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: stale, now })).toBe(
       false,
     );
-  });
-
-  it("closes it for the person's settle on another device, while the server's word is fresh", () => {
-    const settle = (threadId: string, at: number) => ({ threadId, at: new Date(at).toISOString() });
-    const settles = [settle("otter", now - HAND_SETTLE_MS), settle("otter", now - 1)];
-    const heard = handSettledAtFrom(settles, "otter");
-    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: heard, now })).toBe(true);
-    const stale = handSettledAtFrom([settle("otter", now - HAND_SETTLE_MS)], "otter");
-    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: stale, now })).toBe(
-      false,
-    );
-    expect(handSettledAtFrom(settles, "pip")).toBeNull();
-    expect(handSettledAtFrom(undefined, "otter")).toBeNull();
   });
 
   it("leaves open a settled Cell the pane never showed at work", () => {

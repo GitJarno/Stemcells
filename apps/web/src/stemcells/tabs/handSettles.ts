@@ -1,8 +1,8 @@
 /**
  * The person's settles. Upstream's auto-settle (a merged pull request, a quiet day) leaves a
- * thread just as Settle does, so a pane leaves only for a fresh settle by hand (`settled.ts`):
- * this device's mark, in local storage so every window hears it at once, or the server's word
- * of one on any device.
+ * thread just as Settle does, so a pane leaves at once only for a fresh settle by hand
+ * (`settled.ts`): this device's mark, in local storage so every window hears it at once. The
+ * server's word of a settle on any device closes panes as it arrives (`windows/settling.ts`).
  */
 import { useSyncExternalStore } from "react";
 
