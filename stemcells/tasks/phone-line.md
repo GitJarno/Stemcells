@@ -63,6 +63,10 @@ Research (2026-10-26) settled where things come from:
    old one to its new one, whose count ticks up: an answer once it is sent
    and the Cell is at work, a settle or its undo at once. Moves you didn't
    make only change the numbers. Under Reduce Motion it just leaves.
+   **Removed (2026-10-30):** the person found a miniature Cell flying
+   between the segments inelegant, so the phone's hop is gone and every
+   move, yours too, only changes the counts. The Mac's column keeps its
+   hops.
 6. **Filters stay T3's.** The phone keeps T3's machine and project
    pickers. Asks never hide: Needs you counts every ask, and the list ends
    with where the ones the pickers leave out are, in the Mac column's words
@@ -88,7 +92,7 @@ the column's asks step has landed, so both read the same asks.
 - [x] Asks: the message, one open at a time, the acts through `actions.ts`
       and T3's commands, and where the filtered-out asks are
 - [x] Your act leaves at once, with the undo line
-- [x] Hops for your own acts
+- [x] Hops for your own acts (removed 2026-10-30, decision 5)
 - [x] User docs: the phone section says what the four segments mean
 - [ ] One pass on a device: the person looks at it on their phone (this
       Mac has no iOS simulator runtime, and its disk had no room for one)

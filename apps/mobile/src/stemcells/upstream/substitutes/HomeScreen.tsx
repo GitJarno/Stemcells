@@ -12,7 +12,6 @@ import { HomeFront } from "../../home/HomeFront";
 import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
 import { useMinute } from "../../home/state";
 import { setPicks, usePicks } from "../../home/usePicks";
-import { movedByHand } from "../../line/kit";
 import { LineHome } from "../../line/LineHome";
 import { useKeepReading, useReadings } from "../../line/readings";
 import {
@@ -81,15 +80,6 @@ export function HomeScreen(props: Props) {
         {...upstream}
         threads={threads}
         pendingTasks={pending ? props.pendingTasks : []}
-        // A settle or its undo from T3's own rows is the person's move: its Cell hops.
-        onSettleThread={(thread) => {
-          movedByHand(thread.id);
-          return props.onSettleThread(thread);
-        }}
-        onUnsettleThread={(thread) => {
-          movedByHand(thread.id);
-          props.onUnsettleThread(thread);
-        }}
       />
     </FromTheTop>
   );

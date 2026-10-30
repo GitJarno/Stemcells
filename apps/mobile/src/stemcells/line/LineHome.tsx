@@ -15,14 +15,7 @@ import { useHomeThreadSelection } from "../upstream/home";
 import { sendThreadCommand, settleFromAnyStage } from "../upstream/needs";
 import { type Act, createHeld } from "./held";
 import { AskCard, type AskActs, AskHead, whoOf } from "./Ask";
-import { Hops } from "./Hops";
-import {
-  commandsFor,
-  elsewhereWords,
-  type FilterProject,
-  type LineStage,
-  movedByHand,
-} from "./kit";
+import { commandsFor, elsewhereWords, type FilterProject, type LineStage } from "./kit";
 import { type Ask, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
 import { readMachine } from "./readings";
 import type { Reading } from "./read";
@@ -116,7 +109,6 @@ export function LineHome(props: {
     const who = whoOf(need);
     const hold = (commands: Act["commands"], words: string) => {
       if (commands.length === 0) return;
-      movedByHand(need.parentThreadId ?? need.threadId);
       void held.hold({
         key: ask.key,
         environmentId,
@@ -141,7 +133,6 @@ export function LineHome(props: {
           : () => {
               void held.letGo();
               held.aside(ask.key);
-              movedByHand(cell.id);
               done();
               void settleFromAnyStage(environmentId, cell.id, () => props.settle(cell)).then(
                 (end) => {
@@ -203,7 +194,6 @@ export function LineHome(props: {
         ) : (
           <EmptyTab words={EMPTY[tab]} />
         )}
-        <Hops standings={line.standings} cellOf={cellOf} />
         <UndoLine held={held} />
       </View>
     </HomeTabsContext>

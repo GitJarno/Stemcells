@@ -28,11 +28,8 @@ export {
   type Given,
   type ThreadCommand,
 } from "../../../../web/src/stemcells/needs/actions.ts";
-export { movedByHand, takeMovedByHand } from "../../../../web/src/stemcells/needs/byHand.ts";
 export {
-  hopsOf,
   standingsOf,
-  type Hop,
   type LineStage,
   type Standings,
 } from "../../../../web/src/stemcells/rail/moves.ts";
