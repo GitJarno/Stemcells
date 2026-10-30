@@ -147,6 +147,67 @@
   outline-offset: 1px;
 }
 
+/* A Cell named in a chat's words (CellToken.tsx): its face before its name,
+   sitting on the line's text; settled, it fades with its Cell. */
+.sc-peer-who[data-stemcells-cell-token] {
+  vertical-align: -0.3em;
+}
+.sc-peer-who[data-stage="settled"] {
+  opacity: 0.62;
+}
+.sc-cell-token-face {
+  display: inline-flex;
+  flex: none;
+}
+
+/* What a token's Cell is on, as a pause over it shows. */
+.sc-cell-peek {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+  width: 18rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.75rem;
+}
+.sc-cell-peek-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+.sc-cell-peek-head .sc-peer-name {
+  color: color-mix(in oklch, var(--sc-peer) 70%, var(--foreground));
+  font-weight: 500;
+}
+.sc-cell-peek-stage {
+  margin-inline-start: auto;
+  color: var(--sc-meta-ink);
+  font-size: 0.75rem;
+}
+.sc-cell-peek-stage[data-stage="working"] {
+  color: var(--sc-working);
+}
+.sc-cell-peek-stage[data-stage="needs-you"] {
+  color: var(--sc-needs-you);
+}
+.sc-cell-peek-stage[data-stage="done"] {
+  color: var(--sc-success);
+}
+.sc-cell-peek-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.sc-cell-peek-meta {
+  margin: 0;
+  overflow: hidden;
+  color: var(--sc-meta-ink);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Two Cells in one file or one checkout: the app's notice, not a message,
    so it stands in the work's column with the work's quiet words, and only
    its mark wears the warning. */

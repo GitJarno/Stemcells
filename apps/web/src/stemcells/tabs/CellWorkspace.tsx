@@ -38,6 +38,7 @@ import { bringAskiHere } from "../windows/joinWindow";
 import { landHere, useLandsNewChats } from "../windows/landing";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
+import { useRing } from "./arrival";
 import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
 import { keepLeft, leaveSlate, settlesOnClose, type Left } from "./settled";
 import {
@@ -759,6 +760,7 @@ function PaneSlot(props: {
   const ownsInput = props.ownsInput && !use(ChatsInBackground);
   useLeavesWhenSettled(props.pane, props.onClose !== null && props.aski === null);
   const carried = useCarriedPane() === props.pane.id;
+  const ring = useRing(props.pane.cell?.threadId ?? null);
   const { onClose } = props;
   // Other panes render only a chat that still exists, so upstream's view never
   // leaves the route on their behalf (it does for a chat that is gone).
@@ -781,6 +783,7 @@ function PaneSlot(props: {
       className={cn("relative flex min-h-0 min-w-0 flex-1 flex-col", props.stacked && "border-t")}
       style={{ flexGrow: props.share }}
     >
+      {ring === null ? null : <span key={ring} data-stemcells-arrival="" aria-hidden />}
       {props.aski ? (
         <AskiPane
           chat={props.aski}
