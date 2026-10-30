@@ -6,6 +6,7 @@ export {
   diskPressure,
   freeFigure,
   FULL_BELOW,
+  noticeShown,
   SOON_BELOW,
   WARN_CHOICES,
   type DiskFailure,

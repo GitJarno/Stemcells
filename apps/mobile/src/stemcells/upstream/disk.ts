@@ -32,7 +32,7 @@ import { type DiskFigures, keptDisks } from "../disk/kept";
 
 // Settings › Disk, the home's disk plate and a Cell the full disk stopped read each machine's
 // free space from its server and open a new Cell in that machine's Disk project; the phone
-// measures nothing itself.
+// measures nothing itself. The plate swipes away as T3's rows do, with their swipe.
 
 export { AppText } from "../../components/ui/AppText";
 export { SymbolView } from "../../components/ui/AppSymbol";
@@ -44,6 +44,8 @@ export { SettingsRow } from "../../features/settings/components/SettingsRow";
 export { SettingsScreen } from "../../features/settings/components/SettingsScreen";
 export { SettingsSection } from "../../features/settings/components/SettingsSection";
 export { openSettings } from "../../features/settings/settings-navigation";
+export { ThreadSwipeable } from "../../features/home/thread-swipe-actions";
+export { withThreadDismissal } from "../../features/home/thread-dismissal";
 
 /** Each machine the phone keeps a connection to, how that connection is now, and its icon. */
 export function useMachines() {
@@ -131,6 +133,9 @@ export function useMachineDisk(environmentIdText: string | null): DiskFigures | 
           ...(snapshot.diskWarnBelowBytes === undefined
             ? {}
             : { warnBelow: snapshot.diskWarnBelowBytes }),
+          ...(snapshot.diskHiddenAtBytes === undefined
+            ? {}
+            : { hiddenAt: snapshot.diskHiddenAtBytes }),
         },
   );
 }

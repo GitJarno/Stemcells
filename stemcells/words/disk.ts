@@ -56,6 +56,18 @@ export const DISK_WARN = {
   failed: "Couldn't change when to warn",
 } as const;
 
+/** The phone's disk notice, swiped away until the disk has news (`stemcells/disk/notice.ts`). */
+export const DISK_NOTICE = {
+  hide: "Hide",
+  hideLabel: "Hide the disk notice",
+  hidden: "Disk notice hidden",
+  until: "Hidden from the phone's home until free space halves or the disk fills",
+  show: "Show the disk notice",
+  showAgain: "Show again",
+  hideFailed: "Couldn't hide the disk notice",
+  showFailed: "Couldn't show the disk notice",
+} as const;
+
 /** A Cell's stopped turn while its machine's disk is full, and once there's room again. */
 export const DISK_FULL = {
   title: "The disk is full",

@@ -17,9 +17,17 @@ export interface Act {
   readonly commands: ReadonlyArray<ThreadCommand>;
 }
 
+/** An act already done, such as a disk notice hidden: Undo calls `takeBack`, and nothing waits. */
+export interface Done {
+  readonly key: string;
+  readonly words: string;
+  readonly takeBack: () => unknown;
+}
+
 /** What the undo line shows: an act you can still take back, or what became of one. */
 export type UndoLine =
   | { readonly kind: "held"; readonly act: Act }
+  | ({ readonly kind: "done" } & Done)
   | { readonly kind: "said"; readonly words: string };
 
 export interface HeldDeps {
@@ -88,7 +96,7 @@ export function createHeld(deps: HeldDeps) {
 
   /** A line of what became of an act, unless a newer act's line stands. */
   function say(words: string) {
-    if (state.line?.kind !== "held") show({ kind: "said", words });
+    if (state.line === null || state.line.kind === "said") show({ kind: "said", words });
   }
 
   /** The line goes now; a held act with it is sent. Resolves once what it sent is in. */
@@ -109,11 +117,18 @@ export function createHeld(deps: HeldDeps) {
       show({ kind: "held", act }, letGo);
       return before;
     },
-    /** Takes the held act back: its ask returns, and nothing is sent. */
+    /** Shows an act already done on the line; the act before it goes now, as `hold` lets it. */
+    did(done: Done): Promise<void> {
+      const before = letGo();
+      show({ kind: "done", ...done });
+      return before;
+    },
+    /** Takes the act on the line back: a held ask returns and nothing is sent; a done act's undone. */
     undo() {
       const line = state.line;
-      if (line?.kind !== "held") return;
-      set({ answered: without(line.act.key) });
+      if (line?.kind === "held") set({ answered: without(line.act.key) });
+      else if (line?.kind === "done") line.takeBack();
+      else return;
       show(null);
     },
     letGo,

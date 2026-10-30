@@ -16,6 +16,8 @@ export interface DiskReading {
     readonly used: number;
     /** How little free space warns the person, once they chose. */
     readonly warnBelow?: number;
+    /** The free space the phone's disk notice was hidden at, while that stands. */
+    readonly hiddenAt?: number;
   };
   readonly scanning: boolean;
   readonly counted: number;

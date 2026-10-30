@@ -13,30 +13,16 @@ import { HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
 import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
 import { useHomeThreadSelection } from "../upstream/home";
-import { sendThreadCommand, settleFromAnyStage } from "../upstream/needs";
-import { type Act, createHeld } from "./held";
+import { settleFromAnyStage } from "../upstream/needs";
+import type { Act } from "./held";
+import { held } from "./heldLine";
 import { AskCard, type AskActs, AskHead, whoOf } from "./Ask";
 import { commandsFor, elsewhereWords, type FilterProject, type LineStage } from "./kit";
 import { type Ask, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
-import { readMachine } from "./readings";
 import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
 
 const segments = tabChoice<LineStage>();
-
-export const held = createHeld({
-  send: sendThreadCommand,
-  stillAsks: async (act) => {
-    const reading = await readMachine(act.environmentId);
-    if (reading?.state !== "read") return null;
-    return reading.list.needs.some((need) => `${act.environmentId}:${need.key}` === act.key);
-  },
-  after: (ms, then) => {
-    const timer = setTimeout(then, ms);
-    return () => clearTimeout(timer);
-  },
-  now: Date.now,
-});
 
 const EMPTY: Readonly<Record<Exclude<LineStage, "needs">, string>> = {
   working: "No Cells flying.",
