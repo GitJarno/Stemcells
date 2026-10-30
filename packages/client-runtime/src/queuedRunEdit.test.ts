@@ -32,12 +32,12 @@ function setup(initialRuns: ReadonlyArray<QueuedRunStatus> | null = queued()) {
 
 describe("resolveQueuedEditExit", () => {
   it("closes an unchanged edit without touching drafts", () => {
-    expect(resolveQueuedEditExit({ editChanged: false, threadDraftEmpty: true })).toBe("clean");
+    expect(resolveQueuedEditExit({ editChanged: false, editEmpty: false })).toBe("clean");
   });
 
-  it("keeps a changed edit only when the thread draft is empty", () => {
-    expect(resolveQueuedEditExit({ editChanged: true, threadDraftEmpty: true })).toBe("kept");
-    expect(resolveQueuedEditExit({ editChanged: true, threadDraftEmpty: false })).toBe("discarded");
+  it("keeps every changed edit, dropping only one emptied out", () => {
+    expect(resolveQueuedEditExit({ editChanged: true, editEmpty: false })).toBe("kept");
+    expect(resolveQueuedEditExit({ editChanged: true, editEmpty: true })).toBe("discarded");
   });
 });
 

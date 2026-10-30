@@ -72,18 +72,13 @@ export function useQueuedRunEdit(threadKey: string | null): QueuedRunEdit | null
 function exitQueuedRunEdit(threadKey: string, edit: QueuedRunEdit): void {
   const editDraftKey = queuedEditDraftKey(threadKey, edit.runId);
   const editDraft = getComposerDraftSnapshot(editDraftKey);
-  const threadDraft = getComposerDraftSnapshot(threadKey);
   const editRestorable = editDraft.text.trim().length > 0 || editDraft.attachments.length > 0;
   const recovery = resolveQueuedEditExit({
     editChanged:
       editDraft.text !== edit.originalText ||
       editDraft.attachments.length > 0 ||
       edit.removedExistingAttachment === true,
-    // A cleared edit has nothing to put back, so it can only be discarded.
-    threadDraftEmpty:
-      editRestorable &&
-      threadDraft.text.trim().length === 0 &&
-      threadDraft.attachments.length === 0,
+    editEmpty: !editRestorable,
   });
   if (recovery === "kept") {
     // The merge publishes the draft before writing it, so a failed write only delays persistence to the next one.

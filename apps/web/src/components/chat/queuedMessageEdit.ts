@@ -19,7 +19,7 @@ export function recoverQueuedMessageEdit(input: {
     editChanged:
       draft !== null &&
       (draft.prompt !== input.originalText || draft.images.length > 0 || draft.files.length > 0),
-    threadDraftEmpty: !composerDraftHasUserContent(store.getComposerDraft(input.threadTarget)),
+    editEmpty: !composerDraftHasUserContent(draft),
   });
   if (recovery === "kept") {
     store.moveComposerPromptAndImages(input.editTarget, input.threadTarget);

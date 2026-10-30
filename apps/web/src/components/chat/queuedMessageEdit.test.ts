@@ -86,14 +86,13 @@ describe("queued message file edits", () => {
     expect(store.getComposerDraft(editTarget)).toBeNull();
   });
 
-  it("does not overwrite a separate draft when the queued run leaves", () => {
+  it("keeps a separate draft and the edit after it when the queued run leaves", () => {
     const store = useComposerDraftStore.getState();
     store.setPrompt(threadTarget, "Separate draft");
+    store.setPrompt(editTarget, "Edited");
     store.addFiles(editTarget, [file]);
-    expect(recoverQueuedMessageEdit({ editTarget, threadTarget, originalText: "" })).toBe(
-      "discarded",
-    );
-    expect(store.getComposerDraft(threadTarget)?.prompt).toBe("Separate draft");
-    expect(store.getComposerDraft(editTarget)).toBeNull();
+    expect(recoverQueuedMessageEdit({ editTarget, threadTarget, originalText: "" })).toBe("kept");
+    expect(store.getComposerDraft(threadTarget)?.prompt).toBe("Separate draft\n\nEdited");
+    expect(store.getComposerDraft(threadTarget)?.files.map(({ id }) => id)).toEqual([file.id]);
   });
 });

@@ -253,9 +253,9 @@ export function useQueuedRunEdit(input: {
           ),
         }),
         // The run started or was cancelled from another client. A changed
-        // edit moves into the thread's own draft when that draft is empty;
-        // otherwise it is dropped. Edits outlive navigation, so the toast is
-        // unscoped and names the thread: the user may be anywhere by now.
+        // edit joins the thread's own draft, after any words already there.
+        // Edits outlive navigation, so the toast is unscoped and names the
+        // thread: the user may be anywhere by now.
         onRunLeftQueue: (_, edit) => {
           const recovery = recoverQueuedMessageEdit({
             editTarget: queuedEditDraftTarget(routeThreadRef, edit.runId),
