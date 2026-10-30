@@ -5,6 +5,7 @@ import "vite-plus/test/config";
 import { substituteUpstreamModules } from "./src/stemcells/upstream/substitutes/substitutes.cjs";
 
 const reactTests = [
+  "src/stemcells/**/*.test.tsx",
   "src/features/files/useFileTreeEntries.test.tsx",
   "src/features/projects/AddProjectScreen.test.ts",
   "src/lib/useMediaVideoPlayback.test.tsx",
