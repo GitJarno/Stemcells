@@ -250,6 +250,34 @@ describe("hasServerAcknowledgedLocalDispatch", () => {
       }),
     ).toBe(true);
   });
+
+  it("acknowledges a compact-and-send while the shell hides its compaction run", () => {
+    const localDispatch = createLocalDispatchSnapshot(
+      makeThread({ latestRun: completedTurn, runtime: readySession }),
+      { latestUserMessageId: MessageId.make("message-before-send") },
+    );
+    const queuedTurn = {
+      ...completedTurn,
+      runId: RunId.make("turn-3"),
+      status: "queued" as const,
+      requestedAt: "2026-03-29T00:01:00.000Z",
+      startedAt: null,
+      completedAt: null,
+    };
+
+    expect(
+      hasServerAcknowledgedLocalDispatch({
+        localDispatch,
+        phase: "running",
+        latestRun: queuedTurn,
+        latestUserMessageId: MessageId.make("message-queued-behind-compact"),
+        runtime: { ...readySession, status: "queued", activeRunId: null },
+        hasPendingApproval: false,
+        hasPendingUserInput: false,
+        threadError: null,
+      }),
+    ).toBe(true);
+  });
 });
 
 describe("deriveCommittedServerUserMessageIds", () => {
