@@ -338,6 +338,32 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": {
+    exports: view(
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx",
+      "ThreadDetailScreen.tsx",
+    ),
+    importers: {
+      // The chat on screen, told to the words in it.
+      "apps/mobile/src/features/threads/ThreadScreenHost.tsx": [
+        "./ThreadDetailScreen",
+        ["ThreadDetailScreen"],
+      ],
+    },
+  },
+  "apps/mobile/src/native/SelectableMarkdownText.tsx": {
+    exports: view(
+      "apps/mobile/src/native/SelectableMarkdownText.tsx",
+      "SelectableMarkdownText.tsx",
+    ),
+    importers: {
+      // A message's words, where another Cell's name is its pill.
+      "apps/mobile/src/features/threads/ThreadFeed.tsx": [
+        "../../native/SelectableMarkdownText",
+        ["SelectableMarkdownText"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -481,6 +507,12 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./NativeScrollViewMarker")>().toEqualTypeOf<
       typeof import("../../../native/NativeScrollViewMarker")
+    >();
+    expectTypeOf<typeof import("./ThreadDetailScreen")>().toEqualTypeOf<
+      typeof import("../../../features/threads/ThreadDetailScreen")
+    >();
+    expectTypeOf<typeof import("./SelectableMarkdownText")>().toEqualTypeOf<
+      typeof import("../../../native/SelectableMarkdownText")
     >();
     expectTypeOf<typeof import("./HomeScreen")>().toEqualTypeOf<
       typeof import("../../../features/home/HomeScreen")

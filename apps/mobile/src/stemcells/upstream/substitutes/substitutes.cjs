@@ -47,6 +47,8 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx": "ComposerAttachmentButton.tsx",
   // A message's picture and video chips read "Image 1", "Video 2", as on the Mac.
   "apps/mobile/src/lib/enrichedLinkPresentation.ts": "enrichedLinkPresentation.ts",
+  "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": "ThreadDetailScreen.tsx",
+  "apps/mobile/src/native/SelectableMarkdownText.tsx": "SelectableMarkdownText.tsx",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

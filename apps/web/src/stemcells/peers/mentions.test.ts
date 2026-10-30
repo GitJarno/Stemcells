@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { linkCellNames, namesOf } from "./mentions";
+import { cellNameOf } from "../cell/name";
+import { linkCellNames, namesFor } from "./mentions";
 
 const names = new Map([
   ["Manatee", "thread-m"],
@@ -29,13 +30,42 @@ describe("another Cell named in a chat's words", () => {
     expect(linkCellNames(text, names)).toBe(linked);
   });
 
-  it("means the Cell active last when two share a name, and skips an id a link can't carry", () => {
+  it("names the other Cells of the chat's project, the one active last of two", () => {
+    const chat = (
+      id: string,
+      facts: Partial<{ projectId: string; updatedAt: string; gone: boolean; aski: boolean }> = {},
+    ) => ({
+      environmentId: "env",
+      id,
+      projectId: facts.projectId ?? "shop",
+      gone: facts.gone ?? false,
+      aski: facts.aski ?? false,
+      updatedAt: facts.updatedAt ?? "2026-10-30T10:00:00.000Z",
+    });
+    const self = chat("self");
+    // Two ids that draw one name, by cellNameOf's deal.
+    const [older, newer] = twins();
+    const names = namesFor(self, [
+      self,
+      chat(older, { updatedAt: "2026-10-01T10:00:00.000Z" }),
+      chat(newer),
+      chat("elsewhere", { projectId: "harbor" }),
+      chat("archived", { gone: true }),
+    ]);
+    expect([...names.values()]).toEqual([newer]);
     expect(
-      namesOf([
-        { id: "old", name: "Fox", updatedAt: "2026-10-01T10:00:00.000Z" },
-        { id: "new", name: "Fox", updatedAt: "2026-10-30T10:00:00.000Z" },
-        { id: "not/an id", name: "Orca", updatedAt: "2026-10-30T10:00:00.000Z" },
-      ]),
-    ).toEqual(new Map([["Fox", "new"]]));
+      namesFor({ ...self, aski: true }, [chat("elsewhere", { projectId: "harbor" })]).size,
+    ).toBe(1);
   });
 });
+
+function twins(): [string, string] {
+  const seen = new Map<string, string>();
+  for (let index = 0; ; index += 1) {
+    const id = `thread-${index}`;
+    const name = cellNameOf(id);
+    const first = seen.get(name);
+    if (first !== undefined) return [first, id];
+    seen.set(name, id);
+  }
+}
