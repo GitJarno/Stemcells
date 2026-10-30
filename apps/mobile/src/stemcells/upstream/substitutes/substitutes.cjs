@@ -36,6 +36,8 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/home/workspace-connection-status.ts": "workspace-connection-status.ts",
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":
     "thread-list-v2-row-appearance.ts",
+  // A flying Cell's card reads at full contrast: its segment and its light say it flies.
+  "apps/mobile/src/features/threads/thread-row-emphasis.ts": "thread-row-emphasis.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
   // The usage chart is the Mac's, a smoothed line per agent over a faint fill,

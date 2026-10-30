@@ -300,6 +300,18 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/thread-row-emphasis.ts": {
+    exports: view(
+      "apps/mobile/src/features/threads/thread-row-emphasis.ts",
+      "thread-row-emphasis.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/thread-list-v2-items.tsx": [
+        "./thread-row-emphasis",
+        ["shouldRecedeThreadRow"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts": {
     exports: view(
       "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts",
@@ -544,6 +556,9 @@ describe("the phone's substitutes for upstream modules", () => {
       typeof import("./thread-list-v2-row-appearance").getThreadListV2RowAppearance
     >().toEqualTypeOf<
       typeof import("../../../features/threads/thread-list-v2-row-appearance").getThreadListV2RowAppearance
+    >();
+    expectTypeOf<typeof import("./thread-row-emphasis").shouldRecedeThreadRow>().toEqualTypeOf<
+      typeof import("../../../features/threads/thread-row-emphasis").shouldRecedeThreadRow
     >();
     expectTypeOf<typeof import("./use-thread-list-v2-shelf-preferences")>().toEqualTypeOf<
       typeof import("../../../features/threads/use-thread-list-v2-shelf-preferences")
