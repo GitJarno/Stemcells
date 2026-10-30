@@ -210,6 +210,26 @@
 [data-stemcells-pane] {
   container: stemcells-pane / inline-size;
 }
+
+/* A Cell its name was clicked to: its pane rings once, in the Cell tone
+   (tabs/arrival.ts). Opacity alone moves, so the ring costs no layout. */
+[data-stemcells-arrival] {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1.5px color-mix(in srgb, var(--sc-peer) 85%, transparent),
+    inset 0 0 28px color-mix(in srgb, var(--sc-peer) 22%, transparent);
+  opacity: 0;
+  animation: sc-arrival 900ms ease-out;
+}
+@keyframes sc-arrival {
+  15% {
+    opacity: 1;
+  }
+}
 /* Upstream widens the lanes' padding from 0.75rem to 3rem in one step at a
    640 px window. A pane ramps it over its own width instead, 480 to 800 px,
    so a composer never jumps sideways while a pane is dragged across the
