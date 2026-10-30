@@ -140,3 +140,15 @@ export function opensOn(counts: Readonly<Record<LineStage, number>>): LineStage 
       ? "working"
       : "landed";
 }
+
+/**
+ * Whether Settled reads its next page as the person nears its end: only while Cells are left and
+ * no page is on its way. A failed read waits for a tap, or each refusal would ask again.
+ */
+export function readsNextPage(shelf: {
+  readonly hidden: number;
+  readonly loading: boolean;
+  readonly failed: boolean;
+}): boolean {
+  return shelf.hidden > 0 && !shelf.loading && !shelf.failed;
+}

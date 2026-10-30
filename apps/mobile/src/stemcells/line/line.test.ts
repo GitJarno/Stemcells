@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { elsewhereWords, type CellStanding, type Need } from "./kit";
-import { countsOf, elsewhereOf, lineOf, opensOn } from "./line";
+import { countsOf, elsewhereOf, lineOf, opensOn, readsNextPage } from "./line";
 import type { Reading } from "./read";
 
 const NOW = "2026-10-27T12:00:00.000Z";
@@ -151,5 +151,12 @@ describe("the phone's home on the Cells' line", () => {
     expect(opensOn({ needs: 0, working: 3, landed: 2, settled: 0 })).toBe("working");
     expect(opensOn({ needs: 0, working: 0, landed: 2, settled: 9 })).toBe("landed");
     expect(opensOn({ needs: 0, working: 0, landed: 0, settled: 9 })).toBe("working");
+  });
+
+  it("reads Settled's next page only while Cells are left and none is on its way", () => {
+    expect(readsNextPage({ hidden: 408, loading: false, failed: false })).toBe(true);
+    expect(readsNextPage({ hidden: 0, loading: false, failed: false })).toBe(false);
+    expect(readsNextPage({ hidden: 408, loading: true, failed: false })).toBe(false);
+    expect(readsNextPage({ hidden: 408, loading: false, failed: true })).toBe(false);
   });
 });

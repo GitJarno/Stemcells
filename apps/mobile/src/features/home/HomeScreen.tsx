@@ -1,3 +1,4 @@
+import { useSettledPages } from "../../stemcells/home/SettledPages";
 import { useActiveNewTask } from "../../state/active-new-task";
 import { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";
 import { useAndroidControlSizing } from "../../components/ui/useAndroidControlSizing";
@@ -468,6 +469,11 @@ export function HomeScreen(props: HomeScreenProps) {
     settledShelfExpanded,
     selectedThreadKey,
   });
+  const settledPages = useSettledPages({
+    hidden: settledShelfExpanded ? threadListV2Layout.hiddenSettledCount : 0,
+    shelf: olderSettledShelf,
+    showMore: showMoreSettled,
+  });
   // Called as `props.onSelectThread(...)`, the compiler would cache this handler on the whole
   // props object, which is new on every render of Home's parent.
   const { onSelectThread } = props;
@@ -806,6 +812,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   />
                 ) : null
               }
+              {...settledPages}
               ListEmptyComponent={v2ListEmpty}
               style={{ flex: 1 }}
               automaticallyAdjustsScrollIndicatorInsets={Platform.OS === "ios"}
