@@ -2,11 +2,12 @@
 
 A double-click on a tab's name opens it for a new one in place, as the
 one-liner over a Cell's composer does: the same field (`rename/RenameField.tsx`),
-the same keys (Enter keeps, Escape doesn't, leaving keeps). A tab of one Cell
-is its chat, so renaming it renames the chat, in the one-liner and in every
-window. A tab of more ("Say hi · 2") takes a name of its own, kept with the
-workspace; a blank one gives it back its focused chat's. Aski's tab and the
-new Cell's are never renamed.
+the same keys (Enter keeps, Escape doesn't, leaving keeps). Every tab takes a
+name of its own, kept with the workspace; a blank one gives it back its focused
+chat's title. The chat's title is its one-liner, which the phone's card and the
+other Cells read, so a tab's name may drift from it (the person, 2026-10-30; a
+tab of one Cell renamed its chat until then). Aski's tab and the new Cell's
+are never renamed.
 
 - [x] The one-liner's rename field, shared; the chat's rename hook (`useCellRename`) out of its menu
 - [x] `Tab.name`, `nameTab`, kept and read back with the workspace

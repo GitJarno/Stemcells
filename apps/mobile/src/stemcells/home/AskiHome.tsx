@@ -5,7 +5,7 @@
 
 import { use, useState } from "react";
 import { Pressable, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, { FadeIn, LayoutAnimationConfig } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
@@ -35,15 +35,21 @@ const NIGHT_ABOVE = 600;
 /** Where a line starts: it moves on each hour, so the home doesn't always open on the same one. */
 const seedNow = () => Math.floor(Date.now() / 3_600_000);
 
+/** The line and the height as the last page left them: each page mounts Aski again, as it stood. */
+const kept = { seed: seedNow(), rolls: 0, height: 0 };
+
 export function AskiHome() {
   const home = use(HomeTabsContext);
   const primaryColumn = use(NativePrimaryColumnContext);
   const insets = useSafeAreaInsets();
   const aski = useAskiChat(home?.environmentId ?? null);
   const openChat = useHomeThreadSelection();
-  const [rolls, setRolls] = useState(0);
-  const [seed] = useState(seedNow);
-  const [height, setHeight] = useState(0);
+  const [seed] = useState(() => {
+    if (kept.seed !== seedNow()) Object.assign(kept, { seed: seedNow(), rolls: 0 });
+    return kept.seed;
+  });
+  const [rolls, setRolls] = useState(kept.rolls);
+  const [height, setHeight] = useState(kept.height);
   const copies = useCopies();
   const ink = useResolveClassNames("text-foreground").color;
   const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
@@ -59,7 +65,10 @@ export function AskiHome() {
     <View
       className="items-center pb-4"
       style={{ paddingTop: ROOM_OVER }}
-      onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
+      onLayout={({ nativeEvent }) => {
+        kept.height = nativeEvent.layout.height;
+        setHeight(kept.height);
+      }}
     >
       {night ? <Night above={NIGHT_ABOVE + insets.top} screen={screen} height={height} /> : null}
       <Pressable
@@ -83,18 +92,23 @@ export function AskiHome() {
         accessibilityHint="Shows another line"
         // What waits on you is said plainly, and only that.
         disabled={counts.input > 0}
-        onPress={() => setRolls((n) => n + 1)}
+        onPress={() => {
+          kept.rolls = rolls + 1;
+          setRolls(kept.rolls);
+        }}
         className="mt-3 self-stretch px-10"
       >
-        <Animated.View key={line} entering={FadeIn.duration(220)}>
-          <AppText
-            className="text-center text-xl"
-            style={night ? { color: NIGHT_TEXT } : undefined}
-            numberOfLines={2}
-          >
-            {line}
-          </AppText>
-        </Animated.View>
+        <LayoutAnimationConfig skipEntering>
+          <Animated.View key={line} entering={FadeIn.duration(220)}>
+            <AppText
+              className="text-center text-xl"
+              style={night ? { color: NIGHT_TEXT } : undefined}
+              numberOfLines={2}
+            >
+              {line}
+            </AppText>
+          </Animated.View>
+        </LayoutAnimationConfig>
       </Pressable>
       {/* A hop lands on its segment (`line/Hops.tsx`). */}
       <View ref={segmentsStandIn} className="mt-5 self-stretch px-4">

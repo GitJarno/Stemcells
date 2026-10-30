@@ -1,7 +1,7 @@
 // A page of the home that isn't T3's list: a tab with no Cells in it, or the asks of Needs you
-// (`line/LineHome.tsx`). It scrolls as T3's list does on iOS (`features/home/HomeScreen.tsx`):
-// UIKit's own inset under the header, so Aski and the rail stand at one height on every tab.
-// A reply typed into an ask scrolls clear of the keyboard.
+// (`line/LineHome.tsx`). It rests where T3's list does on iOS, its top under the header, so Aski
+// and the rail stand at one height on every tab. A reply typed into an ask scrolls clear of the
+// keyboard.
 
 import { use, type ReactNode } from "react";
 import { View } from "react-native";
@@ -21,12 +21,13 @@ export function HomePage(props: { readonly children: ReactNode }) {
     <View className={primaryColumn ? "flex-1 bg-drawer" : "flex-1 bg-screen"}>
       <NativeScrollViewMarker style={{ flex: 1 }}>
         <KeyboardAwareScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          automaticallyAdjustsScrollIndicatorInsets
+          // The marker's own child, so the header finds it: the default mode puts a view between.
+          mode="layout"
+          // Its own padding, not UIKit's inset, which React Native's scrolls stop short of.
+          contentInsetAdjustmentBehavior="never"
           contentContainerStyle={{
-            // As T3's list: UIKit adds the safe area; this clears the tab bar over it.
-            paddingBottom:
-              Math.max(insets.bottom, 24, workspace?.bottomClearance ?? 0) - insets.bottom,
+            paddingTop: insets.top,
+            paddingBottom: Math.max(insets.bottom, 24, workspace?.bottomClearance ?? 0),
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

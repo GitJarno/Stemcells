@@ -6,6 +6,7 @@ import {
   CellBesideRow,
   SlimRowCell,
   SlimRowProject,
+  useSaysNothing,
   useShelfHeadersShown,
 } from "../../stemcells/home/RowCell";
 import type { ThreadRowProviderInstance } from "./thread-provider-instance";
@@ -702,6 +703,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
     (status === "working" && workingLabel !== undefined && thread.goal?.status === "active"
       ? { ...workingLabel, label: "Goal" }
       : workingLabel) ?? (isUnread ? DONE_STATUS_LABEL : undefined);
+  const saysNothing = useSaysNothing(status);
   const recede = shouldRecedeThreadRow({ status, selected });
   const timeLabel = props.timeLabel;
 
@@ -1101,7 +1103,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               type="monochrome"
             />
           ) : null}
-          {showsWoke ? (
+          {saysNothing ? null : showsWoke ? (
             <Pressable
               className="-m-2.5 flex-row items-center gap-1 p-2.5"
               accessibilityRole="button"

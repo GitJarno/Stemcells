@@ -206,13 +206,18 @@ describe("renaming a tab by its name", () => {
     }
   });
 
-  // A tab of one Cell is its chat, and renames it as the one-liner does
-  // (`useCellRename`); a chat this window may not rename (here: no session
-  // at all) doesn't open, nor does Aski's tab.
-  it("a chat that can't be renamed here, and Aski's tab, don't open", async () => {
-    await using screen = await render(<Strip tabs={[tabOf("t1", ["a"])]} />);
+  // The chat's title is its one-liner, which the phone and the other Cells
+  // read: a tab of one Cell takes a name of its own too. Aski's tab never opens.
+  it("a tab of one Cell names the tab, not its chat, and shows that name; Aski's tab doesn't open", async () => {
+    const onRename = vi.fn();
+    await using screen = await render(
+      <Strip tabs={[tabOf("t1", ["a"]), tabOf("t2", ["b"], "KI")]} onRename={onRename} />,
+    );
+    expect(chip(screen.container, "t2").querySelector("span.truncate")!.textContent).toBe("KI");
     await userEvent.dblClick(chip(screen.container, "t1").querySelector("span.truncate")!);
-    expect(field(screen.container)).toBeNull();
+    expect(field(screen.container)!.getAttribute("aria-label")).toBe("Tab name");
+    await userEvent.keyboard("Billing{Enter}");
+    expect(onRename).toHaveBeenCalledWith("t1", "Billing");
     await userEvent.dblClick(chip(screen.container, "aski"));
     expect(field(screen.container)).toBeNull();
   });

@@ -48,15 +48,6 @@ export { ProjectFavicon } from "../../components/ProjectFavicon";
  */
 const TITLE_MENU_OPEN_DELAY_MS = 500;
 
-/** Whether a chat can be renamed now: it was sent, and its environment lets this window operate. */
-export function canRenameCell(cell: CellRef | null): boolean {
-  return (
-    cell !== null &&
-    cell.draftId === null &&
-    readEnvironmentScope(cell.environmentId as EnvironmentId, AuthOrchestrationOperateScope)
-  );
-}
-
 /** Why a chat's new title wasn't applied: it isn't loaded here, or this window may not change it. */
 export const CANT_RENAME_CELL = "Can't rename this Cell here";
 
@@ -66,7 +57,7 @@ export const CANT_RENAME_CELL = "Can't rename this Cell here";
  * `commitRename` says why when it couldn't apply the title at all (chat not loaded here, or
  * this window may not change it), so what was typed isn't dropped unsaid.
  */
-export function useCellRename(cell: CellRef | null) {
+function useCellRename(cell: CellRef | null) {
   const threadRef = cell ? threadRefOf(cell) : null;
   const shell = useQuietThreadShell(threadRef);
   const canOperate = useEnvironmentScope(
