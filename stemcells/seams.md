@@ -632,7 +632,9 @@ library's dependency (above); the rest are substitutes:
   machines menu, each staying open while you tick (`home/scope.tsx`). Where the list has no header (Android, outside the
   workspace) and while searching, the home is T3's own. Two more substitutes: the row tokens make cards on the
   phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
-  and the iPad's sidebar stay T3's), and on the home's tabs every shelf stays open,
+  and the iPad's sidebar stay T3's), no row recedes (`thread-row-emphasis.ts`: T3 fades a
+  working Cell's card to 55%, where Flying is a segment of its own and the card's light says it
+  flies), and on the home's tabs every shelf stays open,
   Settled's only on its own tab (`use-thread-list-v2-shelf-preferences.ts`:
   open, it reads the older settled Cells page by page, and elsewhere showed
   "Loading" and grew the home's Cells), and, at the row's seam, draws
