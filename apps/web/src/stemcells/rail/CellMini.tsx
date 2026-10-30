@@ -1,8 +1,7 @@
 import { useState } from "react";
 
-import { lookOf } from "../cell/CellFigure";
 import { CellStill } from "../cell/CellStill";
-import { dayOf } from "../cell/looks";
+import { dayOf, lookOf } from "../cell/looks";
 import { useRosterLook } from "../tabs/roster";
 import { useCellGround } from "../upstream/appearance";
 import { useCellDriver } from "../upstream/providers";

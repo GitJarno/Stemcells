@@ -1,8 +1,8 @@
 /**
  * A subagent, in the words a person reads, is a Subcell: a Cell another Cell starts for a
- * piece of its work. The web's and phone's substitutes for upstream's sentences about them say
- * Subcell; views that write it inline in upstream's hot files import it from here, once each;
- * cold ones say it in place (`stemcells/seams.md`, Subcells).
+ * piece of its work, and one at work is flying. The web's and phone's substitutes for upstream's
+ * sentences about them say so; views that write it inline in upstream's hot files import it
+ * from here, once each; cold ones say it in place (`stemcells/seams.md`, Subcells).
  */
 
 /** The word, for the views that write it inline: one, many, and the button that opens one. */
@@ -21,4 +21,9 @@ export function inSubcellWords(sentence: string): string {
     /\b[Ss]ubagent(s?)\b/g,
     (_subagent, plural: string) => `Subcell${plural}`,
   );
+}
+
+/** Upstream's tally of a card's Subcells ("3 working · 1 done"), those at work flying. */
+export function inFlyingWords(tally: string): string {
+  return tally.replace(/\b(\d+) working\b/g, "$1 flying");
 }

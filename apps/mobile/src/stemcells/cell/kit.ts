@@ -13,7 +13,7 @@ export {
   MOODS,
   POINTS_PER_PIXEL,
 } from "../../../../web/src/stemcells/cell/look.ts";
-export { dayOf, type Look, looksOf } from "../../../../web/src/stemcells/cell/looks.ts";
+export { dayOf, type Look, lookOf, looksOf } from "../../../../web/src/stemcells/cell/looks.ts";
 export {
   BEAT,
   type CellScene,
@@ -32,5 +32,6 @@ export {
 } from "../../../../web/src/stemcells/cell/forming.ts";
 export { GLYPHS } from "../../../../web/src/stemcells/words/spawn/plan.ts";
 export type { Activity } from "../../../../web/src/stemcells/cell/activity.ts";
+export { subcellFace } from "../../../../web/src/stemcells/cell/subcell.ts";
 export { oneLinerOf } from "../../../../web/src/stemcells/composer/oneLiner.ts";
 export { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";

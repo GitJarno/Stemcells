@@ -3,11 +3,11 @@
 // and in its chat. As on the Mac (`apps/web/src/stemcells/tabs/roster.ts`), a Cell keeps its
 // seat and its look while it stays; a newcomer sits after.
 
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 import { type EnvironmentThreadShell, useThreadShellsSelected } from "../upstream/cells";
 import { askiChatsOf } from "../aski/chat";
-import { dayOf, type Look, looksOf } from "./kit";
+import { dayOf, type Look, lookOf, looksOf } from "./kit";
 
 let crewSeen: ReadonlyArray<EnvironmentThreadShell> | null = null;
 let crewKey = "";
@@ -82,4 +82,13 @@ export function useCellLook(threadId: string): readonly string[] | undefined {
   const crew = useThreadShellsSelected(crewOf);
   const day = useSyncExternalStore(subscribe, () => today);
   return dealt(crew, day).get(threadId)?.worn;
+}
+
+/**
+ * What the Subcell named `name` wears today: no Subcell sits in the crew, so it is dealt alone,
+ * the look the Mac gives one whose thread no tab shows (`apps/web/src/stemcells/cell/SubcellMark.tsx`).
+ */
+export function useSubcellLook(name: string): readonly string[] {
+  const day = useSyncExternalStore(subscribe, () => today);
+  return useMemo(() => lookOf(name, day), [name, day]);
 }

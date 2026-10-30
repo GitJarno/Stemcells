@@ -1,8 +1,8 @@
 /**
- * What Subcells rely on in upstream's views (`stemcells/seams.md`, Subcells): the card grouping
- * a turn's subagents says "2 Subcells", and each one, in the card's header and rows and in a
- * workflow's members, is a Cell (`SubcellMark`) where upstream drew a logo, its face its status.
- * A failure after a sync names the line that moved: say Subcell, or give the avatar back.
+ * What Subcells rely on in upstream's views (`stemcells/seams.md`, Subcells): the card says
+ * "2 Subcells", "1 flying", and each one, in the card's header and rows and a workflow's members,
+ * is a Cell (`SubcellMark`) where upstream drew a logo. A failure after a sync names the line
+ * that moved: say Subcell, or give the avatar back.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -15,7 +15,10 @@ import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
 import workflowOpening from "../../components/chat/WorkflowOpeningBlock.tsx?raw";
 import { inSubcellWords, SUBCELL, subcellCount } from "../../../../../stemcells/words/subcells.ts";
 import * as SeamsChat from "./seams/chat";
-import { formatSubagentDisplayTitle } from "./substitutes/subagentDisplay";
+import {
+  formatSubagentDisplayTitle,
+  summarizeSubagentStatuses,
+} from "./substitutes/subagentDisplay";
 
 /** The source of the top-level function or const named `name`, up to the next top-level declaration. */
 function body(source: string, name: string): string {
@@ -42,6 +45,7 @@ describe("Subcells in upstream's views", () => {
   it("the card counts Subcells and hands each header avatar its Subcell, with its status", () => {
     const card = body(v2EventRow, "V2SubagentGroup");
     expect(card).toContain("const label = Stemcells.subcellCount(members.length);");
+    expect(card).toContain("summarizeSubagentStatuses(agents.map(");
     expect(card).toMatch(
       /\.map\(\(\{ item, status \}\) => \(\s*<EnvironmentSubagentAvatar[^>]*subcell=\{\{ name: item\.childThreadId \?\? item\.subagentId, status \}\}/,
     );
@@ -103,6 +107,12 @@ describe("Subcell words", () => {
     expect(formatSubagentDisplayTitle("Subagent")).toBe("Subcell");
     expect(formatSubagentDisplayTitle("Subagent: Audit the docs")).toBe("Audit the docs");
     expect(formatSubagentDisplayTitle("Background subagent test")).toBe("Background subagent test");
+  });
+
+  it("a card's Subcells at work are flying", () => {
+    expect(summarizeSubagentStatuses(["running", "pending", "waiting", "completed"])).toBe(
+      "3 flying · 1 done",
+    );
   });
 
   it("counts Subcells as one and many", () => {
