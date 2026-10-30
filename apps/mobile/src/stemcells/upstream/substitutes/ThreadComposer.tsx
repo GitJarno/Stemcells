@@ -1,12 +1,13 @@
 // Replaces `features/threads/ThreadComposer.tsx` (`substitutes.cjs`): the feed blurs as it slides
 // under the composer (`edge/Veil.ios.tsx`), so what scrolls past it stops asking for attention
-// beside the glass and by the home indicator. The Cell stands in the header
-// (`chat/CellTitle.tsx`), so the room over the composer is upstream's.
+// by the glass and the home indicator, and the composer wears the Flying light while its Cell
+// works (`glow/ComposerLight.tsx`). The Cell stands in the header (`chat/CellTitle.tsx`).
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import * as Upstream from "../../../features/threads/ThreadComposer";
 import { Veil } from "../../edge/Veil";
+import { ComposerFlight } from "../../glow/ComposerLight";
 
 export * from "../../../features/threads/ThreadComposer";
 
@@ -21,7 +22,9 @@ export const ThreadComposer: typeof Upstream.ThreadComposer = (props) => {
   return (
     <>
       <Veil edge="bottom" color={ground} fade={FADE} over={OVER} beyond={insets.bottom} />
-      <Upstream.ThreadComposer {...props} />
+      <ComposerFlight value={{ thread: props.selectedThread, busy: props.activeThreadBusy }}>
+        <Upstream.ThreadComposer {...props} />
+      </ComposerFlight>
     </>
   );
 };

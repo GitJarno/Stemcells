@@ -351,6 +351,19 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/floating-working-control.tsx": {
+    exports: view(
+      "apps/mobile/src/features/threads/floating-working-control.tsx",
+      "floating-working-control.tsx",
+    ),
+    importers: {
+      // The capsule over a chat's composer, without its plain timer.
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": [
+        "./floating-working-control",
+        ["FloatingWorkingControl"],
+      ],
+    },
+  },
   "apps/mobile/src/native/SelectableMarkdownText.tsx": {
     exports: view(
       "apps/mobile/src/native/SelectableMarkdownText.tsx",
@@ -510,6 +523,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadDetailScreen")>().toEqualTypeOf<
       typeof import("../../../features/threads/ThreadDetailScreen")
+    >();
+    expectTypeOf<typeof import("./floating-working-control")>().toEqualTypeOf<
+      typeof import("../../../features/threads/floating-working-control")
     >();
     expectTypeOf<typeof import("./SelectableMarkdownText")>().toEqualTypeOf<
       typeof import("../../../native/SelectableMarkdownText")

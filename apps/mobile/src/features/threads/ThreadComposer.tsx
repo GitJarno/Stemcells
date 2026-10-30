@@ -118,6 +118,7 @@ import {
   useThreadSettingsSheetPresentation,
   type NavigationWithFinishTransitioning,
 } from "./use-thread-settings-sheet-presentation";
+import { ComposerLight } from "../../stemcells/glow/ComposerLight";
 
 export const COMPOSER_COLLAPSED_CHROME = 60;
 
@@ -386,6 +387,7 @@ function ComposerSurface(props: {
       >
         {null}
       </AnimatedGlassSurface>
+      <ComposerLight />
       <Animated.View
         collapsable={false}
         layout={layoutTransition}
