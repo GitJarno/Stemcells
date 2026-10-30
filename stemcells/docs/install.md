@@ -107,7 +107,10 @@ Stemcells.
 3. In Stemcells on your phone, scan the code. Each computer needs one scan.
    The dialog ticks once your phone is on your tailnet; until then a scan
    can't reach the computer, and it names the account to sign in with.
-4. To reach one computer from another, choose **Copy link** in step 2 on
+4. So Tailscale never needs turning on by hand: on an iPhone, tap your
+   picture in Tailscale and turn on **VPN On Demand**; on Android, turn on
+   **Always-on VPN** for Tailscale in the phone's VPN settings.
+5. To reach one computer from another, choose **Copy link** in step 2 on
    the computer you want to reach, then **Add › Computer** on the one
    you're at, and paste it. Its **Cells** switch lets the two computers'
    Cells see each other.
@@ -115,7 +118,9 @@ Stemcells.
 **Remove** takes a device's access away, or forgets a computer on this
 device; **Turn off** beside **Over Tailscale** stops phones reaching the
 computer at all. Without Tailscale, **Wi-Fi only** pairs a phone on the same
-Wi-Fi, after one restart.
+Wi-Fi, after one restart. Set up Tailscale on that computer later and the
+phone learns its Tailscale address the next time it connects, with no new
+scan.
 
 ### The phone's home
 
