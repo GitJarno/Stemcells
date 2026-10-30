@@ -67,9 +67,10 @@ export function namesFor(
 
 /** The names in one line: equal while the names are. */
 export function signatureOf(names: ReadonlyMap<string, string>): string {
+  // `sort`, not `toSorted`, on fresh arrays here and below: the phone's Hermes lacks it.
   return [...names]
     .map(([name, id]) => `${name}=${id}`)
-    .toSorted()
+    .sort()
     .join(",");
 }
 
@@ -87,7 +88,7 @@ export function linkCellNames(
 ): string {
   if (names.size === 0) return text;
   const alternatives = [...names.keys()]
-    .toSorted((a, b) => b.length - a.length)
+    .sort((a, b) => b.length - a.length)
     .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
     .join("|");
   // A whole, capitalised word, "@" before it or not; never part of a path, a handle or a longer word.
