@@ -121,7 +121,7 @@ export function calls(root: HTMLElement): void {
     });
     const mango = actors[2]!;
     if (asking > 0 && answered < 0 && now >= asking && mango.tone !== "needsYou") {
-      mango.say("Needs you", "needsYou");
+      mango.say("Input", "needsYou");
       mango.play("waiting", now);
       // Aski brings you the question, from over its head; on a narrow stage, from its top corner.
       const narrow = root.clientWidth < 560;

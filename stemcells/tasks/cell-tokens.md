@@ -15,7 +15,7 @@ the device.
    its stage (thinking while Flying, its plea when it needs you, asleep
    when settled), and a settled Cell's token fades.
 2. **Peek.** A pause over it, or a long press, shows its one-liner, its
-   stage in the house words (Flying, Needs you, Landed, Settled), its
+   stage in the house words (Input, Flying, Landed, Settled), its
    latest line and its project. You don't leave the chat.
 3. **Go.** Click or tap. Where there's room, it opens beside the chat that
    named it, so that sentence stays readable. A Cell already open is

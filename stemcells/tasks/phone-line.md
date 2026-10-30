@@ -1,6 +1,6 @@
 # The phone's home on the Cells' line
 
-The column (`left-column-v3.md`) stands each Cell on one line: Needs you,
+The column (`left-column-v3.md`) stands each Cell on one line: Input,
 Flying, Landed, Settled. The phone's home still sorts them its own way
 (Asleep · Active · Working · Input, `phone-cells.md`), and its Input tab is
 a list of rows, so an ask has to be opened to be answered. This brings the
@@ -29,7 +29,7 @@ Research (2026-10-26) settled where things come from:
 
 ## Decisions
 
-1. **The tabs become the line.** Needs you · Flying · Landed · Settled,
+1. **The tabs become the line.** Input · Flying · Landed · Settled,
    T3's segmented control with counts, as now. A Cell stands where the
    column stands it, so the Mac and the phone never disagree. Pinned stays
    T3's: a pinned Cell heads its own segment's list, as T3 lists pins, not
@@ -37,7 +37,7 @@ Research (2026-10-26) settled where things come from:
    Cell is off the line until it wakes, as in the column, and Settled
    holds T3's snoozed shelf, closed until tapped, so what Asleep held is
    still a tap away; the count is the settled Cells, as the column's is.
-   Opens on Needs you when anything waits.
+   Opens on Input when anything waits.
 2. **An ask is a message**, as `aski-asks.md` decisions 4 to 6 set it, with
    no tags. A quiet line with the Cell's sprite and name, the project and
    the age; the question, the largest words; at most two lines of what you
@@ -68,7 +68,7 @@ Research (2026-10-26) settled where things come from:
    move, yours too, only changes the counts. The Mac's column keeps its
    hops.
 6. **Filters stay T3's.** The phone keeps T3's machine and project
-   pickers. Asks never hide: Needs you counts every ask, and the list ends
+   pickers. Asks never hide: Input counts every ask, and the list ends
    with where the ones the pickers leave out are, in the Mac column's words
    (`rail/filter.ts`): "Also 2 in Harbor", or "Also 2 in A, 1 in B and 1
    elsewhere". A tap there clears the pickers.

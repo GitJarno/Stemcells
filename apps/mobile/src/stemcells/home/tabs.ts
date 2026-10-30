@@ -1,7 +1,7 @@
 // Where a Cell's own record puts it, for the line while its machine hasn't said: Asleep (settled
 // or snoozed), Active (the rest), and within Active, Working (it works, or waits on another chat)
 // and Input (an approval, a question or a plan waits). It follows the Cell's face (`cell/mood.ts`),
-// so the "?" over a Cell and Needs you never disagree.
+// so the "?" over a Cell and Input never disagree.
 
 import { faceOf } from "../cell/mood";
 import { asksYou } from "../cell/kit";

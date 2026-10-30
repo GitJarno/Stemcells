@@ -604,7 +604,7 @@ library's dependency (above); the rest are substitutes:
   one offset per workspace tab opened each segment where another was
   scrolled. In the iOS workspace the header's picks narrow it,
   any number of projects and machines (`home/picks.ts`, kept on the phone),
-  and T3's own single pick is handed to its list unset. Needs you is the asks themselves, sent as T3's own
+  and T3's own single pick is handed to its list unset. Input is the asks themselves, sent as T3's own
   thread commands (`upstream/needs.ts`, which takes the web's
   `proposedPlan.ts` for a plan's build), and an answer's undo line stands
   in T3's notice, one at a time. The list's header (`ThreadListFilters`,

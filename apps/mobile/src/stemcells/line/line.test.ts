@@ -146,7 +146,7 @@ describe("the phone's home on the Cells' line", () => {
     expect(elsewhereWords(elsewhereOf(asks, () => true, [shop, blog]))).toBeNull();
   });
 
-  it("opens on Needs you when anything waits, else where Cells are", () => {
+  it("opens on Input when anything waits, else where Cells are", () => {
     expect(opensOn({ needs: 1, working: 3, landed: 2, settled: 0 })).toBe("needs");
     expect(opensOn({ needs: 0, working: 3, landed: 2, settled: 0 })).toBe("working");
     expect(opensOn({ needs: 0, working: 0, landed: 2, settled: 9 })).toBe("landed");

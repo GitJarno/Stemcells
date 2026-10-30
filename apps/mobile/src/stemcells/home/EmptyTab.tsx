@@ -1,4 +1,4 @@
-// A page of the home that isn't T3's list: a tab with no Cells in it, or the asks of Needs you
+// A page of the home that isn't T3's list: a tab with no Cells in it, or the asks of Input
 // (`line/LineHome.tsx`). It rests where T3's list does on iOS, its top under the header, so Aski
 // and the rail stand at one height on every tab. A reply typed into an ask scrolls clear of the
 // keyboard.
