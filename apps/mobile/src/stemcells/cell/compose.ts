@@ -3,7 +3,7 @@
 // them in its first frame, so a figure asks here and draws once its turn
 // comes: a slice of the queue a tick, each slice short of a frame.
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 /** How long one slice of the queue may run, in milliseconds. */
 const SLICE_MS = 8;
@@ -32,23 +32,24 @@ function drain(): void {
 
 /** Whether what `key` names has been composed; asked once, `compose` runs in its turn and the caller draws again. */
 export function useComposed(key: string, compose: () => void): boolean {
-  const [, wake] = useState(0);
-  const ready = done.has(key);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Queue this key's compose; drop its waiter on change or unmount.
-  useEffect(() => {
-    if (done.has(key)) return;
-    const listener = () => wake((n) => n + 1);
-    const listeners = waiting.get(key) ?? new Set();
-    listeners.add(listener);
-    waiting.set(key, listeners);
-    if (!queue.has(key)) queue.set(key, compose);
-    if (!draining) {
-      draining = true;
-      setTimeout(drain, 0);
-    }
-    return () => {
-      listeners.delete(listener);
-    };
-  }, [key, compose]);
-  return ready;
+  // Read through a store: the React Compiler caches a module read like `done.has(key)` per key,
+  // and an effect misses a key composed between its render and its subscribing.
+  const subscribe = useCallback(
+    (wake: () => void) => {
+      if (done.has(key)) return () => {};
+      const listeners = waiting.get(key) ?? new Set();
+      listeners.add(wake);
+      waiting.set(key, listeners);
+      if (!queue.has(key)) queue.set(key, compose);
+      if (!draining) {
+        draining = true;
+        setTimeout(drain, 0);
+      }
+      return () => {
+        listeners.delete(wake);
+      };
+    },
+    [key, compose],
+  );
+  return useSyncExternalStore(subscribe, () => done.has(key));
 }
