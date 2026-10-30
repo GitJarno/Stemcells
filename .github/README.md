@@ -25,7 +25,7 @@
 <p align="center"><b>Words become things.</b></p>
 
 <p align="center">
-  A Mac app for coding agents. Talk to one. Run many.<br>
+  A fun, efficient way to work with your agents. Talk to one. Run many.<br>
   <a href="https://stemcells.sh">stemcells.sh</a> · <a href="#get-it">Get it</a> · <a href="#how-it-works">How it works</a>
 </p>
 
