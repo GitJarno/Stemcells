@@ -5,7 +5,9 @@ import UIKit
 /// chrome's inner side, nothing painted over it. UIKit has no public variable blur, so this drives
 /// a `UIVisualEffectView`'s backdrop with Core Animation's `variableBlur` filter, the one the
 /// system's own bars use, and hides the effect's tint. Without the filter it draws nothing: a
-/// clear edge beats a grey one.
+/// clear edge beats a grey one. UIKit puts its own blur and tint back when it rebuilds the effect
+/// (the light and dark snapshots as the app leaves, its return), which showed as a grey card over
+/// the header, so the veil puts its filter back after each.
 final class StemcellsVeilView: ExpoView {
   enum Edge { case top, bottom }
 
@@ -30,10 +32,20 @@ final class StemcellsVeilView: ExpoView {
     filter = Self.filter(edge)
     isUserInteractionEnabled = false
     addSubview(effectView)
-    // UIKit rebuilds the backdrop's filters when the appearance changes.
-    registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: StemcellsVeilView, _: UITraitCollection) in
-      view.apply()
+    // UIKit rebuilds the backdrop's filters when the appearance changes, the effect view's after
+    // this view hears of it: put ours back now and once UIKit is done.
+    registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) {
+      (view: StemcellsVeilView, _: UITraitCollection) in
+      view.applySoon()
     }
+    for name in [UIApplication.willEnterForegroundNotification, UIApplication.didBecomeActiveNotification] {
+      NotificationCenter.default.addObserver(self, selector: #selector(applySoon), name: name, object: nil)
+    }
+  }
+
+  @objc private func applySoon() {
+    apply()
+    DispatchQueue.main.async { [weak self] in self?.apply() }
   }
 
   override func layoutSubviews() {
@@ -44,9 +56,6 @@ final class StemcellsVeilView: ExpoView {
 
   override func didMoveToWindow() {
     super.didMoveToWindow()
-    // `scale` is the private backdrop layer's key: blur at the screen's scale.
-    guard let scale = window?.screen.scale else { return }
-    effectView.subviews.first?.layer.setValue(scale, forKey: "scale")
     apply()
   }
 
@@ -59,6 +68,8 @@ final class StemcellsVeilView: ExpoView {
     if backdrop.layer.filters?.first as? NSObject !== filter {
       backdrop.layer.filters = [filter]
     }
+    // `scale` is the private backdrop layer's key: blur at the screen's scale, on a rebuilt one too.
+    if let scale = window?.screen.scale { backdrop.layer.setValue(scale, forKey: "scale") }
     for tint in effectView.subviews.dropFirst() { tint.alpha = 0 }
   }
 

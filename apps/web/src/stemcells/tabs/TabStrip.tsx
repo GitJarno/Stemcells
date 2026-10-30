@@ -5,7 +5,6 @@ import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
 import { NeedsTabCount } from "../needs/NeedsTabCount";
 import { RenameField } from "../rename/RenameField";
 import type { AskiChat } from "../upstream/aski";
-import { canRenameCell, useCellRename } from "../upstream/chatHeader";
 import { useCellTitle } from "../upstream/thread";
 import {
   Button,
@@ -152,9 +151,7 @@ export function TabStrip(props: {
               onDoubleClick={(event) => {
                 // Its first click opened the tab; Aski's tab and the new Cell's are never renamed.
                 if (untaken || (event.target as Element).closest("button, input")) return;
-                if (panesOf(tab).length > 1 || canRenameCell(focusedCellOf(tab))) {
-                  setRenaming(tab.id);
-                }
+                setRenaming(tab.id);
               }}
               style={
                 away || tab.id === hosting.hiddenId || flown.has(tab.id)
@@ -216,10 +213,10 @@ function focusedCellOf(tab: Tab): CellRef | null {
 }
 
 /**
- * The tab's focused Cell: its character, then its name. A tab of one Cell is that chat, named by
- * its title; a tab of more is named by its given name, else its focused chat's title, and counts
- * its Cells. Double-clicked, the name opens for a new one in place; in a tab of one Cell that
- * renames the chat, wherever it shows.
+ * The tab's focused Cell: its character, then its name: the one it was given, else its focused
+ * chat's title. A tab of more than one counts its Cells. Double-clicked, the name opens for a new
+ * one in place. It names the tab only: the chat's title is its one-liner, which the phone's card
+ * and the other Cells read, and a tab's name may drift from it.
  */
 function TabTitle(props: {
   tab: Tab;
@@ -231,7 +228,7 @@ function TabTitle(props: {
   const cell = focusedCellOf(props.tab);
   const title = useCellTitle(cell) ?? "New Cell";
   const many = panes.length > 1;
-  const name = many ? (props.tab.name ?? title) : title;
+  const name = props.tab.name ?? title;
   const count = many ? (
     <span className="shrink-0 text-muted-foreground"> · {panes.length}</span>
   ) : null;
@@ -239,21 +236,17 @@ function TabTitle(props: {
     return (
       <>
         <CellMark cell={cell} />
-        {many ? (
-          <RenameField
-            value={name}
-            label="Tab name"
-            className={TAB_RENAME}
-            onCommit={(value) => {
-              props.onDone();
-              const given = value.trim();
-              if (given !== name) props.onRename(given.length > 0 ? given : null);
-            }}
-            onCancel={props.onDone}
-          />
-        ) : (
-          <ChatRename cell={cell} title={title} onDone={props.onDone} />
-        )}
+        <RenameField
+          value={name}
+          label="Tab name"
+          className={TAB_RENAME}
+          onCommit={(value) => {
+            props.onDone();
+            const given = value.trim();
+            if (given !== name) props.onRename(given.length > 0 ? given : null);
+          }}
+          onCancel={props.onDone}
+        />
         {count}
       </>
     );
@@ -271,25 +264,6 @@ function TabTitle(props: {
 
 /** The field takes the name's room in the tab, its text where the name's was. */
 const TAB_RENAME = "-ml-1 h-5 flex-1 px-1";
-
-/** A tab of one Cell renames its chat. */
-function ChatRename(props: { cell: CellRef | null; title: string; onDone: () => void }) {
-  const { commitRename } = useCellRename(props.cell);
-  return (
-    <RenameField
-      value={props.title}
-      label="Title"
-      className={TAB_RENAME}
-      onCommit={(value) => {
-        // Not applied (its chat not loaded here yet): the field stays, with what was typed, saying why.
-        const refused = commitRename(value);
-        if (refused === undefined) props.onDone();
-        return refused;
-      }}
-      onCancel={props.onDone}
-    />
-  );
-}
 
 /**
  * Aski's tab: the fixed first place in the strip. It never drags or closes.

@@ -1,7 +1,7 @@
 // The phone's home on the Cells' line (stemcells/tasks/phone-line.md), under Aski, narrowed by
 // the header's picks. Needs you is the asks themselves, one open at a time; Flying, Landed and
-// Settled hand T3's list their Cells, so its rows and swipes stay T3's. Asks never hide: Needs
-// you counts every one, and says where those the picks leave out are.
+// Settled hand T3's list their Cells, a list each, so its rows and swipes stay T3's. Asks never
+// hide: Needs you counts every one, and says where those the picks leave out are.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
@@ -79,6 +79,8 @@ export function LineHome(props: {
   readonly settle: (cell: EnvironmentThreadShell) => Promise<boolean>;
   /** New chats on their way, which Working lists first. */
   readonly pending: number;
+  /** Settled Cells in view that the servers keep back from the phone. */
+  readonly olderSettled: number;
   /** T3's list, handed these Cells, and the new chats on their way with `pending`. */
   readonly renderList: (
     cells: ReadonlyArray<EnvironmentThreadShell>,
@@ -87,7 +89,8 @@ export function LineHome(props: {
 }) {
   const { answered } = useSyncExternalStore(held.subscribe, held.read);
   const line = lineOf(props.cells, props.readings, props.now, answered, byRecord(props.now));
-  const counts = countsOf(line, props.inView);
+  const onPhone = countsOf(line, props.inView);
+  const counts = { ...onPhone, settled: onPhone.settled + props.olderSettled };
   const tab = segments.useTab(opensOn(counts), props.known);
   const openChat = useHomeThreadSelection();
   const cellOf = (threadId: string) => props.cells.find((cell) => cell.id === threadId);
@@ -154,6 +157,10 @@ export function LineHome(props: {
   const shown = (
     tab === "settled" ? [...line.settled, ...line.snoozed] : tab === "needs" ? [] : line[tab]
   ).filter(props.inView);
+  const listed =
+    shown.length > 0 ||
+    (tab === "working" && props.pending > 0) ||
+    (tab === "settled" && props.olderSettled > 0);
   const greet = {
     input: counts.needs,
     working: counts.working,
@@ -188,13 +195,13 @@ export function LineHome(props: {
             cellOf={cellOf}
             actsFor={actsFor}
           />
-        ) : shown.length === 0 && (tab !== "working" || props.pending === 0) ? (
-          <EmptyTab words={EMPTY[tab]} />
-        ) : (
-          <View style={{ flex: 1 }}>
+        ) : listed ? (
+          <View key={tab} style={{ flex: 1 }}>
             {props.renderList(shown, tab === "working")}
             <CopyLayer />
           </View>
+        ) : (
+          <EmptyTab words={EMPTY[tab]} />
         )}
         <Hops standings={line.standings} cellOf={cellOf} />
         <UndoLine held={held} />

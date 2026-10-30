@@ -1,9 +1,9 @@
 // Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski unless
 // every machine says it has none, else one tab at a time (`home/tabs.ts`); T3's list gets the tab's
-// Cells. In the iOS workspace our picks narrow it (`home/scope.tsx`) and T3's own pick stays
-// unset. Where it has no header (Android, outside the workspace) and searching, it's T3's home.
+// Cells, a list per tab. In the iOS workspace our picks narrow it (`home/scope.tsx`) and T3's own
+// pick stays unset. Where it has no header (Android, outside the workspace) and searching, T3's.
 import { useIsFocused } from "@react-navigation/native";
-import { type ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { Platform, View } from "react-native";
 
 import * as Upstream from "../../../features/home/HomeScreen";
@@ -19,7 +19,12 @@ import { movedByHand } from "../../line/kit";
 import { lineApplies } from "../../line/line";
 import { LineHome } from "../../line/LineHome";
 import { useKeepReading, useReadings } from "../../line/readings";
-import { useWorkspaceTabs } from "../home";
+import {
+  type OlderSettledScope,
+  useOlderSettledShelf,
+  useWorkspaceTabs,
+  WorkspaceTabsContext,
+} from "../home";
 import { buildHomeProjectScopes } from "../threads";
 
 export * from "../../../features/home/HomeScreen";
@@ -44,6 +49,15 @@ export function HomeScreen(props: Props) {
   const picked = usePicks();
   const ours = Platform.OS === "ios" && workspace !== null;
   const scope = scopeOf(ours ? picked : NO_PICKS, props);
+  // The settled chats each server keeps back from the phone, counted with those it holds.
+  const older = useOlderSettledShelf({
+    scopes: scope.olderScopes,
+    expanded: false,
+    visibleCount: 0,
+  });
+  const olderSettled = older.unloadedCount(
+    props.threads.filter((thread) => thread.archivedAt === null && scope.inView(thread)),
+  );
   const { catalogState } = props;
   const ready = catalogState.hasLoadedShellSnapshot && props.projects.length > 0;
   // A saved machine on its way: the home stands as it will, so nothing swaps in under it.
@@ -75,20 +89,22 @@ export function HomeScreen(props: Props) {
       !aski.has(thread.id),
   );
   const list = (threads: Props["threads"], pending: boolean) => (
-    <Upstream.HomeScreen
-      {...upstream}
-      threads={threads}
-      pendingTasks={pending ? props.pendingTasks : []}
-      // A settle or its undo from T3's own rows is the person's move: its Cell hops.
-      onSettleThread={(thread) => {
-        movedByHand(thread.id);
-        return props.onSettleThread(thread);
-      }}
-      onUnsettleThread={(thread) => {
-        movedByHand(thread.id);
-        props.onUnsettleThread(thread);
-      }}
-    />
+    <FromTheTop>
+      <Upstream.HomeScreen
+        {...upstream}
+        threads={threads}
+        pendingTasks={pending ? props.pendingTasks : []}
+        // A settle or its undo from T3's own rows is the person's move: its Cell hops.
+        onSettleThread={(thread) => {
+          movedByHand(thread.id);
+          return props.onSettleThread(thread);
+        }}
+        onUnsettleThread={(thread) => {
+          movedByHand(thread.id);
+          props.onUnsettleThread(thread);
+        }}
+      />
+    </FromTheTop>
   );
 
   if (lineApplies(readings, scope.machines)) {
@@ -111,6 +127,7 @@ export function HomeScreen(props: Props) {
           onShowAll={() => setPicks(NO_PICKS)}
           settle={props.onSettleThread}
           pending={props.pendingTasks.length}
+          olderSettled={olderSettled}
           renderList={list}
         />
       </HomeFront>
@@ -130,8 +147,32 @@ export function HomeScreen(props: Props) {
           </View>
         )}
         pending={props.pendingTasks.length}
+        olderSettled={olderSettled}
       />
     </HomeFront>
+  );
+}
+
+/**
+ * T3's list keeps one scroll offset for the workspace's Threads tab and puts it back each time
+ * it mounts, so a segment opened where another was scrolled, Aski under the header. In the home
+ * each segment opens at its top; the offset still follows the list for T3's search.
+ */
+function FromTheTop(props: { readonly children: ReactNode }) {
+  const workspace = useWorkspaceTabs();
+  if (workspace === null) return props.children;
+  const { state } = workspace;
+  const threads = { ...state.tabs.threads, scrollOffset: 0 };
+  return (
+    <WorkspaceTabsContext
+      value={{
+        ...workspace,
+        getScrollOffset: (tab) => (tab === "threads" ? 0 : workspace.getScrollOffset(tab)),
+        state: { ...state, tabs: { ...state.tabs, threads } },
+      }}
+    >
+      {props.children}
+    </WorkspaceTabsContext>
   );
 }
 
@@ -163,8 +204,20 @@ function scopeOf(picks: Picks, props: Props) {
   const machineLabels = props.environments
     .filter((environment) => pickedMachines.includes(String(environment.environmentId)))
     .map((environment) => environment.label);
+  const olderScopes = props.environments.flatMap(({ environmentId }): OlderSettledScope[] => {
+    if (pickedMachines.length > 0 && !pickedMachines.includes(String(environmentId))) return [];
+    if (chosen.length === 0) return [{ environmentId, projectIds: null }];
+    const projectIds = chosen.flatMap((project) =>
+      project.projectRefs.flatMap((ref) =>
+        ref.environmentId === environmentId ? [ref.projectId] : [],
+      ),
+    );
+    return projectIds.length === 0 ? [] : [{ environmentId, projectIds }];
+  });
   return {
     everywhere,
+    /** Where the servers' older settled chats are counted: the machines and projects in view. */
+    olderScopes,
     machines: pickedMachines.length > 0 ? pickedMachines : allMachines,
     /** The one machine picked, whose Aski the header opens. */
     machine: pickedMachines.length === 1 ? (pickedMachines[0] ?? null) : null,
@@ -192,11 +245,15 @@ function Tabs(props: {
   readonly environmentId: string | null;
   readonly renderList: (threads: Props["threads"], pending: boolean) => ReactNode;
   readonly pending: number;
+  /** Settled chats the servers keep back, which Asleep counts and its list reads on. */
+  readonly olderSettled: number;
 }) {
-  const counts = countsOf(props.cells, props.now);
+  const local = countsOf(props.cells, props.now);
+  const counts = { ...local, asleep: local.asleep + props.olderSettled };
   const tab = tabs.useTab(counts.input > 0 ? "input" : "active", true);
   const shown = props.cells.filter((thread) => inTab(thread, tab, props.now));
   const pending = tab === "active" && props.pending > 0;
+  const listed = shown.length > 0 || pending || (tab === "asleep" && props.olderSettled > 0);
   const home = {
     tab,
     options: HOME_TABS.map(({ id, label }) => ({ id, label, count: counts[id] })),
@@ -207,10 +264,10 @@ function Tabs(props: {
   };
   return (
     <HomeTabsContext value={home}>
-      {shown.length === 0 && !pending ? (
-        <EmptyTab words={EMPTY[tab]} />
+      {listed ? (
+        <Fragment key={tab}>{props.renderList(shown, pending)}</Fragment>
       ) : (
-        props.renderList(shown, pending)
+        <EmptyTab words={EMPTY[tab]} />
       )}
     </HomeTabsContext>
   );

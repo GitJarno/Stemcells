@@ -84,6 +84,14 @@ export function useShelfHeadersShown(): boolean {
   return use(HomeTabsContext) === null;
 }
 
+/**
+ * Whether a card says nothing at its top right: one in flight on Flying, whose light already
+ * says so (`glow/CardLight.tsx`), so its "Working 5m" would only say it twice.
+ */
+export function useSaysNothing(status: string): boolean {
+  return use(HomeTabsContext)?.tab === "working" && (status === "working" || status === "waiting");
+}
+
 /** A card row's content with its Cell beside it, and its marks in its bottom right. */
 export function CellBesideRow(props: {
   readonly thread: EnvironmentThreadShell;

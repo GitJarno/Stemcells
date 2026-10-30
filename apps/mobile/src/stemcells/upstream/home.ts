@@ -1,7 +1,7 @@
-// What the phone's home takes from upstream's: its segmented control (the
-// tabs), how it opens a chat, which column it stands in, whether it stands
-// in the workspace (where its list has a header), the header's items, and the
-// machines and projects its list is narrowed to, and where the phone keeps its picks.
+// What the phone's home takes from upstream's: its segmented control (the tabs), how it opens a
+// chat, which column it stands in, whether it stands in the workspace (where its list has a
+// header), the header's items, the machines and projects its list is narrowed to, how many older
+// settled chats the servers keep, and where the phone keeps its picks.
 
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
@@ -13,7 +13,12 @@ import { threadListEnvironmentsAtom } from "../../state/server";
 export type { EnvironmentMachineKind } from "@t3tools/contracts";
 
 export { SegmentedControl } from "../../components/ui/SegmentedControl";
-export { useWorkspaceTabs } from "../../features/workspace/WorkspaceTabsContext";
+export {
+  useWorkspaceTabs,
+  WorkspaceTabsContext,
+} from "../../features/workspace/WorkspaceTabsContext";
+export { useOlderSettledShelf } from "../../state/olderSettledShelf";
+export type { OlderSettledScope } from "@t3tools/client-runtime/state/threads";
 export { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
 export { Toolbar } from "../../components/ui/Toolbar";
 export { Menu } from "../../components/ui/Menu";

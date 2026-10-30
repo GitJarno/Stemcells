@@ -2,7 +2,8 @@
 // draws no band under the header (iOS 27's `automatic` edge is a hard band). Where we take the
 // band away (the home, a chat's feed), the page blurs at the edges (`edge/Veil.ios.tsx`): under
 // the header, and on the home over the tab bar.
-import { use, type ComponentProps } from "react";
+import { cloneElement, isValidElement, use, type ComponentProps } from "react";
+import type { ScrollViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
@@ -29,7 +30,17 @@ export function NativeScrollViewMarker(
   const insets = useSafeAreaInsets();
   const ground = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
   const effects = noBand ? NO_HEADER_BAND : (props.scrollEdgeEffects ?? fromScreen);
-  const marker = <Upstream.NativeScrollViewMarker {...props} scrollEdgeEffects={effects} />;
+  // React Native stops a scroll at the view's own inset, 0 under UIKit's `automatic` one: T3's
+  // list, put back to its rest, stood with Aski under the header (stemcells/tasks/phone-home-still.md).
+  const children =
+    noBand && isValidElement<ScrollViewProps>(props.children)
+      ? cloneElement(props.children, { scrollToOverflowEnabled: true })
+      : props.children;
+  const marker = (
+    <Upstream.NativeScrollViewMarker {...props} scrollEdgeEffects={effects}>
+      {children}
+    </Upstream.NativeScrollViewMarker>
+  );
   // By value: a screen's options reach here cloned. Upstream never hides the top edge; we do.
   if (effects?.top !== "hidden" || primaryColumn) return marker;
   return (
