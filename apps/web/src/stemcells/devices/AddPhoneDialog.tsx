@@ -145,13 +145,13 @@ function PhoneOnTailnet({ look }: { readonly look: TailnetLook }) {
           ? `${online.map((phone) => phone.name).join(", ")} on your tailnet`
           : "Your phone on your tailnet"}
       </p>
-      {online.length > 0 ? null : (
-        <p className="text-xs text-muted-foreground">
-          {offline !== undefined
+      <p className="text-xs text-muted-foreground">
+        {online.length > 0
+          ? "So Tailscale never needs turning on by hand: VPN On Demand in Tailscale on an iPhone (tap your picture), or Always-on VPN in Android's VPN settings."
+          : offline !== undefined
             ? `${offline.name} has Tailscale off. Turn it on there, then scan this code.`
             : `On your phone, get Tailscale from the App Store or Google Play, sign in${account} and turn it on. Then scan this code. This updates by itself.`}
-        </p>
-      )}
+      </p>
     </div>
   );
 }
@@ -349,7 +349,8 @@ function AddPhone({ onDone }: { readonly onDone: () => void }) {
           </div>
           {overWifi ? (
             <p className="text-xs text-muted-foreground">
-              This works on this Wi-Fi only. Over Tailscale it reaches this computer from anywhere.
+              This works on this Wi-Fi only. Set up Tailscale here later and the phone reaches this
+              computer from anywhere, with no new code.
             </p>
           ) : here.canSwitch && tailnet.look !== null ? (
             <PhoneOnTailnet look={tailnet.look} />

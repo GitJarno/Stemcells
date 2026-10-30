@@ -15,6 +15,7 @@ import * as PresenceHttp from "./presence/http.ts";
 import * as PushHttp from "./push/http.ts";
 import * as Privacy from "./privacy/telemetry.ts";
 import * as Defaults from "./defaults/defaults.ts";
+import * as DirectEndpoints from "./upstream/directEndpoints.ts";
 import * as SpendHttp from "./spend/http.ts";
 import * as SuggestionHttp from "./suggestions/http.ts";
 import * as TailscaleHttp from "./tailscale/http.ts";
@@ -53,3 +54,6 @@ export const modelList = ModelList.bundledModelList;
 
 /** The triage service server.ts provides in place of upstream's: prepares nothing. */
 export const triage = Triage.noTriage;
+
+/** The addresses server.ts gives clients: upstream's, and the Tailscale one while phones use it. */
+export const directEndpoints = DirectEndpoints.directEndpoints;

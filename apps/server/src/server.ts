@@ -700,7 +700,7 @@ const layerRuntimeDependencies = layerRuntimeCoreDependencies.pipe(
   Layer.provideMerge(Stemcells.analytics),
   Layer.provideMerge(ExternalLauncher.layer),
   Layer.provideMerge(RemoteOpenTargets.layer),
-  Layer.provideMerge(DirectEndpoints.layer),
+  Layer.provideMerge(Stemcells.directEndpoints(DirectEndpoints.make)),
   Layer.provideMerge(ServerLifecycleEvents.layer),
   Layer.provide(NetService.layer),
 );
