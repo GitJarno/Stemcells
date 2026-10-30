@@ -1099,7 +1099,11 @@ export function hasServerAcknowledgedLocalDispatch(input: {
   if (input.hasPendingApproval || input.hasPendingUserInput || Boolean(input.threadError)) {
     return true;
   }
-  if (input.phase === "connecting" || derivePhase(input.runtime ?? null) === "connecting") {
+  // The shell hides idle compactions, so it can read "queued" while the thread runs one.
+  if (
+    input.phase === "connecting" ||
+    (input.phase !== "running" && derivePhase(input.runtime ?? null) === "connecting")
+  ) {
     return false;
   }
 
