@@ -23,7 +23,7 @@ import type { CellStanding } from "../needs/wire";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
 import { CellAge, CellCard, CellProject, CellPullRequest, useCellShell } from "../upstream/cellRow";
-import { useOpenCell, useShelves, type ShelvedCell } from "../upstream/column";
+import { useOpenCell, useSettledKeptBack, useShelves, type ShelvedCell } from "../upstream/column";
 import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
   isElectron,
@@ -108,6 +108,10 @@ export function Cells() {
     settled: allShelves.settled.filter(here),
     pinned: allShelves.pinned.filter(here),
   };
+  // The server sends only its newest settled Cells; Settled counts the rest it keeps back too.
+  const keptBack = useSettledKeptBack((projectId) => here({ projectId }));
+  const settledCount = shelves.settled.length + keptBack;
+  const settledUnlisted = settledCount - Math.min(shelves.settled.length, SETTLED_SHOWN);
   const update = useUpdateToTake();
   // The undo line stands above the stages; with the column hidden, the notice is a toast.
   // Settings and Usage have no ⌘Z to undo with.
@@ -149,7 +153,7 @@ export function Cells() {
     needs: waiting,
     working: working.length,
     landed: landed.length,
-    settled: shelves.settled.length,
+    settled: settledCount,
     pinned: shelves.pinned.length,
   };
 
@@ -202,9 +206,9 @@ export function Cells() {
               settled
               cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
               more={
-                shelves.settled.length > SETTLED_SHOWN ? (
+                settledUnlisted > 0 ? (
                   <button type="button" data-cells-more="" onClick={openSearch}>
-                    {shelves.settled.length - SETTLED_SHOWN} more · search finds them
+                    {settledUnlisted} more · search finds them
                   </button>
                 ) : null
               }
