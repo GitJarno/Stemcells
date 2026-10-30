@@ -1,13 +1,19 @@
 /**
  * What the Cells' column reads of upstream's chats beside the needs stream:
- * those settled and those pinned on the primary server, and how a row opens
- * its chat (stemcells/tasks/left-column.md).
+ * those settled and those pinned on the primary server, how many settled ones
+ * it keeps back, and how a row opens its chat (stemcells/tasks/left-column.md).
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import {
+  type OlderSettled,
+  unloadedOlderSettledCount,
+} from "@t3tools/client-runtime/state/threads";
+import type { EnvironmentId } from "@t3tools/contracts";
 import { useNavigate } from "@tanstack/react-router";
 
 import { useQuietThreadShells } from "../../state/entities";
 import { usePrimaryEnvironmentId } from "../../state/environments";
+import { useOlderSettledShelf } from "../../state/olderSettledShelf";
 import { isAskisInstance } from "../aski/setup";
 
 export interface ShelvedCell {
@@ -66,6 +72,39 @@ export function useShelves(): Shelves {
   const shells = useQuietThreadShells();
   const environmentId = usePrimaryEnvironmentId();
   return shelvesOf(shells, environmentId);
+}
+
+/**
+ * Settled chats the server keeps back from this window, older than the newest it sends
+ * (`omitOlderSettled`), in the projects `shown` lets through, less those a page brought in.
+ */
+export function keptBackOf(
+  older: OlderSettled | null,
+  environmentId: EnvironmentId | null,
+  shells: ReadonlyArray<EnvironmentThreadShell>,
+  shown: (projectId: string) => boolean,
+): number {
+  if (older === null || environmentId === null) return 0;
+  const projectIds = [...older.counts.keys()].filter(shown);
+  return unloadedOlderSettledCount({
+    olderSettled: () => older,
+    scopes: [{ environmentId, projectIds }],
+    threads: shells,
+  });
+}
+
+/** The primary server's settled chats it keeps back, for Settled to count with its own. */
+export function useSettledKeptBack(shown: (projectId: string) => boolean): number {
+  const shells = useQuietThreadShells();
+  const environmentId = usePrimaryEnvironmentId();
+  const shelf = useOlderSettledShelf({
+    scopes: environmentId === null ? [] : [{ environmentId, projectIds: null }],
+    expanded: false,
+    visibleCount: 0,
+  });
+  const older =
+    environmentId === null ? null : (shelf.environments.get(environmentId)?.older ?? null);
+  return keptBackOf(older, environmentId, shells, shown);
 }
 
 /** Goes to a Cell's chat; the workspace shows it where opening a chat goes (`tabs/layout.ts`, `showRoute`). */

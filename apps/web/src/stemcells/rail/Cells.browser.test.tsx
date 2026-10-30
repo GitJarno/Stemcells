@@ -162,6 +162,8 @@ vi.mock("../upstream/column", () => ({
       { environmentId: "env", threadId: "thread-p", projectId: "project-harbor", title: "Roadmap" },
     ],
   }),
+  // Harbor's older settled Cells, which the server keeps back.
+  useSettledKeptBack: (shown: (projectId: string) => boolean) => (shown("project-harbor") ? 40 : 0),
   useOpenCell: () => spies.open,
 }));
 
@@ -396,8 +398,9 @@ describe("the Cells' column", () => {
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .not.toBeInViewport();
-    await userEvent.click(screen.getByRole("button", { name: /Settled\s*1/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Settled\s*41/ }));
     await expect.element(screen.getByText("Bump dependencies")).toBeVisible();
+    await expect.element(screen.getByText("40 more · search finds them")).toBeVisible();
   });
 
   it("settles a landed Cell from its row, and all of them, each off the line at once", async () => {

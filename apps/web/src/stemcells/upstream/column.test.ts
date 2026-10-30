@@ -1,7 +1,9 @@
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentId, ProjectId } from "@t3tools/contracts";
+import { DateTime } from "effect";
 import { describe, expect, it } from "vite-plus/test";
 
-import { shelvesOf } from "./column";
+import { keptBackOf, shelvesOf } from "./column";
 
 /** A shell with only what the shelves read; the rest of upstream's shape doesn't matter here. */
 function shell(
@@ -73,5 +75,30 @@ describe("the column's settled and pinned Cells", () => {
       "env",
     );
     expect(ids(shown)).toEqual(["cell"]);
+  });
+
+  it("counts the settled Cells the server keeps back, in the projects shown, less those held", () => {
+    const older = {
+      before: "2026-10-01T00:00:00.000Z",
+      beforeMs: Date.parse("2026-10-01T00:00:00.000Z"),
+      counts: new Map([
+        ["a" as ProjectId, 5],
+        ["b" as ProjectId, 3],
+      ]),
+    };
+    const held = {
+      environmentId: "env",
+      projectId: "a",
+      source: {
+        projectId: "a",
+        lineage: { relationshipToParent: null },
+        settledOverride: "settled",
+        settledAt: DateTime.makeUnsafe("2026-09-20T10:00:00.000Z"),
+      },
+    } as unknown as EnvironmentThreadShell;
+    const env = "env" as EnvironmentId;
+    expect(keptBackOf(older, env, [held], () => true)).toBe(7);
+    expect(keptBackOf(older, env, [held], (projectId) => projectId === "b")).toBe(3);
+    expect(keptBackOf(null, env, [held], () => true)).toBe(0);
   });
 });
