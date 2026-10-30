@@ -1,11 +1,12 @@
 /**
- * The settles the person sent from this device. Upstream's auto-settle (a merged pull request, a
- * quiet day) leaves a thread just as Settle does, so the thread can't tell a pane which it was.
- * Each settle the person sends marks it here first, in local storage so every window hears it,
- * and a pane leaves only for a settle whose mark is fresh (`settled.ts`).
+ * The person's settles. Upstream's auto-settle (a merged pull request, a quiet day) leaves a
+ * thread just as Settle does, so a pane leaves only for a fresh settle by hand (`settled.ts`):
+ * this device's mark, in local storage so every window hears it at once, or the server's word
+ * of one on any device.
  */
 import { useSyncExternalStore } from "react";
 
+import type { HandSettle } from "../needs/wire";
 import type { CellRef } from "./layout";
 
 const STORAGE_KEY = "stemcells.handSettles";
@@ -36,6 +37,19 @@ export function withoutMark(marks: Marks, thread: Thread): Marks {
 
 export function markedAt(marks: Marks, thread: Thread | null): number | null {
   return thread === null ? null : (marks[keyOf(thread)] ?? null);
+}
+
+/** The server's latest settle by hand of the thread, from any device, in ms; null for none. */
+export function handSettledAtFrom(
+  settles: ReadonlyArray<HandSettle> | undefined,
+  threadId: string | null,
+): number | null {
+  let latest: number | null = null;
+  for (const settle of settles ?? []) {
+    const at = Date.parse(settle.at);
+    if (settle.threadId === threadId && (latest === null || at > latest)) latest = at;
+  }
+  return latest;
 }
 
 function parse(value: string | null): Marks {

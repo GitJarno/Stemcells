@@ -10,7 +10,7 @@ import {
   type NewIds,
   type Workspace,
 } from "./layout";
-import { HAND_SETTLE_MS, markedAt, withMark, withoutMark } from "./handSettles";
+import { HAND_SETTLE_MS, handSettledAtFrom, markedAt, withMark, withoutMark } from "./handSettles";
 import { comeBack, leaveSlate, leavesForSettle, settlesOnClose } from "./settled";
 
 let counter = 0;
@@ -122,6 +122,19 @@ describe("which settle closes a pane", () => {
     expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: stale, now })).toBe(
       false,
     );
+  });
+
+  it("closes it for the person's settle on another device, while the server's word is fresh", () => {
+    const settle = (threadId: string, at: number) => ({ threadId, at: new Date(at).toISOString() });
+    const settles = [settle("otter", now - HAND_SETTLE_MS), settle("otter", now - 1)];
+    const heard = handSettledAtFrom(settles, "otter");
+    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: heard, now })).toBe(true);
+    const stale = handSettledAtFrom([settle("otter", now - HAND_SETTLE_MS)], "otter");
+    expect(leavesForSettle({ sawUnsettled: true, settled: true, markedAt: stale, now })).toBe(
+      false,
+    );
+    expect(handSettledAtFrom(settles, "pip")).toBeNull();
+    expect(handSettledAtFrom(undefined, "otter")).toBeNull();
   });
 
   it("leaves open a settled Cell the pane never showed at work", () => {

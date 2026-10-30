@@ -25,19 +25,27 @@ import {
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
 import { standingsOf, type CellStanding } from "./stage.ts";
 
+/** A Cell the person settled by hand, on any device. */
+export interface HandSettle {
+  readonly threadId: string;
+  readonly at: string;
+}
+
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
   /** What the person put off, soonest back first; each keeps its number for when it is back. */
   readonly later: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage, for Aski's roster (stage.ts). */
   readonly cells: ReadonlyArray<CellStanding>;
+  /** The last minute's, for every Mac to close those Cells' panes (settle-everywhere.md). */
+  readonly settles?: ReadonlyArray<HandSettle>;
 }
 
 /**
  * What needs the person, derived on the server from T3's thread shells on each thread change,
  * so every screen shows one list with one numbering (stemcells/tasks/aski-room.md, decision 1).
- * It holds only the shells it last read, the numbers it gave, the details it read per card,
- * and when it last heard from each Cell: the activity clock a stuck run is timed on.
+ * It holds only the shells, numbers and card details it last read, the last minute's settles by
+ * hand, and when it last heard from each Cell: the activity clock a stuck run is timed on.
  */
 export class Needs extends Context.Service<
   Needs,
@@ -60,6 +68,8 @@ const READS = 4;
  * activity clock starts again rather than count time nobody saw.
  */
 const ABSENCE_MS = 3 * 60 * 1000;
+/** A Mac closes a pane only for a settle under 10 s old; a minute covers a slow reconnect. */
+const SETTLES_KEPT_MS = 60 * 1000;
 
 export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.NeedsSource) {
   const latest = yield* SubscriptionRef.make<NeedsList | null>(null);
@@ -68,6 +78,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
   /** When each Cell last showed life: any event of its own work. */
   const heard = new Map<string, number>();
   let lookedAt: number | null = null;
+  let settles: ReadonlyArray<{ readonly threadId: string; readonly at: number }> = [];
   let numbering = EMPTY_NUMBERING;
   let sent: NeedsList | null = null;
 
@@ -146,10 +157,15 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     for (const { signal, detail } of read) {
       if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
     }
+    settles = settles.filter((settle) => now - settle.at < SETTLES_KEPT_MS);
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
       later: later.toSorted((a, b) => a.until.localeCompare(b.until) || a.number - b.number),
       cells: standingsOf([...shells.values()], needs, stops, now, autoResume),
+      settles: settles.map((settle) => ({
+        threadId: settle.threadId,
+        at: DateTime.formatIso(DateTime.makeUnsafe(settle.at)),
+      })),
     };
     if (sent !== null && Equal.equals(list, sent)) return;
     sent = list;
@@ -173,7 +189,12 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       Stream.runForEach((changed) =>
         Effect.gen(function* () {
           const heardAt = yield* Clock.currentTimeMillis;
-          for (const { threadId, lively } of changed) if (lively) heard.set(threadId, heardAt);
+          for (const { threadId, lively, settledByHandAt } of changed) {
+            if (lively) heard.set(threadId, heardAt);
+            if (settledByHandAt !== undefined) {
+              settles = [...settles, { threadId, at: settledByHandAt }];
+            }
+          }
           yield* Effect.forEach(
             changed,
             ({ threadId }) =>

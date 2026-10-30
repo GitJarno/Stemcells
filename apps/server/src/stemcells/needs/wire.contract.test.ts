@@ -6,6 +6,7 @@
  */
 import { assert, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
 import * as Stream from "effect/Stream";
 import * as TestClock from "effect/testing/TestClock";
 import { expectTypeOf } from "vite-plus/test";
@@ -42,7 +43,9 @@ const shells: ReadonlyArray<Shell> = [
 const source: NeedsSource = {
   ready: Effect.void,
   snapshot: Effect.succeed({ shells, sequence: 0 }),
-  changedThreads: () => Stream.never,
+  // The person settles the finished one by hand, from the phone.
+  changedThreads: () =>
+    Stream.make([{ threadId: shells[2]!.id, lively: false, settledByHandAt: NOW + MINUTE }]),
   shell: (id) => Effect.succeed(shells.find((shell) => shell.id === id) ?? null),
   request: (_threadId, requestId) => Effect.succeed(detail(requestId)),
   plan: () => Effect.succeed(null),
@@ -56,8 +59,13 @@ it.effect("the JSON the server sends is what the phone reads", () =>
     Effect.gen(function* () {
       yield* TestClock.setTime(NOW + MINUTE);
       const needs = yield* make(source);
+      const sent = yield* needs.changes.pipe(
+        Stream.filter((list) => list.settles?.length === 1),
+        Stream.runHead,
+        Effect.map(Option.getOrThrow),
+      );
       // As `http.ts` sends it, and as the phone reads it.
-      const read = Wire.needsListOf(JSON.parse(JSON.stringify(yield* needs.list)));
+      const read = Wire.needsListOf(JSON.parse(JSON.stringify(sent)));
       assert.deepStrictEqual(
         read?.needs.map((need) => [need.threadId, need.kind, need.request?.prompt]),
         [["asking", "permission", "pnpm test"]],
@@ -67,6 +75,10 @@ it.effect("the JSON the server sends is what the phone reads", () =>
         ["asking", "needs-you"],
         ["busy", "working"],
         ["finished", "done"],
+      ]);
+      // A Mac closes the settled Cell's panes on this.
+      assert.deepStrictEqual(read?.settles, [
+        { threadId: "finished", at: "2026-10-21T12:01:00.000Z" },
       ]);
     }),
   ),
