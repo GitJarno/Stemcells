@@ -145,12 +145,20 @@ export interface LaterNeed extends Need {
   readonly until: string;
 }
 
+/** A Cell the person settled by hand, on any device. */
+export interface HandSettle {
+  readonly threadId: string;
+  readonly at: string;
+}
+
 export interface NeedsList {
   readonly needs: ReadonlyArray<Need>;
   /** What the person put off, soonest back first; absent from a server before Later's seats. */
   readonly later?: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage; absent from a server before stages. */
   readonly cells?: ReadonlyArray<CellStanding>;
+  /** The last minute's, for a Mac to close those Cells' panes; absent from a server before them. */
+  readonly settles?: ReadonlyArray<HandSettle>;
 }
 
 const isText = (value: unknown): value is string => typeof value === "string";

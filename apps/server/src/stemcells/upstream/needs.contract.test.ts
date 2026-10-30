@@ -5,9 +5,12 @@
  * or a shell field the fixtures no longer match.
  */
 import {
+  CommandId,
+  EventId,
   OrchestrationV2ProviderFailureClass,
   OrchestrationV2RunStatus,
   OrchestrationV2RuntimeRequest,
+  OrchestrationV2StoredEvent,
   OrchestrationV2ThreadShell,
   OrchestrationV2TurnItem,
   ProviderApprovalFullAccessOverride,
@@ -17,7 +20,17 @@ import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
 import { REQUEST_KINDS } from "../needs/derive.ts";
-import { HOUR, at, pendingRequest, runId, shellFixture } from "./needs.fixture.ts";
+import { byThread, settledByHandAt } from "./needs.ts";
+import {
+  HOUR,
+  MINUTE,
+  NOW,
+  at,
+  pendingRequest,
+  runId,
+  shellFixture,
+  threadId,
+} from "./needs.fixture.ts";
 
 describe("upstream's thread shell, as the needs list reads it", () => {
   it("has a card for every kind of runtime request", () => {
@@ -74,5 +87,43 @@ describe("upstream's thread shell, as the needs list reads it", () => {
       shellFixture({ hasActionableProposedPlan: true, interactionMode: "plan" }),
     ];
     for (const shell of shells) Schema.asserts(OrchestrationV2ThreadShell, shell);
+  });
+});
+
+describe("upstream's settle, as the needs list reads it", () => {
+  const settled = (commandId: string | null): OrchestrationV2StoredEvent => ({
+    sequence: 7,
+    commandId: commandId === null ? null : CommandId.make(commandId),
+    event: {
+      id: EventId.make("event-settled"),
+      type: "thread.settled",
+      threadId: threadId("otter"),
+      occurredAt: at(MINUTE),
+      payload: {
+        ...shellFixture({ id: "otter" }),
+        lastVisitedAt: null,
+        settledOverride: "settled",
+        settledAt: at(0),
+      },
+    },
+  });
+
+  it("tells the person's settle, from any client, from upstream's own", () => {
+    Schema.asserts(OrchestrationV2StoredEvent, settled(null));
+    expect(settledByHandAt(settled("5f0c9b8e-2d4a-4c1e-9a7b-3e6f1d2c8b90"))).toBe(NOW);
+    expect(settledByHandAt(settled("server:auto-settle:otter:5f0c9b8e"))).toBeNull();
+    expect(settledByHandAt(settled("server:settle-after-run:run-1"))).toBeNull();
+    expect(settledByHandAt(settled(null))).toBeNull();
+  });
+
+  it("keeps a settle by hand through the batch's later changes to its thread", () => {
+    const otter = threadId("otter");
+    expect(
+      byThread([
+        { threadId: otter, lively: true },
+        { threadId: otter, lively: false, settledByHandAt: NOW },
+        { threadId: otter, lively: false },
+      ]),
+    ).toEqual([{ threadId: otter, lively: true, settledByHandAt: NOW }]);
   });
 });

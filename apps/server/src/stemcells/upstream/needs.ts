@@ -6,6 +6,7 @@
  */
 import type {
   OrchestrationV2DomainEvent,
+  OrchestrationV2StoredEvent,
   OrchestrationV2ThreadShell,
   OrchestrationV2TurnItem,
   ProviderApprovalFullAccessOverride,
@@ -14,6 +15,7 @@ import type {
   RuntimeRequestId,
   ThreadId,
 } from "@t3tools/contracts";
+import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
@@ -92,6 +94,8 @@ export interface InFlight {
 export interface Changed {
   readonly threadId: ThreadId;
   readonly lively: boolean;
+  /** When the person settled it by hand, on any device (`settledByHandAt`). */
+  readonly settledByHandAt?: number;
 }
 
 /** The events of a Cell's own work. */
@@ -130,6 +134,34 @@ export interface NeedsSource {
   readonly autoResume: Effect.Effect<boolean>;
 }
 
+/**
+ * When the person settled the thread by hand, in ms; null for any other event. Upstream's own
+ * settles (a quiet day, a merged pull request, a Cell's run ending) send commands whose ids start
+ * `server:`, and its auto-settle repair migration keys on that prefix; a client's carry its own id.
+ */
+export function settledByHandAt(stored: OrchestrationV2StoredEvent): number | null {
+  const { commandId, event } = stored;
+  if (event.type !== "thread.settled" || commandId === null || commandId.startsWith("server:")) {
+    return null;
+  }
+  return DateTime.toEpochMillis(event.payload.settledAt ?? event.occurredAt);
+}
+
+/** A batch's changes, one per thread: lively if any was, with its latest settle by hand. */
+export function byThread(batch: ReadonlyArray<Changed>): ReadonlyArray<Changed> {
+  const merged = new Map<ThreadId, Changed>();
+  for (const change of batch) {
+    const before = merged.get(change.threadId);
+    const settledByHandAt = change.settledByHandAt ?? before?.settledByHandAt;
+    merged.set(change.threadId, {
+      threadId: change.threadId,
+      lively: change.lively || before?.lively === true,
+      ...(settledByHandAt === undefined ? {} : { settledByHandAt }),
+    });
+  }
+  return [...merged.values()];
+}
+
 /** Items a run is in the middle of that are the model's own words, not a tool call. */
 const OWN_WORDS: ReadonlySet<OrchestrationV2TurnItem["type"]> = new Set([
   "assistant_message",
@@ -163,28 +195,24 @@ export const makeNeedsSource = Effect.gen(function* () {
     events
       .streamProjectedApplicationEvents({
         afterSequence,
-        project: (stored) =>
-          "aggregateKind" in stored
-            ? { sequence: stored.sequence, changed: null }
-            : {
-                sequence: stored.sequence,
-                changed: {
-                  threadId: stored.event.threadId,
-                  lively: LIVELY.has(stored.event.type),
-                },
-              },
+        project: (stored) => {
+          if ("aggregateKind" in stored) return { sequence: stored.sequence, changed: null };
+          const settled = settledByHandAt(stored);
+          return {
+            sequence: stored.sequence,
+            changed: {
+              threadId: stored.event.threadId,
+              lively: LIVELY.has(stored.event.type),
+              ...(settled === null ? {} : { settledByHandAt: settled }),
+            },
+          };
+        },
       })
       .pipe(
         Stream.map((event) => event.changed),
         Stream.filter((changed): changed is Changed => changed !== null),
         Stream.groupedWithin(512, CHANGE_BEAT),
-        Stream.map((batch) => {
-          const byThread = new Map<ThreadId, boolean>();
-          for (const { threadId, lively } of batch) {
-            byThread.set(threadId, lively || byThread.get(threadId) === true);
-          }
-          return [...byThread].map(([threadId, lively]) => ({ threadId, lively }));
-        }),
+        Stream.map(byThread),
         Stream.orDie,
       );
 

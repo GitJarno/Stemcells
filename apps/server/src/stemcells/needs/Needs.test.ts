@@ -75,6 +75,8 @@ const fakeSource = Effect.gen(function* () {
     );
   /** The person's hand changed this thread: a visit, a snooze. */
   const touch = (id: string) => Queue.offer(changes, [{ threadId: threadId(id), lively: false }]);
+  const settleByHand = (id: string, at: number) =>
+    Queue.offer(changes, [{ threadId: threadId(id), lively: false, settledByHandAt: at }]);
   return {
     source,
     put,
@@ -83,6 +85,7 @@ const fakeSource = Effect.gen(function* () {
     replies,
     tools,
     touch,
+    settleByHand,
     failNext: () => (failNextRead = true),
   };
 });
@@ -263,6 +266,27 @@ it.effect("gives a run with a tool call in flight 30 minutes before it is stuck"
         title: "Run tests",
         command: "pnpm test:migrate",
       });
+    }),
+  ),
+);
+
+it.effect("lists a settle by hand for a minute, for every Mac to close the Cell's panes", () =>
+  Effect.scoped(
+    Effect.gen(function* () {
+      yield* TestClock.setTime(NOW);
+      const fake = yield* fakeSource;
+      fake.put(shellFixture({ id: "otter" }));
+      const needs = yield* make(fake.source);
+      assert.deepStrictEqual((yield* needs.list).settles, []);
+
+      yield* fake.settleByHand("otter", NOW);
+      const settled = yield* listWhere(needs.changes, (list) => list.settles?.length === 1);
+      assert.deepStrictEqual(settled.settles, [
+        { threadId: "otter", at: "2026-10-21T12:00:00.000Z" },
+      ]);
+
+      yield* listWhere(needs.changes, (list) => list.settles?.length === 0);
+      assert.isAtLeast((yield* Clock.currentTimeMillis) - NOW, MINUTE);
     }),
   ),
 );
