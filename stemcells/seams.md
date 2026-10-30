@@ -674,8 +674,9 @@ library's dependency (above); the rest are substitutes:
   and the phone draws it as SVG; `cell/hermes.test.ts` reads those modules
   for calls Hermes lacks. Its greeting is word for word from its persona
   (`home/greeting.test.ts`).
-- **Cells by name.** A Cell named in a chat's words is a pill in the Cell
-  tone that opens it (`stemcells/tasks/cell-tokens.md`). A substitute of
+- **Cells by name.** A Cell named in a chat's words is a pill, the Cell
+  held still and its name, that opens it
+  (`stemcells/tasks/cell-tokens.md`). A substitute of
   `ThreadDetailScreen` tells the words which chat they're in
   (`chat/inView.ts`), and one of `SelectableMarkdownText` writes each name
   as T3's own thread link, so T3's tap opens it, pushed or in the pane

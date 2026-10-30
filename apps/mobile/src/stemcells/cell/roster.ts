@@ -77,6 +77,19 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
+/** What the crew among `threads` wears on `day`, by its chats' thread ids. */
+export function crewLooksOf(
+  threads: ReadonlyArray<EnvironmentThreadShell>,
+  day: string,
+): ReadonlyMap<string, Look> {
+  return dealt(crewOf(threads), day);
+}
+
+/** The day the crew is dealt on. */
+export function useCrewDay(): string {
+  return useSyncExternalStore(subscribe, () => today);
+}
+
 /** What the Cell whose chat is `threadId` wears today; undefined for one outside the crew. */
 export function useCellLook(threadId: string): readonly string[] | undefined {
   const crew = useThreadShellsSelected(crewOf);

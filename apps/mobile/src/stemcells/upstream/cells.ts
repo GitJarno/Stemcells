@@ -31,6 +31,15 @@ export function useEnvironmentProviders() {
   return useAtomValue(threadListEnvironmentsAtom).providersByEnvironmentId;
 }
 
+/** What `select` reads from each environment's providers; the caller draws again only when that changes. */
+export function useEnvironmentProvidersSelected<A>(
+  select: (byEnvironment: ReturnType<typeof useEnvironmentProviders>) => A,
+): A {
+  return useAtomValue(threadListEnvironmentsAtom, (environments) =>
+    select(environments.providersByEnvironmentId),
+  );
+}
+
 /** Whether the phone is drawn light or dark. */
 export function useThemeAppearance(): "light" | "dark" {
   return useAppearancePreferences().themeAppearance;
