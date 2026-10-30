@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { CLEANUP_PROMISE, DISK_WARN, diskBytes } from "../../../../../stemcells/words/disk.ts";
 import {
   AppText,
   ScreenScrollView,
@@ -13,6 +13,8 @@ import {
   useMachines,
 } from "../upstream/disk";
 import { useFreeSpace } from "./useFreeSpace";
+import { useWarnBelow } from "./warn";
+import { WarnMenu } from "./WarnMenu";
 
 // Settings › Disk on the phone: each machine's free space, and a tap that opens a new Cell
 // in that machine's Disk project, the cleanup ask waiting unsent. The phone deletes and
@@ -34,7 +36,7 @@ export function DiskScreen() {
       >
         <SettingsSection
           title="Machines"
-          footer={`Tap a machine to start a Cell that frees space on it. ${CLEANUP_PROMISE}`}
+          footer={`Tap a machine to start a Cell that frees space on it. ${CLEANUP_PROMISE} ${DISK_WARN.note}`}
         >
           {machines.length === 0 ? (
             <AppText className="px-4 py-3 text-sm text-foreground-muted">
@@ -47,7 +49,10 @@ export function DiskScreen() {
                 className={index === 0 ? undefined : "border-t border-border"}
               >
                 {machine.connection === "connected" ? (
-                  <ConnectedMachineRow machine={machine} />
+                  <>
+                    <ConnectedMachineRow machine={machine} />
+                    <WarnRow machine={machine} />
+                  </>
                 ) : (
                   <SettingsRow
                     icon={machine.icon}
@@ -63,6 +68,21 @@ export function DiskScreen() {
         </SettingsSection>
       </ScreenScrollView>
     </SettingsScreen>
+  );
+}
+
+/** When the home shows this machine's disk, and its Mac turns it amber. */
+function WarnRow({ machine }: { readonly machine: Machine }) {
+  const disk = useMachineDisk(machine.environmentId);
+  const warnBelow = useWarnBelow(machine.environmentId, disk?.warnBelow);
+  return (
+    <View className="border-t border-border">
+      <WarnMenu environmentId={machine.environmentId} warnBelow={warnBelow}>
+        <View>
+          <SettingsRow icon="bell.badge" label={DISK_WARN.title} value={diskBytes(warnBelow)} />
+        </View>
+      </WarnMenu>
+    </View>
   );
 }
 

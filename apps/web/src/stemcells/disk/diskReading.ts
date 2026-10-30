@@ -10,7 +10,13 @@ export interface DiskItem {
 }
 
 export interface DiskReading {
-  readonly volume: { readonly total: number; readonly free: number; readonly used: number };
+  readonly volume: {
+    readonly total: number;
+    readonly free: number;
+    readonly used: number;
+    /** How little free space warns the person, once they chose. */
+    readonly warnBelow?: number;
+  };
   readonly scanning: boolean;
   readonly counted: number;
   readonly map: {

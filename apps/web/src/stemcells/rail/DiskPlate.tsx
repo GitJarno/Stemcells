@@ -34,7 +34,10 @@ export function DiskPlate(props: { on: boolean; wide?: boolean }) {
           data-on={props.on ? "true" : "false"}
           onClick={() => void navigate({ to: "/settings/disk" })}
         >
-          <span data-stemcells-disk-body="" className={cn(FOOT_TONE[diskPressure(volume.free)])}>
+          <span
+            data-stemcells-disk-body=""
+            className={cn(FOOT_TONE[diskPressure(volume.free, volume.warnBelow)])}
+          >
             <HardDriveIcon aria-hidden />
             <span data-stemcells-disk-figure="">
               {figure.replace(/ GB$/, "")}

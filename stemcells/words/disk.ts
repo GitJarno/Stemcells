@@ -47,6 +47,15 @@ Open with each tier's total, counting shared space once. End with "Not touched" 
 
 Delete nothing until I reply with IDs ("delete L1, L3 and M5", or "all L"). Then remove exactly those. Right before removing each, check it again: still there, unchanged, nothing using it, and for a checkout no uncommitted or unpushed work; skip any that changed and say why. Use the owner's command where there is one (git worktree remove without --force, pnpm store prune, xcrun simctl delete, brew cleanup), otherwise rm -rf on one full path: never a wildcard, never sudo (give me the command to run myself instead). End with the space that came back, from df before and after: sizes overstate what deleting an APFS clone or a hard-linked copy returns.`;
 
+/** How little free space warns: the phone's disk card and Settings › Disk choose it. */
+export const DISK_WARN = {
+  title: "Warn me under",
+  note: "Under this much free space the disk turns amber, and red under half of it. The phone shows it on its home.",
+  menuTitle: "Warn me when free space is under",
+  label: "When to warn about free space",
+  failed: "Couldn't change when to warn",
+} as const;
+
 /** A Cell's stopped turn while its machine's disk is full, and once there's room again. */
 export const DISK_FULL = {
   title: "The disk is full",

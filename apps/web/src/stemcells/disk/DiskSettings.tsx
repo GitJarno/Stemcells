@@ -5,10 +5,17 @@ import {
   Badge,
   Button,
   formatRelativeTimeLabel,
+  Select,
+  SelectItem,
+  SelectPopup,
+  SelectTrigger,
+  SelectValue,
+  sendToPrimary,
   SettingsPageContainer,
   SettingsRow,
   SettingsSection,
   Spinner,
+  toastManager,
   useMachineDisk,
   useOpenDiskCell,
   useOtherMachines,
@@ -16,10 +23,10 @@ import {
   useNowMinuteMs,
   type EnvironmentId,
 } from "../upstream/disk";
-import { CLEANUP_PROMISE, diskBytes } from "../../../../../stemcells/words/disk.ts";
+import { CLEANUP_PROMISE, DISK_WARN, diskBytes } from "../../../../../stemcells/words/disk.ts";
 import { openCleanupCell } from "./cleanupCell";
 import { useDiskReading, type DiskReading } from "./diskReading";
-import { diskPressure, type DiskPressure } from "./pressure";
+import { diskPressure, type DiskPressure, SOON_BELOW, WARN_CHOICES } from "./pressure";
 
 // Settings › Disk: how full each machine's disk is, what is large on this one, and a Cell to
 // free space with. The app deletes nothing itself: "Free space" opens a new Cell in that
@@ -32,10 +39,14 @@ const GAUGE_TONE: Readonly<Record<DiskPressure, string>> = {
   now: "bg-destructive",
 };
 
-function DiskGauge({ volume }: { readonly volume: Pick<DiskReading["volume"], "free" | "total"> }) {
+function DiskGauge({
+  volume,
+}: {
+  readonly volume: Pick<DiskReading["volume"], "free" | "total" | "warnBelow">;
+}) {
   const used = Math.max(0, volume.total - volume.free);
   const share = volume.total > 0 ? Math.min(1, used / volume.total) : 0;
-  const tone = GAUGE_TONE[diskPressure(volume.free)];
+  const tone = GAUGE_TONE[diskPressure(volume.free, volume.warnBelow)];
   return (
     <div className="space-y-1.5 pb-3">
       <div
@@ -76,6 +87,53 @@ function FreeSpaceButton({ openCell }: { readonly openCell: ReturnType<typeof us
   );
 }
 
+/** How little free space warns about this machine: kept on its server, which the phone reads too. */
+function WarnRow(props: {
+  readonly warnBelow: number;
+  readonly onChosen: (warnBelow: number) => void;
+}) {
+  const choose = async (next: number) => {
+    props.onChosen(next);
+    const answer = await sendToPrimary("POST", "/api/stemcells/disk/warn", {
+      warnBelow: next,
+    }).catch(() => null);
+    if (answer?.ok) return;
+    props.onChosen(props.warnBelow);
+    toastManager.add({ type: "error", title: DISK_WARN.failed });
+  };
+  return (
+    <SettingsRow
+      title={<label htmlFor="disk-warn-select">{DISK_WARN.title}</label>}
+      description={DISK_WARN.note}
+      control={
+        <Select
+          value={String(props.warnBelow)}
+          onValueChange={(next) => {
+            if (typeof next === "string" && Number(next) !== props.warnBelow)
+              void choose(Number(next));
+          }}
+        >
+          <SelectTrigger
+            id="disk-warn-select"
+            size="sm"
+            className="w-28"
+            aria-label={DISK_WARN.label}
+          >
+            <SelectValue>{diskBytes(props.warnBelow)}</SelectValue>
+          </SelectTrigger>
+          <SelectPopup align="end" alignItemWithTrigger={false}>
+            {WARN_CHOICES.map((choice) => (
+              <SelectItem key={choice} value={String(choice)}>
+                {diskBytes(choice)}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
+      }
+    />
+  );
+}
+
 /** Another machine's free space, and a Cell there to free some. */
 function OtherMachineRow({
   environmentId,
@@ -110,6 +168,9 @@ export function DiskSettingsPanel() {
   const nowMs = useNowMinuteMs();
   const map = reading?.map ?? null;
   const scanning = reading?.scanning ?? false;
+  // The choice stands from the moment it's made; the next reading carries it.
+  const [chosen, setChosen] = useState<number | null>(null);
+  const warnBelow = chosen ?? reading?.volume.warnBelow ?? SOON_BELOW;
 
   return (
     <SettingsPageContainer>
@@ -127,8 +188,9 @@ export function DiskSettingsPanel() {
           }
           control={<FreeSpaceButton openCell={openCell} />}
         >
-          {reading ? <DiskGauge volume={reading.volume} /> : null}
+          {reading ? <DiskGauge volume={{ ...reading.volume, warnBelow }} /> : null}
         </SettingsRow>
+        <WarnRow warnBelow={warnBelow} onChosen={setChosen} />
       </SettingsSection>
 
       {otherMachines.length > 0 ? (

@@ -8,36 +8,35 @@ import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import * as TestClock from "effect/testing/TestClock";
 
+import * as ServerConfig from "../../config.ts";
 import * as HostResources from "../../resourceTelemetry/HostResources.ts";
+import { writeWarnBelow } from "../disk/warn.ts";
+import * as UpstreamDiskWarn from "./diskWarn.ts";
 
-// Contract: every environment's `server.getHostResources` carries its home
-// volume's free and total bytes, which Settings › Disk shows for each
-// machine (seams.md, Disk on every machine). A server that can't read the
-// volume, or predates the fields, still answers, without them.
+// Contract: every environment's `server.getHostResources` carries its home volume's free and
+// total bytes, and how little free space warns the person once they chose (seams.md, Disk on
+// every machine). A server that can't read the volume, or predates the fields, still answers.
 
 const decodeSnapshot = Schema.decodeUnknownSync(HostResourcesSnapshot);
 
-const readWithHome = (home: string) =>
-  Effect.gen(function* () {
-    const resources = yield* HostResources.HostResources;
-    // The sample waits 200 ms between two CPU readings.
-    const fiber = yield* Effect.forkChild(resources.read);
-    yield* TestClock.adjust("200 millis");
-    return yield* Fiber.join(fiber);
-  }).pipe(
-    Effect.provide(
-      HostResources.layer.pipe(
-        Layer.provide(
-          Layer.mergeAll(
-            NodeServices.layer,
-            // Linux reads memory from a file, so no vm_stat runs.
-            Layer.succeed(HostProcess.Platform, "linux"),
-            Layer.succeed(HostProcess.HomeDirectory, home),
-          ),
-        ),
-      ),
-    ),
+const sample = Effect.gen(function* () {
+  const resources = yield* HostResources.HostResources;
+  // The sample waits 200 ms between two CPU readings.
+  const fiber = yield* Effect.forkChild(resources.read);
+  yield* TestClock.adjust("200 millis");
+  return yield* Fiber.join(fiber);
+});
+
+const host = (home: string) =>
+  Layer.mergeAll(
+    NodeServices.layer,
+    // Linux reads memory from a file, so no vm_stat runs.
+    Layer.succeed(HostProcess.Platform, "linux"),
+    Layer.succeed(HostProcess.HomeDirectory, home),
   );
+
+const readWithHome = (home: string) =>
+  sample.pipe(Effect.provide(HostResources.layer.pipe(Layer.provide(host(home)))));
 
 it.effect("host resources carry the home volume's free and total bytes", () =>
   Effect.gen(function* () {
@@ -46,6 +45,29 @@ it.effect("host resources carry the home volume's free and total bytes", () =>
     assert.isAtLeast(snapshot.diskFreeBytes ?? -1, 0);
     assert.isAtMost(snapshot.diskFreeBytes ?? 0, snapshot.diskTotalBytes ?? 0);
   }),
+);
+
+it.effect("host resources carry how little free space warns the person, once they chose", () =>
+  Effect.gen(function* () {
+    assert.isUndefined((yield* sample).diskWarnBelowBytes);
+    yield* writeWarnBelow(yield* UpstreamDiskWarn.diskWarnFile, 10_000_000_000);
+    // Past the snapshot's five seconds in its cache.
+    yield* TestClock.adjust("6 seconds");
+    assert.strictEqual((yield* sample).diskWarnBelowBytes, 10_000_000_000);
+  }).pipe(
+    Effect.provide(
+      HostResources.layer.pipe(
+        Layer.provideMerge(
+          Layer.mergeAll(
+            host(process.cwd()),
+            ServerConfig.layerTest(process.cwd(), { prefix: "stemcells-disk-warn-" }).pipe(
+              Layer.provide(NodeServices.layer),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
 );
 
 it.effect("host resources answer without them when the volume can't be read", () =>

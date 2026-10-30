@@ -6,9 +6,12 @@
  */
 export type DiskPressure = "calm" | "soon" | "now";
 
-/** Below these, free space wants attention: soon, then now. */
+/**
+ * Below this, free space wants attention soon, and now below half of it: unless the person
+ * chose another `warnBelow` for that machine, one of `WARN_CHOICES`.
+ */
 export const SOON_BELOW = 20_000_000_000;
-export const NOW_BELOW = 10_000_000_000;
+export const WARN_CHOICES = [5e9, 10e9, 20e9, 50e9] as const;
 
 /** Below this the disk is full: Cells, and the server's own database, fail to write. */
 export const FULL_BELOW = 2_000_000_000;
@@ -40,8 +43,8 @@ export function lastDiskFailure(entryId: string): DiskFailure {
   return lastRead.get(entryId) ?? null;
 }
 
-export function diskPressure(free: number): DiskPressure {
-  return free < NOW_BELOW ? "now" : free < SOON_BELOW ? "soon" : "calm";
+export function diskPressure(free: number, warnBelow: number = SOON_BELOW): DiskPressure {
+  return free < warnBelow / 2 ? "now" : free < warnBelow ? "soon" : "calm";
 }
 
 /** The foot's disk: quiet while there's room, then the theme's amber and red. */
