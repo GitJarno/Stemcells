@@ -21,7 +21,7 @@ import cellsSource from "../rail/Cells.tsx?raw";
 import { litFor } from "../rail/lit";
 import railSource from "../rail/Rail.tsx?raw";
 import ourUndoNoticeSource from "./undoNotice.ts?raw";
-import { putAnswerOnUndoLine, undoLatestThreadAction } from "./undoNotice";
+import { putAnswerOnUndoLine, takeOffUndoLine, undoLatestThreadAction } from "./undoNotice";
 
 const webSource = NodeURL.fileURLToPath(new URL("../..", import.meta.url));
 const upstreamViews = NodeFS.readdirSync(webSource, { recursive: true })
@@ -118,6 +118,13 @@ describe("an answer on upstream's undo line", () => {
     await vi.advanceTimersByTimeAsync(5_000);
     expect(acts.undo).toHaveBeenCalledOnce();
     expect(acts.send).not.toHaveBeenCalled();
+  });
+
+  it("leaves the line, its undo untouched, when the room takes it back itself", () => {
+    const acts = answer("need-1");
+    takeOffUndoLine("need-1");
+    expect(undoLatestThreadAction()).toBe(false);
+    expect(acts.undo).not.toHaveBeenCalled();
   });
 
   it("lets an older answer to the same need go when a newer one comes", async () => {

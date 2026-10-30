@@ -49,6 +49,7 @@ const room = registerStandingTool(McpHttpServer.toolkitRegistration).pipe(
       Layer.mock(Needs.Needs)({
         list: Effect.succeed({
           needs: [],
+          later: [],
           cells: [
             {
               threadId: "thread-otter",

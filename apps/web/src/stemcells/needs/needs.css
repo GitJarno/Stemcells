@@ -728,8 +728,9 @@
   }
 }
 
-/* The line: the Cells waiting, then how many, and under them a quiet line
-   naming the one the pointer or the keyboard is on. */
+/* The line: the Cells waiting, then how many, then those put off with Later,
+   dimmed; under them a quiet line naming the one the pointer or the keyboard
+   is on. */
 [data-needs-line] {
   margin-block-start: auto;
   padding-block-start: var(--sc-space-xl);
@@ -760,6 +761,14 @@
   position: absolute;
   inset-inline-start: 0;
   opacity: 0;
+}
+[data-need-seat][data-later] > * {
+  opacity: 0.4;
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-need-seat][data-later]:hover > *,
+[data-need-seat][data-later]:focus-visible > * {
+  opacity: 0.8;
 }
 [data-needs-more] {
   margin-inline-start: var(--sc-space-xs);

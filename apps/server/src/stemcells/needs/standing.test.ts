@@ -33,6 +33,7 @@ describe("the room in words", () => {
   it("names each ask by the number its card shows, every Cell linked", () => {
     const standing = standingOf(
       {
+        later: [],
         // Arrival order, as the list holds them: 2 was answered, so 1 and 3 remain.
         needs: [
           need({

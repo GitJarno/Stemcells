@@ -30,20 +30,26 @@ It replaces `aski-asks.md` decision 3 (every ask open). The ask's look
    the right. Each walk is a few short steps, once, never a loop; with
    reduced motion, the words fade and nobody walks. The edges are the
    half's own: a Cell walks off the hairline between the halves.
-5. **Later stays a snooze.** It snoozes the Cell for an hour as before
-   (`actions.ts`); showing a snoozed ask dimmed at the end of the line, to
-   pull back early, is its own change (step 4).
+5. **Later stays a snooze, and waits in sight.** It snoozes the Cell for an
+   hour as before (`actions.ts`). The server sends what a snoozed Cell
+   would ask as its own list, `later`, soonest back first, each keeping its
+   number for when it is back. The room seats them dimmed after the count;
+   the peek says when each is back, and a click brings it to the front at
+   once, through upstream's unsnooze. A Later still on the undo line is
+   simply taken back. Put off, the Cell walks off the ask's left edge and
+   in at the line's right, to the end.
 
 ## Steps
 
 - [x] Who stands in front, and the line's order: `front.ts`, with tests
 - [x] The room shows one ask and the line (decisions 1 to 3)
 - [x] The walks (decision 4), checked in the desktop lab
-- [ ] Later's asks dimmed at the end of the line, to pull back (decision 5)
+- [x] Later's asks dimmed at the end of the line, to pull back (decision 5)
 
 ## Review
 
-Steps 1 to 3 landed together; step 4 needs the server to list snoozed asks.
+Steps 1 to 3 landed together; step 4 followed, with the server listing
+snoozed asks.
 
 - **The answered Cell hops instead of walking right.** In the lab, walking
   right took it across the next ask's name as that ask rose in; a hop up
@@ -56,3 +62,7 @@ Steps 1 to 3 landed together; step 4 needs the server to list snoozed asks.
 - **Checked** with `front.test.ts` and `walk.browser.test.ts`, and in the
   desktop lab on a fixture list, frame by frame: the leaving card first
   faded in and out at once (the room's arrival fade ran on it too), fixed.
+- **Step 4 in the lab:** Later put the Cell dimmed at the end at once,
+  before the server said so, and a click on it brought its ask in front
+  with the line in order, wide and narrow. Composer words still address
+  only the asks in front of the person: a put-off ask shows no number.

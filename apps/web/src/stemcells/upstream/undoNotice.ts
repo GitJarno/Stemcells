@@ -44,6 +44,11 @@ export function putAnswerOnUndoLine(
   });
 }
 
+/** Takes an answer already taken back off the line; the line lets it go, and it sends nothing. */
+export function takeOffUndoLine(key: string): void {
+  ThreadUndo.invalidate("stemcells-answer", key);
+}
+
 export function useUndoNotice(): UndoNotice | null {
   return useThreadUndoNotice((state) => state.notice);
 }

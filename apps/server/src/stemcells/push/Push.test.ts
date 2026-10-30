@@ -48,7 +48,7 @@ const need = (key: string, sinceMs: number): Need => ({
   stuck: null,
 });
 
-const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, cells: [] });
+const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, later: [], cells: [] });
 
 const world = (key: ApnsKey = KEY) =>
   Effect.gen(function* () {

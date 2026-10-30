@@ -222,6 +222,19 @@ export async function sendThreadCommand(
   }
 }
 
+/** Brings a snoozed Cell back now, as the sidebar's own unsnooze does. */
+export async function unsnoozeCell(threadIdText: string): Promise<CommandOutcome> {
+  const environmentId = appAtomRegistry.get(primaryEnvironmentIdAtom);
+  if (environmentId === null) return { ok: false, why: "Not connected to this Mac's server." };
+  if (!readEnvironmentScope(environmentId, AuthOrchestrationOperateScope)) {
+    return { ok: false, why: NOT_ALLOWED };
+  }
+  return run(threadEnvironment.unsnooze, {
+    environmentId,
+    input: { threadId: ThreadId.make(threadIdText), reason: "user" },
+  });
+}
+
 /** Opens a Cell's own chat beside Aski, or the provider's setup for a sign-in. */
 export function useOpenFromNeeds() {
   const navigate = useNavigate();

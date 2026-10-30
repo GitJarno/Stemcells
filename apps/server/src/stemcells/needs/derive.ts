@@ -95,6 +95,8 @@ export interface Signal {
   readonly since: number;
   /** A request a running turn waits on. */
   readonly blocks: boolean;
+  /** Put off: its Cell is snoozed until then, in ms (one-ask.md, decision 5). Null in front of the person. */
+  readonly later: number | null;
 }
 
 /** A run under way: it may be setting up, queued, working or waiting on a request. */
@@ -180,9 +182,9 @@ export function stuckFor(signal: Signal, inFlight: InFlight | null, now: number)
 }
 
 /**
- * The one thing this Cell needs from the person now, or null. `heardAt` is
- * the last time the Cell showed life: an event of its own work, as the
- * service hears them. `autoResume` is Settings' "Auto-resume limited threads".
+ * The one thing this Cell needs from the person, or null; a snoozed Cell's is put off
+ * (`later`). `heardAt` is the last time the Cell showed life: an event of its own work, as
+ * the service hears them. `autoResume` is Settings' "Auto-resume limited threads".
  */
 export function signalOf(
   shell: Shell,
@@ -191,7 +193,7 @@ export function signalOf(
   autoResume = false,
 ): Signal | null {
   if (shell.deletedAt !== null || shell.archivedAt !== null) return null;
-  if (isSnoozed(shell, now)) return null;
+  const later = isSnoozed(shell, now) ? millis(shell.snoozedUntil) : null;
 
   const request = shell.pendingRuntimeRequest;
   if (request !== null) {
@@ -201,6 +203,7 @@ export function signalOf(
       shell,
       since: DateTime.toEpochMillis(request.createdAt),
       blocks: request.blocking !== false,
+      later,
     };
   }
 
@@ -213,6 +216,7 @@ export function signalOf(
           shell,
           since: heardAt,
           blocks: false,
+          later,
         }
       : null;
   }
@@ -221,7 +225,7 @@ export function signalOf(
   // What a run left (a limit, a failure, a plan, its reply) is the person's to
   // settle; the next run clears the settle, and what it leaves shows again.
   if (runId === null || shell.settledOverride === "settled") return null;
-  const ended = { shell, since: runEnded(shell), blocks: false } as const;
+  const ended = { shell, since: runEnded(shell), blocks: false, later } as const;
 
   if (shell.status === "failed" && shell.lastErrorClass === "usage_limit") {
     return carriesOn(shell, now, autoResume)
@@ -373,6 +377,11 @@ export interface Need {
   readonly failure: NeedFailure | null;
   readonly prose: NeedProse | null;
   readonly stuck: NeedStuck | null;
+}
+
+/** An ask the person put off, back on its own at `until` (one-ask.md, decision 5). */
+export interface LaterNeed extends Need {
+  readonly until: string;
 }
 
 export interface NeedDetail {
