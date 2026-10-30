@@ -81,14 +81,16 @@ foldable, then both ways.
       a name in a chat's words is upstream's thread link, a pill in the Cell
       tone, and a tap opens it as any thread link does: pushed, or in the
       pane beside where the screen holds two (iPad, the open foldable).
-- [ ] Phone: the figure in the pill, its flight into the header, the
-      long-press preview, "‹ Otter".
+- [x] Phone: the figure in the pill, held still as the Mac's: its awake
+      frame drawn once to a PNG the native pill draws before the name
+      (`cell/still.ts`, `chat/useCellStills.ts`).
+- [ ] Phone: its flight into the header, the long-press preview, "‹ Otter".
 - [ ] Both ways: why you're here, in touch, mail and notices as tokens.
 
 ## Review
 
 The Mac and web draw a named Cell as its token in replies and mail, peek
 on hover, open it beside or bring it forward, and ring its pane once. The
-phone draws it as a pill that opens it, beside on a wide screen. The
-phone's figure, flight, preview and back label, and both ways, are still
-open (above).
+phone draws it as a pill, the Cell held still and its name, that opens it,
+beside on a wide screen. The phone's flight, preview and back label, and
+both ways, are still open (above).

@@ -13,10 +13,15 @@ import { CellFigure } from "./CellFigure";
 import { faceOf, faceTurnsAt } from "./mood";
 import { useCellLook } from "./roster";
 
+/** The provider instance a chat runs on. */
+export function instanceOf(thread: EnvironmentThreadShell): string {
+  return thread.runtime?.providerInstanceId ?? thread.modelSelection.instanceId;
+}
+
 /** The driver of the provider a chat runs on (`claudeAgent`, `codex`, …), as its machine names it. */
 export function useDriverOf(thread: EnvironmentThreadShell): string | null {
   const providers = useEnvironmentProviders().get(thread.environmentId);
-  const instanceId = thread.runtime?.providerInstanceId ?? thread.modelSelection.instanceId;
+  const instanceId = instanceOf(thread);
   return providers?.find((provider) => provider.instanceId === instanceId)?.driver ?? null;
 }
 
