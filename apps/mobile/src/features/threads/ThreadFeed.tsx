@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/ThreadFeed";
 import { Button } from "../../components/ui/Button";
 import * as Dialog from "../../components/ui/Dialog";
 import { useOpenPullRequest } from "../../native/useOpenPullRequest";
@@ -1593,8 +1594,8 @@ function renderFeedEntry(
             : [],
         ),
       );
-      const visibleAttachments = attachments.filter(
-        (attachment) => isImageAttachment(attachment) || !inlineAttachmentIds.has(attachment.id),
+      const visibleAttachments = Stemcells.withoutPictures(attachments).filter(
+        (attachment) => !inlineAttachmentIds.has(attachment.id),
       );
       return (
         <Animated.View
@@ -1641,7 +1642,13 @@ function renderFeedEntry(
             ) : null}
             {bubbleBodyVisible ? (
               <View className={cn("gap-2 px-3.5 pb-2.5", foldRowId === null && "pt-2.5")}>
-                {entry.pendingMessage?.attachments.map((attachment) =>
+                <Stemcells.MessageImages
+                  environmentId={props.environmentId}
+                  attachments={attachments}
+                  pending={entry.pendingMessage?.attachments}
+                  onPressPreview={props.onPressPreview}
+                />
+                {Stemcells.withoutPictures(entry.pendingMessage?.attachments).map((attachment) =>
                   attachment.type === "image" && attachment.uploadedAttachmentId ? (
                     <MessageAttachmentImage
                       key={attachment.id}
