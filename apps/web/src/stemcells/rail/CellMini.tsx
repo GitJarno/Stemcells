@@ -12,13 +12,19 @@ import { useCellDriver } from "../upstream/providers";
  * It wears what its tab deals it while a tab shows it, else what it is dealt
  * alone, as everywhere else.
  */
-export function CellMini(props: { environmentId: string; threadId: string }) {
+export function CellMini(props: { environmentId: string; threadId: string; points?: number }) {
   const cell = { environmentId: props.environmentId, threadId: props.threadId, draftId: null };
   const provider = useCellDriver(cell);
   const ground = useCellGround();
   const [day] = useState(() => dayOf(new Date()));
   const look = useRosterLook(props.threadId) ?? lookOf(props.threadId, day);
   return (
-    <CellStill name={props.threadId} look={look} provider={provider} points={1} ground={ground} />
+    <CellStill
+      name={props.threadId}
+      look={look}
+      provider={provider}
+      points={props.points ?? 1}
+      ground={ground}
+    />
   );
 }

@@ -11,9 +11,10 @@ the device.
 ## The five steps
 
 1. **Spot.** The name is a token in the Cell tone (`--sc-peer`): the Cell's
-   own figure, as its tab draws it, then its name. The figure's face tells
-   its stage (thinking while Flying, its plea when it needs you, asleep
-   when settled), and a settled Cell's token fades.
+   own figure, as its tab draws it, held still, then its name. No face for
+   its stage, no "?", nothing that moves: a chat naming many Cells read as
+   a field of pleading, blinking figures (the person, 2026-10-30). The peek
+   tells the stage; a settled Cell's token fades.
 2. **Peek.** A pause over it, or a long press, shows its one-liner, its
    stage in the house words (Input, Flying, Landed, Settled), its
    latest line and its project. You don't leave the chat.
@@ -70,7 +71,7 @@ foldable, then both ways.
       incremental parse while a reply streams.
 - [x] `upstream/cellNames.ts`: the names a chat may use, from upstream's
       shells, held per chat while they stay the same.
-- [x] `peers/CellToken.tsx`: the token, its figure by stage, the peek
+- [x] `peers/CellToken.tsx`: the token, its figure held still, the peek
       (upstream's preview card), click to open beside or bring forward.
 - [x] `tabs/arrival.ts`: the pane showing it rings once.
 - [x] The markdown substitute draws the token in a chat's own words and in

@@ -1,19 +1,14 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (peers.css), outside upstream's Tailwind entry. */
-// Another Cell a chat names (stemcells/tasks/cell-tokens.md): its face and name as a token,
-// its face telling its stage. A pause over it peeks at what it's on; a click opens it beside
-// the chat that named it, or brings it forward where it's open, and its pane rings once.
-import type { Activity } from "../cell/activity";
-import { CellFigure } from "../cell/CellFigure";
-import type { Mood } from "../cell/look";
+// Another Cell a chat names (stemcells/tasks/cell-tokens.md): its Cell held still and its name
+// as a token. A pause over it peeks at what it's on; a click opens it beside the chat that
+// named it, or brings it forward where it's open, and its pane rings once.
 import { useNeeds } from "../needs/stream";
 import type { Stage } from "../needs/wire";
+import { CellMini } from "../rail/CellMini";
 import { ringCell } from "../tabs/arrival";
 import { openCellBeside } from "../tabs/commands";
 import type { CellRef } from "../tabs/layout";
-import { useRosterLook } from "../tabs/roster";
-import { useCellGround } from "../upstream/appearance";
 import { useOpenCell } from "../upstream/column";
-import { useCellDriver } from "../upstream/providers";
 import { useCellPlace, useCellSettled, useCellTitle } from "../upstream/thread";
 import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "../upstream/ui";
 
@@ -26,13 +21,6 @@ const WORD: Readonly<Record<Shown, string>> = {
   "needs-you": "Input",
   done: "Landed",
   settled: "Settled",
-};
-
-const FACE: Readonly<Record<Shown, { mood: Mood; activity?: Activity }>> = {
-  working: { mood: "awake", activity: "thinking" },
-  "needs-you": { mood: "needsYou" },
-  done: { mood: "awake" },
-  settled: { mood: "asleep" },
 };
 
 export function CellToken(props: {
@@ -71,13 +59,13 @@ export function CellToken(props: {
           />
         }
       >
-        <TokenFace cell={cell} shown={shown} points={1} />
+        <TokenFace cell={cell} points={1} />
         <span className="sc-peer-name">{props.label}</span>
       </PreviewCardTrigger>
       <PreviewCardPopup>
         <div className="sc-cell-peek">
           <div className="sc-cell-peek-head">
-            <TokenFace cell={cell} shown={shown} points={2} />
+            <TokenFace cell={cell} points={2} />
             <span className="sc-peer-name">{props.label}</span>
             {shown === null ? null : (
               <span className="sc-cell-peek-stage" data-stage={shown}>
@@ -97,20 +85,12 @@ export function CellToken(props: {
   );
 }
 
-function TokenFace(props: { cell: CellRef; shown: Shown | null; points: number }) {
-  const look = useRosterLook(props.cell.threadId);
-  const provider = useCellDriver(props.cell);
-  const ground = useCellGround();
-  const face = FACE[props.shown ?? "done"];
+function TokenFace(props: { cell: CellRef; points: number }) {
   return (
     <span className="sc-cell-token-face" aria-hidden>
-      <CellFigure
-        name={props.cell.threadId}
-        look={look}
-        provider={provider}
-        ground={ground}
-        mood={face.mood}
-        activity={face.activity}
+      <CellMini
+        environmentId={props.cell.environmentId}
+        threadId={props.cell.threadId}
         points={props.points}
       />
     </span>
