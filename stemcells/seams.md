@@ -667,6 +667,11 @@ library's dependency (above); the rest are substitutes:
   as T3's own thread link, so T3's tap opens it, pushed or in the pane
   beside (`chat/cellLinks.ts`). Which names, by the Mac's rules
   (`stemcells/words/cellNames.ts`).
+- **A chat settled elsewhere closes on return.** The same substitute of
+  `ThreadDetailScreen` reads its machine's list when the app comes back,
+  and a Cell settled by hand on another device meanwhile gives way to the
+  home, the Threads tab opened without columns (`chat/useClosesOnReturn.ts`,
+  `stemcells/tasks/settle-everywhere.md`).
 - **Add to Chat.** A substitute of `ComposerAttachmentButton` has T3's
   plus button open our card (`attach/AttachCard.tsx`): the phone's newest
   photos, the camera first, picks numbered in the order tapped. Add N stages the

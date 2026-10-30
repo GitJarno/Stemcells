@@ -20,7 +20,7 @@ export interface NeedsState {
   readonly later?: ReadonlyArray<LaterNeed>;
   /** Every Cell's stage, for the roster; null until the first list arrives. */
   readonly cells: ReadonlyArray<CellStanding> | null;
-  /** The last minute's settles by hand, on any device; absent until the first list arrives. */
+  /** The day's settles by hand, on any device; absent until the first list arrives. */
   readonly settles?: ReadonlyArray<HandSettle>;
   /** Whether the list is live; a list kept from before a drop may be stale. */
   readonly live: boolean;

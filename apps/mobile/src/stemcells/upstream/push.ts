@@ -6,10 +6,18 @@
 export { supportsAgentAwarenessPush } from "../../features/agent-awareness/capabilities";
 export { requestAgentNotificationPermission } from "../../features/agent-awareness/notificationPermissions";
 export { resolveApsEnvironment } from "../../features/agent-awareness/registrationPayload";
+import type { EnvironmentId } from "@t3tools/contracts";
+
 import type { SavedRemoteConnection } from "../../lib/connection";
+import { useSavedRemoteConnection } from "../../state/use-remote-environment-registry";
 
 export type { SavedRemoteConnection };
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
+
+/** One machine's saved connection, a new one each time its route or token changes. */
+export function useSavedConnection(environmentId: string): SavedRemoteConnection | null {
+  return useSavedRemoteConnection(environmentId as EnvironmentId);
+}
 
 /** A connection T3's relay manages: marked so, or signed with DPoP, which only the relay issues. */
 export function isRelayManagedConnection(

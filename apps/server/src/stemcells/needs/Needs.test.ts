@@ -270,23 +270,36 @@ it.effect("gives a run with a tool call in flight 30 minutes before it is stuck"
   ),
 );
 
-it.effect("lists a settle by hand for a minute, for every Mac to close the Cell's panes", () =>
-  Effect.scoped(
-    Effect.gen(function* () {
-      yield* TestClock.setTime(NOW);
-      const fake = yield* fakeSource;
-      fake.put(shellFixture({ id: "otter" }));
-      const needs = yield* make(fake.source);
-      assert.deepStrictEqual((yield* needs.list).settles, []);
+it.effect(
+  "lists each settled Cell's latest settle by hand for a day, for a phone away meanwhile",
+  () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        yield* TestClock.setTime(NOW);
+        const fake = yield* fakeSource;
+        fake.put(shellFixture({ id: "otter", settledAt: at(0) }));
+        fake.put(shellFixture({ id: "pip", settledAt: at(0) }));
+        const needs = yield* make(fake.source);
+        assert.deepStrictEqual((yield* needs.list).settles, []);
 
-      yield* fake.settleByHand("otter", NOW);
-      const settled = yield* listWhere(needs.changes, (list) => list.settles?.length === 1);
-      assert.deepStrictEqual(settled.settles, [
-        { threadId: "otter", at: "2026-10-21T12:00:00.000Z" },
-      ]);
+        yield* fake.settleByHand("otter", NOW - MINUTE);
+        yield* fake.settleByHand("otter", NOW);
+        yield* fake.settleByHand("pip", NOW);
+        const settled = yield* listWhere(needs.changes, (list) => list.settles?.length === 2);
+        assert.deepStrictEqual(settled.settles, [
+          { threadId: "otter", at: "2026-10-21T12:00:00.000Z" },
+          { threadId: "pip", at: "2026-10-21T12:00:00.000Z" },
+        ]);
 
-      yield* listWhere(needs.changes, (list) => list.settles?.length === 0);
-      assert.isAtLeast((yield* Clock.currentTimeMillis) - NOW, MINUTE);
-    }),
-  ),
+        // Unsettled on another device: nothing closes for it any more.
+        fake.put(shellFixture({ id: "pip" }));
+        yield* fake.touch("pip");
+        yield* listWhere(needs.changes, (list) => list.settles?.length === 1);
+
+        yield* TestClock.adjust("23 hours");
+        assert.deepStrictEqual((yield* needs.list).settles?.length, 1);
+        yield* TestClock.adjust("1 hour");
+        yield* listWhere(needs.changes, (list) => list.settles?.length === 0);
+      }),
+    ),
 );

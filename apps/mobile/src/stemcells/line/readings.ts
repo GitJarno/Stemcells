@@ -6,7 +6,11 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { AppState } from "react-native";
 
-import { isRelayManagedConnection, useSavedRemoteConnections } from "../upstream/push";
+import {
+  isRelayManagedConnection,
+  type SavedRemoteConnection,
+  useSavedRemoteConnections,
+} from "../upstream/push";
 import { readNeeds, type NeedsConnection, type Reading } from "./read";
 
 /** After a chat changes: its machine derives the asks from the same change. */
@@ -65,6 +69,15 @@ function readSoon(environmentId: string) {
   waiting.set(environmentId, timer);
 }
 
+/** A saved connection as the reader reads it, on the route it uses now. */
+export function needsConnectionOf(connection: SavedRemoteConnection): NeedsConnection {
+  return {
+    httpBaseUrl: connection.httpBaseUrl,
+    bearerToken: connection.bearerToken,
+    ...(isRelayManagedConnection(connection) ? { relayManaged: true as const } : {}),
+  };
+}
+
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
   return () => void listeners.delete(listener);
@@ -96,11 +109,7 @@ export function useKeepReading(
       }
     for (const connection of saved) {
       const before = connections.get(connection.environmentId);
-      const next: NeedsConnection = {
-        httpBaseUrl: connection.httpBaseUrl,
-        bearerToken: connection.bearerToken,
-        ...(isRelayManagedConnection(connection) ? { relayManaged: true as const } : {}),
-      };
+      const next = needsConnectionOf(connection);
       connections.set(connection.environmentId, next);
       if (!inFront) continue;
       if (before === undefined) void readMachine(connection.environmentId);

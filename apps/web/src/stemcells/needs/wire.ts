@@ -157,7 +157,10 @@ export interface NeedsList {
   readonly later?: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage; absent from a server before stages. */
   readonly cells?: ReadonlyArray<CellStanding>;
-  /** The last minute's, for a Mac to close those Cells' panes; absent from a server before them. */
+  /**
+   * Each settled Cell's latest settle by hand, for a day: a Mac closes its panes, a phone back
+   * from away its chat. Absent from a server before them.
+   */
   readonly settles?: ReadonlyArray<HandSettle>;
 }
 
