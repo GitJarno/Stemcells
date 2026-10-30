@@ -67,7 +67,7 @@ const NO_STANDINGS: Standings = new Map();
 const SETTLED_SHOWN = 30;
 
 const LABEL: Record<ColumnStage, string> = {
-  needs: "Needs you",
+  needs: "Input",
   working: "Flying",
   landed: "Landed",
   settled: "Settled",
@@ -135,7 +135,7 @@ export function Cells() {
     environmentId === null ? null : { environmentId, threadId: cell.threadId };
   const working = standing("working");
   const landed = standing("done");
-  // Asks never hide: Needs you counts every one, and says where those the filter leaves out are.
+  // Asks never hide: Input counts every one, and says where those the filter leaves out are.
   const asking = onList.filter((each) => each.goneAt === null);
   const waiting = asking.length;
   const askedElsewhere =

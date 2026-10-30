@@ -33,7 +33,7 @@ settled, colour meant nothing, and the stages carried critters.
    is sent when the line goes.
 9. **Filters:** a project, one quiet dropdown under the search. A machine's
    waits until the column lists Cells from more than this Mac (the person,
-   2026-10-27). Asks never hide: Needs you counts every one, and says where
+   2026-10-27). Asks never hide: Input counts every one, and says where
    those the filter leaves out are, a click away from all of them.
 10. **Resizable** with T3's rail, double-click resets.
 11. **The chat stays lifted** off the black canvas T3's redesign brings.

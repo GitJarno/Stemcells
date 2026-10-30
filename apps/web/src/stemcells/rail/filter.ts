@@ -1,6 +1,6 @@
 /**
  * The column's project filter (stemcells/tasks/left-column-v3.md, decision 9): one of upstream's
- * project groups, which may hold a project on several machines. Asks never hide: Needs you
+ * project groups, which may hold a project on several machines. Asks never hide: Input
  * counts the ones it leaves out, and says where they are.
  */
 

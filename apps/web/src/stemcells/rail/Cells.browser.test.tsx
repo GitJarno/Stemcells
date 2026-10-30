@@ -310,7 +310,7 @@ describe("the Cells' column", () => {
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .toBeVisible();
     await expect
-      .element(screen.getByRole("button", { name: /Needs you\s*2/ }))
+      .element(screen.getByRole("button", { name: /Input\s*2/ }))
       .toHaveAttribute("aria-pressed", "true");
   });
 
@@ -464,7 +464,7 @@ async function swipe(column: HTMLElement, dx: number) {
 }
 
 describe("the column's project filter", () => {
-  it("shows one project's Cells, while Needs you counts every ask and says where they are", async () => {
+  it("shows one project's Cells, while Input counts every ask and says where they are", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: "All projects" }));
@@ -476,7 +476,7 @@ describe("the column's project filter", () => {
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .not.toBeInTheDocument();
-    await expect.element(screen.getByRole("button", { name: /Needs you\s*2/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Input\s*2/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Flying\s*1/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Settled\s*1/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Pinned\s*0/ })).toBeVisible();
@@ -503,7 +503,7 @@ describe("the column at another interface size", () => {
     setup(null);
     await using screen = await render(<Column />);
     const search = screen.container.querySelector<HTMLElement>("[data-cells-search]")!;
-    const stage = screen.getByRole("button", { name: /Needs you\s*2/ }).element();
+    const stage = screen.getByRole("button", { name: /Input\s*2/ }).element();
     const measure = () => ({
       plate: search.getBoundingClientRect().height,
       inset: Number.parseFloat(getComputedStyle(search).paddingInlineStart),
@@ -523,7 +523,7 @@ describe("swiping the column", () => {
     setup(null);
     await using screen = await render(<Column />);
     const column = screen.container.querySelector<HTMLElement>("[data-stemcells-cells]")!;
-    await userEvent.click(screen.getByRole("button", { name: /Needs you\s*2/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Input\s*2/ }));
     const open = (name: RegExp) =>
       expect.element(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "true");
 
@@ -535,11 +535,11 @@ describe("swiping the column", () => {
     await swipe(column, -300);
     await open(/Flying\s*1/);
     await swipe(column, -300);
-    await open(/Needs you\s*2/);
+    await open(/Input\s*2/);
 
     // Past the first stage the column gives a little, and springs back.
     await swipe(column, -300);
-    await open(/Needs you\s*2/);
+    await open(/Input\s*2/);
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .toBeInViewport();
@@ -617,7 +617,7 @@ describe("the column's word that Stemcells gets better", () => {
 });
 
 describe("a Cell moving along the line", () => {
-  /** The stream with each listed Cell at `stage`, and the asks of those that left Needs you gone. */
+  /** The stream with each listed Cell at `stage`, and the asks of those that left Input gone. */
   const moved = (
     before: ReturnType<typeof streamState>,
     to: Record<string, CellStanding["stage"]>,

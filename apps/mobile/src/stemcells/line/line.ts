@@ -1,4 +1,4 @@
-// The phone's home as the Cells' line (stemcells/tasks/phone-line.md): Needs you, Working,
+// The phone's home as the Cells' line (stemcells/tasks/phone-line.md): Input, Flying,
 // Landed and Settled, where the column stands each Cell, so the Mac and the phone never
 // disagree. Each machine says where its own Cells stand (`read.ts`); Settled, and the snoozed
 // Cells that are off the line until they wake, are T3's own, from the chats' shells.
@@ -16,7 +16,7 @@ import {
 import type { Reading } from "./read";
 
 export const SEGMENTS: ReadonlyArray<{ readonly id: LineStage; readonly label: string }> = [
-  { id: "needs", label: "Needs you" },
+  { id: "needs", label: "Input" },
   { id: "working", label: "Flying" },
   { id: "landed", label: "Landed" },
   { id: "settled", label: "Settled" },
@@ -102,7 +102,7 @@ export function lineOf<S extends Shell>(
   return line;
 }
 
-/** How many each segment holds in view: Needs you counts every ask, wherever it is, read or not. */
+/** How many each segment holds in view: Input counts every ask, wherever it is, read or not. */
 export function countsOf<S extends Shell>(
   line: Line<S>,
   inView: (cell: { readonly environmentId: string; readonly projectId: string }) => boolean,
@@ -132,7 +132,7 @@ export function elsewhereOf(
   return unplaced > 0 ? [...named, { name: null, count: unplaced }] : named;
 }
 
-/** Where the home opens: on Needs you when anything waits, else where Cells are. */
+/** Where the home opens: on Input when anything waits, else where Cells are. */
 export function opensOn(counts: Readonly<Record<LineStage, number>>): LineStage {
   return counts.needs > 0
     ? "needs"

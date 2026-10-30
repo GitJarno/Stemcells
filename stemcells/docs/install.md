@@ -127,17 +127,17 @@ scan.
 On an iPhone, the home stands your Cells on the same line as the column on
 your computer:
 
-- **Needs you**: what your Cells ask. Each ask reads as a message: the
+- **Input**: what your Cells ask. Each ask reads as a message: the
   question, what you need to decide, and its answers to tap. One is open at
   a time; answer it and the next opens. **Later**, **Settle** and **Open
   chat** are at its foot.
-- **Working**: Cells at work.
+- **Flying**: Cells at work.
 - **Landed**: Cells done with their turn; settle the ones you're done with.
 - **Settled**: Cells you've put away, with snoozed ones on their own shelf.
 
 An answer leaves at once, and a line at the foot says what you did, with
 **Undo**; it's sent when the line goes. The machine and project pickers
-narrow the lists, but never hide an ask: Needs you counts them all, and its
+narrow the lists, but never hide an ask: Input counts them all, and its
 last line says where the rest are. Tap it to see them. A computer that runs
 T3 Code rather than Stemcells keeps the phone's older tabs.
 

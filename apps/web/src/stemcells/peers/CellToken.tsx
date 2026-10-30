@@ -23,7 +23,7 @@ type Shown = Stage | "settled";
 
 const WORD: Readonly<Record<Shown, string>> = {
   working: "Flying",
-  "needs-you": "Needs you",
+  "needs-you": "Input",
   done: "Landed",
   settled: "Settled",
 };

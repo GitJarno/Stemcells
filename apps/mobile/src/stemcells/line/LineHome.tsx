@@ -1,7 +1,7 @@
 // The phone's home on the Cells' line (stemcells/tasks/phone-line.md), under Aski, narrowed by
-// the header's picks. Needs you is the asks themselves, one open at a time; Flying, Landed and
+// the header's picks. Input is the asks themselves, one open at a time; Flying, Landed and
 // Settled hand T3's list their Cells, a list each, so its rows and swipes stay T3's. Asks never
-// hide: Needs you counts every one, and says where those the picks leave out are.
+// hide: Input counts every one, and says where those the picks leave out are.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";

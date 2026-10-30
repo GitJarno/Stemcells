@@ -7,8 +7,8 @@ interactive draft in the chat that asked for it.
 
 ## Decisions
 
-1. **One line of stages: Needs you, Flying, Landed, Settled.** Every Cell
-   is in exactly one. Needs you, Flying and Landed are the stages
+1. **One line of stages: Input, Flying, Landed, Settled.** Every Cell
+   is in exactly one. Input, Flying and Landed are the stages
    `stage.ts` reads (`needs-you`, `working`, `done`); Settled is upstream's
    `settledAt`. Settled is not a second axis: upstream refuses to settle a
    thread that runs or asks, and a new message un-settles one, so the only
@@ -29,7 +29,7 @@ interactive draft in the chat that asked for it.
    its pin off, and pinning a settled one brings it back.
 5. **The column:** search and New Cell on top; the open stage's list; the
    stages' rows at the bottom, each with its count and a few sprites,
-   Pinned set apart. Needs you is open by default, and there is no filter
+   Pinned set apart. Input is open by default, and there is no filter
    at the top: the rows are the only switch. A sprite takes only its own
    line, so text runs the column's full width and the column stays narrow.
 6. **Asks are a queue cleared in the column.** A card says who asks and
