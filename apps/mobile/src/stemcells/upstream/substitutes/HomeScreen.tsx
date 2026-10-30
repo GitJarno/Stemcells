@@ -1,22 +1,18 @@
-// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski unless
-// every machine says it has none, else one tab at a time (`home/tabs.ts`); T3's list gets the tab's
-// Cells, a list per tab. In the iOS workspace our picks narrow it (`home/scope.tsx`) and T3's own
-// pick stays unset. Where it has no header (Android, outside the workspace) and searching, T3's.
+// Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski, T3's
+// list handed each segment's Cells, a list per segment. In the iOS workspace our picks narrow it
+// (`home/scope.tsx`) and T3's own pick stays unset. Where it has no header (Android, outside the
+// workspace) and searching, T3's.
 import { useIsFocused } from "@react-navigation/native";
-import { Fragment, type ReactNode } from "react";
-import { Platform, View } from "react-native";
+import { type ReactNode } from "react";
+import { Platform } from "react-native";
 
 import * as Upstream from "../../../features/home/HomeScreen";
 import { askiChatsOf } from "../../aski/chat";
-import { CopyLayer } from "../../home/CopyLayer";
-import { EmptyTab } from "../../home/EmptyTab";
 import { HomeFront } from "../../home/HomeFront";
 import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
-import { HomeTabsContext, tabChoice, useMinute } from "../../home/state";
-import { countsOf, HOME_TABS, type HomeTab, inTab } from "../../home/tabs";
+import { useMinute } from "../../home/state";
 import { setPicks, usePicks } from "../../home/usePicks";
 import { movedByHand } from "../../line/kit";
-import { lineApplies } from "../../line/line";
 import { LineHome } from "../../line/LineHome";
 import { useKeepReading, useReadings } from "../../line/readings";
 import {
@@ -31,15 +27,6 @@ export * from "../../../features/home/HomeScreen";
 
 type Props = Parameters<typeof Upstream.HomeScreen>[0];
 type Place = { readonly environmentId: string; readonly projectId: string };
-
-const tabs = tabChoice<HomeTab>();
-
-const EMPTY: Readonly<Record<HomeTab, string>> = {
-  asleep: "No Cells asleep.",
-  active: "No Cells awake.",
-  working: "No Cells flying.",
-  input: "Nothing waits on you.",
-};
 
 export function HomeScreen(props: Props) {
   const workspace = useWorkspaceTabs();
@@ -107,47 +94,27 @@ export function HomeScreen(props: Props) {
     </FromTheTop>
   );
 
-  if (lineApplies(readings, scope.machines)) {
-    return (
-      <HomeFront inFront={inFront}>
-        <LineHome
-          cells={cells}
-          readings={readings}
-          known={scope.machines.every((id) => readings.has(id))}
-          connecting={!ready}
-          now={now}
-          inView={scope.inView}
-          projects={scope.everywhere.map((project) => ({
-            key: project.key,
-            name: project.title,
-            memberKeys: project.projectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
-          }))}
-          narrowedTo={scope.narrowedTo}
-          environmentId={scope.machine}
-          onShowAll={() => setPicks(NO_PICKS)}
-          settle={props.onSettleThread}
-          pending={props.pendingTasks.length}
-          olderSettled={olderSettled}
-          renderList={list}
-        />
-      </HomeFront>
-    );
-  }
-
   return (
     <HomeFront inFront={inFront}>
-      <Tabs
-        cells={cells.filter(scope.inView)}
+      <LineHome
+        cells={cells}
+        readings={readings}
+        known={scope.machines.every((id) => readings.has(id))}
+        connecting={!ready}
         now={now}
+        inView={scope.inView}
+        projects={scope.everywhere.map((project) => ({
+          key: project.key,
+          name: project.title,
+          memberKeys: project.projectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
+        }))}
+        narrowedTo={scope.narrowedTo}
         environmentId={scope.machine}
-        renderList={(threads, pending) => (
-          <View style={{ flex: 1 }}>
-            {list(threads, pending)}
-            <CopyLayer />
-          </View>
-        )}
+        onShowAll={() => setPicks(NO_PICKS)}
+        settle={props.onSettleThread}
         pending={props.pendingTasks.length}
         olderSettled={olderSettled}
+        renderList={list}
       />
     </HomeFront>
   );
@@ -236,39 +203,4 @@ function scopeOf(picks: Picks, props: Props) {
               ? "on these machines"
               : null,
   };
-}
-
-/** A machine without the line: Asleep, Active, Working and Input, from the chats' shells. */
-function Tabs(props: {
-  readonly cells: Props["threads"];
-  readonly now: string;
-  readonly environmentId: string | null;
-  readonly renderList: (threads: Props["threads"], pending: boolean) => ReactNode;
-  readonly pending: number;
-  /** Settled chats the servers keep back, which Asleep counts and its list reads on. */
-  readonly olderSettled: number;
-}) {
-  const local = countsOf(props.cells, props.now);
-  const counts = { ...local, asleep: local.asleep + props.olderSettled };
-  const tab = tabs.useTab(counts.input > 0 ? "input" : "active", true);
-  const shown = props.cells.filter((thread) => inTab(thread, tab, props.now));
-  const pending = tab === "active" && props.pending > 0;
-  const listed = shown.length > 0 || pending || (tab === "asleep" && props.olderSettled > 0);
-  const home = {
-    tab,
-    options: HOME_TABS.map(({ id, label }) => ({ id, label, count: counts[id] })),
-    counts,
-    night: tab === "asleep",
-    choose: (id: string) => tabs.choose(id as HomeTab),
-    environmentId: props.environmentId,
-  };
-  return (
-    <HomeTabsContext value={home}>
-      {listed ? (
-        <Fragment key={tab}>{props.renderList(shown, pending)}</Fragment>
-      ) : (
-        <EmptyTab words={EMPTY[tab]} />
-      )}
-    </HomeTabsContext>
-  );
 }

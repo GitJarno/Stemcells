@@ -1,4 +1,4 @@
-// The moon over the Asleep tab, at its real phase: how far into its month
+// The moon over Settled, at its real phase: how far into its month
 // it is, and the lit part as an SVG path. A mean synodic month from a known
 // new moon is within a day of the sky, which is all a drawing needs.
 

@@ -1,14 +1,14 @@
 // A machine's asks and its Cells' stages, read from its own server (`GET /api/stemcells/needs`)
 // with the bearer token the phone paired with, as push registers (`push/register.ts`). T3's
 // relay has no bearer token and Stemcells never pairs through it, so a machine reached that
-// way, or one without the endpoint, has no line: the home keeps T3's tabs for it.
+// way, or one without the endpoint, has no line: its Cells stand where their records do.
 
 import { needsListOf, type NeedsList } from "./kit";
 
 export type Reading =
   /** Its asks and stages, as the server last said. */
   | { readonly state: "read"; readonly list: NeedsList }
-  /** Not a Stemcells server, reached through T3's relay, or paired without a bearer token. */
+  /** Not a Stemcells server, or reached through T3's relay. */
   | { readonly state: "none" }
   /** Out of reach just now; what it said last, if anything, stands. */
   | { readonly state: "unreachable"; readonly list: NeedsList | null };
@@ -30,8 +30,10 @@ export async function readNeeds(
   last: NeedsList | null,
   request: typeof fetch = fetch,
 ): Promise<Reading> {
-  if (connection.relayManaged === true || connection.bearerToken === null) return { state: "none" };
+  if (connection.relayManaged === true) return { state: "none" };
   const away: Reading = { state: "unreachable", list: last };
+  // T3 hands a saved connection its token only once a route connects, again on every reconnect.
+  if (connection.bearerToken === null) return away;
   let url: string;
   try {
     url = new URL(PATH, connection.httpBaseUrl).toString();

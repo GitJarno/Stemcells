@@ -1,4 +1,4 @@
-// The night's colours over the Asleep tab (`Night.tsx`), apart from its
+// The night's colours over Settled (`Night.tsx`), apart from its
 // views so the header can colour Aski's eyes by the sky behind them.
 
 /** The sky at the header's top, and at its deepest, `DEEP_AT` of the way down; past that it fades into the screen. */
