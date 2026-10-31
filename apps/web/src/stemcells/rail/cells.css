@@ -534,10 +534,13 @@ a[data-better-item]:focus-visible > svg {
   padding: var(--sc-space-sm) var(--sc-space-sm) var(--sc-space-xs);
   border-top: 1px solid var(--sc-hairline);
 }
+/* Matches the list's width, so a long reason wraps rather than widening the popover. */
 [data-better-note] {
+  max-width: min(20rem, calc(100vw - 2rem));
   color: var(--sc-dim);
   font-size: 0.75rem;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 /* A Cell on its way from one stage to the next (Hops.tsx): drawn over the

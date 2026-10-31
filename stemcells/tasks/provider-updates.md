@@ -32,9 +32,10 @@ same gap: `npm view <pkg>@latest` ignores the age.
 
 - [x] Server: npm-global installs ask npm for the version it would install (seam in
       `maintenanceResolver.ts`, its test `maintenanceResolver.npmReleaseAge.test.ts`)
-- [ ] Web: provider updates in the banner (`updates/providers.ts`, `UpdateBanner.tsx`,
+- [x] Web: provider updates in the banner (`updates/providers.ts`, `UpdateBanner.tsx`,
       `Cells.tsx`), the pill out of the foot while the banner speaks
-- [ ] Tests: the view table; the column's browser test for providers
-- [ ] seams.md, drift, check:changed, publishable
+- [x] Tests: the view table; the column's browser test for providers
+- [x] seams.md, `install.md`, drift
+- [ ] The gates, check-local, merge
 
 ## Review
