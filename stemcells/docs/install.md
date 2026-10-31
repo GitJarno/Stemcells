@@ -67,6 +67,14 @@ says so; **Restart now** doesn't wait. With the column narrowed to its
 rail, or showing all chats, the update button at its foot offers
 upstream's two steps instead.
 
+Providers get better in the same place: when a provider's own installer
+would take a newer version, the banner names it (**Codex gets better**, or
+**Stemcells and Codex get better**), and the same **Update** installs it at
+once, on every connected machine, with no restart. If one doesn't take, the
+banner says why and offers **Try again**. An npm install keeps to npm's
+`min-release-age`: a release younger than that isn't offered until it's old
+enough to install.
+
 Settings › About › Update track picks what to follow: **Nightly**, every
 change merged to `main`, or **Stable**, the newest release (a `v*` tag).
 A build of `main` follows Nightly, and a release's build, Stable, until

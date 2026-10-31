@@ -10,6 +10,7 @@ import { needFixture, NOW, requestFixture } from "../needs/fixtures";
 import type { CellStanding, Need } from "../needs/wire";
 import { act, render } from "../upstream/testRender";
 import type { DesktopUpdateState } from "../upstream/updates";
+import { useProviderRun, type ProviderOffer } from "../updates/providers";
 import { useUpdateWanted } from "../updates/wanted";
 import { Cells } from "./Cells";
 import { useColumnStore } from "./column";
@@ -22,6 +23,7 @@ const spies = vi.hoisted(() => ({
   download: vi.fn(async () => true),
   install: vi.fn(async () => true),
   openLink: vi.fn(),
+  updateProviders: vi.fn(async () => [{ key: "mac:codex", failure: null }]),
 }));
 /** Tells the column the stream changed, as the live stream does. */
 const changes = vi.hoisted(() => {
@@ -42,7 +44,10 @@ const changes = vi.hoisted(() => {
 /** Whether Aski's room is in front, its asks open on its right half. */
 const room = vi.hoisted(() => ({ inFront: false }));
 /** The app's update as the desktop reports it; each test sets it in `setup`. */
-const desktop = vi.hoisted(() => ({ update: null as DesktopUpdateState | null }));
+const desktop = vi.hoisted(() => ({
+  update: null as DesktopUpdateState | null,
+  providers: [] as ReadonlyArray<ProviderOffer>,
+}));
 
 const needs: Need[] = [
   needFixture({
@@ -209,6 +214,8 @@ vi.mock("../upstream/ui", async (importOriginal) => ({
 vi.mock("../upstream/updates", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../upstream/updates")>()),
   useDesktopUpdateState: () => desktop.update,
+  useProviderOffers: () => desktop.providers,
+  useUpdateProviders: () => spies.updateProviders,
   downloadUpdate: spies.download,
   installUpdate: spies.install,
   openLink: spies.openLink,
@@ -262,14 +269,27 @@ const available: DesktopUpdateState = {
   ],
 };
 
-function setup(update: DesktopUpdateState | null) {
+function setup(update: DesktopUpdateState | null, providers: ReadonlyArray<ProviderOffer> = []) {
   desktop.update = update;
+  desktop.providers = providers;
   useColumnStore.setState({ project: null, stage: "needs" });
   useUpdateWanted.setState({ wanted: false });
+  useProviderRun.setState({ started: [], failures: {} });
   spies.download.mockClear();
   spies.install.mockClear();
   spies.openLink.mockClear();
+  spies.updateProviders.mockClear();
 }
+
+const codex: ProviderOffer = {
+  key: "mac:codex",
+  name: "Codex",
+  machine: null,
+  from: "0.164.0",
+  to: "0.166.0",
+  updating: false,
+  failure: null,
+};
 
 function Column() {
   return (
@@ -604,6 +624,33 @@ describe("the column's word that Stemcells gets better", () => {
     expect(spies.install).not.toHaveBeenCalled();
     await userEvent.click(page.getByRole("button", { name: "Restart now" }));
     expect(spies.install).toHaveBeenCalledOnce();
+  });
+
+  it("says a provider's update the same way, in place of upstream's pill", async () => {
+    setup(upToDate, [codex]);
+    await using screen = await render(<Column />);
+    await expect
+      .element(screen.getByRole("button", { name: "Codex gets better, 1 change" }))
+      .toBeVisible();
+    await expect.element(screen.getByTestId("upstream-update-pill")).not.toBeInTheDocument();
+    await userEvent.hover(screen.getByRole("button", { name: /gets better/ }));
+    await expect.element(page.getByText("0.164.0 → 0.166.0")).toBeVisible();
+  });
+
+  it("takes the providers and the app on one click, the providers at once", async () => {
+    setup(available, [codex]);
+    await using screen = await render(
+      <>
+        <UpdateDriver />
+        <Column />
+      </>,
+    );
+    await userEvent.hover(
+      screen.getByRole("button", { name: `${APP_NAME} and Codex get better, 6 changes` }),
+    );
+    await userEvent.click(page.getByRole("button", { name: "Update" }));
+    expect(spies.updateProviders).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(spies.download).toHaveBeenCalledOnce());
   });
 
   it("is nowhere while the app is up to date, and the foot keeps upstream's pill", async () => {

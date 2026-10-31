@@ -417,6 +417,39 @@ const resolvePnpmGlobalLatestVersion = Effect.fn("resolvePnpmGlobalLatestVersion
   return nonEmptyString(listedEntries?.[0]?.dependencies?.[packageName]?.version);
 });
 
+const decodeNpmList = Schema.decodeUnknownOption(
+  Schema.fromJsonString(
+    Schema.Struct({
+      dependencies: Schema.optional(
+        Schema.Record(Schema.String, Schema.Struct({ version: Schema.optional(Schema.String) })),
+      ),
+    }),
+  ),
+);
+
+// npm's own `latest` honours `min-release-age` and `before`, as its install of `@latest` does;
+// the registry's tag can name a release that install never takes.
+const resolveNpmGlobalLatestVersion = Effect.fn("resolveNpmGlobalLatestVersion")(function* (
+  prefix: string,
+  packageName: string,
+) {
+  const npmPath = yield* resolveCommandPath("npm");
+  if (!npmPath) return null;
+  const global = ["-g", "--prefix", prefix, "--json"];
+  // npm outdated exits 1 when updates are available, and when it fails.
+  const outdated = yield* runProbe(npmPath, ["outdated", ...global, packageName], {}, [0, 1]);
+  const outdatedEntries = outdated
+    ? Option.getOrUndefined(decodePnpmOutdated(outdated))
+    : undefined;
+  if (!outdatedEntries || "error" in outdatedEntries) return null;
+  const latest = nonEmptyString(outdatedEntries[packageName]?.latest);
+  if (latest) return latest;
+  // An empty result means the installed version is still the eligible release.
+  const listed = yield* runProbe(npmPath, ["ls", ...global, "--depth", "0", packageName], {});
+  const listedEntries = listed ? Option.getOrUndefined(decodeNpmList(listed)) : undefined;
+  return nonEmptyString(listedEntries?.dependencies?.[packageName]?.version);
+});
+
 export const resolvePackageManagedProviderMaintenance = Effect.fn(
   "resolvePackageManagedProviderMaintenance",
 )(function* (
@@ -533,6 +566,7 @@ export const resolvePackageManagedProviderMaintenance = Effect.fn(
   // npm proof outranks a containing Homebrew keg; Homebrew Node globals still belong to npm.
   const npmPrefix = yield* resolveNpmGlobalPrefix(context, packageName);
   if (npmPrefix) {
+    const services = yield* Effect.context<ProviderMaintenanceResolverServices>();
     // npm 12 requires script approval to install native binaries; older npm only warns about the flag.
     return makeProviderMaintenanceCapabilities({
       provider: definition.provider,
@@ -547,6 +581,9 @@ export const resolvePackageManagedProviderMaintenance = Effect.fn(
         `${packageName}@latest`,
       ],
       updateLockKey: `npm-global:${normalizeCommandPath(npmPrefix)}`,
+      lookupLatestVersion: resolveNpmGlobalLatestVersion(npmPrefix, packageName).pipe(
+        Effect.provideContext(services),
+      ),
     });
   }
 
