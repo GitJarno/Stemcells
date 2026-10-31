@@ -1,12 +1,29 @@
-import type { DesktopUpdateState } from "@t3tools/contracts";
+import {
+  isAtomCommandInterrupted,
+  squashAtomCommandFailure,
+} from "@t3tools/client-runtime/state/runtime";
+import { PROVIDER_DISPLAY_NAMES, type DesktopUpdateState } from "@t3tools/contracts";
 
 import { resolveDesktopUpdateButtonAction } from "../../components/desktopUpdate.logic";
 import { openDesktopUpdateReleaseNotes } from "../../components/desktopUpdate.toast";
+import {
+  collectProviderUpdateCandidates,
+  hasOneClickUpdateProviderCandidate,
+  isProviderUpdateActive,
+} from "../../components/ProviderUpdateLaunchNotification.logic";
+import { useProviderUpdates } from "../../components/ProviderUpdatesAction";
 import type {
   SkippedMachine,
   collectServerUpdateTargets,
 } from "../../components/sidebar/updateEverything.logic";
 import { stackedThreadToast, toastManager } from "../../components/ui/toast";
+
+import {
+  useEnvironmentProviders,
+  useEnvironments,
+  usePrimaryEnvironmentId,
+} from "../../state/environments";
+import type { ProviderOffer, ProviderRunResult } from "../updates/providers";
 
 export { useDesktopUpdateState } from "../../state/desktopUpdate";
 export type { DesktopUpdateState };
@@ -98,4 +115,48 @@ export function pullRequestUrl(
 /** Opens a link in the person's browser, as upstream's notes do. */
 export function openLink(url: string): void {
   void openDesktopUpdateReleaseNotes(window.desktopBridge, url);
+}
+
+/**
+ * The providers Update Everything would update, on every connected machine: upstream's own
+ * candidates (enabled, behind what their installer would install, one command for all their
+ * instances), with one already updating kept so the banner can say so.
+ */
+export function useProviderOffers(): ReadonlyArray<ProviderOffer> {
+  const { environments } = useEnvironments();
+  const providersByEnvironment = useEnvironmentProviders();
+  const primary = usePrimaryEnvironmentId();
+  return environments.flatMap((environment) => {
+    if (environment.connection.phase !== "connected") return [];
+    const providers = providersByEnvironment.get(environment.environmentId) ?? [];
+    return collectProviderUpdateCandidates(providers)
+      .filter((candidate) => hasOneClickUpdateProviderCandidate(candidate, providers))
+      .map((candidate): ProviderOffer => {
+        const state = candidate.updateState;
+        const failed = state?.status === "failed" || state?.status === "unchanged";
+        return {
+          key: `${environment.environmentId}:${candidate.instanceId}`,
+          name: PROVIDER_DISPLAY_NAMES[candidate.driver] ?? candidate.driver,
+          machine: environment.environmentId === primary ? null : environment.label,
+          from: candidate.versionAdvisory.currentVersion,
+          to: candidate.versionAdvisory.latestVersion,
+          updating: isProviderUpdateActive(candidate),
+          failure: failed ? (state.message ?? "The update didn't take.") : null,
+        };
+      });
+  });
+}
+
+/** Updates every offered provider that isn't already updating, without upstream's toast. */
+export function useUpdateProviders(): () => Promise<ReadonlyArray<ProviderRunResult>> {
+  const { updateAll } = useProviderUpdates();
+  return async () =>
+    (await updateAll({ quiet: true })).map(({ environmentId, instanceId, result }) => {
+      const key = `${environmentId}:${instanceId}`;
+      if (result._tag !== "Failure" || isAtomCommandInterrupted(result)) {
+        return { key, failure: null };
+      }
+      const error = squashAtomCommandFailure(result);
+      return { key, failure: error instanceof Error ? error.message : "The update didn't start." };
+    });
 }

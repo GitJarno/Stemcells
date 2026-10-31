@@ -301,6 +301,7 @@ it.layer(NodeServices.layer)("providerMaintenance", (it) => {
             ],
             lockKey: `npm-global:${normalizeCommandPath(tempDir)}`,
           },
+          lookupLatestVersion: expect.anything(),
         });
       }),
   );

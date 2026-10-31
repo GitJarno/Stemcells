@@ -1,7 +1,6 @@
 import { ArrowUpRightIcon, GiftIcon } from "lucide-react";
 import { useEffect } from "react";
 
-import { APP_NAME } from "../brand/name";
 import { useNeeds } from "../needs/stream";
 import { Button, Popover, PopoverPopup, PopoverTrigger } from "../upstream/ui";
 import {
@@ -11,17 +10,26 @@ import {
   pullRequestUrl,
   updateStep,
   useDesktopUpdateState,
+  useProviderOffers,
+  useUpdateProviders,
   type DesktopUpdateState,
   type UpdateStep,
 } from "../upstream/updates";
 import { bettersOf, changeCountLabel, updateChangeCount } from "../updates/changes";
+import {
+  bannerViewOf,
+  providerBettersOf,
+  runProviderUpdates,
+  useProviderRun,
+  type BannerView,
+  type ProviderOffer,
+} from "../updates/providers";
 import {
   nextUpdateAct,
   takeUpdateStep,
   updateViewOf,
   useUpdateWanted,
   wantUpdate,
-  type UpdateView,
 } from "../updates/wanted";
 
 interface UpdateToTake {
@@ -30,10 +38,24 @@ interface UpdateToTake {
 }
 
 /** Stemcells' own update, while there is one to take; null when it's up to date or not the desktop app. */
-export function useUpdateToTake(): UpdateToTake | null {
+function useUpdateToTake(): UpdateToTake | null {
   const state = useDesktopUpdateState();
   const step = state === null ? null : updateStep(state);
   return state === null || step === null ? null : { state, step };
+}
+
+export interface Betters {
+  readonly update: UpdateToTake | null;
+  readonly providers: ReadonlyArray<ProviderOffer>;
+}
+
+/** What gets better: Stemcells' own update and the providers' one-click ones. Null when nothing does. */
+export function useBetters(): Betters | null {
+  const update = useUpdateToTake();
+  const offers = useProviderOffers();
+  const run = useProviderRun();
+  const providers = providerBettersOf(offers, run);
+  return update === null && providers.length === 0 ? null : { update, providers };
 }
 
 /**
@@ -53,30 +75,51 @@ function useCellsAtWork(): number | null {
 const LISTED = 8;
 
 /**
- * The column's word that Stemcells gets better. Hovering or clicking it lists what got better,
- * each a link to its pull request, and offers one Update. That gets the update ready, then
- * restarts once no Cell is at work; until then the column says what it waits for.
+ * The column's word that Stemcells or its providers get better. Hovering or clicking it lists
+ * what does, each change a link to its pull request, and offers one Update. That updates the
+ * providers at once and gets the app's update ready, then restarts once no Cell is at work;
+ * until then the column says how it goes, or what it waits for.
  */
-export function UpdateBanner(props: { update: UpdateToTake }) {
-  const { state, step } = props.update;
+export function UpdateBanner(props: { betters: Betters }) {
+  const { update, providers } = props.betters;
   const wanted = useUpdateWanted((store) => store.wanted);
   const atWork = useCellsAtWork();
-  const view = updateViewOf({
-    status: state.status,
-    step,
-    percent: state.downloadPercent,
-    wanted,
-    atWork,
-  });
-  const total = updateChangeCount(state);
-  const count = total === 0 ? null : changeCountLabel(total, state.omittedReleaseCount > 0);
+  const updateProviders = useUpdateProviders();
+  const app =
+    update === null
+      ? null
+      : updateViewOf({
+          status: update.state.status,
+          step: update.step,
+          percent: update.state.downloadPercent,
+          wanted,
+          atWork,
+        });
+  const view = bannerViewOf({ app, providers });
+  if (view === null) return null;
+  const appTotal = update === null ? 0 : updateChangeCount(update.state);
+  const total = appTotal + providers.length;
+  const count =
+    total === 0
+      ? null
+      : changeCountLabel(total, update !== null && update.state.omittedReleaseCount > 0);
   const label = [
-    `${APP_NAME} gets better`,
+    view.title,
     count === null ? null : `${count} ${total === 1 ? "change" : "changes"}`,
     view.line,
   ]
     .filter(Boolean)
     .join(", ");
+  const start = () => {
+    const startable = providers.filter((provider) => !provider.updating);
+    if (startable.length > 0) {
+      void runProviderUpdates(
+        startable.map((provider) => provider.key),
+        updateProviders,
+      );
+    }
+    if (app?.act === "update" || app?.act === "retry") wantUpdate();
+  };
 
   return (
     <div data-cells-better="">
@@ -86,11 +129,16 @@ export function UpdateBanner(props: { update: UpdateToTake }) {
           delay={150}
           closeDelay={150}
           render={
-            <button type="button" aria-label={label} data-cells-better-open="" data-step={step} />
+            <button
+              type="button"
+              aria-label={label}
+              data-cells-better-open=""
+              data-step={update?.step}
+            />
           }
         >
           <GiftIcon aria-hidden />
-          <span data-cells-better-words="">{APP_NAME} gets better</span>
+          <span data-cells-better-words="">{view.title}</span>
           {count === null ? null : <span data-cells-better-count="">{count}</span>}
           {view.line === null ? null : <span data-cells-better-detail="">{view.line}</span>}
           {view.percent === null ? null : (
@@ -106,23 +154,47 @@ export function UpdateBanner(props: { update: UpdateToTake }) {
           initialFocus={false}
           aria-label="What got better"
         >
-          <WhatGotBetter state={state} total={total} />
-          <UpdateAct view={view} version={state.downloadedVersion} />
+          <WhatGotBetter state={update?.state ?? null} total={appTotal} providers={providers} />
+          <UpdateAct
+            view={view}
+            version={update?.state.downloadedVersion ?? null}
+            onStart={start}
+          />
         </PopoverPopup>
       </Popover>
     </div>
   );
 }
 
-/** What the update makes better, newest first, each opening its pull request. */
-function WhatGotBetter(props: { state: DesktopUpdateState; total: number }) {
-  const betters = bettersOf(props.state);
+/**
+ * What gets better: each provider's step to the version its installer takes, then the app's
+ * changes, newest first, each opening its pull request.
+ */
+function WhatGotBetter(props: {
+  state: DesktopUpdateState | null;
+  total: number;
+  providers: ReadonlyArray<ProviderOffer>;
+}) {
+  const betters = props.state === null ? [] : bettersOf(props.state);
   const listed = betters.slice(0, LISTED);
   const more = Math.max(props.total, betters.length) - listed.length;
   return (
     <div data-better="">
       <h3 data-better-title="">What got better</h3>
       <ul data-better-list="">
+        {props.providers.map((provider) => (
+          <li key={provider.key}>
+            <span data-better-item="">
+              <span>
+                {provider.name}{" "}
+                <span data-better-version="">
+                  {provider.from === null ? provider.to : `${provider.from} → ${provider.to}`}
+                </span>
+                {provider.machine === null ? null : ` on ${provider.machine}`}
+              </span>
+            </span>
+          </li>
+        ))}
         {listed.map((better) => {
           const url = better.number === null ? null : pullRequestUrl(better.number);
           return (
@@ -151,13 +223,17 @@ function WhatGotBetter(props: { state: DesktopUpdateState; total: number }) {
   );
 }
 
-/** The popover's one action, with a sentence over it when what happens next isn't plain. */
-function UpdateAct(props: { view: UpdateView; version: string | null }) {
+/** The popover's one action, with what to know first when what happens next isn't plain. */
+function UpdateAct(props: { view: BannerView; version: string | null; onStart: () => void }) {
   const { view } = props;
-  if (view.act === null && view.note === null) return null;
+  if (view.act === null && view.notes.length === 0) return null;
   return (
     <div data-better-act="">
-      {view.note === null ? null : <p data-better-note="">{view.note}</p>}
+      {view.notes.map((note) => (
+        <p key={note} data-better-note="">
+          {note}
+        </p>
+      ))}
       {view.act === "restart-now" ? (
         <Button
           size="sm"
@@ -167,7 +243,7 @@ function UpdateAct(props: { view: UpdateView; version: string | null }) {
           Restart now
         </Button>
       ) : view.act === null ? null : (
-        <Button size="sm" onClick={wantUpdate}>
+        <Button size="sm" onClick={props.onStart}>
           {view.act === "retry" ? "Try again" : "Update"}
         </Button>
       )}

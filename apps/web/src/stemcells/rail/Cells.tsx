@@ -55,7 +55,7 @@ import { RailButton } from "./RailParts";
 import { StagePager } from "./StagePager";
 import { useRailUndoNotice } from "./undoNotice";
 import { UndoLine } from "./UndoLine";
-import { UpdateBanner, useUpdateToTake } from "./UpdateBanner";
+import { UpdateBanner, useBetters } from "./UpdateBanner";
 import "../tokens/stemcells.css";
 import "./rail.css";
 import "../needs/needs.css";
@@ -112,7 +112,7 @@ export function Cells() {
   const keptBack = useSettledKeptBack((projectId) => here({ projectId }));
   const settledCount = shelves.settled.length + keptBack;
   const settledUnlisted = settledCount - Math.min(shelves.settled.length, SETTLED_SHOWN);
-  const update = useUpdateToTake();
+  const betters = useBetters();
   // The undo line stands above the stages; with the column hidden, the notice is a toast.
   // Settings and Usage have no ⌘Z to undo with.
   const { open } = useSidebar();
@@ -240,11 +240,11 @@ export function Cells() {
         standings={cells === null ? NO_STANDINGS : standingsOf(cells, allShelves.settled)}
         environmentId={environmentId}
       />
-      {update ? <UpdateBanner update={update} /> : null}
+      {betters ? <UpdateBanner betters={betters} /> : null}
       <div data-cells-foot="">
-        {/* Beside the banner the pill would say the same update twice; without
+        {/* Beside the banner the pill would say the same updates twice; without
             one, it stays for its checks and Update Everything. */}
-        {update ? null : (
+        {betters ? null : (
           <ul data-stemcells-rail-update="">
             <SidebarUpdatePill />
           </ul>

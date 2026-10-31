@@ -388,9 +388,9 @@ svg[data-cells-stage-mark] {
   flex: 1;
 }
 
-/* Stemcells' own update, between the stages and the foot while there's one
-   to take: a gift in the accent's ink, how many changes it brings, and once
-   it's on its way, how far, or what it waits for. */
+/* Stemcells' own update and its providers', between the stages and the foot
+   while there's one to take: a gift in the accent's ink, how many changes it
+   brings, and once it's on its way, how far, or what it waits for. */
 [data-cells-better] {
   flex-shrink: 0;
   padding: var(--sc-space-xs) var(--sc-space-sm) 0;
@@ -460,8 +460,8 @@ svg[data-cells-stage-mark] {
     transition: none;
   }
 }
-/* What got better (UpdateBanner.tsx): a title, then each change as a row
-   that opens its pull request, then the one action. */
+/* What got better (UpdateBanner.tsx): a title, then each provider's step and
+   each change as a row that opens its pull request, then the one action. */
 [data-better] {
   display: flex;
   flex-direction: column;
@@ -515,6 +515,11 @@ a[data-better-item]:focus-visible {
 a[data-better-item]:hover > svg,
 a[data-better-item]:focus-visible > svg {
   opacity: 1;
+}
+/* A provider's step, from the version it runs to the one its installer takes. */
+[data-better-version] {
+  color: var(--sc-dim);
+  font-variant-numeric: tabular-nums;
 }
 [data-better-more] {
   padding: 0 var(--sc-space-sm);
