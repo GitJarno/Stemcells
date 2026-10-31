@@ -122,13 +122,10 @@ function Banner(props: { betters: Betters }) {
     .filter(Boolean)
     .join(", ");
   const start = () => {
-    const startable = providers.filter((provider) => !provider.updating);
-    if (startable.length > 0) {
-      void runProviderUpdates(
-        startable.map((provider) => provider.key),
-        updateProviders,
-      );
-    }
+    void runProviderUpdates(
+      providers.filter((provider) => !provider.updating),
+      updateProviders,
+    );
     if (app?.act === "update" || app?.act === "retry") wantUpdate();
   };
 
@@ -234,10 +231,10 @@ function WhatGotBetter(props: {
   );
 }
 
-/** The popover's one action, with what to know first when what happens next isn't plain. */
+/** The popover's actions, with what to know first when what happens next isn't plain. */
 function UpdateAct(props: { view: BannerView; version: string | null; onStart: () => void }) {
   const { view } = props;
-  if (view.act === null && view.notes.length === 0) return null;
+  if (view.act === null && !view.restartNow && view.notes.length === 0) return null;
   return (
     <div data-better-act="">
       {view.notes.map((note) => (
@@ -245,7 +242,12 @@ function UpdateAct(props: { view: BannerView; version: string | null; onStart: (
           {note}
         </p>
       ))}
-      {view.act === "restart-now" ? (
+      {view.act === null ? null : (
+        <Button size="sm" onClick={props.onStart}>
+          {view.act === "retry" ? "Try again" : "Update"}
+        </Button>
+      )}
+      {view.restartNow ? (
         <Button
           size="sm"
           variant="outline"
@@ -253,11 +255,7 @@ function UpdateAct(props: { view: BannerView; version: string | null; onStart: (
         >
           Restart now
         </Button>
-      ) : view.act === null ? null : (
-        <Button size="sm" onClick={props.onStart}>
-          {view.act === "retry" ? "Try again" : "Update"}
-        </Button>
-      )}
+      ) : null}
     </div>
   );
 }

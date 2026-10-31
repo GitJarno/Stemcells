@@ -274,7 +274,7 @@ function setup(update: DesktopUpdateState | null, providers: ReadonlyArray<Provi
   desktop.providers = providers;
   useColumnStore.setState({ project: null, stage: "needs" });
   useUpdateWanted.setState({ wanted: false });
-  useProviderRun.setState({ running: false, failures: {} });
+  useProviderRun.setState({ started: [], failures: {} });
   spies.download.mockClear();
   spies.install.mockClear();
   spies.openLink.mockClear();

@@ -36,6 +36,16 @@ same gap: `npm view <pkg>@latest` ignores the age.
       `Cells.tsx`), the pill out of the foot while the banner speaks
 - [x] Tests: the view table; the column's browser test for providers
 - [x] seams.md, `install.md`, drift
-- [ ] The gates, check-local, merge
+- [x] The gates, check-local
 
 ## Review
+
+- The root cause was the person's own npm policy, not a broken updater: npm installed exactly
+  what it was told, and the advisory asked a different question. Asking the installer is the
+  same fix upstream already made for pnpm.
+- An independent review found that a provider's failure hid the app's "Restarts once your
+  Cells finish" and its Restart now. The app's progress now keeps the line, and Restart now
+  sits beside Try again. A click's own failures are kept per version, and only what it
+  started reads as updating.
+- Left as upstream has them: Settings' provider rows, the narrow rail and the list column,
+  and an npm that takes longer than the probe's 10 s, which falls back to the registry's tag.

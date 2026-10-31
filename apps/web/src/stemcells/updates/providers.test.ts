@@ -49,6 +49,7 @@ describe("bannerViewOf", () => {
       percent: 42,
       notes: ["2 Cells are flying: it restarts once they finish."],
       act: null,
+      restartNow: false,
     });
     const failed: UpdateView = { line: "Couldn't update", percent: null, note: null, act: "retry" };
     expect(bannerViewOf({ app: failed, providers: [] })).toMatchObject({
@@ -57,20 +58,28 @@ describe("bannerViewOf", () => {
     });
   });
 
-  it("offers one Update while anything waits for it", () => {
+  const restarting: UpdateView = {
+    line: "Restarts once your Cells finish",
+    percent: null,
+    note: "1 Cell is flying, and a restart would stop it.",
+    act: "restart-now",
+  };
+
+  it("offers one Update while anything waits for it, and Restart now while the app does", () => {
     expect(bannerViewOf({ app: null, providers: [codex] })).toMatchObject({
       line: null,
       act: "update",
+      restartNow: false,
     });
     // The app is on its way; the provider still waits.
-    const restarting: UpdateView = {
-      line: "Restarts once your Cells finish",
-      percent: null,
-      note: "1 Cell is flying, and a restart would stop it.",
-      act: "restart-now",
-    };
-    expect(bannerViewOf({ app: restarting, providers: [codex] })?.act).toBe("update");
-    expect(bannerViewOf({ app: restarting, providers: [] })?.act).toBe("restart-now");
+    expect(bannerViewOf({ app: restarting, providers: [codex] })).toMatchObject({
+      act: "update",
+      restartNow: true,
+    });
+    expect(bannerViewOf({ app: restarting, providers: [] })).toMatchObject({
+      act: null,
+      restartNow: true,
+    });
   });
 
   it("says which provider is updating, and names it only beside something else", () => {
@@ -100,60 +109,79 @@ describe("bannerViewOf", () => {
       percent: null,
       notes: ["Codex on Mac mini: Update command exited with code 1: EACCES"],
       act: "retry",
+      restartNow: false,
+    });
+  });
+
+  it("keeps the app's own progress in the line beside a provider's failure", () => {
+    const failed = { ...codex, failure: "Still outdated." };
+    expect(bannerViewOf({ app: restarting, providers: [failed] })).toEqual({
+      title: `${APP_NAME} and Codex get better`,
+      line: "Restarts once your Cells finish",
+      percent: null,
+      notes: ["Codex: Still outdated.", "1 Cell is flying, and a restart would stop it."],
+      act: "retry",
+      restartNow: true,
     });
   });
 });
 
 describe("providerBettersOf", () => {
-  it("shows the click's run as updating, then the failure it saw unless the server kept one", () => {
+  it("shows what the click started as updating, then the failure it saw for that version", () => {
     const kept = { ...claude, failure: "Still outdated." };
     expect(
-      providerBettersOf([codex, kept], { running: true, failures: {} }).map((p) => [
+      providerBettersOf([codex, kept], { started: ["mac:codex"], failures: {} }).map((p) => [
         p.updating,
         p.failure,
       ]),
     ).toEqual([
       [true, null],
-      [true, null],
+      [false, "Still outdated."],
     ]);
+    const failures = { "mac:codex@0.166.0": "Not connected." };
+    expect(providerBettersOf([codex], { started: [], failures })[0]?.failure).toBe(
+      "Not connected.",
+    );
+    // A newer release is a new offer: the old click's failure doesn't speak for it.
     expect(
-      providerBettersOf([codex, kept], {
-        running: false,
-        failures: { "mac:codex": "Not connected." },
-      }).map((p) => p.failure),
-    ).toEqual(["Not connected.", "Still outdated."]);
+      providerBettersOf([{ ...codex, to: "0.167.0" }], { started: [], failures })[0]?.failure,
+    ).toBeNull();
   });
 });
 
 describe("runProviderUpdates", () => {
   it("runs once per click, and keeps what that run saw fail", async () => {
-    useProviderRun.setState({ running: false, failures: { old: "gone" } });
+    useProviderRun.setState({ started: [], failures: { old: "gone" } });
     let finish: (
       results: ReadonlyArray<{ key: string; failure: string | null }>,
     ) => void = () => {};
-    const run = runProviderUpdates(["mac:codex"], () => new Promise((done) => (finish = done)));
-    expect(useProviderRun.getState()).toEqual({ running: true, failures: {} });
+    const run = runProviderUpdates([codex, claude], () => new Promise((done) => (finish = done)));
+    expect(useProviderRun.getState()).toEqual({
+      started: ["mac:codex", "mac:claude"],
+      failures: {},
+    });
     // A second click while it runs starts nothing.
-    await runProviderUpdates(["mac:codex"], () => Promise.reject(new Error("twice")));
+    await runProviderUpdates([codex], () => Promise.reject(new Error("twice")));
     finish([
       { key: "mac:codex", failure: "Not connected." },
       { key: "mac:claude", failure: null },
     ]);
     await run;
     expect(useProviderRun.getState()).toEqual({
-      running: false,
-      failures: { "mac:codex": "Not connected." },
+      started: [],
+      failures: { "mac:codex@0.166.0": "Not connected." },
     });
   });
 
   it("marks every provider it was asked to update when the run itself fails", async () => {
-    useProviderRun.setState({ running: false, failures: {} });
-    await runProviderUpdates(["mac:codex", "mini:codex"], () =>
+    useProviderRun.setState({ started: [], failures: {} });
+    const mini = { ...codex, key: "mini:codex" };
+    await runProviderUpdates([codex, mini], () =>
       Promise.reject(new Error("The machine went away.")),
     );
     expect(useProviderRun.getState().failures).toEqual({
-      "mac:codex": "The machine went away.",
-      "mini:codex": "The machine went away.",
+      "mac:codex@0.166.0": "The machine went away.",
+      "mini:codex@0.166.0": "The machine went away.",
     });
   });
 });

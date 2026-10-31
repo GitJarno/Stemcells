@@ -26,46 +26,53 @@ export interface ProviderRunResult {
   readonly failure: string | null;
 }
 
-/** The person's click while its updates run, and the failures only that run saw. */
-export const useProviderRun = create<{
-  readonly running: boolean;
+type Run = {
+  /** The offers the click is updating, until its run settles. */
+  readonly started: ReadonlyArray<string>;
+  /** What that run saw fail, by offer and the version it tried, so a newer one starts clean. */
   readonly failures: Readonly<Record<string, string>>;
-}>(() => ({ running: false, failures: {} }));
+};
+
+export const useProviderRun = create<Run>(() => ({ started: [], failures: {} }));
+
+const tried = (offer: Pick<ProviderOffer, "key" | "to">) => `${offer.key}@${offer.to}`;
 
 /**
- * Updates every offered provider once. A failure the server keeps comes back on the provider; one
+ * Updates the offered providers once. A failure the server keeps comes back on the provider; one
  * it never saw (a machine gone, no permission) stays here until the next click.
  */
 export async function runProviderUpdates(
-  keys: ReadonlyArray<string>,
+  offers: ReadonlyArray<Pick<ProviderOffer, "key" | "to">>,
   update: () => Promise<ReadonlyArray<ProviderRunResult>>,
 ): Promise<void> {
-  if (useProviderRun.getState().running) return;
-  useProviderRun.setState({ running: true, failures: {} });
-  let failures: Record<string, string> = {};
+  if (offers.length === 0 || useProviderRun.getState().started.length > 0) return;
+  useProviderRun.setState({ started: offers.map((offer) => offer.key), failures: {} });
+  const failures: Record<string, string> = {};
   try {
-    for (const result of await update()) {
-      if (result.failure !== null) failures[result.key] = result.failure;
+    const results = new Map((await update()).map((result) => [result.key, result.failure]));
+    for (const offer of offers) {
+      const failure = results.get(offer.key);
+      if (failure) failures[tried(offer)] = failure;
     }
   } catch (error) {
     const reason = error instanceof Error ? error.message : "The update didn't start.";
-    failures = Object.fromEntries(keys.map((key) => [key, reason]));
+    for (const offer of offers) failures[tried(offer)] = reason;
   } finally {
-    useProviderRun.setState({ running: false, failures });
+    useProviderRun.setState({ started: [], failures });
   }
 }
 
 /** Each offer as the banner reads it: under way while the click's run is, else how it went. */
 export function providerBettersOf(
   offers: ReadonlyArray<ProviderOffer>,
-  run: { readonly running: boolean; readonly failures: Readonly<Record<string, string>> },
+  run: Run,
 ): ReadonlyArray<ProviderOffer> {
   return offers.map((offer) => {
-    const updating = offer.updating || run.running;
+    const updating = offer.updating || run.started.includes(offer.key);
     return {
       ...offer,
       updating,
-      failure: updating ? null : (run.failures[offer.key] ?? offer.failure),
+      failure: updating ? null : (run.failures[tried(offer)] ?? offer.failure),
     };
   });
 }
@@ -80,7 +87,10 @@ export interface BannerView {
   readonly percent: number | null;
   /** Sentences over the action: why something failed, what a restart waits for. */
   readonly notes: ReadonlyArray<string>;
-  readonly act: "update" | "retry" | "restart-now" | null;
+  /** Starts what waits: the providers at once, the app's update on its way. */
+  readonly act: "update" | "retry" | null;
+  /** The app's update is ready and waits for the Cells; this skips the wait. */
+  readonly restartNow: boolean;
 }
 
 const names = new Intl.ListFormat("en", { type: "conjunction" });
@@ -106,12 +116,17 @@ export function bannerViewOf(input: {
   const appFailed = app?.act === "retry";
   const failed = unique([...(appFailed ? [APP_NAME] : []), ...failedProviders.map((p) => p.name)]);
 
+  // The app's own progress (getting ready, waiting for the Cells, restarting) isn't hidden by a
+  // provider's failure; the failure stays in the notes, with Try again.
+  const appBusy = app !== null && app.line !== null && !appFailed;
   const line =
     updating.length > 0
       ? `Updating${named(updating)}…`
-      : failed.length > 0
-        ? `Couldn't update${named(failed)}`
-        : (app?.line ?? null);
+      : appBusy
+        ? app.line
+        : failed.length > 0
+          ? `Couldn't update${named(failed)}`
+          : null;
 
   const startable = providers.some((p) => !p.updating);
   const appStartable = app?.act === "update" || appFailed;
@@ -120,9 +135,7 @@ export function bannerViewOf(input: {
       ? failedProviders.length > 0 || appFailed
         ? "retry"
         : "update"
-      : app?.act === "restart-now"
-        ? "restart-now"
-        : null;
+      : null;
 
   return {
     title: `${names.format(things)} ${things.length === 1 ? "gets" : "get"} better`,
@@ -135,5 +148,6 @@ export function bannerViewOf(input: {
       ...(app?.note ? [app.note] : []),
     ],
     act,
+    restartNow: app?.act === "restart-now",
   };
 }
