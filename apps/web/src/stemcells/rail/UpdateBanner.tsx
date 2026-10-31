@@ -1,5 +1,5 @@
 import { ArrowUpRightIcon, GiftIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { useNeeds } from "../needs/stream";
 import { Button, Popover, PopoverPopup, PopoverTrigger } from "../upstream/ui";
@@ -44,13 +44,13 @@ function useUpdateToTake(): UpdateToTake | null {
   return state === null || step === null ? null : { state, step };
 }
 
-export interface Betters {
+interface Betters {
   readonly update: UpdateToTake | null;
   readonly providers: ReadonlyArray<ProviderOffer>;
 }
 
 /** What gets better: Stemcells' own update and the providers' one-click ones. Null when nothing does. */
-export function useBetters(): Betters | null {
+function useBetters(): Betters | null {
   const update = useUpdateToTake();
   const offers = useProviderOffers();
   const run = useProviderRun();
@@ -80,7 +80,18 @@ const LISTED = 8;
  * providers at once and gets the app's update ready, then restarts once no Cell is at work;
  * until then the column says how it goes, or what it waits for.
  */
-export function UpdateBanner(props: { betters: Betters }) {
+export function UpdateBanner() {
+  // A leaf of its own: provider snapshots change each second while one updates.
+  const betters = useBetters();
+  return betters === null ? null : <Banner betters={betters} />;
+}
+
+/** Upstream's pill, for its checks and Update Everything, while the banner has nothing to say. */
+export function UnlessBetter(props: { children: ReactNode }) {
+  return useBetters() === null ? props.children : null;
+}
+
+function Banner(props: { betters: Betters }) {
   const { update, providers } = props.betters;
   const wanted = useUpdateWanted((store) => store.wanted);
   const atWork = useCellsAtWork();
