@@ -17,22 +17,9 @@ import { createPortal } from "react-dom";
 import { RightPanelSheet } from "../../components/RightPanelSheet";
 import { RightPanelTabs } from "../../components/RightPanelTabs";
 import { useOwnedUntilRest } from "../surfaces/keep";
+import { ChatPanelHostContext } from "./chatPanelHost";
 
-export interface ChatPanelHost {
-  /** The workbench's node; null until it mounts. */
-  readonly node: HTMLElement | null;
-  /** Whether this chat's panel is the one the workbench shows. */
-  readonly owns: boolean;
-  /** Whether this chat is its page's focused one, whose panel the workbench shows on stage. */
-  readonly focused: boolean;
-  /** The chat's thread (a draft's is its thread), which the panel names while it holds its surfaces. */
-  readonly threadKey: string | null;
-  /** A chat with no surfaces and no terminal (Aski's): it has no project to show them for. */
-  readonly bare?: boolean;
-}
-
-/** Null (the default): the panel stays beside its chat, as upstream draws it. */
-export const ChatPanelHostContext = createContext<ChatPanelHost | null>(null);
+export { ChatPanelHostContext, type ChatPanelHost } from "./chatPanelHost";
 
 /**
  * Told when a chat's panel in the workbench is maximized (true) and when it

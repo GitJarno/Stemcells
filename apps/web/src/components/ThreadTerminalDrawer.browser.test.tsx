@@ -24,6 +24,8 @@ vi.mock("~/terminal/ghostty/surface", () => ({
         fixture.pendingSurfaces.push(() => resolve(fakeSurface));
       }),
   },
+  terminalFontFamily: () => "monospace",
+  terminalFontSize: () => 12,
 }));
 vi.mock("../state/terminalSessions", async () => {
   const Atom = await import("effect/reactivity/Atom");
