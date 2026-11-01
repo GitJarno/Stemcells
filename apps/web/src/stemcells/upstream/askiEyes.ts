@@ -9,7 +9,7 @@ import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environ
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
 
-import { isSidebarSubagentThread } from "../../components/Sidebar.logic";
+import { isSidebarHiddenThread } from "../../components/Sidebar.logic";
 import { useEnvironment, usePrimaryEnvironmentId } from "../../state/environments";
 import { useQuietThreadShell, useThreadShells } from "../../state/entities";
 import { useUiStateStore } from "../../uiStateStore";
@@ -55,7 +55,7 @@ export function useOpenChats(aski: CellRef | null, now: string): ReadonlyArray<O
   const visited = useUiStateStore((state) => state.threadLastVisitedAtById);
   return shells.flatMap((chat) => {
     if (chat.archivedAt !== null || chat.settledOverride === "settled") return [];
-    if (isSidebarSubagentThread(chat) || effectiveSnoozed(chat, { now })) return [];
+    if (isSidebarHiddenThread(chat) || effectiveSnoozed(chat, { now })) return [];
     if (aski !== null && chat.environmentId === aski.environmentId && chat.id === aski.threadId)
       return [];
     const key = scopedThreadKey(scopeThreadRef(chat.environmentId, chat.id));

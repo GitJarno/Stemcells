@@ -1,11 +1,6 @@
-/**
- * Substitutes upstream's `components/settings/UpdateTrackSwitchDialog.tsx`
- * (`plugin.ts`). Upstream's dialog moves this app and every server to T3's
- * npm release on the picked track, and asks npm which release that is.
- * Stemcells updates only from its own source, which builds both tracks, so
- * picking one sets it through the desktop bridge, as the select did before,
- * and nothing asks npm about T3's release (`seams.md`, No T3 build offered).
- */
+// Substitutes upstream's `settings/UpdateTrackSwitchDialog.tsx` (`plugin.ts`), which moves every
+// machine to T3's npm release on the picked track. Stemcells updates from its own source, so a
+// pick only saves the track, and nothing asks npm about T3's release (seams.md, No T3 build).
 import { useEffect, useRef, type ComponentProps } from "react";
 
 import type * as Upstream from "../../../components/settings/UpdateTrackSwitchDialog";
@@ -41,5 +36,6 @@ export function UpdateTrackSwitchDialog({
       })
       .finally(onClose);
   }, [channel, current, onClose]);
-  return null;
+  // Upstream's renders a dialog; this one has nothing to ask.
+  return <span hidden />;
 }

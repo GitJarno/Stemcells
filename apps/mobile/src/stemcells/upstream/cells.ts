@@ -6,7 +6,7 @@
 import { useAtomValue } from "@effect/atom-react";
 
 import { useAppearancePreferences } from "../../features/settings/appearance/AppearancePreferencesProvider";
-import { threadListEnvironmentsAtom } from "../../state/server";
+import { threadListEnvironmentsAtom } from "../../state/presentation";
 import { environmentThreadShells } from "../../state/threads";
 import type { EnvironmentThreadShell } from "./threads";
 

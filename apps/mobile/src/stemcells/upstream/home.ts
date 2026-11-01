@@ -11,7 +11,7 @@ import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-works
 import { useWorkspaceTabs } from "../../features/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/workspace/useSelectWorkspaceDetail";
 import { writeFileAtomically } from "../../lib/atomic-file";
-import { threadListEnvironmentsAtom } from "../../state/server";
+import { threadListEnvironmentsAtom } from "../../state/presentation";
 
 export type { EnvironmentMachineKind } from "@t3tools/contracts";
 

@@ -17,7 +17,7 @@ import {
 
 import { openCommandPalette } from "../../commandPaletteBus";
 import type { ProjectFaviconProject } from "../../components/ProjectFavicon";
-import { isSidebarSubagentThread } from "../../components/Sidebar.logic";
+import { isSidebarHiddenThread } from "../../components/Sidebar.logic";
 import { barColor } from "../../components/usage/UsageLimits";
 import { PROVIDER_PRESENTATION } from "../../components/usage/usageProviders";
 import { useSidebarProjectGroups } from "../../hooks/useSidebarProjectGroups";
@@ -97,7 +97,7 @@ export function useRailChats(now: string): ReadonlyArray<RailChat> {
   const visited = useUiStateStore((state) => state.threadLastVisitedAtById);
   return shells.flatMap((shell) => {
     if (shell.archivedAt !== null || shell.settledOverride === "settled") return [];
-    if (isSidebarSubagentThread(shell) || effectiveSnoozed(shell, { now })) return [];
+    if (isSidebarHiddenThread(shell) || effectiveSnoozed(shell, { now })) return [];
     const cell = { environmentId: shell.environmentId, threadId: shell.id, draftId: null };
     return [
       {
