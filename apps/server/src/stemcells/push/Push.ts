@@ -18,6 +18,7 @@ import {
   type Alert,
   type ApnsKey,
   type ApsEnvironment,
+  type Notice,
   type Sent,
 } from "./apns.ts";
 import { alertWords, due } from "./notify.ts";
@@ -42,7 +43,7 @@ export interface PushSource {
   readonly writeKey: (key: ApnsKey | null) => Effect.Effect<boolean>;
   readonly loadDevices: Effect.Effect<ReadonlyArray<Device>>;
   readonly saveDevices: (devices: ReadonlyArray<Device>) => Effect.Effect<void>;
-  readonly send: (device: Device, providerToken: string, alert: Alert) => Effect.Effect<Sent>;
+  readonly send: (device: Device, providerToken: string, notice: Notice) => Effect.Effect<Sent>;
 }
 
 /**
@@ -99,6 +100,8 @@ export const make = Effect.fn("Push.make")(function* (
   let last: PushStatus["last"] = null;
   let needs: ReadonlyArray<Need> = [];
   const pushed = new Set<string>();
+  /** The count of Cells at Input the phones' icons last took from this Mac; null until one did. */
+  let badged: number | null = null;
   const sending = yield* Semaphore.make(1);
 
   const tokenAt = (now: number): string | null => {
@@ -118,20 +121,20 @@ export const make = Effect.fn("Push.make")(function* (
   const sendOne = Effect.fn("Push.sendOne")(function* (
     device: Device,
     signed: string,
-    alert: Alert,
+    notice: Notice,
   ) {
-    const sent = yield* source.send(device, signed, alert);
+    const sent = yield* source.send(device, signed, notice);
     if (sent.reason !== "BadDeviceToken") return { device, sent };
     const moved: Device = {
       ...device,
       environment: device.environment === "production" ? "development" : "production",
     };
-    const again = yield* source.send(moved, signed, alert);
+    const again = yield* source.send(moved, signed, notice);
     return again.status === 200 ? { device: moved, sent: again } : { device, sent };
   });
 
-  /** Sends one alert to every phone; drops the ones Apple says are gone. */
-  const sendAll = Effect.fn("Push.sendAll")(function* (alert: Alert, now: number) {
+  /** Sends one notice to every phone; drops the ones Apple says are gone. */
+  const sendAll = Effect.fn("Push.sendAll")(function* (notice: Notice, now: number) {
     const signed = yield* Effect.try({ try: () => tokenAt(now), catch: () => null }).pipe(
       Effect.orElseSucceed(() => null),
     );
@@ -139,7 +142,7 @@ export const make = Effect.fn("Push.make")(function* (
       if (key !== null) last = { at: iso(now), ok: false, why: "The APNs key didn't sign" };
       return [];
     }
-    const results = yield* Effect.forEach(devices, (device) => sendOne(device, signed, alert), {
+    const results = yield* Effect.forEach(devices, (device) => sendOne(device, signed, notice), {
       concurrency: "unbounded",
     });
     // Phones Apple calls gone are dropped, and one found on its other service is kept there.
@@ -178,13 +181,23 @@ export const make = Effect.fn("Push.make")(function* (
   const look = Effect.fn("Push.look")(function* () {
     const now = yield* Clock.currentTimeMillis;
     if (key === null || devices.length === 0) return;
+    // The icon counts what the phone's Input segment counts of this Mac: every card.
+    const count = needs.length;
     const waiting = due(needs, pushed, now);
     // A card waiting while the person is here stays unpushed: if they go, it buzzes then.
-    if (waiting.length === 0 || !(yield* source.away)) return;
-    for (const need of waiting) {
-      const results = yield* sendAll(alertOf(need), now);
-      // Apple out of reach, or a key that doesn't sign: the next look tries again.
-      if (!results.every(({ sent }) => isTransient(sent))) pushed.add(need.key);
+    if (waiting.length > 0 && (yield* source.away)) {
+      for (const need of waiting) {
+        const results = yield* sendAll({ alert: alertOf(need), badge: count }, now);
+        // Apple out of reach, or a key that doesn't sign: the next look tries again.
+        if (results.every(({ sent }) => isTransient(sent))) continue;
+        pushed.add(need.key);
+        badged = count;
+      }
+    }
+    // A card answered anywhere lowers the icon without a sound; a rise waits for its alert.
+    if (badged !== null && count < badged) {
+      const results = yield* sendAll({ alert: null, badge: count }, now);
+      if (!results.every(({ sent }) => isTransient(sent))) badged = count;
     }
   });
 
@@ -252,10 +265,13 @@ export const make = Effect.fn("Push.make")(function* (
         const now = yield* Clock.currentTimeMillis;
         const results = yield* sendAll(
           {
-            title: "Stemcells",
-            body: "This phone hears when a Cell needs you and you're away from the Mac.",
-            threadId: "stemcells-test",
-            data: { environmentId: source.environmentId, threadId: "", deepLink: "" },
+            alert: {
+              title: "Stemcells",
+              body: "This phone hears when a Cell needs you and you're away from the Mac.",
+              threadId: "stemcells-test",
+              data: { environmentId: source.environmentId, threadId: "", deepLink: "" },
+            },
+            badge: null,
           },
           now,
         );

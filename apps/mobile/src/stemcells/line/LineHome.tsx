@@ -8,6 +8,7 @@ import { AppState, Pressable, View } from "react-native";
 
 import { DiskReaders } from "../disk/DiskPlate";
 import { CopyLayer } from "../home/CopyLayer";
+import { useAppBadge } from "../push/badge";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
 import { HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
@@ -77,6 +78,8 @@ export function LineHome(props: {
   const onPhone = countsOf(line, props.inView);
   const counts = { ...onPhone, settled: onPhone.settled + props.olderSettled };
   const tab = segments.useTab(opensOn(counts), props.known);
+  // Only once every machine has answered: a cold start would clear the icon a closed app was given.
+  useAppBadge(props.known ? counts.needs : null);
   const openChat = useHomeThreadSelection();
   const cellOf = (threadId: string) => props.cells.find((cell) => cell.id === threadId);
 

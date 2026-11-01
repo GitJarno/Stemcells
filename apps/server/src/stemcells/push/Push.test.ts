@@ -10,7 +10,7 @@ import * as TestClock from "effect/testing/TestClock";
 
 import type { Need } from "../needs/derive.ts";
 import type { NeedsList } from "../needs/Needs.ts";
-import type { Alert, ApnsKey, Sent } from "./apns.ts";
+import type { ApnsKey, Notice, Sent } from "./apns.ts";
 import { HOLD_MS } from "./notify.ts";
 import { make, type Device } from "./Push.ts";
 
@@ -54,7 +54,7 @@ const world = (key: ApnsKey = KEY) =>
   Effect.gen(function* () {
     const lists = yield* Queue.unbounded<NeedsList>();
     const ticks = yield* Queue.unbounded<void>();
-    const sent = yield* Queue.unbounded<{ readonly token: string; readonly alert: Alert }>();
+    const sent = yield* Queue.unbounded<{ readonly token: string; readonly notice: Notice }>();
     const saved = yield* Queue.unbounded<ReadonlyArray<Device>>();
     /** Each time a look asks whether anybody is here: a card was due. */
     const asked = yield* Queue.unbounded<void>();
@@ -68,8 +68,8 @@ const world = (key: ApnsKey = KEY) =>
         writeKey: () => Effect.succeed(true),
         loadDevices: Effect.succeed([]),
         saveDevices: (devices) => Queue.offer(saved, devices).pipe(Effect.asVoid),
-        send: (device, _token, alert) =>
-          Queue.offer(sent, { token: device.token, alert }).pipe(
+        send: (device, _token, notice) =>
+          Queue.offer(sent, { token: device.token, notice }).pipe(
             Effect.as(
               state.answers.get(`${device.token}@${device.environment}`) ??
                 state.answers.get(device.token) ?? { status: 200, reason: null },
@@ -108,7 +108,7 @@ it.effect("a waiting card reaches the phone once nobody is here, and only once",
     yield* w.tick;
     const first = yield* Queue.take(w.sent);
     assert.strictEqual(first.token, "aa11");
-    assert.deepStrictEqual(first.alert.data, {
+    assert.deepStrictEqual(first.notice.alert?.data, {
       environmentId: "env-1",
       threadId: "thread-a",
       deepLink: "/threads/env-1/thread-a",
@@ -118,7 +118,25 @@ it.effect("a waiting card reaches the phone once nobody is here, and only once",
     yield* Queue.offer(w.lists, listOf(need("a", 0), need("b", HOLD_MS)));
     yield* TestClock.adjust(HOLD_MS);
     yield* w.tick;
-    assert.strictEqual((yield* Queue.take(w.sent)).alert.threadId, "thread-b");
+    assert.strictEqual((yield* Queue.take(w.sent)).notice.alert?.threadId, "thread-b");
+  }).pipe(Effect.scoped),
+);
+
+it.effect("the icon counts the cards, and falls silently once one is answered", () =>
+  Effect.gen(function* () {
+    const w = yield* world();
+    yield* w.register("aa11");
+    yield* TestClock.adjust(HOLD_MS);
+    // A card not yet due still counts, as on the phone's Input segment.
+    yield* Queue.offer(w.lists, listOf(need("a", 0), need("b", HOLD_MS)));
+    assert.deepStrictEqual((yield* Queue.take(w.sent)).notice.badge, 2);
+
+    // Answered while the person is back at the Mac: the count alone, no alert.
+    w.state.away = false;
+    yield* Queue.offer(w.lists, listOf(need("b", HOLD_MS)));
+    assert.deepStrictEqual((yield* Queue.take(w.sent)).notice, { alert: null, badge: 1 });
+    yield* Queue.offer(w.lists, listOf());
+    assert.deepStrictEqual((yield* Queue.take(w.sent)).notice, { alert: null, badge: 0 });
   }).pipe(Effect.scoped),
 );
 
@@ -164,7 +182,7 @@ it.effect("a key that doesn't sign keeps the card for when one does", () =>
 
     assert.isTrue(yield* w.push.setKey(KEY));
     yield* w.tick;
-    assert.strictEqual((yield* Queue.take(w.sent)).alert.threadId, "thread-a");
+    assert.strictEqual((yield* Queue.take(w.sent)).notice.alert?.threadId, "thread-a");
   }).pipe(Effect.scoped),
 );
 
@@ -179,7 +197,7 @@ it.effect("a push Apple never took is tried again on the next look", () =>
 
     w.state.answers.delete("aa11");
     yield* w.tick;
-    assert.strictEqual((yield* Queue.take(w.sent)).alert.threadId, "thread-a");
+    assert.strictEqual((yield* Queue.take(w.sent)).notice.alert?.threadId, "thread-a");
     assert.strictEqual((yield* w.push.status).last?.ok, true);
   }).pipe(Effect.scoped),
 );
