@@ -330,26 +330,21 @@ describe("thread outbox attachment preparation", () => {
 });
 
 describe("thread outbox drain delivery cleanup", () => {
-  it("drops echoed acknowledged rows at the next delivery without subscribing to the thread", async () => {
-    const first = queuedMessage({ messageId: "awaiting-echo", text: "Delivered" });
-    const second = queuedMessage({ messageId: "next-delivery", text: "Also delivered" });
-    await harness.manager.enqueue(first);
-    await harness.manager.enqueue(second);
+  it("drops an acknowledged row at its echo, so a later history window cannot bring it back", async () => {
+    const message = queuedMessage({ messageId: "awaiting-echo", text: "Delivered" });
+    await harness.manager.enqueue(message);
 
     await expect(
-      completeQueuedMessageDelivery(first, harness.manager.revisionOf(first.messageId)),
+      completeQueuedMessageDelivery(message, harness.manager.revisionOf(message.messageId)),
     ).resolves.toBe("removed");
-    expect(appAtomRegistry.get(acknowledgedThreadMessagesAtom)).toEqual([first]);
+    expect(appAtomRegistry.get(acknowledgedThreadMessagesAtom)).toEqual([message]);
 
     appAtomRegistry.set(harness.threadProjection, {
-      projection: { messages: [{ id: "unrelated" }, { id: first.messageId }] },
+      projection: { messages: [{ id: "unrelated" }, { id: message.messageId }] },
     });
-    expect(appAtomRegistry.get(acknowledgedThreadMessagesAtom)).toEqual([first]);
-
-    await expect(
-      completeQueuedMessageDelivery(second, harness.manager.revisionOf(second.messageId)),
-    ).resolves.toBe("removed");
-    expect(appAtomRegistry.get(acknowledgedThreadMessagesAtom)).toEqual([second]);
+    // A bounded snapshot after newer runs leaves the message out of `messages`.
+    appAtomRegistry.set(harness.threadProjection, { projection: { messages: [] } });
+    expect(appAtomRegistry.get(acknowledgedThreadMessagesAtom)).toEqual([]);
   });
 
   it("removes an acknowledged outbox item even when the sign-out archive write fails", async () => {
