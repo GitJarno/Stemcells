@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   attachedPictureResources,
   closeOpenedMedia,
+  scopedThreadKey,
   useAttachedPictureUrls,
   useOpenedMedia,
   useOwnsChatWindowInput,
@@ -22,11 +23,10 @@ import { pressedMedia } from "./thumbnails";
  * through the whole chat, as its timeline draws it (`chatEntries.ts`).
  */
 export function ChatMediaViewerHost(props: {
-  threadKey: string;
   threadRef: Pick<ChatPlace, "environmentId" | "threadId">;
-  cwd: string | undefined;
+  cwd: string | null | undefined;
 }) {
-  const { threadKey } = props;
+  const threadKey = scopedThreadKey(props.threadRef);
   const preview = useOpenedMedia(threadKey);
   const ownsWindowInput = useOwnsChatWindowInput();
   const anchorRef = useRef<HTMLSpanElement>(null);
@@ -56,7 +56,7 @@ export function ChatMediaViewerHost(props: {
           preview={preview}
           clicked={clicked}
           place={props.threadRef}
-          cwd={props.cwd}
+          cwd={props.cwd ?? undefined}
           threadKey={threadKey}
           scope={scope}
           ownsWindowInput={ownsWindowInput}

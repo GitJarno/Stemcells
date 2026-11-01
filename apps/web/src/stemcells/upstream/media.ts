@@ -35,6 +35,7 @@ export { AttachmentImage } from "../../components/media/AttachmentImage";
 export { composerFloatingLayerProps } from "../../components/chat/composerEventScope";
 /** Whether this chat's pane is the one that answers the window's keys (the focused pane). */
 export { useOwnsChatWindowInput } from "../../components/chat/chatWindowInput";
+export { scopedThreadKey } from "@t3tools/client-runtime/environment";
 export { MediaActions } from "../../components/media/MediaActions";
 export { MediaVideoPlayer } from "../../components/media/MediaVideoPlayer";
 export { isContextMenuOpen } from "../../contextMenuFallback";

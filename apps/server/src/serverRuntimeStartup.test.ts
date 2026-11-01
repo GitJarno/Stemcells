@@ -176,7 +176,8 @@ it.effect.each([
         }),
         // Stemcells launches no starter thread and looks for none (stemcells/upstream/welcome.ts).
         Layer.mock(ThreadManagement.ThreadManagementService)({
-          getShellSnapshot: () => Effect.die("looked for a starter thread"),
+          countThreads: () => Effect.succeed(0),
+          listActiveShellIndex: () => Effect.die("looked for a starter thread"),
         }),
         Layer.mock(ThreadLaunch.ThreadLaunchService)({
           launch: () => Effect.die("launched a starter thread"),
