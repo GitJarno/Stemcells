@@ -6,7 +6,7 @@ import type * as NodeNet from "node:net";
 import * as Schema from "effect/Schema";
 import { assert, it } from "vite-plus/test";
 
-import { providerToken, readsAsKey, sendAlert } from "./apns.ts";
+import { payloadOf, providerToken, readsAsKey, sendNotice } from "./apns.ts";
 
 const pair = NodeCrypto.generateKeyPairSync("ec", { namedCurve: "prime256v1" });
 const p8 = pair.privateKey.export({ type: "pkcs8", format: "pem" }).toString();
@@ -66,13 +66,13 @@ async function apple(
 }
 
 const send = (origin: string, withinMs?: number) =>
-  sendAlert(
+  sendNotice(
     {
       environment: "production",
       token: "aa11",
       topic: "com.example.cells",
       providerToken: "signed",
-      alert,
+      notice: { alert, badge: 2 },
     },
     { origin, ...(withinMs === undefined ? {} : { withinMs }) },
   );
@@ -99,9 +99,18 @@ it("posts the alert as Apple asks and reads its answer", async () => {
       alert: { title: "A Cell", body: "Has a question" },
       sound: "default",
       "thread-id": "thread-1",
+      badge: 2,
     },
     body: alert.data,
   });
+});
+
+it("sends a count alone as only the icon's badge", () => {
+  assert.deepStrictEqual(decodeJson(payloadOf({ alert: null, badge: 0 })), { aps: { badge: 0 } });
+  assert.notProperty(
+    (decodeJson(payloadOf({ alert, badge: null })) as { aps: object }).aps,
+    "badge",
+  );
 });
 
 it("settles when Apple never answers, and when it drops the stream", async () => {

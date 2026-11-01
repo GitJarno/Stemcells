@@ -15,7 +15,7 @@ import * as ServerSecretStore from "../../auth/ServerSecretStore.ts";
 import * as ServerConfig from "../../config.ts";
 import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
 import { readPresence } from "../presence/presence.ts";
-import { sendAlert, type ApnsKey } from "../push/apns.ts";
+import { sendNotice, type ApnsKey } from "../push/apns.ts";
 import type { Device, PushSource } from "../push/Push.ts";
 import * as UpstreamDisk from "./disk.ts";
 
@@ -96,14 +96,14 @@ export const makePushSource = Effect.gen(function* () {
     Effect.map((presence) => !presence.present),
   );
 
-  const send: PushSource["send"] = (device, providerToken, alert) =>
+  const send: PushSource["send"] = (device, providerToken, notice) =>
     Effect.promise(() =>
-      sendAlert({
+      sendNotice({
         environment: device.environment,
         token: device.token,
         topic: device.topic,
         providerToken,
-        alert,
+        notice,
       }),
     );
 

@@ -71,22 +71,50 @@ export interface Alert {
   };
 }
 
+/**
+ * What one push carries: an alert, the app icon's count of Cells at Input, or both. A count
+ * alone sets the icon's badge without a banner or a sound.
+ */
+export interface Notice {
+  readonly alert: Alert | null;
+  readonly badge: number | null;
+}
+
 const encodePayload = Schema.encodeSync(
   Schema.fromJsonString(
     Schema.Struct({
       aps: Schema.Struct({
-        alert: Schema.Struct({ title: Schema.String, body: Schema.String }),
-        sound: Schema.String,
-        "thread-id": Schema.String,
+        alert: Schema.optionalKey(Schema.Struct({ title: Schema.String, body: Schema.String })),
+        sound: Schema.optionalKey(Schema.String),
+        "thread-id": Schema.optionalKey(Schema.String),
+        badge: Schema.optionalKey(Schema.Number),
       }),
-      body: Schema.Struct({
-        environmentId: Schema.String,
-        threadId: Schema.String,
-        deepLink: Schema.String,
-      }),
+      body: Schema.optionalKey(
+        Schema.Struct({
+          environmentId: Schema.String,
+          threadId: Schema.String,
+          deepLink: Schema.String,
+        }),
+      ),
     }),
   ),
 );
+
+/** The JSON Apple takes for `notice`. */
+export function payloadOf({ alert, badge }: Notice): string {
+  const counted = badge === null ? {} : { badge };
+  if (alert === null) return encodePayload({ aps: counted });
+  return encodePayload({
+    aps: {
+      alert: { title: alert.title, body: alert.body },
+      sound: "default",
+      "thread-id": alert.threadId,
+      ...counted,
+    },
+    // Expo hands the app `body` as the notification's data.
+    body: alert.data,
+  });
+}
 const decodeReason = Schema.decodeUnknownOption(
   Schema.fromJsonString(Schema.Struct({ reason: Schema.optional(Schema.String) })),
 );
@@ -100,30 +128,22 @@ export interface Sent {
 const WITHIN_MS = 15_000;
 
 /**
- * Sends one alert to one device; never throws, and settles within
+ * Sends one notice to one device; never throws, and settles within
  * `withinMs` whatever Apple or the network does. Tests point `origin`
  * at a server of their own.
  */
-export function sendAlert(
+export function sendNotice(
   input: {
     readonly environment: ApsEnvironment;
     readonly token: string;
     /** The app's bundle id, which the key's team must own. */
     readonly topic: string;
     readonly providerToken: string;
-    readonly alert: Alert;
+    readonly notice: Notice;
   },
   options: { readonly origin?: string; readonly withinMs?: number } = {},
 ): Promise<Sent> {
-  const payload = encodePayload({
-    aps: {
-      alert: { title: input.alert.title, body: input.alert.body },
-      sound: "default",
-      "thread-id": input.alert.threadId,
-    },
-    // Expo hands the app `body` as the notification's data.
-    body: input.alert.data,
-  });
+  const payload = payloadOf(input.notice);
   const withinMs = options.withinMs ?? WITHIN_MS;
   return new Promise((resolve) => {
     let settled = false;
@@ -149,8 +169,9 @@ export function sendAlert(
       ":path": `/3/device/${encodeURIComponent(input.token)}`,
       authorization: `bearer ${input.providerToken}`,
       "apns-topic": input.topic,
+      // Apple's type for a badge too; a count alone needn't wake the phone at once.
       "apns-push-type": "alert",
-      "apns-priority": "10",
+      "apns-priority": input.notice.alert === null ? "5" : "10",
       "content-type": "application/json",
     });
     request.setEncoding("utf8");

@@ -66,6 +66,14 @@ or anyone else's cloud.
       stays upstream's. Android isn't supported: it would need Google's
       push service.
 - [ ] 5. Later: an Aski room on the phone, so a tap lands on the card.
+- [x] 6. The app icon's badge counts the Cells at Input, as the phone's
+      Input segment does. While the app runs the phone sets it from the
+      line (`push/badge.ts`), once every Mac has answered. A closed app's
+      comes with the pushes: each alert carries the Mac's count of cards,
+      and a count that falls is sent alone (`aps.badge`, no alert or
+      sound, priority 5), even with the person at the Mac. A rise waits
+      for its alert. Each Mac knows only its own cards, so with two Macs a
+      closed app shows the last one's count until the app opens.
 
 ## Steps only the person can take
 
