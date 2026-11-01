@@ -7,9 +7,9 @@ import { describe, expect, it } from "vite-plus/test";
 
 /**
  * Contract: the phone offers upstream's chat in no project as a casual chat in the new chat's
- * project list (its row on iOS and Android, the buttons with no projects) and heads one as the
- * Mac does (`stemcells/seams.md`, A casual chat). If this fails after a sync, upstream rewrote
- * one of these places: say the casual chat's words there again.
+ * project list (its row on iOS and Android, the buttons with no projects) and under a new chat's
+ * headline, and heads one as the Mac does (`stemcells/seams.md`, A casual chat). If this fails
+ * after a sync, upstream rewrote one of these places: say the casual chat's words there again.
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -35,5 +35,19 @@ describe("a casual chat on the phone", () => {
       /const hero = flow\.isScratchDraft \? \([\s\S]{0,200}\{CASUAL_CHAT\.headline\}\s*<\/Text>/,
     );
     expect(source).not.toContain("What should we work on?");
+  });
+
+  it("a new chat offers one under its headline, and its picker leads back", () => {
+    const source = read("NewTaskDraftScreen.tsx");
+    const [casualHero, projectHero] = source
+      .split("const hero = flow.isScratchDraft ? (")[1]!
+      .split(") : (");
+    // The offer turns the draft as the list's row does: the scratch project, then `setProject`.
+    expect(projectHero).toMatch(/\{environmentControl\}\s*<CasualOffer /);
+    expect(read("NewTaskRouteScreen.tsx")).toMatch(
+      /openScratch = useAtomCommand\(projectEnvironment\.openScratch[\s\S]*setProject\(project\);\s*root\?\.goBack\(\)/,
+    );
+    // Once casual, the hero's "No project" opens the project list, which retargets the draft.
+    expect(casualHero).toMatch(/label="No project"\s*onPress=\{chooseProject\}/);
   });
 });
