@@ -70,8 +70,8 @@ describe("the words' contracts with upstream's drafts", () => {
     expect(providerModelPicker).toContain('data-chat-provider-model-picker="true"');
     expect(providerModelPicker).toContain('"data-chat-provider-model-picker-label": "true",');
     expect(providerModelPicker).toContain("<span {...triggerTextProps}>{triggerText}</span>");
-    // The words find effort by "composer.effort" as a word, on the model picker that holds it
-    // since #28057; it can carry "composer.mode" too.
+    // The words find effort by "composer.effort" as a word, on the model picker that now holds
+    // it; it can carry "composer.mode" too.
     expect(composerControlsBar).toMatch(
       /triggerShortcuts=\{\s*pickerOwnsModeShortcut \? "composer\.effort composer\.mode" : "composer\.effort"\s*\}/,
     );

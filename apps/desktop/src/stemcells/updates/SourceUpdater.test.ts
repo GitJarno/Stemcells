@@ -137,6 +137,10 @@ function makeFixture({
   };
 }
 
+// What Settings' track switch hands the updater (`UpdateTrackSwitchDialog` substitute): any
+// release of our own source's track, where upstream's switch names T3's npm release.
+const ANY_RELEASE = { minimumVersion: "0.0.0" };
+
 const nightlyOf = (fixture: Fixture, sha: string) => {
   const day = git(fixture.work, "show", "-s", "--format=%cd", "--date=format-local:%Y%m%d", sha);
   const count = git(fixture.work, "rev-list", "--count", "--first-parent", sha);
@@ -348,11 +352,14 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
         const tip = nightlyOf(fixture, "HEAD");
         assert.equal(available.availableVersion, tip);
         // One day's merges: one nightly, as upstream's notes show T3's.
+        // Upstream dates a nightly's notes by the day in its version.
+        const day = tip.replace(/^.*-nightly\.(\d{4})(\d{2})(\d{2})\..*$/, "$1-$2-$3");
         assert.deepEqual(available.releaseNotes, [
           {
             version: tip,
             items: ["The newest (#4)", "T3's latest work (#3)", "A change (#2)"],
             totalItems: 3,
+            releasedAt: day,
           },
         ]);
 
@@ -425,7 +432,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
         const updates = yield* DesktopUpdates.DesktopUpdates;
         yield* updates.configure;
 
-        const stable = yield* reaching("available", updates.setChannel("latest"));
+        const stable = yield* reaching("available", updates.setChannel("latest", ANY_RELEASE));
         assert.equal(stable.channel, "latest");
         assert.equal(stable.availableVersion, "0.2.0");
         assert.deepEqual(
@@ -444,7 +451,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
           git(fixture.work, "tag", "v0.1.0", "HEAD~2");
           const updates = yield* DesktopUpdates.DesktopUpdates;
           yield* updates.configure;
-          const stable = yield* reaching("available", updates.setChannel("latest"));
+          const stable = yield* reaching("available", updates.setChannel("latest", ANY_RELEASE));
           assert.equal(stable.availableVersion, "0.1.0");
           yield* reaching("downloaded", updates.download);
 

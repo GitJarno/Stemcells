@@ -5,13 +5,11 @@ import { useEffect, useRef, type ComponentProps } from "react";
 
 import type * as Upstream from "../../../components/settings/UpdateTrackSwitchDialog";
 import { stackedThreadToast, toastManager } from "../../../components/ui/toast";
-import { useDesktopUpdateState } from "../../../state/desktopUpdate";
 
 export function UpdateTrackSwitchDialog({
   channel,
   onClose,
 }: ComponentProps<typeof Upstream.UpdateTrackSwitchDialog>) {
-  const current = useDesktopUpdateState()?.channel ?? "latest";
   // Settings hands a new `onClose` each render; the pick is saved once.
   const saved = useRef(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Settings opens this for a picked track; the pick is saved through the desktop bridge, outside React.
@@ -19,12 +17,13 @@ export function UpdateTrackSwitchDialog({
     if (saved.current) return;
     saved.current = true;
     const bridge = window.desktopBridge;
-    if (!bridge || channel === current) {
+    if (!bridge) {
       onClose();
       return;
     }
+    // Any release of our source's track may install; upstream's floor is T3's npm release.
     void bridge
-      .setUpdateChannel(channel)
+      .setUpdateChannel(channel, "0.0.0")
       .catch((error: unknown) => {
         toastManager.add(
           stackedThreadToast({
@@ -35,7 +34,7 @@ export function UpdateTrackSwitchDialog({
         );
       })
       .finally(onClose);
-  }, [channel, current, onClose]);
+  }, [channel, onClose]);
   // Upstream's renders a dialog; this one has nothing to ask.
   return <span hidden />;
 }
