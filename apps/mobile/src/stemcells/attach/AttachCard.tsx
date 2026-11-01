@@ -36,6 +36,7 @@ import {
   IconButton,
   SymbolView,
 } from "../upstream/attach";
+import { footLift } from "./foot";
 import { type Access, accessTo, chooseMore, onLibraryChange, photoOf, photosFrom } from "./library";
 import { GO, numberOf, toggle } from "./picks";
 import { pickingThese } from "./staged";
@@ -49,13 +50,20 @@ const BAR = 56;
 /** How long the Add pill says the cap after a refused tap, ms. */
 const SAYS_CAP_FOR = 1600;
 const CAP = `Up to ${GO} at a time`;
+/** Part height, then the whole screen. */
+const DETENTS = formSheetDetents(0.62);
 
 /**
  * What the last card showed: the access the person gave and the newest page.
  * The card opens on them and asks the library again behind them, so its
  * photos are there as it comes up rather than popping in after it.
  */
-const lastSeen: { access: Access | null; ids: readonly string[] } = { access: null, ids: [] };
+const lastSeen: {
+  access: Access | null;
+  ids: readonly string[];
+  /** The card's height at the tallest detent, for the window it was seen on. */
+  tallest: { readonly window: number; readonly height: number } | null;
+} = { access: null, ids: [], tallest: null };
 
 type Tile =
   | { readonly kind: "camera" }
@@ -75,7 +83,33 @@ export function AttachCard(props: {
   // What to do once the card is down: UIKit presents nothing over a sheet still leaving.
   const after = useRef<(() => Promise<void>) | null>(null);
   const [shown, setShown] = useState(false);
-  if (props.open && !shown) setShown(true);
+  const [detent, setDetent] = useState(0);
+  const [height, setHeight] = useState(0);
+  const [tallest, setTallest] = useState(lastSeen.tallest);
+  const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  if (props.open && !shown) {
+    setShown(true);
+    setDetent(0);
+  }
+  const seen = tallest?.window === window.height ? tallest.height : undefined;
+  const lift = footLift({
+    height,
+    fraction: DETENTS[detent] ?? 1,
+    tallest: seen,
+    window: window.height,
+    top: insets.top,
+    bottom: insets.bottom,
+  });
+  /** The detent and the card's layout come as separate events; either can be the one at the top. */
+  const measure = (at: number, laidOut: number) => {
+    if (at !== DETENTS.length - 1 || laidOut === 0) return;
+    // A sheet stops below the top inset; a taller layout is the content's, not the sheet's.
+    const next = Math.min(laidOut, window.height - insets.top);
+    if (next <= (seen ?? 0)) return;
+    lastSeen.tallest = { window: window.height, height: next };
+    setTallest(lastSeen.tallest);
+  };
 
   const leave = (then: () => Promise<void>) => {
     after.current = then;
@@ -85,9 +119,13 @@ export function AttachCard(props: {
   return (
     <FormSheet
       isOpen={props.open}
-      detents={formSheetDetents(0.62)}
+      detents={DETENTS}
       prefersGrabberVisible
       nativeContainerStyle={sheet}
+      onDetentChanged={(event) => {
+        setDetent(event.nativeEvent.index);
+        measure(event.nativeEvent.index, height);
+      }}
       onNativeDismiss={props.onClose}
       onDidDisappear={() => {
         // A sheet of the system's over the card (Choose more) can report it gone while it stays.
@@ -101,12 +139,25 @@ export function AttachCard(props: {
         );
       }}
     >
-      {shown ? <Card {...props} leave={leave} /> : null}
+      {shown ? (
+        <Card
+          {...props}
+          lift={lift}
+          onHeight={(laidOut) => {
+            setHeight(laidOut);
+            measure(detent, laidOut);
+          }}
+          leave={leave}
+        />
+      ) : null}
     </FormSheet>
   );
 }
 
 function Card(props: {
+  /** How far above the card's foot the sheet's visible foot is (`foot.ts`). */
+  readonly lift: number;
+  readonly onHeight: (height: number) => void;
   readonly onClose: () => void;
   readonly supportsFiles: boolean;
   readonly onPickMedia: () => Promise<void>;
@@ -207,6 +258,7 @@ function Card(props: {
     ...ids.map((id) => ({ kind: "photo", id }) as const),
   ];
   const size = width > 0 ? (width - 2 * GAP) / 3 : 0;
+  const { lift } = props;
   const full = picks.length >= GO;
 
   /** A tap on a dimmed photo: the Add pill shakes its head and says the cap for a moment. */
@@ -230,7 +282,10 @@ function Card(props: {
   return (
     <View
       className="flex-1 bg-sheet"
-      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+      onLayout={(event) => {
+        setWidth(event.nativeEvent.layout.width);
+        props.onHeight(event.nativeEvent.layout.height);
+      }}
     >
       <View className="flex-row items-center px-3 pb-2 pt-4">
         <IconButton
@@ -257,7 +312,7 @@ function Card(props: {
           keyExtractor={(tile) => (tile.kind === "photo" ? tile.id : tile.kind)}
           columnWrapperStyle={{ gap: GAP }}
           ItemSeparatorComponent={Hairline}
-          contentContainerStyle={{ paddingBottom: BAR + insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: BAR + insets.bottom + 24 + lift }}
           initialNumToRender={24}
           windowSize={7}
           removeClippedSubviews
@@ -299,6 +354,7 @@ function Card(props: {
         shake={shake}
         supportsFiles={props.supportsFiles}
         bottom={insets.bottom}
+        lift={lift}
         onPhotos={() => list.current?.scrollToOffset({ offset: 0, animated: true })}
         onFiles={() => thenAdd(props.onPickFiles)}
         onAdd={() => thenAdd(async () => {})}
@@ -419,6 +475,7 @@ function Bar(props: {
   readonly shake: SharedValue<number>;
   readonly supportsFiles: boolean;
   readonly bottom: number;
+  readonly lift: number;
   readonly onPhotos: () => void;
   readonly onFiles: () => void;
   readonly onAdd: () => void;
@@ -428,8 +485,8 @@ function Bar(props: {
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 bottom-0 flex-row gap-3 px-4"
-      style={{ paddingBottom: Math.max(props.bottom, 16) }}
+      className="absolute inset-x-0 flex-row gap-3 px-4"
+      style={{ bottom: props.lift, paddingBottom: Math.max(props.bottom, 16) }}
     >
       {props.picks === 0 ? (
         <GlassSurface className="flex-row self-center p-1" style={{ borderRadius: BAR / 2 }}>
