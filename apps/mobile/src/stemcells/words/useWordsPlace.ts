@@ -1,6 +1,7 @@
 // The phone's new chat follows its words to a project, as the Mac's does (`place.ts`): the
 // hero's "in Harbor" and the header show the move, deleting the name moves it back, and a
-// project picked by hand is written over the name, so the pick stays.
+// project picked by hand is written over the name, so the pick stays; a casual chat, which no
+// name says, stays without one (`place.ts`).
 
 import { useEffect, useEffectEvent, useMemo, useRef } from "react";
 
@@ -25,7 +26,9 @@ const keyOf = (project: EnvironmentProject) => `${project.environmentId}:${proje
 /** `held` while the composer is locked: a send or an import is writing the draft. */
 export function useWordsPlace(draft: WordsDraft, held: boolean): void {
   const taken = useRef(NOTHING_TAKEN);
-  const list = draft.projectScopes.map((scope) => ({
+  // No word names a casual chat: its scope's "No project" would be written over the word.
+  const named = draft.projectScopes.filter((scope) => !scope.projects.every((p) => p.isScratch));
+  const list = named.map((scope) => ({
     key: scope.key,
     name: scope.title,
     projects: scope.projects.map(keyOf),

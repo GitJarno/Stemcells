@@ -72,12 +72,18 @@ export function wordsStep(
   );
   let move: string | null = null;
   let written: string | null = null;
+  let own: string | null = null;
   for (const s of step.steps) {
     if (s.kind === "move") move = s.to;
     else if (s.kind === "rewrite-project") {
       const name = places.list.find((p) => p.projects.includes(s.to))?.name;
       if (name !== undefined) written = text.slice(0, s.word.start) + name + text.slice(s.word.end);
+      // A pick no name says (a casual chat) can't be written over the word, so it becomes the
+      // draft's own: the name holds it there, and deleting the name leaves it there.
+      else own = s.to;
     }
   }
-  return { taken: step.taken, move, text: written };
+  const held =
+    own !== null && key !== undefined ? { ...step.taken, project: { own, set: key } } : step.taken;
+  return { taken: held, move: move === current ? null : move, text: written };
 }

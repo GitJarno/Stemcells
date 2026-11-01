@@ -1,6 +1,7 @@
 import { DraftEnvironmentControl } from "./DraftEnvironmentControl";
 import { AskiStanding } from "../../stemcells/aski/AskiStanding";
 import { useWordsPlace } from "../../stemcells/words/useWordsPlace";
+import { CasualOffer } from "../../stemcells/casual/CasualOffer";
 import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { DraftThreadHeader } from "./DraftThreadHeader";
@@ -774,6 +775,7 @@ export function NewTaskDraftScreen(props: {
       </View>
 
       {environmentControl}
+      <CasualOffer disabled={isComposerInteractionLocked} incomingShareId={props.incomingShareId} />
       {shareUnavailableNotice}
     </View>
   );
