@@ -96,7 +96,7 @@ host api2.cursor.sh Cursor usage limits
 host cursor.com Cursor account usage
 host opencode.ai OpenCode usage limits
 host cdn.agentclientprotocol.com the ACP agent registry, when the person browses it
-host registry.npmjs.org the provider CLIs' latest versions; T3's own release is never asked (noTelemetry.test.ts)
+host registry.npmjs.org the provider CLIs' latest versions; T3's own release is never asked: the server answers it only when a client asks, and ours never do (noTelemetry.test.ts)
 
 # Tools the person starts.
 host storage.googleapis.com Chrome for Testing, downloaded for the preview browser

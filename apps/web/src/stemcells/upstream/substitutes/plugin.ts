@@ -66,6 +66,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // nightly's notes link the day's merged pull requests, not a release.
   "apps/web/src/components/desktopUpdate.logic.ts": "desktopUpdate.logic.ts",
   "apps/web/src/components/sidebar/DesktopUpdateStatusIcon.tsx": "DesktopUpdateStatusIcon.tsx",
+  // Picking an update track sets it for Stemcells' own source; npm is never asked about T3's.
+  "apps/web/src/components/settings/UpdateTrackSwitchDialog.tsx": "UpdateTrackSwitchDialog.tsx",
   // A new chat never starts on Aski's provider instance, nor in its no-project.
   "apps/web/src/lib/chatThreadActions.ts": "chatThreadActions.ts",
   // The welcome lists Claude Code among the agents, never Aski's instance.

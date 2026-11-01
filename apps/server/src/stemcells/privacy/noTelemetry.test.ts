@@ -244,11 +244,20 @@ describe("no Stemcells build tells a third party what the person reads", () => {
   });
 
   it("asks npm about no T3 release", () => {
+    // Upstream's track switch asks the server for T3's npm release; the web's build hands its
+    // importer our substitute, which only saves the track (`substitutes.contract.test.ts`).
+    const switchDialog = "apps/web/src/components/settings/UpdateTrackSwitchDialog.tsx";
+    expect(read("apps/web/src/stemcells/upstream/substitutes/plugin.ts")).toContain(
+      `"${switchDialog}": "UpdateTrackSwitchDialog.tsx"`,
+    );
     const web = code.filter(
-      (file) => file.startsWith("apps/web/src/") && file !== "apps/web/src/state/npmRelease.ts",
+      (file) =>
+        file.startsWith("apps/web/src/") &&
+        file !== "apps/web/src/state/npmRelease.ts" &&
+        file !== switchDialog,
     );
-    expect(filesMatching(web, /\b(?:useNpmReleasePublished|npmReleasePublishedAtom)\(/)).toEqual(
-      [],
-    );
+    expect(
+      filesMatching(web, /\b(?:useNpmReleasePublished|npmReleasePublishedAtom|npmReleaseAtom)\(/),
+    ).toEqual([]);
   });
 });

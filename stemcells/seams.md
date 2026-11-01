@@ -848,6 +848,11 @@ Nothing tells a third party what the person reads or which build they run.
   runs, which updates with the app. Any other server updates by downloading
   T3's build, so it is listed as needing a manual update, and npm is never
   asked whether T3 published a version (`updates.contract.test.ts`).
+- **The update track** (Settings, About) sets the track of Stemcells' own
+  source through the desktop bridge. Upstream's switch moves every machine
+  to T3's npm release on that track and asks npm which it is; the web's
+  `UpdateTrackSwitchDialog` substitute only saves the track
+  (`privacy/noTelemetry.test.ts`).
 - **The command line** has no `t3 update`.
 - **Phone builds** check no over-the-air update source unless the build sets
   `T3CODE_MOBILE_UPDATES_ENABLED=1`.

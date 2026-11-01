@@ -30,6 +30,7 @@ import * as UpstreamT3Wordmark from "../../../components/T3Wordmark";
 import * as UpstreamT3AppIcon from "../../../components/T3AppIcon";
 import * as UpstreamDesktopUpdateLogic from "../../../components/desktopUpdate.logic";
 import * as UpstreamDesktopUpdateStatusIcon from "../../../components/sidebar/DesktopUpdateStatusIcon";
+import * as UpstreamUpdateTrackSwitchDialog from "../../../components/settings/UpdateTrackSwitchDialog";
 import * as UpstreamThreadContextChip from "../../../components/ThreadContextChip";
 import * as UpstreamChatMarkdown from "../../../components/ChatMarkdown";
 import * as UpstreamThreadNotificationCoordinator from "../../../components/ThreadNotificationCoordinator";
@@ -99,6 +100,7 @@ import * as OurT3Wordmark from "./T3Wordmark";
 import * as OurT3AppIcon from "./T3AppIcon";
 import * as OurDesktopUpdateLogic from "./desktopUpdate.logic";
 import * as OurDesktopUpdateStatusIcon from "./DesktopUpdateStatusIcon";
+import * as OurUpdateTrackSwitchDialog from "./UpdateTrackSwitchDialog";
 import * as OurThemePalettes from "./themePalettes";
 import * as OurThreadContextChip from "./ThreadContextChip";
 import * as OurChatMarkdown from "./ChatMarkdown";
@@ -543,6 +545,16 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/sidebar/SidebarUpdatePill.tsx": [
         "./DesktopUpdateStatusIcon",
         ["DesktopUpdateStatusIcon"],
+      ],
+    },
+  },
+  "apps/web/src/components/settings/UpdateTrackSwitchDialog.tsx": {
+    upstream: UpstreamUpdateTrackSwitchDialog,
+    substitute: OurUpdateTrackSwitchDialog satisfies typeof UpstreamUpdateTrackSwitchDialog,
+    importers: {
+      "apps/web/src/components/settings/SettingsPanels.tsx": [
+        "./UpdateTrackSwitchDialog",
+        ["UpdateTrackSwitchDialog"],
       ],
     },
   },
