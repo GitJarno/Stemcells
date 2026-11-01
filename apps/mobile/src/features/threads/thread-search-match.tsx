@@ -3,6 +3,7 @@ import type { EnvironmentThreadSearchMatch } from "@t3tools/client-runtime/state
 
 import { AppText as Text } from "../../components/ui/AppText";
 import { cn } from "../../lib/cn";
+import { useSpeaker } from "../../stemcells/search/speaker";
 
 export function ThreadSearchMatchExcerpt(props: {
   readonly match: EnvironmentThreadSearchMatch;
@@ -12,6 +13,7 @@ export function ThreadSearchMatchExcerpt(props: {
   readonly sidebar?: boolean;
 }) {
   const isUser = props.match.source === "user";
+  const speaker = useSpeaker(props.match.threadId);
   const parts = splitSearchText(
     props.match.snippet,
     findSearchTokenRanges(props.match.snippet, props.query),
@@ -40,7 +42,7 @@ export function ThreadSearchMatchExcerpt(props: {
               : "text-adaptive-emerald-600-400",
         )}
       >
-        {isUser ? "You:" : "Agent:"}{" "}
+        {isUser ? "You:" : `${speaker}:`}{" "}
       </Text>
       {parts.map((part) => (
         <Text
