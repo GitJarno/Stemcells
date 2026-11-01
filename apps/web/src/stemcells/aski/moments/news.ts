@@ -11,7 +11,7 @@ import { TYPING, typingFor } from "./line.ts";
 import { blinkFrom, eyesLooking, squareOf } from "./stage.ts";
 
 /** Seconds: asleep until `wake`, the eye goes over from `go` until `there`, and the line is typed from `say`. */
-export const NEWS = { wake: 0.9, go: 1.5, there: 2.2, say: 2.4 } as const;
+const NEWS = { wake: 0.9, go: 1.5, there: 2.2, say: 2.4 } as const;
 /** How long the eye takes to come home. */
 const HOME_IN = 0.8;
 

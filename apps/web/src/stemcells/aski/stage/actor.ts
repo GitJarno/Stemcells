@@ -11,7 +11,7 @@ import { packLook } from "../../cell/scene.ts";
 import { angleAt, behind, type Metrics, type Orbit, orbitPose, type Pose } from "./stage.ts";
 
 /** A hop into Aski: up, over and in. Theater: hand-set for this one move. */
-export const HOP = {
+const HOP = {
   duration: 520,
   /** How high it rises, in shares of Aski's size, and when it tops out. */
   rise: 0.22,

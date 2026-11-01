@@ -23,7 +23,7 @@ export interface Box {
 export const MOST_LETTERS = 48;
 
 /** The most copies in flight at once. */
-export const MOST_IN_FLIGHT = 4;
+const MOST_IN_FLIGHT = 4;
 
 /** The glyphs a copy condenses through over the Cell's box, one a `form-step`. */
 export const GLYPHS = [".", ":", "+", "#", "@"] as const;

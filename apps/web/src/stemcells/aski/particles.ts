@@ -63,7 +63,7 @@ export function restHomes(): readonly Home[] {
 }
 
 /** The character a cell shows: the ramp at the edges, a body character inside. */
-export function homeChar(h: Home, seed: number, roll: number): string {
+function homeChar(h: Home, seed: number, roll: number): string {
   if (h.cov < 0.9)
     return RAMP[Math.min(RAMP.length - 1, 1 + Math.floor(h.cov * (RAMP.length - 1)))]!;
   return BODY_CHARS[Math.floor(hash(seed, h.i, 31, roll) * BODY_CHARS.length)]!;

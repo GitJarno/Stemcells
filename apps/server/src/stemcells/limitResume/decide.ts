@@ -143,7 +143,7 @@ export type Verdict =
     };
 
 /** Whether `stop` would go now, and why or why not. Ignores the lead and the quiet. */
-export function verdict(stop: Stop, watch: Watch, world: World): Verdict {
+function verdict(stop: Stop, watch: Watch, world: World): Verdict {
   if (!world.enabled) return { hold: "switched-off" };
   if (stop.optedOut) return { hold: "opted-out" };
   if (watch.refusals >= LIMITS.refusals) return { hold: "refused" };

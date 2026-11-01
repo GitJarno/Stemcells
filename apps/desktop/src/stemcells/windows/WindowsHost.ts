@@ -57,7 +57,7 @@ const MEASURE_WAIT_MS = 150;
 const CLOSE_AS_MOVE_MS = 1000;
 
 /** One key per monitor at one size and scale, stable across launches. */
-export function displayKey(display: Electron.Display): string {
+function displayKey(display: Electron.Display): string {
   return `${display.id}:${display.size.width}x${display.size.height}@${display.scaleFactor}`;
 }
 

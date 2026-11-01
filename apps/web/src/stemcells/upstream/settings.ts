@@ -16,7 +16,6 @@ export {
   SettingsRow,
   SettingsSection,
 } from "../../components/settings/settingsLayout";
-export { useNowSecond } from "../../hooks/useNowSecond";
 export { useNowMinuteMs } from "./needs";
 export { Switch } from "../../components/ui/switch";
 export { ScopedSwitch } from "../../components/settings/ScopedSwitch";

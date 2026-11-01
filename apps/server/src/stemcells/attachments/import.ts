@@ -50,9 +50,9 @@ export interface Picture {
 }
 
 /** How long a remote address has to answer and send all its bytes. */
-export const FETCH_TIMEOUT_MS = 60_000;
+const FETCH_TIMEOUT_MS = 60_000;
 /** How many redirects a remote address may take before it is given up on. */
-export const MAX_REDIRECTS = 5;
+const MAX_REDIRECTS = 5;
 
 const refuse = (status: Refusal["status"], reason: string): Refusal => ({
   ok: false,
@@ -61,13 +61,13 @@ const refuse = (status: Refusal["status"], reason: string): Refusal => ({
 });
 
 /** "Over 50 MB": a cap, as the reason says it. */
-export const tooBig = (cap: number) => refuse(413, `Over ${Math.round(cap / (1024 * 1024))} MB`);
+const tooBig = (cap: number) => refuse(413, `Over ${Math.round(cap / (1024 * 1024))} MB`);
 
 /**
  * One answer for a remote address that is refused, unreachable or failing,
  * so what comes back says nothing about what is behind it.
  */
-export const unfetched = () => refuse(502, "Couldn't fetch it");
+const unfetched = () => refuse(502, "Couldn't fetch it");
 
 /**
  * A name fit to keep: its last part, without control characters, at most

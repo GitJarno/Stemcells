@@ -71,20 +71,20 @@ export const REQUEST_KINDS: Readonly<Record<RequestKind, NeedKind>> = {
 };
 
 /** A carry-on still not under way this long after the reset has failed. */
-export const CARRY_ON_GRACE_MS = 15 * 60 * 1000;
+const CARRY_ON_GRACE_MS = 15 * 60 * 1000;
 
 /**
  * A run quiet this long with the model itself at work is stuck. Measured on
  * the Swift app's working transcripts: of 83,439 such gaps the longest
  * benign one was 9.4 min, and every gap past 12 min fell in an outage.
  */
-export const QUIET_MS = 12 * 60 * 1000;
+const QUIET_MS = 12 * 60 * 1000;
 /**
  * With a tool call in flight, or not yet known: a build or a test runs long
  * and says nothing until it ends. Three times the 10 min a CLI gives a
  * foreground command.
  */
-export const TOOL_QUIET_MS = 30 * 60 * 1000;
+const TOOL_QUIET_MS = 30 * 60 * 1000;
 
 export interface Signal {
   /** Changes whenever what is asked changes, so an answer meant for the old ask is never sent. */
@@ -135,7 +135,7 @@ function isUnseenFailure(shell: Shell): boolean {
 }
 
 /** The reset a limit waits for, from T3's recovery record or the provider's own word. */
-export function limitResetAt(shell: Shell): string | null {
+function limitResetAt(shell: Shell): string | null {
   const recovery = shell.limitRecovery;
   if (recovery != null && recovery.runId === shell.latestRunId) return recovery.resetAt;
   return shell.usageLimitResetAt ?? null;

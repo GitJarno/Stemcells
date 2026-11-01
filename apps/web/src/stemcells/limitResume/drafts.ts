@@ -7,7 +7,7 @@
 
 export const DRAFTS_PATH = "/api/stemcells/limit-resume/drafts";
 /** Well within the server's 150 s, even held to once a minute in a hidden window. */
-export const DRAFTS_REPORT_EVERY_MS = 20_000;
+const DRAFTS_REPORT_EVERY_MS = 20_000;
 
 export interface DraftReportDeps {
   /** The chats with a draft now, sorted. */

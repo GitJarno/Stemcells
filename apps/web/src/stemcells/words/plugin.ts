@@ -72,11 +72,6 @@ export const wordsKey = new PluginKey<WordsState>("stemcells-words");
 
 const keyOf = (m: { kind: InkKind; from: number }) => `${m.kind}:${m.from}`;
 
-/** The plugin's reading of the facts, for what draws beside the composer (its readout, its menus). */
-export function wordsFacts(state: EditorState): Facts | null {
-  return wordsKey.getState(state)?.facts ?? null;
-}
-
 /** Re-reads with the setting `source` gives now: after a project, a model or a provider changes. */
 export function refreshWords(view: EditorView): void {
   view.dispatch(view.state.tr.setMeta(wordsKey, { refresh: true }).setMeta("addToHistory", false));

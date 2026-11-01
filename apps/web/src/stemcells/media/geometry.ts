@@ -262,10 +262,10 @@ export function lightsDuringPinch(scale: number): number {
 }
 
 /** A swipe turns past this much travel (px)… */
-export const SWIPE_TRAVEL = 72;
+const SWIPE_TRAVEL = 72;
 /** …or as a flick: this fast (px/s) and this far, the same way. */
-export const FLICK_SPEED = 480;
-export const FLICK_TRAVEL = 12;
+const FLICK_SPEED = 480;
+const FLICK_TRAVEL = 12;
 
 /**
  * Where a swipe let go goes: 1 to the next item (the picture pushed left),

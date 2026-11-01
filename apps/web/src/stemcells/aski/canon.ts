@@ -51,5 +51,5 @@ export const PALETTE = {
   warm: [190, 128, 16] as const,
 };
 
-export const BODY_TOP = Math.min(...LOBES.map((l) => l.y - l.r));
+const BODY_TOP = Math.min(...LOBES.map((l) => l.y - l.r));
 export const BODY_HEIGHT = -BODY_TOP;

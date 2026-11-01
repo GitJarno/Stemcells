@@ -68,7 +68,7 @@ const LEAN = { k: 150, c: 8 };
 const HAT = { k: 90, c: 6 };
 
 /** A toss falls this fast, CSS px a second², whatever the Cell's size: the original's. */
-export const TOSS_GRAVITY = 1400;
+const TOSS_GRAVITY = 1400;
 
 /** Hanging from the hand, stretched this much. */
 const HANGING = 1.08;

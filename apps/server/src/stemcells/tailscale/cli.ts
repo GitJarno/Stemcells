@@ -26,7 +26,7 @@ export interface ServePorts {
   readonly servePort: number;
 }
 
-export const MAC_APP = "/Applications/Tailscale.app";
+const MAC_APP = "/Applications/Tailscale.app";
 /**
  * The CLI, first one found: on a Mac the app's own binary, which answers as
  * the CLI. The `tailscale` the app installs on PATH is a shell script that
@@ -51,7 +51,7 @@ const record = (value: unknown): Record<string, unknown> =>
     : {};
 
 /** The base URL Tailscale Serve answers on: the default HTTPS port leaves the port out. */
-export const serveBaseUrl = (dnsName: string, servePort: number) =>
+const serveBaseUrl = (dnsName: string, servePort: number) =>
   servePort === 443 ? `https://${dnsName}` : `https://${dnsName}:${servePort}`;
 
 const LOOPBACK_PROXY = /^http:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):(\d+)\/?$/;

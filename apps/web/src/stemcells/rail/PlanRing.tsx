@@ -41,7 +41,7 @@ function Arc(props: { radius: number; window: WindowReading; driver: string }) {
 }
 
 /** The plan's week outside and its session inside; a plan with one window, one ring. */
-export function PlanRings(props: { plan: PlanReading }) {
+function PlanRings(props: { plan: PlanReading }) {
   const { plan } = props;
   const driver = String(plan.account.driver);
   const outer = plan.long ?? plan.session;

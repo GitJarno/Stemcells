@@ -182,7 +182,7 @@ function childrenOf(tab: Tab, parentId: string): ReadonlyArray<Shared> | null {
  * row's columns or a column's panes, the parent named by its id. Shares
  * that don't fit its children leave the workspace as it was.
  */
-export function shareOut(workspace: Workspace, parentId: string, shares: number[]): Workspace {
+function shareOut(workspace: Workspace, parentId: string, shares: number[]): Workspace {
   const tab = workspace.tabs.find((candidate) => childrenOf(candidate, parentId) !== null);
   const fits =
     tab !== undefined &&

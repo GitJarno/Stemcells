@@ -49,7 +49,7 @@ export { ProjectFavicon } from "../../components/ProjectFavicon";
 const TITLE_MENU_OPEN_DELAY_MS = 500;
 
 /** Why a chat's new title wasn't applied: it isn't loaded here, or this window may not change it. */
-export const CANT_RENAME_CELL = "Can't rename this Cell here";
+const CANT_RENAME_CELL = "Can't rename this Cell here";
 
 /**
  * Renames the chat as upstream's header does: an empty title is refused with a word, the same

@@ -59,7 +59,7 @@ const ms = (value: DateTime.Utc | null | undefined): number | null =>
   value == null ? null : DateTime.toEpochMillis(value);
 
 /** A shell as `decide.ts` reads it, or null when no limit stopped it, or it isn't ours to carry on. */
-export function stopOf(
+function stopOf(
   shell: Upstream.Shell,
   instances: ReadonlyMap<string, Upstream.Instance>,
 ): Decide.Stop | null {

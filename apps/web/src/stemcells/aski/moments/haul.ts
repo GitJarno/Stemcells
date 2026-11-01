@@ -10,7 +10,7 @@ import { TYPING, typingFor } from "./line.ts";
 import { blinkFrom, eyesLooking, squareOf, write } from "./stage.ts";
 
 /** Seconds: the line of work runs from `from` until `done`; Aski is pleased from `pleased`, and speaks at `say`. */
-export const HAUL_TIMES = { from: 0.3, done: 2.6, pleased: 3.0, say: 3.4 } as const;
+const HAUL_TIMES = { from: 0.3, done: 2.6, pleased: 3.0, say: 3.4 } as const;
 /** The longest the line of work runs, in cells. */
 const LONGEST = 28;
 

@@ -58,14 +58,13 @@ interface Span {
 }
 
 /** The row the hero's headwear rides in `pose`. */
-export const crown = (pose: Pose): number =>
-  pose.base - pose.float - (rowCount(pose.sy) - 1) - pose.lift;
+const crown = (pose: Pose): number => pose.base - pose.float - (rowCount(pose.sy) - 1) - pose.lift;
 
 const MINI_FLOOR = anchorOf(MINI, "ground").y - 1;
 const MINI_TALL = MINI_FLOOR - anchorOf(MINI, "headTop").y + 1;
 
 /** The row the miniature's headwear rides in `pose`. */
-export function miniCrown(pose: Pose): number {
+function miniCrown(pose: Pose): number {
   const rows = Math.max(3, round(MINI_TALL * Math.max(pose.sy, 0.25)));
   const base = MINI_FLOOR + Math.floor((pose.base - pose.float - RIG.restBase) / 2);
   return base - (rows - 1) - round(pose.lift / 2);

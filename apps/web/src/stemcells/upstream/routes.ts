@@ -8,7 +8,6 @@ import type { ThreadRouteTarget } from "../../threadRoutes";
 import type { CellRef } from "../tabs/layout";
 
 export type { ThreadRouteTarget } from "../../threadRoutes";
-export { useThreadRouteTarget } from "../../hooks/useThreadRouteTarget";
 
 export function threadRefOf(cell: CellRef) {
   return scopeThreadRef(cell.environmentId as EnvironmentId, cell.threadId as ThreadId);

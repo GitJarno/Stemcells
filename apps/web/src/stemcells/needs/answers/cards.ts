@@ -8,7 +8,6 @@ import { lastDiskFailure } from "../../disk/pressure";
 import { cardOf } from "../card";
 import type { Shown } from "../display";
 import type { Hold } from "../holds";
-import { holds, page } from "../live";
 import { whoOf } from "../NeedCard";
 import type { Addressee } from "./read";
 
@@ -33,12 +32,4 @@ export function addresseesOf(
       held: hold !== undefined && HELD.has(hold),
     };
   });
-}
-
-/**
- * The cards open now, read outside React: the composer's own reader skips
- * what `readAnswers(text, openCards()).spans` takes.
- */
-export function openCards(now = Date.now()): ReadonlyArray<Addressee> {
-  return addresseesOf(page.read().shown, holds.read(), now);
 }

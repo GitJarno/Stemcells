@@ -21,10 +21,10 @@ import { setAskiPlans, useAskiPlans } from "./planning";
 import "./settingLinks.css";
 
 /** The context link's kind for a setting: `t3-context://v1/<kind>/<id>`. */
-export const SETTING_LINK_KIND = "stemcells-setting";
+const SETTING_LINK_KIND = "stemcells-setting";
 
 /** What Aski takes for the person, by the id Aski links each with. */
-export const TAKES_SWITCHES: Readonly<Record<string, Kind>> = {
+const TAKES_SWITCHES: Readonly<Record<string, Kind>> = {
   "takes-retry": "retry",
   "takes-go-ahead": "goAhead",
   "takes-implement": "implement",

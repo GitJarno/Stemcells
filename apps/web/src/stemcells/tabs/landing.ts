@@ -21,7 +21,7 @@ import {
 } from "./layout";
 
 /** The most panes a tab takes when Cells land in it. */
-export const CELLS_PER_TAB = 4;
+const CELLS_PER_TAB = 4;
 
 export interface LandingWindow {
   readonly workspace: Workspace;

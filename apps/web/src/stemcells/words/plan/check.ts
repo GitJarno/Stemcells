@@ -19,7 +19,7 @@ export type Checked =
   | { readonly ok: false; readonly failed: readonly string[] };
 
 /** The longest title a Cell takes. */
-export const TITLE_MOST = 60;
+const TITLE_MOST = 60;
 
 /** Words too common to tell whether a part of the message reached a prompt. */
 const COMMON = new Set(

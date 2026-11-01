@@ -142,7 +142,7 @@ export function useMerges(aski: CellRef | null): ReadonlyArray<MomentMerge> {
 }
 
 /** The pull requests linked to `shell` that have merged, by their last sync. */
-export function mergesOf(shell: EnvironmentThreadShell): MomentMerge[] {
+function mergesOf(shell: EnvironmentThreadShell): MomentMerge[] {
   return shell.pullRequests.flatMap((link) => {
     const snapshot = link.snapshot;
     if (link.source === "stack-dismissed" || snapshot?.state !== "merged") return [];
@@ -160,7 +160,7 @@ export function mergesOf(shell: EnvironmentThreadShell): MomentMerge[] {
 }
 
 /** A chat's limit recovery, if one is armed: the run a limit stopped, when the window opens again, and whether it carries on by itself then. */
-export function recoveryOf(
+function recoveryOf(
   shell: EnvironmentThreadShell,
 ): { readonly runId: string; readonly resetAt: number; readonly autoResume: boolean } | null {
   const recovery = shell.limitRecovery;

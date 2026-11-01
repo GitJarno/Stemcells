@@ -17,13 +17,6 @@ export function provideNewCellTab(run: () => void): () => void {
   };
 }
 
-/** Opens a new Cell in a new tab; false while no workspace is mounted. */
-export function openNewCellTab(): boolean {
-  if (!newCellTab) return false;
-  newCellTab();
-  return true;
-}
-
 /** "New Cell" (⌘T): a new Cell in a pane of the tab on screen. */
 export function provideNewCellPane(run: () => void): () => void {
   newCellPane = run;

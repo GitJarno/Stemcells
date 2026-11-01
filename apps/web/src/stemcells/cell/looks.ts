@@ -8,10 +8,10 @@ import { type Pack, type PackOutfit, PACKS, type Slot } from "./kit.ts";
 const THEMES: ReadonlyMap<string, Pack> = new Map(PACKS.map((pack) => [pack.theme, pack]));
 
 /** The outfit theme every Cell wears from until the person picks another. */
-export const HOUSE = "house";
+const HOUSE = "house";
 
 /** The outfit themes a person may pick, the themes with no season: the house theme first, then by name. */
-export const OUTFITS: readonly string[] = [
+const OUTFITS: readonly string[] = [
   HOUSE,
   ...[...THEMES.values()]
     .filter((pack) => pack.theme !== HOUSE && pack.season === null)
@@ -28,10 +28,10 @@ export interface Dress {
 }
 
 /** What a Mac dresses its Cells in until the person says otherwise. */
-export const HOUSE_DRESS: Dress = { theme: HOUSE, seasons: true };
+const HOUSE_DRESS: Dress = { theme: HOUSE, seasons: true };
 
 /** The themes worn on `day` in `dress`, in the order they are dealt: the season's while one runs and Seasons is on, then its outfit theme. */
-export function themesOn(day: string, dress: Dress = HOUSE_DRESS): readonly string[] {
+function themesOn(day: string, dress: Dress = HOUSE_DRESS): readonly string[] {
   const theme = OUTFITS.includes(dress.theme) ? dress.theme : HOUSE;
   const season = dress.seasons ? seasonOn(day) : undefined;
   return [...(season === undefined ? [] : [season]), theme];
@@ -40,7 +40,7 @@ export function themesOn(day: string, dress: Dress = HOUSE_DRESS): readonly stri
 const MASK = (1n << 64n) - 1n;
 
 /** A rendezvous score: FNV-1a over the words' UTF-8 in 64 bits, every bit then spread by SplitMix64's finaliser. */
-export function score(words: string): bigint {
+function score(words: string): bigint {
   let hash = 0xcbf29ce484222325n;
   for (const byte of new TextEncoder().encode(words))
     hash = ((hash ^ BigInt(byte)) * 0x100000001b3n) & MASK;
@@ -127,7 +127,7 @@ function itemsOf(theme: string): readonly Item[] {
 const rankings = new Map<string, readonly string[]>();
 
 /** A theme's items in a codename's order: each scores `codename|theme|item`, the highest first, ties by name. */
-export function ranked(codename: string, theme: string): readonly string[] {
+function ranked(codename: string, theme: string): readonly string[] {
   const key = `${codename}|${theme}`;
   const known = rankings.get(key);
   if (known !== undefined) return known;

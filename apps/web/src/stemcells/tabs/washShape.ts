@@ -15,7 +15,7 @@ export interface Box {
  * How far inside what it lights the wash stands, CSS px: a rounded sheet
  * floating clear of the pane's edges and the hairlines between panes.
  */
-export const WASH_INSET = 6;
+const WASH_INSET = 6;
 
 /** The pane, in the slate's own coordinates, drawn `inset` inside its edges. */
 export function washBox(pane: Box, slate: Box, inset = WASH_INSET): Box {

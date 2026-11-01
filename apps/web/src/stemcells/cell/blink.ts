@@ -18,7 +18,7 @@ const LATEST_MS = 3600;
 const PLEA_MS = 530;
 
 /** 32-bit FNV-1a over the text's UTF-8. */
-export function fnv1a32(text: string): number {
+function fnv1a32(text: string): number {
   let hash = 0x811c9dc5;
   for (const byte of new TextEncoder().encode(text)) hash = Math.imul(hash ^ byte, 0x01000193);
   return hash >>> 0;

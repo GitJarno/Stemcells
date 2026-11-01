@@ -25,7 +25,7 @@ type InstanceSettings = Pick<ServerSettings, "providerInstances" | "projectSetti
 export const DEFAULT_INSTANCES = ["codex", "claudeAgent"] as const;
 
 /** The instances a Cell in the project may run on: every enabled one but Aski's. */
-export function cellInstances(settings: InstanceSettings, projectId: ProjectId): string[] {
+function cellInstances(settings: InstanceSettings, projectId: ProjectId): string[] {
   const candidates = new Set<string>([
     ...DEFAULT_INSTANCES,
     ...Object.keys(settings.providerInstances),
@@ -38,7 +38,7 @@ export function cellInstances(settings: InstanceSettings, projectId: ProjectId):
 }
 
 /** What Aski reads when it starts a Cell on its own instance. */
-export function askisInstanceRefusalText(usable: ReadonlyArray<string>): string {
+function askisInstanceRefusalText(usable: ReadonlyArray<string>): string {
   const own = `Provider instance "${ASKI_INSTANCE_ID}" is Aski's own, and no Cell runs on it.`;
   return usable.length === 0
     ? `${own} No other instance is enabled for this project.`
@@ -75,7 +75,7 @@ export function refuseAskisInstance<R>(
 }
 
 /** Where a message to a Cell's chat on Aski's instance runs: the same model on the driver's own. */
-export function cellSelection(
+function cellSelection(
   selection: ModelSelection,
   settings: Pick<ServerSettings, "providerInstances">,
 ): ModelSelection {

@@ -35,7 +35,7 @@ export interface Spoken {
 }
 
 /** What a reading chooses, to tell one answer from another. */
-export function choiceOf(reading: Sent): string {
+function choiceOf(reading: Sent): string {
   return reading.kind === "answer"
     ? `answer ${JSON.stringify(reading.answers)}`
     : `option ${reading.option.id} ${reading.words ?? ""}`;

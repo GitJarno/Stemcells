@@ -8,7 +8,7 @@ import * as Schema from "effect/Schema";
 import { KINDS, type Kind } from "./kinds.ts";
 
 /** Takes in a row before Aski offers to take that kind from then on. */
-export const OFFER_AFTER = 5;
+const OFFER_AFTER = 5;
 /** Kept cards remembered; older ones are long gone from the list. */
 const KEPT_MAX = 200;
 

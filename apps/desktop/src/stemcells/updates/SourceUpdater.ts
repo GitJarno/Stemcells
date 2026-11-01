@@ -82,7 +82,7 @@ const started = (child: NodeChildProcess.ChildProcess) =>
     );
   });
 
-export const make = Effect.gen(function* () {
+const make = Effect.gen(function* () {
   const environment = yield* DesktopEnvironment.DesktopEnvironment;
   const electronApp = yield* ElectronApp.ElectronApp;
 

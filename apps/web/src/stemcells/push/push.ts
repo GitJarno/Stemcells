@@ -59,7 +59,7 @@ function publish<T>(outcome: Outcome<T>, statusOf: (value: T) => PushStatus): Ou
 const same = (value: PushStatus) => value;
 
 /** Reads the status again, as after a phone is removed. */
-export const readAgain = async () => publish(await call<PushStatus>(getFromPrimary(PATH)), same);
+const readAgain = async () => publish(await call<PushStatus>(getFromPrimary(PATH)), same);
 
 export const setKey = async (key: { keyId: string; teamId: string; p8: string }) =>
   publish(await call<PushStatus>(sendToPrimary("PUT", `${PATH}/key`, key)), same);

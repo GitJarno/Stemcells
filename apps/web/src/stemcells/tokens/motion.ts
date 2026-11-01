@@ -11,7 +11,7 @@ const style = (): CSSStyleDeclaration => getComputedStyle(document.documentEleme
  * minifies each time to its shortest spelling, so `3000ms` reaches the page
  * as `3s`: the unit decides the scale. Anything else is no time, 0.
  */
-export function cssMs(value: string): number {
+function cssMs(value: string): number {
   const time = /^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)(ms|s)?\s*$/i.exec(value);
   if (time === null) return 0;
   const n = Number(time[1]);

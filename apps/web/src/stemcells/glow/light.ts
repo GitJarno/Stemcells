@@ -21,7 +21,7 @@ export const LIGHT = 0.015;
 /** The glass that rule was set on: the Swift app's near-black plate, in sRGB. */
 const RULE_GLASS = 0.1;
 /** The hue drift at the band's edges, a turn of the colour wheel either way. */
-export const DRIFT = 0.05;
+const DRIFT = 0.05;
 /**
  * The stained glass, anchor end first: deepest where the light comes from,
  * thinnest across the middle, turned a little round its hue by the far end.
@@ -32,11 +32,11 @@ export const WASH = [
   { at: 1, alpha: 0.1, lift: 0.06, turn: -0.02 },
 ] as const;
 /** The bloom's alpha at its heart, and its reach as a multiple of the anchor's inset. */
-export const BLOOM = 0.45;
+const BLOOM = 0.45;
 export const BLOOM_REACH = 2.6;
 /** The band: half the glass wide, never under 36 pixels, leaning 24° into its travel. */
-export const BAND_SPAN = 0.5;
-export const BAND_LEAST = 36;
+const BAND_SPAN = 0.5;
+const BAND_LEAST = 36;
 export const BAND_LEAN = (24 * Math.PI) / 180;
 /** The iris holds its light to this share of its radius, then feathers out. */
 export const IRIS_SOLID = 0.78;

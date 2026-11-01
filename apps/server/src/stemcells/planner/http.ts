@@ -37,7 +37,7 @@ const LINES_MOST = 24;
 /** The largest file a project's line is read from: a line sits at its top. */
 const LINE_FILE_MOST = 512_000;
 /** How long a plan may take; past it the call is stopped, and the floor shows (decision 11). */
-export const PLAN_TIME = Duration.seconds(20);
+const PLAN_TIME = Duration.seconds(20);
 
 const PlanRequest = Schema.Struct({ prompt: Schema.String, modelSelection: ModelSelection });
 const decodePlanRequest = Schema.decodeUnknownEffect(Schema.fromJsonString(PlanRequest));
@@ -70,7 +70,7 @@ const boundedOptions = (selection: ModelSelection) =>
   );
 
 /** The plan route, stopping a call at `planTime`. */
-export const planRoute = Effect.fn("Planner.plan")(function* (planTime: Duration.Duration) {
+const planRoute = Effect.fn("Planner.plan")(function* (planTime: Duration.Duration) {
   const request = yield* HttpServerRequest.HttpServerRequest;
   const text = yield* boundedText(request, PLAN_BODY_MOST);
   if (Option.isNone(text)) return tooLarge();

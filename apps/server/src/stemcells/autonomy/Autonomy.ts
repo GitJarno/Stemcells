@@ -78,7 +78,7 @@ export class Autonomy extends Context.Service<
 /** How long a card shows as being taken, with Undo, before it goes. */
 export const WINDOW = Duration.seconds(30);
 /** How often a card's window is looked at. */
-export const TICK = Duration.seconds(2);
+const TICK = Duration.seconds(2);
 /** No timer fires while the Mac sleeps: this long between looks means it slept, or the server stood still. */
 const WOKE_AFTER_MS = 30_000;
 /**

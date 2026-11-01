@@ -29,7 +29,7 @@ const BODY_MOST = 4_000;
 /** How long after a Claude run completes its own suggestion is waited for; it comes in a second or two. */
 export const PROVIDER_WAIT = Duration.seconds(10);
 /** How long the short call may take; past it the call is stopped. */
-export const CALL_TIME = Duration.seconds(20);
+const CALL_TIME = Duration.seconds(20);
 /** A reply older than this gets no short call: it's for the conversation going on, not an archive. */
 export const FRESH = Duration.hours(1);
 /** How long an answer is kept for windows that ask later. */

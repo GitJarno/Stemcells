@@ -4,9 +4,9 @@
  * pane. Never more than 30% of the pane, never fewer than six rows.
  */
 
-export const DRAWER_ROWS = 10;
-export const DRAWER_MIN_ROWS = 6;
-export const DRAWER_MAX_PANE_SHARE = 0.3;
+const DRAWER_ROWS = 10;
+const DRAWER_MIN_ROWS = 6;
+const DRAWER_MAX_PANE_SHARE = 0.3;
 
 export interface DrawerMeasure {
   /** One terminal row, in px, from the terminal's font. */

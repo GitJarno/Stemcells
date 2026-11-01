@@ -20,7 +20,7 @@ export interface Size {
 /** A press that moves less than this is a click, as on the strip today. */
 export const PICK_UP_DISTANCE = 4;
 /** How far past its strip's top or bottom a chip is pulled before it tears off. */
-export const TEAR_BAND = 24;
+const TEAR_BAND = 24;
 /** The most a banding chip ever shows of the pull, and how soon it gets there. */
 const BAND_REACH = 18;
 const BAND_GIVE = 0.55;
@@ -197,7 +197,7 @@ const windowOf = (carry: Pick<Carry, "geometry">, id: string) =>
   carry.geometry.windows.find((window) => window.id === id);
 
 /** A strip's catch zone: its rect, grown by the tear band downward. */
-export function catchZone(strip: StripPlace): Rect {
+function catchZone(strip: StripPlace): Rect {
   return { ...strip.rect, height: strip.rect.height + TEAR_BAND };
 }
 
