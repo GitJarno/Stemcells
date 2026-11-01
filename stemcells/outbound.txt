@@ -134,7 +134,7 @@ cut apps/server/src/triage/triagePrompt.ts the instructions `t3 triage` hands th
 # The running app, with no one asking (outbound-live, 2026-10-22). None goes
 # to T3 or carries anything of the person's; each waits on the person's call to go
 # (stemcells/tasks/t3-sync.md, Needs the person).
-live registry.npmjs.org/%40anthropic-ai%2fclaude-code/ the Claude CLI's newest version, asked at start for the update notice (upstream's provider maintenance)
+live registry.npmjs.org the Claude CLI's newest version, asked at start for the update notice (upstream's provider maintenance), through `npm view`, so the person's own npm registry answers; a socket shows no path, and T3's release is never asked (noTelemetry.test.ts)
 live raw.githubusercontent.com/berriai/litellm/ LiteLLM's model price table, for the usage page's cost estimates (UsageService), as the usage page opens
 live api.github.com/repos/berriai/litellm/ the same price table's fallback, asked when raw.githubusercontent.com fails, as it does in the lab
 live api.meta.ai/muse-code/channels/ the Muse CLI's release channel, for its update notice (upstream's provider maintenance), as the usage page opens
