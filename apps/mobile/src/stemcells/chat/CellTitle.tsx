@@ -3,7 +3,7 @@
 // card on the home reads (`stemcells/tasks/project-first.md`). Aski's chat has Aski. A chat sent
 // from here forms here.
 
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
@@ -23,6 +23,11 @@ import {
 const POINTS = 2;
 /** The project's mark beside the one-liner: its capitals' height and a little over. */
 const MARK = 14;
+/**
+ * The bar's button and its gap on either side. A custom title keeps its natural width, so it ends
+ * under the Code button unless it's told where the buttons start.
+ */
+const BESIDE_BUTTON = 76;
 
 /** Reads its chat itself: the header keeps the element it was handed until the chat changes. */
 export function CellTitle(props: { readonly threadId: string }) {
@@ -38,6 +43,7 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
   const project = useProject({ environmentId: thread.environmentId, projectId: thread.projectId });
   const ink = useResolveClassNames("text-foreground").color;
   const ground = useResolveClassNames("bg-screen").backgroundColor;
+  const { width } = useWindowDimensions();
   const name = aski ? "Aski" : cellNameOf(thread.id);
   const about = aski
     ? null
@@ -47,6 +53,7 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
       accessibilityRole="header"
       accessibilityLabel={about === null ? name : `${name}, ${about}`}
       className="min-w-0 flex-row items-center gap-2.5"
+      style={{ maxWidth: Math.max(0, width - 2 * BESIDE_BUTTON) }}
     >
       {aski ? (
         <AskiFigure height={POINTS * 14} ink={ink} ground={ground} />
@@ -65,7 +72,7 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
         {about === null ? null : (
           <View className="min-w-0 flex-row items-center gap-1.5">
             {project === null ? null : <ProjectMark project={project} size={MARK} />}
-            <AppText className="min-w-0 shrink text-xs text-foreground-muted" numberOfLines={1}>
+            <AppText className="min-w-0 shrink text-xs text-foreground" numberOfLines={1}>
               {about}
             </AppText>
           </View>
