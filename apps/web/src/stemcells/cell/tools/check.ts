@@ -56,13 +56,13 @@ export interface Finding {
 }
 
 /** The scenes where the face carries the Cell's state: a piece posed for one of them must leave an eye. */
-export const STATE_SCENES: readonly string[] = ["idle", "waiting", "happy", "asleep", "alert"];
+const STATE_SCENES: readonly string[] = ["idle", "waiting", "happy", "asleep", "alert"];
 
 /** The share of a piece's outline under `MIN_CONTRAST` that fails it. */
-export const DIM_SHARE = 0.5;
+const DIM_SHARE = 0.5;
 
 /** The darkest a cell beside empty space may be on black: Rec. 601 luma, 0–255. */
-export const MIN_LUMA = 40;
+const MIN_LUMA = 40;
 
 /** The original's mouth zone: under the eyes, where a stamp reads as a mouth or a moustache. */
 const MOUTH_ZONE = {
@@ -118,7 +118,7 @@ function pieceCells(rows: readonly string[], bare: readonly string[]): Cell[] {
 }
 
 /** The share of a frame's piece outline too dim to read on `ground`, light frames keylined first; undefined with no outline. */
-export function dimShare(probe: FrameProbe, ground: Ground): number | undefined {
+function dimShare(probe: FrameProbe, ground: Ground): number | undefined {
   const rows = ground === "light" ? keylined(probe.worn, PALETTE) : probe.worn;
   const outline = pieceCells(rows, probe.bare).filter(([x, y]) => facesVoid(rows, x, y));
   if (outline.length === 0) return undefined;
@@ -209,7 +209,7 @@ function lookFindings(
 const MONTH_DAY = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
 /** What pack file `file` breaks in its data: its theme, references, frames, seasons, outfits kept apart. */
-export function packDataFindings(file: string, pack: PackData): Finding[] {
+function packDataFindings(file: string, pack: PackData): Finding[] {
   const out: Finding[] = [];
   const say = (rule: string, subject: string, detail: string) =>
     out.push({ rule, subject, detail, level: "fail" });

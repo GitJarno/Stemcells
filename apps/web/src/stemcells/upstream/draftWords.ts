@@ -98,7 +98,7 @@ export function startingModel(projectRef: ScopedProjectRef): ModelSelection | nu
 }
 
 /** A project's default model: its own setting, else the global default. */
-export function projectDefaultModel(projectRef: ScopedProjectRef): ModelSelection | null {
+function projectDefaultModel(projectRef: ScopedProjectRef): ModelSelection | null {
   const project = readProject(projectRef);
   const settings = appAtomRegistry
     .get(environmentServerConfigsAtom)

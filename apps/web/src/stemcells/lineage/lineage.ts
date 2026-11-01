@@ -80,7 +80,7 @@ export function avatarsOf(lives: readonly Life[]): Avatar[] {
  * them was, or when a life went uncounted (its chat older than the count, or
  * on a machine this page can't ask).
  */
-export function spendOf(lives: readonly Life[]): Spend | null {
+function spendOf(lives: readonly Life[]): Spend | null {
   const counted = lives.flatMap((life) => (life.spend === undefined ? [] : [life.spend]));
   if (counted.length === 0) return null;
   const sum = (field: "tokens" | "inputTokens" | "cachedInputTokens" | "outputTokens") =>

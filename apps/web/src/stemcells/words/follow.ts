@@ -48,7 +48,7 @@ export interface ModelKey {
 }
 
 /** Whether the draft's model is what the words want: an effort they don't name is the draft's own. */
-export const fits = (current: ModelKey | null, want: ModelKey) =>
+const fits = (current: ModelKey | null, want: ModelKey) =>
   current !== null &&
   current.instanceId === want.instanceId &&
   current.model === want.model &&

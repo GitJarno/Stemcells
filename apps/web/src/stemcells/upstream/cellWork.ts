@@ -128,7 +128,7 @@ export function useCellSubagentsAway(cell: CellRef | null): number {
  * the transcript is (`SubcellMark`); a delegating call by its item's id.
  * Undefined for anything else.
  */
-export function budOf(item: TurnItem): Bud | undefined {
+function budOf(item: TurnItem): Bud | undefined {
   if (item.type === "subagent")
     return {
       name: item.childThreadId ?? item.subagentId,

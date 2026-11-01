@@ -12,7 +12,7 @@ import type { Point, Size } from "./carry";
 /** px/s²: a 40 px drop takes ~0.43 s (MochiWorld.swift:22). */
 const GRAVITY = 430;
 /** World frames a second, and substeps a frame (MochiWorld.swift:23-25). */
-export const WORLD_FPS = 24;
+const WORLD_FPS = 24;
 const SUBSTEPS = 8;
 const DT = 1 / (WORLD_FPS * SUBSTEPS);
 /** At most this many dents in the floor at once (MochiWorld.swift:27). */
@@ -303,11 +303,11 @@ const isAtRest = (w: World) => w.dents.length === 0 && settled(w.shake) && isSti
 /** One world frame, world seconds (MochiToss.swift:64). */
 const FRAME = 1 / WORLD_FPS;
 /** A toss's fall, CSS px a second², whatever the Cell's size (MochiToss.swift:66). */
-export const TOSS_GRAVITY = 1400;
+const TOSS_GRAVITY = 1400;
 /** What the top gives back (MochiToss.swift:69). */
 const CEILING = 0.38;
 /** A release faster than this, CSS px a second, is cut to it (MochiToss.swift:70). */
-export const FASTEST = 1100;
+const FASTEST = 1100;
 /** Hanging from the hand, stretched this much (MochiToss.swift:72). */
 const HANGING = 1.08;
 /** World px across the body's box: the body's 26 (MochiToss.swift:76-78). */
@@ -369,7 +369,7 @@ const centreOf = (m: Pick<Motion, "unit" | "box">, b: Body): Point => ({
 });
 
 /** A release, cut to `FASTEST` along its own direction (MochiToss.swift:301-305). */
-export function limited(v: Point): Point {
+function limited(v: Point): Point {
   if (!Number.isFinite(v.x) || !Number.isFinite(v.y)) return { x: 0, y: 0 };
   const factor = Math.min(1, FASTEST / Math.max(1, Math.hypot(v.x, v.y)));
   return { x: v.x * factor, y: v.y * factor };

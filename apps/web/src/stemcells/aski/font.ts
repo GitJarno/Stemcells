@@ -122,5 +122,3 @@ export function glyphBit(ch: string, x: number, y: number): number {
   if (!g || x < 0 || y < 0 || x >= FONT_W || y >= FONT_H) return 0;
   return g[y * FONT_W + x]!;
 }
-
-export const hasGlyph = (ch: string): boolean => bits.has(ch);

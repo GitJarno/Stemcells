@@ -20,7 +20,7 @@ import {
 } from "../scene.ts";
 
 /** Seconds into each bud's own part: it swells until `swell`, pinches off at `pinch`, lands at `land`. Buds follow each other by `stagger`. */
-export const BUD = {
+const BUD = {
   swell: 0.45,
   pinch: 0.5,
   land: 1.15,

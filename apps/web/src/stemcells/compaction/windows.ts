@@ -7,7 +7,7 @@ export const DEFAULT_COMPACT_WINDOW = "500000";
 export const MODEL_OWN_WINDOW = "1000000";
 
 /** The windows offered besides the model's own. */
-export const OFFERED_WINDOWS: ReadonlyArray<string> = ["300000", DEFAULT_COMPACT_WINDOW, "750000"];
+const OFFERED_WINDOWS: ReadonlyArray<string> = ["300000", DEFAULT_COMPACT_WINDOW, "750000"];
 
 export interface CompactWindowChoice {
   readonly value: string;

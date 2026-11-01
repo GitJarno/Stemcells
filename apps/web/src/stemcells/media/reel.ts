@@ -58,7 +58,7 @@ export function itemKey(item: MediaItem): string {
 }
 
 /** The media a settled text embeds; a text a Cell is still writing embeds none yet. */
-export function settledSources(text: MarkdownText): readonly string[] {
+function settledSources(text: MarkdownText): readonly string[] {
   return text.settled ? markdownMediaSources(text.markdown) : [];
 }
 

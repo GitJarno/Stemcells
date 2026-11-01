@@ -16,7 +16,7 @@ export const DEFAULT_COMPACT_WINDOW = "500000";
  * What the CLI holds back below the window before it compacts: room for the reply (at most
  * 20,000) and a 13,000 buffer.
  */
-export const COMPACT_RESERVE = 33_000;
+const COMPACT_RESERVE = 33_000;
 
 /** The window handed to Claude for an instance's setting. */
 export function compactWindowOf(setting: string): string {

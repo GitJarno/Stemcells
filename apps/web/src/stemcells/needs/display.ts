@@ -85,7 +85,7 @@ export function nextEpisode(
 }
 
 /** "1 min 12 s", "40 s", "2 h 5 min". */
-export function spanOf(ms: number): string {
+function spanOf(ms: number): string {
   const seconds = Math.max(1, Math.round(ms / 1000));
   if (seconds < 60) return `${seconds} s`;
   const minutes = Math.floor(seconds / 60);

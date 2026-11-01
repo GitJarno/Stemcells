@@ -81,7 +81,7 @@ export class Push extends Context.Service<
 >()("t3/stemcells/push/Push") {}
 
 /** How often waiting cards are looked at. */
-export const TICK = Duration.seconds(15);
+const TICK = Duration.seconds(15);
 /** A provider token serves this long: under Apple's hour, past its 20-minute floor. */
 const TOKEN_FOR_MS = 45 * 60_000;
 const DEVICES_MAX = 20;

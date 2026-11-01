@@ -14,7 +14,7 @@ export function bodyDistance(f: Frame, x: number, y: number): number {
   return d;
 }
 
-export function limbDistance(f: Frame, x: number, y: number): number {
+function limbDistance(f: Frame, x: number, y: number): number {
   const m = f.limbs;
   if (!m) return Infinity;
   let d = Infinity;

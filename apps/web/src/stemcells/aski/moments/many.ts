@@ -19,7 +19,7 @@ const BUDS = { first: 0.5, every: 0.45, flies: 0.8 } as const;
  * A Cell's word: the longest word of its title that a bud holds whole, the
  * first of equals; a title of only longer words gives its longest, cut.
  */
-export function taskWord(title: string): string {
+function taskWord(title: string): string {
   const words = title
     .toLowerCase()
     .split(/[^a-z0-9]+/)

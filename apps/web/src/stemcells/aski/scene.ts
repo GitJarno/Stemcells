@@ -4,9 +4,7 @@
 // skips to its still and renders offline alike. What every scene shares lives here.
 
 import { BODY_HEIGHT, LOBES } from "./canon.ts";
-import { RAMP } from "./font.ts";
 import { type Grid, isPrintable, makeGrid, put, type Stage } from "./grid.ts";
-import { clamp } from "./math.ts";
 import type { Mood } from "./mood.ts";
 import { restDistance } from "./particles.ts";
 
@@ -112,10 +110,6 @@ export function spell(cells: readonly unknown[], word: string): string[] {
     throw new RangeError(`A form is spelled in one word: ${JSON.stringify(word)}`);
   return cells.map((_, n) => word[n % word.length]!);
 }
-
-/** A density 0..1 as a character, from light to heavy. */
-export const rampChar = (density: number): string =>
-  RAMP[Math.round(clamp(density, 0, 1) * (RAMP.length - 1))]!;
 
 /** Aski at rest on a stage: every cell of its cloud at full ink, spelled `aski`. Every scene ends here. */
 export function cloudAtRest(stage: Stage): Grid {

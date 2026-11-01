@@ -297,7 +297,7 @@ export function sentenceStart(text: string, pos: number): number {
   return at;
 }
 
-export const SENTENCE_BREAK = /[.!?;](?=\s)|\n/;
+const SENTENCE_BREAK = /[.!?;](?=\s)|\n/;
 
 export function sameSentence(text: string, a: number, b: number): boolean {
   return !SENTENCE_BREAK.test(text.slice(Math.min(a, b), Math.max(a, b)));

@@ -66,7 +66,7 @@ export function riskFindings(text: string): RiskFinding[] {
  * "?" only when whitespace or the end follows, so ".env", "v2.1" and
  * "console.log" stay inside their sentence.
  */
-export function sentencesOf(text: string): RiskSpan[] {
+function sentencesOf(text: string): RiskSpan[] {
   const out: RiskSpan[] = [];
   let start = 0;
   const close = (end: number) => {

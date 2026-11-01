@@ -246,7 +246,7 @@ export function throwCell(
  * The longest walk home, ms. The original's chat was narrow; a pane can
  * take the window's width, so a longer way quickens the pace to fit.
  */
-export const WALK_MOST = 3000;
+const WALK_MOST = 3000;
 
 /** Its home pace, CSS px a second. */
 const paceOf = (thrown: Thrown) => HOME_PACE * thrown.motion.box.width;

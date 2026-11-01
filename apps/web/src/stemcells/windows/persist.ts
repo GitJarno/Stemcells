@@ -48,7 +48,7 @@ function parseRect(value: unknown): Rect | null {
   return { x: x as number, y: y as number, width: width as number, height: height as number };
 }
 
-export function parseDisplay(value: unknown): Display | null {
+function parseDisplay(value: unknown): Display | null {
   if (!isRecord(value) || !isNonEmptyString(value.key)) return null;
   const bounds = parseRect(value.bounds);
   const workArea = parseRect(value.workArea);

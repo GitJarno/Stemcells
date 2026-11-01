@@ -29,11 +29,10 @@ import { resolvePrimaryEnvironmentHttpUrl } from "../../environments/primary";
 import { readDesktopPrimaryBearerToken } from "../../environments/primary/desktopAuth";
 import { releaseAttachmentUpload, releaseDraftAttachment } from "../../lib/attachmentUploadQueue";
 import { randomUUID } from "../../lib/utils";
-import { type PromptStashEntry, usePromptStashStore } from "../../promptStashStore";
+import type { PromptStashEntry } from "../../promptStashStore";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { assetEnvironment } from "../../state/assets";
 import { primaryEnvironmentIdAtom } from "../../state/primaryEnvironment";
-import { environmentServerConfigsAtom } from "../../state/server";
 import { environmentSession } from "../../state/session";
 import type { ChatFileAttachment, ChatImageAttachment } from "../../types";
 import type { CellRef } from "../tabs/layout";
@@ -77,12 +76,6 @@ function draftOf(cell: CellRef): ComposerThreadTarget {
     : (cell.draftId as DraftId);
 }
 
-/** The pictures and files a chat's draft holds. */
-export function chipsIn(cell: CellRef): ReadonlyArray<Chip> {
-  const draft = useComposerDraftStore.getState().getComposerDraft(draftOf(cell));
-  return draft ? [...draft.images, ...draft.files] : [];
-}
-
 /**
  * Adds chips to a chat's draft, as upstream's composer adds what is picked
  * or dropped: files with their reference in the words. The mounted composer
@@ -112,20 +105,6 @@ export function letGo(cell: CellRef, chip: Chip): void {
     releaseDraftAttachment(chip);
     store.removeFile(draftOf(cell), chip.id);
   }
-}
-
-/** What a machine's chats take, as upstream's composer reads it. */
-export function machineOf(environmentId: string): {
-  readonly takesFiles: boolean | null;
-  readonly maxFileBytes: number | null;
-} {
-  const config =
-    appAtomRegistry.get(environmentServerConfigsAtom).get(environmentId as EnvironmentId) ?? null;
-  if (config === null) return { takesFiles: null, maxFileBytes: null };
-  return {
-    takesFiles: config.environment.capabilities.attachmentUploads === true,
-    maxFileBytes: config.environment.capabilities.fileAttachments?.maxUploadBytes ?? null,
-  };
 }
 
 /** The machine this page's own server runs on. */
@@ -179,11 +158,6 @@ export async function postToPrimary(pathname: string, body: unknown): Promise<Re
     },
     body: JSON.stringify(body),
   });
-}
-
-/** The stash, newest first. */
-export function stashEntries(): ReadonlyArray<StashEntry> {
-  return usePromptStashStore.getState().entries;
 }
 
 /** A copy that didn't go in, letting go of what it holds: its upload, or its picture's URL. */

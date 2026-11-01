@@ -48,7 +48,7 @@ export const CONTINUE_LINE = "Continue where you left off.";
  * rather than as words the person typed. `nonce` is fresh for every send, so
  * no id is used twice, across retries and restarts alike.
  */
-export const continuedMessageId = (
+const continuedMessageId = (
   reason: Reason,
   threadId: string,
   runId: string,

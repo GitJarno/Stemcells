@@ -57,7 +57,12 @@
         "graphql.config.ts",
       ],
       // The generated operations export every selection's class.
-      "ignoreIssues": { "**/*.graphql.ts": ["exports", "types", "namespaceMembers"] },
+      "ignoreIssues": {
+        "**/*.graphql.ts": ["exports", "types", "namespaceMembers"],
+        // Stemcells: our seams stop calling these (`seams.md`: update source, No telemetry).
+        "src/cli/update.ts": ["exports"],
+        "src/telemetry/Identify.ts": ["exports"],
+      },
       // Keep the transitive Effect runtime pinned for standalone npm installs.
       // The Vite+ web build prerequisite.
       // Native and disk-loaded provider packages stay external to the bundle; the
@@ -89,11 +94,26 @@
     "apps/web": {
       // Worktree setup (scripts/setup-worktree.ts) runs this directly, and evidence
       // fixtures run under node.
-      "entry": ["scripts/warm-dep-cache.ts", "test/fixtures/**/*.mjs"],
+      "entry": [
+        "scripts/warm-dep-cache.ts",
+        "test/fixtures/**/*.mjs",
+        // Stemcells: the Cell art CLI, run by `stemcells/scripts/cells`; and the substitutes,
+        // which our Vite plugin swaps in for upstream modules by path.
+        "src/stemcells/cell/tools/cells.ts",
+        "src/stemcells/upstream/substitutes/**/*.{ts,tsx}",
+        // Stemcells: Aski's stage, parked unmounted (`stemcells/tasks/aski-figure.md`).
+        "src/stemcells/aski/AskiStage.tsx",
+      ],
+      // Stemcells: upstream's breadcrumb, which our settings pages replace.
+      "ignore": ["src/components/settings/SettingsBreadcrumb.tsx"],
       // UI component modules are copied and adapted as cohesive sets. Keep their
       // named subcomponents even before they have callers; the file audit still
       // reports an entire component module when nothing imports it.
-      "ignoreIssues": { "src/components/ui/*.tsx": ["exports", "nsExports", "duplicates"] },
+      "ignoreIssues": {
+        "src/components/ui/*.tsx": ["exports", "nsExports", "duplicates"],
+        // Stemcells: our media viewer replaces this host (`seams.md`, ChatView).
+        "src/components/chat/ExpandedImageDialog.tsx": ["exports"],
+      },
     },
     "apps/marketing": {
       // `astro check` runs from the typecheck task in vite.config.ts, which knip does not read.
@@ -108,6 +128,8 @@
         "scripts/generate-device-stream.mts",
         "src/features/devices/device-stream.browser.ts!",
         "src/features/browser/preview-stream.browser.ts!",
+        // Stemcells: Metro swaps these in for packages by name (`substitutes.cjs`).
+        "src/stemcells/upstream/substitutes/*.ts",
       ],
       // Fonts are configured as asset paths; Expo autolinks the native packages.
       "ignoreDependencies": [

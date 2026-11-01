@@ -85,7 +85,7 @@ const along = (axis: Axis, event: { clientX: number; clientY: number }) =>
  * the neighbours are laid out frame by frame without a render. At rest only the hairline shows;
  * the grip comes a beat after the pointer (`split.css`).
  */
-export function useSeparator(
+function useSeparator(
   props: SeparatorProps,
 ): HTMLAttributes<HTMLDivElement> & { "data-stemcells-split": Axis } {
   const { axis, sides } = props;

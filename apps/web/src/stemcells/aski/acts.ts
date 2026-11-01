@@ -175,7 +175,7 @@ export interface DanceArgs {
 const NOD_BEATS = 2,
   POP_LEAD = 0.14,
   EXIT = 0.9;
-export const danceTiming = (bpm: number) => {
+const danceTiming = (bpm: number) => {
   const period = 60 / bpm;
   return { period, pop: NOD_BEATS * period }; // the limbs pop out exactly on the third beat
 };

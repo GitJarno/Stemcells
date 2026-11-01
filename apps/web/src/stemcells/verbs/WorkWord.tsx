@@ -11,7 +11,7 @@ import type { TimelineEntries } from "../upstream/workVerbs";
 import { turnVerbsOf, type TurnVerbs } from "./turnVerbs";
 import { workedLabel, workingWord } from "./workVerbs";
 
-export { turnVerbsOf, type TurnVerbs } from "./turnVerbs";
+export { type TurnVerbs } from "./turnVerbs";
 
 const TurnVerbsContext = createContext<TurnVerbs | null>(null);
 

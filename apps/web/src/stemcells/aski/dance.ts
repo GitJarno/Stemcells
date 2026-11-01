@@ -26,7 +26,7 @@ const P = (
   ...extra,
 });
 
-export const POSES = {
+const POSES = {
   up: P(
     [
       [-34, 28],
@@ -158,7 +158,7 @@ export const POSES = {
   ),
 } as const;
 
-export const ROUTINE: readonly (keyof typeof POSES)[] = [
+const ROUTINE: readonly (keyof typeof POSES)[] = [
   "up",
   "down",
   "up",

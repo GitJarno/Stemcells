@@ -278,7 +278,7 @@ const pieceOfData = (theme: string, data: PieceData): Piece => {
 };
 
 /** A pack file read into the kit's shapes; `authored` for one drawn in `art/packs/`. */
-export function packOf(data: PackData, authored: boolean): Pack {
+function packOf(data: PackData, authored: boolean): Pack {
   return {
     theme: data.theme,
     season: data.season,

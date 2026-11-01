@@ -11,11 +11,9 @@
  * hidden window's drafts keep holding.
  */
 export const DRAFTS_LAST_MS = 150_000;
-/** How often a screen with drafts reports again: well within `DRAFTS_LAST_MS`. */
-export const DRAFTS_REPORT_EVERY_MS = 20_000;
 /** At most this many chats in one report, and this many screens at once. */
 export const DRAFTS_MAX_THREADS = 500;
-export const DRAFTS_MAX_SCREENS = 32;
+const DRAFTS_MAX_SCREENS = 32;
 
 export interface Drafts {
   /** `screen`'s chats with a draft now, replacing its last report. */

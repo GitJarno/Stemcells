@@ -18,7 +18,7 @@ import { picture, Sheet, textWidth } from "./picture.ts";
 export type Size = "hero" | "mini";
 
 /** Pixels a cell is drawn at each size: the miniature's cell is twice the hero's, so both stand the same height. */
-export const SCALE: Readonly<Record<Size, number>> = { hero: 4, mini: 8 };
+const SCALE: Readonly<Record<Size, number>> = { hero: 4, mini: 8 };
 
 export const SIZES: readonly Size[] = ["mini", "hero"];
 export const GROUNDS: readonly Ground[] = ["black", "light"];
@@ -61,7 +61,7 @@ function wornOf(spec: string): CellLook {
 export const slugOf = (spec: string): string => spec.replace(/[^a-z0-9~-]+/gi, "_");
 
 /** The frames a size shows as the app draws them, with the margin past the box: the hero detail, or the miniature. */
-export const framesOf = (scene: CellScene, size: Size): readonly (readonly string[])[] =>
+const framesOf = (scene: CellScene, size: Size): readonly (readonly string[])[] =>
   scene.mini.map((frame) => (size === "hero" ? frame.drawn.detail : frame.drawn.rows));
 
 /** How far each frame of scene `key` stands from its place, in cells of `size`, for a move that travels. */
@@ -93,7 +93,7 @@ function stage(
 }
 
 /** `from` copied onto `to` at (`x`, `y`). */
-export function paste(to: Sheet, from: Sheet, x: number, y: number): void {
+function paste(to: Sheet, from: Sheet, x: number, y: number): void {
   for (let py = 0; py < from.height; py++) {
     for (let px = 0; px < from.width; px++) {
       const tx = x + px;

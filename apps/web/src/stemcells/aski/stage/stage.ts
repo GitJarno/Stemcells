@@ -52,7 +52,7 @@ export interface Casting {
 }
 
 /** The place a stage puts a Cell in. */
-export function placeOf(stage: string): Place {
+function placeOf(stage: string): Place {
   switch (stage) {
     case "starting":
     case "landed":
@@ -183,7 +183,7 @@ const GROUND_CLEAR = 0.56;
  * the stage's width each side, at most a few of Aski's sizes, never tighter than the orbit above, and flatter. Along
  * its line it goes at the same pace, so a turn takes longer.
  */
-export const WIDE = { share: 0.42, most: 2.9, ry: 0.3 } as const;
+const WIDE = { share: 0.42, most: 2.9, ry: 0.3 } as const;
 
 /** The orbit laid out for a stage. */
 export interface Orbit {

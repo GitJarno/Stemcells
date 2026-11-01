@@ -4,7 +4,7 @@
 import { FRAMES, type Ground, keylined } from "../keyline.ts";
 
 /** Ink as RGBA bytes; `#rrggbb` or `#rrggbbaa`. */
-export function rgba(hex: string): [number, number, number, number] {
+function rgba(hex: string): [number, number, number, number] {
   const value = hex.replace("#", "");
   const at = (i: number) => Number.parseInt(value.slice(i, i + 2), 16);
   return [at(0), at(2), at(4), value.length >= 8 ? at(6) : 255];

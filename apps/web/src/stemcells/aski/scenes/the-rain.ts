@@ -8,8 +8,6 @@ import { ease, hash, lerp, sstep } from "../math.ts";
 import { cloudCells, type SceneCard, spell } from "../scene.ts";
 import { RAIN, SCENE_TIMES } from "./times.ts";
 
-export { RAIN } from "./times.ts";
-
 /** What the rain is made of: every printable character but the space. */
 const DROPS = Array.from({ length: 94 }, (_, n) => String.fromCharCode(33 + n)).join("");
 

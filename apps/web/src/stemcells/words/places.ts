@@ -48,7 +48,7 @@ export interface Roster {
  * A name's words: camel humps split, a [bracket note] removed, a possessive
  * shed, dashes and underscores as spaces. "PriceDrop" → "price drop".
  */
-export function nameWords(name: string): string[] {
+function nameWords(name: string): string[] {
   return name
     .replace(/\[[^\]]*\]|\([^)]*\)/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -166,7 +166,7 @@ export function placeHits(
 }
 
 /** Where the sentence points a name: the anchor ladder. */
-export function anchorOf(text: string, hit: Span, isLead: (word: string) => boolean): PlaceAnchor {
+function anchorOf(text: string, hit: Span, isLead: (word: string) => boolean): PlaceAnchor {
   const before = cleanWords(text.slice(lineStart(text, hit.start), hit.start));
   const next = after(text, hit.end);
   if (before.length <= 4 && before.every(isLead) && !(next.word && DETERMINERS.has(next.word)))

@@ -72,7 +72,7 @@ function ProjectTile(props: { tile: RailTile; on: boolean; onOpen: () => void })
  * emoji chosen for it; an amber dot at the corner while a chat there needs
  * you.
  */
-export function ProjectBadge(props: { project: RailProject; dot: RailTile["dot"] }) {
+function ProjectBadge(props: { project: RailProject; dot: RailTile["dot"] }) {
   const { mark, record } = props.project;
   return (
     <span data-stemcells-badge={mark.kind} className={mark.colorClass ?? undefined} aria-hidden>

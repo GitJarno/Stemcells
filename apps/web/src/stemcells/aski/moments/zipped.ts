@@ -18,7 +18,7 @@ const LENGTH = { least: 8, most: 26 } as const;
 export const zippedLine = (base: string): string => words["moment.zipped"].replace("{base}", base);
 
 /** How long the zipper is for a change of `lines` lines: longer as it doubles. */
-export const zipperFor = (lines: number): number =>
+const zipperFor = (lines: number): number =>
   Math.round(
     Math.min(LENGTH.most, Math.max(LENGTH.least, LENGTH.least + 2 * Math.log2(1 + lines / 50))),
   );

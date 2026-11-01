@@ -94,7 +94,7 @@ export function activityOf(tool: string, brief: string): Activity {
 }
 
 /** A shell command's activity from its first words. Unknown → running. */
-export function commandActivity(brief: string): Activity {
+function commandActivity(brief: string): Activity {
   // Trims spaces and tabs only: a newline stays part of the line.
   const line = brief.toLowerCase().replace(/^[\p{Zs}\t]+|[\p{Zs}\t]+$/gu, "");
   const words = line.split(/[ \t]/).filter((word) => word !== "");

@@ -28,7 +28,7 @@ export function backAfter(
 }
 
 /** The night's hours, local time: from `from` o'clock until `until` o'clock the next morning. */
-export const NIGHT_HOURS = { from: 23, until: 5 } as const;
+const NIGHT_HOURS = { from: 23, until: 5 } as const;
 
 /** The night `now` falls in, named by the date it began (YYYY-MM-DD, local); null by day. */
 export function nightOf(now: Date): string | null {
@@ -214,7 +214,7 @@ export interface RecoverySeen {
 export type Armed = ReadonlyMap<string, { readonly runId: string; readonly resetAt: number }>;
 
 /** How long after its reset a Cell's carrying on still counts, in milliseconds. */
-export const CARRY_WITHIN = 60 * 60_000;
+const CARRY_WITHIN = 60 * 60_000;
 
 /**
  * Each chat's recovery and run seen again at `now`. Says the chats that just

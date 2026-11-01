@@ -9,7 +9,7 @@ export interface Spring {
 }
 
 /** How far from its target a spring may be and still count as settled: a tenth of a percent of the move. */
-export const SETTLED = 0.001;
+const SETTLED = 0.001;
 
 /** Progress of a spring released at 0 toward 1, at time t (seconds), with `velocity` (moves per second; 0 is from rest). */
 export function springAt({ response, damping }: Spring, t: number, velocity = 0): number {
@@ -80,7 +80,7 @@ export function springEasing(spring: Spring, velocity = 0, tolerance = SETTLED):
  * within `tolerance` of every one of them. The first and the last are always
  * kept, so a move sampled this way starts and lands where it did.
  */
-export function fewestPoints(points: readonly EasingPoint[], tolerance = SETTLED): EasingPoint[] {
+function fewestPoints(points: readonly EasingPoint[], tolerance = SETTLED): EasingPoint[] {
   const last = points.length - 1;
   if (last < 1) return [...points];
   const keep = new Set<number>([0, last]);

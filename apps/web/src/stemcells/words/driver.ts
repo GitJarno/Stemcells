@@ -39,7 +39,7 @@ import { wordsKey } from "./plugin";
 import type { Span } from "./text";
 
 /** How long a word at the caret waits before it acts (decision 5). */
-export const PAUSE_MS = 500;
+const PAUSE_MS = 500;
 
 export interface DriverSource {
   /** The unsent draft the composer writes, or null. */

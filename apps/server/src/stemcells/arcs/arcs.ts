@@ -53,7 +53,7 @@ function median(values: ReadonlyArray<number>): number | null {
   return Math.round(value * 10) / 10;
 }
 
-export function stopKindOf(reply: string): StopKind {
+function stopKindOf(reply: string): StopKind {
   const stop = stopOf(reply);
   switch (stop.ask?.cue) {
     case "left":

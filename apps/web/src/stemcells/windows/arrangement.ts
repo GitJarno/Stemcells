@@ -61,8 +61,6 @@ export interface Arrangement {
   readonly memories: ReadonlyArray<Memory>;
 }
 
-export const EMPTY_ARRANGEMENT: Arrangement = { windows: [], lead: null, memories: [] };
-
 /**
  * What the windows do to get from one arrangement to the next. Each window
  * that changes gets its whole workspace: the desktop app refuses a
