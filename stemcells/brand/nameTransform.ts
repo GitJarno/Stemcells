@@ -281,7 +281,7 @@ export const KEPT: ReadonlyArray<Kept> = [
   ...keep(
     /^apps\/web\/src\/components\/onboarding\/WelcomeWizard\.tsx$/,
     `${T3S_OWN}: another computer runs T3's command line (\`npx t3 serve\`)`,
-    "Start T3 Code first, or run",
+    "start T3 Code or run",
   ),
   ...keep(
     /^apps\/web\/src\/components\/settings\/SnapShotSetupDialog\.tsx$/,
