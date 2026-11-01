@@ -23,6 +23,11 @@ import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
 
 const segments = tabChoice<LineStage>();
+/**
+ * UIKit slides the lit segment itself, and each segment's page mounts its own control: a page
+ * that swaps in mid-slide cuts the slide wherever its render got to. The page follows the light.
+ */
+const SLIDE_MS = 300;
 
 const EMPTY: Readonly<Record<Exclude<LineStage, "needs">, string>> = {
   working: "No Cells flying.",
@@ -150,7 +155,7 @@ export function LineHome(props: {
     options: SEGMENTS.map((segment) => ({ ...segment, count: counts[segment.id] })),
     counts: greet,
     night: tab === "settled",
-    choose: (id: string) => segments.choose(id as LineStage),
+    choose: (id: string) => segments.choose(id as LineStage, SLIDE_MS),
     environmentId: props.environmentId,
   };
   return (

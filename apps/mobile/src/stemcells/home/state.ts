@@ -43,14 +43,24 @@ export const HomeInFront = createContext(false);
  */
 export const HomeCellsHeld = createContext(false);
 
-/** One set of tabs' choice: the person's, else where the home opens, held once known. */
+/**
+ * One set of tabs' choice: the person's, else where the home opens, held once known. A choice
+ * `after` some ms shows its page then, the last one made by then.
+ */
 export function tabChoice<Tab extends string>() {
   let chosen: Tab | null = null;
+  let landing: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
-  const choose = (tab: Tab) => {
+  const show = (tab: Tab) => {
     if (chosen === tab) return;
     chosen = tab;
     for (const listener of listeners) listener();
+  };
+  const choose = (tab: Tab, after = 0) => {
+    clearTimeout(landing);
+    landing = undefined;
+    if (after > 0) landing = setTimeout(() => choose(tab), after);
+    else show(tab);
   };
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
@@ -58,12 +68,14 @@ export function tabChoice<Tab extends string>() {
   };
   return {
     choose,
+    /** The tab whose page shows, outside React. */
+    shown: () => chosen,
     /** The tab shown: the person's, else `opens`, chosen for good once `known`. */
     useTab(opens: Tab, known: boolean): Tab {
       const tab = useSyncExternalStore(subscribe, () => chosen);
       // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Choose the opening tab in the shared tab store once the counts are known.
       useEffect(() => {
-        if (known && chosen === null) choose(opens);
+        if (known && chosen === null) show(opens);
       }, [known, opens]);
       return tab ?? opens;
     },
