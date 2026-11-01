@@ -691,7 +691,7 @@ export function NewTaskDraftScreen(props: {
       ? cloneBlocksStart
         ? "Wait for the project clone to finish."
         : flow.submitting
-          ? "Starting the thread…"
+          ? "Starting the Cell…"
           : flow.workspaceMode === "worktree" && (!flow.selectedBranchName || !flow.isGitRepoKnown)
             ? "Choose a base branch before creating a worktree."
             : null
@@ -853,7 +853,7 @@ export function NewTaskDraftScreen(props: {
       <ThreadScreenFallback
         header={
           <AppBar
-            title="New thread"
+            title="New Cell"
             sidebar={false}
             onBack={goBack}
             options={{

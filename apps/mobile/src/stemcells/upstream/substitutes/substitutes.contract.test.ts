@@ -304,6 +304,7 @@ const CASES: Readonly<Record<string, Case>> = {
           "THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME",
           "THREAD_LIST_V2_ROW_DIVIDERS",
           "getThreadListV2RowAppearance",
+          "getThreadListV2NewBranchMenuTitle",
         ],
       ],
     },
@@ -433,6 +434,13 @@ const CASES: Readonly<Record<string, Case>> = {
         "../../native/SelectableMarkdownText",
         ["SelectableMarkdownText"],
       ],
+    },
+  },
+  "apps/mobile/src/components/ui/Dialog.tsx": {
+    exports: view("apps/mobile/src/components/ui/Dialog.tsx", "Dialog.tsx"),
+    importers: {
+      // A home row's alerts, in Cell words.
+      "apps/mobile/src/features/home/useThreadListActions.ts": ["../../components/ui/Dialog", []],
     },
   },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
@@ -671,6 +679,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./modelOptions")>().toEqualTypeOf<
       typeof import("../../../lib/modelOptions")
+    >();
+    expectTypeOf<typeof import("./Dialog")>().toEqualTypeOf<
+      typeof import("../../../components/ui/Dialog")
     >();
     expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
       typeof import("expo-image-picker")

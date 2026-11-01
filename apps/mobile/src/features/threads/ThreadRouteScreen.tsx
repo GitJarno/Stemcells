@@ -145,7 +145,7 @@ function OpeningThreadLoadingScreen() {
   return (
     <ThreadRouteFallbackLayout>
       <LoadingScreen
-        message="Opening thread…"
+        message="Opening Cell…"
         messagePlacement="above-spinner"
         embedded={Platform.OS === "android"}
       />
@@ -184,8 +184,8 @@ function ThreadUnavailableScreen(props: {
         className="bg-screen flex-1 android:bg-transparent"
       >
         <EmptyState
-          title="Thread unavailable"
-          detail="This thread is not available in the current mobile snapshot."
+          title="Cell unavailable"
+          detail="This Cell is not available in the current mobile snapshot."
           actionLabel={props.actionLabel}
           onAction={props.onAction}
         />

@@ -1,13 +1,19 @@
 // Replaces `features/threads/thread-list-v2-row-appearance.ts`
 // (`substitutes.cjs`; Android's `.android.ts` stays T3's): on the phone's
 // own screen each row is a card, as the original app's were, its Cell beside it
-// (`home/RowCell.tsx`). The iPad's sidebar keeps T3's rows.
+// (`home/RowCell.tsx`), and its menu starts a New Cell. The iPad's sidebar keeps T3's rows.
 import type { ViewStyle } from "react-native";
 
 import * as Upstream from "../../../features/threads/thread-list-v2-row-appearance";
 import type { MobileThemeVariables } from "../../../lib/mobileTheme";
 
 export * from "../../../features/threads/thread-list-v2-row-appearance";
+
+export function getThreadListV2NewBranchMenuTitle(
+  _branch: string,
+): ReturnType<typeof Upstream.getThreadListV2NewBranchMenuTitle> {
+  return "New Cell on branch";
+}
 
 export const THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME = "pl-3 pr-4 py-3";
 export const THREAD_LIST_V2_ROW_DIVIDERS = false;

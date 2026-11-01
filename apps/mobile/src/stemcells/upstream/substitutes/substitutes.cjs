@@ -61,6 +61,7 @@ const SUBSTITUTES = {
   // Aski's instance is Aski's: a Cell, a new chat or a scheduled task never offers it, nor badges
   // Claude for it.
   "apps/mobile/src/lib/modelOptions.ts": "modelOptions.ts",
+  "apps/mobile/src/components/ui/Dialog.tsx": "Dialog.tsx",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

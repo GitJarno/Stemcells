@@ -1,7 +1,7 @@
 // Replaces `features/threads/useThreadHeaderOptions.tsx` (`substitutes.cjs`; Android's `.android.ts`
-// stays T3's): a Cell's chat is headed by the Cell beside its name, what its chat is about under it
-// (`chat/CellTitle.tsx`); a draft, or a chat the phone doesn't hold yet, keeps upstream's title.
-// Every chat's git, files and terminal are one Code button (`chat/code.ts`).
+// stays T3's): a Cell's chat is headed by the Cell beside its name, what it's about under it
+// (`chat/CellTitle.tsx`); a draft or an unknown chat keeps its title. Git, files and terminal are
+// one Code button (`chat/code.ts`); the home button reads as the Mac's (`HOME_ITEM`).
 import * as Upstream from "../../../features/threads/useThreadHeaderOptions";
 import { CellTitle } from "../../chat/CellTitle";
 import { foldIntoCode } from "../../chat/code";
@@ -16,6 +16,14 @@ function isItemsFactory(value: unknown): value is () => HeaderItems {
   return typeof value === "function";
 }
 
+const HOME_ITEM = { upstream: "Go to threads list", ours: "Back to the Cells" } as const;
+
+function homeItemInCellWords<Item extends Readonly<Record<string, unknown>>>(item: Item): Item {
+  return item.accessibilityLabel === HOME_ITEM.upstream
+    ? { ...item, accessibilityLabel: HOME_ITEM.ours }
+    : item;
+}
+
 export function useThreadHeaderOptions(
   props: Parameters<typeof Upstream.useThreadHeaderOptions>[0],
 ): ReturnType<typeof Upstream.useThreadHeaderOptions> {
@@ -23,8 +31,12 @@ export function useThreadHeaderOptions(
   const threadId = String(props.gitControls.threadId);
   const known = useThreadShellsSelected((threads) => threads.some((one) => one.id === threadId));
   const rightItems = kept.options.unstable_headerRightItems;
+  const leftItems = kept.options.unstable_headerLeftItems;
   const options = {
     ...kept.options,
+    unstable_headerLeftItems: isItemsFactory(leftItems)
+      ? () => leftItems().map(homeItemInCellWords)
+      : leftItems,
     unstable_headerRightItems: isItemsFactory(rightItems)
       ? () => foldIntoCode(rightItems())
       : rightItems,
