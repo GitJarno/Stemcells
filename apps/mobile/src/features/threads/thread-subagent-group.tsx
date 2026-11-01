@@ -7,7 +7,7 @@ import type {
   EnvironmentId,
   OrchestrationV2Subagent,
   OrchestrationV2TurnItem,
-  ServerProvider,
+  ServerConfig,
 } from "@t3tools/contracts";
 import { Pressable, View, type ColorValue } from "react-native";
 
@@ -42,13 +42,16 @@ function SubagentElapsed({ agents }: { readonly agents: ReadonlyArray<AgentTimin
 
 function SubagentAvatar(props: {
   readonly item: SubagentItem;
-  readonly provider: ServerProvider | undefined;
+  readonly config: ServerConfig | null | undefined;
   readonly status: string;
 }) {
+  const providers = props.config?.providers ?? [];
+  const provider = providers.find(
+    (candidate) => candidate.instanceId === props.item.providerInstanceId,
+  );
   // A remote task's own driver is only a "remote" label.
   const driver =
-    props.provider?.driver ??
-    (props.item.remoteChild === undefined ? props.item.driver : undefined);
+    provider?.driver ?? (props.item.remoteChild === undefined ? props.item.driver : undefined);
   return (
     <SubcellMark
       name={props.item.childThreadId ?? props.item.subagentId}
@@ -96,11 +99,8 @@ export function ThreadSubagentGroup(props: {
   const expanded = props.expandedRows[props.anchorKey] ?? false;
   const serverConfigs = useServerConfigs();
   // A task in a linked environment runs a provider instance of that environment.
-  const providerOf = (item: SubagentItem) =>
-    (item.remoteChild === undefined
-      ? config
-      : serverConfigs.get(item.remoteChild.environmentId)
-    )?.providers.find((provider) => provider.instanceId === item.providerInstanceId);
+  const configOf = (item: SubagentItem) =>
+    item.remoteChild === undefined ? config : serverConfigs.get(item.remoteChild.environmentId);
   return (
     <WorkLogBlock>
       {grouped ? (
@@ -116,7 +116,7 @@ export function ThreadSubagentGroup(props: {
               <View key={agent.item.id} style={{ marginLeft: index === 0 ? 0 : -7 }}>
                 <SubagentAvatar
                   item={agent.item}
-                  provider={providerOf(agent.item)}
+                  config={configOf(agent.item)}
                   status={agent.status}
                 />
               </View>

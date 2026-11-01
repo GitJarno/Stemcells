@@ -1,6 +1,6 @@
-// A user message's pictures: one row the person swipes, the same row while the message is
-// pending and once it's sent. A picture this phone sent keeps showing its own file until the
-// server's copy has loaded, so a send never stacks, blanks or spins its pictures.
+// A user message's pictures: one row the person swipes, above its bubble on the right, the same
+// row while the message is pending and once it's sent. A picture this phone sent keeps showing
+// its own file until the server's copy has loaded, so a send never stacks, blanks or spins them.
 
 import { Image } from "expo-image";
 import { useEffect, useId, useRef } from "react";
@@ -45,7 +45,7 @@ export function MessageImages(props: {
       horizontal
       showsHorizontalScrollIndicator={false}
       className="grow-0"
-      contentContainerClassName="gap-2"
+      contentContainerClassName="grow justify-end gap-2"
     >
       {images.map((image) => (
         <SentImageTile

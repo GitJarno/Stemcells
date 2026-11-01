@@ -1,5 +1,6 @@
 import {
   boundAttachmentIds,
+  buildExpiredTerminalContextToastCopy,
   mergeDirectPreviewAnnotation,
   planComposerTurn,
   snapshotComposerSend,
@@ -127,6 +128,22 @@ describe("deriveComposerSendState", () => {
   });
 });
 
+describe("buildExpiredTerminalContextToastCopy", () => {
+  it("refers to several expired contexts as them", () => {
+    expect(buildExpiredTerminalContextToastCopy(2, "empty")).toEqual({
+      title: "Expired terminal contexts won't be sent",
+      description: "Remove them or re-add them to include terminal output.",
+    });
+    expect(buildExpiredTerminalContextToastCopy(2, "omitted")).toEqual({
+      title: "Expired terminal contexts omitted from message",
+      description: "Re-add them if you want that terminal output included.",
+    });
+    expect(buildExpiredTerminalContextToastCopy(1, "omitted").description).toBe(
+      "Re-add it if you want that terminal output included.",
+    );
+  });
+});
+
 describe("hasServerAcknowledgedLocalDispatch", () => {
   it("acknowledges a settled newer background turn", () => {
     const localDispatch = createLocalDispatchSnapshot(
@@ -174,6 +191,40 @@ describe("hasServerAcknowledgedLocalDispatch", () => {
         threadError: null,
       }),
     ).toBe(false);
+  });
+
+  it.each([
+    ["queued", "message-queued", true],
+    ["queued", "message-before-send", false],
+    ["preparing", "message-queued", false],
+    ["starting", "message-queued", false],
+  ] as const)("acknowledges %s with latest message %s: %s", (status, messageId, acknowledged) => {
+    const localDispatch = createLocalDispatchSnapshot(
+      makeThread({ latestRun: completedTurn, runtime: readySession }),
+      { latestUserMessageId: MessageId.make("message-before-send") },
+    );
+    // The shell hides the silent compaction run, so its runtime reports the queued message's run.
+    const queuedRun = {
+      ...completedTurn,
+      runId: RunId.make("turn-queued"),
+      status: "queued" as const,
+      requestedAt: "2026-03-29T00:01:00.000Z",
+      startedAt: null,
+      completedAt: null,
+    };
+
+    expect(
+      hasServerAcknowledgedLocalDispatch({
+        localDispatch,
+        phase: "running",
+        latestRun: queuedRun,
+        latestUserMessageId: MessageId.make(messageId),
+        runtime: { ...readySession, status },
+        hasPendingApproval: false,
+        hasPendingUserInput: false,
+        threadError: null,
+      }),
+    ).toBe(acknowledged);
   });
 
   it("waits for the matching running turn before acknowledging", () => {
@@ -244,34 +295,6 @@ describe("hasServerAcknowledgedLocalDispatch", () => {
         latestRun: runningRun,
         latestUserMessageId: MessageId.make("message-steer"),
         runtime: runningRuntime,
-        hasPendingApproval: false,
-        hasPendingUserInput: false,
-        threadError: null,
-      }),
-    ).toBe(true);
-  });
-
-  it("acknowledges a compact-and-send while the shell hides its compaction run", () => {
-    const localDispatch = createLocalDispatchSnapshot(
-      makeThread({ latestRun: completedTurn, runtime: readySession }),
-      { latestUserMessageId: MessageId.make("message-before-send") },
-    );
-    const queuedTurn = {
-      ...completedTurn,
-      runId: RunId.make("turn-3"),
-      status: "queued" as const,
-      requestedAt: "2026-03-29T00:01:00.000Z",
-      startedAt: null,
-      completedAt: null,
-    };
-
-    expect(
-      hasServerAcknowledgedLocalDispatch({
-        localDispatch,
-        phase: "running",
-        latestRun: queuedTurn,
-        latestUserMessageId: MessageId.make("message-queued-behind-compact"),
-        runtime: { ...readySession, status: "queued", activeRunId: null },
         hasPendingApproval: false,
         hasPendingUserInput: false,
         threadError: null,

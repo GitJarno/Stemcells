@@ -9,7 +9,7 @@ import { usePanelAnimationSettings } from "../../../panelAnimations";
 import { defaultDrawerHeight } from "../../terminal/drawerHeight";
 import "../../tokens/stemcells.css";
 import "../../terminal/terminal.css";
-import { ChatPanelHostContext } from "../chatPanel";
+import { ChatPanelHostContext } from "../chatPanelHost";
 import {
   TERMINAL_GRID_PADDING,
   UPSTREAM_DRAWER_HEIGHT,

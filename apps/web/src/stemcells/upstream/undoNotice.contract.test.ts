@@ -14,7 +14,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import appSidebarLayoutSource from "../../components/AppSidebarLayout.tsx?raw";
 import sidebarChromeSource from "../../components/sidebar/SidebarChrome.tsx?raw";
-import sidebarListMarkersSource from "../../components/sidebar/SidebarListMarkers.tsx?raw";
 import { isAppModalPage } from "../../components/sidebar/mainAppLocation";
 import undoNoticeStoreSource from "../../hooks/showThreadUndoNotice.ts?raw";
 import cellsSource from "../rail/Cells.tsx?raw";
@@ -36,22 +35,18 @@ const baseUiToastStore = NodeFS.readFileSync(
     NodePath.dirname(
       NodeModule.createRequire(import.meta.url).resolve("@base-ui/react/package.json"),
     ),
-    "esm/toast/store.js",
+    "toast/store.mjs",
   ),
   "utf8",
 );
 
 describe("upstream's undo notice", () => {
   it("is drawn only in the wide sidebar, which the rail stands in for", () => {
-    // Over the list's first bottom shelf, or in the foot when no shelf hosts it.
+    // In the sidebar's foot, over its update pill.
     expect(upstreamViewsDrawing("<SidebarThreadUndoNotice")).toEqual([
       NodePath.join("components", "sidebar", "SidebarChrome.tsx"),
-      NodePath.join("components", "sidebar", "SidebarListMarkers.tsx"),
     ]);
-    expect(sidebarChromeSource).toContain("{showUndoNotice ? <SidebarThreadUndoNotice /> : null}");
-    expect(sidebarListMarkersSource).toMatch(
-      /\{props\.hostsUndoNotice \? \(\s*<SidebarThreadUndoNotice /,
-    );
+    expect(sidebarChromeSource).toMatch(/<SidebarThreadUndoNotice \/>\s*<SidebarUpdatePill \/>/);
     expect(upstreamViewsDrawing("<SidebarChromeFooter")).toEqual([
       NodePath.join("components", "Sidebar.tsx"),
     ]);

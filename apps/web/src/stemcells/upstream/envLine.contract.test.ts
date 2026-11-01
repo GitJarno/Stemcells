@@ -39,7 +39,7 @@ describe("a Cell's env on its ledge", () => {
 
   it("offers the controls where upstream mounts the toolbar: a draft, or kept after the chat starts", () => {
     expect(chatView).toMatch(
-      /const showComposerContextStrip = shouldShowComposerContextStrip\(\{\s*isDraftHeroState,\s*persistInActiveThreads: settings\.persistComposerContextStrip,/,
+      /const showComposerContextStrip =\s*!embedded &&\s*shouldShowComposerContextStrip\(\{\s*isDraftHeroState,\s*persistInActiveThreads: settings\.persistComposerContextStrip,/,
     );
     expect(chatView).toMatch(
       /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,120}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}[\s\S]{0,100}?showGitControls=\{isGitRepo\}/,
@@ -54,7 +54,7 @@ describe("a Cell's env on its ledge", () => {
       "permissionsShownInStrip={showComposerContextStrip && !isServerThread}",
     );
     expect(composerControlsBar).toContain(
-      "const permissionsChipHidden = accessMatchesDefault || props.permissionsShownInStrip;",
+      "matchesDefault: accessMatchesDefault || props.permissionsShownInStrip,",
     );
     const panel = branchToolbar.slice(
       branchToolbar.indexOf('if (layout === "panel") {'),

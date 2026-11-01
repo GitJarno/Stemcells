@@ -5,7 +5,7 @@
  * that moved: say Subcell, or give the avatar back.
  */
 import type { SubagentWorkflowGroup } from "@t3tools/client-runtime/state/subagentRuntime";
-import type { OrchestrationV2PendingBackgroundTask } from "@t3tools/contracts";
+import { ThreadId, type OrchestrationV2PendingBackgroundTask } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import messagesTimeline from "../../components/chat/MessagesTimeline.tsx?raw";
@@ -97,7 +97,7 @@ describe("Subcells in upstream's views", () => {
     expect(
       lifecycleRow.match(/formatSubagentDisplayTitle\(\w+\.title \?\? "Subagent"\)/g),
     ).toHaveLength(2);
-    expect(messagesTimeline).toMatch(/<TimelineSystemDivider\s+label="Subagent of"/);
+    expect(messagesTimeline).toMatch(/<TimelineSystemDivider\s+label=\{[^}]*"Subagent of"\}/);
   });
 
   it("the Subcells' controls say Subcell, never subagent or agent", () => {
@@ -171,13 +171,15 @@ describe("Subcell words", () => {
     ).toEqual([SUBCELL.one, "Audit", "npm test"]);
 
     // The line over those waiting on the person.
-    expect(childThreadInputsTitle([{ hasPendingApprovals: false }])).toBe("Subcell needs input");
-    expect(
-      childThreadInputsTitle([{ hasPendingApprovals: true }, { hasPendingApprovals: true }]),
-    ).toBe("2 Subcells need approval");
-    expect(
-      childThreadInputsTitle([{ hasPendingApprovals: true }, { hasPendingApprovals: false }]),
-    ).toBe("2 Subcells need you");
+    const lineage = {
+      parentThreadId: null,
+      relationshipToParent: "subagent",
+      rootThreadId: ThreadId.make("root"),
+    } as const;
+    const waiting = (hasPendingApprovals: boolean) => ({ hasPendingApprovals, lineage });
+    expect(childThreadInputsTitle([waiting(false)])).toBe("Subcell needs input");
+    expect(childThreadInputsTitle([waiting(true), waiting(true)])).toBe("2 Subcells need approval");
+    expect(childThreadInputsTitle([waiting(true), waiting(false)])).toBe("2 Subcells need you");
   });
 
   it("a count of agents counts Subcells, those at work flying", () => {

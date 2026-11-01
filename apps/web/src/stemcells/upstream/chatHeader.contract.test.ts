@@ -19,7 +19,7 @@ describe("the line's contracts with upstream's chat header", () => {
   it("the header's title opens the thread menu, waits out a double-click, and renames through one commit rule", () => {
     expect(chatHeader).toContain("export function resolveRenameCommit(");
     expect(chatHeader).toMatch(
-      /useThreadActionMenu\(\{\s*threadRef: isServerThread \? activeThreadRef : null,\s*projectCwd: activeProjectCwd,\s*onStartRename: startRename,\s*canShareWithGuest,?\s*\}\)/,
+      /useThreadActionMenu\(\{\s*threadRef: isServerThread \? activeThreadRef : null,\s*projectCwd: activeProjectCwd,\s*onStartRename: startRename,\s*onFind: onFindInThread,\s*canShareWithGuest,?\s*\}\)/,
     );
     // `useCellThreadMenu` offers "Share with guest" by the same rule.
     expect(chatHeader).toContain(
@@ -81,7 +81,8 @@ describe("where the line says a Cell runs, as upstream's context strip says it",
 describe("the composer controls the ladder steps down", () => {
   it("the model picker's trigger and label, and the attach button, carry the marks the ladder hides them by", () => {
     expect(providerModelPicker).toContain('data-chat-provider-model-picker="true"');
-    expect(providerModelPicker).toContain('data-chat-provider-model-picker-label="true"');
+    expect(providerModelPicker).toContain('"data-chat-provider-model-picker-label": "true",');
+    expect(providerModelPicker).toContain("<span {...triggerTextProps}>{triggerText}</span>");
     expect(chatComposer).toContain('data-chat-composer-footer="true"');
     expect(attachmentStrip).toContain('aria-label="Attach files"');
     // The picker keeps a minimum width the narrowest rung lets go.

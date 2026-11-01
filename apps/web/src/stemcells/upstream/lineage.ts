@@ -13,7 +13,7 @@ import {
 } from "@t3tools/client-runtime/state/models";
 import { ProviderDriverKind } from "@t3tools/contracts";
 
-import { isSidebarSubagentThread } from "../../components/Sidebar.logic";
+import { isSidebarHiddenThread } from "../../components/Sidebar.logic";
 import { providerClients } from "../../components/settings/providerDriverMeta";
 import { useArchivedThreadSnapshots } from "../../lib/archivedThreadsState";
 import { useProjects, useThreadShells } from "../../state/entities";
@@ -67,7 +67,7 @@ function livesOf(
   const seen = new Set<string>();
   return [...open, ...archived].flatMap((shell: EnvironmentThreadShell): Life[] => {
     const key = `${shell.environmentId}:${shell.id}`;
-    if (seen.has(key) || isSidebarSubagentThread(shell)) return [];
+    if (seen.has(key) || isSidebarHiddenThread(shell)) return [];
     seen.add(key);
     const instanceId = resolveThreadProviderStack(shell).at(-1) ?? null;
     const listed = providers.get(shell.environmentId)?.find((p) => p.instanceId === instanceId);

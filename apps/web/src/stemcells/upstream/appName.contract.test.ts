@@ -24,7 +24,13 @@ describe("the app's name", () => {
   it("is what the sidebar's top-left reads", () => {
     // Both the visible mark and the probe that measures its width.
     expect(sidebarChromeSource.match(/<SidebarWordmark \/>/g)).toHaveLength(2);
-    expect(sidebarChromeSource).not.toMatch(/T3Wordmark|T3 Code/);
+    // Upstream's link reads "T3 Code home"; the build says ours.
+    const sidebarChrome = built(
+      "apps/web/src/components/sidebar/SidebarChrome.tsx",
+      sidebarChromeSource,
+    );
+    expect(sidebarChrome).not.toMatch(/T3Wordmark|T3 Code/);
+    expect(sidebarChrome).toContain(`aria-label="${APP_NAME} home"`);
   });
 
   it("titles a browser's window, before and after the app loads", () => {

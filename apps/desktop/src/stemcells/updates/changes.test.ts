@@ -1,7 +1,7 @@
+import { desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
 import { describe, expect, it } from "vite-plus/test";
 
 import { normalizeDesktopUpdateReleaseNotes } from "../../updates/releaseNotes.ts";
-import { resolveDefaultDesktopUpdateChannel } from "../../updates/updateChannels.ts";
 import { buildPercentOf, nightlyNotesOf, nightlyVersionOf, readChanges } from "./changes.ts";
 
 describe("an update's changes", () => {
@@ -56,11 +56,9 @@ describe("an update's changes", () => {
 
   it("files a main build under upstream's Nightly, and a release under its Stable", () => {
     expect(
-      resolveDefaultDesktopUpdateChannel(
-        nightlyVersionOf({ base: "0.1.1", day: "20261023", count: 7268 }),
-      ),
+      desktopUpdateChannelOf(nightlyVersionOf({ base: "0.1.1", day: "20261023", count: 7268 })),
     ).toBe("nightly");
-    expect(resolveDefaultDesktopUpdateChannel("0.2.0")).toBe("latest");
+    expect(desktopUpdateChannelOf("0.2.0")).toBe("latest");
   });
 });
 

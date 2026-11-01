@@ -34,7 +34,10 @@ describe("the header-less pane's contracts with upstream", () => {
     expect(chatView).toContain(
       "{!rightPanelControlsAtRoot && !rightPanelControlsInPanel ? panelLayoutControls : null}",
     );
-    expect(chatView).toContain("{rightPanelControlsAtRoot ? panelLayoutControls : null}");
+    // A side chat embedded in another chat's panel keeps none of its own.
+    expect(chatView).toContain(
+      "{rightPanelControlsAtRoot && !embedded ? panelLayoutControls : null}",
+    );
     // Maximize stays in the row while the right panel is closed, out of
     // reach; the … menu leaves out what is inert.
     expect(panelLayoutControls).toContain("inert={!props.rightPanelOpen}");

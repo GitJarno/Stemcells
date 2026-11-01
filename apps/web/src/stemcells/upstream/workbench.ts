@@ -148,6 +148,8 @@ export function surfaceName(
       return "Pull requests";
     case "device":
       return surface.title ?? surface.target?.name ?? "Device";
+    case "side-chat":
+      return "Side chat";
     case "preview":
       return browserName(surface.resourceId ? navStatusOf(surface.resourceId) : null);
   }

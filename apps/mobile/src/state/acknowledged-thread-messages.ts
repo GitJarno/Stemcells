@@ -1,50 +1,58 @@
+import * as Option from "effect/Option";
 import { Atom } from "effect/reactivity";
 import { appAtomRegistry } from "./atom-registry";
-import type { QueuedThreadMessage } from "./thread-outbox-model";
+import { threadHasCaughtUpTo } from "@t3tools/client-runtime/state/threads";
+import type { AcknowledgedThreadMessage, QueuedThreadMessage } from "./thread-outbox-model";
 import { environmentThreadDetails } from "./threads";
 
-// Bridges an acknowledged send until its thread echoes it; command receipts can precede messages.
-// A row ends at that echo, never later: bounded history windows drop old messages from the
-// projection, so a row still checked against it would come back and sit below newer replies.
-export const acknowledgedThreadMessagesAtom = Atom.make<ReadonlyArray<QueuedThreadMessage>>(
+// Keep acknowledged rows until the thread catches up; command receipts can precede messages.
+export const acknowledgedThreadMessagesAtom = Atom.make<ReadonlyArray<AcknowledgedThreadMessage>>(
   [],
 ).pipe(Atom.keepAlive);
 
-const stopWatchingEcho = new Map<string, () => void>();
-
-export function retainAcknowledgedThreadMessage(message: QueuedThreadMessage) {
-  if (isRetained(message)) return;
-  appAtomRegistry.set(acknowledgedThreadMessagesAtom, [
-    ...appAtomRegistry.get(acknowledgedThreadMessagesAtom),
-    message,
-  ]);
-  const threadAtom = environmentThreadDetails.threadAtom({
+// Peeks at a thread only when something already has it in the registry: reading
+// it through the registry would open a snapshot load and a live stream of its own.
+function isEchoedInMountedThread(message: AcknowledgedThreadMessage): boolean {
+  const stateAtom = environmentThreadDetails.stateAtom({
     environmentId: message.environmentId,
     threadId: message.threadId,
   });
-  const stop = appAtomRegistry.subscribe(
-    threadAtom,
-    (thread) => {
-      if (thread?.projection.messages.some((entry) => entry.id === message.messageId)) {
-        forgetAcknowledgedThreadMessage(message);
-      }
-    },
-    { immediate: true },
-  );
-  if (isRetained(message)) stopWatchingEcho.set(message.messageId, stop);
-  else stop();
+  const node = appAtomRegistry.getNodes().get(stateAtom);
+  if (node === undefined) return false;
+  const loaded: Option.Option<Atom.Type<typeof stateAtom>> = node.valueOption();
+  return Option.match(loaded, {
+    onNone: () => false,
+    onSome: (thread) =>
+      threadHasCaughtUpTo(message, {
+        sequence: thread.sequence,
+        messages: Option.getOrUndefined(thread.data)?.messages,
+      }),
+  });
 }
 
-function isRetained(message: QueuedThreadMessage): boolean {
-  return appAtomRegistry
-    .get(acknowledgedThreadMessagesAtom)
-    .some((entry) => entry.messageId === message.messageId);
+function writeAcknowledgedThreadMessages(
+  update: (
+    current: ReadonlyArray<AcknowledgedThreadMessage>,
+  ) => ReadonlyArray<AcknowledgedThreadMessage>,
+) {
+  const current = appAtomRegistry.get(acknowledgedThreadMessagesAtom);
+  const next = update(current).filter((entry) => !isEchoedInMountedThread(entry));
+  if (next.length === current.length && next.every((entry, index) => entry === current[index])) {
+    return;
+  }
+  appAtomRegistry.set(acknowledgedThreadMessagesAtom, next);
+}
+
+export function retainAcknowledgedThreadMessage(message: AcknowledgedThreadMessage) {
+  writeAcknowledgedThreadMessages((current) =>
+    current.some((entry) => entry.messageId === message.messageId)
+      ? current
+      : [...current, message],
+  );
 }
 
 export function forgetAcknowledgedThreadMessage(message: QueuedThreadMessage) {
-  stopWatchingEcho.get(message.messageId)?.();
-  stopWatchingEcho.delete(message.messageId);
-  const current = appAtomRegistry.get(acknowledgedThreadMessagesAtom);
-  const next = current.filter((entry) => entry.messageId !== message.messageId);
-  if (next.length !== current.length) appAtomRegistry.set(acknowledgedThreadMessagesAtom, next);
+  writeAcknowledgedThreadMessages((current) =>
+    current.filter((entry) => entry.messageId !== message.messageId),
+  );
 }

@@ -9,7 +9,7 @@ import {
   useChatShortcuts as useUpstreamChatShortcuts,
   type ChatShortcutCommands,
 } from "../../../components/chat/useChatShortcuts";
-import { ChatPanelHostContext } from "../chatPanel";
+import { ChatPanelHostContext } from "../chatPanelHost";
 
 export * from "../../../components/chat/useChatShortcuts";
 
