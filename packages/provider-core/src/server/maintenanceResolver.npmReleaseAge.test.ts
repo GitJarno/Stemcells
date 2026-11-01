@@ -83,7 +83,10 @@ function npmSpawner(
         kill: () => Effect.void,
         unref: Effect.succeed(Effect.void),
         stdin: Sink.drain,
-        stdout: Stream.encodeText(Stream.make(outdated ? answer.outdated : answer.ls)),
+        stdout: Stream.encodeText(
+          // `npm view` is upstream's own lookup, which it falls back to: the registry's tag.
+          Stream.make(outdated ? answer.outdated : args[0] === "view" ? '"9.9.9"' : answer.ls),
+        ),
         stderr: Stream.empty,
         all: Stream.empty,
         getInputFd: () => Sink.drain,
@@ -123,7 +126,8 @@ it.layer(NodeServices.layer)("npm-global installs under min-release-age", (it) =
         const calls: Array<ReadonlyArray<string>> = [];
         const capabilities = yield* resolveProviderMaintenanceCapabilitiesEffect(resolver, {
           binaryPath: link,
-          env: { PATH: "" },
+          // The provider's own PATH finds npm, as upstream's lookups take it.
+          env: { PATH: NodePath.join(prefix, "bin") },
         }).pipe(
           Effect.provideService(HostProcess.Environment, { PATH: NodePath.join(prefix, "bin") }),
           Effect.provideService(

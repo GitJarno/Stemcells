@@ -208,9 +208,8 @@ it.layer(
   it.effect.each([
     { install: "native", stdout: '"1.2.0"', exitCode: 0, latest: "1.2.0" },
     { install: "manual", stdout: '["1.2.0"]', exitCode: 0, latest: "1.2.0" },
-    { install: "npm", stdout: '"1.2.0"', exitCode: 0, latest: "1.2.0" },
+    // An npm install asks npm itself first: `maintenanceResolver.npmReleaseAge.test.ts`.
     { install: "native", stdout: "", exitCode: 1, latest: null },
-    { install: "npm", stdout: '"1.2.0"', exitCode: 1, latest: null },
     { install: "native", stdout: "not json", exitCode: 0, latest: null },
     { install: "manual", stdout: '["1.2.0", "1.3.0"]', exitCode: 0, latest: null },
     { install: "manual", stdout: '""', exitCode: 0, latest: null },
