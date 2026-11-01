@@ -21,7 +21,13 @@ describe("the line's contracts with upstream's chat header", () => {
     expect(chatHeader).toMatch(
       /useThreadActionMenu\(\{\s*threadRef: isServerThread \? activeThreadRef : null,\s*projectCwd: activeProjectCwd,\s*onStartRename: startRename,\s*onFind: onFindInThread,\s*canShareWithGuest,?\s*\}\)/,
     );
-    // `useCellThreadMenu` offers "Share with guest" by the same rule.
+    // `useCellThreadMenu` offers "Find in thread" and "Share with guest" by the same rules.
+    expect(chatView).toContain(
+      "const threadFindEnabled = isServerThread && serverConfig?.threadFind === true;",
+    );
+    expect(chatView).toContain(
+      "{...(threadFindEnabled ? { onFindInThread: openThreadFindStable } : {})}",
+    );
     expect(chatHeader).toContain(
       "const canShareWithGuest = useAtomValue(canShareWithGuestAtom(activeThreadEnvironmentId));",
     );
