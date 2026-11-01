@@ -146,8 +146,7 @@ your computer:
 An answer leaves at once, and a line at the foot says what you did, with
 **Undo**; it's sent when the line goes. The machine and project pickers
 narrow the lists, but never hide an ask: Input counts them all, and its
-last line says where the rest are. Tap it to see them. A computer that runs
-T3 Code rather than Stemcells keeps the phone's older tabs.
+last line says where the rest are. Tap it to see them.
 
 ### Notifications on your phone
 
