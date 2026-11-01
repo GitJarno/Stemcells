@@ -1,6 +1,6 @@
-// How far night has fallen over the home's header, kept here: each tab's page mounts the header
-// again (`AskiHome.tsx`), so a tab change turns the night from wherever it stands, on the UI
-// thread (`nightfall.ts`). The first home to show takes the night as it stands, unanimated.
+// How far night has fallen over the home's header, kept here, so a tab change turns the night
+// from wherever it stands, on the UI thread (`nightfall.ts`). The first home to show takes the
+// night as it stands, unanimated.
 
 import { useLayoutEffect, useSyncExternalStore } from "react";
 import {

@@ -1,7 +1,6 @@
 // A page of the home that isn't T3's list: a tab with no Cells in it, or the asks of Input
-// (`line/LineHome.tsx`). It rests where T3's list does on iOS, its top under the header, so Aski
-// and the rail stand at one height on every tab. A reply typed into an ask scrolls clear of the
-// keyboard.
+// (`line/LineHome.tsx`). Its top rests where T3's list's does on iOS, under Aski's room
+// (`AskiHome.tsx`). A reply typed into an ask scrolls clear of the keyboard.
 
 import { use, type ReactNode } from "react";
 import { View } from "react-native";
@@ -11,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "../upstream/cells";
 import { NativePrimaryColumnContext, useWorkspaceTabs } from "../upstream/home";
 import { NativeScrollViewMarker } from "../upstream/substitutes/NativeScrollViewMarker";
-import { AskiHome } from "./AskiHome";
+import { HeaderSpace } from "./AskiHome";
 
 export function HomePage(props: { readonly children: ReactNode }) {
   const insets = useSafeAreaInsets();
@@ -32,7 +31,7 @@ export function HomePage(props: { readonly children: ReactNode }) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <AskiHome />
+          <HeaderSpace />
           {props.children}
         </KeyboardAwareScrollView>
       </NativeScrollViewMarker>

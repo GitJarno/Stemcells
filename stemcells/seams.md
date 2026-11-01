@@ -643,17 +643,19 @@ library's dependency (above); the rest are substitutes:
   segment of the Cells' line (`line/LineHome.tsx`, `stemcells/tasks/
   phone-line.md`); a machine that hasn't answered, or has no line, stands
   its Cells where their records do (`stemcells/tasks/phone-one-home.md`);
-  everything the list does stays T3's. Each segment is a list of its own that opens at its
-  top: the list is handed a workspace whose Threads offset stays 0, as T3's
-  one offset per workspace tab opened each segment where another was
-  scrolled. In the iOS workspace the header's picks narrow it,
+  everything the list does stays T3's. Each segment is a list of its own, all
+  kept mounted under one header that never mounts again, so UIKit's segment
+  slides whole and a switch only shows a list (`home/StagePages.tsx`); each
+  opens at its top: the list is handed a workspace whose Threads offset stays
+  0, as T3's one offset per workspace tab opened each segment where another
+  was scrolled. In the iOS workspace the header's picks narrow it,
   any number of projects and machines (`home/picks.ts`, kept on the phone),
   and T3's own single pick is handed to its list unset. Input is the asks themselves, sent as T3's own
   thread commands (`upstream/needs.ts`, which takes the web's
   `proposedPlan.ts` for a plan's build), and an answer's undo line stands
   in T3's notice, one at a time. The list's header (`ThreadListFilters`,
-  substituted) puts Aski, its line and the tabs over the list, reading the
-  tabs from context; on iOS T3's filter chips leave it for the workspace
+  substituted) keeps the room Aski, its line and the tabs stand in over the
+  list, and takes the taps on Aski and its line; on iOS T3's filter chips leave it for the workspace
   header's top right, where the seam in `WorkspaceToolbar.ios.tsx` hands
   its trailing items a projects menu and, with two machines or more, a
   machines menu, each staying open while you tick (`home/scope.tsx`). Where the list has no header (Android, outside the

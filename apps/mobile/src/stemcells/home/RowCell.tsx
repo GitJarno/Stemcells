@@ -29,7 +29,7 @@ import {
   ProjectFavicon,
 } from "../upstream/home";
 import { sendCopy } from "./copies";
-import { HomeCellsHeld, HomeInFront, HomeTabsContext, useMinute } from "./state";
+import { HomeCellsHeld, HomeInFront, HomeStageContext, useMinute } from "./state";
 import { isAway } from "./tabs";
 
 function Figure(props: { readonly thread: EnvironmentThreadShell; readonly points: number }) {
@@ -81,7 +81,7 @@ export interface CardMarks {
 
 /** Whether T3's list draws its shelves' headers: not on the home's tabs, which are the shelves. */
 export function useShelfHeadersShown(): boolean {
-  return use(HomeTabsContext) === null;
+  return use(HomeStageContext) === null;
 }
 
 /**
@@ -89,7 +89,7 @@ export function useShelfHeadersShown(): boolean {
  * says so (`glow/CardLight.tsx`), so its "Working 5m" would only say it twice.
  */
 export function useSaysNothing(status: string): boolean {
-  return use(HomeTabsContext)?.tab === "working" && (status === "working" || status === "waiting");
+  return use(HomeStageContext) === "working" && (status === "working" || status === "waiting");
 }
 
 /** A card row's content with its Cell beside it, and its machine and pull request in its bottom right. */

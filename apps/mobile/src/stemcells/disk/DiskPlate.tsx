@@ -47,21 +47,6 @@ export function DiskPlates() {
   ));
 }
 
-/**
- * Reads each machine's disk while the home is up. The plates mount again with each tab's list,
- * and with no reader between two lists, a machine's figures were let go and read again.
- */
-export function DiskReaders() {
-  return useConnected().map((machine) => (
-    <DiskReader key={machine.environmentId} environmentId={machine.environmentId} />
-  ));
-}
-
-function DiskReader(props: { readonly environmentId: string }) {
-  useMachineDisk(props.environmentId);
-  return null;
-}
-
 function DiskPlate(props: {
   readonly environmentId: string;
   /** Its machine's name, even when it's the only one: the phone is never it. */

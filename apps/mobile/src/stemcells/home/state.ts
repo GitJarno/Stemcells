@@ -3,6 +3,7 @@
 // one, the home opens where `opens` says, and holds it from there.
 
 import { createContext, useEffect, useSyncExternalStore } from "react";
+import type { AnimatedRef, SharedValue } from "react-native-reanimated";
 
 import type { TabCounts } from "./tabs";
 
@@ -29,6 +30,28 @@ export const NoHeaderBand = createContext(false);
 export const HomeTabsContext = createContext<HomeTabs | null>(null);
 
 /**
+ * The stage a list of the home's tabs shows, set around each stage's own list: every stage's
+ * list stays mounted, so what a row draws for its tab goes by its own list, not the tab chosen.
+ */
+export const HomeStageContext = createContext<string | null>(null);
+
+/** One stage's list as the home switches between them (`StagePages.tsx`). */
+export interface StagePage {
+  /** The stage in front: it takes touches and the status bar's tap to the top. */
+  readonly active: boolean;
+  /** Its scroll view, for the switch to scroll on the UI thread. */
+  readonly ref: AnimatedRef;
+  /** How far it stands scrolled past its rest. */
+  readonly scrolled: SharedValue<number>;
+  /** Its scroll view's offset at rest. */
+  readonly rest: SharedValue<number>;
+  /** Past its rest, tall enough to scroll the shared header out of sight: a short list keeps it put too. */
+  readonly minHeight: number;
+}
+
+export const StagePageContext = createContext<StagePage | null>(null);
+
+/**
  * Whether the home is the screen in front. T3's home stays mounted under a
  * chat and keeps drawing its rows; a Cell forms only where it's seen
  * (`cell/forming.ts`), so one Aski starts meanwhile forms on the way back.
@@ -43,24 +66,14 @@ export const HomeInFront = createContext(false);
  */
 export const HomeCellsHeld = createContext(false);
 
-/**
- * One set of tabs' choice: the person's, else where the home opens, held once known. A choice
- * `after` some ms shows its page then, the last one made by then.
- */
+/** One set of tabs' choice: the person's, else where the home opens, held once known. */
 export function tabChoice<Tab extends string>() {
   let chosen: Tab | null = null;
-  let landing: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
-  const show = (tab: Tab) => {
+  const choose = (tab: Tab) => {
     if (chosen === tab) return;
     chosen = tab;
     for (const listener of listeners) listener();
-  };
-  const choose = (tab: Tab, after = 0) => {
-    clearTimeout(landing);
-    landing = undefined;
-    if (after > 0) landing = setTimeout(() => choose(tab), after);
-    else show(tab);
   };
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
@@ -68,18 +81,41 @@ export function tabChoice<Tab extends string>() {
   };
   return {
     choose,
-    /** The tab whose page shows, outside React. */
-    shown: () => chosen,
     /** The tab shown: the person's, else `opens`, chosen for good once `known`. */
     useTab(opens: Tab, known: boolean): Tab {
       const tab = useSyncExternalStore(subscribe, () => chosen);
       // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Choose the opening tab in the shared tab store once the counts are known.
       useEffect(() => {
-        if (known && chosen === null) show(opens);
+        if (known && chosen === null) choose(opens);
       }, [known, opens]);
       return tab ?? opens;
     },
   };
+}
+
+/**
+ * How far a stage's list stands scrolled past its rest as it shows, so the header shared over the
+ * lists stays put: where the last one stood while any of the header shows (never pulled past the
+ * top), else its own place, the header just gone.
+ */
+export function carriedOffset(from: number, own: number, headerEnd: number): number {
+  "worklet";
+  return from < headerEnd ? Math.max(0, from) : Math.max(headerEnd, own);
+}
+
+/**
+ * Where a stage's list starts across as it is chosen: from the side it travels from, `shift`
+ * away, unless it still shows (a tap back mid-switch), when it carries on from where it stands.
+ */
+export function enteringX(
+  opacity: number,
+  x: number,
+  from: number,
+  to: number,
+  shift: number,
+): number {
+  "worklet";
+  return opacity > 0 ? x : Math.sign(to - from) * shift;
 }
 
 let minute = new Date().toISOString();
