@@ -72,7 +72,7 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
         {about === null ? null : (
           <View className="min-w-0 flex-row items-center gap-1.5">
             {project === null ? null : <ProjectMark project={project} size={MARK} />}
-            <AppText className="min-w-0 shrink text-xs text-foreground-muted" numberOfLines={1}>
+            <AppText className="min-w-0 shrink text-xs text-foreground" numberOfLines={1}>
               {about}
             </AppText>
           </View>
