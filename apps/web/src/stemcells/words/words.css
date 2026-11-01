@@ -332,12 +332,6 @@
   opacity: 1;
 }
 
-/* The readout says each Cell's effort, so the effort picker makes way. */
-[data-chat-composer-stack][data-stemcells-cells]
-  [data-resting-block]:has([data-composer-shortcut~="composer.effort"]) {
-  display: none;
-}
-
 /* Send carries the count, so Enter visibly starts 3. */
 button[type="submit"][data-stemcells-cells] {
   width: auto;

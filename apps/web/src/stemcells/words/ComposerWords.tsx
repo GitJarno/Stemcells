@@ -340,9 +340,8 @@ export function ComposerWords(props: { readonly anchor: string }) {
     });
   });
 
-  // The composer says how many Cells Send starts, and the effort picker
-  // makes way for the readout (`words.css`). Upstream re-renders its controls,
-  // so every render marks them again; leaving takes the marks off.
+  // Send says how many Cells it starts (`words.css`). Upstream re-renders its
+  // controls, so every render marks them again; leaving takes the marks off.
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mark upstream's composer controls with the readout after each render, as upstream redraws them.
   useEffect(() => {
     const view = joined.current?.editor.view;
@@ -966,20 +965,17 @@ function nextPaint(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
 }
 
-/** Marks the composer and its Send button with the Cells it starts (`words.css`). */
+/** Marks the composer's Send button with the Cells it starts (`words.css`). */
 function markComposer(editor: HTMLElement, readout: ReadoutData | null): void {
   const stack = editor.closest<HTMLElement>('[data-chat-composer-stack="true"]');
-  if (!stack) return;
-  const send = stack.querySelector<HTMLElement>(
+  const send = stack?.querySelector<HTMLElement>(
     '[data-chat-composer-footer="true"] button[type="submit"]',
   );
-  for (const element of [stack, send]) {
-    if (!element) continue;
-    if (readout) element.setAttribute("data-stemcells-cells", String(readout.total));
-    else element.removeAttribute("data-stemcells-cells");
-  }
-  if (readout?.over || readout?.held) send?.setAttribute("data-stemcells-over", "");
-  else send?.removeAttribute("data-stemcells-over");
+  if (!send) return;
+  if (readout) send.setAttribute("data-stemcells-cells", String(readout.total));
+  else send.removeAttribute("data-stemcells-cells");
+  if (readout?.over || readout?.held) send.setAttribute("data-stemcells-over", "");
+  else send.removeAttribute("data-stemcells-over");
 }
 
 /** The tallest a menu grows before it scrolls (18rem). */
