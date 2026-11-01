@@ -58,6 +58,7 @@ import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
+import * as UpstreamSideChatPane from "../../../components/chat/SideChatPane";
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
@@ -117,6 +118,7 @@ import * as OurVisibleAnimation from "./visibleAnimation";
 import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
 import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
+import * as OurSideChatPane from "./SideChatPane";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 import * as OurUserMessageRow from "./TimelineUserMessageRow";
@@ -795,6 +797,13 @@ const CASES: Readonly<Record<string, Case>> = {
         "./chat/usePasteToFocusComposer",
         ["usePasteToFocusComposer"],
       ],
+    },
+  },
+  "apps/web/src/components/chat/SideChatPane.tsx": {
+    upstream: UpstreamSideChatPane,
+    substitute: OurSideChatPane satisfies typeof UpstreamSideChatPane,
+    importers: {
+      "apps/web/src/components/chat/RightPanelSurfaceContent.tsx": ["./SideChatPane", ["default"]],
     },
   },
   "apps/web/src/hooks/useThreadActions.ts": {
