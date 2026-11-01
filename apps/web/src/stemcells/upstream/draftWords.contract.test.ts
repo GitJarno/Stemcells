@@ -104,7 +104,7 @@ describe("the words' contracts with upstream's drafts", () => {
     // a host of its own when it rests (`rowHoldsWider`).
     expect(chatComposer).toContain("useRestingComposerControlsLayout(null, true)");
     expect(chatComposer).toContain('data-chat-composer-resting-controls="true"');
-    // The effort picker that makes way for it is a block of its own.
+    // The controls beside it rest in blocks of their own, which it refits beside.
     expect(composerControlsBar).toContain("data-resting-block={def.id}");
   });
 
