@@ -32,6 +32,15 @@ describe("a new chat on the phone follows its words to a project", () => {
     expect(wordsStep(picked.text!, places, "mac:hd", picked.taken).move).toBeNull();
   });
 
+  it("keeps a casual chat picked by hand, which no name says, over the name", () => {
+    const named = wordsStep("fix the header in Harbor", places, "mac:atlas", NOTHING_TAKEN);
+    const casual = wordsStep("fix the header in Harbor", places, "mac:scratch", named.taken);
+    expect(casual).toMatchObject({ move: null, text: null });
+    const typed = wordsStep("fix the header in Harbor now", places, "mac:scratch", casual.taken);
+    expect(typed.move).toBeNull();
+    expect(wordsStep("fix the header", places, "mac:scratch", typed.taken).move).toBeNull();
+  });
+
   it("leaves a name the sentence only mentions", () => {
     expect(
       wordsStep("port the parser from Atlas", places, "mac:harbor", NOTHING_TAKEN).move,
