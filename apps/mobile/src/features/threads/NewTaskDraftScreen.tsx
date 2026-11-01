@@ -1,5 +1,6 @@
 import { DraftEnvironmentControl } from "./DraftEnvironmentControl";
 import { AskiStanding } from "../../stemcells/aski/AskiStanding";
+import { useWordsPlace } from "../../stemcells/words/useWordsPlace";
 import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { DraftThreadHeader } from "./DraftThreadHeader";
@@ -351,6 +352,7 @@ export function NewTaskDraftScreen(props: {
   const isImportingContext = flow.draftKey ? contextImports[flow.draftKey] === true : false;
   const isComposerInteractionLocked =
     isIncomingShareTransferPending || flow.submitting || isImportingContext;
+  useWordsPlace(flow, isComposerInteractionLocked);
   const { environments, selectedEnvironmentId, switchEnvironment, switchingToEnvironmentId } = flow;
   const cycleEnvironment = () => {
     if (isComposerInteractionLocked) return true;
