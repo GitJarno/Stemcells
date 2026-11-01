@@ -5,7 +5,7 @@
 import { use } from "react";
 
 import * as Upstream from "../../../features/threads/use-thread-list-v2-shelf-preferences";
-import { HomeTabsContext } from "../../home/state";
+import { HomeStageContext } from "../../home/state";
 
 export * from "../../../features/threads/use-thread-list-v2-shelf-preferences";
 
@@ -15,13 +15,13 @@ export function useThreadListV2ShelfPreferences(): ReturnType<
   typeof Upstream.useThreadListV2ShelfPreferences
 > {
   const kept = Upstream.useThreadListV2ShelfPreferences();
-  const home = use(HomeTabsContext);
-  if (home === null) return kept;
+  const stage = use(HomeStageContext);
+  if (stage === null) return kept;
   return {
     ...kept,
     workingShelfExpanded: true,
     // Open, it reads older settled Cells page by page: on Flying, "Loading" and a drifting count.
-    settledShelfExpanded: home.night,
+    settledShelfExpanded: stage === "settled",
     snoozedShelfExpanded: true,
     toggleWorkingShelf: noop,
     toggleSettledShelf: noop,

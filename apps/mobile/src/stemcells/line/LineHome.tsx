@@ -1,15 +1,14 @@
 // The phone's home on the Cells' line (stemcells/tasks/phone-line.md), under Aski, narrowed by
 // the header's picks. Input is the asks themselves, one open at a time; Flying, Landed and
-// Settled hand T3's list their Cells, a list each, so its rows and swipes stay T3's. Asks never
+// Settled hand T3's list their Cells, a list each, all mounted (`home/StagePages.tsx`). Asks never
 // hide: Input counts every one, and says where those the picks leave out are.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
 
-import { DiskReaders } from "../disk/DiskPlate";
-import { CopyLayer } from "../home/CopyLayer";
 import { useAppBadge } from "../push/badge";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
+import { StagePages, useStagePages } from "../home/StagePages";
 import { HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
 import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
@@ -24,11 +23,12 @@ import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
 
 const segments = tabChoice<LineStage>();
-/**
- * UIKit slides the lit segment itself, and each segment's page mounts its own control: a page
- * that swaps in mid-slide cuts the slide wherever its render got to. The page follows the light.
- */
-const SLIDE_MS = 300;
+const STAGES = [
+  "needs",
+  "working",
+  "landed",
+  "settled",
+] as const satisfies ReadonlyArray<LineStage>;
 
 const EMPTY: Readonly<Record<Exclude<LineStage, "needs">, string>> = {
   working: "No Cells flying.",
@@ -78,6 +78,7 @@ export function LineHome(props: {
   const onPhone = countsOf(line, props.inView);
   const counts = { ...onPhone, settled: onPhone.settled + props.olderSettled };
   const tab = segments.useTab(opensOn(counts), props.known);
+  const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
   useAppBadge(props.known ? counts.needs : null);
   const openChat = useHomeThreadSelection();
@@ -140,13 +141,36 @@ export function LineHome(props: {
   };
 
   // T3's list narrows to the pickers too; handed only those, an empty segment says so in ours.
-  const shown = (
-    tab === "settled" ? [...line.settled, ...line.snoozed] : tab === "needs" ? [] : line[tab]
-  ).filter(props.inView);
-  const listed =
-    shown.length > 0 ||
-    (tab === "working" && props.pending > 0) ||
-    (tab === "settled" && props.olderSettled > 0);
+  const page = (stage: LineStage) => {
+    if (props.connecting) return <EmptyTab words="Connecting…" />;
+    if (stage === "needs")
+      return (
+        <NeedsYou
+          asks={line.asks.filter((ask) => props.inView({ ...ask, projectId: ask.need.projectId }))}
+          unread={line.unread.filter(props.inView)}
+          onOpenChat={openChat}
+          waiting={counts.needs}
+          elsewhere={elsewhereWords(elsewhereOf(line.asks, props.inView, props.projects))}
+          narrowedTo={props.narrowedTo}
+          onShowAll={props.onShowAll}
+          now={Date.parse(props.now)}
+          cellOf={cellOf}
+          actsFor={actsFor}
+        />
+      );
+    const shown = (stage === "settled" ? [...line.settled, ...line.snoozed] : line[stage]).filter(
+      props.inView,
+    );
+    const listed =
+      shown.length > 0 ||
+      (stage === "working" && props.pending > 0) ||
+      (stage === "settled" && props.olderSettled > 0);
+    return listed ? (
+      props.renderList(shown, stage === "working")
+    ) : (
+      <EmptyTab words={EMPTY[stage]} />
+    );
+  };
   const greet = {
     input: counts.needs,
     working: counts.working,
@@ -158,39 +182,17 @@ export function LineHome(props: {
     options: SEGMENTS.map((segment) => ({ ...segment, count: counts[segment.id] })),
     counts: greet,
     night: tab === "settled",
-    choose: (id: string) => segments.choose(id as LineStage, SLIDE_MS),
+    choose: (id: string) => {
+      stages.show(id as LineStage);
+      segments.choose(id as LineStage);
+    },
     environmentId: props.environmentId,
   };
   return (
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>
-        {props.connecting ? (
-          <EmptyTab words="Connecting…" />
-        ) : tab === "needs" ? (
-          <NeedsYou
-            asks={line.asks.filter((ask) =>
-              props.inView({ ...ask, projectId: ask.need.projectId }),
-            )}
-            unread={line.unread.filter(props.inView)}
-            onOpenChat={openChat}
-            waiting={counts.needs}
-            elsewhere={elsewhereWords(elsewhereOf(line.asks, props.inView, props.projects))}
-            narrowedTo={props.narrowedTo}
-            onShowAll={props.onShowAll}
-            now={Date.parse(props.now)}
-            cellOf={cellOf}
-            actsFor={actsFor}
-          />
-        ) : listed ? (
-          <View key={tab} style={{ flex: 1 }}>
-            {props.renderList(shown, tab === "working")}
-            <CopyLayer />
-          </View>
-        ) : (
-          <EmptyTab words={EMPTY[tab]} />
-        )}
+        <StagePages home={stages} tab={tab} night={home.night} render={page} />
         <UndoLine held={held} />
-        <DiskReaders />
       </View>
     </HomeTabsContext>
   );

@@ -7,7 +7,7 @@ import { ActivityIndicator, Pressable, View } from "react-native";
 
 import { readsNextPage } from "../line/line";
 import { AppText } from "../upstream/cells";
-import { HomeTabsContext } from "./state";
+import { HomeStageContext } from "./state";
 
 /** A screen ahead of the end, so the next page is mostly in before the person gets there. */
 const SCREENS_AHEAD = 1;
@@ -23,7 +23,7 @@ export function useSettledPages(input: {
   };
   readonly showMore: () => void;
 }) {
-  if (use(HomeTabsContext) === null) return {};
+  if (use(HomeStageContext) === null) return {};
   const { hidden, shelf } = input;
   return {
     ListFooterComponent:

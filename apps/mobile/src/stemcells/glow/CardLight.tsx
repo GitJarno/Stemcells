@@ -4,7 +4,7 @@ import { use } from "react";
 import { useResolveClassNames } from "uniwind";
 
 import { useDriverOf } from "../cell/ThreadCell";
-import { HomeInFront, HomeTabsContext } from "../home/state";
+import { HomeInFront, HomeStageContext } from "../home/state";
 import { TONES } from "../tokens";
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import { rgbOf } from "./colour";
@@ -28,7 +28,7 @@ const FILL = {
 
 /** The card's light, on the home's Flying tab only; anywhere else, nothing. */
 export function CardLight(props: { readonly thread: EnvironmentThreadShell }) {
-  const flying = use(HomeTabsContext)?.tab === "working";
+  const flying = use(HomeStageContext) === "working";
   return flying ? <Light thread={props.thread} /> : null;
 }
 
