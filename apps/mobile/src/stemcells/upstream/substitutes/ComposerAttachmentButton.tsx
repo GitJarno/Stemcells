@@ -11,6 +11,10 @@ import { hasLibrary } from "../../attach/library";
 
 export * from "../../../features/threads/ComposerAttachmentButton";
 
+/** The card opens by then even if the keyboard never says it left, ms: a + that never answers is worse. */
+const KEYBOARD_GONE_BY = 600;
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 export function ComposerAttachmentButton(
   props: Parameters<typeof Upstream.ComposerAttachmentButton>[0],
 ) {
@@ -22,9 +26,10 @@ export function ComposerAttachmentButton(
         {...props}
         supportsFiles={false}
         onPickMedia={async () => {
-          // A keyboard left up hides the card's foot (Photos, Files, Add N). React Native's
-          // Keyboard.dismiss blurs only its own TextInputs; T3's composer is a native view.
-          void KeyboardController.dismiss();
+          // A keyboard still up, or still leaving, as the card rises hides its foot (Photos,
+          // Files, Add N), so the card waits until it's down. React Native's Keyboard.dismiss
+          // blurs only its own TextInputs; T3's composer is a native view.
+          await Promise.race([KeyboardController.dismiss(), wait(KEYBOARD_GONE_BY)]);
           setOpen(true);
         }}
       />
