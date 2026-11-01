@@ -2,8 +2,8 @@
 // draws no band under the header (iOS 27's `automatic` edge is a hard band). Where we take the
 // band away (the home, a chat's feed), the page blurs at the edges (`edge/Veil.ios.tsx`): under
 // the header, and on the home over the tab bar.
-import { cloneElement, isValidElement, use, type ComponentProps } from "react";
-import type { ScrollViewProps } from "react-native";
+import { cloneElement, isValidElement, use, useMemo, type ComponentProps, type Ref } from "react";
+import type { ScrollViewInstance, ScrollViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
@@ -22,6 +22,20 @@ const HEADER_FADE = 76;
 /** What fades over the tab bar, past the home indicator. */
 const TAB_BAR_FADE = 72;
 
+/** The scroll views put to their rest once, as each mounts. */
+const rested = new WeakSet<ScrollViewInstance>();
+
+/** A ref that hands the scroll view on to its own, and scrolls it to `top` as it mounts. */
+function restsOnMount(own: Ref<ScrollViewInstance> | undefined, top: number) {
+  return (node: ScrollViewInstance | null) => {
+    if (typeof own === "function") own(node);
+    else if (own) own.current = node;
+    if (node === null || rested.has(node)) return;
+    rested.add(node);
+    node.scrollTo({ y: -top, animated: false });
+  };
+}
+
 export function NativeScrollViewMarker(
   props: ComponentProps<typeof Upstream.NativeScrollViewMarker>,
 ) {
@@ -33,11 +47,26 @@ export function NativeScrollViewMarker(
   const insets = useSafeAreaInsets();
   const ground = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
   const effects = noBand ? NO_HEADER_BAND : (props.scrollEdgeEffects ?? fromScreen);
+  const child = isValidElement<ScrollViewProps & { readonly ref?: Ref<ScrollViewInstance> }>(
+    props.children,
+  )
+    ? props.children
+    : null;
+  // A segment's list opens at its rest, Aski under the header, at minus the safe area. T3's scroll
+  // there runs after the first frame, which UIKit's `automatic` inset draws a header lower: Aski
+  // dropped and came back up on a switch. Queued as the list mounts, the scroll lands with it.
+  const own = child?.props.ref;
+  const restOnMount = useMemo(() => restsOnMount(own, insets.top), [own, insets.top]);
   // React Native stops a scroll at the view's own inset, 0 under UIKit's `automatic` one: T3's
   // list, put back to its rest, stood with Aski under the header (stemcells/tasks/phone-home-still.md).
   const children =
-    noBand && isValidElement<ScrollViewProps>(props.children)
-      ? cloneElement(props.children, { scrollToOverflowEnabled: true })
+    noBand && child !== null
+      ? cloneElement(child, {
+          scrollToOverflowEnabled: true,
+          ...(home !== null && child.props.contentInsetAdjustmentBehavior === "automatic"
+            ? { ref: restOnMount }
+            : {}),
+        })
       : props.children;
   const marker = (
     <Upstream.NativeScrollViewMarker {...props} scrollEdgeEffects={effects}>
