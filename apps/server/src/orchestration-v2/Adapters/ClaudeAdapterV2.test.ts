@@ -6740,8 +6740,8 @@ describe("ClaudeAdapterV2 background wake turns", () => {
   it.effect.each([
     { autoCompactWindow: "", model: "claude-sonnet-4-6", threshold: undefined },
     { autoCompactWindow: "150000", model: "claude-sonnet-4-6", threshold: 117_000 },
-    { autoCompactWindow: "200000", model: "claude-sonnet-4-6", threshold: undefined },
-    { autoCompactWindow: "650000", model: "claude-sonnet-4-6", threshold: undefined },
+    { autoCompactWindow: "200000", model: "claude-sonnet-4-6", threshold: 167_000 },
+    { autoCompactWindow: "650000", model: "claude-sonnet-4-6", threshold: 167_000 },
     { autoCompactWindow: "650000", model: "uncatalogued-model", threshold: 617_000 },
   ])(
     "ignores stale snapshots after compaction and reports threshold $autoCompactWindow for $model",
