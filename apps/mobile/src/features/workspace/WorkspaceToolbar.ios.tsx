@@ -19,6 +19,7 @@ import { useWorkspaceTabs } from "./WorkspaceTabsContext";
 import { useCompactWorkspaceTabs, useSidebarWorkspaceTabs } from "./useSystemWorkspaceTabBar";
 import { WorkspaceTabToolbarButtons } from "./WorkspaceSectionToolbar";
 import { useHomeScopeItems } from "../../stemcells/home/scope";
+import { closesOnLeave } from "../../stemcells/home/searchOnLeave";
 
 const SEARCH_LABELS = {
   threads: "Search threads",
@@ -141,7 +142,10 @@ export function WorkspaceToolbar(props: {
     <>
       <NativeStackScreenOptions
         optionsVersion={[selectedTab, tab.searchMode]}
-        listeners={{ transitionEnd: restoreSearch }}
+        listeners={{
+          transitionEnd: restoreSearch,
+          blur: () => closesOnLeave(tab) && cancelSearch(),
+        }}
         options={{
           // Without Liquid Glass, Settings keeps its search field out instead of a search button,
           // which would take the header's trailing items from the scope filter.
