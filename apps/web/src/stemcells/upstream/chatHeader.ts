@@ -4,7 +4,7 @@
  * upstream's own code or its header ported as is; `chatHeader.contract.test.ts` pins it.
  */
 import { useAtomValue } from "@effect/atom-react";
-import { scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { scopedThreadKey, scopeProjectRef } from "@t3tools/client-runtime/environment";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
@@ -24,6 +24,7 @@ import {
 } from "../../components/BranchToolbar.logic";
 import { resolveRenameCommit } from "../../components/chat/ChatHeader";
 import { canShareWithGuestAtom } from "../../components/chat/guestShareAvailability";
+import { openThreadFind } from "../../components/chat/threadFindStore";
 import type { ProjectFaviconProject } from "../../components/ProjectFavicon";
 import { isTrailingDoubleClick } from "../../components/Sidebar.logic";
 import { toastManager } from "../../components/ui/toast";
@@ -32,6 +33,7 @@ import { useNewThreadHandler } from "../../hooks/useHandleNewThread";
 import { useClientSettings } from "../../hooks/useSettings";
 import { useThreadActionMenu } from "../../hooks/useThreadActionMenu";
 import { useProject, useQuietThreadShell } from "../../state/entities";
+import { serverEnvironment } from "../../state/server";
 import { readEnvironmentScope, useEnvironmentScope } from "../../state/session";
 import { threadEnvironment } from "../../state/threads";
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
@@ -96,6 +98,7 @@ function useCellRename(cell: CellRef | null) {
 }
 
 const NO_CHAT = Atom.make(false);
+const NO_CONFIG = Atom.make(null);
 
 /**
  * The chat's thread menu and rename, as upstream's header gives them from
@@ -113,6 +116,11 @@ export function useCellThreadMenu(cell: CellRef | null) {
   const canShareWithGuest = useAtomValue(
     threadRef ? canShareWithGuestAtom(threadRef.environmentId) : NO_CHAT,
   );
+  // "Find in thread", where upstream's header offers it: a sent chat on a server that finds.
+  const serverConfig = useAtomValue(
+    threadRef ? serverEnvironment.configValueAtom(threadRef.environmentId) : NO_CONFIG,
+  );
+  const canFind = shell !== null && serverConfig?.threadFind === true;
 
   const startRename = () => {
     if (!shell || !readEnvironmentScope(shell.environmentId, AuthOrchestrationOperateScope)) return;
@@ -129,6 +137,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
     threadRef: shell ? threadRef : null,
     projectCwd: project?.workspaceRoot ?? null,
     onStartRename: startRename,
+    onFind: canFind ? (ref) => openThreadFind(scopedThreadKey(ref)) : undefined,
     canShareWithGuest,
   });
   const pending = useRef<number | null>(null);
