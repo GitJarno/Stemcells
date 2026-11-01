@@ -358,6 +358,44 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/lib/modelOptions.ts": {
+    exports: view("apps/mobile/src/lib/modelOptions.ts", "modelOptions.ts"),
+    importers: {
+      // Every list of models a Cell, a new chat or a scheduled task picks from.
+      "apps/mobile/src/features/threads/ThreadComposer.tsx": [
+        "../../lib/modelOptions",
+        ["buildModelOptions"],
+      ],
+      "apps/mobile/src/features/threads/ThreadSettingsSheet.tsx": [
+        "../../lib/modelOptions",
+        ["buildModelOptions"],
+      ],
+      "apps/mobile/src/features/threads/new-task-flow-provider.tsx": [
+        "../../lib/modelOptions",
+        [
+          "buildModelOptions",
+          "resolveDefaultableModelSelection",
+          "resolveSelectableModelSelection",
+        ],
+      ],
+      "apps/mobile/src/features/threads/NewTaskDraftScreen.tsx": [
+        "../../lib/modelOptions",
+        ["resolveSelectableModelSelection"],
+      ],
+      "apps/mobile/src/features/settings/scheduledTaskDraft.ts": [
+        "../../lib/modelOptions",
+        ["buildModelOptions", "resolveDefaultableModelSelection"],
+      ],
+      "apps/mobile/src/features/settings/ScheduledTaskPickerScreens.tsx": [
+        "../../lib/modelOptions",
+        ["buildModelOptions"],
+      ],
+      "apps/mobile/src/features/settings/SettingsScheduledTasksRouteScreen.tsx": [
+        "../../lib/modelOptions",
+        ["buildModelOptions"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": {
     exports: view(
       "apps/mobile/src/features/threads/ThreadDetailScreen.tsx",
@@ -630,6 +668,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./enrichedLinkPresentation")>().toEqualTypeOf<
       typeof import("../../../lib/enrichedLinkPresentation")
+    >();
+    expectTypeOf<typeof import("./modelOptions")>().toEqualTypeOf<
+      typeof import("../../../lib/modelOptions")
     >();
     expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
       typeof import("expo-image-picker")

@@ -58,6 +58,9 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": "ThreadDetailScreen.tsx",
   "apps/mobile/src/native/SelectableMarkdownText.tsx": "SelectableMarkdownText.tsx",
   "apps/mobile/src/features/threads/floating-working-control.tsx": "floating-working-control.tsx",
+  // Aski's instance is Aski's: a Cell, a new chat or a scheduled task never offers it, nor badges
+  // Claude for it.
+  "apps/mobile/src/lib/modelOptions.ts": "modelOptions.ts",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

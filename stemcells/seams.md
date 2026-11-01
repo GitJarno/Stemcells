@@ -1041,6 +1041,13 @@ that, so the composer needs no "Move" action. `cellInstance.contract.test.ts`
 runs upstream's composer on a chat seeded on Aski's instance, and the
 server's `askiInstanceMove.contract.test.ts` pins the carry-over.
 
+The phone keeps the same rule with two substitutes (no seam). `lib/modelOptions.ts`'s
+offers Aski's instance only beside a selection already on it, so a Cell's
+composer and settings, a new chat and a scheduled task neither list it nor
+badge Claude as a second account for it, and a new chat never starts there.
+The composer's substitute shows a Cell's chat still on it on the driver's
+own instance, as the web's does (`apps/mobile/src/stemcells/upstream/cellInstance.ts`).
+
 ### The close-out
 
 Every chat upstream starts gets its orchestration sections: Claude as one
