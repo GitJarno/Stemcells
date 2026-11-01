@@ -1,5 +1,5 @@
-import { ChildThreadApprovals } from "./chat/ChildThreadApprovals";
 import * as Stemcells from "../stemcells/upstream/seams/ChatView";
+import { ChildThreadApprovals } from "./chat/ChildThreadApprovals";
 import { workspaceAreaProps } from "../lib/workspaceFocus";
 import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
 import { resolveNewThreadModelSelection } from "@t3tools/shared/usageLimits";

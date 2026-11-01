@@ -66,9 +66,15 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
     expect(newThread).toMatch(
       /resolveNewThreadModelSelectionOverride\(\{\s*projectDefaultSelection: projectDefaultModelSelection \?\? null,\s*carrySelection: carryModelSelection,/,
     );
-    expect(newThread).toContain(
-      "const projectDefaultModelSelection = projectSettings.settings.defaultModelSelection;",
-    );
+    // The project's default gives way to the fallback model while its provider is out of usage.
+    for (const source of [newThread, ours]) {
+      expect(source).toMatch(
+        /resolveNewThreadModelSelection\(\{\s*defaultSelection:\s*configuredDefault\w*Selection \?\?\s*\(carry\w*Selection \|\| [\s\S]{0,60}stickyActiveProvider !== null\s*\?\s*null\s*:\s*resolveProjectDefaultProviderModelSelection\(/,
+      );
+      expect(source).toMatch(
+        /= fallbackResolution\.fallback\s*\?\s*fallbackResolution\.selection\s*:\s*configuredDefault\w*Selection;/,
+      );
+    }
     expect(newThread).toContain(
       "const defaultRuntimeMode = projectSettings.settings.defaultRuntimeMode;",
     );

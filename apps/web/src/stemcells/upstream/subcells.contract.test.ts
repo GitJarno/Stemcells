@@ -97,7 +97,7 @@ describe("Subcells in upstream's views", () => {
     expect(
       lifecycleRow.match(/formatSubagentDisplayTitle\(\w+\.title \?\? "Subagent"\)/g),
     ).toHaveLength(2);
-    expect(messagesTimeline).toMatch(/<TimelineSystemDivider\s+label="Subagent of"/);
+    expect(messagesTimeline).toMatch(/<TimelineSystemDivider\s+label=\{[^}]*"Subagent of"\}/);
   });
 
   it("the Subcells' controls say Subcell, never subagent or agent", () => {

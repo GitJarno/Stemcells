@@ -39,7 +39,10 @@ describe("the composer's dock and upstream", () => {
       "[data-chat-composer-form]>[data-slot=composer-banner-attachment]",
     );
     // A banner's outline is one variable, its tone another.
-    expect(composerBanner).toContain('data-composer-banner-surface="attached"');
+    // An attached one is the default; a detached one stands apart and isn't ours to inset.
+    expect(composerBanner).toContain(
+      'data-composer-banner-surface={detached ? "detached" : "attached"}',
+    );
     expect(composerBanner).toContain(
       "before:border before:border-(--chat-composer-attached-outline)",
     );

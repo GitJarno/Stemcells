@@ -13,7 +13,6 @@ import footerControls from "../../components/chat/ComposerFooterControls.tsx?raw
 import draftHeroHeadline from "../../components/chat/DraftHeroHeadline.tsx?raw";
 import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?raw";
 import controlsMeasurement from "../../components/chat/restingComposerControlsMeasurement.ts?raw";
-import traitsPicker from "../../components/chat/TraitsPicker.tsx?raw";
 import composerSend from "../../components/chat/useComposerSend.ts?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
 
@@ -69,12 +68,14 @@ describe("the words' contracts with upstream's drafts", () => {
   it("the controls the words fly to carry the attributes they're found by", () => {
     expect(draftHeroHeadline).toContain('data-draft-project-trigger=""');
     expect(providerModelPicker).toContain('data-chat-provider-model-picker="true"');
-    expect(providerModelPicker).toContain('data-chat-provider-model-picker-label="true"');
-    // The words find it by "composer.effort" as a word: it can carry "composer.mode" too.
-    expect(traitsPicker).toMatch(
-      /data-composer-shortcut=\{\s*isComposerOwned\s*\?\s*extraMenuOwnsModeShortcut\s*\?\s*"composer\.effort composer\.mode"\s*:\s*"composer\.effort"\s*:\s*undefined\s*\}/,
+    expect(providerModelPicker).toContain('"data-chat-provider-model-picker-label": "true",');
+    expect(providerModelPicker).toContain("<span {...triggerTextProps}>{triggerText}</span>");
+    // The words find effort by "composer.effort" as a word, on the model picker that holds it
+    // since #28057; it can carry "composer.mode" too.
+    expect(composerControlsBar).toMatch(
+      /triggerShortcuts=\{\s*pickerOwnsModeShortcut \? "composer\.effort composer\.mode" : "composer\.effort"\s*\}/,
     );
-    expect(traitsPicker).toContain("<span data-composer-control-label");
+    expect(providerModelPicker).toContain("data-composer-shortcut={props.triggerShortcuts}");
     expect(chatView).toContain('data-chat-composer-stack="true"');
   });
 
@@ -94,7 +95,10 @@ describe("the words' contracts with upstream's drafts", () => {
     expect(controlsMeasurement).toContain(
       "picker.querySelector<HTMLElement>('[data-chat-provider-model-picker-label=\"true\"]')",
     );
-    expect(controlsMeasurement).toContain("Math.max(0, label.scrollWidth - label.clientWidth)");
+    // What the label hides, up to a max width of its own (none on the readout's).
+    expect(controlsMeasurement).toMatch(
+      /Math\.max\(\s*0,\s*Math\.min\(\s*label\.scrollWidth,[\s\S]{0,120}\) - label\.clientWidth,/,
+    );
     expect(controlsMeasurement).toContain("getComputedStyle(picker).minWidth");
     // The row it asks about is its host when it sits in the footer, and in
     // a host of its own when it rests (`rowHoldsWider`).

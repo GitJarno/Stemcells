@@ -6,6 +6,7 @@
  */
 import { DEFAULT_SERVER_SETTINGS } from "@t3tools/contracts";
 import { resolveNewThreadEnvMode, resolveProjectSettings } from "@t3tools/shared/projectSettings";
+import { resolveNewThreadModelSelection } from "@t3tools/shared/usageLimits";
 import { useRouter } from "@tanstack/react-router";
 
 import { useComposerDraftStore } from "../../composerDraftStore";
@@ -17,6 +18,7 @@ import {
   resolveThreadActionProjectRef,
 } from "./substitutes/chatThreadActions";
 import { readT3ProjectFile } from "../../lib/t3ProjectFileDefaults";
+import { resolveProjectDefaultProviderModelSelection } from "../../providerInstances";
 import { newDraftId, newThreadId } from "../../lib/utils";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProjects, readThreadShell, readThreadShells } from "../../state/entities";
@@ -74,6 +76,29 @@ export function useNewCellDraftMaker(): {
       (carryProvider ? carryComposer?.modelSelectionByProvider[carryProvider] : null) ??
       carryShell?.modelSelection ??
       null;
+    // As upstream's: the project's default, or its default provider's, gives way to the
+    // fallback model while its provider is out of usage.
+    const configuredDefaultSelection = projectSettings.settings.defaultModelSelection ?? null;
+    const providers = environmentServerConfigs.get(projectRef.environmentId)?.providers ?? [];
+    const fallbackResolution = resolveNewThreadModelSelection({
+      defaultSelection:
+        configuredDefaultSelection ??
+        (carrySelection || store.stickyActiveProvider !== null
+          ? null
+          : resolveProjectDefaultProviderModelSelection(
+              providers,
+              serverSettings,
+              projectRef.projectId,
+            )),
+      fallbackSelection: serverSettings.fallbackModelSelection ?? null,
+      providers,
+      settings: serverSettings,
+      projectId: projectRef.projectId,
+      now: Date.now(),
+    });
+    const projectDefaultSelection = fallbackResolution.fallback
+      ? fallbackResolution.selection
+      : configuredDefaultSelection;
     const carryInteractionMode =
       carryComposer?.interactionMode ??
       carryShell?.interactionMode ??
@@ -123,7 +148,7 @@ export function useNewCellDraftMaker(): {
     });
     latest.applyStickyState(draftId);
     const modelSelection = resolveNewThreadModelSelectionOverride({
-      projectDefaultSelection: projectSettings.settings.defaultModelSelection ?? null,
+      projectDefaultSelection,
       carrySelection,
       carrySourceDraftId: routeTarget?.kind === "draft" ? routeTarget.draftId : null,
       destinationDraftId: draftId,

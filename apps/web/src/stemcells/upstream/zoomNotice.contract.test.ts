@@ -26,7 +26,7 @@ const baseUiToastStore = NodeFS.readFileSync(
     NodePath.dirname(
       NodeModule.createRequire(import.meta.url).resolve("@base-ui/react/package.json"),
     ),
-    "esm/toast/store.js",
+    "toast/store.mjs",
   ),
   "utf8",
 );
@@ -77,7 +77,11 @@ describe("the level's toast", () => {
 
   it("added again under its id, updates in place and starts its timeout over", () => {
     expect(baseUiToastStore).toMatch(
-      /const existingToast = selectors\.toast\(this\.state, toast\.id\);\s*if \(existingToast\) \{\s*if \(existingToast\.transitionStatus === 'ending'\) \{[\s\S]{0,200}\} else \{[\s\S]{0,200}this\.updateToastInternal\(toast\.id, updates, \{\s*resetTimer: true,/,
+      /const existingToast = selectors\.toast\(this\.state, toast\.id\);\s*if \(existingToast\) \{\s*if \(existingToast\.transitionStatus === 'ending'\) \{[\s\S]{0,200}\} else \{[\s\S]{0,200}this\.updateToastInternal\(toast\.id, updates, true,/,
+    );
+    // Its third argument resets the timer.
+    expect(baseUiToastStore).toContain(
+      "updateToastInternal = (id, updates, resetTimer = false, markUpdated = false) => {",
     );
   });
 

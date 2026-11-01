@@ -79,10 +79,14 @@ describe("the Surface's width comes from the person, never from itself", () => {
     // ...and only the person's drag, or the stored width, writes it.
     expect(resizableWidth.match(/setWidthState\(\{[^}]*\}\)/g)).toEqual([
       "setWidthState({ storageKey, width: readWidth() })",
-      "setWidthState({ storageKey: startStorageKey, width: finalWidth })",
+      "setWidthState({ storageKey: nextStorageKey, width: nextWidth })",
     ]);
-    expect(resizableWidth).toMatch(
-      /finish\(finalWidth\) \{\s*setWidthState\([^)]*\);\s*try \{\s*setLocalStorageItem\(startStorageKey, finalWidth, WidthSchema\);/,
-    );
+    expect(resizableWidth.match(/commitWidth\([^)]*\)/g)).toEqual([
+      "commitWidth(startStorageKey, finalWidth)",
+      "commitWidth(storageKey, clamp(value)",
+    ]);
+    expect(resizableWidth).toContain("if (moved) commitWidth(startStorageKey, finalWidth);");
+    // The other is `setWidth`, which the Surface never takes.
+    expect(inlineSize).toContain("const { width, handlers } = useResizableWidth({");
   });
 });
