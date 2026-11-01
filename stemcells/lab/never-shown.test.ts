@@ -49,6 +49,8 @@ function fakeElectron(displays: Display[]) {
   const reached: string[] = [];
   const app = Object.assign(new NodeEvents.EventEmitter(), {
     paths: {} as Record<string, string>,
+    switches: [] as string[],
+    commandLine: { appendSwitch: (name: string) => app.switches.push(name) },
     exitCode: null as number | null,
     setPath(name: string, path: string) {
       this.paths[name] = path;
@@ -222,6 +224,7 @@ describe("the lab's guard", () => {
     new electron.Notification().show();
     expect(fake.reached).toEqual(["policy accessory"]);
     expect(fake.electron.app.paths.userData).toBe("/tmp/stemcells-lab-test");
+    expect(fake.electron.app.switches).toContain("use-mock-keychain");
   });
 
   it("ends the lab when a window is shown by a way it doesn't cover", async () => {
