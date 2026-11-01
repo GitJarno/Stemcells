@@ -59,6 +59,9 @@ function install(electron, runtime) {
     return result;
   };
 
+  // No keychain prompt: safe storage takes a throwaway key, not the person's login keychain.
+  app.commandLine.appendSwitch("use-mock-keychain");
+
   // Its own profile, set before the app sets its own, which then can't.
   app.setPath("userData", runtime.profile);
   const setPath = app.setPath.bind(app);
