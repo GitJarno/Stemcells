@@ -6,6 +6,8 @@ import {
   CellBesideRow,
   SlimRowCell,
   SlimRowProject,
+  swipeEdgeOf,
+  swipeHint,
   useSaysNothing,
   useShelfHeadersShown,
 } from "../../stemcells/home/RowCell";
@@ -1066,9 +1068,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
   );
   const swipeAccessibilityHint = !canOperateThread
     ? "Opens the Cell"
-    : secondaryAction === null
-      ? `Opens the Cell. Swipe left to ${primaryAction.label.toLowerCase()}.`
-      : `Opens the Cell. Swipe left for ${primaryAction.label.toLowerCase()} and snooze actions.`;
+    : swipeHint(swipeActions.primary, primaryAction.label, secondaryAction !== null);
 
   const titleTextInset = props.project ? projectIconSize + 8 : 0;
   const marks = {
@@ -1478,6 +1478,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         onSwipeableClose={props.onSwipeableClose}
         onSwipeableWillOpen={props.onSwipeableWillOpen}
         primaryAction={primaryAction}
+        primaryEdge={swipeEdgeOf(swipeActions.primary)}
         secondaryAction={secondaryAction}
         resetKey={`${thread.environmentId}:${thread.id}:${variant}:${snoozedRow}:${thread.settledAt}:${thread.unsettledAt}:${thread.snoozedUntil}:${thread.pinnedAt}`}
         simultaneousWith={props.simultaneousSwipeGesture}
