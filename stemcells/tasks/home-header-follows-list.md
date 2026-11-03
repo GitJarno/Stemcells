@@ -9,8 +9,8 @@ of Flying's cards. A scroll put it back.
 Since one header stands over all four stages' lists (`home/StagePages.tsx`), it is placed from
 how far the list in front is scrolled past its rest. That number was kept, not read: each scroll
 event wrote `offset - rest`, with `rest` a second value the JS thread handed the UI thread after
-each render. A stage's list has two rests: T3's list sits under UIKit's inset (minus the safe
-area), the page of an empty stage, the asks or "Connecting…" under padding of its own (0). Every
+each render. A stage's list has two rests: T3's list sits under UIKit's inset, the page of an
+empty stage, the asks or "Connecting…" under padding of its own (0). Every
 time a stage swapped one for the other (Connecting… to the Cells as the app opens; "No Cells
 flying." to the Cells when the first one takes off, which a stage out of sight only renders as
 it is chosen), the new list's first events could reach the UI thread before its rest did. They
@@ -33,3 +33,8 @@ offsets. No unit test can show the race itself: it lives between UIKit's events 
 thread. With one inset and one number, the header can only disagree with the list in front if
 the list moved without saying so. The phone is the check: open the app a few times, from cold
 too, and switch into a stage whose Cells changed while it was out of sight.
+
+On the phone the header then held its room, but every list stood a bar too high, Aski under the
+title. The rest was taken as minus the safe area, as T3's list takes it, while UIKit's inset ends
+at the native header's foot, under its title bar. The rest is now native-stack's measured header
+height (`HeaderHeightContext`, which T3's chat uses too), the safe area only without a header.

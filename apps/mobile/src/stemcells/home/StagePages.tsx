@@ -3,6 +3,7 @@
 // header stands where the front list's own offset puts its room, and on nothing else, so it can't
 // drift from the list. Lists out of sight render nothing new and keep their place.
 
+import { HeaderHeightContext } from "@react-navigation/elements";
 import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode, type Ref } from "react";
 import { type ScrollViewInstance, StyleSheet, View } from "react-native";
 import Animated, {
@@ -90,8 +91,9 @@ export function useStagePages<Stage extends string>(
   opening: Stage,
 ) {
   const at = stages.indexOf(opening);
-  // Where a list rests under UIKit's inset, as T3's list takes it (`contentInsetStartAdjustment`).
-  const top = -useSafeAreaInsets().top;
+  // Where a list rests: UIKit's inset ends at the native header's foot, under its title bar.
+  const safeTop = useSafeAreaInsets().top;
+  const top = -(use(HeaderHeightContext) ?? safeTop);
   const a = usePage(at === 0, top);
   const b = usePage(at === 1, top);
   const c = usePage(at === 2, top);
