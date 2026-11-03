@@ -245,3 +245,5 @@ export function SlimRowProject(props: {
 }) {
   return props.project && !props.sidebar ? <TitleMark project={props.project} faint /> : null;
 }
+
+export { swipeEdgeOf, swipeHint } from "./swipes";
