@@ -22,11 +22,10 @@ export function HomePage(props: { readonly children: ReactNode }) {
         <KeyboardAwareScrollView
           // The marker's own child, so the header finds it: the default mode puts a view between.
           mode="layout"
-          // Its own padding, not UIKit's inset, which React Native's scrolls stop short of.
-          contentInsetAdjustmentBehavior="never"
+          // UIKit's inset, which the marker sets on every stage's list, holds the safe area.
           contentContainerStyle={{
-            paddingTop: insets.top,
-            paddingBottom: Math.max(insets.bottom, 24, workspace?.bottomClearance ?? 0),
+            paddingBottom:
+              Math.max(insets.bottom, 24, workspace?.bottomClearance ?? 0) - insets.bottom,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

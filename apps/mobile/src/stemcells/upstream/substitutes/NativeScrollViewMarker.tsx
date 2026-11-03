@@ -4,7 +4,6 @@
 // to its stage (`home/StagePages.tsx`), which draws the veils once over them all.
 import { cloneElement, isValidElement, use, type ComponentProps, type Ref } from "react";
 import type { ScrollViewInstance, ScrollViewProps } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as Upstream from "../../../native/NativeScrollViewMarker";
 import { ScreenVeils } from "../../edge/ScreenVeils";
@@ -21,16 +20,13 @@ export function NativeScrollViewMarker(
   const fromScreen = use(Upstream.NativeScrollEdgeEffectsContext);
   const page = use(StagePageContext);
   const primaryColumn = use(NativePrimaryColumnContext);
-  const insets = useSafeAreaInsets();
   const effects = noBand ? NO_HEADER_BAND : (props.scrollEdgeEffects ?? fromScreen);
   const child = isValidElement<ScrollViewProps & { readonly ref?: Ref<ScrollViewInstance> }>(
     props.children,
   )
     ? props.children
     : null;
-  // T3's list rests at minus the safe area under UIKit's `automatic` inset; ours at 0.
-  const rest = child?.props.contentInsetAdjustmentBehavior === "automatic" ? -insets.top : 0;
-  const ref = useStageScrollView(page, rest, child?.props.ref);
+  const ref = useStageScrollView(page, child?.props.ref);
   // React Native stops a scroll at the view's own inset, 0 under UIKit's `automatic` one: T3's
   // list, put back to its rest, stood with Aski under the header (stemcells/tasks/phone-home-still.md).
   const children =
@@ -42,9 +38,11 @@ export function NativeScrollViewMarker(
             : {
                 ref,
                 scrollsToTop: page.active,
+                // Every stage's scroll view under T3's list's inset, so one offset means one place.
+                contentInsetAdjustmentBehavior: "automatic",
                 contentContainerStyle: [
                   child.props.contentContainerStyle,
-                  { minHeight: page.minHeight + rest },
+                  { minHeight: page.minHeight },
                 ],
               }),
         })

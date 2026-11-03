@@ -627,7 +627,9 @@ library's dependency (above); the rest are substitutes:
   a scroll view takes none, and a scroll the code makes may reach the
   list's rest under the header (React Native stops one at the scroll
   view's own inset, 0 under UIKit's `automatic` one, which left Aski under
-  the header). Where we take the band away, the marker's
+  the header). Every list on the home's stages takes T3's `automatic`
+  inset there, so the one header over them stands at minus the front
+  list's offset (`home/StagePages.tsx`). Where we take the band away, the marker's
   substitute fades the edge into the ground instead (`edge/Scrim.tsx`),
   and a substitute of `ThreadComposer` fades the feed under the composer.
 - **Cell words.** A substitute of `Dialog` (iOS; Android's stays T3's)

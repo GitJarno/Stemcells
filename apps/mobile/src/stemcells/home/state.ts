@@ -41,11 +41,12 @@ export interface StagePage {
   readonly active: boolean;
   /** Its scroll view, for the switch to scroll on the UI thread. */
   readonly ref: AnimatedRef;
-  /** How far it stands scrolled past its rest. */
-  readonly scrolled: SharedValue<number>;
-  /** Its scroll view's offset at rest. */
-  readonly rest: SharedValue<number>;
-  /** Past its rest, tall enough to scroll the shared header out of sight: a short list keeps it put too. */
+  /**
+   * Its scroll view's own offset, as it last said. Every stage's scroll view rests under the same
+   * inset with its room at its top, so this alone says where the header stands over it.
+   */
+  readonly offset: SharedValue<number>;
+  /** Tall enough to scroll the shared header out of sight: a short list keeps it put too. */
   readonly minHeight: number;
 }
 
@@ -94,13 +95,14 @@ export function tabChoice<Tab extends string>() {
 }
 
 /**
- * How far a stage's list stands scrolled past its rest as it shows, so the header shared over the
- * lists stays put: where the last one stood while any of the header shows (never pulled past the
- * top), else its own place, the header just gone.
+ * Where a stage's list stands as it shows, so the header shared over the lists stays put: where
+ * the last one stood while any of the header shows (never pulled past the top, `top` its rest),
+ * else its own place, the header just gone.
  */
-export function carriedOffset(from: number, own: number, headerEnd: number): number {
+export function carriedOffset(from: number, own: number, top: number, headerEnd: number): number {
   "worklet";
-  return from < headerEnd ? Math.max(0, from) : Math.max(headerEnd, own);
+  const gone = top + headerEnd;
+  return from < gone ? Math.max(top, from) : Math.max(gone, own);
 }
 
 /**
