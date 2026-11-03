@@ -1,7 +1,7 @@
 // The home's stages, a list each, kept mounted under one header (`AskiHome.tsx`) that never mounts
-// again, so UIKit's segment slides whole. In the tap's frame the chosen list, stood where the
-// header is, comes in from its side on the UI thread as the last fades; the latest tap wins.
-// Lists out of sight render nothing new, hold their Cells still and keep their place.
+// again, so UIKit's segment slides whole; a tap brings the chosen list in on the UI thread. The
+// header stands where the front list's own offset puts its room, and on nothing else, so it can't
+// drift from the list. Lists out of sight render nothing new and keep their place.
 
 import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode, type Ref } from "react";
 import { type ScrollViewInstance, StyleSheet, View } from "react-native";
@@ -43,13 +43,12 @@ type Page = Omit<StagePage, "active" | "minHeight"> & {
   readonly x: SharedValue<number>;
 };
 
-function usePage(shown: boolean): Page {
+function usePage(shown: boolean, top: number): Page {
   const ref = useAnimatedRef();
-  const scrolled = useSharedValue(0);
-  const rest = useSharedValue(0);
+  const offset = useSharedValue(top);
   const opacity = useSharedValue(shown ? 1 : 0);
   const x = useSharedValue(0);
-  return useMemo(() => ({ ref, scrolled, rest, opacity, x }), [ref, scrolled, rest, opacity, x]);
+  return useMemo(() => ({ ref, offset, opacity, x }), [ref, offset, opacity, x]);
 }
 
 /** Turns the home to the stage at `next`, on the UI thread. */
@@ -58,6 +57,7 @@ function turn(
   front: SharedValue<number>,
   next: number,
   still: boolean,
+  top: number,
 ) {
   "worklet";
   const from = front.get();
@@ -65,9 +65,9 @@ function turn(
   if (from === next || to === undefined) return;
   const leaving = pages[from];
   if (leaving !== undefined) {
-    const at = carriedOffset(leaving.scrolled.get(), to.scrolled.get(), headerHeight.get());
-    to.scrolled.set(at);
-    scrollTo(to.ref, 0, to.rest.get() + at, false);
+    const at = carriedOffset(leaving.offset.get(), to.offset.get(), top, headerHeight.get());
+    to.offset.set(at);
+    scrollTo(to.ref, 0, at, false);
   }
   front.set(next);
   for (let index = 0; index < pages.length; index++) {
@@ -90,10 +90,12 @@ export function useStagePages<Stage extends string>(
   opening: Stage,
 ) {
   const at = stages.indexOf(opening);
-  const a = usePage(at === 0);
-  const b = usePage(at === 1);
-  const c = usePage(at === 2);
-  const d = usePage(at === 3);
+  // Where a list rests under UIKit's inset, as T3's list takes it (`contentInsetStartAdjustment`).
+  const top = -useSafeAreaInsets().top;
+  const a = usePage(at === 0, top);
+  const b = usePage(at === 1, top);
+  const c = usePage(at === 2, top);
+  const d = usePage(at === 3, top);
   const front = useSharedValue(at);
   const reduced = useReducedMotion();
   return useMemo(() => {
@@ -102,11 +104,12 @@ export function useStagePages<Stage extends string>(
       stages,
       pages,
       front,
+      top,
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
       show: (stage: Stage, still = reduced) =>
-        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still),
+        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still, top),
     };
-  }, [stages, a, b, c, d, front, reduced]);
+  }, [stages, a, b, c, d, front, reduced, top]);
 }
 
 export function StagePages<Stage extends string>(props: {
@@ -135,10 +138,10 @@ export function StagePages<Stage extends string>(props: {
     return () => cancelAnimationFrame(frame);
   }, [warm]);
   const header = useAnimatedStyle(() => ({
-    transform: [{ translateY: -(home.pages[home.front.get()]?.scrolled.get() ?? 0) }],
+    transform: [{ translateY: -(home.pages[home.front.get()]?.offset.get() ?? home.top) }],
   }));
   // A list can scroll the header out of sight however short, so the header never has to move.
-  const minHeight = viewport + height;
+  const minHeight = viewport + height + home.top;
   return (
     <View
       className={primaryColumn ? "flex-1 bg-drawer" : "flex-1 bg-screen"}
@@ -164,7 +167,7 @@ export function StagePages<Stage extends string>(props: {
       })}
       <Animated.View
         pointerEvents="box-none"
-        style={[{ position: "absolute", left: 0, right: 0, top: insets.top }, header]}
+        style={[{ position: "absolute", left: 0, right: 0, top: 0 }, header]}
       >
         <View
           pointerEvents="box-none"
@@ -233,20 +236,18 @@ function handOn(own: Ref<ScrollViewInstance> | undefined, node: ScrollViewInstan
 }
 
 /**
- * A stage's scroll view hands its scroll to the stage on the UI thread, for the header to follow,
+ * A stage's scroll view hands its offset to the stage on the UI thread, for the header to follow,
  * and stands where the stage does as it mounts: a list swapped for an empty line keeps Aski put.
  */
 export function useStageScrollView(
   page: StagePage | null,
-  rest: number,
   own: Ref<ScrollViewInstance> | undefined,
 ) {
-  const scrolled = page?.scrolled ?? null;
-  const restAt = page?.rest ?? null;
+  const offset = page?.offset ?? null;
   const handler = useEvent<{ contentOffset: { y: number } }>(
     (event) => {
       "worklet";
-      if (scrolled !== null && restAt !== null) scrolled.set(event.contentOffset.y - restAt.get());
+      offset?.set(event.contentOffset.y);
     },
     ["onScroll", "onScrollEndDrag", "onMomentumScrollEnd"],
   ) as unknown as {
@@ -256,10 +257,6 @@ export function useStageScrollView(
     };
   };
   const ref = page?.ref ?? null;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the UI thread the scroll view's rest, which the safe area moves.
-  useLayoutEffect(() => {
-    restAt?.set(rest);
-  }, [restAt, rest]);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen to the native scroll view's scroll on the UI thread, as Reanimated's own useScrollOffset does.
   useLayoutEffect(() => {
     if (ref === null) return;
@@ -275,9 +272,9 @@ export function useStageScrollView(
       handOn(own, node);
       if (node === null) return;
       ref?.(node as never);
-      if (stood.has(node)) return;
+      if (stood.has(node) || offset === null) return;
       stood.add(node);
-      node.scrollTo({ y: rest + (scrolled?.get() ?? 0), animated: false });
+      node.scrollTo({ y: offset.get(), animated: false });
     };
-  }, [own, ref, scrolled, rest]);
+  }, [own, ref, offset]);
 }
