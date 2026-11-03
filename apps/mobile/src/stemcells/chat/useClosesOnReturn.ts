@@ -33,8 +33,9 @@ export function useClosesOnReturn(chat: ChatRef): void {
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow React Native's AppState: when the app leaves, and when it comes back; remove the listener on unmount.
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (next) => {
-      if (next === "background") awaySince.current ??= Date.now();
-      else if (next === "active" && awaySince.current !== null) {
+      if (next === "background") {
+        if (awaySince.current === null) awaySince.current = Date.now();
+      } else if (next === "active" && awaySince.current !== null) {
         setBack({ awaySince: awaySince.current, at: Date.now() });
         awaySince.current = null;
       }
