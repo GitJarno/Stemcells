@@ -17,12 +17,12 @@ describe("what a chat calls another", () => {
     );
   });
 
-  it("says what a send did, to whom, with its gist", () => {
+  it("calls a send Cell Mail, to whom, with its gist", () => {
     expect(sentLabel({ to: "thread-1", text: "Can I take 0043? It's next." })).toBe(
-      `Asked ${cellNameOf("thread-1")}: Can I take 0043?`,
+      `Cell Mail to ${cellNameOf("thread-1")}: Can I take 0043?`,
     );
     expect(sentLabel({ to: "thread-1", text: "Took 0044.\nDetails…" })).toBe(
-      `Wrote to ${cellNameOf("thread-1")}: Took 0044.`,
+      `Cell Mail to ${cellNameOf("thread-1")}: Took 0044.`,
     );
   });
 });

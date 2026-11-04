@@ -2,6 +2,7 @@
 import { Undo2Icon } from "lucide-react";
 import { use, useState } from "react";
 
+import { mailWord } from "../../../../../stemcells/words/cellMail.ts";
 import { SubcellMark } from "../cell/SubcellMark";
 import {
   ChatMarkdown,
@@ -17,6 +18,7 @@ import {
   TimelineRowCtx,
   usePeerShell,
 } from "../upstream/peers";
+import { T3Wordmark } from "../upstream/substitutes/T3Wordmark";
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { CellDoor } from "./CellDoor";
 import { useMachineLabel } from "../upstream/machines";
@@ -27,8 +29,8 @@ import { usePeerNote } from "./PeerExchange";
 
 import "./peers.css";
 
-// A message another Cell sent this one (stemcells/tasks/peers.md, decision 4): a note in the
-// transcript's own column and type, under its sender's name, never the person's bubble. A sender
+// A message another Cell sent this one (stemcells/tasks/peers.md, decision 4): Cell Mail, under
+// Stemcells' mark, in the transcript's own column and type, never the person's bubble. A sender
 // here opens its chat; one on a linked machine is named with its machine and opens nothing.
 
 const WAY: Readonly<Record<Kind, string>> = {
@@ -46,6 +48,7 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
   // A Cell elsewhere goes by the name its frame gave it: its own tab's.
   const name = sender.machine === null ? peerNameOf(sender.cell, shell) : cellNameOf(sender.cell);
   const aski = sender.machine === null && isAskiChat(sender.cell, shell);
+  const mail = `${mailWord(aski)} from`;
   const note = usePeerNote(message.id) ?? { kind: "says" as const, answers: null, answered: false };
   const text = bodyOf(message.text);
   const long = shouldCollapseUserMessage(text);
@@ -57,16 +60,18 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
     <article
       className="sc-peer-note px-1"
       data-stemcells-peer="in"
-      aria-label={`${name}${sender.machine === null ? "" : ` on ${machine}`} ${WAY[note.kind]}`}
+      aria-label={`${mail} ${name}${sender.machine === null ? "" : ` on ${machine}`}: ${WAY[note.kind]}`}
     >
       {/* As upstream's rows have: a screen reader moves between messages by their headings. */}
       <MessageAuthorHeading>
         {sender.machine === null ? name : `${name} on ${machine}`}
       </MessageAuthorHeading>
       <span className="sc-peer-figure">
-        {aski ? null : <SubcellMark name={sender.cell} points={1} />}
+        <T3Wordmark className="size-4 text-icon-muted" aria-hidden />
       </span>
       <header className="sc-peer-head text-xs">
+        <span className="flex-none">{mail}</span>
+        {aski ? null : <SubcellMark name={sender.cell} points={1} />}
         {sender.machine === null ? (
           <CellDoor
             name={name}
@@ -79,13 +84,21 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
             <span className="sc-peer-name">{name}</span> on {machine}
           </span>
         )}
-        {note.kind === "ask" ? <span className="flex-none">asks you</span> : null}
+        {note.kind === "ask" ? (
+          <span className="flex-none">
+            <span aria-hidden>· </span>asks you
+          </span>
+        ) : null}
         {note.kind === "ask" && note.answered ? (
           <span className="sc-peer-answered">
             <span aria-hidden>· </span>answered
           </span>
         ) : null}
-        {note.kind === "reply" ? <span className="flex-none">replied to</span> : null}
+        {note.kind === "reply" ? (
+          <span className="flex-none">
+            <span aria-hidden>· </span>replied to
+          </span>
+        ) : null}
         {note.answers === null ? null : <span className="sc-peer-re">“{note.answers}”</span>}
         <PeerMeta row={row} />
       </header>

@@ -2061,7 +2061,8 @@ function renderFeedEntry(
             >
               {presentation.attribution === "guest" ? <GuestBubbleTint /> : null}
               {foldRowId !== null ? (
-                <AgentMessageFoldHeader
+                <Stemcells.MailFold
+                  fallback={AgentMessageFoldHeader}
                   environmentId={props.environmentId}
                   senderThreadId={message.senderThreadId}
                   summary={

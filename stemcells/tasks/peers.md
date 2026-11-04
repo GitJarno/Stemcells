@@ -116,8 +116,8 @@ What it lacks:
      "replied to"), then the message whole, folded only when long, as the
      person's own long message folds. A reply quotes the question it
      answers; an ask shows "answered" once this Cell has written back.
-   - **The asker's** tool row says what it did, to whom: "Asked Otter: Can
-     I take 0043?", "Wrote to Otter: …".
+   - **The asker's** tool row says what it did, to whom: "Cell Mail to Otter:
+     Can I take 0043?".
    - **Both from one transcript.** An ask is a message to a Cell whose
      first sentence ends in "?"; a reply is a message to a Cell that wrote
      to this one earlier. Nothing is stored, nothing read from another
