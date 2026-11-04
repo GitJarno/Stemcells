@@ -17,6 +17,7 @@ import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
 import { readPresence } from "../presence/presence.ts";
 import { sendNotice, type ApnsKey } from "../push/apns.ts";
 import type { Device, PushSource } from "../push/Push.ts";
+import { batteryReader } from "./battery.ts";
 import * as UpstreamDisk from "./disk.ts";
 
 /** The secret the key is kept under, beside the server's own. */
@@ -49,6 +50,8 @@ export const makePushSource = Effect.gen(function* () {
   const path = yield* Path.Path;
   const platform = yield* UpstreamDisk.HostPlatform;
   const environmentId: string = yield* environment.getEnvironmentId;
+  const machineName = Effect.map(environment.getDescriptor, (descriptor) => descriptor.label);
+  const battery = yield* batteryReader;
   const folder = path.join(config.stateDir, "stemcells");
   const file = path.join(folder, "push-devices.json");
 
@@ -109,6 +112,8 @@ export const makePushSource = Effect.gen(function* () {
 
   return {
     environmentId,
+    machineName,
+    battery,
     away,
     readKey,
     writeKey,

@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
+import { useBatteryLine } from "../battery/useBatteries";
 import { DiskPlates } from "../disk/DiskPlate";
 import { EYE_LINE, VIEW } from "../aski/drawing";
 import { useAskiChat } from "../aski/useAskiChat";
@@ -72,9 +73,13 @@ export function useHeaderRoom(): Room {
   return useSyncExternalStore(subscribe, () => room);
 }
 
-function useLine(counts: TabCounts): string {
+/** What Aski says: `plain` when it's what a machine's battery needs of you, which no tap rolls. */
+function useLine(counts: TabCounts): { readonly line: string; readonly plain: boolean } {
   const rolls = useSyncExternalStore(subscribe, () => kept.rolls);
-  return greetingAt(counts, rolls, kept.seed);
+  const battery = useBatteryLine();
+  return battery !== null
+    ? { line: battery, plain: true }
+    : { line: greetingAt(counts, rolls, kept.seed), plain: false };
 }
 
 /** The header, drawn once over the lists: Aski, its line and the tabs. */
@@ -91,7 +96,7 @@ export function AskiHome() {
   const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
   const dusk = useNight(home === null ? null : home.night);
   const { height } = useHeaderRoom();
-  const line = useLine(home?.counts ?? { input: 0, working: 0, active: 0, asleep: 0 });
+  const { line } = useLine(home?.counts ?? { input: 0, working: 0, active: 0, asleep: 0 });
   if (home === null) return null;
   const { counts } = home;
   const eyesAt = ROOM_OVER + ((EYE_LINE - VIEW.y) / VIEW.height) * ASKI_HEIGHT;
@@ -195,7 +200,7 @@ export function HeaderSpace() {
   const aski = useAskiChat(home?.environmentId ?? null);
   const openChat = useHomeThreadSelection();
   const { height, aski: askiAt, line: lineAt } = useHeaderRoom();
-  const line = useLine(home?.counts ?? { input: 0, working: 0, active: 0, asleep: 0 });
+  const { line, plain } = useLine(home?.counts ?? { input: 0, working: 0, active: 0, asleep: 0 });
   if (page === null || home === null) return null;
   return (
     <View style={{ height }}>
@@ -219,7 +224,7 @@ export function HeaderSpace() {
             accessibilityLabel={line}
             accessibilityHint="Shows another line"
             // What waits on you is said plainly, and only that.
-            disabled={home.counts.input > 0}
+            disabled={home.counts.input > 0 || plain}
             onPress={roll}
             style={{ width: lineAt.width, height: lineAt.height }}
           />

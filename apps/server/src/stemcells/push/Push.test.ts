@@ -10,6 +10,7 @@ import * as TestClock from "effect/testing/TestClock";
 
 import type { Need } from "../needs/derive.ts";
 import type { NeedsList } from "../needs/Needs.ts";
+import type { Charge } from "../../../../../stemcells/words/battery.ts";
 import type { ApnsKey, Notice, Sent } from "./apns.ts";
 import { HOLD_MS } from "./notify.ts";
 import { make, type Device } from "./Push.ts";
@@ -50,6 +51,19 @@ const need = (key: string, sinceMs: number): Need => ({
 
 const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, later: [], cells: [] });
 
+const flyingList = (count: number): NeedsList => ({
+  needs: [],
+  later: [],
+  cells: Array.from({ length: count }, (_, index) => ({
+    threadId: `thread-${index}`,
+    projectId: "project-1",
+    title: `Cell ${index}`,
+    stage: "working" as const,
+    line: null,
+    createdAt: "2026-11-04T00:00:00.000Z",
+  })),
+});
+
 const world = (key: ApnsKey = KEY) =>
   Effect.gen(function* () {
     const lists = yield* Queue.unbounded<NeedsList>();
@@ -58,11 +72,21 @@ const world = (key: ApnsKey = KEY) =>
     const saved = yield* Queue.unbounded<ReadonlyArray<Device>>();
     /** Each time a look asks whether anybody is here: a card was due. */
     const asked = yield* Queue.unbounded<void>();
-    const state = { away: true, answers: new Map<string, Sent>() };
+    /** Each time a look reads the battery. */
+    const batteryRead = yield* Queue.unbounded<void>();
+    const state = {
+      away: true,
+      answers: new Map<string, Sent>(),
+      battery: null as Charge | null,
+    };
     const push = yield* make(
       {
         lists: Stream.fromQueue(lists),
         environmentId: "env-1",
+        machineName: Effect.succeed("Laptop"),
+        battery: Queue.offer(batteryRead, undefined).pipe(
+          Effect.andThen(Effect.sync(() => state.battery)),
+        ),
         away: Queue.offer(asked, undefined).pipe(Effect.andThen(Effect.sync(() => state.away))),
         readKey: Effect.succeed(key),
         writeKey: () => Effect.succeed(true),
@@ -89,8 +113,82 @@ const world = (key: ApnsKey = KEY) =>
       state,
       register,
       tick: Queue.offer(ticks, undefined),
+      /** Past the battery's gap: a look reads it, and that look's sends come before the next one's read. */
+      readBattery: TestClock.adjust("1 minute").pipe(
+        Effect.andThen(Queue.offer(ticks, undefined)),
+        Effect.andThen(Queue.take(batteryRead)),
+      ),
+      batteryRead,
     };
   });
+
+it.effect("a machine running out pushes once a discharge, while Cells fly and nobody is here", () =>
+  Effect.gen(function* () {
+    const w = yield* world();
+    yield* w.register("aa11");
+    w.state.battery = { percent: 9, power: "battery" };
+    w.state.away = false;
+    yield* Queue.offer(w.lists, flyingList(2));
+    yield* Queue.take(w.batteryRead);
+    // The person is here to see it, or the charger is in: no push.
+    yield* w.readBattery;
+    w.state.away = true;
+    w.state.battery = { percent: 9, power: "charging" };
+    yield* w.readBattery;
+    yield* w.readBattery;
+    assert.strictEqual(yield* Queue.size(w.sent), 0);
+
+    w.state.battery = { percent: 9, power: "battery" };
+    yield* w.readBattery;
+    assert.deepStrictEqual((yield* Queue.take(w.sent)).notice, {
+      alert: {
+        title: "Laptop has 9% left",
+        body: "Two Cells flying. Plug it in to keep them going.",
+        threadId: "stemcells-battery",
+        data: { environmentId: "env-1", threadId: "", deepLink: "" },
+      },
+      badge: null,
+    });
+
+    // Still falling: it doesn't buzz again.
+    w.state.battery = { percent: 8, power: "battery" };
+    yield* w.readBattery;
+    yield* w.readBattery;
+    assert.strictEqual(yield* Queue.size(w.sent), 0);
+  }).pipe(Effect.scoped),
+);
+
+it.effect(
+  "a machine with nothing flying isn't read, and its recharge still ends the discharge",
+  () =>
+    Effect.gen(function* () {
+      const w = yield* world();
+      yield* w.register("aa11");
+      w.state.battery = { percent: 9, power: "battery" };
+      yield* Queue.offer(w.lists, flyingList(1));
+      yield* Queue.take(w.batteryRead);
+      yield* Queue.take(w.sent);
+
+      // Pushed, and the Cells land: it reads on until the charger comes.
+      yield* Queue.offer(w.lists, flyingList(0));
+      yield* w.readBattery;
+      w.state.battery = { percent: 80, power: "plugged" };
+      yield* w.readBattery;
+
+      // Nothing pushed and nothing flying: no more reads.
+      w.state.battery = { percent: 9, power: "battery" };
+      yield* TestClock.adjust("1 minute");
+      yield* w.tick;
+      yield* TestClock.adjust("1 minute");
+      yield* Queue.offer(w.lists, flyingList(1));
+      yield* Queue.take(w.batteryRead);
+      assert.strictEqual(yield* Queue.size(w.batteryRead), 0);
+      assert.strictEqual(
+        (yield* Queue.take(w.sent)).notice.alert?.body.startsWith("One Cell"),
+        true,
+      );
+    }).pipe(Effect.scoped),
+);
 
 it.effect("a waiting card reaches the phone once nobody is here, and only once", () =>
   Effect.gen(function* () {

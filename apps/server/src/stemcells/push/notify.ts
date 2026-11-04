@@ -4,7 +4,12 @@
  * only a card still waiting after `HOLD_MS`: what a screen or Aski's own
  * take answers in the meantime never buzzes anyone. Pure.
  */
+import { type Charge, LOW_AT } from "../../../../../stemcells/words/battery.ts";
 import type { Need } from "../needs/derive.ts";
+
+/** The charge has run low with no charger: a falling figure at or under `LOW_AT`. */
+export const runningOut = (battery: Charge | null): boolean =>
+  battery !== null && battery.power === "battery" && battery.percent <= LOW_AT;
 
 /** A card waits this long before the phone hears of it: past Aski's 30 s take, and a quick answer elsewhere. */
 export const HOLD_MS = 2 * 60_000;

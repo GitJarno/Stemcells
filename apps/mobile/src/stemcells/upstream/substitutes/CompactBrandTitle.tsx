@@ -11,6 +11,7 @@ import { brandTitleOffset } from "../../../components/CompactBrandTitle";
 import { AppText as Text } from "../../../components/ui/AppText";
 import { useAndroidControlSizing } from "../../../components/ui/useAndroidControlSizing";
 import { resolveMobileStageLabel } from "../../../lib/mobileBranding";
+import { BatteryMarks } from "../../battery/BatteryMarks";
 import { APP_NAME } from "../../brand/name";
 
 const BRAND_MAX_FONT_SCALE = 1.4;
@@ -89,6 +90,12 @@ export function CompactBrandTitle(
       onLayout={(event) => setAvailableWidth(event.nativeEvent.layout.width)}
     >
       {title}
+      {/* The workspace's own title, on iOS: Android's header is T3's. */}
+      {Platform.OS === "ios" ? (
+        <BatteryMarks
+          room={availableWidth === null || fullWidth === null ? null : availableWidth - fullWidth}
+        />
+      ) : null}
     </View>
   ) : (
     title

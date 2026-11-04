@@ -6,6 +6,10 @@
 import { type ReactElement } from "react";
 import { View } from "react-native";
 
+import { chargeWords } from "../../../../../stemcells/words/battery.ts";
+import { fillColour } from "../battery/marks";
+import { useBatteries } from "../battery/useBatteries";
+import { useAppearancePreferences } from "../upstream/battery";
 import { buildHomeProjectScopes } from "../upstream/cells";
 import {
   ENVIRONMENT_MACHINE_SYMBOLS,
@@ -19,6 +23,7 @@ import {
   useSavedRemoteConnections,
 } from "../upstream/home";
 import { inEffect, toggled } from "./picks";
+import { useMinute } from "./state";
 import { setPicks, usePicks } from "./usePicks";
 
 const ALL = "all";
@@ -34,6 +39,90 @@ function useMachineList() {
       kind: kinds.get(connection.environmentId),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/**
+ * The machines' menu, from the scope's button and from the charge beside the app's name: each
+ * machine's row carries its charge. With one machine there is nothing to narrow to.
+ */
+export function useMachinesMenu() {
+  const machines = useMachineList();
+  const batteries = useBatteries();
+  const { themeAppearance } = useAppearancePreferences();
+  const now = Date.parse(useMinute());
+  const picks = usePicks();
+  const machineIds = machines.map((machine) => String(machine.id));
+  const picked = inEffect(picks.machines, machineIds);
+  const narrows = machines.length > 1;
+  const rows = machines.map((machine) => {
+    const battery = batteries.find((each) => each.environmentId === String(machine.id));
+    const colour =
+      battery === undefined || battery.away ? null : fillColour(battery, themeAppearance);
+    return {
+      id: String(machine.id),
+      title: machine.label,
+      image: ENVIRONMENT_MACHINE_SYMBOLS[machine.kind ?? "desktop"],
+      state: picked.includes(String(machine.id)) ? ("on" as const) : ("off" as const),
+      ...(colour === null ? {} : { imageColor: colour }),
+      ...(battery === undefined
+        ? {}
+        : {
+            subtitle: chargeWords(
+              battery,
+              battery.away ? Math.max(0, now - battery.heardAt) / 60_000 : null,
+            ),
+          }),
+    };
+  });
+  return {
+    title: "Machines",
+    actions: narrows
+      ? [
+          { id: ALL, title: "All machines", state: picked.length === 0 ? "on" : "off" } as const,
+          ...rows,
+        ]
+      : rows,
+    onSelect: (id: string) => {
+      if (!narrows) return;
+      setPicks((current) => ({
+        ...current,
+        machines: id === ALL ? [] : toggled(inEffect(current.machines, machineIds), id, machineIds),
+      }));
+    },
+  };
+}
+
+/** Its own component, so a charge's every reading redraws this button and not the whole toolbar. */
+function MachinesButton() {
+  const machines = useMachineList();
+  const menu = useMachinesMenu();
+  const picks = usePicks();
+  const picked = inEffect(
+    picks.machines,
+    machines.map((machine) => String(machine.id)),
+  );
+  const first = machines.find((machine) => picked.includes(String(machine.id)));
+  return (
+    <ScopeButton
+      title={menu.title}
+      label={
+        picked.length === 0
+          ? "All machines"
+          : `Machines: ${machines
+              .filter((machine) => picked.includes(String(machine.id)))
+              .map((machine) => machine.label)
+              .join(", ")}`
+      }
+      actions={menu.actions}
+      onSelect={menu.onSelect}
+    >
+      <SymbolView
+        name={ENVIRONMENT_MACHINE_SYMBOLS[first?.kind ?? "desktop"]}
+        size={18}
+        tintColorClassName={first ? "accent-primary" : "accent-icon"}
+      />
+    </ScopeButton>
+  );
 }
 
 export function useHomeScopeItems(): ReactElement[] {
@@ -105,58 +194,38 @@ export function useHomeScopeItems(): ReactElement[] {
     </Toolbar.Custom>,
   ];
   if (machines.length < 2) return items;
-  const first = machines.find((machine) => pickedMachines.includes(String(machine.id)));
   items.push(
     <Toolbar.Custom key="machine">
-      <ScopeButton
-        title="Machines"
-        label={
-          pickedMachines.length === 0
-            ? "All machines"
-            : `Machines: ${machines
-                .filter((machine) => pickedMachines.includes(String(machine.id)))
-                .map((machine) => machine.label)
-                .join(", ")}`
-        }
-        actions={[
-          { id: ALL, title: "All machines", state: pickedMachines.length === 0 ? "on" : "off" },
-          ...machines.map((machine) => ({
-            id: String(machine.id),
-            title: machine.label,
-            image: ENVIRONMENT_MACHINE_SYMBOLS[machine.kind ?? "desktop"],
-            state: pickedMachines.includes(String(machine.id)) ? ("on" as const) : ("off" as const),
-          })),
-        ]}
-        onSelect={(id) =>
-          setPicks((now) => ({
-            ...now,
-            machines: id === ALL ? [] : toggled(inEffect(now.machines, machineIds), id, machineIds),
-          }))
-        }
-      >
-        <SymbolView
-          name={ENVIRONMENT_MACHINE_SYMBOLS[first?.kind ?? "desktop"]}
-          size={18}
-          tintColorClassName={first ? "accent-primary" : "accent-icon"}
-        />
-      </ScopeButton>
+      <MachinesButton />
     </Toolbar.Custom>,
   );
   return items;
 }
 
-function ScopeButton(props: {
+type ScopeMenuProps = {
   readonly title: string;
   readonly label: string;
   readonly actions: ReadonlyArray<{
     readonly id: string;
     readonly title: string;
+    readonly subtitle?: string;
     readonly image?: string;
+    readonly imageColor?: string;
     readonly state: "on" | "off";
   }>;
   readonly onSelect: (id: string) => void;
   readonly children: ReactElement;
-}) {
+};
+
+function ScopeButton(props: ScopeMenuProps) {
+  return (
+    <ScopeMenu {...props}>
+      <View className="size-9 items-center justify-center">{props.children}</View>
+    </ScopeMenu>
+  );
+}
+
+export function ScopeMenu(props: ScopeMenuProps) {
   return (
     <Menu
       title={props.title}
@@ -169,7 +238,7 @@ function ScopeButton(props: {
       accessibilityLabel={props.label}
       accessibilityRole="button"
     >
-      <View className="size-9 items-center justify-center">{props.children}</View>
+      {props.children}
     </Menu>
   );
 }

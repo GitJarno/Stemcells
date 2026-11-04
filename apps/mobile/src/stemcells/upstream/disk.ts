@@ -80,15 +80,27 @@ const kept = keptDisks();
 /** Each machine's one reader, however many rows and cards show its disk. */
 const readers = new Map<EnvironmentId, { count: number; readonly stop: () => void }>();
 
-function readEvery(registry: AtomRegistry.AtomRegistry, environmentId: EnvironmentId): () => void {
+export function readEvery(
+  registry: AtomRegistry.AtomRegistry,
+  environmentId: EnvironmentId,
+): () => void {
   const reader = readers.get(environmentId);
   if (reader) reader.count += 1;
   else {
-    const timer = setInterval(() => {
+    const read = () => {
       if (AppState.currentState !== "active") return;
       registry.refresh(serverEnvironment.hostResources({ environmentId, input: {} }));
-    }, MACHINE_DISK_EVERY_MS);
-    readers.set(environmentId, { count: 1, stop: () => clearInterval(timer) });
+    };
+    const timer = setInterval(read, MACHINE_DISK_EVERY_MS);
+    // Back at the front: a charge from before is no glance at the machine now.
+    const back = AppState.addEventListener("change", read);
+    readers.set(environmentId, {
+      count: 1,
+      stop: () => {
+        clearInterval(timer);
+        back.remove();
+      },
+    });
   }
   return () => {
     const held = readers.get(environmentId);
