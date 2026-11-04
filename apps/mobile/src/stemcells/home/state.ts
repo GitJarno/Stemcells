@@ -120,6 +120,26 @@ export function enteringX(
   return opacity > 0 ? x : Math.sign(to - from) * shift;
 }
 
+let footRoom = 0;
+const footListeners = new Set<() => void>();
+
+/** How much of the list's foot a notice over it covers, so its last row can scroll clear. */
+export function setFootRoom(height: number) {
+  if (height === footRoom) return;
+  footRoom = height;
+  for (const listener of footListeners) listener();
+}
+
+export function useFootRoom(): number {
+  return useSyncExternalStore(
+    (listener) => {
+      footListeners.add(listener);
+      return () => void footListeners.delete(listener);
+    },
+    () => footRoom,
+  );
+}
+
 let minute = new Date().toISOString();
 const ticks = new Set<() => void>();
 let ticking: ReturnType<typeof setInterval> | undefined;

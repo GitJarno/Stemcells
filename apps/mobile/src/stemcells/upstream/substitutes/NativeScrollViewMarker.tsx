@@ -3,12 +3,12 @@
 // the edges instead (`edge/ScreenVeils.tsx`). A stage's list on the home's tabs hands its scroll
 // to its stage (`home/StagePages.tsx`), which draws the veils once over them all.
 import { cloneElement, isValidElement, use, type ComponentProps, type Ref } from "react";
-import type { ScrollViewInstance, ScrollViewProps } from "react-native";
+import { type ScrollViewInstance, type ScrollViewProps, StyleSheet } from "react-native";
 
 import * as Upstream from "../../../native/NativeScrollViewMarker";
 import { ScreenVeils } from "../../edge/ScreenVeils";
 import { useStageScrollView } from "../../home/StagePages";
-import { NoHeaderBand, StagePageContext } from "../../home/state";
+import { NoHeaderBand, StagePageContext, useFootRoom } from "../../home/state";
 import { NativePrimaryColumnContext, NO_HEADER_BAND } from "../home";
 
 export * from "../../../native/NativeScrollViewMarker";
@@ -27,6 +27,8 @@ export function NativeScrollViewMarker(
     ? props.children
     : null;
   const ref = useStageScrollView(page, child?.props.ref);
+  const footRoom = useFootRoom();
+  const ownPadding = StyleSheet.flatten(child?.props.contentContainerStyle)?.paddingBottom;
   // React Native stops a scroll at the view's own inset, 0 under UIKit's `automatic` one: T3's
   // list, put back to its rest, stood with Aski under the header (stemcells/tasks/phone-home-still.md).
   const children =
@@ -43,6 +45,9 @@ export function NativeScrollViewMarker(
                 contentContainerStyle: [
                   child.props.contentContainerStyle,
                   { minHeight: page.minHeight },
+                  footRoom > 0 && typeof (ownPadding ?? 0) === "number"
+                    ? { paddingBottom: Number(ownPadding ?? 0) + footRoom }
+                    : null,
                 ],
               }),
         })

@@ -1,17 +1,16 @@
-// Aski over the home's tabs, drawn once over every stage's list (`StagePages.tsx`): a tap on Aski
-// opens its chat, on its line rolls another (`greeting.ts`), both taken in each list's room
-// (`HeaderSpace`) so a drag there scrolls. Eyes `^ ^` once every Cell has landed or while copies
-// fly (`copies.ts`); night falls on Settled (`useNight.ts`); a disk in need shows under the tabs.
+// Aski over the home's tabs, drawn once over every stage's list (`StagePages.tsx`), its touches
+// taken in each list's room (`HeaderSpace`). Night falls on Settled (`useNight.ts`). Its height
+// never changes with what's going on, so the tabs and lists stand still: what comes and goes takes
+// room reserved for it (its line) or floats over the list (`DiskFoot`, `UndoLine`).
 
 import { use, useState, useSyncExternalStore } from "react";
-import { type LayoutRectangle, Pressable, StyleSheet, View } from "react-native";
+import { type LayoutRectangle, PixelRatio, Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, LayoutAnimationConfig, makeMutable } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
 import { useBatteryLine } from "../battery/useBatteries";
-import { DiskPlates } from "../disk/DiskPlate";
 import { EYE_LINE, VIEW } from "../aski/drawing";
 import { useAskiChat } from "../aski/useAskiChat";
 import { AppText } from "../upstream/cells";
@@ -34,6 +33,15 @@ const ASKI_WIDTH = (VIEW.width / VIEW.height) * ASKI_HEIGHT;
 const ROOM_OVER = 14;
 /** How far the night reaches over the header: the status bar, and a pull past the top. */
 const NIGHT_ABOVE = 600;
+/** Aski's line takes two lines' room, however few it says, as `text-xl` sets them. */
+const LINE_ROOM = 2 * 28;
+const LINE_ROOM_FILLER = "M\nM";
+/** The rest of the header, as its classes and T3's segments set it. */
+const OVER_LINE = 12;
+const UNDER_LINE = 20 + 36 + 16;
+/** The header's height before it's measured, so a list's first frame stands where it will stay. */
+const HEIGHT_BEFORE_MEASURED =
+  ROOM_OVER + ASKI_HEIGHT + OVER_LINE + LINE_ROOM * PixelRatio.getFontScale() + UNDER_LINE;
 
 /** Where a line starts: it moves on each hour, so the home doesn't always open on the same one. */
 const seedNow = () => Math.floor(Date.now() / 3_600_000);
@@ -47,9 +55,9 @@ type Room = {
   readonly line: LayoutRectangle | null;
 };
 /** The header's height and where Aski and its line stand in it, for each list's room. */
-let room: Room = { height: 0, aski: null, line: null };
+let room: Room = { height: HEIGHT_BEFORE_MEASURED, aski: null, line: null };
 /** The header's height, for the switch on the UI thread: past it, the header is out of sight. */
-export const headerHeight = makeMutable(0);
+export const headerHeight = makeMutable(HEIGHT_BEFORE_MEASURED);
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
@@ -151,28 +159,34 @@ export function AskiHome() {
         className="mt-3 self-stretch px-10"
         onLayout={({ nativeEvent }) => measured({ line: nativeEvent.layout })}
       >
-        <LayoutAnimationConfig skipEntering>
-          <Animated.View key={line} entering={FadeIn.duration(220)}>
-            <AppText
-              className="text-center text-xl"
-              style={dusk === "night" ? { color: NIGHT_TEXT } : undefined}
-              numberOfLines={2}
-            >
-              {line}
-            </AppText>
-            {dusk === "turning" ? (
-              <AtNight style={StyleSheet.absoluteFill}>
-                <AppText
-                  className="text-center text-xl"
-                  style={{ color: NIGHT_TEXT }}
-                  numberOfLines={2}
-                >
-                  {line}
-                </AppText>
-              </AtNight>
-            ) : null}
-          </Animated.View>
-        </LayoutAnimationConfig>
+        {/* Sets the room at whatever text size the person reads, unseen. */}
+        <AppText className="text-center text-xl opacity-0" numberOfLines={2}>
+          {LINE_ROOM_FILLER}
+        </AppText>
+        <View className="absolute inset-x-10 inset-y-0 justify-center">
+          <LayoutAnimationConfig skipEntering>
+            <Animated.View key={line} entering={FadeIn.duration(220)}>
+              <AppText
+                className="text-center text-xl"
+                style={dusk === "night" ? { color: NIGHT_TEXT } : undefined}
+                numberOfLines={2}
+              >
+                {line}
+              </AppText>
+              {dusk === "turning" ? (
+                <AtNight style={StyleSheet.absoluteFill}>
+                  <AppText
+                    className="text-center text-xl"
+                    style={{ color: NIGHT_TEXT }}
+                    numberOfLines={2}
+                  >
+                    {line}
+                  </AppText>
+                </AtNight>
+              ) : null}
+            </Animated.View>
+          </LayoutAnimationConfig>
+        </View>
       </View>
       <View className="mt-5 self-stretch px-4">
         <SegmentedControl
@@ -185,9 +199,6 @@ export function AskiHome() {
           selected={home.tab}
           onSelect={home.choose}
         />
-      </View>
-      <View className="self-stretch">
-        <DiskPlates />
       </View>
     </View>
   );

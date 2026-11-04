@@ -333,6 +333,19 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/useThreadListV2.ts": {
+    exports: view("apps/mobile/src/features/threads/useThreadListV2.ts", "useThreadListV2.ts"),
+    importers: {
+      "apps/mobile/src/features/home/HomeScreen.tsx": [
+        "../threads/useThreadListV2",
+        ["useThreadListV2"],
+      ],
+      "apps/mobile/src/features/threads/ThreadNavigationSidebar.tsx": [
+        "./useThreadListV2",
+        ["useThreadListV2"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx": {
     exports: view(
       "apps/mobile/src/features/threads/ComposerAttachmentButton.tsx",
@@ -670,6 +683,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./use-thread-list-v2-shelf-preferences")>().toEqualTypeOf<
       typeof import("../../../features/threads/use-thread-list-v2-shelf-preferences")
+    >();
+    expectTypeOf<typeof import("./useThreadListV2")>().toEqualTypeOf<
+      typeof import("../../../features/threads/useThreadListV2")
     >();
     expectTypeOf<typeof import("./ComposerAttachmentButton")>().toEqualTypeOf<
       typeof import("../../../features/threads/ComposerAttachmentButton")
