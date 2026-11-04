@@ -1,6 +1,7 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (peers.css), outside upstream's Tailwind entry. */
 import { use, useState } from "react";
 
+import { T3Wordmark } from "../upstream/substitutes/T3Wordmark";
 import { threadIdOf, TimelineRowCtx, usePeerShell } from "../upstream/peers";
 import { CellDoor } from "./CellDoor";
 import { peerNameOf } from "./names";
@@ -28,9 +29,7 @@ export function CollisionRow(props: {
   return (
     <div className="sc-collision text-xs" data-stemcells-peer="collision">
       <div className="sc-collision-line">
-        <span className="sc-collision-mark" aria-hidden>
-          ⚠
-        </span>
+        <T3Wordmark className="sc-collision-mark size-4" aria-hidden />
         <span className="flex-none">
           {collision.kind === "file" ? "Same file as" : "Same checkout as"}
         </span>

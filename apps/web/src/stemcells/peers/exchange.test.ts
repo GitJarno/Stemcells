@@ -41,6 +41,10 @@ describe("a message's gist", () => {
 
   it("drops a self-introduction: the card names the sender", () => {
     expect(gistOf("Otter here. Can I take 0043?").gist).toBe("Can I take 0043?");
+    expect(gistOf('From Otter, the Cell "Migrations". Can I take 0043?').gist).toBe(
+      "Can I take 0043?",
+    );
+    expect(gistOf("From here, the Cell is yours.").gist).toBe("From here, the Cell is yours.");
   });
 
   it("cuts a long first sentence at a word, and carries the cut over", () => {

@@ -3,7 +3,10 @@
 // answer each other, all read from this chat's own timeline. An ask is a message whose first
 // sentence asks; a reply is the next message back to a Cell with an open ask.
 
+import { bodyOf } from "../../../../../stemcells/words/cellMail.ts";
 import { resolveT3McpToolId } from "../upstream/t3Tools";
+
+export { bodyOf };
 
 /** What a peer note reads of a timeline entry: upstream's `TimelineEntry`, as far as it goes. */
 export type Entry =
@@ -40,12 +43,6 @@ export interface PeerNote {
 /** Longest gist before it is cut at a word; a first sentence a little over still stands whole. */
 const GIST_CAP = 90;
 const GIST_SLACK = 30;
-
-/** "Otter here." and the like: the card names the sender already. */
-const SELF_INTRODUCTION = /^(?:this is\s+)?[\p{L}\p{N}_-]+\s+here\s*[.:,—–-]\s*/iu;
-
-/** A message's words, without the greeting that names its sender. */
-export const bodyOf = (text: string): string => text.trim().replace(SELF_INTRODUCTION, "");
 
 /**
  * A message's gist and the rest: its first sentence (to `.`, `?`, `!` before

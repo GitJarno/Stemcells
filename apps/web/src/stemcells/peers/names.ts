@@ -1,6 +1,7 @@
 // What one chat calls another: Aski by its own name, any other Cell by the
 // name its tab shows (`cell/name.ts`), the name its peer frame gave it too.
 
+import { mailWord } from "../../../../../stemcells/words/cellMail.ts";
 import { ASKI_INSTANCE_ID, ASKI_TITLE, isRememberedAskiThread } from "../aski/setup";
 import { cellNameOf } from "../cell/name";
 import { gistOf } from "./exchange";
@@ -25,8 +26,8 @@ export function peerNameOf(threadId: string, shell?: ShellFacts | null): string 
   return isAskiChat(threadId, shell) ? ASKI_TITLE : cellNameOf(threadId);
 }
 
-/** A `t3_thread_send` row's words: "Asked Otter: Can I take 0043?", "Wrote to Otter: Took 0044." */
+/** A `t3_thread_send` row's words: "Cell Mail to Otter: Took 0044.", "Mail to Aski: Took 0044." */
 export function sentLabel(sent: { readonly to: string; readonly text: string }): string {
   const { gist } = gistOf(sent.text);
-  return `${gist.endsWith("?") ? "Asked" : "Wrote to"} ${peerNameOf(sent.to)}: ${gist}`;
+  return `${mailWord(isAskiChat(sent.to))} to ${peerNameOf(sent.to)}: ${gist}`;
 }
