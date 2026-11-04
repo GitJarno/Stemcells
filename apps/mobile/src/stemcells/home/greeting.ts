@@ -3,6 +3,7 @@
 // true to the moment. Anything waiting on you gets plain words and no joke;
 // otherwise a tap rolls another line of the same moment.
 
+import { spelled } from "../../../../../stemcells/words/battery.ts";
 import type { TabCounts } from "./tabs";
 
 const GREETINGS = [
@@ -46,11 +47,6 @@ export const BANK: readonly string[] = [
   ...ALL_DONE,
   ...QUIET,
 ];
-
-const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-
-/** A count as the persona writes one: in words up to ten. */
-const spelled = (n: number): string => WORDS[n] ?? String(n);
 
 /** The lines true of the home with `counts`, past its greeting. */
 export function linesFor(counts: TabCounts): readonly string[] {

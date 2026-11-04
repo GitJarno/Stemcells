@@ -18,6 +18,14 @@ export const HostResourcesSnapshot = Schema.Struct({
   // Stemcells: how little free space warns the person, and the free space they hid its notice at.
   diskWarnBelowBytes: Schema.optionalKey(NonNegativeInt),
   diskHiddenAtBytes: Schema.optionalKey(NonNegativeInt),
+  // Stemcells: this machine's own battery; absent without one, and from servers that don't read it.
+  battery: Schema.optionalKey(
+    Schema.Struct({
+      percent: NonNegativeInt,
+      power: Schema.Literals(["battery", "charging", "plugged"]),
+      minutesLeft: Schema.optionalKey(NonNegativeInt),
+    }),
+  ),
 });
 export type HostResourcesSnapshot = typeof HostResourcesSnapshot.Type;
 

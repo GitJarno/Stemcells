@@ -8,6 +8,7 @@ import * as Layer from "effect/Layer";
 import * as Semaphore from "effect/Semaphore";
 import * as Stream from "effect/Stream";
 
+import { type Charge, lowBatteryPush } from "../../../../../stemcells/words/battery.ts";
 import type { Need } from "../needs/derive.ts";
 import * as Needs from "../needs/Needs.ts";
 import * as Upstream from "../upstream/push.ts";
@@ -21,7 +22,7 @@ import {
   type Notice,
   type Sent,
 } from "./apns.ts";
-import { alertWords, due } from "./notify.ts";
+import { alertWords, due, runningOut } from "./notify.ts";
 
 /** A phone that asked for pushes: its APNs token, which of Apple's services it's on, and its app's bundle id. */
 export interface Device {
@@ -36,6 +37,10 @@ export interface PushSource {
   readonly lists: Stream.Stream<Needs.NeedsList>;
   /** This server's environment id, for the link a tap opens. */
   readonly environmentId: string;
+  /** This machine's name, as the phones show it. */
+  readonly machineName: Effect.Effect<string>;
+  /** This machine's battery now; null without one. */
+  readonly battery: Effect.Effect<Charge | null>;
   /** Whether nobody is at this Mac now (`presence/presence.ts`). */
   readonly away: Effect.Effect<boolean>;
   readonly readKey: Effect.Effect<ApnsKey | null>;
@@ -82,6 +87,8 @@ export class Push extends Context.Service<
 
 /** How often waiting cards are looked at. */
 const TICK = Duration.seconds(15);
+/** How often the battery is read, while it could matter: it falls a percent in minutes. */
+const BATTERY_EVERY_MS = 60_000;
 /** A provider token serves this long: under Apple's hour, past its 20-minute floor. */
 const TOKEN_FOR_MS = 45 * 60_000;
 const DEVICES_MAX = 20;
@@ -102,6 +109,11 @@ export const make = Effect.fn("Push.make")(function* (
   const pushed = new Set<string>();
   /** The count of Cells at Input the phones' icons last took from this Mac; null until one did. */
   let badged: number | null = null;
+  /** How many Cells are flying here, as the last list said. */
+  let flying = 0;
+  /** This discharge's push has gone: the next waits for the machine to come off its low. */
+  let lowPushed = false;
+  let batteryReadAt: number | null = null;
   const sending = yield* Semaphore.make(1);
 
   const tokenAt = (now: number): string | null => {
@@ -178,9 +190,41 @@ export const make = Effect.fn("Push.make")(function* (
     },
   });
 
+  /**
+   * One push a discharge, at its low, while Cells fly and nobody is here. Nothing flying and
+   * nothing pushed, there is nothing to read the battery for; once pushed, it is read until
+   * the machine comes off its low, so the next discharge can push again.
+   */
+  const lookAtBattery = Effect.fn("Push.lookAtBattery")(function* (now: number) {
+    if (flying === 0 && !lowPushed) return;
+    if (batteryReadAt !== null && now - batteryReadAt < BATTERY_EVERY_MS) return;
+    batteryReadAt = now;
+    const battery = yield* source.battery;
+    if (battery === null || !runningOut(battery)) {
+      lowPushed = false;
+      return;
+    }
+    if (lowPushed || flying === 0 || !(yield* source.away)) return;
+    const words = lowBatteryPush(yield* source.machineName, battery.percent, flying);
+    const results = yield* sendAll(
+      {
+        alert: {
+          ...words,
+          threadId: "stemcells-battery",
+          data: { environmentId: source.environmentId, threadId: "", deepLink: "" },
+        },
+        badge: null,
+      },
+      now,
+    );
+    // Apple out of reach, or a key that doesn't sign: the next read tries again.
+    if (!results.every(({ sent }) => isTransient(sent))) lowPushed = true;
+  });
+
   const look = Effect.fn("Push.look")(function* () {
     const now = yield* Clock.currentTimeMillis;
     if (key === null || devices.length === 0) return;
+    yield* lookAtBattery(now);
     // The icon counts what the phone's Input segment counts of this Mac: every card.
     const count = needs.length;
     const waiting = due(needs, pushed, now);
@@ -204,6 +248,7 @@ export const make = Effect.fn("Push.make")(function* (
   const onList = (list: Needs.NeedsList) =>
     Effect.sync(() => {
       needs = list.needs;
+      flying = list.cells.filter((cell) => cell.stage === "working").length;
       const live = new Set(list.needs.map((need) => need.key));
       for (const key of pushed) if (!live.has(key)) pushed.delete(key);
     });
