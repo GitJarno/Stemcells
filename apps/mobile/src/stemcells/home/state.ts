@@ -35,6 +35,9 @@ export const HomeTabsContext = createContext<HomeTabs | null>(null);
  */
 export const HomeStageContext = createContext<string | null>(null);
 
+/** The stage of the home's one list where it shows no tabs (searching, no machine yet): no shelves. */
+export const EVERY_STAGE = "every";
+
 /** One stage's list as the home switches between them (`StagePages.tsx`). */
 export interface StagePage {
   /** The stage in front: it takes touches and the status bar's tap to the top. */

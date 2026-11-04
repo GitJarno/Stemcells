@@ -3,7 +3,7 @@
 // and pull request stand under the time, no agent mark: the Cell's colour says that. T3's row
 // hands control here (`features/threads/thread-list-v2-items.tsx`); the home's tabs draw no shelf.
 
-import { type ReactNode, use, useEffect, useRef } from "react";
+import { type ReactNode, use, useEffect, useMemo, useRef } from "react";
 import { Pressable, View, type ViewInstance, type ViewStyle } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
@@ -18,6 +18,8 @@ import {
   AppText,
   type EnvironmentProject,
   type EnvironmentThreadShell,
+  type PendingNewTask,
+  pendingThreadCreationShell,
   PullRequestGlyph,
   pullRequestStatus,
   SymbolView,
@@ -32,7 +34,12 @@ import { sendCopy } from "./copies";
 import { HomeCellsHeld, HomeInFront, HomeStageContext, useMinute } from "./state";
 import { isAway } from "./tabs";
 
-function Figure(props: { readonly thread: EnvironmentThreadShell; readonly points: number }) {
+function Figure(props: {
+  readonly thread: EnvironmentThreadShell;
+  readonly points: number;
+  /** Its machine is out of reach: it peers. */
+  readonly lineDown?: boolean;
+}) {
   const { thread } = props;
   const aski = useIsAskiChat(thread.id);
   const now = useMinute();
@@ -62,6 +69,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
         points={props.points}
         plays
         away={isAway(thread, now)}
+        lineDown={props.lineDown}
         formingFrom={forming}
         held={held}
       />
@@ -79,7 +87,7 @@ export interface CardMarks {
   readonly project: EnvironmentProject | null;
 }
 
-/** Whether T3's list draws its shelves' headers: not on the home's tabs, which are the shelves. */
+/** Whether T3's list draws its shelves' headers: not on the home, whose tabs are the shelves. */
 export function useShelfHeadersShown(): boolean {
   return use(HomeStageContext) === null;
 }
@@ -90,6 +98,49 @@ export function useShelfHeadersShown(): boolean {
  */
 export function useSaysNothing(status: string): boolean {
   return use(HomeStageContext) === "working" && (status === "working" || status === "waiting");
+}
+
+/** A Cell and its name, in the card's left column. */
+function CellColumn(props: {
+  readonly thread: EnvironmentThreadShell;
+  readonly name: string;
+  readonly lineDown?: boolean;
+}) {
+  return (
+    <View className="w-[52px] items-center">
+      <Figure thread={props.thread} points={2} lineDown={props.lineDown} />
+      <AppText
+        className="mt-1.5 text-[10px] text-foreground-muted"
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+      >
+        {props.name}
+      </AppText>
+    </View>
+  );
+}
+
+/**
+ * A Cell thrown while its machine is out of reach stands in the line as it will once it flies: the
+ * same Cell, by its chat's id, peering, and no light until it does. A draft has no Cell yet.
+ */
+export function QueuedCellBesideRow(props: {
+  readonly task: PendingNewTask;
+  readonly children: ReactNode;
+}) {
+  const { task } = props;
+  const thread = useMemo(
+    () => (task.kind === "pending" ? pendingThreadCreationShell(task.message) : null),
+    [task],
+  );
+  if (thread === null) return props.children;
+  return (
+    <View className="flex-row items-stretch gap-3">
+      <CellColumn thread={thread} name={cellNameOf(thread.id)} lineDown />
+      <View className="min-w-0 flex-1">{props.children}</View>
+    </View>
+  );
 }
 
 /** A card row's content with its Cell beside it, and its machine and pull request in its bottom right. */
@@ -103,17 +154,7 @@ export function CellBesideRow(props: {
   return (
     <View className="flex-row items-stretch gap-3">
       <CardLight thread={props.thread} />
-      <View className="w-[52px] items-center">
-        <Figure thread={props.thread} points={2} />
-        <AppText
-          className="mt-1.5 text-[10px] text-foreground-muted"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
-        >
-          {aski ? "Aski" : cellNameOf(props.thread.id)}
-        </AppText>
-      </View>
+      <CellColumn thread={props.thread} name={aski ? "Aski" : cellNameOf(props.thread.id)} />
       <View className="min-w-0 flex-1">
         {props.children}
         <View className="absolute bottom-0.5 right-0 flex-row items-center gap-1.5">

@@ -4,6 +4,7 @@ import { FailureWords } from "../../stemcells/disk/FailureWords";
 import {
   cardLines,
   CellBesideRow,
+  QueuedCellBesideRow,
   SlimRowCell,
   SlimRowProject,
   swipeEdgeOf,
@@ -255,13 +256,6 @@ function ThreadListV2Section(props: {
   );
 }
 
-const ThreadListV2SectionDivider = memo(function ThreadListV2SectionDivider(props: {
-  readonly label: string;
-  readonly pane?: "screen" | "sidebar";
-}) {
-  return <ThreadListV2Section {...props} />;
-});
-
 type ThreadListV2ShelfHeaderProps = {
   readonly count: number;
   readonly disabled?: boolean;
@@ -468,7 +462,7 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
               sidebarPane && "text-drawer-foreground-muted",
             )}
           >
-            Sends on reconnect
+            Flies on reconnect
           </Text>
         )}
       </View>
@@ -529,9 +523,6 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
 
   return (
     <>
-      {props.showPendingDivider ? (
-        <ThreadListV2SectionDivider label="Unsent" pane={props.pane} />
-      ) : null}
       <ThreadSwipeable
         dormant={dormant}
         threadKey={pendingTask.key}
@@ -559,7 +550,7 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
               accessibilityHint={
                 isDraft
                   ? `Opens the draft in the new task composer. Swipe left to ${deleteLabel.toLowerCase()}.`
-                  : `Sends when the environment reconnects. Opens the task for editing. Swipe left to ${deleteLabel.toLowerCase()}.`
+                  : `Flies when its machine reconnects. Opens the task for editing. Swipe left to ${deleteLabel.toLowerCase()}.`
               }
               accessibilityLabel={pendingTask.title}
               accessibilityRole="button"
@@ -575,7 +566,9 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
                 rowContent
               ) : (
                 <View>
-                  <View className="px-5 py-2.5">{rowContent}</View>
+                  <View className={THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME}>
+                    <QueuedCellBesideRow task={pendingTask}>{rowContent}</QueuedCellBesideRow>
+                  </View>
                   {props.showTrailingDivider !== false ? (
                     <View className="ml-5 h-px bg-border-subtle" />
                   ) : null}

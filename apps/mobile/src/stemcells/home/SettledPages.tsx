@@ -1,13 +1,13 @@
 // On the home's tabs Settled reads its older Cells as the person scrolls toward its end, with a
 // quiet row while a page is on its way, where T3's list asks for a tap on "Show more"
-// (`features/home/HomeScreen.tsx`, at its seam). T3's own home, searching too, keeps its button.
+// (`features/home/HomeScreen.tsx`, at its seam). A list with no tabs, searching too, keeps its button.
 
 import { use } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
 
 import { readsNextPage } from "../line/line";
 import { AppText } from "../upstream/cells";
-import { HomeStageContext } from "./state";
+import { EVERY_STAGE, HomeStageContext } from "./state";
 
 /** A screen ahead of the end, so the next page is mostly in before the person gets there. */
 const SCREENS_AHEAD = 1;
@@ -23,7 +23,8 @@ export function useSettledPages(input: {
   };
   readonly showMore: () => void;
 }) {
-  if (use(HomeStageContext) === null) return {};
+  const stage = use(HomeStageContext);
+  if (stage === null || stage === EVERY_STAGE) return {};
   const { hidden, shelf } = input;
   return {
     ListFooterComponent:

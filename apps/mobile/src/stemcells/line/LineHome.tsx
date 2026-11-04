@@ -64,8 +64,10 @@ export function LineHome(props: {
   readonly connecting: boolean;
   readonly onShowAll: () => void;
   readonly settle: (cell: EnvironmentThreadShell) => Promise<boolean>;
-  /** New chats on their way, which Working lists first. */
+  /** New chats on their way, which Flying lists first: its queued Cells and drafts. */
   readonly pending: number;
+  /** Cells thrown while their machine is out of reach, which Flying counts as it lists them. */
+  readonly queued: number;
   /** Settled Cells in view that the servers keep back from the phone. */
   readonly olderSettled: number;
   /** T3's list, handed these Cells, and the new chats on their way with `pending`. */
@@ -77,7 +79,11 @@ export function LineHome(props: {
   const { answered } = useSyncExternalStore(held.subscribe, held.read);
   const line = lineOf(props.cells, props.readings, props.now, answered, byRecord(props.now));
   const onPhone = countsOf(line, props.inView);
-  const counts = { ...onPhone, settled: onPhone.settled + props.olderSettled };
+  const counts = {
+    ...onPhone,
+    working: onPhone.working + props.queued,
+    settled: onPhone.settled + props.olderSettled,
+  };
   const tab = segments.useTab(opensOn(counts), props.known);
   const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
