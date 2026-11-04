@@ -46,6 +46,8 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/threads/thread-row-emphasis.ts": "thread-row-emphasis.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
+  // On Flying a Cell keeps its place between two turns: T3's list parts them from the rest.
+  "apps/mobile/src/features/threads/useThreadListV2.ts": "useThreadListV2.ts",
   // The usage chart is the Mac's, a smoothed line per agent over a faint fill,
   // and an agent whose Cells wear a body of their own is drawn in its colour.
   "apps/mobile/src/features/usage/UsageDailyChart.ios.tsx": "UsageDailyChart.tsx",

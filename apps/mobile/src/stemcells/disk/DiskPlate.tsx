@@ -1,9 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { View, type ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { DISK_FULL, DISK_NOTICE } from "../../../../../stemcells/words/disk.ts";
+import { setFootRoom } from "../home/state";
 import { held } from "../line/heldLine";
 import {
   AppText,
@@ -16,16 +18,17 @@ import {
   useMachines,
   withThreadDismissal,
 } from "../upstream/disk";
+import { useWorkspaceTabs } from "../upstream/home";
 import { diskPressure, freeFigure, FULL_BELOW, noticeShown } from "./kit";
 import { setNoticeHidden, useHiddenAt } from "./notice";
 import { useFreeSpace } from "./useFreeSpace";
 import { useWarnBelow } from "./warn";
 import { WarnMenu } from "./WarnMenu";
 
-// The phone's home shows a machine only once its disk wants attention: a card under the tabs
-// (`home/AskiHome.tsx`) with Free space and a cog for when it should. Swiped left as a Cell's
-// card is, it hides on every device until the disk has news (`stemcells/disk/notice.ts`),
-// with Undo on the home's line.
+// The phone's home shows a machine only once its disk wants attention: a card floating over the
+// list's foot, since one in the flow moved everything under it when its machine answered. Swiped
+// left as a Cell's card is, it hides on every device until the disk has news
+// (`stemcells/disk/notice.ts`), with Undo on the home's line.
 
 /** Inset as a Cell's card is (`thread-list-v2-row-appearance.ts`), so the swipe stays inside. */
 const CARD = {
@@ -35,16 +38,38 @@ const CARD = {
   overflow: "hidden",
 } satisfies ViewStyle;
 
+const FLOATS = {
+  shadowColor: "#000000",
+  shadowOpacity: 0.3,
+  shadowRadius: 14,
+  shadowOffset: { width: 0, height: 4 },
+} satisfies ViewStyle;
+
 const useConnected = () => useMachines().filter((machine) => machine.connection === "connected");
 
-export function DiskPlates() {
-  return useConnected().map((machine) => (
-    <DiskPlate
-      key={machine.environmentId}
-      environmentId={machine.environmentId}
-      label={machine.label}
-    />
-  ));
+/** Every machine's card over the list's foot, whose height the list scrolls past. */
+export function DiskFoot() {
+  const insets = useSafeAreaInsets();
+  const workspace = useWorkspaceTabs();
+  // Where T3's own notice stands over the home's search bar (`line/UndoLine.tsx`).
+  const bottom = Math.max(insets.bottom, (workspace?.bottomClearance ?? 0) - 32) + 8;
+  const machines = useConnected();
+  return (
+    <View
+      className="absolute inset-x-0"
+      style={{ bottom }}
+      pointerEvents="box-none"
+      onLayout={({ nativeEvent }) => setFootRoom(nativeEvent.layout.height)}
+    >
+      {machines.map((machine) => (
+        <DiskPlate
+          key={machine.environmentId}
+          environmentId={machine.environmentId}
+          label={machine.label}
+        />
+      ))}
+    </View>
+  );
 }
 
 function DiskPlate(props: {
@@ -84,7 +109,7 @@ function DiskPlate(props: {
     });
   };
   return (
-    <View onLayout={({ nativeEvent }) => setWidth(nativeEvent.layout.width)}>
+    <View style={FLOATS} onLayout={({ nativeEvent }) => setWidth(nativeEvent.layout.width)}>
       <ThreadSwipeable
         threadKey={key}
         threadTitle={props.label}

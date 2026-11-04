@@ -684,7 +684,9 @@ library's dependency (above); the rest are substitutes:
   the servers keep back with those the phone holds (T3's own count,
   `useOlderSettledShelf`), and reads them a page at a time as the person
   scrolls near its end, where T3's list has a Show more button (a seam in
-  `HomeScreen.tsx`, `home/SettledPages.tsx`). One of `workspace-connection-status.ts`
+  `HomeScreen.tsx`, `home/SettledPages.tsx`). One of `useThreadListV2.ts` keeps Flying in T3's
+  one order, so a Cell between two turns holds its place (`stemcells/tasks/home-holds-still-3.md`;
+  `useThreadListV2.contract.test.ts` pins that order). One of `workspace-connection-status.ts`
   has the header say Cells while the phone loads or syncs them; upstream's
   own test of a module still gets upstream's (`substitutes.cjs`). The seam in the row puts the
   Cell beside its card's content and keeps the card to two lines, its

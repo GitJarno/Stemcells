@@ -6,6 +6,7 @@
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
 
+import { DiskFoot } from "../disk/DiskPlate";
 import { useAppBadge } from "../push/badge";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
 import { StagePages, useStagePages } from "../home/StagePages";
@@ -192,6 +193,7 @@ export function LineHome(props: {
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>
         <StagePages home={stages} tab={tab} night={home.night} render={page} />
+        <DiskFoot />
         <UndoLine held={held} />
       </View>
     </HomeTabsContext>
