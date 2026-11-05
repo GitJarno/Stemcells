@@ -38,6 +38,8 @@ export {
   SettingsSection,
 } from "~/components/settings/settingsLayout";
 export { useNowSecond } from "~/hooks/useNowSecond";
+export { useTheme } from "~/hooks/useTheme";
+export { observeResize } from "~/lib/observeResize";
 export { useNowMinuteMs } from "./needs";
 export { Badge } from "~/components/ui/badge";
 export { Button } from "~/components/ui/button";
@@ -149,6 +151,26 @@ export function useOtherMachines(): ReadonlyArray<{
         environment.environmentId !== primaryId && connected.includes(environment.environmentId),
     )
     .map(({ environmentId, label }) => ({ environmentId, label }));
+}
+
+/** Every environment this client knows, the primary first; one not connected stays listed. */
+export function useDiskMachines(): ReadonlyArray<{
+  readonly environmentId: EnvironmentId;
+  readonly label: string;
+  readonly primary: boolean;
+  readonly connected: boolean;
+}> {
+  const primaryId = usePrimaryEnvironmentId();
+  const connected = useConnectedEnvironmentIds();
+  const { environments } = useEnvironments();
+  return environments
+    .map(({ environmentId, label }) => ({
+      environmentId,
+      label,
+      primary: environmentId === primaryId,
+      connected: environmentId === primaryId || connected.includes(environmentId),
+    }))
+    .sort((a, b) => Number(b.primary) - Number(a.primary));
 }
 
 /** How often a machine's free space is read again while anything shows it. */

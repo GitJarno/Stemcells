@@ -17,13 +17,14 @@ import {
   isMeasuredKind,
 } from "./rules.ts";
 import * as StemcellsDisk from "./StemcellsDisk.ts";
+import * as StemcellsDrives from "./StemcellsDrives.ts";
 import type { DiskItem, DiskVolume } from "./walk.ts";
 import { WarnBelow, writeWarnBelow } from "./warn.ts";
 
-// GET /api/stemcells/disk: the disk now and the last measurement (`?measure=again` measures
-// anew); GET .../volume: free space alone, never a walk. Both carry `warnBelow` and `hiddenAt`
-// once chosen. POST .../warn `{ warnBelow }` chooses how little free space warns; POST
-// .../notice `{ hiddenAt }` hides the phone's notice at that much free, null shows it again.
+// GET /api/stemcells/disk: the startup drive now and its last measurement (`?measure=again`); .../volume:
+// free space alone, never a walk; POST .../warn and .../notice: the person's choices about it.
+// GET .../drives: every drive here; GET .../drive?id=: one besides the startup drive; POST
+// .../drive/look-inside `{ id, on }` opens or closes one. A client names a drive by its id, never a path.
 
 const DISK_PATH = "/api/stemcells/disk";
 const NO_STORE = { "cache-control": "private, no-store" };
@@ -84,7 +85,7 @@ function toWire(look: StemcellsDisk.DiskLook, choices: Choices) {
 const volumeUnreadable = () =>
   Effect.succeed(HttpServerResponse.text("Could not read the size of the disk.", { status: 503 }));
 
-type ChoicesFor = (free: number) => Effect.Effect<Choices>;
+type ChoicesFor = (free: number | undefined) => Effect.Effect<Choices>;
 
 const lookRoute = Effect.fn("DiskHttp.look")(function* (choices: ChoicesFor) {
   const request = yield* HttpServerRequest.HttpServerRequest;
@@ -112,6 +113,100 @@ const volumeRoute = Effect.fn("DiskHttp.volume")(function* (choices: ChoicesFor)
       ),
     ),
     Effect.catchTags({ DiskVolumeError: volumeUnreadable }),
+  );
+});
+
+/** Folders shown by name on a drive that has no kinds; the rest count as "Other". */
+const FOLDER_BANDS = 5;
+const DRIVE_FOLDER_ITEMS = 8;
+
+/** A look inside a drive, in the same shape as the startup drive's measurement. */
+function driveLookToWire(look: StemcellsDrives.DriveLook, choices: Choices) {
+  const { drive, folders } = look;
+  const shown = folders.slice(0, FOLDER_BANDS);
+  const measured = shown.reduce((sum, folder) => sum + folder.bytes, 0);
+  const used = Math.max(0, drive.total - drive.free);
+  return {
+    drive,
+    denied: look.denied,
+    volume: wireVolume({ total: drive.total, free: drive.free }, choices),
+    scanning: look.scanning,
+    counted: look.counted,
+    map:
+      look.measuredAt === null
+        ? null
+        : {
+            measuredAt: look.measuredAt,
+            partial: look.partial,
+            measured,
+            buckets: [
+              ...shown.map((folder) => ({
+                kind: "folder",
+                title: folder.name,
+                bytes: folder.bytes,
+                items: folder.items.slice(0, DRIVE_FOLDER_ITEMS).map((item) => ({
+                  path: item.name,
+                  name: item.name,
+                  bytes: item.bytes,
+                })),
+              })),
+              { kind: "system", title: "Other", bytes: Math.max(0, used - measured), items: [] },
+              { kind: "free", title: "Free", bytes: drive.free, items: [] },
+            ],
+            findings: [],
+            unreadable: [],
+          },
+  };
+}
+
+const drivesRoute = Effect.fn("DiskHttp.drives")(function* (choices: ChoicesFor) {
+  const drives = yield* StemcellsDrives.StemcellsDrives;
+  const list = yield* drives.list();
+  const startup = list.find((drive) => drive.role === "startup");
+  const chosen = yield* choices(startup?.free);
+  return HttpServerResponse.jsonUnsafe(
+    {
+      drives: list.map((drive) => ({ ...drive, used: Math.max(0, drive.total - drive.free) })),
+      ...wireChoices(chosen),
+    },
+    { headers: NO_STORE },
+  );
+});
+
+const driveRoute = Effect.fn("DiskHttp.drive")(function* (choices: ChoicesFor) {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const url = HttpServerRequest.toURL(request);
+  const id = Option.getOrNull(Option.map(url, (each) => each.searchParams.get("id")));
+  const again = Option.exists(url, (each) => each.searchParams.get("measure") === "again");
+  const drives = yield* StemcellsDrives.StemcellsDrives;
+  const look = id === null ? null : yield* drives.look({ id, again });
+  if (look === null) return HttpServerResponse.text("No such drive here.", { status: 404 });
+  // The phone's notice is the startup disk's, however much room the drive looked at has.
+  const list = yield* drives.list();
+  const chosen = yield* choices(list.find((drive) => drive.role === "startup")?.free);
+  return HttpServerResponse.jsonUnsafe(driveLookToWire(look, chosen), { headers: NO_STORE });
+});
+
+const LookInside = Schema.Struct({
+  id: Schema.String.check(Schema.isMaxLength(64)),
+  on: Schema.Boolean,
+});
+
+const lookInsideRoute = Effect.fn("DiskHttp.lookInside")(function* () {
+  const body = yield* HttpServerRequest.schemaBodyJson(LookInside).pipe(Effect.option);
+  if (Option.isNone(body)) return HttpServerResponse.text("Expected { id, on }.", { status: 400 });
+  const drives = yield* StemcellsDrives.StemcellsDrives;
+  return yield* drives.setLookInside(body.value).pipe(
+    Effect.map((drive) =>
+      drive === null
+        ? HttpServerResponse.text("No such drive here.", { status: 404 })
+        : HttpServerResponse.jsonUnsafe(drive, { headers: NO_STORE }),
+    ),
+    Effect.catchCause((cause) =>
+      Effect.logWarning("Couldn't keep a choice about a drive", cause).pipe(
+        Effect.as(HttpServerResponse.text("Couldn't keep the choice.", { status: 500 })),
+      ),
+    ),
   );
 });
 
@@ -163,6 +258,34 @@ export const choicesLayer = HttpRouter.use((router) =>
   }),
 );
 
+/** The drives on this machine: anyone who may read it sees how full; opening one may start work. */
+export const drivesLayer = HttpRouter.use((router) =>
+  Effect.gen(function* () {
+    const drives = yield* StemcellsDrives.StemcellsDrives;
+    const fs = yield* FileSystem.FileSystem;
+    const stateDir = yield* UpstreamDiskWarn.diskStateDir;
+    const choices: ChoicesFor = (free) =>
+      diskChoices(stateDir, free).pipe(Effect.provideService(FileSystem.FileSystem, fs));
+    const provide = <E, R>(route: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>) =>
+      route.pipe(Effect.provideService(StemcellsDrives.StemcellsDrives, drives));
+    yield* router.add(
+      "GET",
+      `${DISK_PATH}/drives`,
+      UpstreamDisk.withReadAccess(provide(drivesRoute(choices))),
+    );
+    yield* router.add(
+      "GET",
+      `${DISK_PATH}/drive`,
+      UpstreamDisk.withReadAccess(provide(driveRoute(choices))),
+    );
+    yield* router.add(
+      "POST",
+      `${DISK_PATH}/drive/look-inside`,
+      UpstreamDisk.withOperateAccess(provide(lookInsideRoute())),
+    );
+  }),
+);
+
 const readLayer = HttpRouter.use((router) =>
   Effect.gen(function* () {
     const disk = yield* StemcellsDisk.StemcellsDisk;
@@ -179,4 +302,8 @@ const readLayer = HttpRouter.use((router) =>
   }),
 ).pipe(Layer.provide(StemcellsDisk.layer));
 
-export const layer = Layer.mergeAll(readLayer, choicesLayer);
+export const layer = Layer.mergeAll(
+  readLayer,
+  choicesLayer,
+  drivesLayer.pipe(Layer.provide(StemcellsDrives.layer)),
+);
