@@ -354,6 +354,15 @@ The phone's card swipes away until the disk has news
 pages offer it again. The snapshot hands `diskWarn.ts` the disk it sampled,
 so a sample that finds the disk calm forgets the hide there.
 
+Everything past that one figure comes over that machine's own HTTP, from the
+client's own paired connection (`callMachine`): `GET /api/stemcells/disk/drives`
+lists its drives, the page reads any of them, and no upstream file changes for
+it. A client reaches a machine it can't call that way (relay, SSH) through the
+snapshot alone, as one tile with its free space. A drive is named by the id the
+list gave it, never by a path; how full it is comes from `df`, so no file on it
+is touched; and `du` runs on it only once the person chose Look inside, per
+volume UUID (`stemcells/tasks/disk-drives.md`).
+
 The phone has the same page, under Server settings: each machine's free
 space, and a tap that opens a new Cell there with the same ask
 (`stemcells/words/disk.ts`). Either client opens the Cell in that

@@ -60,6 +60,7 @@ export async function callMachine(
   environmentId: EnvironmentId,
   pathname: string,
   body: unknown = null,
+  searchParams?: Record<string, string>,
 ): Promise<MachineAnswer> {
   const init: RequestInit =
     body === null
@@ -72,7 +73,7 @@ export async function callMachine(
   let url: string;
   let authorization: string | null = null;
   if (environmentId === appAtomRegistry.get(primaryEnvironmentIdAtom)) {
-    url = resolvePrimaryEnvironmentHttpUrl(pathname);
+    url = resolvePrimaryEnvironmentHttpUrl(pathname, searchParams);
     const token = await readDesktopPrimaryBearerToken();
     authorization = token ? `Bearer ${token}` : null;
   } else {
@@ -83,7 +84,9 @@ export async function callMachine(
     );
     if (prepared?.httpAuthorization?._tag === "Dpop")
       return { ok: false, reason: "it's reached through the relay" };
-    url = new URL(pathname, address.url).href;
+    const remote = new URL(pathname, address.url);
+    remote.search = new URLSearchParams(searchParams).toString();
+    url = remote.href;
     authorization =
       prepared?.httpAuthorization?._tag === "Bearer"
         ? `Bearer ${prepared.httpAuthorization.token}`
