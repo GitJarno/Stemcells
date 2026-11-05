@@ -181,7 +181,10 @@ const TITLE_MARK_STYLE: ViewStyle = {
  * The project's mark as a title's first glyph, inside its text: it takes room on the first line
  * only, and a second line runs under it, so no column of its own costs every line.
  */
-function TitleMark(props: { readonly project: EnvironmentProject; readonly faint?: boolean }) {
+export function TitleMark(props: {
+  readonly project: EnvironmentProject;
+  readonly faint?: boolean;
+}) {
   return (
     <View style={props.faint ? [TITLE_MARK_STYLE, { opacity: 0.4 }] : TITLE_MARK_STYLE}>
       <ProjectMark project={props.project} size={TITLE_MARK} />
@@ -204,7 +207,7 @@ function tintOf(pr: ThreadPrPresentation) {
 }
 
 /** The width the marks take: each mark is a fixed size, so the title knows it before layout. */
-export function marksWidth(marks: CardMarks) {
+function marksWidth(marks: CardMarks) {
   const widths = [marks.machine ? MARK : 0, marks.pr ? MARK : 0].filter((width) => width > 0);
   return widths.reduce((sum, width) => sum + width, 0) + MARK_GAP * Math.max(widths.length - 1, 0);
 }

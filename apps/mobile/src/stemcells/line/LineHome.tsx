@@ -17,7 +17,7 @@ import { useHomeThreadSelection } from "../upstream/home";
 import { settleFromAnyStage } from "../upstream/needs";
 import type { Act } from "./held";
 import { held } from "./heldLine";
-import { AskCard, type AskActs, AskHead, whoOf } from "./Ask";
+import { AskCard, type AskActs, AskHead, AskLine, whoOf } from "./Ask";
 import { commandsFor, elsewhereWords, type FilterProject, type LineStage } from "./kit";
 import { type Ask, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
 import type { Reading } from "./read";
@@ -259,15 +259,13 @@ function NeedsYou(props: {
           >
             <AskHead
               cell={cell}
-              over={null}
+              place={cell}
               title={cell.title}
-              open={false}
+              over={null}
+              ask={<AskLine>Its machine hasn’t answered yet.</AskLine>}
               corner="Asks you"
               urgent
             />
-            <AppText className="ml-16 text-xs text-foreground-muted">
-              Its machine hasn’t answered yet.
-            </AppText>
           </Pressable>
         ))}
         {props.elsewhere === null ? null : (

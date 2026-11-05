@@ -24,6 +24,9 @@ row, and before the one-liner under a Cell's name in its chat's header.
 Left alone: a home narrowed to one project still shows the mark on every row. Hiding it there
 is a refinement for later, if the repetition reads as noise.
 
+The asks on Input read the same (2026-11-05): mark and the Cell's one-liner as the title, what
+it asks on the line under them. A title of only "2 steps for you" said neither where nor what.
+
 ## Plan
 
 - [x] `RowCell.tsx`: the mark as the title's inline lead (`cardLines().lead`, `SlimRowProject`),
