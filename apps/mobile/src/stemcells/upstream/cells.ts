@@ -20,6 +20,8 @@ export { ProviderIcon } from "../../components/ProviderIcon";
 export { PullRequestGlyph } from "../../features/pull-requests/pullRequestGlyphs";
 export { pullRequestStatus } from "../../features/pull-requests/pullRequestStatus";
 export type { ThreadPrPresentation } from "../../state/thread-pr-presentation";
+export type { PendingNewTask } from "../../state/use-pending-new-tasks";
+export { pendingThreadCreationShell } from "../../state/pending-thread-creation";
 
 /** The project of an ask, which names its machine and project in plain words off the wire. */
 export function useProjectAt(place: {

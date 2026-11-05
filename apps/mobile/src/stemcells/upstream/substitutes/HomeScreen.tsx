@@ -1,7 +1,7 @@
 // Replaces `features/home/HomeScreen.tsx` (`substitutes.cjs`): the Cells' line under Aski, T3's
 // list handed each segment's Cells, a list per segment. In the iOS workspace our picks narrow it
-// (`home/scope.tsx`) and T3's own pick stays unset. Where it has no header (Android, outside the
-// workspace) and searching, T3's.
+// (`home/scope.tsx`) and T3's own pick stays unset. Searching, or with no machine yet, one list,
+// with no shelves. Where it has no header (Android, outside the workspace), T3's.
 import { useIsFocused } from "@react-navigation/native";
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
@@ -10,7 +10,7 @@ import * as Upstream from "../../../features/home/HomeScreen";
 import { askiChatsOf } from "../../aski/chat";
 import { HomeFront } from "../../home/HomeFront";
 import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
-import { useMinute } from "../../home/state";
+import { EVERY_STAGE, HomeStageContext, useMinute } from "../../home/state";
 import { setPicks, usePicks } from "../../home/usePicks";
 import { LineHome } from "../../line/LineHome";
 import { useKeepReading, useReadings } from "../../line/readings";
@@ -55,15 +55,22 @@ export function HomeScreen(props: Props) {
   useKeepReading(props.threads, now, inFront && tabbed);
   // T3's own pick narrows nothing where ours do, or a pick made before ours hides Cells unseen.
   const upstream = ours
-    ? { ...props, selectedEnvironmentId: null, selectedProjectKey: null }
+    ? {
+        ...props,
+        selectedEnvironmentId: null,
+        selectedProjectKey: null,
+        pendingTasks: props.pendingTasks.filter((task) => scope.inView(task)),
+      }
     : props;
   if (!tabbed)
     return (
       <HomeFront inFront={inFront}>
-        <Upstream.HomeScreen
-          {...upstream}
-          threads={ours ? props.threads.filter((thread) => scope.inView(thread)) : props.threads}
-        />
+        <HomeStageContext value={ours ? EVERY_STAGE : null}>
+          <Upstream.HomeScreen
+            {...upstream}
+            threads={ours ? props.threads.filter((thread) => scope.inView(thread)) : props.threads}
+          />
+        </HomeStageContext>
       </HomeFront>
     );
 
@@ -79,7 +86,7 @@ export function HomeScreen(props: Props) {
       <Upstream.HomeScreen
         {...upstream}
         threads={threads}
-        pendingTasks={pending ? props.pendingTasks : []}
+        pendingTasks={pending ? upstream.pendingTasks : []}
       />
     </FromTheTop>
   );
@@ -102,7 +109,8 @@ export function HomeScreen(props: Props) {
         environmentId={scope.machine}
         onShowAll={() => setPicks(NO_PICKS)}
         settle={props.onSettleThread}
-        pending={props.pendingTasks.length}
+        pending={upstream.pendingTasks.length}
+        queued={upstream.pendingTasks.filter((task) => task.kind === "pending").length}
         olderSettled={olderSettled}
         renderList={list}
       />
