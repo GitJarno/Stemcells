@@ -10,7 +10,8 @@ import {
 import { fieldBands, fieldLayout, SHELF_MOST_CELLS } from "./field";
 import { paintShelfField } from "./fieldPainter";
 import { useFieldTheme } from "./DriveHero";
-import { type Drive, STARTUP_DRIVE, useDrives } from "./diskReading";
+import { useDrives } from "./diskReading";
+import { type Drive, STARTUP_DRIVE } from "./wire";
 import { diskPressure, SOON_BELOW } from "./pressure";
 
 // Every drive of every machine in one row, each a small field: where there's room, at a glance, and

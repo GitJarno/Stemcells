@@ -19,20 +19,32 @@ import {
   useMachineDisk,
   useMachines,
 } from "../upstream/disk";
+import { DrivePanel } from "./DrivePanel";
 import { setNoticeHidden, useHiddenAt } from "./notice";
+import { STARTUP_DRIVE } from "./kit";
 import { useFreeSpace } from "./useFreeSpace";
 import { useWarnBelow } from "./warn";
 import { WarnMenu } from "./WarnMenu";
 
-// Settings › Disk on the phone: each machine's free space, and a tap that opens a new Cell
-// in that machine's Disk project, the cleanup ask waiting unsent. The phone deletes and
-// measures nothing; the Cell does both, on the machine, after the person names what goes.
+// Settings › Disk on the phone: one drive of any machine as a field of Cells, every drive to
+// switch to, then each machine's free space and a tap that opens a new Cell in that machine's
+// Disk project, the cleanup ask waiting unsent. The phone deletes and measures nothing; the
+// machine measures, and the Cell deletes there after the person names what goes.
 
 type Machine = ReturnType<typeof useMachines>[number];
 
 export function DiskScreen() {
   const insets = useSafeAreaInsets();
   const machines = useMachines();
+  const [picked, setPicked] = useState<{
+    readonly environmentId: string;
+    readonly driveId: string;
+  } | null>(null);
+  const connected = machines.filter((machine) => machine.connection === "connected");
+  const pickedMachine = connected.find(
+    (machine) => machine.environmentId === picked?.environmentId,
+  );
+  const shown = pickedMachine ?? connected[0];
   return (
     <SettingsScreen title="Disk">
       <ScreenScrollView
@@ -42,6 +54,16 @@ export function DiskScreen() {
         className="flex-1"
         contentContainerClassName="gap-6 px-5 pt-4 pb-[18px]"
       >
+        {shown === undefined ? null : (
+          <DrivePanel
+            machines={machines}
+            environmentId={shown.environmentId}
+            wanted={
+              pickedMachine === undefined ? STARTUP_DRIVE : (picked?.driveId ?? STARTUP_DRIVE)
+            }
+            onSelect={(environmentId, driveId) => setPicked({ environmentId, driveId })}
+          />
+        )}
         <SettingsSection
           title="Machines"
           footer={`Tap a machine to start a Cell that frees space on it. ${CLEANUP_PROMISE} ${DISK_WARN.note}`}

@@ -32,21 +32,14 @@ import {
   diskBytes,
 } from "../../../../../stemcells/words/disk.ts";
 import { openCleanupCell } from "./cleanupCell";
-import {
-  chooseOnMachine,
-  type Drive,
-  type DriveReading,
-  setLookInside,
-  STARTUP_DRIVE,
-  useDriveReading,
-  useDrives,
-} from "./diskReading";
+import { chooseOnMachine, setLookInside, useDriveReading, useDrives } from "./diskReading";
 import { DriveHero, useFieldTheme } from "./DriveHero";
 import { DriveShelf } from "./DriveShelf";
 import { fieldBands, fieldLayout, roundUnit, type FieldFinding, type FieldLayout } from "./field";
 import { bandColor, rgbCss, type FieldColors } from "./fieldColors";
-import type { FieldFocus } from "./fieldPainter";
+import type { FieldFocus } from "./fieldMotion";
 import { SOON_BELOW, WARN_CHOICES } from "./pressure";
+import { type Drive, type DriveReading, STARTUP_DRIVE } from "./wire";
 
 // Settings › Disk: any drive of any connected machine, one at a time, in the same page. The app
 // deletes nothing itself: "Free space" opens a new Cell in that machine's Disk project with the ask
@@ -446,9 +439,11 @@ export function DiskSettingsPanel() {
       <DriveShelf
         environmentId={environmentId}
         driveId={driveId}
-        onSelect={(nextMachine, nextDrive) =>
-          setPicked({ environmentId: nextMachine, driveId: nextDrive })
-        }
+        onSelect={(nextMachine, nextDrive) => {
+          // What was lit or previewed belongs to the visit, not the drive.
+          setHeld(null);
+          setPicked({ environmentId: nextMachine, driveId: nextDrive });
+        }}
       />
 
       {environmentId !== null && drive !== null && external && (!lookInside || denied) ? (
