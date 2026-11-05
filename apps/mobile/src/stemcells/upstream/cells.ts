@@ -4,8 +4,10 @@
 // `cells.contract.test.ts` pins the statuses a Cell's face is read from.
 
 import { useAtomValue } from "@effect/atom-react";
+import { ProjectId, type EnvironmentId } from "@t3tools/contracts";
 
 import { useAppearancePreferences } from "../../features/settings/appearance/AppearancePreferencesProvider";
+import { useProject } from "../../state/entities";
 import { threadListEnvironmentsAtom } from "../../state/presentation";
 import { environmentThreadShells } from "../../state/threads";
 import type { EnvironmentThreadShell } from "./threads";
@@ -18,6 +20,17 @@ export { ProviderIcon } from "../../components/ProviderIcon";
 export { PullRequestGlyph } from "../../features/pull-requests/pullRequestGlyphs";
 export { pullRequestStatus } from "../../features/pull-requests/pullRequestStatus";
 export type { ThreadPrPresentation } from "../../state/thread-pr-presentation";
+
+/** The project of an ask, which names its machine and project in plain words off the wire. */
+export function useProjectAt(place: {
+  readonly environmentId: string;
+  readonly projectId: string;
+}) {
+  return useProject({
+    environmentId: place.environmentId as EnvironmentId,
+    projectId: ProjectId.make(place.projectId),
+  });
+}
 
 /** What `select` reads from every chat the phone knows; the caller draws again only when that changes. */
 export function useThreadShellsSelected<A>(

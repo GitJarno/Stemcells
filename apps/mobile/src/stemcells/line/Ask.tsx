@@ -1,16 +1,16 @@
 // An ask (stemcells/tasks/aski-asks.md, unblocking.md), in Flying's and Landed's card: the Cell
-// and its name left, what to do as the title, its age top right, its project bottom right. Open,
-// it grows under that head: what the Cell did, what waits on it, the options, Reply… last, which
-// opens a full-width field. A Cell's own choices to a question stay rows.
+// and its name left, its project's mark leading its one-liner, its age top right, what to do under
+// them. Open, it grows under that head: what the Cell did, what waits on it, the options, Reply…
+// last, which opens a full-width field. A Cell's own choices to a question stay rows.
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Linking, Pressable, View } from "react-native";
 
 import { cellNameOf } from "../cell/kit";
 import { diskFailure } from "../disk/kit";
-import { CellBesideRow, type CardMarks, marksWidth } from "../home/RowCell";
+import { CellBesideRow, type CardMarks, TitleMark } from "../home/RowCell";
 import { CODE_FONT, NEEDS_YOU } from "../tokens";
-import { AppText, type EnvironmentThreadShell, useProject } from "../upstream/cells";
+import { AppText, type EnvironmentThreadShell, useProjectAt } from "../upstream/cells";
 import { useFreeSpace } from "../disk/useFreeSpace";
 import { useMachineDisk } from "../upstream/disk";
 import { AppTextInput, relativeTime } from "../upstream/needs";
@@ -83,10 +83,8 @@ function AskBody(
   const { need } = props.ask;
   const card = cardOf(need, props.now, props.disk);
   const { cell } = props;
-  const repo = repositoryUrlOf(
-    useProject(cell ? { environmentId: cell.environmentId, projectId: cell.projectId } : null)
-      ?.repositoryIdentity,
-  );
+  const place = { environmentId: props.ask.environmentId, projectId: need.projectId };
+  const repo = repositoryUrlOf(useProjectAt(place)?.repositoryIdentity);
   // The cleanup Cell is a new Cell on the full machine: the ask stays until it retries.
   const choose = (option: CardOption, given?: Given) =>
     option.choice.kind === "freeSpace"
@@ -95,19 +93,24 @@ function AskBody(
   const head = (
     <AskHead
       cell={props.cell}
+      place={place}
       name={whoOf(need)}
-      // A Subcell's ask names it over its parent's title.
-      over={need.parentThreadId === null ? null : `› ${need.title}`}
-      title={
+      title={cell?.title ?? need.title}
+      // A Subcell's ask names it under its parent's title.
+      over={need.parentThreadId === null || cell === undefined ? null : `› ${need.title}`}
+      ask={
         props.open ? (
-          <Words text={card.headline} repo={repo} />
+          <AppText accessibilityRole="header" className="font-t3-bold text-lg text-foreground">
+            <Words text={card.headline} repo={repo} />
+          </AppText>
         ) : (
-          spansOf(card.headline)
-            .map((span) => span.text)
-            .join("")
+          <AskLine>
+            {spansOf(card.headline)
+              .map((span) => span.text)
+              .join("")}
+          </AskLine>
         )
       }
-      open={props.open}
       corner={relativeTime(need.since)}
       // An ask that holds up a running turn says so in its age's amber.
       urgent={need.blocks}
@@ -178,63 +181,65 @@ function AskBody(
 /** A card as T3's rows are on the home (`upstream/substitutes/thread-list-v2-row-appearance.ts`). */
 const CARD = "mx-3 mb-2 rounded-[20px] bg-grouped-card py-3 pl-3 pr-4";
 
-const NO_PULL_REQUEST = () => undefined;
+/** An ask's marks are its project's alone, which `AskHead` leads its title with. */
+const NO_MARKS: CardMarks = {
+  machine: null,
+  machineLabel: null,
+  pr: null,
+  prLabel: null,
+  onOpenPullRequests: () => undefined,
+  project: null,
+};
+
+/** A shut ask's line under its title: what the Cell asks, or why it can't say yet. */
+export function AskLine(props: { readonly children: string }) {
+  return (
+    <AppText className="text-sm text-foreground-secondary" numberOfLines={1}>
+      {props.children}
+    </AppText>
+  );
+}
 
 /**
- * An ask's head, as a card row's: its Cell and name on the left, the title beside them, the
- * corner's words top right, the project's mark bottom right. A Cell whose chat isn't on the
- * phone has its name alone.
+ * An ask's head, as a card row's: its Cell and name on the left, the project's mark leading the
+ * Cell's one-liner beside them, the corner's words top right, the ask under them. A Cell whose
+ * chat isn't on the phone has its name alone.
  */
 export function AskHead(props: {
   readonly cell: EnvironmentThreadShell | undefined;
+  readonly place: { readonly environmentId: string; readonly projectId: string };
   readonly name?: string;
+  readonly title: string;
   readonly over: string | null;
-  readonly title: ReactNode;
-  readonly open: boolean;
+  readonly ask: ReactNode;
   readonly corner: string;
   readonly urgent: boolean;
 }) {
   const { cell } = props;
-  const project = useProject(
-    cell ? { environmentId: cell.environmentId, projectId: cell.projectId } : null,
-  );
-  const marks: CardMarks = {
-    machine: null,
-    machineLabel: null,
-    pr: null,
-    prLabel: null,
-    onOpenPullRequests: NO_PULL_REQUEST,
-    project,
-  };
+  const project = useProjectAt(props.place);
   const body = (
-    <View className="flex-row items-start gap-2">
-      <View className="min-w-0 flex-1 gap-0.5">
-        {props.over ? (
-          <AppText className="text-xs text-foreground-muted" numberOfLines={1}>
-            {props.over}
-          </AppText>
-        ) : null}
+    <View className="gap-1">
+      <View className="flex-row items-start gap-2">
         <AppText
-          accessibilityRole={props.open ? "header" : undefined}
-          className={
-            props.open
-              ? "font-t3-bold text-lg text-foreground"
-              : "font-t3-medium text-base text-foreground"
-          }
-          numberOfLines={props.open ? undefined : 2}
+          className="min-w-0 flex-1 font-t3-medium text-base text-foreground"
+          numberOfLines={2}
         >
+          {project ? <TitleMark project={project} /> : null}
           {props.title}
         </AppText>
-      </View>
-      {/* As wide as the marks under it, so the title's second line never runs beneath them. */}
-      <View className="items-end" style={{ minWidth: marksWidth(marks), paddingTop: 2 }}>
         <AppText
-          className="text-xs font-t3-bold tabular-nums text-foreground-muted"
+          className="pt-0.5 text-xs font-t3-bold tabular-nums text-foreground-muted"
           style={props.urgent ? { color: NEEDS_YOU } : undefined}
         >
           {props.corner}
         </AppText>
       </View>
+      {props.over ? (
+        <AppText className="text-xs text-foreground-muted" numberOfLines={1}>
+          {props.over}
+        </AppText>
+      ) : null}
+      {props.ask}
     </View>
   );
   if (cell === undefined)
@@ -245,9 +250,8 @@ export function AskHead(props: {
       </View>
     );
   return (
-    <CellBesideRow thread={cell} marks={marks}>
-      {/* Room under a one-line title for the marks, as a card row keeps. */}
-      <View style={{ minHeight: 40 }}>{body}</View>
+    <CellBesideRow thread={cell} marks={NO_MARKS}>
+      {body}
     </CellBesideRow>
   );
 }
