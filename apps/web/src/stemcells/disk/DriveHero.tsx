@@ -12,7 +12,8 @@ import {
   rgbCss,
   type Rgb,
 } from "./fieldColors";
-import { FieldPainter, type FieldFocus } from "./fieldPainter";
+import type { FieldFocus } from "./fieldMotion";
+import { FieldPainter } from "./fieldPainter";
 import { diskPressure, FULL_BELOW, type DiskPressure } from "./pressure";
 
 // The top of Settings › Disk: the drive's status in its colour, the room left, and the drive as a

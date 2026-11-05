@@ -10,6 +10,7 @@ import { useContext, useEffect } from "react";
 import { AppState } from "react-native";
 
 import { ENVIRONMENT_MACHINE_SYMBOLS } from "../../components/EnvironmentMachineSymbol";
+import { useAppearancePreferences } from "../../features/settings/appearance/AppearancePreferencesProvider";
 import { uuidv4 } from "../../lib/uuid";
 import { appAtomRegistry } from "../../state/atom-registry";
 import { useServerConfigs, waitForProject } from "../../state/entities";
@@ -29,6 +30,7 @@ import { useWorkspaceEnvironments } from "../../state/workspace";
 import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
 import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
 import { type DiskFigures, keptDisks } from "../disk/kept";
+import { isRelayManagedConnection } from "./push";
 
 // Settings › Disk, the home's disk plate and a Cell the full disk stopped read each machine's
 // free space from its server and open a new Cell in that machine's Disk project; the phone
@@ -39,6 +41,7 @@ export { SymbolView } from "../../components/ui/AppSymbol";
 export { Button } from "../../components/ui/Button";
 export { Menu } from "../../components/ui/Menu";
 export * as Dialog from "../../components/ui/Dialog";
+export { RowPressable } from "../../components/ui/RowPressable";
 export { ScreenScrollView } from "../../components/ui/ScreenScrollView";
 export { SettingsRow } from "../../features/settings/components/SettingsRow";
 export { SettingsScreen } from "../../features/settings/components/SettingsScreen";
@@ -157,6 +160,32 @@ export function useMachineConnection(
   environmentIdText: string,
 ): { readonly httpBaseUrl: string; readonly bearerToken: string | null } | null {
   return useSavedRemoteConnection(environmentIdText as EnvironmentId);
+}
+
+/** A machine's own server, reached directly with the token the phone paired with. */
+export interface MachineLine {
+  readonly httpBaseUrl: string;
+  readonly bearerToken: string;
+}
+
+/**
+ * The line to a machine's own server for its drives; null without a bearer token, or through the
+ * relay, whose signed requests only upstream's own client makes (the Mac's Settings › Disk alike).
+ */
+export function useMachineLine(environmentIdText: string | null): MachineLine | null {
+  const saved = useSavedRemoteConnection(environmentIdText as EnvironmentId | null);
+  if (saved === null || saved.bearerToken === null || isRelayManagedConnection(saved)) return null;
+  return { httpBaseUrl: saved.httpBaseUrl, bearerToken: saved.bearerToken };
+}
+
+/** Whether the phone draws in dark, and the theme's amber and red, as hex or `rgb()`. */
+export function useDiskTheme() {
+  const { themeAppearance, themeVariables } = useAppearancePreferences();
+  return {
+    dark: themeAppearance === "dark",
+    warning: themeVariables["--color-warning-foreground"],
+    danger: themeVariables["--color-danger-foreground"],
+  };
 }
 
 /**

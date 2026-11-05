@@ -72,7 +72,8 @@ Reaching another machine:
 - [x] Web: `field.ts`, painter, hero, shelf, the page for any drive of any machine.
 - [x] Real client, two servers: tiles, map and measure over the second machine's
       own HTTP, and "Not connected" when it goes away. 0 frames asked at rest.
-- [ ] Phone: its Disk page keeps listing machines. Drives and the field come next.
+- [x] Phone: the same page, from each machine's own HTTP with the phone's paired token. One
+      motion (`fieldMotion.ts`) drives the web's canvas and the phone's SVG paths.
 
 ## Review
 
@@ -90,3 +91,10 @@ untouched. Only closing a drive doesn't wait, so the person's answer stands.
 
 Not proven: `du` on a real external (macOS would ask on the person's screen; it ran
 on temporary folders) and a real second Mac (a second local server stood in).
+
+The phone, after: a finger has no hover, so touching the field names the band under it in the
+headline's place, as a scrubbed chart does, and a tap holds it. Sideways scrubs; up and down
+still scroll. What the person touched or previewed belongs to that visit: switching drives
+clears it, on the web too. Checked on the iOS Simulator against two local servers behind a
+fixture proxy: every state above, light and dark. Once landed, the motion asks for no frame,
+which `fieldMotion.test.ts` holds. Not proven on a real phone.
