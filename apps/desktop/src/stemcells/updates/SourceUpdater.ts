@@ -320,8 +320,13 @@ const make = Effect.gen(function* () {
         );
       });
       // The app quitting mid-build ends it; the next one starts over.
-      return Effect.try(() => {
-        if (child.pid !== undefined && child.exitCode === null) process.kill(-child.pid, "SIGTERM");
+      return Effect.try({
+        try: () => {
+          if (child.pid !== undefined && child.exitCode === null) {
+            process.kill(-child.pid, "SIGTERM");
+          }
+        },
+        catch: () => new UpdateStepError({ message: "The build had already stopped." }),
       }).pipe(Effect.ignore);
     }).pipe(
       Effect.ensuring(

@@ -19,6 +19,8 @@ const OURS_BY_ENDING: ReadonlyArray<readonly [ending: RegExp, file: string]> = [
   [/-web-favicon-16x16\.png$/, "web-favicon-16x16.png"],
   [/-web-favicon-32x32\.png$/, "web-favicon-32x32.png"],
   [/-web-apple-touch-180\.png$/, "web-apple-touch-180.png"],
+  [/-web-icon-192x192\.png$/, "web-icon-192x192.png"],
+  [/-web-icon-512x512\.png$/, "web-icon-512x512.png"],
 ];
 
 /**

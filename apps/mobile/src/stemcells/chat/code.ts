@@ -7,11 +7,7 @@
 type HeaderItem = Readonly<Record<string, unknown>>;
 
 /** Upstream's three, in the order the menu lists them. */
-export const CODE_ITEM_IDS = [
-  "thread-right-git",
-  "thread-right-files",
-  "thread-right-terminal",
-] as const;
+const CODE_ITEM_IDS = ["thread-right-git", "thread-right-files", "thread-right-terminal"] as const;
 
 /** A row of the Code menu: upstream's menu opens as a submenu, its button as an action. */
 function rowOf(item: HeaderItem) {

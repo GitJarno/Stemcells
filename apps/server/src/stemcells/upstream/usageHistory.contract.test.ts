@@ -10,6 +10,7 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import { assert, it } from "@effect/vitest";
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   ProviderDriverKind,
@@ -19,7 +20,6 @@ import {
 } from "@t3tools/contracts";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 import * as CursorAccountReader from "@t3tools/provider-cursor/server/CursorAccountReader";
-import * as CursorKeychain from "@t3tools/provider-cursor/server/CursorKeychain";
 import * as CursorUsageAccounts from "@t3tools/provider-cursor/server/CursorUsageAccounts";
 import { MuseUsageHome } from "@t3tools/provider-muse/server";
 import * as Effect from "effect/Effect";
@@ -46,7 +46,7 @@ const AT = Date.parse("2026-08-01T12:00:00Z");
 
 const layerService = (home: string) =>
   Layer.fresh(CursorUsageAccounts.layer).pipe(
-    Layer.provide(CursorAccountReader.layer.pipe(Layer.provide(CursorKeychain.layer))),
+    Layer.provide(CursorAccountReader.layer),
     Layer.provideMerge(AntigravityUsage.layer),
     // No Muse install here: its usage home would start Muse to ask.
     Layer.provideMerge(
@@ -55,9 +55,12 @@ const layerService = (home: string) =>
     Layer.provideMerge(ProviderHostLive.layer),
     Layer.provideMerge(CodexUsageHistory.layer.pipe(Layer.provideMerge(Sqlite.layerMemory))),
     Layer.provideMerge(Layer.mock(BackgroundPolicy.BackgroundPolicy)({})),
-    Layer.provideMerge(Layer.mock(ServerSecretStore.ServerSecretStore)({})),
+    // No Cursor sign-in saved: Cursor's usage reads none.
+    Layer.provideMerge(
+      Layer.mock(ServerSecretStore.ServerSecretStore)({ get: () => Effect.succeedNone }),
+    ),
     Layer.provideMerge(ServerConfig.layerTest(process.cwd(), NodePath.join(home, "t3"))),
-    Layer.provideMerge(NodeServices.layer),
+    Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
     Layer.provideMerge(Layer.succeed(HostProcess.Platform, "linux")),
     Layer.provideMerge(
       ServerSettings.layerTest({

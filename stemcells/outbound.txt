@@ -34,6 +34,8 @@ host json-schema.org the $schema id of t3.json
 host www.apple.com the plist DTD id in a generated plist
 host tailwindcss.com the license comment in generated CSS
 host docs.github.com a comment in the GitHub GraphQL config
+host schemas.microsoft.com XML namespaces in the managed-policy templates (Windows ADMX) the server writes out
+host dev.azure.com Azure DevOps clone links read and rewritten as text (cloneUrl.ts); nothing fetches it
 host www.nayuki.io the QR code library's credit
 host hub.example.ts.net a placeholder in the usage-source dialog
 host machine.tailnet.ts.net a placeholder in a link request's address field, on the web and the phone
@@ -67,6 +69,8 @@ host www.ecosia.org a search engine the person picks
 host www.google.com a search engine the person picks; upstream's favicon url is substituted away (No favicon fetched, seams.md)
 host github.githubassets.com GitHub's icon in upstream's favicon module, substituted away (No favicon fetched, seams.md)
 host challenges.cloudflare.com sign-in pages' Turnstile, allowed in the desktop's page policy
+host teams.cloud.microsoft Teams pages the person opens in the desktop browser get a browser's User-Agent (BrowserSession.ts); nothing else asks it
+host teams.microsoft.com the same, Teams' older address
 
 # Source control, through the person's own CLIs and tokens.
 host github.com repository links, clone urls and the person's GitHub
@@ -93,7 +97,8 @@ host auth.x.ai Grok sign-in
 host cli-chat-proxy.grok.com Grok usage limits
 host api.meta.ai Muse's release channel
 host api2.cursor.sh Cursor usage limits
-host cursor.com Cursor account usage
+host api.cursor.com Cursor's models and account, for a Cursor provider the person signed in (CURSOR_BACKEND_URL may name another)
+host downloads.claude.ai a native Claude CLI's newest version, for its update notice (upstream's provider maintenance), as npm answers it for an npm install; asked of Anthropic, never T3
 host opencode.ai OpenCode usage limits
 host cdn.agentclientprotocol.com the ACP agent registry, when the person browses it
 host registry.npmjs.org the provider CLIs' latest versions; T3's own release is never asked: the server answers it only when a client asks, and ours never do (noTelemetry.test.ts)
@@ -103,6 +108,9 @@ host storage.googleapis.com Chrome for Testing, downloaded for the preview brows
 host googlechromelabs.github.io a comment naming Chrome for Testing's version list
 host open-vsx.org theme search, when the person imports a VS Code theme
 host api.expo.dev the device hub's builds, with the person's Expo token
+host api.x.ai cloud dictation with xAI, once the person adds their own key in Settings › Voice
+host openrouter.ai cloud dictation with OpenRouter: its public model list when the person picks it in Settings › Voice, audio once they add their key; also a comment crediting its glyphs
+host huggingface.co a local dictation model, downloaded when the person asks for it in Settings › Voice, checked against its hash
 
 # Apple's push service, with the person's own APNs key: only once they set
 # one in Settings › Aski, and only to their own phones (push/apns.ts).
@@ -135,6 +143,7 @@ cut apps/server/src/triage/triagePrompt.ts the instructions `t3 triage` hands th
 # to T3 or carries anything of the person's; each waits on the person's call to go
 # (stemcells/tasks/t3-sync.md, Needs the person).
 live registry.npmjs.org the Claude CLI's newest version, asked at start for the update notice (upstream's provider maintenance), through `npm view`, so the person's own npm registry answers; a socket shows no path, and T3's release is never asked (noTelemetry.test.ts)
+live downloads.claude.ai/claude-code-releases/ the native Claude CLI's newest version, asked at start for the same update notice (upstream's provider maintenance) as npm's registry answers for an npm install; Anthropic's own host, never T3's; goes with the update notice
 live raw.githubusercontent.com/berriai/litellm/ LiteLLM's model price table, for the usage page's cost estimates (UsageService), as the usage page opens
 live api.github.com/repos/berriai/litellm/ the same price table's fallback, asked when raw.githubusercontent.com fails, as it does in the lab
 live api.meta.ai/muse-code/channels/ the Muse CLI's release channel, for its update notice (upstream's provider maintenance), as the usage page opens

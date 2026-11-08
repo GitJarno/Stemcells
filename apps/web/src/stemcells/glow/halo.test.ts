@@ -64,7 +64,7 @@ describe("the halo stops at the ledge, and what stands on the dock glows on its 
       "[data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge,",
     );
     expect(dockTop).toContain(
-      '> :not(:has(.composer-line-ledge))\n  > [data-slot="composer-shell"] {\n  anchor-name: --sc-dock-top;',
+      '> :not(:has(.composer-line-ledge))\n  [data-slot="composer-shell"] {\n  anchor-name: --sc-dock-top;',
     );
     expect(glowCss.match(/anchor-name/g)).toHaveLength(1);
   });

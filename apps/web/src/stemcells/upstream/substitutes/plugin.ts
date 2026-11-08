@@ -15,6 +15,8 @@ import { upstreamNamePlugin } from "../../../../../../stemcells/brand/nameTransf
 export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // No favicon fetched: a link or a page shows the app's own mark.
   "packages/shared/src/favicon.ts": "favicon.ts",
+  // No star asked for T3's repository, and GitHub not asked whether the person gave one.
+  "apps/web/src/components/GitHubStarPrompt.tsx": "GitHubStarPrompt.ts",
   // Concise model names: the picker's update notice and a subagent's tooltip.
   "packages/client-runtime/src/providerUpdateRequiredModels.ts": "providerUpdateRequiredModels.ts",
   "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",
@@ -130,6 +132,16 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Upstream's tests of a module Stemcells replaces outright, which still get upstream's modules,
+ * so each keeps testing what it was written for. Only a substituted module's own test: a view
+ * here would ship upstream's module (`substitutes.contract.test.ts` holds it there).
+ */
+export const UPSTREAM_TESTS_OF_UPSTREAM: ReadonlyArray<string> = [
+  // The star prompt our substitute never shows.
+  "apps/web/src/components/GitHubStarPrompt.test.ts",
+];
+
+/**
  * Upstream modules Stemcells replaces only for the upstream files in one
  * folder (`within`, from the repository's root): a module many views share,
  * changed where one of them draws it. Each is proven like the rest, and also
@@ -156,6 +168,8 @@ export const PUBLIC_SUBSTITUTES: Readonly<Record<string, string>> = {
   "/favicon-16x16.png": "stemcells/brand/web-favicon-16x16.png",
   "/favicon-32x32.png": "stemcells/brand/web-favicon-32x32.png",
   "/apple-touch-icon.png": "stemcells/brand/web-apple-touch-180.png",
+  "/icon-192x192.png": "stemcells/brand/web-icon-192x192.png",
+  "/icon-512x512.png": "stemcells/brand/web-icon-512x512.png",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -177,6 +191,10 @@ const scopedSubstituteOf: ReadonlyMap<string, { within: string; file: string }> 
 );
 
 const isOurs = (id: string) => id.startsWith(ourRoot + NodePath.sep);
+
+const testsOfUpstream: ReadonlySet<string> = new Set(
+  UPSTREAM_TESTS_OF_UPSTREAM.map((test) => NodePath.join(repoRoot, test)),
+);
 
 const publicSubstituteOf: ReadonlyMap<string, string> = new Map(
   Object.entries(PUBLIC_SUBSTITUTES).map(([path, ours]) => [path, NodePath.join(repoRoot, ours)]),
@@ -207,6 +225,7 @@ export function substituteUpstreamModules(): Plugin {
         }),
     async resolveId(source, importer, options) {
       if (importer === undefined || isOurs(importer)) return null;
+      if (testsOfUpstream.has(importer.split("?")[0]!)) return null;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (resolved === null || resolved.external) return resolved;
       const scoped = scopedSubstituteOf.get(resolved.id);

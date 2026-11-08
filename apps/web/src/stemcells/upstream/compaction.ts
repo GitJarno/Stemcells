@@ -12,4 +12,4 @@ export {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-export type { ContextWindowSnapshot } from "~/lib/contextWindow";
+export type { ContextWindowSnapshot } from "@t3tools/client-runtime/state/context-window";

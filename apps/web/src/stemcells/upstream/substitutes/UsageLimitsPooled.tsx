@@ -2,7 +2,7 @@
  * Substitutes upstream's `components/usage/UsageLimitsPooled.tsx` (`plugin.ts`): the Usage page
  * lists each plan a row, as the rail's hover does (`limits/PlanBoard.tsx`), where upstream pools
  * a provider's accounts into one card per window. Upstream still picks the environments and
- * providers shown and draws its notices, "Manage usage" links, Cursor prompt and reset credits.
+ * providers shown and draws its notices, "Manage usage" links and reset credits.
  */
 import {
   CHATGPT_USAGE_URL,
@@ -24,14 +24,14 @@ import { formatDuration, ResetCredits, useClockFormat } from "../limits";
 export * from "../../../components/usage/UsageLimitsPooled";
 
 export function UsageLimitsPooled(props: ComponentProps<typeof Upstream.UsageLimitsPooled>) {
-  const { presentations, now, cursorPrompt } = props;
+  const { presentations, now } = props;
   const { plans } = usePlans(presentations, now);
   const clock = useClockFormat(now);
   const notices = collectLimitNotices(presentations);
   const externalLinks = collectExternalUsageLinks(presentations);
   return (
     <div className="flex flex-col gap-8">
-      {plans.length === 0 && notices.length === 0 && !cursorPrompt && externalLinks.length === 0 ? (
+      {plans.length === 0 && notices.length === 0 && externalLinks.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No provider on the selected environments reports subscription limits.
         </p>
@@ -55,7 +55,6 @@ export function UsageLimitsPooled(props: ComponentProps<typeof Upstream.UsageLim
           }}
         />
       ) : null}
-      {cursorPrompt}
       {externalLinks.map((link) => (
         <section
           key={link.url}

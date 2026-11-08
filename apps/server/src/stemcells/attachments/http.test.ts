@@ -1,4 +1,5 @@
 // @effect-diagnostics nodeBuiltinImport:off - real files and a real local web server.
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import * as NodeHttpPlatform from "@effect/platform-node/NodeHttpPlatform";
 import * as NodeFS from "node:fs";
@@ -8,7 +9,7 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 import { EnvironmentHttpApi, ThreadId } from "@t3tools/contracts";
 import { expect, it } from "@effect/vitest";
-import * as Crypto from "effect/Crypto";
+import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
@@ -21,6 +22,7 @@ import * as HttpApiBuilder from "effect/http-api/HttpApiBuilder";
 import { afterAll, beforeAll } from "vite-plus/test";
 
 import { issueAssetUrl } from "../../assets/AssetAccess.ts";
+import * as AssetSigner from "../../assets/AssetSigner.ts";
 import * as NativeAppIconResolver from "../../assets/NativeAppIconResolver.ts";
 import * as AuthHttp from "../../auth/http.ts";
 import * as EnvironmentAuth from "../../auth/EnvironmentAuth.ts";
@@ -31,6 +33,7 @@ import * as Orchestrator from "../../orchestration-v2/Orchestrator.ts";
 import * as SqlitePersistence from "../../persistence/Sqlite.ts";
 import * as ProjectFaviconResolver from "../../project/ProjectFaviconResolver.ts";
 import * as T3ProjectFileLoader from "../../project/T3ProjectFileLoader.ts";
+import * as ManagedPolicy from "../../policy/ManagedPolicy.ts";
 import * as WorkspacePaths from "../../workspace/WorkspacePaths.ts";
 import { publicAddresses } from "../upstream/attachments.ts";
 import * as AttachmentsHttp from "./http.ts";
@@ -59,7 +62,10 @@ const layerConfig = Layer.effect(
   }),
 ).pipe(Layer.provide(ServerConfig.layerTest(process.cwd(), baseDir)));
 
+const layerNode = Layer.mergeAll(NodeServices.layer, NodeCrypto.layer);
+
 const layerEnvironmentAuth = EnvironmentAuth.layer.pipe(
+  Layer.provide(ManagedPolicy.layerTest()),
   Layer.provide(SqlitePersistence.layerMemory),
   Layer.provide(ServerSecretStore.layer),
   Layer.provide(ServerEnvironment.layerIdentity),
@@ -88,12 +94,9 @@ const routesWith = (limits: AttachmentsHttp.Limits) =>
     Layer.provideMerge(layerEnvironmentAuth),
     Layer.provideMerge(layerConfig),
     Layer.provideMerge(
-      HttpPlatform.layer.pipe(
-        Layer.provideMerge(NodeServices.layer),
-        Layer.provideMerge(Etag.layerWeak),
-      ),
+      HttpPlatform.layer.pipe(Layer.provideMerge(layerNode), Layer.provideMerge(Etag.layerWeak)),
     ),
-    Layer.provide(NodeServices.layer),
+    Layer.provide(layerNode),
   );
 
 /** This test's own web server, let through the public check every web import makes. */
@@ -181,7 +184,8 @@ const signedIn = (
     });
     // What the route reads per request, as the server hands it.
     const requestContext = yield* Effect.context<
-      | Crypto.Crypto
+      | AssetSigner.AssetSigner
+      | SecureRandom.SecureRandom
       | ServerSecretStore.ServerSecretStore
       | NativeAppIconResolver.NativeAppIconResolver
       | Orchestrator.OrchestratorV2
@@ -191,7 +195,7 @@ const signedIn = (
     return yield* Effect.acquireUseRelease(
       Effect.sync(() => HttpRouter.toWebHandler(routesWith(routeLimits), { disableLogger: true })),
       (handler) =>
-        Effect.tryPromise(async () => {
+        Effect.promise(async () => {
           const bring: Bring = (body, more = {}) =>
             handler.handler(
               new Request(`http://127.0.0.1${AttachmentsHttp.IMPORT_PATH}`, {
@@ -232,7 +236,13 @@ const signedIn = (
   }).pipe(
     Effect.provideService(ServerSecretStore.ServerSecretStore, secretStore),
     Effect.provide(
-      Layer.mergeAll(layerAssets, layerConfig).pipe(Layer.provideMerge(NodeServices.layer)),
+      Layer.mergeAll(
+        layerAssets,
+        layerConfig,
+        AssetSigner.layer.pipe(
+          Layer.provide(Layer.succeed(ServerSecretStore.ServerSecretStore, secretStore)),
+        ),
+      ).pipe(Layer.provideMerge(layerNode)),
     ),
   );
 

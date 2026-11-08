@@ -42,7 +42,7 @@ export function AskiSettingsPanel() {
         <SettingsRow
           id="aski-plans"
           title={ASKI_SWITCHES["aski-plans"].title}
-          description="When a message starts several Cells and doesn't say what each does, Aski reads it in one short call on its model and gives each Cell its part. Off, the message waits until your words say what each Cell does."
+          description="When a message starts several Cells without saying what each does, Aski gives each its part in one short call on its model. Off, the message waits until your words say what each Cell does."
           control={
             <Switch
               checked={plans}
@@ -56,7 +56,7 @@ export function AskiSettingsPanel() {
         <SettingsRow
           id="aski-suggestions"
           title={ASKI_SWITCHES.suggestions.title}
-          description="When a Cell finishes, its empty composer shows what you'd likely say next. Tab, → or a tap on its key fills it in; Esc hides it. Claude Cells predict their own after each turn, as Claude Code does, at almost no cost. For the others it's one short call on the text generation model, only for a chat you open within an hour of its reply. Off, this device asks for none, and no short call is made for it."
+          description="When a Cell finishes, its empty composer suggests your next words: Tab or → fills them in, Esc hides them. Claude Cells predict their own; others take one short call, only within an hour of a reply."
           control={
             <Switch
               checked={suggestions}

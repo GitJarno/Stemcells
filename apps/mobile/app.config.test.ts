@@ -1,4 +1,8 @@
+import { DEFAULT_HOSTED_APP_URL } from "@t3tools/shared/connectAuth";
 import { afterEach, expect, it, vi } from "vite-plus/test";
+
+import appleAppSiteAssociation from "../web/public/.well-known/apple-app-site-association.json";
+import assetLinks from "../web/public/.well-known/assetlinks.json";
 
 // Keep config parsing independent of local env files and build credentials.
 vi.mock("../../scripts/lib/public-config.ts", () => ({
@@ -30,4 +34,12 @@ it.each([
   const config = await loadConfig(value);
   expect(config.ios?.bundleIdentifier).toBe(identifier);
   expect(config.android?.package).toBe(identifier);
+  // Stemcells claims none of T3's hosted app's thread links (src/stemcells/privacy/noT3Links.ts).
+  const host = new URL(DEFAULT_HOSTED_APP_URL).host;
+  expect(config.ios?.associatedDomains).not.toContain(`applinks:${host}`);
+  expect(appleAppSiteAssociation.applinks.details[0]?.appIDs).toContain(
+    `${config.ios?.appleTeamId}.${identifier}`,
+  );
+  expect(config.android?.intentFilters).toEqual([]);
+  expect(assetLinks.map((link) => link.target.package_name)).toContain(identifier);
 });

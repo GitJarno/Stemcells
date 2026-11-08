@@ -40,12 +40,13 @@ describe("the composer line's contracts with upstream", () => {
     expect(chatView).toMatch(
       /data-chat-composer-stack="true"[^>]*>\s*\{isDraftHeroState \? \([\s\S]*?\) : null\}\s*<div\s+ref=\{draftHeroComposerAnchorRef\}/,
     );
-    // It draws the halo as the block's ::before at z-index -1: under the line
-    // and the plate only while the block stacks its own layers and upstream
-    // draws nothing in its ::before.
+    // It draws the halo as the block's ::before at z-index -1: under the line and
+    // the plate only while the block stacks its own layers, upstream draws nothing
+    // in its ::before, and the wrapper the two stand in (a draft's notice at its
+    // foot) stacks nothing of its own.
     const block = chatView.slice(chatView.indexOf("ref={draftHeroComposerAnchorRef}"));
     expect(block).toMatch(
-      /^ref=\{draftHeroComposerAnchorRef\}\s*className="relative z-10"[\s\S]{0,400}?>\s*<Stemcells\.CellComposerLine \/>\s*<ComposerSurface\.Shell\b/,
+      /^ref=\{draftHeroComposerAnchorRef\}\s*className="relative z-10"[\s\S]{0,300}?>\s*<ChildThreadApprovals threadRef=\{activeThreadRef\} \/>\s*<div className="relative">\s*<Stemcells\.CellComposerLine \/>\s*<ComposerSurface\.Shell\b/,
     );
   });
 
@@ -62,8 +63,9 @@ describe("the composer line's contracts with upstream", () => {
     expect(shell).toContain("group/composer-surface relative isolate ");
     expect(shell).toContain("before:z-0");
     expect(shell).not.toMatch(/\bafter:/);
+    // Between them only the wrapper's end and a draft's notice, out of flow.
     expect(chatView).toMatch(
-      /<\/ComposerSurface\.Shell>\s*<div\s+aria-hidden\s+className="h-\[calc\(env\(safe-area-inset-bottom\)\+1rem\)\] sm:h-\[calc\(env\(safe-area-inset-bottom\)\+1\.25rem\)\]"/,
+      /<\/ComposerSurface\.Shell>\s*\{isDraftHeroState && composerBannerItems\.length > 0 \? \([\s\S]{0,400}?<div className="absolute inset-x-0 top-full [^"]*">\s*<ComposerBannerStack items=\{composerBannerItems\} detached \/>\s*<\/div>\s*\) : null\}\s*<\/div>\s*<div\s+aria-hidden\s+className="h-\[calc\(env\(safe-area-inset-bottom\)\+1rem\)\] sm:h-\[calc\(env\(safe-area-inset-bottom\)\+1\.25rem\)\]"/,
     );
   });
 

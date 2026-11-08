@@ -130,7 +130,9 @@ gate_workflows() {
   local repo known active new=""
   repo=$(repo_slug)
   known=$(gh api "repos/$repo/actions/workflows" --paginate --jq '.workflows[] | "\(.state) \(.path)"')
-  active=$(awk '$1 == "active" && $2 !~ /\/stemcells[^\/]*\.yml$/ {print $2}' <<< "$known")
+  # dynamic/ workflows are GitHub's own (the dependency graph), set in the
+  # repository's settings; the API can't switch them off, and none is upstream's.
+  active=$(awk '$1 == "active" && $2 ~ /^\.github\/workflows\// && $2 !~ /\/stemcells[^\/]*\.yml$/ {print $2}' <<< "$known")
   for file in .github/workflows/*.yml; do
     case $file in */stemcells*.yml) continue ;; esac
     awk '{print $2}' <<< "$known" | grep -qxF "$file" || new="$new $file"
@@ -151,7 +153,7 @@ workflows_off() {
   local repo
   repo=$(repo_slug)
   gh api "repos/$repo/actions/workflows" --paginate \
-    --jq '.workflows[] | select(.state == "active") | select(.path | test("/stemcells[^/]*\\.yml$") | not) | "\(.id) \(.path)"' |
+    --jq '.workflows[] | select(.state == "active") | select(.path | startswith(".github/workflows/")) | select(.path | test("/stemcells[^/]*\\.yml$") | not) | "\(.id) \(.path)"' |
     while read -r id path; do
       echo "off: $path"
       gh api -X PUT "repos/$repo/actions/workflows/$id/disable"

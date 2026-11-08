@@ -16,7 +16,7 @@ import {
 import { mergeProviderInstanceEnvironment } from "@t3tools/provider-core/server/instanceEnvironment";
 import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
 import * as HostProcess from "@t3tools/shared/HostProcess";
-import * as Crypto from "effect/Crypto";
+import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
 import * as Path from "effect/Path";
 import * as Schema from "effect/Schema";
@@ -106,7 +106,7 @@ export const makeLimitResumeSource = Effect.gen(function* () {
   const home = yield* HostProcess.HomeDirectory;
   const hostEnvironment = yield* HostProcess.Environment;
   const path = yield* Path.Path;
-  const crypto = yield* Crypto.Crypto;
+  const random = yield* SecureRandom.SecureRandom;
 
   /** As the Claude driver builds its adapter's launch (`createClaudeAdapterV2`). */
   const claudeLogin = Effect.fn("LimitResume.claudeLogin")(
@@ -160,7 +160,7 @@ export const makeLimitResumeSource = Effect.gen(function* () {
     shell: needs.shell,
     platform,
     enabled,
-    newId: crypto.randomUUIDv4().pipe(Effect.orDie),
+    newId: random.uuidV4(),
     instances,
     send,
   } satisfies LimitResumeSource;

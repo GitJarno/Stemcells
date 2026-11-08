@@ -44,9 +44,10 @@ describe("the chat's scroll indicator, against upstream", () => {
     const marks = marksView();
     const box = marks.slice(0, marks.indexOf('data-testid="timeline-minimap"'));
     // scrollIndicator.css takes over the box's opacity: upstream shows it
-    // always where the lane has room, and under the hand where it hasn't.
+    // always where the lane has room, and under the hand where it hasn't (not
+    // on touch, where there is no hand).
     expect(box.slice(box.lastIndexOf("<div"))).toMatch(
-      /hasPersistentGutter\s*\?\s*"opacity-100"\s*:\s*"opacity-0 [^"]*hover:opacity-100 focus-within:opacity-100"/,
+      /hasPersistentGutter\s*\?\s*"opacity-100"\s*:\s*"[^"]*\bopacity-0 [^"]*hover:opacity-100 focus-within:opacity-100\b[^"]*"/,
     );
   });
 

@@ -1,3 +1,6 @@
+// @effect-diagnostics-next-line nodeBuiltinImport:off -- Effect's FileSystem has no free-space query.
+import * as NodeFSP from "node:fs/promises";
+
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Option from "effect/Option";
@@ -17,6 +20,20 @@ export const diskWarnFile = Effect.map(diskStateDir, warnFile);
 
 /** This server's hide of the phone's disk notice. */
 export const diskNoticeFile = Effect.map(diskStateDir, noticeFile);
+
+/**
+ * The snapshot's disk: free and total bytes of the drive holding `home`, from one `statfs`;
+ * neither when it can't be read within a second.
+ */
+export const diskSpace = (home: string) =>
+  Effect.tryPromise({ try: () => NodeFSP.statfs(home), catch: () => undefined }).pipe(
+    Effect.map((stats): { readonly diskFreeBytes?: number; readonly diskTotalBytes?: number } => ({
+      diskFreeBytes: stats.bavail * stats.bsize,
+      diskTotalBytes: stats.blocks * stats.bsize,
+    })),
+    Effect.timeout("1 second"),
+    Effect.orElseSucceed(() => ({})),
+  );
 
 /**
  * The snapshot's fields for the disk it sampled, read each sample: each left out while the

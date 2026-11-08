@@ -122,8 +122,12 @@ describe("Enter can't send before the words are read", () => {
     expect(chatComposer).toMatch(
       /const noProviderAvailable =\s*selectedProviderEntry === undefined && multipleModelSelections === null;/,
     );
+    // A send during dictation waits for it, then comes back through the same check.
     expect(chatComposer).toMatch(
-      /const submitComposer = \([\s\S]{0,200}?\) => \{\s*if \(\s*noProviderAvailable \|\|/,
+      /const submitComposer = \([\s\S]{0,200}?\) => \{\s*if \(voiceInputActive\) \{\s*event\?\.preventDefault\(\);\s*submitAfterDictation\(\(\) => submitComposerRef\.current\([^)]*\)\);\s*return;\s*\}\s*if \(\s*noProviderAvailable \|\|/,
+    );
+    expect(chatComposer).toContain(
+      "submitComposerRef.current = (mode, intent) => submitComposerStable(undefined, mode, intent);",
     );
   });
 });

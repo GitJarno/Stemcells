@@ -14,6 +14,10 @@ import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
 import * as ClaudeAdapterV2 from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
+import {
+  BUNDLED_CLAUDE_MODEL_CATALOG,
+  resolveClaudeCatalogContextWindowTokens,
+} from "../../provider/ClaudeModelCatalog.ts";
 import { DEFAULT_COMPACT_WINDOW, withCompactWindow } from "../compaction/claudeWindow.ts";
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -71,10 +75,12 @@ describe("the auto-compact window's contracts with upstream", () => {
 
   it("the adapter reports where Claude compacts, capped by a smaller model", () => {
     const usage = { input_tokens: 1_000, output_tokens: 10 };
+    // The adapter reads the model's context from its catalog, as here, then reports usage.
     const threshold = (model: string, window: string) =>
       ClaudeAdapterV2.claudeProviderTurnTokenUsage(
         usage,
-        selection(model),
+        resolveClaudeCatalogContextWindowTokens(BUNDLED_CLAUDE_MODEL_CATALOG, selection(model)) ??
+          null,
         "2026-10-21T00:00:00.000Z",
         window,
       ).autoCompactThreshold;

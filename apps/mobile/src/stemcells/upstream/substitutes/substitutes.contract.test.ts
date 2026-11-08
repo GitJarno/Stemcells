@@ -98,28 +98,36 @@ const CASES: Readonly<Record<string, Case>> = {
   "apps/mobile/src/components/CompactBrandTitle.tsx": {
     exports: view("apps/mobile/src/components/CompactBrandTitle.tsx", "CompactBrandTitle.tsx"),
     importers: {
+      "apps/mobile/src/features/layout/workspace/brand-header-options.tsx": [
+        "../../../components/CompactBrandTitle",
+        ["brandTitleOffset", "CompactBrandTitle"],
+      ],
+      "apps/mobile/src/features/layout/workspace/WorkspaceRootScreen.tsx": [
+        "../../../components/CompactBrandTitle",
+        ["CompactBrandTitle"],
+      ],
+      "apps/mobile/src/features/layout/workspace/WorkspaceBrandTitle.tsx": [
+        "../../../components/CompactBrandTitle",
+        ["CompactBrandTitle"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/layout/workspace/brand-header-options.tsx": {
+    exports: view(
+      "apps/mobile/src/features/layout/workspace/brand-header-options.tsx",
+      "brand-header-options.tsx",
+    ),
+    importers: {
       "apps/mobile/src/Stack.tsx": [
-        "./components/CompactBrandTitle",
+        "./features/layout/workspace/brand-header-options",
         ["getCompactBrandHeaderOptions"],
       ],
-      "apps/mobile/src/features/home/WorkspaceConnectionTitle.tsx": [
-        "../../components/CompactBrandTitle",
-        ["brandTitleOffset", "CompactBrandTitle", "getCompactBrandHeaderOptions"],
+      "apps/mobile/src/features/layout/workspace/WorkspaceListHeader.tsx": [
+        "./brand-header-options",
+        ["getConnectionAwareBrandHeaderOptions"],
       ],
-      "apps/mobile/src/features/workspace/WorkspaceRootScreen.tsx": [
-        "../../components/CompactBrandTitle",
-        ["CompactBrandTitle"],
-      ],
-      "apps/mobile/src/features/workspace/WorkspaceListToolbarRow.tsx": [
-        "../../components/CompactBrandTitle",
-        ["CompactBrandTitle"],
-      ],
-      "apps/mobile/src/features/threads/ThreadNavigationSidebar.tsx": [
-        "../../components/CompactBrandTitle",
-        ["CompactBrandTitle"],
-      ],
-      "apps/mobile/src/features/threads/sidebar-navigation-shell.tsx": [
-        "../../components/CompactBrandTitle",
+      "apps/mobile/src/features/layout/workspace/WorkspaceSidebarColumn.tsx": [
+        "./brand-header-options",
         ["getCompactBrandHeaderOptions"],
       ],
     },
@@ -218,34 +226,6 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/mobile/src/features/usage/UsageLimitsPooled.tsx": [
         "./usageProviders",
         ["useProviderColors"],
-      ],
-    },
-  },
-  "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx": {
-    exports: view(
-      "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx",
-      "useThreadHeaderOptions.tsx",
-    ),
-    importers: {
-      "apps/mobile/src/features/threads/ThreadHeader.tsx": [
-        "./useThreadHeaderOptions",
-        ["useThreadHeaderOptions"],
-      ],
-    },
-  },
-  "apps/mobile/src/features/threads/thread-header-appearance.ts": {
-    exports: view(
-      "apps/mobile/src/features/threads/thread-header-appearance.ts",
-      "thread-header-appearance.ts",
-    ),
-    importers: {
-      "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx": [
-        "./thread-header-appearance",
-        ["threadHeaderAppearance"],
-      ],
-      "apps/mobile/src/features/threads/NewTaskDraftScreen.tsx": [
-        "./thread-header-appearance",
-        ["threadHeaderAppearance"],
       ],
     },
   },
@@ -627,6 +607,9 @@ describe("the phone's substitutes for upstream modules", () => {
     expectTypeOf<typeof import("./CompactBrandTitle")>().toEqualTypeOf<
       typeof import("../../../components/CompactBrandTitle")
     >();
+    expectTypeOf<typeof import("./brand-header-options")>().toEqualTypeOf<
+      typeof import("../../../features/layout/workspace/brand-header-options")
+    >();
     expectTypeOf<typeof import("./BrandMark")>().toEqualTypeOf<
       typeof import("../../../components/BrandMark")
     >();
@@ -639,17 +622,11 @@ describe("the phone's substitutes for upstream modules", () => {
     expectTypeOf<typeof import("./ThreadHeader")>().toEqualTypeOf<
       typeof import("../../../features/threads/ThreadHeader")
     >();
-    expectTypeOf<typeof import("./useThreadHeaderOptions")>().toEqualTypeOf<
-      typeof import("../../../features/threads/useThreadHeaderOptions")
-    >();
     expectTypeOf<typeof import("./UsageDailyChart")>().toEqualTypeOf<
       typeof import("../../../features/usage/UsageDailyChart")
     >();
     expectTypeOf<typeof import("./usageProviders")>().toEqualTypeOf<
       typeof import("../../../features/usage/usageProviders")
-    >();
-    expectTypeOf<typeof import("./thread-header-appearance")>().toEqualTypeOf<
-      typeof import("../../../features/threads/thread-header-appearance")
     >();
     expectTypeOf<typeof import("./NativeScrollViewMarker")>().toEqualTypeOf<
       typeof import("../../../native/NativeScrollViewMarker")

@@ -18,10 +18,10 @@ const workspaceCss = NodeFS.readFileSync(new URL("../tabs/workspace.css", import
 
 describe("the composer's dock and upstream", () => {
   it("an approval keeps the controls row, so the box keeps its height with no help", () => {
-    // Only a collapsed phone composer drops the row; workspace.css no longer
-    // pads the field for a missing row while an approval waits.
+    // Only a collapsed phone composer, while no dictation runs, drops the row;
+    // workspace.css no longer pads the field for a missing row while an approval waits.
     expect(chatComposer).toMatch(
-      /\{isComposerCollapsedMobile \? null : \(\s*<div\s*data-chat-composer-footer="true"/,
+      /\{isComposerCollapsedMobile && speechInput\.state\.phase === "idle" \? null : \(\s*<div\s*data-chat-composer-footer="true"/,
     );
     expect(chatComposer).toMatch(/data-chat-composer-surface="true"/);
     expect(chatComposer).toMatch(/data-chat-composer-body="true"/);

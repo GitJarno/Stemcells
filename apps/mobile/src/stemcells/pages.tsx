@@ -11,11 +11,13 @@ import { useSavedRemoteConnections } from "./upstream/push";
 // options (`Stack.tsx`), and its index lists these rows at the end of Server settings, where
 // its search finds them (`SettingsRouteScreen.tsx`): a line in each (seams.md).
 
-export const stemcellsSettingsScreens = <Options extends object>(pageOptions: Options) => ({
+export const stemcellsSettingsScreens = <Options extends object>(
+  settingsPage: (title: string) => Options,
+) => ({
   SettingsDisk: createNativeStackScreen({
     screen: DiskScreen,
     linking: "settings/disk",
-    options: { ...pageOptions, title: "Disk" },
+    options: settingsPage("Disk"),
   }),
 });
 

@@ -1,7 +1,6 @@
 // Replaces `features/threads/ThreadHeader.tsx` (`substitutes.cjs`): a Cell's
 // chat is headed by the Cell's name, Aski's by Aski's, as the original app heads
-// its chats by codename; on iOS the Cell stands beside it, what the chat is
-// about under it (`useThreadHeaderOptions.tsx`). A draft is a New Cell, as on the Mac.
+// its chats by codename. A draft is a New Cell, as on the Mac.
 import * as Upstream from "../../../features/threads/ThreadHeader";
 import { useIsAskiChat } from "../../aski/useAskiChat";
 import { cellNameOf } from "../../cell/kit";

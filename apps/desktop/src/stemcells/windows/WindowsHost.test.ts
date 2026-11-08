@@ -10,9 +10,9 @@ import * as NodePath from "node:path";
 
 import { describe, it } from "@effect/vitest";
 import * as Clock from "effect/Clock";
-import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as Schema from "effect/Schema";
 import * as Ref from "effect/Ref";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 import { expect, vi } from "vite-plus/test";
@@ -231,7 +231,7 @@ type Window = InstanceType<typeof electron.Window>;
 type Page = InstanceType<typeof electron.Page>;
 
 /** Upstream's window maker, failing. */
-class NoWindow extends Data.TaggedError("NoWindow") {}
+class NoWindow extends Schema.TaggedError<NoWindow>()("NoWindow", {}) {}
 
 /** A turn of the event loop: a window the host asked for is made, a launch's rest open. */
 // oxlint-disable-next-line t3code/no-real-time-wait-in-tests -- a macrotask boundary, not a wait: the host hands upstream's maker its window through runPromise, whose answer lands after this macrotask, and nothing of the host's marks it.

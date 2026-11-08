@@ -154,7 +154,7 @@ describe("a lab's Node processes", () => {
 describe("the records a lab run reads", () => {
   it("find every host in a Chromium net log, even one cut short as the app stopped", () => {
     const netLog = [
-      '{"constants": {"logEventTypes": {"REQUEST_ALIVE": 1, "HOST_RESOLVER_MANAGER_REQUEST": 2, "TCP_CONNECT": 3, "UDP_CONNECT": 4, "UDP_BYTES_SENT": 5, "UDP_LOCAL_ADDRESS": 6}, "logSourceType": {"URL_REQUEST": 1, "HOST_RESOLVER_IMPL_JOB": 2, "SOCKET": 3, "UDP_SOCKET": 4}, "timeTickOffset": "1000"},',
+      '{"constants": {"logEventTypes": {"REQUEST_ALIVE": 1, "HOST_RESOLVER_MANAGER_REQUEST": 2, "TCP_CONNECT": 3, "UDP_CONNECT": 4, "UDP_BYTES_SENT": 5, "UDP_LOCAL_ADDRESS": 6, "NETWORK_MAC_OS_CONFIG_CHANGED": 7}, "logSourceType": {"URL_REQUEST": 1, "HOST_RESOLVER_IMPL_JOB": 2, "SOCKET": 3, "UDP_SOCKET": 4, "NETWORK_CHANGE_NOTIFIER": 5}, "timeTickOffset": "1000"},',
       '"events": [',
       '{"params":{"url":"https://ingest.example.dev/batch"},"phase":1,"source":{"id":1,"type":1},"time":"10","type":1},',
       '{"params":{"host":"https://models.example.dev:443"},"phase":1,"source":{"id":2,"type":2},"time":"11","type":2},',
@@ -167,11 +167,13 @@ describe("the records a lab run reads", () => {
       '{"params":{"address":"192.0.2.53:53"},"phase":0,"source":{"id":8,"type":4},"time":"17","type":4},',
       '{"params":{"byte_count":40},"phase":0,"source":{"id":8,"type":4},"time":"17","type":5},',
       '{"params":{"address":"192.168.1.20:50001"},"phase":0,"source":{"id":8,"type":4},"time":"17","type":6},',
+      '{"params":{"new_interfaces":[{"address":"192.168.1.95","name":"en0"},{"address":"10.0.0.5","name":"utun7"}]},"phase":0,"source":{"id":9,"type":5},"time":"18","type":7},',
       '{"params":{"url":"https://cut.exam',
     ].join("\n");
     const hosts = live.netLogHosts(netLog);
     // The UDP socket that only connected sent nothing (Chromium's IPv6
-    // check); one that sent counts; a socket's own address never does.
+    // check); one that sent counts; a socket's own address never does, nor
+    // this machine's interfaces when the network changes.
     expect(
       [...new Set(hosts.map(({ host }) => host))].filter((host) => !netWatch.isLoopback(host)),
     ).toEqual([

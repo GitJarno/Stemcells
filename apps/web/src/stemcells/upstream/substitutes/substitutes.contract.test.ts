@@ -18,6 +18,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
+import * as UpstreamStarPrompt from "../../../components/GitHubStarPrompt";
 import * as UpstreamBranchToolbar from "../../../components/BranchToolbar";
 import * as UpstreamSidebar from "../../../components/Sidebar";
 import * as UpstreamHostedBrowserWebview from "../../../browser/HostedBrowserWebview";
@@ -83,8 +84,14 @@ import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
 import * as OurFavicon from "./favicon";
+import * as OurStarPrompt from "./GitHubStarPrompt";
 import * as OurTimelineLogic from "./MessagesTimeline.logic";
-import { SCOPED_SUBSTITUTES, SUBSTITUTES, substituteUpstreamModules } from "./plugin";
+import {
+  SCOPED_SUBSTITUTES,
+  SUBSTITUTES,
+  substituteUpstreamModules,
+  UPSTREAM_TESTS_OF_UPSTREAM,
+} from "./plugin";
 import * as OurProviderIconUtils from "./providerIconUtils";
 import * as OurProviderSubagentBar from "./ProviderSubagentBar";
 import * as OurUpdateNotice from "./providerUpdateRequiredModels";
@@ -168,6 +175,16 @@ interface Case {
 }
 
 const CASES: Readonly<Record<string, Case>> = {
+  "apps/web/src/components/GitHubStarPrompt.tsx": {
+    upstream: UpstreamStarPrompt,
+    substitute: OurStarPrompt satisfies typeof UpstreamStarPrompt,
+    importers: {
+      "apps/web/src/components/chat/useComposerSend.ts": [
+        "../GitHubStarPrompt",
+        ["recordPromptSent"],
+      ],
+    },
+  },
   "packages/shared/src/favicon.ts": {
     upstream: UpstreamFavicon,
     substitute: OurFavicon satisfies typeof UpstreamFavicon,
@@ -1031,6 +1048,19 @@ describe("Stemcells' substitutes for upstream modules", () => {
         expect((await container.resolveId(specifier, importer))?.id, key).toBe(substitute);
         // Our own folder gets upstream's module, so a substitute can wrap it.
         expect((await container.resolveId(ownSpecifier, ours))?.id, key).toBe(upstream);
+      }
+      // Upstream's own test of a module we replace still gets upstream's, and
+      // nothing but such a test does.
+      for (const test of UPSTREAM_TESTS_OF_UPSTREAM) {
+        const module = test.replace(/\.test\.tsx?$/, "");
+        const upstream = Object.keys(SUBSTITUTES).find(
+          (file) => file.replace(/\.tsx?$/, "") === module,
+        );
+        expect(upstream, test).toBeDefined();
+        const specifier = `./${NodePath.basename(module)}`;
+        expect((await container.resolveId(specifier, fromRepo(test)))?.id, test).toBe(
+          fromRepo(upstream!),
+        );
       }
       const served = await server.transformRequest("/src/components/chat/MarkdownExternalLink.tsx");
       expect(served?.code).toContain("/src/stemcells/upstream/substitutes/favicon.ts");

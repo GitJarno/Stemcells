@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { CheckIcon, CircleIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import {
-  createPairingLink,
   Dialog,
   DialogDescription,
   DialogFooter,
@@ -17,9 +16,9 @@ import {
   QRCodeSvg,
   reachablePageOrigin,
   refreshRoutes,
-  revokePairingLink,
   turnOnNetworkAccess,
   useCopyToClipboard,
+  usePairing,
   useThisMachine,
 } from "../upstream/devices";
 import { Button, Spinner, toastManager, useNowSecond } from "../upstream/disk";
@@ -158,6 +157,10 @@ function PhoneOnTailnet({ look }: { readonly look: TailnetLook }) {
 
 function AddPhone({ onDone }: { readonly onDone: () => void }) {
   const here = useThisMachine();
+  const pairing = usePairing();
+  // Effect events: the commands are made each render, and the effects below run once each.
+  const createPairingLink = useEffectEvent(pairing.createPairingLink);
+  const revokePairingLink = useEffectEvent(pairing.revokePairingLink);
   const [way, setWay] = useState<"tailnet" | "wifi">("tailnet");
   const tailnet = useTailnet(here.canSwitch && way === "tailnet");
   // A browser away from this computer already reaches it at its page's address.

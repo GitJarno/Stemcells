@@ -1,5 +1,3 @@
-// @effect-diagnostics-next-line nodeBuiltinImport:off -- Effect's FileSystem has no free-space query.
-import * as NodeFSP from "node:fs/promises";
 import * as NodeOS from "node:os";
 import type { HostResourcesSnapshot } from "@t3tools/contracts";
 import * as HostProcess from "@t3tools/shared/HostProcess";
@@ -78,15 +76,7 @@ const make = Effect.fn("makeHostResources")(function* () {
         );
       availableMemoryBytes = darwinAvailableMemory(output) ?? availableMemoryBytes;
     }
-    // Where projects, caches and agents' data fill up.
-    const disk = yield* Effect.tryPromise(() => NodeFSP.statfs(home)).pipe(
-      Effect.map((stats) => ({
-        diskFreeBytes: stats.bavail * stats.bsize,
-        diskTotalBytes: stats.blocks * stats.bsize,
-      })),
-      Effect.timeout("1 second"),
-      Effect.orElseSucceed(() => ({})),
-    );
+    const disk = yield* StemcellsDiskWarn.diskSpace(home);
     return {
       ...disk,
       ...(yield* diskWarn(disk)),

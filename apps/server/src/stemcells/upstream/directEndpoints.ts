@@ -28,9 +28,13 @@ export const directEndpoints = (make: typeof DirectEndpoints.make) =>
       const mark = yield* onMarkPath;
       // Off, Tailscale isn't asked at all: the Mac App Store's can prompt for access when run.
       const on = fs.exists(mark).pipe(Effect.orElseSucceed(() => false));
+      const current = Effect.map(on, (isOn) => (isOn ? withServe : asConfigured));
       return DirectEndpoints.DirectEndpoints.of({
+        resolveAvailable: Effect.fn("StemcellsDirectEndpoints.resolveAvailable")(function* () {
+          return yield* (yield* current).resolveAvailable();
+        }),
         resolve: Effect.fn("StemcellsDirectEndpoints.resolve")(function* () {
-          return yield* ((yield* on) ? withServe : asConfigured).resolve();
+          return yield* (yield* current).resolve();
         }),
       });
     }),

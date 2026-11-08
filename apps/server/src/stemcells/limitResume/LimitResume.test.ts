@@ -253,8 +253,7 @@ it.effect("a Cell the person cancelled reads no login at all", () =>
 const byHand = Effect.gen(function* () {
   const queue = yield* Queue.unbounded<void>();
   const settle = Effect.gen(function* () {
-    yield* Effect.sleep(Duration.millis(0));
-    for (let i = 0; i < 5; i++) yield* Effect.yieldNow;
+    for (let i = 0; i < 6; i++) yield* Effect.yieldNow;
   });
   return {
     ticks: Stream.fromQueue(queue),

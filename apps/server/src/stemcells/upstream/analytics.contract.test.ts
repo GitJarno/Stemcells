@@ -3,6 +3,7 @@ import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import * as HostProcess from "@t3tools/shared/HostProcess";
@@ -16,6 +17,7 @@ import * as HttpClientResponse from "effect/http/HttpClientResponse";
 import * as TestClock from "effect/testing/TestClock";
 
 import * as ServerConfig from "../../config.ts";
+import * as ManagedPolicy from "../../policy/ManagedPolicy.ts";
 import * as UpstreamAnalyticsService from "../../telemetry/AnalyticsService.ts";
 import { analytics as stemcellsAnalytics } from "../layer.ts";
 import { forgetTelemetryId } from "../privacy/telemetry.ts";
@@ -55,7 +57,7 @@ const recordAndWait = Effect.gen(function* () {
   }
 });
 
-it.layer(NodeServices.layer)("Stemcells' analytics", (it) => {
+it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("Stemcells' analytics", (it) => {
   it.effect("records nothing and never reaches the HTTP client", () =>
     Effect.gen(function* () {
       const { urls, layer: layerClient } = recordingClient();
@@ -98,6 +100,8 @@ it.layer(NodeServices.layer)("Stemcells' analytics", (it) => {
           Layer.mergeAll(
             Layer.succeed(HostProcess.Platform, "darwin"),
             Layer.succeed(HostProcess.Architecture, "arm64"),
+            // No managed policy: nothing switches analytics off but the missing configuration.
+            ManagedPolicy.layerTest(),
             layerClient,
           ),
         ),

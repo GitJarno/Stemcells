@@ -16,7 +16,10 @@ describe("a draft's contracts with upstream", () => {
     // The pane's `align-items: flex-end` moves the lane to the foot. A sent
     // chat's overlay is no flex box, so the same rule leaves it alone.
     expect(chatView).toContain('data-chat-composer-overlay="true"');
-    expect(chatView).toContain('"pointer-events-none absolute inset-0 z-20 flex items-center"');
+    // A short window already sets it at the foot.
+    expect(chatView).toContain(
+      '"pointer-events-none absolute inset-0 z-20 flex items-center [@media(max-height:34rem)]:items-end"',
+    );
     expect(chatView).toContain(
       '"pointer-events-none absolute inset-x-0 bottom-0 z-20 pt-1.5 sm:pt-2"',
     );

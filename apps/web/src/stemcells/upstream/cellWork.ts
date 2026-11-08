@@ -19,7 +19,7 @@ import type { ThreadStructureVisibleTurnItem } from "@t3tools/client-runtime/sta
 import { DateTime } from "effect";
 import { useEffect, useState } from "react";
 
-import { latestProviderTurnTokenUsage } from "../../lib/contextWindow";
+import { latestProviderTurnTokenUsage } from "@t3tools/client-runtime/state/context-window";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import {
   useQuietThreadShell,
