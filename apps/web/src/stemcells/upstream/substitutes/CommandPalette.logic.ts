@@ -1,15 +1,17 @@
-// Replaces `components/CommandPalette.logic.ts` (`plugin.ts`): the palette's no-project chat
-// action is a casual chat (`stemcells/words/casualChat.ts`), found by its words too. Upstream
-// builds it in `CommandPalette.tsx`, a hot file, and hands it to `buildRootGroups` here, so the
-// words change on the way through and that file stays upstream's.
+// Replaces `components/CommandPalette.logic.ts` (`plugin.ts`): the no-project chat is a casual
+// chat (`stemcells/words/casualChat.ts`) and Copy thread is Copy Cell (`copyCell.ts`). Upstream
+// builds both actions in hot `CommandPalette.tsx`; their words change here on the way through.
 import { buildRootGroups as buildUpstreamRootGroups } from "../../../components/CommandPalette.logic";
 import { CASUAL_CHAT } from "../../../../../../stemcells/words/casualChat.ts";
+import { COPY_CELL } from "../../../../../../stemcells/words/copyCell.ts";
 
 export * from "../../../components/CommandPalette.logic";
 
 // Upstream's value for that action. Exported, it would be a name upstream's
 // module lacks; `casualChat.contract.test.ts` pins it in upstream's palette.
 const CASUAL_CHAT_ACTION = "action:new-thread-without-project";
+// Upstream's copy action, titled for a Cell's pull request when it has one.
+const COPY_ACTION = "action:copy-thread-reference";
 
 export function buildRootGroups(
   input: Parameters<typeof buildUpstreamRootGroups>[0],
@@ -23,7 +25,9 @@ export function buildRootGroups(
             title: CASUAL_CHAT.action,
             searchTerms: [...item.searchTerms, ...CASUAL_CHAT.searchTerms],
           }
-        : item,
+        : item.value === COPY_ACTION && item.title === "Copy thread"
+          ? { ...item, title: COPY_CELL.action, searchTerms: [...item.searchTerms, "cell"] }
+          : item,
     ),
   });
 }

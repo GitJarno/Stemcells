@@ -10,8 +10,11 @@ import * as UpstreamThreadExecution from "@t3tools/client-runtime/state/thread-e
 import * as UpstreamThreadSubagents from "@t3tools/client-runtime/state/thread-subagents";
 import * as UpstreamThreads from "@t3tools/client-runtime/state/threads";
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
+import * as UpstreamThreadReference from "@t3tools/client-runtime/thread-reference";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
+import * as UpstreamThreadLinks from "@t3tools/shared/threadLinks";
+import { EnvironmentId, ThreadId } from "@t3tools/contracts";
 import { createServer, type Plugin, type UserConfig } from "vite-plus";
 import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
@@ -23,6 +26,8 @@ import { PACKAGES, SUBSTITUTES } from "./substitutes.cjs";
 import * as OurT3McpTools from "./t3McpToolPresentation";
 import * as OurT3ToolSummary from "./t3ToolSummary";
 import * as OurThreadExecution from "./threadExecution";
+import * as OurThreadLinks from "./threadLinks";
+import * as OurThreadReference from "./threadReference";
 import * as OurThreads from "./threads";
 import * as OurThreadSubagents from "./threadSubagents";
 
@@ -502,6 +507,36 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "packages/shared/src/threadLinks.ts": {
+    exports: [
+      Object.keys(UpstreamThreadLinks),
+      Object.keys(OurThreadLinks satisfies typeof UpstreamThreadLinks),
+    ],
+    importers: {
+      // Copy link on a Cell's chip in a message.
+      "apps/mobile/src/features/threads/ThreadFeed.tsx": [
+        "@t3tools/shared/threadLinks",
+        ["hostedThreadLink"],
+      ],
+    },
+  },
+  "packages/client-runtime/src/threadReference.ts": {
+    exports: [
+      Object.keys(UpstreamThreadReference),
+      Object.keys(OurThreadReference satisfies typeof UpstreamThreadReference),
+    ],
+    importers: {
+      // Copy Cell on a Cell's card, and a hardware keyboard's shortcut in a chat.
+      "apps/mobile/src/features/threads/thread-list-v2-items.tsx": [
+        "@t3tools/client-runtime/thread-reference",
+        ["threadChipCopyTarget"],
+      ],
+      "apps/mobile/src/features/keyboard/HardwareKeyboardCommandProvider.tsx": [
+        "@t3tools/client-runtime/thread-reference",
+        ["resolveThreadReferenceCopyTarget"],
+      ],
+    },
+  },
 };
 
 /** Each package substituted by name: upstream's file that imports it, and what that file calls of it. */
@@ -771,5 +806,14 @@ describe("the phone's substitutes for upstream modules", () => {
     } finally {
       await server.close();
     }
+  });
+
+  it("Copy Cell copies the Cell's name and its own link, never one through T3's hosted app", () => {
+    const ref = { environmentId: EnvironmentId.make("env-1"), threadId: ThreadId.make("thread-1") };
+    expect(OurThreadReference.threadChipCopyTarget(ref, "Fix the login")).toMatchObject({
+      value: "[Fix the login](t3-thread://v2/env-1/thread-1)",
+      failureTitle: "Failed to copy Cell",
+    });
+    expect(OurThreadLinks.hostedThreadLink(ref)).toBe("<t3-thread://v2/env-1/thread-1>");
   });
 });

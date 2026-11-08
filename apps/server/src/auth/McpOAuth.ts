@@ -1,3 +1,4 @@
+import * as Stemcells from "../stemcells/upstream/mcpClients.ts";
 import {
   AuthAccessWriteScope,
   type AuthMcpApprovalDecision,
@@ -598,13 +599,13 @@ export const layerMcpClientAuthenticator = Layer.effect(
                   environmentId,
                   requestNamespace: `client:${client.sessionId}`,
                   thread: undefined,
-                  client: {
+                  client: Stemcells.withoutHostedApp({
                     sessionId: client.sessionId,
                     label: client.label,
                     access: client.access,
                     linked: client.peerLink,
                     ...(client.peerLink ? {} : { hostedAppUrl }),
-                  },
+                  }),
                   capabilities: new Set<McpInvocationContext.McpCapability>([
                     "orchestration",
                     "worktree",
