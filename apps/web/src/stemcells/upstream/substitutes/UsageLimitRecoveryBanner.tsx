@@ -24,10 +24,13 @@ export const usageLimitRecoveryBannerItem: typeof Upstream.usageLimitRecoveryBan
     children: (
       <>
         {item.children}
-        <CarriesOnLine
-          cancelled={cancelled}
-          reset={resetToWaitFor(props.resetAt, props.stoppedAt)}
-        />
+        {/* Upstream's worker and ours pass by a settled Cell and one a request waits on. */}
+        {props.settled || props.requestPending ? null : (
+          <CarriesOnLine
+            cancelled={cancelled}
+            reset={resetToWaitFor(props.resetAt, props.stoppedAt)}
+          />
+        )}
       </>
     ),
   };

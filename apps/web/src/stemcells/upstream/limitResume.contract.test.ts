@@ -102,10 +102,12 @@ describe("the limit banner", () => {
   };
 
   /** The `CarriesOnLine` in `item.children`, whatever upstream put there. */
-  const lineOf = (item: { children?: unknown }) => {
-    const line = isValidElement<{ children?: unknown }>(item.children)
+  const findLine = (item: { children?: unknown }) =>
+    isValidElement<{ children?: unknown }>(item.children)
       ? [item.children.props.children].flat().find((child) => isValidElement(child))
       : undefined;
+  const lineOf = (item: { children?: unknown }) => {
+    const line = findLine(item);
     expect(isValidElement(line) && line.type).toBe(CarriesOnLine);
     return line as { props: { cancelled: boolean; reset: number | null } };
   };
@@ -148,6 +150,13 @@ describe("the limit banner", () => {
       recovery: { runId: props.runId, resetAt: props.resetAt, autoResume: true },
     });
     expect(lineOf(armed).props.cancelled).toBe(false);
+  });
+
+  it("says nothing over a settled Cell, or one a request waits on: no worker carries those on", () => {
+    expect(findLine(usageLimitRecoveryBannerItem({ ...props, settled: true }))).toBeUndefined();
+    expect(
+      findLine(usageLimitRecoveryBannerItem({ ...props, requestPending: true })),
+    ).toBeUndefined();
   });
 
   it("says the reset carries the Cell on, and never names signing in", () => {
