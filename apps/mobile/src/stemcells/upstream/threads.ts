@@ -5,6 +5,7 @@
 
 export type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 export type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+export type { AppBarAction, AppBarMenu, AppBarMenuItem } from "../../components/ui/AppBar.types";
 export { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
 export {
   resolveThreadListV2Status,
