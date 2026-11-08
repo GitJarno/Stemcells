@@ -8,6 +8,7 @@ import * as NodePath from "node:path";
 import * as NodeStream from "node:stream";
 import * as NodeStreamPromises from "node:stream/promises";
 
+import * as Schema from "effect/Schema";
 import type * as Undici from "undici";
 
 import { isPictureType, publicAddresses, typeOfName } from "../upstream/attachments.ts";
@@ -79,7 +80,8 @@ export function cleanName(name: string | undefined): string | null {
   return clean === "" ? null : clean.slice(0, 200);
 }
 
-class OverCap extends Error {}
+class OverCap extends Schema.TaggedError<OverCap>()("OverCap", {}) {}
+const isOverCap = Schema.is(OverCap);
 
 /** Passes bytes through until more than `cap` have gone by. */
 function capped(cap: number): {
@@ -132,7 +134,7 @@ export async function store(
     };
   } catch (error) {
     incoming.discard();
-    if (error instanceof OverCap) return tooBig(cap);
+    if (isOverCap(error)) return tooBig(cap);
     return refuse(502, "Couldn't copy it");
   } finally {
     await NodeFSP.rm(part, { force: true });
@@ -168,7 +170,7 @@ export async function readPicture(
     );
   } catch (error) {
     incoming.discard();
-    if (error instanceof OverCap) return tooBig(cap);
+    if (isOverCap(error)) return tooBig(cap);
     return unfetched();
   }
   return {

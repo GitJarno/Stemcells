@@ -1,8 +1,9 @@
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { EnvironmentHttpApi } from "@t3tools/contracts";
 import { expect, it } from "@effect/vitest";
 import * as Context from "effect/Context";
-import * as Crypto from "effect/Crypto";
+import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
@@ -18,6 +19,7 @@ import * as ServerSecretStore from "../../auth/ServerSecretStore.ts";
 import * as ServerConfig from "../../config.ts";
 import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
 import * as SqlitePersistence from "../../persistence/Sqlite.ts";
+import * as ManagedPolicy from "../../policy/ManagedPolicy.ts";
 import * as UpstreamDisk from "./disk.ts";
 
 // Contract: Settings › Disk is answered only to a caller upstream's own
@@ -39,7 +41,10 @@ const layerConfig = Layer.effect(
   }),
 ).pipe(Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "stemcells-disk-auth-" })));
 
+const layerNode = Layer.mergeAll(NodeServices.layer, NodeCrypto.layer);
+
 const layerEnvironmentAuth = EnvironmentAuth.layer.pipe(
+  Layer.provide(ManagedPolicy.layerTest()),
   Layer.provide(SqlitePersistence.layerMemory),
   Layer.provide(ServerSecretStore.layer),
   Layer.provide(ServerEnvironment.layerIdentity),
@@ -60,17 +65,14 @@ const layerRoutes = Layer.mergeAll(
   Layer.provideMerge(layerEnvironmentAuth),
   Layer.provide(layerConfig),
   Layer.provideMerge(
-    HttpPlatform.layer.pipe(
-      Layer.provideMerge(NodeServices.layer),
-      Layer.provideMerge(Etag.layerWeak),
-    ),
+    HttpPlatform.layer.pipe(Layer.provideMerge(layerNode), Layer.provideMerge(Etag.layerWeak)),
   ),
-  Layer.provide(NodeServices.layer),
+  Layer.provide(layerNode),
 );
 
 it.effect("answers a signed-in browser and refuses a caller without credentials", () =>
   Effect.gen(function* () {
-    const crypto = yield* Crypto.Crypto;
+    const random = yield* SecureRandom.SecureRandom;
     const secretStore = ServerSecretStore.ServerSecretStore.of({
       get: () => Effect.succeedNone,
       set: () => Effect.void,
@@ -78,13 +80,13 @@ it.effect("answers a signed-in browser and refuses a caller without credentials"
       getOrCreateRandom: () => Effect.die("Not used by these routes."),
       remove: () => Effect.void,
     });
-    const requestContext = Context.make(Crypto.Crypto, crypto).pipe(
+    const requestContext = Context.make(SecureRandom.SecureRandom, random).pipe(
       Context.add(ServerSecretStore.ServerSecretStore, secretStore),
     );
     return yield* Effect.acquireUseRelease(
       Effect.sync(() => HttpRouter.toWebHandler(layerRoutes, { disableLogger: true })),
       (web) =>
-        Effect.tryPromise(async () => {
+        Effect.promise(async () => {
           const probe = (headers: Record<string, string> = {}) =>
             web.handler(
               new Request("http://127.0.0.1/api/stemcells/probe", { headers }),
@@ -114,5 +116,5 @@ it.effect("answers a signed-in browser and refuses a caller without credentials"
         }),
       (web) => Effect.promise(() => web.dispose()),
     );
-  }).pipe(Effect.provide(NodeServices.layer)),
+  }).pipe(Effect.provide(layerNode)),
 );

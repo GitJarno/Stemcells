@@ -1,3 +1,4 @@
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { EnvironmentId } from "@t3tools/contracts";
 import { assert, it } from "@effect/vitest";
@@ -34,7 +35,7 @@ const device = {
   addedAt: 1,
 };
 
-it.layer(NodeServices.layer)("phone pushes on upstream", (it) => {
+it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("phone pushes on upstream", (it) => {
   it.effect("keeps the key in the secret store and the phones in the state folder", () =>
     Effect.gen(function* () {
       const first = yield* source;

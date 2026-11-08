@@ -5,6 +5,7 @@
  * sweep clear; a signed asset URL reads back to its file and nothing else; and the HTML
  * renderer refuses every non-public address, so a web address can't reach the local network.
  */
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import * as NodeHttpPlatform from "@effect/platform-node/NodeHttpPlatform";
 import * as NodeFS from "node:fs";
@@ -17,6 +18,7 @@ import * as Layer from "effect/Layer";
 import { afterEach } from "vite-plus/test";
 
 import { ASSET_ROUTE_PREFIX, issueAssetUrl } from "../../assets/AssetAccess.ts";
+import * as AssetSigner from "../../assets/AssetSigner.ts";
 import * as NativeAppIconResolver from "../../assets/NativeAppIconResolver.ts";
 import {
   parseThreadSegmentFromAttachmentId,
@@ -105,8 +107,10 @@ const layerAssets = Layer.mergeAll(
     Layer.provide(T3ProjectFileLoader.layer),
   ),
   NativeAppIconResolver.layer.pipe(Layer.provide(layerConfig)),
-  ServerSecretStore.layer.pipe(Layer.provide(layerConfig)),
-).pipe(Layer.provideMerge(NodeServices.layer));
+  AssetSigner.layer.pipe(
+    Layer.provideMerge(ServerSecretStore.layer.pipe(Layer.provide(layerConfig))),
+  ),
+).pipe(Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)));
 
 const readAll = (file: AssetFile) =>
   new Promise<string>((resolve, reject) => {

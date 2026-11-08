@@ -3,6 +3,7 @@ import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
@@ -24,7 +25,7 @@ const serverSrc = NodePath.resolve(
   "../..",
 );
 
-it.layer(NodeServices.layer)("in-app triage", (it) => {
+it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("in-app triage", (it) => {
   it.effect("the server says it has none, so no client offers it", () =>
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;

@@ -380,9 +380,11 @@ export const processTools = Effect.gen(function* () {
           )
           .pipe(Effect.map((handle) => handle.stdout.pipe(Stream.decodeText, Stream.splitLines))),
       ).pipe(Stream.mapError(toolError)),
-    startup: Effect.tryPromise(() => readVolume(home)).pipe(
-      Effect.timeout("2 seconds"),
-      Effect.mapError(toolError),
+    startup: Effect.tryPromise({ try: () => readVolume(home), catch: toolError }).pipe(
+      Effect.timeoutOrElse({
+        duration: "2 seconds",
+        orElse: () => Effect.fail(toolError("timed out")),
+      }),
     ),
   } satisfies DriveTools;
 });

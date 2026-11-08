@@ -50,7 +50,7 @@ const client = McpSchema.McpServerClient.of({
 
 const machine = (home: string) =>
   registerDiskTool(McpHttpServer.toolkitRegistration).pipe(
-    Layer.provideMerge(McpServer.McpServer.layer),
+    Layer.provideMerge(McpHttpServer.layerInProcessMcpServer),
     Layer.provideMerge(McpToolAccessTestkit.liveThreadsLayer),
     Layer.provide(
       Layer.mergeAll(
@@ -76,6 +76,16 @@ const callReport = Effect.gen(function* () {
   return result.structuredContent as { readonly measured: boolean; readonly report: string };
 });
 
+// The walk reads the temporary folder from Node's own environment, so the test sets it there.
+const setProcessEnv = (name: string, value: string) => {
+  const previous = process.env[name];
+  process.env[name] = value;
+  return () => {
+    if (previous === undefined) delete process.env[name];
+    else process.env[name] = previous;
+  };
+};
+
 const walkedAt = (report: string) =>
   report.split("\n").find((line) => line.startsWith("From a walk"));
 
@@ -86,8 +96,7 @@ it.live("a Cell's first report waits for the walk, and the next reuses it", () =
   NodeFS.mkdirSync(NodePath.join(home, "app", "node_modules"), { recursive: true });
   NodeFS.writeFileSync(NodePath.join(home, "app", "node_modules", "dep.js"), "x".repeat(64_000));
   // The walk reads the user's temporary folder too: here, an empty one.
-  const previousTemporary = process.env.TMPDIR;
-  process.env.TMPDIR = NodeFS.mkdtempSync(NodePath.join(home, "tmp-"));
+  const restoreTemporary = setProcessEnv("TMPDIR", NodeFS.mkdtempSync(NodePath.join(home, "tmp-")));
   return Effect.gen(function* () {
     const first = yield* callReport;
     expect(first.measured).toBe(true);
@@ -101,8 +110,7 @@ it.live("a Cell's first report waits for the walk, and the next reuses it", () =
     Effect.provide(machine(home)),
     Effect.ensuring(
       Effect.sync(() => {
-        if (previousTemporary === undefined) delete process.env.TMPDIR;
-        else process.env.TMPDIR = previousTemporary;
+        restoreTemporary();
         NodeFS.rmSync(home, { recursive: true, force: true });
       }),
     ),
