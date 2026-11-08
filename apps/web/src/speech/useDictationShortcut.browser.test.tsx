@@ -24,6 +24,7 @@ const press = (repeat = false) =>
       ctrlKey: !/Mac/i.test(navigator.platform),
       metaKey: /Mac/i.test(navigator.platform),
       shiftKey: true,
+      altKey: true,
       cancelable: true,
       repeat,
     }),

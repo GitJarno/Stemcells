@@ -59,3 +59,14 @@ describe("⌘T", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 });
+
+describe("⌥⇧⌘D", () => {
+  it("goes through to upstream's dictation; ⌘⇧D stays the pane's split", () => {
+    const workspace = handlers();
+    const event = press(key("d", { metaKey: true, altKey: true, shiftKey: true }), workspace);
+    expect(workspace.splitDown).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+    press(key("d", { metaKey: true, shiftKey: true }), workspace);
+    expect(workspace.splitDown).toHaveBeenCalledOnce();
+  });
+});
