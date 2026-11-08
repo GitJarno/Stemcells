@@ -16,6 +16,7 @@ export * from "./threads";
 export { AppText } from "../../components/ui/AppText";
 export { useProject } from "../../state/entities";
 export { SymbolView } from "../../components/ui/AppSymbol";
+export { HeaderItemsWidthContext } from "../../native/header-items-width";
 export { ProviderIcon } from "../../components/ProviderIcon";
 export { PullRequestGlyph } from "../../features/pull-requests/pullRequestGlyphs";
 export { pullRequestStatus } from "../../features/pull-requests/pullRequestStatus";

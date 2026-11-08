@@ -1,51 +1,42 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { foldIntoCode } from "./code";
+import type { AppBarAction, AppBarMenu } from "../upstream/threads";
+import { codeMenu } from "./code";
 
-const git = {
-  identifier: "thread-right-git",
-  label: "Git",
-  icon: { name: "point.topleft.down.curvedto.point.bottomright.up", type: "sfSymbol" },
-  type: "menu",
-  menu: { title: "Git", items: [{ label: "Push", type: "action", onPress: () => {} }] },
-};
-const files = {
-  identifier: "thread-right-files",
-  label: "Files",
-  icon: { name: "folder", type: "sfSymbol" },
-  type: "button",
+const files: AppBarAction = {
+  accessibilityLabel: "Open files",
+  icon: "folder",
+  separateBackground: false,
   onPress: () => {},
 };
-const terminal = {
-  identifier: "thread-right-terminal",
-  label: "Terminal",
-  icon: { name: "terminal", type: "sfSymbol" },
-  type: "menu",
-  disabled: true,
-  menu: { title: "Terminal", items: [] },
+const git: AppBarMenu = {
+  title: "Git controls",
+  icon: "point.topleft.down.curvedto.point.bottomright.up",
+  separateBackground: false,
+  items: [{ id: "push", title: "Push", onPress: () => {} }],
 };
-const sidebar = { identifier: "thread-right-sidebar", type: "button", onPress: () => {} };
+const terminal: AppBarMenu = {
+  title: "Terminal",
+  icon: "terminal",
+  separateBackground: false,
+  items: [],
+};
 
-describe("the header's Code button", () => {
-  it("folds git, files and terminal into one menu, in that order, wherever upstream put them", () => {
-    const folded = foldIntoCode([sidebar, files, git, terminal]);
-    expect(folded.map((item) => item.identifier)).toEqual([
-      "thread-right-sidebar",
-      "thread-right-code",
-    ]);
-    const menu = folded[1]?.menu as { items: Array<Record<string, unknown>> } | undefined;
+describe("the header's Code menu", () => {
+  it("holds files, git and terminal as rows, in upstream's order", () => {
+    const menu = codeMenu([{ ...files, loading: true }], [git, terminal]);
+    expect(menu?.title).toBe("Code");
     const rows = menu?.items ?? [];
-    expect(rows.map((row) => [row.label, row.type])).toEqual([
-      ["Git", "submenu"],
-      ["Files", "action"],
-      ["Terminal", "action"],
+    expect(rows.map((row) => [row.title, "items" in row ? "submenu" : "action"])).toEqual([
+      ["Open files", "action"],
+      ["Git controls", "submenu"],
+      ["Terminal", "submenu"],
     ]);
-    expect(rows[0]?.items).toBe(git.menu.items);
-    expect(rows[1]?.onPress).toBe(files.onPress);
-    expect(rows[2]?.disabled).toBe(true);
+    expect(rows[0]).toMatchObject({ disabled: true, onPress: files.onPress });
+    expect("items" in rows[1]! && rows[1].items).toBe(git.items);
   });
 
-  it("leaves a header without them as it is", () => {
-    expect(foldIntoCode([sidebar])).toEqual([sidebar]);
+  it("is none when the header has nothing for it", () => {
+    expect(codeMenu([], [])).toBeNull();
   });
 });

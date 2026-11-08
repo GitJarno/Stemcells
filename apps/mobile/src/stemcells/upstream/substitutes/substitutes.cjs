@@ -28,6 +28,8 @@ const SUBSTITUTES = {
   // A Cell's name heads its chat; the feed fades under the composer.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
+  // iOS's bar: in a chat, the Cell beside its name, one Code menu, no band behind it.
+  "apps/mobile/src/components/ui/AppBar.tsx": "AppBar.tsx",
   // The home's header says Cells where its brand isn't drawn.
   "apps/mobile/src/features/layout/workspace/brand-header-options.tsx": "brand-header-options.tsx",
   // The home's header floats over what scrolls, no band behind it; what

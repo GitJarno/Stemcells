@@ -1,44 +1,36 @@
-// A chat's header holds one button where upstream's held three (git, files, terminal): each is a
+// A chat's header holds one button where upstream's holds three (files, git, terminal): each is a
 // way into the working copy the Cell changes, so `</>` names them all. Its menu grows from the
 // glass into a row for each, git's and the terminal's own menus open from their rows, and the
 // header keeps its room for the Cell's name.
 
-/** A header item as upstream builds it (`features/threads/ThreadGitControls.tsx`). */
-type HeaderItem = Readonly<Record<string, unknown>>;
+import type { AppBarAction, AppBarMenu, AppBarMenuItem } from "../upstream/threads";
 
-/** Upstream's three, in the order the menu lists them. */
-const CODE_ITEM_IDS = ["thread-right-git", "thread-right-files", "thread-right-terminal"] as const;
-
-/** A row of the Code menu: upstream's menu opens as a submenu, its button as an action. */
-function rowOf(item: HeaderItem) {
-  const menu = item.menu as { readonly items?: ReadonlyArray<unknown> } | undefined;
-  const shared = { label: item.label, icon: item.icon };
-  if (item.type === "menu" && menu?.items !== undefined && item.disabled !== true)
-    return { ...shared, type: "submenu", items: menu.items };
+function rowOfAction(action: AppBarAction): AppBarMenuItem {
   return {
-    ...shared,
-    type: "action",
-    disabled: item.disabled === true,
-    onPress: typeof item.onPress === "function" ? item.onPress : () => {},
+    id: action.accessibilityLabel,
+    title: action.accessibilityLabel,
+    icon: typeof action.icon === "string" ? action.icon : action.icon.ios,
+    disabled: action.disabled === true || action.loading === true,
+    destructive: action.destructive,
+    onPress: action.onPress,
   };
 }
 
-/** `items` with upstream's git, files and terminal folded into one Code menu where the first stood. */
-export function foldIntoCode(items: ReadonlyArray<HeaderItem>): HeaderItem[] {
-  const ours = CODE_ITEM_IDS.flatMap((id) => items.filter((item) => item.identifier === id));
-  if (ours.length === 0) return [...items];
-  const code = {
-    accessibilityLabel: "Code",
-    icon: { name: "chevron.left.forwardslash.chevron.right", type: "sfSymbol" },
-    identifier: "thread-right-code",
-    label: "Code",
-    menu: { items: ours.map(rowOf) },
-    sharesBackground: true,
-    type: "menu",
-    variant: "plain",
+function rowOfMenu(menu: AppBarMenu): AppBarMenuItem {
+  return {
+    id: menu.title,
+    title: menu.title,
+    icon: typeof menu.icon === "string" ? menu.icon : menu.icon.ios,
+    items: menu.items,
   };
-  const first = items.findIndex((item) => ours.includes(item));
-  return items.flatMap((item, index) =>
-    index === first ? [code] : ours.includes(item) ? [] : [item],
-  );
+}
+
+/** The buttons and menus upstream's chat header hands its bar, as one Code menu in their order. */
+export function codeMenu(
+  actions: ReadonlyArray<AppBarAction>,
+  menus: ReadonlyArray<AppBarMenu>,
+): AppBarMenu | null {
+  const items = [...actions.map(rowOfAction), ...menus.map(rowOfMenu)];
+  if (items.length === 0) return null;
+  return { title: "Code", icon: "chevron.left.forwardslash.chevron.right", items };
 }

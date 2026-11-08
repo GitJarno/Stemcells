@@ -645,12 +645,14 @@ library's dependency (above); the rest are substitutes:
 - **The header.** A substitute wraps `ThreadHeader`: a Cell's chat is
   headed by its name, Aski's by Aski; a draft is a New Cell, as on the Mac.
   Aski's chat is the one the Mac and the server pick (`aski/chat.ts`):
-  another chat on Aski's instance is a Cell. Since 2026-11 every screen of
-  upstream's draws one `AppBar`, whose title content is Android's only, and
-  the modules our iOS chat header wrapped are gone: the Cell beside the
-  name (`CellTitle`, kept in history until then), the Code menu's fold (`chat/code.ts`) and
-  the chat header's edge with no band wait for their port
-  (`stemcells/tasks/phone-chat-header.md`). iOS 27's `automatic` edge draws
+  another chat on Aski's instance is a Cell. Every screen of upstream's
+  draws one `AppBar`, whose title content is Android's only, so on iOS a
+  substitute of `AppBar` draws the rest where `ThreadHeader`'s says it heads
+  a chat (`chat/header.ts`): the Cell beside its name, what it's about under
+  it (`chat/CellTitle.tsx`), the bar's files button and git's and the
+  terminal's menus as one Code menu (`chat/code.ts`; what it folds is pinned
+  in `codeMenu.contract.test.ts`), and no band behind the bar. Every other
+  bar is upstream's, and Android's chat keeps T3's. iOS 27's `automatic` edge draws
   a hard band under a transparent header; UIKit draws it on the scroll
   view, and T3's home list asks for it by name, so a substitute wraps
   `NativeScrollViewMarker`: inside the home (`home/HomeFront.tsx`)

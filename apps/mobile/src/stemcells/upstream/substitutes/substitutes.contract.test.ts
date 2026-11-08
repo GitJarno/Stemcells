@@ -199,6 +199,16 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/components/ui/AppBar.tsx": {
+    exports: view("apps/mobile/src/components/ui/AppBar.tsx", "AppBar.tsx"),
+    importers: {
+      // A chat's header, the one bar the substitute changes.
+      "apps/mobile/src/features/threads/ThreadHeader.tsx": [
+        "../../components/ui/AppBar",
+        ["AppBar"],
+      ],
+    },
+  },
   "apps/mobile/src/features/usage/UsageDailyChart.ios.tsx": {
     exports: view("apps/mobile/src/features/usage/UsageDailyChart.ios.tsx", "UsageDailyChart.tsx"),
     importers: {
@@ -656,6 +666,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadHeader")>().toEqualTypeOf<
       typeof import("../../../features/threads/ThreadHeader")
+    >();
+    expectTypeOf<typeof import("./AppBar")>().toEqualTypeOf<
+      typeof import("../../../components/ui/AppBar")
     >();
     expectTypeOf<typeof import("./UsageDailyChart")>().toEqualTypeOf<
       typeof import("../../../features/usage/UsageDailyChart")
