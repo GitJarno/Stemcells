@@ -5,7 +5,10 @@
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
-import { resolveSettledThreadTimestamp } from "@t3tools/client-runtime/state/thread-sort";
+import {
+  resolveSettledThreadTimestamp,
+  resolveThreadActivityTimestamp,
+} from "@t3tools/client-runtime/state/thread-sort";
 import { resolveThreadCurrentPullRequestLink } from "@t3tools/client-runtime/thread-pull-requests";
 import { GitBranchIcon } from "lucide-react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
@@ -43,12 +46,14 @@ export function compactAge(at: string, nowMs: number): string {
   return label === "just now" ? "now" : label.endsWith(" ago") ? label.slice(0, -4) : label;
 }
 
-/** The chat's age: of its last message or, once settled, of the settle. */
+/** What a Cell's age counts from: its latest message or reply, as the sidebar's, or its settle. */
+export function cellAgeAt(shell: CellShell, settled: boolean): string | null {
+  return settled ? resolveSettledThreadTimestamp(shell) : resolveThreadActivityTimestamp(shell);
+}
+
 export function CellAge(props: { shell: CellShell; settled?: boolean }) {
   const nowMinute = useNowMinute();
-  const at = props.settled
-    ? resolveSettledThreadTimestamp(props.shell)
-    : (props.shell.latestUserMessageAt ?? props.shell.updatedAt);
+  const at = cellAgeAt(props.shell, props.settled === true);
   return at === null ? null : compactAge(at, Date.parse(`${nowMinute}:00.000Z`));
 }
 
