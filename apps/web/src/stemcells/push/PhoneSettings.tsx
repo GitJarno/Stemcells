@@ -130,7 +130,7 @@ export function PhoneSettings() {
       <SettingsRow
         id="aski-push-key"
         title="Apple push key"
-        description="When a Cell has waited on you for two minutes and nobody is at this Mac, your phone hears of it. The push goes from this Mac straight to Apple with your own APNs key, from the Keys page of your Apple Developer account. The key stays on this Mac."
+        description="When a Cell has waited on you two minutes and nobody is at this Mac, your phone hears of it: this Mac tells Apple directly, with your own APNs key from Apple Developer › Keys. The key stays here."
         status={key === null ? "No key yet." : `Key ${key.keyId}, team ${key.teamId}`}
         control={
           key === null ? (

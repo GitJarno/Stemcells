@@ -63,7 +63,7 @@ export function AsksMeasure() {
       <SettingsRow
         id="aski-asks-alone"
         title="Answered from the ask alone"
-        description={`Of the asks that ended in the last ${measure.days} days, the ones you answered without opening their chat or flagging them. When an ask doesn't say enough to decide, flag it: the flag is beside its age. Counted on this Mac only, and sent nowhere.`}
+        description={`Of asks that ended in the last ${measure.days} days, the ones you answered without opening their chat or flagging them. If an ask doesn't say enough, flag it beside its age. Counted on this Mac, sent nowhere.`}
         control={
           <span className="tabular-nums">{ended === 0 ? "No asks yet" : share(alone, ended)}</span>
         }
