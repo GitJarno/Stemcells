@@ -181,3 +181,17 @@ timing out under the load; `check-local` and the nightly set it themselves.
   A panel layout of upstream's can drop what its strip shows (the draft's
   permissions chip, #353): when a substitute moves a component into a menu,
   check which props the moved layout leaves out.
+- 2026-11-08 (835 commits, a week of failed nights): upstream's phone moved
+  every screen onto one `AppBar` and deleted the header modules our
+  substitutes wrapped; a substitute whose module is gone goes with it, and
+  what it showed becomes a follow-up (`stemcells/tasks/phone-chat-header.md`).
+  The phone's `dependency-graph.test.ts` catches a cycle through an adapter:
+  an adapter a home row imports must not also re-export a Settings screen.
+  Upstream's test of a module we substitute runs upstream's module
+  (`UPSTREAM_TESTS_OF_UPSTREAM` in `plugin.ts`). `outbound-live` read
+  Chromium's network-change events, which list this Mac's own interfaces, as
+  contacts; it skips them now. GitHub's own `dynamic/` workflows (the
+  dependency graph) can't be switched off by the API and aren't upstream's,
+  so the workflows gate reads `.github/workflows` only. On this Mac,
+  upstream's `GuestPage` "follows the end" test fails on upstream's own tree,
+  as `026` does.
