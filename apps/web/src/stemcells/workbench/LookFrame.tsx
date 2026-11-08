@@ -1,12 +1,11 @@
 import { PanelRight, X } from "lucide-react";
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { asksYou } from "../cell/look";
 import { CellMark } from "../tabs/CellMark";
 import { moodOfStatus } from "../tabs/cellMood";
 import { panesOf, type CellRef, type Tab } from "../tabs/layout";
-import { useCellLastSent } from "../upstream/chat";
 import { useCellTitle } from "../upstream/thread";
 import { useCellStatus } from "../upstream/status";
 import { cn, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
@@ -20,15 +19,7 @@ import {
   useCellSurfaceName,
   useInlinePanels,
 } from "../upstream/workbench";
-import {
-  emptyWorkbenchCell,
-  endLook,
-  escapeMayEndLook,
-  lookPaneId,
-  railPanes,
-  sentSince,
-  type LastSent,
-} from "./look";
+import { emptyWorkbenchCell, endLook, escapeMayEndLook, lookPaneId, railPanes } from "./look";
 import "../tokens/stemcells.css";
 import "./look.css";
 
@@ -52,7 +43,6 @@ export function Look(props: {
   const focusedPanelOpen = useCellPanelOpen(focused?.cell ?? null);
   const inline = useInlinePanels(focused?.cell ?? null);
   const lookId = lookPaneId(tab, { focusedPanelOpen, inline });
-  const lookCell = lookId === null ? null : (focused?.cell ?? null);
 
   const end = (goTo: string | null = null) => {
     if (lookId === null) return;
@@ -60,7 +50,6 @@ export function Look(props: {
     for (const cell of ending.close) closeCellPanel(cell);
     if (ending.focus !== null) props.onFocus(ending.focus);
   };
-  useEndOnSend(lookCell, () => end());
   useEndOnEscape(lookId !== null && props.onStage, () => end());
 
   if (lookId === null) return null;
@@ -181,28 +170,6 @@ export function LookChip(props: { cell: CellRef | null }) {
       <span className="min-w-0 truncate">{name}</span>
     </button>
   );
-}
-
-/**
- * Sending ends Look: the user's reply starts the Cell's next stretch of
- * work, which they spend elsewhere. Read from the chat's own record of the
- * user's last message, so any way of sending counts.
- */
-function useEndOnSend(cell: CellRef | null, end: () => void) {
-  const lastSent = useCellLastSent(cell);
-  const onSent = useEffectEvent(end);
-  const key = cell === null ? null : `${cell.environmentId}/${cell.threadId}`;
-  const watched = useRef<{ key: string | null; seen: LastSent }>({ key: null, seen: undefined });
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- End Look once the chat records a new message from the user.
-  useEffect(() => {
-    const current = watched.current;
-    if (current.key !== key) {
-      watched.current = { key, seen: lastSent };
-      return;
-    }
-    if (key !== null && sentSince(current.seen, lastSent)) onSent();
-    if (lastSent !== undefined) current.seen = lastSent;
-  }, [key, lastSent]);
 }
 
 /**
