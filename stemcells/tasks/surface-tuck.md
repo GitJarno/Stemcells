@@ -191,3 +191,7 @@ Review fixes (the pull request's review):
   still): the desktop's own menu may keep its release, which left the press
   open and the tab deaf to the next one. Headless, a primary press with its
   menu before its release: the menu, no Look; the next click, Look.
+- A touch held for the menu shows it once: the browser's own long-press
+  `contextmenu` from that touch shows none, a later right-click does.
+  Headless: one menu built for the hold and its `contextmenu`, a second for
+  the right-click.

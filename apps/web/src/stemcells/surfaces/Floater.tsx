@@ -178,6 +178,8 @@ function useTuckTab(open: () => void, putAway: () => void) {
   const pulled = useRef(0);
   /** The click that ends a drag or a press held for the menu opens nothing. */
   const swallow = useRef(false);
+  /** The pointer whose press opened the menu, until it lifts: its own `contextmenu` shows none. */
+  const held = useRef<number | null>(null);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Cancel the hover and hold timers when the tab goes.
   useEffect(
     () => () => {
@@ -243,6 +245,7 @@ function useTuckTab(open: () => void, putAway: () => void) {
     if (!current.gesture.hold()) return false;
     endPress();
     swallow.current = true;
+    held.current = current.pointerId;
     return true;
   };
 
@@ -259,6 +262,7 @@ function useTuckTab(open: () => void, putAway: () => void) {
       setOut(false);
     },
     onPointerDown: (event) => {
+      held.current = null;
       if (event.button !== 0 || leaving.current || press.current !== null) return;
       swallow.current = false;
       const { clientX: x, clientY: y, pointerId } = event;
@@ -281,13 +285,15 @@ function useTuckTab(open: () => void, putAway: () => void) {
       pull(pixels);
     },
     onPointerUp: (event) => {
+      if (held.current === event.pointerId) held.current = null;
       if (press.current?.pointerId !== event.pointerId) return;
       const release = endPress()?.release();
       swallow.current = release !== undefined && release !== "open";
       if (release === "put-away") leave();
       else if (release === "spring-back") springBack();
     },
-    onPointerCancel: () => {
+    onPointerCancel: (event) => {
+      if (held.current === event.pointerId) held.current = null;
       if (endPress()?.wandered) springBack();
     },
     onLostPointerCapture: () => {
@@ -299,6 +305,7 @@ function useTuckTab(open: () => void, putAway: () => void) {
     },
     onKeyDown: (event) => {
       swallow.current = false;
+      held.current = null;
       if (event.key !== "Delete" && event.key !== "Backspace") return;
       event.preventDefault();
       leave();
@@ -306,7 +313,7 @@ function useTuckTab(open: () => void, putAway: () => void) {
     onContextMenu: (event) => {
       event.preventDefault();
       const current = press.current;
-      if (current !== null && !holdForMenu(current)) return;
+      if (current === null ? held.current !== null : !holdForMenu(current)) return;
       const rect = event.currentTarget.getBoundingClientRect();
       const pointed = event.clientX !== 0 || event.clientY !== 0;
       void showMenuAt(
