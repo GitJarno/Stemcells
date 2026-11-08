@@ -3594,8 +3594,8 @@ export default function ChatView(props: ChatViewProps) {
                     }
                   >
                     <ChildThreadApprovals threadRef={activeThreadRef} />
-                    <Stemcells.CellComposerLine />
                     <div className="relative">
+                      <Stemcells.CellComposerLine />
                       <ComposerSurface.Shell contextRow={showComposerContextStrip}>
                         <ComposerSurface.Host
                           inert={queuedRunEdit.isSaving}

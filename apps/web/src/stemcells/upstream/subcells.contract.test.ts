@@ -107,7 +107,7 @@ describe("Subcells in upstream's views", () => {
       'title: "Could not stop Subcell"',
       "aria-label={`Stop Subcell ${threadTitle}`}",
       '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
-      ': "Open parent Cell"}',
+      ': "Open parent Cell"',
     ])
       expect(relationships).toContain(words);
     expect(lineageWorkflow).toContain(">No Subcells yet</li>");
@@ -155,7 +155,8 @@ describe("Subcell words", () => {
     const command = (description?: string) => task("command", description);
     for (const [tasks, title] of [
       [[sub()], "Waiting on a Subcell"],
-      [[sub("Audit the subagent docs")], "Waiting on Subcell Audit the subagent docs"],
+      // A lone task's own name stands for it, as written.
+      [[sub("Audit the subagent docs")], "Waiting · Audit the subagent docs"],
       [[sub(), command()], "Waiting on 1 Subcell and 1 command"],
       [[sub(), sub(), command()], "Waiting on 2 Subcells and 1 command"],
       [[sub(), sub(), command(), command()], "Waiting on 2 Subcells and 2 commands"],

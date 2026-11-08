@@ -60,9 +60,10 @@ describe("a chat paints nothing over the slate", () => {
   it("so does the timeline's wrapper, a child of the chat's canvas", () => {
     // At the canvas's own depth in ChatView: a child of ThreadFindCanvas,
     // which renders upstream's ChatCanvas, whose canvas holds its children.
-    // ThreadTimeline renders the timeline itself, with no box of its own.
+    // ThreadTimeline renders the timeline itself, with no box of its own, in
+    // a context that draws none either.
     expect(chatView).toMatch(
-      /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div\s+\{\.\.\.conversationArea\}\s+className="relative flex min-h-0 flex-1 flex-col bg-background"\s*>\s*<ThreadTimeline/,
+      /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div\s+\{\.\.\.conversationArea\}\s+className="relative flex min-h-0 flex-1 flex-col bg-background"\s*>\s*<WorkspaceMutationIdContext value=\{workspaceMutationId\}>\s*<ThreadTimeline/,
     );
     expect(threadTimeline).toMatch(/return <MessagesTimeline [^>]*\/>;/);
     expect(threadFind).toContain("<ChatCanvas {...canvasProps} />");

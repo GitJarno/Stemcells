@@ -76,12 +76,12 @@
    pane, and the box's own top (its banners and upstream's stash tab are
    inside it) where no ledge shows: Aski's perch and a pane with no line.
    A halo finds only the anchor inside its own block, so each pane's finds
-   its own. */
+   its own. The box stands in a wrapper of upstream's inside the block. */
 [data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge,
 [data-stemcells-pane]
   [data-chat-composer-stack="true"]
   > :not(:has(.composer-line-ledge))
-  > [data-slot="composer-shell"] {
+  [data-slot="composer-shell"] {
   anchor-name: --sc-dock-top;
 }
 

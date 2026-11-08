@@ -132,6 +132,16 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Upstream's tests of a module Stemcells replaces outright, which still get upstream's modules,
+ * so each keeps testing what it was written for. Only a substituted module's own test: a view
+ * here would ship upstream's module (`substitutes.contract.test.ts` holds it there).
+ */
+export const UPSTREAM_TESTS_OF_UPSTREAM: ReadonlyArray<string> = [
+  // The star prompt our substitute never shows.
+  "apps/web/src/components/GitHubStarPrompt.test.ts",
+];
+
+/**
  * Upstream modules Stemcells replaces only for the upstream files in one
  * folder (`within`, from the repository's root): a module many views share,
  * changed where one of them draws it. Each is proven like the rest, and also
@@ -182,6 +192,10 @@ const scopedSubstituteOf: ReadonlyMap<string, { within: string; file: string }> 
 
 const isOurs = (id: string) => id.startsWith(ourRoot + NodePath.sep);
 
+const testsOfUpstream: ReadonlySet<string> = new Set(
+  UPSTREAM_TESTS_OF_UPSTREAM.map((test) => NodePath.join(repoRoot, test)),
+);
+
 const publicSubstituteOf: ReadonlyMap<string, string> = new Map(
   Object.entries(PUBLIC_SUBSTITUTES).map(([path, ours]) => [path, NodePath.join(repoRoot, ours)]),
 );
@@ -211,6 +225,7 @@ export function substituteUpstreamModules(): Plugin {
         }),
     async resolveId(source, importer, options) {
       if (importer === undefined || isOurs(importer)) return null;
+      if (testsOfUpstream.has(importer.split("?")[0]!)) return null;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (resolved === null || resolved.external) return resolved;
       const scoped = scopedSubstituteOf.get(resolved.id);

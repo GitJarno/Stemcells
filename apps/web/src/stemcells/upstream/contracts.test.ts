@@ -170,13 +170,16 @@ describe("keys", () => {
   const bindings = (key: string) =>
     DEFAULT_KEYBINDINGS.filter((rule) => rule.key === key).map((rule) => [rule.command, rule.when]);
 
-  it("⌘T, ⌘D and ⌘⇧D are upstream's only for the right panel, diff and terminals", () => {
+  it("⌘T, ⌘D and ⌘⇧D are upstream's only for the right panel, diff, dictation and terminals", () => {
     expect(bindings("mod+t")).toEqual([["rightPanel.new", "rightPanelOpen && !terminalFocus"]]);
     expect(bindings("mod+d")).toEqual([
       ["terminal.split", "terminalFocus"],
       ["diff.toggle", "!terminalFocus"],
     ]);
-    expect(bindings("mod+shift+d")).toEqual([["terminal.splitVertical", "terminalFocus"]]);
+    expect(bindings("mod+shift+d")).toEqual([
+      ["terminal.splitVertical", "terminalFocus"],
+      ["composer.dictation", "!terminalFocus"],
+    ]);
   });
 
   it("⌘W closes a terminal or a right-panel tab first, and ⌘⇧W is free", () => {

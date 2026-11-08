@@ -56,9 +56,14 @@ describe("the composer light's contracts with upstream", () => {
     expect(opens).toBeGreaterThanOrEqual(0);
     const actions = chatComposer.slice(opens);
     const closes = actions.search(/\n {16}<\/div>/);
-    const components = [...actions.slice(0, closes).matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
-    expect(components.at(-1)).toBe("ComposerFooterPrimaryActions");
+    // The voice controls it is handed it draws before its own buttons.
+    expect(actions.slice(0, closes).trimEnd()).toMatch(
+      /\n\s*<ComposerFooterPrimaryActions\b(?:(?!<\/?ComposerFooterPrimaryActions\b)[\s\S])*<\/ComposerFooterPrimaryActions>$/,
+    );
     const footer = body(footerControls, "ComposerFooterPrimaryActions");
+    expect(footer.indexOf("{props.children}")).toBeLessThan(
+      footer.indexOf("<ComposerPrimaryActions"),
+    );
     const drawn = [...footer.matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
     expect(drawn.at(-1)).toBe("ComposerPrimaryActions");
   });

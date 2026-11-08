@@ -86,7 +86,12 @@ import * as OurProviderModelPicker from "./ProviderModelPicker";
 import * as OurFavicon from "./favicon";
 import * as OurStarPrompt from "./GitHubStarPrompt";
 import * as OurTimelineLogic from "./MessagesTimeline.logic";
-import { SCOPED_SUBSTITUTES, SUBSTITUTES, substituteUpstreamModules } from "./plugin";
+import {
+  SCOPED_SUBSTITUTES,
+  SUBSTITUTES,
+  substituteUpstreamModules,
+  UPSTREAM_TESTS_OF_UPSTREAM,
+} from "./plugin";
 import * as OurProviderIconUtils from "./providerIconUtils";
 import * as OurProviderSubagentBar from "./ProviderSubagentBar";
 import * as OurUpdateNotice from "./providerUpdateRequiredModels";
@@ -1043,6 +1048,19 @@ describe("Stemcells' substitutes for upstream modules", () => {
         expect((await container.resolveId(specifier, importer))?.id, key).toBe(substitute);
         // Our own folder gets upstream's module, so a substitute can wrap it.
         expect((await container.resolveId(ownSpecifier, ours))?.id, key).toBe(upstream);
+      }
+      // Upstream's own test of a module we replace still gets upstream's, and
+      // nothing but such a test does.
+      for (const test of UPSTREAM_TESTS_OF_UPSTREAM) {
+        const module = test.replace(/\.test\.tsx?$/, "");
+        const upstream = Object.keys(SUBSTITUTES).find(
+          (file) => file.replace(/\.tsx?$/, "") === module,
+        );
+        expect(upstream, test).toBeDefined();
+        const specifier = `./${NodePath.basename(module)}`;
+        expect((await container.resolveId(specifier, fromRepo(test)))?.id, test).toBe(
+          fromRepo(upstream!),
+        );
       }
       const served = await server.transformRequest("/src/components/chat/MarkdownExternalLink.tsx");
       expect(served?.code).toContain("/src/stemcells/upstream/substitutes/favicon.ts");
