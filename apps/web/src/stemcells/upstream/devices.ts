@@ -12,6 +12,7 @@ import {
   type EnvironmentId,
 } from "@t3tools/contracts";
 import {
+  type AtomCommandResult,
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
 } from "@t3tools/client-runtime/state/runtime";
@@ -25,14 +26,7 @@ import {
 import { resolveDesktopPairingUrl } from "~/components/settings/pairingUrls";
 import { environmentCatalog } from "~/connection/catalog";
 import { isDesktopLocalConnectionTarget } from "~/connection/desktopLocal";
-import {
-  createServerPairingCredential,
-  isLoopbackHostname,
-  revokeServerClientSession,
-  revokeServerPairingLink,
-  type ServerClientSessionRecord,
-  usePrimarySessionState,
-} from "~/environments/primary";
+import { isLoopbackHostname, type ServerClientSessionRecord } from "~/environments/primary";
 import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
 import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAuth";
 import { ensureLocalApi } from "~/localApi";
@@ -44,7 +38,7 @@ import {
 } from "~/state/desktopNetworkAccess";
 import { useEnvironments, usePrimaryEnvironmentId } from "~/state/environments";
 import { useEnvironmentQuery } from "~/state/query";
-import { useEnvironmentScope } from "~/state/session";
+import { useEnvironmentScope, useEnvironmentSessionState } from "~/state/session";
 import { useAtomCommand } from "~/state/use-atom-command";
 
 export type { AdvertisedEndpoint, EnvironmentId };
@@ -107,7 +101,7 @@ export function useThisMachine() {
   const canPair = useEnvironmentScope(primaryId, AuthAccessWriteScope);
   const canMaintain = useEnvironmentScope(primaryId, AuthEnvironmentMaintainScope);
   const canSwitch = bridge !== undefined && canMaintain && !isLocalEnvironmentDisabled();
-  const session = usePrimarySessionState().data;
+  const session = useEnvironmentSessionState(primaryId).data;
   const access = useEnvironmentQuery(
     canRead && primaryId !== null
       ? authEnvironment.accessChanges({ environmentId: primaryId, input: null })
@@ -137,21 +131,49 @@ export function useThisMachine() {
   };
 }
 
-/** A one-time link with the standard client's scopes, as far as this session may grant them. */
-export async function createPairingLink(delegatable: ReadonlyArray<string>) {
-  const created = await createServerPairingCredential({
-    scopes: AuthStandardClientScopes.filter((scope) => delegatable.includes(scope)),
-  });
+const valueOf = <A, E>(result: AtomCommandResult<A, E>): A => {
+  if (result._tag === "Success") return result.value;
+  throw squashAtomCommandFailure(result);
+};
+
+/**
+ * This machine's pairing commands, as Settings › Connections runs them: a one-time link with the
+ * standard client's scopes as far as this session may grant them, revoking one, and removing a
+ * paired device. Each throws what failed.
+ */
+export function usePairing() {
+  const primaryId = usePrimaryEnvironmentId();
+  const create = useAtomCommand(authEnvironment.createPairingCredential, { reportFailure: false });
+  const revoke = useAtomCommand(authEnvironment.revokePairingLink, { reportFailure: false });
+  const revokeClient = useAtomCommand(authEnvironment.revokeClient, { reportFailure: false });
+  const environmentId = () => {
+    if (primaryId === null) throw new Error("This machine isn't connected.");
+    return primaryId;
+  };
   return {
-    id: created.id,
-    credential: created.credential,
-    expiresAt: DateTime.formatIso(created.expiresAt),
+    createPairingLink: async (delegatable: ReadonlyArray<string>) => {
+      const created = valueOf(
+        await create({
+          environmentId: environmentId(),
+          input: {
+            scopes: AuthStandardClientScopes.filter((scope) => delegatable.includes(scope)),
+          },
+        }),
+      );
+      return {
+        id: created.id,
+        credential: created.credential,
+        expiresAt: DateTime.formatIso(created.expiresAt),
+      };
+    },
+    revokePairingLink: async (id: string) => {
+      valueOf(await revoke({ environmentId: environmentId(), input: { id } }));
+    },
+    removeDevice: async (sessionId: Device["sessionId"]) => {
+      valueOf(await revokeClient({ environmentId: environmentId(), input: { sessionId } }));
+    },
   };
 }
-
-export const revokePairingLink = (id: string) => revokeServerPairingLink(id);
-export const removeDevice = (sessionId: Device["sessionId"]) =>
-  revokeServerClientSession(sessionId);
 
 /**
  * The address a scanned code opens: this machine's own `/pair`, never T3's

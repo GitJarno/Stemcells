@@ -1,5 +1,5 @@
 // The home as the screen in front or under a chat, for what it draws (`state.ts`), under a
-// header with nothing behind it, as a chat's (`upstream/substitutes/thread-header-appearance.ts`).
+// header with nothing behind it (`upstream/substitutes/NativeScrollViewMarker.tsx`).
 
 import type { ReactNode } from "react";
 

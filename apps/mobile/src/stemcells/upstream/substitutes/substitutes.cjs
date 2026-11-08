@@ -25,14 +25,13 @@ const SUBSTITUTES = {
   "packages/client-runtime/src/state/threads.ts": "threads.ts",
   "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
   "packages/client-runtime/src/state/threadSubagents.ts": "threadSubagents.ts",
-  // The Cell heads its chat, beside its name; the feed fades under the
-  // composer.
+  // A Cell's name heads its chat; the feed fades under the composer.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
-  "apps/mobile/src/features/threads/useThreadHeaderOptions.tsx": "useThreadHeaderOptions.tsx",
-  // A chat's header, and the home's, float over what scrolls, no band behind
-  // them; what scrolls fades into the ground under them.
-  "apps/mobile/src/features/threads/thread-header-appearance.ts": "thread-header-appearance.ts",
+  // The home's header says Cells where its brand isn't drawn.
+  "apps/mobile/src/features/layout/workspace/brand-header-options.tsx": "brand-header-options.tsx",
+  // The home's header floats over what scrolls, no band behind it; what
+  // scrolls fades into the ground under it.
   "apps/mobile/src/native/NativeScrollViewMarker.tsx": "NativeScrollViewMarker.tsx",
   // The home: one tab of Cells at a time under Aski, in cards, each tab's
   // shelves open.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { workspaceTabNavigationState } from "../../features/workspace/workspace-tab-navigation";
+import { workspaceTabNavigationState } from "../../features/layout/workspace/workspace-tab-navigation";
 
 /**
  * Contract: the Threads tab opened without columns leaves Home alone on the root stack, under its

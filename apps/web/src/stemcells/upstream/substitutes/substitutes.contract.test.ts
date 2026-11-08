@@ -18,6 +18,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import webConfig from "../../../../vite.config";
 import * as UpstreamBrowserSurfaceSlot from "../../../browser/BrowserSurfaceSlot";
+import * as UpstreamStarPrompt from "../../../components/GitHubStarPrompt";
 import * as UpstreamBranchToolbar from "../../../components/BranchToolbar";
 import * as UpstreamSidebar from "../../../components/Sidebar";
 import * as UpstreamHostedBrowserWebview from "../../../browser/HostedBrowserWebview";
@@ -83,6 +84,7 @@ import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
 import * as OurFavicon from "./favicon";
+import * as OurStarPrompt from "./GitHubStarPrompt";
 import * as OurTimelineLogic from "./MessagesTimeline.logic";
 import { SCOPED_SUBSTITUTES, SUBSTITUTES, substituteUpstreamModules } from "./plugin";
 import * as OurProviderIconUtils from "./providerIconUtils";
@@ -168,6 +170,16 @@ interface Case {
 }
 
 const CASES: Readonly<Record<string, Case>> = {
+  "apps/web/src/components/GitHubStarPrompt.tsx": {
+    upstream: UpstreamStarPrompt,
+    substitute: OurStarPrompt satisfies typeof UpstreamStarPrompt,
+    importers: {
+      "apps/web/src/components/chat/useComposerSend.ts": [
+        "../GitHubStarPrompt",
+        ["recordPromptSent"],
+      ],
+    },
+  },
   "packages/shared/src/favicon.ts": {
     upstream: UpstreamFavicon,
     substitute: OurFavicon satisfies typeof UpstreamFavicon,

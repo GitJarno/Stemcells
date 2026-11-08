@@ -21,6 +21,7 @@ import * as DesktopBackendPool from "../../backend/DesktopBackendPool.ts";
 import * as ElectronApp from "../../electron/ElectronApp.ts";
 import * as ElectronWindow from "../../electron/ElectronWindow.ts";
 import * as DesktopAppSettings from "../../settings/DesktopAppSettings.ts";
+import * as DesktopUpdatePolicy from "../../updates/DesktopUpdatePolicy.ts";
 import * as DesktopUpdates from "../../updates/DesktopUpdates.ts";
 import * as SourceUpdater from "./SourceUpdater.ts";
 
@@ -165,6 +166,7 @@ function layerFor(fixture: Fixture, quits: { count: number }) {
     metadata: Effect.die("unexpected metadata read"),
     name: Effect.succeed("Stemcells"),
     systemLocale: Effect.succeed("en-US"),
+    preferredSystemLanguages: Effect.succeed(["en-US"]),
     whenReady: Effect.void,
     requestSingleInstanceLock: Effect.succeed(true),
     quit: Effect.sync(() => {
@@ -245,6 +247,7 @@ function layerFor(fixture: Fixture, quits: { count: number }) {
     Layer.provide(SourceUpdater.layer),
     Layer.provide(
       Layer.mergeAll(
+        DesktopUpdatePolicy.layerTest(),
         layerWindow,
         layerApp,
         layerSettings,
@@ -335,7 +338,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
       "updates/updatesTestHarness.ts",
     ]);
     const main = NodeFS.readFileSync(NodePath.join(desktopSource, "main.ts"), "utf8");
-    assert.include(main, "DesktopUpdates.layer.pipe(Layer.provide(StemcellsUpdater.layer))");
+    assert.match(main, /DesktopUpdates\.layer\.pipe\(\s*Layer\.provide\(StemcellsUpdater\.layer\)/);
   });
 
   it.live("lists the merged pull requests, builds them beside the app, and swaps as it quits", () =>

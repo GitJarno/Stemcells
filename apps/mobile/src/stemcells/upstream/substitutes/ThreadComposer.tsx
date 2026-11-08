@@ -1,7 +1,7 @@
 // Replaces `features/threads/ThreadComposer.tsx` (`substitutes.cjs`): the feed blurs as it slides
 // under the composer (`edge/Veil.ios.tsx`), the composer wears the Flying light while its Cell
-// works (`glow/ComposerLight.tsx`), the Cell stands in the header (`chat/CellTitle.tsx`), and a
-// Cell's chat on Aski's instance reads as on its driver's own (`../cellInstance.ts`).
+// works (`glow/ComposerLight.tsx`), and a Cell's chat on Aski's instance reads as on its
+// driver's own (`../cellInstance.ts`).
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 

@@ -34,7 +34,7 @@ export {
   useThreadUndoNotice,
 } from "../../features/home/thread-undo-notice";
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
-export { useWorkspaceTabs } from "../../features/workspace/WorkspaceTabsContext";
+export { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
 export { relativeTime } from "../../lib/time";
 
 export type CommandOutcome = { readonly ok: true } | { readonly ok: false; readonly why: string };

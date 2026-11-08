@@ -35,6 +35,15 @@ export function replyToFollow(
   return last?.role === "assistant" && !last.streaming ? last.id : null;
 }
 
+/** The chat's last message, as a list for `replyToFollow`: its timeline also holds work and plans. */
+function lastMessageOf(entries: ChatComposerProps["promptHistoryEntries"]) {
+  for (let index = entries.length - 1; index >= 0; index--) {
+    const entry = entries[index];
+    if (entry?.kind === "message") return [entry.message];
+  }
+  return [];
+}
+
 /** Answers this page has, by reply; a reply's answer is asked for once. */
 const asked = new Map<string, Promise<string | null>>();
 const ASKED_MOST = 200;
@@ -64,7 +73,7 @@ function ask(environmentId: EnvironmentId, threadId: ThreadId, replyId: MessageI
  */
 export function usePromptSuggestion(props: ChatComposerProps): PromptSuggestion | null {
   const on = useSuggestionsOn();
-  const replyId = replyToFollow(props.promptHistoryMessages, props.phase);
+  const replyId = replyToFollow(lastMessageOf(props.promptHistoryEntries), props.phase);
   const asking =
     on &&
     replyId !== null &&

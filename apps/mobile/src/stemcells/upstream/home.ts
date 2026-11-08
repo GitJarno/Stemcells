@@ -8,8 +8,8 @@ import { Directory, File, Paths } from "expo-file-system";
 import { Keyboard } from "react-native";
 
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
-import { useWorkspaceTabs } from "../../features/workspace/WorkspaceTabsContext";
-import { useSelectWorkspaceDetail } from "../../features/workspace/useSelectWorkspaceDetail";
+import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
+import { useSelectWorkspaceDetail } from "../../features/layout/workspace/useSelectWorkspaceDetail";
 import { writeFileAtomically } from "../../lib/atomic-file";
 import { threadListEnvironmentsAtom } from "../../state/presentation";
 
@@ -19,7 +19,7 @@ export { SegmentedControl } from "../../components/ui/SegmentedControl";
 export {
   useWorkspaceTabs,
   WorkspaceTabsContext,
-} from "../../features/workspace/WorkspaceTabsContext";
+} from "../../features/layout/workspace/WorkspaceTabsContext";
 export { useOlderSettledShelf } from "../../state/olderSettledShelf";
 export type { OlderSettledScope } from "@t3tools/client-runtime/state/threads";
 export { NativePrimaryColumnContext } from "../../native/v5-workspace-context";

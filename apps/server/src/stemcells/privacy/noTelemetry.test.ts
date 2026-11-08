@@ -73,7 +73,10 @@ describe("no Stemcells build reports on the person", () => {
     // and never searched (the web's settingsSearch substitute,
     // privacyRow.browser.test.tsx): a person never reads them.
     const privacyRow = "apps/web/src/components/settings/SettingsPanels.tsx";
-    expect(filesMatching(words, /anonymous usage data/i)).toEqual([privacyRow]);
+    // Upstream's managed-policy line says them too, and only that row reads it.
+    const policyLine = "apps/web/src/state/managedPolicy.ts";
+    expect(filesMatching(words, /anonymous usage data/i)).toEqual([privacyRow, policyLine]);
+    expect(filesMatching(web, /\bmanagedTelemetryOffMessage\(/)).toEqual([privacyRow, policyLine]);
     const panels = NodeFS.readFileSync(NodePath.join(repoRoot, privacyRow), "utf8");
     const rows = panels
       .split(/(?=<SettingsRow\b)/)

@@ -19,9 +19,9 @@ import {
   MenuItem,
   MenuPopup,
   MenuTrigger,
-  removeDevice,
   requestConfirmDialog,
   useComputers,
+  usePairing,
   useThisMachine,
 } from "../upstream/devices";
 import { AddPhoneDialog } from "./AddPhoneDialog";
@@ -43,6 +43,7 @@ function seenLabel(device: Device, nowMs: number) {
 
 export function DevicesPanel() {
   const here = useThisMachine();
+  const { removeDevice } = usePairing();
   const computers = useComputers();
   const nowMs = useNowMinuteMs();
   const [adding, setAdding] = useState<"phone" | "computer" | null>(null);

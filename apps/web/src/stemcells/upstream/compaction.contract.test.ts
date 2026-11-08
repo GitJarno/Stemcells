@@ -12,7 +12,7 @@ import { formatContextWindowCompactionMessage } from "../../components/chat/Cont
 import { providerClients } from "../../components/settings/providerDriverMeta";
 import { deriveProviderSettingsFields } from "../../components/settings/ProviderSettingsForm";
 import { searchSettings } from "../../components/settings/settingsSearch";
-import { deriveLatestContextWindowSnapshot } from "../../lib/contextWindow";
+import { deriveLatestContextWindowSnapshot } from "@t3tools/client-runtime/state/context-window";
 import { towardCompaction } from "../compaction/meter";
 import { compactWindowIn, DEFAULT_COMPACT_WINDOW, MODEL_OWN_WINDOW } from "../compaction/windows";
 import { SUBSTITUTES } from "./substitutes/plugin";

@@ -347,7 +347,7 @@ const SETTINGS_SCREENS = {
     linking: "settings/waitlist",
     options: { headerShown: false, presentation: "modal" },
   }),
-  ...stemcellsSettingsScreens(SETTINGS_PAGE_OPTIONS),
+  ...stemcellsSettingsScreens(settingsPage),
 };
 
 // iOS 26 header morphing requires one UINavigationBar; nested stacks make the whole screen slide.

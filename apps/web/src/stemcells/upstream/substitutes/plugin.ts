@@ -15,6 +15,8 @@ import { upstreamNamePlugin } from "../../../../../../stemcells/brand/nameTransf
 export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // No favicon fetched: a link or a page shows the app's own mark.
   "packages/shared/src/favicon.ts": "favicon.ts",
+  // No star asked for T3's repository, and GitHub not asked whether the person gave one.
+  "apps/web/src/components/GitHubStarPrompt.tsx": "GitHubStarPrompt.ts",
   // Concise model names: the picker's update notice and a subagent's tooltip.
   "packages/client-runtime/src/providerUpdateRequiredModels.ts": "providerUpdateRequiredModels.ts",
   "packages/client-runtime/src/state/subagentDisplay.ts": "subagentDisplay.ts",

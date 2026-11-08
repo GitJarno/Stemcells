@@ -90,8 +90,11 @@ describe("the timeline, as a continuation's row reads it", () => {
 describe("the limit banner", () => {
   const props = {
     runId: RunId.make("run-1"),
+    errorCode: null,
     resetAt: "2026-10-21T15:00:00.000Z",
     stoppedAt: AT,
+    settled: false,
+    requestPending: false,
     snoozedUntil: null,
     recovery: null,
     timestampFormat: "24-hour" as const,
