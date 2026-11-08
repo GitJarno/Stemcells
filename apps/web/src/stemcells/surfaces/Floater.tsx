@@ -235,6 +235,16 @@ function useTuckTab(open: () => void, putAway: () => void) {
     clearTimeout(current.hold);
     return current.gesture;
   };
+  /**
+   * A press held for the menu ends there: the desktop's own menu may keep its release, and
+   * the click that follows it opens nothing. A dragged press shows no menu.
+   */
+  const holdForMenu = (current: Press): boolean => {
+    if (!current.gesture.hold()) return false;
+    endPress();
+    swallow.current = true;
+    return true;
+  };
 
   const props = {
     ref: tab,
@@ -255,7 +265,7 @@ function useTuckTab(open: () => void, putAway: () => void) {
       const current: Press = { pointerId, gesture: new TuckPress(x, y), hold: undefined };
       if (event.pointerType === "touch") {
         current.hold = window.setTimeout(() => {
-          if (current.gesture.hold()) void showMenuAt({ x, y });
+          if (holdForMenu(current)) void showMenuAt({ x, y });
         }, timing("hold"));
       }
       press.current = current;
@@ -296,9 +306,7 @@ function useTuckTab(open: () => void, putAway: () => void) {
     onContextMenu: (event) => {
       event.preventDefault();
       const current = press.current;
-      // A press held for the menu (ctrl-click, a touch held still) shows it once; a drag, never.
-      if (current !== null && !current.gesture.hold()) return;
-      clearTimeout(current?.hold);
+      if (current !== null && !holdForMenu(current)) return;
       const rect = event.currentTarget.getBoundingClientRect();
       const pointed = event.clientX !== 0 || event.clientY !== 0;
       void showMenuAt(

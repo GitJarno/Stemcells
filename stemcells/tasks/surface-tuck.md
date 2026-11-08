@@ -184,3 +184,10 @@ of seven Cells:
   card is gone: the edge is the tab whether folded or not.
 - Unfolded in a 220 px pane, the tab still covers the head of the Cell on
   the shelf, as PR 1's card did, until the pointer leaves.
+
+Review fixes (the pull request's review):
+
+- A press that opens the menu ends there (a ctrl-click on a Mac, a touch held
+  still): the desktop's own menu may keep its release, which left the press
+  open and the tab deaf to the next one. Headless, a primary press with its
+  menu before its release: the menu, no Look; the next click, Look.
