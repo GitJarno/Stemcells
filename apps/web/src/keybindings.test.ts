@@ -770,7 +770,7 @@ describe("composer and pull request shortcuts", () => {
   it("uses the dictation chord outside the terminal and preserves terminal split", () => {
     const chord = event({ key: "d", ctrlKey: true, shiftKey: true });
     assert.strictEqual(
-      resolveShortcutCommand(chord, DEFAULT_RESOLVED_KEYBINDINGS, {
+      resolveShortcutCommand({ ...chord, altKey: true }, DEFAULT_RESOLVED_KEYBINDINGS, {
         platform: "Linux",
         context: { terminalFocus: false },
       }),
