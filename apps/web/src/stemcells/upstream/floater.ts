@@ -1,8 +1,7 @@
 /**
  * Upstream's floating preview, its "mini player": a browser or device floating over a chat's
- * canvas, out of its right panel. Every way upstream closes the panel on one floats it, and an
- * agent's browser may open floating. What the tuck (`stemcells/surfaces/Floater.tsx`) needs of
- * it: whether a chat has room for it, its face, and upstream's own two ways out of it.
+ * canvas, out of its right panel. What the tuck (`stemcells/surfaces/Floater.tsx`) needs of it:
+ * whether a chat has room for it, its face, upstream's two ways out of it, and upstream's menu.
  */
 import { parseScopedThreadKey, scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { ScopedThreadRef } from "@t3tools/contracts";
@@ -13,6 +12,7 @@ import {
 } from "../../browser/browserRecording";
 import { previewRuntimeTabId } from "../../browser/previewRuntimeTabId";
 import { useFaviconForThreadUrl } from "../../browserFaviconStore";
+import { readLocalApi } from "../../localApi";
 import { useChatCanvas } from "../../components/chat/ChatCanvasContext";
 import { resolveChatCanvasLayout } from "../../components/chat/chatCanvasLayout";
 import { FaviconImage } from "../../components/preview/PreviewFaviconIcon";
@@ -78,6 +78,8 @@ export function useFloaterHasNoRoom(source: FloaterSource): boolean | null {
 /** What a floater shows of itself while tucked. */
 export interface FloaterFace {
   readonly name: string;
+  /** What it is beside its name: a page's host, a device's kind; null where it would repeat it. */
+  readonly detail: string | null;
   /** The page a browser is on, for its mark; null for a device or a browser on none. */
   readonly url: string | null;
   /** Whether a recording of the browser is running, which upstream's floater shows by a dot. */
@@ -87,16 +89,33 @@ export interface FloaterFace {
 export function useFloaterFace(threadRef: ScopedThreadRef, source: FloaterSource): FloaterFace {
   const previews = useThreadPreviewState(threadRef);
   const recordingTabIds = useActiveBrowserRecordingTabIds();
-  if (source.kind === "device") return { name: source.name, url: null, recording: false };
+  if (source.kind === "device") {
+    return { name: source.name, detail: DEVICE_KIND[source.platform], url: null, recording: false };
+  }
   const status = previews.sessions[source.tabId]?.navStatus ?? null;
   const runtimeTabId = previewRuntimeTabId(threadRef, previews.serverEpoch, source.tabId);
+  const name = browserName(status);
+  const url = status !== null && status._tag !== "Idle" ? status.url : null;
+  const host = url === null ? null : hostOf(url);
   return {
-    name: browserName(status),
-    url: status !== null && status._tag !== "Idle" ? status.url : null,
+    name,
+    detail: host === name ? null : host,
+    url,
     recording:
       recordingTabIds.has(runtimeTabId) ||
       findActiveBrowserRecordingRuntimeTabId(threadRef, source.tabId) !== null,
   };
+}
+
+/** A device's kind, as upstream's device view names its screen. */
+const DEVICE_KIND = { ios: "iOS Simulator", android: "Android Emulator" } as const;
+
+function hostOf(url: string): string | null {
+  try {
+    return new URL(url).host || null;
+  } catch {
+    return null;
+  }
 }
 
 /** The mark the browser's page left in upstream's favicon store, as its panel tab shows it. */
@@ -122,6 +141,18 @@ export function openFloaterInPanel(threadRef: ScopedThreadRef, source: FloaterSo
 /** Upstream's "Close floating preview": the floater ends; its browser stays among the panel's tabs. */
 export function closeFloater(threadRef: ScopedThreadRef): void {
   usePreviewMiniPlayerStore.getState().close(threadRef);
+}
+
+/**
+ * Upstream's context menu at a point (the desktop's own menu, else its web stand-in): the item
+ * picked, or null when it was dismissed or couldn't show.
+ */
+export async function showMenu<T extends string>(
+  items: readonly { readonly id: T; readonly label: string }[],
+  at: { readonly x: number; readonly y: number },
+): Promise<T | null> {
+  const picked = readLocalApi()?.contextMenu.show(items, at);
+  return picked ? picked.catch(() => null) : null;
 }
 
 /** A chat's thread as upstream's stores key it. */

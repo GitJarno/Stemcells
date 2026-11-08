@@ -70,67 +70,96 @@
   pointer-events: none;
 }
 
-/* At rest only its mark shows, padded alike on both sides, the rest
-   behind the edge; pointed at or focused, it slides out whole. It moves by
-   transform alone. It comes and goes with no motion of its own: a chat
-   narrowing past the room for a floater swaps one for the other at once. */
+/* The tab: its mark at the chat's edge, the rest of it folded behind the
+   mark, its far end behind the edge so its corners there never show. It
+   unfolds toward the chat from behind the mark, which never moves: its
+   ground slides out from the edge, its words uncovered with it (the same
+   motion, so the ground's edge and the words' meet). At rest only the mark's
+   square takes the pointer. It comes and goes with no motion of its own: a
+   chat narrowing past the room for a floater swaps one for the other. */
 [data-stemcells-tuck-card] {
-  --tuck-peek: calc(var(--tuck-mark) + 2 * var(--tuck-pad));
   --tuck-mark: 16px;
   --tuck-pad: var(--sc-space-lg);
+  --tuck-peek: calc(var(--tuck-mark) + 2 * var(--tuck-pad));
+  --tuck-behind: var(--sc-radius-card);
+  --tuck-unfold: var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
   position: absolute;
-  right: 0;
+  right: calc(-1 * var(--tuck-behind));
   bottom: calc(var(--sc-tuck-floor, 0px) + var(--sc-space-xs));
+  isolation: isolate;
   display: flex;
   align-items: center;
-  max-width: min(16rem, calc(100% - 2 * var(--sc-space-md)));
+  max-width: calc(min(16rem, 100% - 2 * var(--sc-space-md)) + var(--tuck-behind));
   height: 36px;
-  padding-inline-end: var(--sc-space-xs);
-  border: 1px solid var(--sc-pane-button-edge);
+  padding-inline-end: var(--tuck-behind);
   border-radius: var(--sc-radius-card);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  text-align: start;
+  cursor: pointer;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: pan-y;
+  translate: var(--tuck-pull, 0px) 0;
+  transition: translate var(--tuck-unfold);
+  -webkit-app-region: no-drag;
+}
+[data-stemcells-tuck-ground] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid var(--sc-pane-button-edge);
+  border-radius: inherit;
   background: var(--sc-pane-button-ground);
   backdrop-filter: blur(var(--sc-glass-blur)) saturate(var(--sc-glass-saturation));
   box-shadow: var(--sc-glass-shadow);
-  color: var(--muted-foreground);
-  pointer-events: auto;
-  translate: calc(100% - var(--tuck-peek)) 0;
-  transition: translate var(--sc-motion-settle-duration) var(--sc-motion-settle-easing);
-  -webkit-app-region: no-drag;
+  translate: calc(100% - var(--tuck-peek) - var(--tuck-behind)) 0;
+  transition: translate var(--tuck-unfold);
 }
-[data-stemcells-tuck-card]:is(:hover, :focus-within, [data-out]) {
-  translate: calc(-1 * var(--sc-space-md)) 0;
-  color: var(--foreground);
-}
-/* Out, it stands clear of the edge; the gap still counts as the card, so a
-   pointer resting at the very edge doesn't send it back and forth. */
-[data-stemcells-tuck-card]::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 100%;
-  width: var(--sc-space-md);
-}
-
-[data-stemcells-tuck-open] {
+[data-stemcells-tuck-face] {
   display: flex;
   flex: 1 1 auto;
-  align-items: center;
-  gap: var(--tuck-pad);
+  flex-direction: column;
   min-width: 0;
-  height: 100%;
-  padding-inline: var(--tuck-pad) var(--sc-space-xs);
-  border-radius: inherit;
-  font-size: 0.75rem;
-  cursor: pointer;
+  padding-inline-start: var(--tuck-pad);
+  clip-path: inset(0 0 0 100%);
+  transition:
+    clip-path var(--tuck-unfold),
+    opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
 }
+:is([data-stemcells-tuck-name], [data-stemcells-tuck-detail]) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-stemcells-tuck-name] {
+  line-height: 1rem;
+}
+[data-stemcells-tuck-detail] {
+  font-size: 0.6875rem;
+  line-height: 0.875rem;
+  color: var(--muted-foreground);
+}
+/* The mark's square: all of the tab that takes the pointer at rest. */
 [data-stemcells-tuck-mark] {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--tuck-peek);
+  height: 100%;
+  pointer-events: auto;
+}
+[data-stemcells-tuck-icon] {
   position: relative;
   display: flex;
-  flex: none;
   width: var(--tuck-mark);
   height: var(--tuck-mark);
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
 }
-[data-stemcells-tuck-mark] > :is(img, svg) {
+[data-stemcells-tuck-icon] > :is(img, svg) {
   width: 100%;
   height: 100%;
   border-radius: 3px;
@@ -147,41 +176,48 @@
   background: var(--destructive);
   box-shadow: 0 0 0 1.5px var(--background);
 }
-[data-stemcells-tuck-name] {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
-[data-stemcells-tuck-hide] {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 9999px;
-  color: var(--muted-foreground);
-  cursor: pointer;
-}
-[data-stemcells-tuck-hide]:hover {
-  background: var(--sc-pane-button-lit);
+/* Unfolded: pointed at a beat, or focused from the keyboard. */
+[data-stemcells-tuck-card]:is([data-out], :focus-visible) {
   color: var(--foreground);
+  pointer-events: auto;
 }
-[data-stemcells-tuck-hide] svg {
-  width: 14px;
-  height: 14px;
+[data-stemcells-tuck-card]:is([data-out], :focus-visible) [data-stemcells-tuck-ground] {
+  translate: 0 0;
 }
-[data-stemcells-tuck] button:focus-visible {
+[data-stemcells-tuck-card]:is([data-out], :focus-visible) [data-stemcells-tuck-face] {
+  clip-path: inset(0);
+}
+[data-stemcells-tuck-card]:focus-visible {
+  outline: none;
+}
+[data-stemcells-tuck-card]:focus-visible [data-stemcells-tuck-ground] {
   outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
 
-/* Less motion: cards come out, lift and go back in place. */
+/* Pushed into the edge, it follows the pointer; past where letting go puts
+   it away, it dims. Going, nothing of it takes the pointer. */
+[data-stemcells-tuck-card][data-dragging] {
+  cursor: grabbing;
+  transition: none;
+}
+[data-stemcells-tuck-card][data-past] :is([data-stemcells-tuck-face], [data-stemcells-tuck-icon]) {
+  opacity: var(--sc-absent);
+}
+[data-stemcells-tuck-card][data-leaving],
+[data-stemcells-tuck-card][data-leaving] [data-stemcells-tuck-mark] {
+  pointer-events: none;
+}
+
+/* Less motion: cards unfold, lift and go back in place; a drag still
+   follows the pointer. */
 @media (prefers-reduced-motion: reduce) {
   :is(
     [data-stemcells-tuck-card],
+    [data-stemcells-tuck-ground],
+    [data-stemcells-tuck-face],
+    [data-stemcells-tuck-icon],
     [data-stemcells-card] [data-preview-mini-player] > *,
     [data-stemcells-card-open],
     [data-preview-viewport]
