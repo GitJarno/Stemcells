@@ -1,8 +1,7 @@
 /**
  * What Look needs of upstream: a Cell's right panel (open, empty, its last surface), closing and
  * reopening it through upstream's store, whether the window fits the panel inline, and the focus
- * facts that say an Esc is someone else's. When a Cell's chat was last written in is
- * `useCellLastSent` (`chat.tsx`).
+ * facts that say an Esc is someone else's.
  */
 import type { PreviewNavStatus } from "@t3tools/contracts";
 import { getTerminalLabel } from "@t3tools/shared/terminalLabels";

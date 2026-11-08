@@ -18,7 +18,6 @@ import {
   escapeMayEndLook,
   lookPaneId,
   railPanes,
-  sentSince,
   type EscapePress,
 } from "./look";
 
@@ -131,23 +130,6 @@ describe("an empty workbench's ×", () => {
   it("leaves upstream's sheet and a closed panel alone", () => {
     expect(emptyWorkbenchCell(single, { ...picking, inline: false })).toBeNull();
     expect(emptyWorkbenchCell(single, { ...picking, focusedPanelOpen: false })).toBeNull();
-  });
-});
-
-describe("a send from the Look Cell", () => {
-  it("is a change in the user's last message from a value known before", () => {
-    expect(sentSince("2026-10-20T10:00:00Z", "2026-10-20T10:05:00Z")).toBe(true);
-    expect(sentSince("2026-10-20T10:00:00Z", "2026-10-20T10:00:00Z")).toBe(false);
-  });
-
-  it("includes a draft's first message, which makes it a thread", () => {
-    expect(sentSince(null, "2026-10-20T10:05:00Z")).toBe(true);
-  });
-
-  it("isn't a chat's history arriving after Look began (a reload)", () => {
-    expect(sentSince(undefined, "2026-10-20T10:00:00Z")).toBe(false);
-    expect(sentSince("2026-10-20T10:00:00Z", undefined)).toBe(false);
-    expect(sentSince(null, null)).toBe(false);
   });
 });
 

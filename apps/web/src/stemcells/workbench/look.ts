@@ -64,22 +64,6 @@ export function emptyWorkbenchCell(
   return panesOf(tab).find((pane) => pane.id === tab.focusedPaneId)?.cell ?? null;
 }
 
-/**
- * When the user last wrote in a chat: an ISO time, null while it holds
- * none of theirs, undefined while that isn't known yet.
- */
-export type LastSent = string | null | undefined;
-
-/**
- * Whether the user sent a message from the Look Cell, given what was known
- * of its last message before (`seen`) and now. A chat whose messages
- * arrive after Look began (a reload) is not a send: only a change from a
- * known value is.
- */
-export function sentSince(seen: LastSent, now: LastSent): boolean {
-  return seen !== undefined && now !== undefined && now !== null && now !== seen;
-}
-
 /** The parts of a key press Esc's meaning depends on, as it reaches the window. */
 export type EscapePress = Pick<
   KeyboardEvent,

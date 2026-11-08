@@ -3,10 +3,9 @@
 Watch is the slate as it is: the tab's Cells in their grid, no workbench
 showing. When the focused Cell opens its workbench (a surface in its right
 panel), the tab goes into Look: that Cell and its workbench take the slate
-half and half, and the tab's other Cells fold into a rail of marks. Sending
-from the Cell, Esc, the workbench's × or a mark on the rail go back to
-Watch; the Cell keeps a chip naming its last surface, which opens Look
-again.
+half and half, and the tab's other Cells fold into a rail of marks. Esc,
+the workbench's × or a mark on the rail go back to Watch; the Cell keeps a
+chip naming its last surface, which opens Look again.
 
 ## Plan
 
@@ -51,9 +50,10 @@ again.
   buttons. Nothing of Look's rides a chat's header or the pane's floating
   buttons: those are the pane's (its × closes the pane), and upstream's
   right-panel toggle among them stays as it is, lit while the panel is open.
-- **A send is read from the thread**: the shell's last user-authored
-  message moving past what Look first saw. Any way of sending counts; a
-  chat whose history arrives after Look began (a reload) doesn't.
+- **A send keeps Look** (2026-11-08): the surfaces stay open beside the
+  chat, on the same page and at the same size, a draft's first message
+  included. Ending Look on a send floated the browser into the chat, tucked
+  where there was no room, so the page the person was working on vanished.
 - **Esc** ends Look when it reaches the window unstopped and nothing held
   it when pressed: no open menu, dialog, sheet, popover, select, palette,
   context menu, find bar or full-screen app view, no focus in a terminal, a
