@@ -217,6 +217,7 @@
 }
 
 [data-need-head] {
+  container-type: inline-size;
   display: flex;
   align-items: center;
   gap: var(--sc-space-sm);
@@ -300,6 +301,39 @@
 [data-need-tail] button[data-lit] {
   box-shadow: 0 0 0 1px var(--sc-accent);
   color: var(--sc-text);
+}
+/* A head too narrow for the Cell, its project and them, as in the left
+   rail: while the person is on the ask the project gives way and the name
+   shortens, the buttons a little tighter; narrower still, they take the
+   whole line. The card never grows, and the flag stays inside it. */
+@container (inline-size < 19rem) {
+  [data-stemcells-need]:is(:hover, :focus-within)
+    [data-need-head]:has(> [data-need-tail])
+    > :is([data-need-number], [data-need-place]),
+  [data-need-head]:has(> [data-need-tail] [data-lit]) > :is([data-need-number], [data-need-place]) {
+    display: none;
+  }
+  [data-stemcells-need]:is(:hover, :focus-within)
+    [data-need-head]:has(> [data-need-tail])
+    > [data-need-who],
+  [data-need-head]:has(> [data-need-tail] [data-lit]) > [data-need-who] {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  [data-need-tail] button {
+    padding-inline: 0.25rem;
+  }
+}
+@container (inline-size < 13rem) {
+  [data-stemcells-need]:is(:hover, :focus-within)
+    [data-need-head]:has(> [data-need-tail])
+    > :not([data-need-tail]),
+  [data-need-head]:has(> [data-need-tail] [data-lit]) > :not([data-need-tail]) {
+    display: none;
+  }
 }
 
 /* What it asks: the largest words in the message. */
