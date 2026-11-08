@@ -9,10 +9,12 @@ import * as UpstreamSubagentRuntime from "@t3tools/client-runtime/state/subagent
 import * as UpstreamThreadExecution from "@t3tools/client-runtime/state/thread-execution";
 import * as UpstreamThreads from "@t3tools/client-runtime/state/threads";
 import * as UpstreamT3ToolSummary from "@t3tools/client-runtime/t3ToolSummary";
+import * as UpstreamThreadReference from "@t3tools/client-runtime/thread-reference";
 import { resolveWorkEntryToolPresentation } from "@t3tools/client-runtime/work-log/presentation";
 import * as UpstreamFavicon from "@t3tools/shared/favicon";
 import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
 import * as UpstreamThemePalettes from "@t3tools/shared/themePalettes";
+import * as UpstreamThreadLinks from "@t3tools/shared/threadLinks";
 import { build, createServer, type ConfigEnv, type Plugin, type UserConfig } from "vite-plus";
 import { describe, expect, it, vi } from "vite-plus/test";
 
@@ -68,6 +70,7 @@ import * as UpstreamWorkspaceFileDrop from "../../../components/chat/workspaceFi
 import * as UpstreamMediaActions from "../../../components/media/MediaActions";
 import * as UpstreamComposerContextPresentation from "../../../components/composerContextPresentation";
 import * as UpstreamUserMessageContextChips from "../../../components/chat/UserMessageContextChips";
+import * as UpstreamThreadActionMenuLogic from "../../../components/threadActionMenu.logic";
 import * as OurBranchToolbar from "./BranchToolbar";
 import * as OurSidebar from "./Sidebar";
 import * as OurBrowserSurfaceSlot from "./BrowserSurfaceSlot";
@@ -134,6 +137,9 @@ import * as OurWorkspaceFileDrop from "./workspaceFileDrop";
 import * as OurMediaActions from "./MediaActions";
 import * as OurComposerContextPresentation from "./composerContextPresentation";
 import * as OurUserMessageContextChips from "./UserMessageContextChips";
+import * as OurThreadActionMenuLogic from "./threadActionMenu.logic";
+import * as OurThreadLinks from "./threadLinks";
+import * as OurThreadReference from "./threadReference";
 
 // Upstream's timeline loads the diff worker, which only a browser can start;
 // these tests read its module's exports, never draw it.
@@ -920,6 +926,56 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/chat/TimelineUserMessageRow.tsx": [
         "./UserMessageContextChips",
         ["UserMessageContextReferenceChip"],
+      ],
+    },
+  },
+  "packages/shared/src/threadLinks.ts": {
+    upstream: UpstreamThreadLinks,
+    substitute: OurThreadLinks satisfies typeof UpstreamThreadLinks,
+    importers: {
+      // Copy on a Cell's chip in a message.
+      "apps/web/src/components/chat/MarkdownThreadLink.tsx": [
+        "@t3tools/shared/threadLinks",
+        ["formatHostedThreadLink"],
+      ],
+    },
+    serverKeepsUpstream:
+      "Its one link through T3's hosted app, an outside MCP client's, takes a seam of its own (`McpOAuth.ts`), as the server has no bundler.",
+  },
+  "packages/client-runtime/src/threadReference.ts": {
+    upstream: UpstreamThreadReference,
+    substitute: OurThreadReference satisfies typeof UpstreamThreadReference,
+    importers: {
+      // Copy Cell: the Cell's menu, upstream's sidebar, the chat's shortcut and the palette.
+      "apps/web/src/hooks/useThreadActionMenu.ts": [
+        "@t3tools/client-runtime/thread-reference",
+        ["threadChipCopyTarget"],
+      ],
+      "apps/web/src/components/Sidebar.tsx": [
+        "@t3tools/client-runtime/thread-reference",
+        ["threadChipCopyTarget"],
+      ],
+      "apps/web/src/components/ChatView.tsx": [
+        "@t3tools/client-runtime/thread-reference",
+        ["resolveThreadReferenceCopyTarget"],
+      ],
+      "apps/web/src/components/CommandPalette.tsx": [
+        "@t3tools/client-runtime/thread-reference",
+        ["resolveThreadReferenceCopyTarget"],
+      ],
+    },
+  },
+  "apps/web/src/components/threadActionMenu.logic.ts": {
+    upstream: UpstreamThreadActionMenuLogic,
+    substitute: OurThreadActionMenuLogic satisfies typeof UpstreamThreadActionMenuLogic,
+    importers: {
+      "apps/web/src/hooks/useThreadActionMenu.ts": [
+        "../components/threadActionMenu.logic",
+        ["buildThreadActionMenuItems"],
+      ],
+      "apps/web/src/components/Sidebar.tsx": [
+        "./threadActionMenu.logic",
+        ["buildThreadActionMenuItems"],
       ],
     },
   },

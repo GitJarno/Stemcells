@@ -125,6 +125,11 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // by dragging them (`payloads/`).
   "apps/web/src/components/chat/workspaceFileDrop.ts": "workspaceFileDrop.ts",
   "apps/web/src/components/media/MediaActions.tsx": "MediaActions.tsx",
+  // Copy Cell copies the Cell's name and its own link, never one through
+  // T3's hosted app, and the Cell's menu says Cell (`stemcells/words/copyCell.ts`).
+  "packages/shared/src/threadLinks.ts": "threadLinks.ts",
+  "packages/client-runtime/src/threadReference.ts": "threadReference.ts",
+  "apps/web/src/components/threadActionMenu.logic.ts": "threadActionMenu.logic.ts",
   // Attachments read "Image 1", "Video 2": a picture's and a video's chip, in
   // the composer and in a sent message, says its label, not its file's name.
   "apps/web/src/components/composerContextPresentation.tsx": "composerContextPresentation.tsx",

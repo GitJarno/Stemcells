@@ -59,6 +59,10 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": "ThreadDetailScreen.tsx",
   "apps/mobile/src/native/SelectableMarkdownText.tsx": "SelectableMarkdownText.tsx",
   "apps/mobile/src/features/threads/floating-working-control.tsx": "floating-working-control.tsx",
+  // Copy Cell copies the Cell's name and its own link, never one through
+  // T3's hosted app, in Cell words (`stemcells/words/copyCell.ts`).
+  "packages/shared/src/threadLinks.ts": "threadLinks.ts",
+  "packages/client-runtime/src/threadReference.ts": "threadReference.ts",
   // Aski's instance is Aski's: a Cell, a new chat or a scheduled task never offers it, nor badges
   // Claude for it.
   "apps/mobile/src/lib/modelOptions.ts": "modelOptions.ts",
