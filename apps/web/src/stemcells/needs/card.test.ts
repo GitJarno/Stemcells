@@ -239,8 +239,10 @@ describe("a card says what the Cell asked, as it asked it", () => {
     expect(plan(null).options).toEqual([]);
   });
 
-  it("offers Later only where upstream can snooze: never while a request waits", () => {
+  it("offers Later only where upstream can snooze: never while an approval waits", () => {
     expect(cardOf(needFixture({ request: requestFixture() }), NOW).later).toBe(false);
+    const question = requestFixture({ kind: "user_input", prompt: null });
+    expect(cardOf(needFixture({ kind: "question", request: question }), NOW).later).toBe(true);
     expect(
       cardOf(
         needFixture({

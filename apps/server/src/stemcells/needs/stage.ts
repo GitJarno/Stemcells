@@ -6,16 +6,9 @@
  */
 import * as DateTime from "effect/DateTime";
 
-import type { Shell } from "../upstream/needs.ts";
+import { isSnoozed, type Shell } from "../upstream/needs.ts";
 import type { Stop } from "./closeOut.ts";
-import {
-  ACTIVE_RUN,
-  askiThreadOf,
-  carriesOn,
-  isSnoozed,
-  waitsOnItsOwn,
-  type Need,
-} from "./derive.ts";
+import { ACTIVE_RUN, askiThreadOf, carriesOn, waitsOnItsOwn, type Need } from "./derive.ts";
 
 export type Stage = "working" | "needs-you" | "done";
 

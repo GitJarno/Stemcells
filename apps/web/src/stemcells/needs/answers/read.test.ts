@@ -432,8 +432,9 @@ const NEED_MORE: Array<[string, string]> = [
   ],
   ["5, don't go with option B", "5 Mochi: ? a Cell can't read option numbers"],
   ["5 go with option a bit later", "5 Mochi: “go with option a bit later”"],
+  // A question can wait like any ask.
+  ["5 later", "5 Mochi: Later"],
   // A fixed answer the question has no option for isn't its own answer.
-  ["5 later", "5 Mochi: ? which option"],
   ["5 yes please", "5 Mochi: ? which option"],
 ];
 

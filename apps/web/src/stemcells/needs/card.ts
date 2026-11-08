@@ -78,7 +78,7 @@ export interface Card {
   readonly note: string | null;
   /** Why a Cell with full access asks at all, when it still does. */
   readonly why: string | null;
-  /** "Later" snoozes the Cell for an hour; upstream refuses it while a request waits. */
+  /** "Later" snoozes the Cell for an hour; upstream refuses it while an approval waits. */
   readonly later: boolean;
 }
 
@@ -292,7 +292,7 @@ const base = (need: Need) => ({
   options: [],
   note: null,
   why: null,
-  later: need.request === null,
+  later: need.request === null || need.request.kind === "user_input",
 });
 
 /**

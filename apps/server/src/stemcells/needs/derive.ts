@@ -6,16 +6,17 @@
  */
 import * as DateTime from "effect/DateTime";
 
-import type {
-  ApprovalOption,
-  AskedQuestion,
-  FailureClass,
-  FullAccessOverride,
-  InFlight,
-  PlanDetail,
-  RequestDetail,
-  RequestKind,
-  Shell,
+import {
+  isSnoozed,
+  type ApprovalOption,
+  type AskedQuestion,
+  type FailureClass,
+  type FullAccessOverride,
+  type InFlight,
+  type PlanDetail,
+  type RequestDetail,
+  type RequestKind,
+  type Shell,
 } from "../upstream/needs.ts";
 import type { Stop } from "./closeOut.ts";
 import type { Cue, PreRead } from "./preread.ts";
@@ -110,21 +111,6 @@ export const ACTIVE_RUN = new Set<Shell["status"]>([
 
 const millis = (at: DateTime.Utc | null | undefined): number | null =>
   at == null ? null : DateTime.toEpochMillis(at);
-
-/**
- * T3's own rule (client-runtime `effectiveSnoozed`): a snooze holds until
- * its time unless a request, or a failure after the snooze, wakes it early.
- */
-export function isSnoozed(shell: Shell, now: number): boolean {
-  const until = millis(shell.snoozedUntil);
-  if (until === null || until <= now) return false;
-  if (shell.pendingRuntimeRequest !== null) return false;
-  if (shell.status !== "failed") return true;
-  const failedAt = millis(shell.latestRunCompletedAt);
-  const snoozedAt = millis(shell.snoozedAt);
-  if (snoozedAt === null) return false;
-  return failedAt === null || failedAt <= snoozedAt;
-}
 
 /** T3's sidebar rule: a failed latest run nobody has opened the Cell to see since it ended. */
 function isUnseenFailure(shell: Shell): boolean {
