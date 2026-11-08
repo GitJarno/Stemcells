@@ -3,7 +3,7 @@
  * `surfaces/Floater.tsx`). A failure here after a sync names the contract
  * that moved.
  */
-import { beforeEach, describe, expect, it } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { shouldRenderPreviewMiniPlayer } from "../../components/ChatView.logic";
 import {
@@ -13,7 +13,7 @@ import {
 } from "../../previewMiniPlayerStore";
 import { selectActiveRightPanelSurface, useRightPanelStore } from "../../rightPanelStore";
 import { threadRefOf } from "./routes";
-import { floaterHasNoRoom, openFloaterInPanel } from "./floater";
+import { floaterHasNoRoom, openFloaterInPanel, showMenu } from "./floater";
 
 const ref = threadRefOf({ environmentId: "env-tuck", threadId: "thread-tuck", draftId: null });
 const browser = browserMiniPlayerSource("tab-garden");
@@ -56,4 +56,21 @@ describe("the tuck's contracts with upstream's floater", () => {
     expect(shouldRenderPreviewMiniPlayer(browser, shown)).toBe(false);
     expect(shouldRenderPreviewMiniPlayer(browserMiniPlayerSource("tab-other"), shown)).toBe(true);
   });
+
+  it("upstream's menu hands its items to the desktop's own menu at the point and returns the pick", async () => {
+    const showContextMenu = vi.fn(async () => "put-away");
+    using _window = stubWindow({ desktopBridge: { showContextMenu } });
+    const items = [
+      { id: "open", label: "Open" },
+      { id: "put-away", label: "Put away" },
+    ] as const;
+
+    await expect(showMenu(items, { x: 12, y: 34 })).resolves.toBe("put-away");
+    expect(showContextMenu).toHaveBeenCalledWith(items, { x: 12, y: 34 });
+  });
 });
+
+function stubWindow(value: object) {
+  vi.stubGlobal("window", value);
+  return { [Symbol.dispose]: () => vi.unstubAllGlobals() };
+}

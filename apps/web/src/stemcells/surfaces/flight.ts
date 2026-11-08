@@ -266,12 +266,12 @@ function floaters(threadKey: string): HTMLElement[] {
 
 /**
  * Where the thread's card shows on screen: upstream's floater beside the
- * chat, or the part of the tucked card in front of the chat's edge.
+ * chat, or the part of the tucked tab's ground in front of the chat's edge.
  */
 function cardBox(threadKey: string): { readonly box: Box } | null {
   for (const floater of floaters(threadKey)) {
     const room = intersect(floater.getBoundingClientRect(), viewport());
-    const card = floater.querySelector("[data-preview-mini-player], [data-stemcells-tuck-card]");
+    const card = floater.querySelector("[data-preview-mini-player], [data-stemcells-tuck-ground]");
     if (room === null || card === null) continue;
     const box = intersect(card.getBoundingClientRect(), room);
     if (box !== null) return { box };

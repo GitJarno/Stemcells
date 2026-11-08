@@ -327,6 +327,10 @@
   /* An ask folding away once it's answered or gone; the list keeps it that long. */
   --sc-timing-fold: 240ms;
   --sc-timing-dwell: 400ms;
+  /* A pointer resting this long on something means it, not passing over. */
+  --sc-timing-intent: 150ms;
+  /* A touch held still this long is a long-press. */
+  --sc-timing-hold: 500ms;
   --sc-timing-read-before-allow: 1000ms;
   --sc-timing-banner-stay: 5000ms;
   --sc-timing-banner-stale: 120000ms;
