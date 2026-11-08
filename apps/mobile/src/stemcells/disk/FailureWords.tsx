@@ -1,5 +1,5 @@
 import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
-import { useMachineDisk } from "../upstream/disk";
+import { useMachineDisk } from "../upstream/machineDisk";
 import { diskFailure } from "./kit";
 
 /**

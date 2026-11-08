@@ -34,14 +34,12 @@ it.each([
   const config = await loadConfig(value);
   expect(config.ios?.bundleIdentifier).toBe(identifier);
   expect(config.android?.package).toBe(identifier);
-  // Copied thread links open this app only while app.t3.codes lists it.
+  // Stemcells claims none of T3's hosted app's thread links (src/stemcells/privacy/noT3Links.ts).
   const host = new URL(DEFAULT_HOSTED_APP_URL).host;
-  expect(config.ios?.associatedDomains).toContain(`applinks:${host}`);
+  expect(config.ios?.associatedDomains).not.toContain(`applinks:${host}`);
   expect(appleAppSiteAssociation.applinks.details[0]?.appIDs).toContain(
     `${config.ios?.appleTeamId}.${identifier}`,
   );
-  expect(config.android?.intentFilters?.[0]?.data).toEqual([
-    { scheme: "https", host, pathPrefix: "/threads/" },
-  ]);
+  expect(config.android?.intentFilters).toEqual([]);
   expect(assetLinks.map((link) => link.target.package_name)).toContain(identifier);
 });

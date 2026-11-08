@@ -33,6 +33,12 @@ Upstream's `AppBar` takes a `titleContent` that iOS ignores, and its
       title, subtitle and items are set; pick 1 or 2
 - [ ] The Cell beside its name, its about under it
 - [ ] One Code menu
+- [ ] The Code menu's contract again: `upstream/codeButton.contract.test.ts`
+      pinned `identifier: "thread-right-…"` in `ThreadGitControls.tsx`,
+      which `AppBar`'s menus no longer carry, so it went with this sync.
+      Rewrite `chat/code.ts` to fold what `ThreadHeader` now builds
+      (`useThreadGitMenuDefinition`, `threadTerminalMenu`, the folder
+      action) and pin those
 - [ ] "Back to the Cells"
 - [ ] No band behind the chat's header
 - [ ] Contract test: the substitute's module and its importers
