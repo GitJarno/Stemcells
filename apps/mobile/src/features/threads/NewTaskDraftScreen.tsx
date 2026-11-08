@@ -5,10 +5,8 @@ import { CasualOffer } from "../../stemcells/casual/CasualOffer";
 import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { DraftThreadHeader } from "./DraftThreadHeader";
-import { threadHeaderAppearance } from "./thread-header-appearance";
-import { NATIVE_LIQUID_GLASS_SUPPORTED } from "../../native/native-glass";
 import { useComposerAttachmentActions } from "../../state/use-composer-attachment-actions";
-import { useWorkspaceBackNavigation } from "../workspace/useAndroidWorkspaceNavigation";
+import { useWorkspaceBackNavigation } from "../layout/workspace/useAndroidWorkspaceNavigation";
 import { submittedThreadParams } from "./thread-route-state";
 import { ThreadScreenBinding, ThreadScreenFallback } from "./ThreadScreenHost";
 import { draftThreadShell } from "./draft-thread-shell";
@@ -858,21 +856,7 @@ export function NewTaskDraftScreen(props: {
 
   if (!flow.selectedModel) {
     return (
-      <ThreadScreenFallback
-        header={
-          <AppBar
-            title="New Cell"
-            sidebar={false}
-            onBack={goBack}
-            options={{
-              ...threadHeaderAppearance(NATIVE_LIQUID_GLASS_SUPPORTED),
-              unstable_headerSubtitle: undefined,
-              unstable_headerRightItems: () => [],
-              unstable_headerToolbarItems: () => [],
-            }}
-          />
-        }
-      >
+      <ThreadScreenFallback header={<AppBar title="New Cell" onBack={goBack} />}>
         <View className="flex-1 justify-end gap-3 p-4">
           {environmentControl}
           <Text className="text-foreground-muted">
@@ -991,6 +975,7 @@ export function NewTaskDraftScreen(props: {
         onStopThread={() => {}}
         onResumeQueue={null}
         onSendMessage={handleStart}
+        offersSideChat={false}
         onReconnectEnvironment={() => onReconnectEnvironment(selectedProject.environmentId)}
         canSwitchThreadProvider
         onUpdateThreadInteractionMode={flow.planModeEnabled ? flow.setInteractionMode : undefined}

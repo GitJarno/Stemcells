@@ -23,6 +23,7 @@ import {
 import { ASSET_ROUTE_PREFIX, resolveAsset, type ResolvedAsset } from "../../assets/AssetAccess.ts";
 import { openMediaFile } from "../../assets/MediaFile.ts";
 import * as ServerConfig from "../../config.ts";
+import { publicAddresses as upstreamPublicAddresses } from "../../htmlRender/publicProxy.ts";
 
 // What carrying a file into another chat takes from upstream: a pending attachment's path
 // and name, the bytes waiting, a message's caps, a chat's signed asset URL read back to its
@@ -32,9 +33,10 @@ import * as ServerConfig from "../../config.ts";
 /**
  * A host's addresses when every one is public (not this machine, its
  * networks, or link-local and metadata ranges); undefined otherwise. The
- * caller connects only to these.
+ * caller connects only to these. Upstream's proxy also notes fake-IP hosts
+ * in a map it keeps; an import keeps none.
  */
-export { publicAddresses } from "../../htmlRender/publicProxy.ts";
+export const publicAddresses = (host: string) => upstreamPublicAddresses(host, new Map());
 
 /** The most a file in a message may be (upstream's send cap). */
 export const MAX_FILE_BYTES = PROVIDER_SEND_TURN_MAX_FILE_BYTES;

@@ -156,6 +156,8 @@ export const PUBLIC_SUBSTITUTES: Readonly<Record<string, string>> = {
   "/favicon-16x16.png": "stemcells/brand/web-favicon-16x16.png",
   "/favicon-32x32.png": "stemcells/brand/web-favicon-32x32.png",
   "/apple-touch-icon.png": "stemcells/brand/web-apple-touch-180.png",
+  "/icon-192x192.png": "stemcells/brand/web-icon-192x192.png",
+  "/icon-512x512.png": "stemcells/brand/web-icon-512x512.png",
 };
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
