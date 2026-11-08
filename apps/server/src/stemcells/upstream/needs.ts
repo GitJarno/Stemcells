@@ -24,6 +24,7 @@ import * as SqlClient from "effect/sql/SqlClient";
 
 import { loadShellSnapshotParts } from "../../orchestration-v2/ShellStream.ts";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";
+import { isSnoozed as threadIsSnoozed } from "../../orchestration-v2/ThreadSettlementService.ts";
 import * as OrchestrationEventStore from "../../persistence/OrchestrationEventStore.ts";
 import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
 import * as ServerSettings from "../../serverSettings.ts";
@@ -34,6 +35,12 @@ export type ApprovalOption = ProviderApprovalOption;
 /** What a pending runtime request asks for: a command, a file, a question, a sign-in… */
 export type RequestKind = NonNullable<Shell["pendingRuntimeRequest"]>["kind"];
 export type FailureClass = NonNullable<Shell["lastErrorClass"]>;
+
+/**
+ * T3's own snooze rule, the one its sidebar shows: a snooze holds until its time unless an
+ * approval, a question asked after it, a guest's message, or a later failure wakes it.
+ */
+export const isSnoozed = (shell: Shell, now: number): boolean => threadIsSnoozed(shell, now);
 
 /** A question a Cell asked through its provider's own question tool. */
 export interface AskedQuestion {

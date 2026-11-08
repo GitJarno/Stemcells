@@ -123,6 +123,16 @@ describe("what needs the person, from a Cell's shell", () => {
       "permission",
       null,
     ]);
+    // A question snoozed as it stood waits with its Cell; only a new one wakes it.
+    const question = (ago: number) => pendingRequest("user_input", { ago });
+    expect(putOff({ ...snoozed, pendingRuntimeRequest: question(10 * MINUTE) })).toEqual([
+      "question",
+      NOW + HOUR,
+    ]);
+    expect(putOff({ ...snoozed, pendingRuntimeRequest: question(MINUTE) })).toEqual([
+      "question",
+      null,
+    ]);
     expect(putOff({ ...failed, snoozedUntil: at(-MINUTE), snoozedAt: at(-HOUR) })).toEqual([
       "failed",
       null,
