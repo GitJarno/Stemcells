@@ -28,10 +28,12 @@ const centre = (box: DOMRect) => ({ x: box.left + box.width / 2, y: box.top + bo
 const inColumn = (selector: string) =>
   document.querySelector<HTMLElement>(`[data-stemcells-cells] ${selector}`);
 
-/** Where a hop starts: the Cell's own card or row while the open list shows it, else its old stage's row. */
+/** Where a hop starts: the Cell's own sprite, card or row while the open list shows it, else its old stage's row. */
 const startOf = (hop: Hop) => {
   const id = CSS.escape(hop.threadId);
   const own = inColumn(`[data-cells-thread="${id}"], [data-need-thread="${id}"]`);
+  const sprite = own?.querySelector("[data-stemcells-cell-status]");
+  if (sprite) return centre(sprite.getBoundingClientRect());
   if (own !== null) {
     const box = own.getBoundingClientRect();
     return { x: box.left + 16, y: box.top + Math.min(box.height, 32) / 2 };

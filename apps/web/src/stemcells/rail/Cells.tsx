@@ -464,8 +464,9 @@ function Landed(props: { cells: ReadonlyArray<Row> }) {
 }
 
 /**
- * One Cell in two lines, as upstream's rows: its sprite, title and age; under them its project
- * and pull request. Hovering shows the thread's card, and Settle takes the age's place.
+ * One Cell in two lines: its title and age, the title first at the row's edge for scanning; under
+ * them its sprite, project and pull request. Hovering shows the thread's card, and Settle takes
+ * the age's place.
  */
 function CellRow(props: { row: Row; settled?: boolean; onSettle?: () => void }) {
   const { row, onSettle } = props;
@@ -493,7 +494,6 @@ function CellRow(props: { row: Row; settled?: boolean; onSettle?: () => void }) 
           />
         }
       >
-        <CellMark cell={ref} />
         <span data-cells-row-title="">{row.title}</span>
         <span data-cells-row-end="">
           <span data-cells-row-age="">
@@ -514,6 +514,7 @@ function CellRow(props: { row: Row; settled?: boolean; onSettle?: () => void }) 
             </button>
           ) : null}
         </span>
+        <CellMark cell={ref} />
         {shell === null ? null : (
           <span data-cells-row-under="">
             <CellProject shell={shell} />
