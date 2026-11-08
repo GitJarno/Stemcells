@@ -120,10 +120,9 @@ export function netLogEvents(text) {
 }
 
 /**
- * The hosts a Chromium net log shows it contacting, with when (`at`, epoch ms) and a note for a
- * held name. A UDP socket that sent nothing reached no one (Chromium's IPv6 check); a local
- * address is this machine's. A held name shows only as HELD_NAME: beside a request, its URL
- * names the host; alone, it is reported, as the log keeps no other name.
+ * The hosts a Chromium net log shows it contacting, with when (`at`, epoch ms). A UDP socket that
+ * sent nothing reached no one; local addresses and a network change's interfaces are this Mac's.
+ * A held name (HELD_NAME) is reported only when no request beside it names the host.
  */
 export function netLogHosts(text) {
   const events = netLogEvents(text);
@@ -139,6 +138,7 @@ export function netLogHosts(text) {
   for (const event of events) {
     if (event.source.startsWith("UDP_") && !sent.has(event.sourceId)) continue;
     if (event.name.endsWith("LOCAL_ADDRESS")) continue;
+    if (event.source === "NETWORK_CHANGE_NOTIFIER") continue;
     for (const host of hostsInParams(event.params)) {
       if (host !== HELD_NAME) found.push({ host, at: event.at });
       else if (!requests.some((time) => Math.abs(time - event.time) <= 1_000)) {
