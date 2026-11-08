@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { type CellShell, cellAgeAt, compactAge } from "./cellRow";
+import { type CellShell, cellAgeAt, cellWhen, compactAge } from "./cellRow";
 
 // The column's rows shorten upstream's relative time as its sidebar does.
 describe("compactAge", () => {
@@ -32,5 +32,32 @@ describe("cellAgeAt", () => {
 
   it("counts a settled Cell from its settle", () => {
     expect(cellAgeAt(shell, true)).toBe("2026-10-26T11:50:00.000Z");
+  });
+});
+
+// Where a Cell's row gives its age, a Cell whose worktree is still being set up says so, as
+// upstream's row does, rather than an age that reads as Flying.
+describe("cellWhen", () => {
+  const now = Date.parse("2026-10-26T12:00:00.000Z");
+  const shell = (status: "preparing" | "starting" | "running") =>
+    ({
+      latestUserMessageAt: "2026-10-26T11:55:00.000Z",
+      latestRun: null,
+      updatedAt: "2026-10-26T11:55:00.000Z",
+      settledAt: null,
+      hasPendingApprovals: false,
+      hasPendingUserInput: false,
+      runtime: { status },
+    }) as unknown as CellShell;
+
+  it("says Setting up while the worktree is set up, then its age", () => {
+    expect(cellWhen(shell("preparing"), false, now)).toBe("Setting up");
+    expect(cellWhen(shell("starting"), false, now)).toBe("5m");
+    expect(cellWhen(shell("running"), false, now)).toBe("5m");
+  });
+
+  it("lets an ask speak first, as upstream's row does", () => {
+    const asking = { ...shell("preparing"), hasPendingApprovals: true } as CellShell;
+    expect(cellWhen(asking, false, now)).toBe("5m");
   });
 });

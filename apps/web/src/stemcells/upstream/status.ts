@@ -4,6 +4,7 @@ import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/model
 import type { ScopedThreadRef } from "@t3tools/contracts";
 
 import {
+  resolveSidebarThreadStatus,
   resolveThreadLastVisitedAt,
   resolveThreadStatusPill,
   type ThreadStatusPill,
@@ -53,4 +54,9 @@ export function statusOfShell(
 ): CellStatus | null {
   const lastVisitedAt = resolveThreadLastVisitedAt(shell.lastVisitedAt, localLastVisitedAt);
   return resolveThreadStatusPill({ thread: { ...shell, lastVisitedAt } })?.label ?? null;
+}
+
+/** Whether the chat's worktree is still being set up, where upstream's row says "Setting up". */
+export function isSettingUp(shell: EnvironmentThreadShell): boolean {
+  return resolveSidebarThreadStatus(shell) === "preparing";
 }

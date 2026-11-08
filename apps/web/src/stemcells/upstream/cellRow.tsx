@@ -33,6 +33,7 @@ import { useProject, useQuietThreadShell } from "../../state/entities";
 import { formatRelativeTimeLabel } from "../../timestampFormat";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
+import { isSettingUp } from "./status";
 
 export type CellShell = EnvironmentThreadShell;
 
@@ -51,10 +52,16 @@ export function cellAgeAt(shell: CellShell, settled: boolean): string | null {
   return settled ? resolveSettledThreadTimestamp(shell) : resolveThreadActivityTimestamp(shell);
 }
 
+/** What the row says where upstream's says when: "Setting up" while its worktree is, else its age. */
+export function cellWhen(shell: CellShell, settled: boolean, nowMs: number): string | null {
+  if (isSettingUp(shell)) return "Setting up";
+  const at = cellAgeAt(shell, settled);
+  return at === null ? null : compactAge(at, nowMs);
+}
+
 export function CellAge(props: { shell: CellShell; settled?: boolean }) {
   const nowMinute = useNowMinute();
-  const at = cellAgeAt(props.shell, props.settled === true);
-  return at === null ? null : compactAge(at, Date.parse(`${nowMinute}:00.000Z`));
+  return cellWhen(props.shell, props.settled === true, Date.parse(`${nowMinute}:00.000Z`));
 }
 
 function useShellProject(shell: CellShell) {
