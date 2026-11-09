@@ -1,6 +1,6 @@
 // What the auto-compact window takes from upstream: the settings row, its
 // select and search anchor, the Claude instance it belongs to, and the
-// context meter's usage.
+// context bar's usage.
 
 export { defaultInstanceIdForDriver, ProviderDriverKind } from "@t3tools/contracts";
 export { SettingsRow } from "~/components/settings/settingsLayout";

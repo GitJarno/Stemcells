@@ -129,7 +129,7 @@ export function useRefreshProviders(environmentId: EnvironmentId) {
 }
 
 /**
- * Claude Code's own `claude auth login`, typed into the welcome wizard's terminal, which runs
+ * Claude Code's own `claude auth login`, typed into the Welcome page's terminal, which runs
  * with the instance's environment, so the login lands in its config folder.
  */
 export function ClaudeSignInTerminal(props: {

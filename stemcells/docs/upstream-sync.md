@@ -195,3 +195,11 @@ timing out under the load; `check-local` and the nightly set it themselves.
   so the workflows gate reads `.github/workflows` only. On this Mac,
   upstream's `GuestPage` "follows the end" test fails on upstream's own tree,
   as `026` does.
+- 2026-11-09 (160 commits): upstream retired plan mode (#33131) and the
+  composer's context ring. A Build on an older Cell's plan keeps its words in
+  `needs/actions.ts`, and the ring's substitute moved to the details panel's
+  bar. Its one Welcome page replaced the wizard, and first-run clicks in
+  `boot-smoke.mjs` and `outbound-live.mjs` press Start now. An iOS-only
+  autolinking `exclude` replaces the shared list, so a name left out of the
+  phone's build goes in every platform's. Homebrew's Node links a newer
+  SQLite than Node's own, and `026` fails on it for that alone.

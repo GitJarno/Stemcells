@@ -31,7 +31,7 @@ const snapshot = (
   updatedAt: "2026-10-21T00:00:00.000Z",
 });
 
-describe("the context meter's fill", () => {
+describe("the context bar's fill", () => {
   it("is full where a Claude Cell compacts, not at the model's whole context", () => {
     const usage = towardCompaction(snapshot(467_000, 1_000_000, 467_000));
     expect(usage.usedPercentage).toBe(100);
