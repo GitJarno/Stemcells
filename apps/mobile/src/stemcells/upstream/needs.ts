@@ -19,12 +19,11 @@ import {
   type EnvironmentId,
 } from "@t3tools/contracts";
 
-import { buildPlanImplementationPrompt } from "../../../../web/src/proposedPlan";
 import { uuidv4 } from "../../lib/uuid";
 import { appAtomRegistry } from "../../state/atom-registry";
 import { readEnvironmentScope } from "../../state/session";
 import { environmentThreadShells, threadEnvironment } from "../../state/threads";
-import type { ThreadCommand } from "../line/kit";
+import { buildPlanMessage, type ThreadCommand } from "../line/kit";
 
 export { AppTextInput } from "../../components/ui/AppText";
 export { Toast } from "../../components/ui/Toast";
@@ -120,7 +119,7 @@ export async function sendThreadCommand(
         environmentId,
         input: {
           threadId,
-          message: message(buildPlanImplementationPrompt(command.markdown)),
+          message: message(buildPlanMessage(command.markdown)),
           runtimeMode: shell.runtimeMode,
           interactionMode: "default",
           sourceProposedPlan: { threadId, planId: PlanId.make(command.planId) },

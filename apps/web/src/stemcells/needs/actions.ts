@@ -41,6 +41,11 @@ export type ThreadCommand =
 const LATER_MS = 60 * 60 * 1000;
 
 /** What the person gave with the choice: their words, or a question's answers. */
+/** The message that builds a plan: the words upstream's Implement sent until it retired plan mode. */
+export function buildPlanMessage(planMarkdown: string): string {
+  return `PLEASE IMPLEMENT THIS PLAN:\n${planMarkdown.trim()}`;
+}
+
 export interface Given {
   readonly words?: string;
   readonly answers?: Readonly<Record<string, string | ReadonlyArray<string>>>;

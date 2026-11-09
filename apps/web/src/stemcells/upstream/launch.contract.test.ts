@@ -23,7 +23,7 @@ describe("starting Cells beside a draft, as upstream starts its threads", () => 
       multipleModelSend.indexOf("const starts = Promise.all("),
     );
     expect(fanout).toMatch(
-      /bootstrap: \{\s*createThread: \{\s*projectId: project\.id,\s*title,\s*modelSelection: target\.selection,\s*runtimeMode,\s*interactionMode: target\.interactionMode,\s*branch,\s*worktreePath: null,\s*createdAt: createdAt,\s*\},\s*prepareWorktree: \{\s*projectCwd: project\.workspaceRoot,\s*baseBranch: branch,/,
+      /bootstrap: \{\s*createThread: \{\s*projectId: project\.id,\s*title,\s*modelSelection: target\.selection,\s*runtimeMode,\s*interactionMode: DEFAULT_INTERACTION_MODE,\s*branch,\s*worktreePath: null,\s*createdAt: createdAt,\s*\},\s*prepareWorktree: \{\s*projectCwd: project\.workspaceRoot,\s*baseBranch: branch,/,
     );
     expect(fanout).toMatch(/runSetupScript: true,/);
   });

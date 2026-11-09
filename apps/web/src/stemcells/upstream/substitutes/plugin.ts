@@ -30,8 +30,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "packages/client-runtime/src/state/threads.ts": "threads.ts",
   "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
   "apps/web/src/components/chat/TimelineOverlays.tsx": "TimelineOverlays.tsx",
-  // The auto-compact window: the context meter fills toward where it compacts.
-  "apps/web/src/components/chat/ContextWindowMeter.tsx": "ContextWindowMeter.tsx",
+  // The auto-compact window: the context bar fills toward where it compacts.
+  "apps/web/src/components/chat/ThreadDetailsUsage.tsx": "ThreadDetailsUsage.tsx",
   // The workbench: a pane's chat draws its panel and sheet at the tab's edge.
   "apps/web/src/components/RightPanelTabs.tsx": "RightPanelTabs.tsx",
   "apps/web/src/components/RightPanelSheet.tsx": "RightPanelSheet.tsx",

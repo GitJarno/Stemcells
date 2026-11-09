@@ -29,7 +29,7 @@ import { useNowMinute } from "~/hooks/useNowMinute";
 import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
 import { readDesktopPrimaryBearerToken } from "~/environments/primary/desktopAuth";
 import { newMessageId } from "~/lib/utils";
-import { buildPlanImplementationPrompt } from "~/proposedPlan";
+import { buildPlanMessage } from "../needs/actions";
 import { appAtomRegistry } from "~/rpc/atomRegistry";
 import { readThreadShell, useProject } from "~/state/entities";
 import { environmentSummaries } from "~/state/presentation";
@@ -216,7 +216,7 @@ export async function sendThreadCommand(
           message: {
             messageId: newMessageId(),
             role: "user",
-            text: buildPlanImplementationPrompt(command.markdown),
+            text: buildPlanMessage(command.markdown),
             attachments: [],
           },
           runtimeMode: shell.runtimeMode,

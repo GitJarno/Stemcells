@@ -196,10 +196,9 @@ describe("where the drafts are reported from", () => {
     expect(besideSidebar).toMatch(/\n\s*<DraftReport \/>\n/);
     // Every page the person can be on, welcome included, renders inside the
     // sidebar layout; the chat is only one of its outlets.
-    expect(
-      rootRoute.match(/<AppSidebarLayout>\s*<Outlet \/>\s*<\/AppSidebarLayout>/g),
-    ).toHaveLength(2);
-    expect(rootRoute).toMatch(/if \(pathname === "\/welcome"\) \{[\s\S]*?<AppSidebarLayout>/);
+    expect(rootRoute).toMatch(
+      /<AppSidebarLayout showSidebar=\{!isWelcome\}>\s*<Outlet \/>\s*<\/AppSidebarLayout>/,
+    );
     expect(cellWorkspace).not.toContain("DraftReport");
   });
 

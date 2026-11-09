@@ -1,6 +1,6 @@
 /**
  * What the auto-compact window relies on in upstream's web: the Claude instance setting its row
- * writes, the card and search it lives in, and the context meter it fills. A failure after a
+ * writes, the card and search it lives in, and the context bar it fills. A failure after a
  * sync means the seam moved (`stemcells/seams.md`, Auto-compact window): fix `compaction/` or it.
  */
 import { ClaudeSettings, ProviderDriverKind } from "@t3tools/contracts";
@@ -8,7 +8,7 @@ import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
 import providerInstanceCardSource from "../../components/settings/ProviderInstanceCard.tsx?raw";
-import { formatContextWindowCompactionMessage } from "../../components/chat/ContextWindowMeter.logic";
+import { formatContextWindowCompactionMessage } from "../../components/chat/compaction.logic";
 import { providerClients } from "../../components/settings/providerDriverMeta";
 import { deriveProviderSettingsFields } from "../../components/settings/ProviderSettingsForm";
 import { searchSettings } from "../../components/settings/settingsSearch";
@@ -48,11 +48,11 @@ describe("the auto-compact window's contracts with upstream's web", () => {
     }
   });
 
-  it("the context meter fills toward where the chat compacts", () => {
-    // Upstream's composer gets the meter through a substitute that hands it
-    // `towardCompaction(usage)` (`substitutes/ContextWindowMeter.tsx`).
-    expect(SUBSTITUTES["apps/web/src/components/chat/ContextWindowMeter.tsx"]).toBe(
-      "ContextWindowMeter.tsx",
+  it("the context bar fills toward where the chat compacts", () => {
+    // Upstream's details panel gets the bar through a substitute that hands it
+    // `towardCompaction(usage)` (`substitutes/ThreadDetailsUsage.tsx`).
+    expect(SUBSTITUTES["apps/web/src/components/chat/ThreadDetailsUsage.tsx"]).toBe(
+      "ThreadDetailsUsage.tsx",
     );
     const snapshot = deriveLatestContextWindowSnapshot([], {
       usedTokens: 233_500,
@@ -64,7 +64,7 @@ describe("the auto-compact window's contracts with upstream's web", () => {
     const usage = towardCompaction(snapshot!);
     expect(usage.usedPercentage).toBe(50);
     expect(usage.maxTokens).toBe(467_000);
-    expect(formatContextWindowCompactionMessage("Opus 5.5", usage.autoCompactThreshold)).toBe(
+    expect(formatContextWindowCompactionMessage(usage.autoCompactThreshold)).toBe(
       "Compacts automatically at about 467,000 tokens.",
     );
   });
