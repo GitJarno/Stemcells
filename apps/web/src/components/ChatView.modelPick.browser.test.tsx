@@ -52,7 +52,7 @@ it("a model picked for an existing thread reaches the server before any message 
   });
   await expect.element(page.getByText("Answer 0 for thread-model-pick.")).toBeVisible();
 
-  page.getByRole("button", { name: "GPT 5.4", exact: true }).element().click();
+  (page.getByRole("button", { name: "GPT 5.4", exact: true }).element() as HTMLElement).click();
   await page.getByRole("option", { name: /GPT 5\.5/ }).click();
   await vi.waitFor(() =>
     expect(
