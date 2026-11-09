@@ -42,6 +42,7 @@ it("a model picked for an existing thread reaches the server before any message 
     ...DEFAULT_CLIENT_SETTINGS,
     onboardingCompletedAt: "2026-01-01T00:00:00.000Z",
   });
+  await page.viewport(1400, 900);
   const router = getRouter(
     createMemoryHistory({ initialEntries: [`/${ENVIRONMENT_ID}/${thread.id}`] }),
   );
@@ -52,8 +53,8 @@ it("a model picked for an existing thread reaches the server before any message 
   });
   await expect.element(page.getByText("Answer 0 for thread-model-pick.")).toBeVisible();
 
-  await page.getByRole("button", { name: "GPT-5.4", exact: true }).click();
-  await page.getByRole("option", { name: /GPT-5\.5/ }).click();
+  await page.getByRole("button", { name: "GPT 5.4", exact: true }).click();
+  await page.getByRole("option", { name: /GPT 5\.5/ }).click();
   await vi.waitFor(() =>
     expect(
       dispatchedCommands().filter((command) => command.type === "thread.model-selection.set"),

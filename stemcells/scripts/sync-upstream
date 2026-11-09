@@ -97,7 +97,16 @@ gate_upstream_packages() {
   fi
 }
 gate_upstream_web() { upstream_env pnpm exec vp run --filter @t3tools/web test; }
-gate_upstream_server() { upstream_env pnpm exec vp run --filter t3 test; }
+gate_upstream_server() {
+  if [ "$(uname)" = Darwin ]; then
+    # AntigravityInstallation's `agy.CMD` case writes two names that differ
+    # only in case, which a Mac's disk folds into one file.
+    upstream_env pnpm --filter t3 exec vp test run \
+      -t '^(?!.*accepts the agy CLI without a harness sibling)'
+  else
+    upstream_env pnpm exec vp run --filter t3 test
+  fi
+}
 # The web, server and desktop builds, and the check upstream's CI makes on them.
 gate_build() {
   pnpm build:desktop || return 1

@@ -437,10 +437,10 @@ describe("ChatMarkdown skill chips", () => {
     });
 
     await expect
-      .element(screen.getByRole("button", { name: "Model GPT-6.1. Show details" }))
+      .element(screen.getByRole("button", { name: "Model GPT 6.1. Show details" }))
       .toBeVisible();
     expect(buttonsLabelled(screen.container, "Model gpt-4o. Show details")).toEqual([]);
-    expect(screen.container.textContent).toBe("Ask (GPT-6.1), not model:openai/gpt-4o.");
+    expect(screen.container.textContent).toBe("Ask (GPT 6.1), not model:openai/gpt-4o.");
   });
 });
 

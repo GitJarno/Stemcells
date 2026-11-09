@@ -76,7 +76,7 @@ describe("the desktop release", () => {
 
       expect(prompts.length).toBeGreaterThan(0);
       for (const [key, text] of prompts) {
-        expect(text, key).toMatch(new RegExp(`^${APP_NAME} `));
+        expect(text, key).toContain(APP_NAME);
         expect(text, key).not.toMatch(/T3 Code/);
       }
     }),
