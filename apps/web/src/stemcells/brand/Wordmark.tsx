@@ -15,8 +15,3 @@ export function SidebarWordmark() {
     </span>
   );
 }
-
-/** The welcome wizard's heading. */
-export function WizardWordmark() {
-  return <span className="text-2xl font-medium tracking-tight">{APP_NAME}</span>;
-}

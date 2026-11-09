@@ -45,7 +45,7 @@ import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWin
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
 import * as UpstreamCommandPaletteLogic from "../../../components/CommandPalette.logic";
-import * as UpstreamProviderReadiness from "../../../onboarding/providerReadiness.logic";
+import * as UpstreamWelcomePageLogic from "../../../onboarding/welcomePage.logic";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderInstanceIcon from "../../../components/chat/ProviderInstanceIcon";
@@ -82,7 +82,7 @@ import * as OurComposerStashBadge from "./ComposerStashBadge";
 import * as OurContextWindowMeter from "./ContextWindowMeter";
 import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
 import * as OurCommandPaletteLogic from "./CommandPalette.logic";
-import * as OurProviderReadiness from "./providerReadiness.logic";
+import * as OurWelcomePageLogic from "./welcomePage.logic";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
@@ -609,13 +609,13 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
-  "apps/web/src/onboarding/providerReadiness.logic.ts": {
-    upstream: UpstreamProviderReadiness,
-    substitute: OurProviderReadiness satisfies typeof UpstreamProviderReadiness,
+  "apps/web/src/onboarding/welcomePage.logic.ts": {
+    upstream: UpstreamWelcomePageLogic,
+    substitute: OurWelcomePageLogic satisfies typeof UpstreamWelcomePageLogic,
     importers: {
-      "apps/web/src/components/onboarding/WelcomeWizard.tsx": [
-        "../../onboarding/providerReadiness.logic",
-        ["selectOnboardingProvidersByDriver"],
+      "apps/web/src/components/onboarding/WelcomePage.tsx": [
+        "../../onboarding/welcomePage.logic",
+        ["groupWelcomeAgents"],
       ],
     },
   },

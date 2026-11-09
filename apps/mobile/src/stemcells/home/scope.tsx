@@ -1,7 +1,7 @@
 // The home's scope in its header's top right: projects, and with two machines or more, machines,
 // each a menu that stays open while you tick any number (`picks.ts`). Unticked, a plain glyph;
 // ticked, the projects' own icons or the machine's symbol, tinted. T3's workspace toolbar hands
-// its trailing items here at its seam (`features/layout/workspace/WorkspaceToolbar.ios.tsx`).
+// its trailing items here at its seam (`features/layout/workspace/WorkspaceToolbar.tsx`).
 
 import { type ReactElement } from "react";
 import { View } from "react-native";
