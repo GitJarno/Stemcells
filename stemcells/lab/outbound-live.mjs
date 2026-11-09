@@ -595,10 +595,9 @@ async function drive(port, until, drove, ended, step) {
       .catch(() => {});
     step("a chat and its message");
 
-    // A first run opens on the welcome; closed, a chat starts without a project.
+    // A first run opens on the welcome; started, a chat starts without a project.
     await page
-      .getByRole("dialog")
-      .getByRole("button", { name: /close/i })
+      .getByRole("button", { name: /^Start( without an agent)?$/ })
       .first()
       .click({ timeout: 10_000 })
       .catch(() => {});

@@ -18,7 +18,7 @@ const PLACEHOLDER_LOOK = "pointer-events-none absolute inset-0 leading-relaxed t
 describe("the suggestion's contracts with upstream's web", () => {
   it("upstream's composer gives the idle hint last, after everything that asks of the person", () => {
     expect(chatComposerSource).toMatch(
-      /\?\s*"Enable a provider in Settings to send a message"\s*:\s*DEFAULT_COMPOSER_PLACEHOLDER\s*\}/,
+      /\?\s*"Enable a provider in Settings to send a message"\s*:\s*\(offeredPromptSuggestion \?\? DEFAULT_COMPOSER_PLACEHOLDER\)\s*\}/,
     );
     expect(IDLE_PLACEHOLDER).toBe(DEFAULT_COMPOSER_PLACEHOLDER);
   });

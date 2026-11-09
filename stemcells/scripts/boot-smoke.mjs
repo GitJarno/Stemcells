@@ -126,11 +126,10 @@ try {
         `the page wears "${await page.evaluate(() => document.documentElement.dataset.themeId ?? "no theme")}", not Stemcells' look`,
       ),
     );
-  // A first run opens on the welcome; closed, it leaves the home page, where
+  // A first run opens on the welcome; started, it leaves the home page, where
   // a chat starts without a project and opens on its composer, as every chat does.
   await page
-    .getByRole("dialog")
-    .getByRole("button", { name: /close/i })
+    .getByRole("button", { name: /^Start( without an agent)?$/ })
     .first()
     .click({ timeout: 15_000 })
     .catch(() => {});

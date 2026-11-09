@@ -279,9 +279,14 @@ export const KEPT: ReadonlyArray<Kept> = [
     "the anonymous usage data T3 Code collects.",
   ),
   ...keep(
-    /^apps\/web\/src\/components\/onboarding\/WelcomeWizard\.tsx$/,
-    `${T3S_OWN}: another computer runs T3's command line (\`npx t3 serve\`)`,
-    "start T3 Code or run",
+    /^apps\/desktop\/src\/app\/DesktopCliCommand\.ts$/,
+    `${ON_DISK}: the comment above the PATH line "Add to PATH" writes to a shell profile`,
+    "# Added by T3 Code",
+  ),
+  ...keep(
+    /^apps\/mobile\/src\/lib\/saveImageToLibrary\.ts$/,
+    `${ON_DISK}: Android's folder of saved pictures, named by upstream's native module`,
+    "Pictures/T3 Code",
   ),
   ...keep(
     /^apps\/web\/src\/components\/settings\/SnapShotSetupDialog\.tsx$/,

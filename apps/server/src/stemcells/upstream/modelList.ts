@@ -14,6 +14,7 @@ const bundled: Layer.Layer<ModelManifest.ModelManifest> = Layer.succeed(
   ModelManifest.ModelManifest.of({
     current: Effect.succeed(ModelManifest.BUNDLED_MODEL_MANIFEST),
     refresh: Effect.succeed(ModelManifest.BUNDLED_MODEL_MANIFEST),
+    refreshOnDemand: Effect.succeed(ModelManifest.BUNDLED_MODEL_MANIFEST),
     forceRefresh: Effect.succeed(ModelManifest.BUNDLED_MODEL_MANIFEST),
     refreshInBackground: Effect.void,
   }),

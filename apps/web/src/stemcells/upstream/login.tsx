@@ -1,7 +1,7 @@
 /**
  * Upstream's pieces `/login` is built from (`stemcells/login/`): the providers' statuses, the
  * composer's draft, the model picker's own select, the instance mutation, Codex's ChatGPT
- * sign-in and the welcome wizard's sign-in terminal. Aski's chat has no `/login`: its instance
+ * sign-in and the Welcome page's sign-in terminal. Aski's chat has no `/login`: its instance
  * carries its persona, and no Cell moves onto it.
  */
 import { useAtomValue } from "@effect/atom-react";
@@ -14,7 +14,7 @@ import {
 } from "@t3tools/contracts";
 import type { UnifiedSettings } from "@t3tools/contracts/settings";
 
-import { AgentInstallTerminal } from "../../components/onboarding/WelcomeWizard";
+import { AgentInstallTerminal } from "../../components/onboarding/WelcomePage";
 import { useComposerDraftStore, type ComposerThreadTarget } from "../../composerDraftStore";
 import { usePersistEnvironmentProviderInstanceMutation } from "../../hooks/useSettings";
 import { serverEnvironment } from "../../state/server";
@@ -129,7 +129,7 @@ export function useRefreshProviders(environmentId: EnvironmentId) {
 }
 
 /**
- * Claude Code's own `claude auth login`, typed into the welcome wizard's terminal, which runs
+ * Claude Code's own `claude auth login`, typed into the Welcome page's terminal, which runs
  * with the instance's environment, so the login lands in its config folder.
  */
 export function ClaudeSignInTerminal(props: {

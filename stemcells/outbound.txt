@@ -28,6 +28,21 @@ host platform.openai.com doc links in the generated Codex schema
 host developers.openai.com a comment citing image-cost docs
 host platform.claude.com a comment citing vision docs
 host www.w3.org XML and SVG namespaces
+host a.dev an example in a comment
+host poke.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host claude.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host x.ai Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host docs.x.ai Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host gemini.google.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host support.google.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host muse.ai Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host www.meta.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host app.instinct.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host docs.openclaw.ai Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host hermes-agent.nousresearch.com Settings' use-it-in-another-app list: a link the person opens themselves, never fetched
+host origin.cursor.com recognises a repository already on Cursor Origin from its git remote; only the person's own `origin` CLI talks to it, for a repository they keep there
+host downloads.cursor.com the install command shown when the Origin CLI is missing, for the person to run
+host cursor.com the Origin repository page, a link the person opens
 host schemas.openxmlformats.org Office XML namespaces the document preview matches
 host www.idpf.org the EPUB package namespace the document preview matches
 host json-schema.org the $schema id of t3.json

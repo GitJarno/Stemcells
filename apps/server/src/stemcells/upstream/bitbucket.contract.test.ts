@@ -4,6 +4,7 @@ import { assert, it } from "@effect/vitest";
 import * as ConfigProvider from "effect/ConfigProvider";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 import { HttpClient, HttpClientResponse } from "effect/http";
 
 import * as ServerSettings from "../../serverSettings.ts";
@@ -17,11 +18,41 @@ import * as VcsProcess from "../../vcs/VcsProcess.ts";
 // one the answer is "unauthenticated" anyway, and the request would only tell Atlassian the
 // app is running each time the palette opens. If this fails, the tokenless probe is back.
 
+// The host reads these as it starts; this test never runs git.
+const unused = () => Effect.die("not used by Bitbucket's sign-in");
+
 const layerWith = (requests: Array<{ url: string; authorization: string | undefined }>) =>
   SourceControlDrivers.layer.pipe(
-    Layer.provide(Layer.mock(VcsProcess.VcsProcess)({})),
+    Layer.provide(
+      Layer.mock(VcsProcess.VcsProcess)({
+        // GitHub's client asks `gh` for a socket as it starts; none here.
+        run: () =>
+          Effect.succeed({
+            exitCode: ChildProcessSpawner.ExitCode(1),
+            stdout: "",
+            stderr: "",
+            stdoutTruncated: false,
+            stderrTruncated: false,
+          }),
+      }),
+    ),
     Layer.provide(Layer.mock(VcsDriverRegistry.VcsDriverRegistry)({})),
-    Layer.provide(Layer.mock(GitVcsDriver.GitVcsDriver)({})),
+    Layer.provide(
+      Layer.mock(GitVcsDriver.GitVcsDriver)({
+        execute: unused,
+        resolveCommit: unused,
+        readConfigValue: unused,
+        resolvePrimaryRemoteName: unused,
+        ensureRemote: unused,
+        listLocalBranchNames: unused,
+        fetchRemoteBranch: unused,
+        fetchRemoteTrackingBranch: unused,
+        setBranchUpstream: unused,
+        createBranch: unused,
+        writeConfigValue: unused,
+        switchRef: unused,
+      }),
+    ),
     Layer.provide(
       Layer.succeed(
         HttpClient.HttpClient,

@@ -7,6 +7,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import footerControls from "../../components/chat/ComposerFooterControls.tsx?raw";
+import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
 import composerSurface from "../../components/chat/ComposerSurface.tsx?raw";
 import providerInstanceIcon from "../../components/chat/ProviderInstanceIcon.tsx?raw";
 import { toneTokenOf } from "../glow/light";
@@ -56,14 +57,14 @@ describe("the composer light's contracts with upstream", () => {
     expect(opens).toBeGreaterThanOrEqual(0);
     const actions = chatComposer.slice(opens);
     const closes = actions.search(/\n {16}<\/div>/);
-    // The voice controls it is handed it draws before its own buttons.
+    // The voice controls it is handed go inside the primary actions, before send or stop.
     expect(actions.slice(0, closes).trimEnd()).toMatch(
       /\n\s*<ComposerFooterPrimaryActions\b(?:(?!<\/?ComposerFooterPrimaryActions\b)[\s\S])*<\/ComposerFooterPrimaryActions>$/,
     );
     const footer = body(footerControls, "ComposerFooterPrimaryActions");
-    expect(footer.indexOf("{props.children}")).toBeLessThan(
-      footer.indexOf("<ComposerPrimaryActions"),
-    );
+    expect(footer).toMatch(/>\s*\{props\.children\}\s*<\/ComposerPrimaryActions>/);
+    expect(primaryActions.match(/\{children\}\s*\{submit\}/g)).toHaveLength(2);
+    expect(primaryActions).toMatch(/\{children\}\s*\{renderStopGenerationButton\(false\)\}/);
     const drawn = [...footer.matchAll(/<([A-Z]\w*)\b/g)].map((m) => m[1]);
     expect(drawn.at(-1)).toBe("ComposerPrimaryActions");
   });

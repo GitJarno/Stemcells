@@ -27,6 +27,7 @@ export {
   type Span,
 } from "../../../../web/src/stemcells/needs/inline.ts";
 export {
+  buildPlanMessage,
   commandsFor,
   type Given,
   type ThreadCommand,

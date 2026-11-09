@@ -85,7 +85,7 @@ describe("the terminal drawer's contracts with upstream", () => {
     // list as following (live follow on, no anchor) and nothing holds its place.
     expect(timeline).toContain("maintainScrollAtEndThreshold={1}");
     expect(timeline).toMatch(
-      /maintainScrollAtEnd=\{[^}]*anchoredEndSpace \|\|\s*!liveFollowEnabled \|\|\s*fullscreenAppRowId !== null \|\|/,
+      /maintainScrollAtEnd=\{[^?]*\?[^}]*anchoredEndSpace \|\|\s*!liveFollowEnabled \|\|\s*fullscreenAppRowId !== null\s*\?\s*false/,
     );
     expect(timeline).toContain("liveFollowEnabled={!findOpen && props.liveFollowEnabled}");
     expect(resolveChatListAnchoredEndSpace([{ id: "m" }], null, (row) => row.id)).toBeUndefined();

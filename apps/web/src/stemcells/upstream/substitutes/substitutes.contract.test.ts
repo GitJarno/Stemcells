@@ -41,11 +41,11 @@ import * as UpstreamThreadTerminalDrawer from "../../../components/ThreadTermina
 import * as UpstreamThreadPreviewMiniPlayer from "../../../components/preview/ThreadPreviewMiniPlayer";
 import * as UpstreamUsageLimitsPooled from "../../../components/usage/UsageLimitsPooled";
 import * as UpstreamUsageProviders from "../../../components/usage/usageProviders";
-import * as UpstreamContextWindowMeter from "../../../components/chat/ContextWindowMeter";
+import * as UpstreamThreadDetailsUsage from "../../../components/chat/ThreadDetailsUsage";
 import * as UpstreamSettingsSearch from "../../../components/settings/settingsSearch";
 import * as UpstreamDraftHeroHeadline from "../../../components/chat/DraftHeroHeadline";
 import * as UpstreamCommandPaletteLogic from "../../../components/CommandPalette.logic";
-import * as UpstreamProviderReadiness from "../../../onboarding/providerReadiness.logic";
+import * as UpstreamWelcomePageLogic from "../../../onboarding/welcomePage.logic";
 import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/DraftHeroProjectHeading";
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderInstanceIcon from "../../../components/chat/ProviderInstanceIcon";
@@ -79,10 +79,10 @@ import * as OurChatComposer from "./ChatComposer";
 import * as OurChatThreadActions from "./chatThreadActions";
 import * as OurComposerPromptEditor from "./ComposerPromptEditorTiptap";
 import * as OurComposerStashBadge from "./ComposerStashBadge";
-import * as OurContextWindowMeter from "./ContextWindowMeter";
+import * as OurThreadDetailsUsage from "./ThreadDetailsUsage";
 import * as OurDraftHeroHeadline from "./DraftHeroHeadline";
 import * as OurCommandPaletteLogic from "./CommandPalette.logic";
-import * as OurProviderReadiness from "./providerReadiness.logic";
+import * as OurWelcomePageLogic from "./welcomePage.logic";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
@@ -253,10 +253,6 @@ const CASES: Readonly<Record<string, Case>> = {
         "./providerIconUtils",
         ["getTriggerDisplayModelName"],
       ],
-      "apps/web/src/components/chat/ContextWindowMeter.logic.ts": [
-        "./providerIconUtils",
-        ["getDisplayModelName"],
-      ],
     },
   },
   "apps/web/src/components/chat/ProviderSubagentBar.tsx": {
@@ -319,13 +315,13 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/ChatView.tsx": ["./chat/TimelineOverlays", ["ScrollToEndButton"]],
     },
   },
-  "apps/web/src/components/chat/ContextWindowMeter.tsx": {
-    upstream: UpstreamContextWindowMeter,
-    substitute: OurContextWindowMeter satisfies typeof UpstreamContextWindowMeter,
+  "apps/web/src/components/chat/ThreadDetailsUsage.tsx": {
+    upstream: UpstreamThreadDetailsUsage,
+    substitute: OurThreadDetailsUsage satisfies typeof UpstreamThreadDetailsUsage,
     importers: {
-      "apps/web/src/components/chat/ComposerFooterControls.tsx": [
-        "./ContextWindowMeter",
-        ["ContextWindowMeter"],
+      "apps/web/src/components/chat/ThreadDetailsPanel.tsx": [
+        "./ThreadDetailsUsage",
+        ["ThreadDetailsContext"],
       ],
     },
   },
@@ -609,13 +605,13 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
-  "apps/web/src/onboarding/providerReadiness.logic.ts": {
-    upstream: UpstreamProviderReadiness,
-    substitute: OurProviderReadiness satisfies typeof UpstreamProviderReadiness,
+  "apps/web/src/onboarding/welcomePage.logic.ts": {
+    upstream: UpstreamWelcomePageLogic,
+    substitute: OurWelcomePageLogic satisfies typeof UpstreamWelcomePageLogic,
     importers: {
-      "apps/web/src/components/onboarding/WelcomeWizard.tsx": [
-        "../../onboarding/providerReadiness.logic",
-        ["selectOnboardingProvidersByDriver"],
+      "apps/web/src/components/onboarding/WelcomePage.tsx": [
+        "../../onboarding/welcomePage.logic",
+        ["groupWelcomeAgents"],
       ],
     },
   },

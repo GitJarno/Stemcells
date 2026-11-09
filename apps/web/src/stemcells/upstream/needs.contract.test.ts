@@ -6,13 +6,11 @@
 import { minuteTick } from "@t3tools/client-runtime/clock";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { buildPlanImplementationPrompt } from "../../proposedPlan";
 import { PHRASES } from "../needs/card";
 import { COMPOSER_SURFACE_SELECTOR, minuteMs } from "./needs";
 
 import approvalActions from "../../components/chat/ComposerPendingApprovalActions.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
-import primaryActions from "../../components/chat/ComposerPrimaryActions.tsx?raw";
 import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import composerResume from "../../components/chat/useComposerResume.ts?raw";
 import nowMinute from "../../hooks/useNowMinute.ts?raw";
@@ -28,15 +26,8 @@ describe("the column's contracts with upstream", () => {
     expect(approvalActions).toContain('{ decision: "accept", label: "Approve" }');
   });
 
-  it("names a plan's and a failed run's buttons as upstream does, so the card's read the same", () => {
-    // card.ts: "Implement", "Refine…" and "Retry".
-    expect(primaryActions).toContain(': "Implement"}');
-    expect(primaryActions).toContain(': "Refine"}');
+  it("names a failed run's button as upstream does, so the card's reads the same", () => {
     expect(workEntryRow).toMatch(/<RotateCcwIcon aria-hidden \/>\s*Retry\s*<\/Button>/);
-  });
-
-  it("builds a plan with the words upstream's Implement sends", () => {
-    expect(buildPlanImplementationPrompt("  # Plan\n")).toBe("PLEASE IMPLEMENT THIS PLAN:\n# Plan");
   });
 
   it("resumes a limited run with upstream's own words", () => {
