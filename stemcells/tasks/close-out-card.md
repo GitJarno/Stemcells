@@ -95,6 +95,3 @@ phone's card needs only that one fact.
 
 - The phone's card, once the feed can say a segment is an assistant's
   settled reply.
-- `needs/NeedCard.tsx` and `needs/Board.tsx` each draw the facts line with
-  the same markup the card's foot uses; one shared component would hold all
-  three.

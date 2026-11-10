@@ -10,6 +10,7 @@ import { boardOf, VERDICTS, type BoardRow } from "./boardRows";
 import { conditionLineOf } from "./conditionLines";
 import { continueHeld } from "./held";
 import { openPeek } from "./peeking";
+import { RunFacts } from "./RunFacts";
 import { useNeeds } from "./stream";
 
 import "./board.css";
@@ -201,24 +202,7 @@ function Row(props: { row: BoardRow; environmentId: string; now: number }) {
       ) : null}
       {row.changed !== null || row.facts.length > 0 ? (
         <span data-board-facts="">
-          {row.changed === null ? null : (
-            <span data-need-fact="">
-              {row.changed.bar.length > 0 ? (
-                <span data-need-bar="" aria-hidden="true">
-                  {row.changed.bar.map((cell, index) => (
-                    // oxlint-disable-next-line react/no-array-index-key -- Five cells in a fixed order.
-                    <i key={index} data-cell={cell} />
-                  ))}
-                </span>
-              ) : null}
-              {row.changed.words}
-            </span>
-          )}
-          {row.facts.map((fact) => (
-            <span key={fact.id} data-need-fact="" data-tone={fact.tone}>
-              {fact.text}
-            </span>
-          ))}
+          <RunFacts changed={row.changed} facts={row.facts} />
         </span>
       ) : null}
     </button>
