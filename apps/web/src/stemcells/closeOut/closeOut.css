@@ -82,13 +82,14 @@
   color: var(--sc-dim);
 }
 
-/* What the run shows, apart from the Cell's own word: the room's facts (needs.css), and how
-   it landed in the board's marks. */
-[data-close-out-shown] {
+/* What the run shows, apart from the Cell's own word: the room's facts (needs.css) and how
+   it landed in the board's marks, at the size of the card's own labels. */
+[data-stemcells-close-out] > [data-close-out-shown] {
   align-items: baseline;
   margin-block-start: var(--sc-space-md);
   padding-block-start: var(--sc-space-sm);
   border-block-start: 1px solid var(--sc-hairline);
+  font-size: 0.75rem;
 }
 [data-close-out-verdict] > b {
   margin-inline-end: var(--sc-space-xs);

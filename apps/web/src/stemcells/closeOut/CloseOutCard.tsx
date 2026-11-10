@@ -31,8 +31,11 @@ function standsOf(line: CloseOutLine): "done" | "you" | "me" | "waiting" {
   return line.owner ?? "you";
 }
 
-const wordsAt = (node: Node): Element | null =>
-  (node instanceof Element ? node : node.parentElement)?.closest("[data-close-out-words]") ?? null;
+/** The part of the card a selection's end lies in: a line's words, or the run's facts. */
+const partAt = (node: Node): Element | null =>
+  (node instanceof Element ? node : node.parentElement)?.closest(
+    "[data-close-out-words], [data-close-out-shown]",
+  ) ?? null;
 
 export function CloseOutCard(props: {
   closeOut: WrittenCloseOut;
@@ -43,14 +46,14 @@ export function CloseOutCard(props: {
 }) {
   const { lines, source } = props.closeOut;
   const stands = lines.map(standsOf);
-  // Inside one line's words a selection copies as any reply's does; across them, as written.
+  // A selection within one line's words or the facts copies as any does; across lines, as written.
   const copyAsWritten = (event: ClipboardEvent<HTMLElement>) => {
     const selection = window.getSelection();
     if (selection === null || selection.isCollapsed) return;
     const range = selection.getRangeAt(0);
     if (!event.currentTarget.contains(range.endContainer)) return;
-    const from = wordsAt(range.startContainer);
-    if (from !== null && from === wordsAt(range.endContainer)) return;
+    const from = partAt(range.startContainer);
+    if (from !== null && from === partAt(range.endContainer)) return;
     event.preventDefault();
     event.stopPropagation();
     event.clipboardData.setData("text/plain", source);
