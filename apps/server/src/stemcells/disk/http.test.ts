@@ -1,6 +1,5 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
-import { AuthOrchestrationOperateScope, AuthOrchestrationReadScope } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
@@ -8,27 +7,16 @@ import { HttpRouter } from "effect/http";
 import * as Etag from "effect/http/Etag";
 import * as HttpPlatform from "effect/http/HttpPlatform";
 
-import * as EnvironmentAuth from "../../auth/EnvironmentAuth.ts";
-import * as ServerConfig from "../../config.ts";
 import * as UpstreamDiskWarn from "../upstream/diskWarn.ts";
+import {
+  AuthOrchestrationOperateScope,
+  AuthOrchestrationReadScope,
+  configLayerTest,
+  scopedAuth as auth,
+} from "../upstream/server.fixture.ts";
 import { choicesLayer, drivesLayer } from "./http.ts";
 import * as StemcellsDrives from "./StemcellsDrives.ts";
 import { readHiddenAt, writeHiddenAt } from "./notice.ts";
-
-/** A caller's scopes ride a test header; none is no credential. */
-const auth = Layer.succeed(EnvironmentAuth.EnvironmentAuth, {
-  authenticateHttpRequest: (request: { readonly headers: Record<string, string | undefined> }) => {
-    const scopes = request.headers["x-test-scopes"];
-    return scopes === undefined
-      ? Effect.fail(new EnvironmentAuth.ServerAuthMissingCredentialError())
-      : Effect.succeed({
-          sessionId: "session",
-          subject: "test",
-          method: "browser-session-cookie",
-          scopes: scopes.split(",").filter(Boolean),
-        });
-  },
-} as never);
 
 const hide = (body: unknown, scopes: string | null = AuthOrchestrationOperateScope) =>
   new Request("http://127.0.0.1/api/stemcells/disk/notice", {
@@ -45,7 +33,7 @@ it.layer(NodeServices.layer)("the disk notice's route", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "stemcells-disk-http-" });
-      const config = ServerConfig.layerTest(process.cwd(), baseDir).pipe(
+      const config = configLayerTest(process.cwd(), baseDir).pipe(
         Layer.provide(NodeServices.layer),
       );
       const file = yield* UpstreamDiskWarn.diskNoticeFile.pipe(Effect.provide(config));
@@ -84,7 +72,7 @@ it.layer(NodeServices.layer)("the disk notice's route", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "stemcells-drives-http-" });
-      const config = ServerConfig.layerTest(process.cwd(), baseDir).pipe(
+      const config = configLayerTest(process.cwd(), baseDir).pipe(
         Layer.provide(NodeServices.layer),
       );
       const asked: Array<string> = [];

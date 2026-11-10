@@ -12,15 +12,10 @@ import * as NodePath from "node:path";
 import * as Clock from "effect/Clock";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as Ref from "effect/Ref";
 
 import * as Electron from "electron";
 
-import * as DesktopEnvironment from "../../app/DesktopEnvironment.ts";
-import * as DesktopState from "../../app/DesktopState.ts";
-import * as ElectronWindow from "../../electron/ElectronWindow.ts";
-import * as PreviewManager from "../../preview/Manager.ts";
-import * as DesktopWindow from "../../window/DesktopWindow.ts";
+import { windowsHost } from "../upstream/windows.ts";
 import {
   readPlaced,
   readRect,
@@ -86,14 +81,10 @@ function isTransaction(value: unknown): value is Transaction {
 
 export const layer = Layer.effectDiscard(
   Effect.gen(function* () {
-    const environment = yield* DesktopEnvironment.DesktopEnvironment;
-    const desktopWindow = yield* DesktopWindow.DesktopWindow;
-    const electronWindow = yield* ElectronWindow.ElectronWindow;
-    const previewManager = yield* PreviewManager.PreviewManager;
-    const desktopState = yield* DesktopState.DesktopState;
+    const upstream = yield* windowsHost;
     const runPromise = Effect.runPromiseWith(yield* Effect.context<never>());
 
-    const path = NodePath.join(environment.stateDir, FILE_NAME);
+    const path = NodePath.join(upstream.stateDir, FILE_NAME);
     const { stored, unreadable } = readStoredFile(
       path,
       WindowBook.understands,
@@ -159,11 +150,11 @@ export const layer = Layer.effectDiscard(
      * on: then the windows kept meanwhile reopen (`quitEnded`).
      */
     const quittingNow = () => {
-      const now = Ref.getUnsafe(desktopState.quitting);
+      const now = upstream.quitting();
       book.quit(now);
       if (now && quitCheck === undefined) {
         quitCheck = setInterval(() => {
-          if (!Ref.getUnsafe(desktopState.quitting)) quitEnded();
+          if (!upstream.quitting()) quitEnded();
         }, QUIT_CHECK_MS);
         quitCheck.unref();
       }
@@ -241,8 +232,7 @@ export const layer = Layer.effectDiscard(
     const promote = (id: string | null) => {
       const window = id === null ? undefined : live.get(id);
       if (window && !window.isDestroyed()) {
-        void runPromise(electronWindow.setMain(window));
-        void runPromise(previewManager.setMainWindow(window).pipe(Effect.ignore));
+        void runPromise(upstream.setMain(window));
       }
       tellLeads();
       tellNotifier();
@@ -364,7 +354,7 @@ export const layer = Layer.effectDiscard(
         }
       }
       if (fullScreen) window.setFullScreen(true);
-      void runPromise(electronWindow.reveal(window)).then(() => {
+      void runPromise(upstream.reveal(window)).then(() => {
         if (window.isDestroyed()) return;
         // Cheap again once hidden or minimized, as upstream has a window after it first shows.
         page.setBackgroundThrottling(true);
@@ -380,7 +370,7 @@ export const layer = Layer.effectDiscard(
         else kept.kept = { frame, fullScreen, home };
         return;
       }
-      const create = desktopWindow.createExtra;
+      const create = upstream.createExtra;
       if (!create) {
         failed(id, home);
         return;
@@ -419,7 +409,7 @@ export const layer = Layer.effectDiscard(
      */
     const startWarm = (raw: unknown) => {
       coolWarm();
-      const create = desktopWindow.createExtra;
+      const create = upstream.createExtra;
       const record = isTransaction(raw) && raw.open.length === 1 ? readPlaced(raw.open[0]) : null;
       if (!create || !record || book.get(record.id) || live.has(record.id)) return;
       const { change, close } = raw as Transaction;
@@ -764,7 +754,7 @@ export const layer = Layer.effectDiscard(
           const window = typeof raw?.window === "string" ? live.get(raw.window) : undefined;
           if (!window || window.isDestroyed() || typeof raw.pane !== "string") return;
           window.webContents.send(WINDOWS_CHANNEL.focusPane, raw.pane);
-          void runPromise(electronWindow.reveal(window));
+          void runPromise(upstream.reveal(window));
         });
         ipc.on(WINDOWS_CHANNEL.flight, (event, commands: unknown) => {
           if (!Array.isArray(commands) || flownByOther(event.sender)) return;

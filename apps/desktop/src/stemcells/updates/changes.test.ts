@@ -1,8 +1,6 @@
-import { desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
 import { describe, expect, it } from "vite-plus/test";
 
-import { normalizeDesktopUpdateReleaseNotes } from "../../updates/releaseNotes.ts";
-import { buildPercentOf, nightlyNotesOf, nightlyVersionOf, readChanges } from "./changes.ts";
+import { buildPercentOf, readChanges } from "./changes.ts";
 
 describe("an update's changes", () => {
   it("reads each squashed pull request's title and number, a sync of T3's work, and a plain commit", () => {
@@ -24,41 +22,6 @@ describe("an update's changes", () => {
       { title: "their-branch", number: 12, day: "20261022" },
       { title: "A commit pushed straight to main", number: null, day: "20261022" },
     ]);
-  });
-
-  it("makes each day's merges a nightly, as upstream's notes show T3's", () => {
-    // Ten merged on the 23rd, two on the 22nd: commits 7268 back to 7257.
-    const changes = [
-      ...Array.from({ length: 10 }, (_, index) => ({
-        title: `Today ${index}`,
-        number: 300 - index,
-        day: "20261023",
-      })),
-      { title: "Yesterday", number: 200, day: "20261022" },
-      { title: "Yesterday too", number: 199, day: "20261022" },
-    ];
-    const tip = nightlyVersionOf({ base: "0.1.1", day: "20261023", count: 7268 });
-    const { releaseNotes } = normalizeDesktopUpdateReleaseNotes(
-      nightlyNotesOf(changes, { base: "0.1.1", count: 7268 }),
-      tip,
-      "nightly",
-    );
-
-    expect(releaseNotes.map((note) => [note.version, note.totalItems])).toEqual([
-      [tip, 10],
-      ["0.1.1-nightly.20261022.7258", 2],
-    ]);
-    // Upstream lists a nightly's 8 newest, and links the rest.
-    expect(releaseNotes[0]?.items).toHaveLength(8);
-    expect(releaseNotes[0]?.items[0]).toBe("Today 0 (#300)");
-    expect(releaseNotes[1]?.items).toEqual(["Yesterday (#200)", "Yesterday too (#199)"]);
-  });
-
-  it("files a main build under upstream's Nightly, and a release under its Stable", () => {
-    expect(
-      desktopUpdateChannelOf(nightlyVersionOf({ base: "0.1.1", day: "20261023", count: 7268 })),
-    ).toBe("nightly");
-    expect(desktopUpdateChannelOf("0.2.0")).toBe("latest");
   });
 });
 

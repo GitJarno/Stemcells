@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import config from "../../../app.config";
+import { config } from "../upstream/appConfig";
 
 /**
  * Contract: the phone's build says why Add to Chat asks for the photo

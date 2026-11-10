@@ -10,6 +10,10 @@ import { videoMimeType } from "@t3tools/shared/video";
 
 import { attachmentLabels, type AttachmentKind } from "../attachments/kit";
 
+// For `chat/sentImages.ts` and its test, which Node loads: no view comes with these.
+export { EnvironmentId } from "@t3tools/contracts";
+export { imageMimeType };
+
 interface Attached {
   readonly id: string;
   readonly type: string;

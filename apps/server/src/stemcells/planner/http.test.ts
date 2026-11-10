@@ -4,7 +4,6 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { AuthOrchestrationOperateScope, AuthOrchestrationReadScope } from "@t3tools/contracts";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -13,31 +12,19 @@ import * as Etag from "effect/http/Etag";
 import * as HttpPlatform from "effect/http/HttpPlatform";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
-import * as EnvironmentAuth from "../../auth/EnvironmentAuth.ts";
-import * as ServerConfig from "../../config.ts";
-import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
-import * as ProviderInstanceRegistry from "../../provider/ProviderInstanceRegistry.ts";
+import { instancesOf, projectsOf } from "../upstream/planner.fixture.ts";
+import {
+  AuthOrchestrationOperateScope,
+  AuthOrchestrationReadScope,
+  configAt,
+  scopedAuth as auth,
+} from "../upstream/server.fixture.ts";
 import { makeLayer, PLAN_BODY_MOST, PLAN_RECORD_MOST, PLANNER_PATH, PROMPT_MOST } from "./http.ts";
 
 // Contract: the planner's routes answer only callers with their scope, read
 // no more than they take, stop a call at its time, run each call in a
 // private folder, read a project's line only inside the project, and keep
 // the plan history only in the app's own state folder, which they clear.
-
-/** A caller's scopes ride a test header; none is no credential. */
-const auth = Layer.succeed(EnvironmentAuth.EnvironmentAuth, {
-  authenticateHttpRequest: (request: { readonly headers: Record<string, string | undefined> }) => {
-    const scopes = request.headers["x-test-scopes"];
-    return scopes === undefined
-      ? Effect.fail(new EnvironmentAuth.ServerAuthMissingCredentialError())
-      : Effect.succeed({
-          sessionId: "session",
-          subject: "test",
-          method: "browser-session-cookie",
-          scopes: scopes.split(",").filter(Boolean),
-        });
-  },
-} as never);
 
 interface Lean {
   readonly cwds: string[];
@@ -46,30 +33,27 @@ interface Lean {
 }
 
 const registry = (lean: Lean) =>
-  Layer.succeed(ProviderInstanceRegistry.ProviderInstanceRegistry, {
-    getInstance: (id: string) =>
-      Effect.succeed(
-        id === "claudeAgent"
-          ? {
-              enabled: true,
-              textGeneration: {
-                runLean: (request: { readonly cwd: string }) =>
-                  Effect.suspend(() => {
-                    lean.cwds.push(request.cwd);
-                    expect(NodeFS.existsSync(request.cwd)).toBe(true);
-                    return lean.answer;
-                  }).pipe(
-                    Effect.onInterrupt(() =>
-                      Effect.sync(() => {
-                        lean.interrupted = true;
-                      }),
-                    ),
-                  ),
-              },
-            }
-          : undefined,
-      ),
-  } as never);
+  instancesOf((id) =>
+    id === "claudeAgent"
+      ? {
+          enabled: true,
+          textGeneration: {
+            runLean: (request: { readonly cwd: string }) =>
+              Effect.suspend(() => {
+                lean.cwds.push(request.cwd);
+                expect(NodeFS.existsSync(request.cwd)).toBe(true);
+                return lean.answer;
+              }).pipe(
+                Effect.onInterrupt(() =>
+                  Effect.sync(() => {
+                    lean.interrupted = true;
+                  }),
+                ),
+              ),
+          },
+        }
+      : undefined,
+  );
 
 const root = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "stemcells-planner-http-"));
 afterAll(() => NodeFS.rmSync(root, { recursive: true, force: true }));
@@ -80,18 +64,11 @@ NodeFS.writeFileSync(outside, "# Secret\n\nA line from outside the project.\n");
 NodeFS.symlinkSync(outside, NodePath.join(project, "AGENTS.md"));
 NodeFS.writeFileSync(NodePath.join(project, "README.md"), "# Harbor\n\nThe ferry timetable.\n");
 
-const projects = Layer.succeed(ProjectStore.ProjectStoreV2, {
-  listShells: (options?: { readonly projectIds?: ReadonlyArray<string> }) =>
-    Effect.succeed(
-      [{ id: "harbor", workspaceRoot: project }].filter(
-        (shell) => options?.projectIds?.includes(shell.id) ?? true,
-      ),
-    ),
-} as never);
+const projects = projectsOf([{ id: "harbor", workspaceRoot: project }]);
 
 /** The app's state folder, where the plan history lives. */
 const stateDir = NodePath.join(root, "state");
-const config = Layer.succeed(ServerConfig.ServerConfig, { stateDir } as never);
+const config = configAt(stateDir);
 
 function serve(lean: Lean, planTime = Duration.seconds(5)) {
   const routes = makeLayer(planTime).pipe(

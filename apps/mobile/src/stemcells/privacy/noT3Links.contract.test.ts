@@ -1,7 +1,7 @@
 import * as NodeFS from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
-import config from "../../../app.config";
+import { config } from "../upstream/appConfig";
 
 /**
  * Contract: the phone's build claims no link of T3's hosted app (`noT3Links.ts`), while

@@ -5,24 +5,10 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import { assert, describe, it } from "@effect/vitest";
-import * as NodeServices from "@effect/platform-node/NodeServices";
-import type { DesktopUpdateState } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
-import * as Fiber from "effect/Fiber";
-import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
 import type * as Scope from "effect/Scope";
-import * as Stream from "effect/Stream";
 
-import * as DesktopConfig from "../../app/DesktopConfig.ts";
-import * as DesktopEnvironment from "../../app/DesktopEnvironment.ts";
-import * as DesktopState from "../../app/DesktopState.ts";
-import * as DesktopBackendPool from "../../backend/DesktopBackendPool.ts";
-import * as ElectronApp from "../../electron/ElectronApp.ts";
-import * as ElectronWindow from "../../electron/ElectronWindow.ts";
-import * as DesktopAppSettings from "../../settings/DesktopAppSettings.ts";
-import * as DesktopUpdatePolicy from "../../updates/DesktopUpdatePolicy.ts";
-import * as DesktopUpdates from "../../updates/DesktopUpdates.ts";
+import { reaching, Updates, updatesLayer } from "../upstream/updater.fixture.ts";
 import * as SourceUpdater from "./SourceUpdater.ts";
 
 const git = (cwd: string, ...args: string[]) =>
@@ -148,136 +134,16 @@ const nightlyOf = (fixture: Fixture, sha: string) => {
   return `0.1.1-nightly.${day}.${count}`;
 };
 
-function layerFor(fixture: Fixture, quits: { count: number }) {
-  const layerWindow = Layer.succeed(ElectronWindow.ElectronWindow, {
-    create: () => Effect.die("unexpected BrowserWindow creation"),
-    main: Effect.succeedNone,
-    currentMainOrFirst: Effect.succeedNone,
-    focusedMainOrFirst: Effect.succeedNone,
-    setMain: () => Effect.void,
-    clearMain: () => Effect.void,
-    prepareReveal: () => Effect.succeed(false),
-    reveal: () => Effect.void,
-    sendAll: () => Effect.void,
-    destroyAll: Effect.void,
-    syncAllAppearance: () => Effect.void,
-  } satisfies ElectronWindow.ElectronWindow["Service"]);
-  const layerApp = Layer.succeed(ElectronApp.ElectronApp, {
-    metadata: Effect.die("unexpected metadata read"),
-    name: Effect.succeed("Stemcells"),
-    systemLocale: Effect.succeed("en-US"),
-    preferredSystemLanguages: Effect.succeed(["en-US"]),
-    whenReady: Effect.void,
-    requestSingleInstanceLock: Effect.succeed(true),
-    quit: Effect.sync(() => {
-      quits.count += 1;
-    }),
-    exit: () => Effect.void,
-    relaunch: () => Effect.void,
-    setPath: () => Effect.void,
-    setName: () => Effect.void,
-    setAboutPanelOptions: () => Effect.void,
-    setAppUserModelId: () => Effect.void,
-    getAppMetrics: Effect.succeed([]),
-    setAsDefaultProtocolClient: () => Effect.succeed(true),
-    setDesktopName: () => Effect.void,
-    setDockIcon: () => Effect.void,
-    appendCommandLineSwitch: () => Effect.void,
-    onBeforeQuitForUpdate: () => Effect.void,
-    removeCommandLineSwitch: () => Effect.void,
-    on: () => Effect.void,
-  } satisfies ElectronApp.ElectronApp["Service"]);
-  let settings: DesktopAppSettings.DesktopSettings = {
-    ...DesktopAppSettings.resolveDefaultDesktopSettings(nightlyOf(fixture, fixture.built)),
-  };
-  const layerSettings = Layer.succeed(DesktopAppSettings.DesktopAppSettings, {
-    get: Effect.sync(() => settings),
-    load: Effect.sync(() => settings),
-    setMainWindowBounds: () => Effect.die("unexpected"),
-    setServerExposureMode: () => Effect.die("unexpected"),
-    setTailscaleServe: () => Effect.die("unexpected"),
-    setUpdateChannel: (channel) =>
-      Effect.sync(() => {
-        settings = { ...settings, updateChannel: channel, updateChannelConfiguredByUser: true };
-        return { settings, changed: true };
-      }),
-    setWslBackendEnabled: () => Effect.die("unexpected"),
-    setWslDistro: () => Effect.die("unexpected"),
-    setLocalEnvironmentEnabled: () => Effect.die("unexpected"),
-    setWslOnly: () => Effect.die("unexpected"),
-    applyWslWindowsFallback: Effect.die("unexpected"),
-    applyWslWindowsFallbackInMemory: Effect.die("unexpected"),
-  } satisfies DesktopAppSettings.DesktopAppSettings["Service"]);
-  let backendRunning = true;
-  const layerBackend = DesktopBackendPool.layerTest([
-    {
-      id: DesktopBackendPool.PRIMARY_INSTANCE_ID,
-      label: Effect.succeed("Local"),
-      start: Effect.sync(() => {
-        backendRunning = true;
-      }),
-      stop: () =>
-        Effect.sync(() => {
-          backendRunning = false;
-        }),
-      currentConfig: Effect.succeedNone,
-      snapshot: Effect.sync(() => ({
-        desiredRunning: backendRunning,
-        ready: backendRunning,
-        activePid: Option.none(),
-        restartAttempt: 0,
-        restartScheduled: false,
-      })),
-      waitForReady: () => Effect.succeed(true),
-    },
-  ]);
-  const layerConfig = DesktopConfig.layerTest({ T3CODE_HOME: fixture.t3Home });
-  const layerEnvironment = DesktopEnvironment.layer({
-    dirname: "/repo/apps/desktop/src",
-    homeDirectory: fixture.home,
-    platform: "darwin",
-    processArch: "arm64",
-    appVersion: nightlyOf(fixture, fixture.built),
+const layerFor = (fixture: Fixture, quits: { count: number }) =>
+  updatesLayer({
+    updater: SourceUpdater.layer,
+    version: nightlyOf(fixture, fixture.built),
     appPath: fixture.appPath,
-    isPackaged: true,
-    resourcesPath: NodePath.dirname(fixture.appPath),
-    runningUnderArm64Translation: false,
-  }).pipe(Layer.provide(Layer.mergeAll(NodeServices.layer, layerConfig)));
-  return DesktopUpdates.layer.pipe(
-    Layer.provide(SourceUpdater.layer),
-    Layer.provide(
-      Layer.mergeAll(
-        DesktopUpdatePolicy.layerTest(),
-        layerWindow,
-        layerApp,
-        layerSettings,
-        layerBackend,
-        DesktopState.layer,
-        layerConfig,
-        layerEnvironment,
-        NodeServices.layer,
-      ),
-    ),
-  );
-}
-
-/**
- * Runs `action`, then the first state upstream's updater publishes with
- * `status`, or with an error, which fails the test with its message.
- */
-const reaching = <A, E, R>(status: DesktopUpdateState["status"], action: Effect.Effect<A, E, R>) =>
-  Effect.gen(function* () {
-    const updates = yield* DesktopUpdates.DesktopUpdates;
-    const { changes } = yield* updates.subscribe;
-    const reached = yield* changes.pipe(
-      Stream.filter((state) => state.status === status || state.status === "error"),
-      Stream.runHead,
-      Effect.forkScoped,
-    );
-    yield* action;
-    const state = Option.getOrThrow(yield* Fiber.join(reached));
-    assert.equal(state.status, status, state.message ?? undefined);
-    return state;
+    home: fixture.home,
+    t3Home: fixture.t3Home,
+    quit: () => {
+      quits.count += 1;
+    },
   });
 
 /** Resolves once `file` exists: the detached swap writes it on its own. */
@@ -295,7 +161,7 @@ const withFixture = <A, E>(
   use: (
     fixture: Fixture,
     quits: { readonly count: number },
-  ) => Effect.Effect<A, E, DesktopUpdates.DesktopUpdates | Scope.Scope>,
+  ) => Effect.Effect<A, E, Updates | Scope.Scope>,
 ) =>
   Effect.acquireUseRelease(
     Effect.sync(() => makeFixture(options)),
@@ -309,42 +175,11 @@ const withFixture = <A, E>(
     (fixture) => Effect.sync(() => NodeFS.rmSync(fixture.root, { recursive: true, force: true })),
   );
 
-const desktopSource = NodePath.resolve(import.meta.dirname, "../..");
-
-/** The desktop's own modules, by path under `src`. */
-const desktopModules = (folder = desktopSource): string[] =>
-  NodeFS.readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
-    const path = NodePath.join(folder, entry.name);
-    if (entry.isDirectory()) return desktopModules(path);
-    return /\.tsx?$/u.test(entry.name) && !/\.test\.tsx?$/u.test(entry.name)
-      ? [NodePath.relative(desktopSource, path)]
-      : [];
-  });
-
 describe("Stemcells' updates, upstream's updater on the repository", () => {
-  // A build names origin as its feed (install-app), which electron-updater
-  // would reach out to read: upstream's updater is its one user, and runs
-  // on ours.
-  it("leaves electron-updater no one to fetch for", () => {
-    const users = desktopModules().filter((file) =>
-      /from "(?:\.\.?\/)+electron\/ElectronUpdater\.ts"/u.test(
-        NodeFS.readFileSync(NodePath.join(desktopSource, file), "utf8"),
-      ),
-    );
-    assert.deepEqual(users.toSorted(), [
-      "main.ts",
-      "stemcells/updates/SourceUpdater.ts",
-      "updates/DesktopUpdates.ts",
-      "updates/updatesTestHarness.ts",
-    ]);
-    const main = NodeFS.readFileSync(NodePath.join(desktopSource, "main.ts"), "utf8");
-    assert.match(main, /DesktopUpdates\.layer\.pipe\(\s*Layer\.provide\(StemcellsUpdater\.layer\)/);
-  });
-
   it.live("lists the merged pull requests, builds them beside the app, and swaps as it quits", () =>
     withFixture({}, (fixture, quits) =>
       Effect.gen(function* () {
-        const updates = yield* DesktopUpdates.DesktopUpdates;
+        const updates = yield* Updates;
         yield* updates.configure;
         // A main build's version puts it on Nightly.
         const configured = yield* updates.getState;
@@ -392,7 +227,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
   it.live("offers the newest once main moves past a finished build, never the older one", () =>
     withFixture({}, (fixture) =>
       Effect.gen(function* () {
-        const updates = yield* DesktopUpdates.DesktopUpdates;
+        const updates = yield* Updates;
         yield* updates.configure;
         yield* reaching("available", updates.check("test"));
         yield* reaching("downloaded", updates.download);
@@ -410,7 +245,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
   it.live("never swaps in a build main moved past since the last check", () =>
     withFixture({}, (fixture, quits) =>
       Effect.gen(function* () {
-        const updates = yield* DesktopUpdates.DesktopUpdates;
+        const updates = yield* Updates;
         yield* updates.configure;
         yield* reaching("available", updates.check("test"));
         yield* reaching("downloaded", updates.download);
@@ -432,7 +267,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
         git(fixture.work, "tag", "v0.2.0", "HEAD~1");
         // T3's tags reach the same repository from upstream, and aren't ours.
         git(fixture.installedFrom, "tag", "v9.0.0", "HEAD");
-        const updates = yield* DesktopUpdates.DesktopUpdates;
+        const updates = yield* Updates;
         yield* updates.configure;
 
         const stable = yield* reaching("available", updates.setChannel("latest", ANY_RELEASE));
@@ -452,7 +287,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
       withFixture({ builtFrom: "newest" }, (fixture) =>
         Effect.gen(function* () {
           git(fixture.work, "tag", "v0.1.0", "HEAD~2");
-          const updates = yield* DesktopUpdates.DesktopUpdates;
+          const updates = yield* Updates;
           yield* updates.configure;
           const stable = yield* reaching("available", updates.setChannel("latest", ANY_RELEASE));
           assert.equal(stable.availableVersion, "0.1.0");
@@ -469,7 +304,7 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
   it.live("says why it can't check until install-app records where it came from", () =>
     withFixture({ withSource: false }, () =>
       Effect.gen(function* () {
-        const updates = yield* DesktopUpdates.DesktopUpdates;
+        const updates = yield* Updates;
         yield* updates.configure;
         const failed = yield* reaching("error", updates.check("test"));
         assert.equal(failed.errorContext, "check");

@@ -1,10 +1,12 @@
-import type { ModelSelection, ProjectId } from "@t3tools/contracts";
+import { ModelSelection, ProjectId } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 import * as Path from "effect/Path";
 
 import * as ServerConfig from "../../config.ts";
 import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
 import * as ProviderInstanceRegistry from "../../provider/ProviderInstanceRegistry.ts";
+
+export { ModelSelection, ProjectId };
 
 // What Aski's planner takes from upstream: a provider instance's lean
 // structured call (`runLean`, a seam in provider-core), where the person's

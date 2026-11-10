@@ -1,10 +1,12 @@
 import {
-  type MessageId,
+  MessageId,
   type ModelSelection,
   type OrchestrationV2ConversationMessage,
   type OrchestrationV2Run,
   orchestrationV2RunWorkStartedAt,
-  type ThreadId,
+  ProviderInstanceId,
+  RunId,
+  ThreadId,
 } from "@t3tools/contracts";
 import type { Runner } from "@t3tools/provider-core/server/textGenerationOperations";
 import { assistantCitationsToPlainText } from "@t3tools/shared/assistantCitations";
@@ -13,6 +15,9 @@ import * as Effect from "effect/Effect";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";
 import * as ProviderInstanceRegistry from "../../provider/ProviderInstanceRegistry.ts";
 import * as ServerSettings from "../../serverSettings.ts";
+
+/** Upstream's ids, as the route decodes them and its fixtures make them. */
+export { MessageId, ProviderInstanceId, RunId, ThreadId };
 
 // What the next-prompt suggestion takes from upstream: a thread's runs and
 // the messages of the last few, the driver a run went to, and the lean call

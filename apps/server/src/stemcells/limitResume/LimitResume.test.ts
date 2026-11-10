@@ -7,7 +7,6 @@ import * as Queue from "effect/Queue";
 import * as Stream from "effect/Stream";
 import * as TestClock from "effect/testing/TestClock";
 
-import type { OrchestrationV2ServerCommand } from "@t3tools/contracts";
 import {
   CONTINUE_LINE,
   type Instance,
@@ -19,6 +18,9 @@ import { watchAccounts } from "./accounts.ts";
 import { LIMITS } from "./decide.ts";
 import { make, TICK } from "./LimitResume.ts";
 import type { ClaudeLogin } from "./login.ts";
+
+/** A command the source sends on, as upstream shapes it. */
+type Command = Parameters<LimitResumeSource["send"]>[0];
 
 const CLAUDE_LOGIN: ClaudeLogin = {
   binaryPath: "claude",
@@ -50,7 +52,7 @@ const fakeWorld = Effect.gen(function* () {
   const shells = new Map<string, Shell>();
   const changes =
     yield* Queue.unbounded<ReadonlyArray<{ threadId: Shell["id"]; lively: boolean }>>();
-  const sent: Array<OrchestrationV2ServerCommand> = [];
+  const sent: Array<Command> = [];
   const login = { mark: "20261021120000Z|-", account: "account-a" as string | null };
   const reads = { marks: 0, accounts: 0 };
   const settings = { autoResume: true };
@@ -367,7 +369,7 @@ it.effect("each send has ids of its own, a retry's too", () =>
     let refuse = true;
     const source = {
       ...world.source,
-      send: (command: OrchestrationV2ServerCommand) =>
+      send: (command: Command) =>
         Effect.sync(() => {
           world.sent.push(command);
           return !refuse;

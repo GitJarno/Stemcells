@@ -1,7 +1,6 @@
 // @effect-diagnostics globalDate:off - the ledger's hours are this machine's local time, and
 // the import script runs this with plain Node, without Effect.
-import type { UsageProviderKind } from "@t3tools/contracts";
-import type { UsageRecord } from "@t3tools/provider-core/server/usage";
+import type { UsageProviderKind, UsageRecord } from "../upstream/usageRecords.ts";
 
 // Usage kept from transcripts the provider CLIs have since deleted: Claude keeps a transcript
 // about 30 days and the Usage page's cache 92, so older months would read as nothing. No Effect
