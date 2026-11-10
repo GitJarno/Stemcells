@@ -46,6 +46,7 @@
     "../../stemcells/chart/parse.ts",
     "../../stemcells/disk/notice.ts",
     "../../stemcells/disk/project.ts",
+    "../../stemcells/ledger/alone.ts",
     "../../stemcells/words/casualChat.ts",
     "../../stemcells/words/cellMail.ts",
     "../../stemcells/words/cellNames.ts",
