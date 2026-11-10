@@ -90,31 +90,89 @@ export function goalOf(told: ReadonlyArray<Told>): string | null {
   return goal === null ? null : capped(goal.text);
 }
 
+const ORDER: ReadonlyArray<CheckKind> = ["test", "typecheck", "lint", "build"];
+
+/** Programs that are a check wherever a command runs them. */
+const TOOLS: Readonly<Record<string, CheckKind>> = {
+  vitest: "test",
+  jest: "test",
+  pytest: "test",
+  rspec: "test",
+  "check-local": "test",
+  tsc: "typecheck",
+  tsgo: "typecheck",
+  mypy: "typecheck",
+  pyright: "typecheck",
+  eslint: "lint",
+  oxlint: "lint",
+  ruff: "lint",
+  swiftlint: "lint",
+};
+
+/** What a runner is told to run: `pnpm test` is a check, the shell's own `test -f` is not. */
+const SCRIPTS: Readonly<Record<string, CheckKind>> = {
+  test: "test",
+  "check:changed": "test",
+  typecheck: "typecheck",
+  lint: "lint",
+  clippy: "lint",
+  build: "build",
+};
+
+/** `check` is a runner's own word: cargo's and deno's read types, biome's lints. */
+const CHECK_OF: Readonly<Record<string, CheckKind>> = {
+  cargo: "typecheck",
+  deno: "typecheck",
+  biome: "lint",
+};
+
+const RUNNERS = new Set(
+  "vp pnpm npm yarn bun npx bunx turbo nx cargo go deno swift gradle gradlew mvn make dotnet uv poetry python python3 playwright biome xcodebuild".split(
+    " ",
+  ),
+);
+
+/** Words that stand before what a command runs without being it. */
+const PASSED = new Set(["run", "exec", "x", "dlx", "env", "time", "nice", "command"]);
+
+function scriptKind(runner: string, word: string): CheckKind | null {
+  if (word === "check") return CHECK_OF[runner] ?? null;
+  return SCRIPTS[word] ?? SCRIPTS[word.replace(/:.*/, "")] ?? null;
+}
+
 /**
- * The first match names the kind: "vitest --typecheck" tests, and a build's name comes last
- * because test and lint scripts carry "build" in their paths more often than the reverse.
+ * Reads one command up to what it runs, so a word only counts where a program stands: `pnpm
+ * add eslint`, `grep lint src` and `cat eslint.config.js` run no check.
  */
-const KINDS: ReadonlyArray<readonly [CheckKind, RegExp]> = [
-  [
-    "test",
-    /(?:^|[\s/:;&|(])(?:(?:vp|pnpm|npm|yarn|bun|npx|cargo|go|deno|swift|gradle|\.\/gradlew|mvn|make|dotnet)\s+(?:run\s+|exec\s+)?(?:-\S+\s+)*test\b|vitest\b|jest\b|pytest\b|playwright\s+test\b|rspec\b|xcodebuild\s+(?:\S+\s+)*test\b|check:changed\b|check-local\b)/,
-  ],
-  ["typecheck", /(?:^|[\s/:;&|(])(?:typecheck\b|tsc\b|tsgo\b|mypy\b|pyright\b|cargo\s+check\b)/],
-  [
-    "lint",
-    /(?:^|[\s/:;&|(])(?:lint\b|eslint\b|oxlint\b|biome\s+(?:check|lint)\b|ruff\b|clippy\b|swiftlint\b)/,
-  ],
-  [
-    "build",
-    /(?:^|[\s/:;&|(])(?:(?:vp|pnpm|npm|yarn|bun|cargo|go|swift|gradle|\.\/gradlew|make|dotnet)\s+(?:run\s+)?(?:-\S+\s+)*build\b|xcodebuild\b)/,
-  ],
-];
+function kindOfSegment(segment: string): CheckKind | null {
+  let runner: string | null = null;
+  let afterFlag = false;
+  for (const token of segment.trim().split(/\s+/)) {
+    if (token === "" || /^\w+=/.test(token)) continue;
+    if (token.startsWith("-")) {
+      afterFlag = true;
+      continue;
+    }
+    const word = token.slice(token.lastIndexOf("/") + 1);
+    const kind = TOOLS[word] ?? (runner === null ? null : scriptKind(runner, word));
+    if (kind != null) return kind;
+    if (RUNNERS.has(word)) runner = word;
+    else if (!PASSED.has(word) && !afterFlag) return null;
+    afterFlag = false;
+  }
+  return runner === "xcodebuild" ? "build" : null;
+}
 
-const ORDER: ReadonlyArray<CheckKind> = KINDS.map(([kind]) => kind);
-
-/** The kind of check a command is; null for anything else a run runs. */
+/**
+ * The kind of check a command is; null for anything else a run runs. Quoted text is no command:
+ * a commit message that says "fix typecheck" ran none.
+ */
 export function checkKindOf(command: string): CheckKind | null {
-  return KINDS.find(([, pattern]) => pattern.test(command))?.[0] ?? null;
+  const kinds = command
+    .replace(/"[^"]*"|'[^']*'/g, "_")
+    .split(/&&|\|\||[;|\n(){}]/)
+    .map(kindOfSegment);
+  return ORDER.find((kind) => kinds.includes(kind)) ?? null;
 }
 
 /** Each kind of check the run ran, as its last run of that kind ended. */

@@ -60,6 +60,15 @@ describe("the checks a run ran", () => {
     ["cat build/test-output.txt", null],
     ["ls apps/web/src/latest", null],
     ["grep -rn contest src", null],
+    ["env -u GIT_DIR stemcells/scripts/check-local 12", "test"],
+    ["(cd apps/web && pnpm --filter @t3tools/web test)", "test"],
+    ["python -m pytest -q", "test"],
+    ["cargo check", "typecheck"],
+    ["grep -rn lint src", null],
+    ["cat eslint.config.js", null],
+    ["pnpm add -D vitest", null],
+    ["test -f package.json", null],
+    ['git commit -m "fix typecheck && pnpm test"', null],
   ] as const)("%s", (command, kind) => {
     expect(checkKindOf(command)).toBe(kind);
   });
