@@ -82,8 +82,9 @@ async function goto(index) {
   const now = await settled();
   if (now.index !== index) throw new Error(`goto ${index} landed on ${now.index}`);
 }
-/** A point over the middle of the page on stage's first transcript. */
-const POINT = { x: 560, y: 420 };
+/** A point over the middle of the page on stage's first transcript, or `--point x,y`. */
+const [pointX, pointY] = (args.point ?? "560,420").split(",").map(Number);
+const POINT = { x: pointX, y: pointY };
 
 if (args.throttle)
   await page.send("Emulation.setCPUThrottlingRate", { rate: Number(args.throttle) });
@@ -132,6 +133,8 @@ async function one(label, from, streams, expected, { point = POINT, also = [] } 
   if (args.trace) await traceStart();
   let events = [];
   for (const s of streams) events = events.concat(s.events);
+  // `--jitter ms`: a wait of up to that long first, so swipes don't all begin as the page frees up.
+  if (args.jitter) await sleep(Math.random() * Number(args.jitter));
   const others = also.map((other) => send(other.events, other.point));
   const posted = await send(events, point);
   await Promise.all(others);
@@ -191,7 +194,9 @@ if (CASE === "single") {
     if (i % 2 === 0) await goto(MID);
     const first = swipe({ travel: 260, direction, decay: 0.85 });
     const second = swipe({ at: first.lift + Number(args.gap ?? 160), travel: 260, direction });
-    await one("quick2", null, [cut(first, second.events[0][0]), second], 2 * direction);
+    // Without the phases nothing says a second touch began: the proxy's scroll carries on, a page.
+    const pages = PHASES || args.rule === "distance" ? 2 : 1;
+    await one("quick2", null, [cut(first, second.events[0][0]), second], pages * direction);
     await sleep(250);
   }
 } else if (CASE === "short") {
@@ -300,11 +305,21 @@ if (CASE === "single") {
     await sleep(250);
   }
 } else if (CASE === "slow") {
-  // A slow drag past the commit distance, lifted from rest: no coast.
+  // A slow drag of 240 px let go at rest, no coast: a page by distance; by the platform's rule
+  // the nearer page, which is the one it left.
   await goto(MID);
   for (let i = 0; i < N; i++) {
     const direction = i % 6 < 3 ? 1 : -1;
-    await one("slow", null, [swipe({ travel: 240, pace: 4, direction, coast: false })], direction);
+    const expected = args.rule === "distance" ? direction : 0;
+    await one("slow", null, [swipe({ travel: 240, pace: 4, direction, coast: false })], expected);
+    await sleep(250);
+  }
+} else if (CASE === "drag") {
+  // A slow drag past half the page, let go at rest: the next page by either rule.
+  await goto(MID);
+  for (let i = 0; i < N; i++) {
+    const direction = i % 6 < 3 ? 1 : -1;
+    await one("drag", null, [swipe({ travel: 520, pace: 5, direction, coast: false })], direction);
     await sleep(250);
   }
 }

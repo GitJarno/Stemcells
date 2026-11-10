@@ -1033,10 +1033,11 @@ upstream: a refusal that can say why (the `reason`). The rules are ours.
 ### Scroll phases
 
 DOM wheel events say nothing of a trackpad's phases: when the fingers touch,
-when they lift, and when the system's coast (momentum) runs after them. Read
-from wheel events alone, a swipe too short to turn the tab followed 40–225 px
-of coast before it sprang home, because a coast can only be told by its decay
-over several events. On the Mac the app reads the system's own phases:
+when they lift, and when the system's coast (momentum) runs after them. The
+tab swipe turns one page a touch, and a coast can only be told from a second
+touch by its decay over several events, which on a busy page arrive late and
+merged (`stemcells/tasks/swipe-under-load.md`). On the Mac the app reads the
+system's own phases:
 
 - `stemcells/native/scroll-phases.m` is a small Node-API addon with an
   `NSEvent` local monitor. It sees each scroll event before any window does.
@@ -1046,13 +1047,13 @@ over several events. On the Mac the app reads the system's own phases:
   `apps/desktop/resources`, so it needs no seam; `install-app` stops if the
   built app's archive lacks it (`stemcells/scripts/asar-has.mjs`). The
   Stemcells workflow builds and loads it on a Mac.
-- The two desktop modules (rows above) send the phases to the page and put
-  them on the page's clock. A wheel event's time is its system event's
-  time, so the page places each wheel event by the phases at that time
-  (`apps/web/src/stemcells/tabs/phases.ts`).
+- The two desktop modules (rows above) send the phases to the page, with
+  each event's move, on the page's clock. The swipe is the browser's own
+  scroll (`apps/web/src/stemcells/tabs/proxy.ts`); the phases tell it when
+  a touch begins, lifts and coasts, which its rules about touches go by.
 - Without the addon (not built, a dev run that skipped it, or another
-  platform) nothing is sent, and the swipe reads wheel events alone, as
-  before.
+  platform) nothing is sent, and a second swipe counts once the first has
+  come to rest.
 
 ### The terminal drawer moves as one
 

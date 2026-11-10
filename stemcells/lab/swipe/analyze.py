@@ -101,6 +101,7 @@ nominal = statistics.median([g for g in gaps_all if g < 40]) if gaps_all else 16
 width = geometry["width"]
 
 lags, onsets, overshoots, settles, missed_runs, worst_gaps, moved_frames = [], [], [], [], 0, [], 0
+held = []
 per = []
 for swipe in result["results"]:
     events, posted = swipe["events"], swipe["posted"]
@@ -155,6 +156,18 @@ for swipe in result["results"]:
             due = when(shown + latch)
             if due is not None:
                 swipe_lags.append(ms - due)
+    # The same delay at every frame the screen had while the fingers were down, a picture or not:
+    # a strip standing still falls further behind each frame.
+    tick, i, shown_now = t0, 0, 0.0
+    while tick <= lift:
+        while i < len(track) and track[i][0] <= tick:
+            shown_now = (track[i][1] - start) * direction * width
+            i += 1
+        fingers_at = max((moved for t, moved in travel if t <= tick), default=0.0)
+        if fingers_at > latch + 2:
+            due = when(max(shown_now, 0.5) + latch) if shown_now + latch < fingers_at - 1 else None
+            held.append(0.0 if due is None else max(0.0, tick - due))
+        tick += nominal
     # Frames missed while the strip moved: the gaps between pictures from the first move to rest.
     moving = [(ms, at) for ms, at in track if ms >= t0]
     last_move = t0
@@ -195,6 +208,9 @@ summary = {
     "lag_median": pct(lags, 0.5),
     "lag_p95": pct(lags, 0.95),
     "lag_max": max(lags, default=None),
+    "held_median": pct(held, 0.5),
+    "held_p95": pct(held, 0.95),
+    "held_max": max(held, default=None),
     "onset_median": pct(onsets, 0.5),
     "onset_p95": pct(onsets, 0.95),
     "missed_runs": missed_runs,

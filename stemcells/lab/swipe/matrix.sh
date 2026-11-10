@@ -35,6 +35,7 @@ rest() { # prefix extra...: the other gestures round the middle tabs
   run "$p-short" short "$@"
   run "$p-hard" hard "$@"
   run "$p-slow" slow "$@"
+  run "$p-drag" drag "$@"
   run "$p-single-nophases" single --phases 0 "$@"
   if [ "$EXTRA" = extra ]; then
     run "$p-nudge" nudge "$@"

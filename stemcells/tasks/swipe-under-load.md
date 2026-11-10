@@ -189,7 +189,8 @@ compositor, and only where no cancelling wheel listener lies over it.
 - **The tab turns when its page has landed**, a frame after the proxy is
   back at rest, not at the lift: a turn renders, focuses and mounts pages,
   and a field focused on a page still arriving would scroll the proxy to
-  meet it.
+  meet it. Headed two pages off (a second quick swipe) it turns at once, so
+  the page a third swipe would bring in is mounted by then.
 - **A scroll of the proxy that the fingers didn't make** (a focus, an arrow
   key) is undone in the frame it happened in: only a wheel or a touch over
   the proxy makes its scroll a swipe.
@@ -200,7 +201,8 @@ compositor, and only where no cancelling wheel listener lies over it.
 
 - **Letting go.** Was: by distance alone, past 110 px the next page.
   Now: the platform's own rule: flicked, the next page in the flick's way,
-  however short; let go at rest, the nearer page. A rule that sends the
+  however short; let go at rest, the nearer page, so a slow drag has to
+  pass the middle. A rule that sends the
   strip back against its coast needs the main thread at the instant of the
   lift, which is the thing that fails under load: the strip would ride the
   coast the wrong way until the page caught up.
