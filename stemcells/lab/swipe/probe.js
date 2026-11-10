@@ -3,7 +3,14 @@
   if (window.__lab) {
     window.__lab.stop();
   }
-  const lab = (window.__lab = { wheels: [], phases: [], frames: [], long: [], on: true });
+  const lab = (window.__lab = {
+    wheels: [],
+    phases: [],
+    frames: [],
+    long: [],
+    heard: [],
+    on: true,
+  });
   const onWheel = (e) => {
     if (lab.on)
       lab.wheels.push([
@@ -19,6 +26,32 @@
   const unphase = window.stemcellsScrollPhases?.subscribe((s) => {
     if (lab.on) lab.phases.push([s.t, performance.now(), s.phase, s.momentum, s.moved ? 1 : 0]);
   });
+  // What the page hears of the pager's proxy, in the order it hears it: its scroll, where it
+  // will snap to, its rest, the knots and the strip's own place as they are written.
+  const proxy = document.querySelector("[data-stemcells-pages]");
+  const hear = (kind, value) => lab.on && lab.heard.push([performance.now(), kind, value]);
+  const slotOf = () => proxy.scrollLeft / (proxy.scrollWidth / 41);
+  const onScroll = () => hear("scroll", Math.round(slotOf() * 1000) / 1000);
+  const onEnd = () => hear("end", Math.round(slotOf() * 1000) / 1000);
+  const onAim = (e) =>
+    hear("aim", Number(e.snapTargetInline?.getAttribute("data-stemcells-proxy-slot")));
+  proxy?.addEventListener("scroll", onScroll, { capture: true, passive: true });
+  proxy?.addEventListener("scrollend", onEnd, { capture: true });
+  proxy?.addEventListener("scrollsnapchanging", onAim, { capture: true });
+  const writes = new MutationObserver((records) => {
+    for (const record of records) {
+      const el = record.target;
+      if (el.hasAttribute("data-stemcells-hold")) hear("knots", el.getAttribute("data-knots"));
+      else if (el.hasAttribute("data-stemcells-strip")) hear("strip", el.style.transform);
+      else if (el === proxy) hear("moving", proxy.hasAttribute("data-moving"));
+    }
+  });
+  if (proxy)
+    writes.observe(proxy, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["data-knots", "style", "data-moving"],
+    });
   // Where the main thread has the strip, in pages.
   lab.position = () => {
     const pages = document.querySelector("[data-stemcells-pages]");
@@ -58,9 +91,14 @@
     lab.phases = [];
     lab.frames = [];
     lab.long = [];
+    lab.heard = [];
   };
   lab.stop = () => {
     window.removeEventListener("wheel", onWheel, { capture: true });
+    proxy?.removeEventListener("scroll", onScroll, { capture: true });
+    proxy?.removeEventListener("scrollend", onEnd, { capture: true });
+    proxy?.removeEventListener("scrollsnapchanging", onAim, { capture: true });
+    writes.disconnect();
     unphase?.();
     cancelAnimationFrame(raf);
     observer?.disconnect();

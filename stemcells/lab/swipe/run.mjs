@@ -142,7 +142,7 @@ async function one(label, from, streams, expected, { point = POINT, also = [] } 
   if (args.trace) await traceEnd(`${args.trace}.${results.length}.json`);
   const probe = JSON.parse(
     await page.evaluate(
-      "JSON.stringify({ wheels: __lab.wheels, phases: __lab.phases, frames: __lab.frames, long: __lab.long, clock: __lab.clock() })",
+      "JSON.stringify({ wheels: __lab.wheels, phases: __lab.phases, frames: __lab.frames, long: __lab.long, heard: __lab.heard, clock: __lab.clock() })",
     ),
   );
   const turned = after.index - before.index;
@@ -166,6 +166,7 @@ async function one(label, from, streams, expected, { point = POINT, also = [] } 
         : {
             wheels: probe.wheels,
             phases: probe.phases,
+            heard: probe.heard,
             long: probe.long,
             clock: probe.clock,
             frames: probe.frames.length,

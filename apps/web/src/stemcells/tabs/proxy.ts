@@ -73,6 +73,8 @@ export function keyed(
 const SAME_TIME = 2;
 /** How many wheel events are kept to tell whose a touch was. */
 const KEPT_WHEELS = 32;
+/** How many pages the proxy brought are kept for a flick heard late to find. */
+const KEPT_BROUGHT = 8;
 
 /** One touch of the fingers, as the system tells it. */
 interface Touch {
@@ -80,19 +82,23 @@ interface Touch {
   down: boolean;
   /** Whether the fingers have moved: until then they only rest on the trackpad. */
   moved: boolean;
+  /** Whether the walls are its own: once it is known to move the proxy. */
+  claimed: boolean;
+  /** Whether the proxy has rested since it lifted: where the proxy goes after is not its doing. */
+  over: boolean;
   /** The way it was flicked: the way its coast set off, sideways. */
   flick: -1 | 0 | 1;
   /** Whether its coast has set off, so `flick` is known. */
   coasted: boolean;
-  /** Whether it has been given the page a flick is owed. */
+  /** Whether its flick's page is settled. */
   paid: boolean;
 }
 
 /**
- * What a swipe may do to the strip. One touch shows at most one page further: the knots are level
- * past a page either side of where the strip was headed when it began, and move only when the
- * system says a new touch begins or the proxy rests. A flick ends one page on: where the
- * browser's snap leaves it short, the strip is owed that page (`pay`).
+ * What a swipe may do to the strip: one touch shows at most one page further, and a flick ends
+ * one page on, once, by the proxy where its snap goes there, else owed by the strip (`pay`).
+ * A busy page hears the system's phases late, after the proxy's own events and by any amount:
+ * nothing here goes by the order they come in, only by when each says it happened.
  */
 export class Turns {
   #count = 1;
@@ -110,6 +116,12 @@ export class Turns {
   #touch: Touch | null = null;
   /** The latest wheel events over the proxy: when, and whether it was the proxy's to scroll. */
   #wheels: { readonly t: number; readonly ours: boolean }[] = [];
+  /** When the fingers took the proxy from its rest: its first wheel event since. Null at rest. */
+  #left: number | null = null;
+  /** The pages the proxy is to bring to flicks already settled. */
+  #coming = 0;
+  /** The pages the proxy brought that no flick has answered for yet, and when the page heard of each. */
+  #brought: { readonly heard: number; readonly way: -1 | 1 }[] = [];
 
   /** The page the strip's own place is on, or sliding to. */
   get place(): number {
@@ -157,6 +169,8 @@ export class Turns {
   wheel(t: number, ours: boolean): void {
     this.#wheels.push({ t, ours });
     if (this.#wheels.length > KEPT_WHEELS) this.#wheels.shift();
+    if (ours && this.#left === null) this.#left = t;
+    this.#claim();
   }
 
   /** A scroll event's phases, where the desktop app sends them. */
@@ -166,12 +180,18 @@ export class Turns {
       // with the last still down as far as the page heard: its lift got lost.
       const resting = this.#touch !== null && this.#touch.down && !this.#touch.moved;
       if (!resting) this.#touched(scroll.t);
-      if (scroll.phase === BEGAN && this.#touch !== null) this.#touch.moved = true;
+      if (scroll.phase === BEGAN && this.#touch !== null) {
+        this.#touch.moved = true;
+        this.#claim();
+      }
       return;
     }
     const touch = this.#touch;
     if (touch === null) return;
-    if (scroll.phase === ENDED || scroll.phase === CANCELLED) touch.down = false;
+    if (scroll.phase === ENDED || scroll.phase === CANCELLED) {
+      touch.down = false;
+      if (this.#left === null) touch.over = true;
+    }
     if (scroll.momentum !== 0 && scroll.moved && !touch.down && !touch.coasted) {
       touch.coasted = true;
       const sideways = Math.abs(scroll.dx) > Math.abs(scroll.dy);
@@ -191,44 +211,59 @@ export class Turns {
   }
 
   /**
-   * Settles a flicked touch's page: where the browser's snap leaves the strip short of the next
-   * page in the flick's way, the strip's own place moves on one, and that side is walled, so the
-   * touch has one page whatever the proxy then does. Call it once the page has heard where the
-   * proxy is going since the lift: a frame or two after `owing` turns true.
+   * Settles a flicked touch's page. The proxy brought it already, or is headed there: nothing is
+   * owed. Where the browser's snap leaves the strip short, the strip's own place moves on one and
+   * that side is walled, so the touch has one page whatever the proxy then does. Call it once the
+   * page has heard where the proxy is going since the lift: a frame or two after `owing` turns true.
    */
   pay(): void {
     const touch = this.#touch;
     if (touch === null || !this.owing) return;
     touch.paid = true;
     if (this.#spent || !this.#ours(touch)) return;
-    if (Math.round(offsetAt(this.knots, this.#target)) !== 0) return;
+    // Heard since its touch began, so perhaps of its own doing: the page turns once either way.
+    const brought = this.#brought.findIndex(
+      (page) => page.way === touch.flick && page.heard >= touch.began,
+    );
+    if (brought >= 0) {
+      this.#brought.splice(brought, 1);
+      return;
+    }
+    const heading = Math.round(offsetAt(this.knots, this.#target));
+    if (heading !== 0) {
+      if (heading === touch.flick) this.#coming += heading;
+      return;
+    }
     const page = this.#place + touch.flick;
     if (page < 0 || page >= this.#count) return;
-    this.#wall = touch.flick;
+    // At rest there is nothing more of this touch's for the proxy to do.
+    if (this.#left !== null) this.#wall = touch.flick;
     this.#place = page;
   }
 
-  /** The proxy scrolled to `slot`; `pixel` is a pixel in slots. */
-  scrolled(slot: number, pixel: number): void {
+  /** The proxy scrolled to `slot`, as the page hears at `now`; `pixel` is a pixel in slots. */
+  scrolled(slot: number, pixel: number, now: number): void {
     this.#at = slot;
     if (Math.abs(slot - this.#origin) > pixel) this.#resting = false;
     // Landed with the fingers known to be up: the walls go round the page it landed on now, so
     // the next touch finds them there however long the page takes to hear of it.
     const touch = this.#touch;
-    const up = touch !== null && !touch.down;
+    const up = touch !== null && !touch.down && !touch.over;
     if (up && this.#target !== this.#origin && Math.abs(slot - this.#target) <= pixel) {
-      this.#rebase(this.#target);
+      this.#rebase(this.#target, now);
     }
   }
 
-  /** The proxy came to rest on `slot`. It goes back to `REST_SLOT`, which now shows the strip's place. */
-  rested(slot: number): void {
-    this.#rebase(slot);
+  /** The proxy came to rest on `slot`, as the page hears at `now`. It goes back to `REST_SLOT`, which now shows the strip's place. */
+  rested(slot: number, now: number): void {
+    this.#rebase(slot, now);
     this.#origin = REST_SLOT;
     this.#target = REST_SLOT;
     this.#at = REST_SLOT;
     this.#resting = true;
-    if (this.#touch !== null && !this.#touch.down) this.#touch = null;
+    this.#left = null;
+    this.#coming = 0;
+    if (this.#touch !== null && !this.#touch.down) this.#touch.over = true;
   }
 
   #page(page: number): number {
@@ -242,13 +277,49 @@ export class Turns {
   }
 
   #touched(began: number): void {
-    this.#touch = { began, down: true, moved: false, flick: 0, coasted: false, paid: false };
-    if (!this.#resting) this.#rebase(this.#target);
+    // The last touch is over: a flick of its still owed is settled by what the page knows now.
+    this.pay();
+    this.#brought = this.#brought.filter((page) => page.heard >= began);
+    this.#touch = {
+      began,
+      down: true,
+      moved: false,
+      claimed: false,
+      over: false,
+      flick: 0,
+      coasted: false,
+      paid: false,
+    };
   }
 
-  /** The strip's own place becomes the page `slot` shows, and the walls go round that slot. */
-  #rebase(slot: number): void {
-    this.#place = this.#page(this.#place + Math.round(offsetAt(this.knots, slot)));
+  /**
+   * The walls become the touch's own once it is known to move the proxy: fingers that only rest
+   * on the trackpad, or scroll something else, leave them where they are, a paid page's wall
+   * with them. If the proxy was under way before it began, the page that was headed for is the
+   * last touch's, and this one's walls go round it.
+   */
+  #claim(): void {
+    const touch = this.#touch;
+    if (touch === null || touch.claimed || !touch.moved || !this.#ours(touch)) return;
+    touch.claimed = true;
+    if (this.#left !== null && touch.began > this.#left + SAME_TIME) this.#rebase(this.#target);
+  }
+
+  /**
+   * The strip's own place becomes the page `slot` shows, and the walls go round that slot. A page
+   * that brings, heard at `heard`, is a settled flick's where one waits for it; else it is kept
+   * for a flick heard later.
+   */
+  #rebase(slot: number, heard?: number): void {
+    const place = this.#page(this.#place + Math.round(offsetAt(this.knots, slot)));
+    const way = place > this.#place ? 1 : place < this.#place ? -1 : 0;
+    if (way !== 0 && this.#coming * way > 0) {
+      this.#coming -= way;
+    } else if (way !== 0 && heard !== undefined) {
+      this.#brought.push({ heard, way });
+      if (this.#brought.length > KEPT_BROUGHT) this.#brought.shift();
+    }
+    this.#place = place;
     this.#origin = slot;
     this.#wall = 0;
     this.#spent = false;

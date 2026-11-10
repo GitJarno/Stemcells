@@ -137,7 +137,7 @@ export class PageStrip {
         ? new ScrollTimeline({ source: scroller, axis: "x" })
         : null;
     // Whatever the proxy was doing when last attached, it rests now.
-    this.#turns.rested(this.#turns.origin);
+    this.#turns.rested(this.#turns.origin, performance.now());
     this.#fingers = false;
     this.#toOrigin();
     this.#writeKnots(true);
@@ -610,6 +610,8 @@ export class PageStrip {
       !event.ctrlKey &&
       !scrollerTakes(event.target, scroller, event.deltaX > 0 ? 1 : -1);
     this.#turns.wheel(event.timeStamp, ours);
+    // A second touch's first move takes the walls for its own.
+    this.#apply();
   };
 
   readonly #onTouch = (): void => {
@@ -626,7 +628,7 @@ export class PageStrip {
       if (Math.abs(slot - this.#turns.origin) * width > 0.5) this.#toOrigin();
       return;
     }
-    this.#turns.scrolled(slot, 1 / width);
+    this.#turns.scrolled(slot, 1 / width, performance.now());
     if (!SAYS_AIM) this.#turns.aimed(Math.round(slot));
     if (!SAYS_REST) {
       clearTimeout(this.#restTimer);
@@ -661,7 +663,7 @@ export class PageStrip {
     }
     const shown = this.#onScreen();
     const speed = this.#speed();
-    this.#turns.rested(this.#scrolledTo());
+    this.#turns.rested(this.#scrolledTo(), performance.now());
     this.#toOrigin();
     this.#writeKnots();
     this.#travel(shown, this.#turns.place, speed, this.#slide !== null);

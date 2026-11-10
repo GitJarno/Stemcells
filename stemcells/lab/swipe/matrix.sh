@@ -67,10 +67,13 @@ if [ "$PART" = quiet ] || [ "$PART" = all ]; then
   rest q
 fi
 if [ "$PART" = load ] || [ "$PART" = all ]; then
-  # The load: the page's CPU at a quarter speed and its main thread held 120 ms in every 500.
-  ends l --throttle 4 --hold 120/500
-  mid l --throttle 4 --hold 120/500
-  if [ "$EXTRA" = extra ]; then rest l --throttle 4 --hold 120/500; fi
+  # The load: the page's CPU at a quarter speed and its main thread held 120 ms in every 500,
+  # each swipe begun at a moment of its own. Then the thread held 400 ms in every 500.
+  LOAD="--throttle 4 --hold 120/500 --jitter 500"
+  ends l $LOAD
+  mid l $LOAD
+  if [ "$EXTRA" = extra ]; then rest l $LOAD; fi
+  traced h-frames --hold 400/500 --jitter 500
 fi
 if [ "$PART" = stream ] || [ "$PART" = all ]; then
   # A chat streaming on a page the strip holds. Few swipes: every turn it streams stays in the
