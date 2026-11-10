@@ -12,7 +12,7 @@ import {
   shellFixture,
   threadId,
 } from "../upstream/needs.fixture.ts";
-import type { Stop } from "./closeOut.ts";
+import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
 import { ASKI_INSTANCE_ID, needOf, signalOf } from "./derive.ts";
 import { conditionsOf, holdsOf } from "./conditions.ts";
 import { standingsOf } from "./stage.ts";

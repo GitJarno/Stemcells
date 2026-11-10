@@ -6,7 +6,7 @@
  */
 import * as DateTime from "effect/DateTime";
 
-import { stopOf } from "../needs/closeOut.ts";
+import { stopOf } from "../../../../../stemcells/closeOut/closeOut.ts";
 import type { ArcRecords, ArcRun } from "../upstream/arcs.ts";
 
 /** How a Cell's turn ended, by its close-out and then its words. */

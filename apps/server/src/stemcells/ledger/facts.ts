@@ -8,7 +8,7 @@ import * as DateTime from "effect/DateTime";
 import { aloneIn } from "../../../../../stemcells/ledger/alone.ts";
 import type { Fact } from "../../../../../stemcells/ledger/facts.ts";
 import { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
-import { readCloseOut } from "../needs/closeOut.ts";
+import { readCloseOut } from "../../../../../stemcells/closeOut/closeOut.ts";
 import type { LedgerRun, LedgerThread } from "../upstream/ledger.ts";
 
 /** An ISO time as upstream writes its own; null when the words aren't a time. */

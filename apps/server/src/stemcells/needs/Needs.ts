@@ -12,7 +12,7 @@ import * as SubscriptionRef from "effect/SubscriptionRef";
 
 import * as UpstreamNeeds from "../upstream/needs.ts";
 import { leadOf } from "./brief.ts";
-import { stopOf, type Stop } from "./closeOut.ts";
+import { stopOf, type Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
 import { briefOf, factsOf, type Brief } from "./evidence.ts";
 import {
   needOf,

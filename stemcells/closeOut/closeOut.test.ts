@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { readCloseOut, stopOf } from "./closeOut.ts";
+import { readCloseOut, stopOf, writtenCloseOut } from "./closeOut.ts";
 
 describe("a Cell's close-out", () => {
   it("reads Done as delivered, with its line", () => {
@@ -147,5 +147,58 @@ describe("a Cell's close-out", () => {
   it("falls back to the pre-read without one", () => {
     expect(stopOf("Tests pass.\n\nShould I push it?").ask).toMatchObject({ cue: "offer" });
     expect(stopOf("Fixed and pushed.")).toEqual({ ask: null, waits: false, line: null });
+  });
+});
+
+describe("a close-out where it stands in its reply", () => {
+  it("keeps every line as written, the reply before it and the offer after", () => {
+    const reply = [
+      "Both fixes are in.",
+      "",
+      "**Left:**",
+      "- waiting: the checks on #212",
+      "- **you:** sign in at [the registry](https://example.com/login)",
+      "- me: merge it once they pass",
+      "",
+      "I can also tidy the old flags.",
+    ].join("\n");
+    expect(writtenCloseOut(reply)).toEqual({
+      lines: [
+        { kind: "left", owner: "waiting", text: "the checks on #212", nothing: false },
+        {
+          kind: "left",
+          owner: "you",
+          text: "sign in at [the registry](https://example.com/login)",
+          nothing: false,
+        },
+        { kind: "left", owner: "me", text: "merge it once they pass", nothing: false },
+      ],
+      before: "Both fixes are in.",
+      after: "I can also tidy the old flags.",
+      source: reply.split("\n").slice(2, 6).join("\n"),
+    });
+  });
+
+  it("keeps a Done beside a Left, and a Left that says nothing, which the server ranks away", () => {
+    expect(writtenCloseOut("**Done:** the parser, in #12\n**Left:** none")?.lines).toEqual([
+      { kind: "done", owner: null, text: "the parser, in #12", nothing: false },
+      { kind: "left", owner: null, text: "none", nothing: true },
+    ]);
+    expect(writtenCloseOut("**Done:**\n- the parser\n- its tests")?.lines).toMatchObject([
+      { kind: "done", text: "the parser" },
+      { kind: "done", text: "its tests" },
+    ]);
+  });
+
+  it("reads none exactly where the server reads none", () => {
+    for (const reply of [
+      "Fixed and pushed.",
+      "**Left:** nothing.",
+      "```\n**Done:** a template\n```\n\nAll merged.",
+      ["**Done:** step one", ...Array.from({ length: 8 }, (_, i) => `Line ${i}.`)].join("\n"),
+    ]) {
+      expect(writtenCloseOut(reply)).toBeNull();
+      expect(readCloseOut(reply).closeOut).toBeNull();
+    }
   });
 });

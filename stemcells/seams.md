@@ -973,7 +973,10 @@ ours may hold server code upstream's providers import. It tells a Cell to
 ask its choices through its question tool and to end each stop with
 `**Done:**` or `**Left:** you, me or waiting —`
 (`stemcells/tasks/aski-manager.md`, decisions 7 and 8), which
-`apps/server/src/stemcells/needs/closeOut.ts` reads for each Cell's stage.
+`stemcells/closeOut/closeOut.ts` reads for each Cell's stage, and the web for the
+card it draws in the reply: a substitute for `TimelineAssistantRows.tsx` says
+which markdown is an assistant's reply, with no edit to upstream's row
+(`stemcells/tasks/close-out-card.md`).
 Aski's chat gets it too, and the section tells Aski it isn't Aski's.
 `closeOut.contract.test.ts` pins it among upstream's sections, whole within
 a Codex entry, and asking for the lines the reader reads. Upstream could
