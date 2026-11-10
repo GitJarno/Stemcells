@@ -12,7 +12,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 const repo = NodePath.resolve(NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)), "../..");
 
-/** Where our scripts, plans and instructions live; seams.md only describes upstream's code. */
+/** Where our scripts, plans and instructions live; the seams' files only describe upstream's code. */
 const OURS = [
   "stemcells",
   "apps/web/src/stemcells",
@@ -50,7 +50,8 @@ function files(path: string): string[] {
 function unguardedStarts(): string[] {
   const found: string[] = [];
   for (const file of OURS.flatMap(files)) {
-    if (SKIPPED.has(file) || /\.(?:png|jpe?g|webp|gif|node|json)$/.test(file)) continue;
+    if (SKIPPED.has(file) || file.startsWith("stemcells/seams/")) continue;
+    if (/\.(?:png|jpe?g|webp|gif|node|json)$/.test(file)) continue;
     NodeFS.readFileSync(NodePath.join(repo, file), "utf8")
       .split("\n")
       .forEach((line, index) => {

@@ -3,10 +3,10 @@ import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 
 /**
- * Only an app's `stemcells/upstream/` adapter imports upstream's code. The
- * rest of that app's folder goes through it, so when upstream changes shape
- * the type checker fails in one place per app (stemcells/docs/fork.md,
- * rule 2). Each app's `boundary.test.ts` runs this over its own folder.
+ * Only an app's `stemcells/upstream/` adapter imports upstream's code, so when
+ * upstream changes shape the type checker fails in one place per app
+ * (stemcells/docs/fork.md, rule 2). Each app's `boundary.test.ts` runs this over
+ * its own folder, and the one beside this over our folder at the repository's root.
  */
 
 /** A workspace package of upstream's, by the start of its name. */
@@ -32,8 +32,22 @@ export interface Boundary {
 
 /** The boundary of the app whose folder of ours is `ourRoot` (`apps/<app>/src/stemcells`). */
 export function boundaryOf(ourRoot: string): Boundary {
-  const adapterRoot = NodePath.join(ourRoot, "upstream");
-  const repoRoot = NodePath.resolve(ourRoot, "../../../..");
+  return boundary(
+    ourRoot,
+    NodePath.join(ourRoot, "upstream"),
+    NodePath.resolve(ourRoot, "../../../.."),
+  );
+}
+
+/**
+ * The boundary of our folder at the repository's root (`stemcells/`). Every
+ * app shares its code, so it has no adapter: nothing in it imports upstream's.
+ */
+export function sharedBoundaryOf(ourRepoRoot: string): Boundary {
+  return boundary(ourRepoRoot, null, NodePath.dirname(ourRepoRoot));
+}
+
+function boundary(ourRoot: string, adapterRoot: string | null, repoRoot: string): Boundary {
   const appsRoot = NodePath.join(repoRoot, "apps");
   /** Our folder at the repository's root (the brand, the docs), ours too. */
   const ourRepoRoot = NodePath.join(repoRoot, "stemcells");
@@ -48,7 +62,7 @@ export function boundaryOf(ourRoot: string): Boundary {
   };
 
   const upstreamReach = (file: string, specifier: string): string | null => {
-    if (isIn(adapterRoot, file)) return null;
+    if (adapterRoot !== null && isIn(adapterRoot, file)) return null;
     if (specifier.startsWith("~/")) return "upstream app code (~/)";
     if (
       UPSTREAM_PACKAGES.some((name) =>
@@ -73,8 +87,12 @@ export function boundaryOf(ourRoot: string): Boundary {
     const files = NodeFS.readdirSync(ourRoot, { recursive: true })
       .map(String)
       .filter((file) => /\.[cm]?[jt]sx?$/.test(file))
-      .map((file) => NodePath.join(ourRoot, file));
-    if (!files.some((file) => isIn(adapterRoot, file))) {
+      // Not what a build or an install wrote (the site's `dist`).
+      .filter((file) => !/(?:^|[\\/])(?:dist|node_modules|\.[^\\/]+)[\\/]/.test(file))
+      .map((file) => NodePath.join(ourRoot, file))
+      // This check's own test holds imports as text, for its examples.
+      .filter((file) => file !== NodePath.join(import.meta.dirname, "check.test.ts"));
+    if (adapterRoot !== null && !files.some((file) => isIn(adapterRoot, file))) {
       throw new Error(`No upstream adapter in ${ourRoot}: is this an app's folder of ours?`);
     }
     return files.flatMap((file) =>

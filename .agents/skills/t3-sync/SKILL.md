@@ -172,7 +172,7 @@ effect on us open. Sort each one into a bucket:
 How to find each:
 
 - **Touches our seams:** the report's "Seams upstream touched", and
-  `git diff --stat <before> <target>` against the files in `stemcells/seams.md`.
+  `git diff --stat <before> <target>` against the files in `stemcells/seams/*.md`.
 - **Adopt and comes free:** for each `feat` or `fix` touching `apps/web`,
   `apps/mobile` or `apps/desktop`, grep our layer for the module it
   changed: `git grep -l <module> -- 'apps/*/src/stemcells'` and
@@ -206,12 +206,12 @@ Time it: the pull request says how many minutes resolving took
   - else a one-import seam: one import, one line that hands control to
     `stemcells/`.
 
-  The file's row in `seams.md` says what our edit was. Make that edit, and
+  The file's row under `stemcells/seams/` says what our edit was. Make that edit, and
   no more.
 
 - [ ] **When upstream moved the code** (split a file, renamed a function,
       stopped exporting a name), the seam moves with it. Edit the new file,
-      rename it in its `seams.md` row, and point contract tests at the new
+      rename it in its row, and point contract tests at the new
       place. Prefer a substitute of the new, smaller module over an edit in
       the old, hot one.
 - [ ] **Never grow a hot file's seam.** `drift` holds each hot file to its

@@ -1,6 +1,6 @@
 // Resolves a sync's conflicts in upstream's tests, where our only edits are line swaps pinning
 // a name or path our seams change: upstream's file wins, each swap goes back where it still has
-// the line, and a file left as upstream's leaves `stemcells/seams.md`. Anything else is left.
+// the line, and a file left as upstream's leaves the seams' rows. Anything else is left.
 //
 //   node stemcells/scripts/resolve-test-seams.mjs [--preview OURS THEIRS (writes nothing)]
 import * as NodeChildProcess from "node:child_process";
@@ -12,7 +12,13 @@ const has = (rev, file) =>
   NodeChildProcess.spawnSync("git", ["cat-file", "-e", `${rev}:${file}`]).status === 0;
 
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/;
-const SEAMS = "stemcells/seams.md";
+/** Where a row can name a file: the files of rows, and `seams.md` for its Hot-file budget. */
+const seamFiles = () => [
+  "stemcells/seams.md",
+  ...NodeFS.readdirSync("stemcells/seams")
+    .filter((name) => name.endsWith(".md"))
+    .map((name) => `stemcells/seams/${name}`),
+];
 
 /** Our edits to `file` from `base` to `ours`, as [removed lines, added lines] blocks. */
 function ourEdits(base, ours, file) {
@@ -77,7 +83,7 @@ function reapply(base, ours, theirs, file) {
   return { text, applied, gone, same: text === theirsText };
 }
 
-/** `seams.md` without `files` in any row's first column; a row naming no file then goes. */
+/** A file of seam rows without `files` in any row's first column; a row naming no file then goes. */
 function dropFromSeams(seams, files) {
   return seams
     .split("\n")
@@ -133,7 +139,7 @@ for (const file of conflicted) {
   }
   if (!has(theirs, file)) {
     if (!preview) git("rm", "-q", "--", file);
-    console.log(`deleted   ${file}  (upstream deleted it; its seams.md entry goes)`);
+    console.log(`deleted   ${file}  (upstream deleted it; its seam row goes)`);
     unseamed.push(file);
     continue;
   }
@@ -148,13 +154,18 @@ for (const file of conflicted) {
     git("add", "--", file);
   }
   const gone = result.gone ? `, ${result.gone} gone upstream` : "";
-  const same = result.same ? "; same as upstream's now, its seams.md entry goes" : "";
+  const same = result.same ? "; same as upstream's now, its seam row goes" : "";
   console.log(`resolved  ${file}  (${result.applied} of our swaps put back${gone}${same})`);
   if (result.same) unseamed.push(file);
 }
 
 if (!preview && unseamed.length > 0) {
-  NodeFS.writeFileSync(SEAMS, dropFromSeams(NodeFS.readFileSync(SEAMS, "utf8"), unseamed));
-  git("add", "--", SEAMS);
+  for (const seams of seamFiles()) {
+    const before = NodeFS.readFileSync(seams, "utf8");
+    const after = dropFromSeams(before, unseamed);
+    if (after === before) continue;
+    NodeFS.writeFileSync(seams, after);
+    git("add", "--", seams);
+  }
 }
 process.exit(left === 0 ? 0 : 1);

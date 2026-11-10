@@ -37,8 +37,9 @@ case, go back to the three costs and choose what keeps them lowest.
   New files never conflict.
 
 - An upstream file changes only at a **seam**: the smallest edit that hands
-  control to our code, ideally an import and one line. Every seam is listed
-  in `stemcells/seams.md` with its reason.
+  control to our code, ideally an import and one line. Every seam has a
+  row under `stemcells/seams/` with its reason, in the file
+  `stemcells/seams.md` names for its path.
 - Put seams where upstream rarely edits: route roots, registries,
   constants. Avoid the files upstream changes every day. `drift` shows each
   seam file's upstream commits over the last 90 days; a hot file is a bad
@@ -58,7 +59,7 @@ case, go back to the three costs and choose what keeps them lowest.
   test our change breaks goes on the skip list with its reason
   (`stemcells/upstream-skips.txt`).
 - `stemcells/scripts/drift` fails on any changed upstream file that
-  `seams.md` doesn't name. It prints the total, so the fork's size is
+  no row names. It prints the total, so the fork's size is
   always visible.
 
 ## 2. Lean on contracts, not internals — against silent breakage
@@ -89,7 +90,9 @@ case, go back to the three costs and choose what keeps them lowest.
   runs one shared check (`stemcells/boundary/check.ts`), which fails when
   our code imports upstream outside that app's adapter. Another app's code
   of ours counts as ours (the phone's `kit.ts` files draw with the web's);
-  another app's adapter doesn't.
+  another app's adapter doesn't. Our folder at the repository's root, which
+  every app shares, has no adapter: `stemcells/boundary/boundary.test.ts`
+  fails when anything in it imports upstream.
 
 ## 3. Own our state and our wire
 
