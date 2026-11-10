@@ -66,7 +66,10 @@ function useCellsAtWork(): number | null {
   const { cells, needs, live } = useNeeds();
   if (!live || cells === null || needs === null) return null;
   const threads = new Set<string>();
-  for (const cell of cells) if (cell.stage === "working") threads.add(cell.threadId);
+  // A Cell a shared stop holds (conditions.md) reads `working` and runs nothing to end.
+  for (const cell of cells) {
+    if (cell.stage === "working" && cell.holds == null) threads.add(cell.threadId);
+  }
   for (const need of needs) if (need.blocks) threads.add(need.threadId);
   return threads.size;
 }

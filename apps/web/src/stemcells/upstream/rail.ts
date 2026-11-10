@@ -26,6 +26,7 @@ import { deriveProjectIdentity } from "../../projectIdentity";
 import { projectIconColorClassName } from "../../projectIconColors";
 import { useQuietThreadShell, useThreadShells } from "../../state/entities";
 import { environmentPresentations } from "../../state/presentation";
+import { primaryEnvironmentIdAtom } from "../../state/primaryEnvironment";
 import { primaryServerKeybindingsAtom } from "../../state/server";
 import { useUiStateStore } from "../../uiStateStore";
 import type { CellRef } from "../tabs/layout";
@@ -128,6 +129,27 @@ export function useShortcutLabel(command: KeybindingCommand): string | null {
 /** Upstream's search: the command palette, which finds chats and projects. */
 export function openSearch(): void {
   openCommandPalette();
+}
+
+/**
+ * How each provider instance on this Mac reads to the person: its name in Settings, and who is
+ * signed in on it when the provider says, since several accounts share a provider's name.
+ */
+export function useAccountNames(): ReadonlyMap<string, string> {
+  const presentations = useAtomValue(environmentPresentations.presentationsWithProvidersAtom);
+  const primary = useAtomValue(primaryEnvironmentIdAtom);
+  const providers =
+    primary === null ? [] : (presentations.get(primary)?.serverConfig?.providers ?? []);
+  return new Map(
+    providers.map((provider) => {
+      const name =
+        provider.displayName ??
+        Object.values(PROVIDER_PRESENTATION).find((entry) => entry.driverKind === provider.driver)
+          ?.label ??
+        provider.instanceId;
+      return [provider.instanceId, provider.auth.email ? `${name} · ${provider.auth.email}` : name];
+    }),
+  );
 }
 
 /** Upstream's usage limits, pooled per provider as upstream's Usage page pools them. */

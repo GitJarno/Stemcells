@@ -5,6 +5,7 @@
  * take answers in the meantime never buzzes anyone. Pure.
  */
 import { type Charge, LOW_AT } from "../../../../../stemcells/words/battery.ts";
+import type { Condition } from "../needs/conditions.ts";
 import type { Need } from "../needs/derive.ts";
 
 /** The charge has run low with no charger: a falling figure at or under `LOW_AT`. */
@@ -19,7 +20,6 @@ const ASKS: Readonly<Record<Need["kind"], string>> = {
   question: "Has a question",
   "sign-in": "Needs you to sign in again",
   input: "Asks for input",
-  limit: "Hit its usage limit",
   failed: "Stopped with an error",
   plan: "Has a plan ready",
   prose: "Has a question",
@@ -114,6 +114,58 @@ export function alertWords(need: Need): { readonly title: string; readonly body:
   const kind =
     need.kind === "prose" && need.prose !== null ? CUES[need.prose.cue] : ASKS[need.kind];
   return { title: need.title.trim() || "A Cell", body: own === "" ? kind : clipped(own) };
+}
+
+const TITLE = "Usage limit reached";
+
+/** A reset's hour, with its day unless that is today, as this Mac's clock and tongue say them. */
+function whenOf(resetAt: number, now: number, locale?: string, timeZone?: string): string {
+  const day = new Intl.DateTimeFormat(locale, { weekday: "long", timeZone });
+  const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", timeZone });
+  const today = resetAt - now < 24 * 60 * 60_000 && day.format(resetAt) === day.format(now);
+  return today ? time.format(resetAt) : `${day.format(resetAt)} ${time.format(resetAt)}`;
+}
+
+/**
+ * A condition's push: one for every Cell it holds, saying how many, until when, and whether
+ * they carry on by themselves. It names no way past the limit.
+ */
+export function conditionWords(
+  condition: Condition,
+  now: number,
+  locale?: string,
+  timeZone?: string,
+): { readonly title: string; readonly body: string } {
+  const [only] = condition.cells;
+  const one = condition.cells.length === 1 && only !== undefined;
+  const who = one ? only.title.trim() || "A Cell" : `${condition.cells.length} Cells`;
+  const resetAt = Date.parse(condition.resetAt ?? "");
+  const holds = `${who} ${one ? "holds" : "hold"}`;
+  if (Number.isNaN(resetAt)) {
+    return { title: TITLE, body: `${holds}. The limit didn't say when it resets.` };
+  }
+  const when = whenOf(resetAt, now, locale, timeZone);
+  const themselves = one ? "carries on by itself" : "carry on by themselves";
+  const body =
+    resetAt <= now
+      ? condition.waits === "reset"
+        ? `${holds}. The limit reset ${when}, and ${one ? "it" : "they"} ${themselves}.`
+        : `${holds}. The limit reset ${when}, and ${one ? "it is" : "they are"} still stopped.`
+      : condition.waits === "reset"
+        ? `${holds} until ${when}, then ${themselves}.`
+        : `${holds}. The limit resets ${when}.`;
+  return { title: TITLE, body };
+}
+
+/** The conditions to push now: each standing at least `HOLD_MS`, so a quick sign-in buzzes nobody. */
+export function dueConditions(
+  conditions: ReadonlyArray<Condition>,
+  pushed: ReadonlySet<string>,
+  now: number,
+): ReadonlyArray<Condition> {
+  return conditions.filter(
+    (condition) => now - Date.parse(condition.since) >= HOLD_MS && !pushed.has(condition.key),
+  );
 }
 
 /** The cards to push now: each waiting at least `HOLD_MS` and not pushed yet. */

@@ -32,9 +32,8 @@ itself is not an ask.
    limit stopped carries on at the reset by itself: Stemcells turns
    upstream's "Auto-resume limited threads" on once per server (as
    `aski-room.md` always meant), and a person who turns it off keeps it
-   off. With it on, a limit with a known reset makes no ask, however far
-   the reset; one comes only when the reset is unknown or the carry-on
-   hasn't happened 15 minutes after it.
+   off. A limit makes no ask at all, whatever its reset: it is one line
+   for the account, with its Cells holding under it (`conditions.md`).
 2. **An ask leads with the step.** A step a Cell left the person is the
    ask's line, in the Cell's words; several are a numbered list under
    "N steps for you". Under it, what the Cell did: its reply's opening

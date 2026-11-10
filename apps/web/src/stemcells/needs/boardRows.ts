@@ -4,7 +4,7 @@
  * never asked. From the needs list's `cells`. Pure.
  */
 import { barOf, changedWords, factsOf, type BarCell, type Fact } from "./facts";
-import type { CellStanding, Landing } from "./wire";
+import type { CellStanding, Condition, Landing } from "./wire";
 
 type Verdict = Landing["verdict"];
 
@@ -24,11 +24,20 @@ export interface BoardRow {
   readonly facts: ReadonlyArray<Fact>;
 }
 
+/** A stop many Cells share (conditions.md), with the Cells it holds. */
+export interface HeldStage {
+  readonly condition: Condition;
+  readonly rows: ReadonlyArray<BoardRow>;
+  readonly count: number;
+}
+
 interface Board {
+  /** Stopped by a cause they share: neither asking nor flying. */
+  readonly holding: ReadonlyArray<HeldStage>;
   readonly flying: ReadonlyArray<BoardRow>;
   readonly landed: ReadonlyArray<BoardRow>;
   /** How many Cells of each stage the board holds, shown or not. */
-  readonly counts: { readonly flying: number; readonly landed: number };
+  readonly counts: { readonly holding: number; readonly flying: number; readonly landed: number };
 }
 
 /** A landing's mark and its name, as the board and a Cell's hover card say them. */
@@ -74,9 +83,33 @@ function rowOf(cell: CellStanding): BoardRow {
   };
 }
 
-/** Inside each verdict the latest to land is first; the server's own order settles a tie. */
-export function boardOf(cells: ReadonlyArray<CellStanding>, rows = BOARD_ROWS): Board {
-  const flying = cells.filter((cell) => cell.stage === "working").map(rowOf);
+const heldRow = (cell: Condition["cells"][number]): BoardRow => ({
+  threadId: cell.threadId,
+  projectId: cell.projectId,
+  title: cell.title,
+  since: cell.since,
+  line: null,
+  verdict: null,
+  why: null,
+  changed: null,
+  facts: [],
+});
+
+/**
+ * Inside each verdict the latest to land is first; the server's own order settles a tie. A Cell
+ * a condition holds is listed under it and nowhere else: it isn't flying.
+ */
+export function boardOf(
+  cells: ReadonlyArray<CellStanding>,
+  conditions: ReadonlyArray<Condition> = [],
+  rows = BOARD_ROWS,
+): Board {
+  const holding = conditions.map((condition) => ({
+    condition,
+    rows: condition.cells.slice(0, rows).map(heldRow),
+    count: condition.cells.length,
+  }));
+  const flying = cells.filter((cell) => cell.stage === "working" && cell.holds == null).map(rowOf);
   const landed = cells
     .filter((cell) => cell.stage === "done")
     .map(rowOf)
@@ -90,8 +123,13 @@ export function boardOf(cells: ReadonlyArray<CellStanding>, rows = BOARD_ROWS): 
     )
     .map(({ row }) => row);
   return {
+    holding,
     flying: flying.slice(0, rows),
     landed: landed.slice(0, rows),
-    counts: { flying: flying.length, landed: landed.length },
+    counts: {
+      holding: holding.reduce((count, held) => count + held.count, 0),
+      flying: flying.length,
+      landed: landed.length,
+    },
   };
 }

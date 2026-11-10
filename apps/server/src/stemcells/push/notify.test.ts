@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
+import type { Condition } from "../needs/conditions.ts";
 import type { Need } from "../needs/derive.ts";
-import { SAID_CAP, alertWords } from "./notify.ts";
+import { SAID_CAP, alertWords, conditionWords } from "./notify.ts";
 
 const need = (over: Partial<Need> & Pick<Need, "kind">): Need => ({
   key: `thread-a:${over.kind}`,
@@ -118,7 +119,7 @@ describe("what a push says", () => {
     expect(bodyOf({ kind: "prose", prose: prose("stopped", "Next, I will wire the phone.") })).toBe(
       "Stopped short of done",
     );
-    expect(bodyOf({ kind: "limit" })).toBe("Hit its usage limit");
+    expect(bodyOf({ kind: "stuck" })).toBe("Has gone quiet");
   });
 
   it("ends a long one at a word, inside what a lock screen shows", () => {
@@ -136,6 +137,44 @@ describe("what a push says", () => {
     });
     expect(asked.length).toBeLessThanOrEqual(SAID_CAP + 1);
     expect(asked.endsWith("… (and 1 more)")).toBe(true);
+  });
+
+  it("says a limit once for the Cells it holds: how many, until when, and whether they carry on", () => {
+    const now = Date.parse("2026-11-04T10:00:00.000Z");
+    const held = (title: string) => ({
+      threadId: title,
+      projectId: "project-1",
+      title,
+      runId: "run-1",
+      since: "2026-11-04T09:58:00.000Z",
+      carriesOn: true,
+    });
+    const limit: Condition = {
+      key: "limit:claude:1",
+      kind: "limit",
+      providerInstanceId: "claude",
+      resetAt: "2026-11-04T15:00:00.000Z",
+      since: "2026-11-04T09:58:00.000Z",
+      waits: "reset",
+      cells: [held("Export pages"), held("Header tokens")],
+    };
+    const bodyAt = (over: Partial<Condition>) =>
+      conditionWords({ ...limit, ...over }, now, "en-GB", "UTC").body;
+    expect(conditionWords(limit, now, "en-GB", "UTC")).toEqual({
+      title: "Usage limit reached",
+      body: "2 Cells hold until 15:00, then carry on by themselves.",
+    });
+    expect(bodyAt({ resetAt: "2026-11-06T01:00:00.000Z", cells: [held("Export pages")] })).toBe(
+      "Export pages holds until Friday 01:00, then carries on by itself.",
+    );
+    expect(bodyAt({ waits: "you" })).toBe("2 Cells hold. The limit resets 15:00.");
+    expect(bodyAt({ waits: "you", resetAt: null })).toBe(
+      "2 Cells hold. The limit didn't say when it resets.",
+    );
+    // Pushed once the person is away, which can be after the reset.
+    expect(bodyAt({ waits: "you", resetAt: "2026-11-04T09:00:00.000Z" })).toBe(
+      "2 Cells hold. The limit reset 09:00, and they are still stopped.",
+    );
   });
 
   it("keeps a key out of the command it shows", () => {

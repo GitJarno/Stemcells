@@ -24,6 +24,7 @@ import {
   type Signal,
 } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
+import { conditionsOf, holdsOf, type Condition } from "./conditions.ts";
 import { standingsOf, type CellStanding } from "./stage.ts";
 
 /** A Cell the person settled by hand, on any device. */
@@ -38,6 +39,8 @@ export interface NeedsList {
   readonly later: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage, for Aski's roster (stage.ts). */
   readonly cells: ReadonlyArray<CellStanding>;
+  /** Each stop many Cells share, with the Cells it holds (conditions.ts). */
+  readonly conditions?: ReadonlyArray<Condition>;
   /**
    * The latest settle by hand of each Cell still settled, for a day: every Mac closes the Cell's
    * panes, and a phone back from away its chat (settle-everywhere.md).
@@ -150,7 +153,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     }
     lookedAt = now;
     const autoResume = yield* source.autoResume;
-    const candidates = signalsOf([...shells.values()], now, heard, autoResume);
+    const candidates = signalsOf([...shells.values()], now, heard);
     const live = new Set(candidates.map((signal) => signal.key));
     for (const key of details.keys()) if (!live.has(key)) details.delete(key);
     const read = yield* Effect.forEach(
@@ -186,10 +189,14 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
     }
     settles = settles.filter((settle) => now - settle.at < SETTLES_KEPT_MS);
+    // A Cell with an ask stands in Input, whatever else stopped it.
+    const asking = new Set(needs.map((need) => need.parentThreadId ?? need.threadId));
+    const conditions = conditionsOf([...shells.values()], now, autoResume, asking);
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
       later: later.toSorted((a, b) => a.until.localeCompare(b.until) || a.number - b.number),
-      cells: standingsOf([...shells.values()], needs, stops, now, autoResume, briefs),
+      cells: standingsOf([...shells.values()], needs, stops, now, briefs, holdsOf(conditions)),
+      conditions,
       settles: settles.map((settle) => ({
         threadId: settle.threadId,
         at: DateTime.formatIso(DateTime.makeUnsafe(settle.at)),

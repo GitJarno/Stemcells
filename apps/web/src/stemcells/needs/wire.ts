@@ -191,6 +191,42 @@ export interface CellStanding {
   /** How a done Cell landed; null at any other stage, absent from a server before the brief. */
   readonly landing?: Landing | null;
   readonly brief?: Brief | null;
+  /**
+   * The condition that holds it, by its key: stopped by a cause it shares, so neither asking
+   * nor flying though its stage reads `working`. Absent from a server before conditions.
+   */
+  readonly holds?: string | null;
+}
+
+/** A Cell a condition holds. */
+export interface HeldCell {
+  readonly threadId: string;
+  readonly projectId: string;
+  readonly title: string;
+  /** The run the limit stopped, which a "continue" picks up. */
+  readonly runId: string;
+  /** When its run stopped. */
+  readonly since: string;
+  /** It carries on at the reset by itself. */
+  readonly carriesOn: boolean;
+}
+
+/**
+ * A stop many Cells share (stemcells/tasks/conditions.md): an account's usage limit, which no
+ * answer to any one Cell lifts. One line for the cause, its Cells holding under it.
+ */
+export interface Condition {
+  readonly key: string;
+  readonly kind: "limit";
+  readonly providerInstanceId: string;
+  /** When the limit resets, as the refusal said; null when it didn't. */
+  readonly resetAt: string | null;
+  /** When its first Cell stopped. */
+  readonly since: string;
+  /** What ends it: the reset, for Cells that carry on at it; else nothing but the person. */
+  readonly waits: "reset" | "you";
+  /** The Cells it holds, the longest held first. */
+  readonly cells: ReadonlyArray<HeldCell>;
 }
 
 /** An ask the person put off: its Cell is snoozed until `until`, then it is back. */
@@ -210,6 +246,8 @@ export interface NeedsList {
   readonly later?: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage; absent from a server before stages. */
   readonly cells?: ReadonlyArray<CellStanding>;
+  /** Each stop many Cells share; absent from a server before conditions, which asks per Cell. */
+  readonly conditions?: ReadonlyArray<Condition>;
   /**
    * Each settled Cell's latest settle by hand, for a day: a Mac closes its panes, a phone back
    * from away its chat. Absent from a server before them.

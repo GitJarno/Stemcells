@@ -14,6 +14,7 @@ import {
 } from "../upstream/needs.fixture.ts";
 import type { Stop } from "./closeOut.ts";
 import { ASKI_INSTANCE_ID, needOf, signalOf } from "./derive.ts";
+import { conditionsOf, holdsOf } from "./conditions.ts";
 import { standingsOf } from "./stage.ts";
 
 const done: Stop = { ask: null, waits: false, line: "the header fix, merged as #12" };
@@ -76,24 +77,31 @@ describe("a Cell's stage", () => {
     ]);
   });
 
-  it("is working while a run is under way, or while it waits on its own work or a reset", () => {
+  it("is working while a run is under way, or while it waits on its own work", () => {
     expect(stageOf(shellFixture({ status: "running", activeRunId: runId("run-2") }), null)).toBe(
       "working",
     );
     expect(stageOf(shellFixture({ status: "queued" }), null)).toBe("working");
     expect(stageOf(shellFixture({ blockedOnThreadWait: true }))).toBe("working");
     expect(stageOf(shellFixture(), { ask: null, waits: true, line: "CI on #40" })).toBe("working");
-    const carryingOn = shellFixture({
+  });
+
+  it("holds a Cell a usage limit stopped, armed or not: working on the wire, and neither asking nor done", () => {
+    const stopped = shellFixture({
       status: "failed",
       lastErrorClass: "usage_limit",
-      lastVisitedAt: at(0),
-      limitRecovery: {
-        runId: runId("run-1"),
-        resetAt: DateTime.formatIso(at(HOUR)),
-        autoResume: true,
-      },
+      usageLimitResetAt: null,
+      latestRunCompletedAt: at(-MINUTE),
     });
-    expect(stageOf(carryingOn)).toBe("working");
+    const held = holdsOf(conditionsOf([stopped], NOW, false));
+    const [cell] = standingsOf([stopped], cardsOf(stopped), new Map(), NOW, new Map(), held);
+    expect(cell).toMatchObject({
+      stage: "working",
+      holds: "limit:codex:unknown",
+      since: DateTime.formatIso(at(-MINUTE)),
+    });
+    const flying = shellFixture({ status: "running", activeRunId: runId("run-2") });
+    expect(standingsOf([flying], [], new Map(), NOW)[0]?.holds).toBeNull();
   });
 
   it("is done when its turn ended and nothing holds it, with its own line", () => {
