@@ -1,4 +1,3 @@
-import * as DateTime from "effect/DateTime";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
@@ -139,26 +138,11 @@ describe("what needs the person, from a Cell's shell", () => {
     ]);
   });
 
-  it("shows a limit only when nothing will carry the Cell on at a known reset", () => {
-    expect(kindOf(limited)).toBe("limit");
-    const recovery = (resetIn: number, run = "run-1", autoResume = true) => ({
-      ...limited,
-      limitRecovery: { runId: runId(run), resetAt: DateTime.formatIso(at(resetIn)), autoResume },
-    });
-    expect(kindOf(recovery(2 * HOUR))).toBeNull();
-    // However far off: waiting for a reset is the app's, not the person's.
-    expect(kindOf(recovery(3 * 24 * HOUR))).toBeNull();
-    expect(kindOf(recovery(2 * HOUR, "run-0"))).toBe("limit");
-    // The reset passed and the run never went on: the carry-on failed.
-    expect(kindOf(recovery(-20 * MINUTE))).toBe("limit");
-
-    // Settings' auto-resume carries it before upstream's worker arms the run…
-    const onReset = (shell: Parameters<typeof shellFixture>[0]) =>
-      signalOf(shellFixture(shell), NOW, NOW, true)?.kind ?? null;
-    expect(onReset({ ...limited, usageLimitResetAt: DateTime.formatIso(at(HOUR)) })).toBeNull();
-    // …but not over a run the person cancelled, nor with no reset to wait for.
-    expect(onReset(recovery(HOUR, "run-1", false))).toBe("limit");
-    expect(onReset({ ...limited, usageLimitResetAt: null })).toBe("limit");
+  it("asks nothing of a Cell a usage limit stopped, whatever its reset: no answer to it lifts one", () => {
+    expect(kindOf(limited)).toBeNull();
+    expect(kindOf({ ...limited, usageLimitResetAt: null })).toBeNull();
+    // Nor through its failure, however long nobody has opened it.
+    expect(kindOf({ ...limited, lastVisitedAt: null })).toBeNull();
   });
 
   it("shows a failure only until the person has opened the Cell since it ended", () => {
@@ -339,8 +323,7 @@ describe("a card's data", () => {
     });
   });
 
-  it("gives a limit its reset and a failure its words", () => {
-    const limit = signalOf(shellFixture(limited), NOW);
+  it("gives a failure its words", () => {
     const failure = signalOf(
       shellFixture({
         status: "failed",
@@ -349,12 +332,7 @@ describe("a card's data", () => {
       }),
       NOW,
     );
-    if (limit === null || failure === null) throw new Error("expected signals");
-    expect(needOf(limit, {}, 1).limit).toEqual({
-      runId: "run-1",
-      resetAt: "2026-10-27T09:00:00.000Z",
-      autoResume: false,
-    });
+    if (failure === null) throw new Error("expected a signal");
     expect(needOf(failure, {}, 1).failure).toEqual({
       runId: "run-1",
       errorClass: "transport_error",

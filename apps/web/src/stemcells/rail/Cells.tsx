@@ -14,17 +14,18 @@ import { useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from 
 
 import { useAskiRoomInFront } from "../aski/inFront";
 import { CardList, onListOf } from "../needs/CardList";
+import { conditionLineOf } from "../needs/conditionLines";
 import type { Shown } from "../needs/display";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce } from "../needs/live";
 import { useNeeds } from "../needs/stream";
 import { reveal } from "../needs/walk";
-import type { CellStanding } from "../needs/wire";
+import type { CellStanding, Condition } from "../needs/wire";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
 import { CellAge, CellCard, CellProject, CellPullRequest, useCellShell } from "../upstream/cellRow";
 import { useOpenCell, useSettledKeptBack, useShelves, type ShelvedCell } from "../upstream/column";
-import { useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
   isElectron,
   openSearch,
@@ -96,7 +97,7 @@ export function Cells() {
   const [aim, setAim] = useState<ColumnStage | null>(null);
   const shownStage = aim ?? stage;
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
-  const { cells } = useNeeds();
+  const { cells, conditions } = useNeeds();
   const allShelves = useShelves();
   const environmentId = usePrimaryEnvironmentId();
   const projects = useRailProjects();
@@ -132,7 +133,9 @@ export function Cells() {
     (cells ?? []).filter((cell) => cell.stage === of && !settling.has(cell.threadId) && here(cell));
   const toRef = (cell: CellStanding): Ref | null =>
     environmentId === null ? null : { environmentId, threadId: cell.threadId };
-  const working = standing("working");
+  // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
+  const working = standing("working").filter((cell) => cell.holds == null);
+  const held = standing("working").filter((cell) => cell.holds != null);
   const landed = standing("done");
   // Asks never hide: Input counts every one, and says where those the filter leaves out are.
   const asking = onList.filter((each) => each.goneAt === null);
@@ -196,7 +199,18 @@ export function Cells() {
             />
           ),
           working: (
-            <Rows label="Flying" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
+            <>
+              <Rows label="Flying" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
+              {(conditions ?? []).map((condition) => (
+                <Holding
+                  key={condition.key}
+                  condition={condition}
+                  cells={held
+                    .filter((cell) => cell.holds === condition.key)
+                    .flatMap((cell) => rowOf(cell, toRef))}
+                />
+              ))}
+            </>
           ),
           landed: <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />,
           settled: (
@@ -223,6 +237,7 @@ export function Cells() {
             key={each}
             stage={each}
             count={counts[each]}
+            held={each === "working" ? held.length : 0}
             open={shownStage === each}
             onOpen={() => setStage(each)}
           />
@@ -329,13 +344,21 @@ const ALL_PROJECTS = "";
  * A stage's row at the foot: a label and a count (stemcells/tasks/left-column-v3.md, decision
  * 5), its mark in the stage's colour, as T3 marks a thread's status; the open one is lit.
  */
-function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onOpen: () => void }) {
+function StageRow(props: {
+  stage: ColumnStage;
+  count: number;
+  /** Cells of this stage a shared stop holds, counted apart from it. */
+  held?: number;
+  open: boolean;
+  onOpen: () => void;
+}) {
+  const held = props.held ?? 0;
   return (
     <button
       type="button"
       data-cells-stage={props.stage}
       data-open={props.open ? "true" : "false"}
-      data-empty={props.count === 0 ? "true" : "false"}
+      data-empty={props.count + held === 0 ? "true" : "false"}
       aria-pressed={props.open}
       onClick={props.onOpen}
     >
@@ -345,6 +368,7 @@ function StageRow(props: { stage: ColumnStage; count: number; open: boolean; onO
         <span data-cells-stage-mark="" aria-hidden />
       )}
       <span data-cells-stage-label="">{LABEL[props.stage]}</span>
+      {held > 0 ? <span data-cells-stage-held="">{held} holding</span> : null}
       {/* A hop dives in here (Hops.tsx). */}
       <span data-cells-stage-count="">{props.count}</span>
     </button>
@@ -432,6 +456,22 @@ function Rows(props: {
       {props.cells.length === 0 ? <li data-cells-none="">None</li> : null}
       {props.more ? <li>{props.more}</li> : null}
     </ol>
+  );
+}
+
+/** The Cells one shared stop holds, under what stopped them and until when (conditions.md). */
+function Holding(props: { condition: Condition; cells: ReadonlyArray<Row> }) {
+  const now = useNowMinuteMs();
+  if (props.cells.length === 0) return null;
+  const line = conditionLineOf(props.condition, now);
+  return (
+    <>
+      <div data-cells-head="" data-cells-holding="">
+        <span>Holding · {line.what}</span>
+        <span>{line.when}</span>
+      </div>
+      <Rows label="Holding" cells={props.cells} settles />
+    </>
   );
 }
 

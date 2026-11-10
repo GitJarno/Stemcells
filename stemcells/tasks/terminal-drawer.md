@@ -75,4 +75,3 @@ the transcript stood: a reader scrolled two screens up stays put (1882px
 before and after). Two tests that could not fail now wait for the pane's
 own observer before asserting. The drawer's duration is no longer read
 under less motion, where the token is shorter.
-
