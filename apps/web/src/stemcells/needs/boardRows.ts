@@ -53,6 +53,8 @@ const RANK: Readonly<Record<Verdict, number>> = { short: 0, claimed: 1, shown: 2
 /** The most rows a stage shows in the room: past it the column has them all. */
 const BOARD_ROWS = 6;
 
+const landedAt = (row: BoardRow) => (row.since === null ? 0 : Date.parse(row.since));
+
 function rowOf(cell: CellStanding): BoardRow {
   const landing = cell.landing ?? null;
   const brief = cell.brief ?? null;
@@ -72,7 +74,7 @@ function rowOf(cell: CellStanding): BoardRow {
   };
 }
 
-/** The server lists the newest Cell first; a stable sort keeps that inside each verdict. */
+/** Inside each verdict the latest to land is first; the server's own order settles a tie. */
 export function boardOf(cells: ReadonlyArray<CellStanding>, rows = BOARD_ROWS): Board {
   const flying = cells.filter((cell) => cell.stage === "working").map(rowOf);
   const landed = cells
@@ -82,7 +84,9 @@ export function boardOf(cells: ReadonlyArray<CellStanding>, rows = BOARD_ROWS): 
     .sort(
       (a, b) =>
         (a.row.verdict === null ? 3 : RANK[a.row.verdict]) -
-          (b.row.verdict === null ? 3 : RANK[b.row.verdict]) || a.index - b.index,
+          (b.row.verdict === null ? 3 : RANK[b.row.verdict]) ||
+        landedAt(b.row) - landedAt(a.row) ||
+        a.index - b.index,
     )
     .map(({ row }) => row);
   return {

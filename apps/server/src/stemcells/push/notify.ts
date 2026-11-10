@@ -36,18 +36,32 @@ const CUES: Readonly<Record<NonNullable<Need["prose"]>["cue"], string>> = {
 /** A lock screen shows about this much of a push before it cuts it. */
 export const SAID_CAP = 160;
 
-/** Words as a lock screen shows them: one line, no markup. */
-const plain = (text: string) =>
-  text
-    .replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1")
-    .replace(/[`*_]{1,2}/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+const oneLine = (text: string) => text.replace(/\s+/g, " ").trim();
 
-function clipped(text: string): string {
-  if (text.length <= SAID_CAP) return text;
-  const head = text.slice(0, SAID_CAP);
-  return `${head.slice(0, Math.max(head.lastIndexOf(" "), SAID_CAP / 2)).trimEnd()}…`;
+/** Prose as a lock screen shows it: one line, no markup. A name keeps its underscores. */
+const plain = (text: string) =>
+  oneLine(
+    text
+      .replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1")
+      .replace(/`/g, "")
+      .replace(/(?<!\w)[*_]{1,2}(?=\S)|(?<=\S)[*_]{1,2}(?!\w)/g, ""),
+  );
+
+/** A push leaves the Mac for the phone, so a key written into a command stays here. */
+const KEYS: ReadonlyArray<RegExp> = [
+  /\b(\w*(?:key|token|secret|password|passwd)\w*\s*[=:]\s*)\S+/gi,
+  /(--?[\w-]*(?:key|token|secret|password)[\w-]*\s+)\S+/gi,
+  /\b((?:bearer|basic)\s+)\S+/gi,
+];
+
+/** A command, a path or an error: word for word on one line, without the keys in it. */
+const literal = (text: string) =>
+  KEYS.reduce((kept, key) => kept.replace(key, "$1…"), oneLine(text));
+
+function clipped(text: string, cap = SAID_CAP): string {
+  if (text.length <= cap) return text;
+  const head = text.slice(0, cap);
+  return `${head.slice(0, Math.max(head.lastIndexOf(" "), cap / 2)).trimEnd()}…`;
 }
 
 /** A paragraph's own question: its last sentence that asks, else the whole of it. */
@@ -56,27 +70,38 @@ function askIn(paragraph: string): string {
   return sentences.findLast((sentence) => /\?["'”’)\]]*$/.test(sentence)) ?? paragraph;
 }
 
-/** What the card asks, in the Cell's own words; null when it has none to show. */
-function said(need: Need): string | null {
+const WANTS: Readonly<Partial<Record<NonNullable<Need["request"]>["kind"], string>>> = {
+  command: "Wants to run",
+  "file-read": "Wants to read",
+  "file-change": "Wants to change",
+};
+
+/** What the card asks, in the Cell's own words; empty when it has none to show. */
+function said(need: Need): string {
   const { request, prose } = need;
   switch (need.kind) {
     case "question": {
       const [first, ...more] = request?.questions ?? [];
-      if (first === undefined) return null;
-      return more.length === 0 ? first.question : `${first.question} (and ${more.length} more)`;
+      const asked = plain(first?.question ?? "");
+      if (asked === "") return "";
+      const rest = more.length === 0 ? "" : ` (and ${more.length} more)`;
+      return `${clipped(asked, SAID_CAP - rest.length)}${rest}`;
     }
-    case "permission":
-      return request?.prompt ? `Wants to run: ${request.prompt}` : null;
+    case "permission": {
+      const what = literal(request?.prompt ?? "");
+      return request === null || what === ""
+        ? ""
+        : `${WANTS[request.kind] ?? ASKS.permission}: ${what}`;
+    }
     case "plan":
-      return need.plan?.title ? `Plan ready: ${need.plan.title}` : null;
+      return need.plan?.title ? `Plan ready: ${plain(need.plan.title)}` : "";
     case "failed":
-      return need.failure?.message ? `Stopped with an error: ${need.failure.message}` : null;
+      return need.failure?.message ? `Stopped with an error: ${literal(need.failure.message)}` : "";
     case "prose":
-      if (prose === null) return null;
-      if (prose.cue === "left") return `Your step: ${prose.text}`;
-      return prose.cue === "stopped" ? null : askIn(plain(prose.text));
+      if (prose === null || prose.cue === "stopped") return "";
+      return prose.cue === "left" ? `Your step: ${plain(prose.text)}` : askIn(plain(prose.text));
     default:
-      return null;
+      return "";
   }
 }
 
@@ -88,8 +113,7 @@ export function alertWords(need: Need): { readonly title: string; readonly body:
   const own = said(need);
   const kind =
     need.kind === "prose" && need.prose !== null ? CUES[need.prose.cue] : ASKS[need.kind];
-  const body = own === null ? "" : plain(own);
-  return { title: need.title.trim() || "A Cell", body: body === "" ? kind : clipped(body) };
+  return { title: need.title.trim() || "A Cell", body: own === "" ? kind : clipped(own) };
 }
 
 /** The cards to push now: each waiting at least `HOLD_MS` and not pushed yet. */

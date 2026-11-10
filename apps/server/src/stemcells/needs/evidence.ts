@@ -133,7 +133,14 @@ const RUNNERS = new Set(
 );
 
 /** Words that stand before what a command runs without being it. */
-const PASSED = new Set(["run", "exec", "x", "dlx", "env", "time", "nice", "command"]);
+const PASSED = new Set(
+  "run exec x dlx env time nice command timeout sudo xargs nohup if then else do while until !".split(
+    " ",
+  ),
+);
+
+/** Flags whose next word is a place, which can end in a script's name: `-C apps/web/test`. */
+const PLACED = new Set(["-C", "--dir", "--cwd", "--prefix", "--filter", "-F", "--manifest-path"]);
 
 function scriptKind(runner: string, word: string): CheckKind | null {
   if (word === "check") return CHECK_OF[runner] ?? null;
@@ -147,10 +154,16 @@ function scriptKind(runner: string, word: string): CheckKind | null {
 function kindOfSegment(segment: string): CheckKind | null {
   let runner: string | null = null;
   let afterFlag = false;
+  let placed = false;
   for (const token of segment.trim().split(/\s+/)) {
-    if (token === "" || /^\w+=/.test(token)) continue;
+    if (token === "--") break;
+    if (placed || token === "" || /^\w+=|^\d/.test(token)) {
+      placed = false;
+      continue;
+    }
     if (token.startsWith("-")) {
       afterFlag = true;
+      placed = PLACED.has(token);
       continue;
     }
     const word = token.slice(token.lastIndexOf("/") + 1);
@@ -163,13 +176,32 @@ function kindOfSegment(segment: string): CheckKind | null {
   return runner === "xcodebuild" ? "build" : null;
 }
 
+// Codex records each command as `/bin/zsh -lc <script>`, the script quoted in pieces.
+const SHELL_WRAPPER = /^\s*(?:\S*\/)?(?:ba|z|da|k)?sh\s+-l?c\s+(?=["'])([\s\S]*)$/;
+const SHELL_PIECE = /"((?:\\[\s\S]|[^"\\])*)"|'([^']*)'|\\([\s\S])|(\S)/g;
+// What a command carries is not what it runs: a heredoc's body, a quoted string.
+const HEREDOC_BODY =
+  /<<-?[ \t]*(['"]?)(\w+)\1[^\n]*\n(?:(?:[\s\S]*?\n)?[ \t]*\2[ \t]*(?=\n|$)|[\s\S]*$)/g;
+const QUOTED = /'[^']*'|"(?:\\[\s\S]|[^"\\])*"/g;
+
+function scriptOf(command: string): string {
+  const wrapped = SHELL_WRAPPER.exec(command)?.[1];
+  if (wrapped === undefined) return command;
+  return Array.from(
+    wrapped.matchAll(SHELL_PIECE),
+    ([, double, single, escaped, bare]) =>
+      double?.replace(/\\(["\\$`])/g, "$1") ?? single ?? escaped ?? bare,
+  ).join("");
+}
+
 /**
- * The kind of check a command is; null for anything else a run runs. Quoted text is no command:
- * a commit message that says "fix typecheck" ran none.
+ * The kind of check a command is; null for anything else a run runs. A commit message that
+ * says "fix typecheck" ran none, and neither did a file written with `pnpm test` in it.
  */
 export function checkKindOf(command: string): CheckKind | null {
-  const kinds = command
-    .replace(/"[^"]*"|'[^']*'/g, "_")
+  const kinds = scriptOf(command)
+    .replace(HEREDOC_BODY, "\n")
+    .replace(QUOTED, "_")
     .split(/&&|\|\||[;|\n(){}]/)
     .map(kindOfSegment);
   return ORDER.find((kind) => kinds.includes(kind)) ?? null;

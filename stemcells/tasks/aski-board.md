@@ -17,7 +17,7 @@ one landed and what shows it. This page decides how the room shows it.
   under them its own word behind the landing's mark, then what its run
   shows (the ask's own facts line).
 - Landed reads short first, then on its word, then shown: what needs a
-  look is on top. Inside each, the newest first.
+  look is on top. Inside each, the latest to land first.
 - A stage shows six rows; past that it says how many more the column has.
 - A row opens its Cell in the room's peek.
 

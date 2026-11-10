@@ -26,14 +26,14 @@ const landed = (threadId: string, verdict: "shown" | "claimed" | "short") =>
   });
 
 describe("the room's board", () => {
-  it("reads a short landing first, then one on its word, keeping the newest first inside each", () => {
+  it("reads a short landing first, then one on its word, the latest to land first inside each", () => {
     const board = boardOf([
       landed("shown-new", "shown"),
-      landed("word-new", "claimed"),
+      { ...landed("word-old", "claimed"), since: "2026-11-10T09:00:00.000Z" },
       cell("asking", "needs-you"),
       landed("short", "short"),
       cell("flying", "working"),
-      landed("word-old", "claimed"),
+      { ...landed("word-new", "claimed"), since: "2026-11-10T09:30:00.000Z" },
     ]);
     expect(board.landed.map((row) => row.threadId)).toEqual([
       "short",

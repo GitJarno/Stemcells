@@ -69,6 +69,12 @@ describe("the checks a run ran", () => {
     ["pnpm add -D vitest", null],
     ["test -f package.json", null],
     ['git commit -m "fix typecheck && pnpm test"', null],
+    ['/bin/zsh -lc "cd apps/web && pnpm test"', "test"],
+    ["/bin/zsh -lc 'git commit -m \"pnpm test passes\"'", null],
+    ["timeout 600 pnpm lint", "lint"],
+    ["cat <<'EOF' > notes.md\npnpm run build\nEOF", null],
+    ["pnpm -C packages/build install", null],
+    ["cargo run -- test", null],
   ] as const)("%s", (command, kind) => {
     expect(checkKindOf(command)).toBe(kind);
   });

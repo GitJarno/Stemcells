@@ -138,8 +138,8 @@ function Row(props: { row: BoardRow; environmentId: string; now: number }) {
         <span data-board-says="">
           {verdict === null ? null : (
             <b>
-              {verdict.mark}
-              <span className="sr-only"> {verdict.name}</span>
+              <span aria-hidden="true">{verdict.mark}</span>
+              <span className="sr-only">{verdict.name} </span>
             </b>
           )}
           {says}

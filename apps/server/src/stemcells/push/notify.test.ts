@@ -89,6 +89,12 @@ describe("what a push says", () => {
     ).toBe("Wants to run: pnpm test");
     expect(
       bodyOf({
+        kind: "permission",
+        request: request({ kind: "file-change", prompt: "src/__snapshots__/theme_dark.css" }),
+      }),
+    ).toBe("Wants to change: src/__snapshots__/theme_dark.css");
+    expect(
+      bodyOf({
         kind: "plan",
         plan: { id: "plan-1", runId: "run-1", title: "Split the export", steps: [], markdown: "" },
       }),
@@ -122,5 +128,25 @@ describe("what a push says", () => {
     });
     expect(body.length).toBeLessThanOrEqual(SAID_CAP + 1);
     expect(body.endsWith("…")).toBe(true);
+    const asked = bodyOf({
+      kind: "question",
+      request: request({
+        questions: [question("Keep the old column? ".repeat(20)), question("And the header?")],
+      }),
+    });
+    expect(asked.length).toBeLessThanOrEqual(SAID_CAP + 1);
+    expect(asked.endsWith("… (and 1 more)")).toBe(true);
+  });
+
+  it("keeps a key out of the command it shows", () => {
+    expect(
+      bodyOf({
+        kind: "permission",
+        request: request({
+          kind: "command",
+          prompt: 'API_KEY=abc123 curl -H "Authorization: Bearer abc123" --token abc123 my_host',
+        }),
+      }),
+    ).toBe('Wants to run: API_KEY=… curl -H "Authorization: Bearer … --token … my_host');
   });
 });
