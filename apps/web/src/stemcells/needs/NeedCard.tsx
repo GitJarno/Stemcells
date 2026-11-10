@@ -45,6 +45,7 @@ import type { Shown } from "./display";
 import type { Hold } from "./holds";
 import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
+import { RunFacts } from "./RunFacts";
 import { type Lit, lit, useLit } from "./answers/lit";
 import { linkAddresses, marksUp } from "./inline";
 import { tellAsk } from "./told";
@@ -511,34 +512,19 @@ function Facts(props: { card: Card; cell: ReturnType<typeof cellRef> | null }) {
   const { changed, facts } = props.card;
   return (
     <div data-need-facts="">
-      {changed === null ? null : (
-        <span data-need-fact="">
-          {changed.bar.length > 0 ? (
-            <span data-need-bar="" aria-hidden="true">
-              {changed.bar.map((cell, index) => (
-                // oxlint-disable-next-line react/no-array-index-key -- Five cells in a fixed order.
-                <i key={index} data-cell={cell} />
-              ))}
-            </span>
-          ) : null}
-          {changed.words}
-        </span>
-      )}
-      {facts.map((fact) => (
-        <span key={fact.id} data-need-fact="" data-tone={fact.tone}>
-          {fact.href === null ? (
-            fact.text
-          ) : (
-            <ChatMarkdown
-              inline
-              text={`[${fact.text}](${fact.href})`}
-              cwd={undefined}
-              threadRef={props.cell ?? undefined}
-              parseRawHtml={false}
-            />
-          )}
-        </span>
-      ))}
+      <RunFacts
+        changed={changed}
+        facts={facts}
+        renderLink={(text, href) => (
+          <ChatMarkdown
+            inline
+            text={`[${text}](${href})`}
+            cwd={undefined}
+            threadRef={props.cell ?? undefined}
+            parseRawHtml={false}
+          />
+        )}
+      />
     </div>
   );
 }
