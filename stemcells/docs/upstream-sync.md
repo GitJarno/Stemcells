@@ -68,6 +68,11 @@ timing out under the load; `check-local` and the nightly set it themselves.
      at the new one.
    - When upstream stopped exporting something our adapter reads, add the
      one-word `export` back as a seam with a row, or read it another way.
+   - Never put one of our words (Cell, Subcell, Flying) back into a view
+     upstream wrote: the builds swap them
+     (`stemcells/brand/wordTable.ts`). When a gate says the word table no
+     longer fits, upstream reworded that line or said it somewhere new: fix
+     the entry it names.
    - Never a generated file by hand: the merge already took upstream's side
      of each. Generators read the merged tree, so they wait for the last
      conflict: once it is resolved, `stemcells/scripts/sync-upstream

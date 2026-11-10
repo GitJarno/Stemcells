@@ -21,7 +21,6 @@ const HOT_FILES: Readonly<Record<string, string>> = {
   // Split out of MessagesTimeline.tsx and ChatView.tsx (2026-10-21), with their churn.
   "apps/web/src/components/chat/TimelineWorkGroupRows.tsx": "../../stemcells/upstream/seams/chat",
   "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": "../../stemcells/upstream/seams/chat",
-  "apps/web/src/components/chat/TimelineV2EventRow.tsx": "../../stemcells/upstream/seams/chat",
 };
 
 /** An import of ours: our folders, the repository's `stemcells/`, or our files in upstream's folders. */

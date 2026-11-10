@@ -7,6 +7,7 @@ import type { ThreadTurnSubagents } from "@t3tools/client-runtime/state/thread-s
 import type { OrchestrationV2Subagent } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
+import { transformSource } from "../../../../../stemcells/brand/nameTransform.ts";
 import {
   formatSubagentDisplayTitle,
   summarizeSubagentStatuses,
@@ -14,15 +15,20 @@ import {
 import { resolveSubagentPillSegment } from "./substitutes/threadSubagents";
 
 /**
- * Contract: the phone says Subcell where it said subagent or agent: the card grouping a turn's
- * subagents, the sheets listing them and the background work, a chat's header, and the words
- * read aloud (`stemcells/seams.md`, Subcells). The card's header draws each as its Cell, those
- * at work flying, as the Mac does. A failure after a sync: upstream rewrote a line; say it again.
+ * Contract: the phone's build says Subcell where upstream's views say subagent or agent: the
+ * card grouping a turn's subagents, the sheets listing them and the background work, a chat's
+ * header, and the words read aloud (`stemcells/seams.md`, Subcells). A failure after a sync:
+ * upstream rewrote a line; fix its entry in the word table (`stemcells/brand/wordTable.ts`).
  */
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
 const threads = NodePath.resolve(here, "../../features/threads");
-const read = (file: string) => NodeFS.readFileSync(NodePath.join(threads, file), "utf8");
+
+/** What Metro's build makes of an upstream view: our words where the word table swaps upstream's. */
+function built(file: string): string {
+  const source = NodeFS.readFileSync(NodePath.join(threads, file), "utf8");
+  return transformSource(`apps/mobile/src/features/threads/${file}`, source)?.code ?? source;
+}
 
 const SAID = {
   "thread-subagent-group.tsx": [
@@ -66,7 +72,7 @@ const SAID = {
 
 describe("Subcells on the phone", () => {
   it.each(Object.entries(SAID))("%s says Subcell", (file, words) => {
-    const source = read(file);
+    const source = built(file);
     for (const said of words) expect(source).toContain(said);
   });
 

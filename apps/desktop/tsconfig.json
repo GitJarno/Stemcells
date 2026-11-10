@@ -13,6 +13,11 @@
     "../../stemcells/brand/assets.ts",
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/upstreamName.ts",
-    "../../stemcells/brand/nameTransform.ts"
+    "../../stemcells/brand/nameTransform.ts",
+    "../../stemcells/brand/wordTable.ts",
+    "../../stemcells/words/casualChat.ts",
+    "../../stemcells/words/cells.ts",
+    "../../stemcells/words/copyCell.ts",
+    "../../stemcells/words/subcells.ts"
   ]
 }

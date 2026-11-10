@@ -757,7 +757,7 @@ export function HomeScreen(props: HomeScreenProps) {
     hasSearchQuery && threadSearch.isPending ? undefined : hasSearchQuery ? (
       <EmptyState
         title="No results"
-        detail={`No Cells matching "${props.searchQuery}".`}
+        detail={`No threads matching "${props.searchQuery}".`}
         variant={Platform.OS === "android" ? "plain" : undefined}
       />
     ) : v2ScopedProjectGroup !== null ? (

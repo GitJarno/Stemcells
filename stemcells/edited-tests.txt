@@ -15,7 +15,6 @@ apps/desktop/src/app/DesktopPreReadyPlatform.test.ts pins T3's profile folder, w
 apps/desktop/src/app/DesktopUserData.test.ts pins T3's profile folder, which is `sh.stemcells.app` here
 apps/mobile/app.config.test.ts pins T3's thread links, which `withoutT3AppLinks` drops
 apps/mobile/scripts/generate-uniwind-themes.test.ts pins T3's dark palette, which the phone's look replaces
-apps/mobile/src/features/threads/threadAgentsPresentation.test.ts pins "Working", which reads Flying here
 apps/mobile/src/lib/filePreview.test.ts mocks Cell Mail's fold, which its mocks of the feed's parts can't load
 apps/mobile/src/lib/mobileTheme.test.ts pins T3's dark palette, which the phone's look replaces
 apps/mobile/src/state/queued-run-edit.test.ts pins that a queued edit is dropped, which ours keeps
@@ -25,7 +24,6 @@ apps/server/src/serverRuntimeStartup.test.ts pins the starter thread, which Stem
 apps/web/src/components/ChatMarkdown.browser.test.tsx pins the favicon URL and T3's model names, which ours drop and rename
 apps/web/src/components/ChatView.modelPick.browser.test.tsx pins T3's model names, and reaches the picker past Stemcells' column
 apps/web/src/components/ThreadTerminalDrawer.browser.test.tsx its mock of the terminal surface lacks the font our drawer substitute measures
-apps/web/src/components/chat/ThreadRelationshipsControl.browser.test.tsx pins "Previous agents", which reads "Previous Subcells" here
 apps/web/src/components/chat/queuedMessageEdit.test.ts pins that a queued edit is dropped, which ours keeps
 apps/web/src/components/desktopUpdate.logic.test.ts pins T3's release history, which our substitute answers with merged pull requests
 apps/web/src/components/guest/GuestPage.browser.test.tsx pins T3's model names, which ours rename

@@ -343,7 +343,7 @@ function PairingScanCard(props: {
           )}
         </View>
         <Text className={cn("text-center text-sm", light ? "text-black/70" : "text-white/80")}>
-          Scan the code from Settings › Your devices in Stemcells on your computer
+          Scan the code from t3 pair or desktop Connections settings
         </Text>
       </View>
     </Pressable>

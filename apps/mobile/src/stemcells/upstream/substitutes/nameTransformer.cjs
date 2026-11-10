@@ -1,18 +1,30 @@
-// The name transform on the phone (`stemcells/brand/nameTransform.ts`), wrapping Expo's Babel
-// transformer. CommonJS, with the transform loaded by a synchronous `require`: Metro requires a
-// transformer, and upstream's tests read its result at once (`reactCompilerCoverage.test.ts`).
-// The phone's tests don't run Metro, so they see upstream's words, as on the web.
+// The name transform on the phone, and the word table's swaps with it
+// (`stemcells/brand/nameTransform.ts`), wrapping Expo's Babel transformer. CommonJS, loaded by a
+// synchronous `require`: Metro requires a transformer, and upstream's tests read its result at
+// once (`reactCompilerCoverage.test.ts`). The phone's tests don't run Metro: they see upstream's.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");
-const TRANSFORM_FILES = [
-  path.join(repoRoot, "stemcells/brand/nameTransform.ts"),
-  path.join(repoRoot, "stemcells/brand/name.ts"),
-  path.join(repoRoot, "stemcells/brand/upstreamName.ts"),
-  __filename,
-];
+const NAME_TRANSFORM = path.join(repoRoot, "stemcells/brand/nameTransform.ts");
+
+/**
+ * `file` and every file of ours it imports, by their own import lines, so a file the transform
+ * or its word table starts reading is in Metro's cache key without being listed here.
+ * @param {string} file
+ * @param {Set<string>} [found]
+ */
+function withImports(file, found = new Set()) {
+  if (found.has(file)) return found;
+  found.add(file);
+  for (const [, from] of fs.readFileSync(file, "utf8").matchAll(/\bfrom "(\.[^"]+)"/g)) {
+    withImports(path.resolve(path.dirname(file), from), found);
+  }
+  return found;
+}
+
+const TRANSFORM_FILES = [...withImports(NAME_TRANSFORM), __filename];
 
 /** Expo's transformer, found the way Expo's own Metro config finds it. */
 const EXPO_TRANSFORMER = require.resolve("@expo/metro-config/babel-transformer", {
@@ -23,24 +35,30 @@ const expo = require(EXPO_TRANSFORMER);
 /** @type {typeof import("../../../../../../stemcells/brand/nameTransform.ts") | undefined} */
 let nameTransform;
 
-const loadNameTransform = () => (nameTransform ??= require(TRANSFORM_FILES[0]));
+const loadNameTransform = () => (nameTransform ??= require(NAME_TRANSFORM));
+
+/** The whole word table against the sources, once a worker: every build holds every entry. */
+let staleWords;
 
 /** @param {{ filename: string, src: string, options: { projectRoot: string } }} props */
 function transform(props) {
-  const { renameUpstreamName, UPSTREAM_NAME } = loadNameTransform();
+  const { transformSource, wordTableFaults, wordTableError, UPSTREAM_NAME } = loadNameTransform();
+  staleWords ??= wordTableFaults();
+  if (staleWords.length > 0) throw new Error(wordTableError(staleWords));
   const file = path
     .relative(repoRoot, path.resolve(props.options.projectRoot, props.filename))
     .split(path.sep)
     .join("/");
-  const renamed = renameUpstreamName(file, props.src);
-  if (renamed !== null && renamed.unkept.length > 0) {
+  const built = transformSource(file, props.src);
+  if (built !== null && built.unkept.length > 0) {
     throw new Error(
-      `${file} says "${UPSTREAM_NAME}" where the name transform can't rename it: ${renamed.unkept
+      `${file} says "${UPSTREAM_NAME}" where the name transform can't rename it: ${built.unkept
         .map((line) => line.trim())
         .join(" | ")}. Keep it in stemcells/brand/nameTransform.ts (KEPT), with why.`,
     );
   }
-  return expo.transform(renamed === null ? props : { ...props, src: renamed.code });
+  if (built !== null && built.faults.length > 0) throw new Error(wordTableError(built.faults));
+  return expo.transform(built === null ? props : { ...props, src: built.code });
 }
 
 /** Expo's cache key, and the transform's own files: a change to its list reruns it. */
@@ -141,6 +159,7 @@ module.exports = {
   ...expo,
   transform,
   getCacheKey,
+  TRANSFORM_FILES,
   nameTransformer,
   nameCheckedSerializer,
   withNameTransform,

@@ -1,8 +1,8 @@
 /**
- * What Subcells rely on in upstream's views (`stemcells/seams.md`, Subcells): the card says
+ * What Subcells rely on in upstream's views (`stemcells/seams.md`, Subcells): a build's card says
  * "2 Subcells", "1 flying", and each one, in the card's header and rows and a workflow's members,
  * is a Cell (`SubcellMark`) where upstream drew a logo. A failure after a sync names the line
- * that moved: say Subcell, or give the avatar back.
+ * that moved: fix its entry in the word table (`wordTable.ts`), or give the avatar back.
  */
 import type { SubagentWorkflowGroup } from "@t3tools/client-runtime/state/subagentRuntime";
 import { ThreadId, type OrchestrationV2PendingBackgroundTask } from "@t3tools/contracts";
@@ -16,13 +16,13 @@ import lineageWorkflow from "../../components/chat/ThreadLineageWorkflowRow.tsx?
 import lifecycleRow from "../../components/chat/V2LifecycleRow.tsx?raw";
 import subagentBar from "../../components/chat/ProviderSubagentBar.tsx?raw";
 import workflowOpening from "../../components/chat/WorkflowOpeningBlock.tsx?raw";
+import { transformSource } from "../../../../../stemcells/brand/nameTransform.ts";
 import {
   inSubcellCountWords,
   inSubcellWords,
   SUBCELL,
   subcellCount,
 } from "../../../../../stemcells/words/subcells.ts";
-import * as SeamsChat from "./seams/chat";
 import {
   formatSubagentDisplayTitle,
   summarizeSubagentStatuses,
@@ -30,6 +30,10 @@ import {
 import { workflowOpeningHeadline } from "./substitutes/subagentRuntime";
 import { presentPendingBackgroundWork } from "./substitutes/threadExecution";
 import { childThreadInputsTitle } from "./substitutes/threads";
+
+/** What a build makes of an upstream chat view: our words where the word table swaps upstream's. */
+const built = (name: string, source: string) =>
+  transformSource(`apps/web/src/components/chat/${name}.tsx`, source)?.code ?? source;
 
 /** The source of the top-level function or const named `name`, up to the next top-level declaration. */
 function body(source: string, name: string): string {
@@ -41,21 +45,11 @@ function body(source: string, name: string): string {
 }
 
 describe("Subcells in upstream's views", () => {
-  it("the hot files take their Subcell words from our one module, through their one import", () => {
-    // `seams/oneImport.contract.test.ts` holds each to one import of ours.
-    expect(SeamsChat.SUBCELL).toBe(SUBCELL);
-    expect(SeamsChat.subcellCount).toBe(subcellCount);
-    for (const source of [v2EventRow, workEntryRow]) {
-      expect(source).toMatch(
-        /^import \* as Stemcells from "\.\.\/\.\.\/stemcells\/upstream\/seams\/chat";$/m,
-      );
-      expect(source).not.toMatch(/words\/subcells/);
-    }
-  });
-
   it("the card counts Subcells and hands each header avatar its Subcell, with its status", () => {
-    const card = body(v2EventRow, "V2SubagentGroup");
-    expect(card).toContain("const label = Stemcells.subcellCount(members.length);");
+    const card = body(built("TimelineV2EventRow", v2EventRow), "V2SubagentGroup");
+    expect(card).toContain(
+      'const label = `${members.length} ${members.length === 1 ? "Subcell" : "Subcells"}`;',
+    );
     expect(card).toContain("summarizeSubagentStatuses(agents.map(");
     expect(card).toMatch(
       /\.map\(\(\{ item, status \}\) => \(\s*<EnvironmentSubagentAvatar[^>]*subcell=\{\{ name: item\.childThreadId \?\? item\.subagentId, status \}\}/,
@@ -63,10 +57,11 @@ describe("Subcells in upstream's views", () => {
   });
 
   it("a notification row's button opens a Subcell", () => {
-    expect(workEntryRow).toMatch(
-      /aria-label=\{Stemcells\.SUBCELL\.open\}[\s\S]{0,240}\{Stemcells\.SUBCELL\.open\}\s*<\/InlineButton>/,
+    const row = built("TimelineWorkEntryRow", workEntryRow);
+    expect(row).toMatch(
+      /aria-label="Open Subcell"[\s\S]{0,240}\n\s*Open Subcell\s*<\/InlineButton>/,
     );
-    expect(workEntryRow).not.toMatch(/Open subagent/);
+    expect(row).not.toMatch(/Open subagent/);
   });
 
   it("an avatar given its Subcell draws it as a Cell, its face its status, with upstream's status dot", () => {
@@ -109,10 +104,13 @@ describe("Subcells in upstream's views", () => {
       '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
       ': "Open parent Cell"',
     ])
-      expect(relationships).toContain(words);
-    expect(lineageWorkflow).toContain(">No Subcells yet</li>");
-    expect(lineageWorkflow).toContain('{phase.members.length === 1 ? "Subcell" : "Subcells"}');
-    expect(subagentBar).toContain("{`${modelDescription} Subcell: ${announcement}`}");
+      expect(built("ThreadRelationshipsControl", relationships)).toContain(words);
+    const workflow = built("ThreadLineageWorkflowRow", lineageWorkflow);
+    expect(workflow).toContain(">No Subcells yet</li>");
+    expect(workflow).toContain('{phase.members.length === 1 ? "Subcell" : "Subcells"}');
+    expect(built("ProviderSubagentBar", subagentBar)).toContain(
+      "{`${modelDescription} Subcell: ${announcement}`}",
+    );
   });
 });
 
