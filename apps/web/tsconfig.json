@@ -42,6 +42,8 @@
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/nameTransform.ts",
     "../../stemcells/brand/upstreamName.ts",
+    "../../stemcells/chart/layout.ts",
+    "../../stemcells/chart/parse.ts",
     "../../stemcells/disk/notice.ts",
     "../../stemcells/disk/project.ts",
     "../../stemcells/words/casualChat.ts",

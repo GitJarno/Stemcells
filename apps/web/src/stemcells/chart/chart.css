@@ -1,0 +1,273 @@
+/* A `chart` fence in a reply (ChartFence.tsx). Marks wear the data hues in
+   their fixed order; every word wears the text's own inks. Nothing here
+   animates. */
+
+.chat-markdown [data-stemcells-chart] {
+  container-type: inline-size;
+  margin: 0.65rem 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+[data-stemcells-chart-head] {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+[data-stemcells-chart-title] {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--sc-text);
+  text-wrap: pretty;
+}
+
+[data-stemcells-chart-note] {
+  margin-inline-start: 8px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--sc-dim);
+}
+
+[data-stemcells-chart-legend] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-bottom: 10px;
+}
+
+[data-stemcells-chart-key] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--sc-dim);
+}
+
+[data-stemcells-chart-swatch] {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+[data-stemcells-chart-swatch="line"] {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* Series on different units: a small chart each, side by side with room
+   and one under another without. */
+[data-stemcells-chart-panels] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px 24px;
+}
+
+[data-stemcells-chart-panel] {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Bars: a label, its bar on a track from the zero line, its value. */
+[data-stemcells-chart-bars] {
+  display: grid;
+  grid-template-columns: fit-content(40%) minmax(48px, 1fr) max-content;
+  align-items: center;
+  gap: 6px 10px;
+}
+/* A label's bars sit together; a row's gap parts one label's from the next. */
+[data-stemcells-chart-bars="grouped"] {
+  row-gap: 0;
+}
+[data-stemcells-chart-bars="grouped"]
+  [data-stemcells-chart-row]:not(:first-child)
+  > :nth-child(-n + 3) {
+  margin-top: 8px;
+}
+
+[data-stemcells-chart-row] {
+  display: contents;
+}
+
+[data-stemcells-chart-label] {
+  color: var(--sc-soft);
+}
+
+[data-stemcells-chart-track] {
+  position: relative;
+  height: 8px;
+}
+[data-stemcells-chart-bars="grouped"] [data-stemcells-chart-track] {
+  height: 6px;
+}
+
+[data-stemcells-chart-bar] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 0 4px 4px 0;
+}
+[data-stemcells-chart-bar="under"] {
+  border-radius: 4px 0 0 4px;
+}
+[data-stemcells-chart-row]:hover [data-stemcells-chart-bar] {
+  filter: brightness(1.15);
+}
+
+[data-stemcells-chart-value] {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  color: var(--sc-text);
+}
+[data-stemcells-chart-bars="grouped"] [data-stemcells-chart-value] {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--sc-soft);
+}
+
+/* Lines: the rules' numbers, the plot, the lines' end labels; under the
+   plot, the labels that fit. */
+[data-stemcells-chart-lines] {
+  display: grid;
+  column-gap: 8px;
+  font-size: 0.75rem;
+  color: var(--sc-dim);
+}
+
+[data-stemcells-chart-ticks],
+[data-stemcells-chart-ends],
+[data-stemcells-chart-labels],
+[data-stemcells-chart-plot] {
+  position: relative;
+}
+
+[data-stemcells-chart-ticks] > span {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-stemcells-chart-plot] > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+[data-stemcells-chart-rule] {
+  stroke: color-mix(in srgb, var(--sc-hairline) 70%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-stemcells-chart-stroke] {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-stemcells-chart-dot] {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--sc-page);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+[data-stemcells-chart-cross] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--sc-mute);
+  pointer-events: none;
+}
+
+[data-stemcells-chart-ends] > span {
+  position: absolute;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  color: var(--sc-soft);
+}
+
+[data-stemcells-chart-labels] {
+  grid-column: 2;
+  height: 1.4em;
+  margin-top: 6px;
+}
+[data-stemcells-chart-labels] > span {
+  position: absolute;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+[data-stemcells-chart-labels] > [data-stemcells-chart-edge="start"] {
+  transform: none;
+}
+[data-stemcells-chart-labels] > [data-stemcells-chart-edge="end"] {
+  transform: translateX(-100%);
+}
+[data-stemcells-chart-fits="wide"] {
+  display: none;
+}
+@container (min-width: 560px) {
+  [data-stemcells-chart-fits="wide"] {
+    display: inline;
+  }
+  [data-stemcells-chart-fits="narrow"] {
+    display: none;
+  }
+}
+
+/* A hover's words, over the marks and never under the pointer's way. */
+[data-stemcells-chart-tip] {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: 240px;
+  margin-inline: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--sc-edge);
+  border-radius: var(--sc-radius-chip);
+  background: var(--popover);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--sc-dim);
+  pointer-events: none;
+}
+[data-stemcells-chart-bars] [data-stemcells-chart-tip] {
+  bottom: calc(100% + 6px);
+}
+[data-stemcells-chart-plot] [data-stemcells-chart-tip] {
+  top: 0;
+}
+
+[data-stemcells-chart-tip-row] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+[data-stemcells-chart-tip-row] > strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--sc-text);
+}

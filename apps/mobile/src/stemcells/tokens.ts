@@ -7,6 +7,8 @@ export const NEEDS_YOU = "#FDBE48";
 export const WORKING = "#8393FF";
 export const DONE = "#2AD394";
 export const NOTCH = "#000000";
+/** A chart's series, in their fixed order (`--sc-data-hue-1` to `-4`): never cycled. */
+export const DATA_HUES = ["#5071DE", "#B38C15", "#009F7D", "#BB2C54"] as const;
 /** The type marks are set in: monospaced, as the web's `--sc-font-code`. */
 export const CODE_FONT = "Menlo";
 
