@@ -3,7 +3,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { inkOf, PlanCard } from "../limits/PlanBoard";
 import type { PlanReading, WindowReading } from "../limits/plans";
 import { usePlans } from "../limits/usePlans";
-import { formatDuration, useClockFormat, useLimitPresentations } from "../upstream/limits";
+import {
+  formatDuration,
+  showLimitsOnUsage,
+  useClockFormat,
+  useLimitPresentations,
+} from "../upstream/limits";
 import { providerLook } from "../upstream/rail";
 import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "../upstream/ui";
 import { useMinute } from "./clock";
@@ -57,10 +62,10 @@ function PlanRings(props: { plan: PlanReading }) {
 }
 
 /**
- * Plans and limits on the rail: two rings for the plan you're on, its week
- * outside and its session (5h) inside, each filled to what is left, in the
- * provider's colour, amber when the pace runs it out before the reset, red
- * once out. Hovering lists every plan; a click opens the Usage page.
+ * Plans and limits on the rail: the week's ring outside and the session's (5h) inside, each
+ * filled to what is left in the provider's colour, amber when the pace runs it out before the
+ * reset, red once out. Hovering lists every plan; a click opens the Usage page on its limits,
+ * where the plans and the accounts are.
  */
 export function PlanRing(props: { on: boolean }) {
   const now = useMinute();
@@ -88,7 +93,10 @@ export function PlanRing(props: { on: boolean }) {
             aria-current={props.on ? "page" : undefined}
             data-stemcells-rail-plate=""
             data-on={props.on ? "true" : "false"}
-            onClick={() => void navigate({ to: "/usage" })}
+            onClick={() => {
+              showLimitsOnUsage();
+              void navigate({ to: "/usage" });
+            }}
           />
         }
       >

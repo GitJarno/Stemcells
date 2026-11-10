@@ -46,6 +46,16 @@ minutes, its reset a day away.
    Which account a Cell runs on stays the person's click
    (`account-switch.md`).
 
+7. **The accounts are a list of their own.** Under the plans on the Usage
+   page: every Claude and Codex account on this Mac's server, who is
+   signed in, what flies and what holds on each, Sign in, Add an account,
+   and on each account that can take them, Move N holding Cells here. The
+   plan ring opens it and the command palette finds it. Of four places the
+   person chose this one on 2026-11-10: the limit's own line stays silent
+   about accounts, and the list is in the server's order and says nothing
+   about which to pick. A move is the person's click, an account a Cell;
+   nothing moves one by itself (`account-switch.md`).
+
 ## Slices
 
 - [x] 1. Server: conditions for limits, `holds`, no limit ask, the report
@@ -56,10 +66,8 @@ minutes, its reset a day away.
       on it, and until then that parent reads Flying, which it isn't; a Cell that gets through shows the limit has lifted, so the
       rest follow, which covers a limit with no stated reset; the person's
       last-touched Cell goes first.
-- [ ] 3. Accounts on the line: the other signed-in accounts with their
-      headroom, one click to move the holding Cells to one, and Add an
-      account. The person asked for this on 2026-11-10; it lists accounts
-      and words no advice.
+- [x] 3. The accounts list (decision 7): the Usage page's Accounts, the
+      move of held Cells, the ring's click and the palette's words.
 - [ ] 4. The phone: Holding and the line; switching between accounts
       already signed in.
 - [ ] 5. The other shared causes as conditions: a signed-out account, an
@@ -78,3 +86,14 @@ minutes, its reset a day away.
 - `stemcells_standing` gains a Holding section in its report. Its
   description and schema are unchanged: they are text a model reads, and
   their evals cost money to run.
+- Slice 3 was seen in a lab on the real Usage page. The lab's fake CLI
+  can't say who is signed in, so the page alone read the two Claude
+  accounts as signed in, and two of the server's Cells stood as held.
+  Before the model check was added, the click sent each Cell "Continue
+  where you left off." with the picked account and the guard of the run it
+  continues, in one dispatch, as upstream's own Resume does after its
+  picker; the server refused both, as it should for runs no limit stopped.
+  With the check, the lab's Cells, whose model no Claude account offers,
+  are refused before anything is sent. Not run: a held Cell carried on by
+  a second real account, and the sign-in terminal from the list, which is
+  `/login`'s own.

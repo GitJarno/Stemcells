@@ -32,12 +32,13 @@ import { newMessageId } from "~/lib/utils";
 import { buildPlanMessage } from "../needs/actions";
 import { appAtomRegistry } from "~/rpc/atomRegistry";
 import { readThreadShell, useProject } from "~/state/entities";
-import { environmentSummaries } from "~/state/presentation";
+import { environmentPresentations, environmentSummaries } from "~/state/presentation";
 import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
 import { environmentSession, readEnvironmentScope } from "~/state/session";
 import { threadEnvironment } from "~/state/threads";
 
 import type { ThreadCommand } from "../needs/actions";
+import { selectionOnAccount } from "./accountSelection";
 import { repositoryUrlOf } from "../needs/inline";
 import { markHandSettle, unmarkHandSettle } from "../tabs/handSettles";
 
@@ -185,6 +186,17 @@ export async function sendThreadCommand(
       });
     case "message": {
       if (shell === null) return { ok: false, why: "That Cell is gone." };
+      const providers =
+        appAtomRegistry
+          .get(environmentPresentations.presentationsWithProvidersAtom)
+          .get(environmentId)?.serverConfig?.providers ?? [];
+      const moved =
+        command.onInstanceId === undefined
+          ? null
+          : selectionOnAccount(providers, shell.modelSelection, command.onInstanceId);
+      if (command.onInstanceId !== undefined && moved === null) {
+        return { ok: false, why: "That account doesn't offer this Cell's model." };
+      }
       return run(threadEnvironment.startTurn, {
         environmentId,
         input: {
@@ -199,6 +211,7 @@ export async function sendThreadCommand(
           ...(command.continuationOfRunId === undefined
             ? {}
             : { manualContinuationOfRunId: RunId.make(command.continuationOfRunId) }),
+          ...(moved === null ? {} : { modelSelection: moved }),
         },
       });
     }
