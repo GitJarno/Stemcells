@@ -1,7 +1,7 @@
-// The name transform on the phone (`stemcells/brand/nameTransform.ts`), and the word table's
-// swaps with it (`wordTable.ts`), wrapping Expo's Babel transformer. CommonJS, with the transform loaded by a synchronous `require`: Metro requires a
-// transformer, and upstream's tests read its result at once (`reactCompilerCoverage.test.ts`).
-// The phone's tests don't run Metro, so they see upstream's words, as on the web.
+// The name transform on the phone, and the word table's swaps with it
+// (`stemcells/brand/nameTransform.ts`), wrapping Expo's Babel transformer. CommonJS, loaded by a
+// synchronous `require`: Metro requires a transformer, and upstream's tests read its result at
+// once (`reactCompilerCoverage.test.ts`). The phone's tests don't run Metro: they see upstream's.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
