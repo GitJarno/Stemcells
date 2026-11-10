@@ -8,6 +8,7 @@ import { Fragment, type ClipboardEvent, type ComponentType, type ReactNode } fro
 
 import type { CloseOutLine, WrittenCloseOut } from "../../../../../stemcells/closeOut/closeOut.ts";
 import { CLOSE_OUT_LABEL, RUN_SHOWS } from "../../../../../stemcells/words/closeOut.ts";
+import { RunFacts } from "../needs/RunFacts";
 import { useNeeds } from "../needs/stream";
 import { useLatestRunId } from "../upstream/reply";
 import { isLatest, type Reply } from "./reply";
@@ -112,28 +113,11 @@ function RunShown<Chat extends { readonly threadId: string }>(props: ShownProps<
           {verdict.name}
         </span>
       )}
-      {changed === null ? null : (
-        <span data-need-fact="">
-          {changed.bar.length > 0 ? (
-            <span data-need-bar="" aria-hidden="true">
-              {changed.bar.map((cell, index) => (
-                // oxlint-disable-next-line react/no-array-index-key -- Five cells in a fixed order.
-                <i key={index} data-cell={cell} />
-              ))}
-            </span>
-          ) : null}
-          {changed.words}
-        </span>
-      )}
-      {facts.map((fact) => (
-        <span key={fact.id} data-need-fact="" data-tone={fact.tone}>
-          {fact.href === null ? (
-            fact.text
-          ) : (
-            <props.Link chat={props.chat} text={fact.text} href={fact.href} />
-          )}
-        </span>
-      ))}
+      <RunFacts
+        changed={changed}
+        facts={facts}
+        renderLink={(text, href) => <props.Link chat={props.chat} text={text} href={href} />}
+      />
     </div>
   );
 }
