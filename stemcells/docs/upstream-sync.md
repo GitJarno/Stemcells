@@ -16,7 +16,8 @@ runs the same commands you run by hand. GitHub Actions is off for
 Stemcells, so nothing runs them in the cloud. When a night goes through, a
 pull request "Take upstream at <sha> (N commits)" waits for its merge. When
 it stops, the issue "Upstream sync needs a hand" says where, and this page
-says what to do.
+says what to do. A Mac that also opted in to it hands a night's merge
+conflict to a Cell ([A Cell takes the conflict](#a-cell-takes-the-conflict)).
 
 | Command                                        | What it does                                                                                                                                                                                                                                                                 |
 | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -143,6 +144,72 @@ timing out under the load; `check-local` and the nightly set it themselves.
   `STEMCELLS_SYNC_TOKEN` to push upstream's workflow changes: a
   fine-grained token for this repository only, with read and write on
   Contents, Pull requests, Issues and Workflows.
+
+### A Cell takes the conflict
+
+Off unless you ask for it. By default a night that stops waits for a person.
+To have a night that stops on a merge conflict start a Cell that takes the
+sync from there, run this in the repository's checkout, with Stemcells open:
+
+```sh
+stemcells/scripts/install-nightly-sync --cell .
+```
+
+- **It spends your model plan while you sleep.** One Cell per upstream
+  commit, and each runs the whole t3-sync skill: it reads the day's commits,
+  resolves the conflicts, runs every gate, and opens the pull request and
+  its follow-ups. That is a long session. How much of a plan it takes has
+  not been measured. A night that goes through, is skipped, or stops for
+  another reason spends nothing.
+- `--cell <project>` takes the Stemcells project of this repository: a
+  folder in it (`.`), or its id. The installer asks the running app for the
+  id, so a closed app or a folder that is no project fails then, and not at
+  03:00. `--provider <id> --model <slug>` name the Cell's model, as
+  `t3 thread start` takes them; without them it is the project's default.
+- **Off again:** `stemcells/scripts/install-nightly-sync` without `--cell`.
+  `--remove` takes the whole job away.
+- The Cell works in a worktree of its own that the app makes. It ends where
+  a clean night does: a pushed pull request that carries `local-check`,
+  merged by the skill's own rule (its step 5). Where the skill needs a
+  person, such as deleting code of ours that upstream now covers, it says so
+  on the issue and stops.
+
+What a night does, by how `sync-upstream --nightly` ends:
+
+| Exit  | The night                                                                    | With `--cell`                                                        |
+| ----- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 0     | Went through, or found nothing new: the pull request waits, the issue closes | The same                                                             |
+| 3     | A merge conflict: the issue lists the files and their seams                  | The same, then one Cell for that upstream commit, named on the issue |
+| 4     | A gate failed on the merged tree: the issue quotes it                        | The same: no Cell                                                    |
+| 5     | GitHub refused the push: the issue says why                                  | The same: no Cell                                                    |
+| 6     | A generated file's generator failed: the issue names it                      | The same: no Cell                                                    |
+| other | The run failed before its gates finished: the issue quotes its last lines    | The same: no Cell                                                    |
+
+The night's exit code and its issue are the same with a Cell or without one.
+
+**When no Cell started**, the night's line in
+`~/Library/Logs/stemcells-nightly-sync.log` says why:
+
+- `no new Cell: upstream at <sha> has one already`: one Cell per upstream
+  commit. `cells/<sha>` in the nightly's folder
+  (`~/Library/Application Support/sh.stemcells.nightly-sync`) holds when it
+  started; delete that file to let the next night start another.
+- `no Cell: pull request #N takes upstream already`: an open
+  `sync/upstream-*` pull request owns the sync. Merge or close it.
+- `no Cell: … isn't there`: the app's own `t3` command,
+  `~/.stemcells/bin/t3`, is missing. Stemcells writes it each time it opens.
+- `no Cell: … thread start failed`: Stemcells wasn't open at 03:00, or
+  refused. The line quotes what it said; the issue gets a comment without
+  those words, as they name the Mac's folders.
+- No such line: the night didn't end on a conflict (its `done (exit N)`
+  line says how it ended), or the job isn't opted in.
+  `grep -A1 CELL_PROJECT ~/Library/LaunchAgents/sh.stemcells.nightly-sync.plist`
+  prints the project when it is.
+
+**When one started and didn't finish**, it is a Cell in Stemcells like any
+other: open it. It takes the project's default mode, so a project that asks
+before each command leaves it waiting at its first one, and a plan at its
+limit holds it until the limit lifts.
 
 ## What never happens
 

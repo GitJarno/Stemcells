@@ -31,8 +31,10 @@
 # person or a Cell (each file is printed with the seams it touches), 4 when a
 # gate fails, 5 when GitHub refuses the push, 6 when a generated file's
 # generator fails (it names the file). With SYNC_SUMMARY set to a file,
-# it writes there what stopped it, for the issue. VITEST_MAX_WORKERS caps the
-# test workers (Vitest reads it): a busy Mac times tests out otherwise.
+# it writes there what stopped it, for the issue; with SYNC_ISSUE set to one,
+# the number of the issue it kept for a run that stopped (nightly-sync hands
+# it to a Cell). VITEST_MAX_WORKERS caps the test workers (Vitest reads it):
+# a busy Mac times tests out otherwise.
 set -euo pipefail
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$(git rev-parse --show-toplevel)"
@@ -553,8 +555,11 @@ keep_issue() {
     gh api -X PATCH "repos/$repo/issues/$open" -F body=@"$body" > /dev/null
     gh api "repos/$repo/issues/$open/comments" -f body="Stopped again on $today: $why. The issue above says where." > /dev/null
   else
-    gh api "repos/$repo/issues" -f title="$title" -F body=@"$body" --jq .html_url
+    open=$(gh api "repos/$repo/issues" -f title="$title" -F body=@"$body" --jq .html_url)
+    echo "$open"
+    open=${open##*/}
   fi
+  [ -z "${SYNC_ISSUE:-}" ] || echo "$open" > "$SYNC_ISSUE"
   rm -f "$body"
 }
 
