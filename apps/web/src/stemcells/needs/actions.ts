@@ -29,6 +29,8 @@ export type ThreadCommand =
       readonly continuationOfRunId?: string;
       /** Into the running turn ("steer"), or stopping it to start again ("restart"). */
       readonly delivery?: "steer" | "restart";
+      /** The account it goes out on: the Cell moves there, as its own picker moves it. */
+      readonly onInstanceId?: string;
     }
   /** Upstream's "Implement": out of plan mode, and the plan sent back to build. */
   | { readonly type: "build"; readonly planId: string; readonly markdown: string }

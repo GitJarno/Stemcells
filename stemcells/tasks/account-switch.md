@@ -32,8 +32,9 @@ chain (API credits, another provider, wait) comes later.
 - **No credentials in our hands.** Claude logins stay in Claude Code's own
   keychain entries, made by its own `claude auth login`. Anthropic: third
   parties "may not collect, store, or intermediate Claude.ai credentials".
-- **The person switches.** `/login` and the model picker move a Cell; nothing
-  moves one by itself.
+- **The person switches.** `/login` and the model picker move a Cell, and
+  the Usage page's accounts list moves the Cells a limit holds
+  (`conditions.md`, decision 7); nothing moves one by itself.
 
 ## Plan
 

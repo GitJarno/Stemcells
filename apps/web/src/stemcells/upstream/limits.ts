@@ -14,6 +14,10 @@ import {
 
 import { useThreadShells } from "../../state/entities";
 import { environmentPresentations } from "../../state/presentation";
+import {
+  readUsagePagePreferences,
+  saveUsagePagePreferences,
+} from "../../components/usage/usagePagePreferences";
 import { usePrimarySettings } from "../../hooks/useSettings";
 import { formatShortTimestamp } from "../../timestampFormat";
 import { statusOfShell } from "./status";
@@ -129,6 +133,14 @@ export function chatWorkOf(shells: ReadonlyArray<EnvironmentThreadShell>): ChatW
     }
   }
   return { working, lastWritten: lastWritten?.instance ?? null };
+}
+
+/**
+ * The Usage page opens on its limits next: the plans, and under them the accounts. Upstream reads
+ * the tab it kept when the page mounts, so a page already open stays on its tab.
+ */
+export function showLimitsOnUsage(): void {
+  saveUsagePagePreferences({ ...readUsagePagePreferences(), metric: "limits" });
 }
 
 /** Every environment's providers, as upstream's Usage page reads them. */

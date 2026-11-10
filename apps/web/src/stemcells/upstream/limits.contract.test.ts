@@ -9,6 +9,8 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { chatWorkOf, limitAccountsOf, type LimitPresentations } from "./limits";
 
+import usagePage from "../../components/usage/UsagePage.tsx?raw";
+
 const provider = (
   instanceId: string,
   email: string | undefined,
@@ -83,6 +85,15 @@ describe("upstream's limit accounts", () => {
     );
     expect(accounts.map((account) => account.key)).toEqual(["e1:a"]);
     expect(accountOf("e2:b")?.key).toBe("e1:a");
+  });
+});
+
+describe("upstream's Usage page", () => {
+  it("opens on the tab it kept, which the plan ring sets to the limits", () => {
+    expect(usagePage).toContain("useState(readUsagePagePreferences)");
+    expect(usagePage).toMatch(
+      /const metric = preferences\.metric;\s*const showingLimits = metric === "limits";/,
+    );
   });
 });
 
