@@ -2,7 +2,6 @@ import { DraftEnvironmentControl } from "./DraftEnvironmentControl";
 import { AskiStanding } from "../../stemcells/aski/AskiStanding";
 import { useWordsPlace } from "../../stemcells/words/useWordsPlace";
 import { CasualOffer } from "../../stemcells/casual/CasualOffer";
-import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { DraftThreadHeader } from "./DraftThreadHeader";
 import { useComposerAttachmentActions } from "../../state/use-composer-attachment-actions";
@@ -703,7 +702,7 @@ export function NewTaskDraftScreen(props: {
       ? cloneBlocksStart
         ? "Wait for the project clone to finish."
         : flow.submitting
-          ? "Starting the Cell…"
+          ? "Starting the thread…"
           : flow.workspaceMode === "worktree" && (!flow.selectedBranchName || !flow.isGitRepoKnown)
             ? "Choose a base branch before creating a worktree."
             : null
@@ -742,7 +741,7 @@ export function NewTaskDraftScreen(props: {
   const hero = flow.isScratchDraft ? (
     <View className="items-center gap-2 px-6" testID="new-task-hero">
       <Text className="text-center text-2xl font-t3-medium tracking-tight text-foreground">
-        {CASUAL_CHAT.headline}
+        What should we work on?
       </Text>
       <View className="flex-row flex-wrap items-center justify-center gap-x-1">
         <ComposerInlineControl
@@ -936,7 +935,7 @@ export function NewTaskDraftScreen(props: {
 
   if (!flow.selectedModel) {
     return (
-      <ThreadScreenFallback header={<AppBar title="New Cell" onBack={goBack} />}>
+      <ThreadScreenFallback header={<AppBar title="New thread" onBack={goBack} />}>
         <View className="flex-1 justify-end gap-3 p-4">
           {environmentControl}
           <Text className="text-foreground-muted">

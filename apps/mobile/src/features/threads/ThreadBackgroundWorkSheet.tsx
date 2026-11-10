@@ -17,7 +17,7 @@ import { ScreenContent } from "../../components/ui/ScreenContent";
 import { environmentThreadShells } from "../../state/threads";
 
 const KIND_LABELS = {
-  subagent: "Subcell",
+  subagent: "Subagent",
   command: "Command",
   monitor: "Monitor",
   background_task: "Background task",
@@ -97,7 +97,7 @@ function BackgroundWorkRow(props: {
   ) : (
     <Pressable
       accessibilityRole="link"
-      accessibilityLabel={`Open Subcell ${item.label}`}
+      accessibilityLabel={`Open subagent ${item.label}`}
       onPress={() => props.onOpen(childThreadId)}
       className="active:opacity-70"
     >

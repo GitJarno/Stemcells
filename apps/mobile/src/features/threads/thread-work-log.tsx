@@ -1027,7 +1027,7 @@ const ThreadWorkLogRow = function ThreadWorkLogRow(
         accessibilityLabel={failed ? `${accessiblePreview}, tool call failed` : accessiblePreview}
         accessibilityHint={
           notifiedSubagentThreadId !== undefined
-            ? "Opens this Subcell. Long press to copy."
+            ? "Opens this agent's thread. Long press to copy."
             : canExpand
               ? `Double tap to ${expanded ? "hide" : "show"} full details. Long press to copy.`
               : "Long press to copy."

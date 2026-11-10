@@ -266,8 +266,8 @@ export function FloatingWorkingControl(props: {
       {agents !== null ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Open Subcells, ${agents.accessibilityLabel}`}
-          accessibilityHint="Opens this turn's Subcells"
+          accessibilityLabel={`Open agents, ${agents.accessibilityLabel}`}
+          accessibilityHint="Opens this turn's subagents"
           onPress={props.onOpenAgents}
           onLayout={(event) => setAgentsWidth(settleWidth(event.nativeEvent.layout.width))}
           className="h-11 flex-row items-center gap-1.5 px-3 active:opacity-70"
@@ -656,7 +656,7 @@ function WorkingTimer(props: { readonly startedAt: string }) {
       numberOfLines={1}
       style={{ fontVariant: ["tabular-nums"], fontWeight: "500" }}
     >
-      Flying {formatWorkingDuration(props.startedAt, nowMs)}
+      Working {formatWorkingDuration(props.startedAt, nowMs)}
     </SystemText>
   );
 }

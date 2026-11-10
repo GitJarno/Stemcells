@@ -188,7 +188,7 @@ const SLIM_MENU_ACTIONS: MenuAction[] = [
 ];
 
 const SNOOZED_MENU_ACTIONS: MenuAction[] = [
-  { id: "unsnooze", title: "Wake Cell", image: "clock" },
+  { id: "unsnooze", title: "Wake thread", image: "clock" },
   { id: "delete", title: "Delete", image: "trash", attributes: { destructive: true } },
 ];
 
@@ -867,7 +867,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
     () =>
       props.reorderSupported === true
         ? [
-            { id: "arrange", title: "Arrange Cells…", image: "line.3.horizontal" },
+            { id: "arrange", title: "Arrange threads…", image: "line.3.horizontal" },
             {
               id: "move-up",
               title: "Move up",
@@ -953,8 +953,8 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
             },
           ]
         : []),
-      { id: "copy-thread", title: "Copy Cell", image: "text.bubble" },
-      { id: "copy-thread-id", title: "Copy Cell ID", image: "doc.on.doc" },
+      { id: "copy-thread", title: "Copy thread", image: "text.bubble" },
+      { id: "copy-thread-id", title: "Copy thread ID", image: "doc.on.doc" },
     ];
     if (snoozedRow) {
       return layoutThreadListV2RowMenuActions({
@@ -1151,7 +1151,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
     [handleMenuAction, snoozePresetActions, swipeActions.secondary, thread.title],
   );
   const swipeAccessibilityHint = !canOperateThread
-    ? "Opens the Cell"
+    ? "Opens the thread"
     : swipeHint(swipeActions.primary, primaryAction.label, secondaryAction !== null);
 
   const titleTextInset = props.project ? projectIconSize + 8 : 0;

@@ -199,7 +199,7 @@ it("opens an idle child from Lineage when its shell has not been loaded", async 
       showSideChats
     />,
   );
-  await screen.getByRole("button", { name: /Previous Subcells/ }).click();
+  await screen.getByRole("button", { name: /Previous agents/ }).click();
   const child = screen.getByRole("button", { name: /Idle child/ });
   await expect.element(child).toBeEnabled();
   await child.click();
@@ -314,7 +314,7 @@ it("shows a remote subagent's full title in its tooltip even when its environmen
   await expect
     .element(screen.getByRole("button", { name: new RegExp(longTitle) }))
     .not.toBeInTheDocument();
-  await screen.getByRole("button", { name: /Previous Subcells/ }).click();
+  await screen.getByRole("button", { name: /Previous agents/ }).click();
   const row = screen.getByRole("button", { name: new RegExp(longTitle) });
   await userEvent.hover(row);
   await vi.waitFor(() =>

@@ -95,7 +95,7 @@ export function ThreadSubagentGroup(props: {
     };
   });
   const grouped = agents.length > 1;
-  const label = `${agents.length} Subcells`;
+  const label = `${agents.length} subagents`;
   const summary = summarizeSubagentStatuses(agents.map((agent) => agent.status));
   const expanded = props.expandedRows[props.anchorKey] ?? false;
   const serverConfigs = useServerConfigs();
@@ -167,10 +167,10 @@ export function ThreadSubagentGroup(props: {
                 accessibilityRole={target === null ? undefined : "link"}
                 accessibilityHint={
                   target !== null
-                    ? "Opens this Subcell"
+                    ? "Opens this agent's thread"
                     : agent.remoteChild !== undefined
                       ? `Runs on ${agent.remoteChild.label}`
-                      : "Provider-managed Subcell"
+                      : "Provider-managed agent"
                 }
                 disabled={target === null}
                 onPress={() => {
