@@ -2,35 +2,56 @@ import { cellNameOf } from "../cell/name";
 import { CellMini } from "../rail/CellMini";
 import { compactAge } from "../upstream/cellRow";
 import { useNowMinuteMs, usePrimaryEnvironmentId } from "../upstream/needs";
+import { useAccountNames } from "../upstream/rail";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { boardOf, VERDICTS, type BoardRow } from "./boardRows";
+import { conditionLineOf } from "./conditionLines";
 import { openPeek } from "./peeking";
 import { useNeeds } from "./stream";
 
 import "./board.css";
 
-const STAGES = { landed: "Landed", flying: "Flying" } as const;
+const STAGES = { holding: "Holding", landed: "Landed", flying: "Flying" } as const;
 type BoardStage = keyof typeof STAGES;
 
 /**
- * Aski's room as a board (stemcells/tasks/aski-board.md): the Cells that landed, each with how
- * it landed and what shows it, then the ones flying. `compact` while an ask is in front: each
- * stage is a line of its Cells' figures and nothing to read. A row opens its Cell in the peek.
- * Figures are held still (`CellMini`), so the board costs no frame.
+ * Aski's room as a board (aski-board.md): Cells a shared stop holds (conditions.md) under the
+ * line that says what stopped them, then what landed and how, then what flies. `compact` while
+ * an ask is in front: a line of figures a stage. Figures are held still, so it costs no frame.
  */
 export function Board(props: { compact: boolean }) {
-  const { cells } = useNeeds();
+  const { cells, conditions } = useNeeds();
   const environmentId = usePrimaryEnvironmentId();
+  const accounts = useAccountNames();
   const now = useNowMinuteMs();
   if (cells === null || environmentId === null) return null;
-  const board = boardOf(cells);
-  if (board.counts.landed + board.counts.flying === 0) return null;
+  const board = boardOf(cells, conditions);
+  if (board.counts.holding + board.counts.landed + board.counts.flying === 0) return null;
   return (
     <section
       data-stemcells-board=""
       data-compact={props.compact || undefined}
       aria-label="Where the Cells stand"
     >
+      {board.holding.map(({ condition, rows, count }) => {
+        const line = conditionLineOf(condition, now);
+        const account = accounts.get(condition.providerInstanceId);
+        return (
+          <Stage
+            key={condition.key}
+            stage="holding"
+            rows={rows}
+            count={count}
+            compact={props.compact}
+            environmentId={environmentId}
+            now={now}
+            words={{
+              cause: [line.what, account, line.when].filter(Boolean).join(" · "),
+              then: line.then,
+            }}
+          />
+        );
+      })}
       {(["landed", "flying"] as const).map((stage) =>
         board.counts[stage] === 0 ? null : (
           <Stage
@@ -55,6 +76,8 @@ function Stage(props: {
   compact: boolean;
   environmentId: string;
   now: number;
+  /** A holding stage's cause and what happens next. */
+  words?: { readonly cause: string; readonly then: string };
 }) {
   const more = props.count - props.rows.length;
   return (
@@ -63,7 +86,9 @@ function Stage(props: {
         <i aria-hidden="true" />
         {STAGES[props.stage]}
         <span>{props.count}</span>
+        {props.words ? <em>{props.words.cause}</em> : null}
       </h3>
+      {props.words ? <p data-board-words="">{props.words.then}</p> : null}
       {props.compact ? (
         <div data-board-figures="">
           {props.rows.map((row) => (

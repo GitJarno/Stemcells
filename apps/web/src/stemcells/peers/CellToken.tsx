@@ -15,9 +15,10 @@ import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "../upstream/u
 
 import "./peers.css";
 
-type Shown = Stage | "settled";
+type Shown = Stage | "settled" | "holding";
 
 const WORD: Readonly<Record<Shown, string>> = {
+  holding: "Holding",
   working: "Flying",
   "needs-you": "Input",
   done: "Landed",
@@ -39,7 +40,11 @@ export function CellToken(props: {
   const settled = useCellSettled(cell);
   const title = useCellTitle(cell);
   const place = useCellPlace(cell);
-  const shown: Shown | null = settled ? "settled" : (standing?.stage ?? null);
+  const shown: Shown | null = settled
+    ? "settled"
+    : standing?.holds != null
+      ? "holding"
+      : (standing?.stage ?? null);
   // How it landed, before its own word for it: a bare "Done" isn't passed on unmarked.
   const verdict = standing?.landing == null ? null : VERDICTS[standing.landing.verdict];
   const openHere = useOpenCell();

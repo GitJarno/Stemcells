@@ -28,6 +28,25 @@
 [data-board-stage="landed"] > h3 > i {
   background: var(--sc-success);
 }
+/* Holding: a ring, not a dot. Nothing in it moves until its cause clears. */
+[data-board-stage="holding"] > h3 > i {
+  box-sizing: border-box;
+  border: 1px solid var(--sc-dim);
+  background: none;
+}
+[data-board-stage] > h3 > em {
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--sc-soft);
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-board-words] {
+  margin: 0;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
 [data-board-stage] > h3 > span {
   font-variant-numeric: tabular-nums;
 }

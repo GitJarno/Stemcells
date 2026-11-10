@@ -358,6 +358,14 @@ span[data-cells-stage-mark]::before {
 svg[data-cells-stage-mark] {
   color: var(--sc-dim);
 }
+[data-cells-stage-held] {
+  margin-inline-start: auto;
+  color: var(--sc-faint);
+  font-size: 0.75rem;
+}
+[data-cells-stage-held] + [data-cells-stage-count] {
+  margin-inline-start: var(--sc-space-sm);
+}
 [data-cells-stage-count] {
   min-width: 1.5ch;
   margin-inline-start: auto;
