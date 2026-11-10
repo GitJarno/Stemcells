@@ -1,0 +1,168 @@
+/* Aski's room as a board (stemcells/tasks/aski-board.md): the Cells by stage under the asks,
+   each landing with how it landed. Quiet until read: no box, the asks' own type scale. */
+[data-stemcells-board] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-lg);
+}
+[data-board-stage] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+}
+[data-board-stage] > h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  margin: 0;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  font-weight: 500;
+}
+[data-board-stage] > h3 > i {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: 50%;
+  background: var(--sc-working);
+}
+[data-board-stage="landed"] > h3 > i {
+  background: var(--sc-success);
+}
+[data-board-stage] > h3 > span {
+  font-variant-numeric: tabular-nums;
+}
+[data-board-stage] > ul {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A row: the Cell's figure, then its name, what it is on and since when; under them its own
+   word behind the landing's mark, and what its run shows. */
+[data-board-row] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--sc-space-md);
+  row-gap: 0.0625rem;
+  align-items: center;
+  inline-size: 100%;
+  margin-inline: calc(var(--sc-space-md) * -1);
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  box-sizing: content-box;
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-dim);
+  text-align: start;
+}
+[data-board-row]:hover,
+[data-board-row]:focus-visible {
+  background: var(--sc-field);
+}
+[data-board-row] > [data-board-figure] {
+  display: flex;
+  grid-row: 1;
+}
+[data-board-head] {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sc-space-md);
+  min-inline-size: 0;
+}
+[data-board-who] {
+  flex-shrink: 0;
+  color: var(--sc-text);
+  font-weight: 500;
+}
+[data-board-title] {
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--sc-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-board-age] {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  font-variant-numeric: tabular-nums;
+}
+[data-board-says],
+[data-board-facts] {
+  grid-column: 2;
+  min-inline-size: 0;
+}
+[data-board-says] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The landing's mark: a fact shows it, its word alone, or it landed short. */
+[data-board-says] > b {
+  display: inline-block;
+  inline-size: 1em;
+  margin-inline-end: var(--sc-space-xs);
+  font-family: var(--sc-font-mono);
+  font-weight: 600;
+}
+[data-verdict="shown"] > [data-board-says] > b {
+  color: var(--sc-success);
+}
+[data-verdict="short"] > [data-board-says] {
+  color: var(--sc-soft);
+}
+[data-verdict="short"] > [data-board-says] > b {
+  color: var(--sc-error);
+}
+[data-board-facts] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 0.75rem;
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  font-variant-numeric: tabular-nums;
+}
+[data-board-more] {
+  margin: 0;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+
+/* While an ask is in front, a stage is its label and a line of its Cells, the landing's mark
+   at each one's shoulder. */
+[data-stemcells-board][data-compact] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sc-space-sm) var(--sc-space-xl);
+}
+[data-stemcells-board][data-compact] > [data-board-stage] {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sc-space-md);
+}
+[data-board-figures] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sc-space-lg);
+}
+[data-board-figures] > [data-board-figure] {
+  position: relative;
+  display: flex;
+  border-radius: var(--sc-radius-chip);
+}
+[data-board-figures] > [data-board-figure] > b {
+  position: absolute;
+  inset-block-start: -0.375rem;
+  inset-inline-end: -0.25rem;
+  color: var(--sc-dim);
+  font-family: var(--sc-font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+}
+[data-board-figures] > [data-verdict="shown"] > b {
+  color: var(--sc-success);
+}
+[data-board-figures] > [data-verdict="short"] > b {
+  color: var(--sc-error);
+}

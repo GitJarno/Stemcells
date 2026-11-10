@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
+import { Board } from "./Board";
 import { CardList, onListOf } from "./CardList";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
 import { page } from "./live";
@@ -102,21 +103,27 @@ export function NeedsFrame(props: {
       view={view}
       one
       head={
-        // Wide, the asks speak for themselves: only what isn't plain from them is said.
-        layout === "narrow" || waiting === 0 || !view.live ? (
-          <div data-needs-head="">
-            {layout === "narrow" || waiting === 0 ? (
-              <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
-            ) : null}
-            {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
-            {layout === "narrow" ? (
-              <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
-                Back to the chat
-              </button>
-            ) : null}
-          </div>
-        ) : null
+        <>
+          {/* Wide, the asks speak for themselves: only what isn't plain from them is said. */}
+          {layout === "narrow" || waiting === 0 || !view.live ? (
+            <div data-needs-head="">
+              {layout === "narrow" || waiting === 0 ? (
+                <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
+              ) : null}
+              {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
+              {layout === "narrow" ? (
+                <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
+                  Back to the chat
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          {/* With nothing to answer, the room is the board: what landed and how, what flies. */}
+          {waiting === 0 ? <Board compact={false} /> : null}
+        </>
       }
+      // An ask in front keeps the reading: the board folds to a line of figures under it.
+      foot={waiting > 0 ? <Board compact /> : null}
     />
   );
 

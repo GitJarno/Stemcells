@@ -186,6 +186,8 @@ export interface CellStanding {
   readonly line: string | null;
   /** The roster lists the newest first. */
   readonly createdAt: string;
+  /** When this stage began: its run's start while at work, its end once done. Absent or null otherwise. */
+  readonly since?: string | null;
   /** How a done Cell landed; null at any other stage, absent from a server before the brief. */
   readonly landing?: Landing | null;
   readonly brief?: Brief | null;

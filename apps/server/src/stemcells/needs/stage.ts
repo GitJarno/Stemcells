@@ -24,6 +24,8 @@ export interface CellStanding {
   readonly line: string | null;
   /** When it was made: the roster lists the newest first and never reorders. */
   readonly createdAt: string;
+  /** When this stage began: its run's start while at work, its run's end once done; else null. */
+  readonly since: string | null;
   /** How a done Cell landed, and the fact that says so (`verdict.ts`); null at any other stage. */
   readonly landing: Landing | null;
   /** What it was told and what its last run shows; null while it works unasked, or unread. */
@@ -61,6 +63,12 @@ export function standingsOf(
       stop?.waits === true;
     const stage: Stage = needsYou.has(shell.id) ? "needs-you" : atWork ? "working" : "done";
     const brief = briefs.get(shell.id) ?? null;
+    const since =
+      stage === "done"
+        ? (shell.latestRunCompletedAt ?? null)
+        : stage === "working"
+          ? (shell.activityRunStartedAt ?? shell.latestRunStartedAt ?? shell.latestRunRequestedAt)
+          : null;
     return [
       {
         threadId: shell.id,
@@ -69,6 +77,7 @@ export function standingsOf(
         stage,
         line: stage === "needs-you" || stop === null ? null : stop.line,
         createdAt: DateTime.formatIso(shell.createdAt),
+        since: since == null ? null : DateTime.formatIso(since),
         landing: stage === "done" ? landingOf(shell.status, brief) : null,
         brief,
       },

@@ -35,6 +35,21 @@ const stageOf = (
     ?.stage ?? null;
 
 describe("a Cell's stage", () => {
+  it("says since when: its run's end once done, its run's start while it works", () => {
+    const landed = shellFixture({ id: "landed", latestRunCompletedAt: at(-10 * MINUTE) });
+    const flying = shellFixture({
+      id: "flying",
+      status: "running",
+      activeRunId: runId("run-2"),
+      latestRunStartedAt: at(-40 * MINUTE),
+    });
+    const cells = standingsOf([landed, flying], [], new Map(), NOW);
+    expect(Object.fromEntries(cells.map((cell) => [cell.threadId, cell.since]))).toEqual({
+      landed: DateTime.formatIso(at(-10 * MINUTE)),
+      flying: DateTime.formatIso(at(-40 * MINUTE)),
+    });
+  });
+
   it("is needs-you whenever it has a card, even with a run under way", () => {
     const asking = shellFixture({
       status: "waiting",

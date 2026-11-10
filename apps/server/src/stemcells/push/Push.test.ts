@@ -62,6 +62,7 @@ const flyingList = (count: number): NeedsList => ({
     stage: "working" as const,
     line: null,
     createdAt: "2026-11-04T00:00:00.000Z",
+    since: null,
     landing: null,
     brief: null,
   })),

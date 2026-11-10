@@ -29,6 +29,7 @@ const cell = (
   title: "Otter",
   line: null,
   createdAt: "2026-10-24T08:00:00.000Z",
+  since: null,
   landing: null,
   brief: null,
   ...over,
