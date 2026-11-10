@@ -12,9 +12,8 @@ import type { Proof } from "./verdict.ts";
 
 export interface Standing {
   readonly needsYou: number;
+  /** Flying: a Cell a shared stop holds is in the report's own section, and in no count. */
   readonly atWork: number;
-  /** Stopped by a cause many Cells share, such as an account's usage limit. */
-  readonly holding: number;
   readonly done: number;
   readonly report: string;
 }
@@ -117,7 +116,6 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
   const needs = list.needs.toSorted((a, b) => a.number - b.number);
   const atWork = list.cells.filter((cell) => cell.stage === "working" && cell.holds === null);
   const conditions = list.conditions ?? [];
-  const holding = conditions.reduce((count, condition) => count + condition.cells.length, 0);
   const done = list.cells.filter((cell) => cell.stage === "done");
   const lines: string[] = [];
   lines.push(needs.length === 0 ? "Nothing needs you." : `Needs you (${needs.length}):`);
@@ -158,7 +156,6 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
   return {
     needsYou: needs.length,
     atWork: atWork.length,
-    holding,
     done: done.length,
     report: lines.join("\n"),
   };

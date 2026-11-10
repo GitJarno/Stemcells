@@ -5,6 +5,7 @@ and panes, Aski as the one you talk to, a creature per chat, and a Disk
 page. Usage and plans stay upstream's for now.
 
 ## Plan
+
 - [x] **0. Fork and identity.** Own name, bundle id, data folders; house
       rules (`stemcells/AGENTS.md`), seams list, `drift` and
       `sync-upstream` scripts; upstream's release and deploy workflows off.
@@ -28,6 +29,7 @@ page. Usage and plans stay upstream's for now.
       a Cell to resolve.
 
 ## Rules for this slice
+
 - New code in our folders; each upstream edit is a seam in
   `stemcells/seams.md`; `stemcells/scripts/drift` passes before a push.
 - Port faithfully: Aski and the Cells use the same art and behaviour as
@@ -35,6 +37,7 @@ page. Usage and plans stay upstream's for now.
   rewritten in React because the earlier views are Solid.
 
 ## Review
+
 - Landed as five pull requests (identity, art, tabs, disk, Aski) and this
   one for the nightly sync; each was checked in the dev web app.
 - Drift after the slice: about 30 upstream files. The costly seams are the

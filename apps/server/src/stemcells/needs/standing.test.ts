@@ -128,7 +128,7 @@ describe("the room in words", () => {
       "[Otter](t3-thread://v1/t-otter) · Atlas",
       "[Pip](t3-thread://v1/t-pip) · Atlas",
     ]);
-    expect(standing).toMatchObject({ needsYou: 0, atWork: 1, holding: 2, done: 0 });
+    expect(standing).toMatchObject({ needsYou: 0, atWork: 1, done: 0 });
   });
 
   it("says how each done Cell landed and what shows it, so a bare Done isn't passed on", () => {
