@@ -3,7 +3,7 @@ import * as NodeFS from "node:fs";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { DONE, GLOW, INK, NEEDS_YOU, TONES, WORKING } from "./tokens";
+import { DATA_HUES, DONE, GLOW, INK, NEEDS_YOU, TONES, WORKING } from "./tokens";
 
 const web = (path: string) =>
   NodeFS.readFileSync(new URL(`../../../web/src/${path}`, import.meta.url), "utf8");
@@ -26,6 +26,10 @@ describe("the phone's tokens, against the web's", () => {
       NEEDS_YOU: webColour("needs-you"),
       DONE: webColour("success"),
     });
+  });
+
+  it("colours a chart's series as the web does, in the web's order", () => {
+    expect([...DATA_HUES]).toEqual([1, 2, 3, 4].map((at) => webColour(`data-hue-${at}`)));
   });
 
   it("lights a working Cell in the web's tones, on the web's beat", () => {

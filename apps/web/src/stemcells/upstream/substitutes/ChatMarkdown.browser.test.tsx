@@ -1,8 +1,8 @@
 /**
- * A setting Aski links in a reply draws as its switch: upstream's markdown
- * keeps a `t3-context://` link and hands it to the substitute's renderer,
- * and any other context link still reads as upstream's plain words. Another
- * Cell a chat names draws as its token.
+ * Upstream's markdown keeps a `t3-context://` link and hands it to the substitute's renderer:
+ * a setting Aski links draws as its switch, another Cell as its token, and any other context
+ * link still reads as upstream's plain words. A closed `chart` fence reaches the same renderer
+ * whole, through upstream's `extraRemarkPlugins`, and draws as its chart.
  */
 import "../../../index.css";
 
@@ -10,6 +10,7 @@ import type { ScopedThreadRef } from "@t3tools/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 
+import { chatMarkdownClipboardPayload } from "../../../markdown-clipboard";
 import { setAskiPlans, useAskiPlans } from "../../aski/planning";
 import { render } from "../testRender";
 import ChatMarkdown from "./ChatMarkdown";
@@ -92,5 +93,50 @@ describe("a setting in a reply", () => {
     await expect.element(screen.getByText("the old copy")).toBeVisible();
     await expect.element(screen.getByText("a lost one")).toBeVisible();
     expect(screen.container.querySelector("[role='switch']")).toBeNull();
+  });
+});
+
+const FENCE = [
+  "```chart",
+  "bar: Files that conflicted in each sync",
+  "| Sync | Files |",
+  "| --- | --- |",
+  "| 21 Oct | 2 |",
+  "| 26 Oct | 22 |",
+  "| 29 Oct | <5 |",
+  "```",
+].join("\n");
+
+describe("a chart fence in a reply", () => {
+  it("draws once it has closed, and says the same numbers as a table", async () => {
+    await using screen = await render(
+      <ChatMarkdown
+        cwd={undefined}
+        text={`Two syncs:\n\n${FENCE}\n\nThe second was the large one.`}
+      />,
+    );
+    const chart = screen.getByRole("figure", { name: "Files that conflicted in each sync" });
+    await expect.element(chart).toBeVisible();
+    await expect.element(chart.getByText("26 Oct")).toBeVisible();
+    await expect.element(screen.getByText("The second was the large one.")).toBeVisible();
+    await expect.element(chart.getByText("<5")).toBeVisible();
+    expect(screen.container.querySelector("pre")).toBeNull();
+    // Copied with the words round it, the chart is its fence again.
+    window.getSelection()?.selectAllChildren(screen.container);
+    expect(chatMarkdownClipboardPayload(window.getSelection()!)?.text).toContain(FENCE);
+    await userEvent.click(chart.getByRole("button", { name: "Table" }));
+    await expect.element(chart.getByRole("table")).toBeVisible();
+    await expect.element(chart.getByRole("cell", { name: "22" })).toBeVisible();
+  });
+
+  it.each([
+    ["still streaming", FENCE.slice(0, FENCE.lastIndexOf("\n")), true],
+    ["closed, with a cell that isn't a number", FENCE.replace("| 2 |", "| n/a |"), false],
+  ])("stays the fence as written: %s", async (_name, text, isStreaming) => {
+    await using screen = await render(
+      <ChatMarkdown cwd={undefined} text={text} isStreaming={isStreaming} />,
+    );
+    await expect.element(screen.getByText(/\| 26 Oct \| 22 \|/)).toBeVisible();
+    expect(screen.container.querySelector("figure")).toBeNull();
   });
 });

@@ -549,9 +549,19 @@ const CASES: Readonly<Record<string, Case>> = {
   },
 };
 
-/** Each package substituted by name: upstream's file that imports it, and what that file calls of it. */
+/**
+ * Each package substituted by name: upstream's file that imports it, and what that file calls
+ * of it, or says as written where what we replace is a view and the prop we wrap.
+ */
 const PACKAGE_CASES: Readonly<
-  Record<string, { readonly importer: string; readonly calls: ReadonlyArray<string> }>
+  Record<
+    string,
+    {
+      readonly importer: string;
+      readonly calls: ReadonlyArray<string>;
+      readonly says?: ReadonlyArray<string>;
+    }
+  >
 > = {
   "expo-image-picker": {
     importer: "apps/mobile/src/lib/composerImages.ts",
@@ -560,6 +570,13 @@ const PACKAGE_CASES: Readonly<
   "expo-observe": {
     importer: "apps/mobile/src/features/observability/observe.ts",
     calls: ["configure", "dispatchEvents", "reportError"],
+  },
+  "react-native-enriched-markdown": {
+    importer: "apps/mobile/src/native/EnrichedMarkdownText.tsx",
+    calls: [],
+    // A reply's markdown goes through the view we wrap, with its own code renderer for ours
+    // to fall back on, and a block says whether its fence has closed.
+    says: ["<EnrichedMarkdownText", "renderers={renderers}", "block.isComplete"],
   },
 };
 const packages: Readonly<Record<string, string>> = PACKAGES;
@@ -625,10 +642,11 @@ describe("the phone's substitutes for upstream modules", () => {
   });
 
   it("upstream still imports each substituted package and calls what we replace", () => {
-    for (const [name, { importer, calls }] of Object.entries(PACKAGE_CASES)) {
+    for (const [name, { importer, calls, says = [] }] of Object.entries(PACKAGE_CASES)) {
       const source = NodeFS.readFileSync(fromRepo(importer), "utf8");
       expect(source, importer).toMatch(new RegExp(`(?:from |import\\()"${name}"`));
       for (const call of calls) expect(source, importer).toContain(`.${call}(`);
+      for (const words of says) expect(source, importer).toContain(words);
     }
   });
 
@@ -727,6 +745,13 @@ describe("the phone's substitutes for upstream modules", () => {
     expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
       typeof import("expo-image-picker")
     >();
+    // The package's namespace isn't ours by identity, so: the same names, and the view we wrap.
+    expectTypeOf<keyof typeof import("./react-native-enriched-markdown")>().toEqualTypeOf<
+      keyof typeof import("react-native-enriched-markdown")
+    >();
+    expectTypeOf<
+      typeof import("./react-native-enriched-markdown").EnrichedMarkdownText
+    >().toEqualTypeOf<typeof import("react-native-enriched-markdown").EnrichedMarkdownText>();
   });
 
   it("upstream's views still import what we replace from the substituted module", () => {
