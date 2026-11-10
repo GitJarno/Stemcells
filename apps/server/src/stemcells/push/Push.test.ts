@@ -63,6 +63,7 @@ const flyingList = (count: number): NeedsList => ({
     line: null,
     createdAt: "2026-11-04T00:00:00.000Z",
     since: null,
+    holds: null,
     landing: null,
     brief: null,
   })),
@@ -221,6 +222,45 @@ it.effect("a waiting card reaches the phone once nobody is here, and only once",
     yield* TestClock.adjust(HOLD_MS);
     yield* w.tick;
     assert.strictEqual((yield* Queue.take(w.sent)).notice.alert?.threadId, "thread-b");
+  }).pipe(Effect.scoped),
+);
+
+it.effect("a usage limit that holds many Cells reaches the phone as one push", () =>
+  Effect.gen(function* () {
+    const w = yield* world();
+    yield* w.register("aa11");
+    const since = DateTime.formatIso(DateTime.makeUnsafe(0));
+    const held = (threadId: string) => ({
+      threadId,
+      projectId: "project-1",
+      title: threadId,
+      since,
+      carriesOn: true,
+    });
+    const limit = {
+      key: "limit:claudeAgent:1",
+      kind: "limit" as const,
+      providerInstanceId: "claudeAgent",
+      resetAt: null,
+      since,
+      waits: "you" as const,
+      cells: [held("thread-a"), held("thread-b"), held("thread-c")],
+    };
+    yield* Queue.offer(w.lists, { ...listOf(), conditions: [limit] });
+    yield* TestClock.adjust(HOLD_MS);
+    yield* w.tick;
+    const { notice } = yield* Queue.take(w.sent);
+    assert.deepStrictEqual(
+      [notice.alert?.title, notice.alert?.body, notice.badge],
+      ["Usage limit reached", "3 Cells hold. The limit didn't say when it resets.", null],
+    );
+    // The same limit, a Cell more: nothing buzzes again.
+    yield* Queue.offer(w.lists, {
+      ...listOf(),
+      conditions: [{ ...limit, cells: [...limit.cells, held("thread-d")] }],
+    });
+    yield* w.tick;
+    assert.strictEqual(yield* Queue.size(w.sent), 0);
   }).pipe(Effect.scoped),
 );
 

@@ -9,6 +9,7 @@ import * as Semaphore from "effect/Semaphore";
 import * as Stream from "effect/Stream";
 
 import { type Charge, lowBatteryPush } from "../../../../../stemcells/words/battery.ts";
+import type { Condition } from "../needs/conditions.ts";
 import type { Need } from "../needs/derive.ts";
 import * as Needs from "../needs/Needs.ts";
 import * as Upstream from "../upstream/push.ts";
@@ -22,7 +23,7 @@ import {
   type Notice,
   type Sent,
 } from "./apns.ts";
-import { alertWords, due, runningOut } from "./notify.ts";
+import { alertWords, conditionWords, due, dueConditions, runningOut } from "./notify.ts";
 
 /** A phone that asked for pushes: its APNs token, which of Apple's services it's on, and its app's bundle id. */
 export interface Device {
@@ -106,6 +107,7 @@ export const make = Effect.fn("Push.make")(function* (
   let token: { readonly value: string; readonly at: number } | null = null;
   let last: PushStatus["last"] = null;
   let needs: ReadonlyArray<Need> = [];
+  let conditions: ReadonlyArray<Condition> = [];
   const pushed = new Set<string>();
   /** The count of Cells at Input the phones' icons last took from this Mac; null until one did. */
   let badged: number | null = null;
@@ -228,14 +230,25 @@ export const make = Effect.fn("Push.make")(function* (
     // The icon counts what the phone's Input segment counts of this Mac: every card.
     const count = needs.length;
     const waiting = due(needs, pushed, now);
+    const held = dueConditions(conditions, pushed, now);
     // A card waiting while the person is here stays unpushed: if they go, it buzzes then.
-    if (waiting.length > 0 && (yield* source.away)) {
+    if ((waiting.length > 0 || held.length > 0) && (yield* source.away)) {
       for (const need of waiting) {
         const results = yield* sendAll({ alert: alertOf(need), badge: count }, now);
         // Apple out of reach, or a key that doesn't sign: the next look tries again.
         if (results.every(({ sent }) => isTransient(sent))) continue;
         pushed.add(need.key);
         badged = count;
+      }
+      // One push for a stop many Cells share, and no card: the icon's count stays as it is.
+      for (const condition of held) {
+        const alert = {
+          ...conditionWords(condition, now),
+          threadId: condition.key,
+          data: { environmentId: source.environmentId, threadId: "", deepLink: "" },
+        };
+        const results = yield* sendAll({ alert, badge: null }, now);
+        if (!results.every(({ sent }) => isTransient(sent))) pushed.add(condition.key);
       }
     }
     // A card answered anywhere lowers the icon without a sound; a rise waits for its alert.
@@ -248,8 +261,12 @@ export const make = Effect.fn("Push.make")(function* (
   const onList = (list: Needs.NeedsList) =>
     Effect.sync(() => {
       needs = list.needs;
-      flying = list.cells.filter((cell) => cell.stage === "working").length;
-      const live = new Set(list.needs.map((need) => need.key));
+      conditions = list.conditions ?? [];
+      flying = list.cells.filter((cell) => cell.stage === "working" && cell.holds === null).length;
+      const live = new Set([
+        ...list.needs.map((need) => need.key),
+        ...conditions.map((condition) => condition.key),
+      ]);
       for (const key of pushed) if (!live.has(key)) pushed.delete(key);
     });
 

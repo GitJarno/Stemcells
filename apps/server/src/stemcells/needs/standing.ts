@@ -13,6 +13,8 @@ import type { Proof } from "./verdict.ts";
 export interface Standing {
   readonly needsYou: number;
   readonly atWork: number;
+  /** Stopped by a cause many Cells share, such as an account's usage limit. */
+  readonly holding: number;
   readonly done: number;
   readonly report: string;
 }
@@ -45,10 +47,6 @@ function asked(need: Need): string {
       return "needs you to sign in to its provider again";
     case "input":
       return `${request?.appName ?? "an app"} asks for input`;
-    case "limit":
-      return need.limit?.resetAt
-        ? `out of its usage limit until ${need.limit.resetAt}`
-        : "out of its usage limit";
     case "failed":
       return need.failure?.message ? `failed: ${clip(need.failure.message)}` : "failed";
     case "plan":
@@ -117,7 +115,9 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
   const project = (projectId: string) => projectTitles.get(projectId) ?? projectId;
   const titles = new Map(list.cells.map((cell) => [cell.threadId, cell.title]));
   const needs = list.needs.toSorted((a, b) => a.number - b.number);
-  const atWork = list.cells.filter((cell) => cell.stage === "working");
+  const atWork = list.cells.filter((cell) => cell.stage === "working" && cell.holds === null);
+  const conditions = list.conditions ?? [];
+  const holding = conditions.reduce((count, condition) => count + condition.cells.length, 0);
   const done = list.cells.filter((cell) => cell.stage === "done");
   const lines: string[] = [];
   lines.push(needs.length === 0 ? "Nothing needs you." : `Needs you (${needs.length}):`);
@@ -136,6 +136,19 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
       lines.push(`${link(cell.title, cell.threadId)} · ${project(cell.projectId)}${line}`);
     }
   }
+  for (const condition of conditions) {
+    const until =
+      condition.resetAt === null
+        ? "no reset stated"
+        : `resets ${condition.resetAt}${condition.waits === "reset" ? ", then they carry on by themselves" : ""}`;
+    lines.push(
+      "",
+      `Holding (${condition.cells.length}): usage limit on ${condition.providerInstanceId}, ${until}. Nothing to answer in any of them:`,
+    );
+    for (const cell of condition.cells) {
+      lines.push(`${link(cell.title, cell.threadId)} · ${project(cell.projectId)}`);
+    }
+  }
   if (done.length > 0) {
     lines.push("", `Done, not settled (${done.length}):`);
     for (const cell of done) {
@@ -145,6 +158,7 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
   return {
     needsYou: needs.length,
     atWork: atWork.length,
+    holding,
     done: done.length,
     report: lines.join("\n"),
   };

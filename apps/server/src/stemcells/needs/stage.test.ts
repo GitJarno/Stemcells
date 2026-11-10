@@ -96,6 +96,23 @@ describe("a Cell's stage", () => {
     expect(stageOf(carryingOn)).toBe("working");
   });
 
+  it("holds a Cell a usage limit stopped, armed or not: working on the wire, and neither asking nor done", () => {
+    const stopped = shellFixture({
+      status: "failed",
+      lastErrorClass: "usage_limit",
+      usageLimitResetAt: null,
+      latestRunCompletedAt: at(-MINUTE),
+    });
+    const [cell] = standingsOf([stopped], cardsOf(stopped), new Map(), NOW);
+    expect(cell).toMatchObject({
+      stage: "working",
+      holds: "limit:codex:unknown",
+      since: DateTime.formatIso(at(-MINUTE)),
+    });
+    const flying = shellFixture({ status: "running", activeRunId: runId("run-2") });
+    expect(standingsOf([flying], [], new Map(), NOW)[0]?.holds).toBeNull();
+  });
+
   it("is done when its turn ended and nothing holds it, with its own line", () => {
     const [cell] = standingsOf(
       [shellFixture()],

@@ -30,6 +30,7 @@ const cell = (
   line: null,
   createdAt: "2026-10-24T08:00:00.000Z",
   since: null,
+  holds: null,
   landing: null,
   brief: null,
   ...over,
@@ -87,6 +88,47 @@ describe("the room in words", () => {
       "[Pip](t3-thread://v1/t-pip) · Atlas · #281 merged",
     ]);
     expect(standing).toMatchObject({ needsYou: 2, atWork: 1, done: 1 });
+  });
+
+  it("lists Cells a usage limit holds once, under the limit, and out of the Cells at work", () => {
+    const held = { projectId: "p-atlas", since: "2026-10-24T09:00:00.000Z", carriesOn: true };
+    const standing = standingOf(
+      {
+        later: [],
+        needs: [],
+        cells: [
+          cell({ threadId: "t-otter", stage: "working", holds: "limit:claude:1" }),
+          cell({ threadId: "t-pip", stage: "working", title: "Pip", holds: "limit:claude:1" }),
+          cell({ threadId: "t-wren", stage: "working", title: "Wren" }),
+        ],
+        conditions: [
+          {
+            key: "limit:claude:1",
+            kind: "limit",
+            providerInstanceId: "claude",
+            resetAt: "2026-10-24T14:00:00.000Z",
+            since: "2026-10-24T09:00:00.000Z",
+            waits: "reset",
+            cells: [
+              { ...held, threadId: "t-otter", title: "Otter" },
+              { ...held, threadId: "t-pip", title: "Pip" },
+            ],
+          },
+        ],
+      },
+      new Map([["p-atlas", "Atlas"]]),
+    );
+    expect(standing.report.split("\n")).toEqual([
+      "Nothing needs you.",
+      "",
+      "At work (1):",
+      "[Wren](t3-thread://v1/t-wren) · Atlas",
+      "",
+      "Holding (2): usage limit on claude, resets 2026-10-24T14:00:00.000Z, then they carry on by themselves. Nothing to answer in any of them:",
+      "[Otter](t3-thread://v1/t-otter) · Atlas",
+      "[Pip](t3-thread://v1/t-pip) · Atlas",
+    ]);
+    expect(standing).toMatchObject({ needsYou: 0, atWork: 1, holding: 2, done: 0 });
   });
 
   it("says how each done Cell landed and what shows it, so a bare Done isn't passed on", () => {
