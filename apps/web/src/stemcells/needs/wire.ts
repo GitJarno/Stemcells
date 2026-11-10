@@ -125,6 +125,52 @@ export interface Need {
       | null;
     readonly message: string | null;
   } | null;
+  /** Absent from a server before the brief. */
+  readonly brief?: Brief | null;
+}
+
+/**
+ * What stands beside a Cell's own words (stemcells/tasks/aski-brief.md): what it was told to do
+ * and what its run shows, from T3's records.
+ */
+export interface Brief {
+  /** The instruction the Cell is on. */
+  readonly goal: string | null;
+  /** The files and lines the run changed; null when it changed none. */
+  readonly changed: {
+    readonly files: number;
+    readonly additions: number;
+    readonly deletions: number;
+  } | null;
+  /** Each kind of check the run ran, as it last ended. */
+  readonly checks: ReadonlyArray<{
+    readonly kind: "test" | "typecheck" | "lint" | "build";
+    readonly ok: boolean;
+  }>;
+  readonly pullRequest: {
+    readonly number: number;
+    readonly url: string;
+    readonly state: "open" | "closed" | "merged";
+    readonly draft: boolean;
+    readonly checks: "passing" | "failing" | "pending" | null;
+    readonly conflicts: boolean;
+  } | null;
+}
+
+/** How a done Cell landed: shown by a fact, on its word alone, or short. */
+export interface Landing {
+  readonly verdict: "shown" | "claimed" | "short";
+  /** The fact the verdict stands on. */
+  readonly proof:
+    | "stopped"
+    | "rolled-back"
+    | "failed"
+    | "pr-checks-failing"
+    | "check-failed"
+    | "pr-merged"
+    | "pr-checks-passing"
+    | "checks-clean"
+    | "word";
 }
 
 /** A Cell's stage: at work, needs you, or done (aski-manager.md, decision 7). */
@@ -140,6 +186,9 @@ export interface CellStanding {
   readonly line: string | null;
   /** The roster lists the newest first. */
   readonly createdAt: string;
+  /** How a done Cell landed; null at any other stage, absent from a server before the brief. */
+  readonly landing?: Landing | null;
+  readonly brief?: Brief | null;
 }
 
 /** An ask the person put off: its Cell is snoozed until `until`, then it is back. */

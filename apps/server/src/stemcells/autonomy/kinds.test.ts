@@ -20,6 +20,7 @@ const base: Need = {
   failure: null,
   prose: null,
   stuck: null,
+  brief: null,
 };
 
 const prose = (cue: "stopped" | "offer", text: string): Need => ({

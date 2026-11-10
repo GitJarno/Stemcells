@@ -9,6 +9,8 @@ import * as DateTime from "effect/DateTime";
 import { isSnoozed, type Shell } from "../upstream/needs.ts";
 import type { Stop } from "./closeOut.ts";
 import { ACTIVE_RUN, askiThreadOf, carriesOn, waitsOnItsOwn, type Need } from "./derive.ts";
+import type { Brief } from "./evidence.ts";
+import { landingOf, type Landing } from "./verdict.ts";
 
 export type Stage = "working" | "needs-you" | "done";
 
@@ -22,6 +24,10 @@ export interface CellStanding {
   readonly line: string | null;
   /** When it was made: the roster lists the newest first and never reorders. */
   readonly createdAt: string;
+  /** How a done Cell landed, and the fact that says so (`verdict.ts`); null at any other stage. */
+  readonly landing: Landing | null;
+  /** What it was told and what its last run shows; null while it works unasked, or unread. */
+  readonly brief: Brief | null;
 }
 
 /**
@@ -35,6 +41,7 @@ export function standingsOf(
   stops: ReadonlyMap<string, Stop>,
   now: number,
   autoResume = false,
+  briefs: ReadonlyMap<string, Brief> = new Map(),
 ): ReadonlyArray<CellStanding> {
   const aski = askiThreadOf(shells);
   const needsYou = new Set(needs.flatMap((need) => [need.parentThreadId ?? need.threadId]));
@@ -53,6 +60,7 @@ export function standingsOf(
       carriesOn(shell, now, autoResume) ||
       stop?.waits === true;
     const stage: Stage = needsYou.has(shell.id) ? "needs-you" : atWork ? "working" : "done";
+    const brief = briefs.get(shell.id) ?? null;
     return [
       {
         threadId: shell.id,
@@ -61,6 +69,8 @@ export function standingsOf(
         stage,
         line: stage === "needs-you" || stop === null ? null : stop.line,
         createdAt: DateTime.formatIso(shell.createdAt),
+        landing: stage === "done" ? landingOf(shell.status, brief) : null,
+        brief,
       },
     ];
   });

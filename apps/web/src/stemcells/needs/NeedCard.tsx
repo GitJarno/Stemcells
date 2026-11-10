@@ -330,6 +330,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
           ))}
         </ol>
       ) : null}
+      {card.goal ? <Goal text={card.goal} open={flag !== null || whole} /> : null}
       {card.quote ? (
         <Context text={card.quote} cell={ref} repo={repo} open={flag !== null || whole} />
       ) : null}
@@ -340,6 +341,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
           <Words text={card.next} cell={ref} repo={repo} />
         </div>
       ) : null}
+      {card.changed !== null || card.facts.length > 0 ? <Facts card={card} cell={ref} /> : null}
       {card.why ? <p data-need-why="">{card.why}</p> : null}
       {card.note ? <p data-need-note="">{card.note}</p> : null}
       {flag === "asking" ? (
@@ -447,28 +449,96 @@ function Words(props: WordsProps) {
 export const plainOf = (text: string): string =>
   text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");
 
-/** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */
-function Context(props: WordsProps & { open: boolean }) {
+/** Whether folded words run past their lines, measured as the ask resizes; never once `more` shows them all. */
+function useRunsLong(more: boolean) {
   const body = useRef<HTMLDivElement>(null);
   const [long, setLong] = useState(false);
-  const [opened, setOpened] = useState(false);
-  const more = opened || props.open;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure whether the words run past their two lines as the ask resizes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure whether the words run past their lines as the ask resizes.
   useLayoutEffect(() => {
     const element = body.current;
     if (element === null || more) return;
     return observeResize(element, () => setLong(element.scrollHeight > element.clientHeight + 1));
   }, [more]);
+  return { body, long: long && !more };
+}
+
+/** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */
+function Context(props: WordsProps & { open: boolean }) {
+  const [opened, setOpened] = useState(false);
+  const more = opened || props.open;
+  const { body, long } = useRunsLong(more);
   return (
     <div data-need-context="" data-more={more || undefined}>
       <div ref={body}>
         <Words text={props.text} cell={props.cell} repo={props.repo} />
       </div>
-      {long && !more ? (
+      {long ? (
         <button type="button" onClick={() => setOpened(true)}>
           More
         </button>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * What the Cell was told, one line until More: the ask is read against it. The person's own
+ * words, so plain text, never markup.
+ */
+function Goal(props: { text: string; open: boolean }) {
+  const [opened, setOpened] = useState(false);
+  const more = opened || props.open;
+  const { body, long } = useRunsLong(more);
+  return (
+    <div data-need-context="" data-need-goal="" data-more={more || undefined}>
+      <div ref={body}>
+        <span>Asked</span> {props.text}
+      </div>
+      {long ? (
+        <button type="button" onClick={() => setOpened(true)}>
+          More
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * What the run shows, on one line: lines changed with their bar, each check as it ended, the
+ * pull request linked. A failing fact takes the error's ink; nothing here is the Cell's word.
+ */
+function Facts(props: { card: Card; cell: ReturnType<typeof cellRef> | null }) {
+  const { changed, facts } = props.card;
+  return (
+    <div data-need-facts="">
+      {changed === null ? null : (
+        <span data-need-fact="">
+          {changed.bar.length > 0 ? (
+            <span data-need-bar="" aria-hidden="true">
+              {changed.bar.map((cell, index) => (
+                // oxlint-disable-next-line react/no-array-index-key -- Five cells in a fixed order.
+                <i key={index} data-cell={cell} />
+              ))}
+            </span>
+          ) : null}
+          {changed.words}
+        </span>
+      )}
+      {facts.map((fact) => (
+        <span key={fact.id} data-need-fact="" data-tone={fact.tone}>
+          {fact.href === null ? (
+            fact.text
+          ) : (
+            <ChatMarkdown
+              inline
+              text={`[${fact.text}](${fact.href})`}
+              cwd={undefined}
+              threadRef={props.cell ?? undefined}
+              parseRawHtml={false}
+            />
+          )}
+        </span>
+      ))}
     </div>
   );
 }

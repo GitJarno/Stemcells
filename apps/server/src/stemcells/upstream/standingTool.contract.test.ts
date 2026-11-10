@@ -58,6 +58,8 @@ const room = registerStandingTool(McpHttpServer.toolkitRegistration).pipe(
               stage: "done",
               line: "#281 merged",
               createdAt: "2026-10-24T08:00:00.000Z",
+              landing: null,
+              brief: null,
             },
           ],
         }),

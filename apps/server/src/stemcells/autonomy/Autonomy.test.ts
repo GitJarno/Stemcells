@@ -46,6 +46,7 @@ const need = (key: string, threadId: string, kind: "failed" | "prose", since = L
         }
       : null,
   stuck: null,
+  brief: null,
 });
 
 const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, later: [], cells: [] });

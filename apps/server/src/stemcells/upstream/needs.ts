@@ -5,6 +5,8 @@
  * own shell stream and its MCP request tools read them.
  */
 import type {
+  OrchestrationV2Checkpoint,
+  OrchestrationV2ConversationMessage,
   OrchestrationV2DomainEvent,
   OrchestrationV2StoredEvent,
   OrchestrationV2ThreadShell,
@@ -23,11 +25,13 @@ import * as Stream from "effect/Stream";
 import * as SqlClient from "effect/sql/SqlClient";
 
 import { loadShellSnapshotParts } from "../../orchestration-v2/ShellStream.ts";
+import { projectTurnItemForWire } from "../../orchestration-v2/WireProjection.ts";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";
 import { isSnoozed as threadIsSnoozed } from "../../orchestration-v2/ThreadSettlementService.ts";
 import * as OrchestrationEventStore from "../../persistence/OrchestrationEventStore.ts";
 import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
 import * as ServerSettings from "../../serverSettings.ts";
+import type { PullRequestFact, RunRecords } from "../needs/evidence.ts";
 
 export type Shell = OrchestrationV2ThreadShell;
 export type ShellThreadId = ThreadId;
@@ -147,6 +151,11 @@ export interface NeedsSource {
   readonly reply: (threadId: ThreadId, runId: string) => Effect.Effect<string | null>;
   /** What a running run is in the middle of; null when it can't be read. */
   readonly inFlight: (threadId: ThreadId, runId: string) => Effect.Effect<InFlight | null>;
+  /**
+   * What a run left in the records: who told the Cell what, the commands it ran to their end
+   * and the files it changed. Null when they can't be read.
+   */
+  readonly records: (threadId: ThreadId, runId: string) => Effect.Effect<RunRecords | null>;
   /** Settings' "Auto-resume limited threads": a limit's Cell carries on at the reset. */
   readonly autoResume: Effect.Effect<boolean>;
 }
@@ -194,6 +203,87 @@ export const latestHandSettles = (
       Effect.orElseSucceed(() => []),
     ),
   ).pipe(Effect.map((each) => each.flat()));
+
+/**
+ * The Cell's pull request as upstream last read it: the one its chat is linked to, else the
+ * latest it linked. Null without one, or before upstream has read it.
+ */
+export function pullRequestOf(shell: Shell): PullRequestFact | null {
+  const links = (shell.pullRequests ?? []).filter((link) => link.source !== "stack-dismissed");
+  const number = (shell.linkedPullRequest ?? shell.branchPullRequest)?.number;
+  const link =
+    links.find((each) => each.number === number) ??
+    [...links].sort((a, b) => a.linkedAt.localeCompare(b.linkedAt)).at(-1);
+  const snapshot = link?.snapshot ?? null;
+  if (link === undefined || snapshot === null) return null;
+  return {
+    number: link.number,
+    url: link.url,
+    state: snapshot.state,
+    draft: snapshot.isDraft,
+    checks: snapshot.checksState ?? null,
+    conflicts: snapshot.mergeability === "conflicting",
+  };
+}
+
+/** A command that ran to its end; one still running, or stopped, shows nothing yet. */
+const RAN: ReadonlySet<OrchestrationV2TurnItem["status"]> = new Set(["completed", "failed"]);
+
+/** Upstream's own rule for a failed command, the one its chat marks a command red by. */
+function commandFailed(item: OrchestrationV2TurnItem): boolean {
+  if (item.status === "failed") return true;
+  const shown = projectTurnItemForWire(item);
+  return shown.type === "command_execution" && shown.outputIndicatesFailure === true;
+}
+
+/** What a run's brief reads, in one read (`needs.contract.test.ts` reads the real store with it). */
+export const RUN_RECORD_FIELDS = ["messages", "turnItems", "checkpoints"] as const;
+export const runRecordsFilter = (runId: string) =>
+  ({
+    messageRoles: ["user"],
+    turnItemRunIds: [runId as RunId],
+    turnItemTypes: ["command_execution"],
+  }) as const;
+
+/**
+ * Who told the Cell what, oldest first; the commands `runId` ran to their end; and the files
+ * its checkpoint counts. A message upstream sent in the person's seat (a wake, a notification,
+ * a compaction, a workflow's script) is news, never an instruction.
+ */
+export function runRecordsOf(
+  read: {
+    readonly messages: ReadonlyArray<OrchestrationV2ConversationMessage>;
+    readonly turnItems: ReadonlyArray<OrchestrationV2TurnItem>;
+    readonly checkpoints: ReadonlyArray<OrchestrationV2Checkpoint>;
+  },
+  runId: string,
+): RunRecords {
+  return {
+    told: read.messages
+      .filter((message) => message.role === "user" && !message.streaming)
+      .toSorted((a, b) => DateTime.toEpochMillis(a.createdAt) - DateTime.toEpochMillis(b.createdAt))
+      .map((message) => ({
+        text: message.text,
+        news:
+          message.notification !== undefined ||
+          message.scheduledTaskId !== undefined ||
+          message.idleCompaction !== undefined ||
+          message.delegatedCompletion !== undefined ||
+          message.workflowScript === true,
+      })),
+    // In the order they ran: a kind of check stands on its last run.
+    ran: read.turnItems
+      .toSorted((a, b) => a.ordinal - b.ordinal)
+      .flatMap((item) =>
+        item.type === "command_execution" && item.runId === runId && RAN.has(item.status)
+          ? [{ command: item.input, failed: commandFailed(item) }]
+          : [],
+      ),
+    files: read.checkpoints
+      .filter((checkpoint) => checkpoint.runId === runId && checkpoint.status === "ready")
+      .flatMap((checkpoint) => checkpoint.files),
+  };
+}
 
 /** Items a run is in the middle of that are the model's own words, not a tool call. */
 const OWN_WORDS: ReadonlySet<OrchestrationV2TurnItem["type"]> = new Set([
@@ -361,6 +451,12 @@ export const makeNeedsSource = Effect.gen(function* () {
         Effect.catchCause(() => Effect.succeed(null)),
       );
 
+  const records = (threadId: ThreadId, runId: string) =>
+    threads.getThreadRecords(threadId, RUN_RECORD_FIELDS, runRecordsFilter(runId)).pipe(
+      Effect.map((read) => runRecordsOf(read, runId)),
+      Effect.catchCause(() => Effect.succeed(null)),
+    );
+
   return {
     ready,
     snapshot,
@@ -371,6 +467,7 @@ export const makeNeedsSource = Effect.gen(function* () {
     plan,
     reply,
     inFlight,
+    records,
     autoResume: settings.getSettings.pipe(
       Effect.map((current) => current.autoResumeLimitedThreads),
       Effect.orElseSucceed(() => false),

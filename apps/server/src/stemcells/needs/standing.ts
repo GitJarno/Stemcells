@@ -6,6 +6,9 @@
  */
 import type { NeedsList } from "./Needs.ts";
 import type { Need } from "./derive.ts";
+import type { Brief } from "./evidence.ts";
+import type { CellStanding } from "./stage.ts";
+import type { Proof } from "./verdict.ts";
 
 export interface Standing {
   readonly needsYou: number;
@@ -67,6 +70,49 @@ function asked(need: Need): string {
   }
 }
 
+/** How a done Cell landed, said so Aski can pass it on without believing a bare "Done". */
+const LANDED: Readonly<Record<Proof, string>> = {
+  stopped: "landed short: its run was stopped before it finished",
+  "rolled-back": "landed short: its run was rolled back",
+  failed: "landed short: its run failed",
+  "pr-checks-failing": "landed short: its pull request's checks fail",
+  "check-failed": "landed short: a check it ran last failed",
+  "pr-merged": "shown: its pull request merged",
+  "pr-checks-passing": "shown: its pull request's checks pass",
+  "checks-clean": "shown: the checks it ran ended clean",
+  word: "its word only: nothing it ran or opened shows it",
+};
+
+const CHECKS = { test: "tests", typecheck: "typecheck", lint: "lint", build: "build" } as const;
+
+/** What the run shows, as counted facts. */
+function facts(brief: Brief | null): ReadonlyArray<string> {
+  if (brief === null) return [];
+  const { changed, checks, pullRequest } = brief;
+  return [
+    ...(changed === null
+      ? []
+      : [`+${changed.additions} −${changed.deletions} in ${changed.files} files`]),
+    ...checks.map((check) => `${CHECKS[check.kind]} ${check.ok ? "clean" : "failed"}`),
+    ...(pullRequest === null
+      ? []
+      : [
+          `#${pullRequest.number} ${pullRequest.draft ? "draft" : pullRequest.state}${
+            pullRequest.state === "open" && pullRequest.checks !== null
+              ? `, checks ${pullRequest.checks}`
+              : ""
+          }${pullRequest.conflicts ? ", conflicts" : ""}`,
+        ]),
+  ];
+}
+
+/** A done Cell's own word, then how it landed and what shows it. */
+function landed(cell: CellStanding): string {
+  const said = cell.line ? [clip(cell.line)] : [];
+  const how = cell.landing === null ? [] : [LANDED[cell.landing.proof]];
+  return [...said, ...how, ...facts(cell.brief)].map((part) => ` · ${part}`).join("");
+}
+
 export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, string>): Standing {
   const project = (projectId: string) => projectTitles.get(projectId) ?? projectId;
   const titles = new Map(list.cells.map((cell) => [cell.threadId, cell.title]));
@@ -78,8 +124,9 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
   for (const need of needs) {
     const parent = need.parentThreadId === null ? null : titles.get(need.parentThreadId);
     const who = parent ? `${parent} › ${need.title}` : need.title;
+    const goal = need.brief?.goal ? ` · told: ${clip(need.brief.goal)}` : "";
     lines.push(
-      `${need.number} ${link(who, need.threadId)} · ${project(need.projectId)} · ${asked(need)}`,
+      `${need.number} ${link(who, need.threadId)} · ${project(need.projectId)} · ${asked(need)}${goal}`,
     );
   }
   if (atWork.length > 0) {
@@ -92,8 +139,7 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
   if (done.length > 0) {
     lines.push("", `Done, not settled (${done.length}):`);
     for (const cell of done) {
-      const line = cell.line ? ` · ${clip(cell.line)}` : "";
-      lines.push(`${link(cell.title, cell.threadId)} · ${project(cell.projectId)}${line}`);
+      lines.push(`${link(cell.title, cell.threadId)} · ${project(cell.projectId)}${landed(cell)}`);
     }
   }
   return {

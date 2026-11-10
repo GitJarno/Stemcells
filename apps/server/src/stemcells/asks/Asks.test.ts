@@ -25,6 +25,7 @@ const need = (key: string, kind: Need["kind"]): Need => ({
   failure: null,
   prose: null,
   stuck: null,
+  brief: null,
 });
 
 const listOf = (...needs: ReadonlyArray<Need>): NeedsList => ({ needs, later: [], cells: [] });
