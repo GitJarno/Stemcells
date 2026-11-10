@@ -20,6 +20,9 @@ have to trust.
 - **Changed.** Files and lines the run changed, from its checkpoints.
 - **Checks.** The run's own test, typecheck, lint and build commands, each
   kind's last outcome, failed by upstream's own rule for a failed command.
+  A command is a check only where it runs one: `pnpm test` is, and
+  `grep lint src`, `pnpm add vitest` and a commit message that says
+  "typecheck" are not.
 - **Pull request.** The Cell's linked pull request: its state, its checks
   and whether it conflicts, from upstream's snapshot.
 
@@ -74,5 +77,6 @@ no line; it now lands short and says why.
 
 ## Next
 
-- Aski's room as a board of runs, drawn from `cells`.
-- A push that carries the ask itself and lands on its card.
+- Aski's room as a board of runs, drawn from `cells`: `aski-board.md`.
+- A push that carries the ask itself: `phone-push.md`, slice 7. Landing
+  on its card from the tap is still open.
