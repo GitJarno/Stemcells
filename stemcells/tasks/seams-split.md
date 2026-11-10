@@ -28,8 +28,8 @@ made the formatter pad every row again.
   #104, #109, #111) each added a row on the same few lines, for the web's
   `tsconfig.json`. One landed change re-padded the whole table (#65, 192
   lines); the rest avoided that by padding a row by hand and never running
-  the formatter on the file. A file per part cuts the first; no padding
-  ends the second.
+  the formatter on the file. A file per part and path order make the first
+  rarer; no padding ends the second.
 - **Path order, not the order rows arrived in.** With an order, a row has
   one line it belongs on, and two pull requests meet only when they add
   beside the same row. Nothing enforces it: a row out of order still works.
@@ -65,6 +65,6 @@ is missing.
   name the file it was added to.
 - The rows moved are the rows that were: compared cell by cell, but for
   the one dropped.
-- Still colliding: the web's `tsconfig.json` itself. Every feature that
-  shares root code with the web adds an `include` line there, and a row
-  for it. A glob in that `include` would end both; not done here.
+- Not cured: two pull requests that add rows beside the same row still
+  meet, as those five would have if their labels sorted next to each
+  other.
