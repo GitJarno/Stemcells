@@ -52,19 +52,23 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
   const starts = yield* Queue.unbounded<number>();
   /** A null ends the tap, as a failed read would. */
   const feed = yield* Queue.unbounded<LedgerChange | null>();
-  const log = { latest: 10, prunedThrough: 0 };
+  /** One for each time every chat's id was paged to the end: a backfill pass read them all. */
+  const passes = yield* Queue.unbounded<void>();
+  /** `unreadable` taps fail as they start: upstream's log can't be replayed for them. */
+  const log = { latest: 10, prunedThrough: 0, unreadable: 0 };
   const source: LedgerSource = {
     ready: Effect.void,
     environmentId: "environment-mac",
     open: openLedgerFile(file),
-    sequences: Effect.sync(() => ({ ...log })),
+    sequences: Effect.sync(() => ({ latest: log.latest, prunedThrough: log.prunedThrough })),
     changes: (afterSequence) =>
       Stream.unwrap(
-        Effect.as(
-          Queue.offer(starts, afterSequence),
-          Stream.fromQueue(feed).pipe(
-            Stream.takeWhile((change): change is LedgerChange => change !== null),
-          ),
+        Effect.map(Queue.offer(starts, afterSequence), () =>
+          log.unreadable-- > 0
+            ? Stream.die("an event this build can't read")
+            : Stream.fromQueue(feed).pipe(
+                Stream.takeWhile((change): change is LedgerChange => change !== null),
+              ),
         ),
       ),
     threads: (threadIds) =>
@@ -73,12 +77,15 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
         return threadIds.flatMap((id) => (threads.has(id) ? [threads.get(id)!] : []));
       }),
     threadIdsAfter: (after, limit) =>
-      Effect.sync(() =>
-        [...threads.keys()]
+      Effect.suspend(() => {
+        const page = [...threads.keys()]
           .filter((id) => id > after)
           .toSorted()
-          .slice(0, limit),
-      ),
+          .slice(0, limit);
+        return page.length > 0
+          ? Effect.succeed(page)
+          : Effect.as(Queue.offer(passes, undefined), page);
+      }),
   };
   return {
     source,
@@ -93,10 +100,12 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
     },
     /**
      * Ends the tap and waits for the ledger to start it again: every change told is recorded by
-     * then, and so is a backfill under way. The sequence the new tap starts after.
+     * then. The sequence the new tap starts after.
      */
     restarted: Effect.andThen(Queue.offer(feed, null), until(Queue.take(starts))),
     started: until(Queue.take(starts)),
+    /** A backfill pass has read every chat. */
+    passed: until(Queue.take(passes)),
   };
 });
 
@@ -142,6 +151,7 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
         false,
       );
 
+      yield* fake.passed;
       yield* until(ledger.backfilled);
       const first = yield* everyFact(ledger);
       assert.strictEqual(first.length, 32);
@@ -201,7 +211,7 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
       fake.log.latest = 40;
       fake.log.prunedThrough = 30;
       assert.strictEqual(yield* fake.restarted, 40);
-      assert.strictEqual(yield* fake.restarted, 40);
+      yield* fake.passed;
       const third = yield* everyFact(ledger);
       assert.deepStrictEqual(third.slice(0, 34), second);
       assert.deepStrictEqual(
@@ -242,6 +252,39 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
           true,
         );
       }).pipe(Effect.scoped);
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect("gives up a note upstream's log can't be replayed from, once", () =>
+    Effect.gen(function* () {
+      const fake = yield* fakeSource(yield* ledgerFile);
+      fake.put(cell("pip"));
+      const ledger = yield* make(fake.source);
+      assert.strictEqual(yield* fake.started, 10);
+      yield* fake.passed;
+      yield* fake.tell(12, "pip");
+
+      // The tap can't carry on from its note: it starts from now and reads every chat again,
+      // rather than stop for good.
+      fake.log.latest = 30;
+      fake.log.unreadable = 1;
+      assert.strictEqual(yield* fake.restarted, 12);
+      fake.put(cell("wren"));
+      assert.strictEqual(yield* fake.started, 30);
+      yield* fake.passed;
+      assert.deepStrictEqual(
+        (yield* everyFact(ledger)).map((fact) => fact.key),
+        ["born:pip", "born:wren"],
+      );
+
+      // A tap that fails again keeps its note: a broken stream doesn't read every chat over and over.
+      const reads = fake.reads.length;
+      fake.log.latest = 50;
+      fake.log.unreadable = 1;
+      assert.strictEqual(yield* fake.restarted, 30);
+      assert.strictEqual(yield* fake.started, 30);
+      assert.strictEqual(yield* fake.restarted, 30);
+      assert.strictEqual(fake.reads.length, reads);
     }).pipe(Effect.scoped),
   );
 

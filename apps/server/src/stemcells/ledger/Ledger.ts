@@ -6,6 +6,7 @@ import * as Deferred from "effect/Deferred";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as Queue from "effect/Queue";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 
@@ -92,6 +93,18 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
     return kept;
   });
 
+  /** Each start of the tap asks for the backfill, which does nothing once it has finished. */
+  const backfillWanted = yield* Queue.sliding<void>(1);
+  /**
+   * A note upstream's log can't be replayed from (an event this build can't read) would stop
+   * the tap for good, so it is given up: once a run, lest a broken stream read every chat over
+   * and over.
+   */
+  let unreadable = false;
+  let gaveUp = false;
+  /** How often the tap started over: a backfill pass from before one is no longer whole. */
+  let startOvers = 0;
+
   /**
    * Where the tap starts. It carries on from the sequence last noted, so nothing that happened
    * while the server was down, or between a failure and its restart, is missed. Without one,
@@ -99,20 +112,29 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
    */
   const startingPoint = Effect.gen(function* () {
     const { latest, prunedThrough } = yield* source.sequences;
-    const words = yield* store.progress("sequence");
+    const words = unreadable ? null : yield* store.progress("sequence");
+    unreadable = false;
     const noted = words === null ? Number.NaN : Number(words);
-    if (Number.isInteger(noted) && noted <= latest && noted >= prunedThrough) return noted;
+    if (Number.isInteger(noted) && noted <= latest && noted >= prunedThrough) {
+      return { from: noted, resumed: true };
+    }
+    startOvers++;
     yield* store.setProgress("backfill.finished", null);
     yield* store.setProgress("backfill.cursor", null);
     yield* store.setProgress("sequence", String(latest));
-    return latest;
+    return { from: latest, resumed: false };
   });
 
-  const tap = Effect.fn("Ledger.tap")(function* (afterSequence: number) {
+  const tap = Effect.gen(function* () {
+    yield* source.ready;
+    const { from, resumed } = yield* startingPoint;
+    yield* Queue.offer(backfillWanted, undefined);
     let notedAt = yield* Clock.currentTimeMillis;
-    yield* source.changes(afterSequence).pipe(
+    let read = false;
+    yield* source.changes(from).pipe(
       Stream.runForEach(({ sequence, threadIds }) =>
         Effect.gen(function* () {
+          read = true;
           if (threadIds.length > 0) yield* record(threadIds);
           const now = yield* Clock.currentTimeMillis;
           if (threadIds.length === 0 && now - notedAt < NOTE_EVERY_MS) return;
@@ -120,12 +142,20 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
           notedAt = now;
         }),
       ),
+      Effect.onError(() =>
+        Effect.sync(() => {
+          if (!resumed || read || gaveUp) return;
+          gaveUp = true;
+          unreadable = true;
+        }),
+      ),
     );
   });
 
   /** Every chat, a batch at a time with a pause between: it never holds the server up. */
-  const backfill = Effect.gen(function* () {
+  const backfillPass = Effect.gen(function* () {
     if ((yield* store.progress("backfill.finished")) === null) {
+      const pass = startOvers;
       yield* Effect.sleep(BACKFILL_AFTER);
       let cursor = (yield* store.progress("backfill.cursor")) ?? "";
       let kept = 0;
@@ -133,10 +163,13 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
         const threadIds = yield* source.threadIdsAfter(cursor, BATCH);
         if (threadIds.length === 0) break;
         kept += yield* record(threadIds);
+        // The tap started over meanwhile: this pass is void, and the one it asked for begins again.
+        if (pass !== startOvers) return;
         cursor = threadIds.at(-1)!;
         yield* store.setProgress("backfill.cursor", cursor);
         yield* Effect.sleep(PAUSE);
       }
+      if (pass !== startOvers) return;
       yield* store.setProgress("backfill.finished", DateTime.formatIso(yield* DateTime.now));
       yield* Effect.logInfo("The ledger read every chat from before it").pipe(
         Effect.annotateLogs({ facts: kept }),
@@ -145,19 +178,25 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
     yield* Deferred.succeed(backfilled, undefined);
   });
 
-  yield* Effect.gen(function* () {
-    yield* source.ready;
-    const from = yield* startingPoint;
-    yield* Effect.all([tap(from), backfill], { concurrency: 2, discard: true });
-  }).pipe(
-    Effect.catchCauseIf(
-      (cause) => !Cause.hasInterruptsOnly(cause),
-      (cause) => Effect.logWarning("The ledger stopped; it carries on from its last note", cause),
-    ),
-    Effect.andThen(Effect.sleep(RESTART_AFTER)),
-    Effect.forever,
-    Effect.forkScoped,
+  /** Waits to be asked, so no chat is read before the tap knows where it starts. */
+  const backfill = Queue.take(backfillWanted).pipe(
+    Effect.andThen(backfillPass),
+    // A pass that failed is asked for again, from its cursor.
+    Effect.onError(() => Effect.asVoid(Queue.offer(backfillWanted, undefined))),
   );
+
+  // Each on a loop of its own: a tap that can't read doesn't keep the backfill from finishing.
+  for (const work of [tap, backfill]) {
+    yield* work.pipe(
+      Effect.catchCauseIf(
+        (cause) => !Cause.hasInterruptsOnly(cause),
+        (cause) => Effect.logWarning("The ledger stopped; it carries on from its last note", cause),
+      ),
+      Effect.andThen(Effect.sleep(RESTART_AFTER)),
+      Effect.forever,
+      Effect.forkScoped,
+    );
+  }
 
   const page = Effect.fn("Ledger.page")(
     function* (query: LedgerQuery) {

@@ -46,7 +46,7 @@ export interface LedgerRun {
 
 /** A pull request of the chat that merged. */
 export interface LedgerMerge {
-  /** `host/repository#number`: one pull request, whichever chat links it. */
+  /** `host/repository#number`: the pull request, apart from any other on any forge. */
   readonly id: string;
   readonly number: number;
   /** When its forge says it merged, as the forge wrote it; null when it didn't say. */

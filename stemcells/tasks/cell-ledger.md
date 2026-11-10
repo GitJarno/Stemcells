@@ -40,7 +40,7 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   - Asks are every request the run made of the person, blocking or not.
   - The close-out is the kind `needs/closeOut.ts` reads from the run's
     last reply with words in it: `done`, `left` or none.
-  - Each settle is its own fact, keyed by its time.
+  - Each settle the ledger reads is its own fact, keyed by its time.
   - A merge is dated by the forge's `mergedAt`, or by upstream's last read
     when the forge gave none.
 - **Cells only:** not Aski's chat, a subagent's thread or a side chat. A
@@ -52,12 +52,18 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
 - **The tap notes the sequence it has read through**, so a restart carries
   on from there: nothing that happened while the server was down, or
   between a failure and its restart, is missed.
+- **The tap and the backfill each run on a loop of their own**, so a tap
+  that can't read doesn't keep the backfill from finishing. The backfill
+  waits to be asked by the tap, so no chat is read before the tap knows
+  where it starts.
 - **The backfill** is the same deriver over every chat, once: 20 s after
   the server is ready, 10 chats at a time with 200 ms between, on SQLite's
   reader as `upstream/arcs.ts` reads. It notes its cursor after each batch
   and that it finished. When upstream's log no longer reaches the tap's
   note (pruned, or another database), the tap starts from now and every
-  chat is read again; nothing is kept twice.
+  chat is read again; nothing is kept twice. A note the log can't be
+  replayed from (an event this build can't read) is given up the same way,
+  once a run, so a broken stream doesn't read every chat over and over.
 - **`GET /api/stemcells/ledger`**, read scope as the arcs': a page of facts
   in the order they were recorded. `threads=a,b` reads those chats alone;
   `after` and `limit` page; `backfilled` says whether the past is all in.
@@ -70,6 +76,10 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
 - **A rolled-back run keeps its landed fact.** It landed; the ledger says
   what happened. Growth still takes a rollback back, as it reads upstream.
   A run rolled back before the ledger first read it has no fact.
+- **A fact is what the chat says when it is read**, a beat or more after
+  the event. A chat settled and taken up again before that read has no
+  `settled` fact for that settle, and a settle from before the ledger shows
+  only while the chat is still settled.
 - **The driver is the one at first read.** A chat that switches provider
   later keeps the driver it was born with here.
 - **The ledger's own tap, not the needs list's.** It needs each event's
@@ -98,8 +108,9 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   edits: the backfill reads every chat once; a change told twice is kept
   once; a rolled-back run's and a gone chat's facts stay; the next start
   reads no chat again and carries on from its note; a pruned log starts
-  over without a duplicate; an update or a delete is refused; a file that
-  won't open leaves the service standing.
+  over without a duplicate; a note that can't be replayed from is given up
+  once; an update or a delete is refused; a file that won't open leaves the
+  service standing.
 - **A real server**, headless, on a scratch home with fake providers and
   one Replay chat: its `born` fact was recorded 0.3 s after the chat was
   made and its `landed` 0.7 s after the run completed; the endpoint
@@ -110,6 +121,13 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   to 10 ms on the server's own thread. Requests polled every 100 ms took a
   median 4.6 ms during the backfill and 4.1 ms after it (95th percentile
   58 ms and 46 ms, on a Mac busy with other work).
+- **A run's close-out is read once**, as it lands. In the six Replay runs
+  the last reply was final 30 to 150 ms before its run completed. Not
+  checked on a real provider: a reply finished after its run would leave
+  that run's close-out empty for good.
+- **A review of the first commit** found the tap and the backfill sharing
+  one loop, where a tap that kept failing kept the backfill from ever
+  finishing. Each has its own now.
 - **Not measured:** a real database of 10 GB, read cold. Its batches will
   read slower, and a request whose session read queues behind one waits
   that long; the small batch and the pause are what bound it.
