@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import type { Award } from "../../../../../stemcells/ledger/marks.ts";
+import { evidenceOf, MARK_NAMES, saidOf } from "../../../../../stemcells/words/marks.ts";
 import { CellStill } from "../cell/CellStill";
 import type { Ground } from "../cell/keyline";
 import { dayOf, looksOf } from "../cell/looks";
@@ -12,6 +14,7 @@ import {
   ToggleGroup,
   useNowMinuteMs,
 } from "../upstream/settings";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import {
   type Avatar,
   avatarsOf,
@@ -26,13 +29,15 @@ import {
   tallyOf,
   tokensOf,
 } from "./lineage";
+import { MarkGlyph } from "./MarkGlyph";
+import { useMarks } from "./marks";
 import { ProviderCell } from "./ProviderCell";
 import { useSpend } from "./spend";
 
 // Settings › Lineage: every name a Cell has been dealt, and the lives lived under it. A name
 // comes back, so each chat that drew it is a new life of the same avatar, in the look it was
-// dealt the day it was born. A face opens its card with every life. The Cells here stand
-// still: a page of many costs no frames.
+// dealt the day it was born. A face opens its card with every life, and each life lists the
+// marks it earned. The Cells here stand still: a page of many costs no frames.
 
 /** What a life wore: the look its Cell is dealt alone, on the day it was born. */
 const lookOfLife = (life: Life): readonly string[] =>
@@ -212,12 +217,34 @@ function AvatarTile(props: {
   );
 }
 
+/** The marks a life earned, each with what shows it; the day and the sentence on hover. */
+function LifeMarks(props: { readonly awards: readonly Award[] }) {
+  if (props.awards.length === 0) return null;
+  return (
+    <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1" aria-label="Marks">
+      {props.awards.map((award) => (
+        <Tooltip key={award.mark}>
+          <TooltipTrigger render={<li className="flex items-center gap-1.5 text-xs" />}>
+            <MarkGlyph mark={award.mark} className="size-3 shrink-0" />
+            <span className="text-foreground">{MARK_NAMES[award.mark]}</span>
+            <span className="text-muted-foreground tabular-nums">{evidenceOf(award)}</span>
+          </TooltipTrigger>
+          <TooltipPopup side="bottom" align="start">
+            {dateOf(Date.parse(award.at))}: {saidOf(award)}
+          </TooltipPopup>
+        </Tooltip>
+      ))}
+    </ul>
+  );
+}
+
 /** An avatar's every life, oldest first, under its row. */
 function AvatarCard(props: {
   readonly avatar: Avatar;
   readonly now: number;
   readonly ground: Ground;
 }) {
+  const marks = useMarks(props.avatar.lives);
   return (
     <div className="col-span-full flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
       <p className="text-sm font-medium text-foreground">
@@ -247,6 +274,7 @@ function AvatarCard(props: {
                 {spanOf(livedMs(life))}
                 {life.spend !== undefined ? ` · ${spendLine(life.spend)}` : ""}
               </span>
+              <LifeMarks awards={marks.get(life.key) ?? []} />
             </span>
             <span className="shrink-0 text-xs text-muted-foreground">
               {isAwake(life, props.now) ? "Awake" : life.archived ? "Archived" : "Resting"}

@@ -1,6 +1,15 @@
 // The time a Cell worked alone in a run that landed: the run's length less the time it waited
 // on the person. One count for the Cell's growth (`apps/web/src/stemcells/cell/growth.ts`) and
-// the ledger's `landed` fact, so both say the same of a run.
+// the ledger's `landed` fact, so both say the same of a run; and the stages growth counts it
+// against.
+
+const MINUTE = 60_000;
+
+/**
+ * The time worked alone each of growth's stages takes (`stemcells/tasks/cell-growth.md`).
+ * The marks are measured against the same stages, so there is one vocabulary.
+ */
+export const GROWN_MS = { nubs: 10 * MINUTE, arms: 30 * MINUTE, biceps: 120 * MINUTE } as const;
 
 /** A stretch of time, in ms since the epoch. */
 export interface Span {

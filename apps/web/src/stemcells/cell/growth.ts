@@ -5,16 +5,19 @@
 
 import type { Strength } from "./kit.ts";
 
-// The count itself is shared with the ledger, which keeps each landed run's.
+import { GROWN_MS } from "../../../../../stemcells/ledger/alone.ts";
+
+// The count and its stages are shared with the ledger, which keeps each landed run's, and
+// with the marks a Cell earns by them.
 export { aloneIn, type Span } from "../../../../../stemcells/ledger/alone.ts";
 
 const MINUTE = 60_000;
 
 /** The time worked alone each strength takes, strongest first. */
 const GROWN: readonly (readonly [Strength, number])[] = [
-  ["biceps", 120 * MINUTE],
-  ["arms", 30 * MINUTE],
-  ["nubs", 10 * MINUTE],
+  ["biceps", GROWN_MS.biceps],
+  ["arms", GROWN_MS.arms],
+  ["nubs", GROWN_MS.nubs],
 ];
 
 /** A landing whose own run worked alone this long flexes in place of the cheer. */
