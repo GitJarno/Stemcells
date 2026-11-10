@@ -15,6 +15,7 @@ import workEntryRow from "../../components/chat/TimelineWorkEntryRow.tsx?raw";
 import composerResume from "../../components/chat/useComposerResume.ts?raw";
 import nowMinute from "../../hooks/useNowMinute.ts?raw";
 import clock from "../../../../../packages/client-runtime/src/clock.ts?raw";
+import commands from "../../../../../packages/client-runtime/src/operations/commands.ts?raw";
 
 describe("the column's contracts with upstream", () => {
   it("offers a permission upstream's own buttons when the provider names none", () => {
@@ -33,6 +34,11 @@ describe("the column's contracts with upstream", () => {
   it("resumes a limited run with upstream's own words", () => {
     expect(composerResume).toContain(`text: "${PHRASES.continueNow}"`);
     expect(composerResume).toContain("manualContinuationOfRunId");
+    // A held Cell moved to another account (`accounts/move.ts`) starts with that guard and the
+    // account in one dispatch.
+    expect(commands).toMatch(
+      /requestedMode === "start"[\s\S]{0,700}manualContinuationOfRunId: input\.manualContinuationOfRunId[\s\S]{0,500}modelSelection: input\.modelSelection/,
+    );
   });
 
   it("marks the composer, so the narrow sheet stops above it", () => {

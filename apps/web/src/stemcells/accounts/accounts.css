@@ -1,0 +1,66 @@
+/* The accounts under the plans on the Usage page (Accounts.tsx), drawn as the plan board's rows. */
+
+[data-stemcells-accounts] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--sc-font-ui);
+  font-size: 13.5px;
+}
+[data-stemcells-accounts] > h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sc-dim);
+}
+[data-stemcells-accounts] table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+[data-stemcells-accounts] td {
+  padding: 9px 12px 9px 0;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+[data-account-provider],
+[data-account-cells],
+[data-account-usage],
+[data-account-who] > span,
+[data-account-signing] > p {
+  color: var(--sc-dim);
+}
+[data-stemcells-accounts] td[data-account-who] {
+  width: 100%;
+  white-space: normal;
+}
+[data-account-who] > b {
+  margin-inline-end: 8px;
+  font-weight: 550;
+}
+[data-signed-in="false"] > [data-account-who] > b {
+  font-weight: 450;
+  color: var(--sc-dim);
+}
+[data-stemcells-accounts] td[data-account-acts] {
+  padding-inline-end: 0;
+  text-align: end;
+}
+[data-account-acts] > * + * {
+  margin-inline-start: 6px;
+}
+[data-account-add] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+[data-account-signing] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+[data-account-signing] > p {
+  margin: 0;
+  font-size: 12px;
+}

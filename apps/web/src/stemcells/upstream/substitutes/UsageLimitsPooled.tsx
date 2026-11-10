@@ -1,8 +1,8 @@
 /**
- * Substitutes upstream's `components/usage/UsageLimitsPooled.tsx` (`plugin.ts`): the Usage page
- * lists each plan a row, as the rail's hover does (`limits/PlanBoard.tsx`), where upstream pools
- * a provider's accounts into one card per window. Upstream still picks the environments and
- * providers shown and draws its notices, "Manage usage" links and reset credits.
+ * Substitutes upstream's `components/usage/UsageLimitsPooled.tsx` (`plugin.ts`): each plan a row
+ * (`limits/PlanBoard.tsx`) where upstream pools a provider's accounts into a card per window, and
+ * this Mac's accounts under them (`accounts/Accounts.tsx`). Upstream still picks what is shown
+ * and draws its notices, "Manage usage" links and reset credits.
  */
 import {
   CHATGPT_USAGE_URL,
@@ -17,6 +17,7 @@ import { Alert, AlertTitle } from "../../../components/ui/alert";
 import { Button } from "../../../components/ui/button";
 import * as Upstream from "../../../components/usage/UsageLimitsPooled";
 import { ensureLocalApi } from "../../../localApi";
+import { Accounts } from "../../accounts/Accounts";
 import { PlanBoard } from "../../limits/PlanBoard";
 import { usePlans } from "../../limits/usePlans";
 import { formatDuration, ResetCredits, useClockFormat } from "../limits";
@@ -25,7 +26,7 @@ export * from "../../../components/usage/UsageLimitsPooled";
 
 export function UsageLimitsPooled(props: ComponentProps<typeof Upstream.UsageLimitsPooled>) {
   const { presentations, now } = props;
-  const { plans } = usePlans(presentations, now);
+  const { plans, planOf } = usePlans(presentations, now);
   const clock = useClockFormat(now);
   const notices = collectLimitNotices(presentations);
   const externalLinks = collectExternalUsageLinks(presentations);
@@ -55,6 +56,7 @@ export function UsageLimitsPooled(props: ComponentProps<typeof Upstream.UsageLim
           }}
         />
       ) : null}
+      <Accounts planOf={planOf} />
       {externalLinks.map((link) => (
         <section
           key={link.url}

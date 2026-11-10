@@ -16,12 +16,18 @@ import type { UnifiedSettings } from "@t3tools/contracts/settings";
 
 import { AgentInstallTerminal } from "../../components/onboarding/WelcomePage";
 import { useComposerDraftStore, type ComposerThreadTarget } from "../../composerDraftStore";
-import { usePersistEnvironmentProviderInstanceMutation } from "../../hooks/useSettings";
+import {
+  usePersistEnvironmentProviderInstanceMutation,
+  usePrimarySettings,
+} from "../../hooks/useSettings";
+import { environmentPresentations } from "../../state/presentation";
+import { primaryEnvironmentIdAtom } from "../../state/primaryEnvironment";
 import { serverEnvironment } from "../../state/server";
 import { useAtomCommand } from "../../state/use-atom-command";
 import { useState } from "react";
 
 import { toastManager } from "../../components/ui/toast";
+import type { AccountSource } from "../accounts/lines";
 import { isAskisInstance } from "../aski/setup";
 import { accountRows, isLoginPrompt, LOGIN_COMMAND, type AccountFacts } from "../login/accounts";
 import { loginBannerItem } from "../login/LoginPanel";
@@ -169,6 +175,49 @@ function claudeHomesOf(settings: UnifiedSettings): Set<string> {
   return homes;
 }
 
+/** The ids and Claude config folders taken, so a new account gets neither. */
+const takenOf = (providers: ReadonlyArray<ServerProvider>, settings: UnifiedSettings) => ({
+  takenIds: new Set<string>([
+    ...LOGIN_DRIVERS,
+    ...providers.map((provider) => provider.instanceId),
+    ...Object.keys(settings.providerInstances ?? {}),
+  ]),
+  takenHomes: claudeHomesOf(settings),
+});
+
+/**
+ * This Mac's server's Claude and Codex accounts, for the Usage page's list (`accounts/`): the
+ * instances `/login` moves a Cell between, Aski's own left out.
+ */
+export function useAccounts(): {
+  readonly environmentId: EnvironmentId | null;
+  readonly sources: ReadonlyArray<AccountSource>;
+  readonly takenIds: ReadonlySet<string>;
+  readonly takenHomes: ReadonlySet<string>;
+} {
+  const environmentId = useAtomValue(primaryEnvironmentIdAtom);
+  const presentations = useAtomValue(environmentPresentations.presentationsWithProvidersAtom);
+  const settings = usePrimarySettings();
+  const providers =
+    environmentId === null ? [] : (presentations.get(environmentId)?.serverConfig?.providers ?? []);
+  const sources = providers.flatMap((provider): AccountSource[] =>
+    !provider.enabled || !isLoginDriver(provider.driver) || isAskisInstance(provider.instanceId)
+      ? []
+      : [
+          {
+            instanceId: provider.instanceId,
+            driver: provider.driver,
+            group: `${provider.driver}:${provider.continuation?.groupKey ?? ""}`,
+            displayName: provider.displayName ?? null,
+            email: provider.auth.email ?? null,
+            plan: provider.auth.label ?? null,
+            signedIn: provider.auth.status === "authenticated",
+          },
+        ],
+  );
+  return { environmentId, sources, ...takenOf(providers, settings) };
+}
+
 /**
  * `/login` sent from a Claude or Codex Cell opens the sign-in card instead of reaching the
  * agent; `tryOpen` says whether it took the send. Picking an account is the model picker's own
@@ -223,12 +272,7 @@ export function useLoginPanel(input: {
             open.instanceId,
             PROVIDER_NAME[open.driver],
           ),
-          takenIds: new Set([
-            ...LOGIN_DRIVERS,
-            ...providers.map((provider) => provider.instanceId),
-            ...Object.keys(settings.providerInstances ?? {}),
-          ]),
-          takenHomes: claudeHomesOf(settings),
+          ...takenOf(providers, settings),
           onPick: (row) => {
             // The picker says no with a toast of its own when the account can't take the Cell.
             selectModel(ProviderInstanceId.make(row.instanceId), open.model ?? "", {
