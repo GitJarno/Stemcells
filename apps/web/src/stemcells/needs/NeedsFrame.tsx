@@ -98,6 +98,10 @@ export function NeedsFrame(props: {
     if (!target.closest(COMPOSER_SURFACE_SELECTOR) || !target.isContentEditable) return;
     if (enter(target)) event.preventDefault();
   };
+  // Wide with an ask in front there is no head, and a row that came with a dropped stream would
+  // move the card under the pointer: a lone question answers on one click. Its note keeps a row
+  // of its own below, there while unseen.
+  const headed = layout === "narrow" || waiting === 0;
   const list = (
     <CardList
       view={view}
@@ -105,11 +109,9 @@ export function NeedsFrame(props: {
       head={
         <>
           {/* Wide, the asks speak for themselves: only what isn't plain from them is said. */}
-          {layout === "narrow" || waiting === 0 || !view.live ? (
+          {headed ? (
             <div data-needs-head="">
-              {layout === "narrow" || waiting === 0 ? (
-                <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
-              ) : null}
+              <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
               {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
               {layout === "narrow" ? (
                 <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
@@ -123,7 +125,18 @@ export function NeedsFrame(props: {
         </>
       }
       // An ask in front keeps the reading: the board folds to a line of figures under it.
-      foot={waiting > 0 ? <Board compact /> : null}
+      foot={
+        waiting > 0 ? (
+          <>
+            <Board compact />
+            {headed ? null : (
+              <span data-needs-still="" data-unseen={view.live || undefined}>
+                Reconnecting…
+              </span>
+            )}
+          </>
+        ) : null
+      }
     />
   );
 

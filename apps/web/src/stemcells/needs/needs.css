@@ -136,6 +136,9 @@
   color: var(--sc-dim);
   font-size: calc(var(--sc-body) + var(--sc-meta-size));
 }
+[data-needs-still][data-unseen] {
+  visibility: hidden;
+}
 [data-needs-close] {
   margin-inline-start: auto;
   color: var(--sc-dim);

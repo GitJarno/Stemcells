@@ -134,6 +134,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+[data-board-says] code {
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  font-family: var(--sc-font-mono);
+  font-size: 0.9em;
+}
 /* The landing's mark: a fact shows it, its word alone, or it landed short. */
 [data-board-says] > b {
   display: inline-block;
