@@ -2,10 +2,10 @@ import type { RefObject } from "react";
 
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { cssLinear, settledDuration, springAt } from "../tokens/spring.ts";
-import { SwipeHand, type HeldStrip } from "./hand";
 import { releaseVelocity } from "./pager";
-import { PhasedContact, type ScrollPhases } from "./phases";
-import { LIFT_GAP } from "./swipe";
+import type { ScrollPhases } from "./phases";
+import { observeResize } from "../upstream/ui";
+import { keyed, offsetAt, SLOTS, Turns, type Knot } from "./proxy";
 
 /** The new Cell's page, and what follows it (`TabPager`). */
 export interface NewCellPage {
@@ -24,27 +24,13 @@ export const NO_NEW_CELL: NewCellPage = {
 const stripAt = (position: number): string => `translate3d(${-position * 100}%, 0, 0)`;
 /** A page in its place on the strip. */
 const pageAt = (slot: number): string => `translate3d(${slot * 100}%, 0, 0)`;
-
-/** Whether input is waiting to be handled, where the browser can say (Chromium can). */
-function inputPending(): boolean {
-  const scheduling = (
-    navigator as Navigator & {
-      scheduling?: { isInputPending?: (options?: { includeContinuous?: boolean }) => boolean };
-    }
-  ).scheduling;
-  return scheduling?.isInputPending?.({ includeContinuous: true }) === true;
-}
-
-/** How long (ms) after the last wheel event the page keeps watching the frames it draws, so the next event knows what it could hear. */
-const LISTEN_FOR = 600;
-/** No frame drawn for this long (ms): the page was busy, and couldn't hear wheel events. */
-const BUSY = 40;
+/** The strip's hold with the pages `offset` pages on from the strip's own place. */
+const holdAt = (offset: number): string => `translate3d(${-offset * 100}%, 0, 0)`;
 
 /**
  * Whether something under `target`, inside `boundary`, scrolls sideways in
- * `direction` and has room to: then the gesture is its, not the pager's.
- * A border between Cells keeps the gesture too: a swipe never starts from
- * one (`split/Separator.tsx`).
+ * `direction` and has room to: then the browser gives the gesture to it,
+ * not to the proxy.
  */
 function scrollerTakes(
   target: EventTarget | null,
@@ -56,7 +42,6 @@ function scrollerTakes(
     element !== null && element !== boundary;
     element = element.parentElement
   ) {
-    if (element.hasAttribute("data-stemcells-split")) return true;
     if (element.scrollWidth <= element.clientWidth + 1) continue;
     const overflow = getComputedStyle(element).overflowX;
     if (overflow !== "auto" && overflow !== "scroll") continue;
@@ -69,22 +54,30 @@ function scrollerTakes(
   return false;
 }
 
+/** Whether the browser says where a scroll will snap to, and when it has come to rest. */
+const SAYS_AIM = typeof window !== "undefined" && "onscrollsnapchanging" in window;
+const SAYS_REST = typeof window !== "undefined" && "onscrollend" in window;
+/** Without `scrollend`: how long (ms) after its last scroll event the proxy counts as at rest. */
+const REST_AFTER = 150;
+
+const sameKnots = (a: readonly Knot[], b: readonly Knot[]): boolean =>
+  a.length === b.length &&
+  a.every((knot, i) => knot.slot === b[i]!.slot && knot.offset === b[i]!.offset);
+
 /**
- * The strip itself: where it is, the pages on it, and the gesture moving
- * it. It writes to the DOM directly, so a swipe never waits on React. The
- * tabs' pages and the column's stages each have one.
+ * The strip: the pages on it and the swipe moving it; the tabs and the column's stages each have
+ * one. A swipe scrolls the proxy (`proxy.ts`) and the hold round the strip follows on the
+ * compositor. The strip in the hold slides by a spring: a click's turn, a page a flick is owed,
+ * and any jump a change of knots would show. On screen is the two together.
  */
 export class PageStrip {
-  #viewport: HTMLElement | null = null;
-  /** Where the fingers swipe it: the viewport, or a larger surface around it. */
-  #surface: HTMLElement | null = null;
+  #scroller: HTMLElement | null = null;
+  #hold: HTMLElement | null = null;
   #strip: HTMLElement | null = null;
   readonly #pages = new Map<string, HTMLElement>();
   #order: readonly string[] = [];
   #active: string | null = null;
-  /** The tab the strip is on, or on its way to. */
-  #heading: string | null = null;
-  /** Where the strip is when no slide runs: at rest, or held by the fingers. */
+  /** The strip's own place: the page it is on, or sliding to. */
   #position = 0;
   #slide: Animation | null = null;
   /** The running slide's spring: its ends (pages) and the speed it set off with (moves a second). */
@@ -107,44 +100,87 @@ export class PageStrip {
   #aimed: (tabId: string) => void = () => undefined;
   #aim: string | null = null;
 
-  readonly #contact = new PhasedContact();
-  readonly #hand = new SwipeHand(this.#held(), this.#contact);
+  readonly #turns = new Turns();
+  /** The knots the hold follows the proxy by, as last written. */
+  #knots: readonly Knot[] = [];
+  #timeline: ScrollTimeline | null = null;
+  /** The hold following the proxy, and the new Cell's tab following it too. */
+  #follow: Animation | null = null;
+  #tabFollow: Animation | null = null;
+  /** Whether the fingers are what scrolls the proxy: since a wheel or a touch on it, until it rests. */
+  #fingers = false;
+  /** The turns asked for and not yet rendered. */
+  #asked: string[] = [];
+  /** A frame or two on, a flicked touch's page is settled (`Turns.pay`). */
+  #paying = 0;
+  /** A turn waits for the frame that puts the proxy back at rest. */
+  #turning = 0;
+  #restTimer: ReturnType<typeof setTimeout> | undefined;
+  /** The new Cell's tab and the keys it follows the proxy by, as last linked. */
+  #tabLinked: { readonly tab: HTMLElement; readonly keys: string } | null = null;
+  #unresize: (() => void) | undefined;
   /** Stops the desktop app's scroll phases coming, where it sends them. */
   #unphase: (() => void) | undefined;
-  #frame = 0;
-  #idle: ReturnType<typeof setTimeout> | undefined;
-  /** The last frame drawn while wheel events come. */
-  #lastFrame: number | undefined;
-  /** Since the last wheel event: when the page first went `BUSY` without drawing, if it did. */
-  #busyFrom: number | undefined;
-  #beat = 0;
-  #listenUntil = 0;
 
-  attach(viewport: HTMLElement, strip: HTMLElement, surface: HTMLElement = viewport): void {
-    this.#viewport = viewport;
-    this.#surface = surface;
+  /**
+   * `scroller` is the proxy (`ProxyTrack` lays its track out), `hold` the box round the strip
+   * that follows its scroll, `strip` the strip.
+   */
+  attach(scroller: HTMLElement, hold: HTMLElement, strip: HTMLElement): void {
+    this.#scroller = scroller;
+    this.#hold = hold;
     this.#strip = strip;
     strip.style.transform = stripAt(this.#position);
     this.#placeAll();
-    // Not passive: a swipe the pager owns must not also scroll the chat under it.
-    surface.addEventListener("wheel", this.#onWheel, { passive: false });
-    this.#unphase = window.stemcellsScrollPhases?.subscribe(this.#onScroll);
+    this.#timeline =
+      typeof ScrollTimeline === "function"
+        ? new ScrollTimeline({ source: scroller, axis: "x" })
+        : null;
+    // Whatever the proxy was doing when last attached, it rests now.
+    this.#turns.rested(this.#turns.origin);
+    this.#fingers = false;
+    this.#toOrigin();
+    this.#writeKnots(true);
+    // All passive: nothing here may hold the proxy's scroll back.
+    scroller.addEventListener("scroll", this.#onScroll, { passive: true });
+    scroller.addEventListener("scrollend", this.#onRest);
+    scroller.addEventListener("scrollsnapchanging", this.#onAim);
+    scroller.addEventListener("wheel", this.#onWheel, { passive: true });
+    scroller.addEventListener("touchstart", this.#onTouch, { passive: true });
+    // A proxy laid out later, or at another width, is still on the slot it rests on.
+    this.#unresize = observeResize(scroller, () => {
+      if (this.#turns.resting) this.#toOrigin();
+    });
+    this.#unphase = window.stemcellsScrollPhases?.subscribe(this.#onPhases);
   }
 
   detach(): void {
-    this.#surface?.removeEventListener("wheel", this.#onWheel);
-    this.#surface = null;
+    const scroller = this.#scroller;
+    scroller?.removeEventListener("scroll", this.#onScroll);
+    scroller?.removeEventListener("scrollend", this.#onRest);
+    scroller?.removeEventListener("scrollsnapchanging", this.#onAim);
+    scroller?.removeEventListener("wheel", this.#onWheel);
+    scroller?.removeEventListener("touchstart", this.#onTouch);
+    scroller?.removeAttribute("data-moving");
+    this.#unresize?.();
+    this.#unresize = undefined;
     this.#unphase?.();
     this.#unphase = undefined;
-    this.#viewport?.removeAttribute("data-moving");
     this.#moving = false;
     this.#stopSlide();
-    cancelAnimationFrame(this.#frame);
-    this.#frame = 0;
-    cancelAnimationFrame(this.#beat);
-    this.#beat = 0;
-    clearTimeout(this.#idle);
-    this.#viewport = null;
+    this.#follow?.cancel();
+    this.#follow = null;
+    this.#tabFollow?.cancel();
+    this.#tabFollow = null;
+    this.#timeline = null;
+    cancelAnimationFrame(this.#paying);
+    this.#paying = 0;
+    cancelAnimationFrame(this.#turning);
+    this.#turning = 0;
+    clearTimeout(this.#restTimer);
+    this.#tabLinked = null;
+    this.#scroller = null;
+    this.#hold = null;
     this.#strip = null;
   }
 
@@ -169,7 +205,6 @@ export class PageStrip {
     if (this.#active === null) {
       this.#order = order;
       this.#active = active;
-      this.#heading = active;
       this.#aim = active;
       this.#placeAll();
       this.#show(this.#slotOf(active));
@@ -177,9 +212,12 @@ export class PageStrip {
     }
     // Where the eye has the strip: the tab on stage, and how far off it.
     const at = this.#onScreen();
+    const offset = this.#offset();
     const speed = this.#speed();
     const stage = this.#tabAt(Math.round(at));
     const offStage = stage === null ? 0 : at - this.#slotOf(stage);
+    const base = this.#tabAt(this.#position);
+    const heading = this.#tabAt(this.#turns.heading);
     const reordered =
       order.length !== this.#order.length || order.some((id, i) => id !== this.#order[i]);
     const turned = active !== this.#active;
@@ -187,30 +225,36 @@ export class PageStrip {
     this.#active = active;
     if (reordered) this.#standIn = null;
     this.#placeAll();
-    if (this.#slide === null) this.#showNewTab(this.#position);
-    if (!turned && !reordered) return;
+    if (!turned && !reordered) {
+      this.#linkNewTab();
+      return;
+    }
+    // A turn this strip asked for is its own, even one a later swipe has since gone past.
+    const asked = this.#asked.indexOf(active);
+    const own = turned && (active === heading || asked >= 0);
+    if (turned) this.#asked = asked < 0 ? [] : this.#asked.slice(asked + 1);
     const stageSlot = stage === null ? -1 : this.#slotOf(stage);
     const here = stageSlot < 0 ? null : stageSlot + offStage;
-    if (turned && active !== this.#heading) {
-      // A turn by other means. Fingers on the strip give it up.
-      this.#hand.spend();
+    if (turned && !own) {
+      // A turn by other means. Fingers on the proxy give it up: the strip slides from where the
+      // eye has it, and what the proxy does until it rests shows nothing.
+      this.#turns.spend();
+      this.#writeKnots();
       this.#travelTo(active, here, stage, speed);
       return;
     }
     // A swipe's own turn landing, or tabs that moved under the strip: the
     // strip keeps the page on stage where the eye has it.
-    const heading = this.#heading ?? active;
-    if (here === null || this.#slotOf(heading) < 0) {
-      this.#heading = active;
+    const baseSlot = base === null ? -1 : this.#slotOf(base);
+    if (here === null || baseSlot < 0) {
       this.#cut(this.#slotOf(active));
-    } else if (Math.abs(here - at) > 1e-6) {
-      const sliding = this.#slide !== null;
-      this.#stopSlide();
-      this.#show(here);
-      if (this.#hand.holding) this.#hand.regrab();
-      else if (sliding) this.#travel(here, this.#slotOf(heading), speed, true);
-      else this.#show(this.#slotOf(heading));
+    } else if (baseSlot !== this.#position || Math.abs(here - at) > 1e-6) {
+      this.#travel(here - offset, baseSlot, speed, true);
+    } else {
+      this.#turns.set(this.#position, this.#order.length);
+      this.#writeKnots();
     }
+    this.#decide();
   }
 
   /** Who hears where the strip is headed (`#aimed`); the page on stage once at rest. */
@@ -246,8 +290,30 @@ export class PageStrip {
     for (const [tabId, node] of this.#pages) this.#place(tabId, node);
   }
 
-  /** Where the strip is on screen, a slide included. */
-  #onScreen(): number {
+  /** A slot's width on the proxy's track (px); 0 before it is laid out. */
+  #slotWidth(): number {
+    return (this.#scroller?.scrollWidth ?? 0) / SLOTS;
+  }
+
+  /** The slot the proxy is on, between two as it moves. */
+  #slot(): number {
+    const width = this.#slotWidth();
+    const scroller = this.#scroller;
+    return scroller === null || width === 0 ? this.#turns.origin : scroller.scrollLeft / width;
+  }
+
+  /** Puts the proxy on the slot the strip's place shows on, now. */
+  #toOrigin(): void {
+    this.#scroller?.scrollTo({ left: this.#turns.origin * this.#slotWidth(), behavior: "instant" });
+  }
+
+  /** How far (pages) the hold has the pages from the strip's own place, as the page knows the proxy. */
+  #offset(): number {
+    return offsetAt(this.#knots, this.#slot());
+  }
+
+  /** The strip's own place now, a slide included. */
+  #own(): number {
     const strip = this.#strip;
     if (this.#slide === null || strip === null) return this.#position;
     const width = strip.clientWidth;
@@ -256,7 +322,12 @@ export class PageStrip {
     return -new DOMMatrixReadOnly(transform).m41 / width;
   }
 
-  /** How fast the strip moves now, in pages a second toward later pages: a slide's speed, or none. */
+  /** Where the strip is on screen: its own place and the hold's offset together. */
+  #onScreen(): number {
+    return this.#own() + this.#offset();
+  }
+
+  /** How fast the strip itself moves now, in pages a second toward later pages: a slide's speed, or none. */
   #speed(): number {
     const spec = this.#slideSpring;
     const elapsed = this.#slide?.currentTime;
@@ -269,36 +340,81 @@ export class PageStrip {
     return ((spec.to - spec.from) * (progress(after) - progress(before))) / (after - before);
   }
 
-  /** Puts the strip at `position` now. */
+  /** Puts the strip itself at `position` now. */
   #show(position: number): void {
     this.#position = position;
     if (this.#strip) this.#strip.style.transform = stripAt(position);
-    this.#showNewTab(position);
+    this.#turns.set(position, this.#order.length);
+    this.#writeKnots();
+    this.#showNewTab();
   }
 
-  /** Puts the strip at its position on the next frame: once a frame, however many events came. */
-  #schedule(): void {
-    if (this.#frame !== 0) return;
-    this.#frame = requestAnimationFrame(() => {
-      this.#frame = 0;
-      if (this.#strip) this.#strip.style.transform = stripAt(this.#position);
-      this.#showNewTab(this.#position);
-    });
+  /**
+   * Writes the knots the hold follows the proxy by, where they changed: into its scroll-linked
+   * animation, or as its place where the browser has no scroll timelines.
+   */
+  #writeKnots(force = false): void {
+    const hold = this.#hold;
+    const knots = this.#turns.knots;
+    if (hold === null || (!force && sameKnots(knots, this.#knots))) return;
+    this.#knots = knots;
+    const timeline = this.#timeline;
+    if (timeline === null) {
+      hold.style.transform = holdAt(this.#offset());
+    } else {
+      const frames = keyed(knots).map((key) => ({
+        offset: key.at,
+        transform: holdAt(key.offset),
+        easing: "linear",
+      }));
+      if (this.#follow === null) this.#follow = hold.animate(frames, { timeline, fill: "both" });
+      else (this.#follow.effect as KeyframeEffect).setKeyframes(frames);
+    }
+    // Who mirrors the hold (`surfaces/ride.ts`) reads the change off this.
+    hold.setAttribute("data-knots", knots.map((knot) => `${knot.slot}:${knot.offset}`).join(" "));
+    this.#linkNewTab();
   }
 
-  /** How much of the new Cell's page shows with the strip at `position`, 0 to 1. */
+  /** How much of the new Cell's page shows with the strip on screen at `position`, 0 to 1. */
   #newCellShown(position: number): number {
     const slot = this.#newCell.id === null ? -1 : this.#slotOf(this.#newCell.id);
     return slot < 0 ? 0 : Math.min(Math.max(1 - Math.abs(position - slot), 0), 1);
   }
 
-  /** The new Cell's tab shows as much as its page does with the strip at `position`. */
-  #showNewTab(position: number): void {
+  /** The new Cell's tab shows as much as its page does where the strip is on screen. */
+  #showNewTab(): void {
     const tab = this.#newCell.tab.current;
     if (tab === null) return;
-    const shown = this.#newCellShown(position);
+    const shown = this.#newCellShown(this.#position + this.#offset());
     tab.style.setProperty("--stemcells-shown", String(shown));
     tab.style.visibility = shown > 0 ? "" : "hidden";
+  }
+
+  /** The new Cell's tab follows the proxy as its page does, by the same knots. */
+  #linkNewTab(): void {
+    this.#showNewTab();
+    const tab = this.#newCell.tab.current;
+    const timeline = this.#timeline;
+    const keys =
+      tab === null || timeline === null
+        ? []
+        : keyed(this.#knots).map((key) => ({
+            offset: key.at,
+            ...this.#newTabKey(this.#position + key.offset),
+          }));
+    const follows = keys.some((key) => key["--stemcells-shown"] !== keys[0]!["--stemcells-shown"]);
+    const linked = follows && tab !== null ? { tab, keys: JSON.stringify(keys) } : null;
+    if (linked?.tab === this.#tabLinked?.tab && linked?.keys === this.#tabLinked?.keys) return;
+    this.#tabFollow?.cancel();
+    this.#tabFollow = null;
+    this.#tabLinked = linked;
+    if (linked === null || timeline === null) return;
+    this.#tabFollow = linked.tab.animate(keys, { timeline, fill: "both" });
+  }
+
+  #newTabKey(position: number): { "--stemcells-shown": number; visibility: string } {
+    const shown = this.#newCellShown(position);
+    return { "--stemcells-shown": shown, visibility: shown > 0 ? "visible" : "hidden" };
   }
 
   #stopSlide(): void {
@@ -325,7 +441,6 @@ export class PageStrip {
     stage: string | null,
     pagesPerSecond: number,
   ): void {
-    this.#heading = tabId;
     const to = this.#order.indexOf(tabId);
     this.#aimAt(to);
     if (here === null || stage === null) {
@@ -345,7 +460,7 @@ export class PageStrip {
     this.#travel(from, to, pagesPerSecond);
   }
 
-  /** Springs the strip from `from` to page `to`, setting off at `pagesPerSecond`; `tookOver`, from a slide just stopped. */
+  /** Springs the strip itself from `from` to page `to`, setting off at `pagesPerSecond`; `tookOver`, from a slide just stopped. */
   #travel(from: number, to: number, pagesPerSecond: number, tookOver = false): void {
     const strip = this.#strip;
     const takesOver = tookOver || this.#slide !== null;
@@ -392,20 +507,18 @@ export class PageStrip {
       this.#tabSlide = null;
       this.#settle();
       this.#moved();
+      this.#decide();
     };
   }
 
   /** The new Cell's tab slides alongside the strip, from `from` to `to`, on the same spring. */
   #slideNewTab(from: number, to: number, timing: KeyframeAnimationOptions): void {
     const tab = this.#newCell.tab.current;
-    const start = this.#newCellShown(from);
-    const end = this.#newCellShown(to);
-    if (tab === null || start === end) return;
-    const keyframe = (shown: number): Keyframe => ({
-      "--stemcells-shown": shown,
-      visibility: shown > 0 ? "visible" : "hidden",
-    });
-    this.#tabSlide = tab.animate([keyframe(start), keyframe(end)], timing);
+    const offset = this.#offset();
+    const start = this.#newTabKey(from + offset);
+    const end = this.#newTabKey(to + offset);
+    if (tab === null || start["--stemcells-shown"] === end["--stemcells-shown"]) return;
+    this.#tabSlide = tab.animate([start, end], timing);
   }
 
   /** At rest: a stand-in goes back to its own place, and the strip with it if it is on stage. */
@@ -417,131 +530,151 @@ export class PageStrip {
     if (stage !== null) this.#show(this.#slotOf(stage));
   }
 
-  /** Marks the pages moving while the fingers hold the strip or a slide runs, and at rest once neither does. */
+  /** Marks the pages moving while the proxy is off its rest or a slide runs, and at rest once neither is. */
   #moved(): void {
-    const moving = this.#hand.holding || this.#slide !== null;
-    this.#viewport?.toggleAttribute("data-moving", moving);
+    const moving = !this.#turns.resting || this.#slide !== null;
+    this.#scroller?.toggleAttribute("data-moving", moving);
     if (moving === this.#moving) return;
     this.#moving = moving;
     this.#newCell.onMotion(moving);
   }
 
-  /** The strip as the hand holds it. */
-  #held(): HeldStrip {
-    return {
-      at: () => this.#onScreen(),
-      sliding: () => this.#slide !== null,
-      heading: () => {
-        const heading = this.#heading ?? this.#active;
-        const slot = heading === null ? -1 : this.#slotOf(heading);
-        return slot < 0 ? null : slot;
-      },
-      count: () => this.#order.length,
-      width: () => this.#strip?.clientWidth ?? 0,
-      grab: (at) => {
-        this.#stopSlide();
-        this.#show(at);
-      },
-      hold: (position) => {
-        this.#aimAt(Math.round(position));
-        this.#position = position;
-        this.#schedule();
-      },
-      release: (from, to, pagesPerSecond) => this.#release(from, to, pagesPerSecond),
-    };
+  /**
+   * After the rules moved the strip's place or its knots: the knots go to the hold, and the
+   * strip takes by a spring whatever that would otherwise show as a jump, so the picture holds.
+   */
+  #apply(): void {
+    const place = this.#turns.place;
+    const knots = this.#turns.knots;
+    if (place === this.#position && sameKnots(knots, this.#knots)) return;
+    const shown = this.#onScreen();
+    const own = this.#own();
+    const speed = this.#speed();
+    this.#writeKnots();
+    const from = shown - offsetAt(knots, this.#slot());
+    if (place === this.#position && Math.abs(from - own) < 1e-3) return;
+    this.#travel(from, place, speed, true);
   }
 
-  readonly #onWheel = (event: WheelEvent): void => {
-    // Pinches, and wheels that step by lines or pages, aren't swipes; nor is
-    // anything while a border between Cells is held (`split/Separator.tsx`).
-    if (event.ctrlKey || event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL) return;
-    if (document.documentElement.hasAttribute("data-stemcells-splitting")) return;
-    const surface = this.#surface;
-    if (surface === null) return;
-    const sample = {
-      dx: event.deltaX,
-      dy: event.deltaY,
-      t: event.timeStamp,
-      heard: this.#heard(),
-      got: performance.now(),
-    };
-    this.#listen(event.timeStamp);
-    clearTimeout(this.#idle);
-    this.#idle = setTimeout(this.#onIdle, LIFT_GAP + 10);
-    const target = event.target;
-    const holds = this.#hand.wheel(sample, (direction) =>
-      scrollerTakes(target, surface, direction),
-    );
-    if (holds && event.cancelable) event.preventDefault();
-    this.#moved();
-  };
+  /** The tab to turn to now: the one the strip has landed on, if it is not the active one nor asked for already. */
+  #due(): string | null {
+    const width = this.#slotWidth();
+    if (this.#slide !== null || width === 0 || !this.#turns.landed(1 / width)) return null;
+    const tabId = this.#tabAt(this.#turns.heading);
+    return tabId === null || tabId === this.#active || this.#asked.includes(tabId) ? null : tabId;
+  }
 
   /**
-   * Until when the page could hear wheel events since the last one: the
-   * frame before it first went busy, if it did. A wheel event that comes
-   * after a busy stretch carries what came meanwhile, so the gap before it
-   * is a silence only up to there.
+   * Hears where the strip is headed, and turns to the page it has landed on. The tab turns once
+   * the page is there, not at the lift: a turn renders, focuses and mounts pages, none of which
+   * the strip in flight should share its frames with, and a field focused on a page still
+   * arriving would scroll the proxy to meet it.
    */
-  #heard(): number | undefined {
-    const last = this.#lastFrame;
-    if (this.#busyFrom === undefined && last !== undefined && performance.now() - last > BUSY) {
-      this.#busyFrom = last;
-    }
-    const heard = this.#busyFrom;
-    this.#busyFrom = undefined;
-    return heard;
-  }
-
-  /** Watches the frames drawn until a while after `now`. */
-  #listen(now: number): void {
-    this.#listenUntil = now + LISTEN_FOR;
-    if (this.#beat !== 0) return;
-    this.#lastFrame = undefined;
-    this.#beat = requestAnimationFrame(this.#onBeat);
-  }
-
-  readonly #onBeat = (time: number): void => {
-    const last = this.#lastFrame;
-    if (this.#busyFrom === undefined && last !== undefined && time - last > BUSY) {
-      this.#busyFrom = last;
-    }
-    this.#lastFrame = time;
-    this.#beat = time < this.#listenUntil ? requestAnimationFrame(this.#onBeat) : 0;
-  };
-
-  /** The system's phases of a scroll: when they say the fingers lifted, the strip lets go at once. */
-  readonly #onScroll = (scroll: ScrollPhases): void => {
-    const lift = this.#contact.scroll(scroll);
-    if (lift === null) return;
-    this.#hand.lift(lift.coasted.dx, scroll.t);
-    this.#moved();
-  };
-
-  readonly #onIdle = (): void => {
-    // Events held up behind a busy page aren't a silence.
-    if (inputPending()) {
-      this.#idle = setTimeout(this.#onIdle, LIFT_GAP);
-      return;
-    }
-    this.#hand.idle(performance.now());
-    this.#moved();
-  };
-
-  /**
-   * The fingers lifted: the strip springs from `from` to page `to`, and the
-   * tab turns once that slide is under way, so its first frames are on the
-   * compositor before the turn renders.
-   */
-  #release(from: number, to: number, pagesPerSecond: number): void {
-    this.#aimAt(to);
-    const tabId = this.#tabAt(to) ?? this.#heading;
-    this.#heading = tabId;
-    this.#travel(from, to, pagesPerSecond);
-    if (tabId === null || tabId === this.#active) return;
-    requestAnimationFrame(() =>
+  #decide(): void {
+    this.#aimAt(this.#turns.heading);
+    if (this.#due() === null || this.#turning !== 0) return;
+    // A frame on: the proxy is back at rest for the next touch before the turn's render holds the page.
+    this.#turning = requestAnimationFrame(() =>
       setTimeout(() => {
-        if (this.#heading === tabId && tabId !== this.#active) this.#turn(tabId);
+        this.#turning = 0;
+        const tabId = this.#scroller === null ? null : this.#due();
+        if (tabId === null) return;
+        this.#asked.push(tabId);
+        this.#turn(tabId);
       }, 0),
     );
   }
+
+  readonly #onWheel = (event: WheelEvent): void => {
+    this.#fingers = true;
+    const scroller = this.#scroller;
+    if (scroller === null) return;
+    // Whose the gesture is, as the browser decides it: the proxy's if it goes sideways and
+    // nothing under the pointer takes it first.
+    const sideways = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+    const ours =
+      sideways &&
+      !event.defaultPrevented &&
+      !event.ctrlKey &&
+      !scrollerTakes(event.target, scroller, event.deltaX > 0 ? 1 : -1);
+    this.#turns.wheel(event.timeStamp, ours);
+  };
+
+  readonly #onTouch = (): void => {
+    this.#fingers = true;
+  };
+
+  readonly #onScroll = (): void => {
+    const width = this.#slotWidth();
+    if (width === 0) return;
+    const slot = this.#slot();
+    if (!this.#fingers) {
+      // Not the fingers: a field focused or a key pressed scrolled the proxy to show something.
+      // Back it goes, in the frame it moved in.
+      if (Math.abs(slot - this.#turns.origin) * width > 0.5) this.#toOrigin();
+      return;
+    }
+    this.#turns.scrolled(slot, 1 / width);
+    if (!SAYS_AIM) this.#turns.aimed(Math.round(slot));
+    if (!SAYS_REST) {
+      clearTimeout(this.#restTimer);
+      this.#restTimer = setTimeout(this.#onRest, REST_AFTER);
+    }
+    if (this.#timeline === null && this.#hold) {
+      this.#hold.style.transform = holdAt(this.#offset());
+      this.#showNewTab();
+    }
+    this.#apply();
+    this.#moved();
+    this.#decide();
+  };
+
+  readonly #onAim = (event: Event): void => {
+    const target = (event as Event & { snapTargetInline?: Element | null }).snapTargetInline;
+    const slot = Number(target?.getAttribute("data-stemcells-proxy-slot") ?? Number.NaN);
+    if (!Number.isFinite(slot)) return;
+    this.#turns.aimed(slot);
+    this.#decide();
+  };
+
+  /** The proxy came to rest: what it shows folds into the strip's own place, and it goes back to its rest slot. */
+  readonly #onRest = (): void => {
+    const width = this.#slotWidth();
+    if (width === 0) return;
+    const fingers = this.#fingers;
+    this.#fingers = false;
+    if (!fingers) {
+      this.#toOrigin();
+      return;
+    }
+    const shown = this.#onScreen();
+    const speed = this.#speed();
+    this.#turns.rested(this.#slot());
+    this.#toOrigin();
+    this.#writeKnots();
+    this.#travel(shown, this.#turns.place, speed, this.#slide !== null);
+    // A turn asked for on the way to another page than this one is no longer on its way.
+    const here = this.#tabAt(this.#turns.place);
+    this.#asked = this.#asked.filter((tabId) => tabId === here);
+    this.#moved();
+    this.#decide();
+  };
+
+  /** The system's phases of a scroll: when a touch begins, lifts and coasts, which the rules about touches go by. */
+  readonly #onPhases = (scroll: ScrollPhases): void => {
+    this.#turns.phases(scroll);
+    this.#apply();
+    this.#moved();
+    if (!this.#turns.owing || this.#paying !== 0) return;
+    // Two frames on: by then the page has heard where the proxy is going since the lift.
+    this.#paying = requestAnimationFrame(() => {
+      this.#paying = requestAnimationFrame(() => {
+        this.#paying = 0;
+        this.#turns.pay();
+        this.#apply();
+        this.#moved();
+        this.#decide();
+      });
+    });
+  };
 }

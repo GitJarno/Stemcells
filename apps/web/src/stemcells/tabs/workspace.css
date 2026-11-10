@@ -120,12 +120,11 @@
       right bottom / var(--flare) var(--flare) no-repeat;
   pointer-events: none;
 }
-/* Clipped, not hidden: nothing can scroll the slate to bring a page that is
-   off stage into view, as focusing a field in it would. */
+/* The pages' proxy (proxy.css): a swipe scrolls it, and the strip follows. Its frame clips
+   the pages off stage. */
 [data-stemcells-pages] {
   position: absolute;
   inset: 0;
-  overflow: clip;
 }
 /* The pager moves the strip, and places each page on it, a page wide apart. */
 [data-stemcells-strip] {

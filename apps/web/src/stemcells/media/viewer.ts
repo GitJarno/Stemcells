@@ -3,7 +3,7 @@
  * from keys, the trackpad and the pointer. `MediaViewer` renders the item
  * on stage; this decides where it goes and when, through `Stage`.
  */
-import { LIFT_GAP, WheelContact } from "../tabs/swipe";
+import { LIFT_GAP, WheelContact } from "./wheelContact";
 import { isContextMenuOpen, windowControlsOverlayHeight, type MediaItem } from "../upstream/media";
 import {
   IN_VIEW,

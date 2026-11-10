@@ -27,3 +27,4 @@ export {
 export { cn, randomUUID } from "../../lib/utils";
 export { toastManager } from "../../components/ui/toast";
 export { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../../components/ui/empty";
+export { observeResize } from "~/lib/observeResize";

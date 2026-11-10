@@ -56,6 +56,11 @@ export function ride(rider: Rider): () => void {
   let held: PlacedView | null = null;
   /** The slide the page has a copy of, the copy, and where the view was placed for it. */
   let mirrored: { slide: Animation; copy: Animation; placed: PlacedView } | null = null;
+  /**
+   * The pages move two ways at once (`tabs/pageStrip.ts`): their hold follows the swipe's proxy
+   * and the strip in it slides. The page copies each; this is its copy of the hold's following.
+   */
+  let linked: { copy: Animation; knots: string; content: HTMLElement } | null = null;
   /** The view shown as the pages set off, or the last that came since: none of them fades in. */
   let came: HTMLElement | null = null;
   let frame = 0;
@@ -64,8 +69,13 @@ export function ride(rider: Rider): () => void {
     mirrored?.copy.cancel();
     mirrored = null;
   };
+  const unlink = () => {
+    linked?.copy.cancel();
+    linked = null;
+  };
   const letGo = () => {
     unmirror();
+    unlink();
     if (held === null) return;
     held.element.style.overflow = "";
     held.element.style.clipPath = "";
@@ -96,7 +106,22 @@ export function ride(rider: Rider): () => void {
     set(placed.element.style, "overflow", "visible");
     set(placed.element.style, "backgroundColor", "transparent");
     set(placed.element.style, "clipPath", frameCut(placed, size, pages.getBoundingClientRect()));
-    const slide = slideOf(rider.anchor, pages);
+    // The hold's following of the proxy, copied whenever its knots change. The slot's place is
+    // then read with the hold's own move taken off: the copy adds it back, frame for frame.
+    const hold = rider.anchor.closest<HTMLElement>("[data-stemcells-hold]");
+    const link = followOf(hold);
+    if (link === null || hold === null) {
+      unlink();
+    } else {
+      const knots = hold.getAttribute("data-knots") ?? "";
+      if (linked?.knots !== knots || linked.content !== placed.content) {
+        unlink();
+        const copy = followed(link, hold, placed.content);
+        if (copy !== null) linked = { copy, knots, content: placed.content };
+      }
+    }
+    const heldBy = linked === null || hold === null ? { x: 0, y: 0 } : moveOf(hold);
+    const slide = slideOf(rider.anchor);
     if (
       slide !== null &&
       mirrored?.slide === slide &&
@@ -106,7 +131,8 @@ export function ride(rider: Rider): () => void {
       return;
     }
     unmirror();
-    const at = rider.anchor.getBoundingClientRect();
+    const rect = rider.anchor.getBoundingClientRect();
+    const at = { x: rect.x - heldBy.x, y: rect.y - heldBy.y };
     const copy = slide === null ? null : mirror(slide, at, placed);
     if (slide !== null && copy !== null) {
       mirrored = { slide, copy: copy.animation, placed };
@@ -130,7 +156,7 @@ export function ride(rider: Rider): () => void {
     if (pages.hasAttribute("data-moving")) {
       if (frame !== 0) return;
       came = rider.view()?.element ?? null;
-      const style = { attributes: true, attributeFilter: ["style"], subtree: true };
+      const style = { attributes: true, attributeFilter: ["style", "data-knots"], subtree: true };
       writes.observe(pages, style);
       const views = rider.views();
       if (views !== null) writes.observe(views, { ...style, childList: true });
@@ -159,10 +185,9 @@ export function ride(rider: Rider): () => void {
   };
 }
 
-/** The pager's slide, running on its strip (the pages' child that holds the slot), if one is. */
-function slideOf(anchor: HTMLElement, pages: HTMLElement): Animation | null {
-  let strip: HTMLElement | null = anchor;
-  while (strip !== null && strip.parentElement !== pages) strip = strip.parentElement;
+/** The pager's slide, running on the strip that holds the slot, if one is. */
+function slideOf(anchor: HTMLElement): Animation | null {
+  const strip = anchor.closest<HTMLElement>("[data-stemcells-strip]");
   for (const animation of strip?.getAnimations() ?? []) {
     if (animation.playState !== "running" || !(animation.effect instanceof KeyframeEffect)) {
       continue;
@@ -172,6 +197,54 @@ function slideOf(anchor: HTMLElement, pages: HTMLElement): Animation | null {
     }
   }
   return null;
+}
+
+/** The hold's animation that follows the pager's proxy, where the browser has scroll timelines. */
+function followOf(hold: HTMLElement | null): Animation | null {
+  if (hold === null || typeof ScrollTimeline !== "function") return null;
+  return (
+    hold.getAnimations().find((animation) => animation.timeline instanceof ScrollTimeline) ?? null
+  );
+}
+
+/** How far the hold has moved its pages now (px), as the page knows the proxy. */
+function moveOf(hold: HTMLElement): Point {
+  const transform = getComputedStyle(hold).transform;
+  if (transform === "none") return { x: 0, y: 0 };
+  const matrix = new DOMMatrixReadOnly(transform);
+  return { x: matrix.m41, y: matrix.m42 };
+}
+
+/**
+ * A copy of the hold's following on the view's page, on the same scroll timeline; null when it
+ * can't be copied. On `translate`, so it adds to the page's place and to a slide's copy.
+ */
+function followed(link: Animation, hold: HTMLElement, content: HTMLElement): Animation | null {
+  const effect = link.effect;
+  if (!(effect instanceof KeyframeEffect)) return null;
+  const moves = followedMoves(effect.getKeyframes(), {
+    width: hold.offsetWidth,
+    height: hold.offsetHeight,
+  });
+  if (moves === null) return null;
+  return content.animate(
+    moves.map((key) => ({ ...key, easing: "linear" })),
+    { timeline: link.timeline, fill: "both" },
+  );
+}
+
+/** The hold's keys as moves in pixels on a hold of `box`; null if one is no plain move. */
+function followedMoves(
+  keys: readonly { readonly computedOffset: number; readonly transform?: unknown }[],
+  box: Size,
+): { offset: number; translate: string }[] | null {
+  const moves: { offset: number; translate: string }[] = [];
+  for (const key of keys) {
+    const move = translation(typeof key.transform === "string" ? key.transform : undefined, box);
+    if (move === null) return null;
+    moves.push({ offset: key.computedOffset, translate: `${move.x}px ${move.y}px` });
+  }
+  return moves;
 }
 
 /** A move of the page by `by`, as inline style writes it: none when it hasn't moved. */
@@ -257,7 +330,7 @@ export function mirroredKeys(
  */
 function mirror(
   slide: Animation,
-  slot: DOMRect,
+  slot: Point,
   placed: PlacedView,
 ): { animation: Animation; end: string } | null {
   const effect = slide.effect;

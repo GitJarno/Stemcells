@@ -1,0 +1,53 @@
+/* A proxy (proxy.ts): a sideways scroller that nothing but a swipe scrolls. Its track is a row
+   of snap slots, each as wide as the proxy; the frame stays in view as it scrolls, and a hold
+   inside the frame follows the scroll by a scroll-linked animation (pageStrip.ts). No wheel
+   listener over it may cancel: one that can makes the compositor wait for the page before it
+   scrolls. */
+[data-stemcells-proxy] {
+  display: flex;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+/* While a border between Cells is held, no swipe starts (split/Separator.tsx). */
+:root[data-stemcells-splitting] [data-stemcells-proxy] {
+  overflow-x: hidden;
+}
+[data-stemcells-proxy-track] {
+  position: relative;
+  flex: none;
+  width: calc(var(--sc-proxy-slots) * 100%);
+}
+[data-stemcells-proxy-slots] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+/* Always: a coast stops on the next slot, however hard the swipe. */
+[data-stemcells-proxy-slot] {
+  flex: 1 0 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+/* Clipped, not hidden: nothing a focus or a caret brings into view can scroll it, and what is
+   off stage adds nothing to how far the proxy scrolls. */
+[data-stemcells-proxy-frame] {
+  position: sticky;
+  left: 0;
+  width: calc(100% / var(--sc-proxy-slots));
+  height: 100%;
+  overflow: clip;
+}
+[data-stemcells-hold] {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+/* Upstream's scroll areas keep a scroll to themselves both ways. Sideways, one with nothing to
+   scroll that way hands the swipe on to the proxy. */
+[data-stemcells-proxy] [data-slot="scroll-area-viewport"]:not([data-has-overflow-x]) {
+  overscroll-behavior-x: auto;
+}

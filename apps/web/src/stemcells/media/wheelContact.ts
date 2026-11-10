@@ -1,8 +1,7 @@
 /**
  * A two-finger swipe, read from wheel events: the fingers moving, then, once they lift, the
- * system's decaying coast. The pager lets go as the fingers lift, but DOM wheel events say neither
- * which part an event is nor when they lift, so a `ContactSource` works it out (`WheelContact`, or
- * the system's phases). `SwipeLatch` then decides, once per gesture, whether it is the pager's.
+ * system's decaying coast. The viewer lets go as the fingers lift, but DOM wheel events say
+ * neither which part an event is nor when they lift, so `WheelContact` works it out.
  */
 
 /** One wheel event: its deltas in pixels (scroll direction) and its time in milliseconds. */
@@ -33,9 +32,9 @@ export type Contact =
   | { readonly phase: "began"; readonly lifts?: boolean }
   /**
    * The fingers are moving. `resumed`: they never lifted after all, where
-   * a silence was told a lift (`ContactSource.idle`); the events in it had
+   * a silence was told a lift (`WheelContact.idle`); the events in it had
    * been held back. `lifts`: this was their last move, and they have
-   * lifted since (a source that knows, `PhasedContact`).
+   * lifted since.
    */
   | { readonly phase: "moved"; readonly resumed?: boolean; readonly lifts?: boolean }
   /**
@@ -46,18 +45,6 @@ export type Contact =
   | { readonly phase: "lifted"; readonly coasted: { readonly dx: number; readonly dy: number } }
   /** The coast after the fingers lifted, which the gesture ignores. */
   | { readonly phase: "coasting" };
-
-/** Tells finger contact from the coast that follows it. */
-export interface ContactSource {
-  /** Places one wheel event in its gesture. */
-  wheel(sample: WheelSample): Contact;
-  /**
-   * No wheel event has come since the last one: true when that silence, up
-   * to `now`, means the fingers lifted. True once per silence; the next
-   * event may yet say the gesture went on (`resumed`).
-   */
-  idle(now: number): boolean;
-}
 
 /** Silence this long (ms) between events means the fingers lifted, or never moved on. */
 export const LIFT_GAP = 70;
@@ -367,7 +354,7 @@ function mergedMoves(run: readonly WheelSample[], next: WheelSample): boolean {
  * run decaying like a coast. Silences count only while the page could hear (`WheelSample.heard`,
  * `.got`): a backlog is no lift and no new touch.
  */
-export class WheelContact implements ContactSource {
+export class WheelContact {
   #last: WheelSample | null = null;
   /** Set while the fingers are down: their latest events, enough to recognise a coast's start. */
   #run: WheelSample[] | null = null;
@@ -378,6 +365,7 @@ export class WheelContact implements ContactSource {
   /** The run's silence was told a lift (`idle`), until its next event says whether it was. */
   #silent = false;
 
+  /** Places one wheel event in its gesture. */
   wheel(sample: WheelSample): Contact {
     const last = this.#last;
     this.#last = sample;
@@ -455,6 +443,11 @@ export class WheelContact implements ContactSource {
     return null;
   }
 
+  /**
+   * No wheel event has come since the last one: true when that silence, up
+   * to `now`, means the fingers lifted. True once per silence; the next
+   * event may yet say the gesture went on (`resumed`).
+   */
   idle(now: number): boolean {
     if (
       this.#run === null ||
@@ -468,89 +461,5 @@ export class WheelContact implements ContactSource {
     // browser can hold events back without the page knowing.
     this.#silent = true;
     return true;
-  }
-}
-
-/** The fingers must move this far (px) before a gesture is anyone's. */
-export const LATCH_DISTANCE = 8;
-
-/**
- * Who a gesture belongs to: undecided until it has moved `LATCH_DISTANCE`, then the pager's
- * (horizontal, nothing under the fingers scrolls that way) or the page's. "spent" is a gesture the
- * pager gave up when the tabs turned by other means while the fingers were down: the rest of it
- * goes nowhere.
- */
-export type SwipeOwner = "pending" | "pager" | "page" | "spent";
-
-export class SwipeLatch {
-  #owner: SwipeOwner = "pending";
-  #dx = 0;
-  #dy = 0;
-  readonly #taken = new Map<1 | -1, boolean>();
-  readonly #scroller: (direction: 1 | -1) => boolean;
-  readonly #catching: boolean;
-
-  /**
-   * `scrollerTakes(direction)`: whether something under the fingers scrolls
-   * that way (1: toward its end) and has room to. `catching`: the strip is
-   * still moving from the last swipe, so a hand on it that leans horizontal
-   * is catching it, and takes it at once.
-   */
-  constructor(scrollerTakes: (direction: 1 | -1) => boolean, options?: { catching?: boolean }) {
-    this.#scroller = scrollerTakes;
-    this.#catching = options?.catching === true;
-  }
-
-  get owner(): SwipeOwner {
-    return this.#owner;
-  }
-
-  #scrollerTakes(direction: 1 | -1): boolean {
-    let taken = this.#taken.get(direction);
-    if (taken === undefined) {
-      taken = this.#scroller(direction);
-      this.#taken.set(direction, taken);
-    }
-    return taken;
-  }
-
-  /** The fingers moved: returns how far (px) that moves the pager, 0 unless the gesture is its. */
-  move(dx: number, dy: number): number {
-    if (this.#owner === "pager") return dx;
-    if (this.#owner !== "pending") return 0;
-    this.#dx += dx;
-    this.#dy += dy;
-    const across = Math.abs(this.#dx);
-    if (this.#catching && across > Math.abs(this.#dy)) {
-      this.#owner = "pager";
-      return this.#dx;
-    }
-    if (Math.max(across, Math.abs(this.#dy)) <= LATCH_DISTANCE) return 0;
-    const direction = this.#dx > 0 ? 1 : -1;
-    if (across > Math.abs(this.#dy) && !this.#scrollerTakes(direction)) {
-      this.#owner = "pager";
-      // Tracking starts at the latch, so the strip doesn't jump by it.
-      return this.#dx - direction * LATCH_DISTANCE;
-    }
-    this.#owner = "page";
-    return 0;
-  }
-
-  /** The tabs turned by other means while the fingers were down. */
-  spend(): void {
-    if (this.#owner === "pager" || this.#owner === "pending") this.#owner = "spent";
-  }
-
-  /**
-   * Whether the page must leave this gesture's events alone. Browsers let a
-   * gesture's events be cancelled only if its first one was, so a gesture
-   * that might still become the pager's is held from its first event: one
-   * that leans horizontal and isn't a scroller's.
-   */
-  get holds(): boolean {
-    if (this.#owner === "pager" || this.#owner === "spent") return true;
-    if (this.#owner === "page") return false;
-    if (Math.abs(this.#dx) < Math.abs(this.#dy)) return false;
-    return this.#dx === 0 || !this.#scrollerTakes(this.#dx > 0 ? 1 : -1);
   }
 }

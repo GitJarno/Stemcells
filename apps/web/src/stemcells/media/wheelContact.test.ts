@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import {
-  coastRate,
-  LATCH_DISTANCE,
-  LIFT_GAP,
-  SwipeLatch,
-  WheelContact,
-  type Contact,
-  type WheelSample,
-} from "./swipe";
+import { coastRate, LIFT_GAP, WheelContact, type Contact, type WheelSample } from "./wheelContact";
 
 // Traces shaped like a Mac trackpad's wheel events: the fingers' deltas come
 // at an uneven cadence and jitter, then, once they lift, the system's coast
@@ -353,88 +345,5 @@ describe("telling the fingers from the coast", () => {
     const run = [10, 9.4, 8.836, 8.306].map((dx, i) => ({ dx, dy: 0, t: (i * 1000) / 60 }));
     expect(coastRate(run)).toBeCloseTo(0.94, 3);
     expect(coastRate([10, 9, 9.5, 8].map((dx, i) => ({ dx, dy: 0, t: i * 16 })))).toBeNull();
-  });
-});
-
-describe("whose gesture it is", () => {
-  const noScroller = () => false;
-
-  it("a horizontal swipe is the pager's once it passes the latch, from the latch on", () => {
-    const latch = new SwipeLatch(noScroller);
-    expect(latch.holds).toBe(true);
-    expect(latch.move(3, 0.5)).toBe(0);
-    expect(latch.holds).toBe(true);
-    expect(latch.move(4, 0)).toBe(0);
-    expect(latch.owner).toBe("pending");
-    expect(latch.move(5, 1)).toBe(3 + 4 + 5 - LATCH_DISTANCE);
-    expect(latch.owner).toBe("pager");
-    expect(latch.move(-2, 7)).toBe(-2);
-  });
-
-  it("a vertical scroll is the page's, and never held", () => {
-    const latch = new SwipeLatch(noScroller);
-    latch.move(0.5, 3);
-    expect(latch.holds).toBe(false);
-    latch.move(0, 6);
-    expect(latch.owner).toBe("page");
-    expect(latch.move(20, 0)).toBe(0);
-    expect(latch.holds).toBe(false);
-  });
-
-  it("a diagonal start goes to whichever way it has moved more by the latch", () => {
-    const across = new SwipeLatch(noScroller);
-    for (const [dx, dy] of [
-      [3, 3],
-      [3, 2.5],
-      [4, 1],
-    ] as const) {
-      across.move(dx, dy);
-    }
-    expect(across.owner).toBe("pager");
-
-    const down = new SwipeLatch(noScroller);
-    for (const [dx, dy] of [
-      [2, 3],
-      [2, 3],
-      [3, 4],
-    ] as const) {
-      down.move(dx, dy);
-    }
-    expect(down.owner).toBe("page");
-  });
-
-  it("a scroller under the fingers with room that way keeps the gesture", () => {
-    const latch = new SwipeLatch((direction) => direction === 1);
-    latch.move(4, 0);
-    expect(latch.holds).toBe(false);
-    latch.move(6, 0);
-    expect(latch.owner).toBe("page");
-  });
-
-  it("a scroller at its end that way lets the pager have it", () => {
-    const latch = new SwipeLatch((direction) => direction === 1);
-    latch.move(-4, 0);
-    expect(latch.holds).toBe(true);
-    latch.move(-6, 0);
-    expect(latch.owner).toBe("pager");
-  });
-
-  it("a hand on the strip while it still moves takes it at once, if it leans horizontal", () => {
-    const catching = new SwipeLatch(noScroller, { catching: true });
-    expect(catching.move(3, 1)).toBe(3);
-    expect(catching.owner).toBe("pager");
-
-    const scrolling = new SwipeLatch(noScroller, { catching: true });
-    expect(scrolling.move(1, 3)).toBe(0);
-    expect(scrolling.owner).toBe("pending");
-  });
-
-  it("a gesture the pager gave up goes nowhere, and stays held", () => {
-    const latch = new SwipeLatch(noScroller);
-    latch.move(12, 0);
-    latch.spend();
-    expect(latch.owner).toBe("spent");
-    expect(latch.move(30, 0)).toBe(0);
-    expect(latch.holds).toBe(true);
   });
 });
