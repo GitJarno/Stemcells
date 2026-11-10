@@ -243,10 +243,12 @@ compositor, and only where no cancelling wheel listener lies over it.
   strip back against its coast needs the main thread at the instant of the
   lift, which is the thing that fails under load: the strip would ride the
   coast the wrong way until the page caught up.
-- **The settle** is the browser's snap, not our `page` spring. Turns by
+- **The settle** of a flick lifted short of the middle is still our `page`
+  spring (the flick is paid its page two frames after the lift); past the
+  middle, and for a drag let go at rest, it is the browser's snap. Turns by
   click and key keep the spring.
-- **The tab bar follows when the page lands**, about a third of a second
-  after the lift, not at the lift.
+- **The tab bar follows when the proxy lands**, not at the lift (measured
+  under After).
 - **A border between Cells** stops a swipe while it is held, as the plan
   for it says; hovering one no longer does.
 - **Without the scroll phases** (a browser) a second swipe counts once the
@@ -297,4 +299,220 @@ compositor, and only where no cancelling wheel listener lies over it.
 
 ## After
 
-To come.
+On `stemcells/swipe-under-load`, the same rig and lab. The figures were
+taken on three commits of the branch, and each table says which:
+
+- `5dcd045ee5`: the proxy with the touch rules as they are now.
+- `19a49c1762`: that, and the eased hand-over of a page owed to a flick.
+- `14015131aa`: that, and the tab turning as its page lands. This is the
+  code the pull request lands.
+
+### Back to back with the old pager (`19a49c1762`)
+
+The old pager (main as it was merged into the branch), then the new, one
+after the other on 10 November, the lab restarted from the same snapshot
+for each, the Mac's load average between 4.7 and 8.3 throughout. 30 swipes
+a counted case, 12 a traced one.
+
+| Wrong turns                                  | Before                            | Load | After | Load |
+| -------------------------------------------- | --------------------------------- | ---- | ----- | ---- |
+| Onto the one-chat tab, under load            | 7 of 30 (6 two pages, 1 none)     | 5.8  | 0     | 6.7  |
+| An ordinary swipe, under load                | 8 of 30 (7 two pages, 1 three)    | 5.2  | 0     | 6.4  |
+| Traced, under load                           | 3 of 12 (two pages)               | 5.7  | 0     | 5.8  |
+| Traced, main thread held 400 ms in every 500 | 1 of 12 (two pages)               | 4.8  | 0     | 4.7  |
+| Onto the one-chat tab, a chat streaming      | 4 of 30 (1 two pages, 3 off page) | 6.0  | 0     | 4.8  |
+| Traced, a chat streaming                     | 4 of 12 (2 two pages, 2 off page) | 6.4  | 0     | 6.7  |
+| Traced, quiet                                | 2 of 12 (two pages)               | 6.0  | 0     | 8.3  |
+
+"Off page": the old strip came to rest 5 to 9% of a page short of its page.
+
+Traced, before → after:
+
+|                                          | Under load    | Held 400 in 500 | A chat streaming | Quiet         |
+| ---------------------------------------- | ------------- | --------------- | ---------------- | ------------- |
+| Finger to strip at each picture, median  | 38 → 10 ms    | 14 → 10 ms      | 19 → 10 ms       | 12 → 10 ms    |
+| The same, p95                            | 49 → 14 ms    | 20 → 13 ms      | 42 → 16 ms       | 17 → 13 ms    |
+| At every frame of the screen, p95        | 79 → 28 ms    | 118 → 28 ms     | 84 → 42 ms       | 27 → 32 ms    |
+| The same, worst                          | 123 → 32 ms   | 126 → 32 ms     | 110 → 125 ms     | 33 → 40 ms    |
+| First move shown, median                 | 50 → 29 ms    | 33 → 28 ms      | 33 → 29 ms       | 26 → 28 ms    |
+| The same, p95                            | 103 → 30 ms   | 88 → 31 ms      | 56 → 37 ms       | 29 → 30 ms    |
+| Longest the strip stood still, median    | 144 → 26 ms   | 407 → 26 ms     | 157 → 25 ms      | 139 → 25 ms   |
+| The same, worst                          | 744 → 34 ms   | 416 → 33 ms     | 792 → 122 ms     | 716 → 29 ms   |
+| Gaps over two and a half frames, a swipe | 3.4 → 1.0     | 1.8 → 1.0       | 2.6 → 0.6        | 2.7 → 0.7     |
+| Swipes that stepped back on their way    | 6 → 0 of 12   | 2 → 0 of 12     | 7 → 0 of 12      | 8 → 0 of 12   |
+| The largest step back                    | 394 → 0 px    | 169 → 0 px      | 297 → 0 px       | 107 → 0 px    |
+| Lift to rest, median                     | 1.47 → 0.46 s | 0.79 → 0.67 s   | 1.37 → 0.46 s    | 1.28 → 0.46 s |
+
+The screen in the lab draws a frame every 8.4 ms, so p95 of the delay is
+within two frames in every column.
+
+What is left in those numbers:
+
+- **The first move is shown 28 ms after the fingers' first event**, loaded
+  or not, as it was before when quiet (26 ms). It is the platform's own:
+  the event's way to the compositor and one frame.
+- **One gap of 25 to 34 ms in every swipe**, at the lift. It is in the
+  swipe: between the last event with the fingers down and the first of the
+  coast nothing arrives to draw.
+- **With a chat streaming, one swipe in 12 stood still for 122 ms** with
+  the fingers moving (the worst delay at a frame, 125 ms, is the same
+  moment). Its cause was not found. A run on `5dcd045ee5` had none (worst
+  42 ms); one of three scratch runs had one of 143 ms.
+
+### On the code that lands (`14015131aa`)
+
+A short run after the last fix, the lab restarted from the snapshot. The
+streaming rows and the rest of the table were not run again on this commit.
+
+| Wrong turns                                  | After   | Load |
+| -------------------------------------------- | ------- | ---- |
+| Onto the one-chat tab, under load            | 0 of 30 | 6.6  |
+| An ordinary swipe, under load                | 0 of 30 | 6.5  |
+| Traced, quiet                                | 0 of 12 | 6.6  |
+| Traced, under load                           | 0 of 12 | 5.8  |
+| Traced, main thread held 400 ms in every 500 | 0 of 12 | 7.7  |
+
+|                                       | Quiet      | Under load | Held 400 in 500 |
+| ------------------------------------- | ---------- | ---------- | --------------- |
+| Finger to strip, median / p95         | 7 / 12 ms  | 8 / 12 ms  | 8 / 12 ms       |
+| First move shown, median / p95        | 24 / 28 ms | 27 / 29 ms | 26 / 30 ms      |
+| Longest the strip stood still, worst  | 34 ms      | 29 ms      | 32 ms           |
+| Swipes that stepped back on their way | 0 of 12    | 0 of 12    | 0 of 12         |
+| Lift to rest, median                  | 0.46 s     | 0.46 s     | 0.68 s          |
+
+The tab turns 0.92 s after the lift (median of 12 quiet swipes; 0.90 to
+1.14 s), as the proxy lands.
+
+### The whole table (`5dcd045ee5`)
+
+Every case, 30 swipes each (12 traced), quiet and under load. Wrong turns:
+
+| Case               | Quiet   | Load | Under load | Load |
+| ------------------ | ------- | ---- | ---------- | ---- |
+| onechat            | 0 of 30 | 8.5  | 0 of 30    | 15.3 |
+| onechat, no phases | 0 of 30 | 8.6  | 0 of 30    | 20.2 |
+| manychat           | 0 of 30 | 7.8  | 0 of 30    | 19.2 |
+| single             | 0 of 30 | 6.9  | 0 of 30    | 18.6 |
+| single, no phases  | 0 of 30 | 5.5  | 0 of 30    | 6.9  |
+| quick2             | 0 of 30 | 7.0  | 0 of 30    | 15.1 |
+| short              | 0 of 30 | 8.4  | 0 of 30    | 9.9  |
+| hard               | 0 of 30 | 8.1  | 0 of 30    | 10.2 |
+| slow               | 0 of 30 | 5.7  | 0 of 30    | 7.0  |
+| drag               | 0 of 30 | 5.8  | 0 of 30    | 7.1  |
+| nudge              | 0 of 30 | 5.5  | 0 of 30    | 8.4  |
+| vwobble            | 0 of 30 | 5.0  | 0 of 30    | 13.3 |
+| inner              | 0 of 30 | 5.6  | 0 of 30    | 13.9 |
+| elsewhere          | 0 of 30 | 6.9  | 0 of 30    | 11.1 |
+| rested             | 0 of 30 | 8.0  | 0 of 30    | 7.6  |
+| traced             | 0 of 12 | 7.3  | 0 of 12    | 10.9 |
+| traced, held 400   |         |      | 0 of 12    | 9.1  |
+
+With a chat streaming: `onechat` 0 of 30 (load 7.0), traced 0 of 12
+(load 9.1). 978 swipes, none wrong. On the commit before it (`690664d5c9`,
+the proxy with the touch rules going by the order things were heard in)
+the same cases under load and streaming had 4 wrong in 480, all two pages
+for one: `rested` 1 of 30, `elsewhere` 1 of 30, `onechat` with a chat
+streaming 2 of 30.
+
+A swipe onto the one-chat tab against one onto a tab of several: 0 of 30
+each, with the phases and without, quiet and under load (`onechat`,
+`manychat`). Before, 10 of 30 and 6 of 15 under load.
+
+### What the bar asks, and what was reached
+
+- No wrong turns under load: reached, 0 in every case.
+- One contact of the fingers, one page: reached in every case, and held by
+  a test that hears each of ten stories in 400 orders (`proxy.test.ts`).
+- The strip under the fingers within a frame or two at p95: reached.
+- No runs of dropped frames while dragging or settling: reached under load
+  and with the main thread held; not always with a chat streaming (above).
+
+### Found on the way, fixed here
+
+- **A step back at every lift.** A flick lifted short of the middle is paid
+  its page by the spring two frames after the lift, and that side walled.
+  The wall went straight up where the page last heard the proxy, which was
+  two frames (40 to 50 px) behind where it was, so the pages stepped back
+  by that at the lift in 12 of 12 quiet swipes. The wall now eases in ahead
+  of the proxy (`eased`): the pages follow one to one for the stretch the
+  page's word is behind by, then by less, then not at all. 0 of 12 after,
+  in every column.
+- **The tab turned a spring late.** Landing a hair short of its slot, the
+  strip slid the last pixel: a 0.7 s spring nobody sees, and the tab waits
+  for a slide to end before it turns. In all 30 quiet swipes, and 12 to 18
+  of 30 under load, the tab bar and the focus followed 1.6 s after the
+  lift. Under a pixel and a half there is no slide now, and the turn comes
+  as the proxy lands: 0.92 s after the lift in the lab's swipe (median of
+  12, quiet).
+
+### What else rides on the strip
+
+On `14015131aa`, in the lab:
+
+- **Turns by click and key** (the tabs' own turn): to the next tab, to one
+  four away (it comes in as the next page), two turns 120 ms apart. Each
+  lands on its tab with the proxy on its rest slot.
+- **The column's stages**, on the same strip: a swipe a stage, a hard swipe
+  one stage, a swipe past the first stage comes back; the tabs don't move.
+- **A swipe over the composer** turns the tab.
+- **The new Cell**: a swipe past the last tab brings its page in, and a
+  swipe back leaves it.
+- **A narrower window**: the proxy stays on its rest slot at the new width,
+  and swipes turn.
+
+In the table: a swipe inside a code block scrolls the block (`inner`), a
+scroll down a page that strays sideways turns nothing (`vwobble`), and the
+`no phases` rows are a browser without the native addon. The media
+viewer's swipe keeps its own reading of the wheel, moved to
+`media/wheelContact.ts` with its tests. The terminal is under Limits.
+
+### Limits
+
+- **Several chats streaming at once** could not be measured (see The rig):
+  the lab's page draws too few frames there to tell a swipe from the wait.
+- **A swipe begun over the terminal** still waits for the page. Upstream's
+  wheel listener there may cancel (`terminal/ghostty/surface.ts`), so the
+  compositor asks the page before it scrolls anything under the pointer.
+  The terminal has nothing to scroll sideways: the swipe turns the tab, as
+  before, late on a busy page. A seam that leaves sideways events alone
+  would fix it.
+- **Without the scroll phases** (a browser) a second swipe counts once the
+  first has come to rest, and nothing is owed to a flick.
+- **A second quick swipe begun while the page is held** shows nothing
+  beyond the first one's page until the page hears of the touch; it then
+  takes its page by the spring.
+- **The tab bar** lights the new tab when the proxy has landed, not at the
+  lift: 0.9 s after it in the lab's swipe, whose coast runs 0.63 s, with
+  the page itself in place at 0.46 s. The turn waits so that its render
+  finds the walls already round the new page: the next swipe then follows
+  the fingers on the compositor while the page is busy with the turn.
+- **The slate's corners** are painted in the frame's flat colour, without
+  the grain the frame has; the slivers are a few pixels. Looked at on the
+  dark theme only.
+- **The browser's view riding the proxy** (`surfaces/ride.ts`) is covered
+  by its unit tests only: the lab has no native view.
+
+## Review
+
+The cause was not one thing. The strip needed the main thread for every
+frame; a rule that was right was fed a guess when events came late; and a
+rounded clip sent every scroll's start to the page. The proxy takes the
+first off the main thread, the walls make the second a property of the
+keyframes, and the square clip removes the third.
+
+What the first version of the proxy got wrong was the same mistake one
+level up: its touch rules went by the order the page heard things in. The
+system's phases come later than the page's own events by any amount, and
+4 swipes in 480 still turned two pages. The rules now go by when each
+thing says it happened, and the replay test hears every story in orders
+the first tests never tried.
+
+Two faults were not wrong turns and no counted case would have found
+them: the step back at the lift and the tab turning a spring late. Both
+showed only when the traces were read for what the strip did after the
+fingers left. The analyzer now reads the step back; nothing yet reads when
+the tab turns.
+
+Open: the one streaming swipe in 12 that stood still, the terminal's
+listener, and a tab bar that could light as the strip sets off instead of
+when it lands.
