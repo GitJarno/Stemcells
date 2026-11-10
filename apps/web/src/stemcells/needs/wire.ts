@@ -40,6 +40,8 @@ export interface AskedQuestion {
     readonly label: string;
     readonly description: string;
     readonly value: string | null;
+    /** What the option looks like, to see before choosing it. A server from before it sends none. */
+    readonly preview?: string | null;
   }>;
   readonly multiSelect: boolean;
   readonly allowCustomAnswer: boolean;
@@ -123,6 +125,52 @@ export interface Need {
       | null;
     readonly message: string | null;
   } | null;
+  /** Absent from a server before the brief. */
+  readonly brief?: Brief | null;
+}
+
+/**
+ * What stands beside a Cell's own words (stemcells/tasks/aski-brief.md): what it was told to do
+ * and what its run shows, from T3's records.
+ */
+export interface Brief {
+  /** The instruction the Cell is on. */
+  readonly goal: string | null;
+  /** The files and lines the run changed; null when it changed none. */
+  readonly changed: {
+    readonly files: number;
+    readonly additions: number;
+    readonly deletions: number;
+  } | null;
+  /** Each kind of check the run ran, as it last ended. */
+  readonly checks: ReadonlyArray<{
+    readonly kind: "test" | "typecheck" | "lint" | "build";
+    readonly ok: boolean;
+  }>;
+  readonly pullRequest: {
+    readonly number: number;
+    readonly url: string;
+    readonly state: "open" | "closed" | "merged";
+    readonly draft: boolean;
+    readonly checks: "passing" | "failing" | "pending" | null;
+    readonly conflicts: boolean;
+  } | null;
+}
+
+/** How a done Cell landed: shown by a fact, on its word alone, or short. */
+export interface Landing {
+  readonly verdict: "shown" | "claimed" | "short";
+  /** The fact the verdict stands on. */
+  readonly proof:
+    | "stopped"
+    | "rolled-back"
+    | "failed"
+    | "pr-checks-failing"
+    | "check-failed"
+    | "pr-merged"
+    | "pr-checks-passing"
+    | "checks-clean"
+    | "word";
 }
 
 /** A Cell's stage: at work, needs you, or done (aski-manager.md, decision 7). */
@@ -138,6 +186,47 @@ export interface CellStanding {
   readonly line: string | null;
   /** The roster lists the newest first. */
   readonly createdAt: string;
+  /** When this stage began: its run's start while at work, its end once done. Absent or null otherwise. */
+  readonly since?: string | null;
+  /** How a done Cell landed; null at any other stage, absent from a server before the brief. */
+  readonly landing?: Landing | null;
+  readonly brief?: Brief | null;
+  /**
+   * The condition that holds it, by its key: stopped by a cause it shares, so neither asking
+   * nor flying though its stage reads `working`. Absent from a server before conditions.
+   */
+  readonly holds?: string | null;
+}
+
+/** A Cell a condition holds. */
+export interface HeldCell {
+  readonly threadId: string;
+  readonly projectId: string;
+  readonly title: string;
+  /** The run the limit stopped, which a "continue" picks up. */
+  readonly runId: string;
+  /** When its run stopped. */
+  readonly since: string;
+  /** It carries on at the reset by itself. */
+  readonly carriesOn: boolean;
+}
+
+/**
+ * A stop many Cells share (stemcells/tasks/conditions.md): an account's usage limit, which no
+ * answer to any one Cell lifts. One line for the cause, its Cells holding under it.
+ */
+export interface Condition {
+  readonly key: string;
+  readonly kind: "limit";
+  readonly providerInstanceId: string;
+  /** When the limit resets, as the refusal said; null when it didn't. */
+  readonly resetAt: string | null;
+  /** When its first Cell stopped. */
+  readonly since: string;
+  /** What ends it: the reset, for Cells that carry on at it; else nothing but the person. */
+  readonly waits: "reset" | "you";
+  /** The Cells it holds, the longest held first. */
+  readonly cells: ReadonlyArray<HeldCell>;
 }
 
 /** An ask the person put off: its Cell is snoozed until `until`, then it is back. */
@@ -157,6 +246,8 @@ export interface NeedsList {
   readonly later?: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage; absent from a server before stages. */
   readonly cells?: ReadonlyArray<CellStanding>;
+  /** Each stop many Cells share; absent from a server before conditions, which asks per Cell. */
+  readonly conditions?: ReadonlyArray<Condition>;
   /**
    * Each settled Cell's latest settle by hand, for a day: a Mac closes its panes, a phone back
    * from away its chat. Absent from a server before them.

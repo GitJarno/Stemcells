@@ -132,6 +132,22 @@ describe("TabPager's swipe", () => {
   });
 });
 
+// Under a rounded clip the compositor asks the page what each scroll starts on, and a swipe
+// begun on a busy page waits for the answer (tasks/swipe-under-load.md).
+describe("the slate round the pager", () => {
+  it("clips square, its round corners painted over it", async () => {
+    await using screen = await render(
+      <div data-stemcells-workspace="">
+        <div data-stemcells-slate="" style={{ width: WIDTH, height: 300 }} />
+      </div>,
+    );
+    const slate = screen.container.querySelector<HTMLElement>("[data-stemcells-slate]")!;
+    expect(getComputedStyle(slate).overflow).toBe("clip");
+    expect(getComputedStyle(slate).borderRadius).toBe("0px");
+    expect(getComputedStyle(slate, "::before").borderRadius).not.toBe("0px");
+  });
+});
+
 // A native view over a page can't move with it, so it steps aside while
 // `data-moving` is on. Dropped early, the view sits half over the next page.
 describe("TabPager data-moving", () => {

@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { COMPOSER_SURFACE_SELECTOR, observeResize, useDraftText } from "../upstream/needs";
+import { Board } from "./Board";
 import { CardList, onListOf } from "./CardList";
 import { hingeAcross, sameHinge, type Box, type Hinge, type Screen } from "./hinge";
 import { page } from "./live";
@@ -97,24 +98,43 @@ export function NeedsFrame(props: {
     if (!target.closest(COMPOSER_SURFACE_SELECTOR) || !target.isContentEditable) return;
     if (enter(target)) event.preventDefault();
   };
+  // Wide with an ask in front there is no head, and a row that came with a dropped stream would
+  // move the card under the pointer: a lone question answers on one click. Its note keeps a row
+  // of its own below, there while unseen.
+  const headed = layout === "narrow" || waiting === 0;
   const list = (
     <CardList
       view={view}
       one
       head={
-        // Wide, the asks speak for themselves: only what isn't plain from them is said.
-        layout === "narrow" || waiting === 0 || !view.live ? (
-          <div data-needs-head="">
-            {layout === "narrow" || waiting === 0 ? (
+        <>
+          {/* Wide, the asks speak for themselves: only what isn't plain from them is said. */}
+          {headed ? (
+            <div data-needs-head="">
               <b>{waiting === 0 ? "Nothing needs you" : needYou(waiting)}</b>
-            ) : null}
-            {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
-            {layout === "narrow" ? (
-              <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
-                Back to the chat
-              </button>
-            ) : null}
-          </div>
+              {view.live ? null : <span data-needs-still="">Reconnecting…</span>}
+              {layout === "narrow" ? (
+                <button type="button" data-needs-close="" onClick={() => page.setSheet(false)}>
+                  Back to the chat
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          {/* With nothing to answer, the room is the board: what landed and how, what flies. */}
+          {waiting === 0 ? <Board compact={false} /> : null}
+        </>
+      }
+      // An ask in front keeps the reading: the board folds to a line of figures under it.
+      foot={
+        waiting > 0 ? (
+          <>
+            <Board compact />
+            {headed ? null : (
+              <span data-needs-still="" data-unseen={view.live || undefined}>
+                Reconnecting…
+              </span>
+            )}
+          </>
         ) : null
       }
     />

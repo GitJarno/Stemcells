@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/PendingUserInputCard";
 import { Button } from "../../components/ui/Button";
 import { QuestionAttachments } from "./QuestionAttachments";
 import type { EnvironmentId, RuntimeRequestId } from "@t3tools/contracts";
@@ -283,6 +284,7 @@ export function PendingUserInputCard(props: PendingUserInputCardProps) {
                             {description}
                           </Text>
                         ) : null}
+                        <Stemcells.OptionPreview preview={option.preview} shown={selected} />
                       </View>
                     </Pressable>
                   );

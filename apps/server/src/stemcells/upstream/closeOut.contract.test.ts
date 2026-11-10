@@ -10,7 +10,7 @@ import {
 } from "@t3tools/provider-core/server/orchestrationInstructions";
 import { describe, expect, it } from "vite-plus/test";
 
-import { readCloseOut, stopOf } from "../needs/closeOut.ts";
+import { readCloseOut, stopOf } from "../../../../../stemcells/closeOut/closeOut.ts";
 
 const closeOut =
   T3_CODE_ORCHESTRATION_SECTIONS.find((section) =>

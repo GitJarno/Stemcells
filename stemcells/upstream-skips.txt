@@ -1,0 +1,15 @@
+# Upstream's tests that a change of ours breaks. We never edit upstream's
+# tests (`stemcells/docs/fork.md`, rule 1): our own cases go in our own files,
+# and a test of upstream's that our change breaks is named here, with why.
+# The gates that run upstream's suites leave these out by name
+# (`stemcells/scripts/sync-upstream`, skip_pattern), and fail on a line whose
+# file is gone. A line goes when our change stops breaking its test.
+#
+#   <test file> | <the test's name, or how it starts> | <why>
+
+apps/web/src/components/ChatView.browser.test.tsx | a new draft does not load its reserved thread before the server lists it | waits for upstream's sidebar to list the project, which Stemcells' column replaces (#62)
+apps/web/src/components/Sidebar.shortcuts.browser.test.tsx | leaves thread shortcuts and their hints to the preview when their rules exclude it | waits for upstream's sidebar to list the threads, which Stemcells' column replaces (#62)
+apps/web/src/components/chat/MessagesTimeline.browser.test.tsx | folds a message from another agent into a one-line preview | pins upstream's fold of another agent's message, which our TimelineUserMessageRow substitute draws as a Cell's mail (peers/PeerCard.tsx)
+apps/web/src/components/chat/MessagesTimeline.browser.test.tsx | reveals a find match inside a folded agent message | the same fold, which a Cell's mail replaces
+packages/provider-core/src/server/maintenanceResolver.test.ts | uses npm's registry for npm installs | an npm install asks npm itself before the registry; maintenanceResolver.npmReleaseAge.test.ts pins ours
+packages/provider-core/src/server/maintenanceResolver.test.ts | pins npm updates to the global prefix that owns the package and the provider's PATH | expects an npm install's capabilities without the lookupLatestVersion our seam adds

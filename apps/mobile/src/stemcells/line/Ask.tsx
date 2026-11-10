@@ -9,13 +9,16 @@ import { Linking, Pressable, View } from "react-native";
 import { cellNameOf } from "../cell/kit";
 import { diskFailure } from "../disk/kit";
 import { CellBesideRow, type CardMarks, TitleMark } from "../home/RowCell";
-import { CODE_FONT, NEEDS_YOU } from "../tokens";
+import { OptionPreview } from "../previews/OptionPreview";
+import { previewsOf } from "../previews/kit";
+import { CODE_FONT, DIFF, NEEDS_YOU } from "../tokens";
 import { AppText, type EnvironmentThreadShell, useProjectAt } from "../upstream/cells";
 import { useFreeSpace } from "../disk/useFreeSpace";
 import { useMachineDisk } from "../upstream/disk";
 import { AppTextInput, relativeTime } from "../upstream/needs";
 import {
   cardOf,
+  type Card,
   type CardOption,
   type CardQuestion,
   type Given,
@@ -142,6 +145,7 @@ function AskBody(
           {index + 1}. <Words text={step} repo={repo} />
         </AppText>
       ))}
+      {card.goal ? <Goal text={card.goal} /> : null}
       {card.quote ? <Context text={card.quote} repo={repo} /> : null}
       {card.request ? (
         <AppText
@@ -160,6 +164,7 @@ function AskBody(
           <Words text={card.next} repo={repo} />
         </AppText>
       ) : null}
+      {card.changed !== null || card.facts.length > 0 ? <Facts card={card} /> : null}
       {card.why ? <AppText className="text-xs text-foreground-muted">{card.why}</AppText> : null}
       {card.note ? <AppText className="text-sm text-foreground-muted">{card.note}</AppText> : null}
       {card.questions.length > 0 ? (
@@ -297,6 +302,80 @@ function Context(props: { readonly text: string; readonly repo: string | null })
     </View>
   );
 }
+
+/** What the Cell was told, one line until tapped: the ask is read against it. */
+function Goal(props: { readonly text: string }) {
+  const [more, setMore] = useState(false);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Asked: ${props.text}`}
+      accessibilityHint={more ? undefined : "Shows it whole"}
+      disabled={more}
+      onPress={() => setMore(true)}
+    >
+      <AppText className="text-sm text-foreground-secondary" numberOfLines={more ? undefined : 1}>
+        <AppText className="font-t3-medium text-sm text-foreground">Asked</AppText> {props.text}
+      </AppText>
+    </Pressable>
+  );
+}
+
+const FACT_INK = {
+  good: "text-foreground",
+  bad: "text-danger-foreground",
+  plain: "text-foreground-muted",
+} as const;
+
+/**
+ * What the run shows, on one wrapping line: lines changed with their bar, each check as it
+ * ended, the pull request, which opens its page. Nothing here is the Cell's word.
+ */
+function Facts(props: { readonly card: Card }) {
+  const { changed, facts } = props.card;
+  return (
+    <View className="flex-row flex-wrap items-center gap-x-3 gap-y-0.5">
+      {changed === null ? null : (
+        <View className="flex-row items-center gap-1.5">
+          {changed.bar.length > 0 ? (
+            <View aria-hidden className="flex-row gap-px">
+              {changed.bar.map((cell, index) => (
+                <View
+                  // oxlint-disable-next-line react/no-array-index-key -- Five cells in a fixed order.
+                  key={index}
+                  className="size-1.5 rounded-[1px]"
+                  style={{ backgroundColor: DIFF[cell] }}
+                />
+              ))}
+            </View>
+          ) : null}
+          <AppText className="text-xs text-foreground-muted" style={TABULAR}>
+            {changed.words}
+          </AppText>
+        </View>
+      )}
+      {facts.map((fact) => {
+        const href = fact.href;
+        return href === null ? (
+          <AppText key={fact.id} className={`text-xs ${FACT_INK[fact.tone]}`}>
+            {fact.text}
+          </AppText>
+        ) : (
+          <AppText
+            key={fact.id}
+            accessibilityRole="link"
+            className={`text-xs underline ${FACT_INK[fact.tone]}`}
+            onPress={() => void Linking.openURL(href)}
+          >
+            {fact.text}
+          </AppText>
+        );
+      })}
+    </View>
+  );
+}
+
+const TABULAR = { fontVariant: ["tabular-nums" as const] };
 
 function Row(props: {
   readonly title: string;
@@ -482,7 +561,8 @@ function Field(props: {
 
 /**
  * A Cell's own questions, its options in its order, each with its own words. One plain
- * question answers on a tap; several, or one taking many picks, answer together.
+ * question answers on a tap; several, one taking many picks, or one whose options have
+ * previews, answer together.
  */
 function Questions(props: {
   readonly questions: ReadonlyArray<CardQuestion>;
@@ -491,7 +571,10 @@ function Questions(props: {
   const [picked, setPicked] = useState<Record<string, string[]>>({});
   const [own, setOwn] = useState<Record<string, string>>({});
   const [writing, setWriting] = useState<string | null>(null);
-  const single = props.questions.length === 1 && props.questions[0]?.multiSelect === false;
+  // A preview is seen before its option is committed to: with one, a tap picks.
+  const previewed = props.questions.some((question) => previewsOf(question.options) !== null);
+  const single =
+    props.questions.length === 1 && props.questions[0]?.multiSelect === false && !previewed;
   const answerOf = (question: CardQuestion): string | string[] | null => {
     const words = own[question.id]?.trim();
     if (words) return question.multiSelect ? [words] : words;
@@ -535,6 +618,7 @@ function Questions(props: {
                 {choice.description ? (
                   <AppText className="text-sm text-foreground-muted">{choice.description}</AppText>
                 ) : null}
+                <OptionPreview preview={choice.preview} shown={chosen} />
               </Row>
             );
           })}

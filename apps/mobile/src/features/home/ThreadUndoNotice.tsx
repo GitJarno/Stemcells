@@ -78,7 +78,7 @@ export function ThreadUndoNotice(props: { readonly visible: boolean }) {
       pointerEvents="box-none"
     >
       <Toast
-        message={`${notice.action} 1 Cell`}
+        message={`${notice.action} thread`}
         action={{
           label: "Undo",
           onPress: () => {

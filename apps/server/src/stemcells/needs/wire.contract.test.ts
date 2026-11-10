@@ -33,12 +33,13 @@ const detail = (id: string): RequestDetail => ({
   capability: "live",
 });
 
-/** A machine with one Cell asking, one at work, one done and one settled. */
+/** A machine with one Cell asking, one at work, one done, one settled and one a limit stopped. */
 const shells: ReadonlyArray<Shell> = [
   shellFixture({ id: "asking", pendingRuntimeRequest: pendingRequest("command", { id: "r1" }) }),
   shellFixture({ id: "busy", status: "running", activeRunId: runId("run-2") }),
   shellFixture({ id: "finished" }),
   shellFixture({ id: "put-away", settledAt: at(MINUTE) }),
+  shellFixture({ id: "limited", status: "failed", lastErrorClass: "usage_limit" }),
 ];
 
 const source: NeedsSource = {
@@ -53,6 +54,7 @@ const source: NeedsSource = {
   plan: () => Effect.succeed(null),
   reply: () => Effect.succeed(null),
   inFlight: () => Effect.succeed({ tool: null }),
+  records: () => Effect.succeed({ told: [], ran: [], files: [] }),
   autoResume: Effect.succeed(false),
 };
 
@@ -77,7 +79,18 @@ it.effect("the JSON the server sends is what the phone reads", () =>
         ["asking", "needs-you"],
         ["busy", "working"],
         ["finished", "done"],
+        ["limited", "working"],
       ]);
+      // A limit stops a Cell without asking: one condition, and the Cell names it.
+      const [condition] = read?.conditions ?? [];
+      assert.deepStrictEqual(
+        [condition?.kind, condition?.waits, condition?.cells.map((cell) => cell.threadId)],
+        ["limit", "you", ["limited"]],
+      );
+      assert.strictEqual(
+        read?.cells?.find((cell) => cell.threadId === "limited")?.holds,
+        condition?.key,
+      );
       // A Mac closes the settled Cell's panes on this, and a phone back from away its chat.
       assert.deepStrictEqual(read?.settles, [
         { threadId: "put-away", at: "2026-10-21T12:01:00.000Z" },

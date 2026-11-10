@@ -1,3 +1,4 @@
+import * as Stemcells from "../../stemcells/upstream/seams/ComposerPendingUserInputPanel";
 import { type RuntimeRequestId, type ScopedThreadRef } from "@t3tools/contracts";
 import { markdownProseDirection, textDirection } from "~/textDirection";
 import { memo, use, useEffect, useEffectEvent, useRef, useState } from "react";
@@ -268,7 +269,10 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
               className={cn("pt-2 text-foreground/85", questionTextAlign)}
             />
             {/* Rows span the header row's width so the radios align with the question text and the shortcut column sits under the dismiss button. */}
-            <div className="-ms-2 mt-1.5 sm:-ms-1.5">
+            <Stemcells.QuestionOptions
+              question={activeQuestion}
+              className="-ms-2 mt-1.5 sm:-ms-1.5"
+            >
               {activeQuestion.options.map((option, index) => {
                 const optionValue = option.value ?? option.label;
                 const isOptimisticallySelected =
@@ -328,7 +332,7 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
                   </button>
                 );
               })}
-            </div>
+            </Stemcells.QuestionOptions>
           </ComposerBanner.Body>
         </ComposerBanner.Scroll>
       </CollapsiblePanel>

@@ -114,6 +114,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/ThreadContextChip.tsx": "ThreadContextChip.tsx",
   // A setting Aski links in a reply draws as its live switch.
   "apps/web/src/components/ChatMarkdown.tsx": "ChatMarkdown.tsx",
+  // An assistant reply's row says so, and its markdown draws the reply's close-out as a card.
+  "apps/web/src/components/chat/TimelineAssistantRows.tsx": "TimelineAssistantRows.tsx",
   // The work verbs: the timeline hands its rows the chat's verbs in our
   // context, read off the entries it draws.
   "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
@@ -213,8 +215,8 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 /**
  * Resolves upstream's imports of a substituted module to ours, and serves and builds our public
  * files in place of upstream's. In dev and production builds, not tests, it also says Stemcells
- * where upstream's code says T3 Code (`stemcells/brand/nameTransform.ts`): tests run upstream's
- * code as upstream wrote it.
+ * where upstream's code says T3 Code, and our words where the word table swaps upstream's
+ * (`stemcells/brand/nameTransform.ts`): tests run upstream's code as upstream wrote it.
  */
 export function substituteUpstreamModules(): Plugin {
   const naming = process.env.VITEST ? null : upstreamNamePlugin({ root: repoRoot });

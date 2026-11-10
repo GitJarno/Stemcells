@@ -7,7 +7,7 @@ import { page, userEvent } from "vite-plus/test/browser";
 
 import { APP_NAME } from "../brand/name";
 import { needFixture, NOW, requestFixture } from "../needs/fixtures";
-import type { CellStanding, Need } from "../needs/wire";
+import type { CellStanding, Condition, Need } from "../needs/wire";
 import { REST_SLOT, SLOTS } from "../tabs/proxy";
 import { act, render } from "../upstream/testRender";
 import type { DesktopUpdateState } from "../upstream/updates";
@@ -119,7 +119,9 @@ const cells: CellStanding[] = [
   standing("thread-l2", "done", "Done: #309 merged"),
 ];
 
-let stream: { needs: Need[]; cells: CellStanding[]; live: boolean } | undefined;
+let stream:
+  | { needs: Need[]; cells: CellStanding[]; conditions?: Condition[]; live: boolean }
+  | undefined;
 /** The stream's one list, made on first read: the mock's factory runs before this file's constants. */
 function streamState() {
   stream ??= { needs, cells, live: true };
@@ -601,6 +603,14 @@ describe("the column's word that Stemcells gets better", () => {
 
   it("waits for Cells at work before it restarts, and says so, unless told to now", async () => {
     setup({ ...available, status: "downloaded", downloadedVersion: available.availableVersion });
+    await using stack = new AsyncDisposableStack();
+    const before = streamState();
+    stack.defer(() => {
+      stream = before;
+    });
+    // A Cell a usage limit holds runs nothing a restart could stop: it isn't waited for.
+    const held = { ...standing("thread-h", "working", ""), holds: "limit:claude:unknown" };
+    stream = { ...before, cells: [...before.cells, held] };
     await using screen = await render(
       <>
         <UpdateDriver />
@@ -669,6 +679,53 @@ describe("a Cell moving along the line", () => {
     cells: before.cells.map((cell) =>
       to[cell.threadId] === undefined ? cell : { ...cell, stage: to[cell.threadId]! },
     ),
+  });
+
+  it("counts a Cell a usage limit holds beside Flying, and lists it under what holds it", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    await using stack = new AsyncDisposableStack();
+    const before = streamState();
+    stack.defer(() => {
+      stream = before;
+      useColumnStore.setState({ stage: "needs" });
+    });
+    const key = "limit:claude:unknown";
+    const since = "2026-10-26T10:00:00.000Z";
+    await act(() => {
+      stream = {
+        ...before,
+        cells: before.cells.map((cell) =>
+          cell.threadId === "thread-w" ? { ...cell, holds: key } : cell,
+        ),
+        conditions: [
+          {
+            key,
+            kind: "limit",
+            providerInstanceId: "claude",
+            resetAt: null,
+            since,
+            waits: "you",
+            cells: [
+              {
+                threadId: "thread-w",
+                projectId: "project-shop",
+                title: "Chat thread-w",
+                runId: "run-w",
+                since,
+                carriesOn: false,
+              },
+            ],
+          },
+        ],
+      };
+      changes.tell();
+    });
+    await userEvent.click(screen.getByRole("button", { name: /Flying\s*1 holding\s*0/ }));
+    const holding = screen.getByRole("list", { name: "Holding" });
+    await expect.element(holding.getByText("Chat thread-w")).toBeInViewport();
+    await expect.element(screen.getByText("no reset stated")).toBeVisible();
+    await expect.element(screen.getByRole("list", { name: "Flying" })).toHaveTextContent("None");
   });
 
   it("only changes the count when the person didn't move it", async () => {

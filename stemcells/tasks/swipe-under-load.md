@@ -140,6 +140,21 @@ than quiet while it stood still for a quarter of a second in every swipe.
 - **The first event waits.** A wheel listener that may cancel makes the
   compositor ask the main thread before it scrolls anything under it. The
   pager's was one; the composer's is another, over every pane.
+- **Every scroll's start waited too**, found once the strip was a native
+  scroll: begun while the main thread was held, a swipe did not move until
+  the hold ended (first move 60–350 ms late, some after the fingers had
+  lifted), though once moving it followed through later holds. The trace
+  names it: `InputHandler::ScrollBegin`, `Failed Hit Test`,
+  `Request Main Thread Hit Test`, and `FindScrollTargetOnMainThread` when
+  the page got to it. The compositor could not tell by itself what the
+  scroll starts on, at any point of a page. Taken apart on a bare proxy in
+  the lab page, one thing did it: the slate's rounded clip (`overflow:
+  clip` with a `border-radius`). Inside it every start is asked of the
+  page; with the same clip square, none of 30 was, at five points of a
+  page (plain text, a table, a code block, the composer). The same wait
+  was on every scroll down a chat. What did not matter once the clip was
+  square: the transcript's fade mask, scrollers with nothing to scroll,
+  `overscroll-behavior` on boxes that don't scroll.
 - **Upstream's history swipe** (`components/HistorySwipeNavigation.tsx`)
   hears the same swipes on the desktop and goes back or forward in history
   at 120 px unless something under the pointer scrolls sideways. The pager
@@ -196,6 +211,9 @@ compositor, and only where no cancelling wheel listener lies over it.
   the proxy makes its scroll a swipe.
 - **Nothing over the proxy may cancel a wheel event**: the composer's
   listener is passive now, and the pager's own are.
+- **The slate clips square.** Its round corners are the frame's colour
+  painted over its square ones, above the panes (`workspace.css`), so the
+  compositor can tell what a scroll starts on without the page.
 
 ### What changes in the feel, and why
 

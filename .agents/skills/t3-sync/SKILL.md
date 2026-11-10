@@ -110,15 +110,47 @@ cores, or `STEMCELLS_SYNC_MAX_LOAD`), or another sync runs;
 It does steps 1, 4 and 5's report; the reading (step 2), the resolving
 (step 3) and the follow-ups (step 6) are this skill's.
 
+## When the nightly started you
+
+Installed with `--cell` (opt in), a night that stops on a merge conflict
+starts a Cell with this skill. Its first message names the upstream commit
+the night stopped on, and the issue. That Cell is you, and nobody is awake.
+Everything above and below holds, with these differences:
+
+- **Start at step 1.** The nightly keeps nothing of its merge, so there is
+  no branch of its to take. You are already in a worktree of your own, which
+  the app made from `origin/main` as the project last fetched it:
+  `git fetch -q origin && git switch -q --detach origin/main`, install, and
+  make no other. Step 1 picks upstream's newest green commit again; one
+  newer than the message names is fine.
+- **Never wait for an answer.** Where this skill needs the person (a
+  contact gate zero can neither substitute out nor list, a retire-ours
+  yes, a conflict or a red gate the rules here don't settle), push the
+  branch, open the pull request as far as it got, say on the issue what you
+  found and what is left for the person, and stop. Finish whatever doesn't
+  depend on the answer first.
+- **Retire ours waits for the person**, as in step 6: list each candidate
+  in the pull request and on the issue, and delete nothing.
+- **The nightly merges nothing.** Step 5's merge is yours, by its own rule:
+  every gate passed and `local-check` green on the exact head.
+- **End on the issue.** Comment with the pull request's number, or with
+  what stopped you. The issue is public: nothing private in it
+  (`stemcells/AGENTS.md`, In public). The next night that goes through
+  closes it.
+
 ## 1. Pick the target and merge
 
 - [ ] `stemcells/scripts/sync-upstream`. It picks upstream's newest commit on
       which upstream's own CI passed (never the tip blindly) and merges it on
       `sync/upstream-<sha>`. Conflicts in upstream's tests resolve themselves
-      (`resolve-test-seams.mjs`).
+      (`resolve-test-seams.mjs`), and generated files (the lockfile, the
+      web's route tree, the phone's theme files, the agent context budget)
+      are written again by their generators, never merged. The lockfile's
+      generator is `pnpm install`, so the tree is installed after it.
   - Exit 0 with "already has": nothing new. Go to step 6.
   - Exit 3: conflicts remain. Note the time, and go to step 3.
-- [ ] `pnpm install --frozen-lockfile` when the lockfile moved.
+  - Exit 6: a generator failed, and the message names its file. Fix what
+    it reads, then `stemcells/scripts/sync-upstream --regenerate`.
 
 ## 2. Read what changed, like a staff engineer
 
@@ -140,7 +172,7 @@ effect on us open. Sort each one into a bucket:
 How to find each:
 
 - **Touches our seams:** the report's "Seams upstream touched", and
-  `git diff --stat <before> <target>` against the files in `stemcells/seams.md`.
+  `git diff --stat <before> <target>` against the files in `stemcells/seams/*.md`.
 - **Adopt and comes free:** for each `feat` or `fix` touching `apps/web`,
   `apps/mobile` or `apps/desktop`, grep our layer for the module it
   changed: `git grep -l <module> -- 'apps/*/src/stemcells'` and
@@ -174,12 +206,12 @@ Time it: the pull request says how many minutes resolving took
   - else a one-import seam: one import, one line that hands control to
     `stemcells/`.
 
-  The file's row in `seams.md` says what our edit was. Make that edit, and
+  The file's row under `stemcells/seams/` says what our edit was. Make that edit, and
   no more.
 
 - [ ] **When upstream moved the code** (split a file, renamed a function,
       stopped exporting a name), the seam moves with it. Edit the new file,
-      rename it in its `seams.md` row, and point contract tests at the new
+      rename it in its row, and point contract tests at the new
       place. Prefer a substitute of the new, smaller module over an edit in
       the old, hot one.
 - [ ] **Never grow a hot file's seam.** `drift` holds each hot file to its
@@ -188,6 +220,13 @@ Time it: the pull request says how many minutes resolving took
 - [ ] **Never edit upstream to fix upstream.** An upstream bug we hit gets
       a seam with a row that names it, or waits for their fix. No silent
       patches.
+- [ ] **Never edit upstream's tests.** One our change breaks goes on
+      `stemcells/upstream-skips.txt` with its reason, and the gates leave it
+      out by name; our own case goes in a file of ours.
+- [ ] **Never resolve a generated file by hand.** The merge already took
+      upstream's side of each. After the last conflict,
+      `stemcells/scripts/sync-upstream --regenerate` runs every generator
+      on the merged tree and stages what it wrote.
 - [ ] `git add` the files and `git commit` (keeps the merge; never rebase).
 - [ ] A seam that conflicted twice (`stemcells/scripts/sync-stats`) goes on
       the follow-up list: substitute it, or make it an extension point we

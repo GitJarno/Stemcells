@@ -12,7 +12,8 @@ import * as SubscriptionRef from "effect/SubscriptionRef";
 
 import * as UpstreamNeeds from "../upstream/needs.ts";
 import { leadOf } from "./brief.ts";
-import { stopOf, type Stop } from "./closeOut.ts";
+import { stopOf, type Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
+import { briefOf, factsOf, type Brief } from "./evidence.ts";
 import {
   needOf,
   signalsOf,
@@ -23,6 +24,7 @@ import {
   type Signal,
 } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
+import { conditionsOf, holdsOf, type Condition } from "./conditions.ts";
 import { standingsOf, type CellStanding } from "./stage.ts";
 
 /** A Cell the person settled by hand, on any device. */
@@ -37,6 +39,8 @@ export interface NeedsList {
   readonly later: ReadonlyArray<LaterNeed>;
   /** Every Cell in reach and its stage, for Aski's roster (stage.ts). */
   readonly cells: ReadonlyArray<CellStanding>;
+  /** Each stop many Cells share, with the Cells it holds (conditions.ts). */
+  readonly conditions?: ReadonlyArray<Condition>;
   /**
    * The latest settle by hand of each Cell still settled, for a day: every Mac closes the Cell's
    * panes, and a phone back from away its chat (settle-everywhere.md).
@@ -110,16 +114,27 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
             : signal.kind === "stuck"
               ? Effect.map(source.inFlight(shell.id, runId), (inFlight) => ({ inFlight }))
               : Effect.succeed({});
-    return Effect.tap(read, (detail) =>
-      Effect.sync(() => {
-        // A report's verdict is kept like any read: the key changes with the next run.
-        const missed =
-          detail.request === null ||
-          detail.plan === null ||
-          detail.inFlight === null ||
-          detail.stop === null;
-        if (!missed) details.set(signal.key, detail);
-      }),
+    const facts =
+      runId === ""
+        ? Effect.succeed(null)
+        : Effect.map(source.records(shell.id, runId), (records) =>
+            records === null ? null : factsOf(records),
+          );
+    return Effect.zipWith(read, facts, (detail, facts): NeedDetail => ({ ...detail, facts }), {
+      concurrent: true,
+    }).pipe(
+      Effect.tap((detail) =>
+        Effect.sync(() => {
+          // A report's verdict is kept like any read: the key changes with the next run.
+          const missed =
+            detail.request === null ||
+            detail.plan === null ||
+            detail.inFlight === null ||
+            detail.stop === null;
+          // Unread facts aren't a miss: the ask stands without them, and isn't read again for them.
+          if (!missed) details.set(signal.key, detail);
+        }),
+      ),
     );
   };
 
@@ -138,7 +153,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     }
     lookedAt = now;
     const autoResume = yield* source.autoResume;
-    const candidates = signalsOf([...shells.values()], now, heard, autoResume);
+    const candidates = signalsOf([...shells.values()], now, heard);
     const live = new Set(candidates.map((signal) => signal.key));
     for (const key of details.keys()) if (!live.has(key)) details.delete(key);
     const read = yield* Effect.forEach(
@@ -151,10 +166,21 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       numbering,
       kept.map(({ signal }) => signal),
     );
+    // The pull request is read off the shell each time: its checks go on after the run.
+    const briefs = new Map<string, Brief>();
+    for (const { signal, detail } of read) {
+      const brief = briefOf(detail.facts ?? null, UpstreamNeeds.pullRequestOf(signal.shell));
+      if (brief !== null) briefs.set(signal.shell.id, brief);
+    }
     const needs: Array<Need> = [];
     const later: Array<LaterNeed> = [];
     for (const { signal, detail } of kept) {
-      const need = needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0);
+      const need = needOf(
+        signal,
+        detail,
+        numbering.byKey.get(signal.key) ?? 0,
+        briefs.get(signal.shell.id) ?? null,
+      );
       if (signal.later === null) needs.push(need);
       else later.push({ ...need, until: DateTime.formatIso(DateTime.makeUnsafe(signal.later)) });
     }
@@ -163,10 +189,14 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
     }
     settles = settles.filter((settle) => now - settle.at < SETTLES_KEPT_MS);
+    // A Cell with an ask stands in Input, whatever else stopped it.
+    const asking = new Set(needs.map((need) => need.parentThreadId ?? need.threadId));
+    const conditions = conditionsOf([...shells.values()], now, autoResume, asking);
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
       later: later.toSorted((a, b) => a.until.localeCompare(b.until) || a.number - b.number),
-      cells: standingsOf([...shells.values()], needs, stops, now, autoResume),
+      cells: standingsOf([...shells.values()], needs, stops, now, briefs, holdsOf(conditions)),
+      conditions,
       settles: settles.map((settle) => ({
         threadId: settle.threadId,
         at: DateTime.formatIso(DateTime.makeUnsafe(settle.at)),

@@ -1,5 +1,13 @@
 import { FlagIcon } from "lucide-react";
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 import { keepCard, useAutonomy } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
@@ -7,6 +15,8 @@ import { cellNameOf } from "../cell/name";
 import { CellMark } from "../tabs/CellMark";
 import { openCleanupCell } from "../disk/cleanupCell";
 import { diskFailure, type DiskFailure } from "../disk/pressure";
+import { BesidePreview, PreviewBox } from "../previews/OptionPreviews";
+import { previewsOf, shownOf, type Highlight } from "../previews/preview";
 import { timing } from "../tokens/motion";
 import { compactAge } from "../upstream/cellRow";
 import { useMachineDisk, useOpenDiskCell } from "../upstream/disk";
@@ -35,6 +45,7 @@ import type { Shown } from "./display";
 import type { Hold } from "./holds";
 import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
+import { RunFacts } from "./RunFacts";
 import { type Lit, lit, useLit } from "./answers/lit";
 import { linkAddresses, marksUp } from "./inline";
 import { tellAsk } from "./told";
@@ -320,6 +331,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
           ))}
         </ol>
       ) : null}
+      {card.goal ? <Goal text={card.goal} open={flag !== null || whole} /> : null}
       {card.quote ? (
         <Context text={card.quote} cell={ref} repo={repo} open={flag !== null || whole} />
       ) : null}
@@ -330,6 +342,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
           <Words text={card.next} cell={ref} repo={repo} />
         </div>
       ) : null}
+      {card.changed !== null || card.facts.length > 0 ? <Facts card={card} cell={ref} /> : null}
       {card.why ? <p data-need-why="">{card.why}</p> : null}
       {card.note ? <p data-need-note="">{card.note}</p> : null}
       {flag === "asking" ? (
@@ -437,28 +450,81 @@ function Words(props: WordsProps) {
 export const plainOf = (text: string): string =>
   text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");
 
-/** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */
-function Context(props: WordsProps & { open: boolean }) {
+/** Whether folded words run past their lines, measured as the ask resizes; never once `more` shows them all. */
+function useRunsLong(more: boolean) {
   const body = useRef<HTMLDivElement>(null);
   const [long, setLong] = useState(false);
-  const [opened, setOpened] = useState(false);
-  const more = opened || props.open;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure whether the words run past their two lines as the ask resizes.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure whether the words run past their lines as the ask resizes.
   useLayoutEffect(() => {
     const element = body.current;
     if (element === null || more) return;
     return observeResize(element, () => setLong(element.scrollHeight > element.clientHeight + 1));
   }, [more]);
+  return { body, long: long && !more };
+}
+
+/** What the Cell did, two lines until More, or `open` (a flag), shows them all: never a trip to its chat. */
+function Context(props: WordsProps & { open: boolean }) {
+  const [opened, setOpened] = useState(false);
+  const more = opened || props.open;
+  const { body, long } = useRunsLong(more);
   return (
     <div data-need-context="" data-more={more || undefined}>
       <div ref={body}>
         <Words text={props.text} cell={props.cell} repo={props.repo} />
       </div>
-      {long && !more ? (
+      {long ? (
         <button type="button" onClick={() => setOpened(true)}>
           More
         </button>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * What the Cell was told, one line until More: the ask is read against it. The person's own
+ * words, so plain text, never markup.
+ */
+function Goal(props: { text: string; open: boolean }) {
+  const [opened, setOpened] = useState(false);
+  const more = opened || props.open;
+  const { body, long } = useRunsLong(more);
+  return (
+    <div data-need-context="" data-need-goal="" data-more={more || undefined}>
+      <div ref={body}>
+        <span>Asked</span> {props.text}
+      </div>
+      {long ? (
+        <button type="button" onClick={() => setOpened(true)}>
+          More
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * What the run shows, on one line: lines changed with their bar, each check as it ended, the
+ * pull request linked. A failing fact takes the error's ink; nothing here is the Cell's word.
+ */
+function Facts(props: { card: Card; cell: ReturnType<typeof cellRef> | null }) {
+  const { changed, facts } = props.card;
+  return (
+    <div data-need-facts="">
+      <RunFacts
+        changed={changed}
+        facts={facts}
+        renderLink={(text, href) => (
+          <ChatMarkdown
+            inline
+            text={`[${text}](${href})`}
+            cwd={undefined}
+            threadRef={props.cell ?? undefined}
+            parseRawHtml={false}
+          />
+        )}
+      />
     </div>
   );
 }
@@ -599,6 +665,30 @@ function Field(props: {
   );
 }
 
+/** A question's options, the highlighted one's preview beside or under them when any has one. */
+function Choices(props: {
+  question: CardQuestion;
+  highlight: Highlight | null;
+  children: ReactNode;
+}) {
+  const previews = previewsOf(props.question.options);
+  const options = <div data-need-options="">{props.children}</div>;
+  if (previews === null) return options;
+  return (
+    <BesidePreview
+      box={
+        <PreviewBox
+          previews={previews}
+          labels={props.question.options.map((option) => option.label)}
+          shown={shownOf(previews, props.question.id, props.highlight)}
+        />
+      }
+    >
+      {options}
+    </BesidePreview>
+  );
+}
+
 /**
  * A Cell's own questions, its options in its order. One plain question
  * answers on a click; several, or one taking many picks, answer together.
@@ -611,7 +701,12 @@ function Questions(props: {
   const [picked, setPicked] = useState<Record<string, string[]>>({});
   const [own, setOwn] = useState<Record<string, string>>({});
   const [writing, setWriting] = useState<string | null>(null);
+  const [highlight, setHighlight] = useState<Highlight | null>(null);
   const single = props.questions.length === 1 && props.questions[0]?.multiSelect === false;
+  // A click answers, so an option's preview shows when it is pointed at or focused.
+  const point = (question: CardQuestion, index: number) => {
+    if (previewsOf(question.options) !== null) setHighlight({ questionId: question.id, index });
+  };
 
   const answerOf = (question: CardQuestion): string | string[] | null => {
     const words = own[question.id]?.trim();
@@ -644,8 +739,8 @@ function Questions(props: {
               <p data-need-question-text="">{question.question}</p>
             </>
           ) : null}
-          <div data-need-options="">
-            {question.options.map((choice) => {
+          <Choices question={question} highlight={highlight}>
+            {question.options.map((choice, at) => {
               const chosen = (picked[question.id] ?? []).includes(choice.answer);
               return (
                 <button
@@ -655,6 +750,8 @@ function Questions(props: {
                   data-recommended={choice.recommended || undefined}
                   data-lit={lightOf(`answer:${choice.answer}`, props.lit, null)}
                   aria-pressed={single ? undefined : chosen}
+                  onPointerEnter={() => point(question, at)}
+                  onFocus={() => point(question, at)}
                   onClick={() => {
                     if (single) return props.onAnswer({ [question.id]: choice.answer });
                     setOwn((all) => ({ ...all, [question.id]: "" }));
@@ -702,7 +799,7 @@ function Questions(props: {
                 </span>
               </button>
             )}
-          </div>
+          </Choices>
         </div>
       ))}
       {single ? null : (

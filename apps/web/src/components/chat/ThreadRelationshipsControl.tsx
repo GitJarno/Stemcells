@@ -202,7 +202,7 @@ function ThreadLineageGroup<Row extends LineageRow>(props: {
 function relationshipLabel(edge: ThreadRelationshipEdge, currentThreadId: ThreadId) {
   if (edge.kind === "transfer") return "Context transfer";
   if (edge.kind === "subagent") {
-    return edge.sourceThreadId === currentThreadId ? "Subcell" : "Parent Cell";
+    return edge.sourceThreadId === currentThreadId ? "Subagent" : "Parent agent";
   }
   return edge.sourceThreadId === currentThreadId ? "Fork" : "Parent thread";
 }
@@ -270,7 +270,7 @@ function RemoteSubagentRow(props: {
   const status = props.agent.status;
   const failed = status === "failed";
   const title = relationshipThreadTitle({
-    title: props.agent.title ?? "Subcell",
+    title: props.agent.title ?? "Subagent",
     isSubagent: true,
   });
   return (
@@ -382,7 +382,7 @@ function DelegatedFromRow(props: {
             hint={
               environment === null
                 ? `Delegated from ${label ?? "a linked environment"}. Connect to it to open the parent thread.`
-                : "Open parent Cell"
+                : "Open parent agent"
             }
           />
         </TooltipPopup>
@@ -567,7 +567,7 @@ export function ThreadRelationshipsPanel(props: {
     { id: "active", label: null, rows: [...active, ...remoteActive], expanded: true },
     {
       id: "previous",
-      label: "Previous Subcells",
+      label: "Previous agents",
       rows: [...previous, ...remotePrevious],
       expanded: false,
     },
@@ -665,7 +665,7 @@ export function ThreadRelationshipsPanel(props: {
     });
     setStoppingId(null);
     if (result._tag === "Failure") {
-      toastManager.add({ type: "error", title: "Could not stop Subcell" });
+      toastManager.add({ type: "error", title: "Could not stop subagent" });
     }
   };
 
@@ -917,7 +917,7 @@ export function ThreadRelationshipsPanel(props: {
                     variant="ghost"
                     part="icon"
                     tone="destructive"
-                    aria-label={`Stop Subcell ${threadTitle}`}
+                    aria-label={`Stop subagent ${threadTitle}`}
                     disabled={stoppingId !== null}
                     onClick={() => void stopSubagent(threadId, agent)}
                   />
@@ -929,7 +929,7 @@ export function ThreadRelationshipsPanel(props: {
                   <SquareIcon aria-hidden className="size-3 fill-current" />
                 )}
               </TooltipTrigger>
-              <TooltipPopup side="left">Stop Subcell</TooltipPopup>
+              <TooltipPopup side="left">Stop subagent</TooltipPopup>
             </Tooltip>
           </div>
         ) : null}

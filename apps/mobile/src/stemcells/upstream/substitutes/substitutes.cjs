@@ -78,6 +78,8 @@ const PACKAGES = {
   "expo-image-picker": "expo-image-picker.ts",
   // T3's crash reporter records nothing, and sends nothing.
   "expo-observe": "expo-observe.ts",
+  // A reply's `chart` fence draws as its chart, where the package draws a code block.
+  "react-native-enriched-markdown": "react-native-enriched-markdown.tsx",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");

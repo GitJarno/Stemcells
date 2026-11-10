@@ -1,12 +1,12 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
-import * as HostProcess from "@t3tools/shared/HostProcess";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import * as Stream from "effect/Stream";
 import * as TestClock from "effect/testing/TestClock";
 
+import * as UpstreamDisk from "../upstream/disk.ts";
 import { makeDuTally } from "./drives.ts";
 import {
   drivesFile,
@@ -171,8 +171,8 @@ it.live("reads a real du's lines and ends it when the reader stops", () =>
     const tools = yield* processTools.pipe(
       Effect.provide(
         Layer.mergeAll(
-          Layer.succeed(HostProcess.Platform, "darwin"),
-          Layer.succeed(HostProcess.HomeDirectory, root),
+          Layer.succeed(UpstreamDisk.HostPlatform, "darwin"),
+          Layer.succeed(UpstreamDisk.HostHome, root),
         ),
       ),
     );

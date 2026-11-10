@@ -35,9 +35,11 @@ case, go back to the three costs and choose what keeps them lowest.
   - `stemcells/` for docs, plans and scripts.
 
   New files never conflict.
+
 - An upstream file changes only at a **seam**: the smallest edit that hands
-  control to our code, ideally an import and one line. Every seam is listed
-  in `stemcells/seams.md` with its reason.
+  control to our code, ideally an import and one line. Every seam has a
+  row under `stemcells/seams/` with its reason, in the file
+  `stemcells/seams.md` names for its path.
 - Put seams where upstream rarely edits: route roots, registries,
   constants. Avoid the files upstream changes every day. `drift` shows each
   seam file's upstream commits over the last 90 days; a hot file is a bad
@@ -53,17 +55,21 @@ case, go back to the three costs and choose what keeps them lowest.
   untouched (`seams.md`, Substitutes).
 - Never reformat, rename, move or tidy upstream code. Each of those is a
   conflict waiting for the next merge.
+- We never edit upstream's tests: our cases go in our own files, and a
+  test our change breaks goes on the skip list with its reason
+  (`stemcells/upstream-skips.txt`).
 - `stemcells/scripts/drift` fails on any changed upstream file that
-  `seams.md` doesn't name. It prints the total, so the fork's size is
+  no row names. It prints the total, so the fork's size is
   always visible.
 
 ## 2. Lean on contracts, not internals — against silent breakage
 
-- **One adapter per app.** Only `apps/web/src/stemcells/upstream/` and
-  `apps/server/src/stemcells/upstream/` import upstream modules. The rest
-  of our code imports from those adapters. When upstream changes shape,
-  the type checker fails inside the adapter, and that's the one place to
-  fix.
+- **One adapter per app.** Only an app's `src/stemcells/upstream/` folder
+  imports upstream modules: the web's, the server's, the phone's and the
+  desktop's. The rest of that app's code of ours imports from its adapter,
+  tests too: what a test stands on of upstream's is a `*.fixture.ts` in
+  the adapter. When upstream changes shape, the type checker fails inside
+  the adapter, and that's the one place to fix.
 - **Prefer upstream's public surfaces**, which they also have to keep
   stable for themselves. In rough order:
   1. The schemas in `@t3tools/contracts`.
@@ -74,13 +80,19 @@ case, go back to the three costs and choose what keeps them lowest.
   6. Keybinding config.
 
   A component's internals come last.
+
 - **Contract tests.** Every upstream behaviour we depend on gets a test in
   our tree that pins it. Examples: the thread status values we map to a
   Cell's mood, the MCP tool names Aski calls, `ChatView` rendering a thread
   from props. These run on every sync, and a red one names the contract
   that moved.
-- **Boundaries are checked, not trusted.** A test in our tree fails when
-  our code imports upstream outside an adapter.
+- **Boundaries are checked, not trusted.** Each app's `boundary.test.ts`
+  runs one shared check (`stemcells/boundary/check.ts`), which fails when
+  our code imports upstream outside that app's adapter. Another app's code
+  of ours counts as ours (the phone's `kit.ts` files draw with the web's);
+  another app's adapter doesn't. Our folder at the repository's root, which
+  every app shares, has no adapter: `stemcells/boundary/boundary.test.ts`
+  fails when anything in it imports upstream.
 
 ## 3. Own our state and our wire
 
@@ -106,8 +118,10 @@ case, go back to the three costs and choose what keeps them lowest.
 - **Our design tokens live in our own CSS layer.** It overrides upstream's
   variables through the cascade. We don't edit their stylesheet.
 - **Words:** our views say Cell and Aski. Upstream's strings stay until one
-  of our views replaces the one that shows them. The app's name is the one
-  exception: the builds rename it (The name transform, below).
+  of our views replaces the one that shows them. Two exceptions, both made
+  by the builds and never in upstream's files: the app's name, and the
+  words upstream writes inline for a thread and a subagent (The name
+  transform, below).
 
 ## 5. Fixes we carry alone — small, and upstream only when asked
 
@@ -137,13 +151,16 @@ case, go back to the three costs and choose what keeps them lowest.
 - **The nightly pipeline** (the runbook: `upstream-sync.md`), on a Mac,
   as GitHub Actions is off for Stemcells: `install-nightly-sync` (opt in)
   has launchd run it at 03:00, on AC power and when the Mac isn't busy.
-  1. `sync-upstream` merges on a branch, and resolves conflicts in
-     upstream's tests itself.
+  1. `sync-upstream` merges on a branch, resolves conflicts in upstream's
+     tests itself, and writes generated files (the lockfile, the route
+     tree) again with their generators instead of merging them.
   2. `sync-upstream --gates`: drift, nothing reporting on the person, types,
      lint, our tests, upstream's suites, the builds and a headless boot.
   3. If green, `sync-upstream --pr` opens the pull request, with a report.
      If it conflicts or goes red, one issue says where, and a Cell resolves
-     it: upstream's logic wins and our seam goes back on top.
+     it: upstream's logic wins and our seam goes back on top. With
+     `install-nightly-sync --cell` (opt in, as it spends the person's model
+     plan at night), a night that stops on a conflict starts that Cell itself.
 - **Nothing merges unchecked.** A pull request merges once its exact head
   carries `local-check` = success, which `check-local` records after
   running the `check` gates (`stemcells/AGENTS.md`, Landing).
@@ -221,6 +238,16 @@ the desktop app), and their sources stay upstream's
   checks an install's archive against every entry's words, and
   `nameTransform.test.ts` fails on kept words upstream removed or said
   again.
+- **The vocabulary rides it.** Cell for thread, Subcell for subagent or
+  agent, Flying for Working: each was a seam on a line upstream wrote, and
+  two of upstream's tests were edited to expect them. A word table
+  (`stemcells/brand/wordTable.ts`) now names each place by its file and
+  upstream's exact words on one line, with ours for the part that changes,
+  and the same hook swaps them. "thread" can't be renamed wherever it
+  stands, as the name is, so every entry is held to its file: a build fails
+  when the file says the words fewer or more times than the entry does, or
+  is gone. A swap that would span lines stays a seam; sentences upstream
+  assembles at runtime stay with the substitutes that rewrite them.
 - **Tests and source runs see upstream's words.** Tests run upstream's
   code as written, so upstream's tests pass unedited. The server run from
   source (`pnpm dev:server`) isn't built and says T3 Code; that's

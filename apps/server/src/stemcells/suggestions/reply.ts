@@ -1,7 +1,7 @@
-import type { MessageId } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 
 import {
+  type MessageId,
   runStartedAt,
   type SuggestionMessage,
   type SuggestionRun,

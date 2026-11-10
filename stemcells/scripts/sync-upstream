@@ -5,10 +5,14 @@
 #
 #   sync-upstream               merge upstream's newest green commit on
 #                               sync/upstream-<sha>; conflicts in upstream's
-#                               tests resolve themselves (resolve-test-seams.mjs)
+#                               tests resolve themselves (resolve-test-seams.mjs),
+#                               and generated files are written again (GENERATED)
 #   sync-upstream --check       the same, then every gate, then --pr
 #   sync-upstream --nightly     --check, then keep the sync's one issue up to
 #                               date: rewritten when it stops, closed when not
+#   sync-upstream --regenerate  during a merge: generated files that conflicted
+#                               take upstream's side, every generator runs and
+#                               its files are staged; after resolving by hand
 #   sync-upstream --gates [G…]  run the gates on this tree: all, or only G…;
 #                               `check` names the ones a pull request must pass
 #   sync-upstream --pr          push this branch and open or refresh its pull
@@ -25,10 +29,14 @@
 #
 # Exits 0 when done or already up to date, 3 on a conflict that needs a
 # person or a Cell (each file is printed with the seams it touches), 4 when a
-# gate fails, 5 when GitHub refuses the push. With SYNC_SUMMARY set to a file,
-# it writes there what stopped it, for the issue. VITEST_MAX_WORKERS caps the
-# test workers (Vitest reads it): a busy Mac times tests out otherwise.
+# gate fails, 5 when GitHub refuses the push, 6 when a generated file's
+# generator fails (it names the file). With SYNC_SUMMARY set to a file,
+# it writes there what stopped it, for the issue; with SYNC_ISSUE set to one,
+# the number of the issue it kept for a run that stopped (nightly-sync hands
+# it to a Cell). VITEST_MAX_WORKERS caps the test workers (Vitest reads it):
+# a busy Mac times tests out otherwise.
 set -euo pipefail
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$(git rev-parse --show-toplevel)"
 
 GATES=(drift outbound typecheck lint ours upstream-packages upstream-web upstream-server build boot outbound-live workflows)
@@ -44,9 +52,9 @@ repo_slug() {
   echo "${GITHUB_REPOSITORY:-$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')}"
 }
 
-# The seams.md rows that name a file: their change, cut short.
+# The seam rows that name a file (stemcells/seams/): their change, cut short.
 seams_of() {
-  grep -F "\`$1\`" stemcells/seams.md | awk -F' [|] ' '{print "    seam: " substr($2, 1, 140)}' || true
+  grep -hF "\`$1\`" stemcells/seams/*.md | awk -F' [|] ' '{print "    seam: " substr($2, 1, 140)}' || true
 }
 
 # ---------------------------------------------------------------- the gates
@@ -83,28 +91,54 @@ upstream_env() {
   env -u GH_TOKEN -u GITHUB_TOKEN -u GH_ENTERPRISE_TOKEN -u GITHUB_ENTERPRISE_TOKEN \
     GIT_CONFIG_GLOBAL=/dev/null "$@"
 }
+# We never edit upstream's tests: one a change of ours breaks is left out by
+# name (stemcells/upstream-skips.txt). Prints Vitest's -t pattern that runs
+# every test but the list's, and any more named here (a Mac's own).
+skip_pattern() {
+  local list=stemcells/upstream-skips.txt file
+  while IFS= read -r file; do
+    [ -e "$file" ] || {
+      echo "sync: $list names $file, which is gone: drop its line" >&2
+      return 1
+    }
+  done < <(grep -v -E '^[[:space:]]*(#|$)' "$list" | awk -F' [|] ' '{print $1}' | sort -u)
+  # shellcheck disable=SC2016 # regular expressions, not shell's own
+  {
+    grep -v -E '^[[:space:]]*(#|$)' "$list" | awk -F' [|] ' '{print $2}'
+    [ $# -eq 0 ] || printf '%s\n' "$@"
+  } | sed -E 's/[][\\.*^$(){}+?|\/]/\\&/g' | paste -sd'|' - | sed -E 's/^(.+)$/^(?!.*(?:\1))/'
+}
 gate_upstream_packages() {
+  local skip
+  skip=$(skip_pattern) || return 1
   if [ "$(uname)" = Darwin ]; then
     # DesktopLinuxUrlHandler.test.ts writes two Linux icon names that differ
     # only in case, which a Mac's disk folds into one file.
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
-      --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' test &&
+      --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' \
+      test -t "$skip" &&
       upstream_env pnpm --filter @t3tools/desktop exec vp test run --passWithNoTests \
-        --exclude src/app/DesktopLinuxUrlHandler.test.ts
+        --exclude src/app/DesktopLinuxUrlHandler.test.ts -t "$skip"
   else
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
-      --filter '!@t3tools/monorepo' --filter '!@t3tools/web' test
+      --filter '!@t3tools/monorepo' --filter '!@t3tools/web' test -t "$skip"
   fi
 }
-gate_upstream_web() { upstream_env pnpm exec vp run --filter @t3tools/web test; }
+gate_upstream_web() {
+  local skip
+  skip=$(skip_pattern) || return 1
+  upstream_env pnpm exec vp run --filter @t3tools/web test -t "$skip"
+}
 gate_upstream_server() {
+  local skip
   if [ "$(uname)" = Darwin ]; then
     # AntigravityInstallation's `agy.CMD` case writes two names that differ
     # only in case, which a Mac's disk folds into one file.
-    upstream_env pnpm --filter t3 exec vp test run \
-      -t '^(?!.*accepts the agy CLI without a harness sibling)'
+    skip=$(skip_pattern "accepts the agy CLI without a harness sibling") || return 1
+    upstream_env pnpm --filter t3 exec vp test run -t "$skip"
   else
-    upstream_env pnpm exec vp run --filter t3 test
+    skip=$(skip_pattern) || return 1
+    upstream_env pnpm exec vp run --filter t3 test -t "$skip"
   fi
 }
 # The web, server and desktop builds, and the check upstream's CI makes on them.
@@ -232,6 +266,71 @@ run_gates() {
   echo "sync: every gate passed: ${names[*]}"
 }
 
+# ---------------------------------------------------------- generated files
+# Files a tool writes from the rest of the tree. A sync never merges them by
+# hand: one that conflicted takes upstream's side, then every generator runs
+# on the merged tree and what it wrote is staged. The one list: the files a
+# generator writes, then the function that runs it. In this order, as the
+# lockfile's install puts in place what the others run.
+GENERATED=(
+  "pnpm-lock.yaml|generate_lockfile"
+  "apps/web/src/routeTree.gen.ts|generate_route_tree"
+  "apps/mobile/generated-uniwind-themes.css apps/mobile/generated-uniwind-theme-names.json apps/mobile/generated-uniwind-default-theme-variables.json apps/mobile/clerk-theme.json|generate_phone_themes"
+  "apps/server/src/provider/agentContextBudget.json|generate_context_budget"
+)
+# Upstream's lockfile, plus what our own manifests add to it.
+generate_lockfile() { pnpm install --no-frozen-lockfile; }
+generate_route_tree() { node "$here/generate-route-tree.mjs"; }
+generate_phone_themes() { pnpm --filter @t3tools/mobile run generate; }
+generate_context_budget() { node "$here/generate-context-budget.mjs"; }
+
+generated_files() {
+  local row
+  for row in "${GENERATED[@]}"; do tr ' ' '\n' <<< "${row%%|*}"; done
+}
+
+take_upstreams_generated() {
+  local file
+  for file in $(generated_files); do
+    [ -n "$(git diff --name-only --diff-filter=U -- "$file")" ] || continue
+    if git cat-file -e "MERGE_HEAD:$file" 2> /dev/null; then
+      git checkout -q MERGE_HEAD -- "$file"
+    else
+      git rm -q -- "$file"
+    fi
+    echo "sync: $file conflicted: took upstream's, and its generator writes ours back"
+  done
+}
+
+regenerate() {
+  local row files run file left
+  take_upstreams_generated
+  # A generator reads the merged tree, so it waits for the last conflict.
+  left=$(git diff --name-only --diff-filter=U)
+  [ -z "$left" ] || return 3
+  for row in "${GENERATED[@]}"; do
+    files=${row%%|*}
+    run=${row##*|}
+    echo "::group::generate $files"
+    if ! "$run"; then
+      echo "::endgroup::"
+      echo "sync: the generator of $files failed ($run in stemcells/scripts/sync-upstream); fix what it reads, then stemcells/scripts/sync-upstream --regenerate" >&2
+      {
+        echo "The merged tree's generated files could not be written again. This generator failed:"
+        echo
+        echo "- \`${files// /\`, \`}\` (\`$run\` in \`stemcells/scripts/sync-upstream\`)"
+      } > "$summary"
+      return 6
+    fi
+    echo "::endgroup::"
+    for file in $files; do
+      # One upstream deleted and its generator no longer writes has nothing to stage.
+      [ -e "$file" ] || git ls-files --error-unmatch -- "$file" > /dev/null 2>&1 || continue
+      git add -A -- "$file" || return 6
+    done
+  done
+}
+
 # ---------------------------------------------------------------- the report
 
 # Test files and test cases in a tree, counted from the source.
@@ -307,7 +406,7 @@ report() {
   local touched=0
   while IFS= read -r file; do
     [ -z "$file" ] && continue
-    grep -qF "\`$file\`" stemcells/seams.md || continue
+    grep -qF "\`$file\`" stemcells/seams.md stemcells/seams/*.md || continue
     echo "- \`$file\`"
     touched=$((touched + 1))
   done < <(git diff --name-only "$before" "$target")
@@ -320,10 +419,14 @@ report() {
   if [ -z "$conflicts" ]; then
     echo "None: the merge was clean."
   else
-    echo "Merging into main conflicts in these; tests resolve themselves (\`resolve-test-seams.mjs\`), the rest were resolved by hand, upstream's logic first:"
+    echo "Merging into main conflicts in these; tests resolve themselves (\`resolve-test-seams.mjs\`), generated files are written again (\`sync-upstream --regenerate\`), the rest were resolved by hand, upstream's logic first:"
     echo
     echo '```'
-    node stemcells/scripts/resolve-test-seams.mjs --preview origin/main "$target" || true
+    { node stemcells/scripts/resolve-test-seams.mjs --preview origin/main "$target" || true; } |
+      awk -v generated="$(generated_files | tr '\n' ' ')" '
+        BEGIN { split(generated, names, " "); for (i in names) is[names[i]] = 1 }
+        $1 == "left" && ($2 in is) { print "generated " $2 "  (upstream\047s, then its generator)"; next }
+        { print }'
     echo '```'
   fi
   echo
@@ -431,6 +534,7 @@ keep_issue() {
     3) why="the merge conflicts where our seams are" ;;
     4) why="a gate failed on the merged tree" ;;
     5) why="every gate passed, but GitHub refused the push" ;;
+    6) why="a generated file's generator failed on the merged tree" ;;
     *) why="the run failed before its gates finished" ;;
   esac
   body=$(mktemp)
@@ -438,7 +542,7 @@ keep_issue() {
     echo "The sync of $today stopped: $why$run."
     echo
     [ -s "$summary" ] && cat "$summary" && echo
-    echo "**How to take it from here:** \`stemcells/docs/upstream-sync.md\`. In short, in a worktree of your own: \`stemcells/scripts/sync-upstream\`, resolve what it leaves (upstream's logic wins, our seam goes back on top), \`git commit\`, then \`stemcells/scripts/sync-upstream --gates\` and \`--pr\`."
+    echo "**How to take it from here:** \`stemcells/docs/upstream-sync.md\`. In short, in a worktree of your own: \`stemcells/scripts/sync-upstream\`, resolve what it leaves (upstream's logic wins, our seam goes back on top), \`stemcells/scripts/sync-upstream --regenerate\`, \`git commit\`, then \`stemcells/scripts/sync-upstream --gates\` and \`--pr\`."
     echo
     echo "<details><summary>The run's last lines</summary>"
     echo
@@ -451,8 +555,11 @@ keep_issue() {
     gh api -X PATCH "repos/$repo/issues/$open" -F body=@"$body" > /dev/null
     gh api "repos/$repo/issues/$open/comments" -f body="Stopped again on $today: $why. The issue above says where." > /dev/null
   else
-    gh api "repos/$repo/issues" -f title="$title" -F body=@"$body" --jq .html_url
+    open=$(gh api "repos/$repo/issues" -f title="$title" -F body=@"$body" --jq .html_url)
+    echo "$open"
+    open=${open##*/}
   fi
+  [ -z "${SYNC_ISSUE:-}" ] || echo "$open" > "$SYNC_ISSUE"
   rm -f "$body"
 }
 
@@ -479,6 +586,17 @@ case "$mode" in
     run_gates "$@"
     exit $?
     ;;
+  --regenerate)
+    code=0
+    regenerate || code=$?
+    if [ "$code" = 3 ]; then
+      echo "sync: generators read the merged tree; resolve these first, then run this again:" >&2
+      git diff --name-only --diff-filter=U | sed 's/^/  /' >&2
+    elif [ "$code" = 0 ]; then
+      echo "sync: generated files written and staged; next: git commit"
+    fi
+    exit "$code"
+    ;;
   --report)
     git fetch -q --no-tags upstream main
     git fetch -q --no-tags origin main
@@ -497,7 +615,7 @@ case "$mode" in
     ;;
   "" | --check) ;;
   *)
-    sed -n '2,24p' "$0"
+    sed -n '2,28p' "$0"
     exit 2
     ;;
 esac
@@ -543,29 +661,39 @@ fi
 short=$(git rev-parse --short=9 "$target")
 branch="sync/upstream-$short"
 git switch -q -C "$branch" origin/main
-if ! git merge -q --no-edit -m "Take upstream at $short" "$target"; then
-  echo "sync: the merge conflicts; resolving upstream's tests"
-  if node stemcells/scripts/resolve-test-seams.mjs; then
-    git commit -q --no-edit
-    echo "sync: every conflict was in upstream's tests, and each resolved"
-  else
-    echo "sync: conflicts in:"
-    {
-      echo "Merging upstream at \`$short\` ($behind commits) conflicts where our seams are. Upstream's tests resolved themselves; these need a person or a Cell:"
-      echo
-      for file in $(git diff --name-only --diff-filter=U); do
-        echo "- \`$file\`"
-        seams_of "$file" | sed 's/^    /  - /'
-      done
-    } > "$summary"
-    for file in $(git diff --name-only --diff-filter=U); do
-      echo "  $file"
-      seams_of "$file"
-    done
-    echo "sync: resolve them by hand: upstream's logic wins and our seam goes back on top (stemcells/docs/upstream-sync.md)"
-    exit 3
-  fi
+# Not committed yet: generated files are written again on the merged tree
+# first, so the merge commit carries them.
+merged="cleanly"
+if ! git merge -q --no-commit --no-ff -m "Take upstream at $short" "$target" > /dev/null; then
+  echo "sync: the merge conflicts; generated files take upstream's side, and upstream's tests resolve themselves"
+  take_upstreams_generated
+  node stemcells/scripts/resolve-test-seams.mjs || true
+  merged="its conflicts were in upstream's tests and generated files, and each resolved"
 fi
+code=0
+regenerate || code=$?
+if [ "$code" = 3 ]; then
+  echo "sync: conflicts in:"
+  {
+    echo "Merging upstream at \`$short\` ($behind commits) conflicts where our seams are. Upstream's tests resolved themselves, and generated files took upstream's side; these need a person or a Cell:"
+    echo
+    for file in $(git diff --name-only --diff-filter=U); do
+      echo "- \`$file\`"
+      seams_of "$file" | sed 's/^    /  - /'
+    done
+  } > "$summary"
+  for file in $(git diff --name-only --diff-filter=U); do
+    echo "  $file"
+    seams_of "$file"
+  done
+  echo "sync: resolve them by hand: upstream's logic wins and our seam goes back on top; then stemcells/scripts/sync-upstream --regenerate, and git commit (stemcells/docs/upstream-sync.md)"
+  exit 3
+fi
+[ "$code" = 0 ] || exit "$code"
+# Without the pre-commit hook, which would format and lint all of upstream's
+# merge: the gates check the tree.
+git commit -q --no-edit --no-verify
+echo "sync: merged: $merged; generated files were written again"
 
 [ "$mode" = --check ] || {
   echo "sync: merged upstream at $short on $branch; next: stemcells/scripts/sync-upstream --gates, then --pr"

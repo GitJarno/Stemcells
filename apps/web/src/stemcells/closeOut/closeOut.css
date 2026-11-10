@@ -1,0 +1,104 @@
+/* A reply's close-out as a card (CloseOutCard.tsx): where the work stands, under the words
+   that led to it. Part of the reply: a hairline its label sits in, no fill, the reply's own
+   type. Nothing here animates. */
+[data-stemcells-close-out] {
+  min-inline-size: 0;
+  margin: 0.65rem 0 0;
+  padding: 0 var(--sc-space-xl) var(--sc-space-md);
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-chip);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+[data-stemcells-close-out]:first-child {
+  margin-block-start: 0;
+}
+/* An offer of more work after it is the reply going on. */
+[data-stemcells-close-out] + .chat-markdown {
+  margin-block-start: 0.65rem;
+}
+[data-stemcells-close-out] > legend,
+[data-close-out-label],
+[data-close-out-owner] {
+  color: var(--sc-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+[data-stemcells-close-out] > legend {
+  margin-inline-start: calc(var(--sc-space-sm) * -1);
+  padding: 0 var(--sc-space-sm);
+}
+
+/* The owner's word in a margin of its own, the step beside it; a line no owner leads takes
+   the whole measure. */
+[data-close-out-lines] {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--sc-space-xl);
+  row-gap: var(--sc-space-xs);
+  padding-block-start: var(--sc-space-xs);
+}
+[data-close-out-line] {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+[data-close-out-label] {
+  grid-column: 1 / -1;
+  margin-block-start: var(--sc-space-sm);
+}
+[data-close-out-words] {
+  grid-column: 2;
+  min-inline-size: 0;
+}
+[data-close-out-words]:first-child {
+  grid-column: 1 / -1;
+}
+
+/* The person's step: the composer's warmth when a Cell needs them, at the card's edge. */
+[data-stemcells-close-out][data-asks] {
+  border-color: color-mix(
+    in srgb,
+    var(--sc-needs-you) calc(var(--sc-tint-edge) * 100%),
+    var(--sc-hairline)
+  );
+}
+[data-close-out-line][data-stands="you"] {
+  margin-inline: calc(var(--sc-space-xl) * -1);
+  padding: var(--sc-space-xs) var(--sc-space-xl);
+  background: color-mix(in srgb, var(--sc-needs-you) calc(var(--sc-tint-fill) * 50%), transparent);
+  box-shadow: inset 2px 0 0 var(--sc-needs-you);
+}
+[data-stands="you"] > [data-close-out-owner] {
+  color: var(--sc-needs-you);
+}
+[data-stands="you"] > [data-close-out-words] > .chat-markdown {
+  color: var(--sc-text);
+}
+/* A wait is nobody's to act on. */
+[data-stands="waiting"] > [data-close-out-owner],
+[data-stands="waiting"] > [data-close-out-words] > .chat-markdown {
+  color: var(--sc-dim);
+}
+
+/* What the run shows, apart from the Cell's own word: the room's facts (needs.css) and how
+   it landed in the board's marks, at the size of the card's own labels. */
+[data-stemcells-close-out] > [data-close-out-shown] {
+  align-items: baseline;
+  margin-block-start: var(--sc-space-md);
+  padding-block-start: var(--sc-space-sm);
+  border-block-start: 1px solid var(--sc-hairline);
+  font-size: 0.75rem;
+}
+[data-close-out-verdict] > b {
+  margin-inline-end: var(--sc-space-xs);
+  font-family: var(--sc-font-mono);
+  font-weight: 600;
+}
+[data-close-out-verdict="shown"] > b {
+  color: var(--sc-success);
+}
+[data-close-out-verdict="short"] > b {
+  color: var(--sc-error);
+}

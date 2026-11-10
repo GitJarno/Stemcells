@@ -4,12 +4,14 @@
  * transform"). Keyed on content, not positions; no file is kept whole, and a word that only
  * contains the name (a path, an id) fails the build until an entry here keeps it.
  */
+// The same builds swap upstream's words for a thread and a subagent (`wordTable.ts`).
 // @effect-diagnostics nodeBuiltinImport:off - a build step: it reads upstream's sources on disk.
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
 import { NAME, ourName, UPSTREAM_NAME } from "./upstreamName.ts";
+import { type Swap, WORD_TABLE } from "./wordTable.ts";
 
 export { UPSTREAM_NAME };
 
@@ -397,11 +399,14 @@ function wordsStand(text: string, here: number, words: ReadonlyArray<EvenWords>)
 }
 
 export interface Edit {
-  /** Zero-based line and column of the name in the source. */
+  /** Zero-based line and column of the words in the source. */
   readonly line: number;
   readonly column: number;
+  /** How long they were, and are. */
   readonly from: number;
   readonly to: number;
+  /** What stands there now. */
+  readonly text: string;
 }
 
 export interface Renamed {
@@ -446,7 +451,7 @@ export function renameUpstreamName(file: string, code: string): Renamed | null {
         return match;
       }
       const to = ourName(quote);
-      edits.push({ line: index, column, from: match.length, to: to.length });
+      edits.push({ line: index, column, from: match.length, to: to.length, text: to });
       renamed += 1;
       return to;
     });
@@ -464,6 +469,148 @@ export function renameUpstreamName(file: string, code: string): Renamed | null {
     return out;
   });
   return { code: lines.join("\n"), renamed, kept, unkept, edits };
+}
+
+// The word table: upstream's words for a thread and a subagent, swapped the way the name is
+// (`wordTable.ts`). Each entry is held to its file: no swap is ever dropped quietly.
+
+/** What our words may not hold: they stand inside upstream's strings and markup. */
+const CODE = /["`\\{}<>$\n\r]/;
+
+const times = (count: number) => (count === 1 ? "once" : `${count} times`);
+
+/** What the builds refuse in `table` itself, whatever the sources say: each names its entry. */
+export function tableFaults(table: ReadonlyArray<Swap> = WORD_TABLE): string[] {
+  return table.flatMap((swap) => {
+    const entry = `${swap.file} "${swap.words}"`;
+    const faults: string[] = [];
+    if (!isRenamedIn(swap.file)) faults.push(`${entry}: no build transforms that file`);
+    if (/[\n\r]/.test(swap.words)) {
+      faults.push(`${entry}: its words span lines; key it on one line's text`);
+    }
+    if (swap.theirs === "" || swap.words.split(swap.theirs).length !== 2) {
+      faults.push(`${entry}: its words must say "${swap.theirs}" once`);
+    }
+    if (CODE.test(swap.ours)) faults.push(`${entry}: "${swap.ours}" is code, not words`);
+    if (!Number.isInteger(swap.times) || swap.times < 1) {
+      faults.push(`${entry}: must be said at least once`);
+    }
+    return faults;
+  });
+}
+
+interface Swapped {
+  readonly edits: ReadonlyArray<Edit>;
+  readonly faults: ReadonlyArray<string>;
+}
+
+/** The table's swaps in `code` from `file`, and each entry it says fewer or more times than the entry does. */
+function swapWords(file: string, code: string, table: ReadonlyArray<Swap>): Swapped | null {
+  const swaps = table.filter((swap) => swap.file === file);
+  if (swaps.length === 0) return null;
+  const lineStarts = [0];
+  for (let at = code.indexOf("\n"); at !== -1; at = code.indexOf("\n", at + 1)) {
+    lineStarts.push(at + 1);
+  }
+  const faults: string[] = [];
+  const edits: Edit[] = [];
+  for (const swap of swaps) {
+    const places: number[] = [];
+    for (let at = code.indexOf(swap.words); at !== -1; at = code.indexOf(swap.words, at + 1)) {
+      places.push(at);
+    }
+    if (places.length !== swap.times) {
+      faults.push(
+        `${file} says "${swap.words}" ${times(places.length)}, the word table ${times(swap.times)}`,
+      );
+      continue;
+    }
+    for (const place of places) {
+      const at = place + swap.words.indexOf(swap.theirs);
+      const line = lineStarts.findLastIndex((start) => start <= at);
+      edits.push({
+        line,
+        column: at - (lineStarts[line] ?? 0),
+        from: swap.theirs.length,
+        to: swap.ours.length,
+        text: swap.ours,
+      });
+    }
+  }
+  return { edits, faults };
+}
+
+export interface Transformed {
+  readonly code: string;
+  /** How many times the name was renamed. */
+  readonly renamed: number;
+  /** Lines that say the name where `KEPT` doesn't keep it: the build fails on these. */
+  readonly unkept: ReadonlyArray<string>;
+  /** Word table entries this file doesn't hold to: the build fails on these. */
+  readonly faults: ReadonlyArray<string>;
+  readonly edits: ReadonlyArray<Edit>;
+}
+
+/**
+ * What a build makes of `code` from `file` (relative to the repository): our name where it said
+ * upstream's, and the word table's swaps. Null when the builds change nothing there.
+ */
+export function transformSource(
+  file: string,
+  code: string,
+  table: ReadonlyArray<Swap> = WORD_TABLE,
+): Transformed | null {
+  const name = renameUpstreamName(file, code);
+  const words = isRenamedIn(file) ? swapWords(file, code, table) : null;
+  if (name === null && words === null) return null;
+  const edits = [...(name?.edits ?? []), ...(words?.edits ?? [])].sort(
+    (a, b) => a.line - b.line || a.column - b.column,
+  );
+  const faults = [...(words?.faults ?? [])];
+  const lines = code.split("\n");
+  // Last first, so each column still points where it did.
+  for (let index = edits.length - 1; index >= 0; index -= 1) {
+    const edit = edits[index]!;
+    const before = edits[index - 1];
+    const line = lines[edit.line] ?? "";
+    if (before?.line === edit.line && before.column + before.from > edit.column) {
+      faults.push(`${file}: two swaps change the same words: ${line.trim()}`);
+    }
+    lines[edit.line] = line.slice(0, edit.column) + edit.text + line.slice(edit.column + edit.from);
+  }
+  return {
+    code: lines.join("\n"),
+    renamed: name?.renamed ?? 0,
+    unkept: name?.unkept ?? [],
+    faults,
+    edits,
+  };
+}
+
+/**
+ * What stops a build: the table's own faults, and each file it names that is gone or says an
+ * entry's words fewer or more times than the entry does. Every build checks every entry, so a
+ * swap in a file that build doesn't bundle is held too.
+ */
+export function wordTableFaults(
+  root: string = REPO_ROOT,
+  table: ReadonlyArray<Swap> = WORD_TABLE,
+): string[] {
+  const faults = tableFaults(table);
+  for (const file of new Set(table.map((swap) => swap.file))) {
+    const path = NodePath.join(root, file);
+    if (!NodeFS.existsSync(path)) {
+      faults.push(`${file} is gone, and the word table still names it`);
+      continue;
+    }
+    faults.push(...(transformSource(file, NodeFS.readFileSync(path, "utf8"), table)?.faults ?? []));
+  }
+  return faults;
+}
+
+/** A build's error for `faults`, naming each file and its words. */
+export function wordTableError(faults: ReadonlyArray<string>): string {
+  return `the word table no longer fits upstream's words (stemcells/brand/wordTable.ts): upstream reworded them, or says them somewhere new. Fix each entry:\n  ${faults.join("\n  ")}`;
 }
 
 // A source map for the transform: it only swaps words inside a line, so each
@@ -620,7 +767,8 @@ const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 
 /**
  * The transform in a Vite or tsdown build (web, server, desktop main, the phone's WebView
- * scripts). Tests never run it, so they run upstream's code as written. `mustRename: false`
+ * scripts): the name, and the word table's swaps. Tests never run it, so they run upstream's
+ * code as written. `mustRename: false`
  * is for a small build that may bundle nothing upstream names the app in (a WebView script).
  */
 export function upstreamNamePlugin(
@@ -633,6 +781,8 @@ export function upstreamNamePlugin(
   // nothing to rename.
   let renamed = 0;
   let covered = 0;
+  // The whole word table against the sources, once: every build holds every entry.
+  let stale: ReadonlyArray<string> | undefined;
   return {
     name: "stemcells:upstream-name",
     enforce: "pre" as const,
@@ -643,7 +793,9 @@ export function upstreamNamePlugin(
       if (/(?:^|&)(?:raw|url|inline)(?:[&=]|$)/.test(query) || !SCRIPT.test(path)) return null;
       const file = NodePath.relative(root, path).split(NodePath.sep).join("/");
       if (isRenamedIn(file)) covered += 1;
-      const result = renameUpstreamName(file, code);
+      stale ??= wordTableFaults(root);
+      if (stale.length > 0) this.error(wordTableError(stale));
+      const result = transformSource(file, code);
       if (result === null) return null;
       if (result.unkept.length > 0) {
         this.error(
@@ -652,8 +804,9 @@ export function upstreamNamePlugin(
             .join(" | ")}. Keep it in stemcells/brand/nameTransform.ts (KEPT), with why.`,
         );
       }
+      if (result.faults.length > 0) this.error(wordTableError(result.faults));
       renamed += result.renamed;
-      if (result.renamed === 0) return null;
+      if (result.edits.length === 0) return null;
       return {
         code: result.code,
         map: renameSourceMap(id, code.split("\n").length, result.edits),

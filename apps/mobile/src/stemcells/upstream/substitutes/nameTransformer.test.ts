@@ -21,6 +21,7 @@ const transformerPath = NodePath.join(here, "nameTransformer.cjs");
 interface Transformer {
   readonly transform: (props: unknown) => Promise<{ readonly ast: unknown }>;
   readonly getCacheKey: (options: { readonly projectRoot: string }) => string;
+  readonly TRANSFORM_FILES: ReadonlyArray<string>;
   readonly nameTransformer: (current: string) => string;
   readonly nameCheckedSerializer: <S extends (...args: never[]) => unknown>(
     serializer: S,
@@ -74,6 +75,10 @@ describe("the phone's build says Stemcells", () => {
     const hostFreeze = await built("../../packages/client-runtime/src/connection/hostFreeze.ts");
     expect(hostFreeze).toContain(`${APP_NAME} on \${`);
     expect(hostFreeze).not.toContain("T3 Code");
+    // The word table's swaps ride the same transformer (`stemcells/brand/wordTable.ts`).
+    const sheet = await built("src/features/threads/ThreadAgentsSheet.tsx");
+    expect(sheet).toContain('"Subcells"');
+    expect(sheet).not.toContain('"Agents"');
   });
 
   it("keeps what the list keeps: T3's own theme", async () => {
@@ -128,5 +133,12 @@ describe("the phone's build says Stemcells", () => {
     const key = transformer.getCacheKey({ projectRoot: phoneRoot });
     expect(key).toBe(transformer.getCacheKey({ projectRoot: phoneRoot }));
     expect(key.split("$").at(-1)).toMatch(/^[0-9a-f]{40}$/);
+    // The key reads every file the transform does, the word table and its words too.
+    expect(transformer.TRANSFORM_FILES.map((file) => NodePath.relative(phoneRoot, file))).toEqual(
+      expect.arrayContaining([
+        "../../stemcells/brand/wordTable.ts",
+        "../../stemcells/words/subcells.ts",
+      ]),
+    );
   });
 });

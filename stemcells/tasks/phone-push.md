@@ -66,6 +66,13 @@ or anyone else's cloud.
       stays upstream's. Android isn't supported: it would need Google's
       push service.
 - [ ] 5. Later: an Aski room on the phone, so a tap lands on the card.
+- [x] 7. The push says what is asked, in the Cell's own words: its
+      question, the command it wants to run, its plan's title, the step
+      left to the person or the error, cut to what a lock screen shows.
+      A card with no words of its own still says its cue. The Cell's
+      title already went to Apple; its question now does too. A command
+      is shown word for word, except a key, token or password written
+      into it.
 - [x] 6. The app icon's badge counts the Cells at Input, as the phone's
       Input segment does. While the app runs the phone sets it from the
       line (`push/badge.ts`), once every Mac has answered. A closed app's

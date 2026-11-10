@@ -1,7 +1,12 @@
-import { MessageId, ProviderInstanceId, RunId } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 
-import type { SuggestionMessage, SuggestionRun } from "../upstream/suggestions.ts";
+import {
+  MessageId,
+  ProviderInstanceId,
+  RunId,
+  type SuggestionMessage,
+  type SuggestionRun,
+} from "../upstream/suggestions.ts";
 
 /** Run `ordinal`, begun at `beganAt` (epoch ms) on `instance`, its message `ask-<ordinal>`. */
 export const run = (

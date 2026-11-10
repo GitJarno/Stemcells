@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { leadOf, LEAD_CAP } from "./brief.ts";
-import { stopOf } from "./closeOut.ts";
+import { stopOf } from "../../../../../stemcells/closeOut/closeOut.ts";
 
 const leadFor = (reply: string) => leadOf(reply, [stopOf(reply).ask?.text ?? ""]);
 

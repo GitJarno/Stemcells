@@ -42,20 +42,24 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   once two apps share the code: every new package rewrites upstream's
   `pnpm-lock.yaml`, the file every sync touches.
 - An upstream file changes only at a **seam**: the smallest edit that hands
-  control to our code. List it in `stemcells/seams.md`, with its reason,
-  in the same commit. A seam that only swaps a module or wraps an export
-  is a substitute instead (`seams.md`, Substitutes).
+  control to our code. Give it a row under `stemcells/seams/`, in the file
+  `stemcells/seams.md` names for its path, with its reason, in the same
+  commit. A seam that only swaps a module or wraps an export is a
+  substitute instead (`seams.md`, Substitutes).
 - `drift` marks a seam file upstream edits about daily as `hot`. Before a
   feature touches a hot file, its seam gets a substitute or an extension
   point (`stemcells/docs/fork.md`, rule 7). A hot file has a row in
   `seams.md`'s Hot-file budget; our lines and hunks in it never pass that
   row.
 - `stemcells/scripts/drift` before every push: it fails on an upstream
-  change `seams.md` doesn't name, and on a hot file past its budget.
+  change no row names, and on a hot file past its budget.
 - Only the `stemcells/upstream/` adapters import upstream modules. Every
   upstream behaviour we rely on gets a contract test in our tree.
 - Our state lives in our own store, our endpoints under `/api/stemcells/`.
   Never a migration in upstream's sequence, never a column on their tables.
+- We never edit upstream's tests: our cases go in our own files, and a
+  test our change breaks goes on the skip list with its reason
+  (`stemcells/upstream-skips.txt`).
 - Never reformat, rename, move or tidy upstream code. A change any T3 user
   would want would ideally live upstream, but we don't open pull requests
   to T3 unless the person asks: we carry it as a seam.
@@ -87,6 +91,9 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 - Words a person reads in our layer say Cell and Aski. Upstream's strings
   stay until one of our views replaces the one that shows them.
+- A word upstream writes inline in a view is never edited in its file: add
+  an entry to the word table (`stemcells/brand/wordTable.ts`) and the
+  builds swap it (`stemcells/docs/fork.md`, The name transform).
 - A Cell is thrown at a problem and flies until it lands: the stages a
   person reads are Input, Flying, Landed, Settled, never Working or Needs
   you. Code, wire values and text only models read keep `working` and

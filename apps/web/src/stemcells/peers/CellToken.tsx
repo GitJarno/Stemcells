@@ -2,6 +2,7 @@
 // Another Cell a chat names (stemcells/tasks/cell-tokens.md): its Cell held still and its name
 // as a token. A pause over it peeks at what it's on; a click opens it beside the chat that
 // named it, or brings it forward where it's open, and its pane rings once.
+import { VERDICTS } from "../needs/boardRows";
 import { useNeeds } from "../needs/stream";
 import type { Stage } from "../needs/wire";
 import { CellMini } from "../rail/CellMini";
@@ -14,9 +15,10 @@ import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "../upstream/u
 
 import "./peers.css";
 
-type Shown = Stage | "settled";
+type Shown = Stage | "settled" | "holding";
 
 const WORD: Readonly<Record<Shown, string>> = {
+  holding: "Holding",
   working: "Flying",
   "needs-you": "Input",
   done: "Landed",
@@ -38,7 +40,13 @@ export function CellToken(props: {
   const settled = useCellSettled(cell);
   const title = useCellTitle(cell);
   const place = useCellPlace(cell);
-  const shown: Shown | null = settled ? "settled" : (standing?.stage ?? null);
+  const shown: Shown | null = settled
+    ? "settled"
+    : standing?.holds != null
+      ? "holding"
+      : (standing?.stage ?? null);
+  // How it landed, before its own word for it: a bare "Done" isn't passed on unmarked.
+  const verdict = standing?.landing == null ? null : VERDICTS[standing.landing.verdict];
   const openHere = useOpenCell();
   const open = () => {
     if (!openCellBeside(cell)) openHere(cell);
@@ -74,9 +82,11 @@ export function CellToken(props: {
             )}
           </div>
           {title ? <p className="sc-cell-peek-title">{title}</p> : null}
-          {standing?.line || place ? (
+          {verdict || standing?.line || place ? (
             <p className="sc-cell-peek-meta">
-              {[standing?.line, place?.name].filter(Boolean).join(" · ")}
+              {[verdict && `${verdict.mark} ${verdict.name}`, standing?.line, place?.name]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           ) : null}
         </div>

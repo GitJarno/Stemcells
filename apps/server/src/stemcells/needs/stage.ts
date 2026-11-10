@@ -7,8 +7,10 @@
 import * as DateTime from "effect/DateTime";
 
 import { isSnoozed, type Shell } from "../upstream/needs.ts";
-import type { Stop } from "./closeOut.ts";
-import { ACTIVE_RUN, askiThreadOf, carriesOn, waitsOnItsOwn, type Need } from "./derive.ts";
+import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
+import { ACTIVE_RUN, askiThreadOf, waitsOnItsOwn, type Need } from "./derive.ts";
+import type { Brief } from "./evidence.ts";
+import { landingOf, type Landing } from "./verdict.ts";
 
 export type Stage = "working" | "needs-you" | "done";
 
@@ -22,6 +24,20 @@ export interface CellStanding {
   readonly line: string | null;
   /** When it was made: the roster lists the newest first and never reorders. */
   readonly createdAt: string;
+  /**
+   * When this stage began: its run's start while at work, its run's end once done or held; else
+   * null.
+   */
+  readonly since: string | null;
+  /**
+   * The condition that holds it, by its key (`conditions.ts`): stopped by a cause it shares,
+   * so neither asking nor flying. The stage stays `working` for a reader from before this.
+   */
+  readonly holds: string | null;
+  /** How a done Cell landed, and the fact that says so (`verdict.ts`); null at any other stage. */
+  readonly landing: Landing | null;
+  /** What it was told and what its last run shows; null while it works unasked, or unread. */
+  readonly brief: Brief | null;
 }
 
 /**
@@ -34,7 +50,9 @@ export function standingsOf(
   needs: ReadonlyArray<Need>,
   stops: ReadonlyMap<string, Stop>,
   now: number,
-  autoResume = false,
+  briefs: ReadonlyMap<string, Brief> = new Map(),
+  /** Which condition holds each Cell (`holdsOf`): a held Cell stands as working. */
+  held: ReadonlyMap<string, string> = new Map(),
 ): ReadonlyArray<CellStanding> {
   const aski = askiThreadOf(shells);
   const needsYou = new Set(needs.flatMap((need) => [need.parentThreadId ?? need.threadId]));
@@ -46,13 +64,21 @@ export function standingsOf(
     if (shell.latestRunId === null && shell.activeRunId === null) return [];
     if (isSnoozed(shell, now)) return [];
     const stop = stops.get(shell.id) ?? null;
+    const holds = held.get(shell.id) ?? null;
     const atWork =
       ACTIVE_RUN.has(shell.status) ||
       shell.activeRunId !== null ||
       waitsOnItsOwn(shell) ||
-      carriesOn(shell, now, autoResume) ||
+      holds !== null ||
       stop?.waits === true;
     const stage: Stage = needsYou.has(shell.id) ? "needs-you" : atWork ? "working" : "done";
+    const brief = briefs.get(shell.id) ?? null;
+    const since =
+      stage === "done" || (stage === "working" && holds !== null)
+        ? (shell.latestRunCompletedAt ?? null)
+        : stage === "working"
+          ? (shell.activityRunStartedAt ?? shell.latestRunStartedAt ?? shell.latestRunRequestedAt)
+          : null;
     return [
       {
         threadId: shell.id,
@@ -61,6 +87,10 @@ export function standingsOf(
         stage,
         line: stage === "needs-you" || stop === null ? null : stop.line,
         createdAt: DateTime.formatIso(shell.createdAt),
+        since: since == null ? null : DateTime.formatIso(since),
+        holds: stage === "working" ? holds : null,
+        landing: stage === "done" ? landingOf(shell.status, brief) : null,
+        brief,
       },
     ];
   });

@@ -18,8 +18,9 @@ import {
   type RequestKind,
   type Shell,
 } from "../upstream/needs.ts";
-import type { Stop } from "./closeOut.ts";
-import type { Cue, PreRead } from "./preread.ts";
+import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
+import type { Brief, RunFacts } from "./evidence.ts";
+import type { Cue, PreRead } from "../../../../../stemcells/closeOut/preread.ts";
 
 /** The provider instance Aski's chat runs on; the web's `aski/setup.ts` names the same. */
 export const ASKI_INSTANCE_ID = "aski";
@@ -53,7 +54,6 @@ export type NeedKind =
   | "question"
   | "sign-in"
   | "input"
-  | "limit"
   | "failed"
   | "plan"
   | "prose"
@@ -121,7 +121,7 @@ function isUnseenFailure(shell: Shell): boolean {
 }
 
 /** The reset a limit waits for, from T3's recovery record or the provider's own word. */
-function limitResetAt(shell: Shell): string | null {
+export function limitResetAt(shell: Shell): string | null {
   const recovery = shell.limitRecovery;
   if (recovery != null && recovery.runId === shell.latestRunId) return recovery.resetAt;
   return shell.usageLimitResetAt ?? null;
@@ -148,7 +148,7 @@ function runSettled(shell: Shell): boolean {
   );
 }
 
-function runEnded(shell: Shell): number {
+export function runEnded(shell: Shell): number {
   return millis(shell.latestRunCompletedAt) ?? DateTime.toEpochMillis(shell.updatedAt);
 }
 
@@ -170,14 +170,9 @@ export function stuckFor(signal: Signal, inFlight: InFlight | null, now: number)
 /**
  * The one thing this Cell needs from the person, or null; a snoozed Cell's is put off
  * (`later`). `heardAt` is the last time the Cell showed life: an event of its own work, as
- * the service hears them. `autoResume` is Settings' "Auto-resume limited threads".
+ * the service hears them.
  */
-export function signalOf(
-  shell: Shell,
-  now: number,
-  heardAt: number = now,
-  autoResume = false,
-): Signal | null {
+export function signalOf(shell: Shell, now: number, heardAt: number = now): Signal | null {
   if (shell.deletedAt !== null || shell.archivedAt !== null) return null;
   const later = isSnoozed(shell, now) ? millis(shell.snoozedUntil) : null;
 
@@ -213,11 +208,9 @@ export function signalOf(
   if (runId === null || shell.settledOverride === "settled") return null;
   const ended = { shell, since: runEnded(shell), blocks: false, later } as const;
 
-  if (shell.status === "failed" && shell.lastErrorClass === "usage_limit") {
-    return carriesOn(shell, now, autoResume)
-      ? null
-      : { ...ended, key: `${shell.id}:limit:${runId}`, kind: "limit" };
-  }
+  // A limit stops every Cell on its account and no answer to one lifts it: a condition
+  // (`conditions.ts`), never an ask, and a sub-task's is its parent's to handle.
+  if (shell.status === "failed" && shell.lastErrorClass === "usage_limit") return null;
   if (isUnseenFailure(shell)) {
     return { ...ended, key: `${shell.id}:failed:${runId}`, kind: "failed" };
   }
@@ -244,13 +237,12 @@ export function signalsOf(
   shells: ReadonlyArray<Shell>,
   now: number,
   heard: ReadonlyMap<string, number> = new Map(),
-  autoResume = false,
 ): ReadonlyArray<Signal> {
   const aski = askiThreadOf(shells);
   return shells.flatMap((shell) =>
     shell.id === aski || shell.lineage.rootThreadId === aski
       ? []
-      : (signalOf(shell, now, heard.get(shell.id) ?? now, autoResume) ?? []),
+      : (signalOf(shell, now, heard.get(shell.id) ?? now) ?? []),
   );
 }
 
@@ -363,6 +355,8 @@ export interface Need {
   readonly failure: NeedFailure | null;
   readonly prose: NeedProse | null;
   readonly stuck: NeedStuck | null;
+  /** What the Cell was told and what its run shows, beside its own words (`evidence.ts`). */
+  readonly brief: Brief | null;
 }
 
 /** An ask the person put off, back on its own at `until` (one-ask.md, decision 5). */
@@ -380,10 +374,17 @@ export interface NeedDetail {
   /** The reply's opening paragraph, beside the ask (`brief.ts`). */
   readonly lead?: string | null;
   readonly inFlight?: InFlight | null;
+  /** What the run's records say; null when they couldn't be read. */
+  readonly facts?: RunFacts | null;
 }
 
-/** The card's data: the signal, the detail read for it, and its number. */
-export function needOf(signal: Signal, detail: NeedDetail, number: number): Need {
+/** The card's data: the signal, the detail read for it, its number, and what stands beside it. */
+export function needOf(
+  signal: Signal,
+  detail: NeedDetail,
+  number: number,
+  brief: Brief | null = null,
+): Need {
   const { shell } = signal;
   const runId = shell.latestRunId ?? "";
   const pending = shell.pendingRuntimeRequest;
@@ -425,14 +426,7 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             markdown: detail.plan?.markdown ?? null,
           }
         : null,
-    limit:
-      signal.kind === "limit"
-        ? {
-            runId,
-            resetAt: limitResetAt(shell),
-            autoResume: shell.limitRecovery?.autoResume === true,
-          }
-        : null,
+    limit: null,
     failure:
       signal.kind === "failed"
         ? { runId, errorClass: shell.lastErrorClass ?? null, message: shell.lastError ?? null }
@@ -456,5 +450,6 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             tool: detail.inFlight?.tool ?? null,
           }
         : null,
+    brief,
   };
 }
