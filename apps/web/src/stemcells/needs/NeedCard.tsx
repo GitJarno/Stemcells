@@ -1,5 +1,13 @@
 import { FlagIcon } from "lucide-react";
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 import { keepCard, useAutonomy } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
@@ -7,6 +15,8 @@ import { cellNameOf } from "../cell/name";
 import { CellMark } from "../tabs/CellMark";
 import { openCleanupCell } from "../disk/cleanupCell";
 import { diskFailure, type DiskFailure } from "../disk/pressure";
+import { BesidePreview, PreviewBox } from "../previews/OptionPreviews";
+import { previewsOf, shownOf, type Highlight } from "../previews/preview";
 import { timing } from "../tokens/motion";
 import { compactAge } from "../upstream/cellRow";
 import { useMachineDisk, useOpenDiskCell } from "../upstream/disk";
@@ -599,6 +609,30 @@ function Field(props: {
   );
 }
 
+/** A question's options, the highlighted one's preview beside or under them when any has one. */
+function Choices(props: {
+  question: CardQuestion;
+  highlight: Highlight | null;
+  children: ReactNode;
+}) {
+  const previews = previewsOf(props.question.options);
+  const options = <div data-need-options="">{props.children}</div>;
+  if (previews === null) return options;
+  return (
+    <BesidePreview
+      box={
+        <PreviewBox
+          previews={previews}
+          labels={props.question.options.map((option) => option.label)}
+          shown={shownOf(previews, props.question.id, props.highlight)}
+        />
+      }
+    >
+      {options}
+    </BesidePreview>
+  );
+}
+
 /**
  * A Cell's own questions, its options in its order. One plain question
  * answers on a click; several, or one taking many picks, answer together.
@@ -611,7 +645,12 @@ function Questions(props: {
   const [picked, setPicked] = useState<Record<string, string[]>>({});
   const [own, setOwn] = useState<Record<string, string>>({});
   const [writing, setWriting] = useState<string | null>(null);
+  const [highlight, setHighlight] = useState<Highlight | null>(null);
   const single = props.questions.length === 1 && props.questions[0]?.multiSelect === false;
+  // A click answers, so an option's preview shows when it is pointed at or focused.
+  const point = (question: CardQuestion, index: number) => {
+    if (previewsOf(question.options) !== null) setHighlight({ questionId: question.id, index });
+  };
 
   const answerOf = (question: CardQuestion): string | string[] | null => {
     const words = own[question.id]?.trim();
@@ -644,8 +683,8 @@ function Questions(props: {
               <p data-need-question-text="">{question.question}</p>
             </>
           ) : null}
-          <div data-need-options="">
-            {question.options.map((choice) => {
+          <Choices question={question} highlight={highlight}>
+            {question.options.map((choice, at) => {
               const chosen = (picked[question.id] ?? []).includes(choice.answer);
               return (
                 <button
@@ -655,6 +694,8 @@ function Questions(props: {
                   data-recommended={choice.recommended || undefined}
                   data-lit={lightOf(`answer:${choice.answer}`, props.lit, null)}
                   aria-pressed={single ? undefined : chosen}
+                  onPointerEnter={() => point(question, at)}
+                  onFocus={() => point(question, at)}
                   onClick={() => {
                     if (single) return props.onAnswer({ [question.id]: choice.answer });
                     setOwn((all) => ({ ...all, [question.id]: "" }));
@@ -702,7 +743,7 @@ function Questions(props: {
                 </span>
               </button>
             )}
-          </div>
+          </Choices>
         </div>
       ))}
       {single ? null : (

@@ -57,6 +57,8 @@ export interface CardQuestion {
     /** What the answer carries: the Cell's value for the option, else its label. */
     readonly answer: string;
     readonly recommended: boolean;
+    /** What the option looks like, as the Cell sent it (`previews/preview.ts`); null for none. */
+    readonly preview: string | null;
   }>;
   /** Set when the Cell takes an answer of the person's own: the field's placeholder. */
   readonly other: string | null;
@@ -250,6 +252,7 @@ function questionOf(question: AskedQuestion): CardQuestion {
         description: description === label ? "" : description,
         answer: choice.value ?? choice.label,
         recommended: RECOMMENDED.test(choice.label),
+        preview: choice.preview ?? null,
       };
     }),
     other: question.allowCustomAnswer ? "Your own answer…" : null,

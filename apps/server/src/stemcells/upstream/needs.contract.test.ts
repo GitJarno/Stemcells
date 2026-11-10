@@ -13,6 +13,7 @@ import {
   OrchestrationV2StoredEvent,
   OrchestrationV2ThreadShell,
   OrchestrationV2TurnItem,
+  OrchestrationV2UserInputQuestion,
   ProviderApprovalFullAccessOverride,
 } from "@t3tools/contracts";
 import { it as effectIt } from "@effect/vitest";
@@ -22,6 +23,7 @@ import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vite-plus/test";
 
+import { claudeUserInputQuestions } from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
 import * as OrchestrationEventStore from "../../persistence/OrchestrationEventStore.ts";
 import * as SqlitePersistence from "../../persistence/Sqlite.ts";
 import { REQUEST_KINDS } from "../needs/derive.ts";
@@ -36,6 +38,8 @@ import {
   shellFixture,
   threadId,
 } from "./needs.fixture.ts";
+
+const decodeQuestion = Schema.decodeUnknownSync(OrchestrationV2UserInputQuestion);
 
 describe("upstream's thread shell, as the needs list reads it", () => {
   it("has a card for every kind of runtime request", () => {
@@ -68,6 +72,24 @@ describe("upstream's thread shell, as the needs list reads it", () => {
     expect(approval?.fields).toHaveProperty("fullAccessOverride");
     // The web's wire names these two, each with its own words (needs/card.ts).
     expect(ProviderApprovalFullAccessOverride.literals).toEqual(["ask_rule", "provider_check"]);
+  });
+
+  it("carries a question's option preview from Claude's tool to the wire", () => {
+    const [question] = claudeUserInputQuestions({
+      questions: [
+        {
+          question: "Which layout?",
+          options: [{ label: "Wide", description: "Two columns", preview: "[ a | b ]" }],
+        },
+      ],
+    });
+    expect(question?.options[0]?.preview).toBe("[ a | b ]");
+    // Decoding keeps only what the schema names: a wire with no `preview` drops it here.
+    const [option] = decodeQuestion({
+      ...question,
+      options: question?.options.map((sent) => ({ ...sent, own: 1 })),
+    }).options;
+    expect(option).toEqual({ label: "Wide", description: "Two columns", preview: "[ a | b ]" });
   });
 
   it("still names a usage limit as its own failure class", () => {
