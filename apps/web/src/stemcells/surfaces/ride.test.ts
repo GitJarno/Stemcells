@@ -61,13 +61,23 @@ function world(options: { shown?: boolean } = {}) {
     getAnimations: () => [] as unknown[],
     parentElement: null,
   });
+  /** The box round the strip that follows the swipe's proxy. */
+  const hold = Object.assign(new HTMLElementStub(), {
+    x: 0,
+    knots: "",
+    animations: [] as unknown[],
+    getAnimations: () => hold.animations,
+    getAttribute: () => hold.knots,
+    offsetWidth: 1496,
+    offsetHeight: 936,
+  });
   const strip = Object.assign(new HTMLElementStub(), {
     x: 0,
     animations: [] as unknown[],
     getAnimations: () => strip.animations,
     offsetWidth: 1496,
     offsetHeight: 936,
-    parentElement: pages,
+    parentElement: hold,
   });
   /** The slot's page, on the strip: what animates in it is the page's own. */
   const page = Object.assign(new HTMLElementStub(), {
@@ -77,9 +87,15 @@ function world(options: { shown?: boolean } = {}) {
   });
   const slot = { left: 1000, top: 36, width: 500, height: 936 };
   const anchor = {
-    closest: () => pages,
+    closest: (selector: string) =>
+      selector === "[data-stemcells-strip]"
+        ? strip
+        : selector === "[data-stemcells-hold]"
+          ? hold
+          : pages,
     parentElement: page,
-    getBoundingClientRect: () => rect(slot.left + strip.x, slot.top, slot.width, slot.height),
+    getBoundingClientRect: () =>
+      rect(slot.left + strip.x + hold.x, slot.top, slot.width, slot.height),
   };
   const box = (width: number, height: number) => {
     const animated: {
@@ -93,7 +109,7 @@ function world(options: { shown?: boolean } = {}) {
       offsetHeight: height,
       animated,
       animate(frames: Keyframe[], options: KeyframeAnimationOptions) {
-        const animation = { startTime: null as number | null, cancel: vi.fn() };
+        const animation = { startTime: null as number | null, cancel: vi.fn<() => void>() };
         animated.push({ frames, options, animation });
         return animation;
       },
@@ -125,7 +141,7 @@ function world(options: { shown?: boolean } = {}) {
   const show = () => {
     shown = true;
   };
-  return { pages, strip, page, views, view, content, rest, stop, show };
+  return { pages, hold, strip, page, views, view, content, rest, stop, show };
 }
 
 beforeEach(() => {
@@ -195,6 +211,48 @@ describe("a browser rides the page it sits on", () => {
     changed("style");
     expect(content.style.transform).toBe("translate3d(-300px, 0px, 0)");
     expect(view.style.transform).toBe("");
+  });
+
+  it("follows a swipe as a copy of the hold's following of the proxy, on its timeline", () => {
+    // Followed frame by frame from the page, the view ran behind a strip the compositor moves.
+    class ScrollTimelineStub {
+      readonly stub = true;
+    }
+    vi.stubGlobal("ScrollTimeline", ScrollTimelineStub);
+    const { pages, hold, content } = world();
+    const timeline = new ScrollTimelineStub();
+    const keys = [
+      { computedOffset: 0, transform: "translate3d(100%, 0px, 0px)" },
+      { computedOffset: 0.5, transform: "translate3d(0%, 0px, 0px)" },
+      { computedOffset: 1, transform: "translate3d(-100%, 0px, 0px)" },
+    ];
+    hold.animations = [{ timeline, effect: new KeyframeEffectStub(hold, keys, {}) }];
+    hold.knots = "19:-1 20:0 21:1";
+    // The fingers have the pages 300 px on.
+    hold.x = -300;
+    pages.moving = true;
+    changed("data-moving");
+    expect(content.animated).toHaveLength(1);
+    expect(content.animated[0]?.options).toEqual({ timeline, fill: "both" });
+    expect(content.animated[0]?.frames).toEqual([
+      { offset: 0, translate: "1496px 0px", easing: "linear" },
+      { offset: 0.5, translate: "0px 0px", easing: "linear" },
+      { offset: 1, translate: "-1496px 0px", easing: "linear" },
+    ]);
+    // The copy carries those 300 px: the page's own place has none of them.
+    expect(content.style.transform).toBe("");
+    // A frame on, the same knots: the copy stays.
+    frame();
+    expect(content.animated).toHaveLength(1);
+    // New knots, a new copy.
+    hold.knots = "20:-1 21:0 22:1";
+    changed("data-knots");
+    expect(content.animated).toHaveLength(2);
+    expect(content.animated[0]?.animation.cancel).toHaveBeenCalledOnce();
+    // At rest it goes.
+    pages.moving = false;
+    changed("data-moving");
+    expect(content.animated[1]?.animation.cancel).toHaveBeenCalledOnce();
   });
 
   it("is cut to the pages' frame by a cut that keeps still while its page moves", () => {

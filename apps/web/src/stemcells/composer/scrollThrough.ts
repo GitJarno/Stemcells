@@ -10,13 +10,15 @@ export function scrollThrough(composer: HTMLElement): () => void {
     if (scrollsItself(event.target, composer, event.deltaY)) return;
     const transcript = scrollerUnder(composer, event.clientX, event.clientY);
     if (transcript === null) return;
-    event.preventDefault();
     transcript.scrollBy({
       top: wheelPixels(event.deltaY, event.deltaMode, transcript.clientHeight),
       behavior: "instant",
     });
   };
-  composer.addEventListener("wheel", onWheel, { passive: false });
+  // Passive: nothing over the composer scrolls that way by itself, so there is nothing to
+  // cancel, and a listener that may cancel would hold a swipe that starts here until the page
+  // answers (`tabs/proxy.css`).
+  composer.addEventListener("wheel", onWheel, { passive: true });
   return () => composer.removeEventListener("wheel", onWheel);
 }
 

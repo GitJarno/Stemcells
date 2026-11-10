@@ -53,6 +53,7 @@ import { DiskPlate } from "./DiskPlate";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
+import { ProxyTrack } from "../tabs/ProxyTrack";
 import { StagePager } from "./StagePager";
 import { useRailUndoNotice } from "./undoNotice";
 import { UndoLine } from "./UndoLine";
@@ -91,8 +92,8 @@ export function Cells() {
   const backToWork = useNavigateToMainApp();
   const searchKeys = useShortcutLabel("commandPalette.toggle");
   const { stage, setStage, setWidth, project: projectKey, setProject } = useColumnStore();
-  // The column, where a two-finger swipe turns its stages (StagePager.tsx).
-  const [surface, setSurface] = useState<HTMLDivElement | null>(null);
+  // The column: the proxy a two-finger swipe scrolls to turn its stages (StagePager.tsx).
+  const [proxy, setProxy] = useState<HTMLDivElement | null>(null);
   // The stage a swipe or a click is taking the column to, lit in the rows before it lands.
   const [aim, setAim] = useState<ColumnStage | null>(null);
   const shownStage = aim ?? stage;
@@ -160,128 +161,134 @@ export function Cells() {
   };
 
   return (
-    <div ref={setSurface} data-stemcells-cells="">
-      {/* Upstream's sidebar button, or the window's controls, stand here. */}
-      <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
-      <div data-cells-top="">
-        <button type="button" data-cells-search="" onClick={openSearch}>
-          <SearchIcon aria-hidden />
-          <span>Search</span>
-          {searchKeys ? <kbd>{searchKeys}</kbd> : null}
-        </button>
-        <RailButton
-          label="New Cell"
-          detail="⌘T"
-          onClick={() => {
-            if (!openNewCellPane()) void navigate({ to: "/" });
-          }}
-        >
-          <SquarePenIcon />
-        </RailButton>
-      </div>
-      {projects.length > 1 || project !== null ? (
-        <ProjectFilter projects={projects} project={project} onPick={setProject} />
-      ) : null}
-      <StagePager
-        stage={stage}
-        onTurn={setStage}
-        onAim={setAim}
-        surface={surface}
-        pages={{
-          needs: (
-            <NeedsHere
-              waiting={waiting}
-              waitingHere={asking.filter((each) => here(each.need)).length}
-              only={project === null ? undefined : (each) => here(each.need)}
-              project={project?.name ?? null}
-              elsewhere={askedElsewhere}
-              onShowAll={() => setProject(null)}
-            />
-          ),
-          working: (
-            <>
-              <Rows label="Flying" cells={working.flatMap((cell) => rowOf(cell, toRef))} settles />
-              {(conditions ?? []).map((condition) => (
-                <Holding
-                  key={condition.key}
-                  condition={condition}
-                  cells={held
-                    .filter((cell) => cell.holds === condition.key)
-                    .flatMap((cell) => rowOf(cell, toRef))}
+    <div ref={setProxy} data-stemcells-cells="" data-stemcells-proxy="">
+      <ProxyTrack>
+        {/* Upstream's sidebar button, or the window's controls, stand here. */}
+        <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
+        <div data-cells-top="">
+          <button type="button" data-cells-search="" onClick={openSearch}>
+            <SearchIcon aria-hidden />
+            <span>Search</span>
+            {searchKeys ? <kbd>{searchKeys}</kbd> : null}
+          </button>
+          <RailButton
+            label="New Cell"
+            detail="⌘T"
+            onClick={() => {
+              if (!openNewCellPane()) void navigate({ to: "/" });
+            }}
+          >
+            <SquarePenIcon />
+          </RailButton>
+        </div>
+        {projects.length > 1 || project !== null ? (
+          <ProjectFilter projects={projects} project={project} onPick={setProject} />
+        ) : null}
+        <StagePager
+          stage={stage}
+          onTurn={setStage}
+          onAim={setAim}
+          proxy={proxy}
+          pages={{
+            needs: (
+              <NeedsHere
+                waiting={waiting}
+                waitingHere={asking.filter((each) => here(each.need)).length}
+                only={project === null ? undefined : (each) => here(each.need)}
+                project={project?.name ?? null}
+                elsewhere={askedElsewhere}
+                onShowAll={() => setProject(null)}
+              />
+            ),
+            working: (
+              <>
+                <Rows
+                  label="Flying"
+                  cells={working.flatMap((cell) => rowOf(cell, toRef))}
+                  settles
                 />
-              ))}
-            </>
-          ),
-          landed: <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />,
-          settled: (
-            <Rows
-              label="Settled"
-              settled
-              cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
-              more={
-                settledUnlisted > 0 ? (
-                  <button type="button" data-cells-more="" onClick={openSearch}>
-                    {settledUnlisted} more · search finds them
-                  </button>
-                ) : null
-              }
-            />
-          ),
-          pinned: <Rows label="Pinned" cells={shelves.pinned.map(rowOfShelved)} />,
-        }}
-      />
-      <nav data-cells-stages="" aria-label="Stages">
-        <UndoLine />
-        {(["needs", "working", "landed", "settled"] as const).map((each) => (
-          <StageRow
-            key={each}
-            stage={each}
-            count={counts[each]}
-            held={each === "working" ? held.length : 0}
-            open={shownStage === each}
-            onOpen={() => setStage(each)}
-          />
-        ))}
-        <div data-cells-apart="" />
-        <StageRow
-          stage="pinned"
-          count={counts.pinned}
-          open={shownStage === "pinned"}
-          onOpen={() => setStage("pinned")}
+                {(conditions ?? []).map((condition) => (
+                  <Holding
+                    key={condition.key}
+                    condition={condition}
+                    cells={held
+                      .filter((cell) => cell.holds === condition.key)
+                      .flatMap((cell) => rowOf(cell, toRef))}
+                  />
+                ))}
+              </>
+            ),
+            landed: <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />,
+            settled: (
+              <Rows
+                label="Settled"
+                settled
+                cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
+                more={
+                  settledUnlisted > 0 ? (
+                    <button type="button" data-cells-more="" onClick={openSearch}>
+                      {settledUnlisted} more · search finds them
+                    </button>
+                  ) : null
+                }
+              />
+            ),
+            pinned: <Rows label="Pinned" cells={shelves.pinned.map(rowOfShelved)} />,
+          }}
         />
-      </nav>
-      <Hops
-        standings={cells === null ? NO_STANDINGS : standingsOf(cells, allShelves.settled)}
-        environmentId={environmentId}
-      />
-      <UpdateBanner />
-      <div data-cells-foot="">
-        {/* Beside the banner the pill would say the same updates twice. */}
-        <UnlessBetter>
-          <ul data-stemcells-rail-update="">
-            <SidebarUpdatePill />
-          </ul>
-        </UnlessBetter>
-        <RailButton
-          label="Settings"
-          on={onSettings}
-          onClick={() => void (onSettings ? backToWork() : navigate({ to: "/settings" }))}
-        >
-          <SettingsIcon />
-        </RailButton>
-        <RailButton label="Usage" on={onUsage} onClick={() => void navigate({ to: "/usage" })}>
-          <ChartNoAxesColumnIcon />
-        </RailButton>
-        <PlanRing on={onUsage} />
-        <DiskPlate on={lit === "disk"} wide />
-        <span data-cells-foot-gap="" />
-        <RailButton label="All chats, by project" onClick={() => setWidth("list")}>
-          <ListIcon />
-        </RailButton>
-        <RailButton label="Narrow the column" onClick={() => setWidth("rail")}>
-          <ChevronsLeftIcon />
-        </RailButton>
-      </div>
+        <nav data-cells-stages="" aria-label="Stages">
+          <UndoLine />
+          {(["needs", "working", "landed", "settled"] as const).map((each) => (
+            <StageRow
+              key={each}
+              stage={each}
+              count={counts[each]}
+              held={each === "working" ? held.length : 0}
+              open={shownStage === each}
+              onOpen={() => setStage(each)}
+            />
+          ))}
+          <div data-cells-apart="" />
+          <StageRow
+            stage="pinned"
+            count={counts.pinned}
+            open={shownStage === "pinned"}
+            onOpen={() => setStage("pinned")}
+          />
+        </nav>
+        <Hops
+          standings={cells === null ? NO_STANDINGS : standingsOf(cells, allShelves.settled)}
+          environmentId={environmentId}
+        />
+        <UpdateBanner />
+        <div data-cells-foot="">
+          {/* Beside the banner the pill would say the same updates twice. */}
+          <UnlessBetter>
+            <ul data-stemcells-rail-update="">
+              <SidebarUpdatePill />
+            </ul>
+          </UnlessBetter>
+          <RailButton
+            label="Settings"
+            on={onSettings}
+            onClick={() => void (onSettings ? backToWork() : navigate({ to: "/settings" }))}
+          >
+            <SettingsIcon />
+          </RailButton>
+          <RailButton label="Usage" on={onUsage} onClick={() => void navigate({ to: "/usage" })}>
+            <ChartNoAxesColumnIcon />
+          </RailButton>
+          <PlanRing on={onUsage} />
+          <DiskPlate on={lit === "disk"} wide />
+          <span data-cells-foot-gap="" />
+          <RailButton label="All chats, by project" onClick={() => setWidth("list")}>
+            <ListIcon />
+          </RailButton>
+          <RailButton label="Narrow the column" onClick={() => setWidth("rail")}>
+            <ChevronsLeftIcon />
+          </RailButton>
+        </div>
+      </ProxyTrack>
     </div>
   );
 }

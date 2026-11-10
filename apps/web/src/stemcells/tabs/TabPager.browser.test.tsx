@@ -3,20 +3,20 @@ import "./workspace.css";
 
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { fakeTimers, render } from "../upstream/testRender";
+import { render } from "../upstream/testRender";
+import { REST_SLOT } from "./proxy";
 import { PagerPage, TabPager } from "./TabPager";
 
 const TABS = ["one", "two", "three", "four"];
+const WIDTH = 400;
 
 function Pages(props: { activeId: string; onTurn: (tabId: string) => void }) {
   return (
-    <div style={{ position: "relative", width: 400, height: 300 }}>
+    <div style={{ position: "relative", width: WIDTH, height: 300 }}>
       <TabPager tabIds={TABS} activeId={props.activeId} onTurn={props.onTurn}>
         {TABS.map((tabId) => (
           <PagerPage key={tabId} tabId={tabId} onStage={tabId === props.activeId}>
             {tabId}
-            {/* A border between two Cells, as the grid draws it (`split/Separator.tsx`). */}
-            <div data-stemcells-split="x" data-testid={`border-${tabId}`} />
           </PagerPage>
         ))}
       </TabPager>
@@ -24,12 +24,151 @@ function Pages(props: { activeId: string; onTurn: (tabId: string) => void }) {
   );
 }
 
+const proxyOf = (container: HTMLElement) =>
+  container.querySelector<HTMLElement>("[data-stemcells-pages]")!;
+
+/** Where the pages show, in pages: the strip's own place and what its hold adds, as laid out. */
+function shown(container: HTMLElement): number {
+  const first = container.querySelector<HTMLElement>('[data-stemcells-page="one"]')!;
+  const proxy = proxyOf(container);
+  return (proxy.getBoundingClientRect().left - first.getBoundingClientRect().left) / WIDTH;
+}
+
+/** The fingers scroll the proxy to `slot`: a wheel event says it is them, then the scroll. */
+function swipeTo(proxy: HTMLElement, slot: number): void {
+  proxy.dispatchEvent(new WheelEvent("wheel", { deltaX: 30, bubbles: true }));
+  proxy.scrollTo({ left: slot * WIDTH, behavior: "instant" });
+}
+
+/**
+ * Fingers down on the proxy, holding it between slots: no snap takes it to one and it doesn't
+ * come to rest, so nobody hears its `scrollend`, until they lift.
+ */
+function fingersDown(proxy: HTMLElement): Disposable {
+  const unheard = (event: Event) => event.stopImmediatePropagation();
+  proxy.style.scrollSnapType = "none";
+  window.addEventListener("scrollend", unheard, { capture: true });
+  return {
+    [Symbol.dispose]: () => {
+      window.removeEventListener("scrollend", unheard, { capture: true });
+      proxy.style.scrollSnapType = "";
+    },
+  };
+}
+
+describe("TabPager's swipe", () => {
+  it("follows the proxy between slots, a page either way and no further, and gives at an end", async () => {
+    await using screen = await render(<Pages activeId="two" onTurn={() => undefined} />);
+    const proxy = proxyOf(screen.container);
+    expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0);
+    using _fingers = fingersDown(proxy);
+    swipeTo(proxy, REST_SLOT + 0.3);
+    await vi.waitFor(() => expect(shown(screen.container)).toBeCloseTo(1.3, 2));
+    swipeTo(proxy, REST_SLOT + 1.7);
+    await vi.waitFor(() => expect(shown(screen.container)).toBeCloseTo(2, 2));
+    swipeTo(proxy, REST_SLOT - 0.5);
+    await vi.waitFor(() => expect(shown(screen.container)).toBeCloseTo(0.5, 2));
+  });
+
+  it("gives a quarter of the move past the first page", async () => {
+    await using screen = await render(<Pages activeId="one" onTurn={() => undefined} />);
+    const proxy = proxyOf(screen.container);
+    using _fingers = fingersDown(proxy);
+    swipeTo(proxy, REST_SLOT - 0.4);
+    await vi.waitFor(() => expect(shown(screen.container)).toBeCloseTo(-0.1, 2));
+  });
+
+  it("turns one page when the proxy lands a slot on, and puts the proxy back at rest", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const proxy = proxyOf(screen.container);
+    swipeTo(proxy, REST_SLOT + 1);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });
+    await screen.rerender(<Pages activeId="two" onTurn={onTurn} />);
+    await vi.waitFor(() => expect(proxy.hasAttribute("data-moving")).toBe(false), {
+      timeout: 3000,
+    });
+    expect(shown(screen.container)).toBeCloseTo(1, 3);
+    expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0);
+    expect(onTurn).toHaveBeenCalledTimes(1);
+  });
+
+  it("comes to rest a pixel short of its slot without a slide for the pixel", async () => {
+    // A slide nobody sees still runs its whole spring, and the tab turns only once it ends.
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const proxy = proxyOf(screen.container);
+    const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
+    // No snap: the proxy rests where it is put.
+    proxy.style.scrollSnapType = "none";
+    swipeTo(proxy, REST_SLOT + 1 - 1 / WIDTH);
+    await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0));
+    expect(strip.getAnimations()).toHaveLength(0);
+    expect(shown(screen.container)).toBeCloseTo(1, 3);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"));
+  });
+
+  it("turns one page however far one touch carries the proxy", async () => {
+    // The skip: a hard swipe, or a coast taken for a second swipe, went a page too far.
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const proxy = proxyOf(screen.container);
+    swipeTo(proxy, REST_SLOT + 2);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalled(), { timeout: 3000 });
+    expect(onTurn).toHaveBeenCalledWith("two");
+    await screen.rerender(<Pages activeId="two" onTurn={onTurn} />);
+    await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0), {
+      timeout: 3000,
+    });
+    expect(shown(screen.container)).toBeCloseTo(1, 3);
+    expect(onTurn).toHaveBeenCalledTimes(1);
+  });
+
+  it("undoes a scroll of the proxy the fingers didn't make", async () => {
+    // A field focused on a page still arriving scrolls what it can to show itself.
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const proxy = proxyOf(screen.container);
+    proxy.scrollTo({ left: (REST_SLOT + 1) * WIDTH, behavior: "instant" });
+    await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0));
+    expect(shown(screen.container)).toBeCloseTo(0, 3);
+    expect(onTurn).not.toHaveBeenCalled();
+  });
+
+  it("starts no swipe while a border between Cells is held", async () => {
+    await using screen = await render(<Pages activeId="one" onTurn={() => undefined} />);
+    const proxy = proxyOf(screen.container);
+    expect(getComputedStyle(proxy).overflowX).toBe("scroll");
+    document.documentElement.setAttribute("data-stemcells-splitting", "x");
+    using _held = {
+      [Symbol.dispose]: () => document.documentElement.removeAttribute("data-stemcells-splitting"),
+    };
+    expect(getComputedStyle(proxy).overflowX).toBe("hidden");
+  });
+});
+
+// Under a rounded clip the compositor asks the page what each scroll starts on, and a swipe
+// begun on a busy page waits for the answer (tasks/swipe-under-load.md).
+describe("the slate round the pager", () => {
+  it("clips square, its round corners painted over it", async () => {
+    await using screen = await render(
+      <div data-stemcells-workspace="">
+        <div data-stemcells-slate="" style={{ width: WIDTH, height: 300 }} />
+      </div>,
+    );
+    const slate = screen.container.querySelector<HTMLElement>("[data-stemcells-slate]")!;
+    expect(getComputedStyle(slate).overflow).toBe("clip");
+    expect(getComputedStyle(slate).borderRadius).toBe("0px");
+    expect(getComputedStyle(slate, "::before").borderRadius).not.toBe("0px");
+  });
+});
+
 // A native view over a page can't move with it, so it steps aside while
 // `data-moving` is on. Dropped early, the view sits half over the next page.
 describe("TabPager data-moving", () => {
   it("stays on through a far turn's slide until its stand-in has gone back", async () => {
     await using screen = await render(<Pages activeId="one" onTurn={() => undefined} />);
-    const pages = screen.container.querySelector<HTMLElement>("[data-stemcells-pages]")!;
+    const pages = proxyOf(screen.container);
     const first = screen.container.querySelector<HTMLElement>('[data-stemcells-page="one"]')!;
     expect(pages.hasAttribute("data-moving")).toBe(false);
 
@@ -44,32 +183,23 @@ describe("TabPager data-moving", () => {
     expect(first.style.transform).toMatch(/^translate3d\(0%,/);
   });
 
-  it("is on from the swipe's first move until the strip rests on the page it turned to", async () => {
-    const onTurn = vi.fn();
-    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
-    const pages = screen.container.querySelector<HTMLElement>("[data-stemcells-pages]")!;
-    const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
-
-    // A trackpad sends a wheel event a frame: each one comes once the strip has drawn the last.
-    for (let i = 0; i < 10; i++) {
-      const drawn = strip.style.transform;
-      pages.dispatchEvent(new WheelEvent("wheel", { deltaX: 30, cancelable: true }));
-      expect(pages.hasAttribute("data-moving")).toBe(true);
-      await vi.waitFor(() => expect(strip.style.transform).not.toBe(drawn), { interval: 1 });
+  it("is on from the swipe's first move until the proxy rests", async () => {
+    await using screen = await render(<Pages activeId="one" onTurn={() => undefined} />);
+    const pages = proxyOf(screen.container);
+    {
+      using _fingers = fingersDown(pages);
+      swipeTo(pages, REST_SLOT + 0.2);
+      await vi.waitFor(() => expect(pages.hasAttribute("data-moving")).toBe(true));
     }
-
-    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });
-    await screen.rerender(<Pages activeId="two" onTurn={onTurn} />);
-    expect(pages.hasAttribute("data-moving")).toBe(true);
+    swipeTo(pages, REST_SLOT);
     await vi.waitFor(() => expect(pages.hasAttribute("data-moving")).toBe(false), {
       timeout: 3000,
     });
-    expect(onTurn).toHaveBeenCalledTimes(1);
   });
 });
 
-/** Where the strip shows, in pages. */
-const shown = (strip: HTMLElement) =>
+/** Where the strip itself shows, in pages. */
+const stripAt = (strip: HTMLElement) =>
   -new DOMMatrixReadOnly(getComputedStyle(strip).transform).m41 / strip.clientWidth;
 
 /** The strip's slide, held still `ms` into it. */
@@ -88,7 +218,7 @@ describe("TabPager turning again mid-slide", () => {
     const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
     await screen.rerender(<Pages activeId="two" onTurn={() => undefined} />);
     holdSlide(strip, 150);
-    const at = shown(strip);
+    const at = stripAt(strip);
     expect(at).toBeGreaterThan(0.5);
 
     await screen.rerender(<Pages activeId="three" onTurn={() => undefined} />);
@@ -96,32 +226,9 @@ describe("TabPager turning again mid-slide", () => {
     // while the turn renders, waiting for a frame to set off.
     expect(strip.getAnimations()[0]!.pending).toBe(false);
     holdSlide(strip, 0);
-    expect(shown(strip)).toBeCloseTo(at, 2);
+    expect(stripAt(strip)).toBeCloseTo(at, 2);
     // One frame on: from rest it would have gone 0.025 of a page.
     holdSlide(strip, 16);
-    expect(shown(strip) - at).toBeGreaterThan(0.05);
-  });
-});
-
-describe("TabPager and the borders between Cells", () => {
-  it("never starts a swipe from a border", async () => {
-    const onTurn = vi.fn();
-    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
-    const pages = screen.container.querySelector<HTMLElement>("[data-stemcells-pages]")!;
-    const border = screen.container.querySelector<HTMLElement>('[data-testid="border-one"]')!;
-    const page = screen.container.querySelector<HTMLElement>('[data-stemcells-page="one"]')!;
-    const at = page.getBoundingClientRect().left;
-    // The pager's frames and timers, run by hand: a swipe it never started leaves nothing to run.
-    using _timers = fakeTimers();
-    for (let i = 0; i < 10; i++) {
-      border.dispatchEvent(
-        new WheelEvent("wheel", { deltaX: 30, cancelable: true, bubbles: true }),
-      );
-      vi.advanceTimersToNextFrame();
-    }
-    expect(page.getBoundingClientRect().left).toBe(at);
-    await vi.advanceTimersByTimeAsync(600);
-    expect(onTurn).not.toHaveBeenCalled();
-    expect(pages.hasAttribute("data-moving")).toBe(false);
+    expect(stripAt(strip) - at).toBeGreaterThan(0.05);
   });
 });

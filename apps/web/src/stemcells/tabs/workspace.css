@@ -30,12 +30,25 @@
   flex: 1;
   min-height: 0;
   margin: 0 var(--sc-space-md) var(--sc-space-md);
-  border-radius: var(--stemcells-slate-corner);
   background: var(--background);
   /* Clipped, not hidden, as the pages below: nothing a focus or a caret
-     brings into view can scroll what it holds out of line with its edges. */
+     brings into view can scroll what it holds out of line with its edges.
+     Clipped square: under a rounded clip the compositor can't tell what a
+     scroll starts on and asks the page, so on a busy page every swipe and
+     every scroll in a chat waited for it (tasks/swipe-under-load.md). */
   overflow: clip;
   overscroll-behavior: none;
+}
+/* Its round corners are the frame painted over its square ones, above the
+   panes and in the frame's own colour. */
+[data-stemcells-slate]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  border-radius: var(--stemcells-slate-corner);
+  box-shadow: 0 0 0 var(--stemcells-slate-corner) var(--app-chrome-background);
+  pointer-events: none;
 }
 /* Upstream's own dark theme turns its canvas black, to match its sidebar (index.css,
    `:root`'s dark variant; a theme with an id paints its own). The slate and Settings' modal,
@@ -52,7 +65,7 @@
   position: absolute;
   inset: 0;
   z-index: 40;
-  border-radius: inherit;
+  border-radius: var(--stemcells-slate-corner);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sc-edge) 50%, transparent);
   pointer-events: none;
 }
@@ -120,12 +133,11 @@
       right bottom / var(--flare) var(--flare) no-repeat;
   pointer-events: none;
 }
-/* Clipped, not hidden: nothing can scroll the slate to bring a page that is
-   off stage into view, as focusing a field in it would. */
+/* The pages' proxy (proxy.css): a swipe scrolls it, and the strip follows. Its frame clips
+   the pages off stage. */
 [data-stemcells-pages] {
   position: absolute;
   inset: 0;
-  overflow: clip;
 }
 /* The pager moves the strip, and places each page on it, a page wide apart. */
 [data-stemcells-strip] {

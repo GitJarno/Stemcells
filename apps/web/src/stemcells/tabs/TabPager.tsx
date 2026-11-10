@@ -9,12 +9,13 @@ import {
 } from "react";
 
 import { NO_NEW_CELL, PageStrip } from "./pageStrip";
+import { ProxyTrack } from "./ProxyTrack";
 
 /**
- * The tabs' pages side by side on one strip, and the two-finger swipe between them: one transform
- * written a frame, nothing re-rendering. Only the page on stage takes pointer, keys and focus.
- * While pages move, `[data-stemcells-pages]` carries `data-moving` for what can't move with them
- * (a native view). The new Cell's tab follows its page through `--stemcells-shown` (0 to 1).
+ * The tabs' pages on one strip, and the two-finger swipe between them: a native scroll of their
+ * proxy that the strip follows on the compositor (`pageStrip.ts`). Only the page on stage takes
+ * input. While pages move, `[data-stemcells-pages]` carries `data-moving` for what can't move
+ * with them; the new Cell's tab follows its page through `--stemcells-shown` (0 to 1).
  */
 export function TabPager(props: {
   /** Every tab, in the strip's order: a tab's place is its index. */
@@ -32,13 +33,14 @@ export function TabPager(props: {
   children: ReactNode;
 }) {
   const [strip] = useState(() => new PageStrip());
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const proxyRef = useRef<HTMLDivElement>(null);
+  const holdRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Attach the page strip to its viewport; detach on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Attach the page strip to its proxy; detach on unmount.
   useLayoutEffect(() => {
-    if (viewportRef.current === null || stripRef.current === null) return;
-    strip.attach(viewportRef.current, stripRef.current);
+    if (proxyRef.current === null || holdRef.current === null || stripRef.current === null) return;
+    strip.attach(proxyRef.current, holdRef.current, stripRef.current);
     return () => strip.detach();
   }, [strip]);
 
@@ -52,10 +54,14 @@ export function TabPager(props: {
   });
 
   return (
-    <div ref={viewportRef} data-stemcells-pages="">
-      <div ref={stripRef} data-stemcells-strip="">
-        <PageStripContext value={strip}>{props.children}</PageStripContext>
-      </div>
+    <div ref={proxyRef} data-stemcells-pages="" data-stemcells-proxy="">
+      <ProxyTrack>
+        <div ref={holdRef} data-stemcells-hold="">
+          <div ref={stripRef} data-stemcells-strip="">
+            <PageStripContext value={strip}>{props.children}</PageStripContext>
+          </div>
+        </div>
+      </ProxyTrack>
     </div>
   );
 }

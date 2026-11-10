@@ -11,6 +11,9 @@ interface ScrollPhases {
   readonly phase: number;
   readonly momentum: number;
   readonly moved: boolean;
+  /** The move (px) in a wheel event's sense: the system's own, turned round. */
+  readonly dx: number;
+  readonly dy: number;
 }
 
 const listeners = new Set<(scroll: ScrollPhases) => void>();
@@ -30,6 +33,8 @@ ipcRenderer.on("stemcells:scroll-phases", (_event, message: unknown) => {
     phase: phase!,
     momentum: momentum!,
     moved: dx !== 0 || dy !== 0,
+    dx: 0 - dx!,
+    dy: 0 - dy!,
   };
   for (const listener of listeners) listener(scroll);
 });
