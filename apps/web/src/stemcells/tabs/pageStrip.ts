@@ -60,6 +60,12 @@ const SAYS_REST = typeof window !== "undefined" && "onscrollend" in window;
 /** Without `scrollend`: how long (ms) after its last scroll event the proxy counts as at rest. */
 const REST_AFTER = 150;
 
+/**
+ * How far (px) the strip may stand from its place with no slide there: a slide nobody sees still
+ * runs its whole spring, and the tab turns only once it has ended.
+ */
+const NO_SLIDE = 1.5;
+
 const sameKnots = (a: readonly Knot[], b: readonly Knot[]): boolean =>
   a.length === b.length &&
   a.every((knot, i) => knot.slot === b[i]!.slot && knot.offset === b[i]!.offset);
@@ -471,7 +477,7 @@ export class PageStrip {
     const takesOver = tookOver || this.#slide !== null;
     this.#stopSlide();
     this.#show(to);
-    if (strip === null || Math.abs(to - from) < 1e-3) {
+    if (strip === null || this.#near(from, to)) {
       this.#settle();
       this.#moved();
       return;
@@ -526,6 +532,11 @@ export class PageStrip {
     this.#tabSlide = tab.animate([start, end], timing);
   }
 
+  /** Whether two places of the strip (pages) are too near on screen for a slide between them. */
+  #near(a: number, b: number): boolean {
+    return Math.abs(a - b) * (this.#strip?.clientWidth ?? 0) < NO_SLIDE;
+  }
+
   /** At rest: a stand-in goes back to its own place, and the strip with it if it is on stage. */
   #settle(): void {
     if (this.#standIn === null) return;
@@ -557,7 +568,7 @@ export class PageStrip {
     const speed = this.#speed();
     this.#writeKnots();
     const from = shown - offsetAt(knots, this.#slot());
-    if (place === this.#position && Math.abs(from - own) < 1e-3) return;
+    if (place === this.#position && this.#near(from, own)) return;
     this.#travel(from, place, speed, true);
   }
 

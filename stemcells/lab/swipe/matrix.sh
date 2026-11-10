@@ -85,12 +85,14 @@ if [ "$PART" = compact ]; then
   # Back to back with another phase: the rows the table leads with, and a trace kept for
   # the video.
   LOAD="--throttle 4 --hold 120/500 --jitter 500"
+  traced q-frames
   run l-onechat onechat $LOAD
   run l-single single $LOAD
   traced l-frames $LOAD
   traced h-frames --hold 400/500 --jitter 500
   rm -f "$OUT/video.trace".*
   node "$RIG/run.mjs" --case single --n 6 --trace "$OUT/video.trace" --out "$OUT/video.json" $RULE $LOAD | tail -1
+  fed 2 run s-onechat onechat
   fed 12 traced s-frames
 fi
 echo "== done $(date +%H:%M:%S)"

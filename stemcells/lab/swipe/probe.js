@@ -44,14 +44,19 @@
       if (el.hasAttribute("data-stemcells-hold")) hear("knots", el.getAttribute("data-knots"));
       else if (el.hasAttribute("data-stemcells-strip")) hear("strip", el.style.transform);
       else if (el === proxy) hear("moving", proxy.hasAttribute("data-moving"));
+      else if (el.getAttribute("data-on-stage") === "true")
+        hear("turn", el.getAttribute("data-stemcells-page"));
     }
   });
-  if (proxy)
-    writes.observe(proxy, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ["data-knots", "style", "data-moving"],
-    });
+  // Each on its own, not the subtree: a chat streaming on a page writes styles all the time.
+  const hold = proxy?.querySelector("[data-stemcells-hold]");
+  const strip = proxy?.querySelector("[data-stemcells-strip]");
+  proxy && writes.observe(proxy, { attributes: true, attributeFilter: ["data-moving"] });
+  hold && writes.observe(hold, { attributes: true, attributeFilter: ["data-knots"] });
+  strip && writes.observe(strip, { attributes: true, attributeFilter: ["style"] });
+  // The tab turning: its page comes on stage.
+  const stage = { attributes: true, subtree: true, attributeFilter: ["data-on-stage"] };
+  strip && writes.observe(strip, stage);
   // Where the main thread has the strip, in pages.
   lab.position = () => {
     const pages = document.querySelector("[data-stemcells-pages]");

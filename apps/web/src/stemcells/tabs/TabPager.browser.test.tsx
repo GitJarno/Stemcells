@@ -93,6 +93,21 @@ describe("TabPager's swipe", () => {
     expect(onTurn).toHaveBeenCalledTimes(1);
   });
 
+  it("comes to rest a pixel short of its slot without a slide for the pixel", async () => {
+    // A slide nobody sees still runs its whole spring, and the tab turns only once it ends.
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const proxy = proxyOf(screen.container);
+    const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
+    // No snap: the proxy rests where it is put.
+    proxy.style.scrollSnapType = "none";
+    swipeTo(proxy, REST_SLOT + 1 - 1 / WIDTH);
+    await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0));
+    expect(strip.getAnimations()).toHaveLength(0);
+    expect(shown(screen.container)).toBeCloseTo(1, 3);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"));
+  });
+
   it("turns one page however far one touch carries the proxy", async () => {
     // The skip: a hard swipe, or a coast taken for a second swipe, went a page too far.
     const onTurn = vi.fn();
