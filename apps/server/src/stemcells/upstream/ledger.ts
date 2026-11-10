@@ -1,8 +1,7 @@
 /**
- * What the ledger takes from upstream: one chat's records as its projection stores them (the
- * thread, its runs with the reply that ended each, the requests each run made and its merged
- * pull requests), the events that can make a fact, and where our own SQLite file lives. Read
- * only: nothing here writes to upstream's database, and no title or path is read.
+ * What the ledger takes from upstream: a chat's records as its projection stores them (its
+ * thread; its runs, a page at a time), the events that can make a fact, and where our own
+ * SQLite file lives. Read only: no write to upstream's database, and no title or path read.
  */
 import type { OrchestrationV2DomainEvent } from "@t3tools/contracts";
 import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
@@ -26,16 +25,17 @@ import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
 import * as ServerSettings from "../../serverSettings.ts";
 import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
 
-/** A request a run made of the person. */
+/** A request that held a run until the person answered: upstream's own test, a capability that isn't `message`. */
 export interface LedgerRequest {
   readonly createdAt: string;
   readonly resolvedAt: string | null;
-  /** It held the run until answered: upstream's own test, a capability that isn't `message`. */
-  readonly blocking: boolean;
 }
 
 export interface LedgerRun {
+  readonly threadId: string;
   readonly runId: string;
+  /** Its place among its chat's runs, in the order they were asked for. */
+  readonly ordinal: number;
   readonly status: string;
   readonly startedAt: string | null;
   readonly completedAt: string | null;
@@ -44,29 +44,34 @@ export interface LedgerRun {
   readonly requests: ReadonlyArray<LedgerRequest>;
 }
 
+/** Where a page of runs ended: the next starts after it. */
+export interface RunCursor {
+  readonly threadId: string;
+  readonly ordinal: number;
+}
+
 /** A pull request of the chat that merged. */
 export interface LedgerMerge {
   /** `host/repository#number`: the pull request, apart from any other on any forge. */
   readonly id: string;
   readonly number: number;
-  /** When its forge says it merged, as the forge wrote it; null when it didn't say. */
+  /** When its forge says it merged, as the forge wrote it; null until it says. */
   readonly mergedAt: string | null;
-  /** When upstream last read it. */
-  readonly syncedAt: string;
 }
 
 /** One Cell's chat, deleted ones too: not Aski's chat, a subagent's thread or a side chat. */
 export interface LedgerThread {
   readonly threadId: string;
   readonly projectId: string;
-  /** Its provider's driver, or its instance's id when the instance is no longer configured. */
+  /**
+   * The driver of the provider its first run ran on, or of the one it was made with while it
+   * hasn't run; the instance's id when the instance is no longer configured.
+   */
   readonly driver: string | null;
   readonly createdAt: string;
   /** When it was settled, while it is. */
   readonly settledAt: string | null;
   readonly merged: ReadonlyArray<LedgerMerge>;
-  /** In the order they were asked for. */
-  readonly runs: ReadonlyArray<LedgerRun>;
 }
 
 /** What changed after a sequence: the chats an event may have made a fact of. */
@@ -86,10 +91,19 @@ export interface LedgerSource {
   readonly sequences: Effect.Effect<{ readonly latest: number; readonly prunedThrough: number }>;
   /** The chats whose events after `afterSequence` could make a fact, a beat at a time. */
   readonly changes: (afterSequence: number) => Stream.Stream<LedgerChange>;
-  /** These chats' records now; one that is gone, or isn't a Cell's, is left out. */
+  /** These chats' records now, without their runs; one that is gone, or isn't a Cell's, is left out. */
   readonly threads: (
     threadIds: ReadonlyArray<string>,
   ) => Effect.Effect<ReadonlyArray<LedgerThread>>;
+  /**
+   * Up to `limit` runs of these Cells' chats after `after`, by chat then in the order they were
+   * asked for: a long chat is read a page at a time, never whole.
+   */
+  readonly runs: (
+    threadIds: ReadonlyArray<string>,
+    after: RunCursor | null,
+    limit: number,
+  ) => Effect.Effect<ReadonlyArray<LedgerRun>>;
   /** The ids of up to `limit` chats after `after`, in id order: every chat, a page at a time. */
   readonly threadIdsAfter: (after: string, limit: number) => Effect.Effect<ReadonlyArray<string>>;
 }
@@ -114,8 +128,8 @@ export function makesFact(event: OrchestrationV2DomainEvent): boolean {
 }
 
 /**
- * The chats' records, on SQLite's reader as upstream's long reads are: a cold read of a long
- * chat's replies would hold the server's event loop on its own connection.
+ * The chats' records, on SQLite's reader as upstream's long reads are: a cold read would hold
+ * the server's event loop on its own connection.
  */
 export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(function* (
   threadIds: ReadonlyArray<string>,
@@ -132,19 +146,29 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
     readonly settledAt: string | null;
   }>`
     SELECT
-      thread_id AS "threadId",
-      project_id AS "projectId",
-      provider_instance_id AS "instanceId",
-      created_at AS "createdAt",
-      CASE WHEN json_extract(payload_json, '$.settledOverride') = 'settled'
-        THEN json_extract(payload_json, '$.settledAt')
+      thread.thread_id AS "threadId",
+      thread.project_id AS "projectId",
+      coalesce(
+        (
+          SELECT first.provider_instance_id
+          FROM orchestration_v2_projection_runs AS first
+          WHERE first.thread_id = thread.thread_id
+          ORDER BY first.ordinal
+          LIMIT 1
+        ),
+        thread.provider_instance_id
+      ) AS "instanceId",
+      thread.created_at AS "createdAt",
+      CASE WHEN json_extract(thread.payload_json, '$.settledOverride') = 'settled'
+        THEN json_extract(thread.payload_json, '$.settledAt')
       END AS "settledAt"
-    FROM orchestration_v2_projection_threads
-    WHERE thread_id IN ${sql.in(threadIds)}
-      AND coalesce(json_extract(payload_json, '$.lineage.relationshipToParent'), '') <> 'subagent'
-      AND json_extract(payload_json, '$.lineage.sideChat') IS NOT 1
-      AND coalesce(provider_instance_id, '') <> ${ASKI_INSTANCE_ID}
-    ORDER BY thread_id
+    FROM orchestration_v2_projection_threads AS thread
+    WHERE thread.thread_id IN ${sql.in(threadIds)}
+      AND coalesce(json_extract(thread.payload_json, '$.lineage.relationshipToParent'), '')
+        <> 'subagent'
+      AND json_extract(thread.payload_json, '$.lineage.sideChat') IS NOT 1
+      AND coalesce(thread.provider_instance_id, '') <> ${ASKI_INSTANCE_ID}
+    ORDER BY thread.thread_id
   `.pipe(NodeSqliteClient.readOnly);
   if (threads.length === 0) return [];
   const cells = threads.map((thread) => thread.threadId);
@@ -154,18 +178,39 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
       json_extract(link.value, '$.host') || '/' || json_extract(link.value, '$.repository')
         || '#' || json_extract(link.value, '$.number') AS id,
       json_extract(link.value, '$.number') AS number,
-      json_extract(link.value, '$.snapshot.mergedAt') AS "mergedAt",
-      json_extract(link.value, '$.snapshot.syncedAt') AS "syncedAt"
+      json_extract(link.value, '$.snapshot.mergedAt') AS "mergedAt"
     FROM orchestration_v2_projection_threads AS thread,
       json_each(thread.payload_json, '$.pullRequests') AS link
     WHERE thread.thread_id IN ${sql.in(cells)}
       AND json_extract(link.value, '$.snapshot.state') = 'merged'
       AND json_extract(link.value, '$.source') <> 'stack-dismissed'
   `.pipe(NodeSqliteClient.readOnly);
-  const runs = yield* sql<Omit<LedgerRun, "requests"> & { readonly threadId: string }>`
+  return threads.map(({ instanceId, ...thread }): LedgerThread => ({
+    ...thread,
+    driver: instanceId === null ? null : (drivers.get(instanceId) ?? instanceId),
+    merged: merged.flatMap(({ threadId, ...merge }) =>
+      threadId === thread.threadId ? [merge] : [],
+    ),
+  }));
+});
+
+/**
+ * A page of these chats' runs, on SQLite's reader. A reply is read whole: the close-out is
+ * told from a code block by the fences above it (`needs/closeOut.ts`), so its last lines alone
+ * can misread it. The page's size is what bounds the read.
+ */
+export const readLedgerRuns = Effect.fn("StemcellsLedger.readRuns")(function* (
+  threadIds: ReadonlyArray<string>,
+  after: RunCursor | null,
+  limit: number,
+) {
+  if (threadIds.length === 0) return [];
+  const sql = yield* SqlClient.SqlClient;
+  const runs = yield* sql<Omit<LedgerRun, "requests">>`
     SELECT
       run.thread_id AS "threadId",
       run.run_id AS "runId",
+      run.ordinal AS ordinal,
       run.status AS status,
       json_extract(run.payload_json, '$.startedAt') AS "startedAt",
       run.completed_at AS "completedAt",
@@ -179,42 +224,38 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
         LIMIT 1
       ) END AS reply
     FROM orchestration_v2_projection_runs AS run
-    WHERE run.thread_id IN ${sql.in(cells)}
+    WHERE ${sql.and([
+      sql`run.thread_id IN ${sql.in(threadIds)}`,
+      ...(after === null
+        ? []
+        : [sql`(run.thread_id, run.ordinal) > (${after.threadId}, ${after.ordinal})`]),
+    ])}
     ORDER BY run.thread_id, run.ordinal
+    LIMIT ${limit}
   `.pipe(NodeSqliteClient.readOnly);
-  const requests = yield* sql<{
-    readonly runId: string;
-    readonly createdAt: string;
-    readonly resolvedAt: string | null;
-    readonly capability: string | null;
-  }>`
+  // Only a run that landed has its waits counted.
+  const landed = runs.flatMap((run) => (run.status === "completed" ? [run] : []));
+  if (landed.length === 0) return runs.map((run): LedgerRun => ({ ...run, requests: [] }));
+  const requests = yield* sql<LedgerRequest & { readonly runId: string }>`
     SELECT
       node.run_id AS "runId",
       request.created_at AS "createdAt",
-      request.resolved_at AS "resolvedAt",
-      json_extract(request.payload_json, '$.responseCapability.type') AS capability
+      request.resolved_at AS "resolvedAt"
     FROM orchestration_v2_projection_runtime_requests AS request
     JOIN orchestration_v2_projection_nodes AS node ON node.node_id = request.node_id
-    WHERE request.thread_id IN ${sql.in(cells)} AND node.run_id IS NOT NULL
+    WHERE request.thread_id IN ${sql.in([...new Set(landed.map((run) => run.threadId))])}
+      AND node.run_id IN ${sql.in(landed.map((run) => run.runId))}
+      AND coalesce(json_extract(request.payload_json, '$.responseCapability.type'), '')
+        <> 'message'
     ORDER BY request.created_at
   `.pipe(NodeSqliteClient.readOnly);
-
   const requestsOf = new Map<string, LedgerRequest[]>();
-  for (const { runId, capability, ...request } of requests) {
+  for (const { runId, ...request } of requests) {
     const held = requestsOf.get(runId) ?? [];
-    held.push({ ...request, blocking: capability !== "message" });
+    held.push(request);
     requestsOf.set(runId, held);
   }
-  return threads.map(({ instanceId, ...thread }): LedgerThread => ({
-    ...thread,
-    driver: instanceId === null ? null : (drivers.get(instanceId) ?? instanceId),
-    merged: merged.flatMap(({ threadId, ...merge }) =>
-      threadId === thread.threadId ? [merge] : [],
-    ),
-    runs: runs.flatMap(({ threadId, ...run }) =>
-      threadId === thread.threadId ? [{ ...run, requests: requestsOf.get(run.runId) ?? [] }] : [],
-    ),
-  }));
+  return runs.map((run): LedgerRun => ({ ...run, requests: requestsOf.get(run.runId) ?? [] }));
 });
 
 /** A page of every chat's id, in id order, on SQLite's reader. */
@@ -303,6 +344,11 @@ export const makeLedgerSource = Effect.gen(function* () {
         ),
     threads: (threadIds) =>
       Effect.flatMap(drivers, (known) => readLedgerThreads(threadIds, known)).pipe(
+        Effect.provideService(SqlClient.SqlClient, sql),
+        Effect.orDie,
+      ),
+    runs: (threadIds, after, limit) =>
+      readLedgerRuns(threadIds, after, limit).pipe(
         Effect.provideService(SqlClient.SqlClient, sql),
         Effect.orDie,
       ),

@@ -8,7 +8,8 @@ import * as Ledger from "./Ledger.ts";
 
 // GET /api/stemcells/ledger: the facts kept about this machine's Cells, in the order they
 // were recorded, a page at a time. `threads=a,b` reads those chats alone; `after` is the last
-// `seq` already held and `limit` the page's size. Read only: nothing asks the ledger to change.
+// `seq` already held and `limit` the page's size. Each page also says whether the past is all
+// in, and how many chats are left out. Read only: nothing asks the ledger to change.
 
 const LEDGER_PATH = "/api/stemcells/ledger";
 const PAGE = 500;

@@ -30,43 +30,63 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   | `settled` | `settled:<threadId>:<settledAt>`           | none                                          |
   | `merged`  | `merged:<threadId>:<host>/<repo>#<number>` | the pull request's number                     |
 
-- **One deriver**, `factsOf(thread)`: every fact true of a chat now, from
-  upstream's records of it. It decides and does nothing else.
+- **One deriver**: every fact true of a chat now, from upstream's records
+  of it, the chat's own (`factsOf`) and each run's (`landedOf`). It decides
+  and does nothing else.
   - Landed is a run that completed, with a start and a landing. One that
     stopped, failed, was cancelled or rolled back didn't land.
   - Time alone is growth's own count (`stemcells/ledger/alone.ts`, which
     the web's `cell/growth.ts` now imports): the run less its blocking
     waits, clipped to the run, overlaps once.
-  - Asks are every request the run made of the person, blocking or not.
+  - Asks are the requests that held the run until the person answered,
+    the same ones growth counts as waits. One asked in a message, which
+    the run worked on past, is neither.
   - The close-out is the kind `needs/closeOut.ts` reads from the run's
     last reply with words in it: `done`, `left` or none.
   - Each settle the ledger reads is its own fact, keyed by its time.
-  - A merge is dated by the forge's `mergedAt`, or by upstream's last read
-    when the forge gave none.
+  - A merge is a fact only at the forge's own merge time. Upstream reads a
+    merge again until its forge gives one, and that read is told to the
+    tap; a time of ours would stand for good, since the first write is
+    kept.
 - **Cells only:** not Aski's chat, a subagent's thread or a side chat. A
   deleted chat still reads, as upstream keeps its rows.
 - **Live**, the tap is upstream's own event stream, the one the needs list
   follows. Only an event that can make a fact has its chat read: a chat
   made, a run completed, a chat settled, a pull request's state read. A Cell
   streams thousands of other events an hour.
-- **The tap notes the sequence it has read through**, so a restart carries
-  on from there: nothing that happened while the server was down, or
-  between a failure and its restart, is missed.
-- **The tap and the backfill each run on a loop of their own**, so a tap
-  that can't read doesn't keep the backfill from finishing. The backfill
-  waits to be asked by the tap, so no chat is read before the tap knows
-  where it starts.
+- **The tap only listens.** It names the chats to read and how far it has
+  heard, and reads none itself: upstream holds what a slow listener hasn't
+  taken in a buffer of 1,000 events that fails when full. A drain of its
+  own reads the named chats at its pace, then notes the sequence the tap
+  had heard when its round began, so a restart carries on from there:
+  nothing that happened while the server was down, or between a failure
+  and its restart, is missed. A tap that starts again waits for the drain
+  first.
+- **The tap, the drain and the backfill each run on a loop of their own**,
+  so one that fails doesn't stop the others. The backfill waits to be
+  asked by the tap, so no chat is read before the tap knows where it
+  starts.
+- **A read is bounded by its work**: 10 chats, and 50 of their runs, with
+  200 ms before the next. A chat of hundreds of runs is read a slice at a
+  time and never whole, live and in the backfill alike. A run's reply is
+  read whole all the same: the close-out is told from a code block by the
+  fences above it, so a reply's last lines alone can misread it.
+- **A chat that can't be read is skipped**, not waited on. Chats that
+  failed together are tried one at a time; one that fails alone three
+  times running is left out, logged and counted (`skipped` on the
+  endpoint), and the cursor and the note move on. Read fine later, it is
+  counted no more. A failure of our own file skips nothing.
 - **The backfill** is the same deriver over every chat, once: 20 s after
-  the server is ready, 10 chats at a time with 200 ms between, on SQLite's
-  reader as `upstream/arcs.ts` reads. It notes its cursor after each batch
-  and that it finished. When upstream's log no longer reaches the tap's
+  the server is ready, on SQLite's reader as `upstream/arcs.ts` reads. It
+  notes its cursor after each batch and that it finished. When upstream's log no longer reaches the tap's
   note (pruned, or another database), the tap starts from now and every
   chat is read again; nothing is kept twice. A note the log can't be
   replayed from (an event this build can't read) is given up the same way,
   once a run, so a broken stream doesn't read every chat over and over.
 - **`GET /api/stemcells/ledger`**, read scope as the arcs': a page of facts
   in the order they were recorded. `threads=a,b` reads those chats alone;
-  `after` and `limit` page; `backfilled` says whether the past is all in.
+  `after` and `limit` page; `backfilled` says whether the past is all in
+  and `skipped` how many chats are left out.
 
 ## Choices
 
@@ -80,15 +100,18 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   the event. A chat settled and taken up again before that read has no
   `settled` fact for that settle, and a settle from before the ledger shows
   only while the chat is still settled.
-- **The driver is the one at first read.** A chat that switches provider
-  later keeps the driver it was born with here.
+- **The driver is its first run's.** Each run keeps the provider it ran
+  on, so a chat that switched provider before the ledger first read it is
+  still born with the first. One that hasn't run is born with the provider
+  it was made with.
 - **The ledger's own tap, not the needs list's.** It needs each event's
   kind to skip the ones that make no fact, and its sequence to carry on
   after a restart. Both come from the same upstream call.
 - **No worker of its own.** The ledger's file is written a few rows at a
   time and read a page at a time, on one connection.
 - **The server runs without it.** A file that won't open is logged, and
-  the endpoint answers 503.
+  the endpoint answers 503. A file from a newer build counts as one that
+  won't open, and is left exactly as it is.
 
 ## Plan
 
@@ -109,8 +132,11 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   once; a rolled-back run's and a gone chat's facts stay; the next start
   reads no chat again and carries on from its note; a pruned log starts
   over without a duplicate; a note that can't be replayed from is given up
-  once; an update or a delete is refused; a file that won't open leaves the
-  service standing.
+  once; a chat of 120 runs is read 50 at a time; the tap takes what it is
+  told while a read doesn't return; a chat that can't be read is skipped
+  after three tries, live and in the backfill, and counted until it reads
+  again; an update or a delete is refused; a file that won't open, or a
+  newer build's, leaves the service standing and the file as it was.
 - **A real server**, headless, on a scratch home with fake providers and
   one Replay chat: its `born` fact was recorded 0.3 s after the chat was
   made and its `landed` 0.7 s after the run completed; the endpoint
@@ -128,6 +154,12 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
 - **A review of the first commit** found the tap and the backfill sharing
   one loop, where a tap that kept failing kept the backfill from ever
   finishing. Each has its own now.
+- **A second review**, with a real database of over 10 GB in mind, found
+  a batch bounded by chats and not by runs, and the tap reading chats
+  itself, which could fill upstream's buffer. Both are as above now, with
+  the skip, the newer file, the merge time, the first run's driver and the
+  asks. It also asked for a reply's tail alone to be read; that is left,
+  for the fences.
 - **Not measured:** a real database of 10 GB, read cold. Its batches will
   read slower, and a request whose session read queues behind one waits
   that long; the small batch and the pause are what bound it.

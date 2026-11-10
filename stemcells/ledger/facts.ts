@@ -7,7 +7,10 @@
 export interface Born {
   /** The name it was dealt (`stemcells/words/cellNames.ts`), kept should the names change. */
   readonly name: string;
-  /** Its provider's driver (`claudeAgent`, `codex`, …), or its instance's id when unknown. */
+  /**
+   * The driver (`claudeAgent`, `codex`, …) of the provider its first run ran on, or of the one
+   * it was made with when it hadn't run yet; the instance's id when the driver is unknown.
+   */
   readonly driver: string | null;
   readonly projectId: string;
 }
@@ -19,13 +22,16 @@ export interface Landed {
   readonly ms: number;
   /** Of that, the time it worked alone, as growth counts it (`alone.ts`). */
   readonly aloneMs: number;
-  /** How many times the run asked the person: approvals, questions, sign-ins. */
+  /**
+   * How many times the run stopped for the person's answer (an approval, a question, a
+   * sign-in): the requests that held it, the ones growth counts as waits.
+   */
   readonly asks: number;
   /** The close-out its last reply ended with, or null when it wrote none. */
   readonly closeOut: "done" | "left" | null;
 }
 
-/** One of its pull requests merged. */
+/** One of its pull requests merged, at the time its forge gives for the merge. */
 export interface Merged {
   readonly number: number;
 }
@@ -67,4 +73,6 @@ export interface LedgerPage {
   readonly next: number | null;
   /** Whether every chat made before the ledger was has been read into it. */
   readonly backfilled: boolean;
+  /** How many chats are left out for now: each couldn't be read, time after time. */
+  readonly skipped: number;
 }

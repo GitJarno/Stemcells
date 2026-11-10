@@ -1,7 +1,7 @@
 /**
  * The ledger reads what upstream's own projection stores from its events: a chat's thread, its
- * runs with the reply that ended each, the requests of each run through its nodes, and the
- * pull requests on the thread. A failure after a sync means it reads the store as it no longer
+ * runs a page at a time with the reply that ended each, the requests that held each run,
+ * through its nodes, and the pull requests on the thread. A failure after a sync means it reads the store as it no longer
  * is, and facts would go unrecorded without a word.
  */
 import { assert, it } from "@effect/vitest";
@@ -28,7 +28,13 @@ import * as SqlClient from "effect/sql/SqlClient";
 import * as ProjectionStore from "../../orchestration-v2/ProjectionStore.ts";
 import * as SqlitePersistence from "../../persistence/Sqlite.ts";
 import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
-import { makesFact, openLedgerFile, readLedgerThreads, readThreadIdsAfter } from "./ledger.ts";
+import {
+  makesFact,
+  openLedgerFile,
+  readLedgerRuns,
+  readLedgerThreads,
+  readThreadIdsAfter,
+} from "./ledger.ts";
 
 const layerTest = Layer.mergeAll(
   ProjectionStore.layer.pipe(Layer.provideMerge(SqlitePersistence.layerMemory)),
@@ -90,7 +96,7 @@ const created = (thread: OrchestrationV2AppThread) =>
     });
   });
 
-/** A run from minute `from` to minute `to`, with its root node and its replies. */
+/** A run from minute `from` to minute `to` on `instance`, with its root node and its replies. */
 const run = (
   thread: OrchestrationV2AppThread,
   ordinal: number,
@@ -98,6 +104,7 @@ const run = (
   from: number,
   to: number | null,
   replies: ReadonlyArray<string>,
+  instance = "work",
 ) =>
   Effect.gen(function* () {
     const store = yield* ProjectionStore.ProjectionStoreV2;
@@ -112,7 +119,7 @@ const run = (
         id: runId,
         threadId: thread.id,
         ordinal,
-        providerInstanceId: modelSelection.instanceId,
+        providerInstanceId: ProviderInstanceId.make(instance),
         modelSelection,
         providerThreadId: null,
         userMessageId: MessageId.make(`${runId}:ask`),
@@ -210,9 +217,10 @@ const request = (
   });
 
 it.layer(layerTest)("the ledger's records", (it) => {
-  it.effect("are a Cell's thread, its runs with their last reply, each run's requests", () =>
+  it.effect("are a Cell's thread, and its runs a page at a time with what held each", () =>
     Effect.gen(function* () {
-      const pip = threadOf("pip");
+      // It is on another provider now than the one its first run ran on.
+      const pip = threadOf("pip", { instance: "later" });
       yield* created(pip);
       const first = yield* run(pip, 1, "completed", 0, 20, [
         "Working on it.",
@@ -221,8 +229,8 @@ it.layer(layerTest)("the ledger's records", (it) => {
       ]);
       yield* request(pip, first.nodeId, "held", "live", 5, 8);
       yield* request(pip, first.nodeId, "aside", "message", 10, null);
-      yield* run(pip, 2, "interrupted", 30, 31, ["Stopped."]);
-      yield* run(pip, 3, "running", 40, null, []);
+      yield* run(pip, 2, "interrupted", 30, 31, ["Stopped."], "later");
+      yield* run(pip, 3, "running", 40, null, [], "later");
       // Not Cells: a subagent's thread, a side chat, Aski's own chat.
       yield* created(threadOf("pip-reviewer", { parent: "pip" }));
       yield* created(threadOf("pip-aside", { sideChat: true }));
@@ -238,41 +246,42 @@ it.layer(layerTest)("the ledger's records", (it) => {
             createdAt: "2026-10-23T09:00:00.000Z",
             settledAt: null,
             merged: [],
-            runs: [
-              {
-                runId: "run:pip:1",
-                status: "completed",
-                startedAt: "2026-10-23T09:00:00.000Z",
-                completedAt: "2026-10-23T09:20:00.000Z",
-                reply: "Merged.\n\n**Done:** #12 merged",
-                requests: [
-                  {
-                    createdAt: "2026-10-23T09:05:00.000Z",
-                    resolvedAt: "2026-10-23T09:08:00.000Z",
-                    blocking: true,
-                  },
-                  { createdAt: "2026-10-23T09:10:00.000Z", resolvedAt: null, blocking: false },
-                ],
-              },
-              {
-                runId: "run:pip:2",
-                status: "interrupted",
-                startedAt: "2026-10-23T09:30:00.000Z",
-                completedAt: "2026-10-23T09:31:00.000Z",
-                reply: null,
-                requests: [],
-              },
-              {
-                runId: "run:pip:3",
-                status: "running",
-                startedAt: "2026-10-23T09:40:00.000Z",
-                completedAt: null,
-                reply: null,
-                requests: [],
-              },
-            ],
           },
         ],
+      );
+      assert.deepStrictEqual(yield* readLedgerRuns(["pip"], null, 2), [
+        {
+          threadId: "pip",
+          runId: "run:pip:1",
+          ordinal: 1,
+          status: "completed",
+          startedAt: "2026-10-23T09:00:00.000Z",
+          completedAt: "2026-10-23T09:20:00.000Z",
+          reply: "Merged.\n\n**Done:** #12 merged",
+          // The request that held it; the one asked in a message, which didn't, is left out.
+          requests: [
+            { createdAt: "2026-10-23T09:05:00.000Z", resolvedAt: "2026-10-23T09:08:00.000Z" },
+          ],
+        },
+        {
+          threadId: "pip",
+          runId: "run:pip:2",
+          ordinal: 2,
+          status: "interrupted",
+          startedAt: "2026-10-23T09:30:00.000Z",
+          completedAt: "2026-10-23T09:31:00.000Z",
+          reply: null,
+          requests: [],
+        },
+      ]);
+      // The next page starts after the last run read.
+      assert.deepStrictEqual(
+        (yield* readLedgerRuns(["pip"], { threadId: "pip", ordinal: 2 }, 2)).map((each) => [
+          each.runId,
+          each.status,
+          each.completedAt,
+        ]),
+        [["run:pip:3", "running", null]],
       );
     }),
   );
@@ -351,14 +360,8 @@ it.layer(layerTest)("the ledger's records", (it) => {
           createdAt: "2026-10-23T09:00:00.000Z",
           settledAt: "2026-10-23T09:50:00.000Z",
           merged: [
-            {
-              id: "example.com/team/website#7",
-              number: 7,
-              mergedAt: "2026-10-23T09:45:00Z",
-              syncedAt: "2026-10-23T10:00:00.000Z",
-            },
+            { id: "example.com/team/website#7", number: 7, mergedAt: "2026-10-23T09:45:00Z" },
           ],
-          runs: [],
         },
       ]);
       // The events the tap reads for: these, a thread made and a run landing, and no others.

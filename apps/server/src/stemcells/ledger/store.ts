@@ -3,6 +3,7 @@
 // never part of upstream's database or its migrations (`stemcells/docs/fork.md`, rule 3).
 
 import * as Effect from "effect/Effect";
+import * as Schema from "effect/Schema";
 import type * as SqlClient from "effect/sql/SqlClient";
 
 import type { Fact, RecordedFact } from "../../../../../stemcells/ledger/facts.ts";
@@ -44,19 +45,32 @@ interface FactRow {
 }
 
 /** What the ledger remembers of its own work, beside the facts. */
-export type Progress = "sequence" | "backfill.cursor" | "backfill.finished";
+export type Progress = "sequence" | "backfill.cursor" | "backfill.finished" | "skipped";
+
+/** The file was written by a newer build, whose schema this one doesn't know. */
+export class LedgerNewerError extends Schema.TaggedError<LedgerNewerError>()("LedgerNewerError", {
+  version: Schema.Number,
+  known: Schema.Number,
+}) {
+  override get message(): string {
+    return `The ledger's file is at version ${this.version}; this build knows ${this.known}.`;
+  }
+}
 
 export type Store = Effect.Success<ReturnType<typeof makeStore>>;
 
 export const makeStore = Effect.fn("LedgerStore.make")(function* (sql: SqlClient.SqlClient) {
   // The server and its CLI may both have the file open; wait rather than fail.
   yield* sql`PRAGMA busy_timeout = 5000`;
+  const version =
+    (yield* sql<{ readonly user_version: number }>`PRAGMA user_version`)[0]?.user_version ?? 0;
+  // A file from a newer build is left as it is: an older build's writes don't fit its schema.
+  if (version > STEPS.length) {
+    return yield* new LedgerNewerError({ version, known: STEPS.length });
+  }
   yield* sql`PRAGMA journal_mode = WAL`;
   yield* sql`PRAGMA synchronous = NORMAL`;
-  const version = (yield* sql<{ readonly user_version: number }>`PRAGMA user_version`)[0]
-    ?.user_version;
-  // A file from a newer build keeps its schema: its steps are past ours.
-  for (let step = version ?? 0; step < STEPS.length; step++) {
+  for (let step = version; step < STEPS.length; step++) {
     yield* sql.withTransaction(
       Effect.gen(function* () {
         for (const statement of STEPS[step]!) yield* sql.unsafe(statement);

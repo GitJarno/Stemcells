@@ -1,6 +1,7 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import * as DateTime from "effect/DateTime";
+import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
@@ -30,12 +31,14 @@ const cell = (threadId: string, overrides: Partial<LedgerThread> = {}): LedgerTh
   createdAt: at(0),
   settledAt: null,
   merged: [],
-  runs: [],
   ...overrides,
 });
 
-const landedRun = (runId: string, from: number, to: number): LedgerRun => ({
-  runId,
+/** A chat's `ordinal`th run, landed from minute `from` to minute `to`. */
+const landedRun = (threadId: string, ordinal: number, from: number, to: number): LedgerRun => ({
+  threadId,
+  runId: `${threadId}-run-${ordinal}`,
+  ordinal,
   status: "completed",
   startedAt: at(from),
   completedAt: at(to),
@@ -46,8 +49,18 @@ const landedRun = (runId: string, from: number, to: number): LedgerRun => ({
 /** A source over chats the test edits, with the changes it tells of, on a ledger file of its own. */
 const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
   const threads = new Map<string, LedgerThread>();
+  const runs = new Map<string, ReadonlyArray<LedgerRun>>();
   /** The chats each read asked for. */
   const reads: Array<ReadonlyArray<string>> = [];
+  /** How many runs each read of runs asked for. */
+  const slices: number[] = [];
+  /** Each read of chats, as it begins. */
+  const reading = yield* Queue.unbounded<ReadonlyArray<string>>();
+  /** Each sequence the tap has taken. */
+  const heard = yield* Queue.unbounded<number>();
+  /** A read of any of these chats fails; while `held` is set, a read of chats waits for it. */
+  const poison = new Set<string>();
+  const hold: { held: Deferred.Deferred<void> | null } = { held: null };
   /** The sequence each tap started after. */
   const starts = yield* Queue.unbounded<number>();
   /** A null ends the tap, as a failed read would. */
@@ -68,13 +81,31 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
             ? Stream.die("an event this build can't read")
             : Stream.fromQueue(feed).pipe(
                 Stream.takeWhile((change): change is LedgerChange => change !== null),
+                Stream.tap((change) => Queue.offer(heard, change.sequence)),
               ),
         ),
       ),
     threads: (threadIds) =>
-      Effect.sync(() => {
+      Effect.gen(function* () {
         reads.push(threadIds);
+        yield* Queue.offer(reading, threadIds);
+        if (hold.held !== null) yield* Deferred.await(hold.held);
+        if (threadIds.some((id) => poison.has(id))) return yield* Effect.die("a row gone wrong");
         return threadIds.flatMap((id) => (threads.has(id) ? [threads.get(id)!] : []));
+      }),
+    runs: (threadIds, after, limit) =>
+      Effect.sync(() => {
+        slices.push(limit);
+        return threadIds
+          .toSorted()
+          .flatMap((id) => runs.get(id) ?? [])
+          .filter(
+            (run) =>
+              after === null ||
+              run.threadId > after.threadId ||
+              (run.threadId === after.threadId && run.ordinal > after.ordinal),
+          )
+          .slice(0, limit);
       }),
     threadIdsAfter: (after, limit) =>
       Effect.suspend(() => {
@@ -90,17 +121,46 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
   return {
     source,
     reads,
+    slices,
     log,
-    put: (thread: LedgerThread) => threads.set(thread.threadId, thread),
-    drop: (threadId: string) => threads.delete(threadId),
+    poison,
+    put: (thread: LedgerThread, itsRuns: ReadonlyArray<LedgerRun> = []) => {
+      threads.set(thread.threadId, thread);
+      runs.set(thread.threadId, itsRuns);
+    },
+    drop: (threadId: string) => {
+      threads.delete(threadId);
+      runs.delete(threadId);
+    },
+    /** Reads of chats wait from now until the effect this gives is run. */
+    holdReads: Effect.gen(function* () {
+      const held = yield* Deferred.make<void>();
+      hold.held = held;
+      return Effect.andThen(
+        Effect.sync(() => {
+          hold.held = null;
+        }),
+        Deferred.succeed(held, undefined),
+      );
+    }),
+    /** A read of exactly these chats has begun. */
+    readBegan: (...threadIds: string[]) =>
+      until(
+        Effect.repeat(Queue.take(reading), {
+          until: (ids) => ids.join() === threadIds.join(),
+        }),
+      ),
+    /** The tap has taken the change at `sequence`. */
+    heardThrough: (sequence: number) =>
+      until(Effect.repeat(Queue.take(heard), { until: (taken) => taken >= sequence })),
     /** An event at `sequence` that could make a fact of these chats. */
     tell: (sequence: number, ...threadIds: string[]) => {
       log.latest = Math.max(log.latest, sequence);
       return Queue.offer(feed, { sequence, threadIds });
     },
     /**
-     * Ends the tap and waits for the ledger to start it again: every change told is recorded by
-     * then. The sequence the new tap starts after.
+     * Ends the tap and waits for the ledger to start it again, which it does once every chat
+     * told of is read. The sequence the new tap starts after.
      */
     restarted: Effect.andThen(Queue.offer(feed, null), until(Queue.take(starts))),
     started: until(Queue.take(starts)),
@@ -140,7 +200,7 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
     Effect.gen(function* () {
       const fake = yield* fakeSource(yield* ledgerFile);
       for (let n = 0; n < 30; n++) fake.put(cell(`cell-${String(n).padStart(2, "0")}`));
-      fake.put(cell("pip", { runs: [landedRun("run-1", 0, 12)] }));
+      fake.put(cell("pip"), [landedRun("pip", 1, 0, 12)]);
       const ledger = yield* make(fake.source);
 
       // Nothing from before is read as the server starts: the tap starts from now.
@@ -159,7 +219,7 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
         fake.reads.map((ids) => ids.length),
         [10, 10, 10, 1],
       );
-      assert.deepStrictEqual(keysOf(first, "pip"), ["born:pip", "landed:run-1"]);
+      assert.deepStrictEqual(keysOf(first, "pip"), ["born:pip", "landed:pip-run-1"]);
       assert.deepStrictEqual(first[0], {
         seq: 1,
         key: "born:cell-00",
@@ -172,12 +232,10 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
       });
 
       // Pip lands again and is settled. The change told twice is kept once.
-      fake.put(
-        cell("pip", {
-          runs: [landedRun("run-1", 0, 12), landedRun("run-2", 20, 55)],
-          settledAt: at(60),
-        }),
-      );
+      fake.put(cell("pip", { settledAt: at(60) }), [
+        landedRun("pip", 1, 0, 12),
+        landedRun("pip", 2, 20, 55),
+      ]);
       yield* fake.tell(11, "pip");
       yield* fake.tell(12, "pip");
       // A tap that ended carries on from the last change it kept, not from now.
@@ -186,11 +244,11 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
       assert.deepStrictEqual(second.slice(0, 32), first);
       assert.deepStrictEqual(
         second.slice(32).map((fact) => fact.key),
-        ["landed:run-2", `settled:pip:${at(60)}`],
+        [`settled:pip:${at(60)}`, "landed:pip-run-2"],
       );
 
       // Its run is rolled back, then its chat is gone from upstream: what happened stays.
-      fake.put(cell("pip", { runs: [{ ...landedRun("run-1", 0, 12), status: "rolled_back" }] }));
+      fake.put(cell("pip"), [{ ...landedRun("pip", 1, 0, 12), status: "rolled_back" }]);
       yield* fake.tell(21, "pip");
       fake.drop("pip");
       yield* fake.tell(22, "pip");
@@ -200,10 +258,11 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
         (yield* ledger.page({ after: 0, limit: 20, threads: ["pip"] })).facts.map(
           (fact) => fact.key,
         ),
-        ["born:pip", "landed:run-1", "landed:run-2", `settled:pip:${at(60)}`],
+        ["born:pip", "landed:pip-run-1", `settled:pip:${at(60)}`, "landed:pip-run-2"],
       );
-      // The chats from before were read once: every read since was the tap's.
-      assert.deepStrictEqual(fake.reads.slice(4), [["pip"], ["pip"], ["pip"], ["pip"]]);
+      // The chats from before were read once: every read since was for the tap, one a chat
+      // however often it was told of before the read.
+      assert.ok(fake.reads.slice(4).every((ids) => ids.length === 1 && ids[0] === "pip"));
 
       // Upstream pruned its log past the last note: the tap starts from now, and every chat
       // is read again, since what happened between is no longer told. Nothing is kept twice.
@@ -224,10 +283,13 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
   it.effect("on its next start reads no chat again, and carries on from its last note", () =>
     Effect.gen(function* () {
       const file = yield* ledgerFile;
-      const chats = [cell("otter", { runs: [landedRun("run-a", 0, 5)] }), cell("wren")];
+      const chats = (fake: Effect.Success<ReturnType<typeof fakeSource>>) => {
+        fake.put(cell("otter"), [landedRun("otter", 1, 0, 5)]);
+        fake.put(cell("wren"));
+      };
       const before = yield* Effect.gen(function* () {
         const fake = yield* fakeSource(file);
-        chats.forEach(fake.put);
+        chats(fake);
         const ledger = yield* make(fake.source);
         assert.strictEqual(yield* fake.started, 10);
         yield* until(ledger.backfilled);
@@ -239,7 +301,7 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
 
       yield* Effect.gen(function* () {
         const fake = yield* fakeSource(file);
-        chats.forEach(fake.put);
+        chats(fake);
         fake.log.latest = 30;
         const ledger = yield* make(fake.source);
         // Its tap carries on from the first start's last note, not from now.
@@ -288,6 +350,89 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
     }).pipe(Effect.scoped),
   );
 
+  it.effect("reads a long chat's runs a slice at a time, never the chat whole", () =>
+    Effect.gen(function* () {
+      const fake = yield* fakeSource(yield* ledgerFile);
+      fake.put(
+        cell("long"),
+        Array.from({ length: 120 }, (_, n) => landedRun("long", n + 1, n, n + 1)),
+      );
+      fake.put(cell("short"), [landedRun("short", 1, 0, 5)]);
+      const ledger = yield* make(fake.source);
+      yield* until(ledger.backfilled);
+      // 121 runs in one batch of chats: each read asks for a slice of 50 and the one more that
+      // says another follows.
+      assert.deepStrictEqual(fake.slices, [51, 51, 51]);
+      assert.strictEqual(
+        (yield* everyFact(ledger)).filter((fact) => fact.kind === "landed").length,
+        121,
+      );
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect("keeps listening while a read is slow, and reads what it heard after", () =>
+    Effect.gen(function* () {
+      const fake = yield* fakeSource(yield* ledgerFile);
+      for (const name of ["a", "b", "c"]) fake.put(cell(name));
+      const ledger = yield* make(fake.source);
+      assert.strictEqual(yield* fake.started, 10);
+      yield* until(ledger.backfilled);
+
+      const release = yield* fake.holdReads;
+      for (const name of ["a", "b", "c"]) fake.put(cell(name), [landedRun(name, 1, 0, 5)]);
+      yield* fake.tell(11, "a");
+      yield* fake.readBegan("a");
+      // The read of the first doesn't return, and the tap takes the next two all the same:
+      // upstream's buffer for a listener that falls behind is not the ledger's to fill.
+      yield* fake.tell(12, "b");
+      yield* fake.tell(13, "c");
+      yield* fake.heardThrough(13);
+      assert.strictEqual((yield* everyFact(ledger)).length, 3);
+
+      yield* release;
+      assert.strictEqual(yield* fake.restarted, 13);
+      assert.deepStrictEqual(
+        (yield* everyFact(ledger)).slice(3).map((fact) => fact.key),
+        ["landed:a-run-1", "landed:b-run-1", "landed:c-run-1"],
+      );
+    }).pipe(Effect.scoped),
+  );
+
+  it.effect("skips a chat it can't read after three tries, and says how many it skipped", () =>
+    Effect.gen(function* () {
+      const fake = yield* fakeSource(yield* ledgerFile);
+      for (const name of ["a", "bad", "c"]) fake.put(cell(name));
+      fake.poison.add("bad");
+      const ledger = yield* make(fake.source);
+      assert.strictEqual(yield* fake.started, 10);
+      yield* until(ledger.backfilled);
+      const first = yield* ledger.page({ after: 0, limit: 10, threads: null });
+      assert.deepStrictEqual(
+        first.facts.map((fact) => fact.key),
+        ["born:a", "born:c"],
+      );
+      assert.strictEqual(first.skipped, 1);
+      assert.strictEqual(fake.reads.filter((ids) => ids.join() === "bad").length, 3);
+
+      // Live too: the note moves past it, so the chats told of with it and after it are kept.
+      fake.put(cell("c"), [landedRun("c", 1, 0, 5)]);
+      yield* fake.tell(11, "bad", "c");
+      assert.strictEqual(yield* fake.restarted, 11);
+      assert.deepStrictEqual(keysOf(yield* everyFact(ledger), "c"), ["born:c", "landed:c-run-1"]);
+
+      // Read fine later, it is a chat like any other again.
+      fake.poison.delete("bad");
+      yield* fake.tell(12, "bad");
+      assert.strictEqual(yield* fake.restarted, 12);
+      const last = yield* ledger.page({ after: 0, limit: 10, threads: ["bad"] });
+      assert.deepStrictEqual(
+        last.facts.map((fact) => fact.key),
+        ["born:bad"],
+      );
+      assert.strictEqual(last.skipped, 0);
+    }).pipe(Effect.scoped),
+  );
+
   it.effect("holds its facts against any change", () =>
     Effect.gen(function* () {
       const sql = yield* openLedgerFile(":memory:");
@@ -312,13 +457,26 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
     }).pipe(Effect.scoped),
   );
 
-  it.effect("leaves the server running when its file won't open", () =>
+  it.effect("leaves the server running when its file won't open, or is a newer build's", () =>
     Effect.gen(function* () {
       const path = yield* Path.Path;
       const fake = yield* fakeSource(path.join(yield* ledgerFile, "no", "such", "folder.sqlite"));
       const ledger = yield* make(fake.source);
       const read = yield* Effect.exit(ledger.page({ after: 0, limit: 1, threads: null }));
       assert.strictEqual(read._tag, "Failure");
+
+      // A newer build's file is left exactly as it is: this build's writes don't fit its schema.
+      const newer = yield* ledgerFile;
+      yield* Effect.gen(function* () {
+        const sql = yield* openLedgerFile(newer);
+        yield* sql.unsafe("PRAGMA user_version = 99");
+      }).pipe(Effect.scoped);
+      const refused = yield* make((yield* fakeSource(newer)).source);
+      const late = yield* Effect.exit(refused.page({ after: 0, limit: 1, threads: null }));
+      assert.strictEqual(late._tag, "Failure");
+      const sql = yield* openLedgerFile(newer);
+      assert.deepStrictEqual(yield* sql`SELECT name FROM sqlite_schema`, []);
+      assert.deepStrictEqual(yield* sql`PRAGMA user_version`, [{ user_version: 99 }]);
     }).pipe(Effect.scoped),
   );
 });
