@@ -52,6 +52,8 @@ export interface AskedQuestion {
     readonly label: string;
     readonly description: string;
     readonly value: string | null;
+    /** What the option looks like, to see before choosing it: markdown, or a mockup as written. */
+    readonly preview: string | null;
   }>;
   readonly multiSelect: boolean;
   readonly allowCustomAnswer: boolean;
@@ -285,6 +287,7 @@ export const makeNeedsSource = Effect.gen(function* () {
                   label: option.label,
                   description: option.description,
                   value: option.value ?? null,
+                  preview: option.preview ?? null,
                 })),
                 multiSelect: question.multiSelect ?? false,
                 allowCustomAnswer: question.allowCustomAnswer ?? true,

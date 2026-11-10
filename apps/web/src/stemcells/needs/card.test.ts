@@ -85,7 +85,13 @@ describe("a card says what the Cell asked, as it asked it", () => {
               header: "Database",
               question: "Which database should the tests use?",
               options: [
-                { label: "Staging", description: "Shared, has real data", value: "staging" },
+                {
+                  label: "Staging",
+                  description: "Shared, has real data",
+                  value: "staging",
+                  preview: "DATABASE_URL=staging",
+                },
+                // A server from before previews sends none.
                 { label: "A fresh local copy (Recommended)", description: "Slower", value: null },
               ],
               multiSelect: false,
@@ -104,12 +110,14 @@ describe("a card says what the Cell asked, as it asked it", () => {
         description: "Shared, has real data",
         answer: "staging",
         recommended: false,
+        preview: "DATABASE_URL=staging",
       },
       {
         label: "A fresh local copy",
         description: "Slower",
         answer: "A fresh local copy (Recommended)",
         recommended: true,
+        preview: null,
       },
     ]);
     expect(card.questions[0]?.other).not.toBeNull();

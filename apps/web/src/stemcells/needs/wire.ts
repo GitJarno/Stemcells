@@ -40,6 +40,8 @@ export interface AskedQuestion {
     readonly label: string;
     readonly description: string;
     readonly value: string | null;
+    /** What the option looks like, to see before choosing it. A server from before it sends none. */
+    readonly preview?: string | null;
   }>;
   readonly multiSelect: boolean;
   readonly allowCustomAnswer: boolean;

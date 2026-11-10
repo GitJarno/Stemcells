@@ -9,6 +9,8 @@ import { Linking, Pressable, View } from "react-native";
 import { cellNameOf } from "../cell/kit";
 import { diskFailure } from "../disk/kit";
 import { CellBesideRow, type CardMarks, TitleMark } from "../home/RowCell";
+import { OptionPreview } from "../previews/OptionPreview";
+import { previewsOf } from "../previews/kit";
 import { CODE_FONT, NEEDS_YOU } from "../tokens";
 import { AppText, type EnvironmentThreadShell, useProjectAt } from "../upstream/cells";
 import { useFreeSpace } from "../disk/useFreeSpace";
@@ -482,7 +484,8 @@ function Field(props: {
 
 /**
  * A Cell's own questions, its options in its order, each with its own words. One plain
- * question answers on a tap; several, or one taking many picks, answer together.
+ * question answers on a tap; several, one taking many picks, or one whose options have
+ * previews, answer together.
  */
 function Questions(props: {
   readonly questions: ReadonlyArray<CardQuestion>;
@@ -491,7 +494,10 @@ function Questions(props: {
   const [picked, setPicked] = useState<Record<string, string[]>>({});
   const [own, setOwn] = useState<Record<string, string>>({});
   const [writing, setWriting] = useState<string | null>(null);
-  const single = props.questions.length === 1 && props.questions[0]?.multiSelect === false;
+  // A preview is seen before its option is committed to: with one, a tap picks.
+  const previewed = props.questions.some((question) => previewsOf(question.options) !== null);
+  const single =
+    props.questions.length === 1 && props.questions[0]?.multiSelect === false && !previewed;
   const answerOf = (question: CardQuestion): string | string[] | null => {
     const words = own[question.id]?.trim();
     if (words) return question.multiSelect ? [words] : words;
@@ -535,6 +541,7 @@ function Questions(props: {
                 {choice.description ? (
                   <AppText className="text-sm text-foreground-muted">{choice.description}</AppText>
                 ) : null}
+                <OptionPreview preview={choice.preview} shown={chosen} />
               </Row>
             );
           })}
