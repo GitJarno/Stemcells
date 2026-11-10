@@ -2,7 +2,7 @@
 # Lab rig: the whole table for one phase, quiet then under load, the Mac's load average beside
 # each run. `before` is the old pager (its letting go was by distance, and its strip latched
 # 8 px in); anything else is the proxy.
-#   matrix.sh <repo> <phase> [quiet|load|stream|all] [extra]
+#   matrix.sh <repo> <phase> [quiet|load|stream|compact|all] [extra]
 RIG="$(cd "$(dirname "$0")" && pwd)"
 LAB="${LAB:-/tmp/swipe-lab}"
 REPO="$1"; PHASE="$2"; PART="${3:-all}"; EXTRA="$4"
@@ -79,6 +79,18 @@ if [ "$PART" = stream ] || [ "$PART" = all ]; then
   # A chat streaming on a page the strip holds. Few swipes: every turn it streams stays in the
   # lab's chats, and a page of hundreds runs out of memory.
   fed 2 run s-onechat onechat
+  fed 12 traced s-frames
+fi
+if [ "$PART" = compact ]; then
+  # Back to back with another phase: the rows the table leads with, and a trace kept for
+  # the video.
+  LOAD="--throttle 4 --hold 120/500 --jitter 500"
+  run l-onechat onechat $LOAD
+  run l-single single $LOAD
+  traced l-frames $LOAD
+  traced h-frames --hold 400/500 --jitter 500
+  rm -f "$OUT/video.trace".*
+  node "$RIG/run.mjs" --case single --n 6 --trace "$OUT/video.trace" --out "$OUT/video.json" $RULE $LOAD | tail -1
   fed 12 traced s-frames
 fi
 echo "== done $(date +%H:%M:%S)"

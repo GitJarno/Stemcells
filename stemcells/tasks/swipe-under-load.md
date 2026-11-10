@@ -155,6 +155,21 @@ than quiet while it stood still for a quarter of a second in every swipe.
   was on every scroll down a chat. What did not matter once the clip was
   square: the transcript's fade mask, scrollers with nothing to scroll,
   `overscroll-behavior` on boxes that don't scroll.
+- **The phases come later than everything else.** Measured on the new
+  strip, which still turned two pages 4 times in 450 swipes under load.
+  The page's own events (wheel, scroll, the snap's target, rest) come ahead
+  of its other work; the system's phases come by a message that queues
+  behind it. With a chat streaming, a lift at 141 ms and its coast at
+  158 ms were heard at 1600 ms, after the page had landed and the proxy
+  had rested. Two orders got through:
+  - The page landed, then the flick was heard. Nothing said the proxy had
+    already brought that flick its page, so the strip was owed a second
+    (2 of 30 onto the one-chat tab with a chat streaming).
+  - A flick was owed its page before the page heard where the proxy was
+    going, and that side walled. Fingers then came to rest on the trackpad
+    (or scrolled the chat): a new touch, which took the walls for its own
+    and dropped that one. The proxy landed a slot on after all and counted
+    again (3 of 60 `rested`, 1 of 30 `elsewhere`).
 - **Upstream's history swipe** (`components/HistorySwipeNavigation.tsx`)
   hears the same swipes on the desktop and goes back or forward in history
   at 120 px unless something under the pointer scrolls sideways. The pager
@@ -184,18 +199,22 @@ compositor, and only where no cancelling wheel listener lies over it.
   comes in as the next page), a page a flick is owed, and whatever a change
   of knots would otherwise show as a jump. On screen is the two together.
 - **Touches**, where the desktop app's scroll phases say so exactly, and
-  only there:
-  - A touch that begins while the proxy is in flight moves the walls to
-    the page it is headed for. Heard late, the strip catches up by the
-    spring instead of jumping.
-  - A flick ends one page on in its way. Where the browser's snap leaves
-    it on the page it was headed for (the second of two quick swipes,
-    lifted before the proxy got there), the strip is owed that page and
-    takes it by the spring; that side is then walled, so the touch has one
-    page whatever the proxy does next. This is settled two frames after
-    the page hears of the lift, when it has also heard where the proxy is
-    going. Only a touch whose first wheel event was the proxy's to scroll
-    is owed anything.
+  only there. The phases are heard late and by any amount, so no rule goes
+  by the order things are heard in, only by when each says it happened:
+  - A touch takes the walls for its own once it is known to move the proxy:
+    it has moved, and its first wheel event was the proxy's to scroll.
+    Fingers that only rest on the trackpad, or scroll something else, move
+    nothing. If the proxy was under way before the touch began, its walls
+    go round the page the proxy was headed for. Heard late, the strip
+    catches up by the spring instead of jumping.
+  - A flick ends one page on in its way, once. A page the proxy brought
+    since the flick's touch began answers for it, however late the flick is
+    heard. Else, if the proxy is headed there, that page is the flick's
+    when it comes. Else (the second of two quick swipes, lifted before the
+    proxy reached the first one's page) the strip is owed that page and
+    takes it by the spring, and that side is walled, so the touch has one
+    page whatever the proxy does next. This is settled two frames after the
+    page hears of the lift, or when the next touch is heard.
   - Landed, with the fingers known to be up, the walls go round the page
     landed on at once.
 - **At rest** what the proxy shows folds into the strip's own place and the
@@ -259,19 +278,22 @@ compositor, and only where no cancelling wheel listener lies over it.
 ## Plan
 
 - [x] The rig, the lab's load case, the quiet baseline
-- [ ] The baseline under load, and a swipe onto a one-chat tab against one
+- [x] The baseline under load, and a swipe onto a one-chat tab against one
       onto a many-pane tab
-- [ ] The knots, as pure functions with tests
-- [ ] The strip on the proxy: tabs, then the column's stages
-- [ ] The browser's view rides the proxy (`surfaces/ride.ts`)
-- [ ] The composer's wheel listener no longer cancels
-- [ ] Delete the gesture reading the strip no longer uses, with its tests
+- [x] The knots, as pure functions with tests
+- [x] The strip on the proxy: tabs, then the column's stages
+- [x] The browser's view rides the proxy (`surfaces/ride.ts`)
+- [x] The composer's wheel listener no longer cancels
+- [x] Delete the gesture reading the strip no longer uses, with its tests
       and recordings
-- [ ] The same table after, back to back with before
-- [ ] What else rides on the strip: click and key turns, the new Cell's
+- [x] The slate clips square, so a scroll's start stays on the compositor
+- [x] The touch rules by when things happened, with a replay test that
+      hears each story in every order
+- [x] The same table after, back to back with before
+- [x] What else rides on the strip: click and key turns, the new Cell's
       swipe, settle swipes, a sideways swipe in a code block and in the
       terminal, no phases, narrow panes, the column's stages
-- [ ] Video before and after, under load
+- [x] Video before and after, under load
 
 ## After
 

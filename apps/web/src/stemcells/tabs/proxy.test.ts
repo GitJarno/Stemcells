@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { BEGAN, CANCELLED, ENDED, MAY_BEGIN, type ScrollPhases } from "./phases";
-import { END_GIVE, keyed, offsetAt, REST_SLOT, Turns, walls } from "./proxy";
+import { eased, END_GIVE, keyed, offsetAt, REST_SLOT, Turns, walls } from "./proxy";
 
 /** A pixel in slots, on a proxy 800 px wide. */
 const PIXEL = 1 / 800;
@@ -30,6 +30,23 @@ describe("the knots", () => {
     const knots = walls(20, "page", "wall");
     expect(offsetAt(knots, 20.7)).toBe(0);
     expect(offsetAt(knots, 19.5)).toBeCloseTo(-0.5);
+  });
+
+  it("ease a wall in ahead of the proxy: one to one, then by less, then level", () => {
+    const knots = eased(20.4, 0.03, 1);
+    // A step ahead the pages still follow the proxy as they did.
+    expect(offsetAt(knots, 20.42) - offsetAt(knots, 20.4)).toBeCloseTo(0.02);
+    expect(offsetAt(knots, 20.43) - offsetAt(knots, 20.4)).toBeCloseTo(0.03);
+    expect(offsetAt(knots, 20.46) - offsetAt(knots, 20.43)).toBeCloseTo(0.02);
+    expect(offsetAt(knots, 20.49)).toBe(0);
+    expect(offsetAt(knots, 23)).toBe(0);
+    // Behind it nothing shows: the proxy coming back is not the pages going back.
+    expect(offsetAt(knots, 20.1)).toBe(offsetAt(knots, 20.4));
+    // The other way round, mirrored.
+    const back = eased(19.6, 0.03, -1);
+    expect(offsetAt(back, 19.57) - offsetAt(back, 19.6)).toBeCloseTo(-0.03);
+    expect(offsetAt(back, 19.51)).toBe(0);
+    expect(offsetAt(back, 19.9)).toBe(offsetAt(back, 19.6));
   });
 
   it("key the whole track, level past the outer knots, clipped to it at its ends", () => {
@@ -64,7 +81,10 @@ function strip(count = 7, place = 3) {
   turns.set(place, count);
   let now = 0;
   /** The proxy scrolls to `slot`. */
-  const scroll = (slot: number) => turns.scrolled(slot, PIXEL, now);
+  const scroll = (slot: number) => {
+    now += 10;
+    turns.scrolled(slot, PIXEL, now);
+  };
   return {
     turns,
     scroll,
@@ -274,6 +294,33 @@ describe("a flick", () => {
     expect(shown(REST_SLOT + 1.7)).toBe(5);
     land(REST_SLOT + 1);
     expect(turns.place).toBe(5);
+  });
+
+  it("owed its page with the proxy past the wall, hands over wherever the proxy really is", () => {
+    // The page hears where the proxy is a frame or two late. Walled where the page thought it
+    // was, the pages stepped back by what the proxy had travelled since.
+    const { turns, scroll, touch, flick, land, shown } = strip();
+    touch();
+    scroll(REST_SLOT + 0.38);
+    scroll(REST_SLOT + 0.4);
+    flick(40);
+    const at = REST_SLOT + 0.4;
+    const ahead = [0.01, 0.03, 0.05].map((on) => shown(at + on) - shown(at));
+    turns.pay();
+    expect(turns.place).toBe(4);
+    for (const [i, on] of [0.01, 0.03, 0.05].entries()) {
+      expect(shown(at + on) - shown(at)).toBeCloseTo(ahead[i]!);
+    }
+    // Then by less, and soon not at all: the touch has its page.
+    expect(shown(at + 0.15)).toBeLessThan(4);
+    expect(shown(at + 0.3)).toBe(4);
+    expect(shown(REST_SLOT + 2)).toBe(4);
+    // The proxy coming back shows nothing either.
+    expect(shown(REST_SLOT + 0.1)).toBe(shown(at));
+    turns.aimed(REST_SLOT + 1);
+    land(REST_SLOT + 1);
+    expect(turns.place).toBe(4);
+    expect(shown(REST_SLOT + 0.5)).toBeCloseTo(4.5);
   });
 
   it("is owed its page once, even if the proxy goes a slot on after all", () => {

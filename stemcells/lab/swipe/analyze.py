@@ -101,6 +101,8 @@ nominal = statistics.median([g for g in gaps_all if g < 40]) if gaps_all else 16
 width = geometry["width"]
 
 lags, onsets, overshoots, settles, missed_runs, worst_gaps, moved_frames = [], [], [], [], 0, [], 0
+backs = []
+begins = sorted(swipe["posted"][0] for swipe in result["results"] if swipe["posted"])
 held = []
 per = []
 for swipe in result["results"]:
@@ -112,6 +114,8 @@ for swipe in result["results"]:
         continue
     lift = max(posted[i] for i, e in enumerate(events) if e[3] == 4)
     t0, t_end = fingers[0][0], posted[-1] + 1500
+    # No further than the next swipe's first event: its move is not this one's.
+    t_end = min([t_end] + [begin - 50 for begin in begins if begin > t0])
     travel, total = [], 0.0
     for t, dx in fingers:
         total += dx
@@ -180,6 +184,13 @@ for swipe in result["results"]:
     past = max(((at - target) * (1 if target >= start else -1) * width for ms, at in track if ms > lift), default=0.0)
     if swipe["expected"] == 0:
         past = max((abs(at - target) * width for ms, at in track if ms > lift + 2 * nominal), default=0.0)
+    # The furthest the strip stepped back against the swipe from one picture to the next, on its way.
+    back = max(
+        ((a - b) * direction * width for (a_ms, a), (b_ms, b) in zip(in_motion, in_motion[1:])),
+        default=0.0,
+    )
+    back = max(back, 0.0) if swipe["expected"] != 0 else 0.0
+    backs.append(back)
     lags += swipe_lags
     if onset is not None:
         onsets.append(onset)
@@ -188,7 +199,7 @@ for swipe in result["results"]:
     missed_runs += runs
     moved_frames += len(gaps)
     worst_gaps.append(max(gaps, default=0.0))
-    per.append({"label": swipe["label"], "from": swipe["from"], "to": swipe["to"], "onset": onset, "lag_med": statistics.median(swipe_lags) if swipe_lags else None, "lag_max": max(swipe_lags, default=None), "worst_gap": max(gaps, default=0.0), "runs": runs, "past_px": past, "settle_ms": last_move - lift})
+    per.append({"label": swipe["label"], "from": swipe["from"], "to": swipe["to"], "onset": onset, "lag_med": statistics.median(swipe_lags) if swipe_lags else None, "lag_max": max(swipe_lags, default=None), "worst_gap": max(gaps, default=0.0), "runs": runs, "past_px": past, "back_px": back, "settle_ms": last_move - lift})
 
 
 def pct(values, q):
@@ -218,6 +229,8 @@ summary = {
     "worst_gap_median": pct(worst_gaps, 0.5),
     "worst_gap_max": max(worst_gaps, default=None),
     "past_px_max": max(overshoots, default=None),
+    "back_px_max": max(backs, default=None),
+    "stepped_back": sum(1 for back in backs if back > 2),
     "settle_median": pct(settles, 0.5),
 }
 print(json.dumps(summary))

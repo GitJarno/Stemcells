@@ -41,6 +41,30 @@ export function walls(origin: number, back: Side, on: Side): Knot[] {
   return knots;
 }
 
+/** The slopes of a wall eased in: the pages follow the proxy one to one, then by less, then not at all. */
+const EASE = [1, 2 / 3, 1 / 3];
+/** How long (ms) of the proxy's travel each of those steps takes; the first covers how far ahead of the page's word the proxy is. */
+const EASE_STEP = 30;
+/** The most (slots) a step is long. */
+const EASE_MOST = 0.1;
+/** How many of the proxy's latest moves its speed is read from: the fastest, as the lift itself is a pause. */
+const KEPT_SPEEDS = 3;
+
+/**
+ * A wall `way` of a proxy on `from`, eased in over steps of `step` slots, about a place already a
+ * page on. A wall straight up where the page last heard the proxy steps the pages back by what
+ * it has travelled since; behind `from` nothing shows, so the proxy coming back moves nothing.
+ */
+export function eased(from: number, step: number, way: -1 | 1): Knot[] {
+  const knots: Knot[] = [];
+  let offset = 0;
+  for (let i = EASE.length; i >= 0; i--) {
+    knots.push({ slot: from + way * i * step, offset: way * offset || 0 });
+    if (i > 0) offset -= EASE[i - 1]! * step;
+  }
+  return way > 0 ? knots.reverse() : knots;
+}
+
 /** The pages' offset with the proxy on `slot`: straight lines between the knots, level past the outer ones. */
 export function offsetAt(knots: readonly Knot[], slot: number): number {
   const first = knots[0];
@@ -122,6 +146,11 @@ export class Turns {
   #coming = 0;
   /** The pages the proxy brought that no flick has answered for yet, and when the page heard of each. */
   #brought: { readonly heard: number; readonly way: -1 | 1 }[] = [];
+  /** When the proxy was last seen, and how fast its latest moves were (slots a ms). */
+  #seen = 0;
+  #speeds: number[] = [];
+  /** A wall put up with the proxy past it eases in from where the proxy was (`eased`). */
+  #eased: { readonly from: number; readonly step: number } | null = null;
 
   /** The page the strip's own place is on, or sliding to. */
   get place(): number {
@@ -138,14 +167,15 @@ export class Turns {
     return this.#resting;
   }
 
+  /** The knots the hold follows the proxy by. */
   get knots(): Knot[] {
-    if (this.#spent) return [{ slot: this.#origin, offset: 0 }];
-    return walls(this.#origin, this.#side(-1), this.#side(1));
+    if (this.#spent || this.#eased === null || this.#wall === 0) return this.#rules();
+    return eased(this.#eased.from, this.#eased.step, this.#wall);
   }
 
   /** The page the strip is headed for: the one the proxy's target shows. */
   get heading(): number {
-    return this.#page(this.#place + Math.round(offsetAt(this.knots, this.#target)));
+    return this.#page(this.#place + this.#pages(this.#target));
   }
 
   /** Whether the proxy has reached its target, to the pixel, or rests. */
@@ -163,6 +193,7 @@ export class Turns {
   spend(): void {
     if (!this.#resting) this.#spent = true;
     this.#wall = 0;
+    this.#eased = null;
   }
 
   /** A wheel event over the proxy at `t`: `ours` if the proxy is what it scrolls. */
@@ -229,20 +260,30 @@ export class Turns {
       this.#brought.splice(brought, 1);
       return;
     }
-    const heading = Math.round(offsetAt(this.knots, this.#target));
+    const heading = this.#pages(this.#target);
     if (heading !== 0) {
       if (heading === touch.flick) this.#coming += heading;
       return;
     }
     const page = this.#place + touch.flick;
     if (page < 0 || page >= this.#count) return;
-    // At rest there is nothing more of this touch's for the proxy to do.
-    if (this.#left !== null) this.#wall = touch.flick;
     this.#place = page;
+    // At rest there is nothing more of this touch's for the proxy to do.
+    if (this.#left === null) return;
+    this.#wall = touch.flick;
+    const fastest = Math.max(0, ...this.#speeds.map((speed) => speed * touch.flick));
+    const step = Math.min(fastest * EASE_STEP, EASE_MOST);
+    const past = (this.#at - this.#origin) * touch.flick >= 0;
+    this.#eased = past && step > 0 ? { from: this.#at, step } : null;
   }
 
   /** The proxy scrolled to `slot`, as the page hears at `now`; `pixel` is a pixel in slots. */
   scrolled(slot: number, pixel: number, now: number): void {
+    if (now > this.#seen) {
+      this.#speeds.push((slot - this.#at) / (now - this.#seen));
+      if (this.#speeds.length > KEPT_SPEEDS) this.#speeds.shift();
+    }
+    this.#seen = now;
     this.#at = slot;
     if (Math.abs(slot - this.#origin) > pixel) this.#resting = false;
     // Landed with the fingers known to be up: the walls go round the page it landed on now, so
@@ -274,6 +315,17 @@ export class Turns {
     if (this.#wall === way) return "wall";
     const page = this.#place + way;
     return page >= 0 && page < this.#count ? "page" : "end";
+  }
+
+  /** The knots the pages are counted by: a wall straight up at the origin, however it is eased in on screen. */
+  #rules(): Knot[] {
+    if (this.#spent) return [{ slot: this.#origin, offset: 0 }];
+    return walls(this.#origin, this.#side(-1), this.#side(1));
+  }
+
+  /** How many pages on from the strip's own place the proxy on `slot` counts for. */
+  #pages(slot: number): number {
+    return Math.round(offsetAt(this.#rules(), slot));
   }
 
   #touched(began: number): void {
@@ -311,7 +363,7 @@ export class Turns {
    * for a flick heard later.
    */
   #rebase(slot: number, heard?: number): void {
-    const place = this.#page(this.#place + Math.round(offsetAt(this.knots, slot)));
+    const place = this.#page(this.#place + this.#pages(slot));
     const way = place > this.#place ? 1 : place < this.#place ? -1 : 0;
     if (way !== 0 && this.#coming * way > 0) {
       this.#coming -= way;
@@ -322,6 +374,7 @@ export class Turns {
     this.#place = place;
     this.#origin = slot;
     this.#wall = 0;
+    this.#eased = null;
     this.#spent = false;
   }
 
