@@ -35,6 +35,7 @@ case, go back to the three costs and choose what keeps them lowest.
   - `stemcells/` for docs, plans and scripts.
 
   New files never conflict.
+
 - An upstream file changes only at a **seam**: the smallest edit that hands
   control to our code, ideally an import and one line. Every seam is listed
   in `stemcells/seams.md` with its reason.
@@ -74,6 +75,7 @@ case, go back to the three costs and choose what keeps them lowest.
   6. Keybinding config.
 
   A component's internals come last.
+
 - **Contract tests.** Every upstream behaviour we depend on gets a test in
   our tree that pins it. Examples: the thread status values we map to a
   Cell's mood, the MCP tool names Aski calls, `ChatView` rendering a thread
@@ -137,8 +139,9 @@ case, go back to the three costs and choose what keeps them lowest.
 - **The nightly pipeline** (the runbook: `upstream-sync.md`), on a Mac,
   as GitHub Actions is off for Stemcells: `install-nightly-sync` (opt in)
   has launchd run it at 03:00, on AC power and when the Mac isn't busy.
-  1. `sync-upstream` merges on a branch, and resolves conflicts in
-     upstream's tests itself.
+  1. `sync-upstream` merges on a branch, resolves conflicts in upstream's
+     tests itself, and writes generated files (the lockfile, the route
+     tree) again with their generators instead of merging them.
   2. `sync-upstream --gates`: drift, nothing reporting on the person, types,
      lint, our tests, upstream's suites, the builds and a headless boot.
   3. If green, `sync-upstream --pr` opens the pull request, with a report.

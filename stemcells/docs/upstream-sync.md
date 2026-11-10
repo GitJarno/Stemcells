@@ -18,15 +18,16 @@ pull request "Take upstream at <sha> (N commits)" waits for its merge. When
 it stops, the issue "Upstream sync needs a hand" says where, and this page
 says what to do.
 
-| Command                                        | What it does                                                                                                                                                                                                                                    |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stemcells/scripts/sync-upstream`              | Merges upstream's newest commit whose own CI passed into `sync/upstream-<sha>`, a branch from `origin/main`. Conflicts in upstream's tests resolve themselves. Exits 3 on anything else, printing each file with the seams it touches           |
-| `stemcells/scripts/sync-upstream --gates [G…]` | Runs the gates on this tree: all of them, or only the ones named                                                                                                                                                                                |
-| `stemcells/scripts/sync-upstream --pr`         | Pushes this branch and opens its pull request, or refreshes it, with the report as its body                                                                                                                                                     |
-| `stemcells/scripts/sync-upstream --report`     | Prints the report: outbound first (new lines in `outbound.txt`, the call sites upstream added that may contact someone, the runtime gate's last run), then commits by kind, seams upstream touched, conflicts, new dependencies, the test count |
-| `stemcells/scripts/sync-upstream --check`      | All of it in one go: merge, gates, pull request                                                                                                                                                                                                 |
-| `stemcells/scripts/sync-upstream --nightly`    | `--check`, then the issue kept up to date: rewritten when it stops, closed when it goes through or finds nothing new                                                                                                                            |
-| `stemcells/scripts/check-local <pull request>` | The `check` gates on a clean checkout of the pull request's head, recorded on it as `local-check`, which a merge needs (`stemcells/AGENTS.md`, Landing)                                                                                         |
+| Command                                        | What it does                                                                                                                                                                                                                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stemcells/scripts/sync-upstream`              | Merges upstream's newest commit whose own CI passed into `sync/upstream-<sha>`, a branch from `origin/main`. Conflicts in upstream's tests resolve themselves, and generated files are written again. Exits 3 on anything else, printing each file with the seams it touches |
+| `stemcells/scripts/sync-upstream --regenerate` | During a merge, once the last conflict is resolved: generated files that conflicted take upstream's side, every generator runs, and what it wrote is staged                                                                                                                  |
+| `stemcells/scripts/sync-upstream --gates [G…]` | Runs the gates on this tree: all of them, or only the ones named                                                                                                                                                                                                             |
+| `stemcells/scripts/sync-upstream --pr`         | Pushes this branch and opens its pull request, or refreshes it, with the report as its body                                                                                                                                                                                  |
+| `stemcells/scripts/sync-upstream --report`     | Prints the report: outbound first (new lines in `outbound.txt`, the call sites upstream added that may contact someone, the runtime gate's last run), then commits by kind, seams upstream touched, conflicts, new dependencies, the test count                              |
+| `stemcells/scripts/sync-upstream --check`      | All of it in one go: merge, gates, pull request                                                                                                                                                                                                                              |
+| `stemcells/scripts/sync-upstream --nightly`    | `--check`, then the issue kept up to date: rewritten when it stops, closed when it goes through or finds nothing new                                                                                                                                                         |
+| `stemcells/scripts/check-local <pull request>` | The `check` gates on a clean checkout of the pull request's head, recorded on it as `local-check`, which a merge needs (`stemcells/AGENTS.md`, Landing)                                                                                                                      |
 
 On a busy Mac, `VITEST_MAX_WORKERS=2` before any of them keeps tests from
 timing out under the load; `check-local` and the nightly set it themselves.
@@ -48,6 +49,15 @@ timing out under the load; `check-local` and the nightly set it themselves.
    line. A test upstream deleted, or rewrote past our edits, leaves
    `seams.md` with it. What's left is printed with its seams.
 
+   Generated files are never merged. The lockfile, the web's route tree,
+   the phone's theme files and the agent context budget are each written by
+   a tool from the rest of the tree (the list is `GENERATED` in
+   `sync-upstream`). One that conflicted takes upstream's side, then every
+   generator runs on the merged tree and what it wrote is staged, so the
+   merge commit carries them. A generator that fails stops the sync, with
+   exit 6 and its file's name: fix what it reads, then
+   `stemcells/scripts/sync-upstream --regenerate`.
+
 3. **Resolve what's left.** Upstream's logic wins, and our seam goes back on
    top:
    - Take upstream's side (`git checkout --theirs <file>`), then make the
@@ -58,6 +68,10 @@ timing out under the load; `check-local` and the nightly set it themselves.
      at the new one.
    - When upstream stopped exporting something our adapter reads, add the
      one-word `export` back as a seam with a row, or read it another way.
+   - Never a generated file by hand: the merge already took upstream's side
+     of each. Generators read the merged tree, so they wait for the last
+     conflict: once it is resolved, `stemcells/scripts/sync-upstream
+     --regenerate` writes and stages them.
    - Never rebase or squash: `git add` the files and `git commit` keeps the
      merge.
 

@@ -115,10 +115,14 @@ It does steps 1, 4 and 5's report; the reading (step 2), the resolving
 - [ ] `stemcells/scripts/sync-upstream`. It picks upstream's newest commit on
       which upstream's own CI passed (never the tip blindly) and merges it on
       `sync/upstream-<sha>`. Conflicts in upstream's tests resolve themselves
-      (`resolve-test-seams.mjs`).
+      (`resolve-test-seams.mjs`), and generated files (the lockfile, the
+      web's route tree, the phone's theme files, the agent context budget)
+      are written again by their generators, never merged. The lockfile's
+      generator is `pnpm install`, so the tree is installed after it.
   - Exit 0 with "already has": nothing new. Go to step 6.
   - Exit 3: conflicts remain. Note the time, and go to step 3.
-- [ ] `pnpm install --frozen-lockfile` when the lockfile moved.
+  - Exit 6: a generator failed, and the message names its file. Fix what
+    it reads, then `stemcells/scripts/sync-upstream --regenerate`.
 
 ## 2. Read what changed, like a staff engineer
 
@@ -188,6 +192,10 @@ Time it: the pull request says how many minutes resolving took
 - [ ] **Never edit upstream to fix upstream.** An upstream bug we hit gets
       a seam with a row that names it, or waits for their fix. No silent
       patches.
+- [ ] **Never resolve a generated file by hand.** The merge already took
+      upstream's side of each. After the last conflict,
+      `stemcells/scripts/sync-upstream --regenerate` runs every generator
+      on the merged tree and stages what it wrote.
 - [ ] `git add` the files and `git commit` (keeps the merge; never rebase).
 - [ ] A seam that conflicted twice (`stemcells/scripts/sync-stats`) goes on
       the follow-up list: substitute it, or make it an extension point we
