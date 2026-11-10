@@ -1,4 +1,3 @@
-import { ModelSelection, ProjectId } from "@t3tools/contracts";
 import * as Clock from "effect/Clock";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
@@ -11,6 +10,7 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 import { boundedText } from "../http/body.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Upstream from "../upstream/planner.ts";
+import { ModelSelection, ProjectId } from "../upstream/planner.ts";
 import { PlanAnswer } from "./answer.ts";
 import { appendPlan, clearPlans, PlanRecord } from "./history.ts";
 import { firstParagraph, LINE_FILES, LINE_READ_MOST } from "./lines.ts";

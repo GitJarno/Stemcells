@@ -63,11 +63,12 @@ case, go back to the three costs and choose what keeps them lowest.
 
 ## 2. Lean on contracts, not internals — against silent breakage
 
-- **One adapter per app.** Only `apps/web/src/stemcells/upstream/` and
-  `apps/server/src/stemcells/upstream/` import upstream modules. The rest
-  of our code imports from those adapters. When upstream changes shape,
-  the type checker fails inside the adapter, and that's the one place to
-  fix.
+- **One adapter per app.** Only an app's `src/stemcells/upstream/` folder
+  imports upstream modules: the web's, the server's, the phone's and the
+  desktop's. The rest of that app's code of ours imports from its adapter,
+  tests too: what a test stands on of upstream's is a `*.fixture.ts` in
+  the adapter. When upstream changes shape, the type checker fails inside
+  the adapter, and that's the one place to fix.
 - **Prefer upstream's public surfaces**, which they also have to keep
   stable for themselves. In rough order:
   1. The schemas in `@t3tools/contracts`.
@@ -84,8 +85,11 @@ case, go back to the three costs and choose what keeps them lowest.
   Cell's mood, the MCP tool names Aski calls, `ChatView` rendering a thread
   from props. These run on every sync, and a red one names the contract
   that moved.
-- **Boundaries are checked, not trusted.** A test in our tree fails when
-  our code imports upstream outside an adapter.
+- **Boundaries are checked, not trusted.** Each app's `boundary.test.ts`
+  runs one shared check (`stemcells/boundary/check.ts`), which fails when
+  our code imports upstream outside that app's adapter. Another app's code
+  of ours counts as ours (the phone's `kit.ts` files draw with the web's);
+  another app's adapter doesn't.
 
 ## 3. Own our state and our wire
 

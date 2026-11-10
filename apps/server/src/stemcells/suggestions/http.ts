@@ -1,4 +1,3 @@
-import { MessageId, ThreadId } from "@t3tools/contracts";
 import * as Cache from "effect/Cache";
 import * as Clock from "effect/Clock";
 import * as DateTime from "effect/DateTime";
@@ -13,6 +12,7 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 import { boundedText } from "../http/body.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Upstream from "../upstream/suggestions.ts";
+import { MessageId, ThreadId } from "../upstream/suggestions.ts";
 import { cleanSuggestion, SuggestionAnswer, suggestionPrompt } from "./prompt.ts";
 import { awaitProviderSuggestion } from "./provider.ts";
 import { follows, lastCompletedRun, recentUserMessageIds, settledReply } from "./reply.ts";

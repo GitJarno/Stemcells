@@ -1,11 +1,5 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
-import {
-  AuthOrchestrationOperateScope,
-  AuthOrchestrationReadScope,
-  MessageId,
-  ThreadId,
-} from "@t3tools/contracts";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
@@ -16,11 +10,17 @@ import * as Etag from "effect/http/Etag";
 import * as HttpPlatform from "effect/http/HttpPlatform";
 import { describe, expect } from "vite-plus/test";
 
-import * as EnvironmentAuth from "../../auth/EnvironmentAuth.ts";
-import type {
-  SuggestionMessage,
-  SuggestionRun,
-  SuggestionSource,
+import {
+  AuthOrchestrationOperateScope,
+  AuthOrchestrationReadScope,
+  scopedAuth as auth,
+} from "../upstream/server.fixture.ts";
+import {
+  MessageId,
+  type SuggestionMessage,
+  type SuggestionRun,
+  type SuggestionSource,
+  ThreadId,
 } from "../upstream/suggestions.ts";
 import { FRESH, makeLayer, PROVIDER_WAIT, suggest, SUGGESTION_PATH } from "./http.ts";
 import { forgetProviderSuggestion, offerProviderSuggestion } from "./provider.ts";
@@ -178,21 +178,6 @@ describe("suggest", () => {
     }).pipe(Effect.provide(NodeServices.layer)),
   );
 });
-
-/** A caller's scopes ride a test header; none is no credential. */
-const auth = Layer.succeed(EnvironmentAuth.EnvironmentAuth, {
-  authenticateHttpRequest: (request: { readonly headers: Record<string, string | undefined> }) => {
-    const scopes = request.headers["x-test-scopes"];
-    return scopes === undefined
-      ? Effect.fail(new EnvironmentAuth.ServerAuthMissingCredentialError())
-      : Effect.succeed({
-          sessionId: "session",
-          subject: "test",
-          method: "browser-session-cookie",
-          scopes: scopes.split(",").filter(Boolean),
-        });
-  },
-} as never);
 
 function serve(source: SuggestionSource) {
   const routes = makeLayer(Effect.succeed(source)).pipe(

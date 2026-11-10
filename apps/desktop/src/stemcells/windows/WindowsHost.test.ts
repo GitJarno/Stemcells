@@ -14,7 +14,6 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import * as Ref from "effect/Ref";
-import * as SubscriptionRef from "effect/SubscriptionRef";
 import { expect, vi } from "vite-plus/test";
 
 const electron = vi.hoisted(() => {
@@ -219,11 +218,7 @@ vi.mock("electron", () => ({
   autoUpdater: electron.autoUpdater,
 }));
 
-import * as DesktopEnvironment from "../../app/DesktopEnvironment.ts";
-import * as DesktopState from "../../app/DesktopState.ts";
-import * as ElectronWindow from "../../electron/ElectronWindow.ts";
-import * as PreviewManager from "../../preview/Manager.ts";
-import * as DesktopWindow from "../../window/DesktopWindow.ts";
+import { windowsServices } from "../upstream/windows.fixture.ts";
 import { WINDOWS_CHANNEL } from "./channels.ts";
 import * as WindowsHost from "./WindowsHost.ts";
 
@@ -279,24 +274,7 @@ const startHost = Effect.fn("startHost")(function* (
     options.opens === false
       ? Effect.fail(new NoWindow())
       : Effect.sync(() => new electron.Window(bounds));
-  const services = Layer.mergeAll(
-    Layer.succeed(DesktopEnvironment.DesktopEnvironment, { stateDir } as never),
-    Layer.succeed(DesktopWindow.DesktopWindow, { createExtra } as never),
-    Layer.succeed(ElectronWindow.ElectronWindow, {
-      setMain,
-      reveal: () => Effect.void,
-    } as never),
-    Layer.succeed(PreviewManager.PreviewManager, {
-      setMainWindow: () => Effect.void,
-    } as never),
-    Layer.succeed(DesktopState.DesktopState, {
-      backendReady: yield* Ref.make(true),
-      quitting,
-      primaryBackendStartup: yield* SubscriptionRef.make<DesktopState.PrimaryBackendStartup>({
-        _tag: "Ready",
-      }),
-    }),
-  );
+  const services = yield* windowsServices({ stateDir, createExtra, setMain, quitting });
   yield* Layer.build(WindowsHost.layer.pipe(Layer.provide(services)));
   return {
     setMain,

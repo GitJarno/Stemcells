@@ -4,16 +4,15 @@ import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 
-import * as ServerConfig from "../../config.ts";
-import * as ServerSettings from "../../serverSettings.ts";
 import * as UpstreamDefaults from "../upstream/defaults.ts";
+import { configLayerTest, settingsLayerTest } from "../upstream/server.fixture.ts";
 import { applyDefaults } from "./defaults.ts";
 
 /** A server on upstream's defaults, its state folder fresh for each test. */
 const layerServer = () =>
   Layer.mergeAll(
-    Layer.fresh(ServerConfig.layerTest(process.cwd(), { prefix: "stemcells-defaults-" })),
-    Layer.fresh(ServerSettings.layerTest()),
+    Layer.fresh(configLayerTest(process.cwd(), { prefix: "stemcells-defaults-" })),
+    Layer.fresh(settingsLayerTest()),
   );
 
 it.layer(NodeServices.layer)("Stemcells' defaults, on start", (it) => {

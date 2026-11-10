@@ -5,8 +5,7 @@
 
 import { useEffect, useEffectEvent, useMemo, useRef } from "react";
 
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-
+import type { EnvironmentProject } from "../upstream/threads";
 import { NOTHING_TAKEN, placesOf, wordsStep } from "./place";
 
 interface WordsDraft {

@@ -9,6 +9,7 @@
     "src",
     "vite.config.ts",
     "../../scripts/lib",
+    "../../stemcells/boundary/check.ts",
     "../../stemcells/brand/assets.ts",
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/upstreamName.ts",

@@ -6,19 +6,15 @@
  * the ones `install-app` stamps, so upstream's channels and its applied-update check hold.
  */
 import * as NodeChildProcess from "node:child_process";
-import * as NodeEvents from "node:events";
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeUtil from "node:util";
 
 import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 
-import * as DesktopEnvironment from "../../app/DesktopEnvironment.ts";
-import * as ElectronApp from "../../electron/ElectronApp.ts";
-import * as ElectronUpdater from "../../electron/ElectronUpdater.ts";
+import * as Upstream from "../upstream/updater.ts";
 import {
   buildPercentOf,
   CHANGE_DATE,
@@ -48,12 +44,9 @@ const StagedFile = Schema.fromJsonString(
   Schema.Struct({ sha: Schema.String, version: Schema.String, channel: Schema.String }),
 );
 const encodeStaged = Schema.encodeEffect(StagedFile);
-/** A package.json: the app's own, where the build stamps its commit, or the desktop's. */
+/** The desktop's package.json at a commit, which holds the version a build of it takes. */
 const PackageFile = Schema.fromJsonString(
-  Schema.Struct({
-    version: Schema.optional(Schema.String),
-    t3codeCommitHash: Schema.optional(Schema.String),
-  }),
+  Schema.Struct({ version: Schema.optional(Schema.String) }),
 );
 const decodePackage = Schema.decodeOption(PackageFile);
 
@@ -82,11 +75,9 @@ const started = (child: NodeChildProcess.ChildProcess) =>
     );
   });
 
-const make = Effect.gen(function* () {
-  const environment = yield* DesktopEnvironment.DesktopEnvironment;
-  const electronApp = yield* ElectronApp.ElectronApp;
-
-  const folder = NodePath.join(environment.appDataDirectory, "sh.stemcells.app", "updates");
+const steps = (host: Upstream.Host): Upstream.Steps<UpdateStepError> => {
+  const { said } = host;
+  const folder = NodePath.join(host.appDataDirectory, "sh.stemcells.app", "updates");
   const places = {
     source: NodePath.join(folder, "source.json"),
     worktree: NodePath.join(folder, "source"),
@@ -97,14 +88,9 @@ const make = Effect.gen(function* () {
   };
   const installApp = NodePath.join(places.worktree, "stemcells/scripts/install-app");
   // The folder this app sits in, which the swap puts the new one in.
-  const installedIn = NodePath.dirname(NodePath.resolve(environment.resourcesPath, "../.."));
-  const builtCommit =
-    readFile(PackageFile, NodePath.join(environment.appPath, "package.json"))?.t3codeCommitHash ??
-    null;
+  const installedIn = NodePath.dirname(NodePath.resolve(host.resourcesPath, "../.."));
+  const { builtCommit } = host;
 
-  const events = new NodeEvents.EventEmitter();
-  let channel = "latest";
-  let allowDowngrade = false;
   let pending = Option.none<Target>();
 
   const run = (command: string, args: ReadonlyArray<string>) =>
@@ -198,7 +184,7 @@ const make = Effect.gen(function* () {
       target.channel === "nightly"
         ? nightlyNotesOf(changes, yield* nightlyOf(target.sha))
         : releaseNotesOf(changes, target.version);
-    events.emit("update-available", { version: target.version, releaseNotes });
+    said.available({ version: target.version, releaseNotes });
   });
 
   /**
@@ -232,7 +218,7 @@ const make = Effect.gen(function* () {
   );
 
   const check = Effect.gen(function* () {
-    events.emit("checking-for-update");
+    said.checking();
     if (builtCommit === null || builtCommit === "unknown") {
       return yield* new UpdateStepError({
         message: "This build doesn't say which commit it was made from.",
@@ -240,7 +226,7 @@ const make = Effect.gen(function* () {
     }
     yield* fetch;
     const built = yield* git(["rev-parse", `${builtCommit}^{commit}`]);
-    const on = channel;
+    const on = host.channel();
 
     const tip = yield* tipOf(on);
     const changes = Option.isSome(tip) ? yield* changesTo(built, tip.value.sha) : [];
@@ -252,7 +238,7 @@ const make = Effect.gen(function* () {
       Option.isSome(tip) &&
       tip.value.sha !== built &&
       on === "latest" &&
-      (allowDowngrade || staged?.sha === tip.value.sha);
+      (host.allowDowngrade() || staged?.sha === tip.value.sha);
     const offered = changes.length > 0 || steppingBack ? tip : Option.none<Target>();
     // A built update waits for its restart only while it's still the tip: a
     // newer main replaces it, so the update offered is always the newest.
@@ -265,12 +251,12 @@ const make = Effect.gen(function* () {
     if (staged !== null && !ready) yield* dropStaged;
     if (Option.isNone(offered)) {
       pending = Option.none();
-      events.emit("update-not-available");
+      said.upToDate();
       return;
     }
     pending = offered;
     yield* announce(offered.value, changes);
-    if (ready) events.emit("update-downloaded", { version: offered.value.version });
+    if (ready) said.downloaded(offered.value.version);
   });
 
   /** Builds `target` with its own install-app, in the updater's worktree. */
@@ -300,7 +286,7 @@ const make = Effect.gen(function* () {
         tail.push(line);
         if (tail.length > 20) tail.shift();
         const next = buildPercentOf(line, percent);
-        if (next !== percent) events.emit("download-progress", { percent: next });
+        if (next !== percent) said.progress(next);
         percent = next;
       }
     };
@@ -351,7 +337,7 @@ const make = Effect.gen(function* () {
     const target = pending.value;
     const staged = readFile(StagedFile, places.staged);
     if (staged?.sha !== target.sha || !NodeFS.existsSync(places.stage)) yield* build(target);
-    events.emit("update-downloaded", { version: target.version });
+    said.downloaded(target.version);
   });
 
   /**
@@ -386,71 +372,10 @@ const make = Effect.gen(function* () {
     }).pipe(Effect.ensuring(Effect.sync(() => NodeFS.closeSync(log))));
     yield* started(child);
     child.unref();
-    yield* electronApp.quit;
+    yield* host.quit;
   });
 
-  return ElectronUpdater.ElectronUpdater.of({
-    // The feed is the repository install-app recorded; upstream's mock feed
-    // has no place here.
-    setFeedURL: Effect.fn("stemcells.updates.setFeedURL")(() => Effect.void),
-    setAutoDownload: Effect.fn("stemcells.updates.setAutoDownload")(() => Effect.void),
-    setAutoInstallOnAppQuit: Effect.fn("stemcells.updates.setAutoInstallOnAppQuit")(
-      () => Effect.void,
-    ),
-    setChannel: Effect.fn("stemcells.updates.setChannel")((next) =>
-      Effect.sync(() => {
-        channel = next;
-      }),
-    ),
-    setAllowPrerelease: Effect.fn("stemcells.updates.setAllowPrerelease")(() => Effect.void),
-    allowDowngrade: Effect.sync(() => allowDowngrade),
-    setAllowDowngrade: Effect.fn("stemcells.updates.setAllowDowngrade")((value) =>
-      Effect.sync(() => {
-        allowDowngrade = value;
-      }),
-    ),
-    setFullChangelog: Effect.fn("stemcells.updates.setFullChangelog")(() => Effect.void),
-    setDisableDifferentialDownload: Effect.fn("stemcells.updates.setDisableDifferentialDownload")(
-      () => Effect.void,
-    ),
-    checkForUpdates: check.pipe(
-      Effect.mapError(
-        (cause) => new ElectronUpdater.ElectronUpdaterCheckForUpdatesError({ channel, cause }),
-      ),
-      Effect.withSpan("stemcells.updates.check"),
-    ),
-    downloadUpdate: download.pipe(
-      Effect.mapError(
-        (cause) => new ElectronUpdater.ElectronUpdaterDownloadUpdateError({ channel, cause }),
-      ),
-      Effect.withSpan("stemcells.updates.download"),
-    ),
-    quitAndInstall: Effect.fn("stemcells.updates.swap")(({ isSilent, isForceRunAfter }) =>
-      swap.pipe(
-        Effect.mapError(
-          (cause) =>
-            new ElectronUpdater.ElectronUpdaterQuitAndInstallError({
-              channel,
-              isSilent,
-              isForceRunAfter,
-              cause,
-            }),
-        ),
-      ),
-    ),
-    on: Effect.fn("stemcells.updates.on")(function (eventName, listener) {
-      const untyped = listener as unknown as (...args: Array<unknown>) => void;
-      return Effect.acquireRelease(
-        Effect.sync(() => {
-          events.on(eventName, untyped);
-        }),
-        () =>
-          Effect.sync(() => {
-            events.removeListener(eventName, untyped);
-          }),
-      ).pipe(Effect.asVoid);
-    }),
-  });
-});
+  return { check, download, swap };
+};
 
-export const layer = Layer.effect(ElectronUpdater.ElectronUpdater, make);
+export const layer = Upstream.layerOf(steps);

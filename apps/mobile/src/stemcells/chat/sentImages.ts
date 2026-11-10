@@ -2,8 +2,7 @@
 // message is pending they're the drafts this phone picked; once the server holds it, its
 // attachments, which keep showing this phone's own files for what it sent this session.
 
-import { imageMimeType } from "@t3tools/shared/image";
-
+import { imageMimeType } from "../upstream/attachments";
 import type { ChatAttachment, DraftComposerAttachment } from "../upstream/messageImages";
 
 export interface SentImage {

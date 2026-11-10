@@ -36,6 +36,7 @@
     "../../scripts/lib/public-config.ts",
     "../../scripts/lib/third-party-licenses.ts",
     "../../scripts/lib/brand-assets.ts",
+    "../../stemcells/boundary/check.ts",
     "../../stemcells/brand/assets.ts",
     "../../stemcells/brand/look.ts",
     "../../stemcells/brand/mark.ts",

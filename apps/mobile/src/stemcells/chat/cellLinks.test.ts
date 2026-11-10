@@ -1,6 +1,6 @@
-import { parseThreadLinkHref } from "@t3tools/shared/threadLinks";
 import { describe, expect, it } from "vite-plus/test";
 
+import { parseThreadLinkHref } from "../upstream/threads";
 import { cellPill, cellsLinked, linkCells } from "./cellLinks";
 
 describe("another Cell named in a chat's words, on the phone", () => {
