@@ -192,6 +192,9 @@ Time it: the pull request says how many minutes resolving took
 - [ ] **Never edit upstream to fix upstream.** An upstream bug we hit gets
       a seam with a row that names it, or waits for their fix. No silent
       patches.
+- [ ] **Never edit upstream's tests.** One our change breaks goes on
+      `stemcells/upstream-skips.txt` with its reason, and the gates leave it
+      out by name; our own case goes in a file of ours.
 - [ ] **Never resolve a generated file by hand.** The merge already took
       upstream's side of each. After the last conflict,
       `stemcells/scripts/sync-upstream --regenerate` runs every generator

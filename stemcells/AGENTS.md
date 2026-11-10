@@ -56,6 +56,9 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   upstream behaviour we rely on gets a contract test in our tree.
 - Our state lives in our own store, our endpoints under `/api/stemcells/`.
   Never a migration in upstream's sequence, never a column on their tables.
+- We never edit upstream's tests: our cases go in our own files, and a
+  test our change breaks goes on the skip list with its reason
+  (`stemcells/upstream-skips.txt`).
 - Never reformat, rename, move or tidy upstream code. A change any T3 user
   would want would ideally live upstream, but we don't open pull requests
   to T3 unless the person asks: we carry it as a seam.
