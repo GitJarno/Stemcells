@@ -8,6 +8,16 @@
 #   stemcells/scripts/install-nightly-sync --print    print the job, install nothing
 #   stemcells/scripts/install-nightly-sync --remove   uninstall
 #
+#   --cell <project> [--provider <id> --model <slug>]
+#       Opt in to more: a night that stops on a merge conflict starts a Cell
+#       in the running Stemcells, which takes the sync from there (the t3-sync
+#       skill). It works while you sleep and SPENDS YOUR MODEL PLAN: one Cell
+#       per upstream commit, a whole sync each. <project> is the Stemcells
+#       project of this repository: its id, or a folder in it (`.`); Stemcells
+#       must be open, as it's asked for the id. --provider and --model name
+#       the Cell's model as `t3 thread start` takes them; without them, the
+#       project's default. Installing again without --cell turns it off.
+#
 # The job never reads this checkout (nightly-sync says why): the script is
 # copied to ~/Library/Application Support/sh.stemcells.nightly-sync, and the
 # job runs it from there, with this shell's PATH minus any folder under
@@ -21,8 +31,42 @@ plist="$HOME/Library/LaunchAgents/$label.plist"
 log="$HOME/Library/Logs/stemcells-nightly-sync.log"
 here=$(cd "$(dirname "$0")" && pwd)
 domain="gui/$(id -u)"
+# The installed app's own launcher: T3 Code's `t3` may come first on PATH.
+cli="$HOME/.stemcells/bin/t3"
 
-if [ "${1:-}" = --remove ]; then
+usage() {
+  sed -n '2,25p' "$0" >&2
+  exit 2
+}
+fail() {
+  echo "install-nightly-sync: $1" >&2
+  exit 1
+}
+
+print=0 remove=0 project="" provider="" model=""
+while [ $# -gt 0 ]; do
+  case $1 in
+    --print) print=1 ;;
+    --remove) remove=1 ;;
+    --cell | --provider | --model)
+      [ -n "${2:-}" ] || usage
+      case $1 in
+        --cell) project=$2 ;;
+        --provider) provider=$2 ;;
+        --model) model=$2 ;;
+      esac
+      shift
+      ;;
+    *) usage ;;
+  esac
+  shift
+done
+[ -z "$provider$model" ] || [ -n "$project" ] || usage
+if [ -n "$provider$model" ] && { [ -z "$provider" ] || [ -z "$model" ]; }; then
+  fail "--provider and --model go together"
+fi
+
+if [ "$remove" = 1 ]; then
   launchctl bootout "$domain/$label" 2> /dev/null || true
   rm -f "$plist"
   rm -rf "$home"
@@ -45,6 +89,25 @@ path=$(tr ':' '\n' <<< "$PATH" |
   grep -vE "^$HOME/(Documents|Desktop|Downloads)(/|$)" | awk 'NF && !seen[$0]++' | paste -sd: -)
 origin="https://github.com/$(git -C "$here" remote get-url origin |
   sed -E 's#^.*github\.com[:/]##; s#\.git$##').git"
+
+# The job names the project by its id: resolving a folder makes the launcher
+# look at every project's folder, and one under ~/Documents raises the
+# privacy prompt (nightly-sync says what that costs). So the running app is
+# asked now, which also shows that the way a night starts a Cell works here.
+if [ -n "$project" ]; then
+  [ -x "$cli" ] || fail "$cli isn't there: open Stemcells once, which writes it, then run this again"
+  listed=$("$cli" thread list --project "$project" --json) ||
+    fail "Stemcells didn't answer for the project '$project': is the app open, and is that folder (or id) one of its projects?"
+  id=$(grep -o '"projectId": *"[^"]*"' <<< "$listed" | head -1 | sed -E 's/.*"([^"]*)"$/\1/' || true)
+  if [ -z "$id" ]; then
+    [ ! -e "$project" ] || fail "the project of '$project' has no Cell yet, so its id can't be read: start one there, or pass its id"
+    id=$project
+  fi
+  project=$id
+  for value in "$project" "$provider" "$model"; do
+    case $value in *[\<\>\&]*) fail "'$value' can't go in the job: it has one of < > &" ;; esac
+  done
+fi
 
 job() {
   cat << EOF
@@ -73,6 +136,11 @@ job() {
     <string>$origin</string>$(
     [ -n "${STEMCELLS_SYNC_MAX_LOAD:-}" ] &&
       printf '\n    <key>STEMCELLS_SYNC_MAX_LOAD</key>\n    <string>%s</string>' "$STEMCELLS_SYNC_MAX_LOAD"
+    [ -n "$project" ] &&
+      printf '\n    <key>STEMCELLS_SYNC_CELL_PROJECT</key>\n    <string>%s</string>' "$project"
+    [ -n "$model" ] &&
+      printf '\n    <key>STEMCELLS_SYNC_CELL_PROVIDER</key>\n    <string>%s</string>\n    <key>STEMCELLS_SYNC_CELL_MODEL</key>\n    <string>%s</string>' "$provider" "$model"
+    true
   )
   </dict>
   <key>WorkingDirectory</key>
@@ -90,11 +158,10 @@ job() {
 EOF
 }
 
-if [ "${1:-}" = --print ]; then
+if [ "$print" = 1 ]; then
   job
   exit 0
 fi
-[ $# -eq 0 ] || { sed -n '2,16p' "$0" >&2; exit 2; }
 
 mkdir -p "$home" "$(dirname "$plist")" "$(dirname "$log")"
 install -m 0755 "$here/nightly-sync" "$home/nightly-sync"
@@ -104,3 +171,10 @@ launchctl bootout "$domain/$label" 2> /dev/null || true
 launchctl bootstrap "$domain" "$plist"
 echo "install-nightly-sync: installed; it runs at 03:00 and logs to $log"
 echo "  check tonight's conditions now: \"$home/nightly-sync\" --dry-run"
+if [ -n "$project" ]; then
+  with="the project's default model"
+  [ -z "$model" ] || with="model $provider/$model"
+  echo "  a night that stops on a merge conflict starts a Cell in Stemcells: project $project, $with"
+  echo "  THIS SPENDS YOUR MODEL PLAN while you sleep: one Cell per upstream commit, each a whole sync (the merge, every gate, its pull request)"
+  echo "  it starts only if Stemcells is open then; off again: stemcells/scripts/install-nightly-sync"
+fi

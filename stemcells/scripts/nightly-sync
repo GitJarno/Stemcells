@@ -20,10 +20,24 @@
 # (its number of cores by default: every core taken). VITEST_MAX_WORKERS: test
 # workers (2). STEMCELLS_SYNC_ORIGIN: the repository its clone takes, which
 # the installer sets to its checkout's origin.
+#
+# STEMCELLS_SYNC_CELL_PROJECT (opt in: install-nightly-sync --cell): a night
+# that stops on a merge conflict starts a Cell in that project of the running
+# Stemcells, which takes the sync from there with the t3-sync skill and
+# spends the person's model plan. STEMCELLS_SYNC_CELL_PROVIDER and
+# STEMCELLS_SYNC_CELL_MODEL name its model (the project's default without
+# them). One Cell per upstream commit: cells/<sha> here marks it. The night
+# ends as it would without one: the issue is kept, and the exit code is
+# sync-upstream's.
 set -euo pipefail
 
 home="$HOME/Library/Application Support/sh.stemcells.nightly-sync"
 repo="$home/repo"
+# The installed app's own launcher: T3 Code's `t3` may come first on PATH.
+cli="$HOME/.stemcells/bin/t3"
+cell_project=${STEMCELLS_SYNC_CELL_PROJECT:-}
+# Seconds the app gets to take the Cell; past them the night ends without one.
+cell_wait=120
 origin=${STEMCELLS_SYNC_ORIGIN:-}
 upstream=https://github.com/pingdotgg/t3code.git
 dry=0
@@ -52,6 +66,13 @@ if [ -n "$holder" ] && kill -0 "$holder" 2> /dev/null; then
 fi
 if [ "$dry" = 1 ]; then
   say "would run: on AC power, load $load (busy over $max), no other sync"
+  if [ -z "$cell_project" ]; then
+    say "a conflict would wait for a person (install-nightly-sync --cell hands it to a Cell)"
+  elif [ -x "$cli" ]; then
+    say "a conflict would start a Cell in project $cell_project, if Stemcells is running then"
+  else
+    say "a conflict would start no Cell: $cli isn't there (Stemcells writes it when it opens)"
+  fi
   exit 0
 fi
 mkdir -p "$home"
@@ -79,11 +100,87 @@ fi
 tree=$(mktemp -d "${TMPDIR:-/tmp}/stemcells-nightly-XXXXXX")
 git -C "$repo" worktree add -q --detach "$tree" origin/main
 
+# Hands a conflicted night to a Cell. Whatever happens here, the night ends
+# as it would without one: every way out is a line in the log, and where no
+# Cell started, a comment on the issue too.
+start_cell() {
+  local sha short slug issue open marker title message args out err thread status
+  sha=$(git -C "$tree" rev-parse -q --verify MERGE_HEAD 2> /dev/null) || sha=""
+  if [ -z "$sha" ]; then
+    say "no Cell: the stopped merge doesn't say which upstream commit it took"
+    return 0
+  fi
+  short=${sha:0:9}
+  marker="$home/cells/$sha"
+  if [ -e "$marker" ]; then
+    say "no new Cell: upstream at $short has one already ($(cat "$marker"))"
+    return 0
+  fi
+  slug=$(git -C "$repo" remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')
+  issue=$(cat "$issue_file" 2> /dev/null || true)
+  # The skill leaves an open sync to its owner, so a Cell would only find that out.
+  open=$(gh api "repos/$slug/pulls?state=open&per_page=100" \
+    --jq '[.[] | select(.head.ref | startswith("sync/upstream-"))][0].number // ""' 2> /dev/null || true)
+  if [ -n "$open" ]; then
+    say "no Cell: pull request #$open takes upstream already, and owns the sync"
+    return 0
+  fi
+  # A public issue never quotes the launcher, whose errors name this Mac's folders.
+  no_cell() {
+    say "no Cell: $1; the issue waits for a person, as on a night without --cell"
+    [ -z "$issue" ] || gh api "repos/$slug/issues/$issue/comments" -f body="The nightly is set to hand a conflict to a Cell, and could not start one: $2. This waits for a person, as before. The Mac's own log says more: \`~/Library/Logs/stemcells-nightly-sync.log\`." > /dev/null 2>&1 ||
+      say "couldn't say so on issue #$issue"
+  }
+  if [ ! -x "$cli" ]; then
+    no_cell "$cli isn't there (Stemcells writes it when it opens)" "Stemcells' command line tool isn't installed on the Mac"
+    return 0
+  fi
+  title="Take upstream at $short: the night stopped on a conflict"
+  message="The nightly upstream sync stopped on a merge conflict, at upstream's commit $sha. Take the sync from here: follow .agents/skills/t3-sync/SKILL.md (the t3-sync skill), reading its section \"When the nightly started you\" first.
+
+The issue that says where it stopped: ${issue:+#$issue, }https://github.com/$slug/issues${issue:+/$issue}. Nobody is awake to answer you: what needs the person goes on that issue, and then you stop."
+  args=(thread start "$cell_project" "$message" --title "$title" --worktree origin/main)
+  if [ -n "${STEMCELLS_SYNC_CELL_PROVIDER:-}" ] && [ -n "${STEMCELLS_SYNC_CELL_MODEL:-}" ]; then
+    args+=(--provider "$STEMCELLS_SYNC_CELL_PROVIDER" --model "$STEMCELLS_SYNC_CELL_MODEL")
+  fi
+  out=$(mktemp)
+  err=$(mktemp)
+  "$cli" "${args[@]}" < /dev/null > "$out" 2> "$err" &
+  local pid=$!
+  # An app that never answers must not hold the night's lock.
+  for _ in $(seq 1 $((cell_wait * 5))); do
+    kill -0 "$pid" 2> /dev/null || break
+    sleep 0.2
+  done
+  if kill -0 "$pid" 2> /dev/null; then
+    kill "$pid" 2> /dev/null
+    echo "no answer in $cell_wait s" >> "$err"
+  fi
+  status=0
+  wait "$pid" 2> /dev/null || status=$?
+  thread=$(head -1 "$out")
+  if [ "$status" = 0 ] && [ -n "$thread" ]; then
+    mkdir -p "$home/cells"
+    echo "$(date '+%F %T'), Cell $thread" > "$marker"
+    say "started Cell $thread for upstream at $short${issue:+ (issue #$issue)}"
+    [ -z "$issue" ] || gh api "repos/$slug/issues/$issue/comments" -f body="The nightly started a Cell on this, in Stemcells on the Mac that runs it: it takes upstream at \`$short\` with the t3-sync skill, and says here what it leaves for a person." > /dev/null 2>&1 ||
+      say "couldn't say so on issue #$issue"
+  else
+    no_cell "$cli thread start failed (exit $status): $(tail -1 "$err")" "Stemcells wasn't running on the Mac, or refused the start"
+  fi
+  rm -f "$out" "$err"
+}
+
 say "syncing in $tree"
 export VITEST_MAX_WORKERS=${VITEST_MAX_WORKERS:-2}
+# sync-upstream writes there the number of the issue it kept.
+issue_file="$lock/issue"
 set +e
-(cd "$tree" && nice -n 15 stemcells/scripts/sync-upstream --nightly)
+(cd "$tree" && SYNC_ISSUE="$issue_file" nice -n 15 stemcells/scripts/sync-upstream --nightly)
 code=$?
 set -e
 say "done (exit $code)"
+if [ "$code" = 3 ] && [ -n "$cell_project" ]; then
+  start_cell || say "no Cell: starting one failed"
+fi
 exit "$code"
