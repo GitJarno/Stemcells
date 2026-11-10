@@ -110,6 +110,34 @@ cores, or `STEMCELLS_SYNC_MAX_LOAD`), or another sync runs;
 It does steps 1, 4 and 5's report; the reading (step 2), the resolving
 (step 3) and the follow-ups (step 6) are this skill's.
 
+## When the nightly started you
+
+Installed with `--cell` (opt in), a night that stops on a merge conflict
+starts a Cell with this skill. Its first message names the upstream commit
+the night stopped on, and the issue. That Cell is you, and nobody is awake.
+Everything above and below holds, with these differences:
+
+- **Start at step 1.** The nightly keeps nothing of its merge, so there is
+  no branch of its to take. You are already in a worktree of your own, which
+  the app made from `origin/main` as the project last fetched it:
+  `git fetch -q origin && git switch -q --detach origin/main`, install, and
+  make no other. Step 1 picks upstream's newest green commit again; one
+  newer than the message names is fine.
+- **Never wait for an answer.** Where this skill needs the person (a
+  contact gate zero can neither substitute out nor list, a retire-ours
+  yes, a conflict or a red gate the rules here don't settle), push the
+  branch, open the pull request as far as it got, say on the issue what you
+  found and what is left for the person, and stop. Finish whatever doesn't
+  depend on the answer first.
+- **Retire ours waits for the person**, as in step 6: list each candidate
+  in the pull request and on the issue, and delete nothing.
+- **The nightly merges nothing.** Step 5's merge is yours, by its own rule:
+  every gate passed and `local-check` green on the exact head.
+- **End on the issue.** Comment with the pull request's number, or with
+  what stopped you. The issue is public: nothing private in it
+  (`stemcells/AGENTS.md`, In public). The next night that goes through
+  closes it.
+
 ## 1. Pick the target and merge
 
 - [ ] `stemcells/scripts/sync-upstream`. It picks upstream's newest commit on

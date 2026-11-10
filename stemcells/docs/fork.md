@@ -155,7 +155,9 @@ case, go back to the three costs and choose what keeps them lowest.
      lint, our tests, upstream's suites, the builds and a headless boot.
   3. If green, `sync-upstream --pr` opens the pull request, with a report.
      If it conflicts or goes red, one issue says where, and a Cell resolves
-     it: upstream's logic wins and our seam goes back on top.
+     it: upstream's logic wins and our seam goes back on top. With
+     `install-nightly-sync --cell` (opt in, as it spends the person's model
+     plan at night), a night that stops on a conflict starts that Cell itself.
 - **Nothing merges unchecked.** A pull request merges once its exact head
   carries `local-check` = success, which `check-local` records after
   running the `check` gates (`stemcells/AGENTS.md`, Landing).

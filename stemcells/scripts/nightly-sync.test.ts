@@ -202,7 +202,8 @@ describe("a night that stops on a conflict", () => {
 
   it.each([0, 4, 5, 6, 1])("starts none when the sync ends with exit %i", (exit) => {
     const here = mac();
-    expect(here.night(exit, "", CELL).code).toBe(exit);
+    // Even with a merge left open: the exit code decides.
+    expect(here.night(exit, here.upstream[0], CELL).code).toBe(exit);
     expect(here.asked()).toEqual([]);
   });
 

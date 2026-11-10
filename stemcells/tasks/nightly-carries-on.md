@@ -40,7 +40,7 @@ Strictly opt in, where the nightly's own opt-in lives:
 
 - [x] Read how a process outside the app starts a Cell
 - [x] `sync-upstream`: `SYNC_ISSUE`, the number of the issue a stopped run kept
-- [x] `nightly-sync`: the hand-off, its marker, its fallbacks, `--dry-run`
+- [x] `nightly-sync`: the hand-off, its marker, its fallbacks
 - [x] `install-nightly-sync`: `--cell`, `--provider`, `--model`
 - [x] `nightly-sync.test.ts`: the decisions, with every tool stood in for
 - [x] The skill's section, `upstream-sync.md`, `fork.md` rule 6
@@ -91,15 +91,20 @@ Strictly opt in, where the nightly's own opt-in lives:
 - By hand, in a scratch home: a launcher that never answers. With the limit
   set to 2 s the night ended after 3 s with its own exit code, the log line
   and the issue comment, and no process left behind.
-- `shellcheck` on the three scripts.
+- Each guard broken in turn (the opt-in, the exit code, the marker): the
+  test failed each time.
+- `shellcheck` on the three scripts, `stemcells/scripts/drift`, and
+  `vp run check:changed`.
 
 ## Not verified
 
 - The real launcher under launchd, against the real app: nothing here ran
   it (the task forbids it, and it would spend the plan). What it does is
   read from the code above. The first check on the Mac is
-  `install-nightly-sync --cell .`, which asks the running app for the
-  project, then `nightly-sync --dry-run` from the installed copy.
+  `install-nightly-sync --cell .` itself, which asks the running app for
+  the project through the same launcher a night uses.
+- Whether a real Cell follows the skill's new section through a whole
+  sync: no model ran here.
 - How much of a model plan one such night takes: not measured.
 
 ## Review

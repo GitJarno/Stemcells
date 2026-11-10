@@ -66,13 +66,6 @@ if [ -n "$holder" ] && kill -0 "$holder" 2> /dev/null; then
 fi
 if [ "$dry" = 1 ]; then
   say "would run: on AC power, load $load (busy over $max), no other sync"
-  if [ -z "$cell_project" ]; then
-    say "a conflict would wait for a person (install-nightly-sync --cell hands it to a Cell)"
-  elif [ -x "$cli" ]; then
-    say "a conflict would start a Cell in project $cell_project, if Stemcells is running then"
-  else
-    say "a conflict would start no Cell: $cli isn't there (Stemcells writes it when it opens)"
-  fi
   exit 0
 fi
 mkdir -p "$home"
@@ -158,7 +151,8 @@ The issue that says where it stopped: ${issue:+#$issue, }https://github.com/$slu
   fi
   status=0
   wait "$pid" 2> /dev/null || status=$?
-  thread=$(head -1 "$out")
+  # Its last line: what it logs on the way comes first.
+  thread=$(tail -1 "$out")
   if [ "$status" = 0 ] && [ -n "$thread" ]; then
     mkdir -p "$home/cells"
     echo "$(date '+%F %T'), Cell $thread" > "$marker"
