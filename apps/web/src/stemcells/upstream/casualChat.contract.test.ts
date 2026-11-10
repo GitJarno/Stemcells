@@ -1,8 +1,8 @@
 /**
- * What a casual chat relies on in upstream's views (`stemcells/seams.md`, A casual chat): a chat
- * in no project is offered and headed as one under a new chat's headline, on the hero with no
- * projects, and in the command palette (via our substitute of its logic). A failure after a
- * sync names the place back on upstream's words: say the casual chat's words there again.
+ * What a casual chat relies on in upstream's views (`stemcells/seams.md`, A casual chat): a
+ * build offers and heads a chat in no project as one under a new chat's headline and on the hero
+ * with no projects (the word table), and in the command palette (our substitute of its logic).
+ * A failure after a sync names the place upstream reworded: fix its entry in `wordTable.ts`.
  */
 import { describe, expect, it } from "vite-plus/test";
 
@@ -13,8 +13,13 @@ import {
   type CommandPaletteActionItem,
   filterCommandPaletteGroups,
 } from "../../components/CommandPalette.logic";
+import { transformSource } from "../../../../../stemcells/brand/nameTransform.ts";
 import { CASUAL_CHAT } from "../../../../../stemcells/words/casualChat.ts";
 import { buildRootGroups } from "./substitutes/CommandPalette.logic";
+
+/** What a build makes of an upstream view: our words where the word table swaps upstream's. */
+const built = (file: string, source: string) =>
+  transformSource(`apps/web/src/components/${file}`, source)?.code ?? source;
 
 function action(value: string, title: string, searchTerms: string[]): CommandPaletteActionItem {
   return { kind: "action", value, title, searchTerms, icon: null, run: async () => {} };
@@ -22,18 +27,25 @@ function action(value: string, title: string, searchTerms: string[]): CommandPal
 
 describe("a casual chat in upstream's views", () => {
   it("a new chat offers one under its headline, and one already casual is headed so", () => {
-    expect(draftHeroHeadline).toMatch(
-      /const orStartWithoutProject =[\s\S]{0,600}void startScratch\(\)[\s\S]{0,400}\{CASUAL_CHAT\.offer\}\s*<\/TooltipTrigger>/,
+    const headline = built("chat/DraftHeroHeadline.tsx", draftHeroHeadline);
+    const offer = headline.indexOf(CASUAL_CHAT.offer);
+    expect(headline.slice(offer - 1000, offer)).toMatch(
+      /const orStartWithoutProject =[\s\S]{0,600}void startScratch\(\)/,
     );
-    expect(draftHeroHeadline).toMatch(/\{isScratchDraft \? \(\s*<>\{CASUAL_CHAT\.headline\}<\/>/);
-    expect(draftHeroHeadline).not.toMatch(/start without a project|What should we work on\?/);
+    expect(headline.slice(offer + CASUAL_CHAT.offer.length)).toMatch(/^\s*<\/TooltipTrigger>/);
+    const casual = headline.indexOf(`<>${CASUAL_CHAT.headline}</>`);
+    expect(headline.slice(casual - 60, casual)).toMatch(/\{isScratchDraft \? \(\s*$/);
+    expect(headline).not.toMatch(/start without a project|What should we work on\?/);
   });
 
   it("the hero with no projects starts one", () => {
-    expect(noProjectsHero).toMatch(
-      /onClick=\{\(\) => void startScratchThread\(scratchTargetEnvironmentId\)\}[\s\S]{0,200}\{CASUAL_CHAT\.start\}\s*<\/Button>/,
+    const hero = built("NoProjectsHero.tsx", noProjectsHero);
+    const start = hero.indexOf(CASUAL_CHAT.start);
+    expect(hero.slice(start - 300, start)).toContain(
+      "onClick={() => void startScratchThread(scratchTargetEnvironmentId)}",
     );
-    expect(noProjectsHero).not.toContain("Start without a project");
+    expect(hero.slice(start + CASUAL_CHAT.start.length)).toMatch(/^\s*<\/Button>/);
+    expect(hero).not.toContain("Start without a project");
   });
 
   it("the palette's action that starts one reaches the root groups our substitute builds", () => {

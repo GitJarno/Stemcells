@@ -24,7 +24,7 @@ import { useHomeScopeItems } from "../../../stemcells/home/scope";
 import { closesOnLeave } from "../../../stemcells/home/searchOnLeave";
 
 const SEARCH_LABELS = {
-  threads: "Search Cells",
+  threads: "Search threads",
   pullRequests: "Search pull requests",
   settings: "Search settings",
 } as const;

@@ -61,7 +61,7 @@ export function ProviderSubagentBar(props: {
         />
       </div>
       <span role="status" className="sr-only">
-        {`${modelDescription} Subcell: ${announcement}`}
+        {`${modelDescription} subagent: ${announcement}`}
       </span>
       <span className="shrink-0 text-muted-foreground @max-[640px]/composer-surface:sr-only">
         Runs on its own

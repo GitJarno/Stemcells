@@ -57,7 +57,7 @@ function rowTitle(subagent: Pick<OrchestrationV2Subagent, "title" | "prompt">): 
   const title = subagent.title?.trim();
   if (title) return formatSubagentDisplayTitle(title);
   const prompt = subagent.prompt.trim();
-  if (prompt.length === 0) return "Subcell";
+  if (prompt.length === 0) return "Subagent";
   return prompt.length > PROMPT_TITLE_LIMIT
     ? `${prompt.slice(0, PROMPT_TITLE_LIMIT - 3)}...`
     : prompt;
@@ -74,7 +74,7 @@ function rowStatusLabel(status: OrchestrationV2Subagent["status"]): string {
   switch (status) {
     case "pending":
     case "running":
-      return "Flying";
+      return "Working";
     case "waiting":
       return "Waiting";
     case "idle":
@@ -138,7 +138,7 @@ export function workflowRail(group: SubagentWorkflowGroup): ReadonlyArray<Workfl
   if (group.unphasedMembers.length > 0) {
     items.push({
       key: "unphased",
-      title: items.length === 0 ? "Subcells" : "Other",
+      title: items.length === 0 ? "Agents" : "Other",
       members: group.unphasedMembers,
     });
   }

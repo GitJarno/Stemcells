@@ -148,7 +148,7 @@ function ThreadRouteFallbackLayout(props: { readonly children: ReactNode }) {
 function OpeningThreadLoadingScreen() {
   return (
     <ThreadRouteFallbackLayout>
-      <LoadingScreen message="Opening Cell…" messagePlacement="above-spinner" embedded />
+      <LoadingScreen message="Opening thread…" messagePlacement="above-spinner" embedded />
     </ThreadRouteFallbackLayout>
   );
 }
@@ -184,8 +184,8 @@ function ThreadUnavailableScreen(props: {
         className="bg-screen flex-1 android:bg-transparent"
       >
         <EmptyState
-          title="Cell unavailable"
-          detail="This Cell is not available in the current mobile snapshot."
+          title="Thread unavailable"
+          detail="This thread is not available in the current mobile snapshot."
           actionLabel={props.actionLabel}
           onAction={props.onAction}
         />
@@ -507,7 +507,7 @@ function ThreadRouteContent(
     selectedEnvironmentConnection?.environmentLabel ?? null,
     // A linked environment's delegated task names its parent; other linked work its origin.
     delegatedFrom !== null
-      ? `Subcell of ${delegatedFromThread?.title ?? delegatedFrom.title}`
+      ? `Subagent of ${delegatedFromThread?.title ?? delegatedFrom.title}`
       : selectedThread?.linkOrigin
         ? `From ${selectedThread.linkOrigin.label}`
         : null,

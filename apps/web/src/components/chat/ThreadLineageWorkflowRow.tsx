@@ -214,7 +214,7 @@ export function ThreadLineageWorkflowRow({
                       ) : null}
                       <span className="shrink-0 text-2xs font-normal tabular-nums">
                         {phase.settledCount}/{phase.members.length}{" "}
-                        {phase.members.length === 1 ? "Subcell" : "Subcells"}
+                        {phase.members.length === 1 ? "agent" : "agents"}
                       </span>
                       <span className="shrink-0 text-2xs font-normal tabular-nums empty:hidden">
                         <AgentElapsed agent={phaseElapsed(phase)} />
@@ -256,7 +256,7 @@ export function ThreadLineageWorkflowRow({
             />
           ))}
           {phases.length === 0 && group.unphasedMembers.length === 0 ? (
-            <li className="px-2.5 py-1.5 text-2xs text-muted-foreground/70">No Subcells yet</li>
+            <li className="px-2.5 py-1.5 text-2xs text-muted-foreground/70">No agents yet</li>
           ) : null}
         </ul>
       ) : null}

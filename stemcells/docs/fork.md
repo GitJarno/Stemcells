@@ -115,8 +115,10 @@ case, go back to the three costs and choose what keeps them lowest.
 - **Our design tokens live in our own CSS layer.** It overrides upstream's
   variables through the cascade. We don't edit their stylesheet.
 - **Words:** our views say Cell and Aski. Upstream's strings stay until one
-  of our views replaces the one that shows them. The app's name is the one
-  exception: the builds rename it (The name transform, below).
+  of our views replaces the one that shows them. Two exceptions, both made
+  by the builds and never in upstream's files: the app's name, and the
+  words upstream writes inline for a thread and a subagent (The name
+  transform, below).
 
 ## 5. Fixes we carry alone — small, and upstream only when asked
 
@@ -153,7 +155,9 @@ case, go back to the three costs and choose what keeps them lowest.
      lint, our tests, upstream's suites, the builds and a headless boot.
   3. If green, `sync-upstream --pr` opens the pull request, with a report.
      If it conflicts or goes red, one issue says where, and a Cell resolves
-     it: upstream's logic wins and our seam goes back on top.
+     it: upstream's logic wins and our seam goes back on top. With
+     `install-nightly-sync --cell` (opt in, as it spends the person's model
+     plan at night), a night that stops on a conflict starts that Cell itself.
 - **Nothing merges unchecked.** A pull request merges once its exact head
   carries `local-check` = success, which `check-local` records after
   running the `check` gates (`stemcells/AGENTS.md`, Landing).
@@ -231,6 +235,16 @@ the desktop app), and their sources stay upstream's
   checks an install's archive against every entry's words, and
   `nameTransform.test.ts` fails on kept words upstream removed or said
   again.
+- **The vocabulary rides it.** Cell for thread, Subcell for subagent or
+  agent, Flying for Working: each was a seam on a line upstream wrote, and
+  two of upstream's tests were edited to expect them. A word table
+  (`stemcells/brand/wordTable.ts`) now names each place by its file and
+  upstream's exact words on one line, with ours for the part that changes,
+  and the same hook swaps them. "thread" can't be renamed wherever it
+  stands, as the name is, so every entry is held to its file: a build fails
+  when the file says the words fewer or more times than the entry does, or
+  is gone. A swap that would span lines stays a seam; sentences upstream
+  assembles at runtime stay with the substitutes that rewrite them.
 - **Tests and source runs see upstream's words.** Tests run upstream's
   code as written, so upstream's tests pass unedited. The server run from
   source (`pnpm dev:server`) isn't built and says T3 Code; that's

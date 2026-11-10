@@ -215,8 +215,8 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 /**
  * Resolves upstream's imports of a substituted module to ours, and serves and builds our public
  * files in place of upstream's. In dev and production builds, not tests, it also says Stemcells
- * where upstream's code says T3 Code (`stemcells/brand/nameTransform.ts`): tests run upstream's
- * code as upstream wrote it.
+ * where upstream's code says T3 Code, and our words where the word table swaps upstream's
+ * (`stemcells/brand/nameTransform.ts`): tests run upstream's code as upstream wrote it.
  */
 export function substituteUpstreamModules(): Plugin {
   const naming = process.env.VITEST ? null : upstreamNamePlugin({ root: repoRoot });
