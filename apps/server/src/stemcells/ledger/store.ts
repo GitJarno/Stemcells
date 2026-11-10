@@ -103,6 +103,15 @@ export const makeStore = Effect.fn("LedgerStore.make")(function* (sql: SqlClient
     return kept.reduce((count, rows) => count + rows.length, 0);
   });
 
+  /** Which of these keys the ledger already holds a fact for. */
+  const holds = Effect.fn("LedgerStore.holds")(function* (keys: ReadonlyArray<string>) {
+    if (keys.length === 0) return new Set<string>();
+    const rows = yield* sql<{ readonly key: string }>`
+      SELECT key FROM facts WHERE ${sql.in("key", keys)}
+    `;
+    return new Set(rows.map((row) => row.key));
+  });
+
   /** Up to `limit` facts recorded after `after`, in the order they were; of `threads` alone when given. */
   const read = Effect.fn("LedgerStore.read")(function* (query: {
     readonly after: number;
@@ -154,5 +163,8 @@ export const makeStore = Effect.fn("LedgerStore.make")(function* (sql: SqlClient
     }
   });
 
-  return { append, read, progress, setProgress };
+  /** `work` with no other statement of the ledger's between its own: they wait for it. */
+  const together = <A, E>(work: Effect.Effect<A, E>) => sql.withTransaction(work);
+
+  return { append, holds, read, progress, setProgress, together };
 });

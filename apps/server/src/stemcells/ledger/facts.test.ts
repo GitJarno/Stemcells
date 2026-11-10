@@ -11,6 +11,7 @@ const at = (minutes: number) =>
 const cell = (overrides: Partial<LedgerThread> = {}): LedgerThread => ({
   threadId: "thread-pip",
   projectId: "project-harbor",
+  ran: true,
   driver: "claudeAgent",
   createdAt: at(0),
   settledAt: null,
@@ -50,6 +51,8 @@ describe("the facts true of a chat", () => {
         },
       },
     ]);
+    // Born of its first run: until it has one, there is no provider to say it ran on.
+    expect(factsOf(cell({ ran: false }))).toEqual([]);
   });
 
   it.each([

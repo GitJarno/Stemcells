@@ -16,6 +16,7 @@ import type * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as SqlClient from "effect/sql/SqlClient";
 import type { SqlError } from "effect/sql/SqlError";
+import type { Fragment } from "effect/sql/Statement";
 
 import * as ServerConfig from "../../config.ts";
 import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
@@ -63,9 +64,11 @@ export interface LedgerMerge {
 export interface LedgerThread {
   readonly threadId: string;
   readonly projectId: string;
+  /** Whether it has a run yet. */
+  readonly ran: boolean;
   /**
-   * The driver of the provider its first run ran on, or of the one it was made with while it
-   * hasn't run; the instance's id when the instance is no longer configured.
+   * The driver of the provider its first run ran on, or of the one it is on while it hasn't
+   * run; the instance's id when the instance is no longer configured.
    */
   readonly driver: string | null;
   readonly createdAt: string;
@@ -104,13 +107,23 @@ export interface LedgerSource {
     after: RunCursor | null,
     limit: number,
   ) => Effect.Effect<ReadonlyArray<LedgerRun>>;
+  /**
+   * Up to `limit` of one Cell's runs before the run at `before`, newest first: what a landing
+   * can have made new, without the chat's whole past.
+   */
+  readonly newestRuns: (
+    threadId: string,
+    before: number | null,
+    limit: number,
+  ) => Effect.Effect<ReadonlyArray<LedgerRun>>;
   /** The ids of up to `limit` chats after `after`, in id order: every chat, a page at a time. */
   readonly threadIdsAfter: (after: string, limit: number) => Effect.Effect<ReadonlyArray<string>>;
 }
 
 /**
- * Whether an event can make a fact: a chat made, a run landed, a chat settled, a pull request's
- * state read. Cells stream thousands of other events an hour, and none of those is read for.
+ * Whether an event can make a fact: a chat made, its first run asked for, a run landed, a chat
+ * settled, a pull request's state read. Cells stream thousands of other events an hour, and
+ * none of those is read for.
  */
 export function makesFact(event: OrchestrationV2DomainEvent): boolean {
   switch (event.type) {
@@ -120,6 +133,7 @@ export function makesFact(event: OrchestrationV2DomainEvent): boolean {
     case "thread.pull-request-link-updated":
       return true;
     case "run.created":
+      return event.payload.ordinal === 1 || event.payload.status === "completed";
     case "run.updated":
       return event.payload.status === "completed";
     default:
@@ -141,6 +155,7 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
   const threads = yield* sql<{
     readonly threadId: string;
     readonly projectId: string;
+    readonly ran: number;
     readonly instanceId: string | null;
     readonly createdAt: string;
     readonly settledAt: string | null;
@@ -148,6 +163,11 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
     SELECT
       thread.thread_id AS "threadId",
       thread.project_id AS "projectId",
+      EXISTS (
+        SELECT 1
+        FROM orchestration_v2_projection_runs AS any_run
+        WHERE any_run.thread_id = thread.thread_id
+      ) AS ran,
       coalesce(
         (
           SELECT first.provider_instance_id
@@ -185,8 +205,9 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
       AND json_extract(link.value, '$.snapshot.state') = 'merged'
       AND json_extract(link.value, '$.source') <> 'stack-dismissed'
   `.pipe(NodeSqliteClient.readOnly);
-  return threads.map(({ instanceId, ...thread }): LedgerThread => ({
+  return threads.map(({ instanceId, ran, ...thread }): LedgerThread => ({
     ...thread,
+    ran: ran === 1,
     driver: instanceId === null ? null : (drivers.get(instanceId) ?? instanceId),
     merged: merged.flatMap(({ threadId, ...merge }) =>
       threadId === thread.threadId ? [merge] : [],
@@ -195,16 +216,15 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
 });
 
 /**
- * A page of these chats' runs, on SQLite's reader. A reply is read whole: the close-out is
- * told from a code block by the fences above it (`needs/closeOut.ts`), so its last lines alone
- * can misread it. The page's size is what bounds the read.
+ * A page of runs, on SQLite's reader. A reply is read whole: the close-out is told from a code
+ * block by the fences above it (`needs/closeOut.ts`), so its last lines alone can misread it.
+ * The page's size is what bounds the read.
  */
-export const readLedgerRuns = Effect.fn("StemcellsLedger.readRuns")(function* (
-  threadIds: ReadonlyArray<string>,
-  after: RunCursor | null,
+const readRuns = Effect.fn("StemcellsLedger.readRuns")(function* (
+  /** Which runs, and in what order: what follows `WHERE`. */
+  which: (sql: SqlClient.SqlClient) => Fragment,
   limit: number,
 ) {
-  if (threadIds.length === 0) return [];
   const sql = yield* SqlClient.SqlClient;
   const runs = yield* sql<Omit<LedgerRun, "requests">>`
     SELECT
@@ -224,13 +244,7 @@ export const readLedgerRuns = Effect.fn("StemcellsLedger.readRuns")(function* (
         LIMIT 1
       ) END AS reply
     FROM orchestration_v2_projection_runs AS run
-    WHERE ${sql.and([
-      sql`run.thread_id IN ${sql.in(threadIds)}`,
-      ...(after === null
-        ? []
-        : [sql`(run.thread_id, run.ordinal) > (${after.threadId}, ${after.ordinal})`]),
-    ])}
-    ORDER BY run.thread_id, run.ordinal
+    WHERE ${which(sql)}
     LIMIT ${limit}
   `.pipe(NodeSqliteClient.readOnly);
   // Only a run that landed has its waits counted.
@@ -257,6 +271,40 @@ export const readLedgerRuns = Effect.fn("StemcellsLedger.readRuns")(function* (
   }
   return runs.map((run): LedgerRun => ({ ...run, requests: requestsOf.get(run.runId) ?? [] }));
 });
+
+/** A page of these chats' runs after `after`, by chat then oldest first. */
+export const readLedgerRuns = (
+  threadIds: ReadonlyArray<string>,
+  after: RunCursor | null,
+  limit: number,
+) =>
+  threadIds.length === 0
+    ? Effect.succeed([])
+    : readRuns(
+        (sql) => sql`
+          ${sql.and([
+            sql`run.thread_id IN ${sql.in(threadIds)}`,
+            ...(after === null
+              ? []
+              : [sql`(run.thread_id, run.ordinal) > (${after.threadId}, ${after.ordinal})`]),
+          ])}
+          ORDER BY run.thread_id, run.ordinal
+        `,
+        limit,
+      );
+
+/** A page of one chat's runs before the run at `before`, newest first. */
+export const readLedgerNewestRuns = (threadId: string, before: number | null, limit: number) =>
+  readRuns(
+    (sql) => sql`
+      ${sql.and([
+        sql`run.thread_id = ${threadId}`,
+        ...(before === null ? [] : [sql`run.ordinal < ${before}`]),
+      ])}
+      ORDER BY run.ordinal DESC
+    `,
+    limit,
+  );
 
 /** A page of every chat's id, in id order, on SQLite's reader. */
 export const readThreadIdsAfter = Effect.fn("StemcellsLedger.readThreadIdsAfter")(function* (
@@ -349,6 +397,11 @@ export const makeLedgerSource = Effect.gen(function* () {
       ),
     runs: (threadIds, after, limit) =>
       readLedgerRuns(threadIds, after, limit).pipe(
+        Effect.provideService(SqlClient.SqlClient, sql),
+        Effect.orDie,
+      ),
+    newestRuns: (threadId, before, limit) =>
+      readLedgerNewestRuns(threadId, before, limit).pipe(
         Effect.provideService(SqlClient.SqlClient, sql),
         Effect.orDie,
       ),

@@ -31,6 +31,7 @@ import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
 import {
   makesFact,
   openLedgerFile,
+  readLedgerNewestRuns,
   readLedgerRuns,
   readLedgerThreads,
   readThreadIdsAfter,
@@ -110,7 +111,7 @@ const run = (
     const store = yield* ProjectionStore.ProjectionStoreV2;
     const runId = RunId.make(`run:${thread.id}:${ordinal}`);
     const nodeId = NodeId.make(`node:${thread.id}:${ordinal}`);
-    yield* store.apply({
+    const asked: OrchestrationV2DomainEvent = {
       id: EventId.make(`event:${runId}`),
       type: "run.created",
       threadId: thread.id,
@@ -132,7 +133,8 @@ const run = (
         checkpointId: null,
         contextHandoffId: null,
       },
-    });
+    };
+    yield* store.apply(asked);
     yield* store.apply({
       id: EventId.make(`event:${nodeId}`),
       type: "node.updated",
@@ -181,7 +183,7 @@ const run = (
         },
       });
     }
-    return { runId, nodeId };
+    return { runId, nodeId, heard: makesFact(asked) };
   });
 
 const request = (
@@ -229,8 +231,17 @@ it.layer(layerTest)("the ledger's records", (it) => {
       ]);
       yield* request(pip, first.nodeId, "held", "live", 5, 8);
       yield* request(pip, first.nodeId, "aside", "message", 10, null);
-      yield* run(pip, 2, "interrupted", 30, 31, ["Stopped."], "later");
-      yield* run(pip, 3, "running", 40, null, [], "later");
+      const second = yield* run(pip, 2, "interrupted", 30, 31, ["Stopped."], "later");
+      const third = yield* run(pip, 3, "running", 40, null, [], "later");
+      // The tap reads for a chat's first run as it is asked for, when the chat is born, and
+      // after that only for a run that landed.
+      const wren = threadOf("wren");
+      yield* created(wren);
+      const only = yield* run(wren, 1, "running", 0, null, []);
+      assert.deepStrictEqual(
+        [first.heard, second.heard, third.heard, only.heard],
+        [true, false, false, true],
+      );
       // Not Cells: a subagent's thread, a side chat, Aski's own chat.
       yield* created(threadOf("pip-reviewer", { parent: "pip" }));
       yield* created(threadOf("pip-aside", { sideChat: true }));
@@ -242,6 +253,7 @@ it.layer(layerTest)("the ledger's records", (it) => {
           {
             threadId: "pip",
             projectId: "project",
+            ran: true,
             driver: "claudeAgent",
             createdAt: "2026-10-23T09:00:00.000Z",
             settledAt: null,
@@ -274,6 +286,13 @@ it.layer(layerTest)("the ledger's records", (it) => {
           requests: [],
         },
       ]);
+      // A landing's read: the newest first, then the ones before.
+      assert.deepStrictEqual(
+        [yield* readLedgerNewestRuns("pip", null, 2), yield* readLedgerNewestRuns("pip", 2, 2)].map(
+          (page) => page.map((each) => each.runId),
+        ),
+        [["run:pip:3", "run:pip:2"], ["run:pip:1"]],
+      );
       // The next page starts after the last run read.
       assert.deepStrictEqual(
         (yield* readLedgerRuns(["pip"], { threadId: "pip", ordinal: 2 }, 2)).map((each) => [
@@ -355,6 +374,7 @@ it.layer(layerTest)("the ledger's records", (it) => {
         {
           threadId: "otter",
           projectId: "project",
+          ran: false,
           // An instance no longer configured reads as its id.
           driver: "retired",
           createdAt: "2026-10-23T09:00:00.000Z",

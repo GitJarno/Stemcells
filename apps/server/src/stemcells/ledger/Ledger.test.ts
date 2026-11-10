@@ -27,6 +27,7 @@ const at = (minutes: number) =>
 const cell = (threadId: string, overrides: Partial<LedgerThread> = {}): LedgerThread => ({
   threadId,
   projectId: "project-harbor",
+  ran: true,
   driver: "claudeAgent",
   createdAt: at(0),
   settledAt: null,
@@ -54,6 +55,8 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
   const reads: Array<ReadonlyArray<string>> = [];
   /** How many runs each read of runs asked for. */
   const slices: number[] = [];
+  /** Each read of a chat's newest runs: the chat, the run it reads before, how many. */
+  const newest: Array<readonly [string, number | null, number]> = [];
   /** Each read of chats, as it begins. */
   const reading = yield* Queue.unbounded<ReadonlyArray<string>>();
   /** Each sequence the tap has taken. */
@@ -107,6 +110,14 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
           )
           .slice(0, limit);
       }),
+    newestRuns: (threadId, before, limit) =>
+      Effect.sync(() => {
+        newest.push([threadId, before, limit]);
+        return (runs.get(threadId) ?? [])
+          .filter((run) => before === null || run.ordinal < before)
+          .toSorted((a, b) => b.ordinal - a.ordinal)
+          .slice(0, limit);
+      }),
     threadIdsAfter: (after, limit) =>
       Effect.suspend(() => {
         const page = [...threads.keys()]
@@ -122,6 +133,7 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
     source,
     reads,
     slices,
+    newest,
     log,
     poison,
     put: (thread: LedgerThread, itsRuns: ReadonlyArray<LedgerRun> = []) => {
@@ -169,9 +181,21 @@ const fakeSource = Effect.fn("fakeSource")(function* (file: string) {
   };
 });
 
-/** `milestone`, with the clock moving a second at a time meanwhile for the ledger's own waits. */
+/** The simulated seconds a milestone may take: the backfill's waits and three tries at a chat fit many times over. */
+const PATIENCE = 900;
+
+/**
+ * `milestone`, with the clock moving a second at a time meanwhile for the ledger's own waits.
+ * One that never comes fails the test at once, on the test's clock, not at the run's timeout.
+ */
 function until<A, E>(milestone: Effect.Effect<A, E>): Effect.Effect<A, E> {
-  return Effect.raceFirst(milestone, Effect.forever(TestClock.adjust("1 second")));
+  return Effect.raceFirst(
+    milestone,
+    TestClock.adjust("1 second").pipe(
+      Effect.repeat({ times: PATIENCE }),
+      Effect.andThen(Effect.die("milestone never reached")),
+    ),
+  );
 }
 
 /** The whole ledger, read a small page at a time. */
@@ -359,6 +383,7 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
       );
       fake.put(cell("short"), [landedRun("short", 1, 0, 5)]);
       const ledger = yield* make(fake.source);
+      assert.strictEqual(yield* fake.started, 10);
       yield* until(ledger.backfilled);
       // 121 runs in one batch of chats: each read asks for a slice of 50 and the one more that
       // says another follows.
@@ -366,6 +391,21 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
       assert.strictEqual(
         (yield* everyFact(ledger)).filter((fact) => fact.kind === "landed").length,
         121,
+      );
+
+      // A landing costs one small read of the chat's newest runs, however long the chat: it
+      // ends at a run the ledger already holds, and the chat's past is not read again.
+      fake.put(
+        cell("long"),
+        Array.from({ length: 121 }, (_, n) => landedRun("long", n + 1, n, n + 1)),
+      );
+      yield* fake.tell(11, "long");
+      assert.strictEqual(yield* fake.restarted, 11);
+      assert.deepStrictEqual(fake.newest, [["long", null, 11]]);
+      assert.deepStrictEqual(fake.slices, [51, 51, 51]);
+      assert.strictEqual(
+        (yield* ledger.page({ after: 0, limit: 200, threads: ["long"] })).facts.at(-1)?.key,
+        "landed:long-run-121",
       );
     }).pipe(Effect.scoped),
   );
@@ -420,14 +460,18 @@ it.layer(NodeServices.layer)("the ledger", (it) => {
       assert.strictEqual(yield* fake.restarted, 11);
       assert.deepStrictEqual(keysOf(yield* everyFact(ledger), "c"), ["born:c", "landed:c-run-1"]);
 
-      // Read fine later, it is a chat like any other again.
+      // No event names it again, and each start of the tap tries it all the same. Read fine
+      // now, it is a chat like any other, and its runs, never read, are kept from the oldest on.
       fake.poison.delete("bad");
-      yield* fake.tell(12, "bad");
-      assert.strictEqual(yield* fake.restarted, 12);
-      const last = yield* ledger.page({ after: 0, limit: 10, threads: ["bad"] });
+      fake.put(
+        cell("bad"),
+        Array.from({ length: 25 }, (_, n) => landedRun("bad", n + 1, n, n + 1)),
+      );
+      yield* fake.restarted;
+      const last = yield* ledger.page({ after: 0, limit: 50, threads: ["bad"] });
       assert.deepStrictEqual(
         last.facts.map((fact) => fact.key),
-        ["born:bad"],
+        ["born:bad", ...Array.from({ length: 25 }, (_, n) => `landed:bad-run-${n + 1}`)],
       );
       assert.strictEqual(last.skipped, 0);
     }).pipe(Effect.scoped),
