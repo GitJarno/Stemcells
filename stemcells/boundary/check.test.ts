@@ -1,7 +1,7 @@
 import * as NodePath from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 
-import { boundaryOf, importSpecifiers } from "./check.ts";
+import { boundaryOf, importSpecifiers, sharedBoundaryOf } from "./check.ts";
 
 describe("the check on Stemcells' boundary with upstream", () => {
   const repo = NodePath.resolve("/repo");
@@ -48,5 +48,17 @@ describe("the check on Stemcells' boundary with upstream", () => {
     expect(reach("../../../../web/src/components/ChatView")).toBe(
       "upstream app code (relative path)",
     );
+  });
+
+  it("gives our root folder no adapter: nothing there reaches upstream", () => {
+    const shared = sharedBoundaryOf(NodePath.join(repo, "stemcells"));
+    const reach = (file: string, specifier: string) =>
+      shared.upstreamReach(NodePath.join(repo, "stemcells", file), specifier);
+    expect(reach("upstream/words.ts", "@t3tools/contracts")).toBe("an upstream package");
+    expect(reach("words/cells.ts", "../../scripts/lib/brand-assets.ts")).toBe(
+      "upstream app code (relative path)",
+    );
+    expect(reach("words/cells.ts", "../brand/name.ts")).toBeNull();
+    expect(reach("site/src/app.ts", "../../../apps/web/src/stemcells/aski/aski.ts")).toBeNull();
   });
 });

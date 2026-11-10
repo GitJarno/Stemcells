@@ -11,7 +11,8 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-const drift = NodePath.join(NodePath.dirname(NodeURL.fileURLToPath(import.meta.url)), "drift");
+const scripts = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
+const drift = NodePath.join(scripts, "drift");
 
 const SEAMS = `# Seams
 
@@ -181,6 +182,24 @@ describe("drift's hot-file budget", () => {
     expect(code).toBe(1);
   });
 
+  it("reads the rows in stemcells/seams/, and names the file a missing or stale row is in", () => {
+    const repo = repository();
+    repo.write("stemcells/seams.md", "# Seams\n");
+    repo.write("stemcells/seams/rest.md", SEAMS);
+    expect(repo.run().code).toBe(0);
+
+    for (const file of ["apps/web/src/new.ts", "packages/shared/new.ts", "app/new.ts"]) {
+      repo.write(file, "export const ours = 1;\n");
+    }
+    repo.write("stemcells/seams/rest.md", `${SEAMS}| \`app/same.ts\` | Nothing | A seam |\n`);
+    const { code, out } = repo.run();
+    expect(out).toMatch(/DRIFT .*apps\/web\/src\/new\.ts .*add one in stemcells\/seams\/web\.md/);
+    expect(out).toMatch(/DRIFT .*packages\/shared\/new\.ts .*stemcells\/seams\/packages\.md/);
+    expect(out).toMatch(/DRIFT .*app\/new\.ts .*stemcells\/seams\/rest\.md/);
+    expect(out).toMatch(/STALE\s+app\/same\.ts\s+\(named in stemcells\/seams\/rest\.md/);
+    expect(code).toBe(1);
+  });
+
   it("prints the trend against the base for a pull request's body", () => {
     const repo = repository();
     repo.edit("app/hot.ts", 10, "export const more = 10;");
@@ -246,5 +265,29 @@ describe("drift's list of upstream tests still edited", () => {
     const { code, out } = repo.run();
     expect(out).toMatch(/STALE .*app\/cold\.test\.ts .*drop its line/);
     expect(code).toBe(1);
+  });
+});
+
+describe("the resolver of a sync's conflicts in upstream's tests", () => {
+  it("takes a test that is upstream's again out of the file of rows naming it", () => {
+    const repo = repository();
+    const rows = "stemcells/seams/rest.md";
+    repo.write(rows, `${SEAMS}| \`app/cold.test.ts\` | Line 2 says ours | A seam |\n`);
+    repo.edit("app/cold.test.ts", 2, "export const ours = 2;");
+    repo.git("add", ".");
+    repo.git("commit", "-q", "-m", "ours: a swap in upstream's test");
+    repo.git("switch", "-q", "upstream");
+    repo.edit("app/cold.test.ts", 2, "export const theirs = 2;");
+    repo.git("commit", "-q", "-am", "upstream: rewrites the line we swapped");
+    repo.git("switch", "-q", "main");
+    expect(() => repo.git("merge", "-q", "upstream")).toThrow();
+
+    NodeChildProcess.execFileSync("node", [NodePath.join(scripts, "resolve-test-seams.mjs")], {
+      cwd: repo.root,
+    });
+    const left = NodeFS.readFileSync(NodePath.join(repo.root, rows), "utf8");
+    expect(left).not.toContain("app/cold.test.ts");
+    expect(left).toContain("app/cold.ts");
+    expect(repo.git("status", "--porcelain")).not.toMatch(/^(?:UU|.M) /m);
   });
 });

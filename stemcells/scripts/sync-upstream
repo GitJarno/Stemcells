@@ -52,9 +52,9 @@ repo_slug() {
   echo "${GITHUB_REPOSITORY:-$(git remote get-url origin | sed -E 's#^.*github\.com[:/]##; s#\.git$##')}"
 }
 
-# The seams.md rows that name a file: their change, cut short.
+# The seam rows that name a file (stemcells/seams/): their change, cut short.
 seams_of() {
-  grep -F "\`$1\`" stemcells/seams.md | awk -F' [|] ' '{print "    seam: " substr($2, 1, 140)}' || true
+  grep -hF "\`$1\`" stemcells/seams/*.md | awk -F' [|] ' '{print "    seam: " substr($2, 1, 140)}' || true
 }
 
 # ---------------------------------------------------------------- the gates
@@ -406,7 +406,7 @@ report() {
   local touched=0
   while IFS= read -r file; do
     [ -z "$file" ] && continue
-    grep -qF "\`$file\`" stemcells/seams.md || continue
+    grep -qF "\`$file\`" stemcells/seams.md stemcells/seams/*.md || continue
     echo "- \`$file\`"
     touched=$((touched + 1))
   done < <(git diff --name-only "$before" "$target")

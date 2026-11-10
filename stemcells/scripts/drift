@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Lists every upstream file this fork changes, with upstream's heat and our
 # lines and hunks in it, and fails on:
-#   - an upstream change stemcells/seams.md doesn't name;
-#   - a seam row naming a file that no longer differs from upstream;
+#   - an upstream change neither stemcells/seams.md nor a file of rows in
+#     stemcells/seams/ names;
+#   - a row in any of them naming a file that no longer differs from upstream;
 #   - a file with a row in seams.md's "Hot-file budget" whose lines or hunks
 #     pass the row, or whose row gives no reason or isn't two whole numbers;
 #   - a hot file with no row there that grew past the base;
@@ -38,6 +39,20 @@ git rev-parse -q --verify "$base_ref^{commit}" >/dev/null || base_ref=""
 ours='^(stemcells/|apps/(web|server|mobile|desktop)/src/stemcells/|packages/stemcells-)'
 seams=stemcells/seams.md
 tests=stemcells/edited-tests.txt
+# Where seams are named: seams.md (each family's reasons, the Hot-file
+# budget) and the rows, in a file for each part of the repository so two
+# pull requests adding seams rarely meet on a line.
+shopt -s nullglob
+named=("$seams" stemcells/seams/*.md)
+shopt -u nullglob
+
+# The file of rows a file's row goes in, by where the file is.
+home_of() {
+  local part=rest
+  [[ $1 =~ ^apps/(web|server|mobile|desktop)/ ]] && part=${BASH_REMATCH[1]}
+  [[ $1 == packages/* ]] && part=packages
+  echo "stemcells/seams/$part.md"
+}
 
 # Over this, upstream edits the file about every day: its seams get a
 # substitute or an extension point before a feature touches the file again
@@ -168,8 +183,8 @@ while IFS= read -r file; do
     printf '  TEST        %4s %3s  %s  (a test of upstream, edited: our case goes in a file of ours, a test our change breaks in stemcells/upstream-skips.txt)\n' "$lines" "$hunks" "$file"
     edited=1
   fi
-  if ! grep -qF "\`$file\`" "$seams"; then
-    printf '  DRIFT %4s  %4s %3s  %s  (not in %s)\n' "$heat" "$lines" "$hunks" "$file" "$seams"
+  if ! grep -qF "\`$file\`" "${named[@]}"; then
+    printf '  DRIFT %4s  %4s %3s  %s  (no row: add one in %s)\n' "$heat" "$lines" "$hunks" "$file" "$(home_of "$file")"
     unlisted=1
     continue
   fi
@@ -210,13 +225,15 @@ done <<< "$changed"
 # differs from upstream. A sync makes these when upstream deletes a file we
 # edited, or rewrites the lines our edit was on: the row goes too.
 stale=0
-while IFS= read -r file; do
-  [ -z "$file" ] && continue
-  if ! grep -qxF "$file" <<< "$changed"; then
-    printf '  STALE       %s  (named in %s, same as upstream: drop it there)\n' "$file" "$seams"
-    stale=1
-  fi
-done < <(grep -E '^\| *`' "$seams" | cut -d'|' -f2 | grep -oE '`[^`]+`' | tr -d '`' | sort -u)
+for named_in in "${named[@]}"; do
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    if ! grep -qxF "$file" <<< "$changed"; then
+      printf '  STALE       %s  (named in %s, same as upstream: drop it there)\n' "$file" "$named_in"
+      stale=1
+    fi
+  done < <(grep -E '^\| *`' "$named_in" | cut -d'|' -f2 | grep -oE '`[^`]+`' | tr -d '`' | sort -u)
+done
 
 # The still-edited tests list only shrinks: each line names a test we still
 # change, says why, and was there at the base.
