@@ -99,7 +99,7 @@ ours went with its last word) and `TimelineWorkEntryRow.tsx`.
 | Upstream files we change | origin/main | here |
 | ------------------------ | ----------- | ---- |
 | Files                    | 208         | 187  |
-| Lines                    | 3320        | 3180 |
+| Lines                    | 3320        | 3184 |
 | Hunks                    | 704         | 637  |
 | Hot files                | 16          | 16   |
 
