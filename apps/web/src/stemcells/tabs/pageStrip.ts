@@ -295,8 +295,13 @@ export class PageStrip {
     return (this.#scroller?.scrollWidth ?? 0) / SLOTS;
   }
 
-  /** The slot the proxy is on, between two as it moves. */
+  /** The slot the proxy is on, between two as it moves. At rest nothing is read off the page. */
   #slot(): number {
+    return this.#turns.resting ? this.#turns.origin : this.#scrolledTo();
+  }
+
+  /** The slot the proxy has scrolled to, read off the page. */
+  #scrolledTo(): number {
     const width = this.#slotWidth();
     const scroller = this.#scroller;
     return scroller === null || width === 0 ? this.#turns.origin : scroller.scrollLeft / width;
@@ -556,12 +561,19 @@ export class PageStrip {
     this.#travel(from, place, speed, true);
   }
 
-  /** The tab to turn to now: the one the strip has landed on, if it is not the active one nor asked for already. */
+  /**
+   * The tab to turn to now, if it is not the active one nor asked for already: the one the strip
+   * has landed on, or the one it is headed for once that is two pages off, so the page after it
+   * is mounted before a third swipe brings it in.
+   */
   #due(): string | null {
+    const heading = this.#turns.heading;
+    const tabId = this.#tabAt(heading);
+    if (tabId === null || tabId === this.#active || this.#asked.includes(tabId)) return null;
+    const far = this.#active !== null && Math.abs(heading - this.#slotOf(this.#active)) >= 2;
     const width = this.#slotWidth();
-    if (this.#slide !== null || width === 0 || !this.#turns.landed(1 / width)) return null;
-    const tabId = this.#tabAt(this.#turns.heading);
-    return tabId === null || tabId === this.#active || this.#asked.includes(tabId) ? null : tabId;
+    const landed = this.#slide === null && width !== 0 && this.#turns.landed(1 / width);
+    return far || landed ? tabId : null;
   }
 
   /**
@@ -607,7 +619,7 @@ export class PageStrip {
   readonly #onScroll = (): void => {
     const width = this.#slotWidth();
     if (width === 0) return;
-    const slot = this.#slot();
+    const slot = this.#scrolledTo();
     if (!this.#fingers) {
       // Not the fingers: a field focused or a key pressed scrolled the proxy to show something.
       // Back it goes, in the frame it moved in.
@@ -649,7 +661,7 @@ export class PageStrip {
     }
     const shown = this.#onScreen();
     const speed = this.#speed();
-    this.#turns.rested(this.#slot());
+    this.#turns.rested(this.#scrolledTo());
     this.#toOrigin();
     this.#writeKnots();
     this.#travel(shown, this.#turns.place, speed, this.#slide !== null);

@@ -8,6 +8,7 @@ import { page, userEvent } from "vite-plus/test/browser";
 import { APP_NAME } from "../brand/name";
 import { needFixture, NOW, requestFixture } from "../needs/fixtures";
 import type { CellStanding, Need } from "../needs/wire";
+import { REST_SLOT, SLOTS } from "../tabs/proxy";
 import { act, render } from "../upstream/testRender";
 import type { DesktopUpdateState } from "../upstream/updates";
 import { useProviderRun, type ProviderOffer } from "../updates/providers";
@@ -467,20 +468,14 @@ describe("the Cells' column", () => {
 });
 
 /**
- * Two fingers touching down on the column once it rests, and moving `dx` (px, toward later
- * stages): a wheel event a frame, as a trackpad sends them, the first one short as a touch's is.
+ * Two fingers swipe the column a stage on (1) or back (-1) once it rests: a wheel event says the
+ * fingers are on it, and its proxy lands a slot that way (`tabs/proxy.ts`).
  */
-async function swipe(column: HTMLElement, dx: number) {
-  const pages = column.querySelector<HTMLElement>("[data-cells-pages]")!;
-  const strip = column.querySelector<HTMLElement>("[data-cells-strip]")!;
-  await vi.waitFor(() => expect(pages.hasAttribute("data-moving")).toBe(false), { timeout: 3000 });
-  const first = Math.sign(dx) * 4;
-  column.dispatchEvent(new WheelEvent("wheel", { deltaX: first, cancelable: true }));
-  for (let i = 0; i < 9; i++) {
-    const drawn = strip.style.transform;
-    column.dispatchEvent(new WheelEvent("wheel", { deltaX: (dx - first) / 9, cancelable: true }));
-    await vi.waitFor(() => expect(strip.style.transform).not.toBe(drawn), { interval: 1 });
-  }
+async function swipe(column: HTMLElement, way: 1 | -1) {
+  await vi.waitFor(() => expect(column.hasAttribute("data-moving")).toBe(false), { timeout: 3000 });
+  const slot = column.scrollWidth / SLOTS;
+  column.dispatchEvent(new WheelEvent("wheel", { deltaX: way * 30, bubbles: true }));
+  column.scrollTo({ left: (REST_SLOT + way) * slot, behavior: "instant" });
 }
 
 describe("the column's project filter", () => {
@@ -547,18 +542,18 @@ describe("swiping the column", () => {
     const open = (name: RegExp) =>
       expect.element(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "true");
 
-    await swipe(column, 300);
+    await swipe(column, 1);
     await open(/Flying\s*1/);
     await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
-    await swipe(column, 300);
+    await swipe(column, 1);
     await open(/Landed\s*2/);
-    await swipe(column, -300);
+    await swipe(column, -1);
     await open(/Flying\s*1/);
-    await swipe(column, -300);
+    await swipe(column, -1);
     await open(/Input\s*2/);
 
-    // Past the first stage the column gives a little, and springs back.
-    await swipe(column, -300);
+    // Past the first stage the column gives a little, and comes back.
+    await swipe(column, -1);
     await open(/Input\s*2/);
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
