@@ -9,6 +9,8 @@ export const DONE = "#2AD394";
 export const NOTCH = "#000000";
 /** A chart's series, in their fixed order (`--sc-data-hue-1` to `-4`): never cycled. */
 export const DATA_HUES = ["#5071DE", "#B38C15", "#009F7D", "#BB2C54"] as const;
+/** A change's added and removed lines, as the web's diff counts colour them. */
+export const DIFF = { added: "#28EBBA", removed: "#FF648B" } as const;
 /** The type marks are set in: monospaced, as the web's `--sc-font-code`. */
 export const CODE_FONT = "Menlo";
 

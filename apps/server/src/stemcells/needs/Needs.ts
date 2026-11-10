@@ -13,6 +13,7 @@ import * as SubscriptionRef from "effect/SubscriptionRef";
 import * as UpstreamNeeds from "../upstream/needs.ts";
 import { leadOf } from "./brief.ts";
 import { stopOf, type Stop } from "./closeOut.ts";
+import { briefOf, factsOf, type Brief } from "./evidence.ts";
 import {
   needOf,
   signalsOf,
@@ -110,16 +111,27 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
             : signal.kind === "stuck"
               ? Effect.map(source.inFlight(shell.id, runId), (inFlight) => ({ inFlight }))
               : Effect.succeed({});
-    return Effect.tap(read, (detail) =>
-      Effect.sync(() => {
-        // A report's verdict is kept like any read: the key changes with the next run.
-        const missed =
-          detail.request === null ||
-          detail.plan === null ||
-          detail.inFlight === null ||
-          detail.stop === null;
-        if (!missed) details.set(signal.key, detail);
-      }),
+    const facts =
+      runId === ""
+        ? Effect.succeed(null)
+        : Effect.map(source.records(shell.id, runId), (records) =>
+            records === null ? null : factsOf(records),
+          );
+    return Effect.zipWith(read, facts, (detail, facts): NeedDetail => ({ ...detail, facts }), {
+      concurrent: true,
+    }).pipe(
+      Effect.tap((detail) =>
+        Effect.sync(() => {
+          // A report's verdict is kept like any read: the key changes with the next run.
+          const missed =
+            detail.request === null ||
+            detail.plan === null ||
+            detail.inFlight === null ||
+            detail.stop === null;
+          // Unread facts aren't a miss: the ask stands without them, and isn't read again for them.
+          if (!missed) details.set(signal.key, detail);
+        }),
+      ),
     );
   };
 
@@ -151,10 +163,21 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       numbering,
       kept.map(({ signal }) => signal),
     );
+    // The pull request is read off the shell each time: its checks go on after the run.
+    const briefs = new Map<string, Brief>();
+    for (const { signal, detail } of read) {
+      const brief = briefOf(detail.facts ?? null, UpstreamNeeds.pullRequestOf(signal.shell));
+      if (brief !== null) briefs.set(signal.shell.id, brief);
+    }
     const needs: Array<Need> = [];
     const later: Array<LaterNeed> = [];
     for (const { signal, detail } of kept) {
-      const need = needOf(signal, detail, numbering.byKey.get(signal.key) ?? 0);
+      const need = needOf(
+        signal,
+        detail,
+        numbering.byKey.get(signal.key) ?? 0,
+        briefs.get(signal.shell.id) ?? null,
+      );
       if (signal.later === null) needs.push(need);
       else later.push({ ...need, until: DateTime.formatIso(DateTime.makeUnsafe(signal.later)) });
     }
@@ -166,7 +189,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
       later: later.toSorted((a, b) => a.until.localeCompare(b.until) || a.number - b.number),
-      cells: standingsOf([...shells.values()], needs, stops, now, autoResume),
+      cells: standingsOf([...shells.values()], needs, stops, now, autoResume, briefs),
       settles: settles.map((settle) => ({
         threadId: settle.threadId,
         at: DateTime.formatIso(DateTime.makeUnsafe(settle.at)),

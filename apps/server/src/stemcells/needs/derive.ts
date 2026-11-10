@@ -19,6 +19,7 @@ import {
   type Shell,
 } from "../upstream/needs.ts";
 import type { Stop } from "./closeOut.ts";
+import type { Brief, RunFacts } from "./evidence.ts";
 import type { Cue, PreRead } from "./preread.ts";
 
 /** The provider instance Aski's chat runs on; the web's `aski/setup.ts` names the same. */
@@ -363,6 +364,8 @@ export interface Need {
   readonly failure: NeedFailure | null;
   readonly prose: NeedProse | null;
   readonly stuck: NeedStuck | null;
+  /** What the Cell was told and what its run shows, beside its own words (`evidence.ts`). */
+  readonly brief: Brief | null;
 }
 
 /** An ask the person put off, back on its own at `until` (one-ask.md, decision 5). */
@@ -380,10 +383,17 @@ export interface NeedDetail {
   /** The reply's opening paragraph, beside the ask (`brief.ts`). */
   readonly lead?: string | null;
   readonly inFlight?: InFlight | null;
+  /** What the run's records say; null when they couldn't be read. */
+  readonly facts?: RunFacts | null;
 }
 
-/** The card's data: the signal, the detail read for it, and its number. */
-export function needOf(signal: Signal, detail: NeedDetail, number: number): Need {
+/** The card's data: the signal, the detail read for it, its number, and what stands beside it. */
+export function needOf(
+  signal: Signal,
+  detail: NeedDetail,
+  number: number,
+  brief: Brief | null = null,
+): Need {
   const { shell } = signal;
   const runId = shell.latestRunId ?? "";
   const pending = shell.pendingRuntimeRequest;
@@ -456,5 +466,6 @@ export function needOf(signal: Signal, detail: NeedDetail, number: number): Need
             tool: detail.inFlight?.tool ?? null,
           }
         : null,
+    brief,
   };
 }

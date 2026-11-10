@@ -36,6 +36,7 @@ const planNeed: Need = {
   failure: null,
   prose: null,
   stuck: null,
+  brief: null,
 };
 
 describe("a take, as upstream's orchestrator reads it", () => {

@@ -20,6 +20,7 @@ export {
   type CardOption,
   type CardQuestion,
 } from "../../../../web/src/stemcells/needs/card.ts";
+export { type Fact } from "../../../../web/src/stemcells/needs/facts.ts";
 export {
   repositoryUrlOf,
   sentenceCase,

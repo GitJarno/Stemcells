@@ -18,14 +18,20 @@ const need = (over: Partial<Need> & Pick<Need, "number" | "kind" | "threadId">):
   failure: null,
   prose: null,
   stuck: null,
+  brief: null,
   ...over,
 });
 
-const cell = (over: Partial<CellStanding> & Pick<CellStanding, "threadId" | "stage">) => ({
+const cell = (
+  over: Partial<CellStanding> & Pick<CellStanding, "threadId" | "stage">,
+): CellStanding => ({
   projectId: "p-atlas",
   title: "Otter",
   line: null,
   createdAt: "2026-10-24T08:00:00.000Z",
+  since: null,
+  landing: null,
+  brief: null,
   ...over,
 });
 
@@ -81,6 +87,67 @@ describe("the room in words", () => {
       "[Pip](t3-thread://v1/t-pip) · Atlas · #281 merged",
     ]);
     expect(standing).toMatchObject({ needsYou: 2, atWork: 1, done: 1 });
+  });
+
+  it("says how each done Cell landed and what shows it, so a bare Done isn't passed on", () => {
+    const { report } = standingOf(
+      {
+        later: [],
+        needs: [
+          need({
+            number: 1,
+            kind: "plan",
+            threadId: "t-floof",
+            plan: planNamed("Split the export"),
+            brief: {
+              goal: "Split the export into pages",
+              changed: null,
+              checks: [],
+              pullRequest: null,
+            },
+          }),
+        ],
+        cells: [
+          cell({
+            threadId: "t-pip",
+            stage: "done",
+            title: "Pip",
+            line: "tokens moved",
+            landing: { verdict: "short", proof: "check-failed" },
+            brief: {
+              goal: null,
+              changed: { files: 3, additions: 40, deletions: 8 },
+              checks: [
+                { kind: "test", ok: false },
+                { kind: "lint", ok: true },
+              ],
+              pullRequest: {
+                number: 12,
+                url: "https://example.com/pull/12",
+                state: "open",
+                draft: false,
+                checks: "pending",
+                conflicts: true,
+              },
+            },
+          }),
+          cell({
+            threadId: "t-otter",
+            stage: "done",
+            landing: { verdict: "claimed", proof: "word" },
+          }),
+        ],
+      },
+      new Map(),
+    );
+    expect(report.split("\n")).toEqual([
+      "Needs you (1):",
+      "1 [Floof](t3-thread://v1/t-floof) · p-harbor · plan ready: Split the export · told: Split the export into pages",
+      "",
+      "Done, not settled (2):",
+      "[Pip](t3-thread://v1/t-pip) · p-atlas · tokens moved · landed short: a check it ran last failed · +40 −8 in 3 files · tests failed · lint clean · #12 open, checks pending, conflicts",
+      "[Otter](t3-thread://v1/t-otter) · p-atlas · its word only: nothing it ran or opened shows it",
+    ]);
   });
 });
 

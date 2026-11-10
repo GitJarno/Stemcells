@@ -17,6 +17,7 @@ import {
   shellFixture,
   threadId,
 } from "../upstream/needs.fixture.ts";
+import type { RunRecords } from "./evidence.ts";
 import { make, type NeedsList } from "./Needs.ts";
 
 /** A source over shells the test edits, with the changes it announces. */
@@ -24,10 +25,11 @@ const fakeSource = Effect.gen(function* () {
   const shells = new Map<string, Shell>();
   const replies = new Map<string, string>();
   const tools = new Map<string, InFlight["tool"]>();
+  const recorded = new Map<string, RunRecords>();
   /** The event log's latest settle by hand of each thread. */
   const logged = new Map<string, number>();
   const changes = yield* Queue.unbounded<ReadonlyArray<Changed>>();
-  const counts = { snapshots: 0, requestReads: 0, replyReads: 0 };
+  const counts = { snapshots: 0, requestReads: 0, replyReads: 0, recordReads: 0 };
   let failNextRead = false;
   const detail = (id: string): RequestDetail => ({
     id,
@@ -70,6 +72,11 @@ const fakeSource = Effect.gen(function* () {
         return replies.get(threadId) ?? null;
       }),
     inFlight: (threadId) => Effect.succeed({ tool: tools.get(threadId) ?? null }),
+    records: (threadId) =>
+      Effect.sync(() => {
+        counts.recordReads++;
+        return recorded.get(threadId) ?? { told: [], ran: [], files: [] };
+      }),
     autoResume: Effect.succeed(false),
   };
   const put = (shell: Shell) => shells.set(shell.id, shell);
@@ -90,6 +97,7 @@ const fakeSource = Effect.gen(function* () {
     counts,
     replies,
     tools,
+    recorded,
     logged,
     touch,
     settleByHand,
@@ -328,4 +336,69 @@ it.effect("reads the day's settles by hand back from the event log after a resta
       ]);
     }),
   ),
+);
+
+it.effect(
+  "stands a done Cell on what its run shows, and follows its pull request without a second read",
+  () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        yield* TestClock.setTime(NOW);
+        const fake = yield* fakeSource;
+        const link = (checksState: "pending" | "passing") => ({
+          host: "github.com",
+          repository: "example/harbor",
+          number: 12,
+          url: "https://github.com/example/harbor/pull/12",
+          source: "agent" as const,
+          linkedAt: "2026-10-21T11:00:00.000Z",
+          snapshot: {
+            state: "open" as const,
+            title: "Header tokens",
+            headBranch: "header-tokens",
+            baseBranch: "main",
+            isDraft: false,
+            updatedAt: null,
+            syncedAt: "2026-10-21T11:30:00.000Z",
+            checksState,
+          },
+          stack: null,
+        });
+        fake.put(shellFixture({ id: "pip", pullRequests: [link("pending")] }));
+        fake.replies.set("pip", "Moved the tokens.\n\n**Done:** #12 is open");
+        fake.recorded.set("pip", {
+          told: [{ text: "Move the header tokens into the theme file, please", news: false }],
+          ran: [{ command: "pnpm test", failed: true }],
+          files: [{ path: "theme.css", additions: 12, deletions: 3 }],
+        });
+        fake.put(shellFixture({ id: "otter", status: "interrupted" }));
+        const needs = yield* make(fake.source);
+
+        const cells = new Map((yield* needs.list).cells.map((cell) => [cell.threadId, cell]));
+        // A failed check outranks the Cell's own "Done".
+        assert.deepStrictEqual(cells.get("pip")?.landing, {
+          verdict: "short",
+          proof: "check-failed",
+        });
+        assert.strictEqual(
+          cells.get("pip")?.brief?.goal,
+          "Move the header tokens into the theme file, please",
+        );
+        assert.deepStrictEqual(cells.get("pip")?.brief?.changed, {
+          files: 1,
+          additions: 12,
+          deletions: 3,
+        });
+        // A run stopped by hand used to read as done with nothing to say.
+        assert.deepStrictEqual(cells.get("otter")?.landing, { verdict: "short", proof: "stopped" });
+
+        fake.put(shellFixture({ id: "pip", pullRequests: [link("passing")] }));
+        yield* fake.touch("pip");
+        const after = yield* listWhere(needs.changes, (list) =>
+          list.cells.some((cell) => cell.brief?.pullRequest?.checks === "passing"),
+        );
+        assert.strictEqual(after.cells.length, 2);
+        assert.strictEqual(fake.counts.recordReads, 1);
+      }),
+    ),
 );

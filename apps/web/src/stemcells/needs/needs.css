@@ -383,6 +383,46 @@
 [data-need-context] > button:hover {
   color: var(--sc-text);
 }
+/* What the Cell was told: one line, its label in the softer ink. */
+[data-need-goal] > div {
+  -webkit-line-clamp: 1;
+}
+[data-need-goal] > div > span {
+  color: var(--sc-soft);
+  font-weight: 500;
+}
+/* What its run shows: counted facts on one line, a failing one in the error's ink. */
+[data-need-facts] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 0.75rem;
+  margin: 0;
+  color: var(--sc-dim);
+  font-size: calc(var(--sc-body) + var(--sc-meta-size));
+  font-variant-numeric: tabular-nums;
+}
+[data-need-fact][data-tone="good"] {
+  color: var(--sc-soft);
+}
+[data-need-fact][data-tone="bad"] {
+  color: var(--sc-error);
+}
+/* Five cells: the share of the change that added lines, then the share that removed them. */
+[data-need-bar] {
+  display: inline-flex;
+  gap: 1px;
+  margin-inline-end: 0.375rem;
+  vertical-align: 0.0625rem;
+}
+[data-need-bar] > i {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: 1px;
+  background: var(--sc-diff-removed);
+}
+[data-need-bar] > i[data-cell="added"] {
+  background: var(--sc-diff-added);
+}
 [data-need-request] {
   margin: 0;
   padding: var(--sc-space-sm) var(--sc-space-md);

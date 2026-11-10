@@ -53,6 +53,7 @@ const source: NeedsSource = {
   plan: () => Effect.succeed(null),
   reply: () => Effect.succeed(null),
   inFlight: () => Effect.succeed({ tool: null }),
+  records: () => Effect.succeed({ told: [], ran: [], files: [] }),
   autoResume: Effect.succeed(false),
 };
 

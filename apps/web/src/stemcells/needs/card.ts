@@ -6,6 +6,7 @@
  */
 import { DISK_FULL } from "../../../../../stemcells/words/disk.ts";
 import type { DiskFailure } from "../disk/pressure";
+import { barOf, changedWords, factsOf, type BarCell, type Fact } from "./facts";
 import { sentenceCase } from "./inline";
 import type { ApprovalDecision, AskedQuestion, Need, NeedRequest } from "./wire";
 
@@ -82,6 +83,12 @@ export interface Card {
   readonly why: string | null;
   /** "Later" snoozes the Cell for an hour; upstream refuses it while an approval waits. */
   readonly later: boolean;
+  /** The instruction the Cell is on, in the words it was given (aski-brief.md). */
+  readonly goal: string | null;
+  /** What the run changed: its bar and its count; null when it changed nothing. */
+  readonly changed: { readonly bar: ReadonlyArray<BarCell>; readonly words: string } | null;
+  /** What the run shows: each check as it ended, and its pull request. */
+  readonly facts: ReadonlyArray<Fact>;
 }
 
 /** How long "Wait 15 min" holds a stuck card back. */
@@ -296,6 +303,12 @@ const base = (need: Need) => ({
   note: null,
   why: null,
   later: need.request === null || need.request.kind === "user_input",
+  goal: need.brief?.goal ?? null,
+  changed:
+    need.brief?.changed == null
+      ? null
+      : { bar: barOf(need.brief.changed), words: changedWords(need.brief.changed) },
+  facts: factsOf(need.brief),
 });
 
 /**
