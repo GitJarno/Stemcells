@@ -54,6 +54,9 @@ case, go back to the three costs and choose what keeps them lowest.
   untouched (`seams.md`, Substitutes).
 - Never reformat, rename, move or tidy upstream code. Each of those is a
   conflict waiting for the next merge.
+- We never edit upstream's tests: our cases go in our own files, and a
+  test our change breaks goes on the skip list with its reason
+  (`stemcells/upstream-skips.txt`).
 - `stemcells/scripts/drift` fails on any changed upstream file that
   `seams.md` doesn't name. It prints the total, so the fork's size is
   always visible.

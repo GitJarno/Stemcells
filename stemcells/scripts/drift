@@ -5,7 +5,11 @@
 #   - a seam row naming a file that no longer differs from upstream;
 #   - a file with a row in seams.md's "Hot-file budget" whose lines or hunks
 #     pass the row, or whose row gives no reason or isn't two whole numbers;
-#   - a hot file with no row there that grew past the base.
+#   - a hot file with no row there that grew past the base;
+#   - an upstream test file we edit that stemcells/edited-tests.txt doesn't
+#     name, a line there whose file is upstream's again or has no reason, and
+#     a line the base doesn't have: we never edit upstream's tests, so that
+#     list only shrinks.
 # Our own folders are never drift (stemcells/docs/fork.md, rules 1 and 7).
 #
 # Usage: stemcells/scripts/drift [--base <ref>] [--summary]
@@ -33,6 +37,7 @@ git rev-parse -q --verify "$base_ref^{commit}" >/dev/null || base_ref=""
 
 ours='^(stemcells/|apps/(web|server|mobile|desktop)/src/stemcells/|packages/stemcells-)'
 seams=stemcells/seams.md
+tests=stemcells/edited-tests.txt
 
 # Over this, upstream edits the file about every day: its seams get a
 # substitute or an extension point before a feature touches the file again
@@ -104,6 +109,13 @@ measure() {
   printf '%s' "$rows"
 }
 
+# The lines of the still-edited tests list, at a commit or (with none) in the
+# working tree: "<file> <why>", comments and blank lines left out.
+edited_tests_at() {
+  if [ -z "$1" ]; then cat "$tests" 2> /dev/null; else git show "$1:$tests" 2> /dev/null; fi |
+    grep -v -E '^[[:space:]]*(#|$)' || true
+}
+
 if [ "$summary" = 1 ]; then
   here=$(measure "")
   there=""
@@ -133,10 +145,12 @@ here_mb=$(git merge-base HEAD upstream/main)
 base_mb=""
 [ -n "$base_ref" ] && base_mb=$(git merge-base "$base_ref" upstream/main)
 changed=$(changed_at "" "$here_mb")
+listed_tests=$(edited_tests_at "" | awk '{print $1}')
 
 echo "        heat = upstream commits in 90 days; hot = over $HOT, or budgeted; lines and hunks are ours"
 unlisted=0
 over=0
+edited=0
 total_lines=0
 total_hunks=0
 hot=0
@@ -148,6 +162,12 @@ while IFS= read -r file; do
   hunks=${size#* }
   total_lines=$((total_lines + lines))
   total_hunks=$((total_hunks + hunks))
+  # A test file upstream has (a new one beside it is ours) that we changed.
+  if [[ $file =~ \.(test|spec)\.[cm]?[jt]sx?$ ]] && git cat-file -e "$here_mb:$file" 2> /dev/null &&
+    ! grep -qxF "$file" <<< "$listed_tests"; then
+    printf '  TEST        %4s %3s  %s  (a test of upstream, edited: our case goes in a file of ours, a test our change breaks in stemcells/upstream-skips.txt)\n' "$lines" "$hunks" "$file"
+    edited=1
+  fi
   if ! grep -qF "\`$file\`" "$seams"; then
     printf '  DRIFT %4s  %4s %3s  %s  (not in %s)\n' "$heat" "$lines" "$hunks" "$file" "$seams"
     unlisted=1
@@ -198,8 +218,33 @@ while IFS= read -r file; do
   fi
 done < <(grep -E '^\| *`' "$seams" | cut -d'|' -f2 | grep -oE '`[^`]+`' | tr -d '`' | sort -u)
 
+# The still-edited tests list only shrinks: each line names a test we still
+# change, says why, and was there at the base.
+base_tests=""
+base_has_tests=0
+if [ -n "$base_ref" ] && git cat-file -e "$base_ref:$tests" 2> /dev/null; then
+  base_has_tests=1
+  base_tests=$(edited_tests_at "$base_ref" | awk '{print $1}')
+fi
+while read -r file why; do
+  [ -z "$file" ] && continue
+  if ! grep -qxF "$file" <<< "$changed"; then
+    printf '  STALE       %s  (named in %s, same as upstream: drop its line)\n' "$file" "$tests"
+    edited=1
+  elif [ -z "$why" ]; then
+    printf '  TEST        %s  (its line in %s gives no reason)\n' "$file" "$tests"
+    edited=1
+  elif [ "$base_has_tests" = 1 ] && ! grep -qxF "$file" <<< "$base_tests"; then
+    printf '  TEST        %s  (new in %s, which only shrinks)\n' "$file" "$tests"
+    edited=1
+  fi
+done <<< "$(edited_tests_at "")"
+
 echo "$(grep -c . <<< "$changed" || true) upstream files changed, $total_lines lines in $total_hunks hunks; $hot hot"
+if [ "$edited" = 1 ]; then
+  echo "drift: we never edit upstream's tests; see $tests (stemcells/docs/fork.md, rule 1)" >&2
+fi
 if [ "$over" = 1 ]; then
   echo "drift: a hot file grew past its budget, or its row is malformed; see $seams, Hot-file budget (stemcells/docs/fork.md, rule 7)" >&2
 fi
-[ "$unlisted" = 0 ] && [ "$stale" = 0 ] && [ "$over" = 0 ]
+[ "$unlisted" = 0 ] && [ "$stale" = 0 ] && [ "$over" = 0 ] && [ "$edited" = 0 ]

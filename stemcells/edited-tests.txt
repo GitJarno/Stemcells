@@ -1,0 +1,36 @@
+# Upstream's test files we still edit, each with why. We never edit upstream's
+# tests (`stemcells/docs/fork.md`, rule 1): our own cases go in our own files,
+# and a test of upstream's that our change breaks goes on
+# `stemcells/upstream-skips.txt`. These are what's left from before that rule.
+# `stemcells/scripts/drift` fails on a changed upstream test this list doesn't
+# name, on a line whose file is upstream's again, and on a line the base
+# doesn't have: the list only shrinks.
+#
+#   <test file> <why it is still edited>
+
+apps/desktop/src/app/DesktopAppIdentity.test.ts pins T3's name and profile folder, which Stemcells' identity replaces
+apps/desktop/src/app/DesktopClerk.test.ts pins T3's profile folder, which is `sh.stemcells.app` here
+apps/desktop/src/app/DesktopEnvironment.test.ts pins T3's state folder, which is `.stemcells` here
+apps/desktop/src/app/DesktopPreReadyPlatform.test.ts pins T3's profile folder, which is `sh.stemcells.app` here
+apps/desktop/src/app/DesktopUserData.test.ts pins T3's profile folder, which is `sh.stemcells.app` here
+apps/mobile/app.config.test.ts pins T3's thread links, which `withoutT3AppLinks` drops
+apps/mobile/scripts/generate-uniwind-themes.test.ts pins T3's dark palette, which the phone's look replaces
+apps/mobile/src/features/threads/threadAgentsPresentation.test.ts pins "Working", which reads Flying here
+apps/mobile/src/lib/filePreview.test.ts mocks Cell Mail's fold, which its mocks of the feed's parts can't load
+apps/mobile/src/lib/mobileTheme.test.ts pins T3's dark palette, which the phone's look replaces
+apps/mobile/src/state/queued-run-edit.test.ts pins that a queued edit is dropped, which ours keeps
+apps/server/src/cli/app.test.ts pins T3's state folder, which is `.stemcells` here
+apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts pins where Claude compacts, which our auto-compact window moves
+apps/server/src/serverRuntimeStartup.test.ts pins the starter thread, which Stemcells never launches
+apps/web/src/components/ChatMarkdown.browser.test.tsx pins the favicon URL and T3's model names, which ours drop and rename
+apps/web/src/components/ChatView.modelPick.browser.test.tsx pins T3's model names, and reaches the picker past Stemcells' column
+apps/web/src/components/ThreadTerminalDrawer.browser.test.tsx its mock of the terminal surface lacks the font our drawer substitute measures
+apps/web/src/components/chat/ThreadRelationshipsControl.browser.test.tsx pins "Previous agents", which reads "Previous Subcells" here
+apps/web/src/components/chat/queuedMessageEdit.test.ts pins that a queued edit is dropped, which ours keeps
+apps/web/src/components/desktopUpdate.logic.test.ts pins T3's release history, which our substitute answers with merged pull requests
+apps/web/src/components/guest/GuestPage.browser.test.tsx pins T3's model names, which ours rename
+apps/web/src/components/media/MediaActions.test.tsx calls the component as a function, which our substitute wraps in an element
+apps/web/src/keybindings.test.ts presses upstream's dictation chord, which is ⌥⇧⌘D here
+apps/web/src/speech/useDictationShortcut.browser.test.tsx presses upstream's dictation chord, which is ⌥⇧⌘D here
+packages/client-runtime/src/queuedRunEdit.test.ts pins that a queued edit is dropped, which ours keeps
+scripts/build-desktop-artifact.test.ts pins T3's bundle id, which the build reads from ours

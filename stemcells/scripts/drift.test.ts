@@ -78,6 +78,7 @@ function repository(): {
   git("init", "-q", "-b", "upstream");
   write("app/hot.ts", lines("hot", 40));
   write("app/cold.ts", lines("cold", 10));
+  write("app/cold.test.ts", lines("coldTest", 10));
   git("add", ".");
   git("commit", "-q", "-m", "upstream: start");
   for (const turn of [1, 2]) {
@@ -189,5 +190,61 @@ describe("drift's hot-file budget", () => {
     expect(out).toContain("| Hunks | 2 | 3 |");
     expect(out).toContain("| `app/hot.ts` | 3 | 2, 1 | 4, 2 |");
     expect(code).toBe(0);
+  });
+});
+
+describe("drift's list of upstream tests still edited", () => {
+  const SEAMS_WITH_TEST = `${SEAMS}| \`app/cold.test.ts\`, \`app/ours.test.ts\` | Tests | A seam |\n`;
+  const LIST = "stemcells/edited-tests.txt";
+
+  /** Our main edits upstream's test and has it on the list. */
+  function withEditedTest() {
+    const repo = repository();
+    repo.write("stemcells/seams.md", SEAMS_WITH_TEST);
+    repo.edit("app/cold.test.ts", 2, "export const ours = 2;");
+    repo.write("app/ours.test.ts", "export const ours = 1;\n");
+    repo.write(LIST, "# Why each is still edited.\napp/cold.test.ts pins a name of ours\n");
+    repo.git("add", ".");
+    repo.git("commit", "-q", "-m", "ours: an edited test, listed");
+    repo.git("update-ref", "refs/remotes/origin/main", "HEAD");
+    return repo;
+  }
+
+  it("passes an edited test the list names, and a new test file of ours beside it", () => {
+    const { code, out } = withEditedTest().run();
+    expect(out).not.toMatch(/TEST|STALE/);
+    expect(code).toBe(0);
+  });
+
+  it("fails on an edited upstream test the list doesn't name, or names without a reason", () => {
+    for (const list of ["", "app/cold.test.ts\n"]) {
+      const repo = withEditedTest();
+      repo.write(LIST, list);
+      const { code, out } = repo.run();
+      expect(out, list).toMatch(/TEST .*app\/cold\.test\.ts/);
+      expect(code, list).toBe(1);
+    }
+  });
+
+  it("fails on a line the base doesn't have: the list only shrinks", () => {
+    const repo = withEditedTest();
+    repo.git("rm", "-q", "--cached", LIST);
+    repo.git("commit", "-q", "-m", "ours: a base with an empty list");
+    repo.write(LIST, "# Empty.\n");
+    repo.git("add", LIST);
+    repo.git("commit", "-q", "-m", "ours: the list, empty");
+    repo.git("update-ref", "refs/remotes/origin/main", "HEAD");
+    repo.write(LIST, "app/cold.test.ts pins a name of ours\n");
+    const { code, out } = repo.run();
+    expect(out).toMatch(/TEST .*app\/cold\.test\.ts .*only shrinks/);
+    expect(code).toBe(1);
+  });
+
+  it("fails on a line whose test is upstream's again", () => {
+    const repo = withEditedTest();
+    repo.git("checkout", "upstream/main", "--", "app/cold.test.ts");
+    const { code, out } = repo.run();
+    expect(out).toMatch(/STALE .*app\/cold\.test\.ts .*drop its line/);
+    expect(code).toBe(1);
   });
 });
