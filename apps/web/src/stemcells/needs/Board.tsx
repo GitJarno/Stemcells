@@ -9,6 +9,7 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { boardOf, VERDICTS, type BoardRow } from "./boardRows";
 import { conditionLineOf } from "./conditionLines";
 import { continueHeld } from "./held";
+import { spansOf } from "./inline";
 import { openPeek } from "./peeking";
 import { RunFacts } from "./RunFacts";
 import { useNeeds } from "./stream";
@@ -163,10 +164,20 @@ function Stage(props: {
 /** A Cell in one line, for a figure's tooltip and its name to a screen reader. */
 function saidOf(row: BoardRow): string {
   const verdict = row.verdict === null ? null : VERDICTS[row.verdict].name;
-  return [cellNameOf(row.threadId), row.title, verdict, row.line ?? row.why]
-    .filter(Boolean)
-    .join(" · ");
+  const says = row.line ?? row.why;
+  const words = says ? spansOf(says).map((span) => span.text) : [];
+  return [cellNameOf(row.threadId), row.title, verdict, words.join("")].filter(Boolean).join(" · ");
 }
+
+/** A Cell's line as its cards draw it; a link is its words only, the row being one button. */
+const wordsOf = (says: string) =>
+  spansOf(says).map((span, index) => {
+    // oxlint-disable-next-line react/no-array-index-key -- The spans of one line, in its order.
+    if (span.kind === "code") return <code key={index}>{span.text}</code>;
+    // oxlint-disable-next-line react/no-array-index-key -- The spans of one line, in its order.
+    if (span.kind === "strong") return <strong key={index}>{span.text}</strong>;
+    return span.text;
+  });
 
 function Row(props: { row: BoardRow; environmentId: string; now: number }) {
   const { row } = props;
@@ -197,7 +208,7 @@ function Row(props: { row: BoardRow; environmentId: string; now: number }) {
               <span className="sr-only">{verdict.name} </span>
             </b>
           )}
-          {says}
+          {says ? wordsOf(says) : null}
         </span>
       ) : null}
       {row.changed !== null || row.facts.length > 0 ? (
