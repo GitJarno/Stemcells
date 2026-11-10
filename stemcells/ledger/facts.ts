@@ -3,13 +3,13 @@
 // kept for good: it outlives its chat, a rollback and upstream's schema. It carries no title,
 // no words a Cell or the person wrote and no path.
 
-/** Its chat was made. */
+/** Its chat was made, at the fact's time, and has run: the fact is kept from its first run on. */
 export interface Born {
   /** The name it was dealt (`stemcells/words/cellNames.ts`), kept should the names change. */
   readonly name: string;
   /**
-   * The driver (`claudeAgent`, `codex`, …) of the provider its first run ran on, or of the one
-   * it was made with when it hadn't run yet; the instance's id when the driver is unknown.
+   * The driver (`claudeAgent`, `codex`, …) of the provider its first run ran on; the
+   * instance's id when the driver is unknown.
    */
   readonly driver: string | null;
   readonly projectId: string;

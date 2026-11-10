@@ -17,18 +17,21 @@ function isoOf(words: string | null): string | null {
   return Number.isFinite(ms) ? DateTime.formatIso(DateTime.makeUnsafe(ms)) : null;
 }
 
-/** The facts of a chat itself: it was made, it is settled, a pull request of its merged. */
+/** The facts of a chat itself: it was born, it is settled, a pull request of its merged. */
 export function factsOf(thread: LedgerThread): Fact[] {
   const { threadId } = thread;
-  const facts: Fact[] = [
-    {
+  const facts: Fact[] = [];
+  // Born of its first run, on that run's provider: a chat read as it is made and one read long
+  // after then say the same, though the first write is kept.
+  if (thread.ran) {
+    facts.push({
       key: `born:${threadId}`,
       kind: "born",
       threadId,
       at: thread.createdAt,
       data: { name: cellNameOf(threadId), driver: thread.driver, projectId: thread.projectId },
-    },
-  ];
+    });
+  }
   // Each settle is its own fact: a chat settled, taken up again and settled again did both.
   if (thread.settledAt !== null) {
     facts.push({

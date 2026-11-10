@@ -61,10 +61,15 @@ export class Ledger extends Context.Service<
  */
 const BATCH = 10;
 const RUNS = 50;
+/** The runs a landing's read takes at once, newest first: the new one is among the first. */
+const NEWEST = 10;
 const PAUSE = Duration.millis(200);
 /** The backfill waits this long after the server is ready. */
 const BACKFILL_AFTER = Duration.seconds(20);
-/** A quiet tap still has how far it read noted this often, so a restart replays little. */
+/**
+ * While the tap hears events that name no chat, how far it heard is noted this often, so a
+ * restart replays little. A tap that hears nothing has nothing new to note.
+ */
 const NOTE_EVERY_MS = 60_000;
 /** After a failed read the ledger carries on from what it last noted. */
 const RESTART_AFTER = Duration.seconds(5);
@@ -115,14 +120,22 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
       store.append(facts, source.environmentId, DateTime.formatIso(now)),
     );
 
-  /**
-   * Reads these chats and keeps every fact of theirs the ledger doesn't hold yet. Their runs
-   * are read a slice at a time, with a pause between, however many a chat has.
-   */
-  const record = Effect.fn("Ledger.record")(function* (threadIds: ReadonlyArray<string>) {
+  /** Keeps these chats' own facts, and says which of them are Cells'. */
+  const recordChats = Effect.fn("Ledger.recordChats")(function* (threadIds: ReadonlyArray<string>) {
     const threads = yield* reading(source.threads(threadIds));
-    let kept = yield* keep(yield* reading(Effect.sync(() => threads.flatMap(factsOf))));
-    const cells = threads.map((thread) => thread.threadId);
+    const kept = yield* keep(yield* reading(Effect.sync(() => threads.flatMap(factsOf))));
+    return { kept, cells: threads.map((thread) => thread.threadId) };
+  });
+
+  /**
+   * Reads these chats whole and keeps every fact of theirs the ledger doesn't hold yet: the
+   * backfill's read. Their runs are read a slice at a time, oldest first, with a pause between,
+   * however many a chat has.
+   */
+  const recordWhole = Effect.fn("Ledger.recordWhole")(function* (threadIds: ReadonlyArray<string>) {
+    const chats = yield* recordChats(threadIds);
+    let kept = chats.kept;
+    const cells = chats.cells;
     let after: UpstreamLedger.RunCursor | null = null;
     while (cells.length > 0) {
       // One more than a slice says whether another follows.
@@ -135,6 +148,41 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
       if (read.length <= RUNS || last === undefined) break;
       after = { threadId: last.threadId, ordinal: last.ordinal };
       yield* Effect.sleep(PAUSE);
+    }
+    return kept;
+  });
+
+  /**
+   * Reads what can be new of these chats: the tap's read. A chat's runs are read newest first
+   * and only until one whose landing the ledger holds, so a landing costs one small read
+   * however long its chat is. What it finds is kept oldest first: the landings held are then
+   * always every one up to some run, which is what lets the next read stop at the first held.
+   */
+  const recordNew = Effect.fn("Ledger.recordNew")(function* (threadIds: ReadonlyArray<string>) {
+    const chats = yield* recordChats(threadIds);
+    let kept = chats.kept;
+    for (const threadId of chats.cells) {
+      const fresh: Array<ReadonlyArray<Fact>> = [];
+      let before: number | null = null;
+      for (;;) {
+        // One more than a slice says whether another follows.
+        const read: ReadonlyArray<UpstreamLedger.LedgerRun> = yield* reading(
+          source.newestRuns(threadId, before, NEWEST + 1),
+        );
+        const runs = read.slice(0, NEWEST);
+        const landed = yield* reading(Effect.sync(() => runs.flatMap(landedOf)));
+        const held = yield* store.holds(landed.map((fact) => fact.key));
+        const unheld = landed.filter((fact) => !held.has(fact.key));
+        if (unheld.length > 0) fresh.push(unheld.toReversed());
+        const last = runs.at(-1);
+        if (held.size > 0 || read.length <= NEWEST || last === undefined) break;
+        before = last.ordinal;
+        yield* Effect.sleep(PAUSE);
+      }
+      for (const [index, facts] of fresh.toReversed().entries()) {
+        if (index > 0) yield* Effect.sleep(PAUSE);
+        kept += yield* keep(facts);
+      }
     }
     return kept;
   });
@@ -171,20 +219,22 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
   });
 
   /**
-   * `record`, with a way past a chat that can't be read. Chats that failed together are tried
-   * one at a time; one that fails alone fails its caller, which tries again later, until its
-   * `GIVE_UP_AFTER`th failure skips it. A failure of our own file is no chat's and skips none.
+   * A read, `whole` or of what can be new, with a way past a chat that can't be read. Chats
+   * that failed together are tried one at a time; one that fails alone fails its caller, which
+   * tries again later, until its `GIVE_UP_AFTER`th failure skips it. A failure of our own file
+   * is no chat's and skips none.
    */
   const recordOrSkip: (
     threadIds: ReadonlyArray<string>,
-  ) => Effect.Effect<number, SqlError | ChatUnreadableError> = (threadIds) =>
-    record(threadIds).pipe(
+    whole: boolean,
+  ) => Effect.Effect<number, SqlError | ChatUnreadableError> = (threadIds, whole) =>
+    (whole ? recordWhole(threadIds) : recordNew(threadIds)).pipe(
       Effect.tap(() => readFine(threadIds)),
       Effect.catchTags({
         ChatUnreadableError: (error) =>
           threadIds.length === 1
             ? strike(threadIds[0]!, error)
-            : Effect.forEach(threadIds, (threadId) => recordOrSkip([threadId])).pipe(
+            : Effect.forEach(threadIds, (threadId) => recordOrSkip([threadId], whole)).pipe(
                 Effect.map((kept) => kept.reduce((sum, each) => sum + each, 0)),
               ),
       }),
@@ -249,6 +299,13 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
     taps++;
     seen = from;
     notedAt = yield* Clock.currentTimeMillis;
+    // Each start tries the skipped chats again: one skipped while the reader was busy, with
+    // nothing wrong of its own, would else stay unread until an event named it.
+    if (skipped.size > 0) {
+      for (const threadId of skipped) pending.add(threadId);
+      Latch.closeUnsafe(settled);
+      yield* Queue.offer(drainWanted, undefined);
+    }
     yield* Queue.offer(backfillWanted, undefined);
     let read = false;
     yield* source.changes(from).pipe(
@@ -288,7 +345,7 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
     yield* Effect.gen(function* () {
       for (; done < threadIds.length; done += BATCH) {
         if (done > 0) yield* Effect.sleep(PAUSE);
-        yield* recordOrSkip(threadIds.slice(done, done + BATCH));
+        yield* recordOrSkip(threadIds.slice(done, done + BATCH), false);
       }
     }).pipe(
       Effect.onError(() =>
@@ -306,6 +363,24 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
     if (pending.size === 0) yield* settled.open;
   });
 
+  /**
+   * Notes the backfill's progress, unless the tap started over since `pass` began; whether it
+   * did. In one transaction, so a start-over's own clearing waits and lands after: a note made
+   * a moment before one can't outlive it.
+   */
+  const noteBackfill = (
+    pass: number,
+    name: "backfill.cursor" | "backfill.finished",
+    value: string,
+  ) =>
+    store.together(
+      Effect.suspend(() =>
+        pass === startOvers
+          ? Effect.as(store.setProgress(name, value), true)
+          : Effect.succeed(false),
+      ),
+    );
+
   /** Every chat, a batch at a time with a pause between: it never holds the server up. */
   const backfillPass = Effect.gen(function* () {
     if ((yield* store.progress("backfill.finished")) === null) {
@@ -316,15 +391,14 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
       for (;;) {
         const threadIds = yield* source.threadIdsAfter(cursor, BATCH);
         if (threadIds.length === 0) break;
-        kept += yield* recordOrSkip(threadIds);
-        // The tap started over meanwhile: this pass is void, and the one it asked for begins again.
-        if (pass !== startOvers) return;
+        kept += yield* recordOrSkip(threadIds, true);
         cursor = threadIds.at(-1)!;
-        yield* store.setProgress("backfill.cursor", cursor);
+        // The tap started over meanwhile: this pass is void, and the one it asked for begins again.
+        if (!(yield* noteBackfill(pass, "backfill.cursor", cursor))) return;
         yield* Effect.sleep(PAUSE);
       }
-      if (pass !== startOvers) return;
-      yield* store.setProgress("backfill.finished", DateTime.formatIso(yield* DateTime.now));
+      const finished = DateTime.formatIso(yield* DateTime.now);
+      if (!(yield* noteBackfill(pass, "backfill.finished", finished))) return;
       yield* Effect.logInfo("The ledger read every chat from before it").pipe(
         Effect.annotateLogs({ facts: kept, skipped: skipped.size }),
       );

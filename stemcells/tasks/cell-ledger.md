@@ -52,8 +52,8 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   deleted chat still reads, as upstream keeps its rows.
 - **Live**, the tap is upstream's own event stream, the one the needs list
   follows. Only an event that can make a fact has its chat read: a chat
-  made, a run completed, a chat settled, a pull request's state read. A Cell
-  streams thousands of other events an hour.
+  made, its first run asked for, a run completed, a chat settled, a pull
+  request's state read. A Cell streams thousands of other events an hour.
 - **The tap only listens.** It names the chats to read and how far it has
   heard, and reads none itself: upstream holds what a slow listener hasn't
   taken in a buffer of 1,000 events that fails when full. A drain of its
@@ -68,18 +68,30 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   starts.
 - **A read is bounded by its work**: 10 chats, and 50 of their runs, with
   200 ms before the next. A chat of hundreds of runs is read a slice at a
-  time and never whole, live and in the backfill alike. A run's reply is
-  read whole all the same: the close-out is told from a code block by the
-  fences above it, so a reply's last lines alone can misread it.
+  time and never whole. A run's reply is read whole all the same: the
+  close-out is told from a code block by the fences above it, so a reply's
+  last lines alone can misread it.
+- **A landing reads only what can be new.** The backfill reads a chat
+  whole, oldest first. The tap's read takes a chat's 10 newest runs and
+  goes further back only until a run whose landing the ledger holds, so a
+  landing costs one small read however long its chat is. What it finds is
+  kept oldest first: the landings held are then always every one up to
+  some run, which is what lets the next read stop at the first it holds.
+  A run that lands after ten newer ones have is the one it would miss.
 - **A chat that can't be read is skipped**, not waited on. Chats that
   failed together are tried one at a time; one that fails alone three
   times running is left out, logged and counted (`skipped` on the
-  endpoint), and the cursor and the note move on. Read fine later, it is
-  counted no more. A failure of our own file skips nothing.
+  endpoint), and the cursor and the note move on. Each start of the tap
+  tries the skipped again, since a busy reader can skip a chat with
+  nothing wrong of its own. Read fine later, it is counted no more. A
+  failure of our own file skips nothing.
 - **The backfill** is the same deriver over every chat, once: 20 s after
   the server is ready, on SQLite's reader as `upstream/arcs.ts` reads. It
-  notes its cursor after each batch and that it finished. When upstream's log no longer reaches the tap's
-  note (pruned, or another database), the tap starts from now and every
+  notes its cursor after each batch and that it finished, each in one
+  transaction with the check that the tap hasn't started over: a start-over
+  clears both, and a note made a moment before one could else land after
+  the clearing and outlive it. When upstream's log no longer reaches the
+  tap's note (pruned, or another database), the tap starts from now and every
   chat is read again; nothing is kept twice. A note the log can't be
   replayed from (an event this build can't read) is given up the same way,
   once a run, so a broken stream doesn't read every chat over and over.
@@ -100,10 +112,11 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   the event. A chat settled and taken up again before that read has no
   `settled` fact for that settle, and a settle from before the ledger shows
   only while the chat is still settled.
-- **The driver is its first run's.** Each run keeps the provider it ran
-  on, so a chat that switched provider before the ledger first read it is
-  still born with the first. One that hasn't run is born with the provider
-  it was made with.
+- **A Cell is born of its first run**, on that run's provider. The fact is
+  dated when the chat was made and kept once it has a run, so a chat read
+  as it is made and one read long after say the same: the first write is
+  kept, and a chat made on one provider may first run on another. A chat
+  that never ran has no `born`.
 - **The ledger's own tap, not the needs list's.** It needs each event's
   kind to skip the ones that make no fact, and its sequence to carry on
   after a restart. Both come from the same upstream call.
@@ -160,6 +173,13 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
   the skip, the newer file, the merge time, the first run's driver and the
   asks. It also asked for a reply's tail alone to be read; that is left,
   for the fences.
+- **A third review** found a skipped chat never tried again, every landing
+  reading its whole chat, `born` written before the run whose provider it
+  names, and a test that failed only at the run's timeout. All four are as
+  above now; a milestone that never comes fails its test at once. It asked
+  whether a start-over could leave a stale backfill cursor: it could, when
+  the backfill's fiber gives way between its check and its write, and the
+  transaction closes that.
 - **Not measured:** a real database of 10 GB, read cold. Its batches will
   read slower, and a request whose session read queues behind one waits
   that long; the small batch and the pause are what bound it.
@@ -169,7 +189,5 @@ Achievements follow in `cell-marks.md`, as pure functions over these facts.
 
 ## Left
 
-- Achievements over the facts, and their place in Settings › Lineage
-  (`cell-marks.md`).
 - A fact for a fork's parent, a provider switch or a failure: none is
   needed by a mark yet.
