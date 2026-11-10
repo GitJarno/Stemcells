@@ -159,6 +159,12 @@
   color: var(--sc-faint);
   font-size: 0.75rem;
 }
+/* What holds the Cells under it, and until when: the reset drops to its own line when narrow. */
+[data-cells-holding] {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: var(--sc-space-sm);
+}
 [data-cells-head] > button {
   margin-inline-start: auto;
   color: var(--sc-dim);

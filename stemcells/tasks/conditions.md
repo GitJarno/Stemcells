@@ -46,9 +46,10 @@ minutes, its reset a day away.
 
 ## Slices
 
-- [ ] 1. Server: conditions for limits, `holds`, no limit ask, the report
-      and the push. Web: the line in Aski's room, Holding in the Cells'
-      column and on the board.
+- [x] 1. Server: conditions for limits, `holds`, no limit ask, the report
+      and the push. Web: Holding leads the board in Aski's room, and the
+      Cells' column counts held Cells beside Flying and lists them under
+      what holds them.
 - [ ] 2. Resume: a sub-task carries on only while its parent still waits
       on it; a Cell that gets through shows the limit has lifted, so the
       rest follow, which covers a limit with no stated reset; the person's
@@ -61,3 +62,17 @@ minutes, its reset a day away.
       already signed in.
 - [ ] 5. The other shared causes as conditions: a signed-out account, an
       outage, the network.
+
+## Review
+
+- Slice 1 was seen in a lab with a limit put into the server's own list:
+  the lab's Replay provider can't hit one. The needs service itself is
+  held by tests: a limited Cell makes no ask, stands `working` with
+  `holds`, and its condition crosses the wire as the phone reads it.
+- The web keeps its limit card for a server from before conditions, which
+  still asks per Cell.
+- The phone shows no limit ask from a server with conditions, and a held
+  Cell where its own tabs put it; Holding there is slice 4.
+- `stemcells_standing` gains a Holding section in its report. Its
+  description and schema are unchanged: they are text a model reads, and
+  their evals cost money to run.

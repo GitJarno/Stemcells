@@ -467,9 +467,8 @@ function Holding(props: { condition: Condition; cells: ReadonlyArray<Row> }) {
   return (
     <>
       <div data-cells-head="" data-cells-holding="">
-        <span>
-          Holding · {line.what} · {line.when}
-        </span>
+        <span>Holding · {line.what}</span>
+        <span>{line.when}</span>
       </div>
       <Rows label="Holding" cells={props.cells} settles />
     </>
