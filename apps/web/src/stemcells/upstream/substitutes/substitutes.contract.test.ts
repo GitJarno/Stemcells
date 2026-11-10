@@ -64,6 +64,7 @@ import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePaste
 import * as UpstreamSideChatPane from "../../../components/chat/SideChatPane";
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
+import * as UpstreamAssistantRows from "../../../components/chat/TimelineAssistantRows";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
 import * as UpstreamWorkEntryRow from "../../../components/chat/TimelineWorkEntryRow";
 import * as UpstreamWorkspaceFileDrop from "../../../components/chat/workspaceFileDrop";
@@ -131,6 +132,7 @@ import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
 import * as OurSideChatPane from "./SideChatPane";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
+import * as OurAssistantRows from "./TimelineAssistantRows";
 import * as OurUserMessageRow from "./TimelineUserMessageRow";
 import * as OurWorkEntryRow from "./TimelineWorkEntryRow";
 import * as OurWorkspaceFileDrop from "./workspaceFileDrop";
@@ -346,8 +348,19 @@ const CASES: Readonly<Record<string, Case>> = {
     upstream: UpstreamChatMarkdown,
     substitute: OurChatMarkdown satisfies typeof UpstreamChatMarkdown,
     importers: {
-      // Where a reply is drawn: Aski's settings in it.
+      // Where a reply is drawn: Aski's settings in it, and its close-out as a card.
       "apps/web/src/components/chat/TimelineAssistantRows.tsx": ["../ChatMarkdown", []],
+    },
+  },
+  "apps/web/src/components/chat/TimelineAssistantRows.tsx": {
+    upstream: UpstreamAssistantRows,
+    substitute: OurAssistantRows satisfies typeof UpstreamAssistantRows,
+    importers: {
+      // The timeline draws an assistant's reply through it.
+      "apps/web/src/components/chat/MessagesTimeline.tsx": [
+        "./TimelineAssistantRows",
+        ["AssistantTimelineRow"],
+      ],
     },
   },
   "apps/web/src/components/ThreadContextChip.tsx": {

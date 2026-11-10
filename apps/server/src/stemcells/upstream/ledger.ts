@@ -217,8 +217,8 @@ export const readLedgerThreads = Effect.fn("StemcellsLedger.readThreads")(functi
 
 /**
  * A page of runs, on SQLite's reader. A reply is read whole: the close-out is told from a code
- * block by the fences above it (`needs/closeOut.ts`), so its last lines alone can misread it.
- * The page's size is what bounds the read.
+ * block by the fences above it (`stemcells/closeOut/closeOut.ts`), so its last lines alone can
+ * misread it. The page's size is what bounds the read.
  */
 const readRuns = Effect.fn("StemcellsLedger.readRuns")(function* (
   /** Which runs, and in what order: what follows `WHERE`. */

@@ -1,6 +1,6 @@
 /**
  * Stemcells' close-out (stemcells/tasks/aski-manager.md, 7 and 8; landing-asks.md, 1): each stop
- * says where the Cell stands, for `apps/server/src/stemcells/needs/closeOut.ts` to read. It grants
+ * says where the Cell stands, for `stemcells/closeOut/closeOut.ts` to read. It grants
  * nothing: mode and project rules still decide. Kept under the 4,000 bytes a Codex entry holds
  * whole. Change it with its evals (`stemcells/evals/`).
  */
