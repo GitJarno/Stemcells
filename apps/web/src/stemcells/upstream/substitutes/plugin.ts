@@ -114,6 +114,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/ThreadContextChip.tsx": "ThreadContextChip.tsx",
   // A setting Aski links in a reply draws as its live switch.
   "apps/web/src/components/ChatMarkdown.tsx": "ChatMarkdown.tsx",
+  // An assistant reply's row says so, and its markdown draws the reply's close-out as a card.
+  "apps/web/src/components/chat/TimelineAssistantRows.tsx": "TimelineAssistantRows.tsx",
   // The work verbs: the timeline hands its rows the chat's verbs in our
   // context, read off the entries it draws.
   "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
