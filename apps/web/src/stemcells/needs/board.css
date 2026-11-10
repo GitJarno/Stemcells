@@ -43,9 +43,27 @@
   white-space: nowrap;
 }
 [data-board-words] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sc-space-md);
   margin: 0;
   color: var(--sc-dim);
   font-size: calc(var(--sc-body) + var(--sc-meta-size));
+}
+[data-board-words] > button {
+  color: var(--sc-soft);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+[data-board-words] > button:hover:not(:disabled) {
+  color: var(--sc-text);
+}
+[data-board-words] > button:disabled {
+  color: var(--sc-faint);
+}
+[data-board-words] > [role="status"] {
+  color: var(--sc-error);
 }
 [data-board-stage] > h3 > span {
   font-variant-numeric: tabular-nums;

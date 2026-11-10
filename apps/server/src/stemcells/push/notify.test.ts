@@ -145,6 +145,7 @@ describe("what a push says", () => {
       threadId: title,
       projectId: "project-1",
       title,
+      runId: "run-1",
       since: "2026-11-04T09:58:00.000Z",
       carriesOn: true,
     });
@@ -169,6 +170,10 @@ describe("what a push says", () => {
     expect(bodyAt({ waits: "you" })).toBe("2 Cells hold. The limit resets 15:00.");
     expect(bodyAt({ waits: "you", resetAt: null })).toBe(
       "2 Cells hold. The limit didn't say when it resets.",
+    );
+    // Pushed once the person is away, which can be after the reset.
+    expect(bodyAt({ waits: "you", resetAt: "2026-11-04T09:00:00.000Z" })).toBe(
+      "2 Cells hold. The limit reset 09:00, and they are still stopped.",
     );
   });
 

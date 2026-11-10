@@ -35,8 +35,10 @@ minutes, its reset a day away.
 4. **A condition says what it waits on.** `reset`: a known reset, and
    Cells that carry on at it by themselves. `you`: no reset was stated, or
    it passed and they are still stopped, or none of them is armed. Its
-   line names the account, the reset and how many hold; open, it lists
-   them.
+   line names the account, the reset and how many hold, and lists them.
+   One that waits on the person offers Continue now, which sends each of
+   its Cells what its own banner's Continue sends. A Cell with an ask
+   stands in Input and under no condition.
 5. **One push a condition**, not one a Cell, and one line in Aski's
    report.
 6. **The words name no way past a limit.** The line states the account,
@@ -51,7 +53,7 @@ minutes, its reset a day away.
       Cells' column counts held Cells beside Flying and lists them under
       what holds them.
 - [ ] 2. Resume: a sub-task carries on only while its parent still waits
-      on it; a Cell that gets through shows the limit has lifted, so the
+      on it, and until then that parent reads Flying, which it isn't; a Cell that gets through shows the limit has lifted, so the
       rest follow, which covers a limit with no stated reset; the person's
       last-touched Cell goes first.
 - [ ] 3. Accounts on the line: the other signed-in accounts with their

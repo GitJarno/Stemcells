@@ -608,6 +608,14 @@ describe("the column's word that Stemcells gets better", () => {
 
   it("waits for Cells at work before it restarts, and says so, unless told to now", async () => {
     setup({ ...available, status: "downloaded", downloadedVersion: available.availableVersion });
+    await using stack = new AsyncDisposableStack();
+    const before = streamState();
+    stack.defer(() => {
+      stream = before;
+    });
+    // A Cell a usage limit holds runs nothing a restart could stop: it isn't waited for.
+    const held = { ...standing("thread-h", "working", ""), holds: "limit:claude:unknown" };
+    stream = { ...before, cells: [...before.cells, held] };
     await using screen = await render(
       <>
         <UpdateDriver />
@@ -708,6 +716,7 @@ describe("a Cell moving along the line", () => {
                 threadId: "thread-w",
                 projectId: "project-shop",
                 title: "Chat thread-w",
+                runId: "run-w",
                 since,
                 carriesOn: false,
               },

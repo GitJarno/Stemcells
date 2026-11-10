@@ -8,7 +8,6 @@ import * as DateTime from "effect/DateTime";
 
 import { isSnoozed, type Shell } from "../upstream/needs.ts";
 import type { Stop } from "./closeOut.ts";
-import { heldBy } from "./conditions.ts";
 import { ACTIVE_RUN, askiThreadOf, waitsOnItsOwn, type Need } from "./derive.ts";
 import type { Brief } from "./evidence.ts";
 import { landingOf, type Landing } from "./verdict.ts";
@@ -52,6 +51,8 @@ export function standingsOf(
   stops: ReadonlyMap<string, Stop>,
   now: number,
   briefs: ReadonlyMap<string, Brief> = new Map(),
+  /** Which condition holds each Cell (`holdsOf`): a held Cell stands as working. */
+  held: ReadonlyMap<string, string> = new Map(),
 ): ReadonlyArray<CellStanding> {
   const aski = askiThreadOf(shells);
   const needsYou = new Set(needs.flatMap((need) => [need.parentThreadId ?? need.threadId]));
@@ -63,7 +64,7 @@ export function standingsOf(
     if (shell.latestRunId === null && shell.activeRunId === null) return [];
     if (isSnoozed(shell, now)) return [];
     const stop = stops.get(shell.id) ?? null;
-    const holds = heldBy(shell);
+    const holds = held.get(shell.id) ?? null;
     const atWork =
       ACTIVE_RUN.has(shell.status) ||
       shell.activeRunId !== null ||

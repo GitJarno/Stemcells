@@ -203,6 +203,8 @@ export interface HeldCell {
   readonly threadId: string;
   readonly projectId: string;
   readonly title: string;
+  /** The run the limit stopped, which a "continue" picks up. */
+  readonly runId: string;
   /** When its run stopped. */
   readonly since: string;
   /** It carries on at the reset by itself. */

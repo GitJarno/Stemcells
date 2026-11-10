@@ -30,8 +30,8 @@ describe("a stop many Cells share", () => {
       [
         stopped("late"),
         stopped("early", { latestRunCompletedAt: at(-10 * MINUTE) }),
-        // A few seconds apart in the refusals is the same reset.
-        stopped("seconds", { usageLimitResetAt: DateTime.formatIso(at(5 * HOUR + 4000)) }),
+        // A minute apart in the refusals is the same reset, wherever the minute turns.
+        stopped("seconds", { usageLimitResetAt: DateTime.formatIso(at(5 * HOUR + MINUTE)) }),
         shellFixture({ id: "flying", status: "running", activeRunId: runId("run-2") }),
       ],
       NOW,
@@ -41,23 +41,27 @@ describe("a stop many Cells share", () => {
     expect(conditions[0]).toMatchObject({
       kind: "limit",
       providerInstanceId: "codex",
+      // The latest of its resets: by then every Cell's window has turned.
+      resetAt: DateTime.formatIso(at(5 * HOUR + MINUTE)),
       since: DateTime.formatIso(at(-10 * MINUTE)),
       waits: "reset",
     });
     expect(conditions[0]?.cells.map((cell) => cell.threadId)).toEqual(["early", "late", "seconds"]);
   });
 
-  it("leaves out a sub-task, and what the person settled, snoozed or archived", () => {
+  it("leaves out a sub-task, a Cell with an ask, and what the person settled, snoozed or archived", () => {
     const conditions = conditionsOf(
       [
         stopped("parent"),
         child("sub-task", "parent"),
+        stopped("asking"),
         stopped("settled", { settledOverride: "settled", settledAt: at(-MINUTE) }),
         stopped("snoozed", { snoozedUntil: at(HOUR), snoozedAt: at(-MINUTE) }),
         stopped("archived", { archivedAt: at(-MINUTE) }),
       ],
       NOW,
       true,
+      new Set(["asking"]),
     );
     expect(conditions.flatMap((condition) => condition.cells.map((cell) => cell.threadId))).toEqual(
       ["parent"],

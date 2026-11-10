@@ -72,7 +72,12 @@ describe("the room's board", () => {
   });
 
   it("lists a Cell a usage limit holds under the limit, and out of the ones flying", () => {
-    const held = { projectId: "p-harbor", since: "2026-11-10T09:00:00.000Z", carriesOn: true };
+    const held = {
+      projectId: "p-harbor",
+      runId: "run-1",
+      since: "2026-11-10T09:00:00.000Z",
+      carriesOn: true,
+    };
     const board = boardOf(
       [
         cell("otter", "working", { holds: "limit:claude:1" }),

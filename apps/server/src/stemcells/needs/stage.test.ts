@@ -14,6 +14,7 @@ import {
 } from "../upstream/needs.fixture.ts";
 import type { Stop } from "./closeOut.ts";
 import { ASKI_INSTANCE_ID, needOf, signalOf } from "./derive.ts";
+import { conditionsOf, holdsOf } from "./conditions.ts";
 import { standingsOf } from "./stage.ts";
 
 const done: Stop = { ask: null, waits: false, line: "the header fix, merged as #12" };
@@ -76,24 +77,13 @@ describe("a Cell's stage", () => {
     ]);
   });
 
-  it("is working while a run is under way, or while it waits on its own work or a reset", () => {
+  it("is working while a run is under way, or while it waits on its own work", () => {
     expect(stageOf(shellFixture({ status: "running", activeRunId: runId("run-2") }), null)).toBe(
       "working",
     );
     expect(stageOf(shellFixture({ status: "queued" }), null)).toBe("working");
     expect(stageOf(shellFixture({ blockedOnThreadWait: true }))).toBe("working");
     expect(stageOf(shellFixture(), { ask: null, waits: true, line: "CI on #40" })).toBe("working");
-    const carryingOn = shellFixture({
-      status: "failed",
-      lastErrorClass: "usage_limit",
-      lastVisitedAt: at(0),
-      limitRecovery: {
-        runId: runId("run-1"),
-        resetAt: DateTime.formatIso(at(HOUR)),
-        autoResume: true,
-      },
-    });
-    expect(stageOf(carryingOn)).toBe("working");
   });
 
   it("holds a Cell a usage limit stopped, armed or not: working on the wire, and neither asking nor done", () => {
@@ -103,7 +93,8 @@ describe("a Cell's stage", () => {
       usageLimitResetAt: null,
       latestRunCompletedAt: at(-MINUTE),
     });
-    const [cell] = standingsOf([stopped], cardsOf(stopped), new Map(), NOW);
+    const held = holdsOf(conditionsOf([stopped], NOW, false));
+    const [cell] = standingsOf([stopped], cardsOf(stopped), new Map(), NOW, new Map(), held);
     expect(cell).toMatchObject({
       stage: "working",
       holds: "limit:codex:unknown",

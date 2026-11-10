@@ -234,6 +234,7 @@ it.effect("a usage limit that holds many Cells reaches the phone as one push", (
       threadId,
       projectId: "project-1",
       title: threadId,
+      runId: "run-1",
       since,
       carriesOn: true,
     });

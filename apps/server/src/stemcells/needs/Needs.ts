@@ -24,7 +24,7 @@ import {
   type Signal,
 } from "./derive.ts";
 import { EMPTY_NUMBERING, renumber } from "./numbers.ts";
-import { conditionsOf, type Condition } from "./conditions.ts";
+import { conditionsOf, holdsOf, type Condition } from "./conditions.ts";
 import { standingsOf, type CellStanding } from "./stage.ts";
 
 /** A Cell the person settled by hand, on any device. */
@@ -189,11 +189,14 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
     }
     settles = settles.filter((settle) => now - settle.at < SETTLES_KEPT_MS);
+    // A Cell with an ask stands in Input, whatever else stopped it.
+    const asking = new Set(needs.map((need) => need.parentThreadId ?? need.threadId));
+    const conditions = conditionsOf([...shells.values()], now, autoResume, asking);
     const list: NeedsList = {
       needs: needs.toSorted((a, b) => a.number - b.number),
       later: later.toSorted((a, b) => a.until.localeCompare(b.until) || a.number - b.number),
-      cells: standingsOf([...shells.values()], needs, stops, now, briefs),
-      conditions: conditionsOf([...shells.values()], now, autoResume),
+      cells: standingsOf([...shells.values()], needs, stops, now, briefs, holdsOf(conditions)),
+      conditions,
       settles: settles.map((settle) => ({
         threadId: settle.threadId,
         at: DateTime.formatIso(DateTime.makeUnsafe(settle.at)),

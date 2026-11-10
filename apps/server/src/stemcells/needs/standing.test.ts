@@ -91,7 +91,12 @@ describe("the room in words", () => {
   });
 
   it("lists Cells a usage limit holds once, under the limit, and out of the Cells at work", () => {
-    const held = { projectId: "p-atlas", since: "2026-10-24T09:00:00.000Z", carriesOn: true };
+    const held = {
+      projectId: "p-atlas",
+      runId: "run-1",
+      since: "2026-10-24T09:00:00.000Z",
+      carriesOn: true,
+    };
     const standing = standingOf(
       {
         later: [],

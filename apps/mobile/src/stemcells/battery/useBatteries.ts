@@ -52,7 +52,8 @@ export function useBatteries(): ReadonlyArray<MachineBattery> {
 const flyingIn = (reading: Reading | undefined): number =>
   reading === undefined || reading.state === "none"
     ? 0
-    : (reading.list?.cells ?? []).filter((cell) => cell.stage === "working").length;
+    : (reading.list?.cells ?? []).filter((cell) => cell.stage === "working" && cell.holds == null)
+        .length;
 
 /** What Aski says of the machines' batteries, when something is at stake. */
 export function useBatteryLine(): string | null {

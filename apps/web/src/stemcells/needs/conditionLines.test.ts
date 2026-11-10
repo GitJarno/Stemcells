@@ -8,6 +8,7 @@ const held = (threadId: string, carriesOn = true) => ({
   threadId,
   projectId: "p-harbor",
   title: threadId,
+  runId: "run-1",
   since: "2026-11-04T09:58:00.000Z",
   carriesOn,
 });

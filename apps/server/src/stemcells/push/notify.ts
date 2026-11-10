@@ -116,6 +116,8 @@ export function alertWords(need: Need): { readonly title: string; readonly body:
   return { title: need.title.trim() || "A Cell", body: own === "" ? kind : clipped(own) };
 }
 
+const TITLE = "Usage limit reached";
+
 /** A reset's hour, with its day unless that is today, as this Mac's clock and tongue say them. */
 function whenOf(resetAt: number, now: number, locale?: string, timeZone?: string): string {
   const day = new Intl.DateTimeFormat(locale, { weekday: "long", timeZone });
@@ -138,14 +140,21 @@ export function conditionWords(
   const one = condition.cells.length === 1 && only !== undefined;
   const who = one ? only.title.trim() || "A Cell" : `${condition.cells.length} Cells`;
   const resetAt = Date.parse(condition.resetAt ?? "");
-  const when = Number.isNaN(resetAt) ? null : whenOf(resetAt, now, locale, timeZone);
+  const holds = `${who} ${one ? "holds" : "hold"}`;
+  if (Number.isNaN(resetAt)) {
+    return { title: TITLE, body: `${holds}. The limit didn't say when it resets.` };
+  }
+  const when = whenOf(resetAt, now, locale, timeZone);
+  const themselves = one ? "carries on by itself" : "carry on by themselves";
   const body =
-    when === null
-      ? `${who} ${one ? "holds" : "hold"}. The limit didn't say when it resets.`
+    resetAt <= now
+      ? condition.waits === "reset"
+        ? `${holds}. The limit reset ${when}, and ${one ? "it" : "they"} ${themselves}.`
+        : `${holds}. The limit reset ${when}, and ${one ? "it is" : "they are"} still stopped.`
       : condition.waits === "reset"
-        ? `${who} ${one ? "holds" : "hold"} until ${when}, then ${one ? "carries on by itself" : "carry on by themselves"}.`
-        : `${who} ${one ? "holds" : "hold"}. The limit resets ${when}.`;
-  return { title: "Usage limit reached", body };
+        ? `${holds} until ${when}, then ${themselves}.`
+        : `${holds}. The limit resets ${when}.`;
+  return { title: TITLE, body };
 }
 
 /** The conditions to push now: each standing at least `HOLD_MS`, so a quick sign-in buzzes nobody. */

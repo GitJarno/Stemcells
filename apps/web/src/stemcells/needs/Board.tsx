@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { cellNameOf } from "../cell/name";
 import { CellMini } from "../rail/CellMini";
 import { compactAge } from "../upstream/cellRow";
@@ -6,6 +8,7 @@ import { useAccountNames } from "../upstream/rail";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { boardOf, VERDICTS, type BoardRow } from "./boardRows";
 import { conditionLineOf } from "./conditionLines";
+import { continueHeld } from "./held";
 import { openPeek } from "./peeking";
 import { useNeeds } from "./stream";
 
@@ -49,6 +52,7 @@ export function Board(props: { compact: boolean }) {
               cause: [line.what, account, line.when].filter(Boolean).join(" · "),
               then: line.then,
             }}
+            {...(condition.waits === "you" ? { onContinue: () => continueHeld(condition) } : {})}
           />
         );
       })}
@@ -78,8 +82,13 @@ function Stage(props: {
   now: number;
   /** A holding stage's cause and what happens next. */
   words?: { readonly cause: string; readonly then: string };
+  /** Sends its Cells on, for a stage nothing else will; resolves with why one refused, if one did. */
+  onContinue?: () => Promise<string | null>;
 }) {
   const more = props.count - props.rows.length;
+  const [sending, setSending] = useState(false);
+  const [refused, setRefused] = useState<string | null>(null);
+  const { onContinue } = props;
   return (
     <div data-board-stage={props.stage}>
       <h3>
@@ -88,7 +97,27 @@ function Stage(props: {
         <span>{props.count}</span>
         {props.words ? <em>{props.words.cause}</em> : null}
       </h3>
-      {props.words ? <p data-board-words="">{props.words.then}</p> : null}
+      {props.words ? (
+        <p data-board-words="">
+          {props.words.then}
+          {onContinue ? (
+            <button
+              type="button"
+              disabled={sending}
+              onClick={() => {
+                setSending(true);
+                void onContinue().then((why) => {
+                  setRefused(why);
+                  setSending(false);
+                });
+              }}
+            >
+              Continue now
+            </button>
+          ) : null}
+          {refused === null ? null : <span role="status">{refused}</span>}
+        </p>
+      ) : null}
       {props.compact ? (
         <div data-board-figures="">
           {props.rows.map((row) => (
