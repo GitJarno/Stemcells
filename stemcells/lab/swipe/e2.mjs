@@ -8,6 +8,7 @@ import { labWindow, post } from "./post.mjs";
 import { swipe } from "./streams.mjs";
 
 const HERE = new URL(".", import.meta.url).pathname;
+const OUT = `${process.env.LAB ?? "/tmp/swipe-lab"}/out`;
 const pid = Number(NodeChildProcess.execFileSync(`${HERE}labpid.sh`, { encoding: "utf8" }).trim());
 const win = labWindow(pid);
 const page = await connect();
@@ -134,21 +135,21 @@ const cases = {
   single: () => run("single", [swipe({ travel: 300 })]),
   hard: () =>
     run("hard 1100px (walls)", [swipe({ travel: 1100, pace: 70, decay: 0.95 })], {
-      trace: "/tmp/swipe-lab/out/e2-hard.json",
+      trace: `${OUT}/e2-hard.json`,
     }),
   held: () =>
     run("single, main held 700 ms", [swipe({ travel: 300 })], {
       hold: 700,
-      trace: "/tmp/swipe-lab/out/e2-held.json",
+      trace: `${OUT}/e2-held.json`,
     }),
   blocked: () =>
     run(
       "single over the blocking box's page? (pointer over the proxy), main held",
       [swipe({ travel: 300 })],
-      { hold: 700, trace: "/tmp/swipe-lab/out/e2-blocked.json" },
+      { hold: 700, trace: `${OUT}/e2-blocked.json` },
     ),
   vertical: () =>
-    run("vertical scroll over inner list", [swipe({ travel: 1, pace: 1, dy: 30 })], {
+    run("vertical scroll over inner list", [swipe({ axis: "y", travel: 300 })], {
       point: [560, 200],
     }),
   inner: () =>
@@ -157,11 +158,11 @@ const cases = {
     run("swipe back at the first page (rubber bump)", [swipe({ travel: 300, direction: -1 })], {
       before:
         "l.page = 0; l.strip.style.transform = 'translate3d(0,0,0)'; l.knot([[l.MID - 1, 0], [l.MID - 0.5, -0.125], [l.MID, 0], [l.MID + 1, 1]])",
-      trace: "/tmp/swipe-lab/out/e2-rubber.json",
+      trace: `${OUT}/e2-rubber.json`,
     }),
   owed: () =>
     run("owed page: a spring on the strip while the proxy flings", [swipe({ travel: 300 })], {
-      trace: "/tmp/swipe-lab/out/e2-owed.json",
+      trace: `${OUT}/e2-owed.json`,
       during: {
         at: 260,
         run: `(() => { const l = __e2; l.walls(l.MID + 1, -1, 1) || 0; l.knot([[l.MID, 0], [l.MID + 1, 1], [l.MID + 2, 2]]); l.strip.animate([{ transform: "translate3d(-300%,0,0)" }, { transform: "translate3d(-400%,0,0)" }], { duration: 500, easing: "cubic-bezier(0.2,0.8,0.2,1)", fill: "forwards" }); return 1; })()`,

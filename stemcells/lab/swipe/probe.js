@@ -19,17 +19,18 @@
   const unphase = window.stemcellsScrollPhases?.subscribe((s) => {
     if (lab.on) lab.phases.push([s.t, performance.now(), s.phase, s.momentum, s.moved ? 1 : 0]);
   });
-  // Where the main thread has the strip: the old strip's transform, or a scroller's offset.
+  // Where the main thread has the strip, in pages.
   lab.position = () => {
     const pages = document.querySelector("[data-stemcells-pages]");
     const strip = document.querySelector("[data-stemcells-strip]");
     if (!pages || !strip) return null;
-    const width = pages.clientWidth;
-    if (pages.hasAttribute("data-lab-scroller") || strip.style.transform === "") {
-      return Number(pages.dataset.labBase ?? 0) + pages.scrollLeft / width;
-    }
-    const t = getComputedStyle(strip).transform;
-    return t === "none" ? 0 : -new DOMMatrixReadOnly(t).m41 / width;
+    const width = strip.clientWidth;
+    const moved = (element) => {
+      const t = element ? getComputedStyle(element).transform : "none";
+      return t === "none" ? 0 : new DOMMatrixReadOnly(t).m41;
+    };
+    // The strip's own place, and with it what the hold round it adds as it follows the proxy.
+    return -(moved(strip) + moved(strip.closest("[data-stemcells-hold]"))) / width;
   };
   let raf = 0;
   const loop = (t) => {

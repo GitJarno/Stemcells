@@ -4,14 +4,15 @@ if (process.versions.electron && process.type === "browser") {
   const http = require("node:http");
   const fs = require("node:fs");
   const path = require("node:path");
+  /** Where `build.sh` put the addon; the streams it is handed pass through here too. */
+  const bin = process.env.LAB_BIN ?? "/tmp/swipe-lab/bin";
   // The newest build of the addon, so a rebuilt one loads without restarting the app.
   const newest = () => {
-    const builds = fs.readdirSync(__dirname).filter((name) => /^inject.*\.node$/.test(name));
+    const builds = fs.readdirSync(bin).filter((name) => /^inject.*\.node$/.test(name));
     builds.sort(
-      (a, b) =>
-        fs.statSync(path.join(__dirname, b)).mtimeMs - fs.statSync(path.join(__dirname, a)).mtimeMs,
+      (a, b) => fs.statSync(path.join(bin, b)).mtimeMs - fs.statSync(path.join(bin, a)).mtimeMs,
     );
-    return require(path.join(__dirname, builds[0]));
+    return require(path.join(bin, builds[0]));
   };
   let serial = 0;
   http
@@ -19,7 +20,7 @@ if (process.versions.electron && process.type === "browser") {
       let body = "";
       request.on("data", (chunk) => (body += chunk));
       request.on("end", () => {
-        const file = path.join(__dirname, `stream-${process.pid}-${serial++}.txt`);
+        const file = path.join(bin, `stream-${process.pid}-${serial++}.txt`);
         fs.writeFileSync(file, body);
         newest().post(file);
         const wait = setInterval(() => {

@@ -7,6 +7,7 @@ import { labWindow, post } from "./post.mjs";
 import { swipe } from "./streams.mjs";
 
 const HERE = new URL(".", import.meta.url).pathname;
+const OUT = `${process.env.LAB ?? "/tmp/swipe-lab"}/out`;
 const pid = Number(NodeChildProcess.execFileSync(`${HERE}labpid.sh`, { encoding: "utf8" }).trim());
 const win = labWindow(pid);
 const page = await connect();
@@ -110,7 +111,7 @@ const cases = {
   held: () =>
     run("single, main thread held 700 ms", [swipe({ travel: 300 })], {
       hold: 700,
-      trace: "/tmp/swipe-lab/out/e1-held.json",
+      trace: `${OUT}/e1-held.json`,
     }),
 };
 for (const [name, fn] of Object.entries(cases)) if (!only || only === name) await fn();

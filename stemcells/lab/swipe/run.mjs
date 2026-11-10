@@ -1,14 +1,15 @@
 // Lab rig: runs one case of swipes against the lab app and writes what happened.
-//
-//   node run.mjs --case single|quick2|short|onechat|hard|slow --n 30 [--phases 0] [--throttle 4]
-//                [--hold 150/400] [--trace out.json] --out result.json
+//   node run.mjs --case <case> --n 30 [--phases 0] [--throttle 2] [--hold 120/500]
+//                [--rule distance] [--trace prefix] --out result.json
+// The plan tells the cases. `--rule distance` is the old pager's: a short flick springs back.
 import * as NodeFS from "node:fs";
 import * as NodeChildProcess from "node:child_process";
 import { connect } from "./cdp.mjs";
 import { labWindow, post } from "./post.mjs";
-import { swipe } from "./streams.mjs";
+import { cut, rest, swipe } from "./streams.mjs";
 
 const HERE = new URL(".", import.meta.url).pathname;
+const OUT = `${process.env.LAB ?? "/tmp/swipe-lab"}/out`;
 const args = Object.fromEntries(
   process.argv
     .slice(2)
@@ -42,6 +43,7 @@ await page.evaluate(`(() => {
 })()`);
 
 const state = () => page.evaluate("__lab.state()");
+/** The state once the strip rests on the active tab's page; after `limit` ms, whatever it is. */
 async function settled(limit = 6000) {
   const start = Date.now();
   let last = null;
@@ -49,7 +51,8 @@ async function settled(limit = 6000) {
   while (Date.now() - start < limit) {
     const now = await state();
     const key = `${now.index}:${now.moving}:${now.position?.toFixed(3)}`;
-    same = key === last && !now.moving ? same + 1 : 0;
+    const rests = !now.moving && Math.abs((now.position ?? now.index) - now.index) < 0.002;
+    same = key === last && rests ? same + 1 : 0;
     last = key;
     if (same >= 3) return now;
     await sleep(80);
@@ -112,10 +115,9 @@ async function traceEnd(file) {
   NodeFS.writeFileSync(file, JSON.stringify(chunks));
 }
 
-/** Posts a stream over the page and returns its posted times; `gesture` describes what was asked. */
-async function send(events) {
-  const stream = PHASES ? events : events.map((e) => [...e]);
-  return post(pid, { ...win, phases: PHASES }, POINT.x, POINT.y, stream);
+/** Posts a stream over `point` of the page and returns when each event went. */
+async function send(events, point = POINT) {
+  return post(pid, { ...win, phases: PHASES }, point.x, point.y, events);
 }
 
 const results = [];
@@ -123,13 +125,16 @@ const geometry = await page.evaluate(
   `(() => { const r = document.querySelector("[data-stemcells-pages]").getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height, dpr: devicePixelRatio, innerWidth, innerHeight }; })()`,
 );
 
-async function one(label, from, streams, expected) {
+/** Runs one gesture and notes the pages it turned; `also` are streams posted over other points meanwhile. */
+async function one(label, from, streams, expected, { point = POINT, also = [] } = {}) {
   await page.evaluate("__lab.reset(); 1");
   const before = await state();
   if (args.trace) await traceStart();
   let events = [];
   for (const s of streams) events = events.concat(s.events);
-  const posted = await send(events);
+  const others = also.map((other) => send(other.events, other.point));
+  const posted = await send(events, point);
+  await Promise.all(others);
   const after = await settled();
   if (args.trace) await traceEnd(`${args.trace}.${results.length}.json`);
   const probe = JSON.parse(
@@ -138,13 +143,18 @@ async function one(label, from, streams, expected) {
     ),
   );
   const turned = after.index - before.index;
+  // Right: the pages it should have turned, and the strip at rest on the active tab's page.
+  const rests = !after.moving && Math.abs((after.position ?? after.index) - after.index) < 0.002;
+  const ok = turned === expected && rests;
   results.push({
     label,
     from: before.index,
     to: after.index,
     turned,
     expected,
-    ok: turned === expected,
+    rests,
+    position: after.position,
+    ok,
     events,
     posted,
     probe:
@@ -159,7 +169,9 @@ async function one(label, from, streams, expected) {
           },
   });
   process.stdout.write(
-    turned === expected ? "." : `[${label}: ${before.index}->${after.index}, wanted ${expected}]`,
+    ok
+      ? "."
+      : `[${label}: ${before.index}->${after.index}, wanted ${expected}${rests ? "" : `, strip at ${after.position?.toFixed(3)}`}]`,
   );
 }
 
@@ -179,17 +191,83 @@ if (CASE === "single") {
     if (i % 2 === 0) await goto(MID);
     const first = swipe({ travel: 260, direction, decay: 0.85 });
     const second = swipe({ at: first.lift + Number(args.gap ?? 160), travel: 260, direction });
-    // The first's coast is cut where the second touches, as a new touch ends the system's coast.
-    const cut = first.events.filter((e) => e[0] < second.events[0][0]);
-    await one("quick2", null, [{ events: cut }, second], 2 * direction);
+    await one("quick2", null, [cut(first, second.events[0][0]), second], 2 * direction);
     await sleep(250);
   }
 } else if (CASE === "short") {
-  // Flicks too short to turn.
+  // Short flicks, 70 px and a coast: a page each by the platform's rule; none by distance alone.
   await goto(MID);
   for (let i = 0; i < N; i++) {
     const direction = i % 2 === 0 ? 1 : -1;
-    await one("short", null, [swipe({ travel: 70, pace: 14, direction })], 0);
+    const expected = args.rule === "distance" ? 0 : direction;
+    await one("short", null, [swipe({ travel: 70, pace: 14, direction })], expected);
+    await sleep(250);
+  }
+} else if (CASE === "nudge") {
+  // A small move let go at rest: no page.
+  await goto(MID);
+  for (let i = 0; i < N; i++) {
+    const direction = i % 2 === 0 ? 1 : -1;
+    await one("nudge", null, [swipe({ travel: 60, pace: 4, direction, coast: false })], 0);
+    await sleep(250);
+  }
+} else if (CASE === "vwobble") {
+  // A scroll down the page with the fingers straying sideways, over the composer, where nothing
+  // scrolls by itself: no page.
+  await goto(MID);
+  for (let i = 0; i < N; i++) {
+    const direction = i % 2 === 0 ? 1 : -1;
+    const stream = swipe({ axis: "y", travel: 300, direction, wobble: 3 });
+    await one("vwobble", null, [stream], 0, { point: { x: 560, y: 700 } });
+    await sleep(250);
+  }
+} else if (CASE === "inner") {
+  // A swipe inside a sideways scroller on the page: it scrolls, and no page turns.
+  await goto(MID);
+  await page.evaluate(`(() => {
+    document.getElementById("lab-wide")?.remove();
+    const wide = document.createElement("div");
+    wide.id = "lab-wide";
+    wide.style.cssText = "position:absolute;left:40px;top:300px;width:400px;height:120px;overflow-x:auto;z-index:99998;background:#222";
+    wide.innerHTML = '<div style="width:6000px;height:1px"></div>';
+    document.querySelector('[data-stemcells-page][data-on-stage="true"]').append(wide);
+    return 1;
+  })()`);
+  const at = await page.evaluate(
+    `(() => { const r = document.getElementById("lab-wide").getBoundingClientRect(); return { x: r.x + 200, y: r.y + 60 }; })()`,
+  );
+  for (let i = 0; i < N; i++) {
+    const direction = i % 6 < 3 ? 1 : -1;
+    const before = await page.evaluate(`document.getElementById("lab-wide").scrollLeft`);
+    await one("inner", null, [swipe({ travel: 300, direction })], 0, { point: at });
+    const after = await page.evaluate(`document.getElementById("lab-wide").scrollLeft`);
+    if (Math.sign(after - before) !== direction) {
+      results.at(-1).ok = false;
+      process.stdout.write(`[inner: scrolled ${before}->${after}]`);
+    }
+    await sleep(250);
+  }
+  await page.evaluate(`document.getElementById("lab-wide")?.remove(); 1`);
+} else if (CASE === "elsewhere") {
+  // While the strip is in flight, the fingers scroll the chat under them down: one page, and
+  // the strip lands on it.
+  await goto(MID);
+  for (let i = 0; i < N; i++) {
+    const direction = i % 6 < 3 ? 1 : -1;
+    const first = swipe({ travel: 300, direction, decay: 0.85 });
+    const down = swipe({ at: first.lift + Number(args.gap ?? 160), axis: "y", travel: 200 });
+    await one("elsewhere", null, [cut(first, down.events[0][0]), down], direction);
+    await sleep(250);
+  }
+} else if (CASE === "rested") {
+  // While the strip is in flight, fingers come to rest on the trackpad and lift without moving:
+  // one page, and the strip lands on it.
+  await goto(MID);
+  for (let i = 0; i < N; i++) {
+    const direction = i % 6 < 3 ? 1 : -1;
+    const first = swipe({ travel: 300, direction, decay: 0.85 });
+    const touch = rest({ at: first.lift + Number(args.gap ?? 160) });
+    await one("rested", null, [cut(first, touch.events[0][0]), touch], direction);
     await sleep(250);
   }
 } else if (CASE === "onechat") {
@@ -204,6 +282,14 @@ if (CASE === "single") {
       [swipe({ travel: 300, direction: fromLeft ? 1 : -1 })],
       fromLeft ? 1 : -1,
     );
+  }
+} else if (CASE === "manychat") {
+  // The same swipe the other way: from the one-chat tab onto a tab of several beside it.
+  for (let i = 0; i < N; i++) {
+    const direction = i % 2 === 0 ? 1 : -1;
+    await goto(1);
+    await sleep(Number(args.rest ?? 400));
+    await one("manychat", null, [swipe({ travel: 300, direction })], direction);
   }
 } else if (CASE === "hard") {
   // A long fast swipe: one page still.
@@ -230,7 +316,7 @@ console.log(
   `\n${CASE}: ${results.length} swipes, ${wrong.length} wrong${wrong.length ? `: ${wrong.map((r) => `${r.from}->${r.to} (wanted ${r.expected})`).join(", ")}` : ""}`,
 );
 NodeFS.writeFileSync(
-  args.out ?? `/tmp/swipe-lab/out/${CASE}.json`,
+  args.out ?? `${OUT}/${CASE}.json`,
   JSON.stringify({ case: CASE, phases: PHASES, args, geometry, results }),
 );
 page.close();

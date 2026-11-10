@@ -2,10 +2,10 @@
 import * as NodeChildProcess from "node:child_process";
 import { lines } from "./streams.mjs";
 
-const HERE = new URL(".", import.meta.url).pathname;
+const BIN = process.env.LAB_BIN ?? "/tmp/swipe-lab/bin";
 
 export function labWindow(pid) {
-  const out = NodeChildProcess.execFileSync(`${HERE}swipepost`, ["windows", String(pid)], {
+  const out = NodeChildProcess.execFileSync(`${BIN}/swipepost`, ["windows", String(pid)], {
     encoding: "utf8",
   })
     .trim()

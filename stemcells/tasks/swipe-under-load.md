@@ -31,44 +31,83 @@ Replay agent).
   the trace's pictures: delay from a finger's move to the strip showing it,
   gaps in the pictures while it moves, distance past its target.
 - `matrix.sh`: the whole table for one phase, the Mac's load average beside
-  each run.
+  each run. `feed.sh` keeps a chat streaming; `build.sh` builds the addon.
 - `e1.mjs`, `e2.mjs`: the two experiments the design rests on (below).
 
 The lab: 15 tabs holding 2, 1, 3, 1, 2, 1, 2, 1, 1 … panes (tab 1 is the
 one-chat tab between two tabs of several), 20 chats of 11 Replay turns each.
-The load case: 12 chats streaming, the page's CPU throttled 2×, and its main
-thread held 120 ms in every 500. The lab runs the web's dev build, which
-renders slower than a built one.
+It runs the web's dev build, which renders slower than a built one.
+
+Two loads, both on top of whatever else the Mac was doing (its load average
+is beside every run):
+
+- **Load**: the page's CPU at a quarter speed and its main thread held
+  120 ms in every 500, both through the DevTools protocol. It is the same
+  in every run, so before and after compare.
+- **Stream**: a chat streaming on a page the strip holds, a Replay turn
+  after another. One chat keeps the main thread in long frames 60–85% of
+  the time (median 150 ms, worst 350 ms). Few swipes: every turn stays in
+  the lab's chats.
+
+What could not be measured: several chats streaming. With 12 the page drew
+1.5 frames a second, with 6 it drew 5, with 2 it drew 6, and a call over the
+protocol took 20 s to come back; so did one chat streaming with the CPU at
+half speed on the tabs of several panes. A swipe cannot be told from the
+rig's own wait there. And a chat fed for an hour grew to hundreds of turns
+and the page ran out of memory, so the lab starts each phase from a snapshot.
 
 The cases: `single` an ordinary swipe (300 px, then a coast); `onechat` the
-same, onto the one-chat tab from either neighbour; `quick2` two swipes
-160 ms apart (two pages); `short` 60 px and a coast; `hard` 1100 px (one
-page); `slow` a drag let go with no coast.
+same, onto the one-chat tab from either neighbour; `manychat` the same, off
+the one-chat tab onto either neighbour; `quick2` two swipes 160 ms apart
+(two pages); `short` 70 px and a coast; `nudge` 60 px let go at rest;
+`hard` 1100 px (one page); `slow` a drag let go with no coast; and what
+must not turn a page or must still land on one: `vwobble` a scroll down the
+page with the fingers straying sideways, `inner` a swipe inside a sideways
+scroller, `elsewhere` a scroll down a chat while the strip is in flight,
+`rested` fingers resting on the trackpad mid-flight.
 
 ## Before
 
 The pager as it was (`6d21a35944`). Other work kept the Mac's load average
-between 10 and 60 throughout, which is the person's own condition.
+between 10 and 60 throughout, which is the person's own condition. "Load"
+below is that average in the minute the run began.
 
-Page quiet, 30 swipes a case:
+30 swipes a case. Wrong: the swipe did not end on the page it should have.
 
-| Case               | Wrong | What went wrong           | Load |
-| ------------------ | ----- | ------------------------- | ---- |
-| single             | 2     | turned two pages          | 40.8 |
-| onechat            | 0     |                           | 40.0 |
-| onechat, no phases | 2     | did not turn              | 20.9 |
-| quick2             | 7     | the second swipe was lost | 26.1 |
-| short              | 0     |                           | 13.7 |
-| hard               | 0     |                           | 10.9 |
-| slow               | 0     |                           | 10.8 |
+| Case               | Quiet: wrong          | Load | Under load: wrong                   | Load |
+| ------------------ | --------------------- | ---- | ----------------------------------- | ---- |
+| single             | 2 (two pages)         | 40.8 | 11 (9 two pages, 1 three, 1 none)   | 14.1 |
+| onechat            | 0                     | 40.0 | 10 (9 two pages, 1 three)           | 54.9 |
+| onechat, no phases | 2 (no page)           | 20.9 | 7 (1 two pages, 6 none)             | 11.2 |
+| manychat           | not run               |      | 6 (two pages), of the 15 that could | 18.2 |
+| quick2             | 7 (second swipe lost) | 26.1 | 0                                   | 19.6 |
+| short              | 0                     | 13.7 | not run                             |      |
+| hard               | 0                     | 10.9 | not run                             |      |
+| slow               | 0                     | 10.8 | not run                             |      |
 
-Quiet, traced (12 swipes): finger to strip 20 ms median, 74 ms p95, 82 ms
-worst; first move shown 42 ms after it was due (median), 60 ms p95.
+`manychat` goes off tab 1 either way, and toward tab 0 there is no page
+beyond to skip to: 6 of the 15 swipes toward tab 2 went on to tab 3.
 
-Under load: to be measured back to back with the new strip.
+With a chat streaming (26 swipes before the disk ran short): `onechat` 2
+wrong, both two pages (load 19.7). An earlier run on chats grown long: 3 of
+30, one two pages and two none (load 34.5).
 
-An earlier, informal run with all 20 chats streaming: 2 of 12 ordinary
-swipes turned two pages.
+Traced, 12 ordinary swipes:
+
+|                                       | Quiet (load 20) | Under load (load 13.8) |
+| ------------------------------------- | --------------- | ---------------------- |
+| Finger to strip, median               | 20 ms           | 47 ms                  |
+| Finger to strip, p95                  | 74 ms           | 58 ms                  |
+| First move shown, median / p95        | 42 / 60 ms      | 61 / 63 ms             |
+| Longest the strip stood still, median |                 | 272 ms                 |
+| Longest the strip stood still, worst  |                 | 810 ms                 |
+| Gaps of more than two frames, a swipe |                 | 8                      |
+| Lift to rest, median                  |                 | 1.9 s                  |
+| Wrong                                 | 0               | 7 of 12 (two pages)    |
+
+The delay is read at each picture drawn, so a strip that stands still shows
+as a gap, not as a delay: under load the old strip's delay reads no worse
+than quiet while it stood still for a quarter of a second in every swipe.
 
 ## What the traces showed
 
@@ -87,8 +126,17 @@ swipes turned two pages.
   second quick swipe goes one page further then turned a second page. The
   rule is right; what fed it was a guess. A second case began with the main
   thread held at touch-down and the lift's phases 84 ms late.
-- **Why a one-chat tab.** Not yet separated from the above in a trace; to
-  be compared under load.
+- **The skip under load**, the same in every trace read: the lift is heard
+  142 ms late and the strip lets go; the turn's render holds the main
+  thread 806 ms; the coast's last wheel events, merged, are handled 0.5 s
+  and 0.7 s late, before the phases that say they are the coast (heard 1 s
+  and 1.4 s late). Read from wheel events alone they are fingers, and a
+  second page turns.
+- **Why a one-chat tab.** It is not the tab: under the same load a swipe
+  onto the one-chat tab skipped it 10 times in 30, a swipe off it onto a
+  tab of several skipped that 6 times in 15, and a swipe between one-chat
+  tabs 10 in 30. Any page with a page beyond it is skipped at the same
+  rate. A one-chat tab between busy ones is where a person notices.
 - **The first event waits.** A wheel listener that may cancel makes the
   compositor ask the main thread before it scrolls anything under it. The
   pager's was one; the composer's is another, over every pane.
@@ -105,26 +153,48 @@ the handler does. Only a native scroll follows the fingers on the
 compositor, and only where no cancelling wheel listener lies over it.
 
 - The pager's viewport becomes a native sideways scroller with snap points:
-  a **proxy**. It holds a wide track of snap slots and nothing else that
-  moves. The pages sit in a box that sticks to the viewport, and that box
-  follows the proxy's scroll through one scroll-linked animation
-  (`ScrollTimeline`) whose keyframes are **knots**: proxy slot → page
-  offset. Fingers, coast and snap all run on the compositor.
-- **Walls.** The knots are flat past one page either side of where a touch
-  began, so one touch shows at most one page further however far the proxy
-  goes. The compositor holds the rule; no event can break it by being late.
-- **Ends.** Past the first or last page the knots rise a little and come
-  back: the strip gives and returns, on the compositor too.
-- **Touches**, where the desktop app's scroll phases say so exactly: a touch
-  that begins while the strip is in flight moves the walls to the page it
-  is headed for, and if it is flicked on the way there it is owed a page:
-  the strip takes it by a spring while the proxy lands. Late phases only
-  delay this. Without phases (a browser) the walls move when the proxy
-  rests, so a second swipe counts once the first has landed.
-- **At rest** the offset folds into the strip's own place and the proxy
-  goes back to the middle of its track, in one commit.
-- **Turns by a click or a key** slide the strip by a spring, as before; a
-  far one still comes in as the next page.
+  a **proxy** (`tabs/proxy.ts`, `proxy.css`). It holds a wide track of snap
+  slots and a frame that stays in view. In the frame a **hold** follows the
+  proxy's scroll through one scroll-linked animation (`ScrollTimeline`)
+  whose keyframes are **knots**: proxy slot → page offset. The strip sits
+  in the hold. Fingers, coast and snap all run on the compositor.
+- **Walls.** The knots are level past one page either side of the page the
+  strip was headed for when a touch began, so one touch shows at most one
+  page further however far the proxy goes. The compositor holds the rule;
+  no event can break it by being late.
+- **Ends.** Past the first or last page the knots rise a quarter of the
+  move and come back: the strip gives and returns, on the compositor too.
+- **The strip's own place** is a page, and it slides to another by the
+  `page` spring, as before: a turn by a click or a key (a far one still
+  comes in as the next page), a page a flick is owed, and whatever a change
+  of knots would otherwise show as a jump. On screen is the two together.
+- **Touches**, where the desktop app's scroll phases say so exactly, and
+  only there:
+  - A touch that begins while the proxy is in flight moves the walls to
+    the page it is headed for. Heard late, the strip catches up by the
+    spring instead of jumping.
+  - A flick ends one page on in its way. Where the browser's snap leaves
+    it on the page it was headed for (the second of two quick swipes,
+    lifted before the proxy got there), the strip is owed that page and
+    takes it by the spring; that side is then walled, so the touch has one
+    page whatever the proxy does next. This is settled two frames after
+    the page hears of the lift, when it has also heard where the proxy is
+    going. Only a touch whose first wheel event was the proxy's to scroll
+    is owed anything.
+  - Landed, with the fingers known to be up, the walls go round the page
+    landed on at once.
+- **At rest** what the proxy shows folds into the strip's own place and the
+  proxy goes back to the middle of its track, in one commit. Without
+  phases (a browser) this is the only time the walls move.
+- **The tab turns when its page has landed**, a frame after the proxy is
+  back at rest, not at the lift: a turn renders, focuses and mounts pages,
+  and a field focused on a page still arriving would scroll the proxy to
+  meet it.
+- **A scroll of the proxy that the fingers didn't make** (a focus, an arrow
+  key) is undone in the frame it happened in: only a wheel or a touch over
+  the proxy makes its scroll a swipe.
+- **Nothing over the proxy may cancel a wheel event**: the composer's
+  listener is passive now, and the pager's own are.
 
 ### What changes in the feel, and why
 
@@ -136,6 +206,12 @@ compositor, and only where no cancelling wheel listener lies over it.
   coast the wrong way until the page caught up.
 - **The settle** is the browser's snap, not our `page` spring. Turns by
   click and key keep the spring.
+- **The tab bar follows when the page lands**, about a third of a second
+  after the lift, not at the lift.
+- **A border between Cells** stops a swipe while it is held, as the plan
+  for it says; hovering one no longer does.
+- **Without the scroll phases** (a browser) a second swipe counts once the
+  first has come to rest.
 
 ### What lost
 

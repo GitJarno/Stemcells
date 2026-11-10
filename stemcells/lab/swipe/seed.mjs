@@ -1,16 +1,16 @@
-// Lab rig: writes the tabs the load case uses into the lab page's localStorage.
+// Lab rig: sets the lab page's tabs to the load case's. LAB_ENV is the lab's environment id;
+// $LAB/out/threads.jsonl lists its chats, {"threadId": ...} a line.
 import * as NodeFS from "node:fs";
 import { connect } from "./cdp.mjs";
 
 const ENV = process.env.LAB_ENV;
-const first = process.env.LAB_FIRST_THREAD;
-const threads = [
-  first,
-  ...NodeFS.readFileSync("/tmp/swipe-lab/out/threads.jsonl", "utf8")
-    .trim()
-    .split("\n")
-    .map((l) => JSON.parse(l).threadId),
-];
+const threads = NodeFS.readFileSync(
+  `${process.env.LAB ?? "/tmp/swipe-lab"}/out/threads.jsonl`,
+  "utf8",
+)
+  .trim()
+  .split("\n")
+  .map((line) => JSON.parse(line).threadId);
 // Panes per tab: a one-chat tab between tabs of several, then mostly one-chat tabs.
 const shape = [2, 1, 3, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1];
 let next = 0;
