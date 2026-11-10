@@ -18,9 +18,9 @@ import {
   type RequestKind,
   type Shell,
 } from "../upstream/needs.ts";
-import type { Stop } from "./closeOut.ts";
+import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
 import type { Brief, RunFacts } from "./evidence.ts";
-import type { Cue, PreRead } from "./preread.ts";
+import type { Cue, PreRead } from "../../../../../stemcells/closeOut/preread.ts";
 
 /** The provider instance Aski's chat runs on; the web's `aski/setup.ts` names the same. */
 export const ASKI_INSTANCE_ID = "aski";

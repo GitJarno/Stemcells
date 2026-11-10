@@ -7,7 +7,7 @@
 import * as DateTime from "effect/DateTime";
 
 import { isSnoozed, type Shell } from "../upstream/needs.ts";
-import type { Stop } from "./closeOut.ts";
+import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
 import { ACTIVE_RUN, askiThreadOf, waitsOnItsOwn, type Need } from "./derive.ts";
 import type { Brief } from "./evidence.ts";
 import { landingOf, type Landing } from "./verdict.ts";

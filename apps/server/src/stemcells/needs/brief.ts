@@ -2,7 +2,7 @@
  * What an ask carries from the rest of its Cell's reply (stemcells/tasks/unblocking.md,
  * decision 2): the reply's opening paragraph, which says what the Cell did. Pure, no model.
  */
-import { readCloseOut } from "./closeOut.ts";
+import { readCloseOut } from "../../../../../stemcells/closeOut/closeOut.ts";
 
 /** A lead longer than this ends at a sentence or a word, with an ellipsis. */
 export const LEAD_CAP = 400;

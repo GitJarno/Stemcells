@@ -1,8 +1,7 @@
 /**
- * Where a finished Cell says it stands: the close-out lines every Cell ends a stop with
- * (`@t3tools/provider-core`'s `stemcells/closeOut.ts`), read by code, no model. Facts (a
- * pending request, a run, a failure) outrank it; it outranks the pre-read unless that finds
- * a real question: a Cell called done that still asks is the costly mistake (aski-manager.md).
+ * Where a finished Cell says it stands: the close-out every Cell ends a stop with (provider-core's
+ * `stemcells/closeOut.ts`), read by code. One reader for the server, which places the Cell by it
+ * (aski-manager.md), and the views that draw it (close-out-card.md): pure, no newer built-ins.
  */
 import { lastParagraph, preRead, type PreRead } from "./preread.ts";
 
@@ -23,6 +22,8 @@ export type CloseOut =
 
 /** One step of a Left, before the Lefts are ranked. */
 type Owned = { readonly owner: Owner | null; readonly text: string };
+/** A step as written: one that says nothing is left counts for a view alone. */
+type Said = Owned & { readonly nothing: boolean };
 
 /** What a finished reply leaves: the card it makes, if any, and the Cell's own word. */
 export interface Stop {
@@ -32,6 +33,27 @@ export interface Stop {
   readonly waits: boolean;
   /** Its own word on where it stands: what it delivered, or what is left. */
   readonly line: string | null;
+}
+
+/** One line of a close-out, as a view draws it. */
+export interface CloseOutLine {
+  readonly kind: "done" | "left";
+  /** A Left's owner word; null for a Done, and for a Left that names none. */
+  readonly owner: Owner | null;
+  readonly text: string;
+  /** A Left that says nothing is left: it leaves no step, and a view still shows its words. */
+  readonly nothing: boolean;
+}
+
+/** A close-out where it stands in its reply (`writtenCloseOut`). */
+export interface WrittenCloseOut {
+  /** Every line of it in the order written, none ranked away. */
+  readonly lines: ReadonlyArray<CloseOutLine>;
+  /** The reply up to the close-out's last line, and what follows it: an offer of more work. */
+  readonly before: string;
+  readonly after: string;
+  /** The close-out's own lines, as the Cell wrote them. */
+  readonly source: string;
 }
 
 /** A close-out stands among the reply's last lines, after at most an offer of more work. */
@@ -67,19 +89,19 @@ function proseLines(reply: string): ReadonlyArray<{ readonly at: number; readonl
   return kept;
 }
 
-/**
- * The reply's close-out, and the reply without it. A label may carry its step on its own
- * line, or head a list of them, one owner a line. Of several Lefts, the ones that matter most:
- * the person's, then those with no owner, the Cell's own, then a wait; those at one rank read
- * as one. Any Left outranks a Done.
- */
-export function readCloseOut(reply: string): {
-  readonly closeOut: CloseOut | null;
-  readonly rest: string;
-} {
+/** What a reply's last lines hold, before its Lefts are ranked. */
+interface Scan {
+  readonly found: ReadonlyArray<{ readonly kind: "done"; readonly text: string } | Owned>;
+  /** The close-out's own lines, by their index in the reply. */
+  readonly gone: ReadonlySet<number>;
+  readonly lines: ReadonlyArray<CloseOutLine>;
+}
+
+function scan(reply: string): Scan {
   const lines = proseLines(reply);
   const tailFrom = lines.length - TAIL_LINES;
   const found: Array<{ readonly kind: "done"; readonly text: string } | Owned> = [];
+  const written: CloseOutLine[] = [];
   const gone = new Set<number>();
   for (let index = 0; index < lines.length; index++) {
     const label = LABEL.exec(lines[index]!.text);
@@ -94,33 +116,77 @@ export function readCloseOut(reply: string): {
     for (const { at } of steps) gone.add(at);
     if (label[1]?.toLowerCase() === "done") {
       found.push({ kind: "done", text: said || steps.map((step) => step.text).join(SEP) });
+      for (const text of said === "" && steps.length > 0 ? steps.map((step) => step.text) : [said])
+        written.push({ kind: "done", owner: null, text, nothing: false });
       continue;
     }
-    found.push(...leftsOf(said === "" ? steps : [{ at: head, text: said, indent: 0 }]));
+    const lefts = leftsOf(said === "" ? steps : [{ at: head, text: said, indent: 0 }]);
+    found.push(...lefts.filter((left) => !left.nothing));
+    for (const { owner, text, nothing } of lefts)
+      written.push({ kind: "left", owner, text, nothing });
   }
-  if (found.length === 0) return { closeOut: null, rest: reply };
+  return { found, gone, lines: written };
+}
+
+/** Of several Lefts, the ones that matter most, read as one; any Left outranks a Done. */
+function closeOutOf(found: Scan["found"]): CloseOut | null {
   const lefts = found.flatMap((each) => ("owner" in each ? [each] : []));
-  const rest = reply
-    .split("\n")
-    .filter((_, at) => !gone.has(at))
-    .join("\n");
   if (lefts.length === 0) {
     const done = found.find((each) => !("owner" in each));
-    return { closeOut: done === undefined ? null : { kind: "done", text: done.text }, rest };
+    return done === undefined ? null : { kind: "done", text: done.text };
   }
   const rank = (left: Owned) => OWNER_RANK[left.owner ?? "none"];
   const top = Math.min(...lefts.map(rank));
   const steps = lefts.filter((left) => rank(left) === top).map((left) => left.text);
   const mine = lefts.filter((left) => left.owner === "me").map((left) => left.text);
   return {
-    closeOut: {
-      kind: "left",
-      owner: lefts.find((left) => rank(left) === top)!.owner,
-      text: steps.join(SEP),
-      steps,
-      next: top < OWNER_RANK.me && mine.length > 0 ? mine.join(SEP) : null,
-    },
-    rest,
+    kind: "left",
+    owner: lefts.find((left) => rank(left) === top)!.owner,
+    text: steps.join(SEP),
+    steps,
+    next: top < OWNER_RANK.me && mine.length > 0 ? mine.join(SEP) : null,
+  };
+}
+
+/**
+ * The reply's close-out, and the reply without it. A label may carry its step on its own
+ * line, or head a list of them, one owner a line. Of several Lefts, the ones that matter most:
+ * the person's, then those with no owner, the Cell's own, then a wait; those at one rank read
+ * as one. Any Left outranks a Done.
+ */
+export function readCloseOut(reply: string): {
+  readonly closeOut: CloseOut | null;
+  readonly rest: string;
+} {
+  const { found, gone } = scan(reply);
+  if (found.length === 0) return { closeOut: null, rest: reply };
+  const rest = reply
+    .split("\n")
+    .filter((_, at) => !gone.has(at))
+    .join("\n");
+  return { closeOut: closeOutOf(found), rest };
+}
+
+/**
+ * The reply's close-out as its lines, for a view that draws it where it stands: null when
+ * `readCloseOut` reads none, so a view and the server never disagree on whether there is one.
+ */
+export function writtenCloseOut(reply: string): WrittenCloseOut | null {
+  const { found, gone, lines } = scan(reply);
+  if (found.length === 0) return null;
+  const all = reply.split("\n");
+  const last = Math.max(...gone);
+  const kept = (from: number, to: number) =>
+    all
+      .slice(from, to)
+      .filter((_, at) => !gone.has(from + at))
+      .join("\n")
+      .trim();
+  return {
+    lines,
+    before: kept(0, last),
+    after: kept(last + 1, all.length),
+    source: all.filter((_, at) => gone.has(at)).join("\n"),
   };
 }
 
@@ -146,8 +212,8 @@ function stepsAfter(lines: ReturnType<typeof proseLines>, label: number): Step[]
 }
 
 /** A Left's steps. An owner alone on a line owns the steps set in under it. */
-function leftsOf(steps: ReadonlyArray<Step>): Owned[] {
-  const lefts: Owned[] = [];
+function leftsOf(steps: ReadonlyArray<Step>): Said[] {
+  const lefts: Said[] = [];
   const parents: Array<{ readonly owner: Owner; readonly indent: number }> = [];
   for (const { text: said, indent } of steps) {
     while (parents.length > 0 && indent <= parents.at(-1)!.indent) parents.pop();
@@ -158,8 +224,8 @@ function leftsOf(steps: ReadonlyArray<Step>): Owned[] {
       parents.push({ owner, indent });
       continue;
     }
-    if (step === "" || NOTHING.test(step)) continue;
-    lefts.push({ owner, text: step });
+    if (step === "") continue;
+    lefts.push({ owner, text: step, nothing: NOTHING.test(step) });
   }
   return lefts;
 }
