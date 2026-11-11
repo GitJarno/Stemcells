@@ -1,0 +1,24 @@
+{
+  "id": "fussy",
+  "weight": 1,
+  "breath": {
+    "periodMs": 4000,
+    "depthRows": 1,
+    "outShare": 0.5
+  },
+  "blink": {
+    "windowMs": 4000,
+    "shutMs": 150,
+    "double": false
+  },
+  "noticeMs": 80,
+  "gaze": [],
+  "fidget": "fidget/fussy",
+  "beats": {
+    "onIt": "onIt/fussy",
+    "landed": "landed/fussy",
+    "needsYou": "needsYou/fussy",
+    "wake": "wake",
+    "sleep": "yawn"
+  }
+}

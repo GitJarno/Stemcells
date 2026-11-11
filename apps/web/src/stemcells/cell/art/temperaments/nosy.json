@@ -1,0 +1,48 @@
+{
+  "id": "nosy",
+  "weight": 1,
+  "breath": {
+    "periodMs": 4000,
+    "depthRows": 1
+  },
+  "blink": {
+    "windowMs": 4000,
+    "shutMs": 150,
+    "double": true
+  },
+  "noticeMs": 80,
+  "gaze": [
+    {
+      "look": [0, 0],
+      "holdMs": 5000
+    },
+    {
+      "look": [1, 0],
+      "holdMs": 1330
+    },
+    {
+      "look": [0, 0],
+      "holdMs": 3000
+    },
+    {
+      "look": [0, -1],
+      "holdMs": 1000
+    },
+    {
+      "look": [0, 0],
+      "holdMs": 4330
+    },
+    {
+      "look": [-1, 0],
+      "holdMs": 1330
+    }
+  ],
+  "fidget": "fidget/nosy",
+  "beats": {
+    "onIt": "onIt/nosy",
+    "landed": "landed/nosy",
+    "needsYou": "needsYou/nosy",
+    "wake": "wake",
+    "sleep": "yawn"
+  }
+}

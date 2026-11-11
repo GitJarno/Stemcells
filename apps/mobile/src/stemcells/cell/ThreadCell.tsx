@@ -58,6 +58,11 @@ export function ThreadCell(props: {
     const timer = setTimeout(() => setNow(Date.now()), Math.max(0, turnsAt - Date.now()));
     return () => clearTimeout(timer);
   }, [turnsAt]);
+  const run = thread.latestRun;
+  const landedAt =
+    run?.status === "completed" && run.completedAt !== null
+      ? Date.parse(run.completedAt)
+      : undefined;
   return (
     <CellFigure
       name={thread.id}
@@ -70,6 +75,7 @@ export function ThreadCell(props: {
       ground={ground}
       formingFrom={props.formingFrom}
       held={props.held}
+      landedAt={landedAt}
     />
   );
 }

@@ -19,16 +19,22 @@ import {
   bodyOf,
   BOX,
   type CellScene,
+  clockSeconds,
   empty,
-  frameShown,
+  enter,
+  type Entrance,
+  entranceOf,
+  frameFor,
   GLYPHS,
   type Ground,
   HOP,
   inBlocks,
   isBlinking,
+  mannerOf,
   MARGIN,
   type MiniFrame,
   type Mood,
+  prepare,
   sceneFor,
   sceneOf,
   wornLook,
@@ -83,16 +89,24 @@ function formingShown(
   return step.part === "blocks" ? formed.blocks[step.step]! : formed.hop[step.step]!;
 }
 
-/** The frame a Cell shows at `seconds`: playing, its scene's; held, the first, its eyes shut while it blinks. */
-function frameAt(
+/** Where a Cell stood when it was last drawn, and the moment it entered that with. */
+interface Stood {
+  readonly mood: Mood;
+  readonly working: boolean;
+  readonly entrance: Entrance | undefined;
+}
+
+/** The frame a Cell held still shows at `seconds`: its scene's first, its eyes shut while it blinks on its own cadence. */
+function heldAt(
   scene: CellScene,
   name: string,
   seconds: number | undefined,
-  plays: boolean,
   pleading: boolean,
 ): MiniFrame {
-  if (plays || seconds === undefined) return frameShown(scene, name, seconds, pleading);
-  const shut = scene.shut !== undefined && isBlinking(name, seconds, pleading);
+  const shut =
+    seconds !== undefined &&
+    scene.shut !== undefined &&
+    isBlinking(name, seconds, pleading, mannerOf(name).blink);
   return (shut ? scene.shut! : scene).mini[0]!;
 }
 
@@ -114,6 +128,8 @@ export function CellFigure(props: {
   readonly ground?: Ground | undefined;
   /** When its glyphs start, on the clock, as it forms (`forming.ts`); it just stands without. */
   readonly formingFrom?: number | undefined;
+  /** When its last turn landed (ms since the epoch): a cheer seen as it happens plays from its first frame. */
+  readonly landedAt?: number | undefined;
 }) {
   const points = props.points ?? 2;
   const { name, mood, activity } = props;
@@ -123,9 +139,29 @@ export function CellFigure(props: {
   const reduced = useReducedMotion();
   const still = reduced || props.held === true;
   const forms = props.formingFrom !== undefined && !reduced;
-  const key = `${worn}|${mood}|${activity ?? ""}|${forms}`;
+  const working = activity !== undefined;
+  // The stance it enters is kept from the render that first sees it, as React asks of a value
+  // derived from the one before: a landing, or a send taken up, is played from that moment.
+  const [stood, setStood] = useState<Stood | null>(null);
+  if (stood === null || stood.mood !== mood || stood.working !== working) {
+    const moment = entranceOf(
+      stood ?? undefined,
+      { mood, working },
+      now(),
+      props.landedAt === undefined ? undefined : clockSeconds(props.landedAt),
+    );
+    setStood({
+      mood,
+      working,
+      entrance: moment === undefined ? stood?.entrance : enter(name, moment),
+    });
+  }
+  const entrance = stood?.entrance;
+  const key = `${worn}|${mood}|${activity ?? ""}|${forms}|${plays ? mannerOf(name).id : ""}`;
   const ready = useComposed(key, () => {
-    sceneFor(wornLook(worn === "" ? [] : worn.split("+")), mood, activity, 0);
+    const look = wornLook(worn === "" ? [] : worn.split("+"));
+    sceneFor(look, mood, activity, 0);
+    if (plays) prepare(look, { name, mood, activity });
     if (forms) formedOf(worn);
   });
   // The last look composed stands while the next one composes: a Cell
@@ -140,16 +176,10 @@ export function CellFigure(props: {
     const forming = drawn.forms
       ? formingShown(formedOf(drawn.worn), props.formingFrom, seconds)
       : undefined;
-    return (
-      forming ??
-      frameAt(
-        sceneFor(look, drawn.mood, drawn.activity, plays ? (seconds ?? 0) : 0),
-        name,
-        seconds,
-        plays,
-        asksYou(drawn.mood),
-      )
-    );
+    if (forming !== undefined) return forming;
+    return plays
+      ? frameFor(look, { name, mood: drawn.mood, activity: drawn.activity, entrance }, seconds)
+      : heldAt(sceneFor(look, drawn.mood, drawn.activity, 0), name, seconds, asksYou(drawn.mood));
   });
   const body = bodyOf(props.provider);
   const ground = props.ground ?? "black";

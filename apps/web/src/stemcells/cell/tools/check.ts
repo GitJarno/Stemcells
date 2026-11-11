@@ -43,6 +43,7 @@ import {
   probesOf,
   pastDetail,
   probeStill,
+  stateOf,
 } from "../scene.ts";
 
 /** A failure stops the art shipping; a warning asks for a look; a note is about the original's art, the reference. */
@@ -326,7 +327,7 @@ export function looksOfPack(theme: string): PackLook[] {
   const scenesOf = (name: string) => {
     const states = new Set(statesOf(name));
     if (swappedIn.has(`${theme}/${name}`)) states.add("happy");
-    return [...SCENES.keys()].filter((key) => states.has(key.split("/")[0]!));
+    return [...SCENES.keys()].filter((key) => states.has(stateOf(key)));
   };
   const pieces = pack.pieces.map((piece): PackLook => {
     const id = `${theme}/${piece.name}`;
@@ -359,15 +360,18 @@ export function looksOfPack(theme: string): PackLook[] {
   return [...pieces, ...outfits];
 }
 
-/** What a temperament breaks: its beats and fidget name scenes that exist. */
+/** What a temperament breaks: a weight, a breath and a blink that can be played, beats and a fidget that name scenes. */
 function temperamentFindings(): Finding[] {
   const out: Finding[] = [];
   for (const t of TEMPERAMENTS.values()) {
     const say = (rule: string, detail: string) =>
       out.push({ rule, subject: `temperament ${t.id}`, detail, level: "fail" });
     if (!(t.weight > 0)) say("temperament", "weight must be above 0");
+    if (!(t.breath.periodMs >= 1000)) say("temperament", "a breath takes a second or more");
+    if (!(t.blink.windowMs >= 2 * (t.blink.shutMs + 400)))
+      say("temperament", "its blink's window is too short for its shut eyes");
     for (const name of [t.fidget, ...Object.values(t.beats ?? {})])
-      if (!SCENES.has(name)) say("temperament", `"${name}" is no scene`);
+      if (name !== undefined && !SCENES.has(name)) say("temperament", `"${name}" is no scene`);
   }
   return out;
 }

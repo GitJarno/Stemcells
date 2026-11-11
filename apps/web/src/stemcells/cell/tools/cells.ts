@@ -10,7 +10,16 @@ import { PACKS } from "../kit.ts";
 import { dayOf, looksOf } from "../looks.ts";
 import { wornLook } from "../scene.ts";
 import { check, looksOfPack } from "./check.ts";
-import { animation, contactSheet, GROUNDS, lookOf, sheetOf, SIZES, slugOf } from "./draw.ts";
+import {
+  animation,
+  contactSheet,
+  GROUNDS,
+  lookOf,
+  mannerSheet,
+  sheetOf,
+  SIZES,
+  slugOf,
+} from "./draw.ts";
 import { lookbook } from "./lookbook.ts";
 
 const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.md)
@@ -21,6 +30,8 @@ const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.
   cells lookbook [theme…]        a page of packs, animated (every drawn pack by default)
   cells crew [day] [count]       a sheet of a crew in view, dealt together on a day
                                  (YYYY-MM-DD, today by default; twelve Cells by default)
+  cells manner [temperament…]    a sheet of the temperaments: each one's rest and beats,
+                                 frame by frame (--look <look>, bare by default; --ground light)
   cells check [theme…] [--original]
                                  the rules; exits 1 on a failure. --original adds notes
                                  on the original's art
@@ -109,6 +120,13 @@ function main(argv: readonly string[]): number {
           contactSheet(`crew ${day}`, looks, ["idle", "happy"], body),
         ),
       );
+      return 0;
+    }
+    case "manner": {
+      const spec = typeof flags.get("look") === "string" ? (flags.get("look") as string) : "bare";
+      const ground = flags.get("ground") === "light" ? "light" : "black";
+      const name = `manner-${slugOf(spec)}${rest.length > 0 ? `-${rest.join("-")}` : ""}.png`;
+      console.log(write(NodePath.join(out, name), mannerSheet(spec, rest, body, ground)));
       return 0;
     }
     case "check": {

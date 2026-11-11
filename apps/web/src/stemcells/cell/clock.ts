@@ -34,9 +34,16 @@ const again = () => {
   for (const update of staged) update();
 };
 
+/** How long after the person last moved or typed a Cell still takes them to be at the screen. */
+const HERE_MS = 60_000;
+let lastHere = Date.now();
+
+/** Whether the person is at the screen: they moved the pointer or pressed a key in the last minute. */
+export const personHere = (now: number = Date.now()): boolean => now - lastHere < HERE_MS;
+
 let watching = false;
 
-/** Listens once, the first time a Cell takes the stage: the window, Reduce Motion, the display's density. */
+/** Listens once, the first time a Cell takes the stage: the window, Reduce Motion, the display's density, the person's hand. */
 function watch(): void {
   if (watching) return;
   watching = true;
@@ -49,6 +56,11 @@ function watch(): void {
     }
   });
   matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", again);
+  const here = () => {
+    lastHere = Date.now();
+  };
+  for (const type of ["pointermove", "pointerdown", "keydown"] as const)
+    addEventListener(type, here, { passive: true, capture: true });
   // A query on the density now fires once when it changes: ask again each time.
   const density = () =>
     matchMedia(`(resolution: ${devicePixelRatio}dppx)`).addEventListener(

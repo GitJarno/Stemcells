@@ -1,0 +1,24 @@
+{
+  "id": "proud",
+  "weight": 1,
+  "breath": {
+    "periodMs": 4330,
+    "depthRows": 1,
+    "puff": true
+  },
+  "blink": {
+    "windowMs": 4800,
+    "shutMs": 150,
+    "double": false
+  },
+  "noticeMs": 170,
+  "gaze": [],
+  "fidget": "fidget/proud",
+  "beats": {
+    "onIt": "onIt/proud",
+    "landed": "landed/proud",
+    "needsYou": "needsYou/proud",
+    "wake": "wake",
+    "sleep": "yawn"
+  }
+}

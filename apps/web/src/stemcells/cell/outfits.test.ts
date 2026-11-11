@@ -88,6 +88,12 @@ vi.mock("./art.ts", () => {
         season: { years: { "2027": ["02-06", "02-20"] } },
         pieces: [piece("lantern", "back", "N"), piece("crown", "headwear", "Y")],
       },
+      // The same window as the original's `christmas`.
+      yule: {
+        theme: "yule",
+        season: { from: "12-01", to: "12-26" },
+        pieces: [piece("star", "headwear", "Y")],
+      },
     },
     ART_MOVES: {},
     ART_TEMPERAMENTS: {},
@@ -133,6 +139,11 @@ describe("a season, dealt first and dated year by year when it moves", () => {
     expect(seasonOn("2027-02-21")).toBe("winter");
     expect(seasonOn("2028-02-10")).toBe("winter");
     expect(seasonOn("02-10")).toBe("winter");
+  });
+
+  it("goes to the pack drawn since when its window ties with the original's", () => {
+    expect(seasonOn("12-10")).toBe("yule");
+    expect(seasonOn("12-27")).toBe("newyear");
   });
 
   it("gives every Cell the season's item, and the theme's outfit only where it fits beside it", () => {

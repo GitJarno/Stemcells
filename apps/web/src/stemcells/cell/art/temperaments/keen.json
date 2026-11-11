@@ -1,0 +1,31 @@
+{
+  "id": "keen",
+  "weight": 1,
+  "breath": {
+    "periodMs": 3000,
+    "depthRows": 1
+  },
+  "blink": {
+    "windowMs": 3400,
+    "shutMs": 150,
+    "double": true
+  },
+  "noticeMs": 0,
+  "gaze": [
+    {
+      "look": [0, 0],
+      "holdMs": 11000
+    },
+    {
+      "look": [0, -1],
+      "holdMs": 1000
+    }
+  ],
+  "fidget": "fidget/keen",
+  "beats": {
+    "onIt": "onIt/keen",
+    "landed": "landed/keen",
+    "wake": "wake",
+    "sleep": "yawn"
+  }
+}

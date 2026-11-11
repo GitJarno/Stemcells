@@ -1,15 +1,15 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
 // A Cell's character: the original app's Cell, drawn from the kit frame by frame in its
-// provider's colours, wearing its deal, playing its mood and work, with the "?" while it waits
-// on you. Its box is the miniature's (13 × 14 cells), hats and all, so every Cell stands on
-// one line; its picture reaches past the box by `MARGIN`, taking no room.
+// provider's colours, wearing its deal, playing its mood and work in its own manner, with the
+// "?" while it waits on you. Its box is the miniature's (13 × 14 cells), hats and all, so
+// every Cell stands on one line; its picture reaches past the box by `MARGIN`, taking no room.
 
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
 import { clockSeconds } from "./blink.ts";
-import { bodyOf, frameShown, sceneFor } from "./cast.ts";
-import { onStage } from "./clock.ts";
+import { bodyOf, enter, type Entrance, entranceOf, frameFor, type Stance } from "./cast.ts";
+import { onStage, personHere } from "./clock.ts";
 import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./forming.ts";
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
@@ -73,6 +73,9 @@ export function CellFigure(props: {
   const canvas = useRef<HTMLCanvasElement>(null);
   /** The landing whose marks it has raised, and from when (`clockSeconds`). */
   const rising = useRef<{ landing: number; from: number } | null>(null);
+  /** Where it last stood, and the moment it entered that with (`cast.ts`). */
+  const stood = useRef<Stance | undefined>(undefined);
+  const entrance = useRef<Entrance | undefined>(undefined);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Paint the figure's canvas on each stage clock tick, unsubscribing when what it shows changes.
   useLayoutEffect(() => {
     const element = canvas.current;
@@ -85,16 +88,25 @@ export function CellFigure(props: {
       rising.current = { landing, from: clockSeconds() };
     const from = landing === null ? undefined : rising.current?.from;
     const formed = formsAt === undefined ? undefined : formedOf(look);
+    const stance: Stance = { mood, working: activity !== undefined };
+    const moment = entranceOf(
+      stood.current,
+      stance,
+      clockSeconds(),
+      landedAt === null ? undefined : clockSeconds(landedAt),
+    );
+    if (moment !== undefined) entrance.current = enter(name, moment);
+    stood.current = stance;
+    const entered = entrance.current;
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
       const part =
         formed === undefined || formsAt === undefined || seconds === undefined
           ? undefined
           : formingPart(Math.floor((seconds - formsAt) * BEAT), formed.hop.length);
-      const scene = sceneFor(look, mood, activity, seconds ?? 0);
       const played =
         part === undefined || formed === undefined
-          ? frameShown(scene, name, seconds, asksYou(mood))
+          ? frameFor(look, { name, mood, activity, entrance: entered, here: personHere() }, seconds)
           : part.part === "empty"
             ? formed.before
             : part.part === "blocks"
