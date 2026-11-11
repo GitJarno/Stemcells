@@ -1,0 +1,24 @@
+{
+  "id": "steady",
+  "weight": 1,
+  "breath": {
+    "periodMs": 5200,
+    "depthRows": 1,
+    "outShare": 0.4
+  },
+  "blink": {
+    "windowMs": 5600,
+    "shutMs": 150,
+    "double": false
+  },
+  "noticeMs": 330,
+  "gaze": [],
+  "fidget": "fidget/steady",
+  "beats": {
+    "onIt": "onIt/steady",
+    "landed": "landed/steady",
+    "needsYou": "needsYou/steady",
+    "wake": "wake",
+    "sleep": "yawn"
+  }
+}

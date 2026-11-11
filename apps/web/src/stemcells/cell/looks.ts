@@ -40,7 +40,7 @@ function themesOn(day: string, dress: Dress = HOUSE_DRESS): readonly string[] {
 const MASK = (1n << 64n) - 1n;
 
 /** A rendezvous score: FNV-1a over the words' UTF-8 in 64 bits, every bit then spread by SplitMix64's finaliser. */
-function score(words: string): bigint {
+export function score(words: string): bigint {
   let hash = 0xcbf29ce484222325n;
   for (const byte of new TextEncoder().encode(words))
     hash = ((hash ^ BigInt(byte)) * 0x100000001b3n) & MASK;
@@ -70,16 +70,18 @@ function windowIn(season: NonNullable<Pack["season"]>, year: string | undefined)
 
 /**
  * The season `day` falls in (`2027-02-06`, or a month-day, `02-06`, which
- * holds no moving feast): the narrowest window when two hold it, ties to the
- * first by name.
+ * holds no moving feast): the narrowest window when two hold it; a tie goes
+ * to a pack drawn since the original's, which dresses the season whole, then
+ * to the first by name.
  */
 export function seasonOn(day: string): string | undefined {
   const monthDay = day.slice(-5);
   const year = day.length > 5 ? day.slice(0, 4) : undefined;
   let best: { theme: string; days: number } | undefined;
-  for (const { theme, season } of [...THEMES.values()].sort((a, b) =>
-    a.theme < b.theme ? -1 : 1,
-  )) {
+  const packs = [...THEMES.values()].sort(
+    (a, b) => Number(b.authored) - Number(a.authored) || (a.theme < b.theme ? -1 : 1),
+  );
+  for (const { theme, season } of packs) {
     const window = season === null ? undefined : windowIn(season, year);
     if (window === undefined) continue;
     const holds =

@@ -33,6 +33,7 @@ import {
   TOOLS,
   type Wardrobe,
 } from "./kit.ts";
+import { generatedScene } from "./manner.ts";
 import { fitted, hero, mini, seated } from "./rig.ts";
 import { compose, crop, type Layer, miniOf, round } from "./sprite.ts";
 
@@ -110,6 +111,10 @@ export interface MiniFrame {
 export interface CellScene {
   /** Frames a second. */
   readonly fps: number;
+  /** The frame that tells the move: what Reduce Motion holds. */
+  readonly tell: number;
+  /** Frames in one pass of the move: a looping strip may hold several, until what it wears that animates comes round too. */
+  readonly pass: number;
   readonly hero: readonly (readonly string[])[];
   readonly mini: readonly MiniFrame[];
   /** The same loop with its open eyes shut; absent when it never shows open eyes. */
@@ -141,19 +146,20 @@ const FASTEST_RATE = 12;
 /**
  * A move's frames with its worn pieces' animation folded in: for each
  * frame, the pose and the clock the pieces read. The scene runs at a whole
- * multiple of the move's rate; looping, until the move and every cycle end
- * together (within `LONGEST_STRIP`).
+ * multiple of the move's rate, each of its frames held `hold` of the strip's;
+ * looping, until the move and every cycle end together (within `LONGEST_STRIP`).
  */
 function fold(
   poses: number,
   fps: number,
   pieces: readonly Piece[],
   loops = true,
-): { fps: number; poses: number[]; beats: Beat[] } {
+): { fps: number; hold: number; poses: number[]; beats: Beat[] } {
   const moving = pieces.filter(animates);
   if (poses <= 0 || moving.length === 0 || fps < 1 || fps !== Math.round(fps)) {
     return {
       fps,
+      hold: 1,
       poses: Array.from({ length: poses }, (_, i) => i),
       beats: Array.from({ length: poses }, () => STILL),
     };
@@ -171,6 +177,7 @@ function fold(
   if (loops && count * passes <= LONGEST_STRIP) count *= passes;
   return {
     fps: rate,
+    hold,
     poses: Array.from({ length: count }, (_, i) => Math.trunc(i / hold) % poses),
     beats: Array.from({ length: count }, (_, tick) => ({ tick, rate })),
   };
@@ -251,44 +258,71 @@ export const pastDetail = (hero: readonly string[]): number =>
 function folding(move: Move, wardrobe: Wardrobe, pieces: "loop" | "once" | "still") {
   const moving = animatedOf(wardrobe);
   return moving.length === 0
-    ? { fps: move.fps, poses: move.frames.map((_, i) => i), beats: move.frames.map(() => STILL) }
+    ? {
+        fps: move.fps,
+        hold: 1,
+        poses: move.frames.map((_, i) => i),
+        beats: move.frames.map(() => STILL),
+      }
     : pieces === "still"
       ? fold(move.frames.length, onBeat(move.fps), [])
       : fold(move.frames.length, onBeat(move.fps), moving, pieces === "loop");
 }
 
-/** `move` worn: every frame at both sizes, open and shut, its animated pieces run as `pieces` says. */
+/**
+ * `move` worn: every frame at both sizes, open and shut, its animated pieces run as `pieces`
+ * says. Frames that draw the same pose are one frame, so a held pose costs one composition
+ * and a figure showing it paints once.
+ */
 function composed(move: Move, wardrobe: Wardrobe, pieces: "loop" | "once" | "still"): CellScene {
   const moving = animatedOf(wardrobe);
   const folded = folding(move, wardrobe, pieces);
-  const made = new Map<string, readonly (readonly string[])[]>();
+  const drawn = move.frames.map((frame) =>
+    JSON.stringify([frame.pose, frame.layers, frame.swaps, frame.hidden ?? false]),
+  );
+  interface Made {
+    readonly hero: readonly string[];
+    readonly mini: MiniFrame;
+    readonly heroShut: readonly string[];
+    readonly miniShut: MiniFrame;
+    readonly blinks: boolean;
+  }
+  const made = new Map<string, Made>();
   const frames = folded.poses.map((pose, i) => {
     const beat = folded.beats[i]!;
-    const key = [pose, ...moving.map((piece) => frameAt(piece, beat))].join(",");
+    const key = [drawn[pose], ...moving.map((piece) => frameAt(piece, beat))].join("|");
     let frame = made.get(key);
     if (frame === undefined) {
-      frame = [
-        composeFrame(move, pose, wardrobe, false, false, beat),
-        composeFrame(move, pose, wardrobe, true, false, beat),
-        composeFrame(move, pose, wardrobe, false, true, beat),
-        composeFrame(move, pose, wardrobe, true, true, beat),
-      ];
+      const hero = composeFrame(move, pose, wardrobe, false, false, beat);
+      const mini = composeFrame(move, pose, wardrobe, true, false, beat);
+      const heroShut = composeFrame(move, pose, wardrobe, false, true, beat);
+      const miniShut = composeFrame(move, pose, wardrobe, true, true, beat);
+      const blinks = !same([heroShut], [hero]) || !same([miniShut], [mini]);
+      const open = frameOf(mini, hero);
+      frame = {
+        hero,
+        mini: open,
+        heroShut,
+        miniShut: blinks ? frameOf(miniShut, heroShut) : open,
+        blinks,
+      };
       made.set(key, frame);
     }
     return frame;
   });
-  const strip = (at: number) => frames.map((frame) => frame[at]!);
-  const minis = (minis: readonly (readonly string[])[], heroes: readonly (readonly string[])[]) =>
-    minis.map((rows, i) => frameOf(rows, heroes[i]!));
-  const [heroOpen, miniOpen, heroShut, miniShut] = [strip(0), strip(1), strip(2), strip(3)];
+  const tell = Math.min(Math.max(move.meta.tell ?? 0, 0), Math.max(move.frames.length - 1, 0));
   return {
     fps: folded.fps,
-    hero: heroOpen,
-    mini: minis(miniOpen, heroOpen),
-    shut:
-      same(heroShut, heroOpen) && same(miniShut, miniOpen)
-        ? undefined
-        : { hero: heroShut, mini: minis(miniShut, heroShut) },
+    tell: tell * folded.hold,
+    pass: move.frames.length * folded.hold,
+    hero: frames.map((frame) => frame.hero),
+    mini: frames.map((frame) => frame.mini),
+    shut: frames.some((frame) => frame.blinks)
+      ? {
+          hero: frames.map((frame) => frame.heroShut),
+          mini: frames.map((frame) => frame.miniShut),
+        }
+      : undefined,
   };
 }
 
@@ -435,6 +469,24 @@ function posedIn(wardrobe: Wardrobe, state: string): Wardrobe {
   };
 }
 
+/** The state a scene drawn for a manner stands in, for the pieces posed by state: a landing is `happy`, a rest `idle`. */
+const STATES: Readonly<Record<string, string>> = {
+  rest: "idle",
+  fidget: "idle",
+  onIt: "idle",
+  wake: "idle",
+  pleased: "happy",
+  landed: "happy",
+  needsYou: "waiting",
+  yawn: "asleep",
+};
+
+/** The state scene `key` plays in (`building` for `building/0`, `happy` for `landed/keen`). */
+export function stateOf(key: string): string {
+  const first = key.split("/")[0]!;
+  return STATES[first] ?? first;
+}
+
 const scenes = new Map<string, CellScene>();
 
 /** What scene `key` plays in `look`: its move (the look's own cheer for `happy`), what it wears in that state, how its pieces run. */
@@ -442,10 +494,10 @@ function playOf(
   look: CellLook,
   key: string,
 ): { move: Move; wardrobe: Wardrobe; pieces: Scene["pieces"] } | undefined {
-  const scene = SCENES.get(key);
+  const scene = SCENES.get(key) ?? generatedScene(key);
   if (scene === undefined) return undefined;
   const cheer = key === "happy" && look.cheer !== undefined ? CHEERS.get(look.cheer) : undefined;
-  const dressed = posedIn(look.wardrobe, key.split("/")[0]!);
+  const dressed = posedIn(look.wardrobe, stateOf(key));
   const wardrobe = scene.holds ? { ...dressed, held: scene.held } : dressed;
   return {
     move: strong(cheer ?? scene, look.strength, wardrobe.held),
@@ -455,10 +507,9 @@ function playOf(
 }
 
 /**
- * The scene `key` (`idle`, `reading/0`, … in `kit/moves.json`) in `look`,
- * composed the first time it is asked for: a Cell pays for the scenes it
- * shows, never for the catalogue. A look with a cheer of its own plays it
- * for `happy`.
+ * The scene `key` (`idle`, `reading/0`, … in `kit/moves.json`; a manner's `rest/keen`) in
+ * `look`, composed the first time it is asked for: a Cell pays for the scenes it shows, never
+ * for the catalogue. A look with a cheer of its own plays it for `happy`.
  */
 export function sceneOf(look: CellLook, key: string): CellScene | undefined {
   const known = scenes.get(`${look.name}|${key}`);

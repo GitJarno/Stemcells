@@ -43,6 +43,7 @@ import {
   probesOf,
   pastDetail,
   probeStill,
+  stateOf,
 } from "../scene.ts";
 
 /** A failure stops the art shipping; a warning asks for a look; a note is about the original's art, the reference. */
@@ -197,8 +198,11 @@ function lookFindings(
           );
       }
     }
-    const spilt = (options.scenes ?? [...SCENES.keys()]).filter((key) =>
-      probesOf(look, key, compact).some((probe) => probe.spilt > 0),
+    // A look with a cheer of its own never plays a temperament's landing (`cast.ts`).
+    const spilt = (options.scenes ?? [...SCENES.keys()]).filter(
+      (key) =>
+        !(look.cheer !== undefined && key.startsWith("landed/")) &&
+        probesOf(look, key, compact).some((probe) => probe.spilt > 0),
     );
     if (spilt.length > 0)
       say("box", `${size}: art falls off the canvas in ${spilt.join(", ")}`, "warn");
@@ -326,7 +330,7 @@ export function looksOfPack(theme: string): PackLook[] {
   const scenesOf = (name: string) => {
     const states = new Set(statesOf(name));
     if (swappedIn.has(`${theme}/${name}`)) states.add("happy");
-    return [...SCENES.keys()].filter((key) => states.has(key.split("/")[0]!));
+    return [...SCENES.keys()].filter((key) => states.has(stateOf(key)));
   };
   const pieces = pack.pieces.map((piece): PackLook => {
     const id = `${theme}/${piece.name}`;
@@ -359,23 +363,39 @@ export function looksOfPack(theme: string): PackLook[] {
   return [...pieces, ...outfits];
 }
 
-/** What a temperament breaks: its beats and fidget name scenes that exist. */
+/** What a temperament breaks: a weight, a breath and a blink that can be played, beats and a fidget that name scenes. */
 function temperamentFindings(): Finding[] {
   const out: Finding[] = [];
   for (const t of TEMPERAMENTS.values()) {
     const say = (rule: string, detail: string) =>
       out.push({ rule, subject: `temperament ${t.id}`, detail, level: "fail" });
     if (!(t.weight > 0)) say("temperament", "weight must be above 0");
+    if (!(t.breath.periodMs >= 1000)) say("temperament", "a breath takes a second or more");
+    if (!(t.blink.windowMs >= 2 * (t.blink.shutMs + 400)))
+      say("temperament", "its blink's window is too short for its shut eyes");
     for (const name of [t.fidget, ...Object.values(t.beats ?? {})])
-      if (!SCENES.has(name)) say("temperament", `"${name}" is no scene`);
+      if (name !== undefined && !SCENES.has(name)) say("temperament", `"${name}" is no scene`);
   }
   return out;
 }
 
-/** What a drawn scene's marks and tools break: falling off the canvas, a warning (a move that travels leaves its box on purpose). */
+/**
+ * What a drawn scene's marks and tools break: falling off the canvas, a warning. The body's own
+ * reach in the frame's pose is not a mark: the rig widens a squash past the box, as the
+ * original's breath does, and a move that travels leaves its box on purpose.
+ */
 function sceneFindings(key: string): Finding[] {
+  const bare = packLook([]);
+  const frames = SCENES.get(key)?.frames ?? [];
   const sizes = (["hero", "mini"] as const).filter((size) =>
-    probesOf(packLook([]), key, size === "mini").some((probe) => probe.effects > 0),
+    probesOf(bare, key, size === "mini").some((probe, i) => {
+      const frame = frames[i];
+      const body =
+        size === "mini" || frame === undefined || frame.hidden
+          ? 0
+          : pastDetail(probeStill(bare, frame.pose, false).bare);
+      return probe.effects > body;
+    }),
   );
   return sizes.length === 0
     ? []

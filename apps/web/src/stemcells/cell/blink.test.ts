@@ -24,3 +24,28 @@ test("the clock counts from the reference date", () => {
   NodeAssert.equal(clockSeconds(Date.UTC(2001, 0, 1)), 0);
   NodeAssert.equal(clockSeconds(Date.UTC(2001, 0, 1, 0, 0, 4)), 4);
 });
+
+test("a temperament blinks on its own cadence: inside its window, shut as long as it says, twice now and then", () => {
+  const cadence = { windowMs: 3400, shutMs: 150, double: true };
+  const shutIn = (window: number) => {
+    const runs: number[] = [];
+    let run = 0;
+    for (let ms = 0; ms < cadence.windowMs; ms += 10) {
+      const shut = isBlinking("Otter", (window * cadence.windowMs + ms) / 1000, false, cadence);
+      if (shut) run += 10;
+      else if (run > 0) {
+        runs.push(run);
+        run = 0;
+      }
+    }
+    NodeAssert.equal(run, 0, `window ${window}: open at its end`);
+    return runs;
+  };
+  const windows = Array.from({ length: 60 }, (_, window) => shutIn(window));
+  for (const runs of windows) {
+    NodeAssert.ok(runs.length === 1 || runs.length === 2);
+    for (const run of runs) NodeAssert.equal(run, cadence.shutMs);
+  }
+  const twice = windows.filter((runs) => runs.length === 2).length;
+  NodeAssert.ok(twice > 5 && twice < 40, `${twice} of 60 windows blink twice`);
+});

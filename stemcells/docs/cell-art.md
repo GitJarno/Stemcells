@@ -18,13 +18,14 @@ lands is dealt; a scene that lands can be played.
 `stemcells/scripts/cells` runs from any worktree, with no dev server and no
 build. It uses node's own TypeScript.
 
-| Command                        | What it makes                                                                                                                                 |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cells render <look> [scene…]` | `sheet.png`: every frame of each scene, at the miniature and the hero, on black and on light. Also one animated PNG per scene, size and frame |
-| `cells pack <theme>`           | A still sheet of every piece and outfit in a pack, at rest and cheering                                                                       |
-| `cells lookbook [theme…]`      | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack                                                |
-| `cells crew [day] [count]`     | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering      |
-| `cells check [theme…]`         | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art                                                          |
+| Command                        | What it makes                                                                                                                                  |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cells render <look> [scene…]` | `sheet.png`: every frame of each scene, at the miniature and the hero, on black and on light. Also one animated PNG per scene, size and frame  |
+| `cells pack <theme>`           | A still sheet of every piece and outfit in a pack, at rest and cheering                                                                        |
+| `cells lookbook [theme…]`      | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack                                                 |
+| `cells crew [day] [count]`     | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering       |
+| `cells manner [temperament…]`  | `manner-<look>.png`: each temperament's rest (a picture a hold) and its beats frame by frame, at both sizes. `--look <look>`, `--ground light` |
+| `cells check [theme…]`         | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art                                                           |
 
 A `<look>` is one of:
 
@@ -220,7 +221,10 @@ bundler has it too; `art.test.ts` fails until it is.
   - It lists two or three `colourways`, each a fabric of its own. Colourways
     are fabric only: the body stays the provider's colour.
   - Its `cheer` plays when a turn lands: a pack's (`theme/cheer`), or a
-    curated look's (`knight`, `alien`, `dragon`).
+    curated look's (`knight`, `alien`, `dragon`). It plays once, from its
+    first frame, the moment the turn lands; then the Cell rests with `^ ^`
+    until the cheer's six seconds are up. So start it at or near rest, and
+    end it on the rest pose with `"eyes": "happy"`.
   - `silhouette` (what it reads as at a glance) and `family` (its colour
     family) keep a crew apart. No two outfits in a pack share both.
 
@@ -286,7 +290,11 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
     in hero cells. The tools draw it; the app holds the Cell in its place
     until a stage gives it room to travel.
 - **The move's meta:**
-  - `kind`: `loop`, `once` or `hold`;
+  - `kind`: `loop`, `once` or `hold`. A state's scene loops on the wall
+    clock: Cells at work or asking in step, a Cell at rest, landed or
+    asleep on a phase of its own. A moment (a landing's cheer, a
+    temperament's beats) plays once from the frame it began on, then the
+    state's scene holds (`cell/cast.ts`, `entering`);
   - `priority`: its rung on the ladder;
   - `tier`: `common`, `rare`, `legendary` or `secret`;
   - `lively`: it needs the lively token;
@@ -343,26 +351,56 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
 
 ### A temperament: `art/temperaments/<id>.json`
 
+How a Cell carries itself between moves. Each Cell is dealt one for life from
+its name (`cell/manner.ts`), apart from its look; the design is in
+`stemcells/tasks/cell-life.md`, Temperament.
+
 ```json
 {
-  "id": "steady",
-  "weight": 2,
-  "breath": { "periodMs": 4200, "depthRows": 1 },
-  "blink": { "windowMs": 4000, "shutMs": 150, "double": false },
-  "noticeMs": 300,
-  "gaze": [{ "look": [1, 0], "holdMs": 1200 }],
-  "fidget": "idle",
+  "id": "nosy",
+  "weight": 1,
+  "breath": { "periodMs": 4000, "depthRows": 1 },
+  "blink": { "windowMs": 4000, "shutMs": 150, "double": true },
+  "noticeMs": 80,
+  "gaze": [
+    { "look": [0, 0], "holdMs": 5000 },
+    { "look": [1, 0], "holdMs": 1330 }
+  ],
+  "fidget": "fidget/nosy",
   "beats": {
-    "onIt": "idle",
-    "landed": "happy",
-    "needsYou": "waiting",
-    "wake": "idle",
-    "sleep": "asleep"
+    "onIt": "onIt/nosy",
+    "landed": "landed/nosy",
+    "needsYou": "needsYou/nosy",
+    "wake": "wake",
+    "sleep": "yawn"
   }
 }
 ```
 
-`fidget` and the `beats` name scenes.
+- **`breath`** is its rest: one row down for a share of each period
+  (`outShare`, a third unless told); `puff` swells it a row at the top.
+- **`blink`** is once a window, at a moment its name picks; `double` blinks
+  twice in one window of three.
+- **`gaze`** is where it looks at rest, a cycle in order (`[0, 0]` is ahead),
+  rounded out to whole breaths. Leave it empty to look ahead.
+- The rest is made from these, not drawn: `rest/<id>`, and `pleased/<id>`
+  (the same breath with `^ ^`, held after a landing's cheer). Both are scenes
+  the tools draw. Each Cell stands at its own place in its rest, so a crew
+  never breathes as one.
+- **`beats`** name the scenes it enters a moment with, each played once:
+  - `onIt` when a send is taken up;
+  - `landed` when a turn lands and its look has no cheer of its own;
+  - `wake` and `sleep` when it wakes and when it goes cold.
+  - `needsYou` is the loop it waits on you in (the body only: the plea's face
+    and the caret blink are every Cell's).
+
+  A beat left out plays as every Cell's (`happy`, `waiting`).
+
+- **`noticeMs`** is how long it holds a moment's first frame before it moves.
+- **`fidget`** is a scene it plays at rest, about once in six minutes, and
+  only while the person has moved the pointer or typed in the last minute.
+- A beat starts and ends at rest, and never borrows a state's face: `! !`,
+  `x x` and `- -` stay what they mean, and `^ ^` is for a landing.
 
 ## The rules `check` holds
 
@@ -387,7 +425,8 @@ These hold on drawn art. On the original's art they are notes.
   - outfits in a pack differ in silhouette or family;
   - a drawn move has a `tell` that is one of its frames, keeps the beat
     (12, or 24 with `sound`), and hands back to a real scene;
-  - a temperament's weight is above 0, and its fidget and beats are scenes.
+  - a temperament's weight is above 0, its breath takes a second or more, its
+    blink fits its window, and its fidget and beats are scenes.
 - **The box.** A piece drawn here, worn alone at rest, keeps inside the
   miniature's footprint on the hero (26 × 28 from (3, 2)): the margin a 2×
   display draws past it is the original's, whose pieces reach there, drawn for

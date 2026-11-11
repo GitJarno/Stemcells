@@ -2,10 +2,11 @@ import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
-import { bodyOf, frameShown, pictureOf, sceneFor } from "./cast.ts";
+import { bodyOf, entering, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
 import { BODIES, PACKS } from "./kit.ts";
 import { BOX, MOODS } from "./look.ts";
-import { MARGIN, packLook, sceneOf } from "./scene.ts";
+import { fidgetingFor, mannerOf, phaseOf } from "./manner.ts";
+import { type CellScene, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
 import { crop } from "./sprite.ts";
 
 const bare = packLook([]);
@@ -104,4 +105,164 @@ test("Codex, Kimi and Gemini wear their own bodies, every other provider the cor
     ["codex", "codex", "kimi", "kimi", "gemini", "gemini", "claude", "claude", "claude"],
   );
   for (const body of ["codex", "kimi", "gemini", "claude"]) NodeAssert.ok(body in BODIES, body);
+});
+
+/** Whether `frame` is frame `index` of `scene`, eyes open or shut. */
+const isFrame = (scene: CellScene, index: number, frame: unknown): boolean =>
+  frame === scene.mini[index] || frame === scene.shut?.mini[index];
+
+test("a landing's cheer plays once from its first frame, then the Cell rests with its eyes pleased", () => {
+  const name = "Otter";
+  const manner = mannerOf(name);
+  const cheer = sceneOf(bare, manner.beats.landed ?? "happy")!;
+  const rest = sceneOf(bare, `pleased/${manner.id}`)!;
+  const since = 1000;
+  const at = (seconds: number) =>
+    frameFor(
+      bare,
+      { name, mood: "pleased", activity: undefined, entrance: { kind: "landed", since } },
+      seconds,
+    );
+  const beat = 1 / cheer.fps;
+  const noticed = since + manner.noticeMs / 1000;
+  NodeAssert.ok(isFrame(cheer, 0, at(since)), "its first frame the moment it lands");
+  for (const index of [0, 3, cheer.pass - 1])
+    NodeAssert.ok(isFrame(cheer, index, at(noticed + (index + 0.5) * beat)), `frame ${index}`);
+  const after = at(noticed + (cheer.pass + 0.5) * beat);
+  NodeAssert.ok(
+    rest.mini.includes(after) || rest.shut?.mini.includes(after),
+    "once played, it rests: the cheer never loops",
+  );
+});
+
+test("an outfit's own cheer wins over the Cell's manner, and held still it shows the frame that tells it", () => {
+  const athlete = outfitLook("gym/athlete")!;
+  const flex = sceneOf(athlete, "happy")!;
+  const showing = {
+    name: "Otter",
+    mood: "pleased",
+    activity: undefined,
+    entrance: { kind: "landed", since: 50 },
+  } as const;
+  NodeAssert.ok(isFrame(flex, 0, frameFor(athlete, showing, 50)));
+  NodeAssert.equal(frameFor(athlete, showing, undefined), flex.mini[flex.tell]);
+  NodeAssert.ok(flex.tell > 0, "the flex, not the stance before it");
+});
+
+test("a cheer is one pass even while what the Cell wears goes on moving", () => {
+  // A raincloud rains on a cycle of its own, which the original folds into a longer strip.
+  const cloud = packLook(["house/raincloud"]);
+  const manner = mannerOf("Otter");
+  const cheer = sceneOf(cloud, manner.beats.landed ?? "happy")!;
+  NodeAssert.ok(cheer.pass <= cheer.mini.length);
+  const showing = {
+    name: "Otter",
+    mood: "pleased",
+    activity: undefined,
+    entrance: { kind: "landed", since: 0 },
+  } as const;
+  const after = frameFor(cloud, showing, manner.noticeMs / 1000 + (cheer.pass + 0.5) / cheer.fps);
+  const rest = sceneOf(cloud, `pleased/${manner.id}`)!;
+  NodeAssert.ok(rest.mini.includes(after) || rest.shut?.mini.includes(after));
+});
+
+test("a moment is entered once: a landing seen late is joined in progress, a send is taken up, a sleeper wakes", () => {
+  const rest = { mood: "awake", working: false } as const;
+  const work = { mood: "awake", working: true } as const;
+  const pleased = { mood: "pleased", working: false } as const;
+  const asleep = { mood: "asleep", working: false } as const;
+  NodeAssert.deepEqual(entranceOf(work, pleased, 100, 99.8), { kind: "landed", since: 100 });
+  NodeAssert.deepEqual(entranceOf(undefined, pleased, 100, 96), { kind: "landed", since: 96 });
+  NodeAssert.equal(entranceOf(pleased, pleased, 101, 96), undefined);
+  NodeAssert.deepEqual(entranceOf(rest, work, 7), { kind: "onIt", since: 7 });
+  NodeAssert.deepEqual(entranceOf(pleased, work, 7), { kind: "onIt", since: 7 });
+  NodeAssert.deepEqual(entranceOf({ mood: "needsYou", working: false }, work, 7), {
+    kind: "onIt",
+    since: 7,
+  });
+  NodeAssert.equal(entranceOf(work, work, 8), undefined);
+  NodeAssert.equal(
+    entranceOf({ mood: "meditating", working: true }, work, 8),
+    undefined,
+    "deep in thought, it was at work all along",
+  );
+  NodeAssert.equal(entranceOf(undefined, work, 8), undefined, "found at work, it just works");
+  NodeAssert.deepEqual(entranceOf(asleep, rest, 9), { kind: "wake", since: 9 });
+  NodeAssert.deepEqual(entranceOf(rest, asleep, 9), { kind: "sleep", since: 9 });
+  NodeAssert.deepEqual(
+    entranceOf(work, pleased, 100, 90),
+    { kind: "landed", since: 100 },
+    "a picture that watched it land cheers from the top, whatever the clocks say",
+  );
+});
+
+test("every picture of a Cell plays a moment in step: one that appears mid-move joins it", () => {
+  const rest = { mood: "awake", working: false } as const;
+  const work = { mood: "awake", working: true } as const;
+  const pleased = { mood: "pleased", working: false } as const;
+  const taken = entering("Heron", rest, work, 50);
+  NodeAssert.deepEqual(taken, { kind: "onIt", since: 50 });
+  NodeAssert.equal(entering("Heron", rest, work, 50.2), taken, "a second picture, a beat later");
+  NodeAssert.equal(entering("Heron", undefined, work, 50.6), taken, "a pane opened mid-move");
+  NodeAssert.equal(
+    entering("Heron", work, work, 51),
+    undefined,
+    "nothing begins: it keeps its own",
+  );
+  const cheer = entering("Heron", work, pleased, 60, 59.9);
+  NodeAssert.deepEqual(cheer, { kind: "landed", since: 60 });
+  NodeAssert.equal(entering("Heron", undefined, pleased, 61, 59.9), cheer, "opened a second on");
+  NodeAssert.equal(entering("Heron", undefined, pleased, 63, 59.9), cheer, "and found it later");
+  NodeAssert.equal(entering("Heron", undefined, rest, 70), undefined, "the cheer is over");
+  NodeAssert.deepEqual(
+    entering("Heron", work, pleased, 90, 89.9),
+    { kind: "landed", since: 90 },
+    "the next landing is its own moment",
+  );
+});
+
+test("an entrance belongs to the state it entered: a cheer left for work is dropped", () => {
+  const landed = { kind: "landed", since: 10 } as const;
+  const frame = frameFor(
+    bare,
+    { name: "Otter", mood: "awake", activity: "reading", entrance: landed },
+    10.1,
+  );
+  const reading = sceneOf(bare, "reading/0")!;
+  NodeAssert.ok(reading.mini.includes(frame) || reading.shut?.mini.includes(frame));
+});
+
+test("every Cell keeps one manner for life, a crew holds all six, and at rest no two stand on the same beat", () => {
+  const crew = Array.from({ length: 60 }, (_, i) => `thread-${i}`);
+  NodeAssert.equal(new Set(crew.map((name) => mannerOf(name).id)).size, 6);
+  for (const name of crew.slice(0, 6)) NodeAssert.equal(mannerOf(name), mannerOf(name));
+  NodeAssert.ok(new Set(crew.slice(0, 12).map(phaseOf)).size >= 11);
+});
+
+test("a rest is painted only when its pose changes: frames of one pose are one picture", () => {
+  for (const name of ["thread-0", "thread-1", "thread-2", "thread-3"]) {
+    const manner = mannerOf(name);
+    const rest = sceneOf(bare, `rest/${manner.id}`)!;
+    const poses = new Set(rest.hero.map((rows) => rows.join("\n"))).size;
+    NodeAssert.equal(new Set(rest.mini).size, poses, manner.id);
+    NodeAssert.ok(poses < rest.mini.length, `${manner.id} holds its poses`);
+  }
+});
+
+test("a Cell at rest fidgets now and then, and only while the person is there", () => {
+  const name = "thread-0";
+  const manner = mannerOf(name);
+  const fidget = sceneOf(bare, manner.fidget!)!;
+  const rest = sceneOf(bare, `rest/${manner.id}`)!;
+  let seconds = 0;
+  while (fidgetingFor(name, seconds) === undefined) seconds += 1;
+  const start = seconds - fidgetingFor(name, seconds)!;
+  const showing = { name, mood: "awake", activity: undefined } as const;
+  const there = frameFor(bare, { ...showing, here: true }, start + 0.01);
+  NodeAssert.ok(isFrame(fidget, 0, there), "its fidget's first frame");
+  const away = frameFor(bare, showing, start + 0.01);
+  NodeAssert.ok(rest.mini.includes(away) || rest.shut?.mini.includes(away));
+  const windows = Array.from({ length: 400 }, (_, w) => fidgetingFor(name, w * 90 + 89));
+  const held = windows.filter((since) => since !== undefined).length;
+  NodeAssert.ok(held > 50 && held < 150, `${held} of 400 windows hold a fidget`);
 });

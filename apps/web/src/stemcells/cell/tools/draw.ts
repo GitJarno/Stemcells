@@ -2,7 +2,8 @@
 // strips and animations at both sizes on both frames, and sheets of many.
 
 import { FRAMES, type Ground } from "../keyline.ts";
-import { paletteOf, pieceOf, SCENES, STRENGTHS } from "../kit.ts";
+import { paletteOf, pieceOf, SCENES, STRENGTHS, TEMPERAMENTS } from "../kit.ts";
+import { restKey } from "../manner.ts";
 import {
   type CellLook,
   type CellScene,
@@ -129,6 +130,32 @@ export function animation(
 const GAP = 8;
 const INK = { black: "#EDE9E0", light: "#1F2328" } as const;
 
+/** Labelled strips, one under another, on one sheet. */
+function laid(title: string, rows: readonly { label: string; strip: Sheet[] }[]): Uint8Array {
+  const label = 16;
+  const width =
+    Math.max(
+      textWidth(title, 2),
+      ...rows.map(({ strip }) => strip.reduce((w, f) => w + f.width + GAP, 0)),
+    ) + GAP;
+  const height =
+    label * 2 + rows.reduce((h, { strip }) => h + label + (strip[0]?.height ?? 0) + GAP, 0);
+  const sheet = new Sheet(width, height, "#16181C");
+  sheet.text(title, GAP, GAP, INK.black, 2);
+  let y = label * 2;
+  for (const { label: words, strip } of rows) {
+    sheet.text(words, GAP, y, INK.black, 2);
+    y += label;
+    let x = GAP;
+    for (const frame of strip) {
+      paste(sheet, frame, x, y);
+      x += frame.width + GAP;
+    }
+    y += (strip[0]?.height ?? 0) + GAP;
+  }
+  return png(sheet.width, sheet.height, sheet.pixels);
+}
+
 /** A look's scenes on one sheet: each scene's every frame, at both sizes, on both frames, labelled. */
 export function sheetOf(spec: string, keys: readonly string[], body: string): Uint8Array {
   const look = lookOf(spec);
@@ -144,28 +171,53 @@ export function sheetOf(spec: string, keys: readonly string[], body: string): Ui
           strip: stage(key, framesOf(scene, size), palette, size, ground),
         });
   }
-  const label = 16;
-  const width =
-    Math.max(
-      textWidth(spec, 2),
-      ...rows.map(({ strip }) => strip.reduce((w, f) => w + f.width + GAP, 0)),
-    ) + GAP;
-  const height =
-    label * 2 + rows.reduce((h, { strip }) => h + label + (strip[0]?.height ?? 0) + GAP, 0);
-  const sheet = new Sheet(width, height, "#16181C");
-  sheet.text(spec, GAP, GAP, INK.black, 2);
-  let y = label * 2;
-  for (const { label: words, strip } of rows) {
-    sheet.text(words, GAP, y, INK.black, 2);
-    y += label;
-    let x = GAP;
-    for (const frame of strip) {
-      paste(sheet, frame, x, y);
-      x += frame.width + GAP;
+  return laid(spec, rows);
+}
+
+/**
+ * The temperaments on one sheet, in a look: each one's rest (a frame per change of pose, with
+ * how many frames it holds) and its beats frame by frame, at both sizes on `ground`.
+ */
+export function mannerSheet(
+  spec: string,
+  ids: readonly string[],
+  body: string,
+  ground: Ground,
+): Uint8Array {
+  const look = lookOf(spec);
+  const palette = paletteOf(body);
+  const rows: { label: string; strip: Sheet[] }[] = [];
+  const manners = [...TEMPERAMENTS.values()].filter(
+    (manner) => ids.length === 0 || ids.includes(manner.id),
+  );
+  if (manners.length === 0) throw new Error("no such temperament");
+  for (const manner of manners) {
+    const beats = [manner.beats.onIt, manner.beats.landed, manner.fidget, manner.beats.needsYou];
+    const keys = [restKey(manner), ...beats.filter((key) => key !== undefined)];
+    for (const key of new Set(keys)) {
+      const scene = sceneOf(look, key);
+      if (scene === undefined) throw new Error(`no scene "${key}"`);
+      const rest = key === restKey(manner);
+      for (const size of SIZES) {
+        // A beat is one pass, however long what the look wears makes its strip.
+        const frames = framesOf(scene, size).slice(0, rest ? undefined : scene.pass);
+        // A rest holds a pose for seconds: one picture a hold, its length in the label.
+        const starts = frames.flatMap((frame, i) => (rest && frame === frames[i - 1] ? [] : [i]));
+        const held = starts.map((at, i) => (starts[i + 1] ?? frames.length) - at);
+        rows.push({
+          label: `${key} ${size} ${scene.fps}fps${rest ? ` holds ${held.join(" ")}` : ""}`,
+          strip: stage(
+            key,
+            starts.map((at) => frames[at]!),
+            palette,
+            size,
+            ground,
+          ),
+        });
+      }
     }
-    y += (strip[0]?.height ?? 0) + GAP;
   }
-  return png(sheet.width, sheet.height, sheet.pixels);
+  return laid(`manner ${spec}`, rows);
 }
 
 /** Looks side by side: each one's `keys` scenes (the first frame; the cheer at its height), mini and hero, on both frames, labelled. */

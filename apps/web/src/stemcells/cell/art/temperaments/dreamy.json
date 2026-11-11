@@ -1,0 +1,33 @@
+{
+  "id": "dreamy",
+  "weight": 1,
+  "breath": {
+    "periodMs": 5670,
+    "depthRows": 1,
+    "outShare": 0.4
+  },
+  "blink": {
+    "windowMs": 6400,
+    "shutMs": 330,
+    "double": false
+  },
+  "noticeMs": 500,
+  "gaze": [
+    {
+      "look": [0, 0],
+      "holdMs": 14000
+    },
+    {
+      "look": [0, -1],
+      "holdMs": 3000
+    }
+  ],
+  "fidget": "fidget/dreamy",
+  "beats": {
+    "onIt": "onIt/dreamy",
+    "landed": "landed/dreamy",
+    "needsYou": "needsYou/dreamy",
+    "wake": "wake",
+    "sleep": "yawn"
+  }
+}

@@ -617,16 +617,22 @@ export interface Temperament {
   readonly breath: {
     readonly periodMs: number;
     readonly depthRows: number;
-    readonly puff?: boolean;
+    /** The share of a breath spent breathed out; a third unless told. */
+    readonly outShare?: number | undefined;
+    /** It swells a row at the top of the breath, before it lets it out. */
+    readonly puff?: boolean | undefined;
   };
   readonly blink: { readonly windowMs: number; readonly shutMs: number; readonly double: boolean };
   /** How long it takes to notice a moment. */
   readonly noticeMs: number;
+  /** Where it looks at rest, a cycle in order: `[0, 0]` is ahead. None: always ahead. */
   readonly gaze: readonly { readonly look: readonly number[]; readonly holdMs: number }[];
-  /** The scene it fidgets with. */
-  readonly fidget: string;
-  /** Its own take on the moments, as scene names. */
-  readonly beats: Readonly<Record<"onIt" | "landed" | "needsYou" | "wake" | "sleep", string>>;
+  /** The scene it fidgets with, now and then, at rest. */
+  readonly fidget?: string | undefined;
+  /** Its own take on the moments, as scene names; a moment it leaves out plays as every Cell's. */
+  readonly beats: Readonly<
+    Partial<Record<"onIt" | "landed" | "needsYou" | "wake" | "sleep", string>>
+  >;
 }
 
 /** The temperaments, by id. */

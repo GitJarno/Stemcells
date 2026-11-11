@@ -3,7 +3,16 @@
 // `figure.test.ts` draws every mood on every body through them.
 
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";
-export { bodyOf, frameShown, sceneFor } from "../../../../web/src/stemcells/cell/cast.ts";
+export {
+  bodyOf,
+  type Entrance,
+  entering,
+  frameFor,
+  frameShown,
+  prepare,
+  sceneFor,
+} from "../../../../web/src/stemcells/cell/cast.ts";
+export { mannerOf } from "../../../../web/src/stemcells/cell/manner.ts";
 export { FRAMES, type Ground, keylined } from "../../../../web/src/stemcells/cell/keyline.ts";
 export { BODIES, paletteOf } from "../../../../web/src/stemcells/cell/kit.ts";
 export {

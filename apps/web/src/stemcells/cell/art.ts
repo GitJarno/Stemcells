@@ -6,15 +6,24 @@
 import dock from "./art/moves/dock.json" with { type: "json" };
 import form from "./art/moves/form.json" with { type: "json" };
 import growth from "./art/moves/growth.json" with { type: "json" };
+import manner from "./art/moves/manner.json" with { type: "json" };
 import marks from "./art/moves/marks.json" with { type: "json" };
 import toss from "./art/moves/toss.json" with { type: "json" };
 import work from "./art/moves/work.json" with { type: "json" };
 import august from "./art/packs/august.json" with { type: "json" };
 import classes from "./art/packs/classes.json" with { type: "json" };
+import december from "./art/packs/december.json" with { type: "json" };
 import gym from "./art/packs/gym.json" with { type: "json" };
+import january from "./art/packs/january.json" with { type: "json" };
 import lunarNewYear from "./art/packs/lunar-new-year.json" with { type: "json" };
 import november from "./art/packs/november.json" with { type: "json" };
 import workshop from "./art/packs/workshop.json" with { type: "json" };
+import dreamy from "./art/temperaments/dreamy.json" with { type: "json" };
+import fussy from "./art/temperaments/fussy.json" with { type: "json" };
+import keen from "./art/temperaments/keen.json" with { type: "json" };
+import nosy from "./art/temperaments/nosy.json" with { type: "json" };
+import proud from "./art/temperaments/proud.json" with { type: "json" };
+import steady from "./art/temperaments/steady.json" with { type: "json" };
 
 /** Files by name (no folder, no `.json`), in name order. */
 export type ArtFiles = Readonly<Record<string, unknown>>;
@@ -23,14 +32,16 @@ export type ArtFiles = Readonly<Record<string, unknown>>;
 export const ART_PACKS: ArtFiles = {
   august,
   classes,
+  december,
   gym,
+  january,
   "lunar-new-year": lunarNewYear,
   november,
   workshop,
 };
 
 /** Moves: new scenes, and meta for the original's. */
-export const ART_MOVES: ArtFiles = { dock, form, growth, marks, toss, work };
+export const ART_MOVES: ArtFiles = { dock, form, growth, manner, marks, toss, work };
 
-/** Temperaments, one a file: none drawn yet. */
-export const ART_TEMPERAMENTS: ArtFiles = {};
+/** Temperaments, one a file: how a Cell carries itself (`manner.ts`). */
+export const ART_TEMPERAMENTS: ArtFiles = { dreamy, fussy, keen, nosy, proud, steady };

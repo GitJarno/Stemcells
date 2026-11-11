@@ -1,0 +1,5618 @@
+{
+  "theme": "december",
+  "season": {
+    "from": "12-01",
+    "to": "12-26"
+  },
+  "about": "The dark month: strings of lights in the windows, baking, wrapping, and the long wait for the holiday.",
+  "pieces": [
+    {
+      "name": "sack",
+      "slot": "back",
+      "about": "A gift-bringer's burlap sack, carried over the left shoulder from behind: its tied mouth stands above the shoulder.",
+      "art": [
+        "....tt....",
+        "...tttn...",
+        "....RR....",
+        "...ttttn..",
+        "..ttttttn.",
+        ".tttttttnn",
+        "tttttttttn",
+        "ttttttnttn",
+        "tttttttnnn",
+        "ttttttnn..",
+        "tttttnn...",
+        "ttttnn....",
+        "tttnn.....",
+        ".nn......."
+      ],
+      "hotspot": [12, 15],
+      "mini": [".tt.", ".R..", "ttt.", "ttt.", "ttn.", "tn..", "n..."],
+      "miniHotspot": [6, 8]
+    },
+    {
+      "name": "lights",
+      "slot": "wrap",
+      "about": "A string of coloured lights hung in a swag across the chest, as it is on a tree: two of its bulbs blink in turn.",
+      "art": [
+        ".ff....................ff.",
+        "..WYf................ff...",
+        "..YY.fff..........fff.WY..",
+        ".......WSfffffffff....YY..",
+        ".......SS...WR...WI.......",
+        "............RR...II.......",
+        ".........................."
+      ],
+      "hotspot": [12, 7],
+      "mini": [".Y.........Y.", "...S.....I...", "......R......"],
+      "miniHotspot": [6, 3],
+      "frames": [
+        [
+          ".ff....................ff.",
+          "..WYf................ff...",
+          "..YY.fff..........fff.WY..",
+          ".......WSfffffffff....YY..",
+          ".......SS...WR...WI.......",
+          "............RR...II.......",
+          ".........................."
+        ],
+        [
+          ".ff....................ff.",
+          "..WYf................ff...",
+          "..YY.fff..........fff.WY..",
+          ".......hhfffffffff....YY..",
+          ".......hh...WR...WI.......",
+          "............RR...II.......",
+          ".........................."
+        ],
+        [
+          ".ff....................ff.",
+          "..WYf................ff...",
+          "..YY.fff..........fff.WY..",
+          ".......WSfffffffff....YY..",
+          ".......SS...WR...WI.......",
+          "............RR...II.......",
+          ".........................."
+        ],
+        [
+          ".ff....................ff.",
+          "..WYf................ff...",
+          "..YY.fff..........fff.WY..",
+          ".......WSfffffffff....YY..",
+          ".......SS...WR...MM.......",
+          "............RR...MM.......",
+          ".........................."
+        ]
+      ],
+      "miniFrames": [
+        [".Y.........Y.", "...S.....I...", "......R......"],
+        [".Y.........Y.", "...h.....I...", "......R......"],
+        [".Y.........Y.", "...S.....I...", "......R......"],
+        [".Y.........Y.", "...S.....M...", "......R......"]
+      ],
+      "fps": 2
+    }
+  ],
+  "fabrics": {
+    "coat": {
+      "about": "A gift-bringer's crimson coat from the chest down: a charcoal belt with a gold buckle, and a white fur hem.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [14, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "W"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "miniRows": [11, 11]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [0, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [22, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m",
+            "L": "N",
+            "O": "m"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "coat-navy": {
+      "about": "The gift-bringer's coat in navy: a charcoal belt with a gold buckle, and a white fur hem.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [14, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "W"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "miniRows": [11, 11]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [0, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [22, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "coat-forest": {
+      "about": "The gift-bringer's coat in green: a charcoal belt with a gold buckle, and a white fur hem.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [14, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "W"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "miniRows": [11, 11]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [0, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [22, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "harness": {
+      "about": "A reindeer's leather strap of sleigh bells across the chest, a larger bell hanging under it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [14, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "k",
+            "b": "k"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [16, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [6, 6],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [6, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [10, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [2, 2],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [10, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Z",
+            "b": "Z"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "miniRows": [12, 12]
+        }
+      ]
+    },
+    "harness-crimson": {
+      "about": "The reindeer's strap of sleigh bells in crimson.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [14, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "k",
+            "b": "k"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [16, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [6, 6],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [6, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [10, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [2, 2],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [10, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "N"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "miniRows": [12, 12]
+        }
+      ]
+    },
+    "harness-holly": {
+      "about": "The reindeer's strap of sleigh bells in holly green.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [14, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "k",
+            "b": "k"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [16, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [6, 6],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [6, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [10, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [2, 2],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [10, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f",
+            "b": "f"
+          },
+          "rides": true,
+          "rows": [24, 25],
+          "miniRows": [12, 12]
+        }
+      ]
+    },
+    "boughs": {
+      "about": "The green boughs of a decorated tree from the chest down.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [4, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [12, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "f",
+            "L": "F",
+            "O": "f"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13]
+        }
+      ]
+    },
+    "boughs-snow": {
+      "about": "The tree's boughs under snow, from the chest down.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [4, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [12, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13]
+        }
+      ]
+    },
+    "boughs-night": {
+      "about": "The tree's boughs after dark, navy from the chest down.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [4, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [12, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w",
+            "L": "U",
+            "O": "w"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13]
+        }
+      ]
+    },
+    "paper": {
+      "about": "Sky-blue wrapping paper with white dots from the chest down, a gold ribbon crossed over it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "G"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [15, 16],
+          "miniRows": [11, 13],
+          "miniColumns": [6, 6]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [6, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [10, 10],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [20, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [12, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [19, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [12, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [4, 4],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "paper-pink": {
+      "about": "Pink wrapping paper with red dots from the chest down, a white ribbon crossed over it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [15, 16],
+          "miniRows": [11, 13],
+          "miniColumns": [6, 6]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [6, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [10, 10],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [20, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [12, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [19, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [12, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [4, 4],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i",
+            "L": "I",
+            "O": "i"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "paper-lime": {
+      "about": "Lime wrapping paper with white dots from the chest down, a red ribbon crossed over it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [26, 27],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "r"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [15, 16],
+          "miniRows": [11, 13],
+          "miniColumns": [6, 6]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [6, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [10, 10],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [20, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [12, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [19, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [12, 12],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [4, 4],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "miniRows": [11, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [10, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "apron": {
+      "about": "A baker's white apron: straps over the shoulders, a bib under the face and a full skirt with a pocket, its crimson strings tied round the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [13, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [13, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [0, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [25, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "N"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "N"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [17, 22],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [17, 22],
+          "columns": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "p"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [2, 2],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "p"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [10, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "columns": [7, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [26, 28],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "miniColumns": [2, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        }
+      ]
+    },
+    "apron-sky": {
+      "about": "The baker's apron in sky blue, its strings navy.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [13, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [13, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [0, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "w"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [25, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "U"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "U",
+            "b": "U"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [17, 22],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [17, 22],
+          "columns": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [2, 2],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [10, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "S"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "columns": [7, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "S"
+          },
+          "rides": true,
+          "rows": [26, 28],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "S"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "miniColumns": [2, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "S"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "d",
+            "b": "d"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        }
+      ]
+    },
+    "apron-pink": {
+      "about": "The baker's apron in pink, its strings crimson.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "i",
+            "b": "i"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [13, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "i",
+            "b": "i"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [13, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "i",
+            "b": "i"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [0, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [25, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "N"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "N",
+            "b": "N"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i"
+          },
+          "rides": true,
+          "rows": [17, 22],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i"
+          },
+          "rides": true,
+          "rows": [17, 22],
+          "columns": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [2, 2],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "i"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [10, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "I"
+          },
+          "rides": true,
+          "rows": [23, 25],
+          "columns": [7, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "I"
+          },
+          "rides": true,
+          "rows": [26, 28],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "i",
+            "b": "i"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "I"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "miniColumns": [2, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "I",
+            "b": "I"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "i",
+            "b": "i"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        }
+      ]
+    },
+    "straw": {
+      "about": "A sheaf of straw up both flanks and round the chest, as a straw goat is made: a red ribbon binds it at the waist, its cut ends at the hem.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [25, 26],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [17, 29],
+          "columns": [5, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [20, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [17, 29],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [1, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [3, 3],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [5, 5],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [7, 7],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [9, 9],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "G",
+            "L": "G",
+            "O": "o"
+          },
+          "rides": true,
+          "rows": [27, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [17, 21],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [17, 21],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "o"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "straw-pale": {
+      "about": "The sheaf in pale straw, a red ribbon at the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [25, 26],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [17, 29],
+          "columns": [5, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [20, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "t",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [17, 29],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [1, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [3, 3],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [5, 5],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [7, 7],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [9, 9],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "C",
+            "L": "C",
+            "O": "t"
+          },
+          "rides": true,
+          "rows": [27, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [17, 21],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [17, 21],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "straw-sun": {
+      "about": "The sheaf in sun-yellow straw, a green ribbon at the waist.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "f",
+            "b": "f"
+          },
+          "rides": true,
+          "rows": [25, 26],
+          "miniRows": [12, 12]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [17, 29],
+          "columns": [5, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [20, 20],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 29],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [17, 29],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [1, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [3, 3],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [5, 5],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [7, 7],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [9, 9],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [23, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "J"
+          },
+          "rides": true,
+          "rows": [27, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [17, 21],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [17, 21],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "J"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    }
+  },
+  "outfits": [
+    {
+      "id": "gift-bringer",
+      "headwear": "christmas/santa",
+      "back": "december/sack",
+      "fabric": "december/coat",
+      "colourways": [
+        {
+          "id": "navy",
+          "fabric": "december/coat-navy"
+        },
+        {
+          "id": "forest",
+          "fabric": "december/coat-forest"
+        }
+      ],
+      "cheer": "december/gift",
+      "silhouette": "pointed-hat",
+      "family": "crimson"
+    },
+    {
+      "id": "reindeer",
+      "headwear": "christmas/antlers",
+      "face": "christmas/nose",
+      "fabric": "december/harness",
+      "colourways": [
+        {
+          "id": "crimson",
+          "fabric": "december/harness-crimson"
+        },
+        {
+          "id": "holly",
+          "fabric": "december/harness-holly"
+        }
+      ],
+      "cheer": "december/prance",
+      "silhouette": "antlers",
+      "family": "leather"
+    },
+    {
+      "id": "tree",
+      "headwear": "christmas/tree",
+      "wrap": "december/lights",
+      "fabric": "december/boughs",
+      "colourways": [
+        {
+          "id": "snow",
+          "fabric": "december/boughs-snow"
+        },
+        {
+          "id": "night",
+          "fabric": "december/boughs-night"
+        }
+      ],
+      "cheer": "december/twinkle",
+      "silhouette": "tree",
+      "family": "forest"
+    },
+    {
+      "id": "present",
+      "headwear": "christmas/present",
+      "fabric": "december/paper",
+      "colourways": [
+        {
+          "id": "pink",
+          "fabric": "december/paper-pink"
+        },
+        {
+          "id": "lime",
+          "fabric": "december/paper-lime"
+        }
+      ],
+      "cheer": "december/pop",
+      "silhouette": "box",
+      "family": "sky"
+    },
+    {
+      "id": "baker",
+      "headwear": "christmas/gingerbread",
+      "fabric": "december/apron",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "december/apron-sky"
+        },
+        {
+          "id": "pink",
+          "fabric": "december/apron-pink"
+        }
+      ],
+      "cheer": "december/flour",
+      "silhouette": "biscuit",
+      "family": "pearl"
+    },
+    {
+      "id": "straw-goat",
+      "headwear": "christmas/olkipukki",
+      "fabric": "december/straw",
+      "colourways": [
+        {
+          "id": "pale",
+          "fabric": "december/straw-pale"
+        },
+        {
+          "id": "sun",
+          "fabric": "december/straw-sun"
+        }
+      ],
+      "cheer": "december/butt",
+      "silhouette": "goat",
+      "family": "straw"
+    }
+  ],
+  "cheers": {
+    "gift": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 8,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [-1, -1]
+          }
+        },
+        {
+          "pose": {
+            "look": [-1, -1],
+            "sy": 0.94,
+            "spread": 0.2,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.8,
+                "dx": 2,
+                "dy": -3
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "look": [-1, -1],
+            "sy": 0.9,
+            "spread": 0.3,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.85,
+                "dx": 2,
+                "dy": -5
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "look": [-1, 0],
+            "sy": 0.9,
+            "spread": 0.3,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.85,
+                "dx": 2,
+                "dy": -4
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "wide",
+            "look": [-1, -1],
+            "sy": 0.9,
+            "spread": 0.3,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.85,
+                "dx": 2,
+                "dy": -5
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "wide",
+            "look": [-1, -1],
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -5
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.05,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.05,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            },
+            {
+              "art": [".W.", "WWW", ".W."],
+              "attach": "handL",
+              "hotspot": [-4, 7],
+              "z": 5,
+              "mini": ["W"],
+              "miniHotspot": [-2, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            },
+            {
+              "art": ["W"],
+              "attach": "handL",
+              "hotspot": [-5, 6],
+              "z": 5,
+              "mini": ["W"],
+              "miniHotspot": [-2, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.05,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            },
+            {
+              "art": [".W.", "WWW", ".W."],
+              "attach": "handL",
+              "hotspot": [5, 3],
+              "z": 5,
+              "mini": ["W"],
+              "miniHotspot": [1, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            },
+            {
+              "art": ["W"],
+              "attach": "handL",
+              "hotspot": [4, 2],
+              "z": 5,
+              "mini": ["W"],
+              "miniHotspot": [1, 4]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.05,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.9,
+                "dx": 1,
+                "dy": -6
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.85,
+                "dx": 0,
+                "dy": -4
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [".Y...Y.", "..YYY..", "SSSYSSd", "YYYYYYJ", "SSSYSSd", "dSSYSdd"],
+              "attach": "handL",
+              "hotspot": [3, 7],
+              "z": 4,
+              "mini": ["Y.Y", "SYS", "SYd"],
+              "miniHotspot": [1, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.92,
+            "spread": 0.2,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.6,
+                "dx": 2,
+                "dy": -1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.98
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    },
+    "prance": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 5,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0],
+            "sy": 0.92,
+            "spread": 0.2
+          }
+        },
+        {
+          "pose": {
+            "look": [1, 0],
+            "sy": 0.88,
+            "spread": 0.4
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": 2,
+            "hatDX": -1,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -4
+              },
+              {
+                "side": -1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": 2.5,
+            "hatDX": 0,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -6
+              },
+              {
+                "side": -1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": 2.5,
+            "hatDX": 0,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -6
+              },
+              {
+                "side": -1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": 2,
+            "hatDX": 0,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -5
+              },
+              {
+                "side": -1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.86,
+            "spread": 0.4,
+            "arms": [
+              {
+                "side": 1,
+                "at": 0.4,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                "WW..WW........WW..WW",
+                "....................",
+                "......W..WW..W......",
+                ".....W..WWW...W.....",
+                "......W......W......"
+              ],
+              "attach": "ground",
+              "hotspot": [9, 6],
+              "z": 5,
+              "mini": ["W.......W", "....W...."],
+              "miniHotspot": [4, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.95,
+            "spread": 0.1
+          },
+          "layers": [
+            {
+              "art": [".W..........W.", "W............W", "W............W", ".W..........W."],
+              "attach": "ground",
+              "hotspot": [6, 4],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": -2,
+            "hatDX": 1,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -4
+              },
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": -2.5,
+            "hatDX": 0,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -6
+              },
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": -2.5,
+            "hatDX": 0,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -6
+              },
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03,
+            "lean": -2,
+            "hatDX": 0,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.45,
+                "dx": 3,
+                "dy": -5
+              },
+              {
+                "side": 1,
+                "at": 0.3,
+                "dx": 2,
+                "dy": 1
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.86,
+            "spread": 0.4,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.4,
+                "dx": 3,
+                "dy": 0
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                "WW..WW........WW..WW",
+                "....................",
+                "......W..WW..W......",
+                ".....W..WWW...W.....",
+                "......W......W......"
+              ],
+              "attach": "ground",
+              "hotspot": [9, 6],
+              "z": 5,
+              "mini": ["W.......W", "....W...."],
+              "miniHotspot": [4, 2]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.95,
+            "spread": 0.1
+          },
+          "layers": [
+            {
+              "art": [".W..........W.", "W............W", "W............W", ".W..........W."],
+              "attach": "ground",
+              "hotspot": [6, 4],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 1]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.98
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    },
+    "twinkle": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 7,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [0, -1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.92,
+            "spread": 0.2
+          },
+          "layers": [
+            {
+              "art": [
+                "oo....................",
+                "oo..................oo",
+                ".....hh.............oo",
+                ".....hh...rr...MM.....",
+                "..........rr...MM....."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": ["o.........o", "..h.....M..", ".....r....."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.88,
+            "spread": 0.4
+          },
+          "layers": [
+            {
+              "art": [
+                "oo....................",
+                "oo..................oo",
+                ".....hh.............oo",
+                ".....hh...rr...MM.....",
+                "..........rr...MM....."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": ["o.........o", "..h.....M..", ".....r....."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.88,
+            "spread": 0.4
+          },
+          "layers": [
+            {
+              "art": [
+                "oo....................",
+                "oo..................oo",
+                ".....hh.............oo",
+                ".....hh...rr...MM.....",
+                "..........rr...MM....."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": ["o.........o", "..h.....M..", ".....r....."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.88,
+            "spread": 0.4
+          },
+          "layers": [
+            {
+              "art": [
+                "oo....................",
+                "oo..................oo",
+                ".....hh.............oo",
+                ".....hh...rr...MM.....",
+                "..........rr...MM....."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 6],
+              "z": 1,
+              "mini": ["o.........o", "..h.....M..", ".....r....."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "wide",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "YWWY....................",
+                "YWWY................YWWY",
+                ".YY..SWWS...........YWWY",
+                ".....SWWS.RWWR.IWWI..YY.",
+                "......SS..RWWR.IWWI.....",
+                "...........RR...II......"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["W.........W", "..W.....W..", ".....W....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["WW...WW", ".W...W."],
+              "attach": "headTop",
+              "hotspot": [3, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "YWWY....................",
+                "YWWY................YWWY",
+                ".YY..SWWS...........YWWY",
+                ".....SWWS.RWWR.IWWI..YY.",
+                "......SS..RWWR.IWWI.....",
+                "...........RR...II......"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["W.........W", "..W.....W..", ".....W....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["WW...WW", ".W...W."],
+              "attach": "headTop",
+              "hotspot": [3, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                ".....................W",
+                "......................",
+                ".W....................",
+                "WYW...................",
+                ".W....................",
+                "......................",
+                "...................Y.."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 25],
+              "z": 5,
+              "mini": ["..........W", "W.........."],
+              "miniHotspot": [5, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "yWYy....................",
+                "yYYy................yWYy",
+                ".....yWSy...........yYYy",
+                ".....ySSy.yWRy.yWIy.....",
+                "..........yRRy.yIIy....."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["Y.........Y", "..S.....I..", ".....R....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["W...W"],
+              "attach": "headTop",
+              "hotspot": [2, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                ".....................W",
+                "......................",
+                ".W....................",
+                "WYW...................",
+                ".W....................",
+                "......................",
+                "...................Y.."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 25],
+              "z": 5,
+              "mini": ["..........W", "W.........."],
+              "miniHotspot": [5, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "yWYy....................",
+                "yYYy................yWYy",
+                ".....yWSy...........yYYy",
+                ".....ySSy.yWRy.yWIy.....",
+                "..........yRRy.yIIy....."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["Y.........Y", "..S.....I..", ".....R....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["Y...Y"],
+              "attach": "headTop",
+              "hotspot": [2, 12],
+              "z": 5,
+              "mini": ["Y...Y"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                ".....................W",
+                "......................",
+                ".W....................",
+                "WYW...................",
+                ".W....................",
+                "......................",
+                "...................Y.."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 25],
+              "z": 5,
+              "mini": ["..........W", "W.........."],
+              "miniHotspot": [5, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "YWWY....................",
+                "YWWY................YWWY",
+                ".YY..SWWS...........YWWY",
+                ".....SWWS.RWWR.IWWI..YY.",
+                "......SS..RWWR.IWWI.....",
+                "...........RR...II......"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["W.........W", "..W.....W..", ".....W....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["WW...WW", ".W...W."],
+              "attach": "headTop",
+              "hotspot": [3, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                "W.....................",
+                "......................",
+                "....................W.",
+                "...................WYW",
+                "....................W.",
+                "......................",
+                "......................",
+                "......................",
+                "..Y..................."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 26],
+              "z": 5,
+              "mini": ["W..........", "...........", "...........", "..........W"],
+              "miniHotspot": [5, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "YWWY....................",
+                "YWWY................YWWY",
+                ".YY..SWWS...........YWWY",
+                ".....SWWS.RWWR.IWWI..YY.",
+                "......SS..RWWR.IWWI.....",
+                "...........RR...II......"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["W.........W", "..W.....W..", ".....W....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["W...W"],
+              "attach": "headTop",
+              "hotspot": [2, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                "W.....................",
+                "......................",
+                "....................W.",
+                "...................WYW",
+                "....................W.",
+                "......................",
+                "......................",
+                "......................",
+                "..Y..................."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 26],
+              "z": 5,
+              "mini": ["W..........", "...........", "...........", "..........W"],
+              "miniHotspot": [5, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "yWYy....................",
+                "yYYy................yWYy",
+                ".....yWSy...........yYYy",
+                ".....ySSy.yWRy.yWIy.....",
+                "..........yRRy.yIIy....."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["Y.........Y", "..S.....I..", ".....R....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["Y...Y"],
+              "attach": "headTop",
+              "hotspot": [2, 12],
+              "z": 5,
+              "mini": ["Y...Y"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                "W.....................",
+                "......................",
+                "....................W.",
+                "...................WYW",
+                "....................W.",
+                "......................",
+                "......................",
+                "......................",
+                "..Y..................."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 26],
+              "z": 5,
+              "mini": ["W..........", "...........", "...........", "..........W"],
+              "miniHotspot": [5, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "yWYy....................",
+                "yYYy................yWYy",
+                ".....yWSy...........yYYy",
+                ".....ySSy.yWRy.yWIy.....",
+                "..........yRRy.yIIy....."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["Y.........Y", "..S.....I..", ".....R....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": [
+                "W.....................",
+                "......................",
+                "....................W.",
+                "...................WYW",
+                "....................W.",
+                "......................",
+                "......................",
+                "......................",
+                "..Y..................."
+              ],
+              "attach": "ground",
+              "hotspot": [10, 26],
+              "z": 5,
+              "mini": ["W..........", "...........", "...........", "..........W"],
+              "miniHotspot": [5, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "YWWY....................",
+                "YWWY................YWWY",
+                ".YY..SWWS...........YWWY",
+                ".....SWWS.RWWR.IWWI..YY.",
+                "......SS..RWWR.IWWI.....",
+                "...........RR...II......"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["W.........W", "..W.....W..", ".....W....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["WW...WW", ".W...W."],
+              "attach": "headTop",
+              "hotspot": [3, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                ".....................Y..",
+                "..Y.....................",
+                "........................",
+                "........................",
+                ".......................W",
+                "W......................."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 23],
+              "z": 5,
+              "mini": ["............Y", "Y............"],
+              "miniHotspot": [6, 11]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "YWWY....................",
+                "YWWY................YWWY",
+                ".YY..SWWS...........YWWY",
+                ".....SWWS.RWWR.IWWI..YY.",
+                "......SS..RWWR.IWWI.....",
+                "...........RR...II......"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["W.........W", "..W.....W..", ".....W....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["W...W"],
+              "attach": "headTop",
+              "hotspot": [2, 12],
+              "z": 5,
+              "mini": ["W...W"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                ".....................Y..",
+                "..Y.....................",
+                "........................",
+                "........................",
+                ".......................W",
+                "W......................."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 23],
+              "z": 5,
+              "mini": ["............Y", "Y............"],
+              "miniHotspot": [6, 11]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                "yWYy....................",
+                "yYYy................yWYy",
+                ".....yWSy...........yYYy",
+                ".....ySSy.yWRy.yWIy.....",
+                "..........yRRy.yIIy....."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["Y.........Y", "..S.....I..", ".....R....."],
+              "miniHotspot": [5, 3]
+            },
+            {
+              "art": ["Y...Y"],
+              "attach": "headTop",
+              "hotspot": [2, 12],
+              "z": 5,
+              "mini": ["Y...Y"],
+              "miniHotspot": [2, 5]
+            },
+            {
+              "art": [
+                ".....................Y..",
+                "..Y.....................",
+                "........................",
+                "........................",
+                ".......................W",
+                "W......................."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 23],
+              "z": 5,
+              "mini": ["............Y", "Y............"],
+              "miniHotspot": [6, 11]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          },
+          "layers": [
+            {
+              "art": [
+                "yWYy....................",
+                "yYYy................yWYy",
+                ".....yWSy...........yYYy",
+                ".....ySSy.yWRy.yWIy.....",
+                "..........yRRy.yIIy....."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 6],
+              "z": 1,
+              "mini": ["Y.........Y", "..S.....I..", ".....R....."],
+              "miniHotspot": [5, 3]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.95
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.02
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.99
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    },
+    "pop": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 10,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [0, -1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": -3,
+            "hatDX": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": 3,
+            "hatDX": -1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": -3,
+            "hatDX": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": 3,
+            "hatDX": -1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": -2
+          }
+        },
+        {
+          "pose": {
+            "eyes": "wide",
+            "sy": 0.9,
+            "spread": 0.3
+          }
+        },
+        {
+          "pose": {
+            "eyes": "wide",
+            "sy": 0.86,
+            "spread": 0.4
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "base": 27,
+            "sy": 1.05,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -5
+              },
+              {
+                "side": 1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -5
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                "...R..WW.S....",
+                ".YYRW....WYY..",
+                "..G.......G...",
+                "W............W",
+                "..SS......II.."
+              ],
+              "attach": "ground",
+              "hotspot": [6, 26],
+              "z": 5,
+              "mini": ["Y.......Y", "........R"],
+              "miniHotspot": [5, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "base": 27,
+            "sy": 1.05,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -5
+              },
+              {
+                "side": 1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -5
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                "YYRR...W..W...SSY",
+                "G...............G",
+                ".................",
+                ".S.............I.",
+                ".S.............I."
+              ],
+              "attach": "ground",
+              "hotspot": [8, 26],
+              "z": 5,
+              "mini": ["Y........SY", "...........", ".S........R"],
+              "miniHotspot": [6, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "base": 27,
+            "sy": 1.03,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -5
+              },
+              {
+                "side": 1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -5
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                "YY...................YY",
+                ".G.R...............S.G.",
+                "...R....W.......W..S...",
+                ".......................",
+                ".SS.................II."
+              ],
+              "attach": "ground",
+              "hotspot": [11, 25],
+              "z": 5,
+              "mini": ["..........SY", "Y...........", "...........R", ".S.........."],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.86,
+            "spread": 0.4
+          },
+          "layers": [
+            {
+              "art": [
+                "YY.....................YY",
+                "G..RR................SS.G",
+                ".........................",
+                ".......W...........W.....",
+                ".........................",
+                ".S.....................I.",
+                ".S.....................I."
+              ],
+              "attach": "ground",
+              "hotspot": [12, 23],
+              "z": 5,
+              "mini": ["..........S.Y", ".............", "Y..........R.", ".S..........."],
+              "miniHotspot": [6, 11]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.04
+          },
+          "layers": [
+            {
+              "art": [
+                "YYR...................SYY.",
+                ".GR...................SG..",
+                "..........................",
+                "..........................",
+                "..........................",
+                "SS......................II"
+              ],
+              "attach": "ground",
+              "hotspot": [12, 17],
+              "z": 5,
+              "mini": ["..........S..", "............Y", "...........R.", "Y............"],
+              "miniHotspot": [6, 9]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.98
+          },
+          "layers": [
+            {
+              "art": ["RR...................SS"],
+              "attach": "ground",
+              "hotspot": [10, 13],
+              "z": 5,
+              "mini": ["Y"],
+              "miniHotspot": [-6, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    },
+    "flour": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 8,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "look": [0, 1]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [0, 1],
+            "sy": 1.04,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.6,
+                "dx": 3,
+                "dy": -2
+              },
+              {
+                "side": 1,
+                "at": 0.6,
+                "dx": 3,
+                "dy": -2
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [0, 1],
+            "sy": 1.06,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -4
+              },
+              {
+                "side": 1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -4
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [0, 1],
+            "sy": 1.06,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -4
+              },
+              {
+                "side": 1,
+                "at": 0.7,
+                "dx": 3,
+                "dy": -4
+              }
+            ]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.82,
+            "spread": 0.5,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.35,
+                "dx": 3,
+                "dy": 1
+              },
+              {
+                "side": 1,
+                "at": 0.35,
+                "dx": 3,
+                "dy": 1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": ["...WWWW..WWW...", ".WWWWWWWWWWWWW.", "WWWWWWWWWWWWWWp", ".WWpp.WWWpp.pp."],
+              "attach": "ground",
+              "hotspot": [6, 10],
+              "z": 5,
+              "mini": [".WW.WW.", "WWWWWWW"],
+              "miniHotspot": [3, 5]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.86,
+            "spread": 0.4,
+            "arms": [
+              {
+                "side": -1,
+                "at": 0.35,
+                "dx": 3,
+                "dy": 1
+              },
+              {
+                "side": 1,
+                "at": 0.35,
+                "dx": 3,
+                "dy": 1
+              }
+            ]
+          },
+          "layers": [
+            {
+              "art": [
+                "......WWW.....WWW...",
+                "....WWWWWW..WWWWWW..",
+                "..WWWWWWWWWWWWWWWWW.",
+                ".WWWWWWWWWWWWWWWWWWp",
+                "WWWWWWWWWWWWWWWWWWpp",
+                "WWWWWWWWWWWWWWWWWppp",
+                ".WWWWWWWWWWWWWWpppp.",
+                "..WWWWWppWWWWppppp..",
+                "...WWpp..pppp.pp....",
+                ".....p.....pp......."
+              ],
+              "attach": "ground",
+              "hotspot": [9, 16],
+              "z": 5,
+              "mini": ["..WW..WW.", ".WWWWWWWW", "WWWWWWWWp", ".WWWpWWpp"],
+              "miniHotspot": [4, 7]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "sy": 0.94,
+            "spread": 0.1
+          },
+          "layers": [
+            {
+              "art": [
+                "......WWW.....WWW...",
+                "....WWWWWW..WWWWWW..",
+                "..WWWWWWWWWWWWWWWWW.",
+                ".WWWWWWWWWWWWWWWWWWp",
+                "WWWWWWWWWWWWWWWWWWpp",
+                "WWWWWWWWWWWWWWWWWppp",
+                ".WWWWWWWWWWWWWWpppp.",
+                "..WWWWWppWWWWppppp..",
+                "...WWpp..pppp.pp....",
+                ".....p.....pp......."
+              ],
+              "attach": "ground",
+              "hotspot": [9, 16],
+              "z": 5,
+              "mini": ["..WW..WW.", ".WWWWWWWW", "WWWWWWWWp", ".WWWpWWpp"],
+              "miniHotspot": [4, 7]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze"
+          },
+          "layers": [
+            {
+              "art": [
+                ".................WWWW....",
+                "...............WWWWWWWW..",
+                "..............WWWWWWWWWW.",
+                ".WW..........WWWWWWWWWWpp",
+                "WWWW.........WWWWWWWWWppp",
+                "WWWpp.........WWWWWWWpppp",
+                ".pp.......p....WWpp.ppp..",
+                "........W................"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 20],
+              "z": 5,
+              "mini": ["...........WW", "WW........WWW", "Wp........WWp"],
+              "miniHotspot": [6, 9]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze"
+          },
+          "layers": [
+            {
+              "art": [
+                ".................WWWW....",
+                "...............WWWWWWWW..",
+                "..............WWWWWWWWWW.",
+                ".WW..........WWWWWWWWWWpp",
+                "WWWW.........WWWWWWWWWppp",
+                "WWWpp.........WWWWWWWpppp",
+                ".pp.......p....WWpp.ppp..",
+                "........W................"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 20],
+              "z": 5,
+              "mini": ["...........WW", "WW........WWW", "Wp........WWp"],
+              "miniHotspot": [6, 9]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "wide"
+          },
+          "layers": [
+            {
+              "art": [
+                "...................WWW..",
+                "....W.............WWWWW.",
+                ".................WWWWWpp",
+                "WW................WWWppp",
+                "p..................ppp..",
+                "........................",
+                "...............p........"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 24],
+              "z": 5,
+              "mini": ["...........WW", "W..........Wp", ".p..........."],
+              "miniHotspot": [6, 11]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "wide"
+          },
+          "layers": [
+            {
+              "art": [
+                "...................WWW..",
+                "....W.............WWWWW.",
+                ".................WWWWWpp",
+                "WW................WWWppp",
+                "p..................ppp..",
+                "........................",
+                "...............p........"
+              ],
+              "attach": "ground",
+              "hotspot": [11, 24],
+              "z": 5,
+              "mini": ["...........WW", "W..........Wp", ".p..........."],
+              "miniHotspot": [6, 11]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                ".....................WW..",
+                "....................WWWp.",
+                "..W..................pp..",
+                ".........................",
+                "p........................",
+                "........................W"
+              ],
+              "attach": "ground",
+              "hotspot": [12, 27],
+              "z": 5,
+              "mini": ["..........W.", "...........p", "W..........."],
+              "miniHotspot": [5, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.03
+          },
+          "layers": [
+            {
+              "art": [
+                ".....................WW..",
+                "....................WWWp.",
+                "..W..................pp..",
+                ".........................",
+                "p........................",
+                "........................W"
+              ],
+              "attach": "ground",
+              "hotspot": [12, 27],
+              "z": 5,
+              "mini": ["..........W.", "...........p", "W..........."],
+              "miniHotspot": [5, 13]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.98
+          },
+          "layers": [
+            {
+              "art": ["..................W..", "W...................p"],
+              "attach": "ground",
+              "hotspot": [9, 28],
+              "z": 5,
+              "mini": ["W"],
+              "miniHotspot": [-6, 14]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    },
+    "butt": {
+      "fps": 12,
+      "facing": "right",
+      "kind": "once",
+      "tell": 6,
+      "lively": true,
+      "frames": [
+        {
+          "pose": {}
+        },
+        {
+          "pose": {
+            "eyes": "focused",
+            "look": [1, 0]
+          }
+        },
+        {
+          "pose": {
+            "eyes": "angry",
+            "look": [1, 0],
+            "lean": -2,
+            "sy": 0.96
+          }
+        },
+        {
+          "pose": {
+            "eyes": "angry",
+            "look": [1, 0],
+            "lean": -3,
+            "sy": 0.92,
+            "spread": 0.2
+          }
+        },
+        {
+          "pose": {
+            "eyes": "angry",
+            "look": [1, 0],
+            "lean": -3,
+            "sy": 0.9,
+            "spread": 0.3
+          }
+        },
+        {
+          "pose": {
+            "eyes": "angry",
+            "look": [1, 0],
+            "lean": 4,
+            "sy": 0.94
+          },
+          "layers": [
+            {
+              "art": ["qqqqq..", ".......", ".......", ".qqqqqq", ".......", ".......", "qqqq..."],
+              "attach": "ground",
+              "hotspot": [12, 22],
+              "z": 5,
+              "mini": ["qq.", "...", "qqq"],
+              "miniHotspot": [6, 12]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": 4,
+            "sy": 0.94
+          },
+          "layers": [
+            {
+              "art": ["qqq.", "....", "....", "qqqq", "....", "....", "qq.."],
+              "attach": "ground",
+              "hotspot": [12, 22],
+              "z": 5,
+              "mini": ["q.", "..", "qq"],
+              "miniHotspot": [6, 12]
+            },
+            {
+              "art": ["q.", ".q", ".q", "..", "..", ".q", ".q", "q."],
+              "attach": "ground",
+              "hotspot": [-12, 27],
+              "z": 5,
+              "mini": ["q", ".", ".", ".", "q"],
+              "miniHotspot": [-6, 14]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": 4,
+            "sy": 0.94
+          },
+          "layers": [
+            {
+              "art": ["q.", ".q", ".q", "..", "..", ".q", ".q", "q."],
+              "attach": "ground",
+              "hotspot": [-12, 27],
+              "z": 5,
+              "mini": ["q", ".", ".", ".", "q"],
+              "miniHotspot": [-6, 14]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "squeeze",
+            "lean": 3.5,
+            "sy": 0.96
+          },
+          "layers": [
+            {
+              "art": ["Y", ".", ".", ".", ".", ".", ".", "Y"],
+              "attach": "ground",
+              "hotspot": [-13, 27],
+              "z": 5,
+              "mini": ["Y"],
+              "miniHotspot": [-6, 9]
+            }
+          ]
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "lean": 1
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.06
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.06
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.85,
+            "spread": 0.4
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 1.04
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy",
+            "sy": 0.98
+          }
+        },
+        {
+          "pose": {
+            "eyes": "happy"
+          }
+        }
+      ]
+    }
+  }
+}
