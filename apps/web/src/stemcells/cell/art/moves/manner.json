@@ -831,7 +831,7 @@
             {
               "art": [".*.", "*W*", ".*."],
               "attach": "handL",
-              "hotspot": [1, 5],
+              "hotspot": [0, 5],
               "z": 5,
               "mini": ["*"],
               "miniHotspot": [0, 2]
@@ -863,7 +863,7 @@
             {
               "art": [".*.", "*W*", ".*."],
               "attach": "handL",
-              "hotspot": [1, 5],
+              "hotspot": [0, 5],
               "z": 5,
               "mini": ["*"],
               "miniHotspot": [0, 2]
@@ -871,7 +871,7 @@
             {
               "art": [".*.", "*W*", ".*."],
               "attach": "handR",
-              "hotspot": [1, 5],
+              "hotspot": [2, 5],
               "z": 5,
               "mini": ["*"],
               "miniHotspot": [0, 2]
@@ -903,7 +903,7 @@
             {
               "art": [".*.", "*W*", ".*."],
               "attach": "handR",
-              "hotspot": [1, 5],
+              "hotspot": [2, 5],
               "z": 5,
               "mini": ["*"],
               "miniHotspot": [0, 2]

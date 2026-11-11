@@ -291,9 +291,10 @@ The Cells in view are dealt together (`cell/looks.ts`, rules in
     until a stage gives it room to travel.
 - **The move's meta:**
   - `kind`: `loop`, `once` or `hold`. A state's scene loops on the wall
-    clock, every Cell in step. A moment (a landing's cheer, a temperament's
-    beats) plays once from the frame it began on, then the state's scene
-    holds (`cell/cast.ts`, `entranceOf`);
+    clock: Cells at work or asking in step, a Cell at rest, landed or
+    asleep on a phase of its own. A moment (a landing's cheer, a
+    temperament's beats) plays once from the frame it began on, then the
+    state's scene holds (`cell/cast.ts`, `entering`);
   - `priority`: its rung on the ladder;
   - `tier`: `common`, `rare`, `legendary` or `secret`;
   - `lively`: it needs the lively token;

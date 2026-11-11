@@ -5,9 +5,8 @@
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";
 export {
   bodyOf,
-  enter,
   type Entrance,
-  entranceOf,
+  entering,
   frameFor,
   frameShown,
   prepare,

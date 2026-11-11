@@ -21,9 +21,8 @@ import {
   type CellScene,
   clockSeconds,
   empty,
-  enter,
   type Entrance,
-  entranceOf,
+  entering,
   frameFor,
   GLYPHS,
   type Ground,
@@ -89,8 +88,9 @@ function formingShown(
   return step.part === "blocks" ? formed.blocks[step.step]! : formed.hop[step.step]!;
 }
 
-/** Where a Cell stood when it was last drawn, and the moment it entered that with. */
+/** Whose picture it last was, where that Cell stood as drawn, and the moment it entered that with. */
 interface Stood {
+  readonly name: string;
   readonly mood: Mood;
   readonly working: boolean;
   readonly entrance: Entrance | undefined;
@@ -139,24 +139,6 @@ export function CellFigure(props: {
   const reduced = useReducedMotion();
   const still = reduced || props.held === true;
   const forms = props.formingFrom !== undefined && !reduced;
-  const working = activity !== undefined;
-  // The stance it enters is kept from the render that first sees it, as React asks of a value
-  // derived from the one before: a landing, or a send taken up, is played from that moment.
-  const [stood, setStood] = useState<Stood | null>(null);
-  if (stood === null || stood.mood !== mood || stood.working !== working) {
-    const moment = entranceOf(
-      stood ?? undefined,
-      { mood, working },
-      now(),
-      props.landedAt === undefined ? undefined : clockSeconds(props.landedAt),
-    );
-    setStood({
-      mood,
-      working,
-      entrance: moment === undefined ? stood?.entrance : enter(name, moment),
-    });
-  }
-  const entrance = stood?.entrance;
   const key = `${worn}|${mood}|${activity ?? ""}|${forms}|${plays ? mannerOf(name).id : ""}`;
   const ready = useComposed(key, () => {
     const look = wornLook(worn === "" ? [] : worn.split("+"));
@@ -170,6 +152,25 @@ export function CellFigure(props: {
   if (ready && standing?.key !== key) setStanding({ key, worn, mood, activity, forms });
   const drawn: Standing | null = ready ? { key, worn, mood, activity, forms } : standing;
   const look = drawn === null ? null : wornLook(drawn.worn === "" ? [] : drawn.worn.split("+"));
+  // The stance it enters is kept from the render that first draws it, as React asks of a value
+  // derived from the one before: a move starts once its frames are composed, not while they are.
+  const [stood, setStood] = useState<Stood | null>(null);
+  const working = drawn?.activity !== undefined;
+  if (
+    drawn !== null &&
+    (stood?.name !== name || stood.mood !== drawn.mood || stood.working !== working)
+  ) {
+    const before = stood?.name === name ? stood : undefined;
+    const moment = entering(
+      name,
+      before,
+      { mood: drawn.mood, working },
+      now(),
+      props.landedAt === undefined ? undefined : clockSeconds(props.landedAt),
+    );
+    setStood({ name, mood: drawn.mood, working, entrance: moment ?? before?.entrance });
+  }
+  const entrance = stood?.name === name ? stood.entrance : undefined;
   const shown = useSyncExternalStore(drawn !== null && !still ? onBeat : never, () => {
     if (drawn === null || look === null) return null;
     const seconds = still ? undefined : now();

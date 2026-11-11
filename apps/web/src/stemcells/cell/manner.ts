@@ -150,8 +150,15 @@ const FIDGET_SPAN = 72;
  */
 export function fidgetingFor(name: string, seconds: number): number | undefined {
   const window = Math.floor(seconds / FIDGET_WINDOW);
-  const hash = fnv1a32(`${name}#fidget#${window}`);
-  if (hash % FIDGET_ONE_IN !== 0) return undefined;
-  const start = window * FIDGET_WINDOW + FIDGET_EARLIEST + ((hash >>> 8) % FIDGET_SPAN);
-  return seconds >= start ? seconds - start : undefined;
+  let fidget = fidgets.get(name);
+  if (fidget?.window !== window) {
+    const hash = fnv1a32(`${name}#fidget#${window}`);
+    const starts = window * FIDGET_WINDOW + FIDGET_EARLIEST + ((hash >>> 8) % FIDGET_SPAN);
+    fidget = { window, start: hash % FIDGET_ONE_IN === 0 ? starts : undefined };
+    fidgets.set(name, fidget);
+  }
+  return fidget.start !== undefined && seconds >= fidget.start ? seconds - fidget.start : undefined;
 }
+
+/** The window each Cell was last asked about, and when its fidget starts: asked every beat, a window lasts a minute and a half. */
+const fidgets = new Map<string, { window: number; start: number | undefined }>();

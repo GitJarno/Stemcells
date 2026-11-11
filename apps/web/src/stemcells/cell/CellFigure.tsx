@@ -8,7 +8,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
 import { clockSeconds } from "./blink.ts";
-import { bodyOf, enter, type Entrance, entranceOf, frameFor, type Stance } from "./cast.ts";
+import { bodyOf, type Entrance, entering, frameFor, type Stance } from "./cast.ts";
 import { onStage, personHere } from "./clock.ts";
 import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./forming.ts";
 import type { Ground } from "./keyline.ts";
@@ -73,9 +73,8 @@ export function CellFigure(props: {
   const canvas = useRef<HTMLCanvasElement>(null);
   /** The landing whose marks it has raised, and from when (`clockSeconds`). */
   const rising = useRef<{ landing: number; from: number } | null>(null);
-  /** Where it last stood, and the moment it entered that with (`cast.ts`). */
-  const stood = useRef<Stance | undefined>(undefined);
-  const entrance = useRef<Entrance | undefined>(undefined);
+  /** Whose picture it last was, where that Cell stood, and the moment it entered that with (`cast.ts`). */
+  const stood = useRef<{ name: string; stance: Stance; entrance: Entrance | undefined }>(undefined);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Paint the figure's canvas on each stage clock tick, unsubscribing when what it shows changes.
   useLayoutEffect(() => {
     const element = canvas.current;
@@ -89,15 +88,16 @@ export function CellFigure(props: {
     const from = landing === null ? undefined : rising.current?.from;
     const formed = formsAt === undefined ? undefined : formedOf(look);
     const stance: Stance = { mood, working: activity !== undefined };
-    const moment = entranceOf(
-      stood.current,
-      stance,
-      clockSeconds(),
-      landedAt === null ? undefined : clockSeconds(landedAt),
-    );
-    if (moment !== undefined) entrance.current = enter(name, moment);
-    stood.current = stance;
-    const entered = entrance.current;
+    const before = stood.current?.name === name ? stood.current : undefined;
+    const entered =
+      entering(
+        name,
+        before?.stance,
+        stance,
+        clockSeconds(),
+        landedAt === null ? undefined : clockSeconds(landedAt),
+      ) ?? before?.entrance;
+    stood.current = { name, stance, entrance: entered };
     let shown: { frame: MiniFrame; dpr: number } | undefined;
     return onStage(element, (seconds) => {
       const part =

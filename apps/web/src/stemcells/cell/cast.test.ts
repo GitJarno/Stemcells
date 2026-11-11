@@ -2,7 +2,7 @@ import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
-import { bodyOf, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
+import { bodyOf, entering, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
 import { BODIES, PACKS } from "./kit.ts";
 import { BOX, MOODS } from "./look.ts";
 import { fidgetingFor, mannerOf, phaseOf } from "./manner.ts";
@@ -189,6 +189,36 @@ test("a moment is entered once: a landing seen late is joined in progress, a sen
   NodeAssert.equal(entranceOf(undefined, work, 8), undefined, "found at work, it just works");
   NodeAssert.deepEqual(entranceOf(asleep, rest, 9), { kind: "wake", since: 9 });
   NodeAssert.deepEqual(entranceOf(rest, asleep, 9), { kind: "sleep", since: 9 });
+  NodeAssert.deepEqual(
+    entranceOf(work, pleased, 100, 90),
+    { kind: "landed", since: 100 },
+    "a picture that watched it land cheers from the top, whatever the clocks say",
+  );
+});
+
+test("every picture of a Cell plays a moment in step: one that appears mid-move joins it", () => {
+  const rest = { mood: "awake", working: false } as const;
+  const work = { mood: "awake", working: true } as const;
+  const pleased = { mood: "pleased", working: false } as const;
+  const taken = entering("Heron", rest, work, 50);
+  NodeAssert.deepEqual(taken, { kind: "onIt", since: 50 });
+  NodeAssert.equal(entering("Heron", rest, work, 50.2), taken, "a second picture, a beat later");
+  NodeAssert.equal(entering("Heron", undefined, work, 50.6), taken, "a pane opened mid-move");
+  NodeAssert.equal(
+    entering("Heron", work, work, 51),
+    undefined,
+    "nothing begins: it keeps its own",
+  );
+  const cheer = entering("Heron", work, pleased, 60, 59.9);
+  NodeAssert.deepEqual(cheer, { kind: "landed", since: 60 });
+  NodeAssert.equal(entering("Heron", undefined, pleased, 61, 59.9), cheer, "opened a second on");
+  NodeAssert.equal(entering("Heron", undefined, pleased, 63, 59.9), cheer, "and found it later");
+  NodeAssert.equal(entering("Heron", undefined, rest, 70), undefined, "the cheer is over");
+  NodeAssert.deepEqual(
+    entering("Heron", work, pleased, 90, 89.9),
+    { kind: "landed", since: 90 },
+    "the next landing is its own moment",
+  );
 });
 
 test("an entrance belongs to the state it entered: a cheer left for work is dropped", () => {

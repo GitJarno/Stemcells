@@ -114,9 +114,9 @@ const JOINED_LATE = 1.5;
 
 /**
  * The moment a Cell enters `after` with, coming from `before` (undefined: it is first seen) at
- * `seconds`. A landing cheers, from the top when it is seen as it happens (`landed`, its time
- * on the clock); a send is taken up; a sleeper wakes; a Cell going cold yawns. Nothing else is
- * a moment: a Cell found in a state just stands in it.
+ * `seconds`. A landing cheers, from the top for a picture that watched it land; one that finds
+ * it landed (`landed`, its time on the clock) joins the cheer where it is by now. A send is
+ * taken up; a sleeper wakes; a Cell going cold yawns. Nothing else is a moment.
  */
 export function entranceOf(
   before: Stance | undefined,
@@ -126,8 +126,8 @@ export function entranceOf(
 ): Entrance | undefined {
   if (after.mood === "pleased") {
     if (before?.mood === "pleased") return undefined;
-    const late = landed !== undefined && seconds - landed > JOINED_LATE;
-    return { kind: "landed", since: late ? landed : seconds };
+    const found = before === undefined && landed !== undefined && seconds - landed > JOINED_LATE;
+    return { kind: "landed", since: found ? landed : seconds };
   }
   if (before === undefined) return undefined;
   if (after.mood === "asleep")
@@ -139,18 +139,30 @@ export function entranceOf(
   return after.working && !wasAtWork ? { kind: "onIt", since: seconds } : undefined;
 }
 
-/** Entrances taken within this long of each other, in seconds, are one: every picture of a Cell plays it in step. */
-const IN_STEP = 0.5;
-
 const entered = new Map<string, Entrance>();
 
-/** `entrance` as every picture of the Cell `name` names plays it: the first to see a moment sets when it began. */
-export function enter(name: string, entrance: Entrance): Entrance {
+/**
+ * The entrance a picture of the Cell `name` names takes up on coming to `after` from `before`
+ * (undefined: the picture is new); undefined when nothing begins, and it keeps the one it had.
+ * Every picture of a Cell plays a moment in step: the first to see it sets when it began, and
+ * one that appears while the Cell still stands in it joins it.
+ */
+export function entering(
+  name: string,
+  before: Stance | undefined,
+  after: Stance,
+  seconds: number,
+  landed?: number,
+): Entrance | undefined {
+  const moment = entranceOf(before, after, seconds, landed);
   const known = entered.get(name);
-  if (known?.kind === entrance.kind && Math.abs(known.since - entrance.since) < IN_STEP)
-    return known;
-  entered.set(name, entrance);
-  return entrance;
+  if (known !== undefined && holds(known.kind, after)) {
+    if (moment === undefined) return before === undefined ? known : undefined;
+    if (moment.kind === known.kind && Math.abs(known.since - moment.since) <= JOINED_LATE)
+      return known;
+  }
+  if (moment !== undefined) entered.set(name, moment);
+  return moment;
 }
 
 /** Whether a Cell standing so is still in the state `kind` entered. */

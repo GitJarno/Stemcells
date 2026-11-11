@@ -29,10 +29,12 @@ const DOUBLES = 3;
 /** A pleading Cell's half-period: a text caret's. */
 const PLEA_MS = 530;
 
+const UTF8 = new TextEncoder();
+
 /** 32-bit FNV-1a over the text's UTF-8. */
 export function fnv1a32(text: string): number {
   let hash = 0x811c9dc5;
-  for (const byte of new TextEncoder().encode(text)) hash = Math.imul(hash ^ byte, 0x01000193);
+  for (const byte of UTF8.encode(text)) hash = Math.imul(hash ^ byte, 0x01000193);
   return hash >>> 0;
 }
 
@@ -65,9 +67,16 @@ export function isBlinking(
   const window = Math.floor(ms / cadence.windowMs);
   if (Math.abs(window) >= LONGEST) return false;
   const into = ms - window * cadence.windowMs;
-  const start = blinkStart(seed, window, cadence);
-  if (into >= start && into < start + cadence.shutMs) return true;
-  if (!cadence.double || fnv1a32(`${seed}#${window}#twice`) % DOUBLES !== 0) return false;
-  const again = start + cadence.shutMs + BETWEEN_MS;
-  return into >= again && into < again + cadence.shutMs;
+  let blink = asked.get(seed);
+  if (blink?.window !== window || blink.cadence !== cadence) {
+    const start = blinkStart(seed, window, cadence);
+    const twice = cadence.double && fnv1a32(`${seed}#${window}#twice`) % DOUBLES === 0;
+    blink = { window, cadence, start, again: twice ? start + cadence.shutMs + BETWEEN_MS : -1 };
+    asked.set(seed, blink);
+  }
+  const shutFrom = (start: number) => start >= 0 && into >= start && into < start + cadence.shutMs;
+  return shutFrom(blink.start) || shutFrom(blink.again);
 }
+
+/** The blink of the window each Cell was last asked about: a Cell is asked every beat, and its window lasts seconds. */
+const asked = new Map<string, { window: number; cadence: Cadence; start: number; again: number }>();
