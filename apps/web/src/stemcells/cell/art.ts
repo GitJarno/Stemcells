@@ -14,6 +14,7 @@ import august from "./art/packs/august.json" with { type: "json" };
 import classes from "./art/packs/classes.json" with { type: "json" };
 import december from "./art/packs/december.json" with { type: "json" };
 import gym from "./art/packs/gym.json" with { type: "json" };
+import january from "./art/packs/january.json" with { type: "json" };
 import lunarNewYear from "./art/packs/lunar-new-year.json" with { type: "json" };
 import november from "./art/packs/november.json" with { type: "json" };
 import workshop from "./art/packs/workshop.json" with { type: "json" };
@@ -33,6 +34,7 @@ export const ART_PACKS: ArtFiles = {
   classes,
   december,
   gym,
+  january,
   "lunar-new-year": lunarNewYear,
   november,
   workshop,
