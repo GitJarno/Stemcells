@@ -32,19 +32,46 @@ From the animation canon, as the moves here use them on a 12-beat clock:
 ## Plan
 
 - [x] Read the kit, the rig, the deal, the tools and `cell-life.md`; render what is there
-- [ ] Moves from their first frame: an entrance (landed, on it, wake, sleep) plays once from
+- [x] Moves from their first frame: an entrance (landed, on it, wake, sleep) plays once from
       the moment it begins, then the state's own scene holds; Reduce Motion holds the `tell`
-- [ ] Rest of its own: each Cell's breath on its own phase; frames that are the same pose are
+- [x] Rest of its own: each Cell's breath on its own phase; frames that are the same pose are
       one frame, so a resting Cell is painted only when its pose changes
-- [ ] Six temperaments drawn (`art/temperaments/`), dealt for life from a Cell's name: breath,
+- [x] Six temperaments drawn (`art/temperaments/`), dealt for life from a Cell's name: breath,
       blink, glances, a fidget, and its own on it, landed and needs you
-- [ ] The phone plays the same entrances and blinks on each Cell's own cadence
-- [ ] `cells manner`: one sheet of every temperament's rest and beats
-- [ ] December and January dressed in whole outfits on the original's hats (one pack each,
+- [x] The phone plays the same entrances and blinks on each Cell's own cadence
+- [x] `cells manner`: one sheet of every temperament's rest and beats
+- [x] December and January dressed in whole outfits on the original's hats (one pack each,
       drawn in parallel); a drawn season wins a tie with the original's
-- [ ] Docs: `cell-art.md` (temperaments, once-moves, how a cheer ends)
-- [ ] Proof: sheets of every temperament and pack; the dev app, a landing watched live
+- [x] Docs: `cell-art.md` (temperaments, once-moves, how a cheer ends)
+- [x] Proof: sheets of every temperament and pack; the dev app, a landing watched live
 
 ## Review
 
-(written when the work lands)
+Landed as planned, with these calls made on the way:
+
+- **An entrance, not a scene.** A moment is `{ kind, since }` beside the state, played once from
+  `since` and bounded by the move's own pass, so a worn piece that animates can't make it
+  repeat. `cast.ts` `entering` is the one place it begins: the first picture of a Cell to see
+  a moment sets when it began, and a pane or a phone row that appears mid-move joins it. A
+  picture that watched a landing cheers from the top whatever the clocks say; only one that
+  finds a Cell already landed trusts the landing's time.
+- **Rest is generated, moments are drawn.** A temperament's rest is made from its record
+  (breath, puff, glances), so the six files stay a page each; its on it, landed, needs you and
+  fidget are drawn frames in `art/moves/manner.json`.
+- **A fidget needs someone to see it.** One window in four, and only while the person moved
+  or typed in the last minute.
+- **The original is untouched.** `kit/` and its parity hashes are as they were; a Cell with no
+  name, and any screen that holds a Cell still, shows what it showed.
+- **The check measures marks.** A drawn move's squash widens the body past the box, as the
+  original's breath does; `cells check` now subtracts the body's own reach, and skips a
+  temperament's landing for a look that has a cheer of its own (it never plays).
+- **December and January** are packs of whole outfits on the original's hats (six and seven,
+  two colourways each, a cheer each). A drawn pack wins a tie with the original's for the
+  same days.
+
+Proved by: the Cell tests (web and the phone's), `cells check`, sheets of every temperament
+and both packs on both grounds, and a landing recorded frame by frame in the dev app (on it,
+thinking, the cheer once from its first frame, `^ ^` at rest).
+
+Left for later: the miniature ignores a squash's widening and low side arms (they show at the
+hero only), and a tall hat still clamps a hop.
