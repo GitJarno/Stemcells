@@ -1,7 +1,9 @@
 import "../tokens/stemcells.css";
 import "./workspace.css";
 
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { cdp, userEvent } from "vite-plus/test/browser";
 
 import { render } from "../upstream/testRender";
 import { REST_SLOT } from "./proxy";
@@ -10,10 +12,19 @@ import { PagerPage, TabPager } from "./TabPager";
 const TABS = ["one", "two", "three", "four"];
 const WIDTH = 400;
 
+/** Where a page's frame stands on it (px), for the pages that have one. */
+const FRAMES: Record<string, { left: number; top: number; width: number; height: number }> = {
+  one: { left: 20, top: 20, width: 150, height: 100 },
+  two: { left: 120, top: 80, width: 200, height: 150 },
+};
+
 function Pages(props: {
   activeId: string;
   onTurn: (tabId: string) => void;
   onAim?: (tabId: string) => void;
+  frames?: boolean;
+  /** What page one holds besides its name. */
+  inOne?: ReactNode;
 }) {
   return (
     <div style={{ position: "relative", width: WIDTH, height: 300 }}>
@@ -26,6 +37,15 @@ function Pages(props: {
         {TABS.map((tabId) => (
           <PagerPage key={tabId} tabId={tabId} onStage={tabId === props.activeId}>
             {tabId}
+            {tabId === "one" ? props.inOne : null}
+            {props.frames && FRAMES[tabId] ? (
+              <iframe
+                title={tabId}
+                sandbox=""
+                srcDoc="<p>A visual</p>"
+                style={{ position: "absolute", border: 0, ...FRAMES[tabId] }}
+              />
+            ) : null}
           </PagerPage>
         ))}
       </TabPager>
@@ -47,6 +67,22 @@ function shown(container: HTMLElement): number {
 function swipeTo(proxy: HTMLElement, slot: number): void {
   proxy.dispatchEvent(new WheelEvent("wheel", { deltaX: 30, bubbles: true }));
   proxy.scrollTo({ left: slot * WIDTH, behavior: "instant" });
+}
+
+/**
+ * A wheel as the browser gets one from the trackpad, at a point of the proxy: it goes to whatever
+ * is under that point, a frame included, and scrolls what the browser lets it.
+ */
+async function wheelAt(proxy: HTMLElement, x: number, y: number, deltaY = 0): Promise<void> {
+  const box = proxy.getBoundingClientRect();
+  const host = window.frameElement?.getBoundingClientRect() ?? { left: 0, top: 0 };
+  await cdp().send("Input.dispatchMouseEvent", {
+    type: "mouseWheel",
+    x: host.left + box.left + x,
+    y: host.top + box.top + y,
+    deltaX: WIDTH * 0.8,
+    deltaY,
+  });
 }
 
 /**
@@ -157,6 +193,102 @@ describe("TabPager's swipe", () => {
     await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0));
     expect(shown(screen.container)).toBeCloseTo(0, 3);
     expect(onTurn).not.toHaveBeenCalled();
+  });
+
+  // A wheel over a frame scrolls the proxy, and the page round the frame hears no wheel event.
+  it("follows a swipe over a frame, whose wheel the page never hears", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} frames />);
+    const proxy = proxyOf(screen.container);
+    await userEvent.hover(screen.container.querySelector('iframe[title="one"]')!);
+    await wheelAt(proxy, 95, 70);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });
+  });
+
+  it("follows it when the frame slid under a pointer that stayed where it was", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} frames />);
+    const proxy = proxyOf(screen.container);
+    // On page one's own ground, where page two has its frame: hovering says nothing of a frame.
+    await userEvent.hover(proxy, { position: { x: 250, y: 200 } });
+    await screen.rerender(<Pages activeId="two" onTurn={onTurn} frames />);
+    await vi.waitFor(() => expect(proxy.hasAttribute("data-moving")).toBe(false), {
+      timeout: 3000,
+    });
+    await wheelAt(proxy, 250, 200);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("three"), { timeout: 3000 });
+  });
+
+  it("still undoes the scroll a focus makes, with the pointer over a frame", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(
+      <Pages activeId="one" onTurn={onTurn} frames inOne={<input aria-label="A field" />} />,
+    );
+    const proxy = proxyOf(screen.container);
+    const frame = screen.container.querySelector('iframe[title="one"]')!;
+    await userEvent.hover(frame);
+    expect(frame.matches(":hover")).toBe(true);
+    // As the browser does for a field on a page still arriving: the focus, then the scroll.
+    screen.container.querySelector("input")!.focus({ preventScroll: true });
+    proxy.scrollTo({ left: (REST_SLOT + 1) * WIDTH, behavior: "instant" });
+    await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0));
+    expect(shown(screen.container)).toBeCloseTo(0, 3);
+    expect(onTurn).not.toHaveBeenCalled();
+  });
+
+  // The browser lets no scroll out of a box that keeps overscroll to itself, even one with
+  // nothing to scroll: upstream's `overscroll-contain` boxes would end every swipe over them.
+  it("follows a swipe over a box that keeps its overscroll and has nothing to scroll sideways", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(
+      <Pages
+        activeId="one"
+        onTurn={onTurn}
+        inOne={
+          <>
+            <style>{".overscroll-contain{overscroll-behavior:contain}"}</style>
+            <div
+              className="overscroll-contain"
+              style={{
+                position: "absolute",
+                inset: "40px 40px auto",
+                height: 150,
+                overflow: "auto",
+              }}
+            />
+          </>
+        }
+      />,
+    );
+    await wheelAt(proxyOf(screen.container), 200, 100);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });
+  });
+
+  // Upstream's terminal cancels every wheel that moves up or down at all, as a sideways swipe's do.
+  it("follows a sideways swipe over the terminal", async () => {
+    const onTurn = vi.fn();
+    await using screen = await render(
+      <Pages
+        activeId="one"
+        onTurn={onTurn}
+        inOne={
+          <div data-terminal-owner="drawer" style={{ position: "absolute", inset: "40px" }}>
+            <canvas
+              ref={(canvas) => {
+                const cancel = (event: WheelEvent) => {
+                  if (event.deltaY !== 0) event.preventDefault();
+                };
+                canvas?.addEventListener("wheel", cancel, { passive: false });
+                return () => canvas?.removeEventListener("wheel", cancel);
+              }}
+              style={{ display: "block", width: "100%", height: "100%" }}
+            />
+          </div>
+        }
+      />,
+    );
+    await wheelAt(proxyOf(screen.container), 200, 150, 3);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });
   });
 
   it("starts no swipe while a border between Cells is held", async () => {

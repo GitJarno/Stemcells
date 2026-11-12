@@ -100,4 +100,13 @@ describe("the terminal drawer's contracts with upstream", () => {
       'return resolveStorage(typeof window !== "undefined" ? window.localStorage : undefined);',
     );
   });
+
+  // The tabs' swipe passes a sideways wheel by the terminal (`tabs/pageStrip.ts`).
+  it("the terminal stands in a marked element and reads only how far a wheel moves up or down", () => {
+    expect(drawer).toContain("data-terminal-owner=");
+    const onWheel = surface.slice(surface.indexOf("private readonly onWheel"));
+    const body = onWheel.slice(0, onWheel.indexOf("};"));
+    expect(body).toContain("if (event.deltaY === 0) return;");
+    expect(body).not.toContain("deltaX");
+  });
 });
