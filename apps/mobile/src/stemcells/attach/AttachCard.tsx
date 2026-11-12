@@ -1,7 +1,7 @@
-// Add to Chat, as the original app's card has it: a sheet of the newest photos, camera first, where a
-// tap picks a photo in order and a second tap lets it go. "Add N" puts them in the composer in
-// that order through T3's own picking (`staged.ts`). Leaving by another door (the camera,
-// Files, the system's picker) adds what's picked first, so nothing chosen drops.
+// Add to Chat, as the original app's card has it: a sheet of the newest photos and videos, camera
+// first, where a tap picks one in order and a second tap lets it go. "Add N" puts them in the
+// composer in that order through T3's own picking (`staged.ts`). Leaving by another door (the
+// camera, Files, the system's picker) adds what's picked first, so nothing chosen drops.
 
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
@@ -37,11 +37,20 @@ import {
   SymbolView,
 } from "../upstream/attach";
 import { footLift } from "./foot";
-import { type Access, accessTo, chooseMore, onLibraryChange, photoOf, photosFrom } from "./library";
+import {
+  type Access,
+  accessTo,
+  chooseMore,
+  forgetCopies,
+  onLibraryChange,
+  type Shot,
+  shotOf,
+  shotsFrom,
+} from "./library";
 import { GO, numberOf, toggle } from "./picks";
 import { pickingThese } from "./staged";
 
-/** Photos asked of the library at a time. */
+/** Photos and videos asked of the library at a time. */
 const PAGE = 90;
 /** The squares' hairline. */
 const GAP = 2;
@@ -60,15 +69,15 @@ const DETENTS = formSheetDetents(0.62);
  */
 const lastSeen: {
   access: Access | null;
-  ids: readonly string[];
+  shots: readonly Shot[];
   /** The card's height at the tallest detent, for the window it was seen on. */
   tallest: { readonly window: number; readonly height: number } | null;
-} = { access: null, ids: [], tallest: null };
+} = { access: null, shots: [], tallest: null };
 
 type Tile =
   | { readonly kind: "camera" }
   | { readonly kind: "more" }
-  | { readonly kind: "photo"; readonly id: string };
+  | { readonly kind: "shot"; readonly shot: Shot };
 
 export function AttachCard(props: {
   readonly open: boolean;
@@ -166,7 +175,7 @@ function Card(props: {
 }) {
   const insets = useSafeAreaInsets();
   const [access, setAccess] = useState<Access | null>(lastSeen.access);
-  const [ids, setIds] = useState<readonly string[]>(lastSeen.ids);
+  const [shots, setShots] = useState<readonly Shot[]>(lastSeen.shots);
   const [more, setMore] = useState(true);
   const [picks, setPicks] = useState<readonly string[]>([]);
   // The sheet is the window's width on a phone: its first frame lays out at
@@ -189,14 +198,14 @@ function Card(props: {
       if (!live) return;
       setAccess(granted);
       if (granted !== "all" && granted !== "limited") {
-        lastSeen.ids = [];
-        setIds([]);
+        lastSeen.shots = [];
+        setShots([]);
         return;
       }
-      const page = await photosFrom(0, PAGE);
-      lastSeen.ids = page;
+      const page = await shotsFrom(0, PAGE);
+      lastSeen.shots = page;
       if (!live) return;
-      setIds(page);
+      setShots(page);
       setMore(page.length === PAGE);
     })();
     return () => {
@@ -209,39 +218,41 @@ function Card(props: {
   useEffect(
     () =>
       onLibraryChange(() => {
-        void photosFrom(0, PAGE).then((page) => {
-          lastSeen.ids = page;
-          setIds(page);
+        void shotsFrom(0, PAGE).then((page) => {
+          lastSeen.shots = page;
+          setShots(page);
           setMore(page.length === PAGE);
         });
       }),
     [],
   );
 
-  /** The library's photos from `from` on, after those shown. */
+  /** The library's photos and videos from `from` on, after those shown. */
   const load = async (from: number) => {
     if (loading.current) return;
     loading.current = true;
     // `.finally`, not `try`: React Compiler can't compile a `try` without a `catch`.
-    const page = await photosFrom(from, PAGE).finally(() => {
+    const page = await shotsFrom(from, PAGE).finally(() => {
       loading.current = false;
     });
-    // A photo arriving meanwhile shifts the pages, so one may come again.
-    setIds((shown) => {
-      const known = new Set(shown);
-      return [...shown, ...page.filter((id) => !known.has(id))];
+    // One arriving meanwhile shifts the pages, so one may come again.
+    setShots((shown) => {
+      const known = new Set(shown.map((shot) => shot.id));
+      return [...shown, ...page.filter((shot) => !known.has(shot.id))];
     });
     setMore(page.length === PAGE);
   };
 
   const add = async (picked: readonly string[]) => {
     if (picked.length === 0) return;
-    const read = await Promise.allSettled(picked.map(photoOf));
-    const photos = read.flatMap((photo) => (photo.status === "fulfilled" ? [photo.value] : []));
-    if (photos.length < picked.length) {
-      Alert.alert("Couldn't add every photo", "One or more couldn't be read from the library.");
+    const read = await Promise.allSettled(picked.map(shotOf));
+    const shots = read.flatMap((shot) => (shot.status === "fulfilled" ? [shot.value] : []));
+    if (shots.length < picked.length) {
+      Alert.alert("Couldn't add them all", "One or more couldn't be read from the library.");
     }
-    if (photos.length > 0) await pickingThese(photos, props.onPickMedia);
+    if (shots.length > 0) {
+      await pickingThese(shots, props.onPickMedia).finally(() => void forgetCopies());
+    }
   };
   const thenAdd = (door: () => Promise<void>) => {
     const picked = picks;
@@ -255,7 +266,7 @@ function Card(props: {
   const tiles: Tile[] = [
     { kind: "camera" },
     ...(access === "limited" ? [{ kind: "more" } as const] : []),
-    ...ids.map((id) => ({ kind: "photo", id }) as const),
+    ...shots.map((shot) => ({ kind: "shot", shot }) as const),
   ];
   const size = width > 0 ? (width - 2 * GAP) / 3 : 0;
   const { lift } = props;
@@ -309,7 +320,7 @@ function Card(props: {
           ref={list}
           data={tiles}
           numColumns={3}
-          keyExtractor={(tile) => (tile.kind === "photo" ? tile.id : tile.kind)}
+          keyExtractor={(tile) => (tile.kind === "shot" ? tile.shot.id : tile.kind)}
           columnWrapperStyle={{ gap: GAP }}
           ItemSeparatorComponent={Hairline}
           contentContainerStyle={{ paddingBottom: BAR + insets.bottom + 24 + lift }}
@@ -318,7 +329,7 @@ function Card(props: {
           removeClippedSubviews
           onEndReachedThreshold={1.5}
           onEndReached={() => {
-            if (sees && more) void load(ids.length);
+            if (sees && more) void load(shots.length);
           }}
           ListFooterComponent={access === "none" ? <NoAccess /> : undefined}
           renderItem={({ item }) =>
@@ -327,7 +338,7 @@ function Card(props: {
                 size={size}
                 symbol="camera"
                 title="Camera"
-                onPress={() => thenAdd(takePhoto(props.onPickMedia))}
+                onPress={() => thenAdd(takeShot(props.onPickMedia))}
               />
             ) : item.kind === "more" ? (
               <Door
@@ -337,12 +348,12 @@ function Card(props: {
                 onPress={() => void chooseMore()}
               />
             ) : (
-              <PhotoTile
-                id={item.id}
+              <ShotTile
+                shot={item.shot}
                 size={size}
-                number={numberOf(picks, item.id)}
+                number={numberOf(picks, item.shot.id)}
                 dimmed={full}
-                onPress={() => tap(item.id)}
+                onPress={() => tap(item.shot.id)}
               />
             )
           }
@@ -363,14 +374,14 @@ function Card(props: {
   );
 }
 
-/** The camera, as the system presents it; what it takes goes through T3's picking like a picked photo. */
-function takePhoto(pickMedia: () => Promise<void>) {
+/** The camera, as the system presents it, photo or video; what it takes goes through T3's picking like a picked one. */
+function takeShot(pickMedia: () => Promise<void>) {
   return async () => {
     const camera = await ImagePicker.requestCameraPermissionsAsync();
     if (!camera.granted) {
       Alert.alert(
         "The camera is off for this app",
-        "Turn it on in Settings to take a photo here.",
+        "Turn it on in Settings to take a photo or video here.",
         [
           { text: "Not now", style: "cancel" },
           { text: "Open Settings", onPress: () => void Linking.openSettings() },
@@ -378,7 +389,10 @@ function takePhoto(pickMedia: () => Promise<void>) {
       );
       return;
     }
-    const shot = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 1 });
+    const shot = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images", "videos"],
+      quality: 1,
+    });
     if (!shot.canceled) await pickingThese(shot.assets, pickMedia);
   };
 }
@@ -415,21 +429,23 @@ function Door(props: {
   );
 }
 
-/** One photo: its picture, square, from the library at the size it's drawn (kept in memory only), and its ring. */
-function PhotoTile(props: {
-  readonly id: string;
+/** One photo or video: its picture, square, from the library at the size it's drawn (kept in memory only), its ring, and a video's length. */
+function ShotTile(props: {
+  readonly shot: Shot;
   readonly size: number;
   readonly number: number | undefined;
   /** The go is full and this one isn't in it. */
   readonly dimmed: boolean;
   readonly onPress: () => void;
 }) {
+  const { id, videoMs } = props.shot;
   const picked = props.number !== undefined;
   const dimmed = props.dimmed && !picked;
+  const length = videoMs === null ? null : lengthOf(videoMs);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Photo"
+      accessibilityLabel={length === null ? "Photo" : `Video, ${length}`}
       accessibilityState={{ selected: picked }}
       accessibilityValue={picked ? { text: `Picked, ${props.number}` } : undefined}
       accessibilityHint={dimmed ? CAP : undefined}
@@ -438,14 +454,22 @@ function PhotoTile(props: {
       style={{ width: props.size, height: props.size, opacity: dimmed ? 0.4 : 1 }}
     >
       <Image
-        source={{ uri: props.id }}
+        source={{ uri: id }}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
-        recyclingKey={props.id}
+        recyclingKey={id}
         cachePolicy="memory"
         transition={120}
       />
       {picked ? <View className="absolute inset-0 bg-black/25" /> : null}
+      {length === null ? null : (
+        <AppText
+          className="absolute bottom-1.5 right-2 text-[12px] font-semibold text-white"
+          style={styles.length}
+        >
+          {length}
+        </AppText>
+      )}
       <View
         className={
           picked
@@ -512,7 +536,7 @@ function Bar(props: {
           <Animated.View className="flex-1" style={shaking}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={props.picks === 1 ? "Add 1 photo" : `Add ${props.picks} photos`}
+              accessibilityLabel={`Add ${props.picks}`}
               accessibilityValue={props.sayingCap ? { text: CAP } : undefined}
               onPress={props.onAdd}
               className="items-center justify-center rounded-full bg-primary active:opacity-80"
@@ -590,3 +614,23 @@ function NoAccess() {
     </View>
   );
 }
+
+/** A video's length as Photos shows it: 0:42, 12:05, 1:02:03. */
+function lengthOf(ms: number): string {
+  const all = Math.round(ms / 1000);
+  const seconds = String(all % 60).padStart(2, "0");
+  const minutes = Math.floor(all / 60) % 60;
+  const hours = Math.floor(all / 3600);
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`
+    : `${minutes}:${seconds}`;
+}
+
+const styles = StyleSheet.create({
+  // Legible over any picture, as Photos sets it.
+  length: {
+    textShadowColor: "rgba(0,0,0,0.6)",
+    textShadowRadius: 3,
+    textShadowOffset: { width: 0, height: 0 },
+  },
+});
