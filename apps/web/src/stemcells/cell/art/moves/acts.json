@@ -1,0 +1,364 @@
+{
+  "marks": {
+    "star": {
+      "about": "A small star: a cheer's, a daze's.",
+      "art": [".*.", "*W*", ".*."],
+      "hotspot": [1, 1],
+      "mini": ["*"],
+      "miniHotspot": [0, 0]
+    },
+    "thumb": {
+      "about": "A thumb up, on a fist: the hand at the end of a raised arm.",
+      "art": [".L.", ".B.", ".B.", "BBB", "BBB", "bbb"],
+      "hotspot": [1, 4],
+      "mini": ["B", "B"],
+      "miniHotspot": [0, 1]
+    },
+    "dust": {
+      "about": "A landing's dust, a puff either side of the base.",
+      "art": [".u....................u.", "uu....................uu"],
+      "hotspot": [12, 2],
+      "z": -1,
+      "mini": ["u...........u"],
+      "miniHotspot": [6, 1]
+    },
+    "z": {
+      "about": "A sleeper's z.",
+      "art": ["zzz", "..z", ".z.", "zzz"],
+      "hotspot": [1, 2],
+      "mini": ["zz", ".z", "zz"],
+      "miniHotspot": [0, 1]
+    }
+  },
+  "acts": {
+    "hop": {
+      "about": "A small hop on the spot.",
+      "score": [
+        {
+          "do": "leap",
+          "height": 2,
+          "tell": true
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "jump": {
+      "about": "A jump with both arms up: a look up, the crouch, the hang, dust where it lands.",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "leap",
+          "height": 6,
+          "arms": "up",
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "dust",
+          "on": "land",
+          "at": "ground",
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "spin": {
+      "about": "Once round on the spot.",
+      "score": [
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9,
+            "spread": 0.3
+          },
+          "for": 2
+        },
+        {
+          "do": "spin",
+          "turns": 1,
+          "per": 8,
+          "rise": 1,
+          "tell": true
+        },
+        {
+          "do": "squash",
+          "to": 0.94,
+          "in": 1,
+          "hold": 0
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "thumbsUp": {
+      "about": "A thumb up and a nod: on it.",
+      "score": [
+        {
+          "do": "ease",
+          "lean": -1.5,
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "right": "raised",
+          "rightHolds": "thumb"
+        },
+        {
+          "do": "mark",
+          "mark": "star",
+          "at": "handR",
+          "dx": -3,
+          "dy": -7,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "nod",
+          "times": 1
+        },
+        {
+          "do": "hold",
+          "for": 6,
+          "tell": true
+        },
+        {
+          "do": "arms",
+          "right": null
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "nod": {
+      "about": "Two nods: understood.",
+      "score": [
+        {
+          "do": "nod",
+          "times": 2,
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "dazed": {
+      "about": "Poked silly: a recoil, stars round its head while it wobbles, then it shakes them off.",
+      "deaf": true,
+      "score": [
+        {
+          "do": "face",
+          "eyes": "squeeze"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.88,
+            "spread": 0.4
+          },
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "dizzy",
+          "mouth": "wavy"
+        },
+        {
+          "do": "orbit",
+          "mark": "star",
+          "count": 3,
+          "rx": 8,
+          "ry": 2,
+          "dy": -2,
+          "per": 12,
+          "for": 28
+        },
+        {
+          "do": "wobble",
+          "reach": 3,
+          "times": 6,
+          "per": 4,
+          "decay": 0.85,
+          "tell": true
+        },
+        {
+          "do": "face",
+          "eyes": "squeeze",
+          "mouth": "none"
+        },
+        {
+          "do": "shake",
+          "times": 2,
+          "per": 2,
+          "reach": 2
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "groove": {
+      "about": "A dance: two sways with a dip, a hop with its arms up, once round, and a last sway.",
+      "state": "landed",
+      "tier": "rare",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "happy"
+        },
+        {
+          "do": "sway",
+          "reach": 2,
+          "times": 2,
+          "per": 3,
+          "bob": 2,
+          "step": 2,
+          "raise": "up",
+          "tell": true
+        },
+        {
+          "do": "leap",
+          "height": 3,
+          "arms": "up",
+          "settle": false
+        },
+        {
+          "do": "spin",
+          "turns": 1,
+          "per": 6,
+          "arms": "out"
+        },
+        {
+          "do": "sway",
+          "reach": 2,
+          "times": 1,
+          "per": 3,
+          "bob": 2,
+          "step": 2,
+          "raise": "up"
+        },
+        {
+          "do": "rest",
+          "eyes": "happy"
+        }
+      ]
+    },
+    "doze": {
+      "about": "Nods off where it stands, starts awake, and looks about to see who saw.",
+      "tier": "rare",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "drowsy"
+        },
+        {
+          "do": "hold",
+          "for": 5
+        },
+        {
+          "do": "ease",
+          "sy": 0.88,
+          "lean": 1.5,
+          "for": 12,
+          "way": "out"
+        },
+        {
+          "do": "face",
+          "eyes": "sleepy"
+        },
+        {
+          "do": "mark",
+          "mark": "z",
+          "dx": 9,
+          "dy": -1,
+          "drift": [1, -1],
+          "every": 4,
+          "for": 10
+        },
+        {
+          "do": "hold",
+          "for": 10,
+          "tell": true
+        },
+        {
+          "do": "face",
+          "eyes": "wide"
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "lean": 0,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "calm",
+          "look": [1, 0]
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "face",
+          "look": [-1, 0]
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    }
+  },
+  "cues": {
+    "poke/rest": ["hop", "nod"],
+    "poke/rest/2": ["jump"],
+    "poke/rest/3": ["spin"],
+    "poke/rest/dazed": ["dazed"],
+    "poke/work": ["thumbsUp", "nod"],
+    "poke/landed": ["groove"],
+    "granted": ["thumbsUp"],
+    "answered": ["nod"]
+  }
+}

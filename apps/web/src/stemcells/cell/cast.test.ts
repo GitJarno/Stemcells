@@ -177,9 +177,17 @@ test("a moment is entered once: a landing seen late is joined in progress, a sen
   NodeAssert.deepEqual(entranceOf(rest, work, 7), { kind: "onIt", since: 7 });
   NodeAssert.deepEqual(entranceOf(pleased, work, 7), { kind: "onIt", since: 7 });
   NodeAssert.deepEqual(entranceOf({ mood: "needsYou", working: false }, work, 7), {
-    kind: "onIt",
+    kind: "answered",
     since: 7,
   });
+  NodeAssert.deepEqual(entranceOf({ mood: "needsApproval", working: false }, work, 7), {
+    kind: "granted",
+    since: 7,
+  });
+  const crashed = { mood: "crashed", working: false } as const;
+  NodeAssert.deepEqual(entranceOf(work, crashed, 7), { kind: "failed", since: 7 });
+  NodeAssert.equal(entranceOf(crashed, crashed, 8), undefined);
+  NodeAssert.equal(entranceOf(undefined, crashed, 8), undefined, "found failed, it just holds");
   NodeAssert.equal(entranceOf(work, work, 8), undefined);
   NodeAssert.equal(
     entranceOf({ mood: "meditating", working: true }, work, 8),

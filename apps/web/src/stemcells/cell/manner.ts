@@ -71,9 +71,19 @@ function breathOf(manner: Temperament): { sy: number; sx?: number }[] {
  * rounded out to whole breaths, looking ahead for the rest, so the loop closes. With `eyes`
  * other than calm (a landing's `^ ^`) it only breathes.
  */
-function restFrames(manner: Temperament, eyes: string): Frame[] {
+function restFrames(
+  manner: Temperament,
+  eyes: string,
+  watching?: { readonly x: number; readonly y: number },
+): Frame[] {
   const breath = breathOf(manner);
-  const glances = eyes === "calm" ? manner.gaze : [];
+  // Watching the person's hand, it looks nowhere else.
+  const glances =
+    watching !== undefined
+      ? [{ look: [watching.x, watching.y], holdMs: 1000 }]
+      : eyes === "calm"
+        ? manner.gaze
+        : [];
   const looks = glances.flatMap(({ look, holdMs }) =>
     Array.from({ length: Math.max(1, Math.round((holdMs * REST_FPS) / 1000)) }, () => look),
   );
@@ -98,19 +108,37 @@ const MADE: Readonly<Record<string, string>> = { rest: "calm", pleased: "happy" 
 
 const generated = new Map<string, Scene | undefined>();
 
-/** The scene `key` names when a manner's record makes it (`rest/<id>`, `pleased/<id>`); undefined for any other. */
+/** A step of a glance: left or up, ahead, right or down. */
+const STEPS = [-1, 0, 1];
+
+/**
+ * The scene `key` names when a manner's record makes it (`rest/<id>`, `pleased/<id>`, and a
+ * rest watching the person's hand, `rest/<id>@1,-1`); undefined for any other.
+ */
 export function generatedScene(key: string): Scene | undefined {
   if (generated.has(key)) return generated.get(key);
-  const [kind = "", id = ""] = key.split("/");
+  const [kind = "", rest = ""] = key.split("/");
+  const [id = "", toward] = rest.split("@");
   const eyes = MADE[kind];
   const manner = mannerById(id);
+  const [x, y] = (toward ?? "").split(",").map(Number);
+  const watching =
+    toward !== undefined && kind === "rest" && STEPS.includes(x!) && STEPS.includes(y!)
+      ? { x: x!, y: y! }
+      : undefined;
+  const named =
+    manner === undefined
+      ? undefined
+      : watching === undefined
+        ? `${kind}/${id}`
+        : watchingKey(manner, watching);
   const scene: Scene | undefined =
-    eyes === undefined || manner === undefined || key !== `${kind}/${id}`
+    eyes === undefined || manner === undefined || key !== named
       ? undefined
       : {
           fps: REST_FPS,
           facing: "right",
-          frames: restFrames(manner, eyes),
+          frames: restFrames(manner, eyes, watching),
           meta: { kind: "loop", tell: 0 },
           holds: false,
           pieces: "loop",
@@ -122,6 +150,11 @@ export function generatedScene(key: string): Scene | undefined {
 /** The scene a Cell of `manner` rests in, and the one it rests in once landed, `^ ^`. */
 export const restKey = (manner: Temperament): string => `rest/${manner.id}`;
 export const pleasedKey = (manner: Temperament): string => `pleased/${manner.id}`;
+/** The rest of a Cell of `manner` that watches the person's hand, a step each way from it. */
+export const watchingKey = (
+  manner: Temperament,
+  toward: { readonly x: number; readonly y: number },
+): string => `rest/${manner.id}@${Math.sign(toward.x)},${Math.sign(toward.y)}`;
 
 const phases = new Map<string, number>();
 
@@ -136,7 +169,7 @@ export function phaseOf(name: string): number {
 }
 
 /** A Cell may fidget once in a window this long, in seconds. */
-const FIDGET_WINDOW = 90;
+export const FIDGET_WINDOW = 90;
 /** One window in this many holds a fidget: about one every six minutes a Cell. */
 const FIDGET_ONE_IN = 4;
 /** A fidget starts this far into its window at the earliest, and ends before the window does. */

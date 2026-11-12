@@ -2,11 +2,20 @@
 // shows at a moment: the original app's casting over the kit's scenes, each
 // Cell in its own manner (`manner.ts`), a moment played once from where it began.
 
+import { actFor, performing, standingOf } from "./acting.ts";
 import type { Activity } from "./activity.ts";
 import { isBlinking } from "./blink.ts";
 import { type Pose, REST, type Temperament } from "./kit.ts";
 import type { Mood } from "./look.ts";
-import { fidgetingFor, mannerOf, phaseOf, pleasedKey, restKey } from "./manner.ts";
+import {
+  FIDGET_WINDOW,
+  fidgetingFor,
+  mannerOf,
+  phaseOf,
+  pleasedKey,
+  restKey,
+  watchingKey,
+} from "./manner.ts";
 import {
   type CellLook,
   type CellScene,
@@ -99,7 +108,7 @@ export function frameShown(
 
 /** A moment a Cell enters its state with: a move played once from `since` (on `clockSeconds`), before the state's own scene. */
 export interface Entrance {
-  readonly kind: "landed" | "onIt" | "wake" | "sleep";
+  readonly kind: "landed" | "onIt" | "granted" | "answered" | "failed" | "wake" | "sleep";
   readonly since: number;
 }
 
@@ -113,10 +122,9 @@ export interface Stance {
 const JOINED_LATE = 1.5;
 
 /**
- * The moment a Cell enters `after` with, coming from `before` (undefined: it is first seen) at
- * `seconds`. A landing cheers, from the top for a picture that watched it land; one that finds
- * it landed (`landed`, its time on the clock) joins the cheer where it is by now. A send is
- * taken up; a sleeper wakes; a Cell going cold yawns. Nothing else is a moment.
+ * The moment a Cell enters `after` with, from `before` (undefined: first seen) at `seconds`. A
+ * landing cheers, joined where it is by now when found `landed` earlier. A send is taken up, so
+ * is leave given or an answer; a failure dazes; a sleeper wakes; a Cell going cold yawns.
  */
 export function entranceOf(
   before: Stance | undefined,
@@ -132,11 +140,16 @@ export function entranceOf(
   if (before === undefined) return undefined;
   if (after.mood === "asleep")
     return before.mood === "asleep" ? undefined : { kind: "sleep", since: seconds };
+  if (after.mood === "crashed")
+    return before.mood === "crashed" ? undefined : { kind: "failed", since: seconds };
   if (after.mood !== "awake") return undefined;
   if (before.mood === "asleep") return { kind: "wake", since: seconds };
   // Deep in thought, or behind a line that dropped, it was at work all along.
   const wasAtWork = before.working && ["awake", "meditating", "peering"].includes(before.mood);
-  return after.working && !wasAtWork ? { kind: "onIt", since: seconds } : undefined;
+  if (!after.working || wasAtWork) return undefined;
+  const kind =
+    before.mood === "needsApproval" ? "granted" : before.mood === "needsYou" ? "answered" : "onIt";
+  return { kind, since: seconds };
 }
 
 const entered = new Map<string, Entrance>();
@@ -171,7 +184,11 @@ function holds(kind: Entrance["kind"], { mood, working }: Stance): boolean {
     case "landed":
       return mood === "pleased";
     case "onIt":
+    case "granted":
+    case "answered":
       return mood === "awake" && working;
+    case "failed":
+      return mood === "crashed";
     case "wake":
       return mood === "awake";
     case "sleep":
@@ -179,14 +196,21 @@ function holds(kind: Entrance["kind"], { mood, working }: Stance): boolean {
   }
 }
 
-/** The scene an entrance plays: a landing's cheer (the look's own wins), else the manner's take, where it has one. */
+/**
+ * The scene an entrance plays: a landing's cheer (the look's own wins), a cue's act as the
+ * Cell `name` names picks it for the moment it began, else the manner's take, where it has one.
+ */
 function entranceKey(
-  kind: Entrance["kind"],
+  { kind, since }: Entrance,
   look: CellLook,
   manner: Temperament,
+  name: string,
 ): string | undefined {
   if (kind === "landed")
     return look.cheer === undefined ? (manner.beats.landed ?? "happy") : "happy";
+  if (kind === "granted" || kind === "answered")
+    return actFor(kind, name, Math.max(0, Math.floor(since))) ?? manner.beats.onIt;
+  if (kind === "failed") return actFor(kind, name, Math.max(0, Math.floor(since)));
   return manner.beats[kind];
 }
 
@@ -199,6 +223,8 @@ export interface Showing {
   readonly entrance?: Entrance | undefined;
   /** The person is at the screen: a Cell at rest may fidget. */
   readonly here?: boolean | undefined;
+  /** Where the person's pointer is from it, a step each way (`-1`, `0`, `1`): at rest it looks there. */
+  readonly watching?: { readonly x: number; readonly y: number } | undefined;
 }
 
 /** The scene a Cell holds in its state, once any entrance has played: its own rest, its own way of waiting on you. */
@@ -208,7 +234,9 @@ function standing(look: CellLook, showing: Showing, manner: Temperament, seconds
     mood === "pleased"
       ? pleasedKey(manner)
       : mood === "awake" && activity === undefined
-        ? restKey(manner)
+        ? showing.watching === undefined
+          ? restKey(manner)
+          : watchingKey(manner, showing.watching)
         : mood === "needsYou"
           ? manner.beats.needsYou
           : undefined;
@@ -222,8 +250,19 @@ export function prepare(look: CellLook, showing: Showing): void {
   const manner = mannerOf(showing.name);
   const stance = { mood: showing.mood, working: showing.activity !== undefined };
   standing(look, showing, manner, 0);
-  for (const kind of ["landed", "onIt", "wake", "sleep"] as const) {
-    const key = holds(kind, stance) ? entranceKey(kind, look, manner) : undefined;
+  const since = showing.entrance?.since ?? 0;
+  for (const kind of [
+    "landed",
+    "onIt",
+    "granted",
+    "answered",
+    "failed",
+    "wake",
+    "sleep",
+  ] as const) {
+    const key = holds(kind, stance)
+      ? entranceKey({ kind, since }, look, manner, showing.name)
+      : undefined;
     if (key !== undefined) sceneOf(look, key);
   }
 }
@@ -242,9 +281,12 @@ export function frameFor(look: CellLook, showing: Showing, seconds: number | und
     showing.entrance !== undefined && holds(showing.entrance.kind, stance)
       ? showing.entrance
       : undefined;
-  const entryKey = entrance === undefined ? undefined : entranceKey(entrance.kind, look, manner);
+  const entryKey = entrance === undefined ? undefined : entranceKey(entrance, look, manner, name);
+  // A face held still enters with nothing, but for the daze a failure begins with.
   const entering =
-    HELD[mood] !== undefined || entryKey === undefined ? undefined : sceneOf(look, entryKey);
+    (HELD[mood] !== undefined && entrance?.kind !== "failed") || entryKey === undefined
+      ? undefined
+      : sceneOf(look, entryKey);
   const state = standing(look, showing, manner, seconds ?? 0);
   if (seconds === undefined) {
     const told = entrance?.kind === "landed" && entering !== undefined ? entering : state;
@@ -254,16 +296,34 @@ export function frameFor(look: CellLook, showing: Showing, seconds: number | und
   const blinking = isBlinking(name, seconds, pleading, manner.blink);
   const at = (scene: CellScene, index: number) =>
     ((blinking ? scene.shut?.mini : undefined) ?? scene.mini)[index]!;
+  // The person's poke is answered over anything else, in the state it was cast for.
+  const act = performing(name, seconds, standingOf(mood, stance.working));
+  const acted = act === undefined ? undefined : sceneOf(look, act.key);
+  if (act !== undefined && acted !== undefined) {
+    const index = Math.trunc((seconds - act.since) * onBeat(acted.fps));
+    if (index >= 0 && index < acted.pass) return at(acted, index);
+  }
   if (entering !== undefined && entrance !== undefined) {
     const since = seconds - entrance.since - manner.noticeMs / 1000;
     const index = Math.trunc(since * onBeat(entering.fps));
     if (index < entering.pass) return at(entering, Math.max(0, index));
   }
   const resting = mood === "awake" && activity === undefined;
-  if (resting && showing.here === true && manner.fidget !== undefined) {
-    const fidget = sceneOf(look, manner.fidget);
-    const since = fidgetingFor(name, seconds);
-    if (fidget !== undefined && since !== undefined) {
+  // Now and then, with the person there: a fidget at rest, a stir in its sleep.
+  const idling =
+    showing.here !== true || showing.watching !== undefined
+      ? undefined
+      : resting
+        ? ({ cue: "fidget", who: name, otherwise: manner.fidget } as const)
+        : mood === "asleep"
+          ? ({ cue: "sleeping", who: `${name}#asleep`, otherwise: undefined } as const)
+          : undefined;
+  const since = idling === undefined ? undefined : fidgetingFor(idling.who, seconds);
+  if (idling !== undefined && since !== undefined) {
+    const turn = Math.floor((seconds - since) / FIDGET_WINDOW);
+    const key = actFor(idling.cue, name, turn) ?? idling.otherwise;
+    const fidget = key === undefined ? undefined : sceneOf(look, key);
+    if (fidget !== undefined) {
       const index = Math.trunc(since * onBeat(fidget.fps));
       if (index < fidget.pass) return at(fidget, index);
     }

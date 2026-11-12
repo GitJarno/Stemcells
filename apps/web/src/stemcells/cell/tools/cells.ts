@@ -12,6 +12,7 @@ import { NAMES } from "../name.ts";
 import { wornLook } from "../scene.ts";
 import { check, looksOfPack } from "./check.ts";
 import {
+  actsSheet,
   animation,
   contactSheet,
   GROUNDS,
@@ -35,6 +36,9 @@ const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.
                                  landed (every name by default)
   cells manner [temperament…]    a sheet of the temperaments: each one's rest and beats,
                                  frame by frame (--look <look>, bare by default; --ground light)
+  cells acts [act…]              a sheet of the acts (art/moves, a score each), frame by
+                                 frame at both sizes (--look <look>, bare by default;
+                                 --ground light); every act by default
   cells check [theme…] [--original]
                                  the rules; exits 1 on a failure. --original adds notes
                                  on the original's art
@@ -144,6 +148,13 @@ function main(argv: readonly string[]): number {
       const ground = flags.get("ground") === "light" ? "light" : "black";
       const name = `manner-${slugOf(spec)}${rest.length > 0 ? `-${rest.join("-")}` : ""}.png`;
       console.log(write(NodePath.join(out, name), mannerSheet(spec, rest, body, ground)));
+      return 0;
+    }
+    case "acts": {
+      const spec = typeof flags.get("look") === "string" ? (flags.get("look") as string) : "bare";
+      const ground = flags.get("ground") === "light" ? "light" : "black";
+      const name = `acts-${slugOf(spec)}${rest.length > 0 ? `-${rest.join("-")}` : ""}.png`;
+      console.log(write(NodePath.join(out, name), actsSheet(spec, rest, body, ground)));
       return 0;
     }
     case "check": {

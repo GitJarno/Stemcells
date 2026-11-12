@@ -25,6 +25,7 @@ import {
   type Piece,
   pieceOf,
   type Pose,
+  REST,
   type Scene,
   SCENES,
   type Slot,
@@ -76,6 +77,12 @@ function composeFrame(
   if (blinking && SHUTS.has(pose.eyes)) pose = { ...pose, eyes: LIDS };
   if (probe.eyeless) pose = { ...pose, eyes: "none" };
   pose = fitted(pose, headroomOf(look), backroomOf(look));
+  // A step to the side stops where what it wears would leave the canvas.
+  const step = pose.x - REST.x;
+  if (step !== 0) {
+    const room = sideRoomOf(look);
+    pose = { ...pose, x: REST.x + Math.sign(step) * Math.min(Math.abs(step), room) };
+  }
   const fabric = probe.bare ? undefined : fabricOf(look);
   const held = look.held === undefined ? undefined : TOOLS.get(look.held);
   const body = seated(
@@ -98,6 +105,39 @@ function composeFrame(
   const rows = compose(shown, [...worn, ...effects], probe.spill);
   // `reverse` on the copy: the phone runs this, and Hermes has no `toReversed`.
   return move.facing === "left" ? rows.map((row) => [...row].reverse().join("")) : rows;
+}
+
+const sideRooms = new Map<string, number>();
+
+/** How far a Cell wearing `wardrobe` can step to either side, in hero cells, with all it wears on the canvas at both sizes. */
+function sideRoomOf(wardrobe: Wardrobe): number {
+  const key = JSON.stringify(wardrobe);
+  const known = sideRooms.get(key);
+  if (known !== undefined) return known;
+  const still: Move = {
+    fps: 0,
+    facing: "right",
+    frames: [{ pose: REST, layers: [], swaps: {} }],
+    meta: {},
+  };
+  const roomIn = (rows: readonly string[]) => {
+    let room = rows[0]?.length ?? 0;
+    for (const row of rows) {
+      const cells = [...row];
+      const left = cells.findIndex((cell) => cell !== ".");
+      if (left < 0) continue;
+      const right = cells.length - 1 - cells.findLastIndex((cell) => cell !== ".");
+      room = Math.min(room, left, right);
+    }
+    return room;
+  };
+  // A cell of the miniature is two of the hero's.
+  const room = Math.min(
+    roomIn(composeFrame(still, 0, wardrobe, false, false)),
+    roomIn(composeFrame(still, 0, wardrobe, true, false)) * 2,
+  );
+  sideRooms.set(key, room);
+  return room;
 }
 
 /** One frame at the miniature's size, with the hero art it stands for, at twice the density. */
@@ -481,10 +521,10 @@ const STATES: Readonly<Record<string, string>> = {
   yawn: "asleep",
 };
 
-/** The state scene `key` plays in (`building` for `building/0`, `happy` for `landed/keen`). */
+/** The state scene `key` plays in (`building` for `building/0`, `happy` for `landed/keen`), an act's its own. */
 export function stateOf(key: string): string {
   const first = key.split("/")[0]!;
-  return STATES[first] ?? first;
+  return SCENES.get(key)?.state ?? STATES[first] ?? first;
 }
 
 const scenes = new Map<string, CellScene>();
