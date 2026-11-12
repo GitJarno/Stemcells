@@ -16,6 +16,24 @@ vi.mock("../art.ts", () => {
     ART_PACKS: {
       house: { theme: "house", season: null, pieces: [] },
       misnamed: { theme: "elsewhere", season: null, pieces: [] },
+      // A cast with a look for no one, and one name's look drawn twice.
+      troupe: {
+        theme: "troupe",
+        season: null,
+        cast: true,
+        pieces: [],
+        outfits: [
+          { id: "nobody", silhouette: "none", family: "none" },
+          { id: "otter", silhouette: "ears", family: "brown" },
+        ],
+      },
+      understudies: {
+        theme: "understudies",
+        season: null,
+        cast: true,
+        pieces: [],
+        outfits: [{ id: "otter", silhouette: "tail", family: "brown" }],
+      },
       trial: {
         theme: "trial",
         season: null,
@@ -426,6 +444,15 @@ describe("art drawn beside the kit", () => {
     ]);
     expect(rules("trial/0", "warn")).toEqual([]);
     expect(rules("temperament jumpy")).toEqual(["temperament"]);
+  });
+
+  it("holds the cast to the Cells' names: a look for each, and one each", () => {
+    const cast = check().filter((f) => f.rule === "cast");
+    expect(cast.map((f) => `${f.subject}: ${f.detail}`)).toEqual([
+      'troupe/nobody: "nobody" is no Cell\'s name',
+      "understudies/otter: troupe/otter is this name's look already",
+      expect.stringMatching(/^the cast: no look of their own: Orca, /),
+    ]);
   });
 
   it("never lets a drawn pack or scene replace the original's", () => {
