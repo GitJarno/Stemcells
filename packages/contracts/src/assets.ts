@@ -2,7 +2,7 @@ import * as Schema from "effect/Schema";
 
 import { NonNegativeInt, ThreadId, TrimmedNonEmptyString, TurnItemId } from "./baseSchemas.ts";
 import {
-  PROVIDER_SEND_TURN_MAX_FILE_BYTES,
+  FILE_ATTACHMENT_MAX_UPLOAD_BYTES,
   PROVIDER_SEND_TURN_MAX_IMAGE_BYTES,
   PROVIDER_SEND_TURN_SUPPORTED_IMAGE_MIME_TYPES,
 } from "./chatAttachment.ts";
@@ -105,7 +105,7 @@ const FileAttachmentCreateUploadUrlInput = Schema.Struct({
   mimeType: TrimmedNonEmptyString.check(Schema.isMaxLength(100)),
   sizeBytes: NonNegativeInt.check(
     Schema.isGreaterThanOrEqualTo(1),
-    Schema.isLessThanOrEqualTo(PROVIDER_SEND_TURN_MAX_FILE_BYTES),
+    Schema.isLessThanOrEqualTo(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
   ),
 });
 

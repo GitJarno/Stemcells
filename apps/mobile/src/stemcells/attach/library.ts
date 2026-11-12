@@ -7,11 +7,7 @@ import { requireOptionalNativeModule } from "expo";
 import type { ImagePickerAsset } from "expo-image-picker";
 import { Platform } from "react-native";
 
-import {
-  imageMimeType,
-  PROVIDER_SEND_TURN_MAX_FILE_BYTES,
-  videoMimeType,
-} from "../upstream/attach";
+import { imageMimeType, FILE_ATTACHMENT_MAX_UPLOAD_BYTES, videoMimeType } from "../upstream/attach";
 import { blankPlaces, moovIn } from "./placeless";
 
 /** Whether this build can show the library: iOS, with the module built in. */
@@ -126,7 +122,7 @@ export async function shotOf(id: string): Promise<ImagePickerAsset> {
 async function placelessCopy(id: string, uri: string, name: string): Promise<string> {
   const { Directory, File, FileMode, Paths } = await import("expo-file-system");
   const video = new File(uri);
-  if ((video.size ?? 0) > PROVIDER_SEND_TURN_MAX_FILE_BYTES) return uri;
+  if ((video.size ?? 0) > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) return uri;
   const copies = new Directory(Paths.cache, COPIES);
   copies.create({ idempotent: true, intermediates: true });
   const copy = new File(copies, `${id}-${name}`.replace(/[^\w.-]/g, "-"));

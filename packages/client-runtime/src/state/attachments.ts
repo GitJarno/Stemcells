@@ -1,5 +1,5 @@
 import {
-  PROVIDER_SEND_TURN_MAX_FILE_BYTES,
+  FILE_ATTACHMENT_MAX_UPLOAD_BYTES,
   WS_METHODS,
   type AttachmentCreateUploadUrlInput,
   type AttachmentCreateUploadUrlResult,
@@ -190,7 +190,7 @@ export async function runAttachmentUploadCycle<E, RE>(input: {
  * files the send would then refuse.
  */
 export function clampFileAttachmentUploadBytes(advertisedMaxUploadBytes: number): number {
-  return Math.min(advertisedMaxUploadBytes, PROVIDER_SEND_TURN_MAX_FILE_BYTES);
+  return Math.min(advertisedMaxUploadBytes, FILE_ATTACHMENT_MAX_UPLOAD_BYTES);
 }
 
 export function formatAttachmentSize(sizeBytes: number): string {
@@ -200,6 +200,8 @@ export function formatAttachmentSize(sizeBytes: number): string {
 }
 
 export function fileAttachmentTooLargeMessage(name: string, maxUploadBytes: number): string {
+  if (maxUploadBytes % 1024 ** 3 === 0)
+    return `'${name}' exceeds the ${maxUploadBytes / 1024 ** 3} GB attachment limit.`;
   const maxUploadSize =
     maxUploadBytes >= 1024 * 1024 && maxUploadBytes % (1024 * 1024) === 0
       ? `${maxUploadBytes / (1024 * 1024)} MB`

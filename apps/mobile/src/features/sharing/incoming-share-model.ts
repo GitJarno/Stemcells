@@ -5,7 +5,7 @@ import {
 import {
   isProviderSendTurnSupportedImageMimeType,
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
-  PROVIDER_SEND_TURN_MAX_FILE_BYTES,
+  FILE_ATTACHMENT_MAX_UPLOAD_BYTES,
   PROVIDER_SEND_TURN_MAX_IMAGE_BYTES,
 } from "@t3tools/contracts";
 import * as Schema from "effect/Schema";
@@ -306,8 +306,8 @@ export async function buildIncomingShareDraft(input: {
           }
           continue;
         }
-        if (sizeBytes > PROVIDER_SEND_TURN_MAX_FILE_BYTES) {
-          warnings.push(fileAttachmentTooLargeMessage(name, PROVIDER_SEND_TURN_MAX_FILE_BYTES));
+        if (sizeBytes > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
+          warnings.push(fileAttachmentTooLargeMessage(name, FILE_ATTACHMENT_MAX_UPLOAD_BYTES));
           if (persistedFileUri) {
             await releaseOwnedFiles(input.fileReader, [persistedFileUri]);
           }
@@ -325,8 +325,8 @@ export async function buildIncomingShareDraft(input: {
             await releaseOwnedFiles(input.fileReader, [persistedFileUri]);
             continue;
           }
-          if (sizeBytes > PROVIDER_SEND_TURN_MAX_FILE_BYTES) {
-            warnings.push(fileAttachmentTooLargeMessage(name, PROVIDER_SEND_TURN_MAX_FILE_BYTES));
+          if (sizeBytes > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
+            warnings.push(fileAttachmentTooLargeMessage(name, FILE_ATTACHMENT_MAX_UPLOAD_BYTES));
             await releaseOwnedFiles(input.fileReader, [persistedFileUri]);
             continue;
           }
