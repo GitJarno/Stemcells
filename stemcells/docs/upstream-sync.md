@@ -290,3 +290,18 @@ limit holds it until the limit lifts.
   autolinking `exclude` replaces the shared list, so a name left out of the
   phone's build goes in every platform's. Homebrew's Node links a newer
   SQLite than Node's own, and `026` fails on it for that alone.
+- 2026-11-12 (758 commits, a failed night): upstream's i18n wrapped Settings
+  words in `msg()` and `gt()`; the word table never swaps a wrapped string,
+  so another language shows upstream's translation, not ours. Our contract
+  tests that match upstream's text moved with it. Upstream now draws a
+  question's option previews itself: the phone takes its card, and the web
+  keeps our box beside the options and hides upstream's copy. An adapter that
+  imports a constant from a module that imports `serverRuntimeStartup.ts`
+  closes a loop through `EffectWorker.ts` and leaves upstream's errors
+  undefined at load: keep constants in leaf modules. Upstream's
+  `vite.config.ts` stamps the page title after our rename unless ours runs
+  last. Desktop's test projects ignore `--exclude`, so the Mac-only cases in
+  `sync-upstream` are skipped by name. `outbound-live` counts this Mac's own
+  addresses as local: upstream's sshd check (#34745) dials its own tailnet
+  address. The generated report's commit list passes GitHub's 65,536
+  character limit past about 700 commits: link the comparison instead.
