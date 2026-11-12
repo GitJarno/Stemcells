@@ -87,7 +87,7 @@
         },
         {
           "do": "wobble",
-          "reach": 4,
+          "reach": 3,
           "times": 2,
           "per": 3,
           "decay": 0.5
@@ -128,14 +128,14 @@
             {
               "do": "pose",
               "pose": {
-                "lean": 4
+                "lean": 3
               },
               "for": 2
             },
             {
               "do": "pose",
               "pose": {
-                "lean": -4
+                "lean": -3
               },
               "for": 2
             }
@@ -467,7 +467,7 @@
           "do": "mark",
           "mark": "notes",
           "at": "ground",
-          "dx": 11,
+          "dx": 9,
           "dy": -12,
           "drift": [0, -1.5],
           "for": 9
@@ -524,7 +524,7 @@
         },
         {
           "do": "sway",
-          "reach": 4,
+          "reach": 3,
           "times": 1,
           "per": 8,
           "tell": true
@@ -646,7 +646,7 @@
         },
         {
           "do": "ease",
-          "lean": 4,
+          "lean": 3,
           "for": 3
         },
         {
@@ -655,7 +655,7 @@
         },
         {
           "do": "ease",
-          "lean": -4,
+          "lean": -3,
           "for": 4
         },
         {
