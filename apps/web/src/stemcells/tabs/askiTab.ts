@@ -101,6 +101,15 @@ export function openBesideOutsideAski(
   return setCell(addPane(workspace, ids, rowWidth), ids.pane, cell);
 }
 
+/** The workspace without Aski's tab, for when the person turns it off; its Cells' tabs stay. */
+export function withoutAski(workspace: Workspace): Workspace {
+  if (!askiTabOf(workspace)) return workspace;
+  const tabs = workspace.tabs.filter((candidate) => !isAskiTab(candidate));
+  const activeTabId =
+    workspace.activeTabId === ASKI_TAB_ID ? (tabs[0]?.id ?? null) : workspace.activeTabId;
+  return { tabs, activeTabId };
+}
+
 export function closeTabUnlessAski(workspace: Workspace, tabId: string): Workspace {
   return tabId === ASKI_TAB_ID ? workspace : closeTab(workspace, tabId);
 }

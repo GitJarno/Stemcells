@@ -30,7 +30,12 @@ export function TabStrip(props: {
   /** The Cells' tabs; Aski's is drawn on its own, before them. */
   tabs: ReadonlyArray<Tab>;
   activeTabId: string | null;
-  aski: { readonly active: boolean; readonly cell: CellRef | null; readonly chat: AskiChat };
+  /** Aski's chip, first; null while Aski's tab is off (Settings › Aski). */
+  aski: {
+    readonly active: boolean;
+    readonly cell: CellRef | null;
+    readonly chat: AskiChat;
+  } | null;
   /**
    * The new Cell past the last tab (`newCell.ts`): its tab, and whether it
    * is taken (then it is among `tabs`). Its tab is last, and shows only as
@@ -103,12 +108,14 @@ export function TabStrip(props: {
             : undefined,
         }}
       >
-        <AskiChip
-          {...props.aski}
-          onActivate={() => onActivate(ASKI_TAB_ID)}
-          springLit={spring.lit === ASKI_TAB_ID}
-          springHandlers={spring.handlers(ASKI_TAB_ID)}
-        />
+        {props.aski ? (
+          <AskiChip
+            {...props.aski}
+            onActivate={() => onActivate(ASKI_TAB_ID)}
+            springLit={spring.lit === ASKI_TAB_ID}
+            springHandlers={spring.handlers(ASKI_TAB_ID)}
+          />
+        ) : null}
         {shownTabs.map((tab, index) => {
           const dragged = view?.picked === true && view.tabId === tab.id;
           // Off the strip, its chip is on the flight layer and its place here is empty.
