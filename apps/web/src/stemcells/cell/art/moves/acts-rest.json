@@ -1,0 +1,989 @@
+{
+  "marks": {
+    "zSmall": {
+      "about": "A sleeper's smallest z, the nearest its head.",
+      "art": ["zz.", ".z.", ".zz"],
+      "hotspot": [1, 1],
+      "mini": ["z"],
+      "miniHotspot": [-1, 0]
+    },
+    "zMid": {
+      "about": "A sleeper's z, on its way up.",
+      "art": ["zzzz", "...z", "..z.", ".z..", "zzzz"],
+      "hotspot": [1, 2],
+      "mini": ["zz", ".z", "zz"],
+      "miniHotspot": [0, 1]
+    },
+    "zBig": {
+      "about": "A sleeper's big Z, the furthest from its head.",
+      "art": ["zzzzzz", "....z.", "...z..", "..z...", ".z....", "zzzzzz"],
+      "hotspot": [2, 3],
+      "mini": ["zzz", "..z", ".z.", "zzz"],
+      "miniHotspot": [1, 2]
+    },
+    "bubbleSmall": {
+      "about": "A snore's bubble as it starts. A bubble's hotspot is its foot: where it is blown from.",
+      "art": [".S.", "SWS", ".S."],
+      "hotspot": [1, 2],
+      "mini": ["S"],
+      "miniHotspot": [0, 1]
+    },
+    "bubbleMid": {
+      "about": "A snore's bubble, half grown.",
+      "art": ["..SS..", ".SWSS.", "SWSSSS", "SSSSSd", ".SSSd.", "..dd.."],
+      "hotspot": [2, 5],
+      "mini": [".S.", "SWS", ".S."],
+      "miniHotspot": [1, 3]
+    },
+    "bubbleBig": {
+      "about": "A snore's bubble, full.",
+      "art": [
+        "..SSSS..",
+        ".SWWSSS.",
+        "SWWSSSSS",
+        "SWSSSSSS",
+        "SSSSSSSd",
+        "SSSSSSdd",
+        ".SSSSdd.",
+        "..dddd.."
+      ],
+      "hotspot": [3, 7],
+      "mini": [".SS.", "SWSS", "SSSd", ".Sd."],
+      "miniHotspot": [1, 4]
+    },
+    "bubbleWide": {
+      "about": "A full bubble wobbling: wider than tall.",
+      "art": ["..SSSSSS..", ".SWWSSSSd.", "SWSSSSSSSd", ".SSSSSSdd.", "..SSSddd..", "....dd...."],
+      "hotspot": [4, 5],
+      "mini": [".SSS.", "SWSSd", ".Sdd."],
+      "miniHotspot": [2, 3]
+    },
+    "bubblePop": {
+      "about": "A bubble that just popped: its drops, flying up and apart.",
+      "art": [
+        "......SS......",
+        "......SS......",
+        "..SS......SS..",
+        "..............",
+        "S............S",
+        "S............S"
+      ],
+      "hotspot": [6, 10],
+      "mini": ["...S...", ".S...S.", ".......", "S.....S"],
+      "miniHotspot": [3, 6]
+    },
+    "puff": {
+      "about": "A sneeze's puff as it bursts out.",
+      "art": ["..WW..", ".WWWWu", "WWWWuu", ".uWuu.", "..uu.."],
+      "hotspot": [2, 2],
+      "mini": [".W", "WW", ".u"],
+      "miniHotspot": [0, 1]
+    },
+    "puffWide": {
+      "about": "A puff blown apart: its specks, thinning.",
+      "art": ["W...u...", "...W...u", ".W....u.", "....u...", "..u....u"],
+      "hotspot": [3, 2],
+      "mini": ["W.u", "...", "W.u"],
+      "miniHotspot": [1, 1]
+    }
+  },
+  "acts": {
+    "snore": {
+      "about": "Asleep: a bubble grows at its face as it breathes out, wobbles and pops; it sleeps on.",
+      "state": "asleep",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "sleepy"
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.9375,
+          "spread": 0.5,
+          "for": 5
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "bubbleSmall",
+          "at": "mouth",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.90625,
+          "spread": 0.6,
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "bubbleMid",
+          "at": "mouth",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.859375,
+          "spread": 0.7,
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "bubbleBig",
+          "at": "mouth",
+          "for": 3
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "bubbleWide",
+          "at": "mouth",
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "bubbleBig",
+          "at": "mouth",
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "bubbleWide",
+          "at": "mouth",
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "bubblePop",
+          "at": "mouth",
+          "drift": [0, -2],
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.875,
+            "spread": 0.6,
+            "eyes": "serene"
+          },
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 3
+        }
+      ]
+    },
+    "dream": {
+      "about": "Asleep: z's leave its head one after another, each growing as it drifts up and away, while it breathes slowly.",
+      "state": "asleep",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "sleepy"
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "zSmall",
+          "dx": 5,
+          "dy": -17,
+          "at": "ground",
+          "drift": [1, -1],
+          "every": 2,
+          "for": 4
+        },
+        {
+          "do": "ease",
+          "sy": 0.9375,
+          "spread": 0.5,
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "zMid",
+          "dx": 7,
+          "dy": -21,
+          "at": "ground",
+          "drift": [1, -1],
+          "every": 2,
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.6,
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "zBig",
+          "dx": 9,
+          "dy": -23,
+          "at": "ground",
+          "drift": [1, -1],
+          "every": 2,
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "zSmall",
+          "dx": 5,
+          "dy": -17,
+          "at": "ground",
+          "drift": [1, -1],
+          "every": 2,
+          "for": 4
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "zMid",
+          "dx": 7,
+          "dy": -21,
+          "at": "ground",
+          "drift": [1, -1],
+          "every": 2,
+          "for": 4
+        },
+        {
+          "do": "ease",
+          "sy": 0.9375,
+          "spread": 0.5,
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "zBig",
+          "dx": 9,
+          "dy": -23,
+          "at": "ground",
+          "drift": [1, -1],
+          "every": 2,
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.6,
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        }
+      ]
+    },
+    "mumble": {
+      "about": "Asleep: it stirs, shifts its weight one way and back, mumbles a word or two, and settles.",
+      "state": "asleep",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "sleepy"
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "lean": -3.5,
+          "sy": 0.875,
+          "spread": 0.6,
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "mouth": "small"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "mouth": "small",
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "lean": 1.5,
+          "sy": 0.84375,
+          "spread": 0.7,
+          "for": 3
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "lean": 0,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 2
+        }
+      ]
+    },
+    "stir": {
+      "about": "Poked asleep: it starts, its lids lift halfway to see who it was, and fall again. It doesn't wake.",
+      "state": "asleep",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "sleepy"
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "ease",
+          "way": "out",
+          "sy": 0.9375,
+          "spread": 0.5,
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "drowsy"
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.6,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 5,
+          "tell": true
+        },
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "ease",
+          "sy": 0.75,
+          "spread": 1,
+          "for": 3
+        },
+        {
+          "do": "face",
+          "eyes": "sleepy"
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.8125,
+          "spread": 0.8,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 1
+        }
+      ]
+    },
+    "crash": {
+      "about": "Its run failed: a jolt off the ground, stars round its head while it wobbles, a sag, and x x.",
+      "state": "crashed",
+      "score": [
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "wide"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 3,
+            "sy": 1.1875
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 4,
+            "sy": 1.0625
+          },
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "squeeze"
+        },
+        {
+          "do": "squash",
+          "to": 0.8125,
+          "in": 1,
+          "hold": 1
+        },
+        {
+          "do": "face",
+          "eyes": "dizzy",
+          "mouth": "wavy"
+        },
+        {
+          "do": "orbit",
+          "mark": "star",
+          "count": 3,
+          "rx": 8,
+          "ry": 2,
+          "dy": -2,
+          "per": 10,
+          "for": 11
+        },
+        {
+          "do": "wobble",
+          "reach": 3,
+          "times": 2,
+          "per": 3,
+          "decay": 0.8,
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.75,
+          "spread": 0.6,
+          "way": "out",
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 1
+        }
+      ]
+    },
+    "wince": {
+      "about": "Poked after it failed: it flinches away, eyes shut tight, and comes back to x x.",
+      "state": "crashed",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "dizzy",
+          "mouth": "wavy"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "squeeze"
+        },
+        {
+          "do": "ease",
+          "lean": -4,
+          "sy": 0.875,
+          "spread": 0.3,
+          "way": "out",
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 4,
+          "tell": true
+        },
+        {
+          "do": "face",
+          "eyes": "dizzy"
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "sy": 1,
+          "spread": 0,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 2
+        }
+      ]
+    },
+    "startle": {
+      "about": "A jolt of surprise: straight up with no crouch, eyes wide, then a look left and right.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "wide"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "sy": 1.25
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 4,
+            "sy": 1.1875
+          },
+          "for": 3,
+          "tell": true
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "squash",
+          "to": 0.875,
+          "in": 1,
+          "hold": 1,
+          "spread": 0.5
+        },
+        {
+          "do": "face",
+          "look": [-3, 0]
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "face",
+          "look": [3, 0]
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "face",
+          "look": [0, 0],
+          "eyes": "calm"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "shiver": {
+      "about": "A quick cold shiver, eyes shut tight, and a shake to be rid of it.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "squeeze"
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.2,
+          "for": 2
+        },
+        {
+          "do": "repeat",
+          "times": 4,
+          "tell": true,
+          "steps": [
+            {
+              "do": "pose",
+              "pose": {
+                "lean": -1.5
+              },
+              "for": 1
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "lean": 1.5
+              },
+              "for": 1
+            }
+          ]
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "spread": 0,
+          "for": 2
+        },
+        {
+          "do": "shake",
+          "times": 2,
+          "per": 2,
+          "reach": 3
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "sneeze": {
+      "about": "Two breaths in, leaning back, and a sneeze that jolts it forward and down in a puff; it looks a little surprised.",
+      "tier": "rare",
+      "score": [
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "squeeze",
+          "mouth": "small"
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "lean": -2,
+          "way": "out",
+          "for": 4
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "lean": -1,
+          "for": 3
+        },
+        {
+          "do": "ease",
+          "sy": 1.1875,
+          "lean": -4,
+          "way": "out",
+          "for": 5
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "mark",
+          "mark": "puff",
+          "at": "ground",
+          "dx": 7,
+          "dy": -5,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.78125,
+            "spread": 0.5,
+            "lean": 4,
+            "mouth": "open"
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "puffWide",
+          "at": "ground",
+          "dx": 9,
+          "dy": -5,
+          "drift": [1, 0],
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.78125,
+            "spread": 0.5,
+            "lean": 4,
+            "mouth": "open"
+          },
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "face",
+          "eyes": "wide",
+          "mouth": "none"
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "lean": 0,
+          "way": "out",
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "sigh": {
+      "about": "A long breath: it swells, lets it all out and sinks low, then comes back up slowly.",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "for": 5
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "serene",
+          "mouth": "small",
+          "look": [0, 0]
+        },
+        {
+          "do": "ease",
+          "sy": 0.78125,
+          "spread": 0.5,
+          "way": "out",
+          "for": 7
+        },
+        {
+          "do": "hold",
+          "for": 3,
+          "tell": true
+        },
+        {
+          "do": "face",
+          "mouth": "none"
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 6
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "peek": {
+      "about": "A look around: it leans far to the left, then far to the right, a blink between, and ahead again.",
+      "score": [
+        {
+          "do": "face",
+          "look": [-2, 0]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -2,
+            "face": -1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -3.5,
+            "face": -1
+          },
+          "for": 4,
+          "tell": true
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -1.5,
+            "face": -1,
+            "eyes": "sleepy"
+          },
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [2, 0]
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": 1.5,
+            "face": 1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": 3.5,
+            "face": 1
+          },
+          "for": 4
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": 1.5,
+            "face": 1,
+            "eyes": "sleepy"
+          },
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [0, 0]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    }
+  }
+}
