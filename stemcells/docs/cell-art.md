@@ -454,9 +454,10 @@ scene `act/<name>`. `cells acts <name>` draws it frame by frame; `cells render
   cast in order from a place of its own. The cues a Cell is given are in
   `cell/acting.ts` (`CUE_STATES`), each with the state its acts are drawn
   for.
-- **A step to the side** (`shift`, a sway's `step`) stops where what the Cell
-  wears would leave the canvas: a wide hat sways without stepping. Two hero
-  cells move the miniature one.
+- **A step to the side** (`shift`, a sway's `step`) is two hero cells at
+  most, which move the miniature one, and none at all for a look whose
+  pieces it would push off the canvas: a wide hat sways without stepping.
+  Keep a lean at 3 or under for the same reason.
 
 ### A temperament: `art/temperaments/<id>.json`
 

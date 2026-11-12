@@ -51,14 +51,34 @@ that shows a face its state doesn't own.
 
 ## Plan
 
-- [ ] `score.ts`: phrases, marks, the expander; tests
-- [ ] kit: `acts`, `marks` and `cues` in a move file; `act/<name>` scenes
-- [ ] `acting.ts`: cues, the pick, the poke's climb, landing first; tests
-- [ ] `cast.ts`: an act in flight, the new entrances, fidgets and sleepers
+- [x] `score.ts`: phrases, marks, the expander; tests
+- [x] kit: `acts`, `marks` and `cues` in a move file; `act/<name>` scenes; an
+      act's `encore` for a landed Cell
+- [x] `acting.ts`: cues, the pick, the poke's climb, landing first; tests
+- [x] `cast.ts`: an act in flight, the new entrances, fidgets and sleepers
       from the table
-- [ ] web: the poke and the gaze on the composer's Cell
-- [ ] phone: the poke on a chat's Cell
-- [ ] the repertoire, each judged frame by frame on a sheet at both sizes
-- [ ] tools: `cells acts`, and the rules `check` holds for a score
-- [ ] docs: `cell-art.md` (a score), `interaction.md` (the poke)
-- [ ] one pass in the lab, captures for the pull request
+- [x] web: the poke and the gaze on the composer's Cell
+- [x] phone: the poke on a chat's Cell
+- [x] the repertoire, each judged frame by frame on a sheet at both sizes
+- [x] tools: `cells acts`, and the rules `check` holds for a score
+- [x] docs: `cell-art.md` (a score), `interaction.md` (the poke)
+- [x] one pass in the lab, captures for the pull request
+
+## Review
+
+- 33 acts in three files: `acts.json` (the first twelve and the gestures),
+  `acts-dance.json` (dances and sound), `acts-rest.json` (sleepers, the
+  failure, the stunned). Seven have an encore. Every cue a Cell is given has
+  a cast.
+- Proof: the kit's tests (scores, acting, the frame picker, `check`'s rules
+  on fixture acts), `cells check` with no failure, and a poke, a flurry and
+  the gaze sampled from the Cell over a composer in a headless lab.
+- A step to the side is held to what a look has room for: two hero cells,
+  and none for a look whose pieces would leave the canvas. Leans stay at 3
+  or under for the same reason.
+- Left for later, each a row in the table above when its signal exists:
+  stopped by the person (no status says it today), the chorus, the lap.
+  The lively token and the hourly budget for rare acts (`cell-life.md`) are
+  still unbuilt; a rare act is one turn in five.
+- Not run on a device: the phone's poke. It is typechecked and shares the
+  web's engine.

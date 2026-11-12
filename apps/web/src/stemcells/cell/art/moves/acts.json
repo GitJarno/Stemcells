@@ -464,22 +464,30 @@
   "cues": {
     "poke/rest": {
       "any": ["hop", "nod"],
-      "keen": ["hop"],
+      "keen": ["hop", "bounce", "wiggle"],
       "proud": ["salute", "nod"],
       "fussy": ["startle", "shake"],
       "nosy": ["peek", "hop"],
-      "dreamy": ["nod"],
+      "dreamy": ["nod", "wiggle"],
       "steady": ["nod", "salute"]
     },
     "poke/rest/2": {
       "any": ["jump"],
       "fussy": ["shake", "jump"]
     },
-    "poke/rest/3": ["spin", "groove"],
+    "poke/rest/3": ["spin", "twirl", "groove", "shuffle"],
     "poke/rest/dazed": ["dazed"],
     "poke/work": ["thumbsUp", "nod", "salute"],
     "poke/ask": ["insist"],
-    "poke/landed": ["encore/hop", "encore/jump", "encore/groove"],
+    "poke/landed": [
+      "encore/hop",
+      "encore/jump",
+      "encore/wiggle",
+      "encore/twirl",
+      "encore/groove",
+      "encore/shuffle",
+      "encore/disco"
+    ],
     "poke/asleep": ["stir"],
     "poke/crashed": ["wince"],
     "poke/away": ["shrug", "sigh"],
@@ -487,12 +495,12 @@
     "answered": ["nod", "thumbsUp"],
     "failed": ["crash"],
     "fidget": {
-      "keen": ["fidget/keen", "hop"],
-      "proud": ["fidget/proud"],
+      "keen": ["fidget/keen", "bounce", "hop", "stretch", "disco", "shuffle"],
+      "proud": ["fidget/proud", "stretch", "tune", "sing", "disco"],
       "fussy": ["fidget/fussy", "shiver", "peek", "sneeze"],
-      "nosy": ["fidget/nosy", "peek", "hop", "sneeze"],
-      "dreamy": ["fidget/dreamy", "sigh", "doze"],
-      "steady": ["fidget/steady", "sigh", "doze", "groove"]
+      "nosy": ["fidget/nosy", "peek", "hop", "tune", "sneeze"],
+      "dreamy": ["fidget/dreamy", "hum", "bop", "sigh", "doze"],
+      "steady": ["fidget/steady", "tune", "stretch", "sigh", "bop", "doze", "groove"]
     },
     "sleeping": ["snore", "dream", "mumble"]
   }
