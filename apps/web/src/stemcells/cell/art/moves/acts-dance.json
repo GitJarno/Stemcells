@@ -525,7 +525,8 @@
       "score": [
         {
           "do": "face",
-          "eyes": "serene"
+          "eyes": "serene",
+          "mouth": "smile"
         },
         {
           "do": "hold",
