@@ -116,3 +116,31 @@ body goes through.
   longer. Home, nothing of the flight runs.
 - **Reduce Motion:** nothing is thrown. Let go in its own pane, the Cell
   fades where it is and is home, as any carry let go elsewhere.
+
+## The poke
+
+A press on a Cell that never becomes a carry is a poke: the Cell answers
+it. The acting table decides with what (`cell/acting.ts`, the acts and
+cues in `cell/art/moves/`); the design is in `stemcells/tasks/cell-acts.md`.
+
+- **Where**: the Cell over a composer (let go within 4 CSS px of the
+  press), and the Cell in a chat's header on the phone. A tab's Cell is
+  the tab's handle, and a click there opens the tab.
+- **In the state it is in.** The answer never changes what the Cell says.
+  At rest it hops, nods or salutes; at work it gives a thumb up or a nod
+  and works on; waiting on the person it insists, its `! !` still on its
+  face; just landed it celebrates again in `^ ^`; asleep it stirs and
+  sleeps on; failed it winces and stays `x x`.
+- **A flurry climbs.** Pokes within a second and a half of each other
+  count up, at rest only: an answer, a bigger one, a spin, and from the
+  fifth the daze: stars round its head while it wobbles, then it shakes
+  them off. A dazed Cell hears nothing until it has.
+- **In the air it lands first**: a poke that comes mid-jump is answered
+  from the landing, six frames on at most.
+- **Every picture of the Cell** plays the answer in step: its tab's mark
+  and the Cell over its composer.
+- **It watches the hand.** A resting Cell over a composer looks toward
+  the pointer while it is within 240 CSS px and has moved in the last six
+  seconds, a step each way; with the pointer on it, straight ahead. While
+  it watches it doesn't fidget.
+- **Reduce Motion**: a poke plays nothing, and the Cell watches nothing.

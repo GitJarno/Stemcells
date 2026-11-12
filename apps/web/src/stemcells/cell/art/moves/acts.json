@@ -42,7 +42,8 @@
         {
           "do": "rest"
         }
-      ]
+      ],
+      "encore": true
     },
     "jump": {
       "about": "A jump with both arms up: a look up, the crouch, the hang, dust where it lands.",
@@ -71,7 +72,8 @@
         {
           "do": "rest"
         }
-      ]
+      ],
+      "encore": true
     },
     "spin": {
       "about": "Once round on the spot.",
@@ -342,6 +344,119 @@
         },
         {
           "do": "rest"
+        }
+      ]
+    },
+    "salute": {
+      "about": "Stands tall with a hand at its brow: understood.",
+      "score": [
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "for": 1
+        },
+        {
+          "do": "arms",
+          "right": "brow"
+        },
+        {
+          "do": "hold",
+          "for": 6,
+          "tell": true
+        },
+        {
+          "do": "arms",
+          "right": null
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "shake": {
+      "about": "Shakes its head: no.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "focused"
+        },
+        {
+          "do": "shake",
+          "times": 2,
+          "per": 4,
+          "reach": 3,
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "shrug": {
+      "about": "A shrug: both arms out, a look up, and it lets them drop.",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "arms",
+          "arms": "out"
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 5,
+          "tell": true
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "insist": {
+      "about": "Two quick hops with its plea still on its face: it is waiting on you.",
+      "state": "ask",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "open"
+        },
+        {
+          "do": "leap",
+          "height": 2,
+          "settle": false,
+          "tell": true
+        },
+        {
+          "do": "leap",
+          "height": 2
+        },
+        {
+          "do": "rest",
+          "eyes": "open"
         }
       ]
     }

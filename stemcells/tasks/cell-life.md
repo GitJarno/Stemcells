@@ -215,6 +215,14 @@ Read on main on 21 October.
   (`subagent`, `collab_agent_tool_call`) to `activity.ts`. An MCP tool stays
   running unless its name says browser.
 
+### Acts and the person's hand
+
+The moves grew into a system of their own: an act is a score, a table of
+cues says when it plays, and a poke is answered in the state the Cell is
+in. Leave given (`granted`), a question answered (`answered`) and a failure
+(`failed`) are entrances with acts of their own; a fidget and a sleeper's
+stir are picked from the table. See `stemcells/tasks/cell-acts.md`.
+
 ## 3. Choreography
 
 - **The clock.** It is the wall clock, the same beat the composer's glow keeps

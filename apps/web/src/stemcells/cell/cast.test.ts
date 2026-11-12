@@ -1,11 +1,12 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
+import { poke, resetActing, stand } from "./acting.ts";
 import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
 import { bodyOf, entering, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
 import { BODIES, PACKS } from "./kit.ts";
 import { BOX, MOODS } from "./look.ts";
-import { fidgetingFor, mannerOf, phaseOf } from "./manner.ts";
+import { fidgetingFor, mannerOf, phaseOf, watchingKey } from "./manner.ts";
 import { type CellScene, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
 import { crop } from "./sprite.ts";
 
@@ -273,4 +274,45 @@ test("a Cell at rest fidgets now and then, and only while the person is there", 
   const windows = Array.from({ length: 400 }, (_, w) => fidgetingFor(name, w * 90 + 89));
   const held = windows.filter((since) => since !== undefined).length;
   NodeAssert.ok(held > 50 && held < 150, `${held} of 400 windows hold a fidget`);
+});
+
+test("a poke's act plays over the Cell's state from its first frame, then hands back; a state that turns drops it", () => {
+  resetActing();
+  stand("poked", "awake", false);
+  const act = poke("poked", 1000)!;
+  const scene = sceneOf(bare, act.key)!;
+  const showing = { name: "poked", mood: "awake", activity: undefined } as const;
+  const plays = (frame: unknown, index: number) =>
+    frame === scene.mini[index] || frame === scene.shut?.mini[index];
+  for (const index of [0, Math.floor(scene.pass / 2), scene.pass - 1])
+    NodeAssert.ok(plays(frameFor(bare, showing, 1000 + (index + 0.5) / 12), index), `${index}`);
+  const rest = sceneOf(bare, `rest/${mannerOf("poked").id}`)!;
+  const after = frameFor(bare, showing, act.until + 0.01);
+  NodeAssert.ok(rest.mini.includes(after) || rest.shut?.mini.includes(after), "back at rest");
+  const asking = frameFor(bare, { ...showing, mood: "needsYou" }, 1000.1);
+  NodeAssert.equal(
+    frameFor(bare, showing, undefined),
+    rest.mini[rest.tell],
+    "Reduce Motion plays no act",
+  );
+  resetActing();
+  NodeAssert.equal(
+    asking,
+    frameFor(bare, { ...showing, mood: "needsYou" }, 1000.1),
+    "it asked by then: its plea played, as if never poked",
+  );
+});
+
+test("a resting Cell watches the person's pointer and looks nowhere else", () => {
+  const name = "watcher";
+  const manner = mannerOf(name);
+  const showing = { name, mood: "awake", activity: undefined, here: true } as const;
+  const right = sceneOf(bare, watchingKey(manner, { x: 1, y: 0 }))!;
+  const left = sceneOf(bare, watchingKey(manner, { x: -1, y: 0 }))!;
+  NodeAssert.notDeepEqual(right.mini[0]!.rows, left.mini[0]!.rows, "its eyes go where the hand is");
+  for (let seconds = 0; seconds < 40; seconds += 1.7) {
+    const frame = frameFor(bare, { ...showing, watching: { x: 1, y: 0 } }, seconds);
+    NodeAssert.ok(right.mini.includes(frame) || right.shut?.mini.includes(frame), `${seconds}`);
+  }
+  NodeAssert.equal(sceneOf(bare, `rest/${manner.id}@2,0`), undefined, "a step each way, no more");
 });
