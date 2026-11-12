@@ -117,16 +117,18 @@ describe("a frame of a drag restyles only what changed", () => {
     expect(anchored).toEqual([]);
   });
 
-  // Chrome matches a selector from its subject: a subject that names nothing
-  // runs its `:has()` against every element on the page, and marks each one
-  // for a recheck whenever what is inside it changes.
-  it("puts no `:has()` on a subject that names nothing", () => {
+  // Chrome matches a selector from its subject, then tries every ancestor against each compound
+  // before it: a compound that names nothing runs its `:has()` on all of them, up to the root.
+  // Each is then marked, and a change anywhere under one restyles all inside it: the whole page
+  // at 175 ms a change, for one `> :not(:has(...))` (`stemcells/tasks/snappy-tabs.md`).
+  it("puts no `:has()` on a compound that names nothing", () => {
     const unnamed = sheets.flatMap(({ path, css }) =>
       selectorsOf(css)
-        .filter((selector) => {
-          const subject = compoundsOf(selector).at(-1)!;
-          return subject.includes(":has(") && !namesSomething(subject);
-        })
+        .filter((selector) =>
+          compoundsOf(selector).some(
+            (compound) => compound.includes(":has(") && !namesSomething(compound),
+          ),
+        )
         .map((selector) => `${path}: ${selector}`),
     );
     expect(unnamed).toEqual([]);

@@ -55,18 +55,17 @@ describe("the halo stops at the ledge, and what stands on the dock glows on its 
     // The block's own top is the Cell's head (or Aski's): the halo's top
     // follows the dock's top instead, through an anchor in the block.
     const halo = ruleOf(glowCss, HALO);
-    expect(halo).toContain(
-      "top: calc(anchor(--sc-dock-top top, 0px) - var(--sc-halo-reach) - var(--sc-halo-fade-top));",
+    expect(halo).toMatch(
+      /top: calc\(\s*anchor\(--sc-dock-ledge top, anchor\(--sc-dock-box top, 0px\)\) - var\(--sc-halo-reach\)/,
     );
     expect(halo).toMatch(/to bottom,\s*transparent,\s*black var\(--sc-halo-fade-top\),/);
-    const dockTop = ruleOf(
-      glowCss,
-      "[data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge,",
+    expect(ruleOf(glowCss, "[data-stemcells-composer-line] .composer-line-ledge {")).toContain(
+      "anchor-name: --sc-dock-ledge;",
     );
-    expect(dockTop).toContain(
-      '> :not(:has(.composer-line-ledge))\n  [data-slot="composer-shell"] {\n  anchor-name: --sc-dock-top;',
-    );
-    expect(glowCss.match(/anchor-name/g)).toHaveLength(1);
+    expect(
+      ruleOf(glowCss, '[data-chat-composer-stack="true"] [data-slot="composer-shell"] {'),
+    ).toContain("anchor-name: --sc-dock-box;");
+    expect(glowCss.match(/anchor-name/g)).toHaveLength(2);
   });
 
   it("the Cell, its buds and Aski wear the page's colour round their shape", () => {
