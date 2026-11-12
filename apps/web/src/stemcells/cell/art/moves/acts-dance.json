@@ -58,7 +58,7 @@
       ]
     },
     "twirl": {
-      "about": "Two quick turns with its arms out, and a wobble as it finds its feet.",
+      "about": "Two quick turns up on its toes with its arms out, and a wobble as it finds its feet.",
       "encore": true,
       "score": [
         {
@@ -97,7 +97,7 @@
         },
         {
           "do": "wobble",
-          "reach": 3.5,
+          "reach": 3,
           "times": 2,
           "per": 3,
           "decay": 0.5
@@ -170,7 +170,7 @@
       ]
     },
     "shuffle": {
-      "about": "A sideways dance step: out one way and back with a dip on each beat, the leading arm up, then the other way.",
+      "about": "A sideways dance step: a hop out one way and back, a dip as it lands, the leading arm up, then the other way.",
       "tier": "rare",
       "encore": true,
       "score": [
@@ -200,8 +200,7 @@
           "shift": 4,
           "sy": 0.875,
           "spread": 0.3,
-          "for": 1,
-          "tell": true
+          "for": 1
         },
         {
           "do": "ease",
@@ -211,7 +210,8 @@
         },
         {
           "do": "hold",
-          "for": 2
+          "for": 2,
+          "tell": true
         },
         {
           "do": "pose",
@@ -456,7 +456,7 @@
       ]
     },
     "tune": {
-      "about": "Whistles a short tune: the pucker, three notes drifting up one after another, a small sway.",
+      "about": "Whistles a short tune: the pucker, three notes rising one after another, a small sway.",
       "score": [
         {
           "do": "face",
@@ -521,7 +521,7 @@
       ]
     },
     "hum": {
-      "about": "Hums with its eyes shut, swaying slowly, one note beside it.",
+      "about": "Hums with its eyes shut, swaying slowly, one note over its shoulder.",
       "score": [
         {
           "do": "face",
@@ -557,7 +557,7 @@
       ]
     },
     "sing": {
-      "about": "One big note: a breath in, then its mouth open and its arms out, the note over its head.",
+      "about": "One big note: a breath in, then its mouth open and its arms out, a large note by its head that trembles as it holds.",
       "tier": "rare",
       "score": [
         {
@@ -597,9 +597,9 @@
         {
           "do": "mark",
           "mark": "bigNote",
+          "dx": 9,
           "dy": -7,
-          "for": 11,
-          "dx": 9
+          "for": 11
         },
         {
           "do": "hold",
