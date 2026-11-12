@@ -55,6 +55,8 @@ interface Probe {
   readonly bare?: boolean;
   readonly eyeless?: boolean;
   readonly spill?: { count: number };
+  /** A step to the side is taken as posed, not held to the look's room. */
+  readonly free?: boolean;
 }
 
 /** Pose `index` of `move` as worn: its swaps, the face blinked, a hop held under the hat, fabric, the tool, marks. */
@@ -79,8 +81,8 @@ function composeFrame(
   pose = fitted(pose, headroomOf(look), backroomOf(look));
   // A step to the side stops where what it wears would leave the canvas.
   const step = pose.x - REST.x;
-  if (step !== 0) {
-    const room = sideRoomOf(look);
+  if (step !== 0 && !probe.free) {
+    const room = stepRoomOf(look);
     pose = { ...pose, x: REST.x + Math.sign(step) * Math.min(Math.abs(step), room) };
   }
   const fabric = probe.bare ? undefined : fabricOf(look);
@@ -107,36 +109,40 @@ function composeFrame(
   return move.facing === "left" ? rows.map((row) => [...row].reverse().join("")) : rows;
 }
 
-const sideRooms = new Map<string, number>();
+/** A step to the side: two hero cells, which move the miniature one. */
+const STEP = 2;
+const stepRooms = new Map<string, number>();
 
-/** How far a Cell wearing `wardrobe` can step to either side, in hero cells, with all it wears on the canvas at both sizes. */
-function sideRoomOf(wardrobe: Wardrobe): number {
+/**
+ * How far a Cell wearing `wardrobe` can step to either side, in hero cells: a step (`STEP`)
+ * where that pushes nothing it wears off the canvas at either size, either way; else none. Its
+ * own body may lose a column at the miniature, whose box it fills.
+ */
+function stepRoomOf(wardrobe: Wardrobe): number {
   const key = JSON.stringify(wardrobe);
-  const known = sideRooms.get(key);
+  const known = stepRooms.get(key);
   if (known !== undefined) return known;
-  const still: Move = {
-    fps: 0,
-    facing: "right",
-    frames: [{ pose: REST, layers: [], swaps: {} }],
-    meta: {},
-  };
-  const roomIn = (rows: readonly string[]) => {
-    let room = rows[0]?.length ?? 0;
-    for (const row of rows) {
-      const cells = [...row];
-      const left = cells.findIndex((cell) => cell !== ".");
-      if (left < 0) continue;
-      const right = cells.length - 1 - cells.findLastIndex((cell) => cell !== ".");
-      room = Math.min(room, left, right);
-    }
-    return room;
-  };
-  // A cell of the miniature is two of the hero's.
-  const room = Math.min(
-    roomIn(composeFrame(still, 0, wardrobe, false, false)),
-    roomIn(composeFrame(still, 0, wardrobe, true, false)) * 2,
-  );
-  sideRooms.set(key, room);
+  const clips = [-STEP, STEP].some((step) => {
+    const stepped: Move = {
+      fps: 0,
+      facing: "right",
+      frames: [{ pose: { ...REST, x: REST.x + step }, layers: [], swaps: {} }],
+      meta: {},
+    };
+    return [false, true].some((compact) => {
+      const worn = { count: 0 };
+      const bare = { count: 0 };
+      composeFrame(stepped, 0, wardrobe, compact, false, STILL, { spill: worn, free: true });
+      composeFrame(stepped, 0, wardrobe, compact, false, STILL, {
+        bare: true,
+        spill: bare,
+        free: true,
+      });
+      return worn.count > bare.count;
+    });
+  });
+  const room = clips ? 0 : STEP;
+  stepRooms.set(key, room);
   return room;
 }
 
