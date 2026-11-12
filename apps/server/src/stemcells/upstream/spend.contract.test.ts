@@ -164,7 +164,9 @@ const rate = (scale: number) => ({
   cacheCreationCostPerToken: scale / 1_000_000,
 });
 const pricing: Pricing = {
-  rates: new Map([["claude-opus-5-5", { ...rate(1), fast: rate(2), ultrafast: null }]]),
+  rates: new Map([
+    ["claude-opus-5-5", { ...rate(1), fast: rate(2), ultrafast: null, contextTiers: [] }],
+  ]),
   overrides: new Map(),
   aliases: new Map(),
 };

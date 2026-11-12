@@ -50,7 +50,7 @@ const layerService = (home: string) =>
     Layer.provideMerge(AntigravityUsage.layer),
     // No Muse install here: its usage home would start Muse to ask.
     Layer.provideMerge(
-      Layer.mock(MuseUsageHome.MuseUsageHome)({ resolve: () => Effect.undefined }),
+      Layer.mock(MuseUsageHome.MuseUsageHome)({ resolve: () => Effect.succeedSome(undefined) }),
     ),
     Layer.provideMerge(ProviderHostLive.layer),
     Layer.provideMerge(CodexUsageHistory.layer.pipe(Layer.provideMerge(Sqlite.layerMemory))),

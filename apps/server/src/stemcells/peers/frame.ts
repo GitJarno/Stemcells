@@ -4,7 +4,7 @@
 // The stored message keeps its words; only what the provider reads is framed.
 
 import { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
-import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
 
 /** A thread as the frame reads it, sender or recipient. */
 export interface ThreadFacts {

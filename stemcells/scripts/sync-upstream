@@ -132,9 +132,13 @@ gate_upstream_web() {
 gate_upstream_server() {
   local skip
   if [ "$(uname)" = Darwin ]; then
-    # AntigravityInstallation's `agy.CMD` case writes two names that differ
-    # only in case, which a Mac's disk folds into one file.
-    skip=$(skip_pattern "accepts the agy CLI without a harness sibling") || return 1
+    # AntigravityInstallation's `agy.CMD` case and ClaudeSkills' `PSTACK`
+    # plugin write names that differ only in case, which a Mac's disk folds
+    # into one file; its registry-order case reads a temp path through
+    # macOS's /var symlink, so the project's path never matches.
+    skip=$(skip_pattern "accepts the agy CLI without a harness sibling" \
+      "gives a synced namespace to an installed plugin, then the first synced row" \
+      "merges plugin enablement and selects installs in native registry order") || return 1
     upstream_env pnpm --filter t3 exec vp test run -t "$skip"
   else
     skip=$(skip_pattern) || return 1

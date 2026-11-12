@@ -46,11 +46,22 @@ const tailscaleUp = (asked: Ref.Ref<number>) =>
     ),
   );
 
-/** Serve answering for this server on the tailnet name. */
+/** Serve answering on the tailnet name with this server's T3 descriptor. */
 const serveAnswers = Layer.succeed(
   HttpClient.HttpClient,
   HttpClient.make((request) =>
-    Effect.succeed(HttpClientResponse.fromWeb(request, new Response(null, { status: 200 }))),
+    Effect.succeed(
+      HttpClientResponse.fromWeb(
+        request,
+        Response.json({
+          environmentId: "serve-test",
+          label: "Serve test",
+          platform: { os: "darwin", arch: "arm64" },
+          serverVersion: "0.0.0-test",
+          capabilities: { repositoryIdentity: true },
+        }),
+      ),
+    ),
   ),
 );
 
