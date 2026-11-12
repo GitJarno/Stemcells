@@ -1,8 +1,8 @@
 /**
  * Which repository a checkout with a fork and its parent belongs to, as the Pull requests
  * list and a thread's pull requests read it. Upstream's resolver picks `upstream` over
- * `origin`: these pin that `gh repo set-default` wins (`ghDefaultRemote.ts`) and that
- * without it upstream's pick stands.
+ * `origin` unless `gh repo set-default` names another: these pin that gh's default wins
+ * and that without it upstream's pick stands.
  */
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it } from "@effect/vitest";

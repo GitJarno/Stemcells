@@ -11,6 +11,7 @@ import { T3Wordmark, ThreadDisclosureChevron } from "../upstream/mailFold";
 interface FoldProps<Environment, Thread> {
   readonly environmentId: Environment;
   readonly senderThreadId?: Thread;
+  readonly senderTitle?: string;
   readonly summary: string;
   readonly expanded: boolean;
   readonly onToggle: () => void;
