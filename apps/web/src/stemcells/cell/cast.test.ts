@@ -1,12 +1,12 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
-import { poke, resetActing, stand } from "./acting.ts";
+import { actFor, castFor, poke, resetActing, stand } from "./acting.ts";
 import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
 import { bodyOf, entering, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
 import { BODIES, PACKS } from "./kit.ts";
 import { BOX, MOODS } from "./look.ts";
-import { fidgetingFor, mannerOf, phaseOf, watchingKey } from "./manner.ts";
+import { FIDGET_WINDOW, fidgetingFor, mannerOf, phaseOf, watchingKey } from "./manner.ts";
 import { type CellScene, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
 import { crop } from "./sprite.ts";
 
@@ -258,14 +258,18 @@ test("a rest is painted only when its pose changes: frames of one pose are one p
   }
 });
 
-test("a Cell at rest fidgets now and then, and only while the person is there", () => {
+test("a Cell at rest fidgets now and then with an act its temperament casts, and only while the person is there", () => {
   const name = "thread-0";
   const manner = mannerOf(name);
-  const fidget = sceneOf(bare, manner.fidget!)!;
   const rest = sceneOf(bare, `rest/${manner.id}`)!;
   let seconds = 0;
   while (fidgetingFor(name, seconds) === undefined) seconds += 1;
   const start = seconds - fidgetingFor(name, seconds)!;
+  const cast = castFor("fidget", name);
+  NodeAssert.ok(cast.includes(manner.fidget!), "its own fidget is one of them");
+  const key = actFor("fidget", name, Math.floor(start / FIDGET_WINDOW))!;
+  NodeAssert.ok(cast.includes(key));
+  const fidget = sceneOf(bare, key)!;
   const showing = { name, mood: "awake", activity: undefined } as const;
   const there = frameFor(bare, { ...showing, here: true }, start + 0.01);
   NodeAssert.ok(isFrame(fidget, 0, there), "its fidget's first frame");

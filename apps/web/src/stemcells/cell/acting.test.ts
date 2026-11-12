@@ -36,19 +36,22 @@ test("a flurry of pokes climbs: an answer, a bigger one, a spin, then dazed and 
 
 test("a Cell in the air lands before the next act starts", () => {
   resetActing();
-  stand("a", "awake", false);
-  poke("a", 100);
-  const jump = poke("a", 100.2)!;
+  const leaves = (key: string | undefined) =>
+    SCENES.get(key ?? "")?.frames.some((frame) => frame.pose.base < REST.base) === true;
+  // A Cell whose second answer leaves the ground: which act that is, is its temperament's.
+  const name = NAMES.find((one) => leaves(actFor("poke/rest/2", one, 0)))!;
+  stand(name, "awake", false);
+  poke(name, 100);
+  const jump = poke(name, 100.2)!;
   const frames = SCENES.get(jump.key)!.frames;
   const airborne = frames.findIndex((frame) => frame.pose.base < REST.base);
-  NodeAssert.ok(airborne > 0, "the second answer leaves the ground");
   const midAir = jump.since + (airborne + 0.5) / 12;
-  const next = poke("a", midAir)!;
+  const next = poke(name, midAir)!;
   NodeAssert.ok(next.since > midAir, "it waits for the landing");
-  NodeAssert.equal(performing("a", midAir, "rest"), jump, "and plays the jump out till then");
+  NodeAssert.equal(performing(name, midAir, "rest"), jump, "and plays the jump out till then");
   const landed = frames[Math.trunc((next.since - jump.since) * 12)]!;
   NodeAssert.equal(landed.pose.base, REST.base);
-  NodeAssert.equal(performing("a", next.since, "rest"), next);
+  NodeAssert.equal(performing(name, next.since, "rest"), next);
 });
 
 test("a poke is answered in the state the Cell is in, once, and dropped when the state turns", () => {
