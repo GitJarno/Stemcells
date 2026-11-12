@@ -178,18 +178,24 @@
         },
         {
           "do": "ease",
-          "shift": 4,
+          "lean": 3,
           "sy": 0.875,
           "spread": 0.3,
-          "for": 2,
-          "way": "out"
+          "for": 1
         },
         {
           "do": "ease",
-          "sy": 1,
-          "spread": 0,
+          "shift": 4,
+          "lean": 1,
           "for": 1,
           "tell": true
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "sy": 1,
+          "spread": 0,
+          "for": 1
         },
         {
           "do": "hold",
@@ -197,14 +203,20 @@
         },
         {
           "do": "ease",
-          "shift": 0,
+          "lean": -3,
           "sy": 0.875,
           "spread": 0.3,
-          "for": 2,
-          "way": "out"
+          "for": 1
         },
         {
           "do": "ease",
+          "shift": 0,
+          "lean": -1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -224,14 +236,20 @@
         },
         {
           "do": "ease",
-          "shift": -4,
+          "lean": -3,
           "sy": 0.875,
           "spread": 0.3,
-          "for": 2,
-          "way": "out"
+          "for": 1
         },
         {
           "do": "ease",
+          "shift": -4,
+          "lean": -1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -242,14 +260,20 @@
         },
         {
           "do": "ease",
-          "shift": 0,
+          "lean": 3,
           "sy": 0.875,
           "spread": 0.3,
-          "for": 2,
-          "way": "out"
+          "for": 1
         },
         {
           "do": "ease",
+          "shift": 0,
+          "lean": 1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -556,7 +580,8 @@
           "do": "mark",
           "mark": "bigNote",
           "dy": -7,
-          "for": 11
+          "for": 11,
+          "dx": 9
         },
         {
           "do": "hold",
