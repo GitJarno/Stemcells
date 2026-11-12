@@ -45,12 +45,12 @@ theme, so about seventy of the original's pieces and twelve drawn outfits
 ## Review
 
 - The 68 drawn looks came from five drawings made side by side, one family
-  a file, then judged together on one sheet. Three were redrawn after that
-  look: the otter (a hood that read as a wig became an otter sitting up with
-  its shell), the walrus (its tusks now hang free of the hood) and the
-  peanut (two lobes with a waist).
-- Hoods as wide as the miniature warn in the scenes that lean, as the
-  original's own hoods do. Nothing fails.
+  a file, each carried through its own rounds of redrawing, then judged
+  together on one sheet. Two were redrawn after that look: the otter (a
+  hood that read as a wig became an otter sitting up with its shell) and
+  the peanut (two lobes with a waist).
+- Three hoods as wide as the miniature warn in the scenes that lean, as
+  the original's own hoods do. Nothing fails.
 - Two chats can draw one name. They then wear one look, apart only where it
   has colourways: most cast looks have none. Dealing names apart is the
   fix, and its own change.
