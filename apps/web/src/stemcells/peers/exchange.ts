@@ -17,6 +17,7 @@ export type Entry =
         readonly role: string;
         readonly text: string;
         readonly senderThreadId?: string | undefined;
+        readonly linkedSender?: LinkedSender | undefined;
       };
     }
   | {
@@ -75,14 +76,24 @@ export interface Sender {
   readonly machine: string | null;
 }
 
+/** Upstream's stamp on a message an agent sent through a linked environment's peer MCP link. */
+interface LinkedSender {
+  readonly environmentId: string;
+  readonly threadId: string;
+}
+
 /** The Cell that sent a message; null for the person's own, or the app's. */
 export function senderOf(message: {
   readonly id: string;
   readonly role: string;
   readonly senderThreadId?: string | undefined;
+  readonly linkedSender?: LinkedSender | undefined;
 }): Sender | null {
   if (message.role !== "user") return null;
   if (message.senderThreadId !== undefined) return { cell: message.senderThreadId, machine: null };
+  if (message.linkedSender !== undefined) {
+    return { cell: message.linkedSender.threadId, machine: message.linkedSender.environmentId };
+  }
   const mail = MAIL.exec(message.id);
   if (mail === null) return null;
   try {
