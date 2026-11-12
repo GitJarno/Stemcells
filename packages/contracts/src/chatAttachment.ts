@@ -15,6 +15,8 @@ export const PROVIDER_SEND_TURN_MAX_ATTACHMENTS = 100;
 export const PROVIDER_SEND_TURN_MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const PROVIDER_SEND_TURN_MAX_TOTAL_IMAGE_BYTES = 80 * 1024 * 1024;
 export const PROVIDER_SEND_TURN_MAX_FILE_BYTES = 50 * 1024 * 1024;
+/** Stemcells: an uploaded file streams to disk and reaches agents as a path, so it may be larger. */
+export const FILE_ATTACHMENT_MAX_UPLOAD_BYTES = 1024 * 1024 * 1024;
 export const PROVIDER_SEND_TURN_SUPPORTED_IMAGE_MIME_TYPES = [
   "image/gif",
   "image/jpeg",
@@ -165,7 +167,7 @@ export const ChatFileAttachment = Schema.Struct({
   mimeType: TrimmedNonEmptyString.check(Schema.isMaxLength(100)),
   sizeBytes: NonNegativeInt.check(
     Schema.isGreaterThanOrEqualTo(1),
-    Schema.isLessThanOrEqualTo(PROVIDER_SEND_TURN_MAX_FILE_BYTES),
+    Schema.isLessThanOrEqualTo(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
   ),
   /** Keep path-only so agents inspect selectively without consuming the context folding preserves. */
   source: Schema.optional(PastedTextAttachmentSource),

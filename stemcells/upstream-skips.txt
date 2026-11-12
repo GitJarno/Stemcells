@@ -7,9 +7,11 @@
 #
 #   <test file> | <the test's name, or how it starts> | <why>
 
+apps/server/src/environment/ServerEnvironment.test.ts | persists the environment id across service restarts | pins the 50 MB upload advertisement; a Stemcells server advertises 1 GB (seams/packages.md), which apps/server/src/stemcells/upstream/uploads.contract.test.ts pins
 apps/web/src/components/ChatView.browser.test.tsx | a new draft does not load its reserved thread before the server lists it | waits for upstream's sidebar to list the project, which Stemcells' column replaces (#62)
 apps/web/src/components/Sidebar.shortcuts.browser.test.tsx | leaves thread shortcuts and their hints to the preview when their rules exclude it | waits for upstream's sidebar to list the threads, which Stemcells' column replaces (#62)
 apps/web/src/components/chat/MessagesTimeline.browser.test.tsx | folds a message from another agent into a one-line preview | pins upstream's fold of another agent's message, which our TimelineUserMessageRow substitute draws as a Cell's mail (peers/PeerCard.tsx)
 apps/web/src/components/chat/MessagesTimeline.browser.test.tsx | reveals a find match inside a folded agent message | the same fold, which a Cell's mail replaces
+packages/contracts/src/chatAttachment.test.ts | rejects malformed known attachment types instead of tolerating them | its oversized file is 50 MB and a byte, which the 1 GB upload cap takes; uploads.contract.test.ts pins the new edge
 packages/provider-core/src/server/maintenanceResolver.test.ts | uses npm's registry for npm installs | an npm install asks npm itself before the registry; maintenanceResolver.npmReleaseAge.test.ts pins ours
 packages/provider-core/src/server/maintenanceResolver.test.ts | pins npm updates to the global prefix that owns the package and the provider's PATH | expects an npm install's capabilities without the lookupLatestVersion our seam adds
