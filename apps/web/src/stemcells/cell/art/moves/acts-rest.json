@@ -104,17 +104,17 @@
         },
         {
           "do": "hold",
-          "for": 2
+          "for": 1
         },
         {
           "do": "ease",
           "sy": 0.9375,
           "spread": 0.5,
-          "for": 5
+          "for": 4
         },
         {
           "do": "hold",
-          "for": 2
+          "for": 1
         },
         {
           "do": "mark",
@@ -343,7 +343,7 @@
       ]
     },
     "mumble": {
-      "about": "Asleep: it stirs, shifts its weight one way and back, mumbles a word or two, and settles.",
+      "about": "Asleep: it turns a little in its sleep, mumbles a word or three, and turns back.",
       "state": "asleep",
       "score": [
         {
@@ -361,15 +361,40 @@
           "for": 1
         },
         {
-          "do": "ease",
-          "lean": -3,
-          "sy": 0.875,
-          "spread": 0.6,
-          "for": 4
+          "do": "pose",
+          "pose": {
+            "lean": -1.5,
+            "face": -1,
+            "sy": 0.84375,
+            "spread": 0.7
+          },
+          "for": 1
         },
         {
           "do": "pose",
           "pose": {
+            "lean": -2.5,
+            "face": -2,
+            "sy": 0.875,
+            "spread": 0.6
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "face": -2,
+            "sy": 0.875,
+            "spread": 0.6
+          },
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "face": -2,
             "sy": 0.9375,
             "spread": 0.5,
             "mouth": "small"
@@ -377,12 +402,20 @@
           "for": 2
         },
         {
-          "do": "hold",
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "face": -2,
+            "sy": 0.875,
+            "spread": 0.6
+          },
           "for": 1
         },
         {
           "do": "pose",
           "pose": {
+            "lean": -3,
+            "face": -2,
             "sy": 0.9375,
             "spread": 0.5,
             "mouth": "small"
@@ -391,26 +424,66 @@
           "tell": true
         },
         {
-          "do": "hold",
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "face": -2,
+            "sy": 0.875,
+            "spread": 0.6
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "face": -2,
+            "sy": 0.9375,
+            "spread": 0.5,
+            "mouth": "small"
+          },
           "for": 2
         },
         {
-          "do": "ease",
-          "lean": 1.5,
-          "sy": 0.84375,
-          "spread": 0.7,
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "face": -2,
+            "sy": 0.875,
+            "spread": 0.6
+          },
           "for": 3
         },
         {
-          "do": "ease",
-          "sy": 0.8125,
-          "spread": 0.8,
-          "lean": 0,
-          "for": 3
+          "do": "pose",
+          "pose": {
+            "lean": -1.5,
+            "face": -1,
+            "sy": 0.84375,
+            "spread": 0.7
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": 1.5,
+            "face": 1,
+            "sy": 0.84375,
+            "spread": 0.7
+          },
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": 0.5
+          },
+          "for": 1
         },
         {
           "do": "hold",
-          "for": 2
+          "for": 3
         }
       ]
     },
@@ -587,7 +660,8 @@
         },
         {
           "do": "face",
-          "eyes": "squeeze"
+          "eyes": "squeeze",
+          "mouth": "none"
         },
         {
           "do": "ease",
@@ -604,7 +678,8 @@
         },
         {
           "do": "face",
-          "eyes": "dizzy"
+          "eyes": "dizzy",
+          "mouth": "wavy"
         },
         {
           "do": "ease",
@@ -633,30 +708,27 @@
         {
           "do": "pose",
           "pose": {
+            "lift": 1,
+            "sy": 1.3125
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
             "lift": 2,
             "sy": 1.25
           },
-          "for": 1,
-          "arms": "high"
-        },
-        {
-          "do": "pose",
-          "pose": {
-            "lift": 4,
-            "sy": 1.1875
-          },
           "for": 3,
-          "tell": true,
-          "arms": "high"
+          "tell": true
         },
         {
           "do": "pose",
           "pose": {
-            "lift": 2,
+            "lift": 1,
             "sy": 1.0625
           },
-          "for": 1,
-          "arms": "high"
+          "for": 1
         },
         {
           "do": "squash",
@@ -716,14 +788,14 @@
             {
               "do": "pose",
               "pose": {
-                "lean": -1.5
+                "lean": -2
               },
               "for": 1
             },
             {
               "do": "pose",
               "pose": {
-                "lean": 1.5
+                "lean": 2
               },
               "for": 1
             }
