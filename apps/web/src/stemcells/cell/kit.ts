@@ -9,6 +9,7 @@ import packsData from "./kit/packs.json" with { type: "json" };
 import paletteData from "./kit/palette.json" with { type: "json" };
 import wardrobeData from "./kit/wardrobe.json" with { type: "json" };
 import { ART_MOVES, ART_PACKS, ART_TEMPERAMENTS } from "./art.ts";
+import { type ScoreMark, scored, type Step } from "./score.ts";
 import type { Anchor, Body, Layer, Point } from "./sprite.ts";
 
 interface LayerData {
@@ -447,6 +448,8 @@ export interface Scene extends Move {
   readonly holds: boolean;
   readonly held?: string | undefined;
   readonly pieces: "loop" | "once" | "still";
+  /** The state it is worn as, for pieces posed by state (`asleep`, `happy`); its name's unless told. */
+  readonly state?: string | undefined;
 }
 
 /** A move as its file holds it: the export's layers by index, a drawn one's inline. */
@@ -469,11 +472,38 @@ interface SceneData extends MoveData {
   readonly holds?: boolean;
   readonly held?: string;
   readonly pieces?: string;
+  readonly state?: string;
 }
+
+/** The state a Cell is in when an act may play: whose face the act keeps (`stemcells/tasks/cell-acts.md`). */
+export type ActState = "rest" | "ask" | "landed" | "asleep" | "crashed";
+
+/** An act as its file holds it: what it is, when it may play, and its score (`score.ts`). */
+export interface ActData {
+  readonly about: string;
+  readonly state?: ActState;
+  readonly tier?: MoveMeta["tier"];
+  /** It loops while its state holds; an act plays once unless told. */
+  readonly loop?: boolean;
+  /** Pokes go unanswered while it plays. */
+  readonly deaf?: boolean;
+  /** A landed Cell plays it too, as `encore/<name>`: the same score in a landing's `^ ^`. */
+  readonly encore?: boolean;
+  readonly score: readonly Step[];
+}
+
+/** The acts that may answer a cue: one list for every Cell, or one a temperament with `any` for the rest. */
+export type CueData = readonly string[] | Readonly<Record<string, readonly string[]>>;
 
 /** A move set as its file in `art/moves/` holds it: new scenes, meta for the export's, the arms a strength holds at rest, and the marks a landing's diff raises. */
 export interface MoveFile {
   readonly scenes?: Readonly<Record<string, SceneData>>;
+  /** Acts, each a score: scenes named `act/<name>`. */
+  readonly acts?: Readonly<Record<string, ActData>>;
+  /** The marks scores show, by name, shared by every move file. */
+  readonly marks?: Readonly<Record<string, ScoreMark>>;
+  /** What may answer each cue, as scene names, an act by its bare name. */
+  readonly cues?: Readonly<Record<string, CueData>>;
   readonly meta?: Readonly<Record<string, MoveMeta>>;
   readonly strength?: Readonly<Partial<Record<Strength, Omit<Arm, "side">>>>;
   readonly diff?: {
@@ -551,6 +581,7 @@ const scene = (data: SceneData, meta?: MoveMeta): Scene => ({
   holds: data.holds ?? false,
   held: data.held,
   pieces: (data.pieces ?? "loop") as Scene["pieces"],
+  state: data.state,
 });
 
 /** The move files drawn for Stemcells, by file name. */
@@ -586,12 +617,100 @@ export const DIFF_MARKS: { rise: readonly number[]; added: Mark; removed: Mark }
     : [{ rise: file.diff.rise, added: mark(file.diff.added), removed: mark(file.diff.removed) }],
 )[0];
 
-/** The scenes drawn for Stemcells, by name. */
-export const DRAWN_SCENES: ReadonlyMap<string, Scene> = new Map(
+/** The marks scores show, by name: every move file's together. */
+const SCORE_MARKS: Readonly<Record<string, ScoreMark>> = Object.assign(
+  {},
+  ...[...MOVE_FILES.values()].map((file) => file.marks ?? {}),
+);
+
+/** The scene an act plays as: `act/<name>`. */
+export const actKey = (name: string): string => `act/${name}`;
+
+/** The state each act's scene is worn as, for pieces posed by state. */
+const WORN_AS: Readonly<Record<ActState, string>> = {
+  rest: "idle",
+  ask: "waiting",
+  landed: "happy",
+  asleep: "asleep",
+  crashed: "idle",
+};
+
+/** An act: what it is, the state it plays in, and what its score left unanswered (`check`). */
+export interface Act {
+  readonly name: string;
+  readonly about: string;
+  readonly state: ActState;
+  readonly deaf: boolean;
+  readonly scene: Scene;
+  readonly problems: readonly string[];
+}
+
+/** The eyes a landing wears: an encore shows them wherever the act shows a face. */
+const LANDED_EYES = "happy";
+
+/** The acts, by name: each one's score made into a scene, and its encore where it has one. */
+export const ACTS: ReadonlyMap<string, Act> = new Map(
   [...MOVE_FILES.values()].flatMap((file) =>
-    Object.entries(file.scenes ?? {}).map(([name, data]) => [name, scene(data)] as const),
+    Object.entries(file.acts ?? {}).flatMap(([name, data]) => {
+      const made = scored(data.score, SCORE_MARKS);
+      const actOf = (as: string, state: ActState, frames: typeof made.frames): Act => ({
+        name: as,
+        about: data.about,
+        state,
+        deaf: data.deaf ?? false,
+        problems: made.problems,
+        scene: scene({
+          fps: 12,
+          facing: "right",
+          kind: data.loop ? "loop" : "once",
+          tier: data.tier ?? "common",
+          tell: made.tell,
+          pieces: "loop",
+          state: WORN_AS[state],
+          frames,
+        }),
+      });
+      const act = actOf(name, data.state ?? "rest", made.frames);
+      if (!data.encore) return [[name, act] as const];
+      const landed = made.frames.map((frame) =>
+        frame.pose.eyes === "none"
+          ? frame
+          : { ...frame, pose: { ...frame.pose, eyes: LANDED_EYES } },
+      );
+      return [
+        [name, act] as const,
+        [`encore/${name}`, actOf(`encore/${name}`, "landed", landed)] as const,
+      ];
+    }),
   ),
 );
+
+/** A cue's cast as scene names: an act by its name is its scene, anything else a scene's own key. */
+const castOf = (names: readonly string[]): readonly string[] =>
+  names.map((name) => (ACTS.has(name) || !name.includes("/") ? actKey(name) : name));
+
+/** What may answer each cue, by temperament, `any` for one with no list of its own. */
+export const CUES: ReadonlyMap<string, Readonly<Record<string, readonly string[]>>> = new Map(
+  [...MOVE_FILES.values()].flatMap((file) =>
+    Object.entries(file.cues ?? {}).map(([cue, cast]) => {
+      const lists: Readonly<Record<string, readonly string[]>> = Array.isArray(cast)
+        ? { any: cast as readonly string[] }
+        : (cast as Readonly<Record<string, readonly string[]>>);
+      return [
+        cue,
+        Object.fromEntries(Object.entries(lists).map(([who, names]) => [who, castOf(names)])),
+      ] as const;
+    }),
+  ),
+);
+
+/** The scenes drawn for Stemcells, by name: those drawn frame by frame, and the acts'. */
+export const DRAWN_SCENES: ReadonlyMap<string, Scene> = new Map([
+  ...[...MOVE_FILES.values()].flatMap((file) =>
+    Object.entries(file.scenes ?? {}).map(([name, data]) => [name, scene(data)] as const),
+  ),
+  ...[...ACTS.values()].map((act) => [actKey(act.name), act.scene] as const),
+]);
 
 /** The original's scenes by name, with any meta drawn for them. */
 export const EXPORTED_SCENES: ReadonlyMap<string, Scene> = new Map(

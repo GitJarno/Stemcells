@@ -2,6 +2,7 @@
 // web must keep these modules free of the DOM. The phone draws the frame itself (`figure.ts`);
 // `figure.test.ts` draws every mood on every body through them.
 
+export { performing, poke, stand, standingOf } from "../../../../web/src/stemcells/cell/acting.ts";
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";
 export {
   bodyOf,

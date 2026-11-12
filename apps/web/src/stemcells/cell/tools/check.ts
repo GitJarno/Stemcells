@@ -17,6 +17,10 @@ import {
   BODIES,
   CHEERS,
   DRAWN_SCENES,
+  actKey,
+  ACTS,
+  type ActState,
+  CUES,
   EXPORTED_SCENES,
   FABRICS,
   HEADWEAR,
@@ -35,6 +39,7 @@ import {
   type Slot,
   TEMPERAMENTS,
 } from "../kit.ts";
+import { CUE_STATES } from "../acting.ts";
 import { NAMES } from "../name.ts";
 import {
   type CellLook,
@@ -44,6 +49,7 @@ import {
   probesOf,
   pastDetail,
   probeStill,
+  spillsIn,
   stateOf,
 } from "../scene.ts";
 
@@ -158,6 +164,7 @@ function lookFindings(
   const out: Finding[] = [];
   const say = (rule: string, detail: string, level: Level = "fail") =>
     out.push({ rule, subject, detail, level: options.original ? "note" : level });
+  const measured = new Map<string, boolean>();
   for (const compact of [false, true]) {
     const size = compact ? "mini" : "hero";
     for (const eyes of ["calm", "open"]) {
@@ -203,7 +210,7 @@ function lookFindings(
     const spilt = (options.scenes ?? [...SCENES.keys()]).filter(
       (key) =>
         !(look.cheer !== undefined && key.startsWith("landed/")) &&
-        probesOf(look, key, compact).some((probe) => probe.spilt > 0),
+        spillsIn(look, key, compact, measured),
     );
     if (spilt.length > 0)
       say("box", `${size}: art falls off the canvas in ${spilt.join(", ")}`, "warn");
@@ -424,6 +431,84 @@ function temperamentFindings(): Finding[] {
   return out;
 }
 
+/** The eyes an act may show in each state: the state's own face, and the back of its head. */
+const ACT_EYES: Readonly<Record<ActState, ReadonlySet<string> | undefined>> = {
+  // Any face but the two that say something else: `^ ^` is a landing's, `! !` asks.
+  rest: undefined,
+  ask: new Set(["open", "none"]),
+  landed: new Set(["happy", "none"]),
+  asleep: new Set(["sleepy", "drowsy", "serene", "none"]),
+  crashed: new Set(["dizzy", "squeeze", "wide", "calm", "none"]),
+};
+const NOT_AT_REST = new Set(["happy", "open"]);
+/** The eyes an act hands back with: its state's, held. */
+const ACT_ENDS: Readonly<Record<ActState, string>> = {
+  rest: "calm",
+  ask: "open",
+  landed: "happy",
+  asleep: "sleepy",
+  crashed: "dizzy",
+};
+/** An act played once runs this many frames at most: six seconds. */
+const ACT_LONGEST = 72;
+
+/**
+ * What the acts and the cues break: a score that names what there isn't, a face its state
+ * doesn't own, a last frame that isn't where the state's scene picks up, an act too long, a
+ * cue the Cell is never given, a cast that names no scene or crosses states, an act never cast.
+ */
+function actFindings(): Finding[] {
+  const out: Finding[] = [];
+  const say = (rule: string, subject: string, detail: string, level: Level = "fail") =>
+    out.push({ rule, subject, detail, level });
+  for (const act of ACTS.values()) {
+    const subject = `act ${act.name}`;
+    for (const problem of act.problems) say("score", subject, problem);
+    const frames = act.scene.frames;
+    const allowed = ACT_EYES[act.state];
+    const wrong = new Set(
+      frames
+        .map((frame) => frame.pose.eyes)
+        .filter((eyes) => (allowed === undefined ? NOT_AT_REST.has(eyes) : !allowed.has(eyes))),
+    );
+    if (wrong.size > 0)
+      say("face", subject, `shows ${[...wrong].join(", ")} eyes, not its state's (${act.state})`);
+    const last = frames.at(-1)?.pose;
+    const first = frames[0]?.pose;
+    if (last !== undefined && first !== undefined) {
+      // A sleeper lies flat: its act ends as it began. Any other ends standing at rest.
+      const home = act.state === "asleep" ? first : REST;
+      const body = (pose: typeof last) =>
+        [pose.x, pose.base, pose.sy, pose.lean, pose.spread, pose.float, pose.face].join(" ");
+      if (body(last) !== body(home) || last.arms.length > 0)
+        say("ends", subject, "its last frame isn't where its state's scene picks up");
+      if (last.eyes !== ACT_ENDS[act.state])
+        say("ends", subject, `ends on ${last.eyes} eyes, not ${ACT_ENDS[act.state]}`);
+    }
+    if (act.scene.meta.kind !== "loop" && frames.length > ACT_LONGEST)
+      say("length", subject, `${frames.length} frames: over ${ACT_LONGEST / BEAT} seconds`);
+    const key = actKey(act.name);
+    if (![...CUES.values()].some((cast) => Object.values(cast).some((list) => list.includes(key))))
+      say("cue", subject, "no cue casts it: it never plays", "warn");
+  }
+  for (const [cue, cast] of CUES) {
+    const state = CUE_STATES[cue];
+    if (state === undefined) say("cue", `cue ${cue}`, "no Cell is ever given this cue");
+    for (const [who, list] of Object.entries(cast)) {
+      if (who !== "any" && !TEMPERAMENTS.has(who))
+        say("cue", `cue ${cue}`, `"${who}" is no temperament`);
+      if (list.length === 0) say("cue", `cue ${cue}`, `nothing cast for ${who}`);
+      for (const key of list) {
+        if (!SCENES.has(key)) say("cue", `cue ${cue}`, `"${key}" is no scene`);
+        const act = key.startsWith("act/") ? ACTS.get(key.slice("act/".length)) : undefined;
+        if (act !== undefined && state !== undefined && act.state !== state)
+          say("cue", `cue ${cue}`, `${act.name} is drawn for ${act.state}, the cue is ${state}`);
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * What a drawn scene's marks and tools break: falling off the canvas, a warning. The body's own
  * reach in the frame's pose is not a mark: the rig widens a squash past the box, as the
@@ -492,6 +577,11 @@ export function check(options: { themes?: readonly string[]; original?: boolean 
       if (move !== undefined)
         out.push(...moveFindings(`${file}: ${name}`, move, true), ...sceneFindings(name));
     }
+  for (const act of ACTS.values()) {
+    const key = actKey(act.name);
+    out.push(...moveFindings(`act ${act.name}`, act.scene, true), ...sceneFindings(key));
+  }
+  out.push(...actFindings());
   out.push(...temperamentFindings());
   out.push(...castFindings(wanted, options.themes === undefined || options.themes.length === 0));
   for (const pack of PACKS) {

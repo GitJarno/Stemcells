@@ -37,6 +37,8 @@ const again = () => {
 /** How long after the person last moved or typed a Cell still takes them to be at the screen. */
 const HERE_MS = 60_000;
 let lastHere = Date.now();
+/** Where the person's pointer last was in the window, and when. */
+let pointer: { readonly x: number; readonly y: number; readonly at: number } | undefined;
 
 /** Whether the person is at the screen: they moved the pointer or pressed a key in the last minute. */
 export const personHere = (now: number = Date.now()): boolean => now - lastHere < HERE_MS;
@@ -56,8 +58,10 @@ function watch(): void {
     }
   });
   matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", again);
-  const here = () => {
+  const here = (event: Event) => {
     lastHere = Date.now();
+    if (event instanceof PointerEvent)
+      pointer = { x: event.clientX, y: event.clientY, at: lastHere };
   };
   for (const type of ["pointermove", "pointerdown", "keydown"] as const)
     addEventListener(type, here, { passive: true, capture: true });
@@ -72,6 +76,44 @@ function watch(): void {
       { once: true },
     );
   density();
+}
+
+/** A Cell watches a pointer this near its middle, in CSS px, that moved this lately, in ms. */
+const WATCHES_WITHIN = 240;
+const WATCHES_FOR = 6_000;
+/** A pointer this far off an axis, as a share of its distance, is looked at along it. */
+const OFF_AXIS = 0.38;
+
+const watched = new WeakMap<
+  Element,
+  { readonly at: number; readonly toward: { readonly x: number; readonly y: number } | undefined }
+>();
+
+/**
+ * Where the person's pointer is from the Cell drawn in `element`, a step each way (`-1`, `0`,
+ * `1`; ahead while the pointer is on it): what a resting Cell watches. Undefined while the
+ * pointer is far, or still for a while. Measured once a move, not once a beat.
+ */
+export function watchingFrom(
+  element: Element,
+  now: number = Date.now(),
+): { readonly x: number; readonly y: number } | undefined {
+  if (pointer === undefined || now - pointer.at > WATCHES_FOR) return undefined;
+  const known = watched.get(element);
+  if (known?.at === pointer.at) return known.toward;
+  const box = element.getBoundingClientRect();
+  const dx = pointer.x - (box.left + box.width / 2);
+  const dy = pointer.y - (box.top + box.height / 2);
+  const far = Math.hypot(dx, dy);
+  const step = (d: number) => (Math.abs(d) > far * OFF_AXIS ? Math.sign(d) : 0);
+  const toward =
+    far > WATCHES_WITHIN
+      ? undefined
+      : far < Math.max(box.width, box.height) / 2
+        ? { x: 0, y: 0 }
+        : { x: step(dx), y: step(dy) };
+  watched.set(element, { at: pointer.at, toward });
+  return toward;
 }
 
 const seenBy = new Map<Element, (seen: boolean) => void>();

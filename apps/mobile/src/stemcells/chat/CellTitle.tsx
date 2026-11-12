@@ -4,13 +4,13 @@
 // from here forms here.
 
 import { use } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
 import { useIsAskiChat } from "../aski/useAskiChat";
 import { formingFrom } from "../cell/forming";
-import { cellNameOf, oneLinerOf } from "../cell/kit";
+import { cellNameOf, clockSeconds, oneLinerOf, poke } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { ProjectMark } from "../home/RowCell";
 import {
@@ -61,12 +61,15 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
       {aski ? (
         <AskiFigure height={POINTS * 14} ink={ink} ground={ground} />
       ) : (
-        <ThreadCell
-          thread={thread}
-          points={POINTS}
-          plays
-          formingFrom={formingFrom(thread.id, thread.createdAt)}
-        />
+        // A tap on the Cell is a poke: it answers in the state it is in (`cell/acting.ts`).
+        <Pressable accessible={false} hitSlop={8} onPress={() => poke(thread.id, clockSeconds())}>
+          <ThreadCell
+            thread={thread}
+            points={POINTS}
+            plays
+            formingFrom={formingFrom(thread.id, thread.createdAt)}
+          />
+        </Pressable>
       )}
       <View className="min-w-0 shrink">
         <AppText className="font-t3-bold text-[15px] text-foreground" numberOfLines={1}>

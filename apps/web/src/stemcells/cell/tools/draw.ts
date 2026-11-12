@@ -2,7 +2,7 @@
 // strips and animations at both sizes on both frames, and sheets of many.
 
 import { FRAMES, type Ground } from "../keyline.ts";
-import { paletteOf, pieceOf, SCENES, STRENGTHS, TEMPERAMENTS } from "../kit.ts";
+import { actKey, ACTS, paletteOf, pieceOf, SCENES, STRENGTHS, TEMPERAMENTS } from "../kit.ts";
 import { restKey } from "../manner.ts";
 import {
   type CellLook,
@@ -218,6 +218,45 @@ export function mannerSheet(
     }
   }
   return laid(`manner ${spec}`, rows);
+}
+
+/** Frames of an act on one line of its sheet. */
+const ACTS_ACROSS = 16;
+
+/**
+ * Acts on one sheet, in a look: each one's every frame at the miniature and the hero on
+ * `ground`, with how long it runs and the frame that tells it.
+ */
+export function actsSheet(
+  spec: string,
+  names: readonly string[],
+  body: string,
+  ground: Ground,
+): Uint8Array {
+  const look = lookOf(spec);
+  const palette = paletteOf(body);
+  const rows: { label: string; strip: Sheet[] }[] = [];
+  const acts = [...ACTS.values()].filter((act) => names.length === 0 || names.includes(act.name));
+  if (acts.length === 0) throw new Error("no such act");
+  for (const act of acts) {
+    const key = actKey(act.name);
+    const scene = sceneOf(look, key);
+    if (scene === undefined) continue;
+    for (const size of SIZES) {
+      const frames = framesOf(scene, size).slice(0, scene.pass);
+      const strip = stage(key, frames, palette, size, ground);
+      // A long act runs on over several lines, each from the frame its label names.
+      for (let from = 0; from < strip.length; from += ACTS_ACROSS)
+        rows.push({
+          label:
+            from === 0
+              ? `${act.name} ${size} ${act.state} ${frames.length} frames, tells at ${scene.tell}`
+              : `${act.name} ${size} from ${from}`,
+          strip: strip.slice(from, from + ACTS_ACROSS),
+        });
+    }
+  }
+  return laid(`acts ${spec}`, rows);
 }
 
 /** Looks side by side: each one's `keys` scenes (the first frame; the cheer at its height), mini and hero, on both frames, labelled. */

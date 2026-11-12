@@ -78,6 +78,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
         diff={diff}
         landedAt={landedAt}
         forming={forming}
+        watches={props.stage}
       />
     </span>
   );

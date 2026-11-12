@@ -3,6 +3,9 @@
 // by name: a bundler's glob is Vite's alone, and the phone's Metro bundles one as nothing
 // (`art.test.ts` fails on a file left out). Formats: `stemcells/docs/cell-art.md`.
 
+import actsDance from "./art/moves/acts-dance.json" with { type: "json" };
+import actsRest from "./art/moves/acts-rest.json" with { type: "json" };
+import acts from "./art/moves/acts.json" with { type: "json" };
 import dock from "./art/moves/dock.json" with { type: "json" };
 import form from "./art/moves/form.json" with { type: "json" };
 import growth from "./art/moves/growth.json" with { type: "json" };
@@ -53,7 +56,18 @@ export const ART_PACKS: ArtFiles = {
 };
 
 /** Moves: new scenes, and meta for the original's. */
-export const ART_MOVES: ArtFiles = { dock, form, growth, manner, marks, toss, work };
+export const ART_MOVES: ArtFiles = {
+  acts,
+  "acts-dance": actsDance,
+  "acts-rest": actsRest,
+  dock,
+  form,
+  growth,
+  manner,
+  marks,
+  toss,
+  work,
+};
 
 /** Temperaments, one a file: how a Cell carries itself (`manner.ts`). */
 export const ART_TEMPERAMENTS: ArtFiles = { dreamy, fussy, keen, nosy, proud, steady };

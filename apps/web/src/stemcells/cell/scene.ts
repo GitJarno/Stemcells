@@ -25,6 +25,7 @@ import {
   type Piece,
   pieceOf,
   type Pose,
+  REST,
   type Scene,
   SCENES,
   type Slot,
@@ -54,6 +55,8 @@ interface Probe {
   readonly bare?: boolean;
   readonly eyeless?: boolean;
   readonly spill?: { count: number };
+  /** A step to the side is taken as posed, not held to the look's room. */
+  readonly free?: boolean;
 }
 
 /** Pose `index` of `move` as worn: its swaps, the face blinked, a hop held under the hat, fabric, the tool, marks. */
@@ -76,6 +79,12 @@ function composeFrame(
   if (blinking && SHUTS.has(pose.eyes)) pose = { ...pose, eyes: LIDS };
   if (probe.eyeless) pose = { ...pose, eyes: "none" };
   pose = fitted(pose, headroomOf(look), backroomOf(look));
+  // A step to the side stops where what it wears would leave the canvas.
+  const step = pose.x - REST.x;
+  if (step !== 0 && !probe.free) {
+    const room = stepRoomOf(look);
+    pose = { ...pose, x: REST.x + Math.sign(step) * Math.min(Math.abs(step), room) };
+  }
   const fabric = probe.bare ? undefined : fabricOf(look);
   const held = look.held === undefined ? undefined : TOOLS.get(look.held);
   const body = seated(
@@ -98,6 +107,50 @@ function composeFrame(
   const rows = compose(shown, [...worn, ...effects], probe.spill);
   // `reverse` on the copy: the phone runs this, and Hermes has no `toReversed`.
   return move.facing === "left" ? rows.map((row) => [...row].reverse().join("")) : rows;
+}
+
+/** A step to the side: two hero cells, which move the miniature one. */
+const STEP = 2;
+/** The lean a step is taken with, at most: a dance step leans the way it goes. */
+const STEP_LEAN = 2;
+const stepRooms = new Map<string, number>();
+
+/**
+ * How far a Cell wearing `wardrobe` can step to either side, in hero cells: a step (`STEP`)
+ * where stepping, leaning that way, pushes no more of what it wears off the canvas than the
+ * lean alone, at either size, either way; else none. Its own body may lose a column at the
+ * miniature, whose box it fills.
+ */
+function stepRoomOf(wardrobe: Wardrobe): number {
+  const key = JSON.stringify(wardrobe);
+  const known = stepRooms.get(key);
+  if (known !== undefined) return known;
+  /** Cells of what it wears that `pose` pushes off the canvas, at one size. */
+  const lost = (pose: Pose, compact: boolean) => {
+    const posed: Move = {
+      fps: 0,
+      facing: "right",
+      frames: [{ pose, layers: [], swaps: {} }],
+      meta: {},
+    };
+    const worn = { count: 0 };
+    const bare = { count: 0 };
+    composeFrame(posed, 0, wardrobe, compact, false, STILL, { spill: worn, free: true });
+    composeFrame(posed, 0, wardrobe, compact, false, STILL, {
+      bare: true,
+      spill: bare,
+      free: true,
+    });
+    return worn.count - bare.count;
+  };
+  const clips = [-1, 1].some((way) => {
+    const leaned = { ...REST, lean: way * STEP_LEAN };
+    const stepped = { ...leaned, x: REST.x + way * STEP };
+    return [false, true].some((compact) => lost(stepped, compact) > lost(leaned, compact));
+  });
+  const room = clips ? 0 : STEP;
+  stepRooms.set(key, room);
+  return room;
 }
 
 /** One frame at the miniature's size, with the hero art it stands for, at twice the density. */
@@ -481,10 +534,10 @@ const STATES: Readonly<Record<string, string>> = {
   yawn: "asleep",
 };
 
-/** The state scene `key` plays in (`building` for `building/0`, `happy` for `landed/keen`). */
+/** The state scene `key` plays in (`building` for `building/0`, `happy` for `landed/keen`), an act's its own. */
 export function stateOf(key: string): string {
   const first = key.split("/")[0]!;
-  return STATES[first] ?? first;
+  return SCENES.get(key)?.state ?? STATES[first] ?? first;
 }
 
 const scenes = new Map<string, CellScene>();
@@ -607,6 +660,50 @@ export function probeStill(look: CellLook, pose: Pose, compact: boolean): FrameP
     compact,
     pose.eyes,
   );
+}
+
+/**
+ * Whether scene `key` pushes anything `look` wears off the canvas at one size. Only the body's
+ * pose can: `seen` remembers each one measured, so a pose many scenes share (a rest, a squash)
+ * is drawn once, and a library of acts costs what its distinct poses do.
+ */
+export function spillsIn(
+  look: CellLook,
+  key: string,
+  compact: boolean,
+  seen: Map<string, boolean>,
+): boolean {
+  const play = playOf(look, key);
+  if (play === undefined) return false;
+  const { move, wardrobe } = play;
+  const folded = folding(move, wardrobe, play.pieces);
+  const moving = animatedOf(wardrobe);
+  const worn = JSON.stringify(wardrobe);
+  return folded.poses.some((index, i) => {
+    const frame = move.frames[index]!;
+    const beat = folded.beats[i]!;
+    // Which eyes and mouth are stamped on the body, and a mark is drawn bare too: neither
+    // moves what is worn. Where the face looks does: a lens rides the eyes.
+    const body = { ...frame.pose, eyes: "", mouth: "" };
+    const id = [
+      compact,
+      move.facing,
+      worn,
+      JSON.stringify([body, frame.swaps, frame.hidden ?? false]),
+      ...moving.map((piece) => frameAt(piece, beat)),
+    ].join("|");
+    let spills = seen.get(id);
+    if (spills === undefined) {
+      const posed: Move = { ...move, frames: [{ ...frame, layers: [] }] };
+      const dressed = { count: 0 };
+      const bare = { count: 0 };
+      composeFrame(posed, 0, wardrobe, compact, false, beat, { spill: dressed });
+      composeFrame(posed, 0, wardrobe, compact, false, beat, { bare: true, spill: bare });
+      spills = dressed.count > bare.count;
+      seen.set(id, spills);
+    }
+    return spills;
+  });
 }
 
 /** Every frame scene `key` shows in `look`, at the miniature (`compact`) or the hero, as the tools measure it. */

@@ -1,12 +1,20 @@
 import * as NodeAssert from "node:assert/strict";
 import { test } from "vite-plus/test";
+import { actFor, castFor, poke, resetActing, stand } from "./acting.ts";
 import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
 import { bodyOf, entering, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
-import { BODIES, PACKS } from "./kit.ts";
+import { BODIES, PACK_OUTFITS, PACKS, REST, TEMPERAMENTS } from "./kit.ts";
 import { BOX, MOODS } from "./look.ts";
-import { fidgetingFor, mannerOf, phaseOf } from "./manner.ts";
-import { type CellScene, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
+import {
+  FIDGET_WINDOW,
+  fidgetingFor,
+  generatedScene,
+  mannerOf,
+  phaseOf,
+  watchingKey,
+} from "./manner.ts";
+import { type CellScene, frameIn, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
 import { crop } from "./sprite.ts";
 
 const bare = packLook([]);
@@ -177,9 +185,17 @@ test("a moment is entered once: a landing seen late is joined in progress, a sen
   NodeAssert.deepEqual(entranceOf(rest, work, 7), { kind: "onIt", since: 7 });
   NodeAssert.deepEqual(entranceOf(pleased, work, 7), { kind: "onIt", since: 7 });
   NodeAssert.deepEqual(entranceOf({ mood: "needsYou", working: false }, work, 7), {
-    kind: "onIt",
+    kind: "answered",
     since: 7,
   });
+  NodeAssert.deepEqual(entranceOf({ mood: "needsApproval", working: false }, work, 7), {
+    kind: "granted",
+    since: 7,
+  });
+  const crashed = { mood: "crashed", working: false } as const;
+  NodeAssert.deepEqual(entranceOf(work, crashed, 7), { kind: "failed", since: 7 });
+  NodeAssert.equal(entranceOf(crashed, crashed, 8), undefined);
+  NodeAssert.equal(entranceOf(undefined, crashed, 8), undefined, "found failed, it just holds");
   NodeAssert.equal(entranceOf(work, work, 8), undefined);
   NodeAssert.equal(
     entranceOf({ mood: "meditating", working: true }, work, 8),
@@ -249,14 +265,18 @@ test("a rest is painted only when its pose changes: frames of one pose are one p
   }
 });
 
-test("a Cell at rest fidgets now and then, and only while the person is there", () => {
+test("a Cell at rest fidgets now and then with an act its temperament casts, and only while the person is there", () => {
   const name = "thread-0";
   const manner = mannerOf(name);
-  const fidget = sceneOf(bare, manner.fidget!)!;
   const rest = sceneOf(bare, `rest/${manner.id}`)!;
   let seconds = 0;
   while (fidgetingFor(name, seconds) === undefined) seconds += 1;
   const start = seconds - fidgetingFor(name, seconds)!;
+  const cast = castFor("fidget", name);
+  NodeAssert.ok(cast.includes(manner.fidget!), "its own fidget is one of them");
+  const key = actFor("fidget", name, Math.floor(start / FIDGET_WINDOW))!;
+  NodeAssert.ok(cast.includes(key));
+  const fidget = sceneOf(bare, key)!;
   const showing = { name, mood: "awake", activity: undefined } as const;
   const there = frameFor(bare, { ...showing, here: true }, start + 0.01);
   NodeAssert.ok(isFrame(fidget, 0, there), "its fidget's first frame");
@@ -265,4 +285,68 @@ test("a Cell at rest fidgets now and then, and only while the person is there", 
   const windows = Array.from({ length: 400 }, (_, w) => fidgetingFor(name, w * 90 + 89));
   const held = windows.filter((since) => since !== undefined).length;
   NodeAssert.ok(held > 50 && held < 150, `${held} of 400 windows hold a fidget`);
+});
+
+test("a poke's act plays over the Cell's state from its first frame, then hands back; a state that turns drops it", () => {
+  resetActing();
+  stand("poked", "awake", false);
+  const act = poke("poked", 1000)!;
+  const scene = sceneOf(bare, act.key)!;
+  const showing = { name: "poked", mood: "awake", activity: undefined } as const;
+  const plays = (frame: unknown, index: number) =>
+    frame === scene.mini[index] || frame === scene.shut?.mini[index];
+  for (const index of [0, Math.floor(scene.pass / 2), scene.pass - 1])
+    NodeAssert.ok(plays(frameFor(bare, showing, 1000 + (index + 0.5) / 12), index), `${index}`);
+  const rest = sceneOf(bare, `rest/${mannerOf("poked").id}`)!;
+  const after = frameFor(bare, showing, act.until + 0.01);
+  NodeAssert.ok(rest.mini.includes(after) || rest.shut?.mini.includes(after), "back at rest");
+  const asking = frameFor(bare, { ...showing, mood: "needsYou" }, 1000.1);
+  NodeAssert.equal(
+    frameFor(bare, showing, undefined),
+    rest.mini[rest.tell],
+    "Reduce Motion plays no act",
+  );
+  resetActing();
+  NodeAssert.equal(
+    asking,
+    frameFor(bare, { ...showing, mood: "needsYou" }, 1000.1),
+    "it asked by then: its plea played, as if never poked",
+  );
+});
+
+test("a resting Cell watches the person's pointer and looks nowhere else", () => {
+  const name = "watcher";
+  const manner = mannerOf(name);
+  const showing = { name, mood: "awake", activity: undefined, here: true } as const;
+  const right = sceneOf(bare, watchingKey(manner, { x: 1, y: 0 }))!;
+  const left = sceneOf(bare, watchingKey(manner, { x: -1, y: 0 }))!;
+  NodeAssert.notDeepEqual(right.mini[0]!.rows, left.mini[0]!.rows, "its eyes go where the hand is");
+  for (let seconds = 0; seconds < 40; seconds += 1.7) {
+    const frame = frameFor(bare, { ...showing, watching: { x: 1, y: 0 } }, seconds);
+    NodeAssert.ok(right.mini.includes(frame) || right.shut?.mini.includes(frame), `${seconds}`);
+  }
+  NodeAssert.equal(sceneOf(bare, `rest/${manner.id}@2,0`), undefined, "a step each way, no more");
+  for (const id of TEMPERAMENTS.keys()) {
+    const frames = generatedScene(`rest/${id}@1,-1`)!.frames;
+    NodeAssert.ok(
+      frames.every((frame) => frame.pose.look.x === 1 && frame.pose.look.y === -1),
+      `${id} looks at the hand the whole breath through`,
+    );
+  }
+});
+
+test("a step to the side is taken where there is room, and held where what the Cell wears would leave the canvas", () => {
+  const stepped = { ...REST, x: REST.x + 2 };
+  const rows = (look: typeof bare, pose: typeof REST) =>
+    frameIn(look, "idle", pose).rows.join("\n");
+  NodeAssert.notEqual(rows(bare, stepped), rows(bare, REST), "bare, it steps");
+  const looks = [...PACK_OUTFITS.keys()].map((id) => outfitLook(id)!);
+  const held = looks.filter((look) => rows(look, stepped) === rows(look, REST));
+  NodeAssert.ok(held.length > 0, "some look is too wide to step");
+  NodeAssert.ok(held.length < looks.length, "and a look with room steps too");
+  NodeAssert.equal(
+    rows(bare, { ...REST, x: REST.x + 6 }),
+    rows(bare, stepped),
+    "and never further than a step",
+  );
 });

@@ -364,6 +364,101 @@ every screen (`cell/looks.ts`, the reasons in `stemcells/tasks/cell-cast.md`):
   warns on it. Its other poses come from springs, not frames
   (`cell/toss.ts`).
 
+### An act: a score in `art/moves/<set>.json`
+
+An act is a move written as a **score**: a list of phrases, each carrying its
+craft once, so a new act is a few lines and moves well on every look. The kit
+expands it into frames at 12 a second (`cell/score.ts`) and plays it as the
+scene `act/<name>`. `cells acts <name>` draws it frame by frame; `cells render
+<look> act/<name>` animates it. The design: `stemcells/tasks/cell-acts.md`.
+
+```json
+{
+  "marks": {
+    "star": {
+      "about": "…",
+      "art": [".*.", "*W*", ".*."],
+      "hotspot": [1, 1],
+      "mini": ["*"],
+      "miniHotspot": [0, 0]
+    }
+  },
+  "acts": {
+    "jump": {
+      "about": "A jump with both arms up, dust where it lands.",
+      "score": [
+        { "do": "face", "look": [0, -1] },
+        { "do": "hold", "for": 2 },
+        { "do": "leap", "height": 6, "arms": "up", "tell": true },
+        { "do": "mark", "mark": "dust", "on": "land", "at": "ground", "for": 2 },
+        { "do": "rest" }
+      ]
+    }
+  },
+  "cues": { "poke/rest/2": ["jump"], "fidget": { "any": ["hop"], "keen": ["fidget/keen", "hop"] } }
+}
+```
+
+- **An act** has `about`, a `score`, and may have:
+  - `state`: the state it is drawn for, whose face it keeps: `rest` (the
+    default: any state with no face of its own), `ask` (`! !`, the `open`
+    eyes), `landed` (`^ ^`, `happy`), `asleep` (lids) or `crashed` (`x x`,
+    `dizzy`);
+  - `tier`: `rare` acts come up about one turn in five;
+  - `deaf`: pokes go unanswered while it plays;
+  - `loop`: it loops, where an act otherwise plays once;
+  - `encore`: a landed Cell plays it too, as `encore/<name>`: the same
+    score with `^ ^` wherever it shows a face.
+- **What persists.** `face` (`eyes`, `mouth`, `look`), `arms` (`left`,
+  `right`, or `arms` for both: a name below, or `null` to drop it) and `ease`
+  (`sy`, `spread`, `lean`, `shift`, `float`, `lift`, over `for` frames) set
+  what every later frame carries. An arm travels a frame out and a frame
+  home. `leftHolds` and `rightHolds` put a mark in the hand while its arm is
+  out. `rest` puts everything back.
+- **Arms** by name: `up`, `high`, `out`, `raised` (beside the crown, where a
+  hand has room to show), `low`, `hip`, `brow`. The body fills its box, so an
+  arm reads best above the shoulders.
+- **Phrases.** Any phrase takes `arms`, `left`, `right`, `eyes` and `mouth`
+  for its own frames only.
+
+  | Phrase   | What it plays                                                                               | Takes                                           |
+  | -------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+  | `hold`   | the pose as it is                                                                           | `for`                                           |
+  | `leap`   | a crouch, the launch, the rise, a hang, a faster fall, the landing squashed, the settle     | `height`, `hang`, `crouch`, `depth`, `settle`   |
+  | `bounce` | leaps one after another, each lower, each landing the next one's crouch                     | `height`, `times`, `decay`                      |
+  | `squash` | down to a height (or up, past 1), held, and home ringing                                    | `to`, `in`, `hold`, `spread`                    |
+  | `nod`    | the eyes down and the crown with them                                                       | `times`, `depth`, `per`                         |
+  | `shake`  | the face side to side                                                                       | `times`, `reach`, `per`                         |
+  | `sway`   | side to side on a beat: `bob` dips through the middle, `step` steps, `raise` lifts that arm | `reach`, `times`, `per`, `bob`, `step`, `raise` |
+  | `wobble` | unsteady: each swing smaller, the hat a beat behind                                         | `reach`, `times`, `per`, `decay`                |
+  | `spin`   | round on the spot, the back of its head on the far half                                     | `turns`, `per`, `dir`, `rise`                   |
+  | `turn`   | to the back of its head (`to: "back"`), or round to the `front`                             | `to`, `dir`, `for`                              |
+  | `shiver` | a quick tremble                                                                             | `for`, `reach`                                  |
+  | `wave`   | one arm between two places                                                                  | `side`, `a`, `b`, `times`, `per`                |
+  | `pose`   | a frame of your own over what is carried, when no phrase fits                               | `pose`, `for`                                   |
+  | `repeat` | its `steps`, `times` over                                                                   | `steps`, `times`                                |
+
+- **Marks** (`marks`, shared by every move file) are art with a hotspot and
+  a drawn miniature, never an anchor: the score places them.
+  - `mark` lays one over the next `for` frames `at` an anchor (`headTop`
+    unless told), `dx`, `dy` hero cells from it, moving `drift` every
+    `every` frames. `on: "land"` or `on: "apex"` starts it at the leap
+    before.
+  - `orbit` circles `count` of one round the head (`rx`, `ry`, `per`), in
+    front on the near half and behind on the far.
+- **`tell: true`** on one phrase names the frame Reduce Motion holds: a
+  leap's height, a spin's back, else the phrase's middle.
+- **Cues** say when an act plays. A cue's cast is a list for every Cell, or
+  one a temperament with `any` for the rest; an act goes by its bare name,
+  any other scene by its key (`fidget/keen`). Each Cell goes through its
+  cast in order from a place of its own. The cues a Cell is given are in
+  `cell/acting.ts` (`CUE_STATES`), each with the state its acts are drawn
+  for.
+- **A step to the side** (`shift`, a sway's `step`) is two hero cells at
+  most, which move the miniature one, and none at all for a look whose
+  pieces it would push off the canvas: a wide hat sways without stepping.
+  Keep a lean at 3 or under for the same reason.
+
 ### A temperament: `art/temperaments/<id>.json`
 
 How a Cell carries itself between moves. Each Cell is dealt one for life from
@@ -444,7 +539,13 @@ These hold on drawn art. On the original's art they are notes.
   - a drawn move has a `tell` that is one of its frames, keeps the beat
     (12, or 24 with `sound`), and hands back to a real scene;
   - a temperament's weight is above 0, its breath takes a second or more, its
-    blink fits its window, and its fidget and beats are scenes.
+    blink fits its window, and its fidget and beats are scenes;
+  - an act's score names phrases, arms and marks that exist; it shows only
+    its state's face (at rest, never `^ ^` or `! !`); it ends where its
+    state's scene picks up (standing at rest, in its state's eyes; a
+    sleeper's as it began); played once, it runs six seconds at most;
+  - a cue is one a Cell is given, its cast names scenes, and each act it
+    casts is drawn for the cue's state. An act no cue casts is a warning.
 - **The box.** A piece drawn here, worn alone at rest, keeps inside the
   miniature's footprint on the hero (26 × 28 from (3, 2)): the margin a 2×
   display draws past it is the original's, whose pieces reach there, drawn for

@@ -1,0 +1,714 @@
+{
+  "marks": {
+    "note": {
+      "about": "A musical note: a hum's, a whistle's.",
+      "art": ["..xx.", "..x.x", "..x..", "..x..", "xxx..", "xxx.."],
+      "hotspot": [2, 3],
+      "mini": [".xx", ".x.", ".x.", "xx."],
+      "miniHotspot": [1, 2]
+    },
+    "notes": {
+      "about": "Two notes on one beam.",
+      "art": [".xxxxx", ".x...x", ".x...x", "xx..xx", "xx..xx"],
+      "hotspot": [3, 2],
+      "mini": [".xxxx", ".x..x", ".x..x", "xx.xx"],
+      "miniHotspot": [2, 2]
+    },
+    "bigNote": {
+      "about": "One large note: a song's.",
+      "art": [
+        "...xxx.",
+        "...xxxx",
+        "...xx.x",
+        "...xx..",
+        "...xx..",
+        "...xx..",
+        ".xxxx..",
+        "xxxxx..",
+        "xxxxx..",
+        ".xxx..."
+      ],
+      "hotspot": [3, 5],
+      "mini": ["..xx", "..x.", "..x.", "xxx.", "xxx."],
+      "miniHotspot": [1, 3]
+    }
+  },
+  "acts": {
+    "bounce": {
+      "about": "Three hops in a row on the spot, each lower than the last.",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -2]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "bounce",
+          "height": 5,
+          "times": 3,
+          "decay": 0.6,
+          "tell": true
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "twirl": {
+      "about": "Two quick turns up on its toes with its arms out, and a wobble as it finds its feet.",
+      "encore": true,
+      "score": [
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9,
+            "spread": 0.3,
+            "face": -2
+          },
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "for": 1
+        },
+        {
+          "do": "spin",
+          "turns": 2,
+          "per": 6,
+          "arms": {
+            "at": 0.8,
+            "dx": 5,
+            "dy": -1
+          },
+          "tell": true
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "wide"
+        },
+        {
+          "do": "wobble",
+          "reach": 3,
+          "times": 2,
+          "per": 3,
+          "decay": 0.5
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "wiggle": {
+      "about": "A quick happy wiggle, low and fast, side to side.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "mouth": "smile"
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.4,
+          "for": 2,
+          "way": "out"
+        },
+        {
+          "do": "repeat",
+          "times": 3,
+          "tell": true,
+          "steps": [
+            {
+              "do": "pose",
+              "pose": {
+                "lean": 3
+              },
+              "for": 2
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "lean": -3
+              },
+              "for": 2
+            }
+          ]
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "shuffle": {
+      "about": "A sideways dance step: a hop out one way and back, a dip as it lands, the leading arm up, then the other way.",
+      "tier": "rare",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "look": [2, 0]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "right": "high"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": 2,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": 4,
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": 2,
+            "lean": -2
+          },
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": 0,
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [-2, 0]
+        },
+        {
+          "do": "arms",
+          "right": null,
+          "left": "high"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": -2,
+            "lean": -2
+          },
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": -4,
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": -2,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": 0,
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "arms",
+          "left": null
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "disco": {
+      "about": "The point: one arm to the sky and the hips the other way, held, then the other side, twice over.",
+      "tier": "rare",
+      "encore": true,
+      "score": [
+        {
+          "do": "repeat",
+          "times": 2,
+          "steps": [
+            {
+              "do": "face",
+              "look": [1, -1]
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "sy": 0.875,
+                "spread": 0.4
+              },
+              "for": 1
+            },
+            {
+              "do": "arms",
+              "left": null,
+              "right": {
+                "at": 0.8,
+                "dx": 5,
+                "dy": -6
+              }
+            },
+            {
+              "do": "ease",
+              "lean": 3,
+              "shift": -2,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 4,
+              "tell": true
+            },
+            {
+              "do": "face",
+              "look": [-1, -1]
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "sy": 0.875,
+                "spread": 0.4
+              },
+              "for": 1
+            },
+            {
+              "do": "arms",
+              "right": null,
+              "left": {
+                "at": 0.8,
+                "dx": 5,
+                "dy": -6
+              }
+            },
+            {
+              "do": "ease",
+              "lean": -3,
+              "shift": 2,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 4
+            }
+          ]
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "shift": 0,
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "bop": {
+      "about": "Bobs to a beat only it hears: down and up four times with its eyes shut, a note rising.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "note",
+          "at": "ground",
+          "dx": 11,
+          "dy": -18,
+          "drift": [0, -1],
+          "every": 3,
+          "for": 21
+        },
+        {
+          "do": "repeat",
+          "times": 4,
+          "tell": true,
+          "steps": [
+            {
+              "do": "pose",
+              "pose": {
+                "sy": 0.8,
+                "spread": 0.4
+              },
+              "for": 2
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "sy": 0.9375,
+                "spread": 0.1
+              },
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 2
+            }
+          ]
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "tune": {
+      "about": "Whistles a short tune: the pucker, three notes rising one after another, a small sway.",
+      "score": [
+        {
+          "do": "face",
+          "mouth": "whistle",
+          "look": [1, 0]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "note",
+          "at": "ground",
+          "dx": 11,
+          "dy": -12,
+          "drift": [0, -1.5],
+          "for": 9
+        },
+        {
+          "do": "ease",
+          "lean": 2,
+          "for": 7
+        },
+        {
+          "do": "mark",
+          "mark": "notes",
+          "at": "ground",
+          "dx": 9,
+          "dy": -16,
+          "drift": [0, -1.1],
+          "for": 9
+        },
+        {
+          "do": "ease",
+          "lean": -2,
+          "for": 7,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "note",
+          "at": "ground",
+          "dx": 11,
+          "dy": -12,
+          "drift": [0, -1.5],
+          "for": 9
+        },
+        {
+          "do": "ease",
+          "lean": 2,
+          "for": 6
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "for": 3
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "hum": {
+      "about": "Hums with its eyes shut, swaying slowly, one note over its shoulder.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "serene",
+          "mouth": "smile"
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "note",
+          "dx": 7,
+          "dy": -5,
+          "drift": [0, -1],
+          "every": 8,
+          "for": 25
+        },
+        {
+          "do": "sway",
+          "reach": 3,
+          "times": 1,
+          "per": 8,
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "sing": {
+      "about": "One big note: a breath in, then its mouth open and its arms out, a large note by its head that trembles as it holds.",
+      "tier": "rare",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "for": 5,
+          "way": "out"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "mouth": "open",
+          "eyes": "serene",
+          "look": [0, 0]
+        },
+        {
+          "do": "arms",
+          "arms": {
+            "at": 0.8,
+            "dx": 5,
+            "dy": -1
+          }
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0.5,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "bigNote",
+          "dx": 9,
+          "dy": -7,
+          "for": 11
+        },
+        {
+          "do": "hold",
+          "for": 3,
+          "tell": true
+        },
+        {
+          "do": "shiver",
+          "for": 6
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "mouth": "none",
+          "eyes": "calm"
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "ease",
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "squash",
+          "to": 0.9,
+          "in": 1,
+          "hold": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "stretch": {
+      "about": "A morning stretch: both arms up and taller, a lean each way, then it lets go and settles.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "arms",
+          "arms": "up",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 1.25,
+          "for": 4,
+          "way": "out"
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "ease",
+          "lean": 3,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "lean": -3,
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "squash",
+          "to": 0.9,
+          "in": 1,
+          "hold": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    }
+  }
+}

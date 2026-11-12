@@ -5,11 +5,12 @@
 // every Cell stands on one line; its picture reaches past the box by `MARGIN`, taking no room.
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { stand } from "./acting.ts";
 import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
 import { clockSeconds } from "./blink.ts";
 import { bodyOf, type Entrance, entering, frameFor, type Stance } from "./cast.ts";
-import { onStage, personHere } from "./clock.ts";
+import { onStage, personHere, watchingFrom } from "./clock.ts";
 import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./forming.ts";
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
@@ -57,6 +58,8 @@ export function CellFigure(props: {
   readonly landedAt?: number | null | undefined;
   /** Its forming as it starts (`forming.ts`): its box empty until the hand-off, then its blocks and its hop. */
   readonly forming?: Forming | undefined;
+  /** At rest it watches the person's pointer while it is near (`clock.ts`): the Cell over a composer. */
+  readonly watches?: boolean | undefined;
 }) {
   const { name, activity, strength } = props;
   const flexes = props.flexes ?? false;
@@ -64,6 +67,7 @@ export function CellFigure(props: {
   const removed = props.diff?.removed ?? false;
   const landedAt = props.landedAt ?? null;
   const formsAt = props.forming?.at;
+  const watches = props.watches ?? false;
   const [day] = useState(() => dayOf(new Date()));
   const mood = moodOf(props.mood);
   const worn = (props.look ?? lookOf(name, day)).join("+");
@@ -88,6 +92,7 @@ export function CellFigure(props: {
     const from = landing === null ? undefined : rising.current?.from;
     const formed = formsAt === undefined ? undefined : formedOf(look);
     const stance: Stance = { mood, working: activity !== undefined };
+    stand(name, mood, stance.working);
     const before = stood.current?.name === name ? stood.current : undefined;
     const entered =
       entering(
@@ -106,7 +111,18 @@ export function CellFigure(props: {
           : formingPart(Math.floor((seconds - formsAt) * BEAT), formed.hop.length);
       const played =
         part === undefined || formed === undefined
-          ? frameFor(look, { name, mood, activity, entrance: entered, here: personHere() }, seconds)
+          ? frameFor(
+              look,
+              {
+                name,
+                mood,
+                activity,
+                entrance: entered,
+                here: personHere(),
+                watching: watches && seconds !== undefined ? watchingFrom(element) : undefined,
+              },
+              seconds,
+            )
           : part.part === "empty"
             ? formed.before
             : part.part === "blocks"
@@ -139,6 +155,7 @@ export function CellFigure(props: {
     body,
     points,
     ground,
+    watches,
   ]);
   return (
     <span

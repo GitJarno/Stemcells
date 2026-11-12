@@ -33,9 +33,12 @@ import {
   MARGIN,
   type MiniFrame,
   type Mood,
+  performing,
   prepare,
   sceneFor,
   sceneOf,
+  stand,
+  standingOf,
   wornLook,
 } from "./kit";
 
@@ -161,6 +164,8 @@ export function CellFigure(props: {
     (stood?.name !== name || stood.mood !== drawn.mood || stood.working !== working)
   ) {
     const before = stood?.name === name ? stood : undefined;
+    // Where it stands, for a poke to be answered in (`acting.ts`).
+    stand(name, drawn.mood, working);
     const moment = entering(
       name,
       before,
@@ -178,7 +183,11 @@ export function CellFigure(props: {
       ? formingShown(formedOf(drawn.worn), props.formingFrom, seconds)
       : undefined;
     if (forming !== undefined) return forming;
-    return plays
+    // A poke is answered wherever the Cell is drawn, playing or held still.
+    const poked =
+      seconds !== undefined &&
+      performing(name, seconds, standingOf(drawn.mood, drawn.activity !== undefined)) !== undefined;
+    return plays || poked
       ? frameFor(look, { name, mood: drawn.mood, activity: drawn.activity, entrance }, seconds)
       : heldAt(sceneFor(look, drawn.mood, drawn.activity, 0), name, seconds, asksYou(drawn.mood));
   });

@@ -1,7 +1,9 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (composer-line.css), outside upstream's Tailwind entry. */
 import { CheckIcon, CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
-import { type CSSProperties, use, useLayoutEffect } from "react";
+import { type CSSProperties, use, useLayoutEffect, useRef } from "react";
 
+import { poke } from "../cell/acting";
+import { clockSeconds } from "../cell/blink";
 import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
 import { useCellStage } from "../needs/stream";
@@ -20,7 +22,9 @@ import { useNavigateToCell } from "../upstream/routes";
 import { useCellBranch } from "../upstream/checkout";
 import { useSettleCell } from "../upstream/settle";
 import { useCellPlace } from "../upstream/thread";
+import { reducedMotion } from "../tokens/motion";
 import { cn, ComposerBanner, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
+import { PICK_UP_DISTANCE } from "../windows/carry";
 import { startChatCarry } from "../windows/ChatCarry";
 import { useCellAway } from "../windows/CellThrow";
 import { LineEnv } from "./LineEnv";
@@ -53,6 +57,8 @@ export function CellComposerLine() {
   const away = useCellAway(cell?.threadId);
   const stage = useCellStage(cell?.draftId === null ? cell.threadId : null);
   const settle = useSettleCell();
+  /** Where the Cell was pressed: let go there, the press was a poke, not a carry. */
+  const pressed = useRef<{ x: number; y: number } | null>(null);
   const offered = env?.offered === true;
   // Where the menu offers a choice, a checkout on no branch reads as
   // upstream's picker reads it; elsewhere it names nothing.
@@ -102,7 +108,22 @@ export function CellComposerLine() {
           data-stemcells-chat-handle=""
           data-away={away || undefined}
           className="flex w-fit"
-          onPointerDown={(event) => startChatCarry(event, cell, "cell")}
+          onPointerDown={(event) => {
+            pressed.current = event.button === 0 ? { x: event.clientX, y: event.clientY } : null;
+            startChatCarry(event, cell, "cell");
+          }}
+          onPointerMove={(event) => {
+            // Once the hand has gone as far as a carry takes, the press is never a poke.
+            const press = pressed.current;
+            if (press === null) return;
+            if (Math.hypot(event.clientX - press.x, event.clientY - press.y) >= PICK_UP_DISTANCE)
+              pressed.current = null;
+          }}
+          onPointerUp={() => {
+            const press = pressed.current;
+            pressed.current = null;
+            if (press !== null && !reducedMotion()) poke(cell.threadId, clockSeconds());
+          }}
         >
           <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />
         </span>

@@ -251,6 +251,18 @@ vi.mock("../art.ts", () => {
     },
     ART_MOVES: {
       trial: {
+        acts: {
+          bow: { about: "A nod.", score: [{ do: "nod", times: 1, tell: true }, { do: "rest" }] },
+          grin: {
+            about: "A landing's face at rest, a phrase there isn't, and it never comes home.",
+            score: [{ do: "face", eyes: "happy" }, { do: "moonwalk" }, { do: "ease", lean: 2 }],
+          },
+        },
+        cues: {
+          "poke/rest": ["bow"],
+          "poke/asleep": ["bow", "ghost"],
+          "poke/nowhere": ["bow"],
+        },
         scenes: {
           idle: { fps: 1, facing: "right", tell: 0, frames: [{ pose: { eyes: "wide" } }] },
           "trial/0": {
@@ -454,6 +466,19 @@ describe("art drawn beside the kit", () => {
     ]);
     expect(rules("trial/0", "warn")).toEqual([]);
     expect(rules("temperament jumpy")).toEqual(["temperament"]);
+  });
+
+  it("holds an act to its score, its state's face and its way home, and a cue to its cast", () => {
+    expect(rules("act bow")).toEqual([]);
+    expect(rules("act grin")).toEqual(["ends", "face", "score", "tell"]);
+    expect(rules("act grin", "warn")).toEqual(["cue"]);
+    expect(about("cue poke/asleep").map((f) => f.detail)).toEqual([
+      "bow is drawn for rest, the cue is asleep (and 1 more)",
+    ]);
+    expect(about("cue poke/nowhere").map((f) => f.detail)).toEqual([
+      "no Cell is ever given this cue",
+    ]);
+    expect(about("cue poke/rest")).toEqual([]);
   });
 
   it("holds the cast to the Cells' names: a look for each, and one each", () => {
