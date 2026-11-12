@@ -50,7 +50,10 @@
   content: "";
   position: absolute;
   inset: calc(-1 * (var(--sc-halo-reach) + var(--sc-halo-fade)));
-  top: calc(anchor(--sc-dock-top top, 0px) - var(--sc-halo-reach) - var(--sc-halo-fade-top));
+  top: calc(
+    anchor(--sc-dock-ledge top, anchor(--sc-dock-box top, 0px)) - var(--sc-halo-reach) -
+      var(--sc-halo-fade-top)
+  );
   z-index: -1;
   background: color-mix(in srgb, var(--background) var(--sc-halo-strength), transparent);
   mask-image:
@@ -75,14 +78,16 @@
 /* The dock's top, where the halo's top stands: the ledge's top in a Cell's
    pane, and the box's own top (its banners and upstream's stash tab are
    inside it) where no ledge shows: Aski's perch and a pane with no line.
-   A halo finds only the anchor inside its own block, so each pane's finds
-   its own. The box stands in a wrapper of upstream's inside the block. */
-[data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge,
-[data-stemcells-pane]
-  [data-chat-composer-stack="true"]
-  > :not(:has(.composer-line-ledge))
-  [data-slot="composer-shell"] {
-  anchor-name: --sc-dock-top;
+   A halo finds only the anchors inside its own block, so each pane's finds
+   its own. Two names, the ledge's asked for first: one name, kept off the
+   box by a `:has()` for the ledge, ran that `:has()` on every ancestor of
+   every box, and any change anywhere restyled the whole page
+   (`restyle.test.ts`). */
+[data-stemcells-pane] [data-stemcells-composer-line] .composer-line-ledge {
+  anchor-name: --sc-dock-ledge;
+}
+[data-stemcells-pane] [data-chat-composer-stack="true"] [data-slot="composer-shell"] {
+  anchor-name: --sc-dock-box;
 }
 
 /* The halo reaches past the pane's foot, and upstream lets the chat's
