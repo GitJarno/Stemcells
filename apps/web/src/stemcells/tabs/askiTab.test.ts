@@ -10,6 +10,7 @@ import {
   seatAski,
   splitDownOutsideAski,
   splitRightOutsideAski,
+  withoutAski,
 } from "./askiTab";
 import {
   activeTab,
@@ -155,6 +156,15 @@ describe("Aski's tab", () => {
   it("is kept with the layout", () => {
     const seated = seatAski(withCells("a"), aski, ids());
     expect(parseWorkspace(JSON.parse(JSON.stringify(serializeWorkspace(seated))))).toEqual(seated);
+  });
+
+  it("leaves when turned off, handing the front to the first Cell's tab and keeping the rest", () => {
+    const cells = withCells("a", "b");
+    const seated = seatAski(cells, aski, ids());
+    expect(withoutAski(seated)).toEqual({ tabs: cells.tabs, activeTabId: cells.tabs[0]!.id });
+    const onB = { ...seated, activeTabId: cells.tabs[1]!.id };
+    expect(withoutAski(onB).activeTabId).toBe(cells.tabs[1]!.id);
+    expect(withoutAski(cells)).toBe(cells);
   });
 });
 

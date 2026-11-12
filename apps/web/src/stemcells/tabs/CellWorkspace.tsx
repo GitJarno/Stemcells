@@ -17,6 +17,7 @@ import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
 import { showAskiStays } from "../aski/stays";
+import { useAskiTabOn } from "../aski/tabSwitch";
 import { showMarksWhileScrolling } from "../scrollIndicator/scrollIndicator";
 import { growSides } from "../split/grow";
 import { Separator, type Axis } from "../split/Separator";
@@ -45,6 +46,7 @@ import { keepLeft, leaveSlate, settlesOnClose, type Left } from "./settled";
 import {
   addPaneOutsideAski,
   ASKI_TAB_ID,
+  withoutAski,
   closeTabUnlessAski,
   isAskiTab,
   moveTabAfterAski,
@@ -142,6 +144,12 @@ export function CellWorkspace(props: {
   const focused = focusedPane(workspace);
   const focusedPresence = useCellPresence(focused?.cell ?? null);
   const [askiChat, setAskiChat] = useState<AskiChat>({ status: "starting" });
+  // Aski's tab is the person's to turn on (Settings › Aski); off, it leaves the strip.
+  const askiOn = useAskiTabOn();
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- The switch lives in local storage, outside the workspace store: off, Aski's stored tab goes.
+  useEffect(() => {
+    if (!askiOn) updateWorkspace(withoutAski);
+  }, [askiOn]);
   // A swipe grants no user activation the way a click or a key does, so it
   // is counted here: either means the person has acted since the app opened.
   const swiped = useRef(false);
@@ -428,13 +436,13 @@ export function CellWorkspace(props: {
 
   // On the index route Aski's chat is on its way: the grid waits for it
   // rather than letting upstream's index start a draft beside it.
-  const askiOnTheWay = isIndexRoute && askiChat.status === "starting" && tab === null;
+  const askiOnTheWay = askiOn && isIndexRoute && askiChat.status === "starting" && tab === null;
   const keepGrid =
     isIndexRoute && ((tab !== null && focusedPresence.liveness !== "gone") || askiOnTheWay);
   const keeper = (
     <>
-      <AskiKeeper onChat={onAskiChat} />
-      <AskiMomentWatch aski={askiChat.status === "ready" ? askiChat.cell : null} />
+      {askiOn ? <AskiKeeper onChat={onAskiChat} /> : null}
+      <AskiMomentWatch aski={askiOn && askiChat.status === "ready" ? askiChat.cell : null} />
       <AskiSpawn />
       <WindowsKeeper onMoved={routeToFocused} onFocusPane={focusPaneAndRoute} />
       <SettledComeBack rowWidth={gridWidth} />
@@ -458,13 +466,13 @@ export function CellWorkspace(props: {
   const routeOwnerId =
     props.target === null ? null : (routeHolder?.pane.id ?? (routeIsNew ? focused?.id : null));
 
-  const askiTab = workspace.tabs.find(isAskiTab) ?? null;
+  const askiTab = askiOn ? (workspace.tabs.find(isAskiTab) ?? null) : null;
   const cellTabs = askiTab
     ? workspace.tabs.filter((candidate) => candidate !== askiTab)
     : workspace.tabs;
   // Aski's page is first in every window. Held by another, it shows Aski's
   // chat as it stands there, and turning to it brings Aski here.
-  const askiVisiting = askiTab === null ? askiAway : null;
+  const askiVisiting = askiOn && askiTab === null ? askiAway : null;
   const askiShown = askiTab ?? askiVisiting;
   const stageId = askiVisiting && askiComing ? ASKI_TAB_ID : workspace.activeTabId;
   // The new Cell's page is the strip's last, taken or not.
@@ -491,11 +499,15 @@ export function CellWorkspace(props: {
         <TabStrip
           tabs={cellTabs}
           activeTabId={stageId}
-          aski={{
-            active: askiShown !== null && stageId === ASKI_TAB_ID,
-            cell: askiShown ? (panesOf(askiShown)[0]?.cell ?? null) : null,
-            chat: askiChat,
-          }}
+          aski={
+            askiOn
+              ? {
+                  active: askiShown !== null && stageId === ASKI_TAB_ID,
+                  cell: askiShown ? (panesOf(askiShown)[0]?.cell ?? null) : null,
+                  chat: askiChat,
+                }
+              : null
+          }
           newCell={newCell ? { tab: newCellTab(newCell), taken: newCellIsTaken } : null}
           newTabRef={newTabRef}
           windowTabs={workspace.tabs.length}
