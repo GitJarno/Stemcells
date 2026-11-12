@@ -1,0 +1,20 @@
+/* Upstream's picture of a folder over the column (`SidebarFolderDrop`, the
+   column's next sibling) in our tokens: a sheet over the column, its edge a
+   hairline, never the accent. It lights and goes out with the hand, no motion.
+   The rail is too narrow for its words; its glyph stays. */
+:is([data-stemcells-cells], [data-stemcells-rail]) + [aria-hidden] {
+  inset: 0.375rem;
+  border: 1px solid color-mix(in srgb, var(--sc-text) 42%, transparent);
+  border-radius: var(--sc-radius-card);
+  background: color-mix(in srgb, var(--sc-wash) 92%, transparent);
+  box-shadow: none;
+  color: var(--sc-text);
+  font-family: var(--sc-font-ui);
+}
+:is([data-stemcells-cells], [data-stemcells-rail]) + [aria-hidden] > svg {
+  color: var(--sc-dim);
+}
+[data-stemcells-rail] + [aria-hidden] {
+  inset-inline: 0.25rem;
+  font-size: 0;
+}

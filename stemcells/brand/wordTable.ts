@@ -175,6 +175,10 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     whole("What should we work on?", CASUAL_CHAT.headline),
   ),
   ...inFile(
+    "apps/web/src/components/sidebar/SidebarFolderDrop.tsx",
+    within('description: "Drop files on a thread to attach them."', "thread", CELL.one),
+  ),
+  ...inFile(
     `${CHAT}/ProviderSubagentBar.tsx`,
     within("`${modelDescription} subagent: ${announcement}`", "subagent", SUBCELL.one),
   ),

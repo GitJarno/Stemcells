@@ -1,6 +1,7 @@
 import { ChevronsLeftIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { SidebarFolderDrop } from "../upstream/folderDrop";
 import {
   SidebarMenuButton,
   SidebarMenuItem,
@@ -22,11 +23,13 @@ import "../scrollbars/scrollbars.css";
 import "../pages/frame.css";
 // How a reply reads, in every chat.
 import "../transcript/reply.css";
+import "./folderDrop.css";
 
 /**
  * Upstream's sidebar slot: the Cells' column, the rail, or upstream's list
  * (`wide`) when the person chose it. A phone width gets upstream's, which
- * is a sheet there.
+ * is a sheet there. A folder dropped on any of them is added as a project:
+ * upstream's list carries its own drop zone, ours stand in the same one.
  */
 export function LeftColumn(props: { wide: ReactNode }) {
   // App-wide, as the column is: the zoom level shows on every page.
@@ -36,7 +39,11 @@ export function LeftColumn(props: { wide: ReactNode }) {
   // An update the person asked for carries on whichever column shows.
   const wanted = useUpdateWanted((store) => store.wanted);
   const column =
-    isMobile || width === "list" ? props.wide : width === "rail" ? <Rail /> : <Cells />;
+    isMobile || width === "list" ? (
+      props.wide
+    ) : (
+      <SidebarFolderDrop>{width === "rail" ? <Rail /> : <Cells />}</SidebarFolderDrop>
+    );
   return (
     <>
       {wanted ? <UpdateDriver /> : null}
