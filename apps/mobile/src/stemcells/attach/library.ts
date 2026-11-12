@@ -1,5 +1,5 @@
-// The phone's photo library, for Add to Chat: access, the newest photos, and a picked photo as
-// T3's picker hands one over (`staged.ts`). T3 never asks for the library; the card asks when
+// The phone's photo library, for Add to Chat: access, the newest photos and videos, and a picked
+// one as T3's picker hands it over (`staged.ts`). T3 never asks for the library; the card asks when
 // it first opens. A build made before the library's module was added has none, and keeps T3's
 // own menu.
 
@@ -7,13 +7,28 @@ import { requireOptionalNativeModule } from "expo";
 import type { ImagePickerAsset } from "expo-image-picker";
 import { Platform } from "react-native";
 
-import { imageMimeType } from "../upstream/attach";
+import {
+  imageMimeType,
+  PROVIDER_SEND_TURN_MAX_FILE_BYTES,
+  videoMimeType,
+} from "../upstream/attach";
+import { blankPlaces, moovIn } from "./placeless";
 
 /** Whether this build can show the library: iOS, with the module built in. */
 export const hasLibrary =
   Platform.OS === "ios" && requireOptionalNativeModule("ExpoMediaLibraryNext") !== null;
 
 const library = () => import("expo-media-library");
+
+/** One of the library's photos or videos. */
+export interface Shot {
+  readonly id: string;
+  /** A video's length, ms; null for a photo. */
+  readonly videoMs: number | null;
+}
+
+/** Where a video's placeless copy waits until T3 has taken its own. */
+const COPIES = "stemcells-attach";
 
 /** How much of the library we may see: all of it, the photos the person chose, none, or not asked yet. */
 export type Access = "all" | "limited" | "none" | "unasked";
@@ -30,16 +45,19 @@ export async function accessTo(ask: boolean): Promise<Access> {
   return response.accessPrivileges === "limited" ? "limited" : "all";
 }
 
-/** The ids of the library's photos, newest first, from `offset`. */
-export async function photosFrom(offset: number, count: number): Promise<string[]> {
+/** The library's photos and videos, newest first, from `offset`. */
+export async function shotsFrom(offset: number, count: number): Promise<Shot[]> {
   const { AssetField, MediaType, Query } = await library();
-  const photos = await new Query()
-    .eq(AssetField.MEDIA_TYPE, MediaType.IMAGE)
+  const shots = await new Query()
+    .within(AssetField.MEDIA_TYPE, [MediaType.IMAGE, MediaType.VIDEO])
     .orderBy({ key: AssetField.CREATION_TIME, ascending: false })
     .offset(offset)
     .limit(count)
-    .exe();
-  return photos.map((photo) => photo.id);
+    .exeForMetadata();
+  return shots.map((shot) => ({
+    id: shot.id,
+    videoMs: shot.mediaType === MediaType.VIDEO ? (shot.duration ?? 0) : null,
+  }));
 }
 
 /** Under limited access: the system's sheet for the person to choose more photos; the library says when they have (`onLibraryChange`). */
@@ -62,14 +80,25 @@ export function onLibraryChange(changed: () => void): () => void {
 }
 
 /**
- * The photo of `id` as T3's picker hands one over: its file as Photos shows it, edits and all,
- * from iCloud when it must be. T3 redraws a HEIC as a JPEG, which drops its metadata, but sends
- * a JPEG's own bytes, EXIF and all. So a JPEG is redrawn here too: unlike the system's picker,
- * this card can't let the person leave out where it was taken.
+ * `id` as T3's picker hands it over, as Photos shows it, from iCloud if need be. Unlike the
+ * system's picker, the card can't let the person leave out where it was taken, so it never
+ * sends it: a JPEG is redrawn (T3 sends one's EXIF; it redraws a HEIC), a video goes placeless.
  */
-export async function photoOf(id: string): Promise<ImagePickerAsset> {
-  const { Asset } = await library();
+export async function shotOf(id: string): Promise<ImagePickerAsset> {
+  const { Asset, MediaType } = await library();
   const info = await new Asset(id).getInfo();
+  if (info.mediaType === MediaType.VIDEO) {
+    return {
+      assetId: id,
+      type: "video",
+      uri: await placelessCopy(id, info.uri, info.filename),
+      fileName: info.filename,
+      mimeType: videoMimeType({ name: info.uri, mimeType: "" }) ?? undefined,
+      width: info.width,
+      height: info.height,
+      duration: info.duration,
+    };
+  }
   // The file's own name: an edited photo is its render (`FullSizeRender.jpg`), not its original.
   const mimeType = imageMimeType({ name: info.uri, mimeType: "" }) ?? undefined;
   const picked = {
@@ -88,4 +117,43 @@ export async function photoOf(id: string): Promise<ImagePickerAsset> {
   } finally {
     image.release();
   }
+}
+
+/**
+ * A copy of the video at `uri` without where it was filmed (`placeless.ts`). One past what T3
+ * takes goes as it is: T3 refuses it before it reads a byte.
+ */
+async function placelessCopy(id: string, uri: string, name: string): Promise<string> {
+  const { Directory, File, FileMode, Paths } = await import("expo-file-system");
+  const video = new File(uri);
+  if ((video.size ?? 0) > PROVIDER_SEND_TURN_MAX_FILE_BYTES) return uri;
+  const copies = new Directory(Paths.cache, COPIES);
+  copies.create({ idempotent: true, intermediates: true });
+  const copy = new File(copies, `${id}-${name}`.replace(/[^\w.-]/g, "-"));
+  if (copy.exists) copy.delete();
+  await video.copy(copy);
+  const handle = copy.open(FileMode.ReadWrite);
+  try {
+    const read = async (at: number, length: number) => {
+      handle.offset = at;
+      return handle.readBytes(length);
+    };
+    const moov = await moovIn(copy.size ?? 0, read);
+    if (moov === null) throw new Error(`Couldn't read '${name}' as a video.`);
+    const box = await read(moov.at, moov.length);
+    if (blankPlaces(box) > 0) {
+      handle.offset = moov.at;
+      await handle.writeBytes(box);
+    }
+  } finally {
+    handle.close();
+  }
+  return copy.uri;
+}
+
+/** Lets go of the videos' copies once T3 has taken its own. */
+export async function forgetCopies(): Promise<void> {
+  const { Directory, Paths } = await import("expo-file-system");
+  const copies = new Directory(Paths.cache, COPIES);
+  if (copies.exists) copies.delete();
 }
