@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { KEEP_VISITED, mountedTabs, releaseVelocity, visit } from "./pager";
+import { keep, KEEP_VISITED, MOUNTED_MOST, releaseVelocity, settle, visit } from "./pager";
 
 describe("a slide's first speed", () => {
   it("sets off at the strip's speed, as a share of the move, toward the target", () => {
@@ -20,33 +20,59 @@ describe("a slide's first speed", () => {
 });
 
 describe("which pages stay mounted", () => {
-  const tabs = ["a", "b", "c", "d", "e", "f", "g"];
+  const tabs = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"];
+  const sorted = (ids: readonly string[]) => ids.toSorted();
 
-  it("the active page and two either side", () => {
-    expect(mountedTabs(tabs, "d", "d", ["d"])).toEqual(["b", "c", "d", "e", "f"]);
-    expect(mountedTabs(tabs, "a", "a", ["a"])).toEqual(["a", "b", "c"]);
+  it("keeps the active page and two either side", () => {
+    expect(sorted(keep([], tabs, "d", ["d"]))).toEqual(["b", "c", "d", "e", "f"]);
+    expect(sorted(keep([], tabs, "a", ["a"]))).toEqual(["a", "b", "c"]);
   });
 
   it("and the last few visited, so a swipe back finds them as they were", () => {
-    expect(mountedTabs(tabs, "g", "g", ["g", "a", "d"])).toEqual(["a", "d", "e", "f", "g"]);
+    expect(sorted(keep([], tabs, "n", ["n", "a", "g"]))).toEqual(["a", "g", "l", "m", "n"]);
   });
 
-  it("the active page at once; its new neighbours once the turn has settled in", () => {
-    expect(mountedTabs(tabs, "e", "d", ["e", "d"])).toEqual(["b", "c", "d", "e", "f"]);
+  // Each turn between two tabs used to mount the page two past the one arrived at and unmount
+  // the one two past the other: seconds of work for a turn that showed nothing new.
+  it("mounts and unmounts nothing going back and forth between tabs", () => {
+    let kept = keep([], tabs, "e", ["e"]);
+    kept = keep(kept, tabs, "f", ["f", "e"]);
+    const there = sorted(kept);
+    for (const [active, visited] of [
+      ["e", ["e", "f"]],
+      ["f", ["f", "e"]],
+      ["e", ["e", "f"]],
+    ] as const) {
+      kept = keep(kept, tabs, active, visited);
+      expect(sorted(kept)).toEqual(there);
+    }
   });
 
-  // The pages that become a turn's neighbours mount after it, in a render a
-  // busy stream can hold back; a second swipe can set off before then.
-  it("every page a second swipe can reach before the first has settled in", () => {
-    const beside = (at: number) =>
-      [at - 1, at + 1].filter((page) => page >= 0 && page < tabs.length);
-    tabs.forEach((settled, at) => {
-      for (const heading of beside(at)) {
-        expect(mountedTabs(tabs, tabs[heading]!, settled, [settled])).toEqual(
-          expect.arrayContaining(beside(heading).map((page) => tabs[page])),
-        );
-      }
-    });
+  it("drops the pages wanted least once there are too many", () => {
+    let kept: string[] = [];
+    let visited: string[] = [];
+    for (const active of ["a", "f", "k", "n"]) {
+      visited = visit(visited, active, tabs);
+      kept = keep(kept, tabs, active, visited);
+    }
+    expect(kept).toHaveLength(MOUNTED_MOST);
+    // The page on stage, the pages beside it and every page visited are among them.
+    expect(kept).toEqual(expect.arrayContaining(["n", "m", "l", "k", "f", "a"]));
+  });
+
+  it("forgets a tab that is gone", () => {
+    expect(keep(["a", "b", "c"], ["a", "c"], "a", ["a", "b"])).toEqual(["a", "c"]);
+  });
+
+  it("lets the kept pages in one at a time, the most wanted first", () => {
+    const kept = keep(["d"], tabs, "d", ["d"]);
+    expect(settle(["d"], kept)).toEqual(["d", "c"]);
+    expect(settle(["d", "c"], kept)).toEqual(["d", "c", "e"]);
+    expect(settle(kept, kept)).toEqual(kept);
+  });
+
+  it("takes out the pages no longer kept before it lets another in", () => {
+    expect(settle(["a", "x", "d"], ["d", "c", "a"])).toEqual(["a", "d"]);
   });
 
   it("the visited list keeps the most recent few, of tabs that still exist", () => {
@@ -54,9 +80,5 @@ describe("which pages stay mounted", () => {
     for (const id of ["a", "b", "c", "d", "e", "b"]) visited = visit(visited, id, tabs);
     expect(visited).toEqual(["b", "e", "d", "c"].slice(0, KEEP_VISITED));
     expect(visit(visited, "c", ["b", "c"])).toEqual(["c", "b"]);
-  });
-
-  it("orders pages by id, so one joining never moves another in the document", () => {
-    expect(mountedTabs(["z", "m", "a"], "m", "m", ["m"])).toEqual(["a", "m", "z"]);
   });
 });

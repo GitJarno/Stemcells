@@ -29,6 +29,8 @@ export function TabPager(props: {
   newTabRef?: RefObject<HTMLElement | null>;
   /** The pages started moving, or came to rest (`data-moving`). */
   onMotion?: (moving: boolean) => void;
+  /** The page the strip is headed for, as a swipe aims at it and before it lands. */
+  onAim?: (tabId: string) => void;
   /** A `PagerPage` for each tab whose page is mounted, the active one among them. */
   children: ReactNode;
 }) {
@@ -46,6 +48,7 @@ export function TabPager(props: {
 
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the strip this render's tabs and callbacks before paint.
   useLayoutEffect(() => {
+    strip.aimed(props.onAim ?? NO_AIM);
     strip.sync(props.tabIds, props.activeId, props.onTurn, {
       id: props.newCellId ?? NO_NEW_CELL.id,
       tab: props.newTabRef ?? NO_NEW_CELL.tab,
@@ -65,6 +68,8 @@ export function TabPager(props: {
     </div>
   );
 }
+
+const NO_AIM = () => undefined;
 
 const PageStripContext = createContext<PageStrip | null>(null);
 

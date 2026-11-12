@@ -32,13 +32,24 @@ the two seconds after.
   DevTools protocol, the same in every run. The Mac's own load average is
   beside each run: other work kept it between 13 and 48.
 
+The rig is `stemcells/lab/turns/`. `lab-up.sh <repo> <port>` makes the lab
+home and starts the server on the built web app (`vp build` in `apps/web`
+first); `transcript.py` writes the long Replay transcript and `chats.sh`
+starts the chats; `table.sh <repo> <name>` measures the four cases,
+`stream.sh <repo> send <line>...` sets chats streaming under them, and
+`behave.mjs <repo>` checks what a turn must leave true: the tab lit, one
+page on stage and only it taking input, the caret in its composer, the
+address on its chat, by a click, a cold tab, quick clicks and a swipe.
+
 ## Plan
 
 - [x] The rig, the baseline, a profile and a timeline of one turn
 - [x] The whole page restyled at every change: one selector of ours
-- [ ] What a turn still asks of the main thread, one cause at a time
-- [ ] The rig in the repository, the same table after, one pass in the
-      real app
+- [x] What a turn still asks of the main thread, one cause at a time
+- [x] The rig in the repository, the same table after
+- [ ] A tab never mounted: its page mounts in one long task
+- [x] The same turns with chats streaming
+- [ ] One pass in the desktop app
 
 ## What the baseline showed
 
@@ -118,4 +129,115 @@ box's top where the ledge is gone (measured in the lab page both ways).
 It was never only tabs. A word streaming into a chat, a tooltip, a key in
 the composer each added an element and paid the same pass.
 
+## A turn in two steps
+
+After the restyle, a click still did everything in one render before the
+tab lit: the strip, both pages changing hands, the pages a turn brings in,
+and the route, which renders every mounted chat. Slowed, 384 ms to light.
+
+- **The tab lights and the strip moves in the click's own render; the
+  stage changes hands once that has drawn.** Which page takes input, focus
+  and the keys is a state of its own (`stagedTabId`), set after the paint.
+- **The route follows the hand-over, a frame after the chat took focus.**
+  A route change renders every mounted chat (upstream's `ChatView` reads
+  the location), and before the focus frame it held the caret back 250 ms.
+- **A swipe's tab lights when the swipe is headed there**, not when its
+  page has landed: the strip already says where it is headed (`onAim`).
+- **Pages stay mounted by use, not by distance.** Two tabs either side
+  were kept and the rest unmounted, so going between two tabs three apart
+  mounted and unmounted pages at every turn. Now up to ten stay: the
+  neighbours, the last visited, and what was there (`keep`).
+- **A page nobody asked for mounts when the hands are still** (`still.ts`):
+  the page idle and 600 ms since a key, a press or a scroll, one page at a
+  time (`settle`). The page turned to mounts with the hand-over.
+- **A render that moved nothing reads nothing from the strip.** `sync` ran
+  after every render of the workspace and asked a sliding strip where it
+  was: a style pass each time.
+- **Only the fingers aim the strip.** The browser's word on where a scroll
+  will snap was taken from any scroll, so a field scrolling the proxy to
+  show itself could turn the tab (a test failed on it once in eight runs
+  under load). Now pinned: `TabPager.browser.test.tsx`.
+
+### Not a transition
+
+The first cut handed the stage over with `useDeferredValue` and let pages
+in with `startTransition`. Quiet, it measured well. With six chats
+streaming and the page slowed, the tab lit in 32 ms and its page took the
+stage 6 s later, 15 s at p95: React drops a transition's render for every
+urgent one and starts it over, a streaming chat is an urgent render every
+30 ms, and the hand-over got through only when React forced it after five
+seconds. A page let in the same way would have rendered again and again
+for as long.
+
+So both are plain updates. The hand-over runs after the paint in a task
+the browser puts ahead of those waiting (`afterPaint.ts`,
+`scheduler.postTask`), and renders there and then: as a plain task it
+still waited a second behind the chats' renders.
+
+### The same turns after
+
+8 each, median / p95, main's in brackets where it was measured.
+
+|                         | near, quiet | near, slowed    | far, quiet | far, slowed      |
+| ----------------------- | ----------- | --------------- | ---------- | ---------------- |
+| The tab lit             | 3 / 5 (77)  | 14 / 16 (384)   | 3 / 20     | 17 / 126 (946)   |
+| The first frame after   | 40 / 40     | 88 / 88 (624)   | 40 / 64    | 104 / 216        |
+| The caret in its chat   | 85 / 104    | 394 / 448 (553) | 148 / 178  | 804 / 970 (1192) |
+| Main thread held after  | 68 / 122    | 665 / 972       | 422 / 525  | 1689 / 1959      |
+| The longest single hold | 68 / 86     | 336 / 390       | 148 / 190  | 717 / 1044       |
+| The Mac's load average  | 48          | 39              | 29         | 23               |
+
+With six chats streaming a long turn each (`stream.sh`, on a transcript
+from `transcript.py <file> 0 30`), between two mounted tabs, main and this
+build one after the other:
+
+|                       | quiet, main | quiet, now | slowed, main | slowed, now |
+| --------------------- | ----------- | ---------- | ------------ | ----------- |
+| The tab lit           | 85 / 89     | 3 / 10     | 491 / 552    | 32 / 36     |
+| The first frame after | 168 / 184   | 48 / 72    | 768 / 856    | 144 / 168   |
+| The caret in its chat | 126 / 132   | 117 / 129  | 692 / 776    | 773 / 914   |
+| The longest hold      | 234 / 244   | 97 / 249   | 706 / 786    | 677 / 812   |
+| The Mac's load        | 68          | 98         | 75           | 94          |
+
+The slide itself runs on the compositor from the first frame. The rig's
+"page moved" reads the strip's place on the main thread, which the
+hand-over now holds right after that frame, so the first frame is the row
+to read.
+
+What is left in a turn between mounted tabs is the hand-over itself:
+`inert` leaving one page and taking the other restyles both (about 50 ms
+quiet), then React's render and the focus. `inert` stays: it is what keeps
+a hidden page out of select-all, the tab order and a screen reader.
+
 ## Review
+
+The bar asked for a lit tab and a moving page within 100 ms at p95 under
+load, and typing within 200 ms.
+
+- Lit and moving: met. Slowed to a quarter, 16 ms and 88 ms at p95, from
+  500 and 850; with six chats streaming as well, 36 and 168.
+- Typing: met quiet (104 ms), not slowed (448 ms, from 553), and with
+  chats streaming it is where it was (773 ms against 692).
+- A tab never mounted lights at once and its page still mounts in one
+  task: 150 ms quiet, 700 ms slowed. With ten tabs or fewer every page is
+  mounted after a still moment, so this is the eleventh tab on, and the
+  first turn after a reload.
+- From the baseline, a turn next door held the page 2953 ms and now holds
+  it 68; slowed, 10574 and now 665.
+
+Not done: the cold page's mount (the plan's next line), and a pass in the
+desktop app. And one thing given up: a page beside the stage used to
+mount in the turn's own render, and now waits for still hands, so a swipe
+in the first second after a reload, or along more than ten tabs, slides a
+bare page in and fills it as it lands.
+
+What I'd keep:
+
+- Measure in the built app. The dev build renders several times slower
+  and hid the restyle behind React's own cost.
+- A style cost has no stack. The profile said "recalculate style" under
+  whatever asked a question first; only the timeline's element counts said
+  the whole page was in it.
+- Measure with the page doing what it does all day. The transition design
+  passed every quiet run and a review, and handed the stage over ten
+  times later than main the first time chats streamed under it.

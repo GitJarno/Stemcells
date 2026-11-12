@@ -10,10 +10,19 @@ import { PagerPage, TabPager } from "./TabPager";
 const TABS = ["one", "two", "three", "four"];
 const WIDTH = 400;
 
-function Pages(props: { activeId: string; onTurn: (tabId: string) => void }) {
+function Pages(props: {
+  activeId: string;
+  onTurn: (tabId: string) => void;
+  onAim?: (tabId: string) => void;
+}) {
   return (
     <div style={{ position: "relative", width: WIDTH, height: 300 }}>
-      <TabPager tabIds={TABS} activeId={props.activeId} onTurn={props.onTurn}>
+      <TabPager
+        tabIds={TABS}
+        activeId={props.activeId}
+        onTurn={props.onTurn}
+        {...(props.onAim ? { onAim: props.onAim } : {})}
+      >
         {TABS.map((tabId) => (
           <PagerPage key={tabId} tabId={tabId} onStage={tabId === props.activeId}>
             {tabId}
@@ -93,6 +102,16 @@ describe("TabPager's swipe", () => {
     expect(onTurn).toHaveBeenCalledTimes(1);
   });
 
+  it("says which page it is headed for before it turns there, so its tab can light", async () => {
+    const onTurn = vi.fn();
+    const onAim = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} onAim={onAim} />);
+    swipeTo(proxyOf(screen.container), REST_SLOT + 1);
+    await vi.waitFor(() => expect(onTurn).toHaveBeenCalledWith("two"), { timeout: 3000 });
+    expect(onAim).toHaveBeenCalledWith("two");
+    expect(onAim.mock.invocationCallOrder[0]).toBeLessThan(onTurn.mock.invocationCallOrder[0]!);
+  });
+
   it("comes to rest a pixel short of its slot without a slide for the pixel", async () => {
     // A slide nobody sees still runs its whole spring, and the tab turns only once it ends.
     const onTurn = vi.fn();
@@ -127,8 +146,13 @@ describe("TabPager's swipe", () => {
   it("undoes a scroll of the proxy the fingers didn't make", async () => {
     // A field focused on a page still arriving scrolls what it can to show itself.
     const onTurn = vi.fn();
-    await using screen = await render(<Pages activeId="one" onTurn={onTurn} />);
+    const onAim = vi.fn();
+    await using screen = await render(<Pages activeId="one" onTurn={onTurn} onAim={onAim} />);
     const proxy = proxyOf(screen.container);
+    // The browser's word on where that scroll will snap can come before the scroll is undone.
+    const next = proxy.querySelector(`[data-stemcells-proxy-slot="${REST_SLOT + 1}"]`);
+    proxy.dispatchEvent(Object.assign(new Event("scrollsnapchanging"), { snapTargetInline: next }));
+    expect(onAim).not.toHaveBeenCalledWith("two");
     proxy.scrollTo({ left: (REST_SLOT + 1) * WIDTH, behavior: "instant" });
     await vi.waitFor(() => expect(proxy.scrollLeft).toBeCloseTo(REST_SLOT * WIDTH, 0));
     expect(shown(screen.container)).toBeCloseTo(0, 3);
