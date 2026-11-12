@@ -3,7 +3,6 @@
 // header stands where the front list's own offset puts its room, and on nothing else, so it can't
 // drift from the list. Lists out of sight render nothing new and keep their place.
 
-import { HeaderHeightContext } from "@react-navigation/elements";
 import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode, type Ref } from "react";
 import { type ScrollViewInstance, StyleSheet, View } from "react-native";
 import Animated, {
@@ -21,7 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
-import { NativePrimaryColumnContext } from "../upstream/home";
+import { NativePrimaryColumnContext, useContentTopInset } from "../upstream/home";
 import { AskiHome, headerHeight, useHeaderRoom } from "./AskiHome";
 import { CopyLayer } from "./CopyLayer";
 import {
@@ -39,7 +38,7 @@ const SWITCH = { duration: 200, easing: Easing.out(Easing.cubic) };
 /** How far a list comes in from the side it lies on, points. */
 const SHIFT = 20;
 
-type Page = Omit<StagePage, "active" | "minHeight"> & {
+type Page = Omit<StagePage, "active" | "minHeight" | "inset"> & {
   readonly opacity: SharedValue<number>;
   readonly x: SharedValue<number>;
 };
@@ -91,9 +90,8 @@ export function useStagePages<Stage extends string>(
   opening: Stage,
 ) {
   const at = stages.indexOf(opening);
-  // Where a list rests: UIKit's inset ends at the native header's foot, under its title bar.
-  const safeTop = useSafeAreaInsets().top;
-  const top = -(use(HeaderHeightContext) ?? safeTop);
+  // Where a list rests: under the inset T3's list rests under, at the native header's foot.
+  const top = -useContentTopInset();
   const a = usePage(at === 0, top);
   const b = usePage(at === 1, top);
   const c = usePage(at === 2, top);
@@ -160,6 +158,7 @@ export function StagePages<Stage extends string>(props: {
             active={active}
             mounted={active || warm}
             minHeight={minHeight}
+            inset={-home.top}
             inFront={inFront && active}
             held={held || !active}
           >
@@ -190,12 +189,16 @@ function Stage(props: {
   readonly active: boolean;
   readonly mounted: boolean;
   readonly minHeight: number;
+  readonly inset: number;
   readonly inFront: boolean;
   readonly held: boolean;
   readonly children: ReactNode;
 }) {
-  const { page, active, minHeight } = props;
-  const value = useMemo(() => ({ ...page, active, minHeight }), [page, active, minHeight]);
+  const { page, active, minHeight, inset } = props;
+  const value = useMemo(
+    () => ({ ...page, active, minHeight, inset }),
+    [page, active, minHeight, inset],
+  );
   const style = useAnimatedStyle(() => ({
     opacity: page.opacity.get(),
     transform: [{ translateX: page.x.get() }],

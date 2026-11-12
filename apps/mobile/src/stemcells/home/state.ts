@@ -46,6 +46,8 @@ export interface StagePage {
    * inset with its room at its top, so this alone says where the header stands over it.
    */
   readonly offset: SharedValue<number>;
+  /** That inset, set by hand on every stage's scroll view: each rests at minus this. */
+  readonly inset: number;
   /** Tall enough to scroll the shared header out of sight: a short list keeps it put too. */
   readonly minHeight: number;
 }

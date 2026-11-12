@@ -1,5 +1,5 @@
 // The hand-off from Add to Chat to T3's own photo picking: the card stages
-// the photos it picked, then runs T3's picking, whose picker returns them
+// what it picked, then runs T3's picking, whose picker returns them
 // (`upstream/substitutes/expo-image-picker.ts`). T3 then reads, sizes and
 // adds them as it does the system picker's, by its own rules and limits.
 

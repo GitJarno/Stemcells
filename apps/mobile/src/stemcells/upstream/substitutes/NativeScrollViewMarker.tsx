@@ -40,8 +40,10 @@ export function NativeScrollViewMarker(
             : {
                 ref,
                 scrollsToTop: page.active,
-                // Every stage's scroll view under T3's list's inset, so one offset means one place.
-                contentInsetAdjustmentBehavior: "automatic",
+                // One inset on every stage's scroll view, by hand as T3's list sets its own, so one
+                // offset means one place. UIKit's `automatic` would add its own on top of a list's.
+                contentInsetAdjustmentBehavior: "never",
+                contentInset: { ...child.props.contentInset, top: page.inset },
                 contentContainerStyle: [
                   child.props.contentContainerStyle,
                   { minHeight: page.minHeight },
