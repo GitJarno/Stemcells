@@ -1,6 +1,5 @@
 import {
   Fragment,
-  useDeferredValue,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
@@ -10,6 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
+import { flushSync } from "react-dom";
 
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
@@ -40,6 +40,7 @@ import { landHere, useLandsNewChats } from "../windows/landing";
 import { useClosesSettledCells } from "../windows/settling";
 import { WindowsKeeper } from "../windows/WindowsKeeper";
 import { EmptyWorkbenchClose, Look } from "../workbench/LookFrame";
+import { afterPaint } from "./afterPaint";
 import { useRing } from "./arrival";
 import { SettledComeBack, useLeavesWhenSettled } from "./SettledPanes";
 import { keepLeft, leaveSlate, settlesOnClose, type Left } from "./settled";
@@ -86,13 +87,13 @@ import {
 import { keepEnd } from "./keepEnd";
 import { holdTranscriptsStill } from "./stillTranscripts";
 import { newCellTab, newCellTaken, takeNewCell, type NewCell } from "./newCell";
-import { mountedTabs } from "./pager";
 import { CellPill, PaneButtons, PaneGrip } from "./PaneButtons";
 import { PaneCellContext, PaneComposerContext } from "./paneCell";
 import { newIds, readWorkspace, updateWorkspace, useWorkspaceStore } from "./store";
 import { PagerPage, TabPager } from "./TabPager";
 import { watchFlights } from "../surfaces/flight";
 import { TabStrip } from "./TabStrip";
+import { useMountedPages } from "./useMountedPages";
 import { useNewCell } from "./useNewCell";
 import { useWorkspaceKeys } from "./useWorkspaceKeys";
 import "../tokens/stemcells.css";
@@ -130,9 +131,15 @@ export function CellWorkspace(props: {
   const takenRoute = useWorkspaceStore((store) => store.takenRoute);
   const visited = useWorkspaceStore((store) => store.visited);
   const newCell = useWorkspaceStore((store) => store.newCell);
-  // A turn renders the arriving page's ownership at once; the pages that
-  // become its neighbours mount after, without holding up the slide.
-  const settledTabId = useDeferredValue(workspace.activeTabId);
+  // A turn lights its tab and sets its page off at once. The stage changes hands once that
+  // has drawn, with what it costs (two pages restyled, the focus, a page mounted), and the
+  // route after that: none of it holds up the turn the person sees (`snappy-tabs.md`).
+  const [stagedTabId, setStagedTabId] = useState(workspace.activeTabId);
+  // The page a swipe is headed for, and the tab that was active when it was: its tab lights
+  // as the strip commits to it, not when it has landed.
+  const [aim, setAim] = useState<{ readonly tab: string; readonly under: string | null } | null>(
+    null,
+  );
   const routeCell = useCellForRoute(props.target);
   const isIndexRoute = useIsIndexRoute();
   const navigateToCell = useNavigateToCell();
@@ -181,6 +188,27 @@ export function CellWorkspace(props: {
     const cell = focusedPane(readWorkspace())?.cell;
     if (cell) navigateToCell(cell, { replace: true });
   };
+  const activeTabId = workspace.activeTabId;
+  // A plain update, not a deferred value: React starts a deferred render over for every urgent
+  // one, and with chats streaming the stage changed hands seconds after its tab had lit.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the stage to the active tab once the turn to it has drawn.
+  useEffect(() => {
+    if (stagedTabId === activeTabId) return;
+    // Rendered there and then: React's own task would wait in line again.
+    return afterPaint(() => flushSync(() => setStagedTabId(activeTabId)));
+  }, [stagedTabId, activeTabId]);
+  // A turn's route follows the hand-over, once the staged chat has taken its focus: every
+  // mounted chat renders on a route change, and the caret would wait behind them.
+  const routeDue = useRef(false);
+  const goToStaged = useEffectEvent(routeToFocused);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Route to the focused Cell once the stage has reached the tab turned to.
+  useEffect(() => {
+    if (!routeDue.current || stagedTabId !== activeTabId) return;
+    return afterPaint(() => {
+      routeDue.current = false;
+      goToStaged();
+    });
+  }, [stagedTabId, activeTabId]);
 
   /** Brings Aski here if another window holds it; false when it doesn't. */
   const bringAski = (cell?: CellRef): boolean => {
@@ -273,7 +301,9 @@ export function CellWorkspace(props: {
         ? takeNewCell(latest, current)
         : activateTab(latest, tabId),
     );
-    routeToFocused();
+    // The tab on stage already (its own tab clicked): nothing is handed over, so route now.
+    if (readWorkspace().activeTabId === stagedTabId) routeToFocused();
+    else routeDue.current = true;
   };
 
   const closeTabAndRoute = (tabId: string) => {
@@ -434,6 +464,44 @@ export function CellWorkspace(props: {
     props.background !== true,
   );
 
+  const askiTab = askiOn ? (workspace.tabs.find(isAskiTab) ?? null) : null;
+  const cellTabs = askiTab
+    ? workspace.tabs.filter((candidate) => candidate !== askiTab)
+    : workspace.tabs;
+  // Aski's page is first in every window. Held by another, it shows Aski's
+  // chat as it stands there, and turning to it brings Aski here.
+  const askiVisiting = askiOn && askiTab === null ? askiAway : null;
+  const askiShown = askiTab ?? askiVisiting;
+  const stageId = askiVisiting && askiComing ? ASKI_TAB_ID : workspace.activeTabId;
+  // The new Cell's page is the strip's last, taken or not.
+  const workspaceTabIds = workspace.tabs.map((candidate) => candidate.id);
+  const untakenNewCell = newCell !== null && !newCellIsTaken ? newCell : null;
+  const tabIds = [
+    ...(askiVisiting ? [ASKI_TAB_ID] : []),
+    ...workspaceTabIds,
+    ...(untakenNewCell ? [untakenNewCell.ids.tab] : []),
+  ];
+  const tabOf = (tabId: string): Tab | undefined =>
+    workspace.tabs.find((candidate) => candidate.id === tabId) ??
+    (askiVisiting && tabId === ASKI_TAB_ID ? askiVisiting : undefined) ??
+    (untakenNewCell && tabId === untakenNewCell.ids.tab ? newCellTab(untakenNewCell) : undefined);
+
+  // The tab lit: the one a swipe under way is headed for, else the active one.
+  const litId =
+    aim !== null && aim.under === workspace.activeTabId && tabIds.includes(aim.tab)
+      ? aim.tab
+      : stageId;
+  // The page on stage: the tab the stage was last handed to, while it is still a tab.
+  const stagedId = workspace.tabs.some((candidate) => candidate.id === stagedTabId)
+    ? stagedTabId
+    : (tab?.id ?? null);
+  // Aski's page as another window holds it is never staged here: it mounts as it is turned to.
+  const mounted = useMountedPages(
+    tabIds,
+    askiVisiting && askiComing ? ASKI_TAB_ID : stagedId,
+    visited,
+  );
+
   // On the index route Aski's chat is on its way: the grid waits for it
   // rather than letting upstream's index start a draft beside it.
   const askiOnTheWay = askiOn && isIndexRoute && askiChat.status === "starting" && tab === null;
@@ -466,28 +534,6 @@ export function CellWorkspace(props: {
   const routeOwnerId =
     props.target === null ? null : (routeHolder?.pane.id ?? (routeIsNew ? focused?.id : null));
 
-  const askiTab = askiOn ? (workspace.tabs.find(isAskiTab) ?? null) : null;
-  const cellTabs = askiTab
-    ? workspace.tabs.filter((candidate) => candidate !== askiTab)
-    : workspace.tabs;
-  // Aski's page is first in every window. Held by another, it shows Aski's
-  // chat as it stands there, and turning to it brings Aski here.
-  const askiVisiting = askiOn && askiTab === null ? askiAway : null;
-  const askiShown = askiTab ?? askiVisiting;
-  const stageId = askiVisiting && askiComing ? ASKI_TAB_ID : workspace.activeTabId;
-  // The new Cell's page is the strip's last, taken or not.
-  const workspaceTabIds = workspace.tabs.map((candidate) => candidate.id);
-  const untakenNewCell = newCell !== null && !newCellIsTaken ? newCell : null;
-  const tabIds = [
-    ...(askiVisiting ? [ASKI_TAB_ID] : []),
-    ...workspaceTabIds,
-    ...(untakenNewCell ? [untakenNewCell.ids.tab] : []),
-  ];
-  const tabOf = (tabId: string): Tab | undefined =>
-    workspace.tabs.find((candidate) => candidate.id === tabId) ??
-    (askiVisiting && tabId === ASKI_TAB_ID ? askiVisiting : undefined) ??
-    (untakenNewCell && tabId === untakenNewCell.ids.tab ? newCellTab(untakenNewCell) : undefined);
-
   return (
     <SidebarInset
       data-stemcells-workspace=""
@@ -499,10 +545,11 @@ export function CellWorkspace(props: {
         <TabStrip
           tabs={cellTabs}
           activeTabId={stageId}
+          litTabId={litId}
           aski={
             askiOn
               ? {
-                  active: askiShown !== null && stageId === ASKI_TAB_ID,
+                  active: askiShown !== null && litId === ASKI_TAB_ID,
                   cell: askiShown ? (panesOf(askiShown)[0]?.cell ?? null) : null,
                   chat: askiChat,
                 }
@@ -539,11 +586,15 @@ export function CellWorkspace(props: {
               newCellId={newCell?.ids.tab ?? null}
               newTabRef={newTabRef}
               onMotion={newCellMotion}
+              onAim={(tabId) =>
+                // A turn of the workspace's own aims the strip at the tab already lit.
+                setAim(tabId === stageId ? null : { tab: tabId, under: workspace.activeTabId })
+              }
             >
-              {mountedTabs(tabIds, stageId ?? tab.id, settledTabId, visited).map((tabId) => {
+              {mounted.map((tabId) => {
                 const pageTab = tabOf(tabId);
                 if (!pageTab) return null;
-                const onStage = tabId === tab.id;
+                const onStage = tabId === stagedId;
                 return (
                   <PagerPage key={tabId} tabId={tabId} onStage={onStage}>
                     <TabPage

@@ -30,6 +30,8 @@ export function TabStrip(props: {
   /** The Cells' tabs; Aski's is drawn on its own, before them. */
   tabs: ReadonlyArray<Tab>;
   activeTabId: string | null;
+  /** The tab drawn lit, when it is not the active one: the one a swipe under way is headed for. */
+  litTabId?: string | null;
   /** Aski's chip, first; null while Aski's tab is off (Settings › Aski). */
   aski: {
     readonly active: boolean;
@@ -57,6 +59,7 @@ export function TabStrip(props: {
   const stripRef = useRef<HTMLDivElement>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const { tabs, onActivate, onMove } = props;
+  const litTabId = props.litTabId ?? props.activeTabId;
   // A tab a drag rests on opens, so a file can be carried to another tab's chat.
   const spring = useSpringTabs(props.activeTabId, onActivate);
   // A chat carried by its Cell lights the chip it would go into.
@@ -134,7 +137,7 @@ export function TabStrip(props: {
                 if (isNewCell) newTabRef.current = element;
               }}
               role="tab"
-              aria-selected={tab.id === props.activeTabId}
+              aria-selected={tab.id === litTabId}
               data-stemcells-tab={tab.id}
               data-stemcells-new-tab={isNewCell ? "" : undefined}
               data-spring-lit={
@@ -179,7 +182,7 @@ export function TabStrip(props: {
                 // Lifted off the strip, a dragged tab is opaque so the tabs it passes stay under it.
                 dragged
                   ? "relative z-10 bg-popover text-foreground shadow-md ring-1 ring-border"
-                  : tab.id === props.activeTabId
+                  : tab.id === litTabId
                     ? "bg-accent text-foreground"
                     : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
               )}

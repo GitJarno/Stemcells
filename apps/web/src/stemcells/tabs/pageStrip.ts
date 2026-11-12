@@ -216,6 +216,16 @@ export class PageStrip {
       this.#show(this.#slotOf(active));
       return;
     }
+    const reordered =
+      order.length !== this.#order.length || order.some((id, i) => id !== this.#order[i]);
+    const turned = active !== this.#active;
+    // A render that moved nothing reads nothing: where a sliding strip is costs a style pass,
+    // and this runs after every render of the workspace.
+    if (!turned && !reordered) {
+      this.#placeAll();
+      this.#linkNewTab();
+      return;
+    }
     // Where the eye has the strip: the tab on stage, and how far off it.
     const at = this.#onScreen();
     const offset = this.#offset();
@@ -224,17 +234,10 @@ export class PageStrip {
     const offStage = stage === null ? 0 : at - this.#slotOf(stage);
     const base = this.#tabAt(this.#position);
     const heading = this.#tabAt(this.#turns.heading);
-    const reordered =
-      order.length !== this.#order.length || order.some((id, i) => id !== this.#order[i]);
-    const turned = active !== this.#active;
     this.#order = order;
     this.#active = active;
     if (reordered) this.#standIn = null;
     this.#placeAll();
-    if (!turned && !reordered) {
-      this.#linkNewTab();
-      return;
-    }
     // A turn this strip asked for is its own, even one a later swipe has since gone past.
     const asked = this.#asked.indexOf(active);
     const own = turned && (active === heading || asked >= 0);
@@ -657,7 +660,8 @@ export class PageStrip {
   readonly #onAim = (event: Event): void => {
     const target = (event as Event & { snapTargetInline?: Element | null }).snapTargetInline;
     const slot = Number(target?.getAttribute("data-stemcells-proxy-slot") ?? Number.NaN);
-    if (!Number.isFinite(slot)) return;
+    // Only the fingers' scroll aims the strip: any other is on its way back to the origin.
+    if (!this.#fingers || !Number.isFinite(slot)) return;
     this.#turns.aimed(slot);
     this.#decide();
   };

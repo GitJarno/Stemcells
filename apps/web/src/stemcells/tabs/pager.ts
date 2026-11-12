@@ -27,12 +27,10 @@ export function releaseVelocity(
 export const KEEP_VISITED = 4;
 
 /**
- * How many pages either side of the settled tab stay mounted: two, so the
- * page a second quick swipe reaches (one past where the first is going)
- * was mounted a turn earlier, its chats loaded and laid out, and never
- * mounts as it slides in.
+ * How many pages stay mounted at most: the active one, the four beside it and the last few
+ * visited are eight, and two more are kept from before.
  */
-const MOUNTED_NEAR = 2;
+export const MOUNTED_MOST = 10;
 
 /** `visited` (most recent first) after a visit to `tabId`, keeping only `tabIds`. */
 export function visit(
@@ -45,25 +43,32 @@ export function visit(
 }
 
 /**
- * The tabs whose pages are mounted: the active one, two either side of
- * `settled` (the active tab once a turn has settled in), and the last few
- * visited, so a swipe back finds its chats as it left them. In a stable
- * order, so a page joining never moves the others in the document.
+ * The pages to keep mounted, most wanted first: the active one, two either side of it (so the
+ * page a second quick swipe reaches is there before it slides in), the last few visited (so a
+ * swipe back finds its chats as it left them), then those kept before. A page stays until
+ * `MOUNTED_MOST` are wanted more, so going back and forth between tabs mounts nothing.
  */
-export function mountedTabs(
+export function keep(
+  kept: readonly string[],
   tabIds: readonly string[],
   active: string | null,
-  settled: string | null,
   visited: readonly string[],
 ): string[] {
-  const mounted = new Set<string>(visited.slice(0, KEEP_VISITED));
-  if (active !== null) mounted.add(active);
-  const index = settled === null ? -1 : tabIds.indexOf(settled);
-  if (index >= 0) {
-    for (let near = index - MOUNTED_NEAR; near <= index + MOUNTED_NEAR; near++) {
-      const id = tabIds[near];
-      if (id !== undefined) mounted.add(id);
-    }
-  }
-  return tabIds.filter((id) => mounted.has(id)).toSorted();
+  const index = active === null ? -1 : tabIds.indexOf(active);
+  const near = index < 0 ? [] : [0, -1, 1, -2, 2].map((step) => tabIds[index + step]);
+  const wanted = [...near, ...visited.slice(0, KEEP_VISITED), ...kept].filter(
+    (id): id is string => id !== undefined && tabIds.includes(id),
+  );
+  return [...new Set(wanted)].slice(0, MOUNTED_MOST);
+}
+
+/**
+ * The mounted pages after a still moment (`useMountedPages.ts`): those no longer kept leave, or
+ * else the most wanted page not yet mounted comes in. One at a time: each mounts in one go.
+ */
+export function settle(mounted: readonly string[], kept: readonly string[]): string[] {
+  const staying = mounted.filter((id) => kept.includes(id));
+  if (staying.length !== mounted.length) return staying;
+  const next = kept.find((id) => !mounted.includes(id));
+  return next === undefined ? staying : [...staying, next];
 }
