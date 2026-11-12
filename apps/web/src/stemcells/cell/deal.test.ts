@@ -52,6 +52,21 @@ test("through a longer season a Cell dresses for it one day in three, on days of
   for (const day of dressed("Otter")) NodeAssert.ok(dressesFor("Otter", "winter", day));
 });
 
+test("a Cell wears the same piece on each of its dress-up days while it stays in view", () => {
+  let kept = looksOf(ROSTER, "2027-01-02");
+  const worn = new Map<string, string[]>(ROSTER.map((codename) => [codename, []]));
+  for (let date = 2; date <= 31; date++) {
+    // Half the crew steps out every other day, so a fresh deal would rank against other Cells.
+    const crew = date % 2 === 0 ? ROSTER : ROSTER.filter((_, i) => i % 2 === 0);
+    const dealt = looksOf(crew, `2027-01-${String(date).padStart(2, "0")}`, kept);
+    kept = new Map([...kept, ...dealt]);
+    for (const [codename, look] of dealt) worn.get(codename)!.push(...look.worn);
+  }
+  const days = [...worn.values()];
+  NodeAssert.ok(days.some((pieces) => pieces.length > 2));
+  for (const pieces of days) NodeAssert.ok(new Set(pieces).size <= 1, pieces.join(" "));
+});
+
 test("a Cell arriving never changes what the Cells before it wear", () => {
   for (const day of ["10-19", "12-01"]) {
     const all = looksOf(ROSTER, day);

@@ -277,8 +277,16 @@ function packDataFindings(file: string, pack: PackData): Finding[] {
       if (!MONTH_DAY.test(from ?? "") || !MONTH_DAY.test(to ?? ""))
         say("season", theme, `"${from}" to "${to}" is no window (MM-DD)`);
     const feast = "from" in season ? season.feast : undefined;
-    if (feast !== undefined && !feast.every((day) => MONTH_DAY.test(day)))
-      say("season", theme, `its feast "${feast.join('" to "')}" is no window (MM-DD)`);
+    if (feast !== undefined && "from" in season) {
+      const within = (day: string) =>
+        season.from <= season.to
+          ? day >= season.from && day <= season.to
+          : day >= season.from || day <= season.to;
+      if (!feast.every((day) => MONTH_DAY.test(day)))
+        say("season", theme, `its feast "${feast.join('" to "')}" is no window (MM-DD)`);
+      else if (!feast.every(within))
+        say("season", theme, `its feast "${feast.join('" to "')}" falls outside its window`);
+    }
   }
   return out;
 }

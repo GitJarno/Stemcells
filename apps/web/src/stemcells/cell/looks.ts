@@ -32,11 +32,14 @@ export function score(words: string): bigint {
 export const dayOf = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
+/** The days before each month begins, in a year of 365. */
+const BEFORE = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+
 /** How many days a window holds past its first, counting over the new year when it runs past it. */
 const length = (from: string, to: string): number => {
-  const ordinal = (day: string) => Number(day.slice(0, 2)) * 31 + Number(day.slice(3));
+  const ordinal = (day: string) => BEFORE[Number(day.slice(0, 2)) - 1]! + Number(day.slice(3));
   const days = ordinal(to) - ordinal(from);
-  return days >= 0 ? days : days + 12 * 31;
+  return days >= 0 ? days : days + 365;
 };
 
 /** Whether the window `from`–`to` holds a month-day, over the new year when it runs past it. */
@@ -50,7 +53,7 @@ function windowIn(season: NonNullable<Pack["season"]>, year: string | undefined)
   return dated === undefined ? undefined : { from: dated[0], to: dated[1], feast: undefined };
 }
 
-/** A season this short is a feast whole. */
+/** A season that ends within this many days of its first, three weeks or less, is a feast whole. */
 const FEAST_DAYS = 20;
 
 /** Through a longer season a Cell dresses for it one day in this many, on days of its own. */
@@ -138,6 +141,8 @@ const rankedBy = (names: readonly string[], key: (name: string) => string): stri
 /** What a Cell wears, as ids in the order worn, each in the slots those before it leave free (`theme/piece`, or `outfit:theme/outfit~colourway`). */
 export interface Look {
   readonly worn: readonly string[];
+  /** What it holds while in view but doesn't wear today: its own look under a season's outfit, its season's item between its dress-up days. */
+  readonly held?: readonly string[] | undefined;
 }
 
 /** The id an outfit is worn by: `outfit:theme/outfit`, with `~colourway` for one of its own. */
@@ -213,13 +218,19 @@ function dealSeason(
   return dealt;
 }
 
-/** The item of `theme` a kept look wears, when the season still deals it. */
+/** Every id a kept look holds: what it wears, then what it has put by. */
+const holding = (kept: Look | undefined): readonly string[] => [
+  ...(kept?.worn ?? []),
+  ...(kept?.held ?? []),
+];
+
+/** The item of `theme` a kept look holds, when the season still deals it. */
 function keptOf(
   theme: string,
   items: ReadonlyMap<string, Item>,
   kept: Look | undefined,
 ): { readonly item: Item; readonly colourway: string } | undefined {
-  for (const id of kept?.worn ?? []) {
+  for (const id of holding(kept)) {
     if (id.startsWith(`${theme}/`)) {
       const item = items.get(id.slice(theme.length + 1));
       if (item !== undefined && item.outfit === undefined) return { item, colourway: "" };
@@ -230,6 +241,19 @@ function keptOf(
     }
   }
   return undefined;
+}
+
+/** The id of the item of `theme` a kept look holds, when the season still deals it. */
+function heldItem(
+  theme: string,
+  items: ReadonlyMap<string, Item>,
+  kept: Look | undefined,
+): string | undefined {
+  const known = keptOf(theme, items, kept);
+  if (known === undefined) return undefined;
+  return known.item.outfit === undefined
+    ? `${theme}/${known.item.name}`
+    : outfitId(known.item.outfit, known.colourway);
 }
 
 /** The look drawn for the Cell name `name` (`Fox`), as the id it is worn by; undefined for a name with none. */
@@ -256,7 +280,7 @@ function dealOwn(
   for (const codename of codenames) {
     const outfit = CAST.get(cellNameOf(codename).toLowerCase());
     if (outfit === undefined) continue;
-    const colourway = colourwayIn(kept.get(codename)?.worn ?? [], outfit);
+    const colourway = colourwayIn(holding(kept.get(codename)), outfit);
     if (colourway === undefined) fresh.push([codename, outfit]);
     else take(codename, outfit, colourway);
   }
@@ -270,8 +294,8 @@ function dealOwn(
 /**
  * What each Cell of a crew wears on `day` (`2027-02-06`, or a month-day), as ids, Cells in seat
  * order: its own look; on a day it dresses for the season, the season's outfit in its place,
- * or the season's piece before it. A Cell `kept` names keeps the item and colourways it wore.
- * Nothing kept, every screen agrees.
+ * or the season's piece before it. A Cell `kept` names keeps its colourways and its season's
+ * item, from one dress-up day to the next. Nothing kept, every screen agrees.
  */
 export function looksOf(
   codenames: readonly string[],
@@ -279,20 +303,30 @@ export function looksOf(
   kept: ReadonlyMap<string, Look> = new Map(),
 ): ReadonlyMap<string, Look> {
   const season = seasonAt(day);
+  const items =
+    season === undefined
+      ? new Map<string, Item>()
+      : new Map(itemsOf(season.theme).map((item) => [item.name, item]));
+  const dresses = (codename: string) =>
+    season !== undefined && (season.feast || dressesFor(codename, season.theme, day));
   const seasonal =
     season === undefined
       ? new Map<string, string>()
-      : dealSeason(
-          season.theme,
-          codenames.filter((codename) => season.feast || dressesFor(codename, season.theme, day)),
-          kept,
-        );
+      : dealSeason(season.theme, codenames.filter(dresses), kept);
   const own = dealOwn(codenames, kept);
   return new Map(
     codenames.map((codename) => {
       const item = seasonal.get(codename);
-      const mine = item?.startsWith("outfit:") ? undefined : own.get(codename);
-      return [codename, { worn: [item, mine].filter((id): id is string => id !== undefined) }];
+      const mine = own.get(codename);
+      const whole = item?.startsWith("outfit:") === true;
+      // Between its dress-up days a Cell puts its season's item by, to wear the same one again.
+      const put =
+        season === undefined || dresses(codename)
+          ? undefined
+          : heldItem(season.theme, items, kept.get(codename));
+      const held = [whole ? mine : undefined, put].filter((id): id is string => id !== undefined);
+      const worn = [item, whole ? undefined : mine].filter((id): id is string => id !== undefined);
+      return [codename, held.length > 0 ? { worn, held } : { worn }];
     }),
   );
 }

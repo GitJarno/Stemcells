@@ -183,7 +183,7 @@ bundler has it too; `art.test.ts` fails until it is.
 - **`season`** is one of:
   - `null`;
   - `{"from": "08-01", "to": "08-31"}` (MM-DD, inclusive, and it may wrap the
-    new year). A window over twenty days may name its `"feast": ["12-20",
+    new year). A window longer than three weeks may name its `"feast": ["12-20",
     "12-26"]`, the days inside it every Cell dresses for;
   - for a feast that moves, `{"years": {"2027": ["02-06", "02-20"]}}`.
 - **`"cast": true`** marks a pack of the Cells' own looks. Each outfit's `id`
@@ -243,7 +243,7 @@ every screen (`cell/looks.ts`, the reasons in `stemcells/tasks/cell-cast.md`):
 - **Its own look, every day.** A Cell wears the look drawn for its name: the
   Cell named Fox wears the fox hood. Two Cells of one name in view wear the
   look's colourways apart, while it has any.
-- **A season is dress-up days.** A window of twenty days or fewer is a feast
+- **A season is dress-up days.** A window of three weeks or less is a feast
   whole, and so are a longer window's named `feast` days: every Cell dresses
   for it. Through the rest of a longer season a Cell dresses for it one day
   in three, on days of its own.
@@ -255,7 +255,8 @@ every screen (`cell/looks.ts`, the reasons in `stemcells/tasks/cell-cast.md`):
   together: no two wear the same silhouette or colour family while the
   catalogue lasts; past it, the least worn, in a colourway no other wearer
   has.
-- A Cell keeps the item and colourways it wears while it stays in view.
+- A Cell keeps its colourways and its season's item while it stays in
+  view, from one dress-up day to the next.
 
 ### A move set: `art/moves/<set>.json`
 

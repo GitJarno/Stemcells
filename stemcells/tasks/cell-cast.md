@@ -20,7 +20,7 @@ theme, so about seventy of the original's pieces and twelve drawn outfits
 3. **Motion stays the temperament's.** A cast look has a cheer only where the
    cheer is the joke (Squire raises the sword, Ukulele strums). Every other
    landing plays the Cell's temperament.
-4. **A season is dress-up days.** A window of twenty days or fewer, or a
+4. **A season is dress-up days.** A window of three weeks or less, or a
    longer window's named feast, dresses every Cell. Through the rest of a
    longer season a Cell dresses for it one day in three, on days of its own,
    so a crew in November is mostly itself with a raincoat or two.
@@ -57,5 +57,9 @@ theme, so about seventy of the original's pieces and twelve drawn outfits
 - A season's outfit now takes the place of the own look where the first
   build stacked them: stacked, a December coat over a knight's helm read as
   neither.
+- An independent read of the deal found that a Cell forgot things while in
+  view: a twin lost its colourway after a day in a season's outfit, and a
+  Cell could change its season's outfit between dress-up days. A look now
+  carries what it has put by (`Look.held`), with a test for each.
 - Not done here: the earned pieces and lineage colourways of
   `cell-life.md`, and a card that names what a Cell wears.

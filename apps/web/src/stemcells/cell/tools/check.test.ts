@@ -16,6 +16,11 @@ vi.mock("../art.ts", () => {
     ART_PACKS: {
       house: { theme: "house", season: null, pieces: [] },
       misnamed: { theme: "elsewhere", season: null, pieces: [] },
+      misfeast: {
+        theme: "misfeast",
+        season: { from: "06-01", to: "06-30", feast: ["07-01", "07-02"] },
+        pieces: [],
+      },
       // A cast with a look for no one, and one name's look drawn twice.
       troupe: {
         theme: "troupe",
@@ -438,6 +443,11 @@ describe("art drawn beside the kit", () => {
     expect(rules("faulty/turn")).toContain("poses");
     expect(rules("faulty/two")).toContain("apart");
     expect(rules("faulty")).toContain("season");
+    expect(
+      check({ themes: ["misfeast"] })
+        .filter((f) => f.subject === "misfeast")
+        .map((f) => f.detail),
+    ).toEqual(['its feast "07-01" to "07-02" falls outside its window']);
     expect(rules("trial/1")).toEqual(["beat", "next", "tell"]);
     expect(about("trial/2").map((f) => `${f.level} ${f.rule} ${f.detail}`)).toEqual([
       "warn box its marks fall off the canvas (hero)",

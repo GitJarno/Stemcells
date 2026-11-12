@@ -108,7 +108,7 @@ vi.mock("./art.ts", async () => {
       // The same window as the original's `christmas`.
       yule: {
         theme: "yule",
-        season: { from: "12-01", to: "12-26" },
+        season: { from: "12-01", to: "12-26", feast: ["12-20", "12-26"] },
         pieces: [piece("star", "headwear", "Y")],
       },
     },
@@ -160,6 +160,14 @@ describe("a season, dealt first and dated year by year when it moves", () => {
   it("goes to the pack drawn since when its window ties with the original's", () => {
     expect(seasonOn("12-10")).toBe("yule");
     expect(seasonOn("12-27")).toBe("newyear");
+  });
+
+  it("dresses every Cell on a long season's own feast days, and some of them before", () => {
+    const crew = ["Otter", "Puffin", "Wren", "Heron", "Marten", "Lark", "Gannet", "Plover"];
+    const dressed = (day: string) =>
+      [...looksOf(crew, day).values()].filter((look) => look.worn[0] === "yule/star").length;
+    expect(dressed("2027-12-22")).toBe(crew.length);
+    expect(dressed("2027-12-05")).toBeLessThan(crew.length);
   });
 
   it("wears the season's piece with the outfit, the outfit's fabric kept", () => {
@@ -215,6 +223,17 @@ describe("a Cell's own look", () => {
     expect(both.get(twin)!.worn).toEqual([`${own(first)}~sky`]);
     expect(looksOf([twin], "2027-05-20", both).get(twin)).toEqual(both.get(twin));
     expect(looksOf([twin], "2027-05-20").get(twin)!.worn).toEqual([own(first)]);
+  });
+
+  it("keeps its colourway through a day dressed in a season's outfit", () => {
+    const first = "cell-0";
+    const twin = Array.from({ length: 5000 }, (_, i) => `cell-${i + 1}`).find(
+      (codename) => cellNameOf(codename) === cellNameOf(first),
+    )!;
+    const plain = looksOf([first, twin], "2027-05-20");
+    const feast = looksOf([first, twin], "2027-03-05", plain);
+    expect(feast.get(twin)!.worn).toEqual([expect.stringMatching(/^outfit:crew\//)]);
+    expect(looksOf([twin], "2027-05-20", feast).get(twin)!.worn).toEqual([`${own(first)}~sky`]);
   });
 
   it("is drawn for every name the mock holds", () => {
