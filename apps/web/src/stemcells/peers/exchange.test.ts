@@ -139,6 +139,11 @@ describe("messages between Cells, from one chat", () => {
       machine: "environment-studio",
     });
     expect(senderOf({ id: "message-1", role: "user" })).toBeNull();
+    const linkedSender = { environmentId: "environment-studio", threadId: "thread-puma" };
+    expect(senderOf({ id: "message-2", role: "user", linkedSender })).toEqual({
+      cell: "thread-puma",
+      machine: "environment-studio",
+    });
     const notes = exchangeOf([
       { kind: "message", message: { id: mail, role: "user", text: "Can I take the auth module?" } },
       {
