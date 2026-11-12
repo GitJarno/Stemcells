@@ -406,7 +406,9 @@ scene `act/<name>`. `cells acts <name>` draws it frame by frame; `cells render
     `dizzy`);
   - `tier`: `rare` acts come up about one turn in five;
   - `deaf`: pokes go unanswered while it plays;
-  - `loop`: it loops, where an act otherwise plays once.
+  - `loop`: it loops, where an act otherwise plays once;
+  - `encore`: a landed Cell plays it too, as `encore/<name>`: the same
+    score with `^ ^` wherever it shows a face.
 - **What persists.** `face` (`eyes`, `mouth`, `look`), `arms` (`left`,
   `right`, or `arms` for both: a name below, or `null` to drop it) and `ease`
   (`sy`, `spread`, `lean`, `shift`, `float`, `lift`, over `for` frames) set

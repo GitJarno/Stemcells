@@ -153,7 +153,7 @@ function main(argv: readonly string[]): number {
     case "acts": {
       const spec = typeof flags.get("look") === "string" ? (flags.get("look") as string) : "bare";
       const ground = flags.get("ground") === "light" ? "light" : "black";
-      const name = `acts-${slugOf(spec)}${rest.length > 0 ? `-${rest.join("-")}` : ""}.png`;
+      const name = `acts-${slugOf(spec)}${rest.length > 0 ? `-${rest.map(slugOf).join("-")}` : ""}.png`;
       console.log(write(NodePath.join(out, name), actsSheet(spec, rest, body, ground)));
       return 0;
     }

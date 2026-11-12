@@ -232,13 +232,8 @@
     },
     "groove": {
       "about": "A dance: two sways with a dip, a hop with its arms up, once round, and a last sway.",
-      "state": "landed",
       "tier": "rare",
       "score": [
-        {
-          "do": "face",
-          "eyes": "happy"
-        },
         {
           "do": "sway",
           "reach": 2,
@@ -271,10 +266,10 @@
           "raise": "up"
         },
         {
-          "do": "rest",
-          "eyes": "happy"
+          "do": "rest"
         }
-      ]
+      ],
+      "encore": true
     },
     "doze": {
       "about": "Nods off where it stands, starts awake, and looks about to see who saw.",
@@ -354,10 +349,10 @@
   "cues": {
     "poke/rest": ["hop", "nod"],
     "poke/rest/2": ["jump"],
-    "poke/rest/3": ["spin"],
+    "poke/rest/3": ["spin", "groove"],
     "poke/rest/dazed": ["dazed"],
     "poke/work": ["thumbsUp", "nod"],
-    "poke/landed": ["groove"],
+    "poke/landed": ["encore/groove"],
     "granted": ["thumbsUp"],
     "answered": ["nod"]
   }

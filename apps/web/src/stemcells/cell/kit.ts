@@ -487,6 +487,8 @@ export interface ActData {
   readonly loop?: boolean;
   /** Pokes go unanswered while it plays. */
   readonly deaf?: boolean;
+  /** A landed Cell plays it too, as `encore/<name>`: the same score in a landing's `^ ^`. */
+  readonly encore?: boolean;
   readonly score: readonly Step[];
 }
 
@@ -643,14 +645,16 @@ export interface Act {
   readonly problems: readonly string[];
 }
 
-/** The acts, by name: each one's score made into a scene. */
+/** The eyes a landing wears: an encore shows them wherever the act shows a face. */
+const LANDED_EYES = "happy";
+
+/** The acts, by name: each one's score made into a scene, and its encore where it has one. */
 export const ACTS: ReadonlyMap<string, Act> = new Map(
   [...MOVE_FILES.values()].flatMap((file) =>
-    Object.entries(file.acts ?? {}).map(([name, data]) => {
+    Object.entries(file.acts ?? {}).flatMap(([name, data]) => {
       const made = scored(data.score, SCORE_MARKS);
-      const state = data.state ?? "rest";
-      const act: Act = {
-        name,
+      const actOf = (as: string, state: ActState, frames: typeof made.frames): Act => ({
+        name: as,
         about: data.about,
         state,
         deaf: data.deaf ?? false,
@@ -663,17 +667,27 @@ export const ACTS: ReadonlyMap<string, Act> = new Map(
           tell: made.tell,
           pieces: "loop",
           state: WORN_AS[state],
-          frames: made.frames,
+          frames,
         }),
-      };
-      return [name, act] as const;
+      });
+      const act = actOf(name, data.state ?? "rest", made.frames);
+      if (!data.encore) return [[name, act] as const];
+      const landed = made.frames.map((frame) =>
+        frame.pose.eyes === "none"
+          ? frame
+          : { ...frame, pose: { ...frame.pose, eyes: LANDED_EYES } },
+      );
+      return [
+        [name, act] as const,
+        [`encore/${name}`, actOf(`encore/${name}`, "landed", landed)] as const,
+      ];
     }),
   ),
 );
 
-/** A cue's cast as scene names: an act by its bare name is its scene. */
+/** A cue's cast as scene names: an act by its name is its scene, anything else a scene's own key. */
 const castOf = (names: readonly string[]): readonly string[] =>
-  names.map((name) => (name.includes("/") ? name : actKey(name)));
+  names.map((name) => (ACTS.has(name) || !name.includes("/") ? actKey(name) : name));
 
 /** What may answer each cue, by temperament, `any` for one with no list of its own. */
 export const CUES: ReadonlyMap<string, Readonly<Record<string, readonly string[]>>> = new Map(
