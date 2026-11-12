@@ -73,5 +73,7 @@ export function rejectRequestsUntilServing<T extends NodeHttp.Server>(server: T)
       server.off("newListener", onNewListener);
     }
   });
+  // Stemcells: a 1 GB upload over a slow link outlasts Node's 5-minute default.
+  server.requestTimeout = 60 * 60_000;
   return server;
 }
