@@ -29,22 +29,22 @@
       ],
       "hotspot": [12, 4],
       "mini": [
-        "....nnWnk....",
+        "....nnWnn....",
         "..nnnnWnnnk..",
-        ".nnnnnWnnnnk.",
-        "kZnnnnWnnnnZZ",
-        "kZtttWWWtttZZ",
-        "kZ.........ZZ",
-        "kZ.........ZZ",
-        "kZ.........ZZ",
-        ".Z.........Z."
+        ".ZZnnnWnnnZZ.",
+        ".ZZnnnWnnnZZ.",
+        ".ZZttWWWttZZ.",
+        ".Z.........Z.",
+        ".Z.........Z.",
+        ".Z.........Z.",
+        ".ZZ.......ZZ."
       ],
       "miniHotspot": [6, 3]
     },
     {
       "name": "doggo",
       "slot": "headwear",
-      "about": "A black-and-tan dog's hood: broad upright ears set wide, a tan spot over each eye and tan cheeks.",
+      "about": "A black-and-tan dog's hood: big upright ears, a black cap coming to a point on the brow, and tan cheeks.",
       "art": [
         "...D..................4...",
         "..D44................444..",
@@ -54,10 +54,10 @@
         "..D4ooo44........44ooo44..",
         "..D4ooo444444444444ooo44..",
         "...D4444444444444444444...",
-        "...D4444444444444444444...",
-        "...D444oo44444444oo4444...",
-        "...D444oo44444444oo4444...",
-        "..D444444444444444444444..",
+        "...oo4444444444444444on...",
+        "...oooo444444444444ooon...",
+        "...oooooo44444444ooooon...",
+        "..oooGGGGGG4444GGGGGGoon..",
         "..oooG..............Goon..",
         "..oooG..............Goon..",
         ".ooooG..............Gooon.",
@@ -71,43 +71,28 @@
         "..4.......4..",
         ".444.....444.",
         ".4o4.....4o4.",
-        ".4o444444o44.",
+        ".4o4444444o4.",
         "..444444444..",
-        "..44o444o44..",
-        ".44444444444.",
-        "oo.........on",
-        "oo.........on",
-        "oo.........on"
+        "..oo44444oo..",
+        ".oGGGG4GGGGn.",
+        ".o.........n.",
+        ".o.........n.",
+        ".o.........n."
       ],
       "miniHotspot": [6, 5]
     },
     {
-      "name": "collar",
-      "slot": "wrap",
-      "about": "A red dog collar round the neck, a brass tag hanging from it.",
-      "art": [
-        "RRRRRRRRRRRRRRRRRRRRRRRRRr",
-        "rrrrrrrrrrrrGGrrrrrrrrrrrr",
-        "...........YYYJ...........",
-        "...........YYYJ...........",
-        "............JJ............"
-      ],
-      "hotspot": [12, 5],
-      "mini": ["RRRRRRRRRRRRr", "......Y......"],
-      "miniHotspot": [6, 2]
-    },
-    {
       "name": "cheems",
       "slot": "headwear",
-      "about": "A shiba's hood: a wide round orange head with small rounded ears, cream inside, and big round cream cheeks.",
+      "about": "A shiba's hood: a wide round orange head with small rounded ears, a cream dot over each eye and big cream cheeks.",
       "art": [
-        "..333................33o..",
-        ".33333..............3333o.",
-        ".33WW3..............3WW3o.",
-        ".33WW3333333333333333WW3o.",
+        "..33..................3o..",
+        ".3333................333o.",
+        ".3WW33..............33WWo.",
+        ".3WWW3333333333333333WWWo.",
         ".33333333333333333333333o.",
-        ".33333333333333333333333o.",
-        ".33333333333333333333333o.",
+        ".333333WW33333333WW33333o.",
+        ".333333WW33333333WW33333o.",
         ".33333333333333333333333o.",
         ".333oooooooooooooooooo33o.",
         ".3333o..............o333o.",
@@ -120,14 +105,15 @@
       ],
       "hotspot": [12, 6],
       "mini": [
-        ".33.......33.",
+        "..3.......3..",
         ".3W3.....3W3.",
         ".33333333333.",
+        ".333C333C33o.",
         ".3333333333o.",
-        "333333333333o",
-        "33oooooooo33o",
-        "WW.........WC",
-        "WW.........WC"
+        ".3ooooooooo3.",
+        ".W.........W.",
+        ".W.........W.",
+        ".W.........C."
       ],
       "miniHotspot": [6, 4]
     },
@@ -136,64 +122,63 @@
       "slot": "wrap",
       "about": "A shiba's tail curled tight into a ring at its hip, cream on the inside.",
       "art": [
-        "..oooo..",
-        ".oG333o.",
-        "oG3WW33o",
-        "o3WWWW3o",
-        "o3WW3W3o",
-        "o33W333o",
-        ".o3333o.",
+        "..3333..",
+        ".3WWWW3.",
+        "3WWWWWW3",
+        "3WW33WW3",
+        "3WW33WCo",
+        "3WWWWCCo",
+        ".3WCCCo.",
         "..oooo.."
       ],
       "hotspot": [-6, 8],
-      "mini": [".oo.", "o3W3", "oWW3", ".oo."],
-      "miniHotspot": [-3, 4]
+      "mini": ["WWW", "W3C", "ooo"],
+      "miniHotspot": [-3, 3]
     },
     {
       "name": "bork",
       "slot": "headwear",
-      "about": "A husky's hood: a grey cap coming to a point over a white mask, tall pointed ears, and a pale blue mark over each eye.",
+      "about": "A husky's hood: a grey cap over a white mask, tall pointed ears, and a pale blue mark over each eye.",
       "art": [
-        "......D............D......",
-        ".....DDD..........DDD.....",
-        ".....DWD..........DWD.....",
-        "....DDWDD........DDWDD....",
-        "....DWWWD........DWWWD....",
-        "....DWWWD........DWWWD....",
-        "....DDDDD........DDDDD....",
-        "....DDDDDDDDDDDDDDDDDD....",
-        "....DDDDDDDDDDDDDDDDDD....",
-        "...DDDDDDDDDDDDDDDDDDDD...",
-        "...DDWWWWDDDDDDDDWWWWDD...",
-        "...DWWSSWWWDDDDWWWSSWWD...",
-        "..DDWWWWWWWWDDWWWWWWWWDD..",
-        "..DDWW..............WWDD..",
-        "..DDWW..............WWDD..",
-        ".DDWWW..............WWWDD.",
-        ".DDWWW..............WWWDD.",
-        ".DDWWW..............WWWDD.",
-        "DDWWWW..............WWWWDD",
-        ".DDqqq..............qqqDD."
+        "......D............4......",
+        ".....DDD..........DD4.....",
+        ".....DWD..........DW4.....",
+        "....DDWDD........DDWD4....",
+        "....DWWWD........DWWW4....",
+        "....DDDDD........DDDD4....",
+        "....DDDDDDDDDDDDDDDDD4....",
+        "....DDDDDDDDDDDDDDDDD4....",
+        "...DDDDDDDDDDDDDDDDDDD4...",
+        "...DDWWWWWDDDDDDWWWWWD4...",
+        "...DWWWSSWWDDDDWWSSWWW4...",
+        "..DDWWWWWWWWDDWWWWWWWWD4..",
+        "..DDWW..............WWD4..",
+        "..DDWW..............WWD4..",
+        ".DDWWW..............WWWD4.",
+        ".DDWWW..............WWWD4.",
+        ".DDWWW..............WWWD4.",
+        "DDWWWW..............WWWWD4",
+        ".DDqqq..............qqqD4."
       ],
-      "hotspot": [12, 10],
+      "hotspot": [12, 9],
       "mini": [
         "...D.....D...",
         "..DWD...DWD..",
         "..DWD...DWD..",
         "..DDDDDDDDD..",
         "..DDDDDDDDD..",
-        ".DDWSWDWSWDD.",
-        ".DWWWWDWWWWD.",
-        "DW.........WD",
-        "DW.........WD",
-        "DW.........WD"
+        ".DDWSWDWSWD4.",
+        ".DWWWWDWWWW4.",
+        ".W.........W.",
+        ".W.........W.",
+        ".W.........q."
       ],
       "miniHotspot": [6, 5]
     },
     {
       "name": "dingo",
       "slot": "headwear",
-      "about": "A dingo's hood: lean and sandy, with tall narrow ears standing close together and white at the tips of its cheeks.",
+      "about": "A dingo's hood: lean and sandy, with tall narrow ears standing close together.",
       "art": [
         ".......s..........o.......",
         ".......s..........o.......",
@@ -212,8 +197,8 @@
         "...ssy..............yso...",
         "..sssy..............ysso..",
         "..sssy..............ysso..",
-        "..WWWy..............yWWq..",
-        "..WWWy..............yWWq.."
+        "..sssy..............ysso..",
+        "..oooy..............yooo.."
       ],
       "hotspot": [12, 9],
       "mini": [
@@ -226,7 +211,7 @@
         ".syyyyyyyyyo.",
         ".s.........o.",
         ".s.........o.",
-        ".W.........q."
+        ".s.........o."
       ],
       "miniHotspot": [6, 5]
     },
@@ -245,18 +230,18 @@
         "......qq"
       ],
       "hotspot": [-6, 8],
-      "mini": ["oo..", ".oo.", "..ot", "...t"],
-      "miniHotspot": [-3, 4]
+      "mini": ["ss.", ".sW"],
+      "miniHotspot": [-3, 3]
     },
     {
       "name": "puma",
       "slot": "headwear",
       "about": "A puma's hood: lean and tawny, with blunt ears dark on the back, a cream brow and white whiskers out at each cheek.",
       "art": [
-        "....ZZ..............ZZ....",
-        "...ZZoZ............ZoZZ...",
-        "...ZoCCo..........oCCoZ...",
-        "...ooCCooooooooooooCCon...",
+        "...ZZ................ZZ...",
+        "..ZZCZ..............ZCZZ..",
+        "..ZCCoo............ooCCZ..",
+        "..oCCooooooooooooooooCCn..",
         "...ooooooooooooooooooon...",
         "...ooooooooooooooooooon...",
         "...ooooooooooooooooooon...",
@@ -264,23 +249,23 @@
         "..oooCCCCCCCCCCCCCCCCoon..",
         "..oooC..............Coon..",
         "..oooC..............Coon..",
-        "..oooC..............Coon..",
         "WWoooC..............CoooWW",
         "..oooC..............Coon..",
-        "WWoooC..............CoooWW",
-        "..nnnC..............Cnnn.."
+        "WWoWWC..............CWWoWW",
+        "..WWWC..............CWWW..",
+        "..qqqC..............Cqqq.."
       ],
       "hotspot": [12, 6],
       "mini": [
         "..ZZ.....ZZ..",
-        "..oCo...oCo..",
+        "..ZCo...oCZ..",
         "..ooooooooo..",
         "..oooooooon..",
         "..oooooooon..",
         ".oCCCCCCCCCn.",
         ".o.........n.",
-        "Wo.........nW",
-        ".o.........n."
+        ".W.........W.",
+        ".W.........q."
       ],
       "miniHotspot": [6, 4]
     },
@@ -297,13 +282,13 @@
         "...nnnnnnnnnnnnnnnnnnnnnn."
       ],
       "hotspot": [12, 7],
-      "mini": ["Z............", "Z...........o", ".ooooooooooon"],
+      "mini": [".Z...........", ".Z...........", ".oooooooooon."],
       "miniHotspot": [6, 3]
     },
     {
       "name": "panther",
       "slot": "headwear",
-      "about": "A black panther's hood: sleek charcoal with small pointed ears, two yellow eyes on its brow and white whiskers.",
+      "about": "A black panther's hood: sleek charcoal with small pointed ears, two yellow eyes on its brow and a white whisker at each cheek.",
       "art": [
         "...4..................4...",
         "...44................44...",
@@ -316,48 +301,50 @@
         "..444DDDDDDDDDDDDDDDD444..",
         "..444D..............D444..",
         "..444D..............D444..",
-        "W.444D..............D444.W",
-        ".W444D..............D444W.",
         "..444D..............D444..",
         "WW444D..............D444WW",
+        "..444D..............D444..",
+        "..444D..............D444..",
         "..444................444.."
       ],
       "hotspot": [12, 6],
       "mini": [
-        "..4.......4..",
-        "..44.....44..",
-        "..444444444..",
-        "..4YY444YY4..",
-        "..444444444..",
-        ".4DDDDDDDDD4.",
+        "...4.....4...",
+        "...44...44...",
+        "...4Y444Y4...",
+        "...4444444...",
+        "..4DDDDDDD4..",
         ".4.........4.",
-        "W4.........4W",
+        ".4.........4.",
         ".4.........4."
       ],
-      "miniHotspot": [6, 4]
+      "miniHotspot": [6, 3]
     },
     {
       "name": "panthertail",
-      "slot": "wrap",
-      "about": "A panther's long black tail raised behind it, hooked over at the top.",
+      "slot": "back",
+      "about": "A panther's long black tail raised behind it, hooked over at the tip.",
       "art": [
         ".444.",
         "44.44",
         "...44",
         "...44",
-        "..44.",
-        "..44.",
-        ".44..",
-        ".44..",
-        ".44..",
-        "..44.",
-        "..44.",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
+        "...44",
         "...44",
         "...44"
       ],
-      "hotspot": [-9, 25],
-      "mini": ["44", ".4", ".4", "4.", "4.", ".4"],
-      "miniHotspot": [-5, 13]
+      "hotspot": [-9, 15],
+      "mini": ["4.", ".4", ".4", ".4", ".4", ".4", ".4"],
+      "miniHotspot": [-4, 9]
     },
     {
       "name": "badger",
@@ -374,11 +361,11 @@
         "..WWWWW44WWWWWWWW44WWWWq..",
         "..WWWW..............WWWq..",
         "..WWWW..............WWWq..",
-        ".WWWWW..............WWWWq.",
-        ".WWWWW..............WWWWq.",
-        ".WWWWW..............WWWWq.",
-        "WWWWWW..............WWWWWq",
-        ".qqqqq..............qqqqq."
+        ".uWWWW..............WWWWD.",
+        ".uuWWW..............WWWuD.",
+        ".uuuWW..............WWuuD.",
+        "uuuuuW..............WuuuuD",
+        ".uuuu................uuuD."
       ],
       "hotspot": [12, 5],
       "mini": [
@@ -388,9 +375,9 @@
         "..W44WWW44q..",
         ".WW44WWW44Wq.",
         ".WWW4WWW4WWq.",
-        "WW.........Wq",
-        "WW.........Wq",
-        "WW.........Wq"
+        ".W.........q.",
+        ".u.........u.",
+        ".u.........D."
       ],
       "miniHotspot": [6, 4]
     },
@@ -422,26 +409,26 @@
       "mini": [
         ".....ZZZ.....",
         "....ZZkZZ....",
-        "C..ZZZZZkZ..C",
-        "C.ZZkZZZZZZ.C",
-        ".CZZZZZkZZZC.",
+        ".C.ZZZZZkZ.C.",
+        ".CCZkZZZZZCt.",
+        "..ZZZZZkZZZ..",
         "..ZZZkZZZZZ..",
         ".ZZZZZZZZZkZ.",
-        "ZZZ...Z...ZZZ",
-        "ZZ.........ZZ",
-        "Z...........Z"
+        ".Z....Z....Z.",
+        ".Z.........Z.",
+        ".Z.........Z."
       ],
       "miniHotspot": [6, 5]
     },
     {
       "name": "yak",
       "slot": "headwear",
-      "about": "A yak's head of hair: long shaggy charcoal hair hanging down both sides of the face, and wide upswept horns.",
+      "about": "A yak's head of hair: long shaggy charcoal hair hanging to the ground at both sides of the face, a forelock, and wide upswept horns.",
       "art": [
-        "C........................C",
-        "C........................C",
-        "CC......................CC",
-        ".CC....................CC.",
+        "C........................t",
+        "C........................t",
+        "CC......................Ct",
+        ".CC....................Ct.",
         ".tCC..................CCt.",
         "..tCCC...44444444...CCCt..",
         "....tCC444444444444CCt....",
@@ -450,42 +437,39 @@
         "...44444444444444444444...",
         "...44D44444444444444D44...",
         "..44D4444444444444444D44..",
-        "..4D44.4..4....4..4.44D4..",
-        "..4D44..............44D4..",
+        "..4D44.4...4444...4.44D4..",
+        "..4D44......44......44D4..",
         ".44D44..............44D44.",
-        ".4D4D4..............4D4D4.",
+        "..4D4D..............D4D4..",
+        ".44D4D..............D4D44.",
+        "44D44D..............D44D44",
         ".4D4D4..............4D4D4.",
         "44D4D4..............4D4D44",
         "4D44D4..............4D44D4",
-        "4D44D4..............4D44D4",
-        "4D4D44..............44D4D4",
-        "4D.4D4..............4D4.D4",
-        "4..4.4..............4.4..4"
+        "4D.4.4..............4.4.D4"
       ],
       "hotspot": [12, 9],
       "mini": [
-        "C...........C",
-        "C...........C",
-        "tC.........Ct",
-        ".tC.44444.Ct.",
-        "..t4444444t..",
+        ".C.........C.",
+        ".C.........C.",
+        ".tC.......Ct.",
+        "..tC44444Ct..",
+        "...4444444...",
         "..444444444..",
         ".44444444444.",
-        "4D4...4...4D4",
-        "4D.........4D",
-        "4D.........4D",
-        "4D.........4D",
-        "4D.........4D",
-        "4...........4"
+        ".4....4....4.",
+        ".4.........4.",
+        ".4.........4.",
+        ".4D.......D4."
       ],
       "miniHotspot": [6, 5]
     },
     {
       "name": "moose",
       "slot": "headwear",
-      "about": "A moose's antlers: two broad flat palms with short tines along the top, on a brown cap with small ears beneath them.",
+      "about": "A moose's antlers: two broad flat palms with short tines along the top, on a brown cap with a small ear under each.",
       "art": [
-        "C..C..C............C..C..C",
+        "t..t..t............t..t..n",
         "tt.tt.tt..........tt.tt.tn",
         "ttttttttt........ttttttttn",
         "ttttttttt........ttttttttn",
@@ -493,17 +477,17 @@
         "..nnnnnttt......tttnnnnn..",
         ".......ttt......ttn.......",
         "..nn....ttkkkkkktt....nn..",
-        ".nnPn.kkkkkkkkkkkkkk.nPnn.",
+        ".nntnkkkkkkkkkkkkkkkkntnn.",
         "..nn.kkkkkkkkkkkkkkkk.nn..",
         "....kkkkkkkkkkkkkkkkkZ...."
       ],
       "hotspot": [12, 9],
       "mini": [
-        "C.C.C...C.C.C",
-        "ttttt...ttttt",
-        "ttttt...ttttn",
-        ".nttt...tttn.",
-        "nn..tkkkt..nn",
+        ".t.t.....t.t.",
+        ".tttt...tttt.",
+        ".tttt...tttn.",
+        "..ntt...ttn..",
+        ".nnkkkkkkknn.",
         "...kkkkkkZ..."
       ],
       "miniHotspot": [6, 5]
@@ -518,7 +502,6 @@
         "...CCnC............CnCt...",
         "...CnnC...WW..WW...Cnnt...",
         "...CnnC..WWWWWWWW..Cnnt...",
-        "...CnnC.WWWWWWWWWW.Cnnt...",
         "...CCnCCWWWWWWWWWWCCnCt...",
         "....CCCCWWWWWWWWWWCCCt....",
         "....CCCCtWWWWWWWWtCCCt....",
@@ -532,7 +515,7 @@
         "..CCCC..............CCCt..",
         "...CC................Ct..."
       ],
-      "hotspot": [12, 10],
+      "hotspot": [12, 9],
       "mini": [
         "...C.....C...",
         "..Cn.....nC..",
@@ -541,71 +524,39 @@
         "..CCtWWWtCt..",
         ".CCCCCCCCCCt.",
         ".CCCCCCCCCCt.",
-        "CC.........Ct",
+        ".C....C....t.",
         ".C.........t.",
-        "CC.........Ct"
+        ".C.........t."
       ],
       "miniHotspot": [6, 5]
     },
     {
       "name": "alpaca",
       "slot": "headwear",
-      "about": "An alpaca's fleece: a big round caramel bouffant, bumpy as a cloud, a fringe hanging at its front edge and a small ear at each side.",
+      "about": "An alpaca's fleece: a big round caramel bouffant, curly as a cloud, a fringe hanging at its front edge and a small ear at each side.",
       "art": [
-        "n........oooooooo........n",
-        "nn...ooo.oGGooGGo.ooo...nn",
-        ".nCnooGooooooooooooGoonCn.",
-        "..noGGooooooooooooooGGon..",
-        ".ooGooooooooooooooooooGoo.",
-        ".ooooooooonoooonooooooooo.",
-        ".ooooonoonoooooonoonooooo.",
-        ".ooonnoooooooooooooonnooo.",
-        "..oooooooooooooooooooooo..",
-        "..oooooooooooooooooooooo..",
-        "...oooooooooooooooooooo...",
-        "...oo.ooo.oooooo.ooo.oo...",
-        "....o..o...o..o...o..o...."
+        "..n.....oo.oooo.oo.....n..",
+        "..nn..oooooooooooooo..nn..",
+        "..nCn.ooGGooooooGGoo.nCn..",
+        "..nCnooGooooooooooGoonCn..",
+        "..noooooooonoonoooooooon..",
+        ".oooooonoooooooooonooooon.",
+        "..ooooooooGooooGooooooon..",
+        ".ooooGoooooonnooooooGooon.",
+        "..ooonoooooooooooooonoon..",
+        "...ooooooooooooooooooon...",
+        "...oo.ooo.oooooo.ooo.on...",
+        "....o..o...o..o...o..n...."
       ],
-      "hotspot": [12, 10],
+      "hotspot": [12, 9],
       "mini": [
-        "n...oo.oo...n",
-        "nn.oGoooGo.nn",
-        ".nooooooooon.",
-        ".ooonooonoon.",
-        ".oooooooooon.",
-        "..oooooooon..",
+        "..n..ooo..n..",
+        "..nooGoooon..",
+        "..ooooooGoo..",
+        ".ooGoooonooo.",
+        ".oooonooooon.",
+        "..ooooooooo..",
         "..o.oo.oo.o.."
-      ],
-      "miniHotspot": [6, 5]
-    },
-    {
-      "name": "alpaca-g",
-      "slot": "headwear",
-      "about": "An alpaca's fleece: a big round caramel bouffant, bumpy as a cloud, a fringe hanging at its front edge and a small ear at each side.",
-      "art": [
-        "n........GGGGGGGG........n",
-        "nn...GGG.GyyGGyyG.GGG...nn",
-        ".nCnGGyGGGGGGGGGGGGyGGnCn.",
-        "..nGyyGGGGGGGGGGGGGGyyGn..",
-        ".GGyGGGGGGGGGGGGGGGGGGyGG.",
-        ".GGGGGGGGGoGGGGoGGGGGGGGG.",
-        ".GGGGGoGGoGGGGGGoGGoGGGGG.",
-        ".GGGooGGGGGGGGGGGGGGooGGG.",
-        "..GGGGGGGGGGGGGGGGGGGGGG..",
-        "..GGGGGGGGGGGGGGGGGGGGGG..",
-        "...GGGGGGGGGGGGGGGGGGGG...",
-        "...GG.GGG.GGGGGG.GGG.GG...",
-        "....G..G...G..G...G..G...."
-      ],
-      "hotspot": [12, 10],
-      "mini": [
-        "n...GG.GG...n",
-        "nn.GyGGGyG.nn",
-        ".nGGGGGGGGGn.",
-        ".GGGoGGGoGGo.",
-        ".GGGGGGGGGGo.",
-        "..GGGGGGGGo..",
-        "..G.GG.GG.G.."
       ],
       "miniHotspot": [6, 5]
     },
@@ -625,27 +576,28 @@
         ".444444444444444444444444."
       ],
       "hotspot": [12, 9],
-      "mini": ["....44444....", "....4D444....", ".W..4D444..W.", ".WI.RRRRr.IW.", "4444444444444"],
+      "mini": ["....44444....", "....4D444....", "..W.4D444.W..", ".WI.RRRRr.IW.", ".44444444444."],
       "miniHotspot": [6, 5]
     },
     {
       "name": "monocle",
       "slot": "face",
       "about": "A gold monocle over one eye, its chain hanging down.",
+      "z": 1,
       "art": [
-        ".GGGG...",
-        "G....G..",
-        "G....G..",
-        "G....G..",
-        "G....G..",
-        ".oooo.G.",
-        ".......G",
-        ".......G",
+        ".YYYY...",
+        "Y....Y..",
+        "Y....Y..",
+        "Y....Y..",
+        "Y....Y..",
+        ".JJJJ.J.",
+        ".......J",
+        ".......J",
         ".......o"
       ],
       "hotspot": [-3, 3],
-      "mini": [".GGG.", "G...G", "G...G", "G...G", ".oooG", "....o"],
-      "miniHotspot": [-1, 2]
+      "mini": [".YYY.", "Y...Y", "Y...Y", "Y...Y", ".JJJ."],
+      "miniHotspot": [0, 2]
     },
     {
       "name": "purrito",
@@ -661,383 +613,313 @@
         "...uuuuuDuuuuuuuuDuuuuD..."
       ],
       "hotspot": [12, 5],
-      "mini": ["..u.......u..", "..uI.....Iu..", "..uuuDuDuuD..", "..uuuuuuuuD.."],
+      "mini": ["..u.......u..", "..uI.....Iu..", "..uuDuDuDuD..", "..uuuuuuuuD.."],
       "miniHotspot": [6, 3]
     }
   ],
   "fabrics": {
-    "tortilla": {
-      "about": "A flour tortilla wrapped round the lower body like a blanket, toasted in spots, with a band of foil at its base.",
+    "collar": {
+      "about": "A red dog collar round the neck, a brass tag hanging from it.",
       "bands": [
         {
           "parts": ["torso"],
           "map": {
-            "B": "W",
-            "b": "W"
-          },
-          "rides": true,
-          "rows": [27, 27],
-          "columns": [8, 9],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "W",
-            "b": "W"
-          },
-          "rides": true,
-          "rows": [27, 27],
-          "columns": [15, 15],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "W",
-            "b": "W"
-          },
-          "rides": true,
-          "rows": [27, 27],
-          "columns": [21, 22],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "u",
-            "b": "u"
-          },
-          "rides": true,
-          "rows": [28, 29],
-          "columns": [11, 11],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "u",
-            "b": "u"
-          },
-          "rides": true,
-          "rows": [28, 29],
-          "columns": [18, 18],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "u",
-            "b": "u"
-          },
-          "rides": true,
-          "rows": [28, 29],
-          "columns": [24, 24],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "p",
-            "b": "q",
-            "L": "p",
-            "O": "q"
-          },
-          "rides": true,
-          "rows": [27, 29],
-          "miniRows": [13, 13]
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "o",
-            "b": "o"
-          },
-          "rides": true,
-          "rows": [24, 24],
-          "columns": [6, 7],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "o",
-            "b": "o"
-          },
-          "rides": true,
-          "rows": [25, 25],
-          "columns": [22, 23],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "o",
-            "b": "o"
+            "B": "G",
+            "b": "G",
+            "L": "G",
+            "O": "G"
           },
           "rides": true,
           "rows": [26, 26],
-          "columns": [9, 9],
+          "columns": [15, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "o",
-            "b": "o"
+            "B": "J",
+            "b": "J",
+            "L": "J",
+            "O": "J"
           },
           "rides": true,
-          "rows": [23, 23],
-          "columns": [25, 26],
+          "rows": [27, 28],
+          "columns": [17, 17],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "s",
-            "b": "s"
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "Y"
           },
           "rides": true,
-          "rows": [23, 23],
-          "columns": [12, 13],
+          "rows": [27, 28],
+          "columns": [14, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "s",
-            "b": "s"
+            "B": "J",
+            "b": "J",
+            "L": "J",
+            "O": "J"
           },
           "rides": true,
-          "rows": [24, 24],
-          "columns": [14, 15],
+          "rows": [29, 29],
+          "columns": [15, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "s",
-            "b": "s"
+            "B": "r",
+            "b": "r",
+            "L": "r",
+            "O": "r"
           },
           "rides": true,
           "rows": [25, 25],
-          "columns": [16, 17],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "s",
-            "b": "s"
+            "B": "R",
+            "b": "r",
+            "L": "R",
+            "O": "r"
           },
           "rides": true,
-          "rows": [26, 26],
-          "columns": [18, 19],
+          "rows": [24, 24],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "y",
-            "b": "y"
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "Y"
           },
           "rides": true,
-          "rows": [12, 12],
-          "miniColumns": [0, 10],
+          "miniRows": [12, 12],
+          "miniColumns": [6, 6],
           "only": "mini"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "y",
-            "b": "s",
-            "L": "y",
-            "O": "s"
+            "B": "R",
+            "b": "r",
+            "L": "R",
+            "O": "r"
           },
           "rides": true,
-          "rows": [23, 26],
-          "miniRows": [11, 12]
+          "miniRows": [11, 11],
+          "only": "mini"
         }
       ]
     },
-    "tortilla-spinach": {
-      "about": "The tortilla blanket in spinach green, with a band of foil at its base.",
+    "collar-sky": {
+      "about": "The dog collar in sky blue, with its brass tag.",
       "bands": [
         {
           "parts": ["torso"],
           "map": {
-            "B": "W",
-            "b": "W"
-          },
-          "rides": true,
-          "rows": [27, 27],
-          "columns": [8, 9],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "W",
-            "b": "W"
-          },
-          "rides": true,
-          "rows": [27, 27],
-          "columns": [15, 15],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "W",
-            "b": "W"
-          },
-          "rides": true,
-          "rows": [27, 27],
-          "columns": [21, 22],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "u",
-            "b": "u"
-          },
-          "rides": true,
-          "rows": [28, 29],
-          "columns": [11, 11],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "u",
-            "b": "u"
-          },
-          "rides": true,
-          "rows": [28, 29],
-          "columns": [18, 18],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "u",
-            "b": "u"
-          },
-          "rides": true,
-          "rows": [28, 29],
-          "columns": [24, 24],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "p",
-            "b": "q",
-            "L": "p",
-            "O": "q"
-          },
-          "rides": true,
-          "rows": [27, 29],
-          "miniRows": [13, 13]
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "F",
-            "b": "F"
-          },
-          "rides": true,
-          "rows": [24, 24],
-          "columns": [6, 7],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "F",
-            "b": "F"
-          },
-          "rides": true,
-          "rows": [25, 25],
-          "columns": [22, 23],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "F",
-            "b": "F"
+            "B": "G",
+            "b": "G",
+            "L": "G",
+            "O": "G"
           },
           "rides": true,
           "rows": [26, 26],
-          "columns": [9, 9],
+          "columns": [15, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "F",
-            "b": "F"
+            "B": "J",
+            "b": "J",
+            "L": "J",
+            "O": "J"
           },
           "rides": true,
-          "rows": [23, 23],
-          "columns": [25, 26],
+          "rows": [27, 28],
+          "columns": [17, 17],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "a",
-            "b": "a"
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "Y"
           },
           "rides": true,
-          "rows": [23, 23],
-          "columns": [12, 13],
+          "rows": [27, 28],
+          "columns": [14, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "a",
-            "b": "a"
+            "B": "J",
+            "b": "J",
+            "L": "J",
+            "O": "J"
           },
           "rides": true,
-          "rows": [24, 24],
-          "columns": [14, 15],
+          "rows": [29, 29],
+          "columns": [15, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "a",
-            "b": "a"
+            "B": "d",
+            "b": "d",
+            "L": "d",
+            "O": "d"
           },
           "rides": true,
           "rows": [25, 25],
-          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [6, 6],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "S",
+            "b": "d",
+            "L": "S",
+            "O": "d"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        }
+      ]
+    },
+    "collar-lime": {
+      "about": "The dog collar in lime, with its brass tag.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "G",
+            "b": "G",
+            "L": "G",
+            "O": "G"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [15, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J",
+            "L": "J",
+            "O": "J"
+          },
+          "rides": true,
+          "rows": [27, 28],
+          "columns": [17, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "Y"
+          },
+          "rides": true,
+          "rows": [27, 28],
+          "columns": [14, 16],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "J",
+            "b": "J",
+            "L": "J",
+            "O": "J"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [15, 16],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
             "B": "a",
-            "b": "a"
+            "b": "a",
+            "L": "a",
+            "O": "a"
           },
           "rides": true,
-          "rows": [26, 26],
-          "columns": [18, 19],
+          "rows": [25, 25],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
             "B": "A",
-            "b": "A"
+            "b": "a",
+            "L": "A",
+            "O": "a"
           },
           "rides": true,
-          "rows": [12, 12],
-          "miniColumns": [0, 10],
+          "rows": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "Y",
+            "b": "Y",
+            "L": "Y",
+            "O": "Y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [6, 6],
           "only": "mini"
         },
         {
@@ -1049,55 +931,63 @@
             "O": "a"
           },
           "rides": true,
-          "rows": [23, 26],
-          "miniRows": [11, 12]
+          "miniRows": [11, 11],
+          "only": "mini"
         }
       ]
     },
-    "tortilla-tomato": {
-      "about": "The tortilla blanket in tomato red, with a band of foil at its base.",
+    "tortilla": {
+      "about": "A flour tortilla wrapped round the body like a blanket, up to the cheeks, toasted in flecks, with a band of foil at its base.",
       "bands": [
         {
           "parts": ["torso"],
           "map": {
             "B": "W",
-            "b": "W"
+            "b": "W",
+            "L": "W",
+            "O": "W"
           },
           "rides": true,
-          "rows": [27, 27],
-          "columns": [8, 9],
+          "rows": [28, 28],
+          "columns": [7, 8],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
             "B": "W",
-            "b": "W"
+            "b": "W",
+            "L": "W",
+            "O": "W"
           },
           "rides": true,
-          "rows": [27, 27],
-          "columns": [15, 15],
+          "rows": [28, 28],
+          "columns": [14, 14],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
             "B": "W",
-            "b": "W"
+            "b": "W",
+            "L": "W",
+            "O": "W"
           },
           "rides": true,
-          "rows": [27, 27],
-          "columns": [21, 22],
+          "rows": [28, 28],
+          "columns": [20, 21],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
             "B": "u",
-            "b": "u"
+            "b": "u",
+            "L": "u",
+            "O": "u"
           },
           "rides": true,
-          "rows": [28, 29],
+          "rows": [29, 29],
           "columns": [11, 11],
           "only": "hero"
         },
@@ -1105,10 +995,12 @@
           "parts": ["torso"],
           "map": {
             "B": "u",
-            "b": "u"
+            "b": "u",
+            "L": "u",
+            "O": "u"
           },
           "rides": true,
-          "rows": [28, 29],
+          "rows": [29, 29],
           "columns": [18, 18],
           "only": "hero"
         },
@@ -1116,10 +1008,12 @@
           "parts": ["torso"],
           "map": {
             "B": "u",
-            "b": "u"
+            "b": "u",
+            "L": "u",
+            "O": "u"
           },
           "rides": true,
-          "rows": [28, 29],
+          "rows": [29, 29],
           "columns": [24, 24],
           "only": "hero"
         },
@@ -1132,25 +1026,94 @@
             "O": "q"
           },
           "rides": true,
-          "rows": [27, 29],
-          "miniRows": [13, 13]
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "r",
-            "b": "r"
-          },
-          "rides": true,
-          "rows": [24, 24],
-          "columns": [6, 7],
+          "rows": [27, 27],
+          "columns": [4, 5],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "r",
-            "b": "r"
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [10, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [18, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
           },
           "rides": true,
           "rows": [25, 25],
@@ -1160,91 +1123,1610 @@
         {
           "parts": ["torso"],
           "map": {
-            "B": "r",
-            "b": "r"
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
           },
           "rides": true,
           "rows": [26, 26],
-          "columns": [9, 9],
+          "columns": [24, 25],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "r",
-            "b": "r"
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
           },
           "rides": true,
-          "rows": [23, 23],
-          "columns": [25, 26],
+          "rows": [27, 27],
+          "columns": [26, 27],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "R",
-            "b": "R"
-          },
-          "rides": true,
-          "rows": [23, 23],
-          "columns": [12, 13],
-          "only": "hero"
-        },
-        {
-          "parts": ["torso"],
-          "map": {
-            "B": "R",
-            "b": "R"
+            "B": "o",
+            "b": "o",
+            "L": "o",
+            "O": "o"
           },
           "rides": true,
           "rows": [24, 24],
-          "columns": [14, 15],
+          "columns": [5, 6],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "R",
-            "b": "R"
+            "B": "o",
+            "b": "o",
+            "L": "o",
+            "O": "o"
           },
           "rides": true,
           "rows": [25, 25],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o",
+            "L": "o",
+            "O": "o"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [13, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o",
+            "L": "o",
+            "O": "o"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [5, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [0, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [26, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [6, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [25, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [0, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [25, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [7, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "s",
+            "L": "W",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [9, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [23, 27],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p",
+            "L": "p",
+            "O": "p"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "miniColumns": [9, 9],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s",
+            "L": "s",
+            "O": "s"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [10, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "y",
+            "L": "y",
+            "O": "y"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "tortilla-spinach": {
+      "about": "The tortilla blanket in spinach green, with a band of foil at its base.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u",
+            "L": "u",
+            "O": "u"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u",
+            "L": "u",
+            "O": "u"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u",
+            "L": "u",
+            "O": "u"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [4, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [10, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
           "columns": [16, 17],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "R",
-            "b": "R"
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
           },
           "rides": true,
-          "rows": [26, 26],
+          "rows": [27, 27],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 23],
           "columns": [18, 19],
           "only": "hero"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "3",
-            "b": "3"
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
           },
           "rides": true,
-          "rows": [12, 12],
-          "miniColumns": [0, 10],
+          "rows": [24, 24],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [26, 27],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F",
+            "L": "F",
+            "O": "F"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [5, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F",
+            "L": "F",
+            "O": "F"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F",
+            "L": "F",
+            "O": "F"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [13, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F",
+            "L": "F",
+            "O": "F"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [5, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [0, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [26, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [6, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [25, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [0, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [25, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [7, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [9, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 27],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [11, 11],
           "only": "mini"
         },
         {
           "parts": ["torso"],
           "map": {
-            "B": "3",
-            "b": "R",
-            "L": "3",
-            "O": "R"
+            "B": "p",
+            "b": "p",
+            "L": "p",
+            "O": "p"
           },
           "rides": true,
-          "rows": [23, 26],
-          "miniRows": [11, 12]
+          "miniRows": [13, 13],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "miniColumns": [9, 9],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a",
+            "L": "a",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [10, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A",
+            "L": "A",
+            "O": "A"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
+        }
+      ]
+    },
+    "tortilla-corn": {
+      "about": "The tortilla blanket in blue corn, with a band of foil at its base.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [7, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [14, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W",
+            "L": "W",
+            "O": "W"
+          },
+          "rides": true,
+          "rows": [28, 28],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u",
+            "L": "u",
+            "O": "u"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u",
+            "L": "u",
+            "O": "u"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u",
+            "L": "u",
+            "O": "u"
+          },
+          "rides": true,
+          "rows": [29, 29],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [4, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [10, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [18, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [20, 21],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [26, 27],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "h",
+            "b": "h",
+            "L": "h",
+            "O": "h"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [5, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "h",
+            "b": "h",
+            "L": "h",
+            "O": "h"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "h",
+            "b": "h",
+            "L": "h",
+            "O": "h"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [13, 14],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "h",
+            "b": "h",
+            "L": "h",
+            "O": "h"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [24, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [5, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [26, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [0, 5],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [19, 19],
+          "columns": [26, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [6, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [25, 25],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [0, 6],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [20, 20],
+          "columns": [25, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [7, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [0, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [21, 21],
+          "columns": [24, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [8, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [0, 8],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [22, 22],
+          "columns": [23, 31],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [9, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "rows": [23, 27],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "q",
+            "b": "q",
+            "L": "q",
+            "O": "q"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "miniColumns": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "p",
+            "L": "p",
+            "O": "p"
+          },
+          "rides": true,
+          "miniRows": [13, 13],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "miniColumns": [9, 9],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "2",
+            "b": "2",
+            "L": "2",
+            "O": "2"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "miniColumns": [10, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "1",
+            "L": "1",
+            "O": "1"
+          },
+          "rides": true,
+          "miniRows": [12, 12],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "miniRows": [11, 11],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [0, 1],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "1",
+            "b": "2",
+            "L": "1",
+            "O": "2"
+          },
+          "rides": true,
+          "miniRows": [8, 10],
+          "miniColumns": [11, 12],
+          "only": "mini"
         }
       ]
     }
@@ -1259,9 +2741,19 @@
     {
       "id": "doggo",
       "headwear": "cast-pack/doggo",
-      "wrap": "cast-pack/collar",
-      "silhouette": "broad ears",
-      "family": "tan"
+      "fabric": "cast-pack/collar",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "cast-pack/collar-sky"
+        },
+        {
+          "id": "lime",
+          "fabric": "cast-pack/collar-lime"
+        }
+      ],
+      "silhouette": "pricked ears",
+      "family": "black and tan"
     },
     {
       "id": "cheems",
@@ -1287,14 +2779,14 @@
       "id": "puma",
       "headwear": "cast-pack/puma",
       "wrap": "cast-pack/pumatail",
-      "silhouette": "round ears",
+      "silhouette": "wrapped tail",
       "family": "tawny"
     },
     {
       "id": "panther",
       "headwear": "cast-pack/panther",
-      "wrap": "cast-pack/panthertail",
-      "silhouette": "hooked tail",
+      "back": "cast-pack/panthertail",
+      "silhouette": "raised tail",
       "family": "black"
     },
     {
@@ -1319,7 +2811,7 @@
       "id": "moose",
       "headwear": "cast-pack/moose",
       "silhouette": "antlers",
-      "family": "bone"
+      "family": "tan"
     },
     {
       "id": "llama",
@@ -1338,7 +2830,7 @@
       "headwear": "cast-pack/meowingtons",
       "face": "cast-pack/monocle",
       "silhouette": "top hat",
-      "family": "crimson"
+      "family": "black and crimson"
     },
     {
       "id": "purrito",
@@ -1350,8 +2842,8 @@
           "fabric": "cast-pack/tortilla-spinach"
         },
         {
-          "id": "tomato",
-          "fabric": "cast-pack/tortilla-tomato"
+          "id": "corn",
+          "fabric": "cast-pack/tortilla-corn"
         }
       ],
       "silhouette": "wrap",

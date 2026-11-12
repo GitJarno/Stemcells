@@ -31,18 +31,17 @@
       "art": [
         "..oo.......",
         ".oGon..oo..",
-        ".oWon..oGon",
+        ".oWon.oGon.",
         ".oGon.oGWn.",
         ".oGWn.oGon.",
+        ".oGon.oWon.",
         "WWWWWWWWWWp",
         ".RRRRRRRRr.",
-        ".WWWWWWWpq.",
         "..WWWWWpq..",
-        "...WWWpq...",
         "....Wpq...."
       ],
-      "hotspot": [5, 10],
-      "mini": [".on....", ".oW..on", ".on.Wn.", "WWWWWWp", ".RRRRr.", ".WWWpq.", "..Wpq.."],
+      "hotspot": [5, 9],
+      "mini": [".on....", ".oW.on.", ".on.oW.", ".oW.on.", "WWWWWWp", ".RRRRr.", "..WWp.."],
       "miniHotspot": [3, 6]
     },
     {
@@ -70,19 +69,19 @@
       "slot": "headwear",
       "about": "Three small ridged gnocchi in a pile, a basil leaf on top and a dab of tomato sauce.",
       "art": [
-        ".............FF....",
-        ".......yyyyyFFFf...",
-        "......yysysyyFf....",
-        ".....yWysysysy.....",
-        "......yysysyG......",
-        "..yyyyyGGGGGyyyyy..",
-        ".yysysyy...yysysyy.",
-        "yWysysysy.yyysysysy",
-        ".yysysyGRRRyysysyG.",
-        "..GGGGGRRRRRGGGGG.."
+        "..............FF...",
+        ".......yyyyyyFFFf..",
+        "......yRRsysyyFf...",
+        ".....yRRRsysysy....",
+        "......yRsysysG.....",
+        "..yyyyyyGGGGGyyyyy.",
+        ".yysysysyoyysysysy.",
+        "yWysysysyoyWysysysy",
+        ".yysysysG.yysysysG.",
+        "..GGGGGG...GGGGGG.."
       ],
       "hotspot": [9, 8],
-      "mini": ["......Ff.", "...yyyF..", "..yGyGy..", ".yyy.yyy.", "yGyGRyGyG", ".GGGRGGG."],
+      "mini": ["......Ff.", "..yRyyF..", "..RRyGy..", ".yyyyyyy.", "yGyGyyGyG", ".GGG.GGG."],
       "miniHotspot": [4, 5]
     },
     {

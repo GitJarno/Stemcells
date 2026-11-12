@@ -28,7 +28,7 @@
     {
       "name": "radish",
       "slot": "headwear",
-      "about": "A small round red radish tipped on the crown: floppy leaves fall to one side and its thin white root tail curls out the other.",
+      "about": "A small round red radish tipped over on the crown: floppy leaves fall to one side and its thin white root tail trails off the other.",
       "art": [
         "..FF...FF.................",
         "FFaFF.FaaF................",
@@ -47,7 +47,7 @@
         ".FF.F......",
         "FaFaF......",
         ".FafRRR....",
-        "..fRWRRR...",
+        "..fRPRRR...",
         "...RRRRWW..",
         "....RRR.Wg.",
         "..........g"
@@ -68,8 +68,8 @@
         "....ffffffffffffffff..J..."
       ],
       "hotspot": [12, 6],
-      "mini": [".........J.", ".aFaFaFaJYJ", "kffffffff3J", ".fffffff.J."],
-      "miniHotspot": [5, 3]
+      "mini": [".........J.", ".aFaFaFaJYJ", "kfFfFfFff3Y", "kffffffff3J", "..ffffff.J."],
+      "miniHotspot": [5, 4]
     },
     {
       "name": "potato",
@@ -83,13 +83,13 @@
         ".ootttoooovoooo.",
         "ootttooooooooooo",
         "otoooooZnooooooo",
-        "ooonZooooooonZon",
-        "oooooooooooooonn",
+        "ooonZooooooooooo",
+        "oooooooooooonZnn",
         ".ooooonZoooonnn.",
         "...nnnnnnnnnn..."
       ],
       "hotspot": [7, 9],
-      "mini": ["....iv...", "......v..", ".ooooovo.", "otooooooo", "oZoooZoon", ".oooZonn."],
+      "mini": ["....iv...", "......v..", ".oooo.v..", "otooooZoo", "oooZoooon", ".oooooZn."],
       "miniHotspot": [4, 5]
     },
     {
@@ -132,7 +132,7 @@
     {
       "name": "beans",
       "slot": "headwear",
-      "about": "An opened tin of beans standing on the crown: a silver can with a plain blue label band, beans heaped at the rim and the lid bent up behind.",
+      "about": "An opened tin of beans standing on the crown: a silver can with a plain blue label band, beans heaped at the rim and the lid bent up at one side.",
       "art": [
         ".............ggg.",
         "....33.33...gWWpg",
@@ -155,18 +155,18 @@
       "slot": "headwear",
       "about": "A block of tofu on the crown: a white cube in soft shade, scallion rings scattered on top and a drip of soy sauce running down its face.",
       "art": [
-        "...WWaaWWFaWWW.",
-        "..WZZaFWWaaWWWq",
-        ".WZZZZZWaFWWWqq",
-        "pppZZpZppppppqq",
-        "pppZppZppppppqq",
-        "pppZpppppppppqq",
+        "...WWWWWWWWWWW.",
+        "..WWZZaaWFaWWWq",
+        ".WWZZZZaWaaFWqq",
+        "ppppZZpZpppppqq",
+        "ppppZppZpppppqq",
+        "ppppZppppppppqq",
         "pppppppppppppqq",
         "ppppppppppppqq.",
         "qqqqqqqqqqqqq.."
       ],
       "hotspot": [6, 8],
-      "mini": [".ZaWWaW.", "ZZZaWWWq", "ZpZppppq", "Zpppppqq", "pppppppq"],
+      "mini": [".WWWWWW.", "WZZaWaWq", "pZZpppqq", "ppZpppqq", "pppppppq"],
       "miniHotspot": [3, 4]
     },
     {
@@ -212,7 +212,7 @@
     {
       "name": "pretzel",
       "slot": "headwear",
-      "about": "A knotted pretzel standing over the crown like a tiara: brown crossed arms and three holes, dotted with white salt.",
+      "about": "A knotted pretzel standing over the crown like a tiara: brown crossed arms and three holes, dotted with salt.",
       "art": [
         "...oogo......oooo...",
         ".oonnnnoo..oongnnoo.",
