@@ -22,10 +22,10 @@ export function HomePage(props: { readonly children: ReactNode }) {
         <KeyboardAwareScrollView
           // The marker's own child, so the header finds it: the default mode puts a view between.
           mode="layout"
-          // UIKit's inset, which the marker sets on every stage's list, holds the safe area.
+          // UIKit adds no inset to a stage's list (the marker's substitute): the foot holds the
+          // safe area itself, as T3's list's does.
           contentContainerStyle={{
-            paddingBottom:
-              Math.max(insets.bottom, 24, workspace?.bottomClearance ?? 0) - insets.bottom,
+            paddingBottom: Math.max(insets.bottom, 24, workspace?.bottomClearance ?? 0),
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
