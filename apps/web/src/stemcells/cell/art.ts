@@ -11,6 +11,7 @@ import marks from "./art/moves/marks.json" with { type: "json" };
 import toss from "./art/moves/toss.json" with { type: "json" };
 import work from "./art/moves/work.json" with { type: "json" };
 import august from "./art/packs/august.json" with { type: "json" };
+import castPack from "./art/packs/cast.json" with { type: "json" };
 import classes from "./art/packs/classes.json" with { type: "json" };
 import december from "./art/packs/december.json" with { type: "json" };
 import gym from "./art/packs/gym.json" with { type: "json" };
@@ -31,6 +32,7 @@ export type ArtFiles = Readonly<Record<string, unknown>>;
 /** Packs: pieces, fabrics, outfits and their cheers. */
 export const ART_PACKS: ArtFiles = {
   august,
+  cast: castPack,
   classes,
   december,
   gym,

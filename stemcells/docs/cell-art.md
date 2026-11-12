@@ -11,7 +11,7 @@ comes from two places:
   drawing in parallel never share a file.
 
 Every file under `cell/art/` joins the kit when the app starts. A pack that
-lands is dealt; a scene that lands can be played.
+lands is worn; a scene that lands can be played.
 
 ## The tools
 
@@ -24,6 +24,7 @@ build. It uses node's own TypeScript.
 | `cells pack <theme>`           | A still sheet of every piece and outfit in a pack, at rest and cheering                                                                        |
 | `cells lookbook [theme…]`      | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack                                                 |
 | `cells crew [day] [count]`     | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering       |
+| `cells cast [name…]`           | `cast.png`: the Cells' own looks by name, at rest and landed. Every name by default; a name with no look is drawn bare and marked `none`       |
 | `cells manner [temperament…]`  | `manner-<look>.png`: each temperament's rest (a picture a hold) and its beats frame by frame, at both sizes. `--look <look>`, `--ground light` |
 | `cells check [theme…]`         | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art                                                           |
 
@@ -182,8 +183,14 @@ bundler has it too; `art.test.ts` fails until it is.
 - **`season`** is one of:
   - `null`;
   - `{"from": "08-01", "to": "08-31"}` (MM-DD, inclusive, and it may wrap the
-    new year);
+    new year). A window over twenty days may name its `"feast": ["12-20",
+    "12-26"]`, the days inside it every Cell dresses for;
   - for a feast that moves, `{"years": {"2027": ["02-06", "02-20"]}}`.
+- **`"cast": true`** marks a pack of the Cells' own looks. Each outfit's `id`
+  is a Cell's name in lower case (`stemcells/words/cellNames.json`), and that
+  Cell wears it every day. A cast look is one silhouette piece and at most
+  one supporting piece, and has a cheer only where the cheer is the joke:
+  without one, a landing plays the Cell's temperament.
 - **`slot`** names where the piece sits:
 
   | Slot       | Anchor                                        | Depth                                       |
@@ -230,18 +237,25 @@ bundler has it too; `art.test.ts` fails until it is.
 
 ### How a crew is dealt
 
-The Cells in view are dealt together (`cell/looks.ts`, rules in
-`stemcells/tasks/cell-outfits.md`):
+What a Cell wears is worked out from its chat's id and the day, the same on
+every screen (`cell/looks.ts`, the reasons in `stemcells/tasks/cell-cast.md`):
 
-- A pack with outfits deals each Cell one outfit, in one of its colourways;
-  a pack without deals one piece.
-- No two Cells in view wear the same silhouette or colour family while the
+- **Its own look, every day.** A Cell wears the look drawn for its name: the
+  Cell named Fox wears the fox hood. Two Cells of one name in view wear the
+  look's colourways apart, while it has any.
+- **A season is dress-up days.** A window of twenty days or fewer is a feast
+  whole, and so are a longer window's named `feast` days: every Cell dresses
+  for it. Through the rest of a longer season a Cell dresses for it one day
+  in three, on days of its own.
+- **Dressed for the season**, a Cell wears the season's outfit in place of
+  its own look: an outfit is a whole look. A season pack with no outfits
+  deals one piece, and the Cell's own look keeps the slots the piece leaves
+  free.
+- **No two alike in a season.** The Cells in view that dress for it are dealt
+  together: no two wear the same silhouette or colour family while the
   catalogue lasts; past it, the least worn, in a colourway no other wearer
   has.
-- A season's item is dealt first, being the day's; the theme's item takes
-  the slots it leaves free, so a season outfit that leaves a slot free lets
-  a Cell's own theme show beside it.
-- A Cell keeps its look while it stays in view.
+- A Cell keeps the item and colourways it wears while it stays in view.
 
 ### A move set: `art/moves/<set>.json`
 
@@ -423,6 +437,9 @@ These hold on drawn art. On the original's art they are notes.
   - `poses`, outfit pieces, fabrics and cheers name things that exist;
   - seasons are real windows;
   - outfits in a pack differ in silhouette or family;
+  - a cast look is named for a Cell's name, no name has two, no two cast
+    looks share both silhouette and family, and (with no theme named) every
+    name has one;
   - a drawn move has a `tell` that is one of its frames, keeps the beat
     (12, or 24 with `sound`), and hands back to a real scene;
   - a temperament's weight is above 0, its breath takes a second or more, its

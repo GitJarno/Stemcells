@@ -284,9 +284,10 @@ Read on main on 21 October.
   mage's robe in lilac, sky or rose).
 - **Seasons first.** A season's item is dealt first, because it is the
   day's. The theme's item takes the slots the season leaves free, so a season
-  outfit that leaves a slot free lets a Cell's own theme show beside it. The
-  rule as it stands is in `stemcells/docs/cell-art.md`, "A season's item is
-  dealt first". Decided; see below.
+  outfit that leaves a slot free lets a Cell's own theme show beside it.
+  Decided; see below. Since replaced: a Cell wears its own name's look, and a
+  season is dress-up days (`stemcells/tasks/cell-cast.md`; the rule as it
+  stands is in `stemcells/docs/cell-art.md`, "How a crew is dealt").
 - **Growth: the flex.**
   - Time worked alone is a turn's running time with no needs-you, summed over
     the thread.
