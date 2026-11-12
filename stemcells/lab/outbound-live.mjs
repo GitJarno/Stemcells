@@ -602,7 +602,7 @@ async function drive(port, until, drove, ended, step) {
       .click({ timeout: 10_000 })
       .catch(() => {});
     await page
-      .getByRole("button", { name: /without a project/i })
+      .getByRole("button", { name: /without a project|casual chat/i })
       .first()
       .click({ timeout: 20_000 })
       .catch(() => {});
