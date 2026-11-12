@@ -99,7 +99,7 @@ interface Booked extends Performance {
 
 const booked = new Map<string, Booked>();
 const stood = new Map<string, Standing>();
-const pokes = new Map<string, { at: number; streak: number }>();
+const pokes = new Map<string, { at: number; streak: number; standing: Standing }>();
 const turns = new Map<string, number>();
 
 /** Pokes this close together, in seconds, are one flurry. */
@@ -117,12 +117,14 @@ export function pokeCue(standing: Standing, streak: number): string {
   return streak >= 3 ? "poke/rest/3" : streak === 2 ? "poke/rest/2" : "poke/rest";
 }
 
-/** The first cue of `cue`'s climb that has a cast: a kit with no flurry answers every poke the same. */
+/** A resting Cell's climb, lowest first. */
+const CLIMB = ["poke/rest", "poke/rest/2", "poke/rest/3", "poke/rest/dazed"];
+
+/** `cue`, or the highest rung of the climb under it that has a cast: a kit short a rung answers with the one below. */
 function castCue(cue: string, name: string): string {
-  let at = cue;
-  while (castFor(at, name).length === 0 && at.includes("/", "poke/".length))
-    at = at.slice(0, at.lastIndexOf("/"));
-  return at;
+  for (let rung = CLIMB.indexOf(cue); rung > 0; rung--)
+    if (castFor(CLIMB[rung]!, name).length > 0) return CLIMB[rung]!;
+  return CLIMB.includes(cue) ? CLIMB[0]! : cue;
 }
 
 /** The act the Cell `name` names plays at `seconds`, while it still stands as it did when the act began. */
@@ -164,10 +166,13 @@ export function stand(name: string, mood: Mood, working: boolean): void {
 export function poke(name: string, seconds: number): Performance | undefined {
   const standing = stood.get(name) ?? "rest";
   const now = performing(name, seconds, standing);
-  if (now?.deaf === true) return now;
+  // Deaf from the moment the daze is booked, while it still waits for a landing too.
+  const next = booked.get(name);
+  if (next?.deaf === true && next.standing === standing && seconds < next.until) return next;
   const last = pokes.get(name);
-  const streak = last !== undefined && seconds - last.at <= FLURRY ? last.streak + 1 : 1;
-  pokes.set(name, { at: seconds, streak });
+  const flurry = last !== undefined && last.standing === standing && seconds - last.at <= FLURRY;
+  const streak = flurry ? last.streak + 1 : 1;
+  pokes.set(name, { at: seconds, streak, standing });
   if (standing !== "rest" && now !== undefined) return now;
   const cue = castCue(pokeCue(standing, streak), name);
   const turn = turns.get(`${name}|${cue}`) ?? 0;
@@ -176,7 +181,7 @@ export function poke(name: string, seconds: number): Performance | undefined {
   if (key === undefined || scene === undefined) return undefined;
   turns.set(`${name}|${cue}`, turn + 1);
   const since = now === undefined ? seconds : landsAt(now, seconds);
-  const next: Booked = {
+  const answer: Booked = {
     key,
     since,
     until: since + lengthOf(scene),
@@ -184,8 +189,8 @@ export function poke(name: string, seconds: number): Performance | undefined {
     deaf: ACTS.get(key.slice("act/".length))?.deaf ?? false,
     before: now,
   };
-  booked.set(name, next);
-  return next;
+  booked.set(name, answer);
+  return answer;
 }
 
 /** Forgets every poke and act in flight: for tests. */

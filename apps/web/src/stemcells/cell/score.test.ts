@@ -106,16 +106,23 @@ test("a mark rides the frames it is given: from a landing, drifting, or circling
 });
 
 test("a score that names what there isn't says so, and plays the rest", () => {
-  const { frames, problems } = scored([
-    { do: "moonwalk" },
-    { do: "arms", left: "wing" },
-    { do: "mark", mark: "comet", for: 2 },
-    { do: "hold", for: 2 },
-  ]);
+  const { frames, problems } = scored(
+    [
+      { do: "moonwalk" },
+      { do: "arms", left: "wing" },
+      { do: "mark", mark: "comet", for: 2 },
+      { do: "mark", mark: "star", on: "land", for: 2 },
+      { do: "hold", for: 2 },
+      { do: "mark", mark: "star", for: 2 },
+    ],
+    { star },
+  );
   NodeAssert.equal(frames.length, 2);
   NodeAssert.deepEqual(problems, [
     "0 moonwalk: no such phrase",
     '1 arms: no arm "wing"',
+    '3 mark: no phrase before it names "land"',
     '2 mark: no mark "comet"',
+    "5 mark: no frame follows it to ride",
   ]);
 });

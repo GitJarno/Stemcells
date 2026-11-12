@@ -77,19 +77,14 @@ function restFrames(
   watching?: { readonly x: number; readonly y: number },
 ): Frame[] {
   const breath = breathOf(manner);
-  // Watching the person's hand, it looks nowhere else.
-  const glances =
-    watching !== undefined
-      ? [{ look: [watching.x, watching.y], holdMs: 1000 }]
-      : eyes === "calm"
-        ? manner.gaze
-        : [];
+  const glances = watching === undefined && eyes === "calm" ? manner.gaze : [];
   const looks = glances.flatMap(({ look, holdMs }) =>
     Array.from({ length: Math.max(1, Math.round((holdMs * REST_FPS) / 1000)) }, () => look),
   );
   const count = Math.max(1, Math.ceil(looks.length / breath.length)) * breath.length;
   return Array.from({ length: count }, (_, i) => {
-    const look = looks[i] ?? [0, 0];
+    // Watching the person's hand, it looks there the whole breath through.
+    const look = watching === undefined ? (looks[i] ?? [0, 0]) : [watching.x, watching.y];
     return {
       pose: {
         ...REST,

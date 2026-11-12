@@ -662,6 +662,50 @@ export function probeStill(look: CellLook, pose: Pose, compact: boolean): FrameP
   );
 }
 
+/**
+ * Whether scene `key` pushes anything `look` wears off the canvas at one size. Only the body's
+ * pose can: `seen` remembers each one measured, so a pose many scenes share (a rest, a squash)
+ * is drawn once, and a library of acts costs what its distinct poses do.
+ */
+export function spillsIn(
+  look: CellLook,
+  key: string,
+  compact: boolean,
+  seen: Map<string, boolean>,
+): boolean {
+  const play = playOf(look, key);
+  if (play === undefined) return false;
+  const { move, wardrobe } = play;
+  const folded = folding(move, wardrobe, play.pieces);
+  const moving = animatedOf(wardrobe);
+  const worn = JSON.stringify(wardrobe);
+  return folded.poses.some((index, i) => {
+    const frame = move.frames[index]!;
+    const beat = folded.beats[i]!;
+    // Which eyes and mouth are stamped on the body, and a mark is drawn bare too: neither
+    // moves what is worn. Where the face looks does: a lens rides the eyes.
+    const body = { ...frame.pose, eyes: "", mouth: "" };
+    const id = [
+      compact,
+      move.facing,
+      worn,
+      JSON.stringify([body, frame.swaps, frame.hidden ?? false]),
+      ...moving.map((piece) => frameAt(piece, beat)),
+    ].join("|");
+    let spills = seen.get(id);
+    if (spills === undefined) {
+      const posed: Move = { ...move, frames: [{ ...frame, layers: [] }] };
+      const dressed = { count: 0 };
+      const bare = { count: 0 };
+      composeFrame(posed, 0, wardrobe, compact, false, beat, { spill: dressed });
+      composeFrame(posed, 0, wardrobe, compact, false, beat, { bare: true, spill: bare });
+      spills = dressed.count > bare.count;
+      seen.set(id, spills);
+    }
+    return spills;
+  });
+}
+
 /** Every frame scene `key` shows in `look`, at the miniature (`compact`) or the hero, as the tools measure it. */
 export function probesOf(look: CellLook, key: string, compact: boolean): FrameProbe[] {
   const play = playOf(look, key);

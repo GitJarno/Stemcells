@@ -2,7 +2,7 @@
 // shows at a moment: the original app's casting over the kit's scenes, each
 // Cell in its own manner (`manner.ts`), a moment played once from where it began.
 
-import { actFor, performing, standingOf } from "./acting.ts";
+import { actFor, castFor, performing, standingOf } from "./acting.ts";
 import type { Activity } from "./activity.ts";
 import { isBlinking } from "./blink.ts";
 import { type Pose, REST, type Temperament } from "./kit.ts";
@@ -196,22 +196,26 @@ function holds(kind: Entrance["kind"], { mood, working }: Stance): boolean {
   }
 }
 
+/** The act each entrance picked from its cue's cast: picked once, asked for every beat it holds. */
+const picked = new WeakMap<Entrance, string | undefined>();
+
 /**
  * The scene an entrance plays: a landing's cheer (the look's own wins), a cue's act as the
  * Cell `name` names picks it for the moment it began, else the manner's take, where it has one.
  */
 function entranceKey(
-  { kind, since }: Entrance,
+  entrance: Entrance,
   look: CellLook,
   manner: Temperament,
   name: string,
 ): string | undefined {
+  const { kind, since } = entrance;
   if (kind === "landed")
     return look.cheer === undefined ? (manner.beats.landed ?? "happy") : "happy";
-  if (kind === "granted" || kind === "answered")
-    return actFor(kind, name, Math.max(0, Math.floor(since))) ?? manner.beats.onIt;
-  if (kind === "failed") return actFor(kind, name, Math.max(0, Math.floor(since)));
-  return manner.beats[kind];
+  if (kind !== "granted" && kind !== "answered" && kind !== "failed") return manner.beats[kind];
+  if (!picked.has(entrance))
+    picked.set(entrance, actFor(kind, name, Math.max(0, Math.floor(since))));
+  return picked.get(entrance) ?? (kind === "failed" ? undefined : manner.beats.onIt);
 }
 
 /** What a picture of a Cell needs to know to draw it at a moment. */
@@ -250,21 +254,15 @@ export function prepare(look: CellLook, showing: Showing): void {
   const manner = mannerOf(showing.name);
   const stance = { mood: showing.mood, working: showing.activity !== undefined };
   standing(look, showing, manner, 0);
-  const since = showing.entrance?.since ?? 0;
-  for (const kind of [
-    "landed",
-    "onIt",
-    "granted",
-    "answered",
-    "failed",
-    "wake",
-    "sleep",
-  ] as const) {
+  for (const kind of ["landed", "onIt", "wake", "sleep"] as const) {
     const key = holds(kind, stance)
-      ? entranceKey({ kind, since }, look, manner, showing.name)
+      ? entranceKey({ kind, since: 0 }, look, manner, showing.name)
       : undefined;
     if (key !== undefined) sceneOf(look, key);
   }
+  // Which act a cue's entrance plays is picked when it begins: every one its cast holds.
+  for (const kind of ["granted", "answered", "failed"] as const)
+    if (holds(kind, stance)) for (const key of castFor(kind, showing.name)) sceneOf(look, key);
 }
 
 /**

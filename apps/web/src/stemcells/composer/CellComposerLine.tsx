@@ -112,12 +112,17 @@ export function CellComposerLine() {
             pressed.current = event.button === 0 ? { x: event.clientX, y: event.clientY } : null;
             startChatCarry(event, cell, "cell");
           }}
-          onPointerUp={(event) => {
+          onPointerMove={(event) => {
+            // Once the hand has gone as far as a carry takes, the press is never a poke.
+            const press = pressed.current;
+            if (press === null) return;
+            if (Math.hypot(event.clientX - press.x, event.clientY - press.y) >= PICK_UP_DISTANCE)
+              pressed.current = null;
+          }}
+          onPointerUp={() => {
             const press = pressed.current;
             pressed.current = null;
-            if (press === null || reducedMotion()) return;
-            if (Math.hypot(event.clientX - press.x, event.clientY - press.y) < PICK_UP_DISTANCE)
-              poke(cell.threadId, clockSeconds());
+            if (press !== null && !reducedMotion()) poke(cell.threadId, clockSeconds());
           }}
         >
           <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />

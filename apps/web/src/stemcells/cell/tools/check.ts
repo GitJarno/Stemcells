@@ -49,6 +49,7 @@ import {
   probesOf,
   pastDetail,
   probeStill,
+  spillsIn,
   stateOf,
 } from "../scene.ts";
 
@@ -163,6 +164,7 @@ function lookFindings(
   const out: Finding[] = [];
   const say = (rule: string, detail: string, level: Level = "fail") =>
     out.push({ rule, subject, detail, level: options.original ? "note" : level });
+  const measured = new Map<string, boolean>();
   for (const compact of [false, true]) {
     const size = compact ? "mini" : "hero";
     for (const eyes of ["calm", "open"]) {
@@ -208,7 +210,7 @@ function lookFindings(
     const spilt = (options.scenes ?? [...SCENES.keys()]).filter(
       (key) =>
         !(look.cheer !== undefined && key.startsWith("landed/")) &&
-        probesOf(look, key, compact).some((probe) => probe.spilt > 0),
+        spillsIn(look, key, compact, measured),
     );
     if (spilt.length > 0)
       say("box", `${size}: art falls off the canvas in ${spilt.join(", ")}`, "warn");

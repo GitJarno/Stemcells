@@ -592,10 +592,14 @@ export function scored(
           break;
         }
         case "mark":
-        case "orbit":
-          // Laid over the frames once all of them are known (`overlay`).
-          spans.push({ step, where, from: cues.get(word(step.on) ?? "") ?? frames.length });
+        case "orbit": {
+          // Laid over the frames once all of them are known.
+          const on = word(step.on);
+          if (on !== undefined && !cues.has(on))
+            problems.push(`${where}: no phrase before it names "${on}"`);
+          spans.push({ step, where, from: cues.get(on ?? "") ?? frames.length });
           break;
+        }
         default:
           problems.push(`${where}: no such phrase`);
       }
@@ -648,6 +652,7 @@ export function scored(
       problems.push(`${where}: no mark "${String(step.mark)}"`);
       continue;
     }
+    if (from >= frames.length) problems.push(`${where}: no frame follows it to ride`);
     const attach = word(step.at) ?? "headTop";
     const count = Math.max(1, whole(step.for, 1));
     const drift = pair(step.drift) ?? [0, 0];

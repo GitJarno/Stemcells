@@ -54,6 +54,41 @@ test("a Cell in the air lands before the next act starts", () => {
   NodeAssert.equal(performing(name, next.since, "rest"), next);
 });
 
+test("a daze booked mid-air is deaf at once; a flurry doesn't carry from one state to the next", () => {
+  resetActing();
+  const leaves = (key: string | undefined) =>
+    SCENES.get(key ?? "")?.frames.some((frame) => frame.pose.base < REST.base) === true;
+  const name = NAMES.find((one) => leaves(actFor("poke/rest/2", one, 0)))!;
+  stand(name, "awake", false);
+  for (const at of [100, 100.1, 100.15, 100.2]) poke(name, at);
+  const jump = performing(name, 100.25, "rest")!;
+  const air = SCENES.get(jump.key)!.frames.findIndex((frame) => frame.pose.base < REST.base);
+  NodeAssert.ok(air >= 0, "the fourth poke finds it playing an act that leaves the ground");
+  const midAir = jump.since + (air + 0.5) / 12;
+  const dazed = poke(name, midAir)!;
+  NodeAssert.equal(dazed.key, "act/dazed");
+  NodeAssert.ok(dazed.since > midAir, "the daze waits for the landing");
+  NodeAssert.equal(poke(name, midAir + 0.01), dazed, "and nothing pushes it later");
+  resetActing();
+  stand("c", "awake", true);
+  poke("c", 10);
+  stand("c", "awake", false);
+  const first = poke("c", 10.5)!;
+  NodeAssert.ok(castFor("poke/rest", "c").includes(first.key), "at rest now: its first poke");
+});
+
+test("a rare act comes up now and then, never two turns running", () => {
+  const cue = "poke/rest/3";
+  const rare = (key: string | undefined) => SCENES.get(key ?? "")?.meta.tier === "rare";
+  NodeAssert.ok(castFor(cue, "x").some(rare) && !castFor(cue, "x").every(rare));
+  for (const name of NAMES.slice(0, 12)) {
+    const turns = Array.from({ length: 300 }, (_, turn) => rare(actFor(cue, name, turn)));
+    const count = turns.filter(Boolean).length;
+    NodeAssert.ok(count > 20 && count < 100, `${name}: ${count} of 300`);
+    NodeAssert.ok(!turns.some((is, i) => is && turns[i + 1] === true), `${name} twice running`);
+  }
+});
+
 test("a poke is answered in the state the Cell is in, once, and dropped when the state turns", () => {
   resetActing();
   for (const [mood, working, cue] of [

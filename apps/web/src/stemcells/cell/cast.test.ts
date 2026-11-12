@@ -4,10 +4,17 @@ import { actFor, castFor, poke, resetActing, stand } from "./acting.ts";
 import { ACTIVITIES } from "./activity.ts";
 import { blinkStart } from "./blink.ts";
 import { bodyOf, entering, entranceOf, frameFor, frameShown, pictureOf, sceneFor } from "./cast.ts";
-import { BODIES, PACKS } from "./kit.ts";
+import { BODIES, PACK_OUTFITS, PACKS, REST, TEMPERAMENTS } from "./kit.ts";
 import { BOX, MOODS } from "./look.ts";
-import { FIDGET_WINDOW, fidgetingFor, mannerOf, phaseOf, watchingKey } from "./manner.ts";
-import { type CellScene, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
+import {
+  FIDGET_WINDOW,
+  fidgetingFor,
+  generatedScene,
+  mannerOf,
+  phaseOf,
+  watchingKey,
+} from "./manner.ts";
+import { type CellScene, frameIn, MARGIN, outfitLook, packLook, sceneOf } from "./scene.ts";
 import { crop } from "./sprite.ts";
 
 const bare = packLook([]);
@@ -319,4 +326,27 @@ test("a resting Cell watches the person's pointer and looks nowhere else", () =>
     NodeAssert.ok(right.mini.includes(frame) || right.shut?.mini.includes(frame), `${seconds}`);
   }
   NodeAssert.equal(sceneOf(bare, `rest/${manner.id}@2,0`), undefined, "a step each way, no more");
+  for (const id of TEMPERAMENTS.keys()) {
+    const frames = generatedScene(`rest/${id}@1,-1`)!.frames;
+    NodeAssert.ok(
+      frames.every((frame) => frame.pose.look.x === 1 && frame.pose.look.y === -1),
+      `${id} looks at the hand the whole breath through`,
+    );
+  }
+});
+
+test("a step to the side is taken where there is room, and held where what the Cell wears would leave the canvas", () => {
+  const stepped = { ...REST, x: REST.x + 2 };
+  const rows = (look: typeof bare, pose: typeof REST) =>
+    frameIn(look, "idle", pose).rows.join("\n");
+  NodeAssert.notEqual(rows(bare, stepped), rows(bare, REST), "bare, it steps");
+  const looks = [...PACK_OUTFITS.keys()].map((id) => outfitLook(id)!);
+  const held = looks.filter((look) => rows(look, stepped) === rows(look, REST));
+  NodeAssert.ok(held.length > 0, "some look is too wide to step");
+  NodeAssert.ok(held.length < looks.length, "and a look with room steps too");
+  NodeAssert.equal(
+    rows(bare, { ...REST, x: REST.x + 6 }),
+    rows(bare, stepped),
+    "and never further than a step",
+  );
 });
