@@ -4,6 +4,10 @@ Slice 4 of the Cell port (`cell-kit.md`), with the calls made on 21 October
 (`cell-life.md`, Decisions). The art formats and tools are in
 `cell-tools.md`; this makes the runtime wear what they carry.
 
+Since replaced in part: a Cell now wears its own name's look in place of a
+theme's item, and a season is dress-up days (`cell-cast.md`). Rules 3 to 7
+still hold for a season's items.
+
 ## Rules
 
 1. **A theme deals outfits.** A pack with outfits deals each Cell one outfit

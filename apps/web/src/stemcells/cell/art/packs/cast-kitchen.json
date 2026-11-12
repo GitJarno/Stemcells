@@ -1,0 +1,1031 @@
+{
+  "theme": "cast-kitchen",
+  "season": null,
+  "cast": true,
+  "about": "The Cells' own looks: cooked dishes worn on the crown, and three oddities (a brain, bongos and a trumpet).",
+  "pieces": [
+    {
+      "name": "taco",
+      "slot": "headwear",
+      "about": "A hard-shell taco standing along the crown like a crest: a yellow shell, lettuce and tomato along its open edge.",
+      "art": [
+        "........aA.RR.Aa......",
+        ".....AaARaaRRAaAR.....",
+        "...aRAaYYYYYYYYaAaA...",
+        "..AaAYYYYYYYYYYYYRRa..",
+        ".aAYYYYYJYYYYYYYYYYAa.",
+        "ARYYYYYYYYYYYYJYYYYYaA",
+        "aYYYJYYYYYYYYYYYYYYYYa",
+        "YYYYYYYYYYJYYYYYYJYYYJ",
+        "YYYYYYYYYYYYYYYYYYYYJJ",
+        ".JJJJJJJJJJJJJJJJJJJJ."
+      ],
+      "hotspot": [11, 8],
+      "mini": ["..aARaA..", ".RYYYYYa.", "aYYYJYYYA", "YYYYYYJYJ", ".JJJJJJJ."],
+      "miniHotspot": [4, 4]
+    },
+    {
+      "name": "churro",
+      "slot": "headwear",
+      "about": "Two ridged, sugared churros standing in a paper cone.",
+      "art": [
+        "..oo.......",
+        ".oGon..oo..",
+        ".oWon.oGon.",
+        ".oGon.oGWn.",
+        ".oGWn.oGon.",
+        ".oGon.oWon.",
+        "WWWWWWWWWWp",
+        ".RRRRRRRRr.",
+        "..WWWWWpq..",
+        "....Wpq...."
+      ],
+      "hotspot": [5, 9],
+      "mini": [".on....", ".oW.on.", ".on.oW.", ".oW.on.", "WWWWWWp", ".RRRRr.", "..WWp.."],
+      "miniHotspot": [3, 6]
+    },
+    {
+      "name": "dumpling",
+      "slot": "headwear",
+      "about": "One white pleated dumpling, twisted shut at the top, sitting in a round bamboo steamer basket.",
+      "art": [
+        "........WW........",
+        "......WqWWqW......",
+        "....WWqWWqWWqW....",
+        "...WWqWWWWWWWqW...",
+        "...WWWWWWWWWWWp...",
+        "...WWWWWWWWWWpp...",
+        "tttttttttttttttttt",
+        "nnnnnnnnnnnnnnnnnn",
+        "ttkttttkttttkttttn",
+        ".nnnnnnnnnnnnnnnn."
+      ],
+      "hotspot": [9, 8],
+      "mini": ["....W....", "..WWpWW..", ".WWWWWWp.", "ttttttttt", "nnknnnknn", ".ttttttt."],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "gnocchi",
+      "slot": "headwear",
+      "about": "Three small ridged gnocchi in a pile, a basil leaf on top and a dab of tomato sauce.",
+      "art": [
+        "..............FF...",
+        ".......yyyyyyFFFf..",
+        "......yRRsysyyFf...",
+        ".....yRRRsysysy....",
+        "......yRsysysG.....",
+        "..yyyyyyGGGGGyyyyy.",
+        ".yysysysyoyysysysy.",
+        "yWysysysyoyWysysysy",
+        ".yysysysG.yysysysG.",
+        "..GGGGGG...GGGGGG.."
+      ],
+      "hotspot": [9, 8],
+      "mini": ["......Ff.", "..yRyyF..", "..RRyGy..", ".yyyyyyy.", "yGyGyyGyG", ".GGG.GGG."],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "pierogi",
+      "slot": "headwear",
+      "about": "One crimped half-moon pierogi, its edge browned in the pan, with a dollop of sour cream and a sprig of dill.",
+      "art": [
+        "..............F.F.",
+        "......oCoCo..F.F..",
+        "...oCoCCCCCWWWF...",
+        "..CCCCCCCCWWWWWo..",
+        ".oCCWWCCCCWWWWWCo.",
+        ".CCWCCCCCCCpppCCC.",
+        "oCCCCCCCCCCCCCCCCo",
+        ".tttttttttttttttt."
+      ],
+      "hotspot": [9, 6],
+      "mini": ["..oCoCo..", ".oCCCCCF.", "oCCCCCWWo", "CCWCCCWWC", ".ttttttt."],
+      "miniHotspot": [4, 4]
+    },
+    {
+      "name": "ravioli",
+      "slot": "headwear",
+      "about": "A square ravioli pillow with pinked edges and a spoonful of tomato sauce on top.",
+      "art": [
+        ".....RRRRR.....",
+        "y.y.RRRRRRR.y.y",
+        "yyyyRRWWRRRyyyy",
+        ".yyssRRRRRssyy.",
+        "yyysyyRRyyysyyy",
+        ".yysyyyRyyysyy.",
+        "yyysyWWyyyysyyy",
+        ".yysyWyyyyysyy.",
+        "yyysssssssssyyy",
+        ".yyyyyyyyyyyyy.",
+        "y.y.y.y.y.y.y.y"
+      ],
+      "hotspot": [7, 9],
+      "mini": ["...RRR...", ".yyRRRyy.", "GyyyRyyyG", ".yyWyyyy.", "GyyyyyyyG", ".G.G.G.G."],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "noodle",
+      "slot": "headwear",
+      "about": "A ramen bowl worn as a hat: noodles spill over its brim at both sides, chopsticks stand in it, and half an egg floats on top.",
+      "art": [
+        "...................nk.nk",
+        "..................nk.nk.",
+        "......YJYYJYY....nk.nk..",
+        "....YYJYYWWWWJYYnk.nk...",
+        "...YJYYJW33WWYJnkYnkJY..",
+        ".YYWWWWWWWWWWWWWWWWWWYY.",
+        "YJYhhhhhhhhhhhhhhhhhhYJY",
+        "YJY.WWWWWWWWWWWWWWWp..YY",
+        ".YY..WWWWWWWWWWWWWp...JY",
+        ".YJ....WWWWWWWWpp......Y",
+        "YY.......pppppp.........",
+        "Y......................."
+      ],
+      "hotspot": [11, 9],
+      "mini": [
+        "........n.n",
+        "..YJYYYn.n.",
+        ".YYW3WYJYY.",
+        "YWWWWWWWWWY",
+        "Y.hhhhhhh.J",
+        "J..WWWWW..."
+      ],
+      "miniHotspot": [5, 5]
+    },
+    {
+      "name": "meatball",
+      "slot": "headwear",
+      "about": "A nest of spaghetti with one big meatball on top, tomato sauce running down it.",
+      "art": [
+        "........RRRRR.........",
+        ".......RRRRRRR........",
+        "......RRnRRRnRR.......",
+        "......nRonnRnnk.......",
+        "......nonnnnnkk.......",
+        "....YYJnnnnnkkkJYY....",
+        "..YYJYYYkkkkkRYYJYYY..",
+        "YYJYoJYYRYJYoRJYYJoYJY",
+        "YJYYJYoJYYJYYJYoJYYJYJ",
+        ".JJoJJYJJoJJYJJoJJYJJ."
+      ],
+      "hotspot": [11, 8],
+      "mini": [
+        "....RRR....",
+        "...nRnRk...",
+        "...nonnk...",
+        ".YJYkkkJYJ.",
+        "YJYYJRJYYJY",
+        ".JYJYYJYJJ."
+      ],
+      "miniHotspot": [5, 5]
+    },
+    {
+      "name": "baguette",
+      "slot": "back",
+      "about": "A golden baguette carried on the back, its scored end rising over the left shoulder.",
+      "art": [
+        ".GGG......",
+        "GGGGGo....",
+        ".GGyGGo...",
+        ".GyGGGo...",
+        "..GGGGGo..",
+        "...GGyGGo.",
+        "...GyGGGo.",
+        "....GGGGGo",
+        "....GGGyGo",
+        ".....GGyGG"
+      ],
+      "hotspot": [12, 18],
+      "mini": [".GG...", "GyGo..", ".GGyo.", "..GyGo", "...GGG"],
+      "miniHotspot": [5, 9]
+    },
+    {
+      "name": "bigbrain",
+      "slot": "headwear",
+      "about": "A big pink brain worn as the crown: two lobes, deep in folds.",
+      "art": [
+        "...III.III.III.III...",
+        ".IIIIIIIIIMIIIIIIIII.",
+        "IIIMMIIIPIMIIMMMIIIII",
+        "IMMIIMIIPIMIPIIIMIMMI",
+        "IIIIIMIIIIMIPIIIIMIII",
+        "IIPPIIMMMIMIIMMIIIPII",
+        "IPIIMIIIIMIIMIIMMMIII",
+        ".IIIIIPPIIMIIIIIIIII.",
+        "..PPPPPPPPMPPPPPPPP.."
+      ],
+      "hotspot": [10, 7],
+      "mini": [
+        "...II.II...",
+        "..IIIPIII..",
+        ".IMMIPIMMI.",
+        "IIIIMPMIIII",
+        "IMMIIPIIMMI",
+        ".PPMPPPMPP."
+      ],
+      "miniHotspot": [5, 5]
+    },
+    {
+      "name": "bongo",
+      "slot": "headwear",
+      "about": "A pair of bongo drums joined side by side: tan skins, red shells with wooden staves.",
+      "art": [
+        "...CCCCC......CCCCCCC...",
+        "..CWWCCCC....CWWWCCCCC..",
+        ".gCCCCCCCg..gCCCCCCCCCg.",
+        ".ggggggggg..ggggggggggg.",
+        ".RRnRRnRRRnnRRnRRRnRRRn.",
+        ".RRnRRnRRrnnRRnRRRnRRRr.",
+        "..RnRRnRr....RnRRRnRRr..",
+        "..RnRRnRr....RnRRRnRRr..",
+        "...rrrrr......rrrrrrr..."
+      ],
+      "hotspot": [11, 7],
+      "mini": [".CCC..CCCC.", "gCCCggCCCCg", "RnRRnnRRnRR", "RnRR..RRnRR", ".rr....rrr."],
+      "miniHotspot": [5, 4]
+    },
+    {
+      "name": "doot",
+      "slot": "headwear",
+      "about": "A brass trumpet lying across the crown: mouthpiece to one side, bell to the other, three valves on top.",
+      "art": [
+        "........JJ.JJ.JJ......YJ",
+        "........YY.YY.YY.....YYJ",
+        "........YY.YY.YY....YYYJ",
+        "pp.YYYYYYYYYYYYYYYYYYYWJ",
+        "ppYYJJJJJJJJJJJJJJJJYYWJ",
+        ".....YJ.YY.YY.YY.YJ.YYYJ",
+        ".....YJ.YY.YY.YY.YJ..YYJ",
+        ".....YYJJJJJJJJJJYJ...YJ",
+        "......YYYYYYYYYYYY......"
+      ],
+      "hotspot": [11, 7],
+      "mini": ["...J.J.J..Y", "...Y.Y.Y.YY", "pYYYYYYYYYW", "..YJ...JYYY", "...YYYYY..Y"],
+      "miniHotspot": [5, 4]
+    }
+  ],
+  "fabrics": {
+    "marine": {
+      "about": "A sailor's striped top: navy and cream hoops from the chest down, as the library's, its shaded edge lifted so it shows on black.",
+      "bands": [
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [4, 4]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [5, 5]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [6, 6]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [7, 7]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [8, 8]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [9, 9]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [10, 10]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [11, 11]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [12, 12]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [13, 13]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [14, 14]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [15, 15]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [16, 16]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [17, 17]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [18, 18]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [19, 19]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [20, 20]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [21, 21]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [22, 22]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [23, 23]
+        },
+        {
+          "map": {
+            "B": "w",
+            "b": "w"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [24, 24]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [25, 25]
+        }
+      ]
+    },
+    "marine-crimson": {
+      "about": "The striped top with crimson hoops.",
+      "bands": [
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [4, 4]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [5, 5]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [6, 6]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [7, 7]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [8, 8]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [9, 9]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [10, 10]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [11, 11]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [12, 12]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [13, 13]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [14, 14]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [15, 15]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [16, 16]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [17, 17]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [18, 18]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [19, 19]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [20, 20]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [21, 21]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [22, 22]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [23, 23]
+        },
+        {
+          "map": {
+            "B": "N",
+            "b": "m"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [24, 24]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [25, 25]
+        }
+      ]
+    },
+    "marine-denim": {
+      "about": "The striped top with washed denim hoops.",
+      "bands": [
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [4, 4]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [5, 5]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [6, 6]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [7, 7]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [8, 8]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [9, 9]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [10, 10]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [11, 11]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [12, 12]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [13, 13]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [14, 14]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [15, 15]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [16, 16]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [17, 17]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [18, 18]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp"],
+          "rides": true,
+          "rows": [19, 19]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [20, 20]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [21, 21]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [22, 22]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [23, 23]
+        },
+        {
+          "map": {
+            "B": "1",
+            "b": "2"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [24, 24]
+        },
+        {
+          "map": {
+            "b": "C",
+            "B": "W"
+          },
+          "only": "hero",
+          "parts": ["arm", "armUp", "torso"],
+          "rides": true,
+          "rows": [25, 25]
+        }
+      ]
+    }
+  },
+  "outfits": [
+    {
+      "id": "taco",
+      "headwear": "cast-kitchen/taco",
+      "silhouette": "crest",
+      "family": "yellow"
+    },
+    {
+      "id": "churro",
+      "headwear": "cast-kitchen/churro",
+      "silhouette": "cone",
+      "family": "cinnamon"
+    },
+    {
+      "id": "dumpling",
+      "headwear": "cast-kitchen/dumpling",
+      "silhouette": "steamer",
+      "family": "bamboo"
+    },
+    {
+      "id": "gnocchi",
+      "headwear": "cast-kitchen/gnocchi",
+      "silhouette": "pile",
+      "family": "butter"
+    },
+    {
+      "id": "pierogi",
+      "headwear": "cast-kitchen/pierogi",
+      "silhouette": "half-moon",
+      "family": "cream"
+    },
+    {
+      "id": "ravioli",
+      "headwear": "cast-kitchen/ravioli",
+      "silhouette": "square",
+      "family": "wheat"
+    },
+    {
+      "id": "noodle",
+      "headwear": "cast-kitchen/noodle",
+      "silhouette": "bowl",
+      "family": "porcelain"
+    },
+    {
+      "id": "meatball",
+      "headwear": "cast-kitchen/meatball",
+      "silhouette": "nest",
+      "family": "brown"
+    },
+    {
+      "id": "baguette",
+      "headwear": "classes/beret",
+      "back": "cast-kitchen/baguette",
+      "outfit": "breton",
+      "fabric": "cast-kitchen/marine",
+      "colourways": [
+        {
+          "id": "crimson",
+          "fabric": "cast-kitchen/marine-crimson"
+        },
+        {
+          "id": "denim",
+          "fabric": "cast-kitchen/marine-denim"
+        }
+      ],
+      "silhouette": "baguette",
+      "family": "golden"
+    },
+    {
+      "id": "bigbrain",
+      "headwear": "cast-kitchen/bigbrain",
+      "silhouette": "brain",
+      "family": "pink"
+    },
+    {
+      "id": "bongo",
+      "headwear": "cast-kitchen/bongo",
+      "silhouette": "drums",
+      "family": "red"
+    },
+    {
+      "id": "doot",
+      "headwear": "cast-kitchen/doot",
+      "silhouette": "trumpet",
+      "family": "brass"
+    }
+  ]
+}

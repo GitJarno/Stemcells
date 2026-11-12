@@ -4,7 +4,7 @@ import type { Award } from "../../../../../stemcells/ledger/marks.ts";
 import { evidenceOf, MARK_NAMES, saidOf } from "../../../../../stemcells/words/marks.ts";
 import { CellStill } from "../cell/CellStill";
 import type { Ground } from "../cell/keyline";
-import { dayOf, looksOf } from "../cell/looks";
+import { castLookOf } from "../cell/looks";
 import { useCellGround } from "../upstream/appearance";
 import { useLives } from "../upstream/lineage";
 import {
@@ -39,9 +39,11 @@ import { useSpend } from "./spend";
 // dealt the day it was born. A face opens its card with every life, and each life lists the
 // marks it earned. The Cells here stand still: a page of many costs no frames.
 
-/** What a life wore: the look its Cell is dealt alone, on the day it was born. */
-const lookOfLife = (life: Life): readonly string[] =>
-  looksOf([life.threadId], dayOf(new Date(life.born))).get(life.threadId)?.worn ?? [];
+/** What a life wears here: its name's own look, whatever the season it was born in. */
+const lookOfLife = (life: Life): readonly string[] => {
+  const own = castLookOf(life.name);
+  return own === undefined ? [] : [own];
+};
 
 const ORDER_NAMES: Readonly<Record<Order, string>> = {
   lives: "Most lives",

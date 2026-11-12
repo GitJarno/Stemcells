@@ -1,9 +1,6 @@
 {
   "theme": "december",
-  "season": {
-    "from": "12-01",
-    "to": "12-26"
-  },
+  "season": { "from": "12-01", "to": "12-26", "feast": ["12-20", "12-26"] },
   "about": "The dark month: strings of lights in the windows, baking, wrapping, and the long wait for the holiday.",
   "pieces": [
     {

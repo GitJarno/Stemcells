@@ -16,6 +16,29 @@ vi.mock("../art.ts", () => {
     ART_PACKS: {
       house: { theme: "house", season: null, pieces: [] },
       misnamed: { theme: "elsewhere", season: null, pieces: [] },
+      misfeast: {
+        theme: "misfeast",
+        season: { from: "06-01", to: "06-30", feast: ["07-01", "07-02"] },
+        pieces: [],
+      },
+      // A cast with a look for no one, and one name's look drawn twice.
+      troupe: {
+        theme: "troupe",
+        season: null,
+        cast: true,
+        pieces: [],
+        outfits: [
+          { id: "nobody", silhouette: "none", family: "none" },
+          { id: "otter", silhouette: "ears", family: "brown" },
+        ],
+      },
+      understudies: {
+        theme: "understudies",
+        season: null,
+        cast: true,
+        pieces: [],
+        outfits: [{ id: "otter", silhouette: "tail", family: "brown" }],
+      },
       trial: {
         theme: "trial",
         season: null,
@@ -420,12 +443,26 @@ describe("art drawn beside the kit", () => {
     expect(rules("faulty/turn")).toContain("poses");
     expect(rules("faulty/two")).toContain("apart");
     expect(rules("faulty")).toContain("season");
+    expect(
+      check({ themes: ["misfeast"] })
+        .filter((f) => f.subject === "misfeast")
+        .map((f) => f.detail),
+    ).toEqual(['its feast "07-01" to "07-02" falls outside its window']);
     expect(rules("trial/1")).toEqual(["beat", "next", "tell"]);
     expect(about("trial/2").map((f) => `${f.level} ${f.rule} ${f.detail}`)).toEqual([
       "warn box its marks fall off the canvas (hero)",
     ]);
     expect(rules("trial/0", "warn")).toEqual([]);
     expect(rules("temperament jumpy")).toEqual(["temperament"]);
+  });
+
+  it("holds the cast to the Cells' names: a look for each, and one each", () => {
+    const cast = check().filter((f) => f.rule === "cast");
+    expect(cast.map((f) => `${f.subject}: ${f.detail}`)).toEqual([
+      'troupe/nobody: "nobody" is no Cell\'s name',
+      "understudies/otter: troupe/otter is this name's look already",
+      expect.stringMatching(/^the cast: no look of their own: Orca, /),
+    ]);
   });
 
   it("never lets a drawn pack or scene replace the original's", () => {

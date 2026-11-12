@@ -35,6 +35,7 @@ import {
   type Slot,
   TEMPERAMENTS,
 } from "../kit.ts";
+import { NAMES } from "../name.ts";
 import {
   type CellLook,
   type FrameProbe,
@@ -275,7 +276,51 @@ function packDataFindings(file: string, pack: PackData): Finding[] {
     for (const [from, to] of windows)
       if (!MONTH_DAY.test(from ?? "") || !MONTH_DAY.test(to ?? ""))
         say("season", theme, `"${from}" to "${to}" is no window (MM-DD)`);
+    const feast = "from" in season ? season.feast : undefined;
+    if (feast !== undefined && "from" in season) {
+      const within = (day: string) =>
+        season.from <= season.to
+          ? day >= season.from && day <= season.to
+          : day >= season.from || day <= season.to;
+      if (!feast.every((day) => MONTH_DAY.test(day)))
+        say("season", theme, `its feast "${feast.join('" to "')}" is no window (MM-DD)`);
+      else if (!feast.every(within))
+        say("season", theme, `its feast "${feast.join('" to "')}" falls outside its window`);
+    }
   }
+  return out;
+}
+
+/**
+ * What the cast breaks: a look named for no Cell, a name drawn twice, two looks a crew couldn't
+ * tell apart; and, over the whole cast (`whole`), a name with no look of its own.
+ */
+function castFindings(wanted: (theme: string) => boolean, whole: boolean): Finding[] {
+  const out: Finding[] = [];
+  const say = (rule: string, subject: string, detail: string) =>
+    out.push({ rule, subject, detail, level: "fail" });
+  const names = new Set(NAMES.map((name) => name.toLowerCase()));
+  const drawn = new Map<string, string>();
+  const kinds = new Map<string, string>();
+  for (const pack of PACKS) {
+    if (!pack.cast) continue;
+    for (const outfit of pack.outfits) {
+      const id = `${pack.theme}/${outfit.name}`;
+      const twin = drawn.get(outfit.name);
+      const kind = `${outfit.silhouette} / ${outfit.family}`;
+      const alike = kinds.get(kind);
+      if (wanted(pack.theme)) {
+        if (!names.has(outfit.name)) say("cast", id, `"${outfit.name}" is no Cell's name`);
+        if (twin !== undefined) say("cast", id, `${twin} is this name's look already`);
+        if (alike !== undefined && !alike.startsWith(`${pack.theme}/`))
+          say("apart", id, `same silhouette and family as ${alike} (${kind})`);
+      }
+      drawn.set(outfit.name, id);
+      kinds.set(kind, id);
+    }
+  }
+  const bare = NAMES.filter((name) => !drawn.has(name.toLowerCase()));
+  if (whole && bare.length > 0) say("cast", "the cast", `no look of their own: ${bare.join(", ")}`);
   return out;
 }
 
@@ -448,6 +493,7 @@ export function check(options: { themes?: readonly string[]; original?: boolean 
         out.push(...moveFindings(`${file}: ${name}`, move, true), ...sceneFindings(name));
     }
   out.push(...temperamentFindings());
+  out.push(...castFindings(wanted, options.themes === undefined || options.themes.length === 0));
   for (const pack of PACKS) {
     if (!wanted(pack.theme) || (!pack.authored && !options.original)) continue;
     for (const { label, kind, look, mouth, eyesAllowed, scenes } of looksOfPack(pack.theme))

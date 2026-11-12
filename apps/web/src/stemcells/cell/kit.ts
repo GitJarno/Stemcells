@@ -149,9 +149,16 @@ export interface Piece {
   readonly about?: string | undefined;
 }
 
-/** A pack's season: a window every year, or one dated year by year (a moving feast). */
+/**
+ * A pack's season: a window every year, or one dated year by year (a moving feast). A long
+ * window may name its `feast`, the days inside it every Cell dresses for (`looks.ts`).
+ */
 export type Season =
-  | { readonly from: string; readonly to: string }
+  | {
+      readonly from: string;
+      readonly to: string;
+      readonly feast?: readonly [from: string, to: string] | undefined;
+    }
   | { readonly years: Readonly<Record<string, readonly [from: string, to: string]>> };
 
 /** An outfit's fabric in another colour. */
@@ -191,6 +198,8 @@ export interface Pack {
   readonly outfits: readonly PackOutfit[];
   /** Drawn for Stemcells (`art/`), not exported from the original. */
   readonly authored: boolean;
+  /** Its outfits are the Cells' own looks, each named for the Cell name that wears it (`looks.ts`). */
+  readonly cast: boolean;
   readonly about?: string | undefined;
 }
 
@@ -245,6 +254,7 @@ export interface FabricData {
 export interface PackData {
   readonly theme: string;
   readonly season: Season | null;
+  readonly cast?: boolean;
   readonly about?: string;
   readonly pieces: readonly PieceData[];
   readonly fabrics?: Readonly<Record<string, readonly Band[] | FabricData>>;
@@ -290,6 +300,7 @@ function packOf(data: PackData, authored: boolean): Pack {
       colourways: colourways ?? [],
     })),
     authored,
+    cast: data.cast ?? false,
     about: data.about,
   };
 }

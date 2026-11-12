@@ -7,7 +7,8 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import { PACKS } from "../kit.ts";
-import { dayOf, looksOf } from "../looks.ts";
+import { castLookOf, dayOf, looksOf } from "../looks.ts";
+import { NAMES } from "../name.ts";
 import { wornLook } from "../scene.ts";
 import { check, looksOfPack } from "./check.ts";
 import {
@@ -30,6 +31,8 @@ const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.
   cells lookbook [theme…]        a page of packs, animated (every drawn pack by default)
   cells crew [day] [count]       a sheet of a crew in view, dealt together on a day
                                  (YYYY-MM-DD, today by default; twelve Cells by default)
+  cells cast [name…]             a sheet of the Cells' own looks, by name, at rest and
+                                 landed (every name by default)
   cells manner [temperament…]    a sheet of the temperaments: each one's rest and beats,
                                  frame by frame (--look <look>, bare by default; --ground light)
   cells check [theme…] [--original]
@@ -118,6 +121,20 @@ function main(argv: readonly string[]): number {
         write(
           NodePath.join(out, `crew-${slugOf(day)}.png`),
           contactSheet(`crew ${day}`, looks, ["idle", "happy"], body),
+        ),
+      );
+      return 0;
+    }
+    case "cast": {
+      const names = rest.length > 0 ? rest : [...NAMES].sort();
+      const looks = names.map((name) => {
+        const own = castLookOf(name);
+        return [own === undefined ? `${name}: none` : name, wornLook(own ? [own] : [])] as const;
+      });
+      console.log(
+        write(
+          NodePath.join(out, "cast.png"),
+          contactSheet("the cast", looks, ["idle", "happy"], body),
         ),
       );
       return 0;

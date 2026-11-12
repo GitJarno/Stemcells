@@ -8,6 +8,8 @@ import { afterAll, describe, expect, it } from "vite-plus/test";
 
 import { contrast, FRAMES, KEYLINE, keylined } from "../keyline.ts";
 import { PACK_FILES, paletteOf } from "../kit.ts";
+import { castLookOf } from "../looks.ts";
+import { NAMES } from "../name.ts";
 import { check } from "./check.ts";
 import { apng, png } from "./png.ts";
 
@@ -115,6 +117,10 @@ describe("cells, the command line", () => {
     },
     60_000,
   );
+
+  it("gives every Cell name a look of its own", () => {
+    expect(NAMES.filter((name) => castLookOf(name) === undefined)).toEqual([]);
+  });
 
   it("refuses a look it doesn't know", () => {
     const render = cells("render", "house/nothing");

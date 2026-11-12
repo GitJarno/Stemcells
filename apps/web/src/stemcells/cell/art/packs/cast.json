@@ -1,0 +1,383 @@
+{
+  "theme": "cast",
+  "season": null,
+  "cast": true,
+  "about": "The Cells' own looks, one for each name, worn from the pieces and outfits drawn before them.",
+  "pieces": [],
+  "outfits": [
+    {
+      "id": "axolotl",
+      "headwear": "animals/axolotl",
+      "silhouette": "gills",
+      "family": "pink"
+    },
+    {
+      "id": "birb",
+      "headwear": "winter/owl",
+      "silhouette": "owl",
+      "family": "pearl"
+    },
+    {
+      "id": "biscuit",
+      "headwear": "christmas/gingerbread",
+      "silhouette": "biscuit",
+      "family": "cocoa"
+    },
+    {
+      "id": "blep",
+      "headwear": "animals/catears",
+      "silhouette": "cat-ears",
+      "family": "lilac"
+    },
+    {
+      "id": "blob",
+      "silhouette": "bare",
+      "family": "body"
+    },
+    {
+      "id": "boop",
+      "face": "christmas/nose",
+      "silhouette": "nose",
+      "family": "red"
+    },
+    {
+      "id": "bruce",
+      "back": "gym/towel",
+      "fabric": "gym/trunks",
+      "colourways": [
+        {
+          "id": "sunflower",
+          "fabric": "gym/trunks-sunflower"
+        },
+        {
+          "id": "lilac",
+          "fabric": "gym/trunks-lilac"
+        }
+      ],
+      "cheer": "gym/gloves",
+      "silhouette": "towel",
+      "family": "sky"
+    },
+    {
+      "id": "bubba",
+      "headwear": "bandana",
+      "wrap": "gym/belt",
+      "fabric": "gym/singlet",
+      "colourways": [
+        {
+          "id": "lime",
+          "fabric": "gym/singlet-lime"
+        },
+        {
+          "id": "bubblegum",
+          "fabric": "gym/singlet-bubblegum"
+        }
+      ],
+      "cheer": "gym/press",
+      "silhouette": "bandana",
+      "family": "sunflower"
+    },
+    {
+      "id": "chomp",
+      "headwear": "animals/shark",
+      "silhouette": "fin",
+      "family": "slate"
+    },
+    {
+      "id": "chonker",
+      "headwear": "house/cat",
+      "silhouette": "loaf-cat",
+      "family": "ginger"
+    },
+    {
+      "id": "cuddles",
+      "headwear": "animals/bearhood",
+      "silhouette": "bear-hood",
+      "family": "cocoa"
+    },
+    {
+      "id": "duckey",
+      "headwear": "house/duck",
+      "silhouette": "duck",
+      "family": "yellow"
+    },
+    {
+      "id": "flamingo",
+      "headwear": "summer/flamingo",
+      "silhouette": "flamingo",
+      "family": "pink"
+    },
+    {
+      "id": "floof",
+      "headwear": "animals/lamb",
+      "silhouette": "fleece",
+      "family": "pearl"
+    },
+    {
+      "id": "floppy",
+      "headwear": "house/bunny",
+      "silhouette": "long-ears",
+      "family": "pearl"
+    },
+    {
+      "id": "fox",
+      "headwear": "animals/foxhood",
+      "wrap": "animals/tail",
+      "silhouette": "fox-hood",
+      "family": "orange"
+    },
+    {
+      "id": "gary",
+      "headwear": "house/snail",
+      "silhouette": "snail",
+      "family": "sand"
+    },
+    {
+      "id": "gremlin",
+      "face": "workshop/weldmask",
+      "wrap": "workshop/toolbelt",
+      "fabric": "workshop/apron",
+      "colourways": [
+        {
+          "id": "red",
+          "fabric": "workshop/apron-red"
+        },
+        {
+          "id": "navy",
+          "fabric": "workshop/apron-navy"
+        }
+      ],
+      "cheer": "workshop/sparks",
+      "silhouette": "mask",
+      "family": "leather"
+    },
+    {
+      "id": "gus",
+      "headwear": "cowboy",
+      "silhouette": "brim",
+      "family": "leather"
+    },
+    {
+      "id": "jester",
+      "headwear": "fable/jester",
+      "silhouette": "bells",
+      "family": "motley"
+    },
+    {
+      "id": "jiggly",
+      "headwear": "ocean/jellyfish",
+      "silhouette": "jellyfish",
+      "family": "pink"
+    },
+    {
+      "id": "kevin",
+      "headwear": "hardhat",
+      "wrap": "workshop/toolbelt",
+      "fabric": "workshop/hivis",
+      "colourways": [
+        {
+          "id": "yellow",
+          "fabric": "workshop/hivis-yellow"
+        }
+      ],
+      "cheer": "workshop/tip",
+      "silhouette": "hardhat",
+      "family": "hi-vis"
+    },
+    {
+      "id": "longboi",
+      "headwear": "dinosaurs/longneck",
+      "silhouette": "long-neck",
+      "family": "sky"
+    },
+    {
+      "id": "mlem",
+      "headwear": "summer/popsicle",
+      "silhouette": "popsicle",
+      "family": "pink"
+    },
+    {
+      "id": "muffin",
+      "headwear": "food/cupcake",
+      "silhouette": "cupcake",
+      "family": "pink"
+    },
+    {
+      "id": "nigel",
+      "headwear": "graduate",
+      "silhouette": "mortarboard",
+      "family": "navy"
+    },
+    {
+      "id": "nugget",
+      "headwear": "spring/chick",
+      "silhouette": "chick",
+      "family": "yellow"
+    },
+    {
+      "id": "pancake",
+      "headwear": "food/pancakes",
+      "silhouette": "stack",
+      "family": "gold"
+    },
+    {
+      "id": "penguin",
+      "headwear": "winter/penguin",
+      "wrap": "january/feet",
+      "fabric": "january/coat",
+      "colourways": [
+        {
+          "id": "slate",
+          "fabric": "january/coat-slate"
+        },
+        {
+          "id": "blue",
+          "fabric": "january/coat-blue"
+        }
+      ],
+      "cheer": "january/flap",
+      "silhouette": "penguin",
+      "family": "charcoal"
+    },
+    {
+      "id": "pickle",
+      "face": "food/cucumber",
+      "silhouette": "slice",
+      "family": "green"
+    },
+    {
+      "id": "rawr",
+      "headwear": "dinosaurs/baby",
+      "silhouette": "dinosaur",
+      "family": "green"
+    },
+    {
+      "id": "shroom",
+      "headwear": "house/mushroom",
+      "silhouette": "toadstool",
+      "family": "red"
+    },
+    {
+      "id": "smol",
+      "headwear": "house/bee",
+      "silhouette": "bee",
+      "family": "yellow"
+    },
+    {
+      "id": "spatula",
+      "headwear": "toque",
+      "fabric": "december/apron",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "december/apron-sky"
+        },
+        {
+          "id": "pink",
+          "fabric": "december/apron-pink"
+        }
+      ],
+      "silhouette": "toque",
+      "family": "pearl"
+    },
+    {
+      "id": "sploot",
+      "headwear": "autumn/squirrel",
+      "silhouette": "squirrel",
+      "family": "russet"
+    },
+    {
+      "id": "squire",
+      "headwear": "helm",
+      "back": "classes/cape",
+      "outfit": "plate",
+      "colourways": [
+        {
+          "id": "gold",
+          "fabric": "classes/plate-gold"
+        },
+        {
+          "id": "sky",
+          "fabric": "classes/plate-sky"
+        }
+      ],
+      "cheer": "knight",
+      "silhouette": "helm",
+      "family": "steel"
+    },
+    {
+      "id": "ukulele",
+      "headwear": "classes/beret",
+      "back": "classes/lute",
+      "fabric": "classes/doublet",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "classes/doublet-sky"
+        },
+        {
+          "id": "lime",
+          "fabric": "classes/doublet-lime"
+        }
+      ],
+      "cheer": "classes/strum",
+      "silhouette": "lute",
+      "family": "crimson"
+    },
+    {
+      "id": "wiggles",
+      "headwear": "ocean/octopus",
+      "silhouette": "octopus",
+      "family": "lilac"
+    },
+    {
+      "id": "winston",
+      "headwear": "newyear/tophat",
+      "face": "magnifier",
+      "silhouette": "top-hat",
+      "family": "charcoal"
+    },
+    {
+      "id": "yeet",
+      "headwear": "classes/headband",
+      "fabric": "classes/gi",
+      "colourways": [
+        {
+          "id": "sky",
+          "fabric": "classes/gi-sky"
+        },
+        {
+          "id": "black",
+          "fabric": "classes/gi-black"
+        }
+      ],
+      "cheer": "classes/palm",
+      "silhouette": "band",
+      "family": "pearl"
+    },
+    {
+      "id": "yoink",
+      "back": "classes/cloak",
+      "fabric": "classes/hood",
+      "colourways": [
+        {
+          "id": "gold",
+          "fabric": "classes/hood-gold"
+        },
+        {
+          "id": "sky",
+          "fabric": "classes/hood-sky"
+        }
+      ],
+      "cheer": "classes/vanish",
+      "silhouette": "hood",
+      "family": "charcoal"
+    },
+    {
+      "id": "zoomies",
+      "headwear": "house/propeller",
+      "silhouette": "propeller",
+      "family": "primary"
+    }
+  ]
+}
