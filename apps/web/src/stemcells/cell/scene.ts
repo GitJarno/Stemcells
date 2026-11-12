@@ -111,35 +111,42 @@ function composeFrame(
 
 /** A step to the side: two hero cells, which move the miniature one. */
 const STEP = 2;
+/** The lean a step is taken with, at most: a dance step leans the way it goes. */
+const STEP_LEAN = 2;
 const stepRooms = new Map<string, number>();
 
 /**
  * How far a Cell wearing `wardrobe` can step to either side, in hero cells: a step (`STEP`)
- * where that pushes nothing it wears off the canvas at either size, either way; else none. Its
- * own body may lose a column at the miniature, whose box it fills.
+ * where stepping, leaning that way, pushes no more of what it wears off the canvas than the
+ * lean alone, at either size, either way; else none. Its own body may lose a column at the
+ * miniature, whose box it fills.
  */
 function stepRoomOf(wardrobe: Wardrobe): number {
   const key = JSON.stringify(wardrobe);
   const known = stepRooms.get(key);
   if (known !== undefined) return known;
-  const clips = [-STEP, STEP].some((step) => {
-    const stepped: Move = {
+  /** Cells of what it wears that `pose` pushes off the canvas, at one size. */
+  const lost = (pose: Pose, compact: boolean) => {
+    const posed: Move = {
       fps: 0,
       facing: "right",
-      frames: [{ pose: { ...REST, x: REST.x + step }, layers: [], swaps: {} }],
+      frames: [{ pose, layers: [], swaps: {} }],
       meta: {},
     };
-    return [false, true].some((compact) => {
-      const worn = { count: 0 };
-      const bare = { count: 0 };
-      composeFrame(stepped, 0, wardrobe, compact, false, STILL, { spill: worn, free: true });
-      composeFrame(stepped, 0, wardrobe, compact, false, STILL, {
-        bare: true,
-        spill: bare,
-        free: true,
-      });
-      return worn.count > bare.count;
+    const worn = { count: 0 };
+    const bare = { count: 0 };
+    composeFrame(posed, 0, wardrobe, compact, false, STILL, { spill: worn, free: true });
+    composeFrame(posed, 0, wardrobe, compact, false, STILL, {
+      bare: true,
+      spill: bare,
+      free: true,
     });
+    return worn.count - bare.count;
+  };
+  const clips = [-1, 1].some((way) => {
+    const leaned = { ...REST, lean: way * STEP_LEAN };
+    const stepped = { ...leaned, x: REST.x + way * STEP };
+    return [false, true].some((compact) => lost(stepped, compact) > lost(leaned, compact));
   });
   const room = clips ? 0 : STEP;
   stepRooms.set(key, room);
