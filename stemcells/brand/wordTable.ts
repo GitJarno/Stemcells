@@ -164,6 +164,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     // The card's own line and the header over a worktree's first turn.
     within("`Working for ${elapsed(", "Working", FLYING, 2),
   ),
+  // The web and the phone: the window's title, the list's status and what a screen reader hears.
+  ...inFile(
+    "packages/client-runtime/src/state/threadActivityAnnouncement.ts",
+    within('working: "Working",', "Working", FLYING),
+  ),
   // The web.
   ...inFile(
     "apps/web/src/components/NoProjectsHero.tsx",
