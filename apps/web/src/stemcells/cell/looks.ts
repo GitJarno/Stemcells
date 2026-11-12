@@ -62,6 +62,7 @@ const DRESSES_ONE_DAY_IN = 3n;
  * since the original's, which dresses the season whole, then to the first by name.
  */
 function seasonAt(day: string): { readonly theme: string; readonly feast: boolean } | undefined {
+  if (asked?.day === day) return asked.season;
   const monthDay = day.slice(-5);
   const year = day.length > 5 ? day.slice(0, 4) : undefined;
   let best: { theme: string; days: number; feast: boolean } | undefined;
@@ -78,8 +79,14 @@ function seasonAt(day: string): { readonly theme: string; readonly feast: boolea
       (window.feast !== undefined && holds(window.feast[0], window.feast[1], monthDay));
     best = { theme, days, feast };
   }
+  asked = { day, season: best };
   return best;
 }
+
+/** The last day asked about and its season: every Cell in view asks for the same day, each render. */
+let asked:
+  | { readonly day: string; readonly season: { theme: string; feast: boolean } | undefined }
+  | undefined;
 
 /** The season `day` falls in (`2027-02-06`, or a month-day, `02-06`, which holds no moving feast). */
 export function seasonOn(day: string): string | undefined {
