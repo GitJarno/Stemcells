@@ -35,9 +35,27 @@ theme, so about seventy of the original's pieces and twelve drawn outfits
 - [x] The deal (`cell/looks.ts`): own look by name, dress-up days, feasts,
       twins apart by colourway; `Pack.cast`, a season's `feast`
 - [x] `cast.json`: 42 names from the original's pieces and the drawn outfits
-- [ ] `cast-burrow`, `cast-pack`, `cast-shore`, `cast-garden`,
+- [x] `cast-burrow`, `cast-pack`, `cast-shore`, `cast-garden`,
       `cast-kitchen`: 68 names, drawn
 - [x] `cells cast`, and the cast's rules in `cells check`
 - [x] Tests for each rule; the original's deal fixture retired with the theme
-- [ ] Proof: the cast line-up on every body and both frames; a crew through
+- [x] Proof: the cast line-up on every body and both frames; a crew through
       a plain day, a long season and a feast; the dev app
+
+## Review
+
+- The 68 drawn looks came from five drawings made side by side, one family
+  a file, then judged together on one sheet. Three were redrawn after that
+  look: the otter (a hood that read as a wig became an otter sitting up with
+  its shell), the walrus (its tusks now hang free of the hood) and the
+  peanut (two lobes with a waist).
+- Hoods as wide as the miniature warn in the scenes that lean, as the
+  original's own hoods do. Nothing fails.
+- Two chats can draw one name. They then wear one look, apart only where it
+  has colourways: most cast looks have none. Dealing names apart is the
+  fix, and its own change.
+- A season's outfit now takes the place of the own look where the first
+  build stacked them: stacked, a December coat over a knight's helm read as
+  neither.
+- Not done here: the earned pieces and lineage colourways of
+  `cell-life.md`, and a card that names what a Cell wears.

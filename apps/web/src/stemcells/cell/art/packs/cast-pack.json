@@ -1,0 +1,1361 @@
+{
+  "theme": "cast-pack",
+  "season": null,
+  "cast": true,
+  "about": "The Cells' own looks: dogs, cats and horned beasts, one for each Cell named after one.",
+  "pieces": [
+    {
+      "name": "pupper",
+      "slot": "headwear",
+      "about": "A puppy's hood: brown, a white blaze down the forehead, and long dark floppy ears hanging down both sides.",
+      "art": [
+        ".......nnnnnWWnnnnk.......",
+        ".....nnnnnnnWWnnnnnnk.....",
+        "....nnnnnnnnWWnnnnnnnk....",
+        "..kZnnnnnnnWWWWnnnnnnnZZ..",
+        ".kZZZnnnnnnWWWWnnnnnnZZZZ.",
+        ".kZZZnnnnnWWWWWWnnnnnZZZZ.",
+        "kZZZZtttttWWWWWWtttttZZZZZ",
+        "kZZZZt..............tZZZZZ",
+        "kZZZZt..............tZZZZZ",
+        "kZZZZt..............tZZZZZ",
+        "kZZZZt..............tZZZZZ",
+        "kZZZZt..............tZZZZZ",
+        "kZZZZZ..............ZZZZZZ",
+        "kZZZZZ..............ZZZZZZ",
+        ".kZZZZ..............ZZZZZ.",
+        ".kZZZ................ZZZZ.",
+        "..kZ..................ZZ.."
+      ],
+      "hotspot": [12, 4],
+      "mini": [
+        "....nnWnk....",
+        "..nnnnWnnnk..",
+        ".nnnnnWnnnnk.",
+        "kZnnnnWnnnnZZ",
+        "kZtttWWWtttZZ",
+        "kZ.........ZZ",
+        "kZ.........ZZ",
+        "kZ.........ZZ",
+        ".Z.........Z."
+      ],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "doggo",
+      "slot": "headwear",
+      "about": "A black-and-tan dog's hood: broad upright ears set wide, a tan spot over each eye and tan cheeks.",
+      "art": [
+        "...D..................4...",
+        "..D44................444..",
+        "..D444..............4444..",
+        "..D4o44............44o44..",
+        "..D4oo44..........44oo44..",
+        "..D4ooo44........44ooo44..",
+        "..D4ooo444444444444ooo44..",
+        "...D4444444444444444444...",
+        "...D4444444444444444444...",
+        "...D444oo44444444oo4444...",
+        "...D444oo44444444oo4444...",
+        "..D444444444444444444444..",
+        "..oooG..............Goon..",
+        "..oooG..............Goon..",
+        ".ooooG..............Gooon.",
+        ".ooooG..............Gooon.",
+        ".ooooG..............Gooon.",
+        "oooooG..............Goooon",
+        ".nnnnG..............Gnnnn."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "..4.......4..",
+        ".444.....444.",
+        ".4o4.....4o4.",
+        ".4o444444o44.",
+        "..444444444..",
+        "..44o444o44..",
+        ".44444444444.",
+        "oo.........on",
+        "oo.........on",
+        "oo.........on"
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "collar",
+      "slot": "wrap",
+      "about": "A red dog collar round the neck, a brass tag hanging from it.",
+      "art": [
+        "RRRRRRRRRRRRRRRRRRRRRRRRRr",
+        "rrrrrrrrrrrrGGrrrrrrrrrrrr",
+        "...........YYYJ...........",
+        "...........YYYJ...........",
+        "............JJ............"
+      ],
+      "hotspot": [12, 5],
+      "mini": ["RRRRRRRRRRRRr", "......Y......"],
+      "miniHotspot": [6, 2]
+    },
+    {
+      "name": "cheems",
+      "slot": "headwear",
+      "about": "A shiba's hood: a wide round orange head with small rounded ears, cream inside, and big round cream cheeks.",
+      "art": [
+        "..333................33o..",
+        ".33333..............3333o.",
+        ".33WW3..............3WW3o.",
+        ".33WW3333333333333333WW3o.",
+        ".33333333333333333333333o.",
+        ".33333333333333333333333o.",
+        ".33333333333333333333333o.",
+        ".33333333333333333333333o.",
+        ".333oooooooooooooooooo33o.",
+        ".3333o..............o333o.",
+        ".3WWWW..............WWWWo.",
+        "WWWWWW..............WWWWWC",
+        "WWWWWW..............WWWWWC",
+        "WWWWWW..............WWWWWC",
+        "WWWWWW..............WWWWWC",
+        ".WWWW................WWWC."
+      ],
+      "hotspot": [12, 6],
+      "mini": [
+        ".33.......33.",
+        ".3W3.....3W3.",
+        ".33333333333.",
+        ".3333333333o.",
+        "333333333333o",
+        "33oooooooo33o",
+        "WW.........WC",
+        "WW.........WC"
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "curl",
+      "slot": "wrap",
+      "about": "A shiba's tail curled tight into a ring at its hip, cream on the inside.",
+      "art": [
+        "..oooo..",
+        ".oG333o.",
+        "oG3WW33o",
+        "o3WWWW3o",
+        "o3WW3W3o",
+        "o33W333o",
+        ".o3333o.",
+        "..oooo.."
+      ],
+      "hotspot": [-6, 8],
+      "mini": [".oo.", "o3W3", "oWW3", ".oo."],
+      "miniHotspot": [-3, 4]
+    },
+    {
+      "name": "bork",
+      "slot": "headwear",
+      "about": "A husky's hood: a grey cap coming to a point over a white mask, tall pointed ears, and a pale blue mark over each eye.",
+      "art": [
+        "......D............D......",
+        ".....DDD..........DDD.....",
+        ".....DWD..........DWD.....",
+        "....DDWDD........DDWDD....",
+        "....DWWWD........DWWWD....",
+        "....DWWWD........DWWWD....",
+        "....DDDDD........DDDDD....",
+        "....DDDDDDDDDDDDDDDDDD....",
+        "....DDDDDDDDDDDDDDDDDD....",
+        "...DDDDDDDDDDDDDDDDDDDD...",
+        "...DDWWWWDDDDDDDDWWWWDD...",
+        "...DWWSSWWWDDDDWWWSSWWD...",
+        "..DDWWWWWWWWDDWWWWWWWWDD..",
+        "..DDWW..............WWDD..",
+        "..DDWW..............WWDD..",
+        ".DDWWW..............WWWDD.",
+        ".DDWWW..............WWWDD.",
+        ".DDWWW..............WWWDD.",
+        "DDWWWW..............WWWWDD",
+        ".DDqqq..............qqqDD."
+      ],
+      "hotspot": [12, 10],
+      "mini": [
+        "...D.....D...",
+        "..DWD...DWD..",
+        "..DWD...DWD..",
+        "..DDDDDDDDD..",
+        "..DDDDDDDDD..",
+        ".DDWSWDWSWDD.",
+        ".DWWWWDWWWWD.",
+        "DW.........WD",
+        "DW.........WD",
+        "DW.........WD"
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "dingo",
+      "slot": "headwear",
+      "about": "A dingo's hood: lean and sandy, with tall narrow ears standing close together and white at the tips of its cheeks.",
+      "art": [
+        ".......s..........o.......",
+        ".......s..........o.......",
+        "......sys........syo......",
+        "......sys........syo......",
+        "......syys......syyo......",
+        "......syys......syyo......",
+        "......sssss....sssso......",
+        ".....ssssssssssssssso.....",
+        "....ssssssssssssssssso....",
+        "....ssssssssssssssssso....",
+        "....ssssssssssssssssso....",
+        "...ssyyyyyyyyyyyyyyyyso...",
+        "...ssy..............yso...",
+        "...ssy..............yso...",
+        "...ssy..............yso...",
+        "..sssy..............ysso..",
+        "..sssy..............ysso..",
+        "..WWWy..............yWWq..",
+        "..WWWy..............yWWq.."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "...s.....s...",
+        "...s.....s...",
+        "...sy...ys...",
+        "...sy...ys...",
+        "...sssssso...",
+        "..sssssssso..",
+        ".syyyyyyyyyo.",
+        ".s.........o.",
+        ".s.........o.",
+        ".W.........q."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "dingotail",
+      "slot": "wrap",
+      "about": "A dingo's straight tail swung out to one side, sandy with a white tip.",
+      "art": [
+        "sss.....",
+        "ssss....",
+        ".ssss...",
+        "..ssss..",
+        "...sWWW.",
+        "....WWWW",
+        ".....WWq",
+        "......qq"
+      ],
+      "hotspot": [-6, 8],
+      "mini": ["oo..", ".oo.", "..ot", "...t"],
+      "miniHotspot": [-3, 4]
+    },
+    {
+      "name": "puma",
+      "slot": "headwear",
+      "about": "A puma's hood: lean and tawny, with blunt ears dark on the back, a cream brow and white whiskers out at each cheek.",
+      "art": [
+        "....ZZ..............ZZ....",
+        "...ZZoZ............ZoZZ...",
+        "...ZoCCo..........oCCoZ...",
+        "...ooCCooooooooooooCCon...",
+        "...ooooooooooooooooooon...",
+        "...ooooooooooooooooooon...",
+        "...ooooooooooooooooooon...",
+        "...ooooooooooooooooooon...",
+        "..oooCCCCCCCCCCCCCCCCoon..",
+        "..oooC..............Coon..",
+        "..oooC..............Coon..",
+        "..oooC..............Coon..",
+        "WWoooC..............CoooWW",
+        "..oooC..............Coon..",
+        "WWoooC..............CoooWW",
+        "..nnnC..............Cnnn.."
+      ],
+      "hotspot": [12, 6],
+      "mini": [
+        "..ZZ.....ZZ..",
+        "..oCo...oCo..",
+        "..ooooooooo..",
+        "..oooooooon..",
+        "..oooooooon..",
+        ".oCCCCCCCCCn.",
+        ".o.........n.",
+        "Wo.........nW",
+        ".o.........n."
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "pumatail",
+      "slot": "wrap",
+      "about": "A puma's long tail wrapped round its feet, the dark tip curling up at one side.",
+      "art": [
+        "ZZ........................",
+        "ZZ........................",
+        "ZZo.......................",
+        ".ooo....................oo",
+        "..oooooooooooooooooooooooo",
+        "...nnnnnnnnnnnnnnnnnnnnnn."
+      ],
+      "hotspot": [12, 7],
+      "mini": ["Z............", "Z...........o", ".ooooooooooon"],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "panther",
+      "slot": "headwear",
+      "about": "A black panther's hood: sleek charcoal with small pointed ears, two yellow eyes on its brow and white whiskers.",
+      "art": [
+        "...4..................4...",
+        "...44................44...",
+        "...444..4444444444..444...",
+        "...44444444444444444444...",
+        "...44DDD4444444444DDD44...",
+        "...44YYY4444444444YYY44...",
+        "...444YKY44444444YKY444...",
+        "...44444444444444444444...",
+        "..444DDDDDDDDDDDDDDDD444..",
+        "..444D..............D444..",
+        "..444D..............D444..",
+        "W.444D..............D444.W",
+        ".W444D..............D444W.",
+        "..444D..............D444..",
+        "WW444D..............D444WW",
+        "..444................444.."
+      ],
+      "hotspot": [12, 6],
+      "mini": [
+        "..4.......4..",
+        "..44.....44..",
+        "..444444444..",
+        "..4YY444YY4..",
+        "..444444444..",
+        ".4DDDDDDDDD4.",
+        ".4.........4.",
+        "W4.........4W",
+        ".4.........4."
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "panthertail",
+      "slot": "wrap",
+      "about": "A panther's long black tail raised behind it, hooked over at the top.",
+      "art": [
+        ".444.",
+        "44.44",
+        "...44",
+        "...44",
+        "..44.",
+        "..44.",
+        ".44..",
+        ".44..",
+        ".44..",
+        "..44.",
+        "..44.",
+        "...44",
+        "...44"
+      ],
+      "hotspot": [-9, 25],
+      "mini": ["44", ".4", ".4", "4.", "4.", ".4"],
+      "miniHotspot": [-5, 13]
+    },
+    {
+      "name": "badger",
+      "slot": "headwear",
+      "about": "A badger's hood: white, with two bold black stripes running from the brow over the top to small white-tipped ears.",
+      "art": [
+        "....WW..............Wq....",
+        "...4444............4444...",
+        "...4444.WWWWWWWWWW.4444...",
+        "....W444WWWWWWWWWW444q....",
+        "...WWW444WWWWWWWW444WWq...",
+        "...WWW444WWWWWWWW444WWq...",
+        "...WWW444WWWWWWWW444WWq...",
+        "..WWWWW44WWWWWWWW44WWWWq..",
+        "..WWWW..............WWWq..",
+        "..WWWW..............WWWq..",
+        ".WWWWW..............WWWWq.",
+        ".WWWWW..............WWWWq.",
+        ".WWWWW..............WWWWq.",
+        "WWWWWW..............WWWWWq",
+        ".qqqqq..............qqqqq."
+      ],
+      "hotspot": [12, 5],
+      "mini": [
+        "..WW.....WW..",
+        "..44.....44..",
+        "...44WWW44...",
+        "..W44WWW44q..",
+        ".WW44WWW44Wq.",
+        ".WWW4WWW4WWq.",
+        "WW.........Wq",
+        "WW.........Wq",
+        "WW.........Wq"
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "bison",
+      "slot": "headwear",
+      "about": "A bison's woolly cap: dark brown, a high shaggy hump, a ragged fringe over the brow and two short curved horns.",
+      "art": [
+        ".........ZZZZZZZZ.........",
+        ".......ZZZkZZZZkZZZ.......",
+        "......ZZkZZZZZZZZkZZ......",
+        "CC...ZZZZZZkZZkZZZZZZ...Ct",
+        "CC..ZZZkZZZZZZZZZZkZZZ..Ct",
+        "CCC.ZZZZZZkZZZZkZZZZZZ.CCt",
+        ".CCCZZkZZZZZZZZZZZZkZZCCt.",
+        "..ttZZZZZkZZZZZZkZZZZZtt..",
+        "...ZZZZZZZZZkkZZZZZZZZZ...",
+        "...ZZZkZZZZZZZZZZZZkZZZ...",
+        "..ZZZZZZZkZZZZZZkZZZZZZZ..",
+        "..ZZZZZZZZZZZZZZZZZZZZZZ..",
+        "..ZZZZ.Z..Z....Z..Z.ZZZZ..",
+        "..ZZZZ..............ZZZZ..",
+        ".ZZZZZ..............ZZZZZ.",
+        ".ZZZZ................ZZZZ.",
+        ".ZZ.Z................Z.ZZ.",
+        ".Z......................Z."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        ".....ZZZ.....",
+        "....ZZkZZ....",
+        "C..ZZZZZkZ..C",
+        "C.ZZkZZZZZZ.C",
+        ".CZZZZZkZZZC.",
+        "..ZZZkZZZZZ..",
+        ".ZZZZZZZZZkZ.",
+        "ZZZ...Z...ZZZ",
+        "ZZ.........ZZ",
+        "Z...........Z"
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "yak",
+      "slot": "headwear",
+      "about": "A yak's head of hair: long shaggy charcoal hair hanging down both sides of the face, and wide upswept horns.",
+      "art": [
+        "C........................C",
+        "C........................C",
+        "CC......................CC",
+        ".CC....................CC.",
+        ".tCC..................CCt.",
+        "..tCCC...44444444...CCCt..",
+        "....tCC444444444444CCt....",
+        ".....4444444444444444.....",
+        "....444444444444444444....",
+        "...44444444444444444444...",
+        "...44D44444444444444D44...",
+        "..44D4444444444444444D44..",
+        "..4D44.4..4....4..4.44D4..",
+        "..4D44..............44D4..",
+        ".44D44..............44D44.",
+        ".4D4D4..............4D4D4.",
+        ".4D4D4..............4D4D4.",
+        "44D4D4..............4D4D44",
+        "4D44D4..............4D44D4",
+        "4D44D4..............4D44D4",
+        "4D4D44..............44D4D4",
+        "4D.4D4..............4D4.D4",
+        "4..4.4..............4.4..4"
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "C...........C",
+        "C...........C",
+        "tC.........Ct",
+        ".tC.44444.Ct.",
+        "..t4444444t..",
+        "..444444444..",
+        ".44444444444.",
+        "4D4...4...4D4",
+        "4D.........4D",
+        "4D.........4D",
+        "4D.........4D",
+        "4D.........4D",
+        "4...........4"
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "moose",
+      "slot": "headwear",
+      "about": "A moose's antlers: two broad flat palms with short tines along the top, on a brown cap with small ears beneath them.",
+      "art": [
+        "C..C..C............C..C..C",
+        "tt.tt.tt..........tt.tt.tn",
+        "ttttttttt........ttttttttn",
+        "ttttttttt........ttttttttn",
+        ".ttttttttt......ttttttttn.",
+        "..nnnnnttt......tttnnnnn..",
+        ".......ttt......ttn.......",
+        "..nn....ttkkkkkktt....nn..",
+        ".nnPn.kkkkkkkkkkkkkk.nPnn.",
+        "..nn.kkkkkkkkkkkkkkkk.nn..",
+        "....kkkkkkkkkkkkkkkkkZ...."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "C.C.C...C.C.C",
+        "ttttt...ttttt",
+        "ttttt...ttttn",
+        ".nttt...tttn.",
+        "nn..tkkkt..nn",
+        "...kkkkkkZ..."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "llama",
+      "slot": "headwear",
+      "about": "A llama's woolly hood in cream: tall banana-shaped ears curving in at the tips, and a white wool topknot between them.",
+      "art": [
+        ".....CC............Ct.....",
+        "....CCC............CCt....",
+        "...CCnC............CnCt...",
+        "...CnnC...WW..WW...Cnnt...",
+        "...CnnC..WWWWWWWW..Cnnt...",
+        "...CnnC.WWWWWWWWWW.Cnnt...",
+        "...CCnCCWWWWWWWWWWCCnCt...",
+        "....CCCCWWWWWWWWWWCCCt....",
+        "....CCCCtWWWWWWWWtCCCt....",
+        "...CCCCCCttttttttCCCCCt...",
+        "...CCCCCCCCCCCCCCCCCCCt...",
+        "..CCCCCCCCCCCCCCCCCCCCCt..",
+        "..CCCCCCCCCCCCCCCCCCCCCt..",
+        ".CCCCC.C..C....C..C.CCCCt.",
+        "..CCCC..............CCCt..",
+        ".CCCCC..............CCCCt.",
+        "..CCCC..............CCCt..",
+        "...CC................Ct..."
+      ],
+      "hotspot": [12, 10],
+      "mini": [
+        "...C.....C...",
+        "..Cn.....nC..",
+        "..Cn.WWW.nC..",
+        "..CCWWWWWCC..",
+        "..CCtWWWtCt..",
+        ".CCCCCCCCCCt.",
+        ".CCCCCCCCCCt.",
+        "CC.........Ct",
+        ".C.........t.",
+        "CC.........Ct"
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "alpaca",
+      "slot": "headwear",
+      "about": "An alpaca's fleece: a big round caramel bouffant, bumpy as a cloud, a fringe hanging at its front edge and a small ear at each side.",
+      "art": [
+        "n........oooooooo........n",
+        "nn...ooo.oGGooGGo.ooo...nn",
+        ".nCnooGooooooooooooGoonCn.",
+        "..noGGooooooooooooooGGon..",
+        ".ooGooooooooooooooooooGoo.",
+        ".ooooooooonoooonooooooooo.",
+        ".ooooonoonoooooonoonooooo.",
+        ".ooonnoooooooooooooonnooo.",
+        "..oooooooooooooooooooooo..",
+        "..oooooooooooooooooooooo..",
+        "...oooooooooooooooooooo...",
+        "...oo.ooo.oooooo.ooo.oo...",
+        "....o..o...o..o...o..o...."
+      ],
+      "hotspot": [12, 10],
+      "mini": [
+        "n...oo.oo...n",
+        "nn.oGoooGo.nn",
+        ".nooooooooon.",
+        ".ooonooonoon.",
+        ".oooooooooon.",
+        "..oooooooon..",
+        "..o.oo.oo.o.."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "alpaca-g",
+      "slot": "headwear",
+      "about": "An alpaca's fleece: a big round caramel bouffant, bumpy as a cloud, a fringe hanging at its front edge and a small ear at each side.",
+      "art": [
+        "n........GGGGGGGG........n",
+        "nn...GGG.GyyGGyyG.GGG...nn",
+        ".nCnGGyGGGGGGGGGGGGyGGnCn.",
+        "..nGyyGGGGGGGGGGGGGGyyGn..",
+        ".GGyGGGGGGGGGGGGGGGGGGyGG.",
+        ".GGGGGGGGGoGGGGoGGGGGGGGG.",
+        ".GGGGGoGGoGGGGGGoGGoGGGGG.",
+        ".GGGooGGGGGGGGGGGGGGooGGG.",
+        "..GGGGGGGGGGGGGGGGGGGGGG..",
+        "..GGGGGGGGGGGGGGGGGGGGGG..",
+        "...GGGGGGGGGGGGGGGGGGGG...",
+        "...GG.GGG.GGGGGG.GGG.GG...",
+        "....G..G...G..G...G..G...."
+      ],
+      "hotspot": [12, 10],
+      "mini": [
+        "n...GG.GG...n",
+        "nn.GyGGGyG.nn",
+        ".nGGGGGGGGGn.",
+        ".GGGoGGGoGGo.",
+        ".GGGGGGGGGGo.",
+        "..GGGGGGGGo..",
+        "..G.GG.GG.G.."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "meowingtons",
+      "slot": "headwear",
+      "about": "A black top hat with a crimson band, and two white cat ears poking up through its brim.",
+      "art": [
+        "........4444444444........",
+        "........4D44444444........",
+        "........4D44444444........",
+        "........4D44444444........",
+        "....W...4444444444...q....",
+        "...WWW..4444444444..WWq...",
+        "...WIWW.RRRRRRRRRR.WWIq...",
+        "..WWIIW.RRRRRRRRRR.WIIWq..",
+        ".444444444444444444444444."
+      ],
+      "hotspot": [12, 9],
+      "mini": ["....44444....", "....4D444....", ".W..4D444..W.", ".WI.RRRRr.IW.", "4444444444444"],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "monocle",
+      "slot": "face",
+      "about": "A gold monocle over one eye, its chain hanging down.",
+      "art": [
+        ".GGGG...",
+        "G....G..",
+        "G....G..",
+        "G....G..",
+        "G....G..",
+        ".oooo.G.",
+        ".......G",
+        ".......G",
+        ".......o"
+      ],
+      "hotspot": [-3, 3],
+      "mini": [".GGG.", "G...G", "G...G", "G...G", ".oooG", "....o"],
+      "miniHotspot": [-1, 2]
+    },
+    {
+      "name": "purrito",
+      "slot": "headwear",
+      "about": "A grey tabby's cap: small pointed ears, pink inside, and three tabby stripes on the forehead.",
+      "art": [
+        "....u................D....",
+        "....uu..............uD....",
+        "....uIu............uID....",
+        "....uIIu..........uIID....",
+        "....uuuuuuuDuuDuuuuuuD....",
+        "....uuuuDuuDuuDuuDuuuD....",
+        "...uuuuuDuuuuuuuuDuuuuD..."
+      ],
+      "hotspot": [12, 5],
+      "mini": ["..u.......u..", "..uI.....Iu..", "..uuuDuDuuD..", "..uuuuuuuuD.."],
+      "miniHotspot": [6, 3]
+    }
+  ],
+  "fabrics": {
+    "tortilla": {
+      "about": "A flour tortilla wrapped round the lower body like a blanket, toasted in spots, with a band of foil at its base.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [21, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [6, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [9, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "o",
+            "b": "o"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [25, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [12, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [14, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "s",
+            "b": "s"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [18, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "y"
+          },
+          "rides": true,
+          "rows": [12, 12],
+          "miniColumns": [0, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "y",
+            "b": "s",
+            "L": "y",
+            "O": "s"
+          },
+          "rides": true,
+          "rows": [23, 26],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "tortilla-spinach": {
+      "about": "The tortilla blanket in spinach green, with a band of foil at its base.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [21, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [6, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [9, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "F",
+            "b": "F"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [25, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [12, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [14, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "a",
+            "b": "a"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [18, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "A"
+          },
+          "rides": true,
+          "rows": [12, 12],
+          "miniColumns": [0, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "A",
+            "b": "a",
+            "L": "A",
+            "O": "a"
+          },
+          "rides": true,
+          "rows": [23, 26],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "tortilla-tomato": {
+      "about": "The tortilla blanket in tomato red, with a band of foil at its base.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [8, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [15, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "W"
+          },
+          "rides": true,
+          "rows": [27, 27],
+          "columns": [21, 22],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [11, 11],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [18, 18],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "u",
+            "b": "u"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "columns": [24, 24],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "p",
+            "b": "q",
+            "L": "p",
+            "O": "q"
+          },
+          "rides": true,
+          "rows": [27, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "r",
+            "b": "r"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [6, 7],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "r",
+            "b": "r"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [22, 23],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "r",
+            "b": "r"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [9, 9],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "r",
+            "b": "r"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [25, 26],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [23, 23],
+          "columns": [12, 13],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [24, 24],
+          "columns": [14, 15],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [25, 25],
+          "columns": [16, 17],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "R",
+            "b": "R"
+          },
+          "rides": true,
+          "rows": [26, 26],
+          "columns": [18, 19],
+          "only": "hero"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "3",
+            "b": "3"
+          },
+          "rides": true,
+          "rows": [12, 12],
+          "miniColumns": [0, 10],
+          "only": "mini"
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "3",
+            "b": "R",
+            "L": "3",
+            "O": "R"
+          },
+          "rides": true,
+          "rows": [23, 26],
+          "miniRows": [11, 12]
+        }
+      ]
+    }
+  },
+  "outfits": [
+    {
+      "id": "pupper",
+      "headwear": "cast-pack/pupper",
+      "silhouette": "floppy ears",
+      "family": "brown"
+    },
+    {
+      "id": "doggo",
+      "headwear": "cast-pack/doggo",
+      "wrap": "cast-pack/collar",
+      "silhouette": "broad ears",
+      "family": "tan"
+    },
+    {
+      "id": "cheems",
+      "headwear": "cast-pack/cheems",
+      "wrap": "cast-pack/curl",
+      "silhouette": "curled tail",
+      "family": "orange"
+    },
+    {
+      "id": "bork",
+      "headwear": "cast-pack/bork",
+      "silhouette": "masked hood",
+      "family": "grey"
+    },
+    {
+      "id": "dingo",
+      "headwear": "cast-pack/dingo",
+      "wrap": "cast-pack/dingotail",
+      "silhouette": "narrow ears",
+      "family": "sand"
+    },
+    {
+      "id": "puma",
+      "headwear": "cast-pack/puma",
+      "wrap": "cast-pack/pumatail",
+      "silhouette": "round ears",
+      "family": "tawny"
+    },
+    {
+      "id": "panther",
+      "headwear": "cast-pack/panther",
+      "wrap": "cast-pack/panthertail",
+      "silhouette": "hooked tail",
+      "family": "black"
+    },
+    {
+      "id": "badger",
+      "headwear": "cast-pack/badger",
+      "silhouette": "striped hood",
+      "family": "white"
+    },
+    {
+      "id": "bison",
+      "headwear": "cast-pack/bison",
+      "silhouette": "hump",
+      "family": "dark brown"
+    },
+    {
+      "id": "yak",
+      "headwear": "cast-pack/yak",
+      "silhouette": "long hair",
+      "family": "charcoal"
+    },
+    {
+      "id": "moose",
+      "headwear": "cast-pack/moose",
+      "silhouette": "antlers",
+      "family": "bone"
+    },
+    {
+      "id": "llama",
+      "headwear": "cast-pack/llama",
+      "silhouette": "banana ears",
+      "family": "cream"
+    },
+    {
+      "id": "alpaca",
+      "headwear": "cast-pack/alpaca",
+      "silhouette": "bouffant",
+      "family": "caramel"
+    },
+    {
+      "id": "meowingtons",
+      "headwear": "cast-pack/meowingtons",
+      "face": "cast-pack/monocle",
+      "silhouette": "top hat",
+      "family": "crimson"
+    },
+    {
+      "id": "purrito",
+      "headwear": "cast-pack/purrito",
+      "fabric": "cast-pack/tortilla",
+      "colourways": [
+        {
+          "id": "spinach",
+          "fabric": "cast-pack/tortilla-spinach"
+        },
+        {
+          "id": "tomato",
+          "fabric": "cast-pack/tortilla-tomato"
+        }
+      ],
+      "silhouette": "wrap",
+      "family": "flour"
+    }
+  ]
+}

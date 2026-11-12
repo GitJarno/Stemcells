@@ -1,0 +1,753 @@
+{
+  "theme": "cast-burrow",
+  "season": null,
+  "cast": true,
+  "about": "The Cells' own looks: small mammals and soft beasts, from the otter to the lemur.",
+  "pieces": [
+    {
+      "name": "otter",
+      "slot": "headwear",
+      "about": "An otter sitting up on the crown: small ears, a pale whiskered muzzle, a scallop shell held to its chest in both paws, and a thick tail to one side.",
+      "art": [
+        "..nn...nn...",
+        ".nnnnnnnnn..",
+        ".nKnCCCnKn..",
+        ".nnCCZCCnn..",
+        "..nnCCCnn...",
+        ".nnCpWpCnn..",
+        ".nnCWWWCnn.n",
+        ".nnnCqCnnnnn",
+        ".ZnnnnnnnZn.",
+        "..ZZZZZZZ..."
+      ],
+      "hotspot": [5, 9],
+      "mini": [".n.n..", "nnnnn.", "nCCCn.", "nCWCnn", ".nnnn."],
+      "miniHotspot": [2, 4]
+    },
+    {
+      "name": "wombat",
+      "slot": "headwear",
+      "about": "A wombat's hood: a square taupe box of a head, tiny ears at its corners and a big dark nose.",
+      "art": [
+        ".tt....................tt.",
+        "tkkt..................tkkk",
+        "tttttttttttttttttttttttttk",
+        "tttttttttttttttttttttttttk",
+        "ttttttKKttkkkkkkttKKtttttk",
+        "tttttttttkkjkkjkkttttttttk",
+        "ttttttttttkkkkkktttttttttk",
+        "tttttttttttttttttttttttttk",
+        "tttttt..............tttttk",
+        "tttttt..............tttttk",
+        "tttttt..............tttttk",
+        "tttttt..............tttttk",
+        "tttttt..............tttttk",
+        "tttttt..............tttttk",
+        "kkkkkk..............kkkkkk"
+      ],
+      "hotspot": [12, 5],
+      "mini": [
+        ".tt.......tt.",
+        ".ttttttttttk.",
+        ".ttKtttttKtk.",
+        ".ttttjjjtttk.",
+        ".ttttttttttk.",
+        ".t.........k.",
+        ".t.........k.",
+        ".t.........k."
+      ],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "quokka",
+      "slot": "headwear",
+      "about": "A quokka's hood: warm tan with round upright ears, pale cheeks and its small smile, and a green leaf sprig tucked behind one ear.",
+      "art": [
+        "........................a.",
+        "....................aa.aA.",
+        ".....................afAa.",
+        ".....ooo..........ooo.f...",
+        "....onnno........onnnof...",
+        "....onnno........onnnon...",
+        "....ooooo.oooooo.ooooon...",
+        "....oooooooooooooooooon...",
+        "...ooooKKooooooooKKoooon..",
+        "...ooooooCCCKKCCCoooooon..",
+        "...oooooCCkCCCCkCCooooon..",
+        "..ooooooCCCkkkkCCCooooon..",
+        "..oooo..............ooon..",
+        "..oooo..............ooon..",
+        ".ooooo..............oooon.",
+        ".ooooo..............oooon.",
+        ".ooooo..............oooon.",
+        "oooooo..............ooooon",
+        ".nnnnn..............nnnnn."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "...........a.",
+        "..oo.....ooA.",
+        "..oo.....oof.",
+        "..ooooooooo..",
+        "..ooooooooon.",
+        "..ooCCkCCoon.",
+        ".ooooooooooo.",
+        ".o.........n.",
+        ".o.........n.",
+        ".o.........n."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "hamster",
+      "slot": "headwear",
+      "about": "A hamster's hood: gold with a white blaze and full white cheeks, round pink-lined ears, and a striped sunflower seed on the crown.",
+      "art": [
+        "............44............",
+        "...........4g44...........",
+        "...........4g4g...........",
+        "...GGG.....4g4g.....GGG...",
+        "..GIIIG.....44.....GIIIo..",
+        "..GIIIG.GGGGWWGGGG.GIIIo..",
+        "..GGGGGGGGGGWWGGGGGGGGGo..",
+        "....GGGGGGGGWWGGGGGGGo....",
+        "...GGGKKGGGWWWWGGGKKGGGo..",
+        "...GGGGGGGWWPPWWGGGGGGGo..",
+        "...GGGGGGWWWWWWWWGGGGGGo..",
+        "..GGGWWWWWWWWWWWWWWWWGGo..",
+        "..GGWW..............WWGo..",
+        "..WWWW..............WWWq..",
+        "WWWWWW..............WWWWWq",
+        "WWWWWW..............WWWWWq",
+        "WWWWWW..............WWWWWq",
+        "WWWWWW..............WWWWWq",
+        ".qqqqq..............qqqqq."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "......4......",
+        ".GG..4g4..GG.",
+        ".GIG.GWG.GIG.",
+        ".GGGGGWGGGGG.",
+        "..GGGGWGGGG..",
+        "..GGGWWWGGG..",
+        ".WWWWWWWWWWW.",
+        ".W.........W.",
+        ".W.........W.",
+        ".W.........W."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "capybara",
+      "slot": "headwear",
+      "about": "A capybara's hood: flat-topped and dark brown, small ears, heavy-lidded eyes and a blunt snout, with a round orange citrus fruit resting on top.",
+      "art": [
+        "............Ff............",
+        "...........3333...........",
+        "..........3y3333..........",
+        "..........333333..........",
+        "...kk.....33333o.....kk...",
+        "..kkkk.....33oo.....kkkj..",
+        "..kkkkkkkkkkkkkkkkkkkkkj..",
+        "..kkknnkkkkkkkkkkkknnkkj..",
+        "..kkkKKkkkkkkkkkkkkKKkkj..",
+        "..kkkkkknnnnnnnnnnkkkkkj..",
+        "..kkkkkknnKnnnnKnnkkkkkj..",
+        "..kkkkkknnnnnnnnnnkkkkkj..",
+        "..kkkk..............kkkj..",
+        "..kkkk..............kkkj..",
+        ".kkkkk..............kkkkj.",
+        ".kkkkk..............kkkkj.",
+        ".kkkkk..............kkkkj.",
+        "kkkkkk..............kkkkkj",
+        ".jjjjj..............jjjjj."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "......F......",
+        ".....y33.....",
+        "..k..33o..k..",
+        ".kkkkkkkkkkj.",
+        ".kkkkkkkkkkj.",
+        ".kkknKnKnkkj.",
+        ".kkkkkkkkkkj.",
+        ".k.........j.",
+        ".k.........j.",
+        ".k.........j."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "sloth",
+      "slot": "headwear",
+      "about": "A sloth holding on from above: its pale face with dark eye stripes rests on the crown, and two long arms reach down the sides to three pale claws each.",
+      "art": [
+        ".........tttttttt.........",
+        ".......tttCCCCCCtttk......",
+        "......ttCCCCCCCCCCttk.....",
+        "......ttCkKCCCCKkCttk.....",
+        "......ttkkCCjjCCkkttk.....",
+        "......ttCCCCCCCCCCttk.....",
+        "....ttttttCCCCCCttttttk...",
+        "...ttttt..........tttttk..",
+        "..tttt..............ttttk.",
+        ".tttt................tttk.",
+        ".ttt..................ttk.",
+        "ttt....................ttk",
+        "ttt....................ttk",
+        "ttt....................ttk",
+        "tttt..................tttk",
+        "W.W.W................W.W.W",
+        "W.W.W................W.W.W"
+      ],
+      "hotspot": [12, 7],
+      "mini": [
+        "....ttttt....",
+        "...tCCCCCt...",
+        "...kKCCCKk...",
+        "..ttCCjCCtt..",
+        ".ttt.....ttt.",
+        ".tt.......tt.",
+        ".t.........t.",
+        ".t.........t.",
+        ".W.........W.",
+        ".WW.......WW."
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "pedro",
+      "slot": "headwear",
+      "about": "A raccoon's hood: grey with pointed white-lined ears, a black bandit mask under white eyebrows, and a white muzzle with a black nose.",
+      "art": [
+        "...D..................D...",
+        "...DD................D4...",
+        "...DWD..............DW4...",
+        "...DWWD............DWW4...",
+        "...DDDDD.DDDDDDDD.DDDD4...",
+        "...DDDDDDDDDDDDDDDDDDD4...",
+        "...DDDDDDDDDDDDDDDDDDD4...",
+        "...DDWWWWWDDDDDDWWWWWD4...",
+        "...4KKKKKKKDDDDKKKKKKK4...",
+        "...4KKKpKKKDDDDKKKpKKK4...",
+        "..D4KKKWWWWWKKWWWWWKKK44..",
+        "..DDDW..............WDD4..",
+        "..DDDW..............WDD4..",
+        ".DDDDW..............WDDD4.",
+        ".DDDDW..............WDDD4.",
+        ".DDDDW..............WDDD4.",
+        "DDDDDW..............WDDDD4",
+        ".4444W..............W4444."
+      ],
+      "hotspot": [12, 8],
+      "mini": [
+        ".D.........D.",
+        ".DW.......WD.",
+        ".DDDDDDDDDDD.",
+        "..DDDDDDDDD..",
+        "..4KKKDKKK4..",
+        ".D4WWWKWWW4D.",
+        ".D.........D.",
+        ".D.........D.",
+        ".D.........D."
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "ringtail",
+      "slot": "wrap",
+      "about": "A raccoon's ringed tail, curled round the base from behind: black rings on pale grey, with a black tip.",
+      "art": [
+        "................u4",
+        "..............4uu4",
+        "..4uu44uuu44uuu44u",
+        ".44uuu44uuu44uuu44",
+        ".44uuu44uuu44uuu4.",
+        "..4uu44uuu44uuu4.."
+      ],
+      "hotspot": [4, 7],
+      "mini": [".u4u4u4u4", "4u4u4u4u4"],
+      "miniHotspot": [2, 3]
+    },
+    {
+      "name": "nibbles",
+      "slot": "headwear",
+      "about": "A mouse's two big round grey ears, pink inside, with a wedge of holey yellow cheese on the crown between them.",
+      "art": [
+        "..uuuu..............uuuu..",
+        ".uuuuuu............uuuuuD.",
+        "uuIIIIuu..........uuIIIIuD",
+        "uIIIIIIu.......YY.uIIIIIuD",
+        "uIIIIIIu.....YYYJ.uIIIIIuD",
+        "uIIIIIIu...YYYYoJ.uIIIIIuD",
+        "uuIIIIuu.YYYoYYYJ.uuiiiiuD",
+        ".uuiiuu..YoYYYYoJ..uuiiuD.",
+        "..uuuu...YYYYoYYJ...uuuD..",
+        "....uu..............uuD..."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "..uu.....uu..",
+        ".uIIu...uIIu.",
+        ".uIIu.Y.uIIu.",
+        ".uIIuYYJuIIu.",
+        "..uuYYoYJuu..",
+        "...u.....u..."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "ferret",
+      "slot": "headwear",
+      "about": "A ferret draped over the crown like a stole: its masked face at one end, a long cream body, dark paws holding on, and a dark-tipped tail hanging down the other side.",
+      "art": [
+        ".CC....CC.................",
+        ".CCWWWWCC.................",
+        ".kkkWWkkkCCCCCCCCCC.......",
+        ".kKkWWkKkCCCCCCCCCCCCt....",
+        ".WWWWWWWWCCCCCCCCCCCCCt...",
+        "..WWkkWW.CCCCCCCCCCCCCCt..",
+        "...WWWW.kk........kkCCCCt.",
+        "......................CCCt",
+        "......................CCCt",
+        "......................CCCt",
+        "......................Ckkj",
+        "......................kkkj",
+        "......................kkkj",
+        ".......................kkj",
+        ".......................kj."
+      ],
+      "hotspot": [12, 6],
+      "mini": [
+        ".CCCCCCCCC...",
+        ".kCkCCCCCCC..",
+        ".WkW.....CCC.",
+        "..........CC.",
+        "...........C.",
+        "...........k.",
+        "...........k."
+      ],
+      "miniHotspot": [6, 2]
+    },
+    {
+      "name": "tapir",
+      "slot": "headwear",
+      "about": "A tapir's hood: black, with round white-tipped ears and a short trunk of a snout that droops a little way over the brow.",
+      "art": [
+        "....WWW............WWW....",
+        "...44444..........44444...",
+        "...44444..........44444...",
+        "...44444.44444444.44444...",
+        "...44444444444444444444...",
+        "...4444444DDDDDD4444444...",
+        "...444pK44D4444D44Kp444...",
+        "...4444444D4444D4444444...",
+        "..44444444D4444D44444444..",
+        "..4444....D4444D....4444..",
+        "..4444.....4KK4.....4444..",
+        ".44444..............44444.",
+        ".44444..............44444.",
+        ".44444..............44444.",
+        "444444..............444444",
+        ".44444..............44444."
+      ],
+      "hotspot": [12, 6],
+      "mini": [
+        ".WW.......WW.",
+        ".44.......44.",
+        ".44444444444.",
+        "..444444444..",
+        "..4444D4444..",
+        ".44444D44444.",
+        ".4....4....4.",
+        ".4.........4.",
+        ".4.........4."
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "manatee",
+      "slot": "headwear",
+      "about": "A manatee's hood: smooth, round and blue-grey, a pale bristly muzzle dotted with whiskers, a paddle flipper at each side and blades of seagrass on top.",
+      "art": [
+        "............a.............",
+        "........a...a...a.........",
+        ".........a..F..a..........",
+        ".........F..F..F..........",
+        ".........F..F..F..........",
+        "........11111111112.......",
+        ".....1111111111111112.....",
+        "....111111111111111112....",
+        "...111K111111111111K1112..",
+        "...11111111111111111112...",
+        "..1111uu2uu2uu2uu2uu1112..",
+        "..111u2uu2uuuuuu2uu2u112..",
+        "..111u..............u112..",
+        "..111u..............u112..",
+        "..11..................12..",
+        ".111..................112.",
+        "1111..................1112",
+        "11111................11112",
+        "11111................11112",
+        ".2222................2222."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "......a......",
+        "....a.F.a....",
+        "....F.F.F....",
+        "...1111111...",
+        "..111111111..",
+        ".11111111112.",
+        ".u2u2u2u2u2u.",
+        ".1.........2.",
+        ".11.......12.",
+        ".11.......12."
+      ],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "walrus",
+      "slot": "headwear",
+      "about": "A walrus's hood: a bald cinnamon dome, a pale whiskered pad across the brow, and two long ivory tusks coming down outside the eyes.",
+      "art": [
+        "........nnnnnnnnnnk.......",
+        ".....nnnnnnnnnnnnnnnk.....",
+        "....nnnnnnnnnnnnnnnnnk....",
+        "...nnnnKKnnnnnnnnKKnnnk...",
+        "...nnnCCCCCCkkCCCCCCnnk...",
+        "...nnCtCCtCCCCCCtCCtCnk...",
+        "..nnnCCtCCtCCCCtCCtCCnnk..",
+        "..nnWW..............WWnk..",
+        "..knWW..............WCkk..",
+        "....WW..............WC....",
+        "....WW..............WC....",
+        "....WW..............WC....",
+        "....WC..............WC....",
+        ".....W..............W.....",
+        ".....W..............W....."
+      ],
+      "hotspot": [12, 4],
+      "mini": [
+        "....nnnnn....",
+        "...nnnnnnn...",
+        "..nnnnnnnnk..",
+        "..nCCCkCCCk..",
+        ".nCCCCCCCCCk.",
+        ".W.........W.",
+        ".W.........W.",
+        ".W.........W.",
+        ".W.........W."
+      ],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "lemur",
+      "slot": "headwear",
+      "about": "A ring-tailed lemur's hood: soft grey with dark triangular ears, and a white face with dark eye patches round amber eyes and a dark snout.",
+      "art": [
+        ".....4..............4.....",
+        ".....44............44.....",
+        ".....4W4..........4W4.....",
+        ".....4W44uuuuuuuu44W4.....",
+        "....uuuuuuuuuuuuuuuuuD....",
+        "...uWWWWWWWuuuuWWWWWWWuD..",
+        "...uWW4444WWuuWW4444WWuD..",
+        "...uWW4344WWWWWW4434WWuD..",
+        "...uWWW44WW4444WW44WWWuD..",
+        "..uuuWWWWWW4444WWWWWWuuD..",
+        "..uuuW..............WuuD..",
+        "..uuuW..............WuuD..",
+        ".uuuuW..............WuuuD.",
+        ".uuuuW..............WuuuD.",
+        ".uuuuW..............WuuuD.",
+        "uuuuuW..............WuuuuD",
+        ".DDDDW..............WDDDD."
+      ],
+      "hotspot": [12, 7],
+      "mini": [
+        "..4.......4..",
+        "..44.....44..",
+        "..4uuuuuuu4..",
+        "..uWWWuWWWu..",
+        "..W4WWWWW4W..",
+        ".uWWWW4WWWWu.",
+        ".u.........u.",
+        ".u.........u.",
+        ".u.........u."
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "lemur-tail",
+      "slot": "back",
+      "about": "A ring-tailed lemur's tail held up behind one shoulder: black and white rings, curling over at its black tip.",
+      "art": [
+        ".44.",
+        "4444",
+        "4WWW",
+        ".WWW",
+        ".444",
+        ".444",
+        ".WWW",
+        ".WWW",
+        ".444",
+        ".444",
+        ".WWW",
+        ".WWW",
+        ".444",
+        ".444",
+        ".WWW",
+        ".WWW",
+        ".444",
+        ".444",
+        ".WWW",
+        ".WWW"
+      ],
+      "hotspot": [-10, 15],
+      "mini": ["44", "WW", "WW", "44", "WW", "44", ".W", ".4"],
+      "miniHotspot": [-5, 9]
+    },
+    {
+      "name": "pangolin",
+      "slot": "headwear",
+      "about": "A pangolin's hood: overlapping bronze scales with a jagged edge, and a small pale pointed snout at the brow.",
+      "art": [
+        "......o...o....o...k......",
+        "....ooonooonooonooonok....",
+        "...onnnonnnonnnonnnonnk...",
+        "..GoooGoooGoooGoooGoooGk..",
+        "..ooonooottttttttnooonok..",
+        ".onnnonnntKttttKtonnnonnk.",
+        ".oooGoooGottttttGoooGoook.",
+        ".oonooonoootkktnooonooonk.",
+        ".nnonn..............nnnok.",
+        "ooGooo..............ooGook",
+        ".nooon..............onook.",
+        "nonnno..............nonnnk",
+        ".oooGo..............Goook.",
+        "ooonoo..............ooonok",
+        ".nnon................nnok."
+      ],
+      "hotspot": [12, 5],
+      "mini": [
+        "....o.o.o....",
+        "...ononono...",
+        "..onononono..",
+        "..nottktton..",
+        ".nononononon.",
+        ".o.........o.",
+        ".n.........n.",
+        ".o.........o."
+      ],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "pangolin-tail",
+      "slot": "wrap",
+      "about": "A pangolin's scaled tail, come round from behind at one side: it tapers along the base and curls up at its tip.",
+      "art": [
+        "..........ok",
+        ".........Gok",
+        "..on.....onk",
+        ".o..n...Gon.",
+        ".o.....oGnk.",
+        ".no..Goonk..",
+        "..nGoonnk..."
+      ],
+      "hotspot": [-2, 8],
+      "mini": [".o..o", "n..on", "noonk"],
+      "miniHotspot": [-2, 3]
+    }
+  ],
+  "fabrics": {
+    "saddle": {
+      "about": "A tapir's two-tone coat: a broad white saddle round the middle of the body, and charcoal below it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "W",
+            "b": "p",
+            "L": "W",
+            "O": "p"
+          },
+          "rides": true,
+          "rows": [23, 27],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "saddle-cream": {
+      "about": "A tapir's two-tone coat: a broad cream saddle round the middle of the body, and charcoal below it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "C",
+            "b": "t",
+            "L": "C",
+            "O": "t"
+          },
+          "rides": true,
+          "rows": [23, 27],
+          "miniRows": [11, 12]
+        }
+      ]
+    },
+    "saddle-ash": {
+      "about": "A tapir's two-tone coat: a broad ash-grey saddle round the middle of the body, and charcoal below it.",
+      "bands": [
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "4",
+            "b": "4",
+            "L": "4",
+            "O": "4"
+          },
+          "rides": true,
+          "rows": [28, 29],
+          "miniRows": [13, 13]
+        },
+        {
+          "parts": ["torso"],
+          "map": {
+            "B": "g",
+            "b": "D",
+            "L": "g",
+            "O": "D"
+          },
+          "rides": true,
+          "rows": [23, 27],
+          "miniRows": [11, 12]
+        }
+      ]
+    }
+  },
+  "outfits": [
+    {
+      "id": "otter",
+      "headwear": "cast-burrow/otter",
+      "silhouette": "sitting otter",
+      "family": "brown"
+    },
+    {
+      "id": "wombat",
+      "headwear": "cast-burrow/wombat",
+      "silhouette": "box hood",
+      "family": "taupe"
+    },
+    {
+      "id": "quokka",
+      "headwear": "cast-burrow/quokka",
+      "silhouette": "round-eared hood with a sprig",
+      "family": "tan"
+    },
+    {
+      "id": "hamster",
+      "headwear": "cast-burrow/hamster",
+      "silhouette": "full-cheeked hood",
+      "family": "gold"
+    },
+    {
+      "id": "capybara",
+      "headwear": "cast-burrow/capybara",
+      "silhouette": "flat hood with a fruit",
+      "family": "brown"
+    },
+    {
+      "id": "sloth",
+      "headwear": "cast-burrow/sloth",
+      "silhouette": "hanging arms",
+      "family": "beige"
+    },
+    {
+      "id": "pedro",
+      "headwear": "cast-burrow/pedro",
+      "wrap": "cast-burrow/ringtail",
+      "silhouette": "masked hood",
+      "family": "slate"
+    },
+    {
+      "id": "nibbles",
+      "headwear": "cast-burrow/nibbles",
+      "silhouette": "big round ears",
+      "family": "pink"
+    },
+    {
+      "id": "ferret",
+      "headwear": "cast-burrow/ferret",
+      "silhouette": "stole",
+      "family": "cream"
+    },
+    {
+      "id": "tapir",
+      "headwear": "cast-burrow/tapir",
+      "fabric": "cast-burrow/saddle",
+      "colourways": [
+        {
+          "id": "cream",
+          "fabric": "cast-burrow/saddle-cream"
+        },
+        {
+          "id": "ash",
+          "fabric": "cast-burrow/saddle-ash"
+        }
+      ],
+      "silhouette": "snouted hood",
+      "family": "charcoal"
+    },
+    {
+      "id": "pangolin",
+      "headwear": "cast-burrow/pangolin",
+      "wrap": "cast-burrow/pangolin-tail",
+      "silhouette": "scaled hood",
+      "family": "bronze"
+    },
+    {
+      "id": "manatee",
+      "headwear": "cast-burrow/manatee",
+      "silhouette": "flippered hood",
+      "family": "blue-grey"
+    },
+    {
+      "id": "walrus",
+      "headwear": "cast-burrow/walrus",
+      "silhouette": "tusked hood",
+      "family": "cinnamon"
+    },
+    {
+      "id": "lemur",
+      "headwear": "cast-burrow/lemur",
+      "back": "cast-burrow/lemur-tail",
+      "silhouette": "ringed tail",
+      "family": "silver"
+    }
+  ]
+}

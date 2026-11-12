@@ -1,0 +1,519 @@
+{
+  "theme": "cast-shore",
+  "season": null,
+  "cast": true,
+  "about": "The Cells' own looks: birds, sea creatures and reptiles, one for each name from the shore.",
+  "pieces": [
+    {
+      "name": "orca",
+      "slot": "headwear",
+      "about": "An orca hood: black, a white oval patch over each eye, a white chin, and a tall dorsal fin on top.",
+      "art": [
+        "............44............",
+        "............44............",
+        "...........D444...........",
+        "...........D444...........",
+        "..........D44444..........",
+        "..........D444444.........",
+        ".......DDD444444444.......",
+        ".....DD44444444444444.....",
+        "....D4WWWW444444WWWW44....",
+        "...44WWWWWW4444WWWWWW44...",
+        "...444WWWW444444WWWW444...",
+        "..4444444444444444444444..",
+        "..4444..............4444..",
+        "..4444..............4444..",
+        ".44444..............44444.",
+        ".44444..............44444.",
+        ".4444W..............W4444.",
+        "444WWW..............WWW444",
+        ".WWWWW..............WWWWp."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "......4......",
+        "......44.....",
+        "....44444....",
+        "..444444444..",
+        ".44WW444WW44.",
+        ".44444444444.",
+        "44.........44",
+        "44.........44",
+        "WW.........WW"
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "narwhal",
+      "slot": "headwear",
+      "about": "A narwhal hood: speckled blue-grey with a white chin, and a long spiral ivory tusk angled forward and up.",
+      "art": [
+        ".......................WW.",
+        "......................Wt..",
+        "....................WtW...",
+        "...................tWW....",
+        ".................WWtW.....",
+        "................WtWW......",
+        ".......11111111tWW11......",
+        ".....1111111111111112.....",
+        "....111121111111121112....",
+        "...11111111121111111112...",
+        "...11121111111111121112...",
+        "..1111111211111121111112..",
+        "..1111..............1112..",
+        "..1211..............1112..",
+        ".11111..............11112.",
+        ".11111..............12112.",
+        ".1121p..............p1112.",
+        "111ppp..............ppp112",
+        ".ppppp..............ppppq."
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        "...........W.",
+        ".........WW..",
+        ".......Wt....",
+        "...111W111...",
+        "..112111121..",
+        ".11111111111.",
+        "11.........12",
+        "11.........12",
+        "pp.........pq"
+      ],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "puffer",
+      "slot": "headwear",
+      "about": "A puffed-up yellow pufferfish sitting on the crown: white belly, short spines all round, lips pursed.",
+      "art": [
+        ".......o...o.......",
+        "....o.YYYYYYY.o....",
+        "....YYYYYYYYYYY....",
+        "..oYYYYJYYYYWWYYo..",
+        "JJ.YYYYYYYYYWKYY...",
+        "JJJYYJYYYYYYYYYY33.",
+        ".JoYYYYJJYYYYYYWo..",
+        "....WWWWJWWWWWW....",
+        "....oWWWWWWWWWo....",
+        "......WWWWWWW......"
+      ],
+      "hotspot": [9, 9],
+      "mini": ["....o.o.o....", "...YYYYYYYo..", ".JoYYYYYKY...", "..JYYYYYYY3..", "...oWWWWWo..."],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "goose",
+      "slot": "headwear",
+      "about": "A white goose's head and neck rising straight out of the crown, orange beak, looking to one side.",
+      "art": [
+        "..WWWW.......",
+        ".WWWWWW......",
+        ".WWWKWW333...",
+        ".WWWWWp3333..",
+        "..WWWWp......",
+        "...WWWp......",
+        "...WWWp......",
+        "...WWWp......",
+        "..WWWWWp.....",
+        ".pWWWWWWp...."
+      ],
+      "hotspot": [5, 9],
+      "mini": [".....WW......", ".....WK33....", ".....WW......", ".....WW......", "....WWWW....."],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "honker",
+      "slot": "headwear",
+      "about": "A brass bulb horn lying across the crown: a black rubber bulb at one end, a flared brass bell at the other.",
+      "art": [
+        "......................oGY.",
+        "....................ooGGYY",
+        ".4444.............ooGGGGkY",
+        "444444..........ooGGGGGGkY",
+        "4D4444oGGGGGGGGGGGGGGGGGkY",
+        "444444oooooooooooGGGGGGGkY",
+        "444444..........ooGGGGGGkY",
+        ".4444.............ooGGGGkY",
+        "....................ooGGYY",
+        "......................oGY."
+      ],
+      "hotspot": [12, 6],
+      "mini": [".........GY", ".44.....GGY", "4444GGGGGoY", ".44.....GGY", ".........oY"],
+      "miniHotspot": [5, 3]
+    },
+    {
+      "name": "falcon",
+      "slot": "headwear",
+      "about": "A falcon perched upright on the crown: dark cap, hooked beak, barred cream breast, folded pointed wings.",
+      "art": [
+        "....kkkkk....",
+        "...kkkkkkk...",
+        "...kkkYKCCY4.",
+        "...kkkkkCC.4.",
+        "..nnnkCCCCC..",
+        ".nnknnCnCnCC.",
+        ".nknnkCCnCnC.",
+        ".nnnknCnCnC..",
+        "..nnknnCCnC..",
+        "...kkkk.YY.Y.",
+        "....kk......."
+      ],
+      "hotspot": [6, 9],
+      "mini": [".kkk....", ".kKCY...", "nnCCn...", "nnnCC...", ".kk.Y..."],
+      "miniHotspot": [3, 4]
+    },
+    {
+      "name": "toucan",
+      "slot": "headwear",
+      "about": "A toucan perched on the crown: black, a white bib, and an oversized orange-and-yellow bill.",
+      "art": [
+        "...4444...............",
+        "..444444..............",
+        "..44dK44YYYYYYYYY3....",
+        "..44dd4333333333334...",
+        "..44WWW333333333344...",
+        ".444WWWW..33333334....",
+        ".444WWWW..............",
+        ".4444WW44.............",
+        "44444444..............",
+        "4444.3.3..............",
+        "44...................."
+      ],
+      "hotspot": [9, 9],
+      "mini": ["..444.......", "..4d4YYYY3..", ".44WW33334..", ".444W.......", "44.........."],
+      "miniHotspot": [5, 4]
+    },
+    {
+      "name": "pelican",
+      "slot": "headwear",
+      "about": "A white pelican settled on the crown, its huge pouched bill resting forward.",
+      "art": [
+        "..........WWW.........",
+        ".........WWWWW........",
+        ".........WWKWW33333333",
+        "...WWWW..pWWW.GGGGGGG3",
+        ".WWWWWWWWWWWW.oGGGGGo.",
+        "WWWWWWWWWWWWW..oGGGGo.",
+        "4WWWWWWWWWWWp...oGGo..",
+        ".44pWWWWWWWp.....oo...",
+        "...pppppppp..........."
+      ],
+      "hotspot": [10, 8],
+      "mini": ["....WW.....", "....WK3333.", "WWWWWW.GGG3", "WWWWWp..GG.", ".4pppp....."],
+      "miniHotspot": [5, 4]
+    },
+    {
+      "name": "pigeon",
+      "slot": "headwear",
+      "about": "A plump grey pigeon on the crown, a green-and-violet sheen on its neck; its head bobs.",
+      "art": [
+        "...........DDD.....",
+        "..........DDDDD....",
+        "..........DD3KDWg..",
+        "..........DDDDD....",
+        "...................",
+        "....uuuuu.FvFvD....",
+        "..uuuuuuuuuvFvuu...",
+        ".uuuu4uuu4uuuuuuu..",
+        "DDuuu4uuu4uuuuuuu..",
+        "4DDuuuuuuuuuuuuu...",
+        "...quuuuuuuuuuq....",
+        "........P..P......."
+      ],
+      "hotspot": [9, 9],
+      "mini": [".....DD....", ".....DKW...", "..uuuuFv...", "Duu4u4uuu..", ".quuuuuq..."],
+      "miniHotspot": [5, 4],
+      "frames": [
+        [
+          "...........DDD.....",
+          "..........DDDDD....",
+          "..........DD3KDWg..",
+          "..........DDDDD....",
+          "...................",
+          "....uuuuu.FvFvD....",
+          "..uuuuuuuuuvFvuu...",
+          ".uuuu4uuu4uuuuuuu..",
+          "DDuuu4uuu4uuuuuuu..",
+          "4DDuuuuuuuuuuuuu...",
+          "...quuuuuuuuuuq....",
+          "........P..P......."
+        ],
+        [
+          ".............DDD...",
+          "............DDDDD..",
+          "............DD3KDWg",
+          "............DDDDD..",
+          "...................",
+          "....uuuuu.FvFvDD...",
+          "..uuuuuuuuuvFvuu...",
+          ".uuuu4uuu4uuuuuuu..",
+          "DDuuu4uuu4uuuuuuu..",
+          "4DDuuuuuuuuuuuuu...",
+          "...quuuuuuuuuuq....",
+          "........P..P......."
+        ]
+      ],
+      "miniFrames": [
+        [".....DD....", ".....DKW...", "..uuuuFv...", "Duu4u4uuu..", ".quuuuuq..."],
+        ["......DD...", "......DKW..", "..uuuuFvu..", "Duu4u4uuu..", ".quuuuuq..."]
+      ],
+      "fps": 2
+    },
+    {
+      "name": "heron",
+      "slot": "headwear",
+      "about": "A grey-blue heron hunched on one leg on the crown: a black crest plume trailing back, a long dagger bill.",
+      "art": [
+        "..44....WWW........",
+        "....4444WKWGGGGGGG.",
+        "........WWWGGG.....",
+        ".......WWp.........",
+        "...11111WW.........",
+        ".11111114WW........",
+        "1111122221W........",
+        ".222....t..........",
+        "........t..........",
+        "........t..........",
+        ".......ttt........."
+      ],
+      "hotspot": [9, 9],
+      "mini": ["...4WWGGG", ".1111W...", "11112....", "...4.....", "...4....."],
+      "miniHotspot": [4, 4]
+    },
+    {
+      "name": "platypus",
+      "slot": "headwear",
+      "about": "A platypus hood: dark brown, two beady eyes, and a flat slate bill hanging over the brow.",
+      "art": [
+        ".........kkkkkkkk.........",
+        "......kkkkkkkkkkkkkk......",
+        "....kkkkkkkkkkkkkkkkkk....",
+        "...kkkkkKkkkkkkkkKkkkkZ...",
+        "...kkkkkkkkkkkkkkkkkkkZ...",
+        "..kkkkkkgggggggggggkkkkZ..",
+        "..kkkkDDD4DDDDDD4DDDkkkZ..",
+        "..kkDDDDDDDDDDDDDDDDDDkZ..",
+        "..kkk4DDDDDDDDDDDDDD4kkZ..",
+        "..kkkk..............kkkZ..",
+        ".kkkkk..............kkkkZ.",
+        ".kkkkk..............kkkkZ.",
+        ".kkkkk..............kkkkZ.",
+        "kkkkkk..............kkkkkZ",
+        ".ZZZZZ..............ZZZZZ."
+      ],
+      "hotspot": [12, 5],
+      "mini": [
+        "....kkkkk....",
+        "...kkkkkkk...",
+        "..kKkkkkkKk..",
+        ".kkkDDDDDkkk.",
+        ".kDDDDDDDDDk.",
+        "kk.........kk",
+        "kk.........kk",
+        "kk.........kk"
+      ],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "paddle",
+      "slot": "wrap",
+      "about": "A platypus's flat paddle tail, lying out to one side at the base.",
+      "art": ["..kkkkkk.", ".kkZkZkkk", "kkZkZkZkk", ".kkZkZkkk", "..ZZZZZZ."],
+      "hotspot": [-5, 5],
+      "mini": [".kkkk", "kkZkk"],
+      "miniHotspot": [-2, 2]
+    },
+    {
+      "name": "gecko",
+      "slot": "headwear",
+      "about": "A bright green gecko clinging across the crown and down one side: toe pads splayed, tail curling.",
+      "art": [
+        "......a.a......a.a.......",
+        ".......A........A........",
+        ".......A........A........",
+        "..AAA.AA.......AA........",
+        ".AAKAAAAAAAAAAAAAA.......",
+        "AAAAAAARAAARAAARAAAA.....",
+        ".AAKAAAAAAAAAAAAAAAAA....",
+        "..AAA.AA.......AA..AAA...",
+        ".......A........A....AA..",
+        ".......A........A.....AA.",
+        "......a.a......a.a....AA.",
+        ".......................AA",
+        ".......................AA",
+        ".....................A.AA",
+        "....................A..A.",
+        "....................AAAA."
+      ],
+      "hotspot": [12, 8],
+      "mini": [
+        "....a..a...",
+        ".AA.A..A...",
+        "AKAAAAAAA..",
+        ".AA.A..A.A.",
+        "..........A",
+        "..........A",
+        "..........A"
+      ],
+      "miniHotspot": [5, 3]
+    },
+    {
+      "name": "newt",
+      "slot": "headwear",
+      "about": "An orange newt with black spots lying along the crown, yellow belly down, its tail trailing down one side.",
+      "art": [
+        "...................3333..",
+        "..................33K3333",
+        "......33333333333333333YY",
+        "....3334333343333433YYY..",
+        "...33YYYYYYYYYYYYYYY33...",
+        "..33Y3..............33...",
+        ".33Y33..............Y3Y..",
+        ".33......................",
+        ".3Y......................",
+        "33.......................",
+        "3Y.......................",
+        "3........................",
+        "33......................."
+      ],
+      "hotspot": [12, 5],
+      "mini": ["........33.", "...34343K3.", ".33YYYYY3..", "3..........", "3.........."],
+      "miniHotspot": [5, 3]
+    },
+    {
+      "name": "snek",
+      "slot": "headwear",
+      "about": "A green snake coiled on the crown, head raised, a red forked tongue out.",
+      "art": [
+        "...........FFFF.....",
+        "..........FFFKFF.R..",
+        "..........FFFFFFR...",
+        "..........FAAf...R..",
+        "......FFFFFAAf......",
+        ".....FaFFFaFFFFf....",
+        "......ffffffff......",
+        "F..FFFFFFFFFFFFFF...",
+        "FFFFFaFFFaFFFaFFFF..",
+        "...ffffffffffffff..."
+      ],
+      "hotspot": [9, 9],
+      "mini": ["......FF...", ".....FFKFR.", "F..FFFFF...", "FFFFaFFaFF.", "..fffffff.."],
+      "miniHotspot": [5, 4]
+    },
+    {
+      "name": "kiwi",
+      "slot": "headwear",
+      "about": "A kiwi, the bird: a round brown fuzzy ball on the crown with a long thin beak.",
+      "art": [
+        "....n.n.n..........",
+        "...nnnnnnnn........",
+        ".nnnonnknnnn.......",
+        "..nnnnnnnonnn......",
+        "knnknnnnnnKnntt....",
+        ".nnnnonnknnnn..tt..",
+        "knnnnnnnnnnnn....t.",
+        ".nknnnonnnnkn.....t",
+        "..nnnnnnnnnn......t",
+        "....tt...tt........",
+        "...ttt..ttt........"
+      ],
+      "hotspot": [9, 9],
+      "mini": ["..nnnn....", ".nnnnnn...", "knnnnKntt.", ".nnnnnn..t", "..nt.tn..t"],
+      "miniHotspot": [4, 4]
+    }
+  ],
+  "outfits": [
+    {
+      "id": "orca",
+      "headwear": "cast-shore/orca",
+      "silhouette": "fin-hood",
+      "family": "charcoal"
+    },
+    {
+      "id": "narwhal",
+      "headwear": "cast-shore/narwhal",
+      "silhouette": "tusk-hood",
+      "family": "denim"
+    },
+    {
+      "id": "puffer",
+      "headwear": "cast-shore/puffer",
+      "silhouette": "spiky-ball",
+      "family": "sunflower"
+    },
+    {
+      "id": "goose",
+      "headwear": "cast-shore/goose",
+      "silhouette": "long-neck",
+      "family": "white"
+    },
+    {
+      "id": "honker",
+      "headwear": "cast-shore/honker",
+      "silhouette": "horn",
+      "family": "brass"
+    },
+    {
+      "id": "falcon",
+      "headwear": "cast-shore/falcon",
+      "silhouette": "raptor",
+      "family": "rust"
+    },
+    {
+      "id": "toucan",
+      "headwear": "cast-shore/toucan",
+      "silhouette": "big-bill",
+      "family": "black"
+    },
+    {
+      "id": "pelican",
+      "headwear": "cast-shore/pelican",
+      "silhouette": "pouch-bill",
+      "family": "pearl"
+    },
+    {
+      "id": "pigeon",
+      "headwear": "cast-shore/pigeon",
+      "silhouette": "plump-bird",
+      "family": "grey"
+    },
+    {
+      "id": "heron",
+      "headwear": "cast-shore/heron",
+      "silhouette": "wader",
+      "family": "blue-grey"
+    },
+    {
+      "id": "platypus",
+      "headwear": "cast-shore/platypus",
+      "wrap": "cast-shore/paddle",
+      "silhouette": "bill-hood",
+      "family": "cocoa"
+    },
+    {
+      "id": "gecko",
+      "headwear": "cast-shore/gecko",
+      "silhouette": "lizard",
+      "family": "lime"
+    },
+    {
+      "id": "newt",
+      "headwear": "cast-shore/newt",
+      "silhouette": "newt",
+      "family": "orange"
+    },
+    {
+      "id": "snek",
+      "headwear": "cast-shore/snek",
+      "silhouette": "coil",
+      "family": "forest"
+    },
+    {
+      "id": "kiwi",
+      "headwear": "cast-shore/kiwi",
+      "silhouette": "fuzzball",
+      "family": "tan"
+    }
+  ]
+}

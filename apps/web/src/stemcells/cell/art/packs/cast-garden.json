@@ -1,0 +1,343 @@
+{
+  "theme": "cast-garden",
+  "season": null,
+  "cast": true,
+  "about": "The Cells' own looks: vegetables, fruit and the breakfast table, each worn on the crown by the Cell of that name.",
+  "pieces": [
+    {
+      "name": "turnip",
+      "slot": "headwear",
+      "about": "A turnip sitting on the crown: a squat white bulb with purple shoulders and a tuft of upright green leaves.",
+      "art": [
+        ".FF....a....FF",
+        ".FFa..Fa...aFF",
+        "..FFa.FaF.aFF.",
+        "...FFaFafaFF..",
+        "..MMMfFafMMMM.",
+        "MMMMMMMMMMMMMr",
+        "MiiMMMMMMMMMMr",
+        "iiiiiiiiiiiiiq",
+        ".WWWWWWWWWWpq.",
+        "..WWWWWWWWpq..",
+        "....WWWWpq...."
+      ],
+      "hotspot": [6, 9],
+      "mini": ["FF.a..F", ".FFaFF.", ".MMMMM.", "MiMMMMM", ".WWWWp.", "..WWp.."],
+      "miniHotspot": [3, 5]
+    },
+    {
+      "name": "radish",
+      "slot": "headwear",
+      "about": "A small round red radish tipped on the crown: floppy leaves fall to one side and its thin white root tail curls out the other.",
+      "art": [
+        "..FF...FF.................",
+        "FFaFF.FaaF................",
+        "FaaFFFFaFFf.RRRR..........",
+        "FF.FFaFFfFfRRRRRRr........",
+        ".F..FF.ffRRPPRRRRRr.......",
+        ".........RRPRRRRRRRr......",
+        ".........RRRRRRRRRRWW.....",
+        ".........RRRRRRRRRWWWW....",
+        "..........RRRRRRRrWWW.gg..",
+        "...........rRRRRrr.....gg.",
+        ".........................g"
+      ],
+      "hotspot": [12, 9],
+      "mini": [
+        ".FF.F......",
+        "FaFaF......",
+        ".FafRRR....",
+        "..fRWRRR...",
+        "...RRRRWW..",
+        "....RRR.Wg.",
+        "..........g"
+      ],
+      "miniHotspot": [5, 5]
+    },
+    {
+      "name": "zucchini",
+      "slot": "headwear",
+      "about": "A dark-green striped zucchini lying across the crown, its stalk at one end and its yellow blossom still on the other.",
+      "art": [
+        "......................J...",
+        "....FFaFFFaFFFaFFFa..JY.J.",
+        "..fFFaFFFaFFFaFFFaFFJYYYJ.",
+        "kkffFfffFfffFfffFffff3YYYJ",
+        "kkfffFfffFfffFfffFfff3YJ..",
+        "..ffffffffffffffffffJYJ.J.",
+        "....ffffffffffffffff..J..."
+      ],
+      "hotspot": [12, 6],
+      "mini": [".........J.", ".aFaFaFaJYJ", "kffffffff3J", ".fffffff.J."],
+      "miniHotspot": [5, 3]
+    },
+    {
+      "name": "potato",
+      "slot": "headwear",
+      "about": "A lumpy brown potato on the crown, dark eyes in its skin and one pale sprout curling up from the top.",
+      "art": [
+        ".......ii.......",
+        "......i..v......",
+        ".........vv.....",
+        "...ooooo.vv.....",
+        ".ootttoooovoooo.",
+        "ootttooooooooooo",
+        "otoooooZnooooooo",
+        "ooonZooooooonZon",
+        "oooooooooooooonn",
+        ".ooooonZoooonnn.",
+        "...nnnnnnnnnn..."
+      ],
+      "hotspot": [7, 9],
+      "mini": ["....iv...", "......v..", ".ooooovo.", "otooooooo", "oZoooZoon", ".oooZonn."],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "peanut",
+      "slot": "headwear",
+      "about": "A peanut in its shell lying across the crown: two tan lobes with a waist between them and a dimpled skin.",
+      "art": [
+        "..ssss.....sss..",
+        ".ssosss...ssoss.",
+        "sssssosssssssoss",
+        "sosssssosssossso",
+        "ssssosssssosssso",
+        ".osssssooosssso.",
+        "..oooo....oooo.."
+      ],
+      "hotspot": [8, 6],
+      "mini": [".ss..ss.", "ssosssos", "sssossss", ".oo..oo."],
+      "miniHotspot": [4, 3]
+    },
+    {
+      "name": "mango",
+      "slot": "headwear",
+      "about": "A ripe mango on the crown: a kidney-shaped fruit shading from a red shoulder through orange to a yellow tip, with its stem and one green leaf.",
+      "art": [
+        "....kk...FFFa...",
+        "...RRkk.FFFFFFa.",
+        ".RR3R3kkfFFFFf..",
+        "RR3R3333YYYYYY..",
+        "R3R333YYyyYYYYY.",
+        "R3333YYyYYYYYYYY",
+        "3333YYYYYYYYYYYJ",
+        ".33YYYYYYYYYYYJJ",
+        "..YYYYYYYYYYYJJ.",
+        "....YYYYYYYJJ..."
+      ],
+      "hotspot": [7, 9],
+      "mini": ["..k.FF...", ".RRkFFa..", "RR33YY...", "R33YYYYY.", "33YYYYYYJ", ".YYYYYJJ."],
+      "miniHotspot": [3, 5]
+    },
+    {
+      "name": "beans",
+      "slot": "headwear",
+      "about": "An opened tin of beans standing on the crown: a silver can with a plain blue label band, beans heaped at the rim and the lid bent up behind.",
+      "art": [
+        ".............ggg.",
+        "....33.33...gWWpg",
+        "..33R3333R3gWpppg",
+        ".3R3333R333Rgppg.",
+        "gg33R3333R33ggg..",
+        "gWggggggggggu....",
+        "hSShhhhhhhhhU....",
+        "hSShhhhhhhhhU....",
+        "hSShhhhhhhhhU....",
+        "gWggggggggggu....",
+        "uuuuuuuuuuuuu...."
+      ],
+      "hotspot": [6, 9],
+      "mini": [".......gg.", ".3R33.gWWg", "g3R33ggWg.", "hShhhhU...", "hShhhhU...", "gWggggu..."],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "tofu",
+      "slot": "headwear",
+      "about": "A block of tofu on the crown: a white cube in soft shade, scallion rings scattered on top and a drip of soy sauce running down its face.",
+      "art": [
+        "...WWaaWWFaWWW.",
+        "..WZZaFWWaaWWWq",
+        ".WZZZZZWaFWWWqq",
+        "pppZZpZppppppqq",
+        "pppZppZppppppqq",
+        "pppZpppppppppqq",
+        "pppppppppppppqq",
+        "ppppppppppppqq.",
+        "qqqqqqqqqqqqq.."
+      ],
+      "hotspot": [6, 8],
+      "mini": [".ZaWWaW.", "ZZZaWWWq", "ZpZppppq", "Zpppppqq", "pppppppq"],
+      "miniHotspot": [3, 4]
+    },
+    {
+      "name": "pudding",
+      "slot": "headwear",
+      "about": "A caramel custard pudding on a small plate: a pale yellow mould, wider at the foot, with dark caramel over the top and dripping down its sides.",
+      "art": [
+        ".....ZZZZZZ.....",
+        "....ZnnZZZZZ....",
+        "...ZZZZZZZZZZ...",
+        "...ZyZZyyZyZZ...",
+        "...yyZyyyyyZJ...",
+        "..yyyyyyyyyyJJ..",
+        "..yWyyyyyyyyJJ..",
+        "..yWyyyyyyyyJJ..",
+        "WWWWWWWWWWWWWWWq",
+        ".qqqqqqqqqqqqqq."
+      ],
+      "hotspot": [7, 8],
+      "mini": ["...ZZZ...", "..ZnZZZ..", "..ZyZyZ..", ".yyyyyyJ.", ".yWyyyyJ.", "WWWWWWWWq"],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "waffle",
+      "slot": "headwear",
+      "about": "A golden waffle stood on the crown, its grid of pockets facing out, with a pale pat of butter and a drip of syrup.",
+      "art": [
+        ".GGGGGGGGGGGGG.",
+        "GGnoGnoGnoGnoGG",
+        "GGooGooGooGooGG",
+        "GGGGGGGGGGGGGGG",
+        "GGnoGnWWWWGnoGG",
+        "GGooGoyyyyZooGG",
+        "GGGGGGGZZZZGGGG",
+        "GGnoGnoGZoGnoGG",
+        "GGooGooGZoGooGG",
+        ".oooooooZooooo."
+      ],
+      "hotspot": [7, 9],
+      "mini": [".GGGGGGG.", "GnGnGnGnG", "GGGWWGGGG", "GnGnZnGnG", "GGGGZGGGG", ".ooooooo."],
+      "miniHotspot": [4, 5]
+    },
+    {
+      "name": "pretzel",
+      "slot": "headwear",
+      "about": "A knotted pretzel standing over the crown like a tiara: brown crossed arms and three holes, dotted with white salt.",
+      "art": [
+        "...oogo......oooo...",
+        ".oonnnnoo..oongnnoo.",
+        "onn....nnoonn....nno",
+        "gn......nngn......nn",
+        "nn.....nnkknn.....nn",
+        "nnk...nnk..knn...kgn",
+        ".nnk.nnk....knn.knn.",
+        "..nngnk......knnnn..",
+        "...knnnn....ngnnk...",
+        ".....kkkkkkkkkk....."
+      ],
+      "hotspot": [9, 9],
+      "mini": [
+        ".ono...ono.",
+        "n...n.n...n",
+        "n....n....n",
+        ".n..n.n..n.",
+        "..nn...nn..",
+        "...nnnnn..."
+      ],
+      "miniHotspot": [5, 5]
+    },
+    {
+      "name": "crumpet",
+      "slot": "headwear",
+      "about": "A cup of tea on its saucer, a curl of steam rising from it and a buttered crumpet beside it on the saucer.",
+      "art": [
+        "...............g........",
+        "..............g.........",
+        "...............g........",
+        "..........WWWWWWWWWW....",
+        "..........SnnnnnnnnSdd..",
+        "..GGGGGG..SWSSSSSSSd.d..",
+        ".GoGyWyGG.SWSSSSSSSd.d..",
+        ".oGGyyGGo.SSSSSSSSSddd..",
+        ".nononono..SSSSSSSd.....",
+        "WWWWWWWWWWWWWWWWWWWWWWWq",
+        "..qqqqqqqqqqqqqqqqqqqq.."
+      ],
+      "hotspot": [11, 9],
+      "mini": [
+        ".......g...",
+        "......g....",
+        "....dnnndd.",
+        ".y..dSddd.d",
+        "GGG..ddddd.",
+        "WWWWWWWWWWq"
+      ],
+      "miniHotspot": [5, 5]
+    }
+  ],
+  "fabrics": {},
+  "outfits": [
+    {
+      "id": "turnip",
+      "headwear": "cast-garden/turnip",
+      "silhouette": "bulb",
+      "family": "mauve"
+    },
+    {
+      "id": "radish",
+      "headwear": "cast-garden/radish",
+      "silhouette": "radish",
+      "family": "red"
+    },
+    {
+      "id": "zucchini",
+      "headwear": "cast-garden/zucchini",
+      "silhouette": "marrow",
+      "family": "forest"
+    },
+    {
+      "id": "potato",
+      "headwear": "cast-garden/potato",
+      "silhouette": "lump",
+      "family": "earth"
+    },
+    {
+      "id": "peanut",
+      "headwear": "cast-garden/peanut",
+      "silhouette": "figure-eight",
+      "family": "sand"
+    },
+    {
+      "id": "mango",
+      "headwear": "cast-garden/mango",
+      "silhouette": "kidney",
+      "family": "sunset"
+    },
+    {
+      "id": "beans",
+      "headwear": "cast-garden/beans",
+      "silhouette": "tin",
+      "family": "navy"
+    },
+    {
+      "id": "tofu",
+      "headwear": "cast-garden/tofu",
+      "silhouette": "cube",
+      "family": "pearl"
+    },
+    {
+      "id": "pudding",
+      "headwear": "cast-garden/pudding",
+      "silhouette": "pudding",
+      "family": "custard"
+    },
+    {
+      "id": "waffle",
+      "headwear": "cast-garden/waffle",
+      "silhouette": "grid",
+      "family": "gold"
+    },
+    {
+      "id": "pretzel",
+      "headwear": "cast-garden/pretzel",
+      "silhouette": "knot",
+      "family": "chestnut"
+    },
+    {
+      "id": "crumpet",
+      "headwear": "cast-garden/crumpet",
+      "silhouette": "teacup",
+      "family": "sky"
+    }
+  ]
+}
