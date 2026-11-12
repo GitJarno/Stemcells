@@ -15,7 +15,7 @@ import {
   type EnvironmentMachineKind,
 } from "@t3tools/contracts";
 import { Atom } from "effect/reactivity";
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useState, type MouseEvent as ReactMouseEvent } from "react";
 
 import {
   type EnvironmentOption,
@@ -42,13 +42,6 @@ import { threadRefOf } from "./routes";
 
 export { EnvironmentMachineIcon } from "../../components/EnvironmentMachineIcon";
 export { ProjectFavicon } from "../../components/ProjectFavicon";
-
-/**
- * How long a click on the title waits before opening the menu, so a
- * double-click can rename instead; as upstream's header waits, and only
- * where the menu is the desktop's own (it holds input while open).
- */
-const TITLE_MENU_OPEN_DELAY_MS = 500;
 
 /** Why a chat's new title wasn't applied: it isn't loaded here, or this window may not change it. */
 const CANT_RENAME_CELL = "Can't rename this Cell here";
@@ -140,44 +133,20 @@ export function useCellThreadMenu(cell: CellRef | null) {
     onFind: canFind ? (ref) => openThreadFind(scopedThreadKey(ref)) : undefined,
     canShareWithGuest,
   });
-  const pending = useRef<number | null>(null);
-  const cancelPendingMenu = () => {
-    if (pending.current === null) return;
-    clearTimeout(pending.current);
-    pending.current = null;
-  };
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Cancel the menu's pending double-click wait when the chat changes or the line unmounts.
-  useEffect(
-    () => () => {
-      if (pending.current === null) return;
-      clearTimeout(pending.current);
-      pending.current = null;
-    },
-    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- A pending menu belongs to the chat that was clicked, so another chat drops it.
-    [key],
-  );
-
-  /** Opens the menu under the clicked element, after the double-click wait where there is one. */
+  /** Opens the menu under the clicked element, as upstream's header does. */
   const onClick = (event: ReactMouseEvent<HTMLElement>) => {
     if (isTrailingDoubleClick(event.detail)) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    const open = () => {
-      pending.current = null;
-      openMenu({ x: rect.left, y: rect.bottom + 4 });
-    };
-    cancelPendingMenu();
-    if (event.detail === 0 || window.desktopBridge === undefined) open();
-    else pending.current = window.setTimeout(open, TITLE_MENU_OPEN_DELAY_MS);
+    openMenu({ x: rect.left, y: rect.bottom + 4 });
   };
+  // A native menu takes the second click, so only the in-page menu lets a double-click reach here.
   const onDoubleClick = (event: ReactMouseEvent<HTMLElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    cancelPendingMenu();
     closeMenu();
     startRename();
   };
   const onContextMenu = (event: ReactMouseEvent<HTMLElement>) => {
     if (renaming || !shell) return;
-    cancelPendingMenu();
     event.preventDefault();
     openMenu({ x: event.clientX, y: event.clientY });
   };
@@ -187,7 +156,6 @@ export function useCellThreadMenu(cell: CellRef | null) {
     renaming,
     onClick,
     onDoubleClick: canRename ? onDoubleClick : undefined,
-    onBlur: cancelPendingMenu,
     onContextMenu,
     commitRename,
     cancelRename,

@@ -227,7 +227,8 @@ export function substituteUpstreamModules(): Plugin {
       ? {}
       : {
           transform: naming.transform,
-          transformIndexHtml: naming.transformIndexHtml,
+          // Last, after vite.config.ts's bootstrap title stamps upstream's name into <title>.
+          transformIndexHtml: { order: "post", handler: naming.transformIndexHtml },
           generateBundle: naming.generateBundle,
         }),
     async resolveId(source, importer, options) {

@@ -19,12 +19,13 @@ import { buildDocJson } from "../../composer-rich-text-doc";
 import composerEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
+import { isComposerSubmissionBlocked } from "../../components/chat/composerSubmission";
 import { promptBetween, wordsCatalogOf } from "./words";
 
 describe("the composer ink's contracts with upstream", () => {
   it("the editor's prompt is its document serialized, as the Cells beside it are sent", () => {
     expect(composerEditor).toMatch(
-      /const handleEditorChange = \(updated: TiptapEditor\) => \{\s*const map = serializeEditorDoc\(updated\.state\.doc\);[\s\S]{0,400}const nextValue = map\.value;/,
+      /const handleEditorChange = \(updated: TiptapEditor(?:, transaction: Transaction)?\) => \{\s*const map = serializeEditorDoc\(updated\.state\.doc\);[\s\S]{0,400}const nextValue = map\.value;/,
     );
   });
 
@@ -124,8 +125,20 @@ describe("Enter can't send before the words are read", () => {
     );
     // A send during dictation waits for it, then comes back through the same check.
     expect(chatComposer).toMatch(
-      /const submitComposer = \([\s\S]{0,200}?\) => \{\s*if \(voiceInputActive\) \{\s*event\?\.preventDefault\(\);\s*submitAfterDictation\(\(\) => submitComposerRef\.current\([^)]*\)\);\s*return;\s*\}\s*if \(\s*noProviderAvailable \|\|/,
+      /const submitComposer = \([\s\S]{0,200}?\) => \{\s*if \(voiceInputActive\) \{\s*event\?\.preventDefault\(\);\s*submitAfterDictation\(\(\) => submitComposerRef\.current\([^)]*\)\);\s*return false;\s*\}\s*if \(submissionBlocked \|\|/,
     );
+    expect(chatComposer).toMatch(
+      /const submissionBlocked = isComposerSubmissionBlocked\(\{\s*submissionTarget,\s*noProviderAvailable,/,
+    );
+    expect(
+      isComposerSubmissionBlocked({
+        submissionTarget: "provider-turn",
+        noProviderAvailable: true,
+        sendDisabledReason: null,
+        attachmentBlockReason: null,
+        environmentUnavailable: false,
+      }),
+    ).toBe(true);
     expect(chatComposer).toContain(
       "submitComposerRef.current = (mode, intent) => submitComposerStable(undefined, mode, intent);",
     );

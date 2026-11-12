@@ -34,6 +34,7 @@ const UNDONE_ACTION = {
   Unpinned: "unpin",
   Archived: "archive",
   Discarded: "discard",
+  Answered: "answer",
 } satisfies Record<UndoOptions["action"], string>;
 
 function countLabel(action: UndoOptions["action"], count: number) {

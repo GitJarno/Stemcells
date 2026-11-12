@@ -39,7 +39,7 @@ describe("the line the window's controls stand on", () => {
 
   it("is where upstream centres its sidebar button", () => {
     expect(appSidebarLayout).toMatch(
-      /"pointer-events-none fixed left-\[var\(--workspace-controls-left\)\] top-\[var\(--workspace-controls-top\)\] z-50 ml-px flex h-\[var\(--workspace-topbar-height\)\] items-center",\s*isMobile && mobileSheetMounted && "hidden",\s*\)\}\s*data-sidebar-control=""/,
+      /"pointer-events-none fixed left-\[var\(--workspace-controls-left\)\] top-\[var\(--workspace-controls-top\)\] z-50 ml-px flex h-\[var\(--workspace-topbar-height\)\] items-center",\s*mobileSidebarSheetMounted && "hidden",\s*\)\}\s*data-sidebar-control=""/,
     );
   });
 

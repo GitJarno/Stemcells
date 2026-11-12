@@ -26,7 +26,7 @@ describe("the header-less pane's contracts with upstream", () => {
 
   it("the panel toggles sit in a fixed row marked as the titlebar's controls", () => {
     expect(panelLayoutControls).toMatch(
-      /className="pointer-events-none fixed top-\[var\(--workspace-controls-top\)\] right-\[var\(--workspace-controls-right\)\] z-50 [^"]*"\s*data-workspace-titlebar-controls\s*>/,
+      /className=\{cn\(\s*"pointer-events-none fixed top-\[var\(--workspace-controls-top\)\] right-\[var\(--workspace-controls-right\)\] z-50 [^"]*",\s*mobileSidebarSheetMounted && "hidden",\s*\)\}\s*data-workspace-titlebar-controls\s*>/,
     );
     expect(chatView).toMatch(/const panelLayoutControls = \(\s*<WorkspaceTitlebarControls\b/);
     // The row goes beside the header or at the chat's root, both places

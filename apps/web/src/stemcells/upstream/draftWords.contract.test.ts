@@ -83,7 +83,7 @@ describe("the words' contracts with upstream's drafts", () => {
     // The readout takes the picker's place (`substitutes/ProviderModelPicker.tsx`)
     // with a value other than "true", so the flights never land on it.
     expect(composerControlsBar).toMatch(
-      /<ComposerModelPicker\s+environmentId=\{environmentId\}\s+compact=\{false\}\s+isComposerOwned\b/,
+      /<ComposerModelPicker\s+environmentId=\{environmentId\}[^>]{0,80}?\s+compact=\{false\}\s+isComposerOwned\b/,
     );
     expect(footerControls).toContain(
       'import { ProviderModelPicker } from "./ProviderModelPicker";',

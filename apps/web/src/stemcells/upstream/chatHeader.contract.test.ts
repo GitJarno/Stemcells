@@ -16,7 +16,7 @@ import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?r
 import chatView from "../../components/ChatView.tsx?raw";
 
 describe("the line's contracts with upstream's chat header", () => {
-  it("the header's title opens the thread menu, waits out a double-click, and renames through one commit rule", () => {
+  it("the header's title opens the thread menu, opens it at once, and renames through one commit rule", () => {
     expect(chatHeader).toContain("export function resolveRenameCommit(");
     expect(chatHeader).toMatch(
       /useThreadActionMenu\(\{\s*threadRef: isServerThread \? activeThreadRef : null,\s*projectCwd: activeProjectCwd,\s*onStartRename: startRename,\s*onFind: onFindInThread,\s*canShareWithGuest,?\s*\}\)/,
@@ -31,10 +31,11 @@ describe("the line's contracts with upstream's chat header", () => {
     expect(chatHeader).toContain(
       "const canShareWithGuest = useAtomValue(canShareWithGuestAtom(activeThreadEnvironmentId));",
     );
-    expect(chatHeader).toContain("const TITLE_MENU_OPEN_DELAY_MS = 500;");
+    // A click opens the menu at once, past a double-click's trailing click; `useCellThreadMenu` too.
     expect(chatHeader).toMatch(
-      /event\.detail === 0 \|\| clickedChevron \|\| window\.desktopBridge === undefined/,
+      /const openMenuFromTitle = \(event: ReactMouseEvent<HTMLButtonElement>\) => \{\s*if \(isTrailingDoubleClick\(event\.detail\)\) return;\s*const rect = event\.currentTarget\.getBoundingClientRect\(\);\s*openMenu\(\{ x: rect\.left, y: rect\.bottom \+ 4 \}\);\s*\};/,
     );
+    expect(chatHeader).not.toContain("setTimeout");
     expect(chatHeader).toContain("threadEnvironment.updateMetadata");
   });
 

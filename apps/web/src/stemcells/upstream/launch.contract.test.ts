@@ -66,7 +66,7 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
 
   it("the draft's own uploads go once its Cell has started, so the Cells beside take their own", () => {
     expect(composerSend).toMatch(
-      /turnStartSucceeded = true;[\s\S]{0,200}?if \(turnUsesAttachmentUploads\) \{\s*releaseDraftAttachments\(composerAttachmentsSnapshot\);/,
+      /turnStartSucceeded = true;[\s\S]{0,600}?if \(turnUsesAttachmentUploads\) \{\s*releaseDraftAttachments\(composerAttachmentsSnapshot\);/,
     );
   });
 
@@ -81,7 +81,7 @@ describe("what a message carries, taken to the Cells beside the draft's", () => 
 
   it("a chip's context reaches the model only where the text has the chip", () => {
     expect(contextReferences).toMatch(
-      /export function projectComposerContextForProvider\(input: \{[\s\S]{0,120}?\}\): string \{\s*const occurrences = collectComposerContextReferences\(input\.text\);\s*if \(occurrences\.length === 0\) return input\.text;/,
+      /export function projectComposerContextForProvider\(input: \{[\s\S]{0,120}?\}\): string \{\s*const occurrences = collectComposerContextReferences\(input\.text\);\s*if \(occurrences\.length === 0\) return expandAssistantCitationsForProvider\(input\.text\);/,
     );
     expect(providerTurnStart).toContain("projectComposerContextForProvider(");
   });

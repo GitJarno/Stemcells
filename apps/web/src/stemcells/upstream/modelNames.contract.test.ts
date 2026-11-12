@@ -101,8 +101,8 @@ describe("concise model names' contracts with upstream", () => {
   it("every view that names a model reads it through the seams", () => {
     // A sync that resolved a conflict in upstream's favour would bring a
     // vendor word back to that view.
-    expect(providerModelsSectionSource).toContain(
-      "groupModelsForDisplay(models.map(withConciseName), {",
+    expect(providerModelsSectionSource).toMatch(
+      /groupModelsForDisplay\(\s*\[\.\.\.models\.map\(withConciseName\),/,
     );
     // The rest read ours through substitutes of upstream's modules
     // (`substitutes/plugin.ts`); the substitutes contract test proves every
