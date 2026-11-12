@@ -71,6 +71,11 @@
           "for": 2
         },
         {
+          "do": "ease",
+          "sy": 1.125,
+          "for": 1
+        },
+        {
           "do": "spin",
           "turns": 2,
           "per": 6,
@@ -82,12 +87,17 @@
           "tell": true
         },
         {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
           "do": "face",
           "eyes": "wide"
         },
         {
           "do": "wobble",
-          "reach": 3,
+          "reach": 3.5,
           "times": 2,
           "per": 3,
           "decay": 0.5
@@ -150,7 +160,7 @@
         },
         {
           "do": "ease",
-          "sy": 1.0625,
+          "sy": 1.125,
           "spread": 0,
           "for": 1
         },
@@ -177,22 +187,24 @@
           "right": "high"
         },
         {
-          "do": "ease",
-          "lean": 3,
-          "sy": 0.875,
-          "spread": 0.3,
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": 2,
+            "lean": 2
+          },
           "for": 1
         },
         {
           "do": "ease",
           "shift": 4,
-          "lean": 1,
+          "sy": 0.875,
+          "spread": 0.3,
           "for": 1,
           "tell": true
         },
         {
           "do": "ease",
-          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -202,21 +214,23 @@
           "for": 2
         },
         {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": 2,
+            "lean": -2
+          },
+          "for": 1
+        },
+        {
           "do": "ease",
-          "lean": -3,
+          "shift": 0,
           "sy": 0.875,
           "spread": 0.3,
           "for": 1
         },
         {
           "do": "ease",
-          "shift": 0,
-          "lean": -1,
-          "for": 1
-        },
-        {
-          "do": "ease",
-          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -235,21 +249,23 @@
           "left": "high"
         },
         {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": -2,
+            "lean": -2
+          },
+          "for": 1
+        },
+        {
           "do": "ease",
-          "lean": -3,
+          "shift": -4,
           "sy": 0.875,
           "spread": 0.3,
           "for": 1
         },
         {
           "do": "ease",
-          "shift": -4,
-          "lean": -1,
-          "for": 1
-        },
-        {
-          "do": "ease",
-          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -259,21 +275,23 @@
           "for": 2
         },
         {
+          "do": "pose",
+          "pose": {
+            "lift": 2,
+            "shift": -2,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
           "do": "ease",
-          "lean": 3,
+          "shift": 0,
           "sy": 0.875,
           "spread": 0.3,
           "for": 1
         },
         {
           "do": "ease",
-          "shift": 0,
-          "lean": 1,
-          "for": 1
-        },
-        {
-          "do": "ease",
-          "lean": 0,
           "sy": 1,
           "spread": 0,
           "for": 1
@@ -301,16 +319,16 @@
           "times": 2,
           "steps": [
             {
+              "do": "face",
+              "look": [1, -1]
+            },
+            {
               "do": "pose",
               "pose": {
                 "sy": 0.875,
                 "spread": 0.4
               },
               "for": 1
-            },
-            {
-              "do": "face",
-              "look": [1, -1]
             },
             {
               "do": "arms",
@@ -333,16 +351,16 @@
               "tell": true
             },
             {
+              "do": "face",
+              "look": [-1, -1]
+            },
+            {
               "do": "pose",
               "pose": {
                 "sy": 0.875,
                 "spread": 0.4
               },
               "for": 1
-            },
-            {
-              "do": "face",
-              "look": [-1, -1]
             },
             {
               "do": "arms",
@@ -468,8 +486,8 @@
           "mark": "notes",
           "at": "ground",
           "dx": 9,
-          "dy": -12,
-          "drift": [0, -1.5],
+          "dy": -16,
+          "drift": [0, -1.1],
           "for": 9
         },
         {
@@ -635,7 +653,7 @@
         },
         {
           "do": "ease",
-          "sy": 1.1875,
+          "sy": 1.25,
           "for": 4,
           "way": "out"
         },
