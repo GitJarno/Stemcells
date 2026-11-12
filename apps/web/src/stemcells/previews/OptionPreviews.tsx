@@ -85,7 +85,10 @@ export function QuestionOptions({
 }: ComponentProps<"div"> & {
   readonly question: {
     readonly id: string;
-    readonly options: ReadonlyArray<{ readonly label: string; readonly preview?: string }>;
+    readonly options: ReadonlyArray<{
+      readonly label: string;
+      readonly preview?: string | undefined;
+    }>;
   };
 }) {
   const [highlight, setHighlight] = useState<Highlight | null>(null);
@@ -106,9 +109,14 @@ export function QuestionOptions({
       <div {...container}>
         {Children.map(children, (child, index) => {
           const point = () => setHighlight({ questionId: question.id, index });
-          // No box of its own, so upstream's rows lay out as they do without it.
+          // No box of its own, so upstream's rows lay out as they do without it. Upstream draws
+          // each preview under its option too; the box shows it, so that copy is hidden.
           return (
-            <div className="contents" onPointerEnter={point} onFocus={point}>
+            <div
+              className="contents [&>div>:not(button)]:hidden"
+              onPointerEnter={point}
+              onFocus={point}
+            >
               {child}
             </div>
           );

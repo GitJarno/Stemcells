@@ -6,6 +6,8 @@
  */
 import * as DateTime from "effect/DateTime";
 
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
+
 import {
   isSnoozed,
   type ApprovalOption,
@@ -21,9 +23,6 @@ import {
 import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
 import type { Brief, RunFacts } from "./evidence.ts";
 import type { Cue, PreRead } from "../../../../../stemcells/closeOut/preread.ts";
-
-/** The provider instance Aski's chat runs on; the web's `aski/setup.ts` names the same. */
-export const ASKI_INSTANCE_ID = "aski";
 
 /**
  * Aski's own chat among the Cells, whose asks show inline there: the

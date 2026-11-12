@@ -134,6 +134,11 @@ describe("a lab's Node processes", () => {
     ];
     expect(local.filter((host) => !netWatch.isLoopback(host))).toEqual([]);
     expect(away.filter((host) => netWatch.isLoopback(host))).toEqual([]);
+    // A socket to one of this machine's own addresses never leaves it.
+    const own = Object.values(NodeOS.networkInterfaces())
+      .flat()
+      .flatMap((entry) => (entry ? [entry.address] : []));
+    expect(own.filter((host) => !netWatch.isLoopback(host))).toEqual([]);
   });
 
   it("read the target of each way a socket is connected, and leave a local path alone", () => {

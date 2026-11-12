@@ -109,7 +109,7 @@ export const KEPT: ReadonlyArray<Kept> = [
     "so T3 Code stopped watching it.",
     "which T3 Code is watching for you:",
     "T3 Code stopped watching after",
-    "and T3 Code wakes you on the next change",
+    ["and T3 Code wakes you on the next change", 2],
   ),
   ...keep(
     /^packages\/provider-core\/src\/server\/orchestrationInstructions\.ts$/,

@@ -1104,17 +1104,11 @@ connection; what's ours is which tabs it holds.
 ### A fork's own repository
 
 A project's repository is what the Pull requests list shows, and what a
-thread's pull requests are found in. With an `upstream` remote, upstream
-takes that one over `origin`, right for someone contributing to the parent:
-Stemcells' own checkout (`origin` the fork, `upstream` T3's) listed T3's
-pull requests. The remote `gh repo set-default` chose
-(`remote.<name>.gh-resolved` = `base`) comes first, so the app reads the
-repository `gh pr list` reads there; without it upstream's pick stands. A
-checkout with one remote spawns no extra git.
-`ghDefaultRemote.contract.test.ts` pins both.
-
-To offer upstream: the same two lines, as any fork that is its own product
-wants them.
+thread's pull requests are found in. Upstream now puts the remote
+`gh repo set-default` chose (`remote.<name>.gh-resolved` = `base`) before
+`upstream` and `origin`, so Stemcells' own checkout lists its own pull
+requests with no seam of ours. `ghDefaultRemote.contract.test.ts` pins that
+behaviour, and that without gh's default upstream's pick stands.
 
 ### Updates from the repository
 
@@ -1566,7 +1560,7 @@ with no history, but carry their old file's churn.
 
 | File                                                                | Lines | Hunks | Why                                                                                                                                                                                                                                                                               |
 | ------------------------------------------------------------------- | ----- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src/components/ChatView.tsx`                              | 30    | 12    | ChatView safe to render twice (window input), the media viewer, the composer line; upstream not asked                                                                                                                                                                             |
+| `apps/web/src/components/ChatView.tsx`                              | 22    | 11    | ChatView safe to render twice (window input), the media viewer, the composer line; upstream not asked                                                                                                                                                                             |
 | `apps/web/src/components/chat/ChatComposer.tsx`                     | 7     | 5     | Window input (the stash shortcut, paste as text) and the composer's light                                                                                                                                                                                                         |
 | `apps/web/src/components/chat/MessagesTimeline.tsx`                 | 3     | 2     | The work verbs, on the turn fold                                                                                                                                                                                                                                                  |
 | `apps/web/src/components/settings/settingsSearch.ts`                | 10    | 5     | Settings › Disk and the compaction row in upstream's lists (a type, so no substitute reaches them)                                                                                                                                                                                |

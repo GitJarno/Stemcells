@@ -4,7 +4,7 @@
 // a line or two.
 
 import { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
-import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
 import { titleOf } from "./frame.ts";
 
 /** How long after its last activity a Cell at rest still counts as at work here. */

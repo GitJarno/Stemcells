@@ -94,7 +94,7 @@ describe("a carry's contracts with upstream's drop", () => {
     // A carry clears a picture's own address and markup; an editor that took drops itself
     // would still claim one, and a drop cursor would promise text where a file lands.
     expect(composerEditor).toContain("dropcursor: false,");
-    expect(composerEditor).not.toMatch(/handleDrop|handleDOMEvents/);
+    expect(composerEditor).not.toMatch(/handleDrop|\b(?:drop|dragover|dragenter)\s*[:(]/);
   });
 
   it("a sidebar row takes a drop on the element that names its chat by its key", () => {

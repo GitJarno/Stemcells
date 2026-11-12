@@ -95,7 +95,6 @@ export function CellComposerLine() {
     "aria-haspopup": "menu",
     onClick: menu.onClick,
     onDoubleClick: menu.onDoubleClick,
-    onBlur: menu.onBlur,
   } as const;
   return (
     <div data-stemcells-composer-line="" data-stage={stage ?? undefined}>

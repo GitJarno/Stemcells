@@ -12,11 +12,11 @@ import {
   MessageAuthorHeading,
   MessageCopyButton,
   type MessageRow,
-  shouldCollapseUserMessage,
   threadIdOf,
   TimelineRowActivityCtx,
   TimelineRowCtx,
   usePeerShell,
+  useTallEnoughToFold,
 } from "../upstream/peers";
 import { T3Wordmark } from "../upstream/substitutes/T3Wordmark";
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
@@ -51,7 +51,7 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
   const mail = `${mailWord(aski)} from`;
   const note = usePeerNote(message.id) ?? { kind: "says" as const, answers: null, answered: false };
   const text = bodyOf(message.text);
-  const long = shouldCollapseUserMessage(text);
+  const { ref: contentRef, tallEnough: long } = useTallEnoughToFold(text.trim().length > 0);
   const [open, setOpen] = useState(false);
   const revealRef = findRevealRef(() => setOpen(true));
   const folded = long && !open;
@@ -109,13 +109,15 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
         data-thread-find-fold={folded ? "" : undefined}
         data-folded={folded ? "" : undefined}
       >
-        <ChatMarkdown
-          text={text}
-          cwd={ctx.markdownCwd}
-          threadRef={ctx.threadRef ?? undefined}
-          lineBreaks
-          parseRawHtml={false}
-        />
+        <div ref={contentRef}>
+          <ChatMarkdown
+            text={text}
+            cwd={ctx.markdownCwd}
+            threadRef={ctx.threadRef ?? undefined}
+            lineBreaks
+            parseRawHtml={false}
+          />
+        </div>
       </div>
       {long ? (
         <div className="sc-peer-fold">

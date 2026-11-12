@@ -1076,7 +1076,10 @@ describe("Stemcells' substitutes for upstream modules", () => {
     try {
       const plugin = substituteUpstreamModules();
       expect(plugin.transform).toBeTypeOf("function");
-      expect(plugin.transformIndexHtml).toBeTypeOf("function");
+      expect(plugin.transformIndexHtml).toMatchObject({
+        order: "post",
+        handler: expect.any(Function),
+      });
       expect(plugin.generateBundle).toBeTypeOf("function");
     } finally {
       process.env.VITEST = vitest;

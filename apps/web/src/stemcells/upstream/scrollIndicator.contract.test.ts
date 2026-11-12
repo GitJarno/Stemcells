@@ -51,13 +51,22 @@ describe("the chat's scroll indicator, against upstream", () => {
     );
   });
 
-  it("the preview opens inside the marks' box, by an attribute upstream's code finds it by", () => {
+  it("the preview opens inside the marks' box, the jump button's one span that isn't a dash", () => {
     const marks = marksView();
     const box = marks.indexOf('data-testid="timeline-minimap"');
-    const preview = marks.indexOf("data-minimap-preview\n");
+    const button = marks.indexOf("<button", box);
+    const jump = marks.slice(button, marks.indexOf("</button>", button));
     expect(box).toBeGreaterThan(-1);
-    expect(preview).toBeGreaterThan(box);
-    expect(marks).toContain('target.closest("[data-minimap-preview]")');
+    expect(button).toBeGreaterThan(box);
+    // scrollIndicator.css turns it back to read by `button > span:not([data-minimap-strip])`:
+    // before the preview, the button's only span is a dash.
+    const preview = jump.search(
+      /\{activeItem \? \(\s*(?:\/\/[^\n]*\n\s*)*<span\s+className="pointer-events-none absolute left-8 /,
+    );
+    expect(preview).toBeGreaterThan(-1);
+    const before = jump.slice(0, preview);
+    expect(before.match(/<span\b/g)).toHaveLength(1);
+    expect(before).toMatch(/<span\s+aria-hidden="true"[\s\S]*data-minimap-strip\s/);
   });
 
   it("the transcript scrolls under the class the indicator hears it by, beside the chat's marks", () => {

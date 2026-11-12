@@ -524,8 +524,9 @@ const initialize = () => {
 const atCeiling = (state) => state.log >= workerData.backpressureFrames;
 const exceedsSizeLimit = () =>
   journalSizeLimit >= 0 && statSync(workerData.filename + "-wal").size > journalSizeLimit;
-const schedule = (state, blocked) => {
-  if (blocked || state.log - state.checkpointed >= workerData.frames) {
+// Retry a WAL past its limits even with admission open, so it resets once a pinning reader closes.
+const schedule = (state, retry) => {
+  if (retry || state.log - state.checkpointed >= workerData.frames) {
     // The parent holds its writer during each check, so it starts the retry.
     idle = setTimeout(() => parentPort.postMessage({ type: "retry" }), workerData.idleMs);
   }
@@ -536,8 +537,11 @@ const check = (id, nextJournalSizeLimit, force, nextGeneration = generation) => 
   if (Number.isSafeInteger(nextJournalSizeLimit)) journalSizeLimit = nextJournalSizeLimit;
   let state = frames.get();
   const oversized = exceedsSizeLimit();
+  let pinned = false;
   if (force || state.log - state.checkpointed >= workerData.frames || oversized) {
-    checkpoint.get();
+    const result = checkpoint.get();
+    // A reader's snapshot stopped the backfill; holding writes cannot let it catch up.
+    pinned = result.checkpointed < result.log;
     state = frames.get();
   }
   if (state.checkpointed === state.log && (atCeiling(state) || oversized)) {
@@ -551,24 +555,22 @@ const check = (id, nextJournalSizeLimit, force, nextGeneration = generation) => 
     });
     return;
   }
-  const blocked = (atCeiling(state) || oversized) && state.checkpointed < state.log;
+  const blocked = !pinned && (atCeiling(state) || oversized) && state.checkpointed < state.log;
   parentPort.postMessage({ type: "checkpoint", id, generation, ...state, blocked });
-  schedule(state, blocked);
+  schedule(state, atCeiling(state) || oversized);
 };
 const finishTruncate = (truncateId) => {
   if (pendingTruncate === undefined || pendingTruncate.truncateId !== truncateId) return;
   const pending = pendingTruncate;
   parentPort.postMessage({ type: "truncate-start", truncateId });
-  let busy;
   // Admission is paused here; a pinned reader must not make truncation wait.
   db.exec("PRAGMA busy_timeout = 0;");
   try {
-    busy = truncate.get().busy !== 0;
+    truncate.get();
   } finally {
     db.exec("PRAGMA busy_timeout = 5000;");
   }
   const state = frames.get();
-  const blocked = (atCeiling(state) && (busy || state.checkpointed < state.log)) || exceedsSizeLimit();
   pendingTruncate = undefined;
   parentPort.postMessage({
     type: "checkpoint",
@@ -576,13 +578,15 @@ const finishTruncate = (truncateId) => {
     generation: pending.generation,
     truncateId,
     ...state,
-    blocked,
+    // With writes held, only a reader can stop the reset, and holding them longer would not
+    // release it.
+    blocked: false,
   });
   while (pendingBarriers > 0) {
     pendingBarriers--;
     parentPort.postMessage("barrier");
   }
-  schedule(state, blocked);
+  schedule(state, atCeiling(state) || exceedsSizeLimit());
 };
 parentPort.on("message", (request) => {
   clearTimeout(idle);
@@ -627,17 +631,25 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
     yield* warn("Node SQLite lacks transaction-state or statement-authorizer support");
     return undefined;
   }
-  // These are the writer's first statements, before callers set their own wait.
-  writer.exec("PRAGMA busy_timeout = 5000;");
-  const version = String(writer.prepare("SELECT sqlite_version() AS version").get()?.version);
+  // These are the writer's first statements, before callers set their own wait. A file that is
+  // not a database first fails here.
+  const { version, frames, sizeLimit } = yield* Effect.try({
+    try: () => {
+      writer.exec("PRAGMA busy_timeout = 5000;");
+      return {
+        version: String(writer.prepare("SELECT sqlite_version() AS version").get()?.version),
+        frames: writer.prepare("PRAGMA wal_checkpoint(NOOP)"),
+        sizeLimit: writer.prepare("PRAGMA journal_size_limit"),
+      };
+    },
+    catch: (cause) => failed(cause, "Failed to open database", "open"),
+  });
   const [major = 0, minor = 0] = version.split(".").map(Number);
   // Older SQLite treats NOOP as PASSIVE, which would checkpoint on the writer.
   if (major < 3 || (major === 3 && minor < 51)) {
     yield* warn(`SQLite ${version} has no NOOP checkpoint`);
     return undefined;
   }
-  const frames = writer.prepare("PRAGMA wal_checkpoint(NOOP)");
-  const sizeLimit = writer.prepare("PRAGMA journal_size_limit");
   const started = Result.try(
     () =>
       new NodeWorkerThreads.Worker(checkpointWorkerSource, {
@@ -670,9 +682,7 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
   const waiters: Array<Waiter> = [];
   let elected: Waiter | undefined;
   const gated = () =>
-    !stopped &&
-    !writer.isTransaction &&
-    (unknown || blocked || truncate !== undefined || log >= CHECKPOINT_BACKPRESSURE_FRAMES);
+    !stopped && !writer.isTransaction && (unknown || blocked || truncate !== undefined);
   // macOS holds every reader of a file while a write to it is stuck, and only the
   // worker writes the database file. A writer statement during a check could block
   // the event loop for as long as a slow disk takes; waiting for the reply cannot.
@@ -728,6 +738,8 @@ const startCheckpointWorker = Effect.fnUntraced(function* (
       log = nextLog;
       checkpointed = nextCheckpointed;
       unknown = false;
+      // Past the ceiling, hold writes until the worker judges this WAL; a reader can pin it there.
+      if (log >= CHECKPOINT_BACKPRESSURE_FRAMES) blocked = true;
     } catch {
       unknown = true;
     }

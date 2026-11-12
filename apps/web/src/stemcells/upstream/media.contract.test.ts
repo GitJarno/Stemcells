@@ -169,15 +169,21 @@ describe("a chat's reel", () => {
   it("names a markdown picture's file as the chat's renderer asks for it", () => {
     const chart = reel.find((item) => item.name === "chart.png");
     const workspace = classifyMarkdownImageSource("out/chart.png", place.cwd);
-    expect(workspace._tag).toBe("WorkspaceFile");
+    if (workspace._tag !== "WorkspaceFile") throw new Error("not a workspace file");
+    // `ChatMarkdown`'s `ChatMarkdownAssetImage` resource: a relative path means this host's file.
+    expect(workspace.relative).toBe(true);
     expect(chart?.actionsSource?.asset).toEqual({
       environmentId: place.environmentId,
       resource: {
         _tag: "media-file",
         threadId: place.threadId,
-        path: workspace._tag === "WorkspaceFile" ? workspace.path : "",
+        path: workspace.path,
+        hostOnly: true,
       },
     });
+    expect(upstreamSource("components/ChatMarkdown.tsx")).toMatch(
+      /resource=\{\{\s*_tag: "media-file",\s*threadId: threadRef\.threadId,\s*path: imageSource\.path,\s*\.\.\.\(imageSource\.relative \? \{ hostOnly: true as const \} : \{\}\),\s*\}\}/,
+    );
     // The thumbnail registers this shape (`ChatMarkdownAssetImage`); the click carries it.
     const clicked = {
       src: "https://local/chart?token=1",

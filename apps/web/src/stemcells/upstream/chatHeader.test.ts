@@ -27,12 +27,12 @@ describe("where the line says a Cell runs", () => {
     ).toBeNull();
   });
 
-  it("names a worktree in upstream's words, with its branch", () => {
+  it("names a worktree by its folder, as upstream does, with its branch", () => {
     expect(
       runsOnOf({ environmentId: here, worktreePath: "/work/tree", branch: "fix-leaves" }, [
         thisMac,
       ]),
-    ).toEqual({ machine: null, worktree: { label: "Worktree", branch: "fix-leaves" } });
+    ).toEqual({ machine: null, worktree: { label: "tree", branch: "fix-leaves" } });
   });
 
   it("names another machine, as upstream's strip would", () => {

@@ -7,6 +7,7 @@ import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import { ProviderDriverKind } from "@t3tools/contracts";
 import * as ModelCatalog from "@t3tools/provider-core/server/ModelCatalog";
+import * as Clock from "effect/Clock";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as HttpClient from "effect/http/HttpClient";
@@ -63,7 +64,16 @@ it.layer(NodeServices.layer)("Stemcells' model list", (it) => {
         yield* catalog.refreshInBackground;
         for (const kind of Object.keys(ModelManifest.BUNDLED_MODEL_MANIFEST.providers ?? {})) {
           const driver = ProviderDriverKind.make(kind);
-          assert.deepStrictEqual(yield* catalog.current(driver), catalog.bundled(driver));
+          // current reads the "new" badge's age off the effect clock; bundled reads the wall's.
+          const nowMs = yield* Clock.currentTimeMillis;
+          assert.deepStrictEqual(
+            yield* catalog.current(driver),
+            ModelManifest.resolveProviderCatalog(
+              ModelManifest.BUNDLED_MODEL_MANIFEST,
+              driver,
+              nowMs,
+            ) ?? undefined,
+          );
         }
       }).pipe(Effect.provide(Layer.merge(layerList, layerClient)));
       assert.deepEqual(urls, []);

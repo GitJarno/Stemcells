@@ -109,16 +109,18 @@ skip_pattern() {
   } | sed -E 's/[][\\.*^$(){}+?|\/]/\\&/g' | paste -sd'|' - | sed -E 's/^(.+)$/^(?!.*(?:\1))/'
 }
 gate_upstream_packages() {
-  local skip
+  local skip mac
   skip=$(skip_pattern) || return 1
   if [ "$(uname)" = Darwin ]; then
     # DesktopLinuxUrlHandler.test.ts writes two Linux icon names that differ
-    # only in case, which a Mac's disk folds into one file.
+    # only in case, which a Mac's disk folds into one file. Its config's
+    # projects ignore --exclude, so its cases are left out by name.
+    mac=$(skip_pattern "installs both app id spellings without creating an icon cache" \
+      "replaces same-length stale icons and refreshes an existing cache once") || return 1
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' \
       test -t "$skip" &&
-      upstream_env pnpm --filter @t3tools/desktop exec vp test run --passWithNoTests \
-        --exclude src/app/DesktopLinuxUrlHandler.test.ts -t "$skip"
+      upstream_env pnpm --filter @t3tools/desktop exec vp test run --passWithNoTests -t "$mac"
   else
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' test -t "$skip"
@@ -126,15 +128,25 @@ gate_upstream_packages() {
 }
 gate_upstream_web() {
   local skip
-  skip=$(skip_pattern) || return 1
+  if [ "$(uname)" = Darwin ]; then
+    # A horizontal wheel over the expanded image scrolls it a pixel down too in
+    # a Mac's headless Chromium, upstream's own tree as well.
+    skip=$(skip_pattern "scrolling pans the image while Ctrl+wheel zooms around the pointer") || return 1
+  else
+    skip=$(skip_pattern) || return 1
+  fi
   upstream_env pnpm exec vp run --filter @t3tools/web test -t "$skip"
 }
 gate_upstream_server() {
   local skip
   if [ "$(uname)" = Darwin ]; then
-    # AntigravityInstallation's `agy.CMD` case writes two names that differ
-    # only in case, which a Mac's disk folds into one file.
-    skip=$(skip_pattern "accepts the agy CLI without a harness sibling") || return 1
+    # AntigravityInstallation's `agy.CMD` case and ClaudeSkills' `PSTACK`
+    # plugin write names that differ only in case, which a Mac's disk folds
+    # into one file; its registry-order case reads a temp path through
+    # macOS's /var symlink, so the project's path never matches.
+    skip=$(skip_pattern "accepts the agy CLI without a harness sibling" \
+      "gives a synced namespace to an installed plugin, then the first synced row" \
+      "merges plugin enablement and selects installs in native registry order") || return 1
     upstream_env pnpm --filter t3 exec vp test run -t "$skip"
   else
     skip=$(skip_pattern) || return 1

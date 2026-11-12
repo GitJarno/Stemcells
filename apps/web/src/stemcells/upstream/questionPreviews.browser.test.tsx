@@ -73,6 +73,12 @@ describe("a question's option previews, in upstream's panel", () => {
     await using screen = await renderPanel(720, OPTIONS);
     const option = (name: RegExp) => screen.getByRole("button", { name });
     await expect.poll(() => shown(screen.container)?.textContent).toContain("short 3");
+    // Upstream draws each preview under its option as well; only the box's copy shows.
+    const inline = [...screen.container.querySelectorAll("p")].filter(
+      (p) => p.textContent?.includes(" 1") && p.closest("[data-option-preview]") === null,
+    );
+    expect(inline).toHaveLength(2);
+    expect(inline.every((p) => p.offsetParent === null)).toBe(true);
     const height = () => box(screen.container)!.getBoundingClientRect().height;
     const first = height();
 

@@ -17,7 +17,8 @@ import {
 } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 
-import { ASKI_INSTANCE_ID, askiThreadOf } from "../needs/derive.ts";
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
+import { askiThreadOf } from "../needs/derive.ts";
 
 type InstanceSettings = Pick<ServerSettings, "providerInstances" | "projectSettingsOverrides">;
 

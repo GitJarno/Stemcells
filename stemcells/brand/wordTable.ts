@@ -189,7 +189,7 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('currentThreadId ? "Subagent" :', "Subagent", SUBCELL.one),
     within(': "Parent agent";', "agent", CELL.one),
     within('props.agent.title ?? "Subagent"', "Subagent", SUBCELL.one),
-    within(': "Open parent agent"', "agent", CELL.one),
+    within(": `Open parent agent on", "agent", CELL.one),
     within('label: "Previous agents"', "agents", SUBCELL.many),
     within('title: "Could not stop subagent"', "subagent", SUBCELL.one),
     within("aria-label={`Stop subagent ${threadTitle}`}", "subagent", SUBCELL.one),

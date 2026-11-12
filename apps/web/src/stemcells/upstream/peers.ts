@@ -15,8 +15,8 @@ export { default as ChatMarkdown } from "../../components/ChatMarkdown";
 export { findRevealRef } from "../../components/chat/markdownFindContext";
 export { MessageCopyButton } from "../../components/chat/MessageCopyButton";
 export { MessageAuthorHeading } from "../../components/chat/TimelineRowParts";
-export { shouldCollapseUserMessage } from "../../components/chat/MessagesTimeline.logic";
 export { TimelineRowActivityCtx, TimelineRowCtx } from "../../components/chat/timelineRowContext";
+export { useTallEnoughToFold } from "../../components/chat/useTallEnoughToFold";
 export { formatChatTimestampTooltip, formatDayAwareTimestamp } from "../../timestampFormat";
 
 /** A message's row in the timeline. */

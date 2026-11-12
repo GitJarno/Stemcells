@@ -10,13 +10,13 @@ import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
   Alert,
-  FlatList,
   Linking,
   Pressable,
   StyleSheet,
   useWindowDimensions,
   View,
 } from "react-native";
+import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
 import Animated, {
   type SharedValue,
   useAnimatedStyle,
@@ -183,7 +183,7 @@ function Card(props: {
   const window = useWindowDimensions();
   const [width, setWidth] = useState(window.width);
   const [sayingCap, setSayingCap] = useState(false);
-  const list = useRef<FlatList<Tile>>(null);
+  const list = useRef<LegendListRef>(null);
   const loading = useRef(false);
   const capTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const shake = useSharedValue(0);
@@ -316,7 +316,8 @@ function Card(props: {
         />
       </View>
       {size > 0 ? (
-        <FlatList
+        // oxlint-disable-next-line t3code/require-registered-list-scroll -- the grid scrolls inside a form sheet, which has no header to register with.
+        <LegendList
           ref={list}
           data={tiles}
           numColumns={3}
@@ -324,9 +325,8 @@ function Card(props: {
           columnWrapperStyle={{ gap: GAP }}
           ItemSeparatorComponent={Hairline}
           contentContainerStyle={{ paddingBottom: BAR + insets.bottom + 24 + lift }}
-          initialNumToRender={24}
-          windowSize={7}
-          removeClippedSubviews
+          estimatedItemSize={size}
+          extraData={{ picks, full, size }}
           onEndReachedThreshold={1.5}
           onEndReached={() => {
             if (sees && more) void load(shots.length);

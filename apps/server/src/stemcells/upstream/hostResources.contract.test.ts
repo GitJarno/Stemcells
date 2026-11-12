@@ -4,7 +4,9 @@ import { HostResourcesSnapshot } from "@t3tools/contracts";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
+import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
+import * as PlatformError from "effect/PlatformError";
 import { ChildProcessSpawner } from "effect/process";
 import * as Schema from "effect/Schema";
 import * as Sink from "effect/Sink";
@@ -33,9 +35,32 @@ const sample = Effect.gen(function* () {
   return yield* Fiber.join(fiber);
 });
 
+/** The real filesystem, but this Mac has no /proc or /sys, and says so at once. */
+const noProcFs = Layer.effect(
+  FileSystem.FileSystem,
+  Effect.map(FileSystem.FileSystem, (fs) =>
+    FileSystem.FileSystem.of({
+      ...fs,
+      readFileString: (path, encoding) =>
+        path.startsWith("/proc/") || path.startsWith("/sys/")
+          ? Effect.fail(
+              PlatformError.systemError({
+                _tag: "NotFound",
+                module: "FileSystem",
+                method: "readFileString",
+                pathOrDescriptor: path,
+              }),
+            )
+          : fs.readFileString(path, encoding),
+    }),
+  ),
+).pipe(Layer.provide(NodeServices.layer));
+
 const host = (home: string) =>
   Layer.mergeAll(
     NodeServices.layer,
+    // Its cgroup reads before the sample's sleep must not wait on the disk, or the clock moves first.
+    noProcFs,
     // Linux reads memory from a file, so no vm_stat runs.
     Layer.succeed(HostProcess.Platform, "linux"),
     Layer.succeed(HostProcess.HomeDirectory, home),

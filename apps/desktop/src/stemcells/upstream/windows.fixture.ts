@@ -35,6 +35,7 @@ export const windowsServices = Effect.fn("windowsServices")(function* (input: {
     Layer.succeed(DesktopState.DesktopState, {
       backendReady: yield* Ref.make(true),
       quitting: input.quitting,
+      canInstallUpdates: yield* Ref.make(false),
       primaryBackendStartup: yield* SubscriptionRef.make<DesktopState.PrimaryBackendStartup>({
         _tag: "Ready",
       }),

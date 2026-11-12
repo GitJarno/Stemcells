@@ -20,6 +20,7 @@ import * as DesktopState from "../../app/DesktopState.ts";
 import * as DesktopBackendPool from "../../backend/DesktopBackendPool.ts";
 import * as ElectronApp from "../../electron/ElectronApp.ts";
 import * as ElectronWindow from "../../electron/ElectronWindow.ts";
+import * as DesktopSshEnvironment from "../../ssh/DesktopSshEnvironment.ts";
 import * as DesktopAppSettings from "../../settings/DesktopAppSettings.ts";
 import * as DesktopUpdatePolicy from "../../updates/DesktopUpdatePolicy.ts";
 import * as DesktopUpdates from "../../updates/DesktopUpdates.ts";
@@ -136,6 +137,14 @@ export function updatesLayer(input: {
     resourcesPath: NodePath.dirname(input.appPath),
     runningUnderArm64Translation: false,
   }).pipe(Layer.provide(Layer.mergeAll(NodeServices.layer, layerConfig)));
+  // Upstream's install closes SSH port forwards first; the lab's app has none.
+  const layerSsh = Layer.succeed(DesktopSshEnvironment.DesktopSshEnvironment, {
+    discoverHosts: () => Effect.die("unexpected"),
+    resolveHost: () => Effect.die("unexpected"),
+    ensureEnvironment: () => Effect.die("unexpected"),
+    disconnectEnvironment: () => Effect.die("unexpected"),
+    closeAllTunnels: Effect.void,
+  } satisfies DesktopSshEnvironment.DesktopSshEnvironment["Service"]);
   return DesktopUpdates.layer.pipe(
     Layer.provide(input.updater),
     Layer.provide(
@@ -145,6 +154,7 @@ export function updatesLayer(input: {
         layerApp,
         layerSettings,
         layerBackend,
+        layerSsh,
         DesktopState.layer,
         layerConfig,
         layerEnvironment,

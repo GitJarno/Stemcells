@@ -24,7 +24,7 @@ import * as OrchestrationEventStore from "../../persistence/OrchestrationEventSt
 import { deriveProviderInstanceConfigMap } from "../../provider/ProviderInstanceRegistryHydration.ts";
 import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
 import * as ServerSettings from "../../serverSettings.ts";
-import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
 
 /** A request that held a run until the person answered: upstream's own test, a capability that isn't `message`. */
 export interface LedgerRequest {

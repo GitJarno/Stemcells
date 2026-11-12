@@ -11,15 +11,8 @@ import {
   shellFixture,
   threadId,
 } from "../upstream/needs.fixture.ts";
-import {
-  ASKI_INSTANCE_ID,
-  askiThreadOf,
-  needOf,
-  planOutline,
-  signalOf,
-  signalsOf,
-  stuckFor,
-} from "./derive.ts";
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
+import { askiThreadOf, needOf, planOutline, signalOf, signalsOf, stuckFor } from "./derive.ts";
 
 const kindOf = (...args: Parameters<typeof shellFixture>) =>
   signalOf(shellFixture(...args), NOW)?.kind ?? null;

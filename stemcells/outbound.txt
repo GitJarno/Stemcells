@@ -64,6 +64,7 @@ host suspense-vps.hel1.t3.sh made-up showcase rows on the phone
 
 # Links a person opens in their own browser.
 host app.t3.codes T3's hosted app: T3 Connect's sign-in page and hosted pairing and prompt links, used only once T3 Connect is set up, which Stemcells never does (AGENTS.md); a pasted thread link from it still reads as a chip, and a copied Cell never names it (seams.md, Copy Cell)
+host nightly.app.t3.codes T3's nightly hosted app: the page that approves an agent sign-in on the T3 Connect address, for T3's nightly build only, so only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
 host t3.chat the T3 Chat subscription link on T3 Connect's account page, shown only once T3 Connect is set up, which Stemcells never does (AGENTS.md)
 host t3.codes legal and download links, a README credit line and t3.json's schema url; nothing fetches it
 host apps.apple.com the phone app's store link
@@ -101,6 +102,7 @@ host api.bitbucket.org asked only when a Bitbucket token is configured
 host api.anthropic.com Claude credits and usage limits
 host api.openai.com Codex models and sign-in claims
 host auth.openai.com Codex sign-in
+host releases.openai.com Codex's own release channel: a native Codex install's newest version for the update notice, as `codex update` reads it; the person's provider, never T3
 host accounts.google.com Antigravity sign-in
 host oauth2.googleapis.com Antigravity sign-in
 host www.googleapis.com Antigravity account
@@ -158,7 +160,6 @@ cut apps/server/src/triage/triagePrompt.ts the instructions `t3 triage` hands th
 # to T3 or carries anything of the person's; each waits on the person's call to go
 # (stemcells/tasks/t3-sync.md, Needs the person).
 live registry.npmjs.org the Claude CLI's newest version, asked at start for the update notice (upstream's provider maintenance), through `npm view`, so the person's own npm registry answers; a socket shows no path, and T3's release is never asked (noTelemetry.test.ts)
-live downloads.claude.ai/claude-code-releases/ the native Claude CLI's newest version, asked at start for the same update notice (upstream's provider maintenance) as npm's registry answers for an npm install; Anthropic's own host, never T3's; goes with the update notice
 live raw.githubusercontent.com/berriai/litellm/ LiteLLM's model price table, for the usage page's cost estimates (UsageService), as the usage page opens
 live api.github.com/repos/berriai/litellm/ the same price table's fallback, asked when raw.githubusercontent.com fails, as it does in the lab
 live api.meta.ai/muse-code/channels/ the Muse CLI's release channel, for its update notice (upstream's provider maintenance), as the usage page opens

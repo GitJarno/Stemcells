@@ -6,6 +6,7 @@
 
 const NodeFS = require("node:fs");
 const NodeNet = require("node:net");
+const NodeOS = require("node:os");
 
 /** A name or address that stays on this machine. */
 function isLoopback(host) {
@@ -20,7 +21,17 @@ function isLoopback(host) {
   if (/^127(?:\.\d{1,3}){3}$/.test(name)) return true;
   // An IPv4 loopback written as IPv6.
   if (/^::ffff:127(?:\.\d{1,3}){3}$/.test(name)) return true;
-  return false;
+  // An address this machine holds (its Wi-Fi's, its tailnet's) is reached without leaving it.
+  return ownAddresses().has(name.replace(/^::ffff:/, "").replace(/%.*$/, ""));
+}
+
+function ownAddresses() {
+  return new Set(
+    Object.values(NodeOS.networkInterfaces())
+      .flat()
+      .map((entry) => entry?.address.toLowerCase().replace(/%.*$/, ""))
+      .filter(Boolean),
+  );
 }
 
 /** The host and port a `Socket#connect` call is for, or null for a local path (IPC). */

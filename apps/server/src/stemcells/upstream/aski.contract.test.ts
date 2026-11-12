@@ -175,6 +175,8 @@ describe("the persona's launch arguments", () => {
 
   it("Codex passes a -c override to its app server as one argument", () => {
     const override = 'developer_instructions="You are Aski.\\nSay \\"Cell\\"."';
-    expect(codexAppServerArgs(`-c '${override}'`)).toEqual(["app-server", "-c", override]);
+    const args = codexAppServerArgs(`-c '${override}'`);
+    expect(args[0]).toBe("app-server");
+    expect(args.slice(-2)).toEqual(["-c", override]);
   });
 });

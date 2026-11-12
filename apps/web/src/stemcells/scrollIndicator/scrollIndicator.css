@@ -29,12 +29,13 @@
 
 /* They stand at the chat's right edge: upstream's left, mirrored, at
    upstream's own distances, so the dashes hang from the right and the
-   preview opens leftward. The preview turns back to read. */
+   preview opens leftward. The preview (the jump button's one span that
+   isn't a dash) turns back to read. */
 [data-stemcells-pane] [data-testid="timeline-minimap"] {
   left: auto;
   right: 0;
   scale: -1 1;
 }
-[data-stemcells-pane] [data-minimap-preview] {
+[data-stemcells-pane] [data-testid="timeline-minimap"] button > span:not([data-minimap-strip]) {
   scale: -1 1;
 }

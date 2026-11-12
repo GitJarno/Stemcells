@@ -134,7 +134,7 @@ try {
     .click({ timeout: 15_000 })
     .catch(() => {});
   await page
-    .getByRole("button", { name: /without a project/i })
+    .getByRole("button", { name: /without a project|casual chat/i })
     .first()
     .click({ timeout: 30_000 })
     .catch(() => {});

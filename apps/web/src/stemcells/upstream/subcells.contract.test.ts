@@ -102,7 +102,7 @@ describe("Subcells in upstream's views", () => {
       'title: "Could not stop Subcell"',
       "aria-label={`Stop Subcell ${threadTitle}`}",
       '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
-      ': "Open parent Cell"',
+      ": `Open parent Cell on ${environment.label}`",
     ])
       expect(built("ThreadRelationshipsControl", relationships)).toContain(words);
     const workflow = built("ThreadLineageWorkflowRow", lineageWorkflow);

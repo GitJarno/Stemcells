@@ -8,7 +8,7 @@ import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
 import * as Effect from "effect/Effect";
 import * as SqlClient from "effect/sql/SqlClient";
 
-import { ASKI_INSTANCE_ID } from "../needs/derive.ts";
+import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
 
 export interface ArcRun {
   readonly threadId: string;
