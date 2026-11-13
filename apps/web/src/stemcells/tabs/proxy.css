@@ -51,3 +51,11 @@
 [data-stemcells-proxy] [data-slot="scroll-area-viewport"]:not([data-has-overflow-x]) {
   overscroll-behavior-x: auto;
 }
+/* So do upstream's other boxes that keep overscroll (the composer's pictures, a panel's list):
+   the browser lets no swipe out of one, even one with nothing to scroll sideways. */
+[data-stemcells-proxy]
+  :is(.overscroll-contain, .overscroll-none, .overscroll-x-contain, .overscroll-x-none):not(
+    [data-slot="scroll-area-viewport"]
+  ) {
+  overscroll-behavior-x: auto;
+}

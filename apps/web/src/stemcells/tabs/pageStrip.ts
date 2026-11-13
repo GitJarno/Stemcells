@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 
 import { reducedMotion, spring, timed } from "../tokens/motion.ts";
 import { cssLinear, settledDuration, springAt } from "../tokens/spring.ts";
+import { pointerOverFrame, watchPointer } from "./overFrame";
 import { releaseVelocity } from "./pager";
 import type { ScrollPhases } from "./phases";
 import { observeResize } from "../upstream/ui";
@@ -53,6 +54,33 @@ function scrollerTakes(
   }
   return false;
 }
+
+/**
+ * What has happened since the last frame. A frame's scroll events come before its animation
+ * callbacks, so a mark is still up for the scroll events of what set it, however late they come.
+ */
+class SinceFrame {
+  #frame = 0;
+
+  get up(): boolean {
+    return this.#frame !== 0;
+  }
+
+  mark(): void {
+    cancelAnimationFrame(this.#frame);
+    this.#frame = requestAnimationFrame(() => {
+      this.#frame = 0;
+    });
+  }
+
+  clear(): void {
+    cancelAnimationFrame(this.#frame);
+    this.#frame = 0;
+  }
+}
+
+/** Upstream's terminal, in its drawer or a panel (`upstream/terminal.contract.test.ts`). */
+const TERMINAL = "[data-terminal-owner]";
 
 /** Whether the browser says where a scroll will snap to, and when it has come to rest. */
 const SAYS_AIM = typeof window !== "undefined" && "onscrollsnapchanging" in window;
@@ -115,6 +143,11 @@ export class PageStrip {
   #tabFollow: Animation | null = null;
   /** Whether the fingers are what scrolls the proxy: since a wheel or a touch on it, until it rests. */
   #fingers = false;
+  /** Whether a frame under the pointer takes this scroll's wheel events (`overFrame.ts`). */
+  #framed = false;
+  /** A wheel event, and a focus or a key (either scrolls the proxy with no wheel), since the last frame. */
+  readonly #wheeled = new SinceFrame();
+  readonly #stirred = new SinceFrame();
   /** The turns asked for and not yet rendered. */
   #asked: string[] = [];
   /** A frame or two on, a flicked touch's page is settled (`Turns.pay`). */
@@ -145,13 +178,18 @@ export class PageStrip {
     // Whatever the proxy was doing when last attached, it rests now.
     this.#turns.rested(this.#turns.origin, performance.now());
     this.#fingers = false;
+    this.#framed = false;
     this.#toOrigin();
     this.#writeKnots(true);
+    watchPointer();
     // All passive: nothing here may hold the proxy's scroll back.
     scroller.addEventListener("scroll", this.#onScroll, { passive: true });
     scroller.addEventListener("scrollend", this.#onRest);
     scroller.addEventListener("scrollsnapchanging", this.#onAim);
     scroller.addEventListener("wheel", this.#onWheel, { passive: true });
+    scroller.addEventListener("wheel", this.#pastTerminal, { capture: true, passive: true });
+    scroller.addEventListener("focusin", this.#onStir);
+    scroller.addEventListener("keydown", this.#onStir, { capture: true });
     scroller.addEventListener("touchstart", this.#onTouch, { passive: true });
     // A proxy laid out later, or at another width, is still on the slot it rests on.
     this.#unresize = observeResize(scroller, () => {
@@ -166,6 +204,11 @@ export class PageStrip {
     scroller?.removeEventListener("scrollend", this.#onRest);
     scroller?.removeEventListener("scrollsnapchanging", this.#onAim);
     scroller?.removeEventListener("wheel", this.#onWheel);
+    scroller?.removeEventListener("wheel", this.#pastTerminal, { capture: true });
+    scroller?.removeEventListener("focusin", this.#onStir);
+    scroller?.removeEventListener("keydown", this.#onStir, { capture: true });
+    this.#wheeled.clear();
+    this.#stirred.clear();
     scroller?.removeEventListener("touchstart", this.#onTouch);
     scroller?.removeAttribute("data-moving");
     this.#unresize?.();
@@ -613,6 +656,8 @@ export class PageStrip {
 
   readonly #onWheel = (event: WheelEvent): void => {
     this.#fingers = true;
+    this.#framed = false;
+    this.#wheeled.mark();
     const scroller = this.#scroller;
     if (scroller === null) return;
     // Whose the gesture is, as the browser decides it: the proxy's if it goes sideways and
@@ -628,6 +673,21 @@ export class PageStrip {
     this.#apply();
   };
 
+  /**
+   * A sideways wheel over upstream's terminal goes past it: the terminal has no use for one and
+   * cancels any wheel that moves up or down at all, the swipe with it.
+   */
+  readonly #pastTerminal = (event: WheelEvent): void => {
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+    if (!(event.target instanceof Element) || !event.target.closest(TERMINAL)) return;
+    event.stopPropagation();
+    this.#onWheel(event);
+  };
+
+  readonly #onStir = (): void => {
+    this.#stirred.mark();
+  };
+
   readonly #onTouch = (): void => {
     this.#fingers = true;
   };
@@ -636,12 +696,27 @@ export class PageStrip {
     const width = this.#slotWidth();
     if (width === 0) return;
     const slot = this.#scrolledTo();
+    const away = Math.abs(slot - this.#turns.origin) * width > 0.5;
+    // The proxy's first move with no wheel event heard and the pointer over a frame: the
+    // fingers, their wheel the frame's.
+    if (
+      away &&
+      this.#turns.resting &&
+      !this.#wheeled.up &&
+      !this.#stirred.up &&
+      pointerOverFrame(this.#scroller!)
+    ) {
+      this.#fingers = true;
+      this.#framed = true;
+    }
     if (!this.#fingers) {
       // Not the fingers: a field focused or a key pressed scrolled the proxy to show something.
       // Back it goes, in the frame it moved in.
-      if (Math.abs(slot - this.#turns.origin) * width > 0.5) this.#toOrigin();
+      if (away) this.#toOrigin();
       return;
     }
+    // A touch is counted by its wheel events: each scroll stands in for those the frame took.
+    if (this.#framed) this.#turns.wheel(performance.now(), true);
     this.#turns.scrolled(slot, 1 / width, performance.now());
     if (!SAYS_AIM) this.#turns.aimed(Math.round(slot));
     if (!SAYS_REST) {
@@ -672,6 +747,7 @@ export class PageStrip {
     if (width === 0) return;
     const fingers = this.#fingers;
     this.#fingers = false;
+    this.#framed = false;
     if (!fingers) {
       this.#toOrigin();
       return;
