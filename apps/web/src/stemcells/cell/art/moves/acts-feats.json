@@ -60,6 +60,13 @@
       "mini": ["W"],
       "miniHotspot": [0, 0]
     },
+    "glow": {
+      "about": "Light on the floor under something that floats.",
+      "art": ["..************..", "***WWWWWWWWWW***"],
+      "hotspot": [7, 1],
+      "mini": ["..*WWWWW*.."],
+      "miniHotspot": [5, 0]
+    },
     "flame": {
       "about": "A rocket's flame under its base, at full burn.",
       "art": [
@@ -417,7 +424,7 @@
           "do": "mark",
           "mark": "cup",
           "dy": -5,
-          "for": 16
+          "for": 18
         },
         {
           "do": "ease",
@@ -435,8 +442,26 @@
           "for": 2
         },
         {
+          "do": "mark",
+          "mark": "twinkle",
+          "dx": -5,
+          "dy": -10,
+          "for": 1
+        },
+        {
           "do": "hold",
-          "for": 2
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glint",
+          "dx": -5,
+          "dy": -10,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
         },
         {
           "do": "ease",
@@ -489,6 +514,12 @@
           "for": 2
         },
         {
+          "do": "mark",
+          "mark": "cup",
+          "dy": -2,
+          "for": 1
+        },
+        {
           "do": "arms",
           "arms": null
         },
@@ -504,7 +535,7 @@
       ]
     },
     "bow": {
-      "about": "A performer's bow: arms wide, then a deep fold forward, its eyes lowered until only its crown shows, held, and back up tall with its arms wide again.",
+      "about": "A performer's bow: arms wide, then a deep fold forward with its eyes shut and lowered, held, and back up tall.",
       "encore": true,
       "score": [
         {
@@ -527,11 +558,6 @@
           "look": [0, 1]
         },
         {
-          "do": "arms",
-          "arms": "out",
-          "for": 0
-        },
-        {
           "do": "ease",
           "sy": 1,
           "for": 1
@@ -541,28 +567,18 @@
           "look": [0, 3]
         },
         {
-          "do": "arms",
-          "arms": null,
-          "for": 0
-        },
-        {
           "do": "ease",
           "sy": 0.875,
           "for": 1
         },
         {
           "do": "face",
-          "look": [0, 5]
+          "look": [0, 2]
         },
         {
           "do": "ease",
           "sy": 0.78125,
           "for": 1
-        },
-        {
-          "do": "face",
-          "eyes": "none",
-          "look": [0, 0]
         },
         {
           "do": "ease",
@@ -575,11 +591,6 @@
           "tell": true
         },
         {
-          "do": "face",
-          "eyes": "serene",
-          "look": [0, 4]
-        },
-        {
           "do": "ease",
           "sy": 0.875,
           "for": 1
@@ -588,11 +599,6 @@
           "do": "face",
           "eyes": "calm",
           "look": [0, 1]
-        },
-        {
-          "do": "arms",
-          "arms": "high",
-          "for": 0
         },
         {
           "do": "ease",
@@ -697,7 +703,7 @@
             "spread": -3,
             "eyes": "none"
           },
-          "for": 2,
+          "for": 1,
           "tell": true
         },
         {
@@ -1136,7 +1142,7 @@
       ]
     },
     "levitate": {
-      "about": "Shuts its eyes and gathers itself, rises off the ground and hovers with a slow bob, motes of light circling it, and comes down.",
+      "about": "Shuts its eyes and gathers itself, rises off the ground and hovers with a slow bob over its own light, motes circling it, and comes down.",
       "score": [
         {
           "do": "face",
@@ -1166,9 +1172,49 @@
         },
         {
           "do": "ease",
+          "float": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 2,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 2,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 3,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 3,
+          "for": 2
+        },
+        {
+          "do": "ease",
           "float": 4,
-          "spread": -1,
-          "for": 5
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
         },
         {
           "do": "orbit",
@@ -1181,35 +1227,114 @@
           "for": 20
         },
         {
-          "do": "ease",
-          "float": 6,
-          "for": 5
-        },
-        {
-          "do": "ease",
-          "float": 4,
+          "do": "repeat",
+          "times": 2,
           "tell": true,
-          "for": 5
-        },
-        {
-          "do": "ease",
-          "float": 6,
-          "for": 5
-        },
-        {
-          "do": "ease",
-          "float": 4,
-          "for": 5
+          "steps": [
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 4,
+              "for": 2
+            },
+            {
+              "do": "ease",
+              "float": 5,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 1
+            },
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 5,
+              "for": 3
+            },
+            {
+              "do": "ease",
+              "float": 6,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 2
+            },
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 4,
+              "for": 2
+            },
+            {
+              "do": "ease",
+              "float": 5,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 1
+            },
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 3,
+              "for": 3
+            },
+            {
+              "do": "ease",
+              "float": 4,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 2
+            }
+          ]
         },
         {
           "do": "arms",
           "arms": null
         },
         {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 2,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 3,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 2,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 1,
+          "for": 1
+        },
+        {
           "do": "ease",
           "float": 0,
           "spread": 0.3,
-          "for": 4
+          "for": 1
         },
         {
           "do": "ease",
@@ -1373,7 +1498,7 @@
         },
         {
           "do": "face",
-          "look": [1, -2]
+          "look": [0, -2]
         },
         {
           "do": "arms",
@@ -1449,7 +1574,7 @@
       ]
     },
     "punch": {
-      "about": "A leap with one fist punched high, hung at the top with a flash off the fist, and down in dust.",
+      "about": "Winds up low, then a leap with one fist punched high and a flash off it, hung at the top, and down in dust.",
       "encore": true,
       "score": [
         {
@@ -1461,31 +1586,104 @@
           "for": 2
         },
         {
-          "do": "leap",
-          "height": 7,
-          "hang": 4,
+          "do": "pose",
+          "pose": {
+            "sy": 0.875,
+            "spread": 0.3,
+            "lean": -1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.8125,
+            "spread": 0.5,
+            "lean": -2
+          },
+          "for": 3,
+          "right": "low"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 4,
+            "sy": 1.1875,
+            "lean": 1
+          },
+          "for": 1,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          }
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 6,
+            "sy": 1.0625,
+            "lean": 2
+          },
+          "for": 1,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          }
+        },
+        {
+          "do": "mark",
+          "mark": "glint",
+          "at": "handR",
+          "dx": -2,
+          "dy": 2,
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 7,
+            "lean": 2
+          },
+          "for": 5,
+          "left": "hip",
           "right": {
             "at": 0.75,
             "dx": 0,
             "dy": -8
           },
-          "left": "hip",
           "tell": true
         },
         {
-          "do": "mark",
-          "mark": "glint",
-          "on": "apex",
-          "at": "handR",
-          "dy": 2,
-          "for": 2
+          "do": "pose",
+          "pose": {
+            "lift": 3,
+            "sy": 1.0625,
+            "lean": 1
+          },
+          "for": 1,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          }
         },
         {
           "do": "mark",
           "mark": "dust",
-          "on": "land",
           "at": "ground",
           "for": 2
+        },
+        {
+          "do": "squash",
+          "to": 0.8125,
+          "in": 1,
+          "hold": 1,
+          "spread": 0.5
         },
         {
           "do": "rest"
