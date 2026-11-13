@@ -13,6 +13,7 @@ import {
   wornIdOf,
 } from "../../../../../stemcells/ledger/feats.ts";
 import {
+  actWords,
   COLLECTION,
   featName,
   featProgress,
@@ -33,39 +34,23 @@ import { ACTS } from "../cell/kit";
 import { dayOf, lookOf } from "../cell/looks";
 import { cellNameOf } from "../cell/name";
 import { CellMini } from "../rail/CellMini";
-import { isAskiTab } from "../tabs/askiTab";
-import { type CellRef, focusedPane, panesOf, type Workspace } from "../tabs/layout";
+import { askiCellOf } from "../tabs/askiTab";
+import { type CellRef, focusedPane } from "../tabs/layout";
 import { useWorkspaceStore } from "../tabs/store";
 import { reducedMotion } from "../tokens/motion";
 import { useCellGround } from "../upstream/appearance";
 import { usePrimaryEnvironmentId } from "../upstream/disk";
 import { useCellDriver } from "../upstream/providers";
+import { useMachineCells } from "../upstream/rail";
 import { SettingsPageContainer, SettingsSection } from "../upstream/settings";
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
-import { toggled } from "./dress";
+import { MOST_TO_DRESS, toggled } from "./dress";
 import { type Standing, standings } from "./fresh";
 import { markSeen, readCollection, useCollection, wear } from "./read";
 import "./collection.css";
 
 /** A Cell that stands in on a tile: no chat's, so its look is only what the tile gives it. */
 const STAND_IN = "collection";
-
-/** The workspace's Cells as one string, each `environment|thread`, each once, Aski's tab aside. */
-function crewKey(workspace: Workspace): string {
-  const cells = workspace.tabs
-    .filter((tab) => !isAskiTab(tab))
-    .flatMap((tab) => panesOf(tab).flatMap((pane) => (pane.cell === null ? [] : [pane.cell])))
-    .filter((cell) => cell.draftId === null);
-  return [...new Set(cells.map((cell) => `${cell.environmentId}|${cell.threadId}`))].join(",");
-}
-
-const cellsOf = (key: string): CellRef[] =>
-  key === ""
-    ? []
-    : key.split(",").map((each) => {
-        const [environmentId = "", threadId = ""] = each.split("|");
-        return { environmentId, threadId, draftId: null };
-      });
 
 const dateOf = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
@@ -178,9 +163,12 @@ function CellChip(props: {
 /** Where the person dresses a Cell in what the feats unlocked, and has it show an act. */
 function DressingRoom(props: { readonly collection: Collection; readonly ground: Ground }) {
   const { collection, ground } = props;
-  const crew = useWorkspaceStore((store) => crewKey(store.workspace));
+  const primaryId = usePrimaryEnvironmentId();
+  const aski = useWorkspaceStore((store) => askiCellOf(store.workspace)?.threadId);
   const focused = useWorkspaceStore((store) => focusedPane(store.workspace)?.cell?.threadId);
-  const cells = cellsOf(crew);
+  const cells = useMachineCells(primaryId)
+    .filter((each) => each.threadId !== aski)
+    .slice(0, MOST_TO_DRESS);
   const [picked, setPicked] = useState<string | null>(null);
   const cell =
     cells.find((each) => each.threadId === picked) ??
@@ -221,87 +209,89 @@ function DressingRoom(props: { readonly collection: Collection; readonly ground:
 
   return (
     <SettingsSection title={COLLECTION.dressingRoom} variant="plain">
-      <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:flex-row">
-        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-52">
-          <Stage cell={cell} look={look} ground={ground} />
-          <div className="flex items-center justify-between gap-2">
-            <span className="truncate text-sm font-medium text-foreground">
-              {cell === null ? COLLECTION.noCell : cellNameOf(cell.threadId)}
-            </span>
-            {worn.length > 0 ? (
-              <Button size="xs" variant="ghost-muted" onClick={reset}>
-                {COLLECTION.ownLook}
-              </Button>
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
+        {cells.length > 1 ? (
+          <div className="flex flex-wrap gap-1.5" aria-label={COLLECTION.cellsToDress}>
+            {cells.map((each) => (
+              <CellChip
+                key={each.threadId}
+                cell={each}
+                on={each.threadId === cell?.threadId}
+                onPick={() => setPicked(each.threadId)}
+              />
+            ))}
+          </div>
+        ) : null}
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex w-full shrink-0 flex-col gap-2 sm:w-52">
+            <Stage cell={cell} look={look} ground={ground} />
+            <div className="flex items-center justify-between gap-2">
+              <span className="truncate text-sm font-medium text-foreground">
+                {cell === null ? COLLECTION.noCell : cellNameOf(cell.threadId)}
+              </span>
+              {worn.length > 0 ? (
+                <Button size="xs" variant="ghost-muted" onClick={reset}>
+                  {COLLECTION.ownLook}
+                </Button>
+              ) : null}
+            </div>
+            {cell === null ? (
+              <p className="text-xs text-muted-foreground">{COLLECTION.tryOn}</p>
             ) : null}
           </div>
-          {cells.length > 1 ? (
-            <div className="flex flex-wrap gap-1.5" aria-label="Cells to dress">
-              {cells.map((each) => (
-                <CellChip
-                  key={each.threadId}
-                  cell={each}
-                  on={each.threadId === cell?.threadId}
-                  onPick={() => setPicked(each.threadId)}
-                />
-              ))}
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-medium text-muted-foreground">{COLLECTION.toWear}</h3>
+              {pieces.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{COLLECTION.nothingYet}</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {pieces.map(({ feat, id }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-pressed={worn.includes(id)}
+                      onClick={() => put(id)}
+                      data-feat-rarity={feat.rarity}
+                      className="wardrobe-tile flex w-20 flex-col items-center gap-1 rounded-md border border-border bg-background p-2"
+                    >
+                      <CellStill
+                        name={STAND_IN}
+                        look={[id]}
+                        provider={driver}
+                        points={2}
+                        ground={ground}
+                      />
+                      <span className="w-full truncate text-center text-2xs text-foreground">
+                        {rewardShort(feat)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          ) : null}
-          {cell === null ? (
-            <p className="text-xs text-muted-foreground">{COLLECTION.tryOn}</p>
-          ) : null}
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xs font-medium text-muted-foreground">{COLLECTION.toWear}</h3>
-            {pieces.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{COLLECTION.nothingYet}</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {pieces.map(({ feat, id }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    aria-pressed={worn.includes(id)}
-                    onClick={() => put(id)}
-                    data-feat-rarity={feat.rarity}
-                    className="wardrobe-tile flex w-20 flex-col items-center gap-1 rounded-md border border-border bg-background p-2"
-                  >
-                    <CellStill
-                      name={STAND_IN}
-                      look={[id]}
-                      provider={driver}
-                      points={2}
-                      ground={ground}
-                    />
-                    <span className="w-full truncate text-center text-2xs text-foreground">
-                      {rewardShort(feat)}
-                    </span>
-                  </button>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-medium text-muted-foreground">
+                {COLLECTION.acts(acts.length)}
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {acts.map((each) => (
+                  <Tooltip key={each.name}>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          size="xs"
+                          variant={FEAT_ACTS.has(each.name) ? "outline" : "ghost-muted"}
+                          onClick={() => play(stageName(cell), `act/${each.name}`, clockSeconds())}
+                        />
+                      }
+                    >
+                      {actWords(each.name)}
+                    </TooltipTrigger>
+                    <TooltipPopup side="bottom">{each.about}</TooltipPopup>
+                  </Tooltip>
                 ))}
               </div>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xs font-medium text-muted-foreground">
-              {COLLECTION.acts(acts.length)}
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {acts.map((each) => (
-                <Tooltip key={each.name}>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        size="xs"
-                        variant={FEAT_ACTS.has(each.name) ? "outline" : "ghost-muted"}
-                        onClick={() => play(stageName(cell), `act/${each.name}`, clockSeconds())}
-                      />
-                    }
-                  >
-                    {each.name}
-                  </TooltipTrigger>
-                  <TooltipPopup side="bottom">{each.about}</TooltipPopup>
-                </Tooltip>
-              ))}
             </div>
           </div>
         </div>

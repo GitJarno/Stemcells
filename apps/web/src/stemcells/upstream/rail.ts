@@ -114,6 +114,19 @@ export function useRailChats(now: string): ReadonlyArray<RailChat> {
   });
 }
 
+/** A machine's chats, the most recently active first: not archived and not a subagent's, settled ones among them. */
+export function useMachineCells(environmentId: string | null): ReadonlyArray<CellRef> {
+  return useThreadShells()
+    .filter(
+      (shell) =>
+        shell.environmentId === environmentId &&
+        shell.archivedAt === null &&
+        !isSidebarHiddenThread(shell),
+    )
+    .toSorted((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0))
+    .map((shell) => ({ environmentId: shell.environmentId, threadId: shell.id, draftId: null }));
+}
+
 /** The project a chat works in, as `environmentId:projectId`; null for a draft. */
 export function useCellProjectKey(cell: CellRef | null): string | null {
   const shell = useQuietThreadShell(cell ? threadRefOf(cell) : null);

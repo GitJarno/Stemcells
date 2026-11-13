@@ -6,6 +6,9 @@ import { wornLook } from "../cell/scene.ts";
 /** A Cell wears at most this many chosen things: one a slot. */
 const MOST_WORN = 4;
 
+/** No more Cells than this are offered to dress: a row of them, not the machine's census. */
+export const MOST_TO_DRESS = 12;
+
 /** The slots a worn id fills: two that share one can't be worn together. */
 const slotsOf = (id: string): string[] =>
   Object.entries(wornLook([id]).wardrobe).flatMap(([slot, piece]) =>

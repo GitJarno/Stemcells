@@ -180,12 +180,17 @@ export function todayCounts(
   ];
 }
 
+/** An act's name as a person reads it: "thumbs up" for `thumbsUp`. */
+export const actWords = (name: string): string =>
+  name.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+
 /** The collection's own words, the same on every screen. */
 export const COLLECTION = {
   title: "Collection",
   today: "Today",
   landedToday: "Landed today",
   dressingRoom: "Dressing room",
+  cellsToDress: "Cells to dress",
   toWear: "To wear",
   ownLook: "Its own look",
   noCell: "No Cell open",
