@@ -17,7 +17,11 @@ const Told = Schema.Struct({ at: Schema.String, threadId: Schema.NullOr(Schema.S
 export const Kept = Schema.Struct({
   worn: Schema.Record(Schema.String, Schema.Array(Schema.String)),
   seen: Schema.Array(Schema.String),
-  deeds: Schema.Struct({ dazed: Schema.optionalKey(Told), tossed: Schema.optionalKey(Told) }),
+  deeds: Schema.Struct({
+    dazed: Schema.optionalKey(Told),
+    tossed: Schema.optionalKey(Told),
+    stroked: Schema.optionalKey(Told),
+  }),
 });
 export type Kept = typeof Kept.Type;
 

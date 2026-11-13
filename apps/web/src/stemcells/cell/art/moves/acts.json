@@ -459,6 +459,52 @@
           "eyes": "open"
         }
       ]
+    },
+    "nuzzle": {
+      "about": "Stroked: its eyes close, it sinks into the hand and sways there, slow and low, then looks up at it.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "ease",
+          "sy": 0.9375,
+          "spread": 0.25,
+          "for": 3,
+          "way": "out"
+        },
+        {
+          "do": "sway",
+          "reach": 3,
+          "times": 1,
+          "per": 10,
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 3
+        },
+        {
+          "do": "face",
+          "eyes": "calm",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "rest"
+        }
+      ]
     }
   },
   "cues": {
@@ -502,6 +548,10 @@
       "dreamy": ["fidget/dreamy", "hum", "bop", "sigh", "doze"],
       "steady": ["fidget/steady", "tune", "stretch", "sigh", "bop", "doze", "groove"]
     },
-    "sleeping": ["snore", "dream", "mumble"]
+    "sleeping": ["snore", "dream", "mumble"],
+    "stroke": ["nuzzle"],
+    "stroke/landed": ["encore/nuzzle"],
+    "stroke/asleep": ["mumble", "dream"],
+    "dressed": ["nod", "wiggle", "twirl"]
   }
 }

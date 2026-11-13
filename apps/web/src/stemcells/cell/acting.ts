@@ -57,12 +57,15 @@ export const CUE_STATES: Readonly<Record<string, ActState>> = {
   feat: "rest",
   "feat/landed": "landed",
   dressed: "rest",
+  stroke: "rest",
+  "stroke/landed": "landed",
+  "stroke/asleep": "asleep",
 };
 
 /** Whether the scene `key` may play yet: an act a feat unlocks waits for its feat (`chosen.ts`). */
 function earnedYet(key: string): boolean {
-  if (!key.startsWith("act/") && !key.startsWith("encore/")) return true;
-  const name = key.slice(key.indexOf("/") + 1);
+  if (!key.startsWith("act/")) return true;
+  const name = key.slice("act/".length).replace(/^encore\//, "");
   return !FEAT_ACTS.has(name) || actUnlocked(name);
 }
 
@@ -217,11 +220,24 @@ function book(
   return answer;
 }
 
-/** Whether an act drawn for `state` may play on a Cell standing so: a moment never plays over an ask, a sleep or a failure. */
+/** Whether an act drawn for `state` may play on a Cell standing so: nothing plays over an ask or a failure. */
 const fits = (state: ActState | undefined, standing: Standing): boolean =>
-  state === "landed"
-    ? standing === "landed"
+  state === "landed" || state === "asleep"
+    ? standing === state
     : state === "rest" && (standing === "rest" || standing === "work");
+
+/**
+ * The person strokes the Cell `name` names (`stroke.ts`): it leans into the hand where it rests,
+ * works or has landed, and sighs in its sleep. An act already playing plays out; a Cell that
+ * asks or has failed is not soothed.
+ */
+export function stroke(name: string, seconds: number): Performance | undefined {
+  const standing = stood.get(name) ?? "rest";
+  const cue =
+    standing === "landed" ? "stroke/landed" : standing === "asleep" ? "stroke/asleep" : "stroke";
+  if (!fits(CUE_STATES[cue], standing)) return undefined;
+  return performing(name, seconds, standing) ?? book(name, cue, seconds, standing, undefined);
+}
 
 /**
  * A moment of the Cell's own that no hand or run brought: `cue` is `feat` (it earned one; a

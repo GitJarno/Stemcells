@@ -54,10 +54,11 @@ export type Measure =
   | "days"
   /** Something the person's hand did, told by a screen the first time (`Deed`). */
   | "dazed"
-  | "tossed";
+  | "tossed"
+  | "stroked";
 
 /** What a screen tells the server it saw the person do, once each. */
-export const DEEDS = ["dazed", "tossed"] as const;
+export const DEEDS = ["dazed", "tossed", "stroked"] as const;
 export type Deed = (typeof DEEDS)[number];
 
 export interface Feat {
@@ -115,6 +116,7 @@ export const FEATS: ReadonlyArray<Feat> = [
   feat("days", 365, "legendary", piece("angel")),
   feat("dazed", 1, "secret", piece("plaster")),
   feat("tossed", 1, "secret", piece("eyepatch")),
+  feat("stroked", 1, "secret", piece("hatchling")),
 ];
 
 /** The id a reward's piece is worn by: an outfit of the earned pack. */

@@ -51,6 +51,7 @@ const NAMES: Readonly<Record<string, string>> = {
   "days-365": "A year in",
   "dazed-1": "Easy now",
   "tossed-1": "Good arm",
+  "stroked-1": "Soft hands",
 };
 
 /** A feat's name; its id for one these words don't know yet. */
@@ -92,6 +93,8 @@ export function featTakes(feat: Feat): string {
       return "You poked a Cell until it saw stars.";
     case "tossed":
       return "You threw a Cell across the room.";
+    case "stroked":
+      return "You stroked a Cell until it leaned in.";
   }
 }
 
@@ -137,6 +140,7 @@ const REWARDS: Readonly<Record<string, string>> = {
   "piece:angel": "The halo and wings",
   "piece:plaster": "The plaster",
   "piece:eyepatch": "The eyepatch",
+  "piece:hatchling": "The eggshell",
   "act:bow": "The bow",
   "act:flip": "The flip",
   "act:robot": "The robot",

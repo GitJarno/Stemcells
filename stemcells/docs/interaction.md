@@ -144,3 +144,41 @@ cues in `cell/art/moves/`); the design is in `stemcells/tasks/cell-acts.md`.
   seconds, a step each way; with the pointer on it, straight ahead. While
   it watches it doesn't fidget.
 - **Reduce Motion**: a poke plays nothing, and the Cell watches nothing.
+
+## The stroke
+
+The hand going back and forth over a Cell soothes it: three turns, each
+after a run of five px, within a second and a half (`cell/stroke.ts`, one
+rule for a pointer and a finger).
+
+- **Where**: the Cell over a composer, with no button down; the Cell in a
+  chat's header on the phone, under a finger that rubs it.
+- **In the state it is in.** At rest or at work it shuts its eyes and
+  leans into the hand; just landed it does so in `^ ^`; asleep it sighs
+  and sleeps on. A Cell that waits on the person, has failed, or whose
+  line is down is not soothed: nothing plays.
+- **An act already playing plays out.** A stroke never cuts in.
+- **Reduce Motion**: a stroke plays nothing.
+
+## The collection
+
+What the Cells' work earns, and a Cell the person dresses
+(`stemcells/tasks/collection.md`).
+
+- **A feat's moment.** A feat earned while the app is open shows one card
+  in a corner: the feat, the Cell whose fact did it, what it unlocked, and
+  a button that puts the piece on that Cell. The Cell holds a cup up. The
+  card takes no focus, leaves after fourteen seconds unless the hand is on
+  it, and never shows while a Cell waits on the person. What the ledger
+  awards for the past gets no card: it is marked new in Settings ›
+  Collection.
+- **The dressing room** (Settings › Collection). One Cell stands on the
+  stage, alive. A tap on a piece puts it on, in place of whatever held its
+  slot, and again takes it off; "Its own look" takes everything off. A tap
+  on an act plays it on the stage. The choice is kept on the Cell's machine
+  and every picture of the Cell wears it, on every device.
+- **A deed** is what the hand did: a Cell poked until it saw stars,
+  thrown, or stroked. The first of each is told to the machine and earns a
+  secret feat.
+- **The same on the Mac and the phone**: the same sections, words and
+  rules. A thrown Cell is the Mac's alone: the phone has no toss.
