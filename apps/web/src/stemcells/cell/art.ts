@@ -4,6 +4,7 @@
 // (`art.test.ts` fails on a file left out). Formats: `stemcells/docs/cell-art.md`.
 
 import actsDance from "./art/moves/acts-dance.json" with { type: "json" };
+import actsFeats from "./art/moves/acts-feats.json" with { type: "json" };
 import actsRest from "./art/moves/acts-rest.json" with { type: "json" };
 import acts from "./art/moves/acts.json" with { type: "json" };
 import dock from "./art/moves/dock.json" with { type: "json" };
@@ -59,6 +60,7 @@ export const ART_PACKS: ArtFiles = {
 export const ART_MOVES: ArtFiles = {
   acts,
   "acts-dance": actsDance,
+  "acts-feats": actsFeats,
   "acts-rest": actsRest,
   dock,
   form,
