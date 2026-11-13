@@ -10,7 +10,7 @@ import { useReducedMotion } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CellFigure } from "../cell/CellFigure";
-import { ACTS, cellNameOf, clockSeconds, moment, play } from "../cell/kit";
+import { cellNameOf, clockSeconds, moment, play } from "../cell/kit";
 import type { NeedsConnection } from "../line/read";
 import { needsConnectionOf } from "../line/readings";
 import { useThemeAppearance, useThreadShellsSelected } from "../upstream/cells";
@@ -27,6 +27,7 @@ import { CellStill } from "./CellStill";
 import { cellsToDress } from "./crew";
 import { HUES, NEW_DOT } from "./hues";
 import {
+  actsToShow,
   actWords,
   COLLECTION,
   type Collection,
@@ -296,12 +297,7 @@ function DressingRoom(props: {
     const id = wornIdOf(feat.reward);
     return id !== undefined && unlocked.has(id) ? [{ feat, id }] : [];
   });
-  const acts = [...ACTS.values()].filter(
-    (each) =>
-      each.state === "rest" &&
-      (!FEAT_ACTS.has(each.name) ||
-        earned.some(({ feat }) => feat.reward.kind === "act" && feat.reward.id === each.name)),
-  );
+  const acts = actsToShow(collection.feats);
 
   const put = (id: string) => {
     const next = toggled(worn, id);

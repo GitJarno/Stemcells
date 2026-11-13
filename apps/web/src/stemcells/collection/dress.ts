@@ -1,6 +1,8 @@
 // Dressing a Cell from the wardrobe the feats unlocked: one thing a slot, the newest on top.
 // Pure, and the phone's too: both dressing rooms put a piece on and take it off the same way.
 
+import { FEAT_ACTS, type FeatState, unlockedActs } from "../../../../../stemcells/ledger/feats.ts";
+import { type Act, ACTS } from "../cell/kit.ts";
 import { wornLook } from "../cell/scene.ts";
 
 /** A Cell wears at most this many chosen things: one a slot. */
@@ -23,4 +25,14 @@ export function toggled(worn: readonly string[], id: string): string[] {
     0,
     MOST_WORN,
   );
+}
+
+/** The acts a Cell shows on the stage: the ones its feats unlocked first, then its own; none a feat still holds. */
+export function actsToShow(feats: ReadonlyArray<FeatState>): Act[] {
+  const unlocked = unlockedActs(feats);
+  const resting = [...ACTS.values()].filter((act) => act.state === "rest");
+  return [
+    ...resting.filter((act) => unlocked.has(act.name)),
+    ...resting.filter((act) => !FEAT_ACTS.has(act.name)),
+  ];
 }

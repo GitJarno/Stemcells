@@ -30,7 +30,6 @@ import { CellFigure } from "../cell/CellFigure";
 import { CellStill } from "../cell/CellStill";
 import { chosenVersion, onChosen } from "../cell/chosen";
 import type { Ground } from "../cell/keyline";
-import { ACTS } from "../cell/kit";
 import { dayOf, lookOf } from "../cell/looks";
 import { cellNameOf } from "../cell/name";
 import { CellMini } from "../rail/CellMini";
@@ -44,7 +43,7 @@ import { useCellDriver } from "../upstream/providers";
 import { useMachineCells } from "../upstream/rail";
 import { SettingsPageContainer, SettingsSection } from "../upstream/settings";
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
-import { MOST_TO_DRESS, toggled } from "./dress";
+import { actsToShow, MOST_TO_DRESS, toggled } from "./dress";
 import { type Standing, standings } from "./fresh";
 import { markSeen, readCollection, useCollection, wear } from "./read";
 import "./collection.css";
@@ -189,12 +188,7 @@ function DressingRoom(props: { readonly collection: Collection; readonly ground:
     const id = wornIdOf(feat.reward);
     return id !== undefined && unlocked.has(id) ? [{ feat, id }] : [];
   });
-  const acts = [...ACTS.values()].filter(
-    (each) =>
-      each.state === "rest" &&
-      (!FEAT_ACTS.has(each.name) ||
-        earned.some(({ feat }) => feat.reward.kind === "act" && feat.reward.id === each.name)),
-  );
+  const acts = actsToShow(collection.feats);
 
   const put = (id: string) => {
     const next = toggled(worn, id);
