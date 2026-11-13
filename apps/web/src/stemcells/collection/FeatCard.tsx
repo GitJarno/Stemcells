@@ -113,7 +113,7 @@ export function FeatCard(props: {
       <button
         type="button"
         className="self-start text-muted-foreground hover:text-foreground"
-        aria-label="Dismiss"
+        aria-label={COLLECTION.dismiss}
         onClick={props.onDone}
       >
         <XIcon className="size-3.5" />

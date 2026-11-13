@@ -335,7 +335,9 @@ function FeatTile(props: {
       <div className="flex flex-1 flex-col gap-1 p-2.5">
         <div className="flex items-center justify-between gap-2">
           <span className="feat-rarity">{RARITY_NAMES[feat.rarity]}</span>
-          {props.fresh ? <span className="feat-new" role="img" aria-label="New" /> : null}
+          {props.fresh ? (
+            <span className="feat-new" role="img" aria-label={COLLECTION.isNew} />
+          ) : null}
         </div>
         <span className="text-sm font-medium text-foreground">
           {hidden ? SECRET.name : featName(feat)}

@@ -190,7 +190,6 @@ export const COLLECTION = {
   today: "Today",
   landedToday: "Landed today",
   dressingRoom: "Dressing room",
-  cellsToDress: "Cells to dress",
   toWear: "To wear",
   ownLook: "Its own look",
   noCell: "No Cell open",
