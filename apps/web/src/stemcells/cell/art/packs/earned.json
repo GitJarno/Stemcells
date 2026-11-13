@@ -28,7 +28,7 @@
       "about": "A gold medal on a blue and white ribbon, worn round the middle: the medal hangs low at the centre.",
       "art": [
         "hhh..................hhh",
-        "WWWhhh............hhhWWW",
+        "hWWhhh............hhhWWh",
         "hhhWWWhhh......hhhWWWhhh",
         "...hhhWWW.YYYY.WWWhhh...",
         "......hhhYYWYYJhhh......",
@@ -51,8 +51,8 @@
         "NNYJNm.",
         "NNNNmm.",
         ".Nmmm..",
-        "Nm..Nm.",
-        "Nm..Nm.",
+        ".NmNm..",
+        ".Nm.Nm.",
         "Nm..Nm.",
         "Nm...Nm",
         "Nm...Nm",
@@ -199,7 +199,7 @@
       ],
       "miniFrames": [
         ["gRR..", "gRRRR", "gRR..", "g....", "g....", "g....", "g...."],
-        ["gRR..", "gRRR.", "gRRRR", "g....", "g....", "g....", "g...."]
+        ["gRR..", "gRRR.", "gRR..", "g....", "g....", "g....", "g...."]
       ],
       "fps": 2
     },
@@ -219,9 +219,9 @@
         "gWpggD..............gWpggD",
         "DDDDDD..............DDDDDD",
         ".4444................4444.",
-        "YWWWWY..............YWWWWY",
-        "3YYYY3..............3YYYY3",
-        ".3YY3................3YY3.",
+        "JYYYYJ..............JYYYYJ",
+        "3JJJJ3..............3JJJJ3",
+        ".3JJ3................3JJ3.",
         ".........................."
       ],
       "hotspot": [12, 13],
@@ -231,7 +231,7 @@
         "RRR.......RRR",
         "gpD.......gpD",
         "gpD.......gpD",
-        "Y...........Y",
+        "J...........J",
         "3...........3"
       ],
       "miniHotspot": [6, 7],
@@ -248,9 +248,9 @@
           "gWpggD..............gWpggD",
           "DDDDDD..............DDDDDD",
           ".4444................4444.",
-          "YWWWWY..............YWWWWY",
-          "3YYYY3..............3YYYY3",
-          ".3YY3................3YY3.",
+          "JYYYYJ..............JYYYYJ",
+          "3JJJJ3..............3JJJJ3",
+          ".3JJ3................3JJ3.",
           ".........................."
         ],
         [
@@ -265,8 +265,8 @@
           "gWpggD..............gWpggD",
           "DDDDDD..............DDDDDD",
           ".4444................4444.",
-          "3YYYY3..............3YYYY3",
-          ".3YY3................3YY3.",
+          "3JJJJ3..............3JJJJ3",
+          ".3JJ3................3JJ3.",
           "..........................",
           ".........................."
         ],
@@ -282,9 +282,9 @@
           "gWpggD..............gWpggD",
           "DDDDDD..............DDDDDD",
           ".4444................4444.",
-          "YWWWWY..............YWWWWY",
-          "YYYYYY..............YYYYYY",
-          "3Y..Y3..............3Y..Y3",
+          "JYYYYJ..............JYYYYJ",
+          "JJJJJJ..............JJJJJJ",
+          "3J..J3..............3J..J3",
           "3....3..............3....3"
         ]
       ],
@@ -295,7 +295,7 @@
           "RRR.......RRR",
           "gpD.......gpD",
           "gpD.......gpD",
-          "Y...........Y",
+          "J...........J",
           "3...........3"
         ],
         [
@@ -313,8 +313,8 @@
           "RRR.......RRR",
           "gpD.......gpD",
           "gpD.......gpD",
-          "Y...........Y",
-          "Y...........Y"
+          "J...........J",
+          "J...........J"
         ]
       ],
       "fps": 3
@@ -324,27 +324,27 @@
       "slot": "wrap",
       "about": "A knitted scarf in three colour stripes, wound round the base with one end hanging.",
       "art": [
-        ".FYYYYYYWWWWWWFFFFFFYYYYY.",
+        ".FYYYYYYWWWWWWFFFFFFYYYYJ.",
         ".fJJJJJJCCCCCCffffffJJJJJ.",
         ".fJJJJJJCCCCCCffffffJJJJJ.",
         "ffoooooottttttffffffoooooo",
-        "..WCCCCt..................",
-        "..CCCCCt..................",
-        "..Ffffff..................",
-        "..f.f.f..................."
+        "....WCCCCt................",
+        "....CCCCCt................",
+        "....Ffffff................",
+        "....f.f.f................."
       ],
       "hotspot": [12, 8],
-      "mini": ["fJJJCCCfffJJJ", "fJJJCCCfffJJJ", ".CCC.........", ".fff........."],
+      "mini": ["fJJJCCCfffJJJ", "fJJJCCCfffJJJ", "..CCC........", "..fff........"],
       "miniHotspot": [6, 4]
     },
     {
       "name": "plaster",
       "slot": "headwear",
-      "about": "Two sticking plasters crossed on the crown, a little off-centre: it took a knock.",
-      "art": ["qq...qq", ".CCWCC.", "..WWW..", ".CCWCC.", "tC...Ct"],
-      "hotspot": [2, 0],
-      "mini": ["q.q", ".W.", "C.C"],
-      "miniHotspot": [1, 0]
+      "about": "Two sticking plasters crossed over a bump on the crown, a little off-centre: it took a knock.",
+      "art": [".qLBBq.", "BCCWCCb", "..WWW..", ".CCWCC.", "tC...Ct"],
+      "hotspot": [1, 2],
+      "mini": ["qBq", ".W.", "C.C"],
+      "miniHotspot": [0, 1]
     }
   ]
 }
