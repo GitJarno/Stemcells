@@ -8,17 +8,19 @@
       "slot": "headwear",
       "about": "A green laurel wreath, worn round the crown: open at the front, its leaves rising either side.",
       "art": [
-        "....F.F..........F.F....",
-        "..F.AFAF........FAFA.F..",
-        ".FAFfFfFf......fFfFfFAF.",
-        ".AFFf..............fFFA.",
-        "F.Ff................fF.F",
-        "AF....................FA",
-        ".Ff..................fF."
+        ".......F......F.......",
+        "...F.F.F......F.F.F...",
+        "...FFAFAFF..FFAFAFF...",
+        ".F.FAFFFAF..FAFFFAF.F.",
+        ".FFAFfffff..fffffFAFF.",
+        ".FAff............ffAF.",
+        "FAf................fAF",
+        "Ff..................fF",
+        "f....................f"
       ],
-      "hotspot": [11, 2],
-      "mini": [".F.F.....F.F.", "FAFAF...FAFAF", ".Ff.......fF."],
-      "miniHotspot": [6, 1]
+      "hotspot": [10, 4],
+      "mini": ["F.F.....F.F", "FFAFF.FFAFF", "FAf.....fAF", "f.........f"],
+      "miniHotspot": [5, 2]
     },
     {
       "name": "medal",
@@ -44,18 +46,18 @@
       "about": "A red prize rosette pinned at one hip, its two ribbon tails hanging.",
       "art": [
         ".RNNN.",
-        "RmNNmN",
-        "NNWWNN",
-        "NNWpNN",
-        "NmNNmm",
-        ".NNNm.",
+        "RNNNNm",
+        "NNWYNm",
+        "NNYJNm",
+        "NNNNmm",
+        ".Nmmm.",
         "Nm..Nm",
         "Nm..Nm",
         "Nm..Nm",
         "N....m"
       ],
       "hotspot": [12, 10],
-      "mini": ["NNN", "NWN", "NNN", "N.N", "N.N"],
+      "mini": ["mNm", "NYN", "mNm", "N.N", "N.N"],
       "miniHotspot": [6, 5]
     },
     {
@@ -79,18 +81,18 @@
       "slot": "headwear",
       "about": "A tweed flat cap with a short peak, worn level on the crown.",
       "art": [
-        "...........ttottCtt......",
+        "...........ttottttt......",
         "........tttotttttotttt...",
-        "......CttottCttottCttotn.",
+        "......tttottCttottCttotn.",
         "....tttotttttotttttotttn.",
-        "..CttottCttottCttottCttnn",
+        "..tttottCttottCttottCttnn",
         ".ttotttttotttttotttttotnn",
         "kkkkkkkkkkk...........nn.",
         ".ZZZZZZZZ................"
       ],
       "hotspot": [12, 4],
-      "mini": [".....ttttt..", "...ttttttttt", ".tttottttott", "kkkkk......o"],
-      "miniHotspot": [6, 2]
+      "mini": ["....ttttt..", "..ttttttttt", ".ttottttott", "kkkk......o"],
+      "miniHotspot": [5, 2]
     },
     {
       "name": "mantle",
@@ -338,7 +340,7 @@
       "slot": "headwear",
       "about": "Two sticking plasters crossed on the crown, a little off-centre: it took a knock.",
       "art": ["tC...Ct", ".CCWCC.", "..WWW..", ".CCWCC.", "tC...Ct"],
-      "hotspot": [1, 0],
+      "hotspot": [2, 0],
       "mini": ["C.C", ".W.", "C.C"],
       "miniHotspot": [1, 0]
     }
