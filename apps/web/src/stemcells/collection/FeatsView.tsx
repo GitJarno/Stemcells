@@ -102,7 +102,7 @@ export function FeatsView(props: { readonly collection: Collection; readonly gro
         );
       })}
       <SettingsSection title={COLLECTION.secrets} variant="plain">
-        <ul className="flex flex-wrap gap-2.5">
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
           {secrets.map((standing) => (
             <SecretTile
               key={standing.feat.id}
@@ -362,7 +362,7 @@ function SecretTile(props: {
   return (
     <li
       data-feat-rarity="secret"
-      className="flex w-44 items-center gap-3 rounded-lg border border-border bg-card p-3"
+      className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
     >
       <span className="grid size-10 shrink-0 place-items-center">
         {earned === null ? (

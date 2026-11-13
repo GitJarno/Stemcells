@@ -95,7 +95,7 @@ export function FeatCard(props: {
             {COLLECTION.nextRung(featName(props.next.feat))}
           </span>
         )}
-        <div className="mt-1.5 flex items-center gap-3">
+        <div className="mt-1.5 flex items-center gap-3 text-xs">
           {wornId !== undefined && threadId !== null && !wearing ? (
             <Button
               size="xs"
