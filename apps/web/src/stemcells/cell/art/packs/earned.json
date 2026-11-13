@@ -2,6 +2,159 @@
   "theme": "earned",
   "season": null,
   "about": "Pieces a feat unlocks: a laurel, a medal, a rosette, a title belt, a flat cap, a mantle, a pennant, a jetpack, a scarf and a pair of sticking plasters.",
+  "outfits": [
+    {
+      "id": "rosette",
+      "wrap": "earned/rosette",
+      "silhouette": "rosette",
+      "family": "red"
+    },
+    {
+      "id": "medal",
+      "wrap": "earned/medal",
+      "silhouette": "medal",
+      "family": "gold"
+    },
+    {
+      "id": "laurel",
+      "headwear": "earned/laurel",
+      "silhouette": "laurel",
+      "family": "forest"
+    },
+    {
+      "id": "mantle",
+      "back": "earned/mantle",
+      "silhouette": "mantle",
+      "family": "crimson"
+    },
+    {
+      "id": "pennant",
+      "back": "earned/pennant",
+      "silhouette": "pennant",
+      "family": "sky"
+    },
+    {
+      "id": "tophat",
+      "headwear": "tophat",
+      "silhouette": "tophat",
+      "family": "charcoal"
+    },
+    {
+      "id": "sprout",
+      "headwear": "sprout",
+      "silhouette": "sprout",
+      "family": "lime"
+    },
+    {
+      "id": "crown",
+      "headwear": "crown",
+      "silhouette": "crown",
+      "family": "sunflower"
+    },
+    {
+      "id": "astronaut",
+      "headwear": "astronaut",
+      "silhouette": "helmet",
+      "family": "pearl"
+    },
+    {
+      "id": "headphones",
+      "headwear": "headphones",
+      "silhouette": "headphones",
+      "family": "slate"
+    },
+    {
+      "id": "shades",
+      "face": "shades",
+      "silhouette": "shades",
+      "family": "ink"
+    },
+    {
+      "id": "titlebelt",
+      "wrap": "earned/titlebelt",
+      "silhouette": "titlebelt",
+      "family": "leather"
+    },
+    {
+      "id": "captain",
+      "headwear": "captain",
+      "silhouette": "captain",
+      "family": "navy"
+    },
+    {
+      "id": "jetpack",
+      "back": "earned/jetpack",
+      "silhouette": "jetpack",
+      "family": "steel"
+    },
+    {
+      "id": "viking",
+      "headwear": "viking",
+      "silhouette": "horns",
+      "family": "bronze"
+    },
+    {
+      "id": "nightcap",
+      "headwear": "nightcap",
+      "silhouette": "nightcap",
+      "family": "lilac"
+    },
+    {
+      "id": "specs",
+      "face": "specs",
+      "silhouette": "specs",
+      "family": "cocoa"
+    },
+    {
+      "id": "scarf",
+      "wrap": "earned/scarf",
+      "silhouette": "scarf",
+      "family": "aqua"
+    },
+    {
+      "id": "fedora",
+      "headwear": "fedora",
+      "silhouette": "fedora",
+      "family": "denim"
+    },
+    {
+      "id": "flatcap",
+      "headwear": "earned/flatcap",
+      "silhouette": "flatcap",
+      "family": "tweed"
+    },
+    {
+      "id": "beret",
+      "headwear": "beret",
+      "silhouette": "beret",
+      "family": "bubblegum"
+    },
+    {
+      "id": "angel",
+      "headwear": "halo",
+      "outfit": "wings",
+      "silhouette": "halo",
+      "family": "white"
+    },
+    {
+      "id": "plaster",
+      "headwear": "earned/plaster",
+      "silhouette": "plaster",
+      "family": "pink"
+    },
+    {
+      "id": "eyepatch",
+      "face": "eyepatch",
+      "silhouette": "eyepatch",
+      "family": "black"
+    },
+    {
+      "id": "hatchling",
+      "headwear": "hatchling",
+      "silhouette": "eggshell",
+      "family": "cream"
+    }
+  ],
   "pieces": [
     {
       "name": "laurel",
