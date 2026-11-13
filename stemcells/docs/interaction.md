@@ -173,11 +173,15 @@ What the Cells' work earns, and a Cell the person dresses
   it, and never shows while a Cell waits on the person. What the ledger
   awards for the past gets no card: it is marked new in Settings ›
   Collection.
-- **The dressing room** (Settings › Collection). One Cell stands on the
-  stage, alive. A tap on a piece puts it on, in place of whatever held its
-  slot, and again takes it off; "Its own look" takes everything off. A tap
-  on an act plays it on the stage. The choice is kept on the Cell's machine
-  and every picture of the Cell wears it, on every device.
+- **The feats** (Settings › Collection, Feats). A summary first: the feats
+  earned, the rank, a bar a segment, the day so far. Then the three rungs
+  nearest earned, then a row a ladder. A tap on a row opens its rungs.
+  Nothing here moves on its own.
+- **The wardrobe** (Settings › Collection, Wardrobe). One Cell stands on
+  the stage, alive. A tap on a piece puts it on, in place of whatever held
+  its slot, and again takes it off; "Its own look" takes everything off. A
+  tap on an act plays it on the stage. The choice is kept on the Cell's
+  machine and every picture of the Cell wears it, on every device.
 - **A deed** is what the hand did: a Cell poked until it saw stars,
   thrown, or stroked. The first of each is told to the machine and earns a
   secret feat.
