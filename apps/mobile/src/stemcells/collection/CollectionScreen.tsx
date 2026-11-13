@@ -3,6 +3,7 @@
 // the feats unlocked on a Cell and watches an act, and every feat with how far along it is. One
 // Cell on the screen is alive, the one on the stage; every other stands still and costs no frame.
 
+import { useIsFocused } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { type ReactNode, useEffect, useEffectEvent, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -245,6 +246,7 @@ function Stage(props: {
   readonly driver: string | null;
 }) {
   const ground = useThemeAppearance() === "light" ? "light" : "black";
+  const inFront = useIsFocused();
   return (
     <View
       className="items-center justify-end rounded-2xl bg-screen"
@@ -262,6 +264,7 @@ function Stage(props: {
         ground={ground}
         points={6}
         plays
+        held={!inFront}
       />
     </View>
   );
