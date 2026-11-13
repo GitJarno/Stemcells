@@ -140,7 +140,7 @@ const REWARDS: Readonly<Record<string, string>> = {
   "piece:angel": "The halo and wings",
   "piece:plaster": "The plaster",
   "piece:eyepatch": "The eyepatch",
-  "piece:hatchling": "The eggshell",
+  "piece:hatchling": "The hatchling",
   "act:bow": "The bow",
   "act:flip": "The flip",
   "act:robot": "The robot",

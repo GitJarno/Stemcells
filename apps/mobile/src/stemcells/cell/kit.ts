@@ -9,7 +9,9 @@ export {
   poke,
   stand,
   standingOf,
+  stroke,
 } from "../../../../web/src/stemcells/cell/acting.ts";
+export { type Stroking, stroking } from "../../../../web/src/stemcells/cell/stroke.ts";
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";
 export { chosenVersion, onChosen, setChosen } from "../../../../web/src/stemcells/cell/chosen.ts";
 export {

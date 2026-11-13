@@ -2,7 +2,7 @@
 // how a piece goes on, and every word either screen shows. Imported here and nowhere else, so
 // `cell/hermes.test.ts` reads them for calls the phone lacks.
 
-export { toggled } from "../../../../web/src/stemcells/collection/dress.ts";
+export { MOST_TO_DRESS, toggled } from "../../../../web/src/stemcells/collection/dress.ts";
 export {
   earnedIds,
   freshFeats,
@@ -18,6 +18,7 @@ export {
   wornIdOf,
 } from "../../../../../stemcells/ledger/feats.ts";
 export {
+  actWords,
   COLLECTION,
   featName,
   featProgress,

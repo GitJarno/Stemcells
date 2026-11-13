@@ -165,8 +165,9 @@ rule for a pointer and a finger).
 What the Cells' work earns, and a Cell the person dresses
 (`stemcells/tasks/collection.md`).
 
-- **A feat's moment.** A feat earned while the app is open shows one card
-  at the top of the screen, never over a composer: the feat, the Cell whose fact did it, what it unlocked, and
+- **A feat's moment.** A feat earned while the app is open shows one card,
+  at the top of the window on the Mac and above the bottom bar on the phone,
+  never over a composer: the feat, the Cell whose fact did it, what it unlocked, and
   a button that puts the piece on that Cell. The Cell holds a cup up. The
   card takes no focus, leaves after fourteen seconds unless the hand is on
   it, and never shows while a Cell waits on the person. What the ledger

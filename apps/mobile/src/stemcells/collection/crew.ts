@@ -5,9 +5,7 @@
 import { askiChatsOf } from "../aski/chat";
 import { inTab } from "../home/tabs";
 import type { EnvironmentThreadShell } from "../upstream/threads";
-
-/** No more Cells than this are offered to dress: a row of them, not the machine's census. */
-const MOST_TO_DRESS = 12;
+import { MOST_TO_DRESS } from "./kit";
 
 type CrewShell = Parameters<typeof askiChatsOf>[0][number] &
   Pick<EnvironmentThreadShell, "archivedAt" | "updatedAt">;

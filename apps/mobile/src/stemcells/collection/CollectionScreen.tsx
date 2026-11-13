@@ -27,6 +27,7 @@ import { CellStill } from "./CellStill";
 import { cellsToDress } from "./crew";
 import { HUES, NEW_DOT } from "./hues";
 import {
+  actWords,
   COLLECTION,
   type Collection,
   FEAT_ACTS,
@@ -382,8 +383,8 @@ function DressingRoom(props: {
                       on ? "border-adaptive-sky-600-400" : "border-transparent"
                     }`}
                   >
-                    <View className="w-20 items-center gap-1 rounded-xl border border-border bg-screen px-2 pb-2 pt-3">
-                      <CellStill name={STAND_IN} look={[id]} provider={driver} points={2} />
+                    <View className="w-24 items-center gap-1 rounded-xl border border-border bg-screen px-2 pb-2 pt-3">
+                      <CellStill name={STAND_IN} look={[id]} provider={driver} points={3} />
                       <AppText className="text-2xs text-foreground" numberOfLines={1}>
                         {rewardShort(feat)}
                       </AppText>
@@ -403,7 +404,7 @@ function DressingRoom(props: {
               <Pressable
                 key={each.name}
                 accessibilityRole="button"
-                accessibilityLabel={each.name}
+                accessibilityLabel={actWords(each.name)}
                 accessibilityHint={each.about}
                 hitSlop={{ top: 5, bottom: 5 }}
                 onPress={() => play(stage, `act/${each.name}`, clockSeconds())}
@@ -417,7 +418,7 @@ function DressingRoom(props: {
                     FEAT_ACTS.has(each.name) ? "text-foreground" : "text-foreground-muted"
                   }`}
                 >
-                  {each.name}
+                  {actWords(each.name)}
                 </AppText>
               </Pressable>
             ))}
@@ -459,14 +460,14 @@ function FeatTile(props: { readonly standing: Standing; readonly fresh: boolean 
     >
       <View className={`items-center justify-end border-b-2 pb-1.5 pt-3 ${hue.floor}`}>
         {hidden ? (
-          <View className="justify-center" style={{ minHeight: 28 }}>
+          <View className="justify-center" style={{ minHeight: 42 }}>
             <AppText className="text-lg font-t3-bold text-foreground-muted">?</AppText>
           </View>
         ) : (
           <CellStill
             name={STAND_IN}
             look={wornId === undefined ? [] : [wornId]}
-            points={2}
+            points={3}
             scene={feat.reward.kind === "act" ? `act/${feat.reward.id}` : undefined}
             flat={earned === null}
           />
