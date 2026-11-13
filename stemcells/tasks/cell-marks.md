@@ -42,8 +42,7 @@ added later is awarded for the past too.
 - **The words** are in `stemcells/words/marks.ts`: each mark's name, what
   shows it ("42 min", "#12") and the sentence that says what the Cell did.
 - **Settings › Lineage** lists each life's marks under it as its card
-  opens: a small glyph cut from square blocks in the ink of the words
-  beside it, the name, and what shows it; the day and the sentence on
+  opens: its icon in the ink of the words beside it, the name, and what shows it; the day and the sentence on
   hover. No new creature art. The page reads `GET /api/stemcells/ledger` for the card's
   chats and works the marks out in the browser.
 
@@ -60,11 +59,14 @@ added later is awarded for the past too.
   on another machine lists no marks here.
 - **No marks while the ledger can't answer.** A failed read shows the page
   as it was before marks, with no error: the marks are an addition.
-- **Six glyphs, not icons from a set**, on the 7 × 7 grid a Cell is cut
-  on (`lineage/markGlyphs.ts`, shared with the phone): a tick come to rest
-  on the ground, two lines joined into one, two arrowheads, an empty
-  speech bubble, a hat, a bar with a weight at each end. The sign says
-  which mark; none wears a hue of its own.
+- **Six icons of our own**, drawn as the app's icons are: a 24 unit
+  square, a stroke of 2 with round caps, no fill
+  (`lineage/markIcons.ts`, one set of shapes for the Mac and the phone).
+  A flight coming down onto the ground, two lines joined into one, a loop
+  in the air, a speech bubble with nothing said, a top hat, a stopwatch.
+  The shape says which mark; none wears a hue. They were first cut from
+  blocks on the Cell's 7 × 7 grid, which read as crude at an icon's size
+  and didn't scale.
 
 ## Plan
 

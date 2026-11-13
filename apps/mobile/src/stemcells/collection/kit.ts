@@ -69,6 +69,7 @@ export {
   marksOf,
 } from "../../../../../stemcells/words/marks.ts";
 export {
-  MARK_GLYPH_PATHS,
-  MARK_GLYPH_SIDE,
-} from "../../../../web/src/stemcells/lineage/markGlyphs.ts";
+  MARK_ICON_BOX,
+  MARK_ICON_STROKE,
+  MARK_ICONS,
+} from "../../../../web/src/stemcells/lineage/markIcons.ts";

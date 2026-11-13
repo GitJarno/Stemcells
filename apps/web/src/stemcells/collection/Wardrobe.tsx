@@ -28,7 +28,7 @@ import { chosenVersion, onChosen } from "../cell/chosen";
 import type { Ground } from "../cell/keyline";
 import { dayOf, lookOf } from "../cell/looks";
 import { cellNameOf } from "../cell/name";
-import { MarkGlyph } from "../lineage/MarkGlyph";
+import { MarkIcon } from "../lineage/MarkIcon";
 import { CellMini } from "../rail/CellMini";
 import { askiCellOf } from "../tabs/askiTab";
 import { type CellRef, focusedPane } from "../tabs/layout";
@@ -104,17 +104,20 @@ function Marks(props: { readonly name: string; readonly awards: readonly Award[]
         <span className="truncate">{marksOf(props.name)}</span>
         <span className="shrink-0 tabular-nums">{marksCount(earned.size, MARKS.length)}</span>
       </h3>
-      <ul className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
         {MARKS.map((mark) => {
           const award = earned.get(mark);
           return (
-            <li key={mark} className="flex min-w-0 items-start gap-2">
-              <MarkGlyph
-                mark={mark}
-                className={`mt-0.5 size-3.5 shrink-0 ${
-                  award === undefined ? "text-muted-foreground/40" : "text-foreground"
+            <li key={mark} className="flex min-w-0 items-center gap-2.5">
+              <span
+                className={`grid size-8 shrink-0 place-items-center rounded-lg ${
+                  award === undefined
+                    ? "border border-dashed border-border text-muted-foreground/45"
+                    : "bg-foreground/8 text-foreground"
                 }`}
-              />
+              >
+                <MarkIcon mark={mark} className="size-[18px]" />
+              </span>
               <div className="flex min-w-0 flex-col">
                 <span
                   className={`truncate text-xs ${

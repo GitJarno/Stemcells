@@ -2,15 +2,16 @@
 // Wardrobe.tsx`): every mark a life can earn, the earned ones with what shows them and when.
 
 import { View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Circle, Path } from "react-native-svg";
 import { useResolveClassNames } from "uniwind";
 
 import { AppText } from "../upstream/disk";
 import {
   type Award,
   evidenceOf,
-  MARK_GLYPH_PATHS,
-  MARK_GLYPH_SIDE,
+  MARK_ICON_BOX,
+  MARK_ICON_STROKE,
+  MARK_ICONS,
   MARK_NAMES,
   MARK_TAKES,
   type MarkId,
@@ -20,22 +21,44 @@ import {
 } from "./kit";
 import { dateOf, NUMBERS } from "./parts";
 
-const GLYPH = 14;
+const ICON = 18;
 
-/** A mark's glyph in the words' own ink, faint until earned. */
-function MarkGlyph(props: { readonly mark: MarkId; readonly earned: boolean }) {
+/** A mark's icon on its tile, in the words' own ink: filled in once earned, an outline until then. */
+function MarkTile(props: { readonly mark: MarkId; readonly earned: boolean }) {
   const ink = useResolveClassNames(
     props.earned ? "text-foreground" : "text-foreground-muted",
   ).color;
   return (
-    <Svg
-      width={GLYPH}
-      height={GLYPH}
-      viewBox={`0 0 ${MARK_GLYPH_SIDE} ${MARK_GLYPH_SIDE}`}
-      style={{ marginTop: 2, opacity: props.earned ? 1 : 0.4 }}
+    <View
+      className={`size-8 items-center justify-center rounded-lg ${
+        props.earned ? "bg-foreground/8" : "border border-dashed border-border"
+      }`}
     >
-      <Path d={MARK_GLYPH_PATHS[props.mark]} fill={ink} />
-    </Svg>
+      <Svg
+        width={ICON}
+        height={ICON}
+        viewBox={`0 0 ${MARK_ICON_BOX} ${MARK_ICON_BOX}`}
+        fill="none"
+        stroke={ink}
+        strokeWidth={MARK_ICON_STROKE}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={props.earned ? 1 : 0.5}
+      >
+        {MARK_ICONS[props.mark].map((part) =>
+          "d" in part ? (
+            <Path key={part.d} d={part.d} />
+          ) : (
+            <Circle
+              key={part.circle.join()}
+              cx={part.circle[0]}
+              cy={part.circle[1]}
+              r={part.circle[2]}
+            />
+          ),
+        )}
+      </Svg>
+    </View>
   );
 }
 
@@ -55,12 +78,12 @@ export function Marks(props: { readonly name: string; readonly awards: readonly 
           {marksCount(earned.size, MARKS.length)}
         </AppText>
       </View>
-      <View className="gap-2.5">
+      <View className="gap-3">
         {MARKS.map((mark) => {
           const award = earned.get(mark);
           return (
-            <View key={mark} accessible className="flex-row items-start gap-2.5">
-              <MarkGlyph mark={mark} earned={award !== undefined} />
+            <View key={mark} accessible className="flex-row items-center gap-3">
+              <MarkTile mark={mark} earned={award !== undefined} />
               <View className="min-w-0 flex-1">
                 <AppText
                   className={
