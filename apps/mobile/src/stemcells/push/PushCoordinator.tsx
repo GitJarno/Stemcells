@@ -12,6 +12,7 @@ import {
   useSavedRemoteConnections,
   type SavedRemoteConnection,
 } from "../upstream/push";
+import { FeatWatch } from "../collection/FeatWatch";
 import { registerWith, type PhoneDevice, type Registered } from "./register";
 
 // The phone asks each saved Mac for pushes whenever it comes to the front
@@ -113,5 +114,6 @@ export function PushCoordinator() {
     });
     return () => subscription.remove();
   }, [savedConnectionsById]);
-  return null;
+  // Ours alone is mounted for the whole app (a seam in `App.tsx`): a feat's moment rides with it.
+  return <FeatWatch />;
 }
