@@ -23,6 +23,7 @@ import castShore from "./art/packs/cast-shore.json" with { type: "json" };
 import cast from "./art/packs/cast.json" with { type: "json" };
 import classes from "./art/packs/classes.json" with { type: "json" };
 import december from "./art/packs/december.json" with { type: "json" };
+import earned from "./art/packs/earned.json" with { type: "json" };
 import gym from "./art/packs/gym.json" with { type: "json" };
 import january from "./art/packs/january.json" with { type: "json" };
 import lunarNewYear from "./art/packs/lunar-new-year.json" with { type: "json" };
@@ -49,6 +50,7 @@ export const ART_PACKS: ArtFiles = {
   "cast-shore": castShore,
   classes,
   december,
+  earned,
   gym,
   january,
   "lunar-new-year": lunarNewYear,

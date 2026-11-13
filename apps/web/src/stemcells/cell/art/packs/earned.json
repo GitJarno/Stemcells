@@ -1,0 +1,346 @@
+{
+  "theme": "earned",
+  "season": null,
+  "about": "Pieces a feat unlocks: a laurel, a medal, a rosette, a title belt, a flat cap, a mantle, a pennant, a jetpack, a scarf and a pair of sticking plasters.",
+  "pieces": [
+    {
+      "name": "laurel",
+      "slot": "headwear",
+      "about": "A green laurel wreath, worn round the crown: open at the front, its leaves rising either side.",
+      "art": [
+        "....F.F..........F.F....",
+        "..F.AFAF........FAFA.F..",
+        ".FAFfFfFf......fFfFfFAF.",
+        ".AFFf..............fFFA.",
+        "F.Ff................fF.F",
+        "AF....................FA",
+        ".Ff..................fF."
+      ],
+      "hotspot": [11, 2],
+      "mini": [".F.F.....F.F.", "FAFAF...FAFAF", ".Ff.......fF."],
+      "miniHotspot": [6, 1]
+    },
+    {
+      "name": "medal",
+      "slot": "wrap",
+      "about": "A gold medal on a blue and white ribbon, worn round the middle: the medal hangs low at the centre.",
+      "art": [
+        "hhh..................hhh",
+        "WWWhhh............hhhWWW",
+        "hhhWWWhhh......hhhWWWhhh",
+        "...hhhWWW.YYYY.WWWhhh...",
+        "......hhhYYWYYJhhh......",
+        ".........YWYYYJ.........",
+        ".........YYYYJJ.........",
+        "..........JJJJ.........."
+      ],
+      "hotspot": [11, 8],
+      "mini": ["WhhW.....WhhW", "....hYWYh....", ".....JJJ....."],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "rosette",
+      "slot": "wrap",
+      "about": "A red prize rosette pinned at one hip, its two ribbon tails hanging.",
+      "art": [
+        ".RNNN.",
+        "RmNNmN",
+        "NNWWNN",
+        "NNWpNN",
+        "NmNNmm",
+        ".NNNm.",
+        "Nm..Nm",
+        "Nm..Nm",
+        "Nm..Nm",
+        "N....m"
+      ],
+      "hotspot": [12, 10],
+      "mini": ["NNN", "NWN", "NNN", "N.N", "N.N"],
+      "miniHotspot": [6, 5]
+    },
+    {
+      "name": "titlebelt",
+      "slot": "wrap",
+      "about": "A champion's title belt, worn round the middle: a wide dark strap, a big gold plate at the centre and a small one either side.",
+      "art": [
+        ".44Y44444YWWYYYYY44444Y44.",
+        "44YYY444YWYYYYYYYJ444YYY44",
+        "44YJY444YYYYNNYYYJ444YJY44",
+        "444Y4444YYYYNmYYYJ4444Y444",
+        "........YYYYYYYYJJ........",
+        ".........JJJJJJJJ........."
+      ],
+      "hotspot": [12, 6],
+      "mini": ["4Y44YYYYY44Y4", "4Y44YYNYY44Y4", ".....JJJ....."],
+      "miniHotspot": [6, 3]
+    },
+    {
+      "name": "flatcap",
+      "slot": "headwear",
+      "about": "A tweed flat cap with a short peak, worn level on the crown.",
+      "art": [
+        "...........ttottCtt......",
+        "........tttotttttotttt...",
+        "......CttottCttottCttotn.",
+        "....tttotttttotttttotttn.",
+        "..CttottCttottCttottCttnn",
+        ".ttotttttotttttotttttotnn",
+        "kkkkkkkkkkk...........nn.",
+        ".ZZZZZZZZ................"
+      ],
+      "hotspot": [12, 4],
+      "mini": [".....ttttt..", "...ttttttttt", ".tttottttott", "kkkkk......o"],
+      "miniHotspot": [6, 2]
+    },
+    {
+      "name": "mantle",
+      "slot": "back",
+      "about": "A champion's mantle, worn on the back: its tall collar rises behind the crown and over both shoulders, deep red with a gold edge.",
+      "art": [
+        "......YYYYYYYYYYYYYY......",
+        "...YYYNNNNNNNNNNNNNNYYY...",
+        "..YYNNNNNNNNNNNNNNNNNNYY..",
+        ".YNNNNNNNNNNNNNNNNNNNNNNY.",
+        "YNNNNNNmmmmmmmmmmmmNNNNNNY",
+        "YNNNNNmmmmmmmmmmmmmmNNNNNY",
+        "YNNNNNmmmmmmmmmmmmmmNNNNNY",
+        "YNNNNmmmmmmmmmmmmmmmmNNNNY",
+        "JNNNNmmmmmmmmmmmmmmmmNNNNJ",
+        "NNNNNmmmmmmmmmmmmmmmmNNNNN",
+        "NNNNNmmmmmmmmmmmmmmmmNNNNN",
+        "NNNNNmmmmmmmmmmmmmmmmNNNNN",
+        "NNNNNmmmmmmmmmmmmmmmmNNNNN",
+        "NNNNNmmmmmmmmmmmmmmmmNNNNN"
+      ],
+      "hotspot": [12, 12],
+      "mini": [
+        "...YYYYYYY...",
+        ".YYNNNNNNNYY.",
+        "YNNmmmmmmmNNY",
+        "YNNmmmmmmmNNY",
+        "NNNmmmmmmmNNN",
+        "NNNmmmmmmmNNN",
+        "NNNmmmmmmmNNN"
+      ],
+      "miniHotspot": [6, 7]
+    },
+    {
+      "name": "pennant",
+      "slot": "back",
+      "about": "A pennant on a pole, carried on the back: the pole rises behind the left shoulder and the pennant flutters from its top.",
+      "art": [
+        "YY..........",
+        "gDWRR.......",
+        "gDWRRRR.....",
+        "gDWRRRRRRR..",
+        "gDWRRRRRRRRR",
+        "gDWNNNNNNN..",
+        "gDWNNNN.....",
+        "gDWNN.......",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD..........",
+        "gD.........."
+      ],
+      "hotspot": [8, 17],
+      "mini": ["gRR..", "gRRRR", "gRR..", "g....", "g....", "g....", "g...."],
+      "miniHotspot": [4, 9],
+      "frames": [
+        [
+          "YY..........",
+          "gDWRR.......",
+          "gDWRRRR.....",
+          "gDWRRRRRRR..",
+          "gDWRRRRRRRRR",
+          "gDWNNNNNNN..",
+          "gDWNNNN.....",
+          "gDWNN.......",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD.........."
+        ],
+        [
+          "YY..........",
+          "gDWRR.......",
+          "gDWRRR......",
+          "gDWRRRRR....",
+          "gDWRRRRRRR..",
+          "gDWNNNNNNNNN",
+          "gDWNNNNNN...",
+          "gDWNNN......",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD..........",
+          "gD.........."
+        ]
+      ],
+      "miniFrames": [
+        ["gRR..", "gRRRR", "gRR..", "g....", "g....", "g....", "g...."],
+        ["gRR..", "gRRR.", "gRRRR", "g....", "g....", "g....", "g...."]
+      ],
+      "fps": 2
+    },
+    {
+      "name": "jetpack",
+      "slot": "back",
+      "about": "A jetpack, worn on the back: its twin tanks rise over both shoulders and a small flame flickers under each.",
+      "art": [
+        "..44..................44..",
+        ".Wpgg................Wpgg.",
+        "gWpggD..............gWpggD",
+        "gWpggD..............gWpggD",
+        "RRRRRr..............RRRRRr",
+        "RRRRRr..............RRRRRr",
+        "gWpggD..............gWpggD",
+        "gWpggD..............gWpggD",
+        "gWpggD..............gWpggD",
+        "DDDDDD..............DDDDDD",
+        ".4444................4444.",
+        "YWWWWY..............YWWWWY",
+        "3YYYY3..............3YYYY3",
+        ".3YY3................3YY3.",
+        ".........................."
+      ],
+      "hotspot": [12, 13],
+      "mini": [
+        ".g.........g.",
+        "gpD.......gpD",
+        "RRR.......RRR",
+        "gpD.......gpD",
+        "gpD.......gpD",
+        "Y...........Y",
+        "3...........3"
+      ],
+      "miniHotspot": [6, 7],
+      "frames": [
+        [
+          "..44..................44..",
+          ".Wpgg................Wpgg.",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "RRRRRr..............RRRRRr",
+          "RRRRRr..............RRRRRr",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "DDDDDD..............DDDDDD",
+          ".4444................4444.",
+          "YWWWWY..............YWWWWY",
+          "3YYYY3..............3YYYY3",
+          ".3YY3................3YY3.",
+          ".........................."
+        ],
+        [
+          "..44..................44..",
+          ".Wpgg................Wpgg.",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "RRRRRr..............RRRRRr",
+          "RRRRRr..............RRRRRr",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "DDDDDD..............DDDDDD",
+          ".4444................4444.",
+          "3YYYY3..............3YYYY3",
+          ".3YY3................3YY3.",
+          "..........................",
+          ".........................."
+        ],
+        [
+          "..44..................44..",
+          ".Wpgg................Wpgg.",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "RRRRRr..............RRRRRr",
+          "RRRRRr..............RRRRRr",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "gWpggD..............gWpggD",
+          "DDDDDD..............DDDDDD",
+          ".4444................4444.",
+          "YWWWWY..............YWWWWY",
+          "YYYYYY..............YYYYYY",
+          "3Y..Y3..............3Y..Y3",
+          "3....3..............3....3"
+        ]
+      ],
+      "miniFrames": [
+        [
+          ".g.........g.",
+          "gpD.......gpD",
+          "RRR.......RRR",
+          "gpD.......gpD",
+          "gpD.......gpD",
+          "Y...........Y",
+          "3...........3"
+        ],
+        [
+          ".g.........g.",
+          "gpD.......gpD",
+          "RRR.......RRR",
+          "gpD.......gpD",
+          "gpD.......gpD",
+          "3...........3",
+          "............."
+        ],
+        [
+          ".g.........g.",
+          "gpD.......gpD",
+          "RRR.......RRR",
+          "gpD.......gpD",
+          "gpD.......gpD",
+          "Y...........Y",
+          "Y...........Y"
+        ]
+      ],
+      "fps": 3
+    },
+    {
+      "name": "scarf",
+      "slot": "wrap",
+      "about": "A knitted scarf in three colour stripes, wound round the base with one end hanging.",
+      "art": [
+        ".FYYYYYYWWWWWWFFFFFFYYYYY.",
+        ".fJJJJJJCCCCCCffffffJJJJJ.",
+        ".fJJJJJJCCCCCCffffffJJJJJ.",
+        "ffoooooottttttffffffoooooo",
+        "..WCCCCt..................",
+        "..CCCCCt..................",
+        "..Ffffff..................",
+        "..f.f.f..................."
+      ],
+      "hotspot": [12, 8],
+      "mini": ["fJJJCCCfffJJJ", "fJJJCCCfffJJJ", ".CCC.........", ".fff........."],
+      "miniHotspot": [6, 4]
+    },
+    {
+      "name": "plaster",
+      "slot": "headwear",
+      "about": "Two sticking plasters crossed on the crown, a little off-centre: it took a knock.",
+      "art": ["tC...Ct", ".CCWCC.", "..WWW..", ".CCWCC.", "tC...Ct"],
+      "hotspot": [1, 0],
+      "mini": ["C.C", ".W.", "C.C"],
+      "miniHotspot": [1, 0]
+    }
+  ]
+}
