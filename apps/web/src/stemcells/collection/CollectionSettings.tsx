@@ -253,13 +253,13 @@ function DressingRoom(props: { readonly collection: Collection; readonly ground:
                       aria-pressed={worn.includes(id)}
                       onClick={() => put(id)}
                       data-feat-rarity={feat.rarity}
-                      className="wardrobe-tile flex w-20 flex-col items-center gap-1 rounded-md border border-border bg-background p-2"
+                      className="wardrobe-tile flex w-24 flex-col items-center gap-1 rounded-md border border-border bg-background p-2"
                     >
                       <CellStill
                         name={STAND_IN}
                         look={[id]}
                         provider={driver}
-                        points={2}
+                        points={3}
                         ground={ground}
                       />
                       <span className="w-full truncate text-center text-2xs text-foreground">
@@ -318,7 +318,7 @@ function FeatTile(props: {
     >
       <div className="feat-plinth">
         {hidden ? (
-          <span className="grid h-7 place-items-center text-lg font-semibold text-muted-foreground">
+          <span className="grid h-10 place-items-center text-xl font-semibold text-muted-foreground">
             ?
           </span>
         ) : (
@@ -326,7 +326,7 @@ function FeatTile(props: {
             name={STAND_IN}
             look={wornId === undefined ? [] : [wornId]}
             provider={null}
-            points={2}
+            points={3}
             ground={props.ground}
             scene={feat.reward.kind === "act" ? `act/${feat.reward.id}` : undefined}
           />

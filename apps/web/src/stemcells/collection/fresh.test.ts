@@ -1,7 +1,7 @@
 import { expect, it } from "vite-plus/test";
 
 import type { Collection, FeatState } from "../../../../../stemcells/ledger/feats.ts";
-import { earnedIds, freshFeats } from "./fresh.ts";
+import { earnedIds, freshFeats, momentOf } from "./fresh.ts";
 
 const state = (id: string, earned: boolean): FeatState => ({
   id,
@@ -34,4 +34,11 @@ it("gives a moment to what was earned since the window's first read, the rarest 
 it("gives none to a feat already shown, on this screen or another", () => {
   const now = collection(["merges-1", "cells-100"], ["cells-100"]);
   expect(freshFeats(new Set(), now).map(({ feat }) => feat.id)).toEqual(["merges-1"]);
+});
+
+it("keeps a feat's card up once it is noted seen, and moves on only when it is dismissed", () => {
+  const shownAndSeen = collection(["merges-1", "cells-100"], ["cells-100"]);
+  expect(momentOf("cells-100", new Set(), shownAndSeen, new Set())?.feat.id).toBe("cells-100");
+  expect(momentOf(null, new Set(), shownAndSeen, new Set(["cells-100"]))?.feat.id).toBe("merges-1");
+  expect(momentOf(null, new Set(), shownAndSeen, new Set(["merges-1"]))).toBeUndefined();
 });

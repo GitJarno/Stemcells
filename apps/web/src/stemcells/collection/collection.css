@@ -15,11 +15,14 @@
   --feat-hue: var(--sc-peer);
 }
 
+/* Top centre, over the transcript's first lines: never over a composer, and clear of
+   upstream's toasts in the top corner. */
 .feat-card {
   position: fixed;
   z-index: 45;
-  inset-block-end: 20px;
-  inset-inline-end: 20px;
+  inset-block-start: 88px;
+  inset-inline-start: 50%;
+  translate: -50% 0;
   width: min(340px, calc(100vw - 40px));
   border-inline-start: 3px solid var(--feat-hue);
   box-shadow: var(--sc-shadow-pop);
@@ -29,7 +32,7 @@
 
   @starting-style {
     opacity: 0;
-    translate: 0 10px;
+    translate: -50% -10px;
   }
 }
 

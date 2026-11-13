@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMinute } from "../rail/clock";
 import { useMomentChats } from "../upstream/askiMoments";
 import { FeatCard } from "./FeatCard";
-import { earnedIds, freshFeats } from "./fresh";
+import { earnedIds, momentOf } from "./fresh";
 import { readCollection, useCollection } from "./read";
 
 /** The ledger keeps a landing well inside a second; this long after a run changes, it is read. */
@@ -24,6 +24,7 @@ export function CollectionWatch() {
   const runs = chats.map((chat) => `${chat.threadId}:${chat.run?.id}:${chat.run?.ended}`).join();
   const waits = chats.some((chat) => chat.standing === "needsYou");
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
+  const [showing, setShowing] = useState<string | null>(null);
   const read = useRef(runs);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the machine's collection a beat after any run starts or ends, clearing the timer on change.
   useEffect(() => {
@@ -43,17 +44,21 @@ export function CollectionWatch() {
   }, []);
   if (collection === null) return null;
   baseline ??= earnedIds(collection);
-  const next = waits
-    ? undefined
-    : freshFeats(baseline, collection).find(({ feat }) => !dismissed.has(feat.id));
-  if (next === undefined) return null;
+  const next = momentOf(showing, baseline, collection, dismissed);
+  // Held once picked: the card notes its feat seen as it shows, which must not take it down.
+  if (showing === null && next !== undefined && !waits) setShowing(next.feat.id);
+  if (showing !== null && next === undefined) setShowing(null);
+  if (showing === null || next === undefined) return null;
   const threadId = next.state.earned?.threadId ?? null;
   return (
     <FeatCard
       key={next.feat.id}
       standing={next}
       worn={threadId === null ? [] : (collection.worn[threadId] ?? [])}
-      onDone={() => setDismissed((before) => new Set(before).add(next.feat.id))}
+      onDone={() => {
+        setDismissed((before) => new Set(before).add(next.feat.id));
+        setShowing(null);
+      }}
     />
   );
 }
