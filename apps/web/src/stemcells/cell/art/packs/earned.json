@@ -37,28 +37,30 @@
         "..........JJJJ.........."
       ],
       "hotspot": [11, 8],
-      "mini": ["WhhW.....WhhW", "....hYWYh....", ".....JJJ....."],
-      "miniHotspot": [6, 3]
+      "mini": ["hh.........hh", "WWhh.....hhWW", "..WWhYWYhWW..", ".....JJJ....."],
+      "miniHotspot": [6, 4]
     },
     {
       "name": "rosette",
       "slot": "wrap",
       "about": "A red prize rosette pinned at one hip, its two ribbon tails hanging.",
       "art": [
-        ".RNNN.",
-        "RNNNNm",
-        "NNWYNm",
-        "NNYJNm",
-        "NNNNmm",
-        ".Nmmm.",
-        "Nm..Nm",
-        "Nm..Nm",
-        "Nm..Nm",
-        "N....m"
+        ".RNNN..",
+        "RNNNNm.",
+        "NNWYNm.",
+        "NNYJNm.",
+        "NNNNmm.",
+        ".Nmmm..",
+        "Nm..Nm.",
+        "Nm..Nm.",
+        "Nm..Nm.",
+        "Nm...Nm",
+        "Nm...Nm",
+        "N.....m"
       ],
-      "hotspot": [12, 10],
-      "mini": ["mNm", "NYN", "mNm", "N.N", "N.N"],
-      "miniHotspot": [6, 5]
+      "hotspot": [12, 12],
+      "mini": ["NNN", "NYN", "NNN", "N.N", "N.N", "m.m"],
+      "miniHotspot": [6, 6]
     },
     {
       "name": "titlebelt",
@@ -91,7 +93,7 @@
         ".ZZZZZZZZ................"
       ],
       "hotspot": [12, 4],
-      "mini": ["....ttttt..", "..ttttttttt", ".ttottttott", "kkkk......o"],
+      "mini": ["....ttttt..", "..ttttttttt", ".ttottttott", "kkkk......."],
       "miniHotspot": [5, 2]
     },
     {
@@ -339,9 +341,9 @@
       "name": "plaster",
       "slot": "headwear",
       "about": "Two sticking plasters crossed on the crown, a little off-centre: it took a knock.",
-      "art": ["tC...Ct", ".CCWCC.", "..WWW..", ".CCWCC.", "tC...Ct"],
+      "art": ["qq...qq", ".CCWCC.", "..WWW..", ".CCWCC.", "tC...Ct"],
       "hotspot": [2, 0],
-      "mini": ["C.C", ".W.", "C.C"],
+      "mini": ["q.q", ".W.", "C.C"],
       "miniHotspot": [1, 0]
     }
   ]
