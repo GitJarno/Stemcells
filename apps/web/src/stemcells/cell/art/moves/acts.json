@@ -459,23 +459,80 @@
           "eyes": "open"
         }
       ]
+    },
+    "nuzzle": {
+      "about": "Stroked: its eyes close, it sinks into the hand and sways there, slow and low, then looks up at it.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "ease",
+          "sy": 0.9375,
+          "spread": 0.25,
+          "for": 3,
+          "way": "out"
+        },
+        {
+          "do": "sway",
+          "reach": 3,
+          "times": 1,
+          "per": 10,
+          "tell": true
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 3
+        },
+        {
+          "do": "face",
+          "eyes": "calm",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "rest"
+        }
+      ]
     }
   },
   "cues": {
     "poke/rest": {
       "any": ["hop", "nod"],
-      "keen": ["hop", "bounce", "wiggle"],
-      "proud": ["salute", "nod"],
-      "fussy": ["startle", "shake"],
+      "keen": ["hop", "bounce", "wiggle", "dash"],
+      "proud": ["salute", "nod", "bow"],
+      "fussy": ["startle", "shake", "sweep"],
       "nosy": ["peek", "hop"],
       "dreamy": ["nod", "wiggle"],
       "steady": ["nod", "salute"]
     },
     "poke/rest/2": {
-      "any": ["jump"],
+      "any": ["jump", "punch", "dash"],
       "fussy": ["shake", "jump"]
     },
-    "poke/rest/3": ["spin", "twirl", "groove", "shuffle"],
+    "poke/rest/3": [
+      "spin",
+      "twirl",
+      "groove",
+      "shuffle",
+      "flip",
+      "robot",
+      "juggle",
+      "rocket",
+      "fireworks",
+      "levitate"
+    ],
     "poke/rest/dazed": ["dazed"],
     "poke/work": ["thumbsUp", "nod", "salute"],
     "poke/ask": ["insist"],
@@ -486,7 +543,11 @@
       "encore/twirl",
       "encore/groove",
       "encore/shuffle",
-      "encore/disco"
+      "encore/disco",
+      "encore/bow",
+      "encore/flip",
+      "encore/punch",
+      "encore/fireworks"
     ],
     "poke/asleep": ["stir"],
     "poke/crashed": ["wince"],
@@ -494,14 +555,30 @@
     "granted": ["thumbsUp", "salute"],
     "answered": ["nod", "thumbsUp"],
     "failed": ["crash"],
+    "feat": ["trophy"],
+    "feat/landed": ["encore/trophy"],
     "fidget": {
-      "keen": ["fidget/keen", "bounce", "hop", "stretch", "disco", "shuffle"],
-      "proud": ["fidget/proud", "stretch", "tune", "sing", "disco"],
-      "fussy": ["fidget/fussy", "shiver", "peek", "sneeze"],
-      "nosy": ["fidget/nosy", "peek", "hop", "tune", "sneeze"],
-      "dreamy": ["fidget/dreamy", "hum", "bop", "sigh", "doze"],
-      "steady": ["fidget/steady", "tune", "stretch", "sigh", "bop", "doze", "groove"]
+      "keen": ["fidget/keen", "bounce", "hop", "stretch", "disco", "shuffle", "dash", "juggle"],
+      "proud": ["fidget/proud", "stretch", "tune", "sing", "disco", "bow"],
+      "fussy": ["fidget/fussy", "shiver", "peek", "sneeze", "sweep"],
+      "nosy": ["fidget/nosy", "peek", "hop", "tune", "sneeze", "juggle"],
+      "dreamy": ["fidget/dreamy", "hum", "bop", "sigh", "doze", "levitate"],
+      "steady": [
+        "fidget/steady",
+        "tune",
+        "stretch",
+        "sigh",
+        "bop",
+        "doze",
+        "groove",
+        "sweep",
+        "robot"
+      ]
     },
-    "sleeping": ["snore", "dream", "mumble"]
+    "sleeping": ["snore", "dream", "mumble"],
+    "stroke": ["nuzzle"],
+    "stroke/landed": ["encore/nuzzle"],
+    "stroke/asleep": ["mumble", "dream"],
+    "dressed": ["nod", "wiggle", "twirl"]
   }
 }

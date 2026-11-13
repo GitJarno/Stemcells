@@ -3,7 +3,9 @@
 // the same twice running. A poke is answered in the state the Cell is in, and pokes in quick
 // succession climb to a daze. Pure, and the phone's too (`stemcells/tasks/cell-acts.md`).
 
+import { FEAT_ACTS } from "../../../../../stemcells/ledger/feats.ts";
 import { fnv1a32 } from "./blink.ts";
+import { actUnlocked } from "./chosen.ts";
 import { ACTS, type ActState, CUES, REST, type Scene, SCENES } from "./kit.ts";
 import type { Mood } from "./look.ts";
 import { mannerOf } from "./manner.ts";
@@ -52,13 +54,28 @@ export const CUE_STATES: Readonly<Record<string, ActState>> = {
   failed: "crashed",
   fidget: "rest",
   sleeping: "asleep",
+  feat: "rest",
+  "feat/landed": "landed",
+  dressed: "rest",
+  stroke: "rest",
+  "stroke/landed": "landed",
+  "stroke/asleep": "asleep",
 };
+
+/** Whether the scene `key` may play yet: an act a feat unlocks waits for its feat (`chosen.ts`). */
+function earnedYet(key: string): boolean {
+  if (!key.startsWith("act/")) return true;
+  const name = key.slice("act/".length).replace(/^encore\//, "");
+  return !FEAT_ACTS.has(name) || actUnlocked(name);
+}
 
 /** The scenes that may answer `cue` for the Cell `name` names: its temperament's list, else every Cell's. */
 export function castFor(cue: string, name: string): readonly string[] {
   const lists = CUES.get(cue);
   if (lists === undefined) return [];
-  return (lists[mannerOf(name).id] ?? lists.any ?? []).filter((key) => SCENES.has(key));
+  return (lists[mannerOf(name).id] ?? lists.any ?? []).filter(
+    (key) => SCENES.has(key) && earnedYet(key),
+  );
 }
 
 /** One turn in this many may play a rare act, where a cue's cast has one. */
@@ -174,7 +191,17 @@ export function poke(name: string, seconds: number): Performance | undefined {
   const streak = flurry ? last.streak + 1 : 1;
   pokes.set(name, { at: seconds, streak, standing });
   if (standing !== "rest" && now !== undefined) return now;
-  const cue = castCue(pokeCue(standing, streak), name);
+  return book(name, castCue(pokeCue(standing, streak), name), seconds, standing, now);
+}
+
+/** Books the Cell `name` names its next act for `cue`, once it is on the ground; none when the cue has no cast. */
+function book(
+  name: string,
+  cue: string,
+  seconds: number,
+  standing: Standing,
+  now: Performance | undefined,
+): Performance | undefined {
   const turn = turns.get(`${name}|${cue}`) ?? 0;
   const key = actFor(cue, name, turn);
   const scene = key === undefined ? undefined : SCENES.get(key);
@@ -191,6 +218,66 @@ export function poke(name: string, seconds: number): Performance | undefined {
   };
   booked.set(name, answer);
   return answer;
+}
+
+/** Whether an act drawn for `state` may play on a Cell standing so: nothing plays over an ask or a failure. */
+const fits = (state: ActState | undefined, standing: Standing): boolean =>
+  state === "landed" || state === "asleep"
+    ? standing === state
+    : state === "rest" && (standing === "rest" || standing === "work");
+
+/**
+ * The person strokes the Cell `name` names (`stroke.ts`): it leans into the hand where it rests,
+ * works or has landed, and sighs in its sleep. An act already playing plays out; a Cell that
+ * asks or has failed is not soothed.
+ */
+export function stroke(name: string, seconds: number): Performance | undefined {
+  const standing = stood.get(name) ?? "rest";
+  const cue =
+    standing === "landed" ? "stroke/landed" : standing === "asleep" ? "stroke/asleep" : "stroke";
+  if (!fits(CUE_STATES[cue], standing)) return undefined;
+  return performing(name, seconds, standing) ?? book(name, cue, seconds, standing, undefined);
+}
+
+/**
+ * A moment of the Cell's own that no hand or run brought: `cue` is `feat` (it earned one; a
+ * landed Cell plays `feat/landed`) or `dressed` (the person put a piece on it). The act cast
+ * for it where the Cell stands, or none: nothing plays while it asks, sleeps or has failed.
+ */
+export function moment(
+  name: string,
+  cue: "feat" | "dressed",
+  seconds: number,
+): Performance | undefined {
+  const standing = stood.get(name) ?? "rest";
+  const mine = standing === "landed" && cue === "feat" ? "feat/landed" : cue;
+  if (!fits(CUE_STATES[mine], standing)) return undefined;
+  const now = performing(name, seconds, standing);
+  if (now?.deaf === true) return undefined;
+  return book(name, mine, seconds, standing, now);
+}
+
+/**
+ * Plays the scene `key` on the Cell `name` names now, as the person asked to see it (the
+ * collection's stage): only where it stands at rest or at work, and only an act it may play.
+ */
+export function play(name: string, key: string, seconds: number): Performance | undefined {
+  const standing = stood.get(name) ?? "rest";
+  const scene = SCENES.get(key);
+  if (scene === undefined || !earnedYet(key) || !fits("rest", standing)) return undefined;
+  const now = performing(name, seconds, standing);
+  if (now?.deaf === true) return undefined;
+  const since = now === undefined ? seconds : landsAt(now, seconds);
+  const shown: Booked = {
+    key,
+    since,
+    until: since + lengthOf(scene),
+    standing,
+    deaf: false,
+    before: now,
+  };
+  booked.set(name, shown);
+  return shown;
 }
 
 /** Forgets every poke and act in flight: for tests. */

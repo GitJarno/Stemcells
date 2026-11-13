@@ -1,0 +1,2336 @@
+{
+  "marks": {
+    "cup": {
+      "about": "A gold cup with two handles, held overhead: a feat's prize.",
+      "art": [
+        "..YYYYYYYYYY..",
+        "YYYWWYYYYYJJYY",
+        "Y.YWYYYYYYJJ.Y",
+        "Y.YWYYYYYYJJ.Y",
+        ".YYYWYYYYJJYY.",
+        "...YYYYYYJJ...",
+        ".....YYJJ.....",
+        "......YJ......",
+        ".....YYJJ.....",
+        "....JJJJJJ...."
+      ],
+      "hotspot": [6, 5],
+      "mini": ["YYYYYYY", ".YWYYJ.", "..YYJ..", "...J...", "..YJJ.."],
+      "miniHotspot": [3, 3]
+    },
+    "twinkle": {
+      "about": "A twinkle off something polished, as it starts and as it goes.",
+      "art": [".WW.", "WWWW", "WWWW", ".WW."],
+      "hotspot": [1, 1],
+      "mini": ["W"],
+      "miniHotspot": [0, 0]
+    },
+    "glint": {
+      "about": "A twinkle at its brightest: four points.",
+      "art": ["..WW..", "..WW..", "WW..WW", "WW..WW", "..WW..", "..WW.."],
+      "hotspot": [2, 2],
+      "mini": [".W.", "W.W", ".W."],
+      "miniHotspot": [1, 1]
+    },
+    "ballRed": {
+      "about": "A juggler's ball, red.",
+      "art": [".RR.", "RPRR", "RRRR", ".RR."],
+      "hotspot": [1, 1],
+      "mini": ["RR", "RR"],
+      "miniHotspot": [0, 0]
+    },
+    "ballGold": {
+      "about": "A juggler's ball, gold.",
+      "art": [".YY.", "YWYY", "YYYJ", ".YJ."],
+      "hotspot": [1, 1],
+      "mini": ["YY", "YY"],
+      "miniHotspot": [0, 0]
+    },
+    "ballBlue": {
+      "about": "A juggler's ball, aqua.",
+      "art": [".QQ.", "QWQQ", "QQQx", ".Qx."],
+      "hotspot": [1, 1],
+      "mini": ["QQ", "QQ"],
+      "miniHotspot": [0, 0]
+    },
+    "mote": {
+      "about": "A mote of light, circling something that floats.",
+      "art": [".W.", "W*W", ".W."],
+      "hotspot": [1, 1],
+      "mini": ["W"],
+      "miniHotspot": [0, 0]
+    },
+    "glow": {
+      "about": "Light on the floor under something that floats. Its hotspot is the floor.",
+      "art": ["..************..", "***WWWWWWWWWW***"],
+      "hotspot": [7, 1],
+      "mini": ["..*WWWWW*.."],
+      "miniHotspot": [5, 0]
+    },
+    "flame": {
+      "about": "A rocket's flame under its base, at full burn. A flame's hotspot is where it leaves the base.",
+      "art": [
+        "..YYYYYYYYYY..",
+        ".YYYWWWWWWYYY.",
+        ".YYWWWWWWWWYY.",
+        "..YYWWWWWWYY..",
+        "..YYYWWWWYYY..",
+        "...YYYWWYYY...",
+        "...3YYYYYY3...",
+        "....33YY33....",
+        ".....3333.....",
+        "......33......"
+      ],
+      "hotspot": [6, 0],
+      "z": -1,
+      "mini": ["YYWWWYY", ".YWWWY.", "..YWY..", "..3Y3..", "...3..."],
+      "miniHotspot": [3, 0]
+    },
+    "flameLow": {
+      "about": "A rocket's flame, flickering shorter.",
+      "art": [
+        "..YYYYYYYYYY..",
+        ".YYYWWWWWWYYY.",
+        "..YYYWWWWYYY..",
+        "...3YYYYYY3...",
+        "....33YY33....",
+        "......33......"
+      ],
+      "hotspot": [6, 0],
+      "z": -1,
+      "mini": ["YYWWWYY", "..YWY..", "...3..."],
+      "miniHotspot": [3, 0]
+    },
+    "flameOut": {
+      "about": "A rocket's flame as it gives out.",
+      "art": ["..YYYYYY..", "...YWWY...", "...3YY3...", "....33...."],
+      "hotspot": [4, 0],
+      "z": -1,
+      "mini": [".YWY.", "..3.."],
+      "miniHotspot": [2, 0]
+    },
+    "blast": {
+      "about": "A rocket's ignition: flame out along the floor either side of its base. Its hotspot is the floor under its middle.",
+      "art": [
+        "YY......................YY",
+        "YWYY..................YYWY",
+        "WWWYY3..............3YYWWW",
+        "YYY33................33YYY"
+      ],
+      "hotspot": [12, 4],
+      "mini": ["YW.........WY", "WY3.......3YW"],
+      "miniHotspot": [6, 2]
+    },
+    "speedA": {
+      "about": "Speed lines trailing behind a dash.",
+      "art": [
+        "WWWWWWWWWW....",
+        "WWWWWWWWWW....",
+        "..............",
+        "..............",
+        "....WWWWWWWWWW",
+        "....WWWWWWWWWW",
+        "..............",
+        "..............",
+        "WWWWWWWW......",
+        "WWWWWWWW......"
+      ],
+      "hotspot": [13, 4],
+      "z": -1,
+      "mini": ["WWWWW..", ".......", "..WWWWW", ".......", "WWWW..."],
+      "miniHotspot": [6, 2]
+    },
+    "speedB": {
+      "about": "Speed lines trailing behind a dash, a beat on.",
+      "art": [
+        "....WWWWWWWW..",
+        "....WWWWWWWW..",
+        "..............",
+        "..............",
+        "WWWWWWWWWW....",
+        "WWWWWWWWWW....",
+        "..............",
+        "..............",
+        "..WWWWWWWWWWWW",
+        "..WWWWWWWWWWWW"
+      ],
+      "hotspot": [13, 4],
+      "z": -1,
+      "mini": ["..WWWW.", ".......", "WWWWW..", ".......", ".WWWWWW"],
+      "miniHotspot": [6, 2]
+    },
+    "broomLeft": {
+      "about": "A broom leaning with its head to the left, where a push has taken it. A broom's hotspot is the floor under its head.",
+      "art": [
+        "......CC.",
+        "......CC.",
+        ".....CC..",
+        ".....CC..",
+        "....CC...",
+        "....CC...",
+        "...CC....",
+        "...CC....",
+        "..CC.....",
+        "..CC.....",
+        ".CC......",
+        ".CC......",
+        "RRRR.....",
+        "YYYYY....",
+        "YYYYYY...",
+        "YYnYYnY..",
+        "YnYYnYYn.",
+        "YnYYnYYn."
+      ],
+      "hotspot": [4, 17],
+      "mini": ["...C", "..C.", "..C.", ".C..", ".C..", "C...", "C...", "R...", "YY..", "YYY."],
+      "miniHotspot": [1, 10]
+    },
+    "broomRight": {
+      "about": "A broom leaning with its head to the right.",
+      "art": [
+        ".CC......",
+        ".CC......",
+        "..CC.....",
+        "..CC.....",
+        "...CC....",
+        "...CC....",
+        "....CC...",
+        "....CC...",
+        ".....CC..",
+        ".....CC..",
+        "......CC.",
+        "......CC.",
+        ".....RRRR",
+        "....YYYYY",
+        "...YYYYYY",
+        "..YnYYnYY",
+        ".nYYnYYnY",
+        ".nYYnYYnY"
+      ],
+      "hotspot": [4, 17],
+      "mini": ["C...", ".C..", ".C..", "..C.", "..C.", "...C", "...C", "...R", "..YY", ".YYY"],
+      "miniHotspot": [2, 10]
+    },
+    "sweptDust": {
+      "about": "Dust pushed along the floor, or thrown up by a skid. Its hotspot is the floor.",
+      "art": ["..WW..", ".WWWWu", "WWWWuu"],
+      "hotspot": [2, 2],
+      "mini": ["WW", "Wu"],
+      "miniHotspot": [1, 2]
+    },
+    "broomUp": {
+      "about": "A broom stood upright on its head.",
+      "art": [
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        "..CC..",
+        ".RRRR.",
+        ".YYYY.",
+        "YYYYYY",
+        "YnYYnY",
+        "YnYYnY",
+        "YnYYnY"
+      ],
+      "hotspot": [2, 17],
+      "mini": [".C.", ".C.", ".C.", ".C.", ".C.", ".C.", ".C.", ".R.", "YYY", "YYY"],
+      "miniHotspot": [1, 10]
+    },
+    "rocketUp": {
+      "about": "A firework's rocket on its way up, its tail behind it. Its hotspot is its tip.",
+      "art": ["WW", "WW", "YY", "YY", ".3", "3."],
+      "hotspot": [0, 0],
+      "z": -1,
+      "mini": ["W", "Y"],
+      "miniHotspot": [0, 0]
+    },
+    "burstFlash": {
+      "about": "A firework as it goes off.",
+      "art": ["..WW..", "..WW..", "WWYYWW", "WWYYWW", "..WW..", "..WW.."],
+      "hotspot": [2, 2],
+      "mini": [".W.", "WYW", ".W."],
+      "miniHotspot": [1, 1]
+    },
+    "burstPink": {
+      "about": "A firework's burst, pink round a gold heart.",
+      "art": [
+        "....II....",
+        "....II....",
+        "..II..II..",
+        "..II..II..",
+        "II..YY..II",
+        "II..YY..II",
+        "..II..II..",
+        "..II..II..",
+        "....II....",
+        "....II...."
+      ],
+      "hotspot": [4, 4],
+      "mini": ["..I..", ".I.I.", "I.Y.I", ".I.I.", "..I.."],
+      "miniHotspot": [2, 2]
+    },
+    "sparksPink": {
+      "about": "A burst of that colour spread wide and starting to fall.",
+      "art": [
+        "......II......",
+        "......II......",
+        "..II......II..",
+        "..II......II..",
+        "..............",
+        "..............",
+        "II..........II",
+        "II..........II",
+        "..............",
+        "..............",
+        "..II......II..",
+        "..II......II.."
+      ],
+      "hotspot": [6, 5],
+      "z": -1,
+      "mini": ["...I...", ".I...I.", ".......", "I.....I", ".......", ".I...I."],
+      "miniHotspot": [3, 2]
+    },
+    "burstAqua": {
+      "about": "A firework's burst, aqua round a white heart.",
+      "art": [
+        "....QQ....",
+        "....QQ....",
+        "..QQ..QQ..",
+        "..QQ..QQ..",
+        "QQ..WW..QQ",
+        "QQ..WW..QQ",
+        "..QQ..QQ..",
+        "..QQ..QQ..",
+        "....QQ....",
+        "....QQ...."
+      ],
+      "hotspot": [4, 4],
+      "mini": ["..Q..", ".Q.Q.", "Q.W.Q", ".Q.Q.", "..Q.."],
+      "miniHotspot": [2, 2]
+    },
+    "sparksAqua": {
+      "about": "A burst of that colour spread wide and starting to fall.",
+      "art": [
+        "......QQ......",
+        "......QQ......",
+        "..QQ......QQ..",
+        "..QQ......QQ..",
+        "..............",
+        "..............",
+        "QQ..........QQ",
+        "QQ..........QQ",
+        "..............",
+        "..............",
+        "..QQ......QQ..",
+        "..QQ......QQ.."
+      ],
+      "hotspot": [6, 5],
+      "z": -1,
+      "mini": ["...Q...", ".Q...Q.", ".......", "Q.....Q", ".......", ".Q...Q."],
+      "miniHotspot": [3, 2]
+    },
+    "burstGold": {
+      "about": "The last and largest burst: gold, with a white ring inside.",
+      "art": [
+        "......YY......",
+        "......YY......",
+        "..YY......YY..",
+        "..YY......YY..",
+        "......WW......",
+        "......WW......",
+        "YY..WW..WW..YY",
+        "YY..WW..WW..YY",
+        "......WW......",
+        "......WW......",
+        "..YY......YY..",
+        "..YY......YY..",
+        "......YY......",
+        "......YY......"
+      ],
+      "hotspot": [6, 6],
+      "mini": ["...Y...", ".Y...Y.", "...W...", "Y.W.W.Y", "...W...", ".Y...Y.", "...Y..."],
+      "miniHotspot": [3, 3]
+    },
+    "sparksGold": {
+      "about": "The gold burst spread wide, falling.",
+      "art": [
+        "..YY..........YY..",
+        "..YY..........YY..",
+        "........YY........",
+        "........YY........",
+        "YY..............YY",
+        "YY..............YY",
+        "......YY..YY......",
+        "......YY..YY......"
+      ],
+      "hotspot": [8, 3],
+      "z": -1,
+      "mini": [".Y.....Y.", "....Y....", "Y.......Y", "...Y.Y..."],
+      "miniHotspot": [4, 1]
+    },
+    "embers": {
+      "about": "The last of a firework, falling: a few sparks of each colour.",
+      "art": [
+        "II..........",
+        "II....QQ....",
+        "......QQ....",
+        "..........YY",
+        "...YY.....YY",
+        "...YY......."
+      ],
+      "hotspot": [6, 3],
+      "z": -1,
+      "mini": ["I..Q..", ".....Y", ".Y...."],
+      "miniHotspot": [3, 1]
+    }
+  },
+  "acts": {
+    "trophy": {
+      "about": "Holds a gold cup overhead in both hands, a twinkle off its rim, and lowers it: a feat earned.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.3,
+          "way": "out",
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "arms": {
+            "at": 0.9,
+            "dx": 0,
+            "dy": -8
+          }
+        },
+        {
+          "do": "mark",
+          "mark": "cup",
+          "dy": -5,
+          "for": 18
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "lean": -2,
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "twinkle",
+          "dx": -5,
+          "dy": -10,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glint",
+          "dx": -5,
+          "dy": -10,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "lean": 2,
+          "for": 3
+        },
+        {
+          "do": "mark",
+          "mark": "twinkle",
+          "dx": 6,
+          "dy": -10,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glint",
+          "dx": 6,
+          "dy": -10,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "twinkle",
+          "dx": 6,
+          "dy": -10,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "lean": 0,
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "cup",
+          "dy": -2,
+          "for": 1
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "spread": 0,
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "bow": {
+      "about": "A performer's bow: arms wide, then a deep fold forward with its eyes shut and lowered, held, and back up tall.",
+      "encore": true,
+      "score": [
+        {
+          "do": "arms",
+          "arms": "high"
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "way": "out",
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "face",
+          "eyes": "serene",
+          "look": [0, 1]
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [0, 3]
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [0, 2]
+        },
+        {
+          "do": "ease",
+          "sy": 0.78125,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 0.75,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 5,
+          "tell": true
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "calm",
+          "look": [0, 1]
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [0, 0]
+        },
+        {
+          "do": "ease",
+          "sy": 1.125,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "flip": {
+      "about": "A backflip: a deep crouch, a high leap, its face over the top and the back of its head round, and it lands in dust with its arms out.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.875,
+            "spread": 0.3
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.78125,
+            "spread": 0.5
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.75,
+            "spread": 0.6
+          },
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 4,
+            "sy": 1.1875,
+            "look": [0, -2]
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 8,
+            "sy": 1.0625,
+            "look": [0, -5]
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 10,
+            "spread": -2,
+            "eyes": "none"
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 11,
+            "sy": 0.9375,
+            "spread": -3,
+            "eyes": "none"
+          },
+          "for": 1,
+          "tell": true
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 11,
+            "sy": 0.9375,
+            "spread": -3,
+            "look": [0, 4]
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 10,
+            "spread": -2,
+            "look": [0, 2]
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 6,
+            "sy": 1.0625,
+            "look": [0, 1]
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "dust",
+          "at": "ground",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "look": [0, 0]
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.8125,
+            "spread": 0.5
+          },
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "arms": "high",
+          "for": 0
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "robot": {
+      "about": "The robot: one arm snaps up, then the other, its head ticks side to side, and it powers down and boots again.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "focused"
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          },
+          "for": 0
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "arms",
+          "left": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          },
+          "for": 0
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "repeat",
+          "times": 2,
+          "tell": true,
+          "steps": [
+            {
+              "do": "pose",
+              "pose": {
+                "lean": -3,
+                "face": -2
+              },
+              "for": 3,
+              "right": "none"
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "lean": 3,
+                "face": 2
+              },
+              "for": 3,
+              "left": "none"
+            }
+          ]
+        },
+        {
+          "do": "arms",
+          "right": null,
+          "for": 0
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9375
+          },
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "arms",
+          "left": null,
+          "for": 0
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9375
+          },
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "drowsy"
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.2,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "ease",
+          "sy": 0.78125,
+          "spread": 0.4,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "face",
+          "eyes": "wide"
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "fireworks": {
+      "about": "Looks up as three rockets rise from behind it and burst overhead, pink, aqua and gold, and watches the sparks fall.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "rocketUp",
+          "at": "ground",
+          "dx": -5,
+          "dy": -16,
+          "drift": [0, -2],
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "burstFlash",
+          "at": "ground",
+          "dx": -5,
+          "dy": -23,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "rocketUp",
+          "at": "ground",
+          "dx": 6,
+          "dy": -16,
+          "drift": [0, -2],
+          "for": 4
+        },
+        {
+          "do": "face",
+          "eyes": "wide"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "burstPink",
+          "at": "ground",
+          "dx": -5,
+          "dy": -23,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "sparksPink",
+          "at": "ground",
+          "dx": -5,
+          "dy": -23,
+          "drift": [0, 1],
+          "for": 5
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "burstFlash",
+          "at": "ground",
+          "dx": 6,
+          "dy": -23,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "burstAqua",
+          "at": "ground",
+          "dx": 6,
+          "dy": -23,
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "rocketUp",
+          "at": "ground",
+          "dx": 0,
+          "dy": -17,
+          "drift": [0, -2],
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "sparksAqua",
+          "at": "ground",
+          "dx": 6,
+          "dy": -23,
+          "drift": [0, 1],
+          "for": 5
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "burstFlash",
+          "at": "ground",
+          "dx": 0,
+          "dy": -22,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "mouth": "open"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "burstGold",
+          "at": "ground",
+          "dx": 0,
+          "dy": -22,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 3,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "sparksGold",
+          "at": "ground",
+          "dx": 0,
+          "dy": -21,
+          "drift": [0, 1],
+          "for": 6
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "look": [0, 0],
+          "mouth": "none"
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "embers",
+          "at": "ground",
+          "dx": 0,
+          "dy": -17,
+          "drift": [0, 1],
+          "for": 4
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "hold",
+          "for": 4
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "levitate": {
+      "about": "Shuts its eyes and gathers itself, rises off the ground and hovers with a slow bob over its own light, motes circling it, and comes down.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "serene"
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "arms",
+          "arms": {
+            "at": 0.5,
+            "dx": 4,
+            "dy": -1
+          }
+        },
+        {
+          "do": "ease",
+          "float": 1,
+          "spread": 0,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 2,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 2,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 3,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 3,
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "float": 4,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "orbit",
+          "mark": "mote",
+          "at": "back",
+          "count": 3,
+          "rx": 11,
+          "ry": 9,
+          "per": 16,
+          "for": 20
+        },
+        {
+          "do": "repeat",
+          "times": 2,
+          "tell": true,
+          "steps": [
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 4,
+              "for": 2
+            },
+            {
+              "do": "ease",
+              "float": 5,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 1
+            },
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 5,
+              "for": 3
+            },
+            {
+              "do": "ease",
+              "float": 6,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 2
+            },
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 4,
+              "for": 2
+            },
+            {
+              "do": "ease",
+              "float": 5,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 1
+            },
+            {
+              "do": "mark",
+              "mark": "glow",
+              "at": "ground",
+              "dy": 3,
+              "for": 3
+            },
+            {
+              "do": "ease",
+              "float": 4,
+              "for": 1
+            },
+            {
+              "do": "hold",
+              "for": 2
+            }
+          ]
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 2,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 3,
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "glow",
+          "at": "ground",
+          "dy": 1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 2,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "float": 0,
+          "spread": 0.3,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "sy": 1.0625,
+          "spread": 0,
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "juggle": {
+      "about": "Juggles three balls round overhead, an arm up in turn for each; one last high throw, and a catch.",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "arms",
+          "arms": {
+            "at": 0.8,
+            "dx": 1,
+            "dy": -4
+          }
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "orbit",
+          "mark": "ballRed",
+          "count": 1,
+          "rx": -8,
+          "ry": -4,
+          "dy": -7,
+          "per": 12,
+          "for": 18
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "look": [-1, -1]
+          },
+          "for": 2,
+          "left": {
+            "at": 0.8,
+            "dx": 0,
+            "dy": -7
+          }
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "look": [1, -1]
+          },
+          "for": 2,
+          "right": {
+            "at": 0.8,
+            "dx": 0,
+            "dy": -7
+          }
+        },
+        {
+          "do": "orbit",
+          "mark": "ballGold",
+          "count": 1,
+          "rx": -8,
+          "ry": -4,
+          "dy": -7,
+          "per": 12,
+          "for": 18
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "look": [-1, -1]
+          },
+          "for": 2,
+          "left": {
+            "at": 0.8,
+            "dx": 0,
+            "dy": -7
+          }
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "look": [1, -1]
+          },
+          "for": 2,
+          "right": {
+            "at": 0.8,
+            "dx": 0,
+            "dy": -7
+          }
+        },
+        {
+          "do": "orbit",
+          "mark": "ballBlue",
+          "count": 1,
+          "rx": -8,
+          "ry": -4,
+          "dy": -7,
+          "per": 12,
+          "for": 18
+        },
+        {
+          "do": "repeat",
+          "times": 4,
+          "tell": true,
+          "steps": [
+            {
+              "do": "pose",
+              "pose": {
+                "look": [-1, -1]
+              },
+              "for": 2,
+              "left": {
+                "at": 0.8,
+                "dx": 0,
+                "dy": -7
+              }
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "look": [1, -1]
+              },
+              "for": 2,
+              "right": {
+                "at": 0.8,
+                "dx": 0,
+                "dy": -7
+              }
+            }
+          ]
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "look": [-1, -1]
+          },
+          "for": 2,
+          "left": {
+            "at": 0.8,
+            "dx": 0,
+            "dy": -7
+          }
+        },
+        {
+          "do": "face",
+          "look": [0, -2]
+        },
+        {
+          "do": "arms",
+          "left": null,
+          "right": {
+            "at": 0.8,
+            "dx": 0,
+            "dy": -7
+          },
+          "for": 0
+        },
+        {
+          "do": "mark",
+          "mark": "ballBlue",
+          "dx": 8,
+          "dy": -9,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9375,
+            "spread": 0.2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "ballBlue",
+          "dx": 8,
+          "dy": -11,
+          "for": 3
+        },
+        {
+          "do": "hold",
+          "for": 3
+        },
+        {
+          "do": "mark",
+          "mark": "ballBlue",
+          "dx": 8,
+          "dy": -9,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [0, 0]
+        },
+        {
+          "do": "mark",
+          "mark": "ballBlue",
+          "at": "handR",
+          "dy": -2,
+          "for": 2
+        },
+        {
+          "do": "squash",
+          "to": 0.875,
+          "in": 1,
+          "hold": 1
+        },
+        {
+          "do": "arms",
+          "arms": null
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "punch": {
+      "about": "Winds up low, then a leap with one fist punched high and a flash off it, hung at the top, and down in dust.",
+      "encore": true,
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -1]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.875,
+            "spread": 0.3,
+            "lean": -1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.8125,
+            "spread": 0.5,
+            "lean": -2
+          },
+          "for": 3,
+          "right": "low"
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 4,
+            "sy": 1.1875,
+            "lean": 1
+          },
+          "for": 1,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          }
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 6,
+            "sy": 1.0625,
+            "lean": 2
+          },
+          "for": 1,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          }
+        },
+        {
+          "do": "mark",
+          "mark": "glint",
+          "at": "handR",
+          "dx": -2,
+          "dy": 2,
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 7,
+            "lean": 2
+          },
+          "for": 5,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          },
+          "tell": true
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 3,
+            "sy": 1.0625,
+            "lean": 1
+          },
+          "for": 1,
+          "left": "hip",
+          "right": {
+            "at": 0.75,
+            "dx": 0,
+            "dy": -8
+          }
+        },
+        {
+          "do": "mark",
+          "mark": "dust",
+          "at": "ground",
+          "for": 2
+        },
+        {
+          "do": "squash",
+          "to": 0.8125,
+          "in": 1,
+          "hold": 1,
+          "spread": 0.5
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "sweep": {
+      "about": "A broom in its hands: three sweeps side to side with a puff of dust each, then it stands the broom up and it is gone.",
+      "score": [
+        {
+          "do": "face",
+          "look": [-1, 1]
+        },
+        {
+          "do": "mark",
+          "mark": "broomUp",
+          "at": "ground",
+          "dx": -11,
+          "dy": -1,
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "shift": 2,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "broomRight",
+          "at": "ground",
+          "dx": -10,
+          "dy": -1,
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "sweptDust",
+          "at": "ground",
+          "dx": -3,
+          "dy": -1,
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9375,
+            "lean": 1
+          },
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "puffWide",
+          "at": "ground",
+          "dx": -1,
+          "dy": -3,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "broomUp",
+          "at": "ground",
+          "dy": -1,
+          "z": -1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": 0,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [1, 1]
+        },
+        {
+          "do": "mark",
+          "mark": "broomUp",
+          "at": "ground",
+          "dx": 12,
+          "dy": -1,
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "shift": -2,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "broomLeft",
+          "at": "ground",
+          "dx": 11,
+          "dy": -1,
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "sweptDust",
+          "at": "ground",
+          "dx": 4,
+          "dy": -1,
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9375,
+            "lean": -1
+          },
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "puffWide",
+          "at": "ground",
+          "dx": 0,
+          "dy": -3,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "broomUp",
+          "at": "ground",
+          "dy": -1,
+          "z": -1,
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": 0,
+          "for": 1
+        },
+        {
+          "do": "face",
+          "look": [-1, 1]
+        },
+        {
+          "do": "mark",
+          "mark": "broomUp",
+          "at": "ground",
+          "dx": -11,
+          "dy": -1,
+          "for": 2
+        },
+        {
+          "do": "ease",
+          "shift": 2,
+          "for": 1
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "broomRight",
+          "at": "ground",
+          "dx": -10,
+          "dy": -1,
+          "for": 4
+        },
+        {
+          "do": "mark",
+          "mark": "sweptDust",
+          "at": "ground",
+          "dx": -3,
+          "dy": -1,
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.9375,
+            "lean": 1
+          },
+          "for": 2
+        },
+        {
+          "do": "mark",
+          "mark": "puffWide",
+          "at": "ground",
+          "dx": -1,
+          "dy": -3,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "look": [0, 0]
+        },
+        {
+          "do": "mark",
+          "mark": "broomUp",
+          "at": "ground",
+          "dx": -11,
+          "dy": -1,
+          "for": 4
+        },
+        {
+          "do": "hold",
+          "for": 4,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "glint",
+          "at": "ground",
+          "dx": -11,
+          "dy": -12,
+          "for": 2
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "ease",
+          "shift": 0,
+          "for": 2
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "dash": {
+      "about": "A squash, then a lap in a blink: out one side and in from the other in two fast hops, speed lines behind, and a skid to a stop in dust.",
+      "score": [
+        {
+          "do": "face",
+          "eyes": "focused",
+          "look": [2, 0]
+        },
+        {
+          "do": "hold",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.8125,
+            "spread": 0.5,
+            "lean": -2
+          },
+          "for": 3
+        },
+        {
+          "do": "mark",
+          "mark": "speedA",
+          "at": "ground",
+          "dx": -1,
+          "dy": -12,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "shift": 2,
+            "lift": 2,
+            "sy": 1.0625,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "speedB",
+          "at": "ground",
+          "dx": -1,
+          "dy": -12,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "shift": 2,
+            "lift": 3,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "speedA",
+          "at": "ground",
+          "dx": -1,
+          "dy": -12,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "shift": 2,
+            "sy": 0.875,
+            "spread": 0.3,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "speedB",
+          "at": "ground",
+          "dx": 3,
+          "dy": -12,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "shift": -2,
+            "lift": 2,
+            "sy": 1.0625,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "speedA",
+          "at": "ground",
+          "dx": 3,
+          "dy": -12,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "shift": -2,
+            "lift": 3,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "speedB",
+          "at": "ground",
+          "dx": 1,
+          "dy": -12,
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.875,
+            "spread": 0.3,
+            "lean": 2
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "sweptDust",
+          "at": "ground",
+          "dx": 9,
+          "dy": -1,
+          "for": 3
+        },
+        {
+          "do": "mark",
+          "mark": "dust",
+          "at": "ground",
+          "for": 3
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -3,
+            "sy": 0.84375,
+            "spread": 0.5
+          },
+          "for": 3,
+          "tell": true
+        },
+        {
+          "do": "mark",
+          "mark": "puffWide",
+          "at": "ground",
+          "dx": 8,
+          "dy": -4,
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lean": -2,
+            "sy": 0.9375,
+            "spread": 0.2
+          },
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "wide",
+          "look": [0, 0]
+        },
+        {
+          "do": "wobble",
+          "reach": 2,
+          "times": 2,
+          "per": 2,
+          "decay": 0.5
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    },
+    "rocket": {
+      "about": "A long crouch that trembles, then it launches as high as there is room on a flame, hangs, and comes down in dust.",
+      "score": [
+        {
+          "do": "face",
+          "look": [0, -2]
+        },
+        {
+          "do": "hold",
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "squeeze",
+          "look": [0, 0]
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.875,
+            "spread": 0.3
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.78125,
+            "spread": 0.5
+          },
+          "for": 1
+        },
+        {
+          "do": "repeat",
+          "times": 2,
+          "steps": [
+            {
+              "do": "pose",
+              "pose": {
+                "sy": 0.71875,
+                "spread": 0.7,
+                "shift": -1
+              },
+              "for": 1
+            },
+            {
+              "do": "pose",
+              "pose": {
+                "sy": 0.71875,
+                "spread": 0.7,
+                "shift": 1
+              },
+              "for": 1
+            }
+          ]
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": -1
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "dust",
+          "at": "ground",
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": 1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": -1
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "blast",
+          "at": "ground",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": 1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.6875,
+            "spread": 0.8
+          },
+          "for": 1
+        },
+        {
+          "do": "face",
+          "eyes": "wide",
+          "look": [0, -1]
+        },
+        {
+          "do": "mark",
+          "mark": "flameLow",
+          "at": "ground",
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 6,
+            "sy": 1.1875
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "flame",
+          "at": "ground",
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 10,
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "flameLow",
+          "at": "ground",
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 12
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "flameOut",
+          "at": "ground",
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 12
+          },
+          "for": 2,
+          "tell": true
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 12,
+            "look": [0, 2]
+          },
+          "for": 3
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "lift": 7,
+            "sy": 1.0625
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "dust",
+          "at": "ground",
+          "for": 2
+        },
+        {
+          "do": "face",
+          "eyes": "calm",
+          "look": [0, 0]
+        },
+        {
+          "do": "squash",
+          "to": 0.75,
+          "in": 1,
+          "hold": 1,
+          "spread": 0.6
+        },
+        {
+          "do": "rest"
+        }
+      ]
+    }
+  }
+}

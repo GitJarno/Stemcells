@@ -1,5 +1,6 @@
 import * as NodeAssert from "node:assert/strict";
 import { test, vi } from "vite-plus/test";
+import { setChosen } from "./chosen.ts";
 import { dressesFor, looksOf, seasonOn } from "./looks.ts";
 
 // The deal over the kit's packs (`kit/packs.json`) alone: packs drawn in `art/` bring their
@@ -94,4 +95,17 @@ test("a Cell keeps its piece while those born before it leave, and the next to a
     !taken.includes(after.get("Gannet")?.worn[0]),
     "the newcomer wears a piece no one else does",
   );
+});
+
+test("what the person dressed a Cell in is worn first, over its deal, until it is taken off", () => {
+  const dealt = looksOf(["Otter", "Wren"], "12-24").get("Otter")!.worn;
+  setChosen({ worn: { Otter: ["outfit:earned/crown"] }, acts: [] });
+  try {
+    const looks = looksOf(["Otter", "Wren"], "12-24");
+    NodeAssert.deepEqual(looks.get("Otter")!.worn, ["outfit:earned/crown", ...dealt]);
+    NodeAssert.ok(!looks.get("Wren")!.worn.includes("outfit:earned/crown"));
+  } finally {
+    setChosen({ worn: {}, acts: [] });
+  }
+  NodeAssert.deepEqual(looksOf(["Otter", "Wren"], "12-24").get("Otter")!.worn, dealt);
 });

@@ -8,7 +8,8 @@ export type StemcellsSettingsPath =
   | "/settings/disk"
   | "/settings/aski"
   | "/settings/your-devices"
-  | "/settings/lineage";
+  | "/settings/lineage"
+  | "/settings/collection";
 
 /** Each page's name in the settings list. */
 export const STEMCELLS_SETTINGS_LABELS: Readonly<Record<StemcellsSettingsPath, string>> = {
@@ -16,18 +17,21 @@ export const STEMCELLS_SETTINGS_LABELS: Readonly<Record<StemcellsSettingsPath, s
   "/settings/aski": "Aski",
   "/settings/your-devices": "Your devices",
   "/settings/lineage": "Lineage",
+  "/settings/collection": "Collection",
 };
 
 /**
  * No settings scope applies: Disk reads this machine, Aski's switch lives on
  * this device, Your devices lists this machine's devices and the computers
- * this device reaches, and Lineage reads every machine's Cells.
+ * this device reaches, Lineage reads every machine's Cells, and Collection reads this
+ * machine's ledger.
  */
 export const STEMCELLS_SETTINGS_SCOPES: Readonly<Record<StemcellsSettingsPath, null>> = {
   "/settings/disk": null,
   "/settings/aski": null,
   "/settings/your-devices": null,
   "/settings/lineage": null,
+  "/settings/collection": null,
 };
 
 /**
@@ -38,6 +42,7 @@ export const STEMCELLS_SETTINGS_SCOPES: Readonly<Record<StemcellsSettingsPath, n
 export const STEMCELLS_SETTINGS_NAV_AFTER: Readonly<Record<StemcellsSettingsPath, string>> = {
   "/settings/aski": "/settings/scheduled-tasks",
   "/settings/lineage": "/settings/aski",
+  "/settings/collection": "/settings/lineage",
   "/settings/your-devices": "/settings/connections",
   "/settings/disk": "/settings/maintenance",
 };
@@ -48,4 +53,5 @@ export const STEMCELLS_DEVICE_ONLY_PATHS: readonly StemcellsSettingsPath[] = [
   "/settings/aski",
   "/settings/your-devices",
   "/settings/lineage",
+  "/settings/collection",
 ];

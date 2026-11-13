@@ -4,6 +4,7 @@
 // (`art.test.ts` fails on a file left out). Formats: `stemcells/docs/cell-art.md`.
 
 import actsDance from "./art/moves/acts-dance.json" with { type: "json" };
+import actsFeats from "./art/moves/acts-feats.json" with { type: "json" };
 import actsRest from "./art/moves/acts-rest.json" with { type: "json" };
 import acts from "./art/moves/acts.json" with { type: "json" };
 import dock from "./art/moves/dock.json" with { type: "json" };
@@ -22,6 +23,7 @@ import castShore from "./art/packs/cast-shore.json" with { type: "json" };
 import cast from "./art/packs/cast.json" with { type: "json" };
 import classes from "./art/packs/classes.json" with { type: "json" };
 import december from "./art/packs/december.json" with { type: "json" };
+import earned from "./art/packs/earned.json" with { type: "json" };
 import gym from "./art/packs/gym.json" with { type: "json" };
 import january from "./art/packs/january.json" with { type: "json" };
 import lunarNewYear from "./art/packs/lunar-new-year.json" with { type: "json" };
@@ -48,6 +50,7 @@ export const ART_PACKS: ArtFiles = {
   "cast-shore": castShore,
   classes,
   december,
+  earned,
   gym,
   january,
   "lunar-new-year": lunarNewYear,
@@ -59,6 +62,7 @@ export const ART_PACKS: ArtFiles = {
 export const ART_MOVES: ArtFiles = {
   acts,
   "acts-dance": actsDance,
+  "acts-feats": actsFeats,
   "acts-rest": actsRest,
   dock,
   form,

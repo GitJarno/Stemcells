@@ -459,6 +459,23 @@ scene `act/<name>`. `cells acts <name>` draws it frame by frame; `cells render
   pieces it would push off the canvas: a wide hat sways without stepping.
   Keep a lean at 3 or under for the same reason.
 
+### What a feat unlocks: `art/packs/earned.json`, `art/moves/acts-feats.json`
+
+A feat (`stemcells/ledger/feats.ts`) unlocks one reward, named by an id:
+
+- **A piece** is an outfit of the `earned` pack with that id
+  (`outfit:earned/laurel`): one piece in one slot, drawn for the pack or the
+  original's own (`"headwear": "crown"`). The pack has no season and is no
+  cast, so nothing deals it: a Cell wears it only when the person puts it on
+  (`cell/chosen.ts`), over its own look, which fills the slots left free.
+- **An act** is an act of that name in `acts-feats.json`. The table casts it
+  like any other; until its feat is earned no Cell plays it
+  (`acting.ts`, `earnedYet`).
+
+A new feat needs its rule and reward in `feats.ts`, its words in
+`stemcells/words/feats.ts`, and its art here; `rewards.test.ts` fails on a
+reward with no art.
+
 ### A temperament: `art/temperaments/<id>.json`
 
 How a Cell carries itself between moves. Each Cell is dealt one for life from

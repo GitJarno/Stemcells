@@ -1,7 +1,10 @@
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackScreen } from "@react-navigation/native-stack";
 import type { ComponentProps } from "react";
+import { Platform } from "react-native";
 
+import { COLLECTION } from "../../../../stemcells/words/feats.ts";
+import { CollectionScreen } from "./collection/CollectionScreen";
 import { DiskScreen } from "./disk/DiskScreen";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
 import { openSettings, type SettingsRow } from "./upstream/disk";
@@ -14,6 +17,11 @@ import { useSavedRemoteConnections } from "./upstream/push";
 export const stemcellsSettingsScreens = <Options extends object>(
   settingsPage: (title: string) => Options,
 ) => ({
+  SettingsCollection: createNativeStackScreen({
+    screen: CollectionScreen,
+    linking: "settings/collection",
+    options: settingsPage(COLLECTION.title),
+  }),
   SettingsDisk: createNativeStackScreen({
     screen: DiskScreen,
     linking: "settings/disk",
@@ -26,13 +34,20 @@ type Row = ComponentProps<typeof SettingsRow> & { readonly id: string };
 export function useStemcellsServerRows(): Row[] {
   const navigation = useNavigation();
   const push = usePushRow();
+  const collection: Row = {
+    id: "SettingsCollection",
+    // Upstream's Android icons have no trophy: a star there.
+    icon: Platform.OS === "ios" ? { ios: "trophy", android: "public" } : "star",
+    label: COLLECTION.title,
+    onPress: () => openSettings(navigation, "SettingsCollection"),
+  };
   const disk: Row = {
     id: "SettingsDisk",
     icon: "internaldrive",
     label: "Disk",
     onPress: () => openSettings(navigation, "SettingsDisk"),
   };
-  return push ? [disk, push] : [disk];
+  return push ? [collection, disk, push] : [collection, disk];
 }
 
 /** Whether this phone hears from the Macs when a Cell needs the person; a tap allows it. */

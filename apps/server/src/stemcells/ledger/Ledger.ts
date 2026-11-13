@@ -429,13 +429,15 @@ export const make = Effect.fn("Ledger.make")(function* (source: UpstreamLedger.L
 
   const page = Effect.fn("Ledger.page")(
     function* (query: LedgerQuery) {
+      // Asked before the facts: a page that says the past is in never lacks its last batch.
+      const backfilled = (yield* store.progress("backfill.finished")) !== null;
       // One more than asked for says whether a page follows.
       const rows = yield* store.read({ ...query, limit: query.limit + 1 });
       const facts = rows.slice(0, query.limit);
       return {
         facts,
         next: rows.length > query.limit ? facts.at(-1)!.seq : null,
-        backfilled: (yield* store.progress("backfill.finished")) !== null,
+        backfilled,
         skipped: skipped.size,
       } satisfies LedgerPage;
     },

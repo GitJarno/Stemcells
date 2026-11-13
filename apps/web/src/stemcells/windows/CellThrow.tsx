@@ -19,6 +19,7 @@ import { createPortal } from "react-dom";
 
 import { BonkWord } from "../cell/BonkWord";
 import { CellToss, type TossDraw } from "../cell/CellToss";
+import { tellDeed } from "../collection/read";
 import { drawnCellBoxOf } from "../cell/forming";
 import { BOX, POINTS_PER_PIXEL } from "../cell/look";
 import type { Toss } from "../cell/toss";
@@ -82,6 +83,7 @@ const subscribe = (listener: () => void) => {
 /** Throws a carried Cell: it flies from the hand, its place on the composer's line empty. */
 export function throwFromCarry(launch: Launch): void {
   setFlying(new Map(flying).set(launch.cell.threadId, launch));
+  tellDeed("tossed", launch.cell.threadId);
 }
 
 /** The Cell of the thread whose chat is carried by its Cell: it hangs from the hand (`ChatCarry.tsx`). */

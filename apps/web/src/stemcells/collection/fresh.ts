@@ -1,0 +1,66 @@
+// Which feats get a moment: the ones earned while this window was open, the rarest first.
+// What the ledger's backfill awards for the past is new on the collection's page, and quiet.
+
+import type { Collection, Rarity } from "../../../../../stemcells/ledger/feats.ts";
+import { laddersOf, type Standing, standingsOf } from "../../../../../stemcells/ledger/ladders.ts";
+
+const RANK: Readonly<Record<Rarity, number>> = { legendary: 0, secret: 1, rare: 2, common: 3 };
+
+export type { Standing };
+
+/** Every feat with how it stands, in the catalogue's order. */
+export const standings = (collection: Collection): Standing[] => standingsOf(collection.feats);
+
+/** The ids of the feats earned. */
+export const earnedIds = (collection: Collection): Set<string> =>
+  new Set(collection.feats.filter((state) => state.earned !== null).map((state) => state.id));
+
+/** What was earned when a collection was first read in full: none of it gets a card. */
+export interface Baseline {
+  readonly earned: ReadonlySet<string>;
+  /** False while the ledger still reads the chats from before it: the next read starts over. */
+  readonly settled: boolean;
+}
+
+/** The baseline once `next` is read: taken again each read until the ledger holds the past, then kept. */
+export const baselineAfter = (before: Baseline | null, next: Collection): Baseline =>
+  before !== null && before.settled
+    ? before
+    : { earned: earnedIds(next), settled: next.backfilled };
+
+/**
+ * The feats earned now that weren't at `baseline` (the window's first read) and haven't been
+ * shown to the person: the rarest first, then in the catalogue's order.
+ */
+export function freshFeats(baseline: ReadonlySet<string>, collection: Collection): Standing[] {
+  const seen = new Set(collection.seen);
+  return standings(collection)
+    .filter(
+      ({ feat, state }) => state.earned !== null && !baseline.has(feat.id) && !seen.has(feat.id),
+    )
+    .sort((a, b) => RANK[a.feat.rarity] - RANK[b.feat.rarity]);
+}
+
+/**
+ * The feat a card shows: the one `showing`, for as long as it stands earned (noting it seen
+ * never takes its own card down), else the next fresh one the person hasn't `dismissed`.
+ */
+export function momentOf(
+  showing: string | null,
+  baseline: ReadonlySet<string>,
+  collection: Collection,
+  dismissed: ReadonlySet<string>,
+): Standing | undefined {
+  if (showing === null)
+    return freshFeats(baseline, collection).find(({ feat }) => !dismissed.has(feat.id));
+  return standings(collection).find(
+    ({ feat, state }) => feat.id === showing && state.earned !== null,
+  );
+}
+
+/** The rung above `standing` on its ladder, when it isn't earned yet: what a card puts in view next. */
+export function rungAbove(standing: Standing, collection: Collection): Standing | null {
+  const ladder = laddersOf(collection.feats).find((each) => each.measure === standing.feat.measure);
+  const above = ladder?.rungs.find(({ feat }) => feat.of > standing.feat.of);
+  return above === undefined || above.state.earned !== null ? null : above;
+}

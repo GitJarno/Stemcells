@@ -3,9 +3,10 @@
 // frame from the carry engine's facts (`toss.ts`), its dizzy stars behind
 // it. The engine moves the box and runs the frame; this draws what is in it.
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { reducedMotion, timing } from "../tokens/motion.ts";
 import { bodyOf } from "./cast.ts";
+import { chosenVersion, onChosen } from "./chosen.ts";
 import type { Ground } from "./keyline.ts";
 import { paletteOf, type Strength } from "./kit.ts";
 import { BOX, POINTS_PER_PIXEL } from "./look.ts";
@@ -79,6 +80,7 @@ export function CellToss(props: {
   readonly frames: (draw: TossDraw) => () => void;
 }) {
   const [day] = useState(() => dayOf(new Date()));
+  useSyncExternalStore(onChosen, chosenVersion);
   const worn = (props.look ?? lookOf(props.name, day)).join("+");
   const body = bodyOf(props.provider);
   const points = props.points ?? POINTS_PER_PIXEL;

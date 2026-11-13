@@ -1546,6 +1546,21 @@
   --sc-provider-codex: rgba(16, 163, 127, 1);
 }
 
+/* A feat's rarity, the same in every skin: the colours an item's name wears in Diablo, magic
+   blue, legendary orange, and purple for what is found by chance. Common is the words' own
+   dim ink. Each clears 4.5:1 on its card, so the rarity's word is the hue itself. */
+:root {
+  --sc-rarity-rare: rgba(21, 93, 252, 1);
+  --sc-rarity-legendary: rgba(202, 53, 0, 1);
+  --sc-rarity-secret: rgba(127, 34, 254, 1);
+}
+
+:root.dark {
+  --sc-rarity-rare: rgba(81, 162, 255, 1);
+  --sc-rarity-legendary: rgba(255, 137, 4, 1);
+  --sc-rarity-secret: rgba(166, 132, 255, 1);
+}
+
 /* The provider's mark in a Cell's composer: the words' ink at this share
    over the composer's own glass, so it reads at a glance whatever greys the
    glass wears, and stays quieter than the placeholder (`glow/glow.css`). */

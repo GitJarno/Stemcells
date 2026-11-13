@@ -13,6 +13,7 @@ import { flushSync } from "react-dom";
 
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
+import { CollectionWatch } from "../collection/CollectionWatch";
 import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
@@ -511,6 +512,7 @@ export function CellWorkspace(props: {
     <>
       {askiOn ? <AskiKeeper onChat={onAskiChat} /> : null}
       <AskiMomentWatch aski={askiOn && askiChat.status === "ready" ? askiChat.cell : null} />
+      <CollectionWatch />
       <AskiSpawn />
       <WindowsKeeper onMoved={routeToFocused} onFocusPane={focusPaneAndRoute} />
       <SettledComeBack rowWidth={gridWidth} />

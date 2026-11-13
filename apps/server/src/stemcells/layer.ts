@@ -4,6 +4,7 @@ import * as ArcsHttp from "./arcs/http.ts";
 import * as AsksHttp from "./asks/http.ts";
 import * as AttachmentsHttp from "./attachments/http.ts";
 import * as AutonomyHttp from "./autonomy/http.ts";
+import * as CollectionHttp from "./collection/http.ts";
 import * as DiskHttp from "./disk/http.ts";
 import * as LedgerHttp from "./ledger/http.ts";
 import * as LimitResumeHttp from "./limitResume/http.ts";
@@ -31,6 +32,7 @@ export const layer = Layer.mergeAll(
   AsksHttp.layer,
   AttachmentsHttp.layer,
   AutonomyHttp.layer,
+  CollectionHttp.layer,
   DiskHttp.layer,
   LedgerHttp.layer,
   PresenceHttp.layer,

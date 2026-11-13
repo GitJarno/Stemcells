@@ -5,6 +5,7 @@
  */
 import { useSyncExternalStore } from "react";
 
+import { chosenVersion, onChosen } from "../cell/chosen";
 import { dayOf, type Look, looksOf } from "../cell/looks";
 import { isAskiTab } from "./askiTab";
 import { panesOf, type Workspace } from "./layout";
@@ -31,7 +32,7 @@ let last: Deal = { key: "", seats: [], looks: new Map() };
  * their order and their looks kept, newcomers seated after them.
  */
 export function dealRoster(names: readonly string[], day: string): ReadonlyMap<string, Look> {
-  const key = `${day}|${names.join(",")}`;
+  const key = `${day}|${chosenVersion()}|${names.join(",")}`;
   if (key === last.key) return last.looks;
   const present = new Set(names);
   const kept = last.seats.filter((name) => present.has(name));
@@ -74,6 +75,7 @@ function subscribe(listener: () => void): () => void {
 export function useRosterLook(name: string | undefined): readonly string[] | undefined {
   const crew = useWorkspaceStore((store) => crewOf(store.workspace).join(","));
   const day = useSyncExternalStore(subscribe, () => today);
+  useSyncExternalStore(onChosen, chosenVersion);
   if (name === undefined || crew === "") return undefined;
   return dealRoster(crew.split(","), day).get(name)?.worn;
 }

@@ -361,7 +361,15 @@ export interface PackLook {
   readonly eyesAllowed: boolean;
   /** The scenes a posed variant is worn in; every scene for anything else. */
   readonly scenes?: readonly string[] | undefined;
+  /** An outfit of the original's own pieces and nothing drawn here: the reference's art, noted and never failed. */
+  readonly borrowed?: boolean;
 }
+
+/** Worn pieces that are all the original's own (a pack's are named `pack/piece`), and at least one. */
+const borrowedOnly = (worn: ReadonlyArray<string | undefined>): boolean => {
+  const pieces = worn.filter((piece) => piece !== undefined);
+  return pieces.length > 0 && pieces.every((piece) => !piece.includes("/"));
+};
 
 /** Every look a pack's art makes: each piece worn alone (its posed variants too), and each outfit in each colourway. */
 export function looksOfPack(theme: string): PackLook[] {
@@ -408,6 +416,7 @@ export function looksOfPack(theme: string): PackLook[] {
               look,
               mouth: false,
               eyesAllowed: false,
+              borrowed: borrowedOnly(Object.values(look.wardrobe)),
             },
           ];
     });
@@ -586,10 +595,12 @@ export function check(options: { themes?: readonly string[]; original?: boolean 
   out.push(...castFindings(wanted, options.themes === undefined || options.themes.length === 0));
   for (const pack of PACKS) {
     if (!wanted(pack.theme) || (!pack.authored && !options.original)) continue;
-    for (const { label, kind, look, mouth, eyesAllowed, scenes } of looksOfPack(pack.theme))
+    for (const { label, kind, look, mouth, eyesAllowed, scenes, borrowed } of looksOfPack(
+      pack.theme,
+    ))
       out.push(
         ...lookFindings(label, look, {
-          original: !pack.authored,
+          original: !pack.authored || borrowed === true,
           mouth,
           eyesAllowed,
           scenes,

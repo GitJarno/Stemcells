@@ -3,13 +3,17 @@ import { test } from "vite-plus/test";
 import {
   actFor,
   castFor,
+  moment,
   performing,
+  play,
   poke,
   pokeCue,
   resetActing,
   stand,
   standingOf,
+  stroke,
 } from "./acting.ts";
+import { setChosen } from "./chosen.ts";
 import { ACTS, REST, SCENES } from "./kit.ts";
 import { NAMES } from "./name.ts";
 
@@ -122,4 +126,46 @@ test("each Cell goes through a cue's cast from a place of its own, never the sam
 test("every act the kit casts for a poke is one a deaf act's flag and length can be read from", () => {
   NodeAssert.equal(ACTS.get("dazed")?.deaf, true);
   NodeAssert.ok([...ACTS.values()].every((act) => act.problems.length === 0));
+});
+
+test("a stroke is answered where the Cell rests, has landed or sleeps, and never over an ask or a failure", () => {
+  resetActing();
+  stand("a", "awake", false);
+  const leaning = stroke("a", 100)!;
+  NodeAssert.equal(leaning.key, "act/nuzzle");
+  NodeAssert.equal(stroke("a", 100.5), leaning, "a second stroke lets the first play out");
+  stand("b", "pleased", false);
+  NodeAssert.equal(stroke("b", 100)!.key, "act/encore/nuzzle");
+  stand("c", "asleep", false);
+  NodeAssert.equal(ACTS.get(stroke("c", 100)!.key.slice("act/".length))!.state, "asleep");
+  for (const mood of ["needsYou", "needsApproval", "crashed", "peering"] as const) {
+    stand("d", mood, false);
+    NodeAssert.equal(stroke("d", 100), undefined, mood);
+  }
+});
+
+test("a moment of the Cell's own plays where it rests or works, and waits out an ask", () => {
+  resetActing();
+  stand("a", "awake", true);
+  NodeAssert.ok(castFor("dressed", "a").includes(moment("a", "dressed", 100)!.key));
+  stand("a", "needsYou", false);
+  NodeAssert.equal(moment("a", "dressed", 200), undefined);
+  NodeAssert.equal(moment("a", "feat", 200), undefined);
+});
+
+test("an act a feat unlocks is cast and shown only once its feat is earned", () => {
+  resetActing();
+  stand("a", "awake", false);
+  setChosen({ worn: {}, acts: [] });
+  try {
+    NodeAssert.equal(play("a", "act/bow", 100), undefined, "locked, the stage won't show it");
+    NodeAssert.ok(!castFor("poke/rest/3", "a").includes("act/flip"));
+    setChosen({ worn: {}, acts: ["bow", "flip"] });
+    NodeAssert.equal(play("a", "act/bow", 100)!.key, "act/bow");
+    NodeAssert.ok(castFor("poke/rest/3", "a").includes("act/flip"));
+    // An act no feat holds back plays for the asking.
+    NodeAssert.equal(play("a", "act/hop", 200)!.key, "act/hop");
+  } finally {
+    setChosen({ worn: {}, acts: [] });
+  }
 });

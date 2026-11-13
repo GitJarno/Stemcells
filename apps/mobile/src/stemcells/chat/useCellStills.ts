@@ -2,7 +2,10 @@
 // message on screen asks, so each reads only its own Cells, as strings: another chat's change
 // draws nothing. None until composed and drawn, in the compose queue's turn (`cell/compose.ts`).
 
+import { useSyncExternalStore } from "react";
+
 import { useComposed } from "../cell/compose";
+import { chosenVersion, onChosen } from "../cell/kit";
 import { crewLooksOf, useCrewDay } from "../cell/roster";
 import { stillUri } from "../cell/still";
 import { instanceOf } from "../cell/ThreadCell";
@@ -37,6 +40,8 @@ export function useCellStills(
   threadIds: ReadonlySet<string>,
 ): ReadonlyMap<string, string> {
   const day = useCrewDay();
+  // A Cell dressed in the collection is worn here at once, not at its chat's next change.
+  useSyncExternalStore(onChosen, chosenVersion);
   const worn = useThreadShellsSelected((shells) =>
     threadIds.size === 0 ? "" : wornIn(shells, environmentId, threadIds, day),
   );

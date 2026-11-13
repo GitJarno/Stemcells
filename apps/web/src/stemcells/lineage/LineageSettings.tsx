@@ -29,7 +29,7 @@ import {
   tallyOf,
   tokensOf,
 } from "./lineage";
-import { MarkGlyph } from "./MarkGlyph";
+import { MarkIcon } from "./MarkIcon";
 import { useMarks } from "./marks";
 import { ProviderCell } from "./ProviderCell";
 import { useSpend } from "./spend";
@@ -227,7 +227,7 @@ function LifeMarks(props: { readonly awards: readonly Award[] }) {
       {props.awards.map((award) => (
         <Tooltip key={award.mark}>
           <TooltipTrigger render={<li className="flex items-center gap-1.5 text-xs" />}>
-            <MarkGlyph mark={award.mark} className="size-3 shrink-0" />
+            <MarkIcon mark={award.mark} className="size-3.5 shrink-0 text-foreground" />
             <span className="text-foreground">{MARK_NAMES[award.mark]}</span>
             <span className="text-muted-foreground tabular-nums">{evidenceOf(award)}</span>
           </TooltipTrigger>

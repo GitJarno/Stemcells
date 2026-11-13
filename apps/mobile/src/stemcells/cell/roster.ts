@@ -7,7 +7,7 @@ import { useMemo, useSyncExternalStore } from "react";
 
 import { type EnvironmentThreadShell, useThreadShellsSelected } from "../upstream/cells";
 import { askiChatsOf } from "../aski/chat";
-import { dayOf, type Look, lookOf, looksOf } from "./kit";
+import { chosenVersion, dayOf, type Look, lookOf, looksOf, onChosen } from "./kit";
 
 let crewSeen: ReadonlyArray<EnvironmentThreadShell> | null = null;
 let crewKey = "";
@@ -37,7 +37,7 @@ let last: { key: string; seats: readonly string[]; looks: ReadonlyMap<string, Lo
 };
 
 function dealt(crew: string, day: string): ReadonlyMap<string, Look> {
-  const key = `${day}|${crew}`;
+  const key = `${day}|${chosenVersion()}|${crew}`;
   if (key === last.key) return last.looks;
   const names = crew === "" ? [] : crew.split(",");
   const present = new Set(names);
@@ -94,6 +94,7 @@ export function useCrewDay(): string {
 export function useCellLook(threadId: string): readonly string[] | undefined {
   const crew = useThreadShellsSelected(crewOf);
   const day = useSyncExternalStore(subscribe, () => today);
+  useSyncExternalStore(onChosen, chosenVersion);
   return dealt(crew, day).get(threadId)?.worn;
 }
 

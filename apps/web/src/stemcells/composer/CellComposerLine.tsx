@@ -2,10 +2,12 @@
 import { CheckIcon, CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
 import { type CSSProperties, use, useLayoutEffect, useRef } from "react";
 
-import { poke } from "../cell/acting";
+import { poke, stroke } from "../cell/acting";
 import { clockSeconds } from "../cell/blink";
 import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
+import { type Stroking, stroking } from "../cell/stroke";
+import { tellDeed } from "../collection/read";
 import { useCellStage } from "../needs/stream";
 import { RenameField } from "../rename/RenameField";
 import { CellMark } from "../tabs/CellMark";
@@ -59,6 +61,7 @@ export function CellComposerLine() {
   const settle = useSettleCell();
   /** Where the Cell was pressed: let go there, the press was a poke, not a carry. */
   const pressed = useRef<{ x: number; y: number } | null>(null);
+  const hand = useRef<Stroking | undefined>(undefined);
   const offered = env?.offered === true;
   // Where the menu offers a choice, a checkout on no branch reads as
   // upstream's picker reads it; elsewhere it names nothing.
@@ -111,7 +114,17 @@ export function CellComposerLine() {
             pressed.current = event.button === 0 ? { x: event.clientX, y: event.clientY } : null;
             startChatCarry(event, cell, "cell");
           }}
+          onPointerLeave={() => {
+            hand.current = undefined;
+          }}
           onPointerMove={(event) => {
+            // No button down, back and forth over it: a stroke (`cell/stroke.ts`).
+            if (event.buttons === 0 && !reducedMotion()) {
+              const { next, stroked } = stroking(hand.current, event.clientX, clockSeconds());
+              hand.current = next;
+              if (stroked && stroke(cell.threadId, clockSeconds()) !== undefined)
+                tellDeed("stroked", cell.threadId);
+            }
             // Once the hand has gone as far as a carry takes, the press is never a poke.
             const press = pressed.current;
             if (press === null) return;
@@ -121,7 +134,10 @@ export function CellComposerLine() {
           onPointerUp={() => {
             const press = pressed.current;
             pressed.current = null;
-            if (press !== null && !reducedMotion()) poke(cell.threadId, clockSeconds());
+            if (press === null || reducedMotion()) return;
+            // Poked until it sees stars is a deed a feat reads, told the first time.
+            if (poke(cell.threadId, clockSeconds())?.key === "act/dazed")
+              tellDeed("dazed", cell.threadId);
           }}
         >
           <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />

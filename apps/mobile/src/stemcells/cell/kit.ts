@@ -2,8 +2,18 @@
 // web must keep these modules free of the DOM. The phone draws the frame itself (`figure.ts`);
 // `figure.test.ts` draws every mood on every body through them.
 
-export { performing, poke, stand, standingOf } from "../../../../web/src/stemcells/cell/acting.ts";
+export {
+  moment,
+  performing,
+  play,
+  poke,
+  stand,
+  standingOf,
+  stroke,
+} from "../../../../web/src/stemcells/cell/acting.ts";
+export { type Stroking, stroking } from "../../../../web/src/stemcells/cell/stroke.ts";
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";
+export { chosenVersion, onChosen, setChosen } from "../../../../web/src/stemcells/cell/chosen.ts";
 export {
   bodyOf,
   type Entrance,
@@ -15,7 +25,7 @@ export {
 } from "../../../../web/src/stemcells/cell/cast.ts";
 export { mannerOf } from "../../../../web/src/stemcells/cell/manner.ts";
 export { FRAMES, type Ground, keylined } from "../../../../web/src/stemcells/cell/keyline.ts";
-export { BODIES, paletteOf } from "../../../../web/src/stemcells/cell/kit.ts";
+export { ACTS, BODIES, paletteOf } from "../../../../web/src/stemcells/cell/kit.ts";
 export {
   asksYou,
   BOX,

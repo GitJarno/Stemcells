@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 import { AskiSettingsIcon } from "../aski/AskiSettingsIcon";
+import { CollectionSettingsIcon } from "../collection/CollectionSettingsIcon";
 import { DevicesIcon } from "../devices/DevicesIcon";
 import { DiskSettingsIcon } from "../disk/DiskSettingsIcon";
 import { LineageSettingsIcon } from "../lineage/LineageSettingsIcon";
@@ -14,4 +15,5 @@ export const STEMCELLS_SETTINGS_ICONS: Readonly<
   "/settings/aski": AskiSettingsIcon,
   "/settings/your-devices": DevicesIcon,
   "/settings/lineage": LineageSettingsIcon,
+  "/settings/collection": CollectionSettingsIcon,
 };

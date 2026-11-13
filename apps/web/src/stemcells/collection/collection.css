@@ -1,0 +1,152 @@
+/* The collection: the card a feat's moment shows, and the tiles of Settings › Collection.
+   Counts are drawn in the words' own ink; only a rung's dot and its rarity's word wear a hue
+   (`tokens/stemcells.css`). Nothing here moves on its own: a card arrives once and a tile
+   lifts under the pointer. */
+
+[data-feat-rarity="common"] {
+  --feat-hue: var(--sc-meta-ink);
+}
+[data-feat-rarity="rare"] {
+  --feat-hue: var(--sc-rarity-rare);
+}
+[data-feat-rarity="legendary"] {
+  --feat-hue: var(--sc-rarity-legendary);
+}
+[data-feat-rarity="secret"] {
+  --feat-hue: var(--sc-rarity-secret);
+}
+
+/* Top centre, over the transcript's first lines: never over a composer, and clear of
+   upstream's toasts in the top corner. */
+.feat-card {
+  position: fixed;
+  z-index: 45;
+  inset-block-start: 88px;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  width: min(340px, calc(100vw - 40px));
+  box-shadow: var(--sc-shadow-pop);
+  transition:
+    opacity var(--sc-motion-icon-hover-duration) var(--sc-motion-icon-hover-easing),
+    translate var(--sc-motion-icon-hover-duration) var(--sc-motion-icon-hover-easing);
+
+  @starting-style {
+    opacity: 0;
+    translate: -50% -10px;
+  }
+}
+
+.feat-rarity {
+  color: var(--feat-hue);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Not earned yet: the shape of what waits, and no more. */
+.feat-locked .cell-figure {
+  filter: brightness(0);
+  opacity: 0.28;
+}
+.dark .feat-locked .cell-figure {
+  filter: brightness(0) invert(1);
+}
+
+.feat-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--sc-text) 12%, transparent);
+  overflow: hidden;
+}
+.feat-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--sc-text);
+}
+
+.feat-secret-ink {
+  color: var(--sc-rarity-secret);
+}
+
+.feat-ring {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex: none;
+}
+.feat-ring svg {
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+}
+.feat-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+.feat-ring-track {
+  stroke: color-mix(in srgb, var(--sc-text) 12%, transparent);
+}
+.feat-ring-fill {
+  stroke: var(--sc-text);
+  stroke-linecap: round;
+}
+.feat-ring-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.ladder-row:hover {
+  background: color-mix(in srgb, var(--sc-meta-ink) 6%, transparent);
+}
+.ladder-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--sc-meta-ink) 55%, transparent);
+}
+.ladder-pip-on {
+  border-color: var(--feat-hue);
+  background: var(--feat-hue);
+}
+
+.feat-new {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sc-success);
+}
+
+.wardrobe-tile {
+  transition: translate var(--sc-motion-icon-hover-duration) var(--sc-motion-icon-hover-easing);
+}
+.wardrobe-tile:hover {
+  translate: 0 -2px;
+}
+.wardrobe-tile[aria-pressed="true"] {
+  outline: 2px solid var(--sc-text);
+  outline-offset: 1px;
+}
+
+.collection-stage {
+  display: grid;
+  place-items: end center;
+  min-height: 132px;
+  padding: 18px 28px 14px;
+  border-radius: var(--sc-radius-card);
+  background:
+    linear-gradient(to top, color-mix(in srgb, var(--sc-text) 6%, transparent), transparent 55%),
+    var(--sc-raised);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feat-card,
+  .wardrobe-tile {
+    transition: none;
+  }
+}
