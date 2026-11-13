@@ -102,6 +102,18 @@
       "mini": [".YWY.", "..3.."],
       "miniHotspot": [2, 0]
     },
+    "blast": {
+      "about": "A rocket's ignition: flame out along the floor either side of its base.",
+      "art": [
+        "YY......................YY",
+        "YWYY..................YYWY",
+        "WWWYY3..............3YYWWW",
+        "YYY33................33YYY"
+      ],
+      "hotspot": [12, 4],
+      "mini": ["YW.........WY", "WY3.......3YW"],
+      "miniHotspot": [6, 2]
+    },
     "speedA": {
       "about": "Speed lines trailing behind a dash.",
       "art": [
@@ -141,7 +153,7 @@
       "miniHotspot": [6, 2]
     },
     "broomLeft": {
-      "about": "A broom pushed out to the left: its head on the floor, its handle leaning back.",
+      "about": "A broom leaning with its head to the left, where a push has taken it.",
       "art": [
         "......CC.",
         "......CC.",
@@ -155,7 +167,7 @@
         "..CC.....",
         ".CC......",
         ".CC......",
-        "NNNN.....",
+        "RRRR.....",
         "YYYYY....",
         "YYYYYY...",
         "YYnYYnY..",
@@ -163,11 +175,11 @@
         "YnYYnYYn."
       ],
       "hotspot": [4, 17],
-      "mini": ["...C", "..C.", "..C.", ".C..", ".C..", "C...", "C...", "N...", "YY..", "YYY."],
-      "miniHotspot": [2, 10]
+      "mini": ["...C", "..C.", "..C.", ".C..", ".C..", "C...", "C...", "R...", "YY..", "YYY."],
+      "miniHotspot": [1, 10]
     },
     "broomRight": {
-      "about": "A broom pushed out to the right.",
+      "about": "A broom leaning with its head to the right.",
       "art": [
         ".CC......",
         ".CC......",
@@ -181,7 +193,7 @@
         ".....CC..",
         "......CC.",
         "......CC.",
-        ".....NNNN",
+        ".....RRRR",
         "....YYYYY",
         "...YYYYYY",
         "..YnYYnYY",
@@ -189,8 +201,15 @@
         ".nYYnYYnY"
       ],
       "hotspot": [4, 17],
-      "mini": ["C...", ".C..", ".C..", "..C.", "..C.", "...C", "...C", "...N", "..YY", ".YYY"],
-      "miniHotspot": [1, 10]
+      "mini": ["C...", ".C..", ".C..", "..C.", "..C.", "...C", "...C", "...R", "..YY", ".YYY"],
+      "miniHotspot": [2, 10]
+    },
+    "sweptDust": {
+      "about": "Dust a broom has pushed along the floor.",
+      "art": ["..WW..", ".WWWWu", "WWWWuu"],
+      "hotspot": [2, 2],
+      "mini": ["WW", "Wu"],
+      "miniHotspot": [1, 2]
     },
     "broomUp": {
       "about": "A broom stood upright on its head.",
@@ -207,7 +226,7 @@
         "..CC..",
         "..CC..",
         "..CC..",
-        ".NNNN.",
+        ".RRRR.",
         ".YYYY.",
         "YYYYYY",
         "YnYYnY",
@@ -215,7 +234,7 @@
         "YnYYnY"
       ],
       "hotspot": [2, 17],
-      "mini": [".C.", ".C.", ".C.", ".C.", ".C.", ".C.", ".C.", ".N.", "YYY", "YYY"],
+      "mini": [".C.", ".C.", ".C.", ".C.", ".C.", ".C.", ".C.", ".R.", "YYY", "YYY"],
       "miniHotspot": [1, 10]
     },
     "rocketUp": {
@@ -230,7 +249,6 @@
       "about": "A firework as it goes off.",
       "art": ["..WW..", "..WW..", "WWYYWW", "WWYYWW", "..WW..", "..WW.."],
       "hotspot": [2, 2],
-      "z": -1,
       "mini": [".W.", "WYW", ".W."],
       "miniHotspot": [1, 1]
     },
@@ -249,7 +267,6 @@
         "....II...."
       ],
       "hotspot": [4, 4],
-      "z": -1,
       "mini": ["..I..", ".I.I.", "I.Y.I", ".I.I.", "..I.."],
       "miniHotspot": [2, 2]
     },
@@ -289,7 +306,6 @@
         "....QQ...."
       ],
       "hotspot": [4, 4],
-      "z": -1,
       "mini": ["..Q..", ".Q.Q.", "Q.W.Q", ".Q.Q.", "..Q.."],
       "miniHotspot": [2, 2]
     },
@@ -333,7 +349,6 @@
         "......YY......"
       ],
       "hotspot": [6, 6],
-      "z": -1,
       "mini": ["...Y...", ".Y...Y.", "...W...", "Y.W.W.Y", "...W...", ".Y...Y.", "...Y..."],
       "miniHotspot": [3, 3]
     },
@@ -1121,7 +1136,7 @@
       ]
     },
     "levitate": {
-      "about": "Shuts its eyes, rises off the ground and hovers with a slow bob, stars circling it, and comes down.",
+      "about": "Shuts its eyes and gathers itself, rises off the ground and hovers with a slow bob, motes of light circling it, and comes down.",
       "score": [
         {
           "do": "face",
@@ -1129,12 +1144,16 @@
         },
         {
           "do": "hold",
-          "for": 3
+          "for": 2
         },
         {
           "do": "ease",
-          "sy": 0.9375,
-          "spread": 0.2,
+          "sy": 0.875,
+          "spread": 0.3,
+          "for": 3
+        },
+        {
+          "do": "hold",
           "for": 2
         },
         {
@@ -1148,8 +1167,7 @@
         {
           "do": "ease",
           "float": 4,
-          "sy": 1,
-          "spread": 0,
+          "spread": -1,
           "for": 5
         },
         {
@@ -1158,7 +1176,7 @@
           "at": "back",
           "count": 3,
           "rx": 11,
-          "ry": 10,
+          "ry": 9,
           "per": 16,
           "for": 20
         },
@@ -1190,17 +1208,23 @@
         {
           "do": "ease",
           "float": 0,
+          "spread": 0.3,
           "for": 4
         },
         {
-          "do": "squash",
-          "to": 0.9375,
-          "in": 1,
-          "hold": 0
+          "do": "ease",
+          "sy": 1.0625,
+          "spread": 0,
+          "for": 2
         },
         {
           "do": "face",
           "eyes": "calm"
+        },
+        {
+          "do": "ease",
+          "sy": 1,
+          "for": 1
         },
         {
           "do": "rest"
@@ -1479,9 +1503,9 @@
           "do": "mark",
           "mark": "broomUp",
           "at": "ground",
-          "dx": -9,
+          "dx": -11,
           "dy": -1,
-          "for": 1
+          "for": 2
         },
         {
           "do": "ease",
@@ -1489,8 +1513,12 @@
           "for": 1
         },
         {
+          "do": "hold",
+          "for": 1
+        },
+        {
           "do": "mark",
-          "mark": "broomLeft",
+          "mark": "broomRight",
           "at": "ground",
           "dx": -10,
           "dy": -1,
@@ -1498,17 +1526,17 @@
         },
         {
           "do": "mark",
-          "mark": "puff",
+          "mark": "sweptDust",
           "at": "ground",
-          "dx": -12,
-          "dy": -17,
+          "dx": -3,
+          "dy": -1,
           "for": 2
         },
         {
           "do": "pose",
           "pose": {
             "sy": 0.9375,
-            "lean": -1
+            "lean": 1
           },
           "for": 2
         },
@@ -1516,8 +1544,8 @@
           "do": "mark",
           "mark": "puffWide",
           "at": "ground",
-          "dx": -12,
-          "dy": -22,
+          "dx": -1,
+          "dy": -3,
           "for": 2
         },
         {
@@ -1545,9 +1573,9 @@
           "do": "mark",
           "mark": "broomUp",
           "at": "ground",
-          "dx": 10,
+          "dx": 12,
           "dy": -1,
-          "for": 1
+          "for": 2
         },
         {
           "do": "ease",
@@ -1555,8 +1583,12 @@
           "for": 1
         },
         {
+          "do": "hold",
+          "for": 1
+        },
+        {
           "do": "mark",
-          "mark": "broomRight",
+          "mark": "broomLeft",
           "at": "ground",
           "dx": 11,
           "dy": -1,
@@ -1564,17 +1596,17 @@
         },
         {
           "do": "mark",
-          "mark": "puff",
+          "mark": "sweptDust",
           "at": "ground",
-          "dx": 13,
-          "dy": -17,
+          "dx": 4,
+          "dy": -1,
           "for": 2
         },
         {
           "do": "pose",
           "pose": {
             "sy": 0.9375,
-            "lean": 1
+            "lean": -1
           },
           "for": 2
         },
@@ -1582,8 +1614,8 @@
           "do": "mark",
           "mark": "puffWide",
           "at": "ground",
-          "dx": 11,
-          "dy": -22,
+          "dx": 0,
+          "dy": -3,
           "for": 2
         },
         {
@@ -1611,9 +1643,9 @@
           "do": "mark",
           "mark": "broomUp",
           "at": "ground",
-          "dx": -9,
+          "dx": -11,
           "dy": -1,
-          "for": 1
+          "for": 2
         },
         {
           "do": "ease",
@@ -1621,8 +1653,12 @@
           "for": 1
         },
         {
+          "do": "hold",
+          "for": 1
+        },
+        {
           "do": "mark",
-          "mark": "broomLeft",
+          "mark": "broomRight",
           "at": "ground",
           "dx": -10,
           "dy": -1,
@@ -1630,17 +1666,17 @@
         },
         {
           "do": "mark",
-          "mark": "puff",
+          "mark": "sweptDust",
           "at": "ground",
-          "dx": -12,
-          "dy": -17,
+          "dx": -3,
+          "dy": -1,
           "for": 2
         },
         {
           "do": "pose",
           "pose": {
             "sy": 0.9375,
-            "lean": -1
+            "lean": 1
           },
           "for": 2
         },
@@ -1648,8 +1684,8 @@
           "do": "mark",
           "mark": "puffWide",
           "at": "ground",
-          "dx": -12,
-          "dy": -22,
+          "dx": -1,
+          "dy": -3,
           "for": 2
         },
         {
@@ -1829,11 +1865,11 @@
         },
         {
           "do": "mark",
-          "mark": "puff",
+          "mark": "sweptDust",
           "at": "ground",
-          "dx": 10,
-          "dy": -7,
-          "for": 2
+          "dx": 9,
+          "dy": -1,
+          "for": 3
         },
         {
           "do": "mark",
@@ -1855,8 +1891,8 @@
           "do": "mark",
           "mark": "puffWide",
           "at": "ground",
-          "dx": 10,
-          "dy": -9,
+          "dx": 8,
+          "dy": -4,
           "for": 2
         },
         {
@@ -1942,34 +1978,60 @@
           ]
         },
         {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": -1
+          },
+          "for": 1
+        },
+        {
           "do": "mark",
           "mark": "dust",
           "at": "ground",
-          "for": 4
+          "for": 1
         },
         {
-          "do": "repeat",
-          "times": 2,
-          "steps": [
-            {
-              "do": "pose",
-              "pose": {
-                "sy": 0.71875,
-                "spread": 0.7,
-                "shift": -1
-              },
-              "for": 1
-            },
-            {
-              "do": "pose",
-              "pose": {
-                "sy": 0.71875,
-                "spread": 0.7,
-                "shift": 1
-              },
-              "for": 1
-            }
-          ]
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": 1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": -1
+          },
+          "for": 1
+        },
+        {
+          "do": "mark",
+          "mark": "blast",
+          "at": "ground",
+          "for": 2
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.71875,
+            "spread": 0.7,
+            "shift": 1
+          },
+          "for": 1
+        },
+        {
+          "do": "pose",
+          "pose": {
+            "sy": 0.6875,
+            "spread": 0.8
+          },
+          "for": 1
         },
         {
           "do": "face",
