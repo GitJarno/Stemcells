@@ -459,12 +459,9 @@ function FeatTile(props: { readonly standing: Standing; readonly fresh: boolean 
     >
       <View className={`items-center justify-end border-b-2 pb-1.5 pt-3 ${hue.floor}`}>
         {hidden ? (
-          <AppText
-            className="text-center text-lg font-t3-bold text-foreground-muted"
-            style={{ height: 28, lineHeight: 28 }}
-          >
-            ?
-          </AppText>
+          <View className="justify-center" style={{ minHeight: 28 }}>
+            <AppText className="text-lg font-t3-bold text-foreground-muted">?</AppText>
+          </View>
         ) : (
           <CellStill
             name={STAND_IN}
