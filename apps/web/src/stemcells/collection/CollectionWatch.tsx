@@ -8,14 +8,11 @@ import { useEffect, useRef, useState } from "react";
 import { useMinute } from "../rail/clock";
 import { useMomentChats } from "../upstream/askiMoments";
 import { FeatCard } from "./FeatCard";
-import { earnedIds, momentOf, rungAbove } from "./fresh";
-import { readCollection, useCollection } from "./read";
+import { momentOf, rungAbove } from "./fresh";
+import { earnedAtFirstRead, readCollection, useCollection } from "./read";
 
 /** The ledger keeps a landing well inside a second; this long after a run changes, it is read. */
 const LEDGER_WRITES_WITHIN = 2_500;
-
-/** What was earned when this window first read the collection: none of it gets a card. */
-let baseline: ReadonlySet<string> | null = null;
 
 export function CollectionWatch() {
   const collection = useCollection();
@@ -43,8 +40,7 @@ export function CollectionWatch() {
     return () => document.removeEventListener("visibilitychange", shown);
   }, []);
   if (collection === null) return null;
-  baseline ??= earnedIds(collection);
-  const next = momentOf(showing, baseline, collection, dismissed);
+  const next = momentOf(showing, earnedAtFirstRead(), collection, dismissed);
   // Held once picked: the card notes its feat seen as it shows, which must not take it down.
   if (showing === null && next !== undefined && !waits) setShowing(next.feat.id);
   if (showing !== null && next === undefined) setShowing(null);

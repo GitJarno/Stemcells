@@ -11,6 +11,7 @@ import {
   unlockedActs,
 } from "../../../../../stemcells/ledger/feats.ts";
 import { setChosen } from "../cell/chosen";
+import { earnedIds } from "./fresh";
 import { getFromPrimary } from "../upstream/disk";
 import { postToPrimary } from "../upstream/limitResume";
 
@@ -20,8 +21,13 @@ let held: Collection | null = null;
 let reading: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
+/** What was earned when this window first read the collection: none of it gets a card. */
+let first: ReadonlySet<string> | null = null;
+export const earnedAtFirstRead = (): ReadonlySet<string> => first ?? new Set();
+
 function take(next: Collection): void {
   held = next;
+  first ??= earnedIds(next);
   setChosen({ worn: next.worn, acts: unlockedActs(next.feats) });
   for (const listener of listeners) listener();
 }
