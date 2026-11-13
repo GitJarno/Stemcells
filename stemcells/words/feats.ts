@@ -230,12 +230,15 @@ const LADDERS: Readonly<Partial<Record<Measure, string>>> = {
 
 export const ladderName = (ladder: Ladder): string => LADDERS[ladder.measure] ?? ladder.measure;
 
-/** Where a ladder stands: "5,472 of 10,000", "1 h 44 min of 2 h"; its count alone once topped. */
+/**
+ * Where a ladder stands: "5,472 of 10,000", "1 h 44 min of 2 h"; topped, its count and that
+ * it is ("50,812 · Topped"), or only "Earned" for a feat that stands alone.
+ */
 export function ladderProgress(ladder: Ladder): string {
   const said = (n: number) => (TIMED.has(ladder.measure) ? spanWords(n) : countWords(n));
-  return ladder.next === null
-    ? said(ladder.have)
-    : `${said(Math.min(ladder.have, ladder.next.feat.of))} of ${said(ladder.next.feat.of)}`;
+  if (ladder.next !== null)
+    return `${said(Math.min(ladder.have, ladder.next.feat.of))} of ${said(ladder.next.feat.of)}`;
+  return ladder.rungs.length === 1 ? COLLECTION.earnedAlone : `${said(ladder.have)} · Topped`;
 }
 
 /** The ranks, the first at no feats (`RANKS` in `stemcells/ledger/ladders.ts`). */
@@ -280,15 +283,14 @@ export const COLLECTION = {
   featsTab: "Feats",
   nextUp: "Next up",
   nextUpNone: "Nothing in reach yet. The first landing starts every ladder.",
-  latest: "Latest",
   secrets: "Secrets",
-  topped: "Topped",
+  earnedAlone: "Earned",
   acts: (n: number) => `Acts · ${n} it can do`,
   feats: (earned: number, all: number) => `Feats · ${earned} of ${all}`,
   count: (earned: number, all: number) => `${earned} of ${all}`,
   secretsFound: (n: number) => (n === 1 ? "1 secret found" : `${n} secrets found`),
   rung: (n: number, of: number) => `Rung ${n} of ${of}`,
-  next: (reward: string) => `Next: ${reward}`,
+  nextRung: (name: string) => `Next: ${name}`,
   rarityFeat: (rarity: string) => `${rarity} feat`,
   putOn: (cell: string) => `Put it on ${cell}`,
 } as const;

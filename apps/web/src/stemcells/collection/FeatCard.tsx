@@ -34,6 +34,8 @@ const STAYS = 14_000;
 export function FeatCard(props: {
   readonly standing: Standing;
   readonly worn: readonly string[];
+  /** The rung above the one earned, put in view at once; null at a ladder's top. */
+  readonly next: Standing | null;
   readonly onDone: () => void;
 }) {
   const { feat, state } = props.standing;
@@ -88,6 +90,11 @@ export function FeatCard(props: {
         <span className="feat-rarity">{COLLECTION.rarityFeat(RARITY_NAMES[feat.rarity])}</span>
         <span className="text-sm font-medium text-foreground">{featName(feat)}</span>
         <span className="text-xs text-muted-foreground">{featSaid(feat, name)}</span>
+        {props.next === null ? null : (
+          <span className="text-xs text-muted-foreground">
+            {COLLECTION.nextRung(featName(props.next.feat))}
+          </span>
+        )}
         <div className="mt-1.5 flex items-center gap-3">
           {wornId !== undefined && threadId !== null && !wearing ? (
             <Button

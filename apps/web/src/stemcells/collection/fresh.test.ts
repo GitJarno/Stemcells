@@ -1,7 +1,7 @@
 import { expect, it } from "vite-plus/test";
 
 import type { Collection, FeatState } from "../../../../../stemcells/ledger/feats.ts";
-import { earnedIds, freshFeats, momentOf } from "./fresh.ts";
+import { earnedIds, freshFeats, momentOf, rungAbove, standings } from "./fresh.ts";
 
 const state = (id: string, earned: boolean): FeatState => ({
   id,
@@ -11,7 +11,7 @@ const state = (id: string, earned: boolean): FeatState => ({
 });
 
 const collection = (earned: readonly string[], seen: readonly string[] = []): Collection => ({
-  feats: ["landings-1", "merges-1", "cells-1000", "alone-120", "dazed-1"].map((id) =>
+  feats: ["landings-1", "landings-10", "merges-1", "cells-1000", "alone-120", "dazed-1"].map((id) =>
     state(id, earned.includes(id)),
   ),
   today: { day: "2026-10-23", landings: 0, merges: 0, cells: 0, aloneMs: 0, landed: [] },
@@ -43,4 +43,12 @@ it("keeps a feat's card up once it is noted seen, and moves on only when it is d
     "merges-1",
   );
   expect(momentOf(null, new Set(), shownAndSeen, new Set(["merges-1"]))).toBeUndefined();
+});
+
+it("names the rung above an earned one, and none above a ladder's top or a secret", () => {
+  const now = collection(["landings-1", "alone-120", "dazed-1"]);
+  const of = (id: string) => standings(now).find(({ feat }) => feat.id === id)!;
+  expect(rungAbove(of("landings-1"), now)?.feat.id).toBe("landings-10");
+  expect(rungAbove(of("alone-120"), now)).toBeNull();
+  expect(rungAbove(of("dazed-1"), now)).toBeNull();
 });

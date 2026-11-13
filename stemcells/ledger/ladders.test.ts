@@ -1,16 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { FEATS, type FeatState } from "./feats.ts";
-import {
-  laddersOf,
-  latestOf,
-  nextUp,
-  rankOf,
-  RANKS,
-  reachOf,
-  secretsOf,
-  tallyOf,
-} from "./ladders.ts";
+import { laddersOf, nextUp, rankOf, RANKS, reachOf, secretsOf, tallyOf } from "./ladders.ts";
 
 /** Every feat as it stands when each measure has come as far as `have` says (0 for one not named). */
 const standing = (have: Readonly<Record<string, number>>): FeatState[] =>
@@ -81,14 +72,5 @@ describe("the feats as ladders", () => {
     expect(rankOf(99)).toEqual({ rank: RANKS.length - 1, toNext: null });
     const visible = FEATS.filter((feat) => feat.segment !== null).length;
     expect(RANKS.at(-1)).toBeLessThan(visible);
-  });
-
-  it("list the feats earned last, the newest first", () => {
-    const feats = standing({ landings: 10 }).map((state) =>
-      state.id === "landings-1"
-        ? { ...state, earned: { at: "2026-11-02T09:00:00.000Z", threadId: null } }
-        : state,
-    );
-    expect(latestOf(feats).map(({ feat }) => feat.id)).toEqual(["landings-1", "landings-10"]);
   });
 });

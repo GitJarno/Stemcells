@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMinute } from "../rail/clock";
 import { useMomentChats } from "../upstream/askiMoments";
 import { FeatCard } from "./FeatCard";
-import { earnedIds, momentOf } from "./fresh";
+import { earnedIds, momentOf, rungAbove } from "./fresh";
 import { readCollection, useCollection } from "./read";
 
 /** The ledger keeps a landing well inside a second; this long after a run changes, it is read. */
@@ -55,6 +55,7 @@ export function CollectionWatch() {
       key={next.feat.id}
       standing={next}
       worn={threadId === null ? [] : (collection.worn[threadId] ?? [])}
+      next={rungAbove(next, collection)}
       onDone={() => {
         setDismissed((before) => new Set(before).add(next.feat.id));
         setShowing(null);

@@ -2,7 +2,7 @@
 // What the ledger's backfill awards for the past is new on the collection's page, and quiet.
 
 import type { Collection, Rarity } from "../../../../../stemcells/ledger/feats.ts";
-import { type Standing, standingsOf } from "../../../../../stemcells/ledger/ladders.ts";
+import { laddersOf, type Standing, standingsOf } from "../../../../../stemcells/ledger/ladders.ts";
 
 const RANK: Readonly<Record<Rarity, number>> = { legendary: 0, secret: 1, rare: 2, common: 3 };
 
@@ -43,4 +43,11 @@ export function momentOf(
   return standings(collection).find(
     ({ feat, state }) => feat.id === showing && state.earned !== null,
   );
+}
+
+/** The rung above `standing` on its ladder, when it isn't earned yet: what a card puts in view next. */
+export function rungAbove(standing: Standing, collection: Collection): Standing | null {
+  const ladder = laddersOf(collection.feats).find((each) => each.measure === standing.feat.measure);
+  const above = ladder?.rungs.find(({ feat }) => feat.of > standing.feat.of);
+  return above === undefined || above.state.earned !== null ? null : above;
 }

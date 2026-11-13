@@ -118,13 +118,3 @@ export function rankOf(earned: number): { readonly rank: number; readonly toNext
   const next = RANKS[rank + 1];
   return { rank, toNext: next === undefined ? null : next - earned };
 }
-
-/** The feats earned last, the newest first, `most` at most. */
-export function latestOf(feats: ReadonlyArray<FeatState>, most = 3): Standing[] {
-  return standingsOf(feats)
-    .filter(({ state }) => state.earned !== null)
-    .map((standing, order) => ({ standing, order, at: Date.parse(standing.state.earned!.at) }))
-    .sort((a, b) => b.at - a.at || b.order - a.order)
-    .slice(0, most)
-    .map(({ standing }) => standing);
-}
