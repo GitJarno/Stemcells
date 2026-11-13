@@ -1,29 +1,15 @@
 // Which feats get a moment: the ones earned while this window was open, the rarest first.
 // What the ledger's backfill awards for the past is new on the collection's page, and quiet.
 
-import {
-  type Collection,
-  type Feat,
-  FEATS,
-  type FeatState,
-  type Rarity,
-} from "../../../../../stemcells/ledger/feats.ts";
+import type { Collection, Rarity } from "../../../../../stemcells/ledger/feats.ts";
+import { type Standing, standingsOf } from "../../../../../stemcells/ledger/ladders.ts";
 
 const RANK: Readonly<Record<Rarity, number>> = { legendary: 0, secret: 1, rare: 2, common: 3 };
 
-export interface Standing {
-  readonly feat: Feat;
-  readonly state: FeatState;
-}
+export type { Standing };
 
 /** Every feat with how it stands, in the catalogue's order. */
-export function standings(collection: Collection): Standing[] {
-  const states = new Map(collection.feats.map((state) => [state.id, state]));
-  return FEATS.flatMap((feat) => {
-    const state = states.get(feat.id);
-    return state === undefined ? [] : [{ feat, state }];
-  });
-}
+export const standings = (collection: Collection): Standing[] => standingsOf(collection.feats);
 
 /** The ids of the feats earned. */
 export const earnedIds = (collection: Collection): Set<string> =>

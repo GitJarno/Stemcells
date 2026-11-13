@@ -54,6 +54,7 @@
     "../../stemcells/ledger/alone.ts",
     "../../stemcells/ledger/facts.ts",
     "../../stemcells/ledger/feats.ts",
+    "../../stemcells/ledger/ladders.ts",
     "../../stemcells/ledger/marks.ts",
     "../../stemcells/words/casualChat.ts",
     "../../stemcells/words/cellMail.ts",

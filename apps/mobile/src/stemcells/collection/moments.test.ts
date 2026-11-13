@@ -4,7 +4,7 @@ import type { Collection } from "./kit";
 import { momentKey, nextMoment } from "./moments";
 
 const holding = (earned: readonly string[], seen: readonly string[] = []): Collection => ({
-  feats: ["landings-1", "landings-10", "landings-100"].map((id) => ({
+  feats: ["landings-1", "landings-10", "landings-1000"].map((id) => ({
     id,
     have: 1,
     of: 1,
@@ -25,8 +25,8 @@ it("shows a feat earned since a machine's first read, once, and none while its C
   expect(nextMoment(first, baselines, none, none)).toBeNull();
 
   // Earned since: the rarest first, one a time, and not again once shown or seen elsewhere.
-  const later = new Map([["mac", holding(["landings-1", "landings-10", "landings-100"])]]);
-  const rare = { environmentId: "mac", featId: "landings-100" };
+  const later = new Map([["mac", holding(["landings-1", "landings-10", "landings-1000"])]]);
+  const rare = { environmentId: "mac", featId: "landings-1000" };
   expect(nextMoment(later, baselines, none, none)).toEqual(rare);
   expect(nextMoment(later, baselines, none, new Set([momentKey(rare)]))).toEqual({
     environmentId: "mac",

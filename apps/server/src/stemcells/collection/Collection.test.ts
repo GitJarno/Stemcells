@@ -66,7 +66,7 @@ it.effect("reads each fact from the ledger once, however often it is asked", () 
     assert.include(earned(read.feats), "landings-10");
     // The second read starts after the last fact the first one held.
     assert.strictEqual(ledger.asked[2], 3);
-    assert.strictEqual(read.feats.find((feat) => feat.id === "landings-50")?.have, 10);
+    assert.strictEqual(read.feats.find((feat) => feat.id === "landings-100")?.have, 10);
   }),
 );
 

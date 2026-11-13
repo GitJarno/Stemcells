@@ -153,6 +153,42 @@
       "headwear": "hatchling",
       "silhouette": "hatchling",
       "family": "lime-green"
+    },
+    {
+      "id": "cowboy",
+      "headwear": "cowboy",
+      "silhouette": "cowboy",
+      "family": "tan"
+    },
+    {
+      "id": "firefighter",
+      "headwear": "firefighter",
+      "silhouette": "fire-helmet",
+      "family": "fire-red"
+    },
+    {
+      "id": "graduate",
+      "headwear": "graduate",
+      "silhouette": "mortarboard",
+      "family": "graphite"
+    },
+    {
+      "id": "wizard",
+      "headwear": "wizard",
+      "silhouette": "wizard",
+      "family": "indigo"
+    },
+    {
+      "id": "propeller",
+      "headwear": "propeller",
+      "silhouette": "propeller",
+      "family": "rainbow"
+    },
+    {
+      "id": "antennae",
+      "headwear": "antennae",
+      "silhouette": "antennae",
+      "family": "green"
     }
   ],
   "pieces": [

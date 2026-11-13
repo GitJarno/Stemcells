@@ -88,7 +88,7 @@ describe("the feats a crew earned, from the ledger's facts", () => {
     const states = feats(facts.toReversed());
     expect(states.get("landings-1")?.earned).toEqual({ at: iso(0), threadId: "pip" });
     expect(states.get("landings-10")?.earned).toEqual({ at: iso(27), threadId: "tenth" });
-    expect(states.get("landings-50")).toMatchObject({ have: 12, of: 50, earned: null });
+    expect(states.get("landings-100")).toMatchObject({ have: 12, of: 100, earned: null });
   });
 
   it.each<[string, Partial<Landed>, boolean]>([
@@ -169,11 +169,11 @@ describe("the feats a crew earned, from the ledger's facts", () => {
 
   it("count one life's landings for the old hand", () => {
     const facts = [
-      ...Array.from({ length: 24 }, (_, n) => landed(n, {}, "old")),
+      ...Array.from({ length: 49 }, (_, n) => landed(n, {}, "old")),
       ...Array.from({ length: 30 }, (_, n) => landed(100 + n, {}, `young-${n}`)),
     ];
-    expect(feats(facts).get("life-25")).toMatchObject({ have: 24, earned: null });
-    expect(feats([...facts, landed(500, {}, "old")]).get("life-25")?.earned).toEqual({
+    expect(feats(facts).get("life-50")).toMatchObject({ have: 49, earned: null });
+    expect(feats([...facts, landed(500, {}, "old")]).get("life-50")?.earned).toEqual({
       at: iso(500),
       threadId: "old",
     });

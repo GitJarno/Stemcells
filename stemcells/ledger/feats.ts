@@ -61,6 +61,31 @@ export type Measure =
 export const DEEDS = ["dazed", "tossed", "stroked"] as const;
 export type Deed = (typeof DEEDS)[number];
 
+/** Where a feat belongs: what the crew gets done, how far a Cell goes alone, how much flies at once. */
+export type Segment = "flight" | "trust" | "crew";
+export const SEGMENTS: ReadonlyArray<Segment> = ["flight", "trust", "crew"];
+
+/** Each measure's segment; none for one only a secret feat reads. */
+const SEGMENT_OF: Readonly<Record<Measure, Segment | null>> = {
+  landings: "flight",
+  merges: "flight",
+  settled: "flight",
+  alone: "trust",
+  quiet: "trust",
+  straight: "trust",
+  quick: "trust",
+  crew: "crew",
+  day: "crew",
+  cells: "crew",
+  life: "crew",
+  drivers: "crew",
+  days: "crew",
+  night: null,
+  dazed: null,
+  tossed: null,
+  stroked: null,
+};
+
 export interface Feat {
   readonly id: string;
   readonly measure: Measure;
@@ -68,6 +93,8 @@ export interface Feat {
   readonly of: number;
   readonly rarity: Rarity;
   readonly reward: Reward;
+  /** Its segment; null for a secret, which belongs to none and counts in no total. */
+  readonly segment: Segment | null;
 }
 
 const piece = (id: string): Reward => ({ kind: "piece", id });
@@ -78,42 +105,54 @@ const feat = (measure: Measure, of: number, rarity: Rarity, reward: Reward, id?:
   of,
   rarity,
   reward,
+  segment: rarity === "secret" ? null : SEGMENT_OF[measure],
 });
 
-/** Every feat, in the order the collection shows them. */
+/**
+ * Every feat, in the order the collection shows them. The feats of one measure are a ladder,
+ * the lowest first: a count that piles up climbs by tens, a best yet by twos and threes, the
+ * first rung inside a crew's first day and the top about a year out for a heavy one
+ * (`stemcells/tasks/collection.md`, The slopes). Every rung unlocks something.
+ */
 export const FEATS: ReadonlyArray<Feat> = [
   feat("landings", 1, "common", piece("rosette")),
   feat("landings", 10, "common", act("bow")),
-  feat("landings", 50, "common", piece("medal")),
-  feat("landings", 100, "rare", piece("laurel")),
-  feat("landings", 500, "rare", act("flip")),
-  feat("landings", 1000, "legendary", piece("mantle")),
+  feat("landings", 100, "common", piece("medal")),
+  feat("landings", 1_000, "rare", piece("laurel")),
+  feat("landings", 10_000, "rare", act("flip")),
+  feat("landings", 50_000, "legendary", piece("mantle")),
   feat("merges", 1, "common", piece("pennant")),
   feat("merges", 10, "common", act("robot")),
-  feat("merges", 50, "rare", piece("tophat")),
-  feat("merges", 100, "legendary", act("fireworks")),
-  feat("cells", 10, "common", piece("sprout")),
-  feat("cells", 100, "rare", piece("crown")),
-  feat("cells", 500, "legendary", piece("astronaut")),
+  feat("merges", 100, "rare", piece("cowboy")),
+  feat("merges", 1_000, "rare", piece("tophat")),
+  feat("merges", 5_000, "legendary", act("fireworks")),
+  feat("settled", 10, "common", act("sweep")),
+  feat("settled", 100, "rare", piece("fedora")),
+  feat("settled", 1_000, "legendary", piece("firefighter")),
   feat("alone", 10 * MINUTE, "common", piece("headphones"), "alone-10"),
   feat("alone", 30 * MINUTE, "rare", piece("shades"), "alone-30"),
   feat("alone", HOUR, "rare", act("levitate"), "alone-60"),
   feat("alone", 2 * HOUR, "legendary", piece("titlebelt"), "alone-120"),
-  feat("crew", 3, "common", act("juggle")),
-  feat("crew", 5, "rare", piece("captain")),
-  feat("crew", 8, "legendary", piece("jetpack")),
-  feat("day", 10, "rare", act("punch")),
-  feat("day", 25, "legendary", piece("viking")),
-  feat("night", 1, "rare", piece("nightcap")),
-  feat("quiet", 5, "rare", piece("specs")),
-  feat("drivers", 3, "rare", piece("scarf")),
-  feat("settled", 10, "common", act("sweep")),
-  feat("settled", 100, "rare", piece("fedora")),
-  feat("quick", 1, "common", act("dash")),
+  feat("quiet", 5, "common", piece("specs")),
+  feat("quiet", 15, "rare", piece("graduate")),
+  feat("quiet", 30, "legendary", piece("wizard")),
   feat("straight", 1, "rare", act("rocket")),
-  feat("life", 25, "rare", piece("flatcap")),
+  feat("quick", 1, "common", act("dash")),
+  feat("crew", 3, "common", act("juggle")),
+  feat("crew", 6, "rare", piece("captain")),
+  feat("crew", 12, "legendary", piece("jetpack")),
+  feat("day", 10, "common", act("punch")),
+  feat("day", 100, "rare", piece("propeller")),
+  feat("day", 500, "legendary", piece("viking")),
+  feat("cells", 10, "common", piece("sprout")),
+  feat("cells", 100, "common", piece("antennae")),
+  feat("cells", 1_000, "rare", piece("astronaut")),
+  feat("cells", 5_000, "legendary", piece("crown")),
+  feat("life", 50, "rare", piece("flatcap")),
+  feat("drivers", 3, "rare", piece("scarf")),
   feat("days", 30, "common", piece("beret")),
   feat("days", 365, "legendary", piece("angel")),
+  feat("night", 1, "secret", piece("nightcap")),
   feat("dazed", 1, "secret", piece("plaster")),
   feat("tossed", 1, "secret", piece("eyepatch")),
   feat("stroked", 1, "secret", piece("hatchling")),
@@ -132,7 +171,7 @@ export interface Earned {
 /** A feat as it stands: how far along, and whether earned. */
 export interface FeatState {
   readonly id: string;
-  /** How far the measure has come, never past `of`. */
+  /** How far the measure has come; past `of` once the feat is earned. */
   readonly have: number;
   readonly of: number;
   readonly earned: Earned | null;
@@ -304,7 +343,7 @@ export function featsOf(
     const counted = tally(each.measure);
     return {
       id: each.id,
-      have: Math.min(counted.value, each.of),
+      have: counted.value,
       of: each.of,
       earned: counted.reached.get(each.of) ?? null,
     };
