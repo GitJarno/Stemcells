@@ -1,18 +1,19 @@
-/* The collection: a feat's rarity as one hue, the card a feat's moment shows, and the tiles of
-   Settings › Collection. Nothing here moves on its own: a card arrives once and a tile lifts
-   under the pointer. */
+/* The collection: the card a feat's moment shows, and the tiles of Settings › Collection.
+   Counts are drawn in the words' own ink; only a rung's dot and its rarity's word wear a hue
+   (`tokens/stemcells.css`). Nothing here moves on its own: a card arrives once and a tile
+   lifts under the pointer. */
 
 [data-feat-rarity="common"] {
   --feat-hue: var(--sc-meta-ink);
 }
 [data-feat-rarity="rare"] {
-  --feat-hue: var(--sc-info);
+  --feat-hue: var(--sc-rarity-rare);
 }
 [data-feat-rarity="legendary"] {
-  --feat-hue: var(--sc-warning);
+  --feat-hue: var(--sc-rarity-legendary);
 }
 [data-feat-rarity="secret"] {
-  --feat-hue: var(--sc-peer);
+  --feat-hue: var(--sc-rarity-secret);
 }
 
 /* Top centre, over the transcript's first lines: never over a composer, and clear of
@@ -24,7 +25,6 @@
   inset-inline-start: 50%;
   translate: -50% 0;
   width: min(340px, calc(100vw - 40px));
-  border-inline-start: 3px solid var(--feat-hue);
   box-shadow: var(--sc-shadow-pop);
   transition:
     opacity var(--sc-motion-icon-hover-duration) var(--sc-motion-icon-hover-easing),
@@ -56,22 +56,17 @@
 .feat-bar {
   height: 3px;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--feat-hue) 18%, transparent);
+  background: color-mix(in srgb, var(--sc-text) 12%, transparent);
   overflow: hidden;
 }
 .feat-bar > span {
   display: block;
   height: 100%;
-  background: var(--feat-hue);
-}
-
-/* The summary's bars carry no rarity: they are counts, in the ring's hue. */
-.feat-bar-plain {
-  --feat-hue: var(--sc-info);
+  background: var(--sc-text);
 }
 
 .feat-secret-ink {
-  color: var(--sc-peer);
+  color: var(--sc-rarity-secret);
 }
 
 .feat-ring {
@@ -90,10 +85,10 @@
   stroke-width: 6;
 }
 .feat-ring-track {
-  stroke: color-mix(in srgb, var(--sc-info) 16%, transparent);
+  stroke: color-mix(in srgb, var(--sc-text) 12%, transparent);
 }
 .feat-ring-fill {
-  stroke: var(--sc-info);
+  stroke: var(--sc-text);
   stroke-linecap: round;
 }
 .feat-ring-count {
@@ -134,7 +129,7 @@
   translate: 0 -2px;
 }
 .wardrobe-tile[aria-pressed="true"] {
-  outline: 2px solid var(--sc-info);
+  outline: 2px solid var(--sc-text);
   outline-offset: 1px;
 }
 
@@ -145,7 +140,7 @@
   padding: 18px 28px 14px;
   border-radius: var(--sc-radius-card);
   background:
-    linear-gradient(to top, color-mix(in srgb, var(--sc-info) 9%, transparent), transparent 55%),
+    linear-gradient(to top, color-mix(in srgb, var(--sc-text) 6%, transparent), transparent 55%),
     var(--sc-raised);
 }
 

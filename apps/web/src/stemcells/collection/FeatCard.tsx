@@ -28,7 +28,7 @@ import type { Standing } from "./fresh";
 import { markSeen, wear } from "./read";
 import "./collection.css";
 
-/** How long the card stays when the pointer leaves it alone, in ms. */
+/** How long the card stays when nothing holds it, in ms. */
 const STAYS = 14_000;
 
 export function FeatCard(props: {
@@ -56,7 +56,7 @@ export function FeatCard(props: {
     markSeen([feat.id]);
     if (threadId !== null && !reducedMotion()) moment(threadId, "feat", clockSeconds());
   }, [feat.id, threadId]);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Leave after its stay unless the pointer holds it, clearing the timer on change.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Leave after its stay unless the pointer or the keyboard holds it, clearing the timer on change.
   useEffect(() => {
     if (held) return;
     const leave = setTimeout(() => done(), STAYS);
@@ -72,9 +72,12 @@ export function FeatCard(props: {
     <aside
       className="feat-card flex gap-3 rounded-lg border border-border bg-card p-3"
       data-feat-rarity={feat.rarity}
+      role="status"
       aria-label={COLLECTION.earned}
       onPointerEnter={() => setHeld(true)}
       onPointerLeave={() => setHeld(false)}
+      onFocus={() => setHeld(true)}
+      onBlur={() => setHeld(false)}
     >
       <div className="grid w-14 shrink-0 place-items-center">
         <CellStill

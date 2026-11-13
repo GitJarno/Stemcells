@@ -104,7 +104,10 @@ are the ones a step too far.
 the middle, legendary at the top. A dot a rung shows it, filled in its
 rarity's hue once earned, beside the count in numbers: in Diablo 4's beta
 the skulls on a challenge drew the complaint that nobody was told what
-they meant.
+they meant. The hues are the ones an item's name wears in Diablo: blue
+for rare, orange for legendary, purple for a secret, and the words' own
+dim ink for common. Nothing else on the page is coloured: a count's bar
+and the ring are drawn in the words' ink, so a hue always means rarity.
 
 **A rank** is the count of feats earned, named: Ground crew, Cadet, Pilot,
 Captain, Commander, Ace, Legend, at 0, 3, 8, 15, 22, 29 and 35 feats. The
@@ -115,6 +118,12 @@ it.
 **Secrets** are on no ladder and in no count, as Feats of Strength are in
 Diablo 3 and World of Warcraft: a question mark until found, then a line
 of their own.
+
+**Two dimensions.** A feat is the person's: what the whole crew has done.
+A mark is one Cell's: what its own life did (`cell-marks.md`), six of
+them, each earned once. Games split the same way, an account's
+achievements and one character's own record. The collection's two views
+are the two: Feats, and Cells.
 
 **You dress a Cell.** In the wardrobe the person picks a Cell and puts
 unlocked pieces on it, a slot at a time. The choice is kept on this
@@ -131,7 +140,8 @@ time (`deed`), and a secret feat reads it.
 
 ## The view
 
-Settings › Collection, the same on the Mac and the phone, in two views.
+Settings › Collection, the same on the Mac and the phone, in two views,
+one a dimension.
 
 **Feats**, the summary first, as World of Warcraft's and Diablo 3's open:
 
@@ -145,7 +155,8 @@ Settings › Collection, the same on the Mac and the phone, in two views.
    gives, and when and which Cell earned it.
 4. The secrets.
 
-**Wardrobe**: one Cell alive on a stage, the Cells to dress, the pieces
+**Cells**: one Cell alive on a stage and the Cells to pick from; its
+record, all six marks with what shows each or what it takes; the pieces
 unlocked, and the acts it can do, the ones a feat unlocked first.
 
 ## Where it lives
@@ -174,6 +185,28 @@ unlocked, and the acts it can do, the ones a feat unlocked first.
 - [x] Web: the read and its refresh, the moment, Settings › Collection
 - [x] Phone: the same views, the moment, the stroke
 - [x] Docs: `cell-art.md`, `interaction.md`
-- [ ] One pass in the lab and one on a phone, captures for the pull request
+- [x] A Cell's own record: three more marks, the read, the Cells view
+- [x] One pass in the lab, captures for the pull request
+- [ ] One pass on a phone
 
 ## Review
+
+- **Seen**, in the lab on a home of its own with fake providers and
+  made-up facts: the Feats view at three points of a crew's life, a ladder
+  opened on its rungs, the Cells view with a Cell's record and its
+  wardrobe, the acts on the stage, and a feat's card with the rung above.
+- **Not seen: the phone.** Its views are the Mac's rules by import and
+  pass their types, lint, the Hermes guard and the phone's own suite, but
+  nothing here ran them on a device: no simulator runtime was installed.
+  The first run on a phone is still owed.
+- **The body stays.** A study of the Cell's figure against the pieces and
+  acts added here found nothing the body needs: every piece fits the
+  slots it has.
+- **The toss is the Mac's alone**, so one secret can't be found from the
+  phone.
+- **The slopes are the first thing to tune.** They are set so a first
+  rung falls in a crew's first day and a top is about a year out for a
+  heavy crew; a lighter crew will want its own look at them.
+- **From review**: no card for what the ledger awards while it still
+  reads the past; a read that ran while a dressing choice was on its way
+  is dropped; the phone no longer loses one machine's read to another's.

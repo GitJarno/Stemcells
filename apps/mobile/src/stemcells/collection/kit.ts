@@ -8,12 +8,15 @@ export {
   toggled,
 } from "../../../../web/src/stemcells/collection/dress.ts";
 export {
+  type Baseline,
+  baselineAfter,
   earnedIds,
   freshFeats,
   rungAbove,
   type Standing,
   standings,
 } from "../../../../web/src/stemcells/collection/fresh.ts";
+export { type Turns, turns } from "../../../../web/src/stemcells/collection/turns.ts";
 export {
   laddersOf,
   type Ladder,
@@ -52,3 +55,20 @@ export {
   SEGMENT_NAMES,
   todayCounts,
 } from "../../../../../stemcells/words/feats.ts";
+export {
+  type Award,
+  type CellRecords,
+  type MarkId,
+  MARKS,
+} from "../../../../../stemcells/ledger/marks.ts";
+export {
+  evidenceOf,
+  MARK_NAMES,
+  MARK_TAKES,
+  marksCount,
+  marksOf,
+} from "../../../../../stemcells/words/marks.ts";
+export {
+  MARK_GLYPH_PATHS,
+  MARK_GLYPH_SIDE,
+} from "../../../../web/src/stemcells/lineage/markGlyphs.ts";

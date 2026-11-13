@@ -365,6 +365,12 @@ export interface PackLook {
   readonly borrowed?: boolean;
 }
 
+/** Worn pieces that are all the original's own (a pack's are named `pack/piece`), and at least one. */
+const borrowedOnly = (worn: ReadonlyArray<string | undefined>): boolean => {
+  const pieces = worn.filter((piece) => piece !== undefined);
+  return pieces.length > 0 && pieces.every((piece) => !piece.includes("/"));
+};
+
 /** Every look a pack's art makes: each piece worn alone (its posed variants too), and each outfit in each colourway. */
 export function looksOfPack(theme: string): PackLook[] {
   const pack = PACKS.find((p) => p.theme === theme);
@@ -410,9 +416,7 @@ export function looksOfPack(theme: string): PackLook[] {
               look,
               mouth: false,
               eyesAllowed: false,
-              borrowed: Object.values(look.wardrobe).every(
-                (piece) => piece === undefined || !piece.includes("/"),
-              ),
+              borrowed: borrowedOnly(Object.values(look.wardrobe)),
             },
           ];
     });

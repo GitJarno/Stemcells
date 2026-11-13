@@ -13,6 +13,7 @@ import {
 } from "../../../../../stemcells/ledger/feats.ts";
 import { setChosen } from "../cell/kit";
 import type { NeedsConnection } from "../line/read";
+import { type Baseline, baselineAfter, type Turns, turns } from "./kit";
 
 const PATH = "/api/stemcells/collection";
 /** The least time between two reads of one machine's collection the line asks for. */
@@ -21,6 +22,17 @@ const GAP_MS = 30_000;
 let held: ReadonlyMap<string, Collection> = new Map();
 const lastRead = new Map<string, number>();
 const listeners = new Set<() => void>();
+
+/** What each machine had earned when the phone first read it in full: none of it gets a card. */
+const baselines = new Map<string, Baseline>();
+export const baselinesHeld = (): ReadonlyMap<string, Baseline> => baselines;
+
+const orders = new Map<string, Turns>();
+function orderOf(environmentId: string): Turns {
+  const order = orders.get(environmentId) ?? turns();
+  orders.set(environmentId, order);
+  return order;
+}
 
 /** Every machine's choices as one: a chat's id is its own on any machine, and an act unlocked on one plays on all. */
 function publish(next: ReadonlyMap<string, Collection>): void {
@@ -41,7 +53,8 @@ const without = (environmentId: string): Map<string, Collection> => {
   return next;
 };
 
-const authorised = (connection: NeedsConnection) =>
+/** Whether the phone holds its own token for this machine: only then can it ask it directly. */
+export const authorised = (connection: NeedsConnection) =>
   connection.relayManaged !== true && connection.bearerToken !== null;
 
 /**
@@ -59,13 +72,19 @@ export async function readCollectionOf(
   if (!authorised(connection)) return;
   if (!force && now - (lastRead.get(environmentId) ?? -GAP_MS) < GAP_MS) return;
   lastRead.set(environmentId, now);
+  const fresh = orderOf(environmentId).read();
   try {
     const answer = await request(new URL(PATH, connection.httpBaseUrl).toString(), {
       headers: { authorization: `Bearer ${connection.bearerToken}` },
     });
     if (answer.status === 404) publish(without(environmentId));
-    else if (answer.ok)
-      publish(new Map(held).set(environmentId, (await answer.json()) as Collection));
+    else if (answer.ok) {
+      // Parsed before `held` is copied: another machine's read may land meanwhile.
+      const next = (await answer.json()) as Collection;
+      if (!fresh()) return;
+      baselines.set(environmentId, baselineAfter(baselines.get(environmentId) ?? null, next));
+      publish(new Map(held).set(environmentId, next));
+    }
   } catch {
     // Out of reach just now: what it said last stands.
   }
@@ -74,6 +93,8 @@ export async function readCollectionOf(
 /** Forgets a machine the phone no longer knows. */
 export function forgetCollectionOf(environmentId: string): void {
   lastRead.delete(environmentId);
+  baselines.delete(environmentId);
+  orders.delete(environmentId);
   if (held.has(environmentId)) publish(without(environmentId));
 }
 
@@ -105,6 +126,7 @@ export async function wear(
   threadId: string,
   worn: readonly string[],
 ): Promise<void> {
+  const arrived = orderOf(environmentId).change();
   const before = held.get(environmentId);
   if (before !== undefined) {
     const { [threadId]: _was, ...others } = before.worn;
@@ -116,6 +138,7 @@ export async function wear(
     );
   }
   await change(connection, { wear: { threadId, worn } });
+  arrived();
   await readCollectionOf(environmentId, connection, Date.now(), fetch, true);
 }
 

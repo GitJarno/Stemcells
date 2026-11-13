@@ -177,8 +177,9 @@ What the Cells' work earns, and a Cell the person dresses
   earned, the rank, a bar a segment, the day so far. Then the three rungs
   nearest earned, then a row a ladder. A tap on a row opens its rungs.
   Nothing here moves on its own.
-- **The wardrobe** (Settings › Collection, Wardrobe). One Cell stands on
-  the stage, alive. A tap on a piece puts it on, in place of whatever held
+- **A Cell of its own** (Settings › Collection, Cells). One Cell stands on
+  the stage, alive, beside the marks its own life earned and what each of
+  the others takes. A tap on a piece puts it on, in place of whatever held
   its slot, and again takes it off; "Its own look" takes everything off. A
   tap on an act plays it on the stage. The choice is kept on the Cell's
   machine and every picture of the Cell wears it, on every device.

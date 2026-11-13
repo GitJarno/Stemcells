@@ -13,7 +13,7 @@ import type { NeedsConnection } from "../line/read";
 import { AppText, SymbolView } from "../upstream/disk";
 import { CellMini } from "./CellMini";
 import { CellStill } from "./CellStill";
-import { HUES, NEW_DOT } from "./hues";
+import { BAR, HUES, NEW_DOT } from "./hues";
 import {
   COLLECTION,
   type Collection,
@@ -43,11 +43,8 @@ import {
   todayCounts,
   wornIdOf,
 } from "./kit";
-import { NUMBERS, Section, STAND_IN } from "./parts";
+import { dateOf, NUMBERS, Section, STAND_IN } from "./parts";
 import { markSeen } from "./read";
-
-const dateOf = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 
 const percent = (part: number) => `${Math.round(Math.min(1, Math.max(0, part)) * 100)}%` as const;
 
@@ -153,7 +150,7 @@ const RING = { size: 88, stroke: 6, radius: 34 };
 
 /** A ring filled as far as `part` of it is done, its number in the middle. */
 function Ring(props: { readonly part: number; readonly n: number; readonly of: number }) {
-  const hue = useResolveClassNames("text-adaptive-sky-600-400").color;
+  const hue = useResolveClassNames("text-foreground").color;
   const round = 2 * Math.PI * RING.radius;
   return (
     <View
@@ -239,9 +236,9 @@ function Summary(props: {
             <AppText className="w-12 text-xs text-foreground">
               {SEGMENT_NAMES[each.segment]}
             </AppText>
-            <View className={`h-[3px] flex-1 overflow-hidden rounded-full ${HUES.rare.track}`}>
+            <View className={`h-[3px] flex-1 overflow-hidden rounded-full ${BAR.track}`}>
               <View
-                className={`h-full ${HUES.rare.fill}`}
+                className={`h-full ${BAR.fill}`}
                 style={{ width: percent(each.earned / each.of) }}
               />
             </View>
@@ -279,13 +276,11 @@ function Summary(props: {
   );
 }
 
-/** A bar filled as far as a ladder is to its next rung, in that rung's hue. */
+/** A bar filled as far as a ladder is to its next rung. */
 function Bar(props: { readonly ladder: Ladder }) {
-  const { ladder } = props;
-  const hue = HUES[(ladder.next ?? ladder.rungs[ladder.rungs.length - 1]!).feat.rarity];
   return (
-    <View className={`h-[3px] overflow-hidden rounded-full ${hue.track}`}>
-      <View className={`h-full ${hue.fill}`} style={{ width: percent(reachOf(ladder)) }} />
+    <View className={`h-[3px] overflow-hidden rounded-full ${BAR.track}`}>
+      <View className={`h-full ${BAR.fill}`} style={{ width: percent(reachOf(props.ladder)) }} />
     </View>
   );
 }

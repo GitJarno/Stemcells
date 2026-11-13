@@ -1,6 +1,7 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (collection.css), outside upstream's Tailwind entry. */
-// The wardrobe: a dressing room where the person puts what the feats unlocked on a Cell and
-// watches an act. One Cell here is alive, the one on the stage; every other stands still.
+// A Cell of its own: the marks its life earned, and a dressing room where the person puts what
+// the feats unlocked on it and watches an act. One Cell here is alive, the one on the stage;
+// every other stands still.
 
 import { useState, useSyncExternalStore } from "react";
 
@@ -10,7 +11,15 @@ import {
   unlockedPieces,
   wornIdOf,
 } from "../../../../../stemcells/ledger/feats.ts";
+import { type Award, MARKS } from "../../../../../stemcells/ledger/marks.ts";
 import { actWords, COLLECTION, rewardShort } from "../../../../../stemcells/words/feats.ts";
+import {
+  evidenceOf,
+  MARK_NAMES,
+  MARK_TAKES,
+  marksCount,
+  marksOf,
+} from "../../../../../stemcells/words/marks.ts";
 import { moment, play } from "../cell/acting";
 import { clockSeconds } from "../cell/blink";
 import { CellFigure } from "../cell/CellFigure";
@@ -19,6 +28,7 @@ import { chosenVersion, onChosen } from "../cell/chosen";
 import type { Ground } from "../cell/keyline";
 import { dayOf, lookOf } from "../cell/looks";
 import { cellNameOf } from "../cell/name";
+import { MarkGlyph } from "../lineage/MarkGlyph";
 import { CellMini } from "../rail/CellMini";
 import { askiCellOf } from "../tabs/askiTab";
 import { type CellRef, focusedPane } from "../tabs/layout";
@@ -32,6 +42,7 @@ import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { actsToShow, MOST_TO_DRESS, toggled } from "./dress";
 import { standings } from "./fresh";
 import { wear } from "./read";
+import { useRecords } from "./records";
 import { STAND_IN } from "./RewardCell";
 import "./collection.css";
 
@@ -81,7 +92,52 @@ function CellChip(props: {
   );
 }
 
-/** Where the person dresses a Cell in what the feats unlocked, and has it show an act. */
+const dateOf = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+
+/** One Cell's record: every mark a life can earn, the earned ones with what shows them and when. */
+function Marks(props: { readonly name: string; readonly awards: readonly Award[] }) {
+  const earned = new Map(props.awards.map((award) => [award.mark, award]));
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="flex items-baseline justify-between gap-2 text-xs font-medium text-muted-foreground">
+        <span className="truncate">{marksOf(props.name)}</span>
+        <span className="shrink-0 tabular-nums">{marksCount(earned.size, MARKS.length)}</span>
+      </h3>
+      <ul className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+        {MARKS.map((mark) => {
+          const award = earned.get(mark);
+          return (
+            <li key={mark} className="flex min-w-0 items-start gap-2">
+              <MarkGlyph
+                mark={mark}
+                className={`mt-0.5 size-3.5 shrink-0 ${
+                  award === undefined ? "text-muted-foreground/40" : "text-foreground"
+                }`}
+              />
+              <div className="flex min-w-0 flex-col">
+                <span
+                  className={`truncate text-xs ${
+                    award === undefined ? "text-muted-foreground" : "font-medium text-foreground"
+                  }`}
+                >
+                  {MARK_NAMES[mark]}
+                </span>
+                <span className="text-2xs text-muted-foreground">
+                  {award === undefined
+                    ? MARK_TAKES[mark]
+                    : `${evidenceOf(award)} · ${dateOf(award.at)}`}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/** A Cell's own record, and where the person dresses it in what the feats unlocked and has it show an act. */
 export function Wardrobe(props: { readonly collection: Collection; readonly ground: Ground }) {
   const { collection, ground } = props;
   const primaryId = usePrimaryEnvironmentId();
@@ -103,6 +159,10 @@ export function Wardrobe(props: { readonly collection: Collection; readonly grou
   const worn = cell === null ? tried : (collection.worn[cell.threadId] ?? []);
   const look = cell === null ? tried : lookOf(cell.threadId, day);
   const driver = useCellDriver(cell);
+  const records = useRecords(
+    cells.map((each) => each.threadId),
+    collection.today.landings + collection.today.merges,
+  );
 
   const unlocked = unlockedPieces(collection.feats);
   const earned = standings(collection).filter(({ state }) => state.earned !== null);
@@ -124,10 +184,10 @@ export function Wardrobe(props: { readonly collection: Collection; readonly grou
   const reset = () => (cell === null ? setTried([]) : void wear(cell.threadId, []));
 
   return (
-    <SettingsSection title={COLLECTION.dressingRoom} variant="plain">
+    <SettingsSection title={COLLECTION.cellsTab} hideTitle variant="plain">
       <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
         {cells.length > 1 ? (
-          <div className="flex flex-wrap gap-1.5" aria-label={COLLECTION.cellsToDress}>
+          <div role="group" className="flex flex-wrap gap-1.5" aria-label={COLLECTION.cellsToDress}>
             {cells.map((each) => (
               <CellChip
                 key={each.threadId}
@@ -156,6 +216,9 @@ export function Wardrobe(props: { readonly collection: Collection; readonly grou
             ) : null}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-4">
+            {cell === null ? null : (
+              <Marks name={cellNameOf(cell.threadId)} awards={records.get(cell.threadId) ?? []} />
+            )}
             <div className="flex flex-col gap-2">
               <h3 className="text-xs font-medium text-muted-foreground">{COLLECTION.toWear}</h3>
               {pieces.length === 0 ? (

@@ -145,9 +145,8 @@ function Card(props: Parameters<typeof FeatMoment>[0]) {
           <Animated.View collapsable={false} style={[FLOATS, swiped]}>
             <View
               accessibilityLabel={COLLECTION.earned}
-              className="flex-row gap-3 overflow-hidden rounded-2xl border border-border bg-grouped-card py-3 pl-4 pr-1"
+              className="flex-row gap-3 rounded-2xl border border-border bg-grouped-card py-3 pl-3 pr-1"
             >
-              <View className={`absolute inset-y-0 left-0 w-[3px] ${hue.fill}`} />
               <View className="w-14 items-center justify-center">
                 <CellStill
                   name={threadId ?? STAND_IN}

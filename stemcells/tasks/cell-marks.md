@@ -12,15 +12,27 @@ added later is awarded for the past too.
   every app and safe for the phone's Hermes. `marksByThread(facts)` gives
   each life its marks, in the order it earned them. A life with none isn't
   listed.
-- **Marks, version 1.** Each is earned once a life, by the first fact
-  that shows it.
+- **Six marks.** Each is earned once a life, and dated by the fact that
+  earned it. A record lists all six, the nearest first.
 
-  | Mark         | Earned by                                                                             | Shows      |
-  | ------------ | ------------------------------------------------------------------------------------- | ---------- |
-  | Landed alone | a run that landed with Done, asked the person nothing and worked 10 min on its own    | that time  |
-  | Merged       | a pull request of its own that merged                                                 | its number |
-  | Long haul    | its landed runs coming to 2 h on their own in one life, at the landing that passed it | all of it  |
+  | Mark           | Earned by                                                                             | Shows            |
+  | -------------- | ------------------------------------------------------------------------------------- | ---------------- |
+  | Landed alone   | a run that landed with Done, asked the person nothing and worked 10 min on its own    | that time        |
+  | Merged         | a pull request of its own that merged                                                 | its number       |
+  | Frequent flyer | ten landings in one life, at the tenth                                                | all its landings |
+  | Radio silence  | five landings in a row with Done and nothing asked, at the fifth                      | its longest row  |
+  | Hat-trick      | three pull requests merged in one life, at the third                                  | all its merges   |
+  | Long haul      | its landed runs coming to 2 h on their own in one life, at the landing that passed it | all of it        |
 
+- **A Cell's marks are the second dimension of the collection**
+  (`collection.md`): a feat is the crew's and the person's, a mark is one
+  Cell's. Settings › Collection › Cells shows the Cell picked with its
+  record: all six, the earned ones with what shows them and the day, the
+  rest with what they take. It asks the machine for the marks alone
+  (`GET /api/stemcells/collection/cells?threads=`), worked out from the
+  facts the collection already holds, so the Mac and the phone read the
+  same record. A mark gets no card: a feat's moment is the crew's, and a
+  Cell merging its first pull request happens too often to interrupt for.
 - **The thresholds are growth's own stages**, imported and never copied:
   10 min is growth's first stage and 2 h its last
   (`GROWN_MS` in `stemcells/ledger/alone.ts`, which the web's
@@ -30,9 +42,9 @@ added later is awarded for the past too.
 - **The words** are in `stemcells/words/marks.ts`: each mark's name, what
   shows it ("42 min", "#12") and the sentence that says what the Cell did.
 - **Settings › Lineage** lists each life's marks under it as its card
-  opens: a small glyph cut from square blocks in one of our state hues, the
-  name, and what shows it; the day and the sentence on hover. No new
-  creature art. The page reads `GET /api/stemcells/ledger` for the card's
+  opens: a small glyph cut from square blocks in the ink of the words
+  beside it, the name, and what shows it; the day and the sentence on
+  hover. No new creature art. The page reads `GET /api/stemcells/ledger` for the card's
   chats and works the marks out in the browser.
 
 ## Choices
@@ -48,9 +60,11 @@ added later is awarded for the past too.
   on another machine lists no marks here.
 - **No marks while the ledger can't answer.** A failed read shows the page
   as it was before marks, with no error: the marks are an addition.
-- **Three glyphs, not icons from a set:** a tick come to rest on the
-  ground, two lines joined into one, a bar with a weight at each end, on
-  the 7 × 7 grid a Cell is cut on.
+- **Six glyphs, not icons from a set**, on the 7 × 7 grid a Cell is cut
+  on (`lineage/markGlyphs.ts`, shared with the phone): a tick come to rest
+  on the ground, two lines joined into one, two arrowheads, an empty
+  speech bubble, a hat, a bar with a weight at each end. The sign says
+  which mark; none wears a hue of its own.
 
 ## Plan
 
@@ -78,7 +92,7 @@ added later is awarded for the past too.
 ## Left
 
 - A mark on the Cell's figure.
-- The phone's views.
+- Lineage on the phone.
 - An MCP tool for agents to read a Cell's marks.
 - `landed` could record the verdict on a landed run (shown, claimed or
   short) once that lands, and a mark could then ask for a landing that

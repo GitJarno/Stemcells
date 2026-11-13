@@ -172,7 +172,7 @@ function Summary(props: {
           {tally.segments.map((each) => (
             <li key={each.segment} className="flex items-center gap-3">
               <span className="w-12 text-xs text-foreground">{SEGMENT_NAMES[each.segment]}</span>
-              <div className="feat-bar feat-bar-plain flex-1" aria-hidden="true">
+              <div className="feat-bar flex-1" aria-hidden="true">
                 <span style={{ width: percent(each.earned / each.of) }} />
               </div>
               <span className="w-14 text-end text-xs text-muted-foreground tabular-nums">

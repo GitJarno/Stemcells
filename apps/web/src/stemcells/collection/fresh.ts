@@ -15,6 +15,19 @@ export const standings = (collection: Collection): Standing[] => standingsOf(col
 export const earnedIds = (collection: Collection): Set<string> =>
   new Set(collection.feats.filter((state) => state.earned !== null).map((state) => state.id));
 
+/** What was earned when a collection was first read in full: none of it gets a card. */
+export interface Baseline {
+  readonly earned: ReadonlySet<string>;
+  /** False while the ledger still reads the chats from before it: the next read starts over. */
+  readonly settled: boolean;
+}
+
+/** The baseline once `next` is read: taken again each read until the ledger holds the past, then kept. */
+export const baselineAfter = (before: Baseline | null, next: Collection): Baseline =>
+  before !== null && before.settled
+    ? before
+    : { earned: earnedIds(next), settled: next.backfilled };
+
 /**
  * The feats earned now that weren't at `baseline` (the window's first read) and haven't been
  * shown to the person: the rarest first, then in the catalogue's order.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { Fact, Landed } from "./facts.ts";
-import { LANDED_ALONE_MS, LONG_HAUL_MS, marksByThread } from "./marks.ts";
+import { LANDED_ALONE_MS, LONG_HAUL_MS, MARKS, marksByThread } from "./marks.ts";
 
 const MINUTE = 60_000;
 const at = (minutes: number) =>
@@ -76,6 +76,34 @@ describe("the marks a life earned, from its facts", () => {
     ]);
   });
 
+  it("counts a life's landings, its clean ones in a row, and its merges", () => {
+    // Too short to land alone or come to a long haul: only the counts are in play.
+    const brief = (n: number, data: Partial<Landed> = {}) =>
+      landed(`run-${n}`, n, { ms: MINUTE, aloneMs: MINUTE, ...data });
+    const nine = Array.from({ length: 9 }, (_, n) => brief(n + 1, { closeOut: "left" }));
+    expect(marks(nine)).toEqual([]);
+    expect(marksByThread([...nine, brief(10), brief(11)]).get("pip")).toEqual([
+      { mark: "frequent-flyer", threadId: "pip", at: at(10), landings: 11 },
+    ]);
+    // An ask breaks the row; the mark is dated by the fifth in a row and shows the longest.
+    const row = [1, 2, 3, 4].map((n) => brief(n));
+    expect(marks([...row, brief(5, { asks: 1 }), ...[6, 7, 8, 9].map((n) => brief(n))])).toEqual(
+      [],
+    );
+    expect(marksByThread([...row, brief(5), brief(6)]).get("pip")).toEqual([
+      { mark: "radio-silence", threadId: "pip", at: at(5), inARow: 6 },
+    ]);
+    expect(marks([mergedAt(1, 10), mergedAt(2, 20)])).toEqual(["merged"]);
+    expect(
+      marksByThread([mergedAt(1, 10), mergedAt(2, 20), mergedAt(3, 30), mergedAt(4, 40)]).get(
+        "pip",
+      ),
+    ).toEqual([
+      { mark: "merged", threadId: "pip", at: at(10), number: 1 },
+      { mark: "hat-trick", threadId: "pip", at: at(30), merges: 4 },
+    ]);
+  });
+
   it("each life earns its own, in the order it earned them", () => {
     const facts = [
       landed("run-a", 50, { aloneMs: 130 * MINUTE }),
@@ -87,5 +115,13 @@ describe("the marks a life earned, from its facts", () => {
     expect(marks(facts, "otter")).toEqual(["landed-alone"]);
     // No mark, no entry: a life that earned nothing isn't listed.
     expect(marksByThread([landed("run-d", 5, { asks: 3 }, "wren")]).has("wren")).toBe(false);
+    // A record lists every mark a rule can award, once.
+    const every = [
+      ...Array.from({ length: 10 }, (_, n) => landed(`run-${n}`, n * 10, { aloneMs: 15 * MINUTE })),
+      mergedAt(1, 5),
+      mergedAt(2, 6),
+      mergedAt(3, 7),
+    ];
+    expect([...marks(every)].sort()).toEqual([...MARKS].sort());
   });
 });

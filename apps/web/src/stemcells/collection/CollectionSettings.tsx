@@ -15,7 +15,7 @@ const VIEWS = ["feats", "wardrobe"] as const;
 type View = (typeof VIEWS)[number];
 const VIEW_NAMES: Readonly<Record<View, string>> = {
   feats: COLLECTION.featsTab,
-  wardrobe: COLLECTION.wardrobe,
+  wardrobe: COLLECTION.cellsTab,
 };
 
 export function CollectionSettingsPanel() {

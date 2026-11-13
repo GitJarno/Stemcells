@@ -67,6 +67,14 @@ it.effect("reads each fact from the ledger once, however often it is asked", () 
     // The second read starts after the last fact the first one held.
     assert.strictEqual(ledger.asked[2], 3);
     assert.strictEqual(read.feats.find((feat) => feat.id === "landings-100")?.have, 10);
+    // A Cell's own record comes from the facts already held: only the Cells asked for, and
+    // none for one that earned nothing.
+    const { marks } = yield* collection.records(["pip", "otter"]);
+    assert.deepStrictEqual(Object.keys(marks), ["pip"]);
+    assert.deepStrictEqual(
+      marks.pip?.map((award) => award.mark),
+      ["radio-silence", "frequent-flyer"],
+    );
   }),
 );
 

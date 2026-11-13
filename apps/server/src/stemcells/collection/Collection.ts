@@ -14,6 +14,7 @@ import {
   featsOf,
   todayOf,
 } from "../../../../../stemcells/ledger/feats.ts";
+import { type CellRecords, marksByThread } from "../../../../../stemcells/ledger/marks.ts";
 import * as Ledger from "../ledger/Ledger.ts";
 import * as Upstream from "../upstream/collection.ts";
 import { type Kept, see, tell, wear } from "./kept.ts";
@@ -36,6 +37,10 @@ export class Collection extends Context.Service<
   Collection,
   {
     readonly read: Effect.Effect<CollectionRead, Ledger.LedgerReadError>;
+    /** The marks these Cells earned in their own lives (`stemcells/tasks/cell-marks.md`). */
+    readonly records: (
+      threadIds: ReadonlyArray<string>,
+    ) => Effect.Effect<CellRecords, Ledger.LedgerReadError>;
     readonly change: (
       change: CollectionChange,
     ) => Effect.Effect<void, Ledger.LedgerReadError | NotUnlockedError>;
@@ -81,6 +86,12 @@ export const make = Effect.fn("Collection.make")(function* (source: CollectionSo
     return { feats: featsOf(all, deeds, now), today: todayOf(all, now), worn, seen, backfilled };
   });
 
+  const records = Effect.fn("Collection.records")(function* (threadIds: ReadonlyArray<string>) {
+    const asked = new Set(threadIds);
+    const theirs = (yield* facts()).filter((fact) => asked.has(fact.threadId));
+    return { marks: Object.fromEntries(marksByThread(theirs)) } satisfies CellRecords;
+  });
+
   const change = Effect.fn("Collection.change")(function* (asked: CollectionChange) {
     const now = yield* Clock.currentTimeMillis;
     const before = yield* Ref.get(kept);
@@ -101,7 +112,7 @@ export const make = Effect.fn("Collection.make")(function* (source: CollectionSo
     yield* source.save(next);
   }, changing.withPermit);
 
-  return Collection.of({ read, change });
+  return Collection.of({ read, records, change });
 });
 
 export const layer = Layer.effect(

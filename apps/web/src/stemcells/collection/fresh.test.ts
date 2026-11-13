@@ -1,7 +1,8 @@
 import { expect, it } from "vite-plus/test";
 
 import type { Collection, FeatState } from "../../../../../stemcells/ledger/feats.ts";
-import { earnedIds, freshFeats, momentOf, rungAbove, standings } from "./fresh.ts";
+import { baselineAfter, earnedIds, freshFeats, momentOf, rungAbove, standings } from "./fresh.ts";
+import { turns } from "./turns.ts";
 
 const state = (id: string, earned: boolean): FeatState => ({
   id,
@@ -51,4 +52,38 @@ it("names the rung above an earned one, and none above a ladder's top or a secre
   expect(rungAbove(of("landings-1"), now)?.feat.id).toBe("landings-10");
   expect(rungAbove(of("alone-120"), now)).toBeNull();
   expect(rungAbove(of("dazed-1"), now)).toBeNull();
+});
+
+it("gives no card to what the ledger awards for the past while it still reads it", () => {
+  const reading = { ...collection(["landings-1"]), backfilled: false };
+  const more = { ...collection(["landings-1", "landings-10"]), backfilled: false };
+  const full = collection(["landings-1", "landings-10", "merges-1"]);
+  // Each read starts over until one says the past is in; that one is kept.
+  let baseline = baselineAfter(null, reading);
+  baseline = baselineAfter(baseline, more);
+  expect(freshFeats(baseline.earned, more)).toEqual([]);
+  baseline = baselineAfter(baseline, full);
+  expect(freshFeats(baseline.earned, full)).toEqual([]);
+  const later = collection(["landings-1", "landings-10", "merges-1", "alone-120"]);
+  expect(baselineAfter(baseline, later)).toBe(baseline);
+  expect(freshFeats(baseline.earned, later).map(({ feat }) => feat.id)).toEqual(["alone-120"]);
+});
+
+it("takes no read that ran while a change was on its way", () => {
+  const order = turns();
+  const before = order.read();
+  const arrived = order.change();
+  const during = order.read();
+  expect(before()).toBe(false);
+  arrived();
+  // Both began before the machine had the change: either may answer with what it replaced.
+  expect(before()).toBe(false);
+  expect(during()).toBe(false);
+  const after = order.read();
+  expect(after()).toBe(true);
+  // A second change on its way holds back the read that followed the first.
+  const second = order.change();
+  expect(after()).toBe(false);
+  second();
+  expect(order.read()()).toBe(true);
 });

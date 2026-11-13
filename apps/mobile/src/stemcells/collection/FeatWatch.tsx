@@ -13,15 +13,12 @@ import { OverlayPortal } from "../upstream/collection";
 import { type SavedRemoteConnection, useSavedRemoteConnections } from "../upstream/push";
 import { waitsOnPerson } from "./crew";
 import { FeatMoment } from "./FeatMoment";
-import { earnedIds, rungAbove, standings } from "./kit";
+import { rungAbove, standings } from "./kit";
 import { type Moment, momentKey, nextMoment } from "./moments";
-import { readCollectionOf, useCollections } from "./read";
+import { baselinesHeld, readCollectionOf, useCollections } from "./read";
 
 /** The ledger keeps a landing well inside a second; this long after a run changes, it is read. */
 const LEDGER_WRITES_WITHIN = 2_500;
-
-/** What each machine had earned when the phone first read it: none of it gets a card. */
-const baselines = new Map<string, ReadonlySet<string>>();
 
 function readEach(saved: ReadonlyArray<SavedRemoteConnection>): void {
   for (const each of saved)
@@ -67,11 +64,6 @@ export function FeatWatch() {
     });
     return () => subscription.remove();
   }, [savedConnectionsById]);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep what each machine had earned at the phone's first read of it, outside React: the app's lifetime, not a view's.
-  useEffect(() => {
-    for (const [environmentId, collection] of collections)
-      if (!baselines.has(environmentId)) baselines.set(environmentId, earnedIds(collection));
-  }, [collections]);
 
   const held = showing === null ? undefined : collections.get(showing.environmentId);
   const standing =
@@ -86,7 +78,7 @@ export function FeatWatch() {
   } else if (showing === null) {
     const next = nextMoment(
       collections,
-      baselines,
+      baselinesHeld(),
       new Set(waiting === "" ? [] : waiting.split(",")),
       shown,
     );

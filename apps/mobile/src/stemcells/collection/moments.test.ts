@@ -21,7 +21,7 @@ it("shows a feat earned since a machine's first read, once, and none while its C
   const first = new Map([["mac", holding(["landings-1"])]]);
   // The first read's feats are no news, with no baseline yet and with it.
   expect(nextMoment(first, new Map(), none, none)).toBeNull();
-  const baselines = new Map([["mac", new Set(["landings-1"])]]);
+  const baselines = new Map([["mac", { earned: new Set(["landings-1"]), settled: true }]]);
   expect(nextMoment(first, baselines, none, none)).toBeNull();
 
   // Earned since: the rarest first, one a time, and not again once shown or seen elsewhere.
@@ -37,7 +37,7 @@ it("shows a feat earned since a machine's first read, once, and none while its C
 
   // A machine with a Cell that waits keeps its card back; another machine's still shows.
   const both = new Map([...later, ["mini", holding(["landings-1"])]]);
-  const all = new Map([...baselines, ["mini", new Set<string>()]]);
+  const all = new Map([...baselines, ["mini", { earned: new Set<string>(), settled: true }]]);
   expect(nextMoment(both, all, new Set(["mac"]), none)).toEqual({
     environmentId: "mini",
     featId: "landings-1",

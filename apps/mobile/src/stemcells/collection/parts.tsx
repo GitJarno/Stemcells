@@ -7,6 +7,9 @@ import { AppText } from "../upstream/disk";
 
 export const NUMBERS = { fontVariant: ["tabular-nums" as const] };
 
+export const dateOf = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+
 /** A Cell that stands in on a tile: no chat's, so its look is only what the tile gives it. */
 export const STAND_IN = "collection";
 

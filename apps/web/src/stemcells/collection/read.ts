@@ -11,7 +11,8 @@ import {
   unlockedActs,
 } from "../../../../../stemcells/ledger/feats.ts";
 import { setChosen } from "../cell/chosen";
-import { earnedIds } from "./fresh";
+import { type Baseline, baselineAfter } from "./fresh";
+import { turns } from "./turns";
 import { getFromPrimary } from "../upstream/disk";
 import { postToPrimary } from "../upstream/limitResume";
 
@@ -21,22 +22,29 @@ let held: Collection | null = null;
 let reading: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
-/** What was earned when this window first read the collection: none of it gets a card. */
-let first: ReadonlySet<string> | null = null;
-export const earnedAtFirstRead = (): ReadonlySet<string> => first ?? new Set();
+const order = turns();
+
+/** What was earned when this window first read the collection in full: none of it gets a card. */
+let first: Baseline | null = null;
+const NONE: ReadonlySet<string> = new Set();
+export const earnedAtFirstRead = (): ReadonlySet<string> => first?.earned ?? NONE;
 
 function take(next: Collection): void {
   held = next;
-  first ??= earnedIds(next);
+  first = baselineAfter(first, next);
   setChosen({ worn: next.worn, acts: unlockedActs(next.feats) });
   for (const listener of listeners) listener();
 }
 
 /** Reads the collection again; one read at a time, and a read that fails leaves what is held. */
 export function readCollection(): Promise<void> {
-  reading ??= getFromPrimary(PATH)
+  if (reading !== null) return reading;
+  const fresh = order.read();
+  reading = getFromPrimary(PATH)
     .then(async (response) => {
-      if (response.ok) take((await response.json()) as Collection);
+      if (!response.ok) return;
+      const next = (await response.json()) as Collection;
+      if (fresh()) take(next);
     })
     .catch(() => undefined)
     .finally(() => {
@@ -55,11 +63,15 @@ async function change(asked: CollectionChange): Promise<boolean> {
  * back its own look. A choice the machine refuses is taken back by the read that follows.
  */
 export async function wear(threadId: string, worn: readonly string[]): Promise<void> {
+  const arrived = order.change();
   if (held !== null) {
     const { [threadId]: _before, ...others } = held.worn;
     take({ ...held, worn: worn.length === 0 ? others : { ...others, [threadId]: worn } });
   }
   await change({ wear: { threadId, worn } });
+  arrived();
+  // A read begun before the choice arrived isn't taken: wait it out, then read.
+  await reading;
   await readCollection();
 }
 
