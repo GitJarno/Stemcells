@@ -4,12 +4,13 @@
 // "?" while it waits on you. Its box is the miniature's (13 × 14 cells), hats and all, so
 // every Cell stands on one line; its picture reaches past the box by `MARGIN`, taking no room.
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { stand } from "./acting.ts";
 import type { Activity } from "./activity.ts";
 import { AskMark } from "./AskMark.tsx";
 import { clockSeconds } from "./blink.ts";
 import { bodyOf, type Entrance, entering, frameFor, type Stance } from "./cast.ts";
+import { chosenVersion, onChosen } from "./chosen.ts";
 import { onStage, personHere, watchingFrom } from "./clock.ts";
 import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./forming.ts";
 import type { Ground } from "./keyline.ts";
@@ -69,6 +70,7 @@ export function CellFigure(props: {
   const formsAt = props.forming?.at;
   const watches = props.watches ?? false;
   const [day] = useState(() => dayOf(new Date()));
+  useSyncExternalStore(onChosen, chosenVersion);
   const mood = moodOf(props.mood);
   const worn = (props.look ?? lookOf(name, day)).join("+");
   const body = bodyOf(props.provider);

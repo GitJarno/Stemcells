@@ -11,6 +11,7 @@ import {
   type SavedRemoteConnection,
   useSavedRemoteConnections,
 } from "../upstream/push";
+import { forgetCollectionOf, readCollectionOf } from "../collection/read";
 import { readNeeds, type NeedsConnection, type Reading } from "./read";
 
 /** After a chat changes: its machine derives the asks from the same change. */
@@ -46,6 +47,8 @@ export function readMachine(environmentId: string): Promise<Reading | null> {
     lastRead.set(environmentId, Date.now());
     // Forgotten meanwhile (the connection removed): nothing to show it for.
     if (connections.has(environmentId)) publish(environmentId, next);
+    // A machine with a line has a collection: what its Cells wear by the person's choice.
+    if (next.state === "read") void readCollectionOf(environmentId, connection);
     return next;
   });
   reading.set(environmentId, read);
@@ -105,6 +108,7 @@ export function useKeepReading(
     for (const id of connections.keys())
       if (!saved.some((connection) => connection.environmentId === id)) {
         connections.delete(id);
+        forgetCollectionOf(id);
         publish(id, null);
       }
     for (const connection of saved) {

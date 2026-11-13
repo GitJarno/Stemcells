@@ -6,6 +6,7 @@ import { poke } from "../cell/acting";
 import { clockSeconds } from "../cell/blink";
 import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
+import { tellDeed } from "../collection/read";
 import { useCellStage } from "../needs/stream";
 import { RenameField } from "../rename/RenameField";
 import { CellMark } from "../tabs/CellMark";
@@ -121,7 +122,10 @@ export function CellComposerLine() {
           onPointerUp={() => {
             const press = pressed.current;
             pressed.current = null;
-            if (press !== null && !reducedMotion()) poke(cell.threadId, clockSeconds());
+            if (press === null || reducedMotion()) return;
+            // Poked until it sees stars is a deed a feat reads, told the first time.
+            if (poke(cell.threadId, clockSeconds())?.key === "act/dazed")
+              tellDeed("dazed", cell.threadId);
           }}
         >
           <CellMark cell={cell} points={POINTS_PER_PIXEL} stage />

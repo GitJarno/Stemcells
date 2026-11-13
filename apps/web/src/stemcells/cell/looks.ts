@@ -3,6 +3,7 @@
 // the slots left free. Every Cell dresses on a feast, one day in three through a longer season.
 // Pure, and the same on every screen; the reasons are in `stemcells/tasks/cell-cast.md`.
 
+import { chosenLook } from "./chosen.ts";
 import { type Pack, type PackOutfit, PACKS } from "./kit.ts";
 import { cellNameOf } from "./name.ts";
 
@@ -292,10 +293,9 @@ function dealOwn(
 }
 
 /**
- * What each Cell of a crew wears on `day` (`2027-02-06`, or a month-day), as ids, Cells in seat
- * order: its own look; on a day it dresses for the season, the season's outfit in its place,
- * or the season's piece before it. A Cell `kept` names keeps its colourways and its season's
- * item, from one dress-up day to the next. Nothing kept, every screen agrees.
+ * What each Cell of a crew wears on `day` (`2027-02-06`, or a month-day), in seat order: what
+ * the person dressed it in (`chosen.ts`), then its season's outfit or piece on a day it dresses
+ * for it, then its own look. A Cell `kept` names keeps its colourways and its season's item.
  */
 export function looksOf(
   codenames: readonly string[],
@@ -325,7 +325,8 @@ export function looksOf(
           ? undefined
           : heldItem(season.theme, items, kept.get(codename));
       const held = [whole ? mine : undefined, put].filter((id): id is string => id !== undefined);
-      const worn = [item, whole ? undefined : mine].filter((id): id is string => id !== undefined);
+      const dealt = [item, whole ? undefined : mine].filter((id): id is string => id !== undefined);
+      const worn = [...(chosenLook(codename) ?? []), ...dealt];
       return [codename, held.length > 0 ? { worn, held } : { worn }];
     }),
   );

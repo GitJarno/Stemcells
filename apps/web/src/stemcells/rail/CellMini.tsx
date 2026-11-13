@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { CellStill } from "../cell/CellStill";
+import { chosenVersion, onChosen } from "../cell/chosen";
 import { dayOf, lookOf } from "../cell/looks";
 import { useRosterLook } from "../tabs/roster";
 import { useCellGround } from "../upstream/appearance";
@@ -17,6 +18,7 @@ export function CellMini(props: { environmentId: string; threadId: string; point
   const provider = useCellDriver(cell);
   const ground = useCellGround();
   const [day] = useState(() => dayOf(new Date()));
+  useSyncExternalStore(onChosen, chosenVersion);
   const look = useRosterLook(props.threadId) ?? lookOf(props.threadId, day);
   return (
     <CellStill

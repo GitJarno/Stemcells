@@ -4,6 +4,7 @@
 
 export { performing, poke, stand, standingOf } from "../../../../web/src/stemcells/cell/acting.ts";
 export { clockSeconds, isBlinking } from "../../../../web/src/stemcells/cell/blink.ts";
+export { chosenVersion, onChosen, setChosen } from "../../../../web/src/stemcells/cell/chosen.ts";
 export {
   bodyOf,
   type Entrance,
