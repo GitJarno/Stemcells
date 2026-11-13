@@ -13,7 +13,7 @@ import { OverlayPortal } from "../upstream/collection";
 import { type SavedRemoteConnection, useSavedRemoteConnections } from "../upstream/push";
 import { waitsOnPerson } from "./crew";
 import { FeatMoment } from "./FeatMoment";
-import { earnedIds, standings } from "./kit";
+import { earnedIds, rungAbove, standings } from "./kit";
 import { type Moment, momentKey, nextMoment } from "./moments";
 import { readCollectionOf, useCollections } from "./read";
 
@@ -106,6 +106,7 @@ export function FeatWatch() {
         connection={saved === undefined ? null : needsConnectionOf(saved)}
         standing={standing}
         worn={threadId === null ? [] : (held?.worn[threadId] ?? [])}
+        next={held === undefined ? null : rungAbove(standing, held)}
         onDone={() => {
           setShown((before) => new Set(before).add(momentKey(showing)));
           setShowing(null);

@@ -3,7 +3,7 @@
  * what it unlocks. One copy for every screen (`stemcells/tasks/collection.md`). The rules are
  * `stemcells/ledger/feats.ts`'s; these words only say them.
  */
-import type { Feat, FeatState, Measure, Rarity, Segment, Today } from "../ledger/feats.ts";
+import type { Feat, Measure, Rarity, Segment, Today } from "../ledger/feats.ts";
 import type { Ladder } from "../ledger/ladders.ts";
 
 const MINUTE = 60_000;
@@ -110,14 +110,6 @@ export function featTakes(feat: Feat): string {
 }
 
 const TIMED: ReadonlySet<Measure> = new Set<Measure>(["alone"]);
-
-/** How far along a feat is: "64 of 100", "42 min of 2 h"; nothing for one that takes a single thing. */
-export function featProgress(feat: Feat, state: FeatState): string | null {
-  if (feat.of <= 1) return null;
-  if (TIMED.has(feat.measure))
-    return `${spanWords(Math.min(state.have, feat.of))} of ${spanWords(feat.of)}`;
-  return `${countWords(Math.min(state.have, feat.of))} of ${countWords(feat.of)}`;
-}
 
 export const RARITY_NAMES: Readonly<Record<Rarity, string>> = {
   common: "Common",

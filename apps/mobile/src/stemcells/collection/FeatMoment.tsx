@@ -65,6 +65,8 @@ export function FeatMoment(props: {
   readonly standing: Standing;
   /** What the Cell that did it wears by the person's choice. */
   readonly worn: readonly string[];
+  /** The rung above the one earned, put in view at once; null at a ladder's top. */
+  readonly next: Standing | null;
   readonly onDone: () => void;
 }) {
   const card = <Card {...props} />;
@@ -163,6 +165,11 @@ function Card(props: Parameters<typeof FeatMoment>[0]) {
                   {featName(feat)}
                 </AppText>
                 <AppText className="text-xs text-foreground-muted">{featSaid(feat, name)}</AppText>
+                {props.next === null ? null : (
+                  <AppText className="text-xs text-foreground-muted">
+                    {COLLECTION.nextRung(featName(props.next.feat))}
+                  </AppText>
+                )}
                 <View className="mt-1.5 flex-row flex-wrap items-center gap-x-3 gap-y-1">
                   {wornId !== undefined && threadId !== null && name !== null && !wearing ? (
                     <Button
