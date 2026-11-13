@@ -214,7 +214,7 @@
     {
       "name": "medal",
       "slot": "wrap",
-      "about": "A gold medal on a blue and white ribbon, worn round the middle: the medal hangs low at the centre.",
+      "about": "A gold medal on a blue and white ribbon, worn round the middle: the ribbon drapes down to the medal, low at the centre.",
       "art": [
         "hhh..................hhh",
         "hWWhhh............hhhWWh",
@@ -232,7 +232,7 @@
     {
       "name": "rosette",
       "slot": "wrap",
-      "about": "A red prize rosette pinned at one hip, its two ribbon tails hanging.",
+      "about": "A red prize rosette with a gold centre, pinned at one side: its two ribbon tails hang to the hip.",
       "art": [
         ".RNNN..",
         "RNNNNm.",
@@ -270,7 +270,7 @@
     {
       "name": "flatcap",
       "slot": "headwear",
-      "about": "A tweed flat cap with a short peak, worn level on the crown.",
+      "about": "A tweed flat cap with a short peak, worn level on the crown: an old hand's cap.",
       "art": [
         "...........ttottttt......",
         "........tttotttttotttt...",
@@ -320,7 +320,7 @@
     {
       "name": "pennant",
       "slot": "back",
-      "about": "A pennant on a pole, carried on the back: the pole rises behind the left shoulder and the pennant flutters from its top.",
+      "about": "A pennant on a pole, carried on the back: the pole rises behind one shoulder and the pennant flutters from its top.",
       "art": [
         "YY..........",
         "gDWRR.......",
@@ -511,7 +511,7 @@
     {
       "name": "scarf",
       "slot": "wrap",
-      "about": "A knitted scarf in three colour stripes, wound round the base with one end hanging.",
+      "about": "A knitted scarf in three colour stripes, wound round the middle just under the eyes, one end hanging to the base.",
       "art": [
         ".FYYYYYYWWWWWWFFFFFFYYYYJ.",
         ".fJJJJJJCCCCCCffffffJJJJJ.",
@@ -532,7 +532,7 @@
       "about": "Two sticking plasters crossed over a bump on the crown, a little off-centre: it took a knock.",
       "art": [".qLBBq.", "BCCWCCb", "..WWW..", ".CCWCC.", "tC...Ct"],
       "hotspot": [1, 2],
-      "mini": ["qBq", ".W.", "C.C"],
+      "mini": ["qBq", ".W.", "W.W"],
       "miniHotspot": [0, 1]
     }
   ]
