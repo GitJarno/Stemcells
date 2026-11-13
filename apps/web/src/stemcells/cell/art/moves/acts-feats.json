@@ -61,14 +61,14 @@
       "miniHotspot": [0, 0]
     },
     "glow": {
-      "about": "Light on the floor under something that floats.",
+      "about": "Light on the floor under something that floats. Its hotspot is the floor.",
       "art": ["..************..", "***WWWWWWWWWW***"],
       "hotspot": [7, 1],
       "mini": ["..*WWWWW*.."],
       "miniHotspot": [5, 0]
     },
     "flame": {
-      "about": "A rocket's flame under its base, at full burn.",
+      "about": "A rocket's flame under its base, at full burn. A flame's hotspot is where it leaves the base.",
       "art": [
         "..YYYYYYYYYY..",
         ".YYYWWWWWWYYY.",
@@ -110,7 +110,7 @@
       "miniHotspot": [2, 0]
     },
     "blast": {
-      "about": "A rocket's ignition: flame out along the floor either side of its base.",
+      "about": "A rocket's ignition: flame out along the floor either side of its base. Its hotspot is the floor under its middle.",
       "art": [
         "YY......................YY",
         "YWYY..................YYWY",
@@ -160,7 +160,7 @@
       "miniHotspot": [6, 2]
     },
     "broomLeft": {
-      "about": "A broom leaning with its head to the left, where a push has taken it.",
+      "about": "A broom leaning with its head to the left, where a push has taken it. A broom's hotspot is the floor under its head.",
       "art": [
         "......CC.",
         "......CC.",
@@ -212,7 +212,7 @@
       "miniHotspot": [2, 10]
     },
     "sweptDust": {
-      "about": "Dust a broom has pushed along the floor.",
+      "about": "Dust pushed along the floor, or thrown up by a skid. Its hotspot is the floor.",
       "art": ["..WW..", ".WWWWu", "WWWWuu"],
       "hotspot": [2, 2],
       "mini": ["WW", "Wu"],
@@ -245,7 +245,7 @@
       "miniHotspot": [1, 10]
     },
     "rocketUp": {
-      "about": "A firework's rocket on its way up, its tail behind it.",
+      "about": "A firework's rocket on its way up, its tail behind it. Its hotspot is its tip.",
       "art": ["WW", "WW", "YY", "YY", ".3", "3."],
       "hotspot": [0, 0],
       "z": -1,
@@ -2104,14 +2104,22 @@
         },
         {
           "do": "face",
-          "eyes": "calm",
+          "eyes": "wide",
           "look": [0, 0]
         },
         {
-          "do": "pose",
-          "pose": {
-            "sy": 1.0625
-          },
+          "do": "wobble",
+          "reach": 2,
+          "times": 2,
+          "per": 2,
+          "decay": 0.5
+        },
+        {
+          "do": "face",
+          "eyes": "calm"
+        },
+        {
+          "do": "hold",
           "for": 1
         },
         {
