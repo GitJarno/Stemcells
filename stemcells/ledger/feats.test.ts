@@ -154,15 +154,15 @@ describe("the feats a crew earned, from the ledger's facts", () => {
       born(2, "c", null),
       born(3, "d", "cursor"),
       landed(5, { ms: 40_000 }, "a"),
-      merged(50, 12, "a"),
+      merged(10, 12, "a"),
       merged(200, 13, "b"),
       settled(60, "a"),
       settled(61, "a"),
     ]);
-    expect(states.get("drivers-3")?.earned).toEqual({ at: iso(3), threadId: "d" });
+    expect(states.get("drivers-2")?.earned).toEqual({ at: iso(1), threadId: "b" });
     expect(states.get("quick-1")?.earned).toEqual({ at: iso(5), threadId: "a" });
-    expect(states.get("straight-1")?.earned).toEqual({ at: iso(50), threadId: "a" });
-    expect(states.get("merges-1")?.earned).toEqual({ at: iso(50), threadId: "a" });
+    expect(states.get("straight-1")?.earned).toEqual({ at: iso(10), threadId: "a" });
+    expect(states.get("merges-1")?.earned).toEqual({ at: iso(10), threadId: "a" });
     // One Cell settled twice is one Cell settled.
     expect(states.get("settled-10")).toMatchObject({ have: 1 });
   });

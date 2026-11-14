@@ -34,7 +34,7 @@ const marks = (facts: ReadonlyArray<Fact>, threadId = "pip") =>
 describe("the marks a life earned, from its facts", () => {
   it("are measured against growth's own stages", () => {
     expect(LANDED_ALONE_MS).toBe(10 * MINUTE);
-    expect(LONG_HAUL_MS).toBe(120 * MINUTE);
+    expect(LONG_HAUL_MS).toBe(360 * MINUTE);
   });
 
   it.each<[string, Partial<Landed>, boolean]>([
@@ -66,13 +66,13 @@ describe("the marks a life earned, from its facts", () => {
     ]);
   });
 
-  it("the long haul is earned at the landing that takes a life past two hours alone", () => {
+  it("the long haul is earned at the landing that takes a life past six hours alone", () => {
     const run = (n: number, minutes: number, alone: number) =>
       landed(`run-${n}`, minutes, { aloneMs: alone * MINUTE, closeOut: "left", asks: 1 });
-    const short = [run(1, 10, 50), run(2, 70, 69)];
+    const short = [run(1, 10, 200), run(2, 70, 159)];
     expect(marks(short)).toEqual([]);
     expect(marksByThread([...short, run(3, 130, 1), run(4, 200, 30)]).get("pip")).toEqual([
-      { mark: "long-haul", threadId: "pip", at: at(130), aloneMs: 150 * MINUTE },
+      { mark: "long-haul", threadId: "pip", at: at(130), aloneMs: 390 * MINUTE },
     ]);
   });
 
@@ -106,9 +106,9 @@ describe("the marks a life earned, from its facts", () => {
 
   it("each life earns its own, in the order it earned them", () => {
     const facts = [
-      landed("run-a", 50, { aloneMs: 130 * MINUTE }),
+      landed("run-a", 50, { aloneMs: 370 * MINUTE }),
       mergedAt(4, 20),
-      landed("run-b", 30, { aloneMs: 60 * MINUTE }, "otter"),
+      landed("run-b", 30, { aloneMs: 300 * MINUTE }, "otter"),
       landed("run-c", 45, { aloneMs: 59 * MINUTE }, "otter"),
     ];
     expect(marks(facts)).toEqual(["merged", "landed-alone", "long-haul"]);
@@ -117,7 +117,7 @@ describe("the marks a life earned, from its facts", () => {
     expect(marksByThread([landed("run-d", 5, { asks: 3 }, "wren")]).has("wren")).toBe(false);
     // A record lists every mark a rule can award, once.
     const every = [
-      ...Array.from({ length: 10 }, (_, n) => landed(`run-${n}`, n * 10, { aloneMs: 15 * MINUTE })),
+      ...Array.from({ length: 10 }, (_, n) => landed(`run-${n}`, n * 10, { aloneMs: 40 * MINUTE })),
       mergedAt(1, 5),
       mergedAt(2, 6),
       mergedAt(3, 7),

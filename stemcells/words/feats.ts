@@ -56,7 +56,7 @@ const NAMES: Readonly<Record<string, string>> = {
   "cells-1000": "A thousand Cells",
   "cells-5000": "Five thousand Cells",
   "life-50": "Old hand",
-  "drivers-3": "Mixed crew",
+  "drivers-2": "Mixed crew",
   "days-30": "A month in",
   "days-365": "A year in",
   "night-1": "Night flight",
@@ -95,7 +95,7 @@ export function featTakes(feat: Feat): string {
     case "quick":
       return "A run landed with Done inside a minute.";
     case "straight":
-      return "A pull request merged within an hour of its Cell's birth.";
+      return "A pull request merged within a quarter of an hour of its Cell's birth.";
     case "life":
       return `One Cell landed ${n} times.`;
     case "days":

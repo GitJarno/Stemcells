@@ -110,10 +110,10 @@ dim ink for common. Nothing else on the page is coloured: a count's bar
 and the ring are drawn in the words' ink, so a hue always means rarity.
 
 **A rank** is the count of feats earned, named: Ground crew, Cadet, Pilot,
-Captain, Commander, Ace, Legend, at 0, 3, 8, 15, 22, 29 and 35 feats. The
-last is short of all thirty-seven, as a Diablo 4 season chapter asks for
-ten objectives of twenty-two: no one rung stands between the person and
-it.
+Captain, Commander, Ace, Legend, at 0, 3, 8, 15, 21, 26 and 32 feats. The
+last is five short of all thirty-seven, as a Diablo 4 season chapter asks
+for ten objectives of twenty-two: no one rung stands between the person
+and it.
 
 **Secrets** are on no ladder and in no count, as Feats of Strength are in
 Diablo 3 and World of Warcraft: a question mark until found, then a line
@@ -137,6 +137,44 @@ unlocked and the rung above, with one button to wear it.
 **A deed is a feat the hand did.** Poking a Cell dizzy, throwing it or
 stroking it is not in the ledger. The client tells the server the first
 time (`deed`), and a secret feat reads it.
+
+## Balance
+
+Where a breakpoint sits is set against a real ledger, not guessed: every
+run's landing, length, time alone and close-out, every birth and merge of
+a heavy crew's first month, run through these same rules. The figures stay
+with the person whose ledger it is. What they taught:
+
+- **A best yet tops out just past the best seen.** A hard goal works near
+  the top tenth of what has been done and stops working far past it
+  (Locke & Latham 2002). The top of each "best" ladder sits a little past
+  a heavy crew's first-month best, so ordinary variation earns it in a
+  month or two and nobody has to chase it.
+- **Something is always near.** Near goals sustain more than far ones
+  (Bandura & Schunk 1981). Feats arrive fast and then thin out: most of a
+  first month's fall in its first week. Counts stay on tens, which read at
+  a glance and spread their late rungs evenly on a log scale; the last
+  three ranks came down, to 21, 26 and 32 feats, so that a rank still
+  arrives in the months when feats are rare.
+- **A Cell's marks step down by about a third** (`cell-marks.md`): each is
+  earned by about two thirds as many lives as the one before, from about
+  one life in three to about one in thirty, and a record lists them in
+  that order. Long haul was the one off the ladder; at six hours alone it
+  is the last mark a life comes to.
+- **The cheapest way to earn anything is play wanted anyway** (principle
+  2). Providers asked for three, which only starting on one more provider
+  earns; it asks for two. Straight through allowed an hour, which an
+  ordinary first merge beats; it allows a quarter of one.
+- **A Cell's own word earns some of them.** Without a word, Radio silence
+  and Landed alone turn on the Done a Cell writes far more than on an ask,
+  which is rare. So no feat or mark is ever put in words a model reads,
+  and all three should move to a landing that was shown once the ledger
+  records one.
+
+To measure again after a second month: lives still open when the ledger
+was read are cut short. The late game is the thin part: after the second
+month a heavy crew has four feats left for the rest of its year, and more
+rungs there need more to unlock.
 
 ## The view
 

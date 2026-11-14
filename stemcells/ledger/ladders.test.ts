@@ -68,7 +68,7 @@ describe("the feats as ladders", () => {
 
   it("give a rank for feats earned, the last reachable short of every feat", () => {
     expect(rankOf(0)).toEqual({ rank: 0, toNext: 3 });
-    expect(rankOf(24)).toEqual({ rank: 4, toNext: 5 });
+    expect(rankOf(24)).toEqual({ rank: 4, toNext: 2 });
     expect(rankOf(99)).toEqual({ rank: RANKS.length - 1, toNext: null });
     const visible = FEATS.filter((feat) => feat.segment !== null).length;
     expect(RANKS.at(-1)).toBeLessThan(visible);
