@@ -109,7 +109,7 @@ export function tallyOf(feats: ReadonlyArray<FeatState>): Tally {
  * The feats a rank takes, the first rank at none. The last is short of every feat: no one
  * rung, the top of the longest ladder least of all, stands between the person and it.
  */
-export const RANKS: ReadonlyArray<number> = [0, 3, 8, 15, 22, 29, 35];
+export const RANKS: ReadonlyArray<number> = [0, 3, 8, 15, 21, 26, 32];
 
 /** The rank `earned` feats make (an index into `RANKS`), and how many more the next takes; null at the last. */
 export function rankOf(earned: number): { readonly rank: number; readonly toNext: number | null } {

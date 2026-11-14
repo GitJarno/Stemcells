@@ -13,16 +13,16 @@ added later is awarded for the past too.
   each life its marks, in the order it earned them. A life with none isn't
   listed.
 - **Six marks.** Each is earned once a life, and dated by the fact that
-  earned it. A record lists all six, the nearest first.
+  earned it. A record lists all six, the one most lives earn first.
 
   | Mark           | Earned by                                                                             | Shows            |
   | -------------- | ------------------------------------------------------------------------------------- | ---------------- |
-  | Landed alone   | a run that landed with Done, asked the person nothing and worked 10 min on its own    | that time        |
   | Merged         | a pull request of its own that merged                                                 | its number       |
   | Frequent flyer | ten landings in one life, at the tenth                                                | all its landings |
-  | Radio silence  | five landings in a row with Done and nothing asked, at the fifth                      | its longest row  |
   | Hat-trick      | three pull requests merged in one life, at the third                                  | all its merges   |
-  | Long haul      | its landed runs coming to 2 h on their own in one life, at the landing that passed it | all of it        |
+  | Landed alone   | a run that landed with Done, asked the person nothing and worked 10 min on its own    | that time        |
+  | Radio silence  | five landings in a row with Done and nothing asked, at the fifth                      | its longest row  |
+  | Long haul      | its landed runs coming to 6 h on their own in one life, at the landing that passed it | all of it        |
 
 - **A Cell's marks are the second dimension of the collection**
   (`collection.md`): a feat is the crew's and the person's, a mark is one
@@ -33,12 +33,14 @@ added later is awarded for the past too.
   facts the collection already holds, so the Mac and the phone read the
   same record. A mark gets no card: a feat's moment is the crew's, and a
   Cell merging its first pull request happens too often to interrupt for.
-- **The thresholds are growth's own stages**, imported and never copied:
-  10 min is growth's first stage and 2 h its last
-  (`GROWN_MS` in `stemcells/ledger/alone.ts`, which the web's
-  `cell/growth.ts` now reads its table from). Growth is worked out from
-  upstream's runs and a rollback takes it back; a mark is the same count
-  made durable.
+- **Where the thresholds sit is set from real lives** (`collection.md`,
+  Balance): each mark is earned by about two thirds as many lives as the
+  one before it. Landed alone's 10 min is growth's first stage and Long
+  haul's 6 h three times its last (`GROWN_MS` in
+  `stemcells/ledger/alone.ts`, which the web's `cell/growth.ts` reads its
+  table from). Long haul was growth's last stage itself, 2 h, which as
+  many lives reached as landed alone: it wasn't the last mark its name
+  promises.
 - **The words** are in `stemcells/words/marks.ts`: each mark's name, what
   shows it ("42 min", "#12") and the sentence that says what the Cell did.
 - **Settings › Lineage** lists each life's marks under it as its card
@@ -53,7 +55,7 @@ added later is awarded for the past too.
   and the mark wants none.
 - **The first fact stands for a mark.** A later, longer run doesn't move
   Landed alone, and a second merge doesn't add another Merged. Long haul
-  is dated by the landing that passed two hours and shows all the life's
+  is dated by the landing that passed six hours and shows all the life's
   time alone since.
 - **This machine's lives only.** Each machine keeps its own ledger; a life
   on another machine lists no marks here.
@@ -79,11 +81,10 @@ added later is awarded for the past too.
 
 ## Review
 
-- **Tests**, `stemcells/ledger/marks.test.ts`: the thresholds are
-  growth's; each condition of Landed alone at its edge (a second short,
+- **Tests**, `stemcells/ledger/marks.test.ts`: the thresholds; each condition of Landed alone at its edge (a second short,
   one ask, something left, no close-out, a long run mostly spent waiting);
   the first run stands for the mark; Merged once, by its first; Long haul
-  at the landing that passes two hours; each life its own, in order.
+  at the landing that passes six hours; each life its own, in order.
 - **Seen**, headless, on a scratch home with fake providers, Replay chats
   and made-up facts written to that home's own ledger: a life with all
   three marks, lives with one, and a life with none, which reads as it did

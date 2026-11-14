@@ -36,11 +36,11 @@ export const MARK_NAMES: Readonly<Record<MarkId, string>> = {
 
 /** What a mark takes, for a Cell that hasn't earned it: short enough to stand beside its name. */
 export const MARK_TAKES: Readonly<Record<MarkId, string>> = {
-  "landed-alone": `${aloneWords(LANDED_ALONE_MS)} alone in one run, nothing asked`,
+  "landed-alone": `A run of ${aloneWords(LANDED_ALONE_MS)} alone that landed with Done`,
   merged: "A pull request merged",
   "long-haul": `${aloneWords(LONG_HAUL_MS)} alone in one life`,
   "frequent-flyer": `${FREQUENT_FLYER} landings`,
-  "radio-silence": `${RADIO_SILENCE} landings in a row, nothing asked`,
+  "radio-silence": `${RADIO_SILENCE} landings in a row with Done`,
   "hat-trick": `${HAT_TRICK} pull requests merged`,
 };
 

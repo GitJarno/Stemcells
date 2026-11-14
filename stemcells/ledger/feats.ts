@@ -149,7 +149,7 @@ export const FEATS: ReadonlyArray<Feat> = [
   feat("cells", 1_000, "rare", piece("astronaut")),
   feat("cells", 5_000, "legendary", piece("crown")),
   feat("life", 50, "rare", piece("flatcap")),
-  feat("drivers", 3, "rare", piece("scarf")),
+  feat("drivers", 2, "common", piece("scarf")),
   feat("days", 30, "common", piece("beret")),
   feat("days", 365, "legendary", piece("angel")),
   feat("night", 1, "secret", piece("nightcap")),
@@ -223,7 +223,7 @@ class Tally {
 
 const NIGHT_ENDS = 5;
 const QUICK_MS = MINUTE;
-const STRAIGHT_MS = HOUR;
+const STRAIGHT_MS = 15 * MINUTE;
 
 interface Timed {
   readonly ms: number;

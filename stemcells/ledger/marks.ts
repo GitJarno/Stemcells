@@ -1,6 +1,6 @@
-// The marks a Cell earns in its own life, worked out from the ledger's facts each time they are
-// asked for and never stored: a mark added later is awarded for the past too. Each is earned
-// once a life and says what shows it. The time thresholds are growth's own stages.
+// The marks a Cell earns in its own life, worked out from the ledger's facts when asked and
+// never stored: a mark added later is awarded for the past too. Each is earned once a life;
+// where its threshold sits is set from real lives (`stemcells/tasks/cell-marks.md`).
 // Pure, and safe for the phone's Hermes: no `toSorted`, no `Intl`.
 
 import { GROWN_MS } from "./alone.ts";
@@ -8,8 +8,8 @@ import type { Fact } from "./facts.ts";
 
 /** A run that long on its own earns Landed alone: the time growth's first stage takes. */
 export const LANDED_ALONE_MS = GROWN_MS.nubs;
-/** That long on its own in one life earns Long haul: growth's last stage, made durable. */
-export const LONG_HAUL_MS = GROWN_MS.biceps;
+/** That long on its own in one life earns Long haul: three times what growing up takes, the last mark a life comes to. */
+export const LONG_HAUL_MS = 3 * GROWN_MS.biceps;
 
 /** That many landings in one life earn Frequent flyer. */
 export const FREQUENT_FLYER = 10;
@@ -65,13 +65,13 @@ export type Award =
 
 export type MarkId = Award["mark"];
 
-/** Every mark a life can earn, in the order a record lists them: the nearest first. */
+/** Every mark a life can earn, in the order a record lists them: the one most lives earn first. */
 export const MARKS: ReadonlyArray<MarkId> = [
-  "landed-alone",
   "merged",
   "frequent-flyer",
-  "radio-silence",
   "hat-trick",
+  "landed-alone",
+  "radio-silence",
   "long-haul",
 ];
 
