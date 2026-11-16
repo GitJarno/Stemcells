@@ -305,3 +305,20 @@ limit holds it until the limit lifts.
   addresses as local: upstream's sshd check (#34745) dials its own tailnet
   address. The generated report's commit list passes GitHub's 65,536
   character limit past about 700 commits: link the comparison instead.
+- 2026-11-16 (1,383 commits, three failed nights): upstream's connection
+  layer now loads the composer's store, so a substitute on that path that
+  imports the app's state closes a loop and leaves the connection runtime
+  undefined at load: a substitute stays as light as the module it replaces,
+  and state is handed in (`firstProject.ts`). Upstream refuses to start
+  with a thread-bound MCP tool that lacks `hiddenFromOutsideClients`; only
+  `boot` caught it, so run `boot` before reading a typecheck pass as done.
+  Resume became the provider's native continuation: a message sent with
+  `manualContinuationOfRunId` never reaches the provider, and a provider
+  without `resumeTurn` refuses it. A rewritten module takes its seam with
+  it (the SQLite checkpoint worker, npm's release age): take upstream's
+  file and retire ours rather than port it onto new code. A hot file's
+  seam survives upstream's edits best as a one-line body inside upstream's
+  own function (`ClaudeAdapterV2.ts`). Playwright's install collects other
+  projects' browser builds from the shared cache. To tell a Mac's own
+  failure from ours, run the test on a worktree of upstream's commit
+  before naming it in `sync-upstream`.
