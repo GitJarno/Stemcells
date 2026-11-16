@@ -6,7 +6,6 @@
 import { minuteTick } from "@t3tools/client-runtime/clock";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { PHRASES } from "../needs/card";
 import { COMPOSER_SURFACE_SELECTOR, minuteMs } from "./needs";
 
 import approvalActions from "../../components/chat/ComposerPendingApprovalActions.tsx?raw";
@@ -31,9 +30,12 @@ describe("the column's contracts with upstream", () => {
     expect(workEntryRow).toMatch(/<RotateCcwIcon aria-hidden \/>\s*Retry\s*<\/Button>/);
   });
 
-  it("resumes a limited run with upstream's own words", () => {
-    expect(composerResume).toContain(`text: "${PHRASES.continueNow}"`);
-    expect(composerResume).toContain("manualContinuationOfRunId");
+  it("resumes a limited run from the run that stopped, as upstream's Resume does", () => {
+    // A manual continuation resumes natively and the server drops its text:
+    // upstream sends none, and the card's line marks the turn without reaching the provider.
+    expect(composerResume).toMatch(
+      /manualContinuationOfRunId: resumableRunId,[\s\S]{0,200}text: "",/,
+    );
     // A held Cell moved to another account (`accounts/move.ts`) starts with that guard and the
     // account in one dispatch.
     expect(commands).toMatch(

@@ -29,18 +29,12 @@ function body(source: string, name: string): string {
 describe("the words' contracts with upstream's drafts", () => {
   it("the hero moves a draft with writing as moveDraft does", () => {
     const select = body(draftHeroHeadline, "selectProject");
-    expect(select).toContain("if (!composerDraftHasUserContent(currentDraft))");
-    expect(select).toMatch(
-      /setLogicalProjectDraftThreadId\(\s*logicalProjectKey,\s*scopeProjectRef/,
+    expect(select).toContain("if (!composerDraftHasUserContent(getComposerDraft(draftId)))");
+    expect(select).toContain(
+      "setLogicalProjectDraftThreadId(logicalProjectKey, projectRef, draftId);",
     );
-    expect(select).toContain("if (!hasExplicitComposerModelSelection(currentDraft))");
-    expect(select).toContain("applyStickyState(draftId)");
-    expect(select).toMatch(
-      /resolveProjectSettings\(environmentSettings, project\.id, project\)\.settings\s*\.defaultModelSelection/,
-    );
-    expect(select).toMatch(
-      /setModelSelection\(draftId, defaultModelSelection, \{\s*replaceOptions: true,/,
-    );
+    // The model a moved draft takes is upstream's own function, which moveDraft calls too.
+    expect(select).toContain("seedDraftModelSelection(draftId, projectRef);");
   });
 
   it("the store keeps a draft's model in the fields the words put back", () => {

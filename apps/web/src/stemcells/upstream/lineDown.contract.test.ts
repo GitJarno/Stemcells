@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
+import providerStatusBanner from "../../components/chat/ProviderStatusBanner.tsx?raw";
 import systemBanners from "../../components/chat/useSystemComposerBanners.tsx?raw";
 import { lineDownOf } from "./lineDown";
 
@@ -41,8 +42,8 @@ describe("a Cell's line is down while upstream's banners say so", () => {
     );
     expect(systemBanners).toContain("id: `environment-unavailable:");
     // The provider's banner shows from the key `lineDownOf` reads.
-    expect(chatView).toContain(
-      "const providerStatusBannerKey = getProviderStatusBannerKey(activeProviderStatus);",
+    expect(providerStatusBanner).toContain(
+      "return getProviderStatusBannerKey(status) !== null && !isDismissed;",
     );
   });
 });
