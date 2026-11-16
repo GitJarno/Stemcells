@@ -1231,17 +1231,16 @@ delivers it and guards permission modes; Stemcells adds what it lacks:
   reached through the relay or over SSH can't be linked: its address
   reaches only this device, or someone's cloud.
 
-### The writer waits out a checkpoint
+### The writer waits out a checkpoint (retired)
 
-The server froze for seconds to a minute and a half, several times a day,
-and every client of it dropped, the window on the same Mac included
-(`stemcells/tasks/checkpoint-freeze.md`). Stack samples caught the same
-picture each time: the checkpoint worker in `pwrite` into `statev2.sqlite`,
-the main thread in `pread` of it. macOS holds every reader of a file while a
-write to it is stuck, and on a nearly full disk the checkpoint's writes can
-stick; the writer lives on the main thread, so it stuck with them. Only the
-worker writes the database file, so the writer now runs nothing while a
-check is out, and waits for the reply without blocking the event loop.
+The server froze for seconds to a minute and a half, several times a day
+(`stemcells/tasks/checkpoint-freeze.md`): the checkpoint worker stuck in
+`pwrite` into `statev2.sqlite`, the main thread in `pread` of it. Our seam
+held the writer while a check was out. Upstream then rewrote the client
+(#35728, #27979): reads run on a pool of reader workers and the checkpoint
+worker only ever checkpoints passively, so the sync of 2026-11-16 took
+upstream's file whole and dropped ours. If the freeze comes back, the task
+file says how to sample it.
 
 ### Attachments carried between chats
 
