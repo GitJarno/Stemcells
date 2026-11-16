@@ -108,7 +108,7 @@ host oauth2.googleapis.com Antigravity sign-in
 host www.googleapis.com Antigravity account
 host cloudcode-pa.googleapis.com Antigravity usage limits
 host daily-cloudcode-pa.googleapis.com Antigravity usage limits
-host dl.google.com Antigravity's CLI download
+host antigravity-cli-auto-updater-974169037036.us-central1.run.app Antigravity's own release channel (Google's, never T3): the CLI's newest version and where to download it, for a person who uses or installs Antigravity
 host accounts.x.ai Grok sign-in
 host auth.x.ai Grok sign-in
 host cli-chat-proxy.grok.com Grok usage limits
@@ -121,7 +121,7 @@ host cdn.agentclientprotocol.com the ACP agent registry, when the person browses
 host registry.npmjs.org the provider CLIs' latest versions; T3's own release is never asked: the server answers it only when a client asks, and ours never do (noTelemetry.test.ts)
 
 # Tools the person starts.
-host storage.googleapis.com Chrome for Testing, downloaded for the preview browser
+host storage.googleapis.com Chrome for Testing, downloaded for the preview browser; Antigravity's CLI download, checked against the release channel's hash
 host googlechromelabs.github.io a comment naming Chrome for Testing's version list
 host open-vsx.org theme search, when the person imports a VS Code theme
 host api.expo.dev the device hub's builds, with the person's Expo token

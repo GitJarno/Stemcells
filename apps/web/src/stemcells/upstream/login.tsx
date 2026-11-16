@@ -155,6 +155,8 @@ export function ClaudeSignInTerminal(props: {
         command: "claude auth login",
         keybindings: serverConfig.keybindings,
       }}
+      // Closing is what tells the page to look at the account again.
+      onCommandFinished={() => {}}
       onClose={props.onClose}
     />
   );

@@ -11,8 +11,11 @@ export function joinDraftContent<Content extends { readonly prompt: string }>(
   for (const [key, value] of Object.entries(moved)) {
     const own = joined[key];
     if (Array.isArray(own) && Array.isArray(value)) {
-      const ids = new Set(own.map(idOf).filter((id) => id !== undefined));
-      joined[key] = [...own, ...value.filter((item) => !ids.has(idOf(item)))];
+      const ids = new Set<unknown>(own.map(idOf));
+      joined[key] = [
+        ...own,
+        ...value.filter((item: unknown) => idOf(item) === undefined || !ids.has(idOf(item))),
+      ];
     } else if (own === null || own === undefined) {
       joined[key] = value;
     }

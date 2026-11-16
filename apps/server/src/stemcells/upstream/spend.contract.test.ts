@@ -162,6 +162,7 @@ const rate = (scale: number) => ({
   outputCostPerToken: (10 * scale) / 1_000_000,
   cacheReadCostPerToken: (0.1 * scale) / 1_000_000,
   cacheCreationCostPerToken: scale / 1_000_000,
+  cacheCreation1hCostPerToken: scale / 1_000_000,
 });
 const pricing: Pricing = {
   rates: new Map([

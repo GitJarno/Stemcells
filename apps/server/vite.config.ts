@@ -94,6 +94,7 @@ export default mergeConfig(
     },
     pack: {
       plugins: [
+        upstreamNamePlugin(),
         {
           // Every server module reads its version from this manifest import.
           name: "t3code:build-version",
@@ -115,7 +116,6 @@ export default mergeConfig(
       outDir: packBootstrap ? "dist-exe" : packExecutable ? cliAssetDir : "dist",
       sourcemap: !packExecutable,
       clean: true,
-      plugins: [upstreamNamePlugin()],
       // SEA can only resolve built-ins; keep dynamic imports inside each emitted module.
       ...(packExecutable ? { outputOptions: { codeSplitting: false } } : {}),
       ...(packMode === "1"

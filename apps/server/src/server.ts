@@ -801,9 +801,7 @@ const layerRuntimeDependencies = layerRuntimeCoreDependencies.pipe(
   Layer.provideMerge(Stemcells.analytics),
   Layer.provideMerge(ExternalLauncher.layer),
   Layer.provideMerge(RemoteOpenTargets.layer),
-  Layer.provideMerge(
-    Stemcells.directEndpoints(DirectEndpoints.make).pipe(Layer.provide(layerServerEnvironment)),
-  ),
+  Layer.provideMerge(Stemcells.directEndpoints(DirectEndpoints.make, layerServerEnvironment)),
   Layer.provideMerge(ServerLifecycleEvents.layer),
   // GitVcsDriver.layer is memoized and some of its build sites live outside this file, so the
   // fetch interval goes in context here, before the first build captures it.

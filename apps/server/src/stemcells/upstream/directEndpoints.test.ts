@@ -10,10 +10,12 @@ import * as Stream from "effect/Stream";
 import * as HttpClient from "effect/http/HttpClient";
 import * as HttpClientResponse from "effect/http/HttpClientResponse";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
+import { EnvironmentId } from "@t3tools/contracts";
 import { describe, expect } from "vite-plus/test";
 
 import * as ServerConfig from "../../config.ts";
 import * as DirectEndpoints from "../../environment/DirectEndpoints.ts";
+import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
 import { directEndpoints } from "./directEndpoints.ts";
 import { onMarkPath } from "./tailscale.ts";
 
@@ -86,7 +88,12 @@ const told = (on: boolean) =>
       return yield* service.resolve();
     }).pipe(
       Effect.provide(
-        directEndpoints(DirectEndpoints.make).pipe(
+        directEndpoints(
+          DirectEndpoints.make,
+          Layer.mock(ServerEnvironment.ServerEnvironment)({
+            getEnvironmentId: Effect.succeed(EnvironmentId.make("environment-here")),
+          }),
+        ).pipe(
           Layer.provideMerge(Layer.mergeAll(onLoopback, tailscaleUp(asked), serveAnswers)),
           Layer.provideMerge(NodeServices.layer),
         ),

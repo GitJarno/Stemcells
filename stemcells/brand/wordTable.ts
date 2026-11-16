@@ -109,6 +109,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within("`Open subagent ${item.label}`", "subagent", SUBCELL.one),
   ),
   ...inFile(
+    `${PHONE}/threads/ThreadFeed.tsx`,
+    // The live timer at the end of a turn's fold.
+    within("Working for {seconds", "Working", FLYING),
+  ),
+  ...inFile(
     `${PHONE}/threads/ThreadRouteScreen.tsx`,
     within('message="Opening thread…"', "thread", CELL.one),
     within('title="Thread unavailable"', "Thread", CELL.one),
@@ -128,8 +133,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     `${PHONE}/threads/floating-working-control.tsx`,
     within("`Open agents, ${agents.accessibilityLabel}`", "Open agents", `Open ${SUBCELL.many}`),
     within(`accessibilityHint="Opens this turn's subagents"`, "subagents", SUBCELL.many),
-    // The timer over the composer; cut before the function's own "Working".
-    within("Working {format", "Working", FLYING),
   ),
   ...inFile(
     `${PHONE}/threads/thread-list-v2-items.tsx`,

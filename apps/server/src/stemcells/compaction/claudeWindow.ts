@@ -33,14 +33,16 @@ export function withCompactWindow<Settings extends { readonly autoCompactWindow:
 /**
  * Where a chat compacts, as its token usage reports it: the launch window capped at the model's
  * context (`maxTokens`, null when the catalog doesn't know the model), less what the CLI holds
- * back. None when no window is handed: the person's own Claude settings decide, unread here.
+ * back (`reserve`: upstream's adapter hands its own figure, the same one). None when no window is
+ * handed: the person's own Claude settings decide, unread here.
  */
-export function claudeAutoCompactThreshold(
+export function compactThreshold(
   autoCompactWindow: string,
   maxTokens: number | null,
+  reserve = COMPACT_RESERVE,
 ): { readonly autoCompactThreshold?: number } {
   const window = Number(autoCompactWindow);
   if (!Number.isFinite(window) || window <= 0) return {};
-  const threshold = Math.min(window, maxTokens ?? window) - COMPACT_RESERVE;
+  const threshold = Math.min(window, maxTokens ?? window) - reserve;
   return threshold > 0 ? { autoCompactThreshold: threshold } : {};
 }

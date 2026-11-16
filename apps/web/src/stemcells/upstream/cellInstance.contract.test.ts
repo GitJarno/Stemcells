@@ -82,6 +82,7 @@ function composerResolves(
   const selectedInstanceId = selectedProviderEntry!.instanceId;
   const { selectedModel, modelOptions } = deriveEffectiveComposerModelState({
     draft: null,
+    threadStarted: true,
     providers: composer.providerStatuses,
     selectedProvider: selectedProviderEntry!.driverKind,
     selectedInstanceId,

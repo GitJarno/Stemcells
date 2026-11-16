@@ -38,6 +38,7 @@ import * as ProjectCloneTracker from "../../project/ProjectCloneTracker.ts";
 import * as ProjectService from "../../project/ProjectService.ts";
 import * as ProjectSetupScriptRunner from "../../project/ProjectSetupScriptRunner.ts";
 import * as WorktreeSetupTracker from "../../project/WorktreeSetupTracker.ts";
+import * as CheckpointStore from "../../checkpointing/CheckpointStore.ts";
 import * as ProviderRegistry from "../../provider/ProviderRegistry.ts";
 import * as ServerSettings from "../../serverSettings.ts";
 import * as TerminalManager from "../../terminal/Manager.ts";
@@ -131,6 +132,7 @@ const launches = ThreadLaunch.layer.pipe(
   ),
   Layer.provide(Layer.mock(WorktreeSetupTracker.WorktreeSetupTracker)({})),
   Layer.provide(Layer.mock(TerminalManager.TerminalManager)({})),
+  Layer.provide(Layer.mock(CheckpointStore.CheckpointStore)({})),
   Layer.provide(Layer.mock(GitWorkflow.GitWorkflowService)({})),
   Layer.provide(Layer.mock(ProjectSetupScriptRunner.ProjectSetupScriptRunner)({})),
   Layer.provide(Layer.mock(ProviderRegistry.ProviderRegistry)({})),
