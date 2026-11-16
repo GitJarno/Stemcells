@@ -224,3 +224,12 @@ report (issue #7, closed), and the third merged upstream (#8).
   both; the agents tooltip's model-name test can't run here on either.
 - CI now runs the web's tests with the web's config, since the root config
   has no substitutes.
+
+## Thread structures a mounted chat keeps (2026-11-17)
+
+Upstream's test "a mounted thread view lets go of the thread structures it
+has replaced" (`ChatView.browser.test.tsx`) finds all four replaced
+structures still reachable under our workspace, and none under upstream's
+own tree. It is skipped (`stemcells/upstream-skips.txt`) and untraced: find
+what of ours holds a replaced structure (a pane kept mounted, the media
+viewer's entries, a store), release it, and drop the skip.

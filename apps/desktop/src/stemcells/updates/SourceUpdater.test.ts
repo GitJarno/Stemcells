@@ -251,12 +251,13 @@ describe("Stemcells' updates, upstream's updater on the repository", () => {
         yield* reaching("downloaded", updates.download);
 
         git(fixture.work, "commit", "-q", "--allow-empty", "-m", "Merged while it waited (#5)");
+        // Upstream's install looks again first, so the newest is built and that one goes in.
         const installed = yield* updates.install;
-        assert.equal(installed.state.errorContext, "install");
-        assert.equal(quits.count, 0);
-        assert.isFalse(NodeFS.existsSync(NodePath.join(fixture.updates, "staged")));
-        const next = yield* reaching("available", updates.check("poll"));
-        assert.equal(next.availableVersion, nightlyOf(fixture, "HEAD"));
+        assert.isTrue(installed.accepted);
+        assert.equal(installed.state.downloadedVersion, nightlyOf(fixture, "HEAD"));
+        const built = NodePath.join(fixture.updates, "staged/Stemcells.app/version");
+        assert.equal(NodeFS.readFileSync(built, "utf8").trim(), nightlyOf(fixture, "HEAD"));
+        assert.equal(quits.count, 1);
       }),
     ),
   );

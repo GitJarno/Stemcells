@@ -91,7 +91,7 @@ const told = (on: boolean) =>
         directEndpoints(
           DirectEndpoints.make,
           Layer.mock(ServerEnvironment.ServerEnvironment)({
-            getEnvironmentId: Effect.succeed(EnvironmentId.make("environment-here")),
+            getEnvironmentId: Effect.succeed(EnvironmentId.make("serve-test")),
           }),
         ).pipe(
           Layer.provideMerge(Layer.mergeAll(onLoopback, tailscaleUp(asked), serveAnswers)),

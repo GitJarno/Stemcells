@@ -8,6 +8,7 @@ import { OrchestratorMcpFailure } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
+import * as McpSchema from "effect/ai/McpSchema";
 import * as Tool from "effect/ai/Tool";
 import * as Toolkit from "effect/ai/Toolkit";
 
@@ -28,7 +29,9 @@ const DiskReportTool = Tool.make("stemcells_disk_report", {
 })
   .annotate(Tool.Title, "Read this machine's disk")
   .annotate(Tool.Readonly, true)
-  .annotate(Tool.Destructive, false);
+  .annotate(Tool.Destructive, false)
+  // It acts as the Cell that calls it, so a client outside the app is never offered it.
+  .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients);
 
 const DiskToolkit = Toolkit.make(DiskReportTool);
 

@@ -9,6 +9,7 @@ import * as Clock from "effect/Clock";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
+import * as McpSchema from "effect/ai/McpSchema";
 import * as Tool from "effect/ai/Tool";
 import * as Toolkit from "effect/ai/Toolkit";
 import * as SqlClient from "effect/sql/SqlClient";
@@ -49,7 +50,9 @@ const ArcsTool = Tool.make("stemcells_arcs", {
 })
   .annotate(Tool.Title, "Read how the work with Cells is going")
   .annotate(Tool.Readonly, true)
-  .annotate(Tool.Destructive, false);
+  .annotate(Tool.Destructive, false)
+  // It acts as the Cell that calls it, so a client outside the app is never offered it.
+  .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients);
 
 export const ArcsToolkit = Toolkit.make(ArcsTool);
 
