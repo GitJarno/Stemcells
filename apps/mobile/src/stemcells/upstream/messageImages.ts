@@ -8,6 +8,9 @@ export { composerImageGallery } from "../../lib/composerImageGallery";
 export { assetImageSource } from "../../lib/assetImageSource";
 export { useAssetUrl, useRefreshAssetUrl } from "../../state/assets";
 export { useFilePreviewGallery } from "../../components/ui/FilePreviewGallery";
-export type { FilePreviewItem, FilePreviewSource } from "../../components/ui/FilePreviewModal.types";
+export type {
+  FilePreviewItem,
+  FilePreviewSource,
+} from "../../components/ui/FilePreviewModal.types";
 export { PresentationSource } from "../../components/ui/NativePresentation";
 export { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";

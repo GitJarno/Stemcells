@@ -43,6 +43,9 @@ export function withAttachPrompts(config: ExpoConfig): ExpoConfig {
       infoPlist: {
         ...config.ios?.infoPlist,
         PHPhotoLibraryPreventAutomaticLimitedAccessAlert: true,
+        // T3's reason names images only, and a video saves too.
+        NSPhotoLibraryAddUsageDescription:
+          "To save a picture or a video from a chat to your photos, when you ask.",
       },
     },
   };

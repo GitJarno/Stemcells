@@ -1307,6 +1307,23 @@ the model every real name (`stemcells/tasks/attachment-labels.md`).
   thumbnails beside a resting composer. The phone's sent message reads
   "Image 1": its pictures are ours (`chat/MessageImages.tsx`).
 
+### A video saves to Photos
+
+On the phone, a video a Cell made should save to Photos as a picture does,
+to post it or send it on. Upstream saves pictures only; a video gets the
+share sheet.
+
+- Substitute of `apps/mobile/src/lib/saveImageToLibrary.ts`: every media
+  menu asks that module what saves and saves through it, so MP4, QuickTime
+  and M4V gain the action wherever a picture has it. iOS only; Android keeps
+  upstream's share sheet.
+- The save is ours, `saveVideoToLibrary` in `apps/mobile/modules/stemcells-edge`:
+  add-only access to Photos, so the app can read nothing there. Upstream's
+  download (to a temporary file it deletes, stopped when the menu's view
+  goes) and its alert on failure are reused as they are.
+- Word table: the action reads "Save to Photos", since it no longer saves
+  images only. `attach/prompts.ts` words iOS's reason for both kinds.
+
 ### Copy Cell
 
 Copying a Cell copies its name and its own link, `[Name](t3-thread://v2/<machine>/<Cell>)`.
