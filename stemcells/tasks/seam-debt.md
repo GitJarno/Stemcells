@@ -233,3 +233,10 @@ structures still reachable under our workspace, and none under upstream's
 own tree. It is skipped (`stemcells/upstream-skips.txt`) and untraced: find
 what of ours holds a replaced structure (a pane kept mounted, the media
 viewer's entries, a store), release it, and drop the skip.
+
+The same tree cannot run upstream's browser suite in one page: the test
+browser's renderers grow to about 2.3 GB and the page closes some 150 s in,
+at a different file each run, while upstream's own tree finishes the 240
+files in one run. The `upstream-web` gate runs the browser project in thirds
+until this is traced; whether a person's long session grows the same way is
+not measured. When the trace lands, put the gate back to one run.

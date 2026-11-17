@@ -145,7 +145,14 @@ gate_upstream_web() {
   else
     skip=$(skip_pattern) || return 1
   fi
-  upstream_env pnpm exec vp run --filter @t3tools/web test -t "$skip"
+  # One page running the whole browser suite grows past 2 GB on our tree and
+  # is closed mid-run (seam-debt.md, thread structures), so it runs in thirds.
+  local shard
+  (cd apps/web && upstream_env pnpm exec vp test run --passWithNoTests --project unit -t "$skip") || return 1
+  for shard in 1 2 3; do
+    (cd apps/web && upstream_env pnpm exec vp test run --passWithNoTests --project browser \
+      --shard="$shard/3" -t "$skip") || return 1
+  done
 }
 gate_upstream_server() {
   local skip

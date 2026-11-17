@@ -321,4 +321,7 @@ limit holds it until the limit lifts.
   own function (`ClaudeAdapterV2.ts`). Playwright's install collects other
   projects' browser builds from the shared cache. To tell a Mac's own
   failure from ours, run the test on a worktree of upstream's commit
-  before naming it in `sync-upstream`.
+  before naming it in `sync-upstream`. "Browser connection was closed", at a
+  different file each run, is the test page out of memory, not a test:
+  sample the renderers' size during a run, and compare with upstream's
+  tree (`seam-debt.md`, thread structures).
