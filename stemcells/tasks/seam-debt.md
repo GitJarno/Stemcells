@@ -224,3 +224,19 @@ report (issue #7, closed), and the third merged upstream (#8).
   both; the agents tooltip's model-name test can't run here on either.
 - CI now runs the web's tests with the web's config, since the root config
   has no substitutes.
+
+## Thread structures a mounted chat keeps (2026-11-17)
+
+Upstream's test "a mounted thread view lets go of the thread structures it
+has replaced" (`ChatView.browser.test.tsx`) finds all four replaced
+structures still reachable under our workspace, and none under upstream's
+own tree. It is skipped (`stemcells/upstream-skips.txt`) and untraced: find
+what of ours holds a replaced structure (a pane kept mounted, the media
+viewer's entries, a store), release it, and drop the skip.
+
+The same tree cannot run upstream's browser suite in one page: the test
+browser's renderers grow to about 2.3 GB and the page closes some 150 s in,
+at a different file each run, while upstream's own tree finishes the 240
+files in one run. The `upstream-web` gate runs the browser project in thirds
+until this is traced; whether a person's long session grows the same way is
+not measured. When the trace lands, put the gate back to one run.

@@ -15,6 +15,7 @@ import composerMentionDrag from "../../components/chat/composerMentionDrag.ts?ra
 import composerStash from "../../components/chat/useComposerStash.ts?raw";
 import mediaActions from "../../components/media/MediaActions.tsx?raw";
 import sidebarThreadRow from "../../components/sidebar/SidebarThreadRow.tsx?raw";
+import attachmentFiles from "../../components/chat/composerAttachmentFiles.ts?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
 import uploadQueue from "../../lib/attachmentUploadQueue.ts?raw";
 import { IMPORT_PATH } from "../payloads/land";
@@ -45,7 +46,9 @@ describe("carried pictures' and files' contracts with upstream", () => {
   });
 
   it("a draft keeps out a picture it already has by name, type and size, which landing reports", () => {
-    expect(composerDraftStore).toContain(
+    // The key also carries the bytes' fingerprint: same name, type and size
+    // with other bytes is another picture.
+    expect(attachmentFiles).toContain(
       "return `${image.mimeType}\\u0000${image.sizeBytes}\\u0000${image.name}`;",
     );
   });

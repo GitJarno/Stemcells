@@ -60,7 +60,6 @@ const SUBSTITUTES = {
   "apps/mobile/src/lib/enrichedLinkPresentation.ts": "enrichedLinkPresentation.ts",
   "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": "ThreadDetailScreen.tsx",
   "apps/mobile/src/native/SelectableMarkdownText.tsx": "SelectableMarkdownText.tsx",
-  "apps/mobile/src/features/threads/floating-working-control.tsx": "floating-working-control.tsx",
   // Copy Cell copies the Cell's name and its own link, never one through
   // T3's hosted app, in Cell words (`stemcells/words/copyCell.ts`).
   "packages/shared/src/threadLinks.ts": "threadLinks.ts",

@@ -228,6 +228,8 @@ describe("when a chat's prompt cache goes cold", () => {
 /** A turn's usage reported at `updatedAt`, its cache expiring at `expiresAt`. */
 function usage(updatedAt: string, expiresAt: string | undefined) {
   return {
+    // Upstream reads only the active provider thread's turns.
+    providerThreadId: "provider-thread-1",
     tokenUsage: {
       usedTokens: 1_000,
       updatedAt,

@@ -9,11 +9,8 @@ import type { EnvironmentId, ProjectId, ScopedProjectRef } from "@t3tools/contra
 import { normalizeProjectPathForComparison } from "@t3tools/shared/path";
 
 import { diskProjectFolder } from "../../../../../stemcells/disk/project.ts";
-import { appAtomRegistry } from "../../rpc/atomRegistry";
-import { readProjects } from "../../state/entities";
-import { environmentServerConfigsAtom } from "../../state/server";
 
-interface ProjectFact {
+export interface ProjectFact {
   readonly environmentId: EnvironmentId;
   readonly id: ProjectId;
   readonly aside: boolean;
@@ -63,16 +60,20 @@ export function isAsideWorkspace(
   );
 }
 
-/** `pastAside` over the projects the app knows now. */
+let knownProjects: (() => readonly ProjectFact[]) | null = null;
+
+/**
+ * Where `firstProject` reads the app's projects. This file stays free of the app's state:
+ * upstream's connection layer loads the composer's store, which loads the new-chat actions this
+ * serves, so importing state here closes a loop that leaves the connection runtime undefined.
+ * `firstProjectFacts.ts` hands the projects in, loaded with the workspace.
+ */
+export function readProjectFactsFrom(source: () => readonly ProjectFact[]): void {
+  knownProjects = source;
+}
+
+/** `pastAside` over the projects the app knows now; upstream's first until the workspace loads. */
 export function firstProject(first: ScopedProjectRef | null): ScopedProjectRef | null {
-  if (first === null) return null;
-  const configs = appAtomRegistry.get(environmentServerConfigsAtom);
-  return pastAside(
-    first,
-    readProjects().map((project) => ({
-      environmentId: project.environmentId,
-      id: project.id,
-      aside: isAsideWorkspace(project.workspaceRoot, configs.get(project.environmentId)),
-    })),
-  );
+  if (first === null || knownProjects === null) return first;
+  return pastAside(first, knownProjects());
 }

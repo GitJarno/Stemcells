@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { claudeAutoCompactThreshold, compactWindowOf, withCompactWindow } from "./claudeWindow.ts";
+import { compactThreshold, compactWindowOf, withCompactWindow } from "./claudeWindow.ts";
 
 describe("the window Claude Cells launch with", () => {
   it("is 500k when the instance names none", () => {
@@ -30,24 +30,24 @@ describe("where a Claude Cell compacts", () => {
     { window: "750000", context: 1_000_000, at: 717_000 },
     { window: "1000000", context: 1_000_000, at: 967_000 },
   ])("compacts $window at $at", ({ window, context, at }) => {
-    expect(claudeAutoCompactThreshold(window, context)).toEqual({ autoCompactThreshold: at });
+    expect(compactThreshold(window, context)).toEqual({ autoCompactThreshold: at });
   });
 
   it("caps the window at a smaller model's context", () => {
-    expect(claudeAutoCompactThreshold("500000", 200_000)).toEqual({
+    expect(compactThreshold("500000", 200_000)).toEqual({
       autoCompactThreshold: 167_000,
     });
-    expect(claudeAutoCompactThreshold("1000000", 200_000)).toEqual({
+    expect(compactThreshold("1000000", 200_000)).toEqual({
       autoCompactThreshold: 167_000,
     });
   });
 
   it("takes the window alone for a model the catalog doesn't know", () => {
-    expect(claudeAutoCompactThreshold("650000", null)).toEqual({ autoCompactThreshold: 617_000 });
+    expect(compactThreshold("650000", null)).toEqual({ autoCompactThreshold: 617_000 });
   });
 
   it("says nothing when no window was handed", () => {
-    expect(claudeAutoCompactThreshold("", 1_000_000)).toEqual({});
-    expect(claudeAutoCompactThreshold("", null)).toEqual({});
+    expect(compactThreshold("", 1_000_000)).toEqual({});
+    expect(compactThreshold("", null)).toEqual({});
   });
 });

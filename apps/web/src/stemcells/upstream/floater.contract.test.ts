@@ -66,7 +66,7 @@ describe("the tuck's contracts with upstream's floater", () => {
     ] as const;
 
     await expect(showMenu(items, { x: 12, y: 34 })).resolves.toBe("put-away");
-    expect(showContextMenu).toHaveBeenCalledWith(items, { x: 12, y: 34 });
+    expect(showContextMenu).toHaveBeenCalledWith(items, { x: 12, y: 34 }, undefined);
   });
 });
 

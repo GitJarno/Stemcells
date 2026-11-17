@@ -7,7 +7,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
-import type { KeybindingCommand } from "@t3tools/contracts";
+import { isListedThreadLineage, type KeybindingCommand } from "@t3tools/contracts";
 import {
   collectLimitAccounts,
   collectLimitPools,
@@ -17,7 +17,6 @@ import {
 
 import { openCommandPalette } from "../../commandPaletteBus";
 import type { ProjectFaviconProject } from "../../components/ProjectFavicon";
-import { isSidebarHiddenThread } from "../../components/Sidebar.logic";
 import { barColor } from "../../components/usage/UsageLimits";
 import { PROVIDER_PRESENTATION } from "../../components/usage/usageProviders";
 import { useSidebarProjectGroups } from "../../hooks/useSidebarProjectGroups";
@@ -98,7 +97,7 @@ export function useRailChats(now: string): ReadonlyArray<RailChat> {
   const visited = useUiStateStore((state) => state.threadLastVisitedAtById);
   return shells.flatMap((shell) => {
     if (shell.archivedAt !== null || shell.settledOverride === "settled") return [];
-    if (isSidebarHiddenThread(shell) || effectiveSnoozed(shell, { now })) return [];
+    if (!isListedThreadLineage(shell.lineage) || effectiveSnoozed(shell, { now })) return [];
     const cell = { environmentId: shell.environmentId, threadId: shell.id, draftId: null };
     return [
       {
@@ -121,7 +120,7 @@ export function useMachineCells(environmentId: string | null): ReadonlyArray<Cel
       (shell) =>
         shell.environmentId === environmentId &&
         shell.archivedAt === null &&
-        !isSidebarHiddenThread(shell),
+        isListedThreadLineage(shell.lineage),
     )
     .toSorted((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0))
     .map((shell) => ({ environmentId: shell.environmentId, threadId: shell.id, draftId: null }));

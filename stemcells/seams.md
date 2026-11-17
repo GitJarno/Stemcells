@@ -1231,17 +1231,16 @@ delivers it and guards permission modes; Stemcells adds what it lacks:
   reached through the relay or over SSH can't be linked: its address
   reaches only this device, or someone's cloud.
 
-### The writer waits out a checkpoint
+### The writer waits out a checkpoint (retired)
 
-The server froze for seconds to a minute and a half, several times a day,
-and every client of it dropped, the window on the same Mac included
-(`stemcells/tasks/checkpoint-freeze.md`). Stack samples caught the same
-picture each time: the checkpoint worker in `pwrite` into `statev2.sqlite`,
-the main thread in `pread` of it. macOS holds every reader of a file while a
-write to it is stuck, and on a nearly full disk the checkpoint's writes can
-stick; the writer lives on the main thread, so it stuck with them. Only the
-worker writes the database file, so the writer now runs nothing while a
-check is out, and waits for the reply without blocking the event loop.
+The server froze for seconds to a minute and a half, several times a day
+(`stemcells/tasks/checkpoint-freeze.md`): the checkpoint worker stuck in
+`pwrite` into `statev2.sqlite`, the main thread in `pread` of it. Our seam
+held the writer while a check was out. Upstream then rewrote the client
+(#35728, #27979): reads run on a pool of reader workers and the checkpoint
+worker only ever checkpoints passively, so the sync of 2026-11-16 took
+upstream's file whole and dropped ours. If the freeze comes back, the task
+file says how to sample it.
 
 ### Attachments carried between chats
 
@@ -1565,7 +1564,7 @@ with no history, but carry their old file's churn.
 | `apps/web/src/components/chat/MessagesTimeline.tsx`                 | 3     | 2     | The work verbs, on the turn fold                                                                                                                                                                                                                                                  |
 | `apps/web/src/components/settings/settingsSearch.ts`                | 10    | 5     | Settings › Disk and the compaction row in upstream's lists (a type, so no substitute reaches them)                                                                                                                                                                                |
 | `apps/server/src/server.ts`                                         | 14    | 8     | Mounts Stemcells' server layer; in upstream's place, its no-op analytics and triage, the bundled model list, and the addresses with Tailscale's (gate zero; one-line swaps). 14 since #27197 put a comment over the analytics line ours replaces                                  |
-| `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts`      | 13    | 2     | Where Claude compacts; upstream not asked. 13 since #22654 grew upstream's local function this seam deletes (its reserve and comment)                                                                                                                                             |
+| `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts`      | 6     | 2     | Where Claude compacts; upstream not asked. 6 since 2026-11-16: the local function stays and answers through ours, so upstream's edits around it no longer split the seam                                                                                                          |
 | `apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts` | 4     | 1     | Expects the thresholds where Claude compacts (the row above); hot since October                                                                                                                                                                                                   |
 | `packages/contracts/src/settings.ts`                                | 3     | 2     | Hidden auto-compact window (one annotation); effort as bars by default (one word)                                                                                                                                                                                                 |
 | `apps/web/src/components/chat/TimelineWorkGroupRows.tsx`            | 8     | 3     | Split out of `MessagesTimeline.tsx`: the work verbs on the working row                                                                                                                                                                                                            |

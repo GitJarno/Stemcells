@@ -28,6 +28,7 @@ import type { AskiChat } from "../upstream/aski";
 import { ChatPaneView, ChatsInBackground, useCellPresence, useOpenNewCell } from "../upstream/chat";
 import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
+import "../upstream/firstProjectFacts";
 import { usePrimaryEnvironmentId } from "../upstream/needs";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { useSettleCell } from "../upstream/settle";

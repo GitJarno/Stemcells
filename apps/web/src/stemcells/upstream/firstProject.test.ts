@@ -6,7 +6,14 @@ import { isScratchProject } from "@t3tools/client-runtime/state/projects";
 import { EnvironmentId, ProjectId } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
-import { isAsideWorkspace, isScratchWorkspace, pastAside } from "./firstProject";
+import {
+  firstProject,
+  isAsideWorkspace,
+  isScratchWorkspace,
+  pastAside,
+  readProjectFactsFrom,
+} from "./firstProject";
+import workspaceSource from "../tabs/CellWorkspace.tsx?raw";
 
 const environmentId = EnvironmentId.make("env-first-project");
 const project = (id: string, aside: boolean) => ({
@@ -31,6 +38,17 @@ describe("the first project a new chat starts in", () => {
     expect(pastAside(refOf(atlas), [scratch, harbor, atlas])).toEqual(refOf(atlas));
     expect(pastAside(refOf(scratch), [scratch])).toEqual(refOf(scratch));
     expect(pastAside(null, [scratch, harbor])).toBeNull();
+  });
+});
+
+describe("the projects a new chat reads", () => {
+  it("are handed in by the workspace, and upstream's first stands until they are", () => {
+    const scratch = project("scratch", true);
+    const harbor = project("harbor", false);
+    expect(firstProject(refOf(scratch))).toEqual(refOf(scratch));
+    readProjectFactsFrom(() => [scratch, harbor]);
+    expect(firstProject(refOf(scratch))).toEqual(refOf(harbor));
+    expect(workspaceSource).toContain('import "../upstream/firstProjectFacts";');
   });
 });
 

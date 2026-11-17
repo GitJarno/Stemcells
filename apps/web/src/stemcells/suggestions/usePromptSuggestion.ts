@@ -81,7 +81,7 @@ export function usePromptSuggestion(props: ChatComposerProps): PromptSuggestion 
     props.activeThreadId !== null &&
     props.canOperateThread &&
     props.activePendingApproval === null &&
-    props.activePendingProgress === null;
+    props.pendingUserInputs.length === 0;
   const threadId = props.activeThreadId;
   const key = asking ? JSON.stringify([props.environmentId, threadId, replyId]) : null;
 

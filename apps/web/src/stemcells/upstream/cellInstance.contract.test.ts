@@ -82,6 +82,7 @@ function composerResolves(
   const selectedInstanceId = selectedProviderEntry!.instanceId;
   const { selectedModel, modelOptions } = deriveEffectiveComposerModelState({
     draft: null,
+    threadStarted: true,
     providers: composer.providerStatuses,
     selectedProvider: selectedProviderEntry!.driverKind,
     selectedInstanceId,
@@ -150,7 +151,11 @@ describe("the composer's contracts with upstream", () => {
       /providerInstanceEntriesFor\(\s*providerStatuses,\s*settings,\s*activeProjectId,?\s*\)/,
     );
     expect(chatComposer).toMatch(
-      /threadModelSelection: activeThreadModelSelection,[\s\S]{0,300}candidateInstanceIds: \[\s*composerDraft\.activeProvider \?\? null,\s*activeThread\?\.runtime\?\.providerInstanceId,\s*activeThreadModelSelection\?\.instanceId,\s*activeProjectDefaultModelSelection\?\.instanceId,\s*\],/,
+      /threadModelSelection: activeThreadModelSelection,[\s\S]{0,300}candidateInstanceIds: \[\s*activeThread\?\.runtime\?\.providerInstanceId,\s*activeThreadModelSelection\?\.instanceId,\s*activeProjectDefaultModelSelection\?\.instanceId,\s*\],/,
+    );
+    // The draft's own pick leads them, while it applies (never on a started thread).
+    expect(composerProviderModel).toMatch(
+      /candidateInstanceIds: \[\s*draftModelSelectionApplies\(draftModelState, threadStarted\)\s*\? draftModelState\.activeProvider\s*: null,\s*\.\.\.candidateInstanceIds,\s*\],/,
     );
     expect(composerControlsBar).toMatch(/instanceEntries=\{providerInstanceEntries\}/);
   });

@@ -35,8 +35,9 @@ describe("the composer's dock and upstream", () => {
     );
     expect(composerBanner).toContain('data-slot="composer-banner-attachment"');
     expect(composerBanner).toContain("w-[calc(100%-2*var(--chat-composer-drawer-inset))]");
+    // Stacked attachments are siblings: the one below another squares its top.
     expect(composerBanner).toContain(
-      "[data-chat-composer-form]>[data-slot=composer-banner-attachment]",
+      "[&+[data-slot=composer-banner-attachment]_[data-composer-banner-surface=attached]]:before:rounded-none",
     );
     // A banner's outline is one variable, its tone another.
     // An attached one is the default; a detached one stands apart and isn't ours to inset.

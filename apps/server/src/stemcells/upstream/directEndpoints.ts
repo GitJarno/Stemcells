@@ -4,14 +4,21 @@ import * as Layer from "effect/Layer";
 
 import * as ServerConfig from "../../config.ts";
 import * as DirectEndpoints from "../../environment/DirectEndpoints.ts";
+import type * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
 import { onMarkPath } from "./tailscale.ts";
 
 // Upstream names this computer's Tailscale address to clients only behind its own Tailscale
 // switch, which relaunches the app. Phones over Tailscale are ours (`tailscale/StemcellsTailscale.ts`):
 // while they're on, every client is told the address too, and saves it as one more way here.
 
-/** Upstream's `make`, told the Tailscale address whenever the person's mark is on. */
-export const directEndpoints = (make: typeof DirectEndpoints.make) =>
+/**
+ * Upstream's `make`, told the Tailscale address whenever the person's mark is on, over the
+ * server environment upstream's own layer is given (`make` reads the environment's id).
+ */
+export const directEndpoints = <E, R>(
+  make: typeof DirectEndpoints.make,
+  environment: Layer.Layer<ServerEnvironment.ServerEnvironment, E, R>,
+) =>
   Layer.effect(
     DirectEndpoints.DirectEndpoints,
     Effect.gen(function* () {
@@ -38,4 +45,4 @@ export const directEndpoints = (make: typeof DirectEndpoints.make) =>
         }),
       });
     }),
-  );
+  ).pipe(Layer.provide(environment));

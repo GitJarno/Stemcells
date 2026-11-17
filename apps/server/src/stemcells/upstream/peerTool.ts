@@ -8,6 +8,7 @@ import { OrchestratorMcpFailure } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
+import * as McpSchema from "effect/ai/McpSchema";
 import * as Tool from "effect/ai/Tool";
 import * as Toolkit from "effect/ai/Toolkit";
 
@@ -43,7 +44,9 @@ const PeerSendTool = Tool.make("stemcells_peer_send", {
 })
   .annotate(Tool.Title, "Send to a Cell on another machine")
   .annotate(Tool.Destructive, true)
-  .annotate(Tool.OpenWorld, true);
+  .annotate(Tool.OpenWorld, true)
+  // It acts as the Cell that calls it, so a client outside the app is never offered it.
+  .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients);
 
 const PeerToolkit = Toolkit.make(PeerSendTool);
 

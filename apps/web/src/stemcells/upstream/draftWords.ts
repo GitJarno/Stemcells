@@ -21,7 +21,7 @@ import {
   type ComposerThreadDraftState,
   type DraftId,
 } from "../../composerDraftStore";
-import { hasExplicitComposerModelSelection } from "../../lib/chatThreadActions";
+import { seedDraftModelSelection } from "../../lib/seedDraftModelSelection";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProject } from "../../state/entities";
 import { environmentServerConfigsAtom } from "../../state/server";
@@ -180,8 +180,8 @@ export function projectRefOf(memberKeys: ReadonlyArray<string>, environmentId: s
 /**
  * Points the draft at another project (`environmentId:projectId`), as the
  * hero's picker does for a draft with writing in it: the draft keeps its
- * pane, its branch and worktree reset, and unless a model was chosen, the
- * project's default model applies.
+ * pane, its branch and worktree reset, and unless a model was chosen, it
+ * takes the model a new chat there would start with (upstream's own seeding).
  */
 export function moveDraft(draftId: string, projectKey: string): void {
   const projectRef = projectRefOfKey(projectKey);
@@ -194,11 +194,7 @@ export function moveDraft(draftId: string, projectKey: string): void {
   )
     return;
   store.setLogicalProjectDraftThreadId(session.logicalProjectKey, projectRef, draftId as DraftId);
-  if (hasExplicitComposerModelSelection(store.getComposerDraft(draftId as DraftId))) return;
-  store.applyStickyState(draftId as DraftId);
-  const defaultModelSelection = projectDefaultModel(projectRef);
-  if (defaultModelSelection)
-    store.setModelSelection(draftId as DraftId, defaultModelSelection, { replaceOptions: true });
+  seedDraftModelSelection(draftId as DraftId, projectRef);
 }
 
 /** Whether the draft has gone: sent (promoted to a thread) or dropped. */
