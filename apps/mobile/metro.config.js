@@ -40,7 +40,6 @@ config.resolver = {
   },
 };
 config.resolver.resolveRequest = substituteRequests(config.resolver.resolveRequest);
-withNameTransform(config);
 
 async function writeFileIfChanged(filePath, contents) {
   try {
@@ -116,9 +115,11 @@ async function prepareStreamScripts() {
 
 module.exports = Promise.all([generateMobileThirdPartyLicenses(), prepareStreamScripts()]).then(
   () =>
-    withUniwindConfig(config, {
-      cssEntryFile: "./global.css",
-      extraThemes,
-      polyfills: { rem: 14 },
-    }),
+    withNameTransform(
+      withUniwindConfig(config, {
+        cssEntryFile: "./global.css",
+        extraThemes,
+        polyfills: { rem: 14 },
+      }),
+    ),
 );

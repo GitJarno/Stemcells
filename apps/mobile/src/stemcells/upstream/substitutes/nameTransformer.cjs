@@ -143,14 +143,17 @@ function nameCheckedSerializer(serializer) {
 }
 
 /**
- * Metro's `config` with the name transform: every module through this
- * transformer, every bundle through the output check.
- * @param {{ transformer: { babelTransformerPath: string }, serializer: { customSerializer?: any } }} config
+ * Metro's finished `config` with the name transform: every module through this
+ * transformer, every catalog through `catalogWorker.cjs`, every bundle through
+ * the output check.
+ * @param {{ transformerPath: string, transformer: { babelTransformerPath: string }, serializer: { customSerializer?: any } }} config
  */
 function withNameTransform(config) {
   config.transformer.babelTransformerPath = nameTransformer(
     config.transformer.babelTransformerPath,
   );
+  // Loaded here: it reads this module's exports.
+  require("./catalogWorker.cjs").withCatalogWorker(config);
   config.serializer.customSerializer = nameCheckedSerializer(config.serializer.customSerializer);
   return config;
 }
@@ -160,6 +163,8 @@ module.exports = {
   transform,
   getCacheKey,
   TRANSFORM_FILES,
+  loadNameTransform,
+  repoRoot,
   nameTransformer,
   nameCheckedSerializer,
   withNameTransform,

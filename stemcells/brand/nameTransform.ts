@@ -769,6 +769,19 @@ const SCRIPT = /\.[cm]?[jt]sx?$/;
 const CATALOG = /^apps\/(?:web|mobile|desktop)\/src\/i18n\/translations\/[^/]+\.json$/;
 const CATALOG_NAME = /T3 Code(?:s(?![\p{L}\p{N}]))?/gu;
 
+/**
+ * A translation catalog's text with every "T3 Code" ours, or null for any other file, or a catalog
+ * that doesn't say it. The web's build and the phone's Metro worker both run it.
+ */
+export function renameCatalog(
+  file: string,
+  code: string,
+): { readonly code: string; readonly renamed: number } | null {
+  if (!CATALOG.test(file)) return null;
+  const renamed = code.match(CATALOG_NAME)?.length ?? 0;
+  return renamed === 0 ? null : { code: code.replace(CATALOG_NAME, ourName(undefined)), renamed };
+}
+
 /** Whether a built file is one a person's app reads: code and pages, not source maps. */
 const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 
@@ -799,11 +812,10 @@ export function upstreamNamePlugin(
       const [path = id, query = ""] = id.split("?");
       if (/(?:^|&)(?:raw|url|inline)(?:[&=]|$)/.test(query)) return null;
       const file = NodePath.relative(root, path).split(NodePath.sep).join("/");
-      if (CATALOG.test(file)) {
-        const count = code.match(CATALOG_NAME)?.length ?? 0;
-        if (count === 0) return null;
-        renamed += count;
-        return { code: code.replace(CATALOG_NAME, ourName(undefined)), map: null };
+      const catalog = renameCatalog(file, code);
+      if (catalog !== null) {
+        renamed += catalog.renamed;
+        return { code: catalog.code, map: null };
       }
       if (!SCRIPT.test(path)) return null;
       if (isRenamedIn(file)) covered += 1;
