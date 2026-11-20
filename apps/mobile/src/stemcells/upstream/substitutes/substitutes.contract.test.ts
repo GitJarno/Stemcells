@@ -443,6 +443,16 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/mobile/src/features/home/useThreadListActions.ts": ["../../components/ui/Dialog", []],
     },
   },
+  "apps/mobile/src/lib/saveImageToLibrary.ts": {
+    exports: view("apps/mobile/src/lib/saveImageToLibrary.ts", "saveImageToLibrary.ts"),
+    importers: {
+      // Every media menu asks here what saves to Photos, and saves through it.
+      "apps/mobile/src/state/mediaActions.ts": [
+        "../lib/saveImageToLibrary",
+        ["canSaveImageToLibrary", "saveImageToLibrary"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
