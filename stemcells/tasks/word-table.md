@@ -56,7 +56,7 @@ Nineteen source files, whole:
   `ThreadAgentsSheet.tsx`, `ThreadBackgroundWorkSheet.tsx`,
   `ThreadRouteScreen.tsx`, `ThreadWorkflowGroup.tsx`,
   `floating-working-control.tsx`, `thread-workflow-opening.tsx`,
-  `threadAgentsPresentation.ts`, `worktree-setup-card.tsx`
+  `threadAgentsPresentation.ts`
 - the web, `apps/web/src/components/`: `NoProjectsHero.tsx`,
   `chat/DraftHeroHeadline.tsx`, `chat/ProviderSubagentBar.tsx`,
   `chat/ThreadLineageWorkflowRow.tsx`, `chat/ThreadRelationshipsControl.tsx`

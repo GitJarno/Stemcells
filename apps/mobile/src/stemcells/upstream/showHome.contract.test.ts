@@ -17,7 +17,7 @@ describe("the home brought to the front", () => {
       { index: 1, routes: [home, chat] },
       "threads",
       { threads: chat.params },
-      { columns: false, check: { thread: () => true, pullRequest: () => true } },
+      { columns: false, check: { thread: () => true, pullRequest: () => true, issue: () => true } },
     );
     expect(next.routes).toEqual([home]);
     expect(next.index).toBe(0);

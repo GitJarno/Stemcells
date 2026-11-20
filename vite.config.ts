@@ -595,6 +595,7 @@ export default defineConfig({
           "**/{test-fixtures,*TestFixtures}.ts",
           "apps/mobile/src/features/development/**",
           "packages/client-runtime/src/rpc/**",
+          "apps/*/src/stemcells/**",
         ],
         rules: { "t3code/no-untranslated-copy": "error" },
       },
