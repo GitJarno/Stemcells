@@ -191,6 +191,7 @@ vi.mock("../upstream/cellRow", async () => {
     compactAge: () => "12m",
     CellProject: () => <span data-cells-row-project="">shop</span>,
     CellPullRequest: () => null,
+    CellIssue: () => null,
     CellCard: (props: { trigger: ReactElement; children: ReactNode }) =>
       cloneElement(props.trigger, undefined, props.children),
   };
@@ -226,6 +227,7 @@ vi.mock("../upstream/updates", async (importOriginal) => ({
 }));
 vi.mock("./PlanRing", () => ({ PlanRing: () => null }));
 vi.mock("./DiskPlate", () => ({ DiskPlate: () => null }));
+vi.mock("./ListButtons", () => ({ ListButtons: () => null }));
 vi.mock("./undoNotice", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./undoNotice")>()),
   useRailUndoNotice: () => undefined,
