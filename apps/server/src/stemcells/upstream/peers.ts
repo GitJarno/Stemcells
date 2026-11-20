@@ -6,11 +6,11 @@
  */
 import {
   type OrchestrationMessageContext,
-  type OrchestrationV2Actor,
   type OrchestrationV2ThreadShell,
   ProjectId,
   repositoryGroupingKeyOf,
   type ThreadId,
+  withMessageSenderNote,
 } from "@t3tools/contracts";
 import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
 import * as DateTime from "effect/DateTime";
@@ -18,7 +18,6 @@ import * as Effect from "effect/Effect";
 
 import type { ProjectionStoreV2Shape } from "../../orchestration-v2/ProjectionStore.ts";
 import type { ProjectService } from "../../project/ProjectService.ts";
-import type { ProviderAuthService } from "../../provider/ProviderAuthService.ts";
 import { elsewhereNow } from "../peers/elsewhere.ts";
 import { cellsOnTheWire } from "../peers/onTheWire.ts";
 import { providerTextOf, type ThreadFacts } from "../peers/frame.ts";
@@ -28,12 +27,11 @@ import { type RosterThread, rosterOf, rosterText, signatureOf } from "../peers/r
 type Store = Pick<ProjectionStoreV2Shape, "getThreadShell">;
 type Projects = Pick<ProjectService["Service"], "listShells">;
 
-interface Message {
+type Message = Parameters<typeof withMessageSenderNote>[0] & {
   readonly id?: string | undefined;
   readonly text: string;
   readonly context?: OrchestrationMessageContext | undefined;
-  readonly senderThreadId?: ThreadId | undefined;
-}
+};
 
 /**
  * Each project's repository key: upstream's own grouping, by its remote.
@@ -68,11 +66,14 @@ const factsOf = (shell: OrchestrationV2ThreadShell, repo: string | null): Thread
   relationshipToParent: shell.lineage.relationshipToParent,
 });
 
-const upstreamTextOf = (message: Message) =>
+const contextTextOf = (message: Message) =>
   projectComposerContextForProvider({
     text: message.text,
     records: message.context?.records ?? [],
   });
+
+// Upstream's own sender note for what our frame doesn't cover: a scheduled task, a tool, a linked environment.
+const upstreamTextOf = (message: Message) => withMessageSenderNote(message, contextTextOf(message));
 
 // Untraced, as `rosterNote` is: each runs inside `text`'s or `providerText`'s span.
 const framed = Effect.fnUntraced(function* (
@@ -81,8 +82,8 @@ const framed = Effect.fnUntraced(function* (
   message: Message,
   repos: ReadonlyMap<string, string>,
 ) {
-  const text = upstreamTextOf(message);
-  if (!cellsOnTheWire()) return text;
+  const text = contextTextOf(message);
+  if (!cellsOnTheWire()) return upstreamTextOf(message);
   // Mail from a linked environment names its sender in its id, as the
   // receiving server made it: there is no sender thread here.
   const id = message.id;
@@ -98,7 +99,7 @@ const framed = Effect.fnUntraced(function* (
     });
   }
   const senderThreadId = message.senderThreadId;
-  if (senderThreadId === undefined) return text;
+  if (senderThreadId === undefined) return upstreamTextOf(message);
   const read = (id: ThreadId) =>
     store.getThreadShell(id).pipe(
       Effect.map((shell) =>
@@ -208,16 +209,3 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
   );
   return note === null ? words : `${note}\n\nUser message:\n${words}`;
 });
-
-type PromptCommands = Pick<ProviderAuthService["Service"], "tryHandlePromptCommand">;
-
-/**
- * Upstream's provider sign-in as a message may use it: a prompt command
- * (`/logout`, for Cursor and Antigravity) runs only from a message the
- * person sent. From anyone else it is words, and another Cell's are framed.
- */
-export const promptCommandsOf = (
-  auth: PromptCommands,
-  message: { readonly createdBy: OrchestrationV2Actor },
-): PromptCommands =>
-  message.createdBy === "user" ? auth : { tryHandlePromptCommand: () => Effect.succeed(false) };

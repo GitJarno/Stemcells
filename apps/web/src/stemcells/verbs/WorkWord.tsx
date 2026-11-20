@@ -29,10 +29,13 @@ export function TurnVerbsProvider({
 }
 
 /** "Noodling", where upstream's working row said "Working", lit while it works. */
-export function CellWorkingWord() {
+export function CellWorkingWord(props: { readonly ellipsis?: boolean }) {
   const verbs = use(TurnVerbsContext);
   const shown = workingWord(verbs?.live ?? null);
-  return <Said shown={shown} plain={workingWord(null)} as={<WorkingSheen>{shown}</WorkingSheen>} />;
+  const word = (
+    <Said shown={shown} plain={workingWord(null)} as={<WorkingSheen>{shown}</WorkingSheen>} />
+  );
+  return props.ellipsis ? <>{word}...</> : word;
 }
 
 /** "Noodled for 3m 12s", where upstream's fold said "Worked for 3m 12s". */

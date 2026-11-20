@@ -80,6 +80,7 @@ function Composer(props: { image: ComposerImageAttachment }) {
       expandedImages={[props.image]}
       preparingImages={[]}
       videos={[]}
+      onCopySnapshot={async () => undefined}
       pendingSnapShotAnimations={[]}
       pendingSnapShotIds={[]}
       uncommittedSnapShotIds={[]}

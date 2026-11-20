@@ -217,7 +217,9 @@ describe("the DOM Look's stylesheet and Esc read", () => {
 
   it("a browser's page takes the keys: the desktop's in a webview, the server's in a field", () => {
     expect(hostedBrowser).toContain("<webview");
-    expect(serverBrowser).toMatch(/<textarea\s+ref=\{inputRef\}\s+aria-label="Browser page"/);
+    expect(serverBrowser).toMatch(
+      /<textarea\s+ref=\{inputRef\}\s+aria-label=\{gt\("Browser page"\)\}/,
+    );
   });
 
   it("the composer stops an Esc it uses, so the key never reaches the window", () => {

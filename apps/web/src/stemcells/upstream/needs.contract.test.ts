@@ -19,15 +19,18 @@ import commands from "../../../../../packages/client-runtime/src/operations/comm
 describe("the column's contracts with upstream", () => {
   it("offers a permission upstream's own buttons when the provider names none", () => {
     // card.ts DEFAULT_DECISIONS mirrors these, so the column and the chat agree.
-    expect(approvalActions).toContain('{ decision: "decline", label: "Decline" }');
-    expect(approvalActions).toContain(
-      '{ decision: "acceptForSession", label: "Always allow this session" }',
-    );
-    expect(approvalActions).toContain('{ decision: "accept", label: "Approve" }');
+    for (const [decision, label] of [
+      ["decline", "Decline"],
+      ["acceptForSession", "Always allow this session"],
+      ["accept", "Approve"],
+    ])
+      expect(approvalActions).toMatch(
+        new RegExp(`\\{\\s*decision: "${decision}",\\s*label: msg\\("${label}"[,)]`),
+      );
   });
 
   it("names a failed run's button as upstream does, so the card's reads the same", () => {
-    expect(workEntryRow).toMatch(/<RotateCcwIcon aria-hidden \/>\s*Retry\s*<\/Button>/);
+    expect(workEntryRow).toMatch(/<RotateCcwIcon aria-hidden \/>\s*<T>Retry<\/T>\s*<\/Button>/);
   });
 
   it("resumes a limited run from the run that stopped, as upstream's Resume does", () => {

@@ -73,7 +73,7 @@ describe("the phone's build says Stemcells", () => {
     expect(feed).toContain(`Sent by ${APP_NAME}`);
     expect(feed).not.toContain("T3 Code");
     const hostFreeze = await built("../../packages/client-runtime/src/connection/hostFreeze.ts");
-    expect(hostFreeze).toContain(`${APP_NAME} on \${`);
+    expect(hostFreeze).toContain(`${APP_NAME} on {host}`);
     expect(hostFreeze).not.toContain("T3 Code");
     // The word table's swaps ride the same transformer (`stemcells/brand/wordTable.ts`).
     const sheet = await built("src/features/threads/ThreadAgentsSheet.tsx");

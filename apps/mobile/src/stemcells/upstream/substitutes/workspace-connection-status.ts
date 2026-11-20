@@ -5,8 +5,8 @@ import * as Upstream from "../../../features/home/workspace-connection-status";
 export * from "../../../features/home/workspace-connection-status";
 
 export function workspaceConnectionStatusPresentation(
-  state: Parameters<typeof Upstream.workspaceConnectionStatusPresentation>[0],
+  ...args: Parameters<typeof Upstream.workspaceConnectionStatusPresentation>
 ): ReturnType<typeof Upstream.workspaceConnectionStatusPresentation> {
-  const shown = Upstream.workspaceConnectionStatusPresentation(state);
+  const shown = Upstream.workspaceConnectionStatusPresentation(...args);
   return shown && { ...shown, label: shown.label.replace(/ threads\.\.\.$/, " Cells…") };
 }

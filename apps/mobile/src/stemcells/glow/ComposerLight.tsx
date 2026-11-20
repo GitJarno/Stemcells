@@ -1,7 +1,7 @@
 // A chat's composer while its Cell flies (`Wave.tsx`): the light the Mac's composer wears, in
 // place of the timer T3 once drew over it (its feed's last line counts the time now).
 // The composer's substitute tells it the chat and whether it's busy; the seam in upstream's
-// composer surface lays it between the glass and the field.
+// composer surface (`components/ComposerSurface.tsx`) lays it between the glass and the field.
 
 import { useIsFocused } from "@react-navigation/native";
 import { createContext, use } from "react";

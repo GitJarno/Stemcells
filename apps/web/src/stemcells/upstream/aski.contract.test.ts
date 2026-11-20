@@ -12,15 +12,20 @@ import {
 import { parseCliArgs, tokenizeCliArgs } from "@t3tools/shared/cliArgs";
 import { describe, expect, expectTypeOf, it } from "vite-plus/test";
 
-import { resolveThreadStatusPill, type ThreadStatusPill } from "../../components/Sidebar.logic";
+import { resolveThreadStatusPill } from "../../components/Sidebar.logic";
+import sidebarLogic from "../../components/Sidebar.logic.ts?raw";
 import { getDefaultProviderInstanceModel } from "../../providerInstances";
 import { askiInstance, personaArgs, personaFor } from "../aski/setup";
 import { chatFactsOf } from "./askiChats";
-import { CELL_STATUSES, type CellStatus } from "./status";
+import { CELL_STATUSES } from "./status";
 
 describe("a chat's status", () => {
   it("is one of the statuses a Cell's face maps, and every one of them", () => {
-    expectTypeOf<ThreadStatusPill["label"]>().toEqualTypeOf<CellStatus>();
+    const pill = sidebarLogic.slice(
+      sidebarLogic.indexOf("export function resolveThreadStatusPill("),
+    );
+    const labels = [...pill.slice(0, pill.indexOf("\n}\n")).matchAll(/label: msg\("([^"]+)"\)/g)];
+    expect(new Set(labels.map((match) => match[1]))).toEqual(new Set(CELL_STATUSES));
     expect(new Set(CELL_STATUSES).size).toBe(CELL_STATUSES.length);
   });
 

@@ -36,7 +36,7 @@ describe("the app's name", () => {
       sidebarChromeSource,
     );
     expect(sidebarChrome).not.toMatch(/T3Wordmark|T3 Code/);
-    expect(sidebarChrome).toContain(`aria-label="${APP_NAME} home"`);
+    expect(sidebarChrome).toContain(`aria-label={gt("${APP_NAME} home")}`);
   });
 
   it("titles a browser's window, before and after the app loads", () => {

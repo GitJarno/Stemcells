@@ -499,7 +499,7 @@ const CASES: Readonly<Record<string, Case>> = {
       // Its rows' anchors: the privacy row is hidden through its own.
       "apps/web/src/components/settings/SettingsPanels.tsx": [
         "./settingsSearch",
-        ["searchableSetting"],
+        ["useSearchableSetting"],
       ],
     },
   },
@@ -658,7 +658,7 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/chat/TimelineWorkEntryRow.tsx": [
         "./MessagesTimeline.logic",
-        ["threadReadLabelPrefix", "workEntryDisplayLabel"],
+        ["workEntryDisplayLabel"],
       ],
       // Upstream derives the transcript's rows in this hook now.
       "apps/web/src/components/chat/useTimelineRows.ts": [

@@ -41,7 +41,7 @@ describe("the line's contracts with upstream's chat header", () => {
 
   it("the header's project starts a new chat in it, with the new-thread handler", () => {
     expect(chatHeader).toMatch(
-      /aria-label=\{`New thread in \$\{activeProjectName\}`\}\s*onClick=\{onNewThreadInProject\}/,
+      /aria-label=\{gt\("New thread in \{project\}", \{ project: activeProjectName \}\)\}\s*onClick=\{onNewThreadInProject\}/,
     );
     expect(chatView).toContain("const handleNewThread = useNewThreadHandler();");
     expect(chatView).toMatch(
@@ -91,7 +91,10 @@ describe("the composer controls the ladder steps down", () => {
     expect(providerModelPicker).toContain('"data-chat-provider-model-picker-label": "true",');
     expect(providerModelPicker).toContain("<span {...triggerTextProps}>{triggerText}</span>");
     expect(chatComposer).toContain('data-chat-composer-footer="true"');
-    expect(attachmentStrip).toContain('aria-label="Attach files"');
+    // The attach button is the one whose child is the paperclip, a lucide icon (`.lucide-paperclip`).
+    expect(attachmentStrip).toMatch(
+      /aria-label=\{gt\("Attach files"\)\}\s*\/>\s*\}\s*>(?:\s*\{\/\*[^]*?\*\/\})?\s*<PaperclipIcon /,
+    );
     // The picker keeps a minimum width the narrowest rung lets go.
     expect(composerControlsBar).toContain(
       'composerControlsCollapsed ? "min-w-13 shrink text-xs!" : "min-w-13",',

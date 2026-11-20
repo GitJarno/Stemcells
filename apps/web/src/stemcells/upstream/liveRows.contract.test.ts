@@ -46,7 +46,7 @@ describe("upstream's live rows, as the wave reads them", () => {
   it("an overlay is the box's own child: a copy of the row sliding the other way inside it", () => {
     const overlay = rowParts.slice(rowParts.indexOf("function ActivityShimmerOverlay"));
     expect(overlay).toMatch(
-      /className="live-activity-focus [^"]*absolute[^"]*"[^]*?<span className="live-activity-focus-counter block">\s*<span className="live-activity-focus-aligned block text-foreground">\{children\}<\/span>/,
+      /className="live-activity-focus [^"]*absolute[^"]*"[^]*?<span className="live-activity-focus-counter block">\s*<span className=\{cn\("live-activity-focus-aligned block text-foreground", className\)\}>\s*\{children\}\s*<\/span>/,
     );
     expect(workGroupRows).toContain(
       "{shimmer ? <ActivityShimmerOverlay>{label}</ActivityShimmerOverlay> : null}",

@@ -4,11 +4,8 @@
  * this Mac's accounts under them (`accounts/Accounts.tsx`). Upstream still picks what is shown
  * and draws its notices, "Manage usage" links and reset credits.
  */
-import {
-  CHATGPT_USAGE_URL,
-  collectExternalUsageLinks,
-  collectLimitNotices,
-} from "@t3tools/shared/usageLimits";
+import { CHATGPT_USAGE_URL, collectExternalUsageLinks } from "@t3tools/shared/usageLimits";
+import { collectLimitNotices } from "@t3tools/shared/usageLimitsCopy";
 import { AlertTriangleIcon, ExternalLinkIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 

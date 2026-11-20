@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 import { CellWorkspace } from "../stemcells/tabs/CellWorkspace";
+import { GlobalVoiceInputIndicator } from "../components/chat/GlobalVoiceInputIndicator";
 import { isAppModalPage } from "../components/sidebar/mainAppLocation";
 import { SidebarInset } from "../components/ui/sidebar";
 import { resolveThreadRouteTarget } from "../threadRoutes";
@@ -22,6 +23,7 @@ function ChatRouteLayout() {
         fallback={modalOpen ? <SidebarInset className="h-dvh" /> : <Outlet />}
       />
       {modalOpen ? <Outlet /> : null}
+      <GlobalVoiceInputIndicator hidden={modalOpen} />
     </>
   );
 }

@@ -310,6 +310,15 @@ describe("the build plugin", () => {
     expect(code.split("\n")[1]!.slice(38, 40)).toBe(" h");
   });
 
+  it("renames every name in a translation catalog, compounds and genitives too", () => {
+    const hooks = pluginHooks();
+    const catalog = '{ "a": "T3 Code-servern", "b": "T3 Codes CLI", "c": "\\"no T3 Code\\"" }';
+    expect(hooks.transform(catalog, "apps/web/src/i18n/translations/sv.json")?.code).toBe(
+      `{ "a": "${APP_NAME}-servern", "b": "${APP_NAME} CLI", "c": "\\"no ${APP_NAME}\\"" }`,
+    );
+    expect(hooks.transform('{ "a": "T3 Code" }', "apps/web/src/data/example.json")).toBeNull();
+  });
+
   it("leaves a module read as text, and code it doesn't rename in", () => {
     const hooks = pluginHooks();
     expect(hooks.transform('export default "T3 Code";', "apps/web/src/a.ts?raw")).toBeNull();

@@ -10,7 +10,6 @@ import { STEMCELLS_SETTINGS_LABELS } from "../../pages/settingsPages";
 import {
   filterAvailableSettingsSearchItems,
   SETTINGS_NAV_GROUPS,
-  searchableSetting,
   searchSettings,
 } from "./settingsSearch";
 
@@ -39,15 +38,9 @@ describe("Settings never offers upstream's privacy row", () => {
     expect(filterAvailableSettingsSearchItems(everywhere).length).toBeGreaterThan(20);
   });
 
-  it("its row is drawn hidden, through the props upstream's row spreads on its root", () => {
-    expect(searchableSetting("privacy-policy")).toEqual({
-      ...Upstream.searchableSetting("privacy-policy"),
-      hidden: true,
-    });
-    expect(searchableSetting("app-version")).toEqual(Upstream.searchableSetting("app-version"));
-    expect(settingsPanels).toMatch(
-      /<SettingsRow\s*\{\.\.\.searchableSetting\("privacy-policy"\)\}/,
-    );
+  it("its row spreads the props the substitute hides (privacyRow.browser.test.tsx)", () => {
+    expect(settingsPanels).toMatch(/const setting = useSearchableSetting\(\);/);
+    expect(settingsPanels).toMatch(/<SettingsRow\s*\{\.\.\.setting\("privacy-policy"\)\}/);
   });
 });
 

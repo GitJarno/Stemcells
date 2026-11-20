@@ -30,14 +30,14 @@ describe("a casual chat on the phone", () => {
     expect(starts).toHaveLength(4);
     const said = [CASUAL_CHAT.title, CASUAL_CHAT.detail, CASUAL_CHAT.start];
     for (const before of starts) {
-      expect(said.some((words) => before.slice(-120).includes(`="${words}"`))).toBe(true);
+      expect(said.some((words) => before.slice(-120).includes(`={gt("${words}")}`))).toBe(true);
     }
     expect(source).toMatch(
       new RegExp(
-        `<Text[^>]*>${CASUAL_CHAT.title}</Text>\\s*<Text[^>]*>\\s*${CASUAL_CHAT.detail}\\s*</Text>`,
+        `<Text[^>]*>\\s*<T>${CASUAL_CHAT.title}</T>\\s*</Text>\\s*<Text[^>]*>\\s*<T>${CASUAL_CHAT.detail}</T>\\s*</Text>`,
       ),
     );
-    expect(source).toContain(`subtitle="${CASUAL_CHAT.detail}"`);
+    expect(source).toContain(`subtitle={gt("${CASUAL_CHAT.detail}")}`);
     expect(source).not.toMatch(/"No project"|"Start without a project"|a task without a project/);
   });
 
@@ -47,7 +47,7 @@ describe("a casual chat on the phone", () => {
     expect(source.slice(headline - 240, headline)).toContain(
       "const hero = flow.isScratchDraft ? (",
     );
-    expect(source.slice(headline + CASUAL_CHAT.headline.length)).toMatch(/^\s*<\/Text>/);
+    expect(source.slice(headline + CASUAL_CHAT.headline.length)).toMatch(/^<\/T>\s*<\/Text>/);
     expect(source).not.toContain("What should we work on?");
   });
 
@@ -62,6 +62,6 @@ describe("a casual chat on the phone", () => {
       /openScratch = useAtomCommand\(projectEnvironment\.openScratch[\s\S]*setProject\(project\);\s*root\?\.goBack\(\)/,
     );
     // Once casual, the hero's "No project" opens the project list, which retargets the draft.
-    expect(casualHero).toMatch(/label="No project"\s*onPress=\{chooseProject\}/);
+    expect(casualHero).toMatch(/label=\{gt\("No project"\)\}\s*onPress=\{chooseProject\}/);
   });
 });

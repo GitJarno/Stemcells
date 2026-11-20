@@ -325,3 +325,16 @@ limit holds it until the limit lifts.
   different file each run, is the test page out of memory, not a test:
   sample the renderers' size during a run, and compare with upstream's
   tree (`seam-debt.md`, thread structures).
+- 2026-11-20 (656 commits): upstream translated its UI. Its strings now go
+  through `gt()`, `msg()`, `<T>` and `m()`, keyed by the English text in
+  per-locale catalogs (`apps/*/src/i18n/translations`), so most word seams
+  moved: pass our label into upstream's message rather than replace it. The
+  word table matches the wrapped strings, and the name swap rewrites the
+  catalogs whole, since their keys are hashes of text that names T3 Code.
+  Labels typed by `msg()` are strings: an adapter that relied on a literal
+  union narrows them again. Upstream's new `no-untranslated-copy` lint leaves
+  our English-only folders out (the root `vite.config.ts`). Upstream's own
+  guard against an agent signing a provider out (`sentByPerson`) made our
+  `/logout` guard redundant; a seam that shadows upstream's check hides its
+  tests' expectations, so read a failure there as ours first. Upstream
+  wants Node 26.13.1 and Playwright's chromium 1248.

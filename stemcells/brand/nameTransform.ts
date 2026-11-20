@@ -759,8 +759,15 @@ interface OutputFile {
   readonly source?: string | Uint8Array;
 }
 
-/** What the transform reads: code, not styles or data. */
+/** What the transform reads: code, not styles or data (but `CATALOG`). */
 const SCRIPT = /\.[cm]?[jt]sx?$/;
+
+/**
+ * Upstream's translation catalogs: prose, where every "T3 Code" is the app's name, also inside a
+ * compound or a genitive ("T3 Code-version", "T3 Codes"), so each says ours, without `KEPT`.
+ */
+const CATALOG = /^apps\/(?:web|mobile|desktop)\/src\/i18n\/translations\/[^/]+\.json$/;
+const CATALOG_NAME = /T3 Code(?:s(?![\p{L}\p{N}]))?/gu;
 
 /** Whether a built file is one a person's app reads: code and pages, not source maps. */
 const CHECKED_OUTPUT = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
@@ -790,8 +797,15 @@ export function upstreamNamePlugin(
       // A module read as text or a link (`?raw`, `?url`) isn't code: the output
       // check sees it. Other queries are code a plugin split off (a route's).
       const [path = id, query = ""] = id.split("?");
-      if (/(?:^|&)(?:raw|url|inline)(?:[&=]|$)/.test(query) || !SCRIPT.test(path)) return null;
+      if (/(?:^|&)(?:raw|url|inline)(?:[&=]|$)/.test(query)) return null;
       const file = NodePath.relative(root, path).split(NodePath.sep).join("/");
+      if (CATALOG.test(file)) {
+        const count = code.match(CATALOG_NAME)?.length ?? 0;
+        if (count === 0) return null;
+        renamed += count;
+        return { code: code.replace(CATALOG_NAME, ourName(undefined)), map: null };
+      }
+      if (!SCRIPT.test(path)) return null;
       if (isRenamedIn(file)) covered += 1;
       stale ??= wordTableFaults(root);
       if (stale.length > 0) this.error(wordTableError(stale));

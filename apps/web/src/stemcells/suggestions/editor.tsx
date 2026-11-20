@@ -1,6 +1,6 @@
 import { type ReactNode, use, useId, useState } from "react";
 
-import { type ComposerPromptEditorProps, IDLE_PLACEHOLDER } from "../upstream/suggestions";
+import { type ComposerPromptEditorProps, useIdlePlaceholder } from "../upstream/suggestions";
 import { cn } from "../upstream/ui";
 import { SuggestionGhost } from "./SuggestionGhost";
 import { PromptSuggestionContext } from "./usePromptSuggestion";
@@ -15,6 +15,7 @@ export function useEditorSuggestion(props: ComposerPromptEditorProps): {
   readonly ghost: ReactNode;
 } {
   const suggestion = use(PromptSuggestionContext);
+  const idlePlaceholder = useIdlePlaceholder();
   const hostClass = `sc-suggest-${useId().replace(/[^\w-]/g, "")}`;
   // The ghost draws in the editor's own box, which upstream renders: a mark
   // beside the editor finds it once both are in the page.
@@ -36,7 +37,7 @@ export function useEditorSuggestion(props: ComposerPromptEditorProps): {
     props.value.length === 0 &&
     props.contextRecords.size === 0 &&
     !props.disabled &&
-    props.placeholder === IDLE_PLACEHOLDER
+    props.placeholder === idlePlaceholder
       ? suggestion
       : null;
   const withHost = { ...props, containerClassName: cn(props.containerClassName, hostClass) };

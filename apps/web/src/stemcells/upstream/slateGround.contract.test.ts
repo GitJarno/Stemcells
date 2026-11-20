@@ -44,7 +44,7 @@ describe("a chat paints nothing over the slate", () => {
 
   it("a pane's chat is upstream's inset, its ground under its grain", () => {
     expect(threadRouteView).toMatch(
-      /<SidebarInset\s[^>]*>\s*<BackgroundThreadContext value=\{background\}>\{view\}<\/BackgroundThreadContext>\s*\{background \? null : redirect\}\s*<\/SidebarInset>/,
+      /<SidebarInset\s[^>]*>\s*<BackgroundThreadContext value=\{background\}>\s*<HiddenThreadContext value=\{background\}>\{view\}<\/HiddenThreadContext>\s*<\/BackgroundThreadContext>\s*\{background \? null : redirect\}\s*<\/SidebarInset>/,
     );
     expect(sidebar).toMatch(
       /<main\s+className=\{cn\(\s*"relative flex min-w-0 w-full flex-1 flex-col bg-background surface-grain",[\s\S]*?\)\}\s+data-slot="sidebar-inset"/,
@@ -65,7 +65,7 @@ describe("a chat paints nothing over the slate", () => {
     expect(chatView).toMatch(
       /\n {10}<ThreadFindCanvas[\s\S]*?\n {12}<div\s+\{\.\.\.conversationArea\}\s+className="relative flex min-h-0 flex-1 flex-col bg-background"\s*>\s*<WorkspaceMutationIdContext value=\{workspaceMutationId\}>\s*<ThreadTimeline/,
     );
-    expect(threadTimeline).toMatch(/return <MessagesTimeline [^>]*\/>;/);
+    expect(threadTimeline).toMatch(/return \(\s*<MessagesTimeline [^>]*\/>\s*\);/);
     expect(threadFind).toContain("<ChatCanvas {...canvasProps} />");
     expect(chatCanvas).toMatch(/data-chat-canvas[\s\S]*?\{children\}\s*<\/div>/);
   });

@@ -157,7 +157,12 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/mobile/src/lib/threadActivity.ts": [
         "@t3tools/shared/t3McpToolPresentation",
-        ["resolveT3McpToolDefinition", "resolveT3McpToolPresentation"],
+        ["resolveT3McpToolDefinition"],
+      ],
+      // The phone's translated presentation names a tool by the definition it reads here.
+      "packages/shared/src/t3McpToolPresentationCopy.ts": [
+        "./t3McpToolPresentation.ts",
+        ["resolveT3McpToolDefinition"],
       ],
       "packages/client-runtime/src/work-log/presentation.ts": [
         "@t3tools/shared/t3McpToolPresentation",

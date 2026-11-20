@@ -93,8 +93,9 @@ What it lacks:
      a claim to be one can't be checked.
    - **Fail closed.** A sender that can't be read is framed as a peer.
    - **Prompt commands are the person's.** `/logout` (Cursor, Antigravity)
-     runs only from a message the person sent. Framing alone already keeps
-     a peer's `/skill` from running.
+     runs only from a message the person sent: upstream's own guard since
+     2026-11 (`sentByPerson`), which retired ours. Framing alone already
+     keeps a peer's `/skill` from running.
 3. **No collision notices.** We built them (two Cells that edited one
    file within 30 minutes, or both in one checkout, were each told once,
    in a message queued behind their turn) and took them out on
@@ -150,8 +151,9 @@ What it lacks:
 7. **Drift.** The server's frame is two calls in two cool files
    (`ProviderTurnStartService`, `ProviderTurnControlService`, 20 and 7
    upstream commits in 90 days); everything on the web is a substitute.
-   The frame and the `/logout` guard are what any T3 user would want; they
-   go upstream once we ask.
+   The frame is what any T3 user would want; it goes upstream once we ask.
+   Upstream now notes an agent's message itself (#39306) and refuses its
+   `/logout` (`sentByPerson`), so ours guards no longer.
 
 ## Plan
 

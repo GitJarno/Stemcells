@@ -5,9 +5,12 @@
  * reply reads and writes through upstream's scope, as Settings does.
  */
 import {
+  SETTINGS_SEARCH_ITEMS,
   SETTINGS_SECTION_LABELS,
   type SettingsPath,
+  type SettingsSearchItemId,
 } from "../../components/settings/settingsSearch";
+import { m } from "../../i18n/messages";
 import { SETTINGS_NAV_GROUPS } from "./substitutes/settingsSearch";
 
 export { SettingsSidebarNav } from "../../components/settings/SettingsSidebarNav";
@@ -20,7 +23,6 @@ export { useNowMinuteMs } from "./needs";
 export { Switch } from "../../components/ui/switch";
 export { ScopedSwitch } from "../../components/settings/ScopedSwitch";
 export { SettingsScopeProvider } from "../../components/settings/SettingsScopeContext";
-export { searchableSetting } from "../../components/settings/settingsSearch";
 export {
   useScopedSettings,
   useUpdateScopedSettings,
@@ -35,3 +37,12 @@ export const SETTINGS_SECTIONS: ReadonlyArray<{ to: SettingsPath; label: string 
     to,
     label: SETTINGS_SECTION_LABELS[to],
   }));
+
+/** A setting's search anchor and title, as upstream's own rows get them (`useSearchableSetting`). */
+export function searchableSetting(id: SettingsSearchItemId): {
+  readonly id: string;
+  readonly title: string;
+} {
+  const item = SETTINGS_SEARCH_ITEMS.find((entry) => entry.id === id)!;
+  return { id: item.id, title: m(item.title) };
+}

@@ -10,16 +10,14 @@ export * from "../../../components/settings/settingsSearch";
 /** Upstream's rows Stemcells never offers, by their search id, hidden through the props its row spreads on its root. */
 const NEVER_OFFERED: ReadonlySet<string> = new Set(["privacy-policy"]);
 
-export function searchableSetting(
-  ...args: Parameters<typeof Upstream.searchableSetting>
-): ReturnType<typeof Upstream.searchableSetting> {
-  const props = Upstream.searchableSetting(...args);
-  if (!NEVER_OFFERED.has(args[0])) return props;
-  const hidden: ReturnType<typeof Upstream.searchableSetting> & { readonly hidden: true } = {
-    ...props,
-    hidden: true,
+export function useSearchableSetting(): ReturnType<typeof Upstream.useSearchableSetting> {
+  const searchable = Upstream.useSearchableSetting();
+  return (id) => {
+    const props = searchable(id);
+    if (!NEVER_OFFERED.has(id)) return props;
+    const hidden: typeof props & { readonly hidden: true } = { ...props, hidden: true };
+    return hidden;
   };
-  return hidden;
 }
 
 export function searchSettings(

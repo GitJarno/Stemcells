@@ -47,10 +47,10 @@ function body(source: string, name: string): string {
 describe("Subcells in upstream's views", () => {
   it("the card counts Subcells and hands each header avatar its Subcell, with its status", () => {
     const card = body(built("TimelineV2EventRow", v2EventRow), "V2SubagentGroup");
-    expect(card).toContain(
-      'const label = `${members.length} ${members.length === 1 ? "Subcell" : "Subcells"}`;',
+    expect(card).toMatch(
+      /const label = gt\("\{count, plural, one \{\{count\} Subcell\} other \{\{count\} Subcells\}\}", \{\s*count: members\.length,\s*\}\);/,
     );
-    expect(card).toContain("summarizeSubagentStatuses(agents.map(");
+    expect(card).toMatch(/summarizeSubagentStatuses\(\s*agents\.map\(/);
     expect(card).toMatch(
       /\.map\(\(\{ item, status \}\) => \(\s*<EnvironmentSubagentAvatar[^>]*subcell=\{\{ name: item\.childThreadId \?\? item\.subagentId, status \}\}/,
     );
@@ -59,7 +59,7 @@ describe("Subcells in upstream's views", () => {
   it("a notification row's button opens a Subcell", () => {
     const row = built("TimelineWorkEntryRow", workEntryRow);
     expect(row).toMatch(
-      /aria-label="Open Subcell"[\s\S]{0,240}\n\s*Open Subcell\s*<\/InlineButton>/,
+      /aria-label=\{gt\("Open Subcell"\)\}[\s\S]{0,240}\n\s*<T>Open Subcell<\/T>\s*<\/InlineButton>/,
     );
     expect(row).not.toMatch(/Open subagent/);
   });
@@ -90,26 +90,35 @@ describe("Subcells in upstream's views", () => {
 
   it("an untitled Subcell's title, and the divider over a Subcell's thread, go through the substitutes", () => {
     expect(
-      lifecycleRow.match(/formatSubagentDisplayTitle\(\w+\.title \?\? "Subagent"\)/g),
+      lifecycleRow.match(/formatSubagentDisplayTitle\(\w+\.title \?\? gt\("Subagent"\)\)/g),
     ).toHaveLength(2);
-    expect(messagesTimeline).toMatch(/<TimelineSystemDivider\s+label=\{[^}]*"Subagent of"\}/);
+    expect(messagesTimeline).toMatch(
+      /<TimelineSystemDivider\s+label=\{\s*parentThreadLink\.sideChat\s*\?\s*gt\("Context from",[^)]*\)\s*:\s*gt\("Subagent of",/,
+    );
   });
 
   it("the Subcells' controls say Subcell, never subagent or agent", () => {
+    const controls = built("ThreadRelationshipsControl", relationships);
     for (const words of [
-      '? "Subcell" : "Parent Cell"',
-      'label: "Previous Subcells"',
-      'title: "Could not stop Subcell"',
-      "aria-label={`Stop Subcell ${threadTitle}`}",
-      '<TooltipPopup side="left">Stop Subcell</TooltipPopup>',
-      ": `Open parent Cell on ${environment.label}`",
+      '? resolve(msg("Open Subcell in this chat"))',
+      ': resolve(msg("Open parent Cell in this chat"))',
+      'title: props.agent.title ?? gt("Subcell"),',
+      'label: gt("Previous Subcells")',
+      'title: gt("Could not stop Subcell")',
+      'aria-label={gt("Stop Subcell {threadTitle}", { threadTitle })}',
+      ': gt("Open parent Cell on {label}", { label: environment.label })',
     ])
-      expect(built("ThreadRelationshipsControl", relationships)).toContain(words);
+      expect(controls).toContain(words);
+    expect(controls).toMatch(
+      /<TooltipPopup side="left">\s*<T>Stop Subcell<\/T>\s*<\/TooltipPopup>/,
+    );
     const workflow = built("ThreadLineageWorkflowRow", lineageWorkflow);
-    expect(workflow).toContain(">No Subcells yet</li>");
-    expect(workflow).toContain('{phase.members.length === 1 ? "Subcell" : "Subcells"}');
+    expect(workflow).toMatch(/>\s*<T>No Subcells yet<\/T>\s*<\/li>/);
+    expect(workflow).toContain(
+      '"{count, plural, one {{settled}/{count} Subcell} other {{settled}/{count} Subcells}}",',
+    );
     expect(built("ProviderSubagentBar", subagentBar)).toContain(
-      "{`${modelDescription} Subcell: ${announcement}`}",
+      'gt("{model} Subcell: {status}", { model: modelDescription, status: announcement })',
     );
   });
 });

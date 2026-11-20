@@ -228,7 +228,8 @@
     flex-shrink: 1;
     min-width: 0;
   }
-  [data-chat-composer-footer="true"] [aria-label="Attach files"] {
+  /* By its icon: its label is in the person's language. */
+  [data-chat-composer-footer="true"] button:has(> .lucide-paperclip) {
     display: none;
   }
   [data-chat-composer-footer="true"] [data-chat-provider-model-picker] {

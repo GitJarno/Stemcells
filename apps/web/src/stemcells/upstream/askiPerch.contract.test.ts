@@ -15,7 +15,7 @@ import minimap from "../../components/chat/TimelineMinimap.tsx?raw";
 describe("Aski's place in its chat, against upstream", () => {
   it("the empty transcript's hint is one paragraph in a centring box, which perch.css hides", () => {
     expect(timeline).toMatch(
-      /className="flex h-full items-center justify-center[^"]*"[\s\S]{0,200}?>\s*<p className="[^"]*">\s*Send a message to start the conversation\.\s*<\/p>\s*<\/div>/,
+      /className="flex h-full items-center justify-center[^"]*"[\s\S]{0,200}?>\s*<p className="[^"]*">\s*<T>Send a message to start the conversation\.<\/T>\s*<\/p>\s*<\/div>/,
     );
   });
 
