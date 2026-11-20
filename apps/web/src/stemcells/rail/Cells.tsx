@@ -23,7 +23,14 @@ import { reveal } from "../needs/walk";
 import type { CellStanding, Condition } from "../needs/wire";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
-import { CellAge, CellCard, CellProject, CellPullRequest, useCellShell } from "../upstream/cellRow";
+import {
+  CellAge,
+  CellCard,
+  CellIssue,
+  CellProject,
+  CellPullRequest,
+  useCellShell,
+} from "../upstream/cellRow";
 import { useOpenCell, useSettledKeptBack, useShelves, type ShelvedCell } from "../upstream/column";
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
@@ -50,6 +57,7 @@ import { elsewhere, elsewhereWords, shows } from "./filter";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
+import { ListButtons } from "./ListButtons";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
@@ -275,6 +283,7 @@ export function Cells() {
           >
             <SettingsIcon />
           </RailButton>
+          <ListButtons />
           <RailButton label="Usage" on={onUsage} onClick={() => void navigate({ to: "/usage" })}>
             <ChartNoAxesColumnIcon />
           </RailButton>
@@ -566,6 +575,7 @@ function CellRow(props: { row: Row; settled?: boolean; onSettle?: () => void }) 
           <span data-cells-row-under="">
             <CellProject shell={shell} />
             <CellPullRequest shell={shell} onOpenCell={onOpen} />
+            <CellIssue shell={shell} onOpenCell={onOpen} />
           </span>
         )}
       </CellCard>

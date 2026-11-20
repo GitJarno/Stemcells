@@ -1208,7 +1208,8 @@ delivers it and guards permission modes; Stemcells adds what it lacks:
   (`apps/web/src/stemcells/peers/`); `MessagesTimeline.logic.ts`'s
   `workEntryDisplayLabel` says what a `t3_thread_send` or
   `stemcells_peer_send` did ("Asked Otter: …"); `MessagesTimeline.tsx` hands the rows the chat's exchange
-  (`PeerExchangeProvider`). The phone keeps upstream's row.
+  (`PeerExchangeProvider`). The phone folds it under Cell Mail
+  (`apps/mobile/src/stemcells/chat/MailFold.tsx`, a `ThreadFeed.tsx` seam).
 - **Cell names** live in `stemcells/words/cellNames.ts`, so the server
   names a peer as its tabs do.
 - **Linked machines** (Stemcells servers only; T3 Code's own can't join).
