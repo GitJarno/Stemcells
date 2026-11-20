@@ -22,7 +22,7 @@ import { usePrimarySettings } from "../../hooks/useSettings";
 import { formatShortTimestamp } from "../../timestampFormat";
 import { statusOfShell } from "./status";
 
-export { formatDuration } from "@t3tools/shared/usageLimits";
+export { formatDuration } from "@t3tools/shared/usageLimitsCopy";
 export { ResetCredits } from "../../components/usage/UsageLimits";
 export type { LimitAccount, LimitPresentations };
 export type LimitWindow = LimitAccount["limits"]["windows"][number];

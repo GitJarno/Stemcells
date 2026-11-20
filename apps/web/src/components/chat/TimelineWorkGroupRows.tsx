@@ -363,10 +363,7 @@ export function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: 
       <Stemcells.CellWorkingWord /> for <WorkingTimer createdAt={row.createdAt} />
     </>
   ) : (
-    <>
-      <Stemcells.CellWorkingWord />
-      ...
-    </>
+    <Stemcells.CellWorkingWord ellipsis />
   );
   return (
     <div className="border-b border-border/60 pb-2 pt-1">

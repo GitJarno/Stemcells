@@ -32,8 +32,9 @@ describe("a casual chat in upstream's views", () => {
     expect(headline.slice(offer - 1000, offer)).toMatch(
       /const orStartWithoutProject =[\s\S]{0,600}void startScratch\(\)/,
     );
-    expect(headline.slice(offer + CASUAL_CHAT.offer.length)).toMatch(/^\s*<\/TooltipTrigger>/);
-    const casual = headline.indexOf(`<>${CASUAL_CHAT.headline}</>`);
+    expect(headline.slice(offer - 3, offer)).toBe("<T>");
+    expect(headline.slice(offer + CASUAL_CHAT.offer.length)).toMatch(/^<\/T>\s*<\/TooltipTrigger>/);
+    const casual = headline.indexOf(`<T>${CASUAL_CHAT.headline}</T>`);
     expect(headline.slice(casual - 60, casual)).toMatch(/\{isScratchDraft \? \(\s*$/);
     expect(headline).not.toMatch(/start without a project|What should we work on\?/);
   });
@@ -44,7 +45,7 @@ describe("a casual chat in upstream's views", () => {
     expect(hero.slice(start - 300, start)).toContain(
       "onClick={() => void startScratchThread(scratchTargetEnvironmentId)}",
     );
-    expect(hero.slice(start + CASUAL_CHAT.start.length)).toMatch(/^\s*<\/Button>/);
+    expect(hero.slice(start + CASUAL_CHAT.start.length)).toMatch(/^<\/T>\s*<\/Button>/);
     expect(hero).not.toContain("Start without a project");
   });
 
@@ -53,7 +54,7 @@ describe("a casual chat in upstream's views", () => {
       /value: "action:new-thread-without-project",[\s\S]{0,400}run: \(\) => startScratchThread\(scratchTargetEnvironmentId\)/,
     );
     expect(commandPalette).toContain(
-      "const rootGroups = buildRootGroups({ actionItems, recentThreadItems });",
+      "const rootGroups = buildRootGroups({ actionItems, recentThreadItems }, messages);",
     );
   });
 

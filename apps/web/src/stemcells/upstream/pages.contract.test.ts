@@ -67,7 +67,7 @@ describe("Settings over the chat", () => {
 
   it("the settings route lays its panel out in upstream's modal, its close and outlet inside", () => {
     expect(settingsRoute).toMatch(
-      /<AppRouteModal label="Settings">\s*<SettingsOnSlab[\s\S]*?<AppRouteModalClose \/>[\s\S]*?<Outlet \/>[\s\S]*?<\/SettingsOnSlab>\s*<\/AppRouteModal>/,
+      /<AppRouteModal label=\{gt\("Settings"\)\}>\s*<SettingsOnSlab[\s\S]*?<AppRouteModalClose \/>[\s\S]*?<Outlet \/>[\s\S]*?<\/SettingsOnSlab>\s*<\/AppRouteModal>/,
     );
     expect(settingsRoute).not.toContain("<SettingsBreadcrumb");
   });

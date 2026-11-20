@@ -19,6 +19,7 @@ const SHORT_SUMMARY = {
   Unpinned: msg("{count, plural, =1 {Unpinned,} other {Unpinned {count},}}"),
   Archived: msg("{count, plural, =1 {Archived,} other {Archived {count},}}"),
   Discarded: msg("{count, plural, =1 {Discarded,} other {Discarded {count},}}"),
+  Answered: msg("{count, plural, =1 {Answered,} other {Answered {count},}}"),
 };
 
 /** Fills the free space in the sidebar footer's utility row, so it never moves or covers the list. */

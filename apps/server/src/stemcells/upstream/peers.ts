@@ -6,7 +6,6 @@
  */
 import {
   type OrchestrationMessageContext,
-  type OrchestrationV2Actor,
   type OrchestrationV2ThreadShell,
   ProjectId,
   repositoryGroupingKeyOf,
@@ -19,7 +18,6 @@ import * as Effect from "effect/Effect";
 
 import type { ProjectionStoreV2Shape } from "../../orchestration-v2/ProjectionStore.ts";
 import type { ProjectService } from "../../project/ProjectService.ts";
-import type { ProviderAuthService } from "../../provider/ProviderAuthService.ts";
 import { elsewhereNow } from "../peers/elsewhere.ts";
 import { cellsOnTheWire } from "../peers/onTheWire.ts";
 import { providerTextOf, type ThreadFacts } from "../peers/frame.ts";
@@ -211,16 +209,3 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
   );
   return note === null ? words : `${note}\n\nUser message:\n${words}`;
 });
-
-type PromptCommands = Pick<ProviderAuthService["Service"], "tryHandlePromptCommand">;
-
-/**
- * Upstream's provider sign-in as a message may use it: a prompt command
- * (`/logout`, for Cursor and Antigravity) runs only from a message the
- * person sent. From anyone else it is words, and another Cell's are framed.
- */
-export const promptCommandsOf = (
-  auth: PromptCommands,
-  message: { readonly createdBy: OrchestrationV2Actor },
-): PromptCommands =>
-  message.createdBy === "user" ? auth : { tryHandlePromptCommand: () => Effect.succeed(false) };

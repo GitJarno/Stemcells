@@ -18,26 +18,29 @@ const USAGE_ACTION = "action:usage";
 const ACCOUNT_TERMS = ["accounts", "account", "sign in", "login", "plans"];
 
 export function buildRootGroups(
-  input: Parameters<typeof buildUpstreamRootGroups>[0],
+  ...[input, resolve]: Parameters<typeof buildUpstreamRootGroups>
 ): ReturnType<typeof buildUpstreamRootGroups> {
-  return buildUpstreamRootGroups({
-    ...input,
-    actionItems: input.actionItems.map((item) =>
-      item.value === CASUAL_CHAT_ACTION
-        ? {
-            ...item,
-            title: CASUAL_CHAT.action,
-            searchTerms: [...item.searchTerms, ...CASUAL_CHAT.searchTerms],
-          }
-        : item.value === COPY_ACTION && item.title === "Copy thread"
-          ? { ...item, title: COPY_CELL.action, searchTerms: [...item.searchTerms, "cell"] }
-          : item.value === USAGE_ACTION
-            ? {
-                ...item,
-                title: "Open usage and accounts",
-                searchTerms: [...item.searchTerms, ...ACCOUNT_TERMS],
-              }
-            : item,
-    ),
-  });
+  return buildUpstreamRootGroups(
+    {
+      ...input,
+      actionItems: input.actionItems.map((item) =>
+        item.value === CASUAL_CHAT_ACTION
+          ? {
+              ...item,
+              title: CASUAL_CHAT.action,
+              searchTerms: [...item.searchTerms, ...CASUAL_CHAT.searchTerms],
+            }
+          : item.value === COPY_ACTION && item.title === "Copy thread"
+            ? { ...item, title: COPY_CELL.action, searchTerms: [...item.searchTerms, "cell"] }
+            : item.value === USAGE_ACTION
+              ? {
+                  ...item,
+                  title: "Open usage and accounts",
+                  searchTerms: [...item.searchTerms, ...ACCOUNT_TERMS],
+                }
+              : item,
+      ),
+    },
+    resolve,
+  );
 }

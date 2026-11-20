@@ -222,5 +222,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     `${CHAT}/TimelineWorkEntryRow.tsx`,
     within('aria-label={gt("Open subagent thread")}', "Open subagent thread", SUBCELL.open),
     within("<T>Open subagent</T>", "Open subagent", SUBCELL.open),
+    // A read of another Cell: "Read Cell “Title”", the title a link to it.
+    within("{Reading thread “{title}”}", "thread", CELL.one, 2),
+    within("{Read thread “{title}”}", "thread", CELL.one),
+    within("{Failed to read thread “{title}”}", "thread", CELL.one),
+    within("{Declined to read thread “{title}”}", "thread", CELL.one),
+    within("{Stopped reading thread “{title}”}", "thread", CELL.one),
   ),
 ];

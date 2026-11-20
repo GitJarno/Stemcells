@@ -53,8 +53,13 @@ export function statusOfShell(
   localLastVisitedAt: string | undefined,
 ): CellStatus | null {
   const lastVisitedAt = resolveThreadLastVisitedAt(shell.lastVisitedAt, localLastVisitedAt);
-  return resolveThreadStatusPill({ thread: { ...shell, lastVisitedAt } })?.label ?? null;
+  const label = resolveThreadStatusPill({ thread: { ...shell, lastVisitedAt } })?.label;
+  return isCellStatus(label) ? label : null;
 }
+
+// Upstream's labels are i18n messages, typed as strings; each is one of these English words.
+const isCellStatus = (label: string | undefined): label is CellStatus =>
+  (CELL_STATUSES as ReadonlyArray<string | undefined>).includes(label);
 
 /** Whether the chat's worktree is still being set up, where upstream's row says "Setting up". */
 export function isSettingUp(shell: EnvironmentThreadShell): boolean {

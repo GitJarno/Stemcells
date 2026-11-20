@@ -82,7 +82,7 @@ describe("no Stemcells build reports on the person", () => {
       .split(/(?=<SettingsRow\b)/)
       .filter((row) => /anonymous usage data/i.test(row));
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatch(/^<SettingsRow\s*\{\.\.\.searchableSetting\("privacy-policy"\)\}/);
+    expect(rows[0]).toMatch(/^<SettingsRow\s*\{\.\.\.setting\("privacy-policy"\)\}/);
   });
 });
 

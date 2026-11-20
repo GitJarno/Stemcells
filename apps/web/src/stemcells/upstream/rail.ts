@@ -11,9 +11,9 @@ import { isListedThreadLineage, type KeybindingCommand } from "@t3tools/contract
 import {
   collectLimitAccounts,
   collectLimitPools,
-  formatDuration,
   type LimitPool,
 } from "@t3tools/shared/usageLimits";
+import { formatDuration } from "@t3tools/shared/usageLimitsCopy";
 
 import { openCommandPalette } from "../../commandPaletteBus";
 import type { ProjectFaviconProject } from "../../components/ProjectFavicon";

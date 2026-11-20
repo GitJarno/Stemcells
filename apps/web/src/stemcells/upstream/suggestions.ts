@@ -4,12 +4,14 @@
 // upstream reaches it (`machines.ts`).
 
 import { type EnvironmentId, MessageId, type ThreadId } from "@t3tools/contracts";
+import { useMessages } from "gt-react";
 
 import type {
   ComposerPromptEditorHandle,
   ComposerPromptEditorProps,
 } from "../../components/ComposerPromptEditorTiptap";
 import type { ChatComposerProps } from "../../components/chat/ChatComposer";
+import { DEFAULT_COMPOSER_PLACEHOLDER as IDLE_PLACEHOLDER } from "../../composerPlaceholder";
 import type { ChatMessage, SessionPhase } from "../../types";
 import { callMachine } from "./machines";
 
@@ -29,7 +31,12 @@ export { Kbd } from "../../components/ui/kbd";
  * Upstream's placeholder when the composer asks nothing else of the person;
  * the only one a suggestion stands in for (`suggestions.contract.test.ts`).
  */
-export { DEFAULT_COMPOSER_PLACEHOLDER as IDLE_PLACEHOLDER } from "../../composerPlaceholder";
+export { IDLE_PLACEHOLDER };
+
+/** That placeholder as the composer shows it, in the person's language. */
+export function useIdlePlaceholder(): string {
+  return useMessages()(IDLE_PLACEHOLDER);
+}
 
 const SUGGESTION_PATH = "/api/stemcells/prompt-suggestion";
 

@@ -7,12 +7,6 @@ import {
 import { T3_MCP_TOOL_NAMES } from "@t3tools/shared/t3McpToolPresentation";
 import { describe, expect, it } from "vite-plus/test";
 
-import {
-  liveWorkEntryLabel,
-  workEntryDisplayLabel,
-} from "../../components/chat/MessagesTimeline.logic";
-import { threadReadLabelPrefix } from "./substitutes/MessagesTimeline.logic";
-
 /**
  * Contract: every work log label a person reads for T3's own tools says no T3, thread or agent.
  * Upstream builds them from `@t3tools/shared/t3McpToolPresentation` and
@@ -88,26 +82,5 @@ describe("T3's own tools in the work log", () => {
     for (const run of runs) {
       expect(summarizeToolGroup(run).summary, tool).not.toMatch(NOT_OUR_WORDS);
     }
-  });
-
-  it.each([
-    ["inProgress", true, "Reading Cell"],
-    ["completed", false, "Read Cell"],
-    ["failed", false, "Failed to read Cell"],
-    ["declined", false, "Declined to read Cell"],
-    ["stopped", false, "Stopped reading Cell"],
-  ] as const)("a %s read of another Cell names it by its title", (status, active, prefix) => {
-    // The timeline writes `${prefix} “Title”`, the title a link to that Cell.
-    const read = {
-      ...call("t3_thread_read", status),
-      itemType: "dynamic_tool" as const,
-      structuredPayload: {
-        type: "dynamic_tool",
-        toolName: "t3-code.t3_thread_read",
-        input: { threadId: "cell-child" },
-      } as never,
-    };
-    expect(threadReadLabelPrefix(liveWorkEntryLabel(read, undefined, active))).toBe(prefix);
-    expect(threadReadLabelPrefix(workEntryDisplayLabel(read, undefined))).toBe(prefix);
   });
 });

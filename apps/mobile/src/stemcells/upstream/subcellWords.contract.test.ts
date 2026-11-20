@@ -32,42 +32,45 @@ function built(file: string): string {
 
 const SAID = {
   "thread-subagent-group.tsx": [
-    "const label = `${agents.length} Subcells`;",
-    "summarizeSubagentStatuses(agents.map((agent) => agent.status))",
+    'gt("{count, plural, one {{count} Subcell} other {{count} Subcells}}", {',
+    "summarizeSubagentStatuses(\n    agents.map((agent) => agent.status),",
     "name={props.item.childThreadId ?? props.item.subagentId}",
     "status={agent.status}",
-    '? "Opens this Subcell"',
-    ': "Provider-managed Subcell"',
+    '? gt("Opens this Subcell")',
+    ': gt("Provider-managed Subcell")',
   ],
   "ThreadAgentsSheet.tsx": [
-    'title="Subcells"',
-    "No Subcells in this turn.",
-    '"Provider-managed Subcell. Its work appears in the transcript."',
-    'accessibilityHint="Opens this Subcell"',
+    'title={gt("Subcells")}',
+    "<T>No Subcells in this turn.</T>",
+    'gt("Provider-managed Subcell. Its work appears in the transcript.")',
+    'accessibilityHint={gt("Opens this Subcell")}',
   ],
   "threadAgentsPresentation.ts": [
-    'if (prompt.length === 0) return "Subcell";',
-    'title: items.length === 0 ? "Subcells" : "Other",',
+    'if (prompt.length === 0) return resolve(msg("Subcell"));',
+    '? resolve(msg("Subcells"))',
   ],
   "floating-working-control.tsx": [
-    "accessibilityLabel={`Open Subcells, ${agents.accessibilityLabel}`}",
-    'accessibilityHint="Opens this turn\'s Subcells"',
+    'accessibilityLabel={gt("Open Subcells, {agents}", { agents: agents.accessibilityLabel })}',
+    'accessibilityHint={gt("Opens this turn\'s Subcells")}',
   ],
   "ThreadBackgroundWorkSheet.tsx": [
-    'subagent: "Subcell",',
-    "accessibilityLabel={`Open Subcell ${item.label}`}",
+    'subagent: msg("Subcell"),',
+    'accessibilityLabel={gt("Open Subcell {label}", { label: item.label })}',
   ],
-  "ThreadRouteScreen.tsx": ["? `Subcell of ${delegatedFromThread?.title ?? delegatedFrom.title}`"],
-  "thread-work-log.tsx": ['? "Opens this Subcell. Long press to copy."'],
-  "ProviderSubagentBar.tsx": ["accessibilityLabel={`${modelDescription} Subcell, ${statusLabel}."],
+  "ThreadRouteScreen.tsx": [
+    '? gt("Subcell of {title}", { title: delegatedFromThread?.title ?? delegatedFrom.title })',
+  ],
+  "thread-work-log.tsx": ['? gt("Opens this Subcell. Long press to copy.")'],
+  "ProviderSubagentBar.tsx": ['"{modelDescription} Subcell, {statusLabel}.'],
   "SubagentStopButton.tsx": [
-    '"Could not stop Subcell"',
-    '${workflow ? "workflow" : "Subcell"} ${label}',
-    '"Stop Subcell?"',
-    "`Every running Subcell in ${label} stops.`",
+    ': gt("Could not stop Subcell")',
+    '? gt("Stopping Subcell {label}", { label })',
+    ': gt("Stop Subcell {label}", { label })',
+    ': gt("Stop Subcell?")',
+    'gt("Every running Subcell in {label} stops.", { label })',
   ],
-  "ThreadWorkflowGroup.tsx": ["No Subcells yet", '"Opens this Subcell"'],
-  "thread-workflow-opening.tsx": ['threadId === null ? undefined : "Opens this Subcell"'],
+  "ThreadWorkflowGroup.tsx": ["<T>No Subcells yet</T>", 'gt("Opens this Subcell")'],
+  "thread-workflow-opening.tsx": ['threadId === null ? undefined : gt("Opens this Subcell")'],
 } as const;
 
 describe("Subcells on the phone", () => {

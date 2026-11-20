@@ -9,24 +9,29 @@ import "../../../index.css";
 import { describe, expect, it } from "vite-plus/test";
 
 import { SettingsRow } from "../../../components/settings/settingsLayout";
-import { searchableSetting } from "./settingsSearch";
+import { useSearchableSetting } from "./settingsSearch";
 import { render } from "../testRender";
+
+function Rows() {
+  const setting = useSearchableSetting();
+  return (
+    <div>
+      <SettingsRow
+        {...setting("privacy-policy")}
+        description="How we handle your data."
+        control={<a href="https://example.com/privacy">View policy</a>}
+      />
+      <SettingsRow
+        {...setting("app-version")}
+        control={<a href="https://example.com/version">Version</a>}
+      />
+    </div>
+  );
+}
 
 describe("the privacy row", () => {
   it("is drawn hidden, and nothing in it takes focus", async () => {
-    await using screen = await render(
-      <div>
-        <SettingsRow
-          {...searchableSetting("privacy-policy")}
-          description="How we handle your data."
-          control={<a href="https://example.com/privacy">View policy</a>}
-        />
-        <SettingsRow
-          {...searchableSetting("app-version")}
-          control={<a href="https://example.com/version">Version</a>}
-        />
-      </div>,
-    );
+    await using screen = await render(<Rows />);
     const rows = [...screen.container.querySelectorAll<HTMLElement>('[data-slot="settings-row"]')];
     expect(rows.map((row) => row.id)).toEqual(["privacy-policy", "app-version"]);
     const [privacy, version] = rows as [HTMLElement, HTMLElement];

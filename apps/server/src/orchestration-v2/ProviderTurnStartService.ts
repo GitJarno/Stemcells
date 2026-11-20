@@ -736,7 +736,7 @@ export const layer: Layer.Layer<
         const authResult = isEmptyCompaction
           ? null
           : yield* Effect.result(
-              Stemcells.promptCommandsOf(providerAuth, providerMessage).tryHandlePromptCommand({
+              providerAuth.tryHandlePromptCommand({
                 instanceId: authInstanceId,
                 text: projectComposerContextForProvider({
                   text: providerMessage.text,

@@ -1,3 +1,4 @@
+import { GTProvider, useMessages } from "gt-react";
 import { createRef, useState } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
@@ -16,6 +17,7 @@ function Composer(props: {
   readonly onChange?: (value: string) => void;
 }) {
   const [prompt, setPrompt] = useState({ value: "", cursor: 0 });
+  const m = useMessages();
   return (
     <PromptSuggestionContext value={props.suggestion}>
       <ComposerPromptEditor
@@ -25,7 +27,7 @@ function Composer(props: {
         contextRecords={new Map()}
         skills={[]}
         disabled={false}
-        placeholder={props.placeholder ?? IDLE_PLACEHOLDER}
+        placeholder={props.placeholder ?? m(IDLE_PLACEHOLDER)}
         onChange={(value, cursor) => {
           setPrompt({ value, cursor });
           props.onChange?.(value);
@@ -35,6 +37,14 @@ function Composer(props: {
       />
     </PromptSuggestionContext>
   );
+}
+
+// A catalog keys a text by its hash: the idle hint's, in Swedish.
+const SWEDISH_IDLE = "Fråga vad som helst. @ filer, $ färdigheter, / kommandon";
+const swedish = { "06ca993fa4236249": SWEDISH_IDLE };
+
+function IdleHint() {
+  return <output>{useMessages()(IDLE_PLACEHOLDER)}</output>;
 }
 
 const ghostIn = (container: HTMLElement) =>
@@ -66,6 +76,17 @@ describe("the composer's suggestion", () => {
     expect(dismiss).toHaveBeenCalledOnce();
     await userEvent.click(screen.getByRole("button", { includeHidden: true }));
     expect(onChange).toHaveBeenLastCalledWith("run the tests");
+  });
+
+  it("stands in for the idle hint in the person's language", async () => {
+    await using screen = await render(
+      <GTProvider locale="sv" translations={{ sv: swedish }}>
+        <IdleHint />
+        <Composer suggestion={suggestion()} />
+      </GTProvider>,
+    );
+    await expect.element(screen.getByText(SWEDISH_IDLE)).toBeInTheDocument();
+    await expect.poll(() => ghostIn(screen.container)?.textContent).toContain("run the tests");
   });
 
   it("never stands in for a placeholder that asks something of the person", async () => {

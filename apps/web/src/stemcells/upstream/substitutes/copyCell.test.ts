@@ -66,7 +66,7 @@ describe("Copy Cell", () => {
 
     // Upstream's palette builds its copy action this way (`CommandPalette.tsx`).
     expect(commandPalette).toMatch(
-      /value: "action:copy-thread-reference",[\s\S]{0,400}"Copy PR link" : "Copy thread",/,
+      /value: "action:copy-thread-reference",[\s\S]{0,400}\? gt\("Copy PR link"\)\s*: gt\("Copy thread"\),/,
     );
     const titles = (title: string) =>
       buildRootGroups({

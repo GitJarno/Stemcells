@@ -4,7 +4,7 @@
 
 export { defaultInstanceIdForDriver, ProviderDriverKind } from "@t3tools/contracts";
 export { SettingsRow } from "~/components/settings/settingsLayout";
-export { searchableSetting } from "~/components/settings/settingsSearch";
+export { searchableSetting } from "./settings";
 export {
   Select,
   SelectItem,

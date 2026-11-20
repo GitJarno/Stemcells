@@ -43,6 +43,7 @@ host hermes-agent.nousresearch.com Settings' use-it-in-another-app list: a link 
 host origin.cursor.com recognises a repository already on Cursor Origin from its git remote; only the person's own `origin` CLI talks to it, for a repository they keep there
 host downloads.cursor.com the install command shown when the Origin CLI is missing, for the person to run
 host cursor.com the Origin repository page, a link the person opens
+host git.cafe the sign-in command shown for a git.cafe repository, for the person to run
 host schemas.openxmlformats.org Office XML namespaces the document preview matches
 host www.idpf.org the EPUB package namespace the document preview matches
 host json-schema.org the $schema id of t3.json
@@ -118,6 +119,10 @@ host api.cursor.com Cursor's models and account, for a Cursor provider the perso
 host downloads.claude.ai a native Claude CLI's newest version, for its update notice (upstream's provider maintenance), as npm answers it for an npm install; asked of Anthropic, never T3
 host opencode.ai OpenCode usage limits
 host cdn.agentclientprotocol.com the ACP agent registry, when the person browses it
+host antigravity.google Antigravity sign-in: the page `agy acp --login` sends the person to, which shows a code they paste back
+host releases.fx.sh fx's own release channel (never T3): a native fx install's newest version, for its update notice (upstream's provider maintenance), only for a person who uses fx
+host api.linear.app Linear issues, only once the person connects Linear with their own token (Settings › Issue trackers)
+host linear.app links to Linear issues the person opens themselves
 host registry.npmjs.org the provider CLIs' latest versions; T3's own release is never asked: the server answers it only when a client asks, and ours never do (noTelemetry.test.ts)
 
 # Tools the person starts.

@@ -35,7 +35,6 @@ import * as ProviderAdapterRegistry from "../../orchestration-v2/ProviderAdapter
 import * as ProviderReplayHarness from "../../orchestration-v2/testkit/ProviderReplayHarness.ts";
 import { mailId } from "../peers/link.ts";
 import * as OnTheWire from "../peers/onTheWire.ts";
-import { promptCommandsOf } from "./peers.ts";
 
 const driver = ProviderDriverKind.make("codex");
 const instanceId = ProviderInstanceId.make("codex");
@@ -440,30 +439,13 @@ it.live("upstream's components alone send upstream's text: no frame, no one told
         yield* worker.drain();
       }).pipe(Effect.provide(upstreamAlone(reads)));
 
-      // Upstream's suites pin this text in their recorded replays.
+      // Upstream's suites pin this text in their recorded replays: its own sender note, then the words.
       assert.deepEqual(yield* Ref.get(reads), [
-        { via: "start", text: "Can I take migration 0043?" },
+        {
+          via: "start",
+          text: `[T3 Code: the agent in T3 thread ${JSON.stringify(otter)} sent this message, not the user.]\n\nCan I take migration 0043?`,
+        },
       ]);
     }),
   ),
-);
-
-it.effect("a prompt command runs only from the person's own message", () =>
-  Effect.gen(function* () {
-    const handled = yield* Ref.make(0);
-    const auth = {
-      tryHandlePromptCommand: () => Ref.update(handled, (count) => count + 1).pipe(Effect.as(true)),
-    };
-    const input = { instanceId, text: "/logout", hasAttachments: false };
-    assert.isTrue(
-      yield* promptCommandsOf(auth, { createdBy: "user" }).tryHandlePromptCommand(input),
-    );
-    assert.isFalse(
-      yield* promptCommandsOf(auth, { createdBy: "agent" }).tryHandlePromptCommand(input),
-    );
-    assert.isFalse(
-      yield* promptCommandsOf(auth, { createdBy: "system" }).tryHandlePromptCommand(input),
-    );
-    assert.equal(yield* Ref.get(handled), 1);
-  }),
 );

@@ -119,10 +119,14 @@ gate_upstream_packages() {
       "replaces same-length stale icons and refreshes an existing cache once") || return 1
     # shared's login-shell case fails on upstream's own tree on this Mac
     # (checked at 747ed9c5b, 2026-11-17).
-    # So do ssh's two missing-gzip cases and its concurrent-launch case.
+    # So do ssh's two missing-gzip cases and its concurrent-launch case, and
+    # (checked at df09ced76, 2026-11-20) its two archive-launch cases, whose
+    # fake t3 execs a node the bare system PATH of a Mac doesn't have.
     skip=$(skip_pattern "captures values when the profile replaces PATH and a DEBUG trap echoes commands" \
       "names missing gzip after verifying with" \
-      "concurrent launches on one remote home record the server that owns it") || return 1
+      "concurrent launches on one remote home record the server that owns it" \
+      "a reconnect from an older client keeps a newer managed server running" \
+      "a newer client still replaces an older managed server") || return 1
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' \
       test -t "$skip" &&
@@ -164,8 +168,11 @@ gate_upstream_server() {
     # The port scanner's job-group case, the setup script's syntax-error
     # case and GitVcsDriver's checkpoint pack cases fail on upstream's own
     # tree on this Mac (checked at 747ed9c5b, 2026-11-17), as does the
-    # server browser's title-change case.
+    # server browser's title-change case. AntigravityInstallation's 16 KiB
+    # page case kills a shell with SIGABRT, which a Mac reports as cancelled
+    # (df09ced76, 2026-11-20; nothing of ours is on that path).
     skip=$(skip_pattern "accepts the agy CLI without a harness sibling" \
+      "explains that the linux-arm64 runtime needs 4 KiB pages when it aborts on a 16 KiB kernel" \
       "gives a synced namespace to an installed plugin, then the first synced row" \
       "merges plugin enablement and selects installs in native registry order" \
       "stops an agent's server through its job's group, and only a listed server" \
