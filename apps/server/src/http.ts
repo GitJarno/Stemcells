@@ -1,3 +1,4 @@
+import * as Stemcells from "./stemcells/upstream/playable.ts";
 import * as Mime from "effect/http/Mime";
 import {
   AuthOrchestrationOperateScope,
@@ -507,7 +508,7 @@ export const layerAssetRoute = HttpRouter.add(
       );
     }
     return yield* assetFileResponse(
-      asset,
+      yield* Stemcells.playableAsset(suffix.slice(0, separatorIndex), asset),
       request.method === "GET" ? request.headers.range : undefined,
       request.headers["if-range"],
       request.method === "HEAD" ? "HEAD" : "GET",
