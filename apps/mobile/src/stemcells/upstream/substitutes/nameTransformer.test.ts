@@ -29,6 +29,24 @@ interface Transformer {
 }
 const transformer = require(transformerPath) as Transformer;
 
+interface Worker {
+  readonly transform: (
+    config: unknown,
+    projectRoot: string,
+    filename: string,
+    data: Buffer,
+    options: unknown,
+  ) => Promise<{ readonly output: ReadonlyArray<{ readonly data: { readonly code: string } }> }>;
+}
+
+/** The phone's Metro config, as Metro loads it. */
+const metroConfig = async () =>
+  (await require(NodePath.join(phoneRoot, "metro.config.js"))) as {
+    readonly transformerPath: string;
+    readonly transformer: { readonly babelTransformerPath: string };
+    readonly serializer: { readonly customSerializer: { readonly checksNames?: boolean } };
+  };
+
 /** Babel's printer, the copy Expo's transformer runs with. */
 const babelRequire = NodeModule.createRequire(require.resolve("expo/metro-config"));
 const generate = (
@@ -59,10 +77,7 @@ async function built(fileFromPhone: string): Promise<string> {
 
 describe("the phone's build says Stemcells", () => {
   it("Metro's config runs every module through the name transformer", async () => {
-    const config = (await require(NodePath.join(phoneRoot, "metro.config.js"))) as {
-      readonly transformer: { readonly babelTransformerPath: string };
-      readonly serializer: { readonly customSerializer: { readonly checksNames?: boolean } };
-    };
+    const config = await metroConfig();
     expect(config.transformer.babelTransformerPath).toBe(transformerPath);
     // Every bundle, however the phone is built, through the output check.
     expect(config.serializer.customSerializer.checksNames).toBe(true);
@@ -79,6 +94,33 @@ describe("the phone's build says Stemcells", () => {
     const sheet = await built("src/features/threads/ThreadAgentsSheet.tsx");
     expect(sheet).toContain('"Subcells"');
     expect(sheet).not.toContain('"Agents"');
+  });
+
+  it("in a translation catalog, which Metro bundles past the Babel transformer", async () => {
+    const config = await metroConfig();
+    expect(config.transformerPath).toBe(NodePath.join(here, "catalogWorker.cjs"));
+    const worker = require(config.transformerPath) as Worker;
+    const file = "src/i18n/translations/es.json";
+    const result = await worker.transform(
+      config.transformer,
+      phoneRoot,
+      file,
+      NodeFS.readFileSync(NodePath.join(phoneRoot, file)),
+      {
+        dev: false,
+        hot: false,
+        minify: false,
+        platform: "ios",
+        type: "module",
+        inlineRequires: false,
+        unstable_transformProfile: "default",
+        customTransformOptions: {},
+        experimentalImportSupport: false,
+      },
+    );
+    const code = result.output[0]!.data.code;
+    expect(code).toContain(APP_NAME);
+    expect(code).not.toContain("T3 Code");
   });
 
   it("keeps what the list keeps: T3's own theme", async () => {
