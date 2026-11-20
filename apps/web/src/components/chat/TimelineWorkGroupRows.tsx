@@ -359,9 +359,9 @@ export function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: 
   ) : compacting ? (
     <CompactingLabel createdAt={row.createdAt} />
   ) : row.createdAt ? (
-    <>
+    <T>
       <Stemcells.CellWorkingWord /> for <WorkingTimer createdAt={row.createdAt} />
-    </>
+    </T>
   ) : (
     <Stemcells.CellWorkingWord ellipsis />
   );
