@@ -31,7 +31,7 @@ function LoadedMediaVideo(props: {
   const [loadState, setLoadState] = useState<"pending" | "complete" | "error">("pending");
   const player = useVideoPlayer(null, (player) => {
     player.staysActiveInBackground = false;
-    player.bufferOptions = { preferredForwardBufferDuration: 5 };
+    player.bufferOptions = { preferredForwardBufferDuration: 30 };
   });
   const playback = createAudioPlaybackSession(player, true);
   const { active, fullscreen, createPlayRequest, onFullscreenEnter, onFullscreenExit } =
