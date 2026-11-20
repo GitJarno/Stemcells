@@ -115,8 +115,11 @@ gate_upstream_packages() {
     # DesktopLinuxUrlHandler.test.ts writes two Linux icon names that differ
     # only in case, which a Mac's disk folds into one file. Its config's
     # projects ignore --exclude, so its cases are left out by name.
+    # LoopbackTunnel's forward-limit case: a Mac resets the refused socket,
+    # which has no error listener (upstream's own tree, df09ced76).
     mac=$(skip_pattern "installs both app id spellings without creating an icon cache" \
-      "replaces same-length stale icons and refreshes an existing cache once") || return 1
+      "replaces same-length stale icons and refreshes an existing cache once" \
+      "closes connections beyond a forward's limit without tunnelling them") || return 1
     # shared's login-shell case fails on upstream's own tree on this Mac
     # (checked at 747ed9c5b, 2026-11-17).
     # So do ssh's two missing-gzip cases and its concurrent-launch case, and
