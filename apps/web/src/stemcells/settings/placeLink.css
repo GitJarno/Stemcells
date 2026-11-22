@@ -1,0 +1,44 @@
+/* A place in Settings a reply names (PlaceLink.tsx): its steps on one quiet chip in the line,
+   the last in full ink. The reply's link colour stays off it. Nothing here animates. */
+[data-stemcells-place] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  max-inline-size: 100%;
+  padding: 0 0.45em 0 0.4em;
+  border: 1px solid var(--sc-hairline);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--sc-text) 5%, transparent);
+  line-height: 1.45;
+  text-decoration: none;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+[data-stemcells-place]:hover {
+  background: color-mix(in srgb, var(--sc-text) 10%, transparent);
+}
+[data-stemcells-place]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+[data-place-icon],
+[data-place-separator],
+[data-place-crumb] {
+  color: var(--sc-soft);
+}
+[data-place-icon] {
+  inline-size: 0.85em;
+  block-size: 0.85em;
+  flex: none;
+  opacity: 0.7;
+}
+[data-place-separator] {
+  opacity: 0.5;
+  font-size: 0.85em;
+}
+[data-place-crumb="last"] {
+  overflow: hidden;
+  color: var(--sc-text);
+  font-weight: 500;
+  text-overflow: ellipsis;
+}

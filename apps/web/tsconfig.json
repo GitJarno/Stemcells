@@ -57,6 +57,7 @@
     "../../stemcells/ledger/feats.ts",
     "../../stemcells/ledger/ladders.ts",
     "../../stemcells/ledger/marks.ts",
+    "../../stemcells/settings/places.ts",
     "../../stemcells/words/casualChat.ts",
     "../../stemcells/words/cellMail.ts",
     "../../stemcells/words/cellNames.ts",
@@ -67,6 +68,7 @@
     "../../stemcells/words/disk.ts",
     "../../stemcells/words/feats.ts",
     "../../stemcells/words/marks.ts",
+    "../../stemcells/words/prose.ts",
     "../../stemcells/words/subcells.ts"
   ]
 }

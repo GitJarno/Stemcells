@@ -4,6 +4,7 @@
 // alike (stemcells/tasks/cell-tokens.md).
 
 import data from "./cellNames.json" with { type: "json" };
+import { mapProse } from "./prose.ts";
 
 /** Every name a Cell may be called by. */
 export const NAMES: readonly string[] = data.names;
@@ -74,12 +75,6 @@ export function signatureOf(names: ReadonlyMap<string, string>): string {
     .join(",");
 }
 
-// Inline code, a link or image with its words, an autolink or a tag, a bare URL: kept as written.
-const KEPT = /(`+)[\s\S]*?\1|!?\[[^\]]*\]\([^)]*\)|<[^>\s]+>|https?:\/\/\S+/g;
-const FENCE = /^\s*(`{3,}|~{3,})/;
-// Four spaces in is code unless it continues a list.
-const INDENTED_CODE = /^(?: {4,}|\t)(?!\s*(?:[-*+]|\d+[.)])\s)/;
-
 /** The text with each name in `names` outside code and links written as `[Name](hrefOf(id))`. */
 export function linkCellNames(
   text: string,
@@ -98,33 +93,5 @@ export function linkCellNames(
   );
   const link = (line: string) =>
     line.replace(named, (_whole, name: string) => `[${name}](${hrefOf(names.get(name)!)})`);
-  let fence: string | null = null;
-  return text
-    .split("\n")
-    .map((line) => {
-      const marker = FENCE.exec(line)?.[1];
-      if (fence !== null) {
-        if (
-          marker !== undefined &&
-          marker[0] === fence[0] &&
-          marker.length >= fence.length &&
-          line.trim() === marker
-        )
-          fence = null;
-        return line;
-      }
-      if (marker !== undefined) {
-        fence = marker;
-        return line;
-      }
-      if (INDENTED_CODE.test(line)) return line;
-      let out = "";
-      let from = 0;
-      for (const kept of line.matchAll(KEPT)) {
-        out += link(line.slice(from, kept.index)) + kept[0];
-        from = kept.index + kept[0].length;
-      }
-      return out + link(line.slice(from));
-    })
-    .join("\n");
+  return mapProse(text, link);
 }

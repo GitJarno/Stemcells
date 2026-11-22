@@ -4,13 +4,20 @@
  * own pages (Settings › Aski) use upstream's rows and switch, and a setting Aski shows in its
  * reply reads and writes through upstream's scope, as Settings does.
  */
+import { EnvironmentId, PROVIDER_DISPLAY_NAMES, ProviderInstanceId } from "@t3tools/contracts";
+import { decodeMsg } from "gt-react";
+
+import type { SettingsCatalog } from "../../../../../stemcells/settings/places.ts";
 import {
+  revealSettingsSearchTarget,
   SETTINGS_SEARCH_ITEMS,
   SETTINGS_SECTION_LABELS,
   type SettingsPath,
+  type SettingsSearchItem,
   type SettingsSearchItemId,
 } from "../../components/settings/settingsSearch";
 import { m } from "../../i18n/messages";
+import { NEVER_OFFERED_SETTINGS } from "../pages/settingsPages";
 import { SETTINGS_NAV_GROUPS } from "./substitutes/settingsSearch";
 
 export { SettingsSidebarNav } from "../../components/settings/SettingsSidebarNav";
@@ -30,6 +37,7 @@ export {
 export { Toggle, ToggleGroup } from "../../components/ui/toggle-group";
 export { useNavigateToMainApp } from "../../components/sidebar/mainAppLocation";
 export type { SettingsPath };
+export { revealSettingsSearchTarget };
 
 /** The sections upstream's sidebar lists, in its order, with ours where the substitute places them. */
 export const SETTINGS_SECTIONS: ReadonlyArray<{ to: SettingsPath; label: string }> =
@@ -45,4 +53,41 @@ export function searchableSetting(id: SettingsSearchItemId): {
 } {
   const item = SETTINGS_SEARCH_ITEMS.find((entry) => entry.id === id)!;
   return { id: item.id, title: m(item.title) };
+}
+
+/**
+ * Settings as a reply's words name it, in English: its pages, the rows its search finds and the
+ * providers its Providers page shows. The shared `stemcells/settings/catalog.json` is this,
+ * written out (`settingsCatalog.contract.test.ts`), so the phone reads paths the same way.
+ */
+export function settingsCatalog(): SettingsCatalog {
+  const items: ReadonlyArray<SettingsSearchItem> = SETTINGS_SEARCH_ITEMS;
+  return {
+    pages: Object.entries(SETTINGS_SECTION_LABELS).map(([path, label]) => ({
+      path,
+      label: decodeMsg(label),
+    })),
+    rows: items
+      .filter((item) => !NEVER_OFFERED_SETTINGS.has(item.id))
+      .map((item) => ({
+        id: item.id,
+        title: decodeMsg(item.title),
+        page: item.to,
+        ...(item.targetId === undefined || item.targetId === item.id
+          ? {}
+          : { anchor: item.targetId }),
+      })),
+    providers: Object.entries(PROVIDER_DISPLAY_NAMES).map(([driver, label]) => ({
+      driver,
+      label: label!,
+    })),
+  };
+}
+
+/** The Providers page's search that opens one driver's own card, on a server or the first. */
+export function providerCardSearch(driver: string, environmentId: string | undefined) {
+  const instanceId = ProviderInstanceId.make(driver);
+  return environmentId === undefined
+    ? { instanceId }
+    : { environmentId: EnvironmentId.make(environmentId), instanceId };
 }

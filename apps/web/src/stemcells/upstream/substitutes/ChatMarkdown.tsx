@@ -1,11 +1,12 @@
 /**
- * Replaces `components/ChatMarkdown.tsx` (`plugin.ts`): in a reply, a setting Aski links draws
- * as its live switch (`aski/settingLinks.tsx`), another Cell as its token (`peers/CellToken.tsx`),
- * a closed `chart` fence as its chart (`chart/ChartFence.tsx`) and a settled reply's close-out as
- * a card (`closeOut/CloseOutCard.tsx`). A view that draws its own context links keeps its words.
+ * Replaces `components/ChatMarkdown.tsx` (`plugin.ts`): a reply draws Aski's setting links as
+ * switches, places in Settings as links, other Cells as tokens, a closed `chart` fence as its
+ * chart and a settled reply's close-out as a card. A view drawing its own context links keeps
+ * its words.
  */
 import { type ComponentProps, memo, type ReactNode, use } from "react";
 
+import { linkPlaces } from "../../../../../../stemcells/settings/places.ts";
 import UpstreamChatMarkdown from "../../../components/ChatMarkdown";
 import { renderContextLink, type ContextLink } from "../../aski/settingLinks";
 import { ChartFence } from "../../chart/ChartFence";
@@ -14,6 +15,7 @@ import { CloseOutCard, LatestShown } from "../../closeOut/CloseOutCard";
 import { cardOf, ReplyInView } from "../../closeOut/reply";
 import { CellToken } from "../../peers/CellToken";
 import { CELL_LINK_KIND, linkCellNames } from "../../peers/mentions";
+import { PLACE_LINK_KIND, PlaceLink, placeHref } from "../../settings/PlaceLink";
 import { useNamedCells } from "../cellNames";
 
 export * from "../../../components/ChatMarkdown";
@@ -21,20 +23,28 @@ export * from "../../../components/ChatMarkdown";
 // One list, so every reply with a chart shares upstream's renderer and its parse cache.
 const CHART_PLUGINS = [remarkChartFence];
 
-const draw = (link: ContextLink): ReactNode =>
-  link.kind === CHART_LINK_KIND ? <ChartFence source={link.label} /> : renderContextLink(link);
+const draw = (link: ContextLink, environmentId?: string): ReactNode =>
+  link.kind === CHART_LINK_KIND ? (
+    <ChartFence source={link.label} />
+  ) : link.kind === PLACE_LINK_KIND ? (
+    <PlaceLink placeKey={link.contextId} label={link.label} environmentId={environmentId} />
+  ) : (
+    renderContextLink(link)
+  );
+
+const drawAnywhere = (link: ContextLink) => draw(link);
 
 // One renderer per server, so upstream's memoised markdown keeps it from render to render.
 const renderers = new Map<string, (link: ContextLink) => ReactNode>();
 function rendererIn(environmentId: string | undefined): (link: ContextLink) => ReactNode {
-  if (environmentId === undefined) return draw;
+  if (environmentId === undefined) return drawAnywhere;
   let render = renderers.get(environmentId);
   if (render === undefined) {
     render = (link) =>
       link.kind === CELL_LINK_KIND ? (
         <CellToken environmentId={environmentId} threadId={link.contextId} label={link.label} />
       ) : (
-        draw(link)
+        draw(link, environmentId)
       );
     renderers.set(environmentId, render);
   }
@@ -47,7 +57,8 @@ const Words = memo(function Words(props: Props) {
   const own = props.renderContextReference;
   const ref = own === undefined ? props.threadRef : undefined;
   const named = useNamedCells(ref);
-  const text = linkCellNames(props.text, named.names);
+  const withCells = linkCellNames(props.text, named.names);
+  const text = own === undefined ? linkPlaces(withCells, placeHref) : withCells;
   // The plugin costs a streaming reply upstream's block-by-block parse, so only a reply that
   // may hold a closed chart runs it.
   const charts =

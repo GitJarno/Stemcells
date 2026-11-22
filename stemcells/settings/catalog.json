@@ -1,0 +1,826 @@
+{
+  "pages": [
+    { "path": "/settings/diagnostics", "label": "Diagnostics" },
+    { "path": "/settings/projects", "label": "Projects" },
+    { "path": "/settings/general", "label": "General" },
+    { "path": "/settings/appearance", "label": "Appearance" },
+    { "path": "/settings/chat", "label": "Chat" },
+    { "path": "/settings/diffs", "label": "Diffs & pull requests" },
+    { "path": "/settings/keybindings", "label": "Keybindings" },
+    { "path": "/settings/snap-shot", "label": "SnapShots" },
+    { "path": "/settings/providers", "label": "Providers" },
+    { "path": "/settings/threads", "label": "Threads" },
+    { "path": "/settings/browser", "label": "Browser" },
+    { "path": "/settings/devices", "label": "Devices" },
+    { "path": "/settings/scheduled-tasks", "label": "Scheduled tasks" },
+    { "path": "/settings/source-control", "label": "Source control & issues" },
+    { "path": "/settings/worktrees", "label": "Worktrees" },
+    { "path": "/settings/disk", "label": "Disk" },
+    { "path": "/settings/aski", "label": "Aski" },
+    { "path": "/settings/your-devices", "label": "Your devices" },
+    { "path": "/settings/lineage", "label": "Lineage" },
+    { "path": "/settings/collection", "label": "Collection" },
+    { "path": "/settings/connections", "label": "Environments" },
+    { "path": "/settings/access", "label": "Sharing & access" },
+    { "path": "/settings/secrets", "label": "Secrets" },
+    { "path": "/settings/maintenance", "label": "Maintenance" },
+    { "path": "/settings/labs", "label": "Labs" },
+    { "path": "/settings/about", "label": "About" },
+    { "path": "/settings/voice", "label": "Voice" },
+    { "path": "/settings/archived", "label": "Archive" }
+  ],
+  "rows": [
+    {
+      "id": "storage-worktree-keep-when",
+      "title": "Keep worktrees with local changes",
+      "page": "/settings/worktrees",
+      "anchor": "storage-worktrees"
+    },
+    { "id": "storage-delete-now", "title": "Delete now", "page": "/settings/maintenance" },
+    { "id": "storage-worktrees", "title": "Worktree cleanup", "page": "/settings/worktrees" },
+    {
+      "id": "storage-worktrees-location",
+      "title": "Worktree location",
+      "page": "/settings/worktrees"
+    },
+    { "id": "storage-artifacts", "title": "Artifacts and logs", "page": "/settings/maintenance" },
+    {
+      "id": "project-defaults",
+      "title": "Project defaults and overrides",
+      "page": "/settings/threads"
+    },
+    { "id": "project-overview", "title": "Project overview", "page": "/settings/projects" },
+    { "id": "default-model", "title": "Default model", "page": "/settings/threads" },
+    { "id": "fallback-model", "title": "Fallback model", "page": "/settings/threads" },
+    { "id": "default-permissions", "title": "Permissions", "page": "/settings/threads" },
+    {
+      "id": "color-scheme",
+      "title": "Color scheme",
+      "page": "/settings/appearance",
+      "anchor": "appearance"
+    },
+    { "id": "theme", "title": "Themes", "page": "/settings/appearance", "anchor": "appearance" },
+    { "id": "setting-appearance-contrast", "title": "Contrast", "page": "/settings/appearance" },
+    { "id": "setting-glass-opacity", "title": "Glass opacity", "page": "/settings/appearance" },
+    { "id": "diff-color-scheme", "title": "Diff colors", "page": "/settings/diffs" },
+    { "id": "chat-width", "title": "Chat width", "page": "/settings/appearance" },
+    { "id": "thread-details-items", "title": "Thread details", "page": "/settings/appearance" },
+    { "id": "effort-display", "title": "Effort display", "page": "/settings/appearance" },
+    { "id": "math-rendering", "title": "Render math", "page": "/settings/appearance" },
+    { "id": "panel-animations", "title": "Panel animations", "page": "/settings/appearance" },
+    {
+      "id": "environment-identification",
+      "title": "Environment identification",
+      "page": "/settings/appearance",
+      "anchor": "appearance-interface"
+    },
+    { "id": "interface-font", "title": "Interface font", "page": "/settings/appearance" },
+    { "id": "prompt-font", "title": "Prompt font", "page": "/settings/appearance" },
+    { "id": "code-font", "title": "Code font", "page": "/settings/appearance" },
+    { "id": "terminal-font", "title": "Terminal font", "page": "/settings/appearance" },
+    { "id": "separate-fonts", "title": "Separate fonts", "page": "/settings/appearance" },
+    { "id": "font-smoothing", "title": "Font smoothing", "page": "/settings/appearance" },
+    { "id": "word-wrap", "title": "Word wrap", "page": "/settings/appearance" },
+    { "id": "composer-context", "title": "Composer context", "page": "/settings/appearance" },
+    { "id": "project-grouping", "title": "Project grouping", "page": "/settings/general" },
+    { "id": "project-order", "title": "Project order", "page": "/settings/general" },
+    { "id": "snooze-options", "title": "Snooze options", "page": "/settings/threads" },
+    {
+      "id": "snooze-limited-threads",
+      "title": "Snooze until limits reset",
+      "page": "/settings/threads"
+    },
+    {
+      "id": "auto-resume-limited-threads",
+      "title": "Resume after usage limits",
+      "page": "/settings/threads"
+    },
+    { "id": "working-shelf", "title": "Working section", "page": "/settings/general" },
+    {
+      "id": "boring-sidebar",
+      "title": "Boring sidebar (group by project)",
+      "page": "/settings/labs"
+    },
+    {
+      "id": "boring-sidebar-multiline",
+      "title": "Two-line folder rows",
+      "page": "/settings/labs",
+      "anchor": "boring-sidebar"
+    },
+    { "id": "tool-call-visibility", "title": "Tool calls in chat", "page": "/settings/chat" },
+    {
+      "id": "screen-reader-announcements",
+      "title": "Screen reader announcements",
+      "page": "/settings/chat"
+    },
+    {
+      "id": "screen-reader-window-title",
+      "title": "Screen reader window title",
+      "page": "/settings/chat"
+    },
+    { "id": "guest-links", "title": "Guest links", "page": "/settings/labs" },
+    { "id": "linked-environments-beta", "title": "Linked environments", "page": "/settings/labs" },
+    { "id": "prompt-suggestions-beta", "title": "Suggest next prompt", "page": "/settings/labs" },
+    { "id": "simlock-hosts", "title": "Simlock device hosts (alpha)", "page": "/settings/labs" },
+    { "id": "worktree-fast-checkout", "title": "Fast worktree checkout", "page": "/settings/labs" },
+    {
+      "id": "voice-transcription-destination",
+      "title": "Transcribe with",
+      "page": "/settings/voice"
+    },
+    { "id": "voice-microphone", "title": "Microphone", "page": "/settings/voice" },
+    { "id": "dictation-shortcut-mode", "title": "Dictation shortcut", "page": "/settings/voice" },
+    { "id": "speech-language", "title": "Transcription language", "page": "/settings/voice" },
+    { "id": "speech-dictionary", "title": "Dictionary", "page": "/settings/voice" },
+    { "id": "speech-project-dictionary", "title": "Project dictionary", "page": "/settings/voice" },
+    { "id": "speech-post-processing-model", "title": "Cleanup model", "page": "/settings/voice" },
+    { "id": "speech-correction-word", "title": "Correction cue", "page": "/settings/voice" },
+    { "id": "speech-silence-filtering", "title": "Silence filtering", "page": "/settings/voice" },
+    { "id": "remove-filler-words", "title": "Remove filler words", "page": "/settings/voice" },
+    { "id": "speech-post-processing", "title": "Clean up transcripts", "page": "/settings/voice" },
+    { "id": "speech-models", "title": "Transcription models", "page": "/settings/voice" },
+    {
+      "id": "speech-hardware",
+      "title": "Transcription hardware and model unloading",
+      "page": "/settings/voice"
+    },
+    { "id": "speech-streaming", "title": "Streaming transcription", "page": "/settings/voice" },
+    { "id": "microphone-test", "title": "Test microphone", "page": "/settings/voice" },
+    { "id": "transcription-test", "title": "Test model", "page": "/settings/voice" },
+    {
+      "id": "auto-settle-inactive-threads",
+      "title": "Auto-settle inactive threads",
+      "page": "/settings/threads"
+    },
+    {
+      "id": "compact-idle-threads",
+      "title": "Compact idle threads",
+      "page": "/settings/providers"
+    },
+    {
+      "id": "auto-settle-merged-threads",
+      "title": "Auto-settle merged threads",
+      "page": "/settings/threads"
+    },
+    {
+      "id": "keep-threads-with-pull-requests",
+      "title": "Keep threads with a PR",
+      "page": "/settings/threads",
+      "anchor": "auto-settle-inactive-threads"
+    },
+    {
+      "id": "days-before-auto-settle",
+      "title": "Days of inactivity before auto-settle",
+      "page": "/settings/threads",
+      "anchor": "auto-settle-inactive-threads"
+    },
+    { "id": "thread-notifications", "title": "Thread notifications", "page": "/settings/general" },
+    { "id": "in-app-notifications", "title": "In-app notifications", "page": "/settings/general" },
+    { "id": "language", "title": "Language", "page": "/settings/general" },
+    { "id": "time-format", "title": "Time format", "page": "/settings/general" },
+    { "id": "response-streaming", "title": "Response streaming", "page": "/settings/threads" },
+    {
+      "id": "hide-whitespace-changes",
+      "title": "Hide whitespace changes",
+      "page": "/settings/diffs"
+    },
+    {
+      "id": "default-diff-file-state",
+      "title": "Default diff file state",
+      "page": "/settings/diffs"
+    },
+    { "id": "diff-layout", "title": "Diff layout", "page": "/settings/diffs" },
+    {
+      "id": "proactive-panels",
+      "title": "Open pull requests and changes panels proactively",
+      "page": "/settings/diffs"
+    },
+    {
+      "id": "skills-in-slash-menu",
+      "title": "Show skills in slash menu",
+      "page": "/settings/chat"
+    },
+    { "id": "composer-rich-text", "title": "Rich text composer", "page": "/settings/chat" },
+    { "id": "send-shortcut", "title": "Send shortcut", "page": "/settings/chat" },
+    { "id": "follow-up-behavior", "title": "Follow-up behavior", "page": "/settings/chat" },
+    {
+      "id": "provider-update-checks",
+      "title": "Provider update checks",
+      "page": "/settings/maintenance"
+    },
+    {
+      "id": "continue-threads-after-server-update",
+      "title": "Continue threads after restarts",
+      "page": "/settings/maintenance"
+    },
+    {
+      "id": "keep-awake-while-agents-work",
+      "title": "Keep awake while agents work",
+      "page": "/settings/maintenance"
+    },
+    {
+      "id": "background-activity",
+      "title": "Background activity",
+      "page": "/settings/maintenance"
+    },
+    { "id": "new-threads", "title": "New threads", "page": "/settings/threads" },
+    { "id": "worktree-submodules", "title": "Submodules", "page": "/settings/worktrees" },
+    { "id": "start-from-origin", "title": "Start from remote", "page": "/settings/worktrees" },
+    {
+      "id": "add-project-starts-in",
+      "title": "Add project starts in",
+      "page": "/settings/threads"
+    },
+    { "id": "ghq-clone-layout", "title": "Clone into host folders", "page": "/settings/threads" },
+    { "id": "unpin-confirmation", "title": "Unpin confirmation", "page": "/settings/general" },
+    { "id": "archive-confirmation", "title": "Archive confirmation", "page": "/settings/general" },
+    { "id": "delete-confirmation", "title": "Delete confirmation", "page": "/settings/general" },
+    {
+      "id": "terminal-close-confirmation",
+      "title": "Terminal close confirmation",
+      "page": "/settings/general"
+    },
+    { "id": "quit-confirmation", "title": "Quit shortcut", "page": "/settings/general" },
+    {
+      "id": "text-generation-model",
+      "title": "Text generation model",
+      "page": "/settings/threads"
+    },
+    {
+      "id": "thread-title-instructions",
+      "title": "Thread title instructions",
+      "page": "/settings/threads"
+    },
+    { "id": "app-version", "title": "Version", "page": "/settings/about" },
+    { "id": "update-track", "title": "Update track", "page": "/settings/about" },
+    { "id": "cli-command", "title": "t3 command", "page": "/settings/about" },
+    { "id": "mobile-app", "title": "Mobile app", "page": "/settings/about" },
+    { "id": "welcome-page", "title": "Welcome page", "page": "/settings/about" },
+    { "id": "telemetry-export", "title": "OpenTelemetry export", "page": "/settings/diagnostics" },
+    { "id": "diagnostics", "title": "Diagnostics", "page": "/settings/maintenance" },
+    { "id": "open-source-licenses", "title": "Open source licenses", "page": "/settings/about" },
+    { "id": "keybindings", "title": "Keybindings", "page": "/settings/keybindings" },
+    { "id": "keybinding-appearance.cycle", "title": "Appearance", "page": "/settings/keybindings" },
+    { "id": "keybinding-chat.find", "title": "Chat", "page": "/settings/keybindings" },
+    { "id": "keybinding-chat.new", "title": "Chat", "page": "/settings/keybindings" },
+    { "id": "keybinding-chat.newLocal", "title": "Chat", "page": "/settings/keybindings" },
+    { "id": "keybinding-chat.newWithoutProject", "title": "Chat", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-commandPalette.toggle",
+      "title": "Command Palette",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-composer.branch", "title": "Composer", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-composer.cycleHost",
+      "title": "Composer",
+      "page": "/settings/keybindings",
+      "anchor": "keybindings"
+    },
+    {
+      "id": "keybinding-composer.decreaseEffort",
+      "title": "Composer",
+      "page": "/settings/keybindings",
+      "anchor": "keybindings"
+    },
+    { "id": "keybinding-composer.effort", "title": "Composer", "page": "/settings/keybindings" },
+    { "id": "keybinding-composer.host", "title": "Composer", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-composer.increaseEffort",
+      "title": "Composer",
+      "page": "/settings/keybindings",
+      "anchor": "keybindings"
+    },
+    { "id": "keybinding-composer.mode", "title": "Composer", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-composer.sendAlternate",
+      "title": "Composer",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-composer.previousWorktree",
+      "title": "Composer",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-composer.sendAndNewThread",
+      "title": "Composer",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-composer.sendBackground",
+      "title": "Composer",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-composer.dictation", "title": "Composer", "page": "/settings/keybindings" },
+    { "id": "keybinding-composer.stash", "title": "Composer", "page": "/settings/keybindings" },
+    { "id": "keybinding-composer.workspace", "title": "Composer", "page": "/settings/keybindings" },
+    { "id": "keybinding-diff.toggle", "title": "Diff", "page": "/settings/keybindings" },
+    { "id": "keybinding-editor.openFavorite", "title": "Editor", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-filePicker.toggle",
+      "title": "File Picker",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-workspace.focusNext",
+      "title": "Focus Next Workspace Area",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-workspace.focusPrevious",
+      "title": "Focus Previous Workspace Area",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.1",
+      "title": "Model Picker: Jump: 1",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.2",
+      "title": "Model Picker: Jump: 2",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.3",
+      "title": "Model Picker: Jump: 3",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.4",
+      "title": "Model Picker: Jump: 4",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.5",
+      "title": "Model Picker: Jump: 5",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.6",
+      "title": "Model Picker: Jump: 6",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.7",
+      "title": "Model Picker: Jump: 7",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.8",
+      "title": "Model Picker: Jump: 8",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.jump.9",
+      "title": "Model Picker: Jump: 9",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.nextProvider",
+      "title": "Model Picker",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.previousProvider",
+      "title": "Model Picker",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-modelPicker.toggle",
+      "title": "Model Picker",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-navigation.back", "title": "Navigation", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-navigation.forward",
+      "title": "Navigation",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-preview.find", "title": "Preview", "page": "/settings/keybindings" },
+    { "id": "keybinding-preview.focusUrl", "title": "Preview", "page": "/settings/keybindings" },
+    { "id": "keybinding-preview.refresh", "title": "Preview", "page": "/settings/keybindings" },
+    { "id": "keybinding-preview.resetZoom", "title": "Preview", "page": "/settings/keybindings" },
+    { "id": "keybinding-preview.toggle", "title": "Preview", "page": "/settings/keybindings" },
+    { "id": "keybinding-preview.zoomIn", "title": "Preview", "page": "/settings/keybindings" },
+    { "id": "keybinding-preview.zoomOut", "title": "Preview", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-projectSearch.toggle",
+      "title": "Project Search",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.copyReference",
+      "title": "Pull Request",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-pullRequest.copyNumber",
+      "title": "Pull Request",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.editQueuedMessage",
+      "title": "Queue",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.steerQueuedMessage",
+      "title": "Queue",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-view.reopenClosed",
+      "title": "Reopen Closed Tab",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-rightPanel.close",
+      "title": "Right Panel",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-rightPanel.new", "title": "Right Panel", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-rightPanel.toggle",
+      "title": "Right Panel",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-rightPanel.toggleMaximized",
+      "title": "Right Panel",
+      "page": "/settings/keybindings",
+      "anchor": "keybindings"
+    },
+    { "id": "keybinding-sidebar.toggle", "title": "Sidebar", "page": "/settings/keybindings" },
+    { "id": "keybinding-terminal.close", "title": "Terminal", "page": "/settings/keybindings" },
+    { "id": "keybinding-terminal.new", "title": "Terminal", "page": "/settings/keybindings" },
+    { "id": "keybinding-terminal.split", "title": "Terminal", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-terminal.splitVertical",
+      "title": "Terminal",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-terminal.toggle", "title": "Terminal", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-themeEditor.toggle",
+      "title": "Theme Editor",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-theme.select", "title": "Theme", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-threadPanel.toggle",
+      "title": "Thread Panel",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.1",
+      "title": "Thread: Jump: 1",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.2",
+      "title": "Thread: Jump: 2",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.3",
+      "title": "Thread: Jump: 3",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.4",
+      "title": "Thread: Jump: 4",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.5",
+      "title": "Thread: Jump: 5",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.6",
+      "title": "Thread: Jump: 6",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.7",
+      "title": "Thread: Jump: 7",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.8",
+      "title": "Thread: Jump: 8",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-thread.jump.9",
+      "title": "Thread: Jump: 9",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-thread.next", "title": "Thread", "page": "/settings/keybindings" },
+    { "id": "keybinding-thread.pin", "title": "Thread", "page": "/settings/keybindings" },
+    { "id": "keybinding-thread.previous", "title": "Thread", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-thread.regenerateTitle",
+      "title": "Thread",
+      "page": "/settings/keybindings",
+      "anchor": "keybindings"
+    },
+    { "id": "keybinding-thread.settle", "title": "Thread", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-thread.stop",
+      "title": "Thread",
+      "page": "/settings/keybindings",
+      "anchor": "keybindings"
+    },
+    { "id": "keybinding-thread.undo", "title": "Thread", "page": "/settings/keybindings" },
+    { "id": "keybinding-usage.cost", "title": "Usage", "page": "/settings/keybindings" },
+    { "id": "keybinding-usage.limits", "title": "Usage", "page": "/settings/keybindings" },
+    { "id": "keybinding-usage.open", "title": "Usage", "page": "/settings/keybindings" },
+    {
+      "id": "keybinding-usage.period.month",
+      "title": "Usage: Period",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-usage.period.week",
+      "title": "Usage: Period",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-usage.period.quarter",
+      "title": "Usage: Period",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-usage.period.day",
+      "title": "Usage: Period",
+      "page": "/settings/keybindings"
+    },
+    { "id": "keybinding-usage.tokens", "title": "Usage", "page": "/settings/keybindings" },
+    { "id": "snap-shot-enabled", "title": "SnapShots", "page": "/settings/snap-shot" },
+    {
+      "id": "snap-shot-accessibility",
+      "title": "Include app text",
+      "page": "/settings/snap-shot",
+      "anchor": "snap-shot-enabled"
+    },
+    {
+      "id": "snap-shot-shortcut",
+      "title": "Capture shortcut",
+      "page": "/settings/snap-shot",
+      "anchor": "snap-shot-enabled"
+    },
+    {
+      "id": "snap-shot-sound",
+      "title": "Capture sound",
+      "page": "/settings/snap-shot",
+      "anchor": "snap-shot-enabled"
+    },
+    {
+      "id": "snap-shot-flash",
+      "title": "Capture flash",
+      "page": "/settings/snap-shot",
+      "anchor": "snap-shot-enabled"
+    },
+    {
+      "id": "snap-shot-animations",
+      "title": "Capture animations",
+      "page": "/settings/snap-shot",
+      "anchor": "snap-shot-enabled"
+    },
+    { "id": "providers", "title": "Providers", "page": "/settings/providers" },
+    { "id": "cell-compact-window", "title": "Compact Cells at", "page": "/settings/providers" },
+    { "id": "usage-providers", "title": "Usage providers", "page": "/settings/providers" },
+    { "id": "text-generators", "title": "Text generators", "page": "/settings/providers" },
+    {
+      "id": "provider-health-check-interval",
+      "title": "Health check interval",
+      "page": "/settings/providers"
+    },
+    { "id": "scheduled-tasks", "title": "Scheduled tasks", "page": "/settings/scheduled-tasks" },
+    { "id": "agent-browser-access", "title": "Agent browser access", "page": "/settings/browser" },
+    { "id": "device-sources", "title": "Device sources", "page": "/settings/devices" },
+    {
+      "id": "agent-device-access",
+      "title": "Agents can use devices",
+      "page": "/settings/devices",
+      "anchor": "devices"
+    },
+    {
+      "id": "device-hub",
+      "title": "Use devices",
+      "page": "/settings/devices",
+      "anchor": "devices"
+    },
+    {
+      "id": "device-platform-support",
+      "title": "Local simulators",
+      "page": "/settings/devices",
+      "anchor": "device-sources"
+    },
+    {
+      "id": "browser-profiles",
+      "title": "Browser profiles",
+      "page": "/settings/browser",
+      "anchor": "browser"
+    },
+    {
+      "id": "browser-default-profile",
+      "title": "Default browser profile",
+      "page": "/settings/browser",
+      "anchor": "browser-profiles"
+    },
+    {
+      "id": "browser-default-viewport",
+      "title": "Default browser viewport",
+      "page": "/settings/browser"
+    },
+    { "id": "browser-default-zoom", "title": "Default browser zoom", "page": "/settings/browser" },
+    {
+      "id": "browser-default-appearance",
+      "title": "Default browser appearance",
+      "page": "/settings/browser"
+    },
+    {
+      "id": "browser-recording-frame-rate",
+      "title": "Browser recording frame rate",
+      "page": "/settings/browser"
+    },
+    {
+      "id": "browser-recording-key-presses",
+      "title": "Show key presses in recordings",
+      "page": "/settings/browser"
+    },
+    {
+      "id": "browser-recording-mouse-presses",
+      "title": "Show mouse presses in recordings",
+      "page": "/settings/browser"
+    },
+    { "id": "browser-link-target", "title": "Open links in", "page": "/settings/browser" },
+    { "id": "browser-search-engine", "title": "Search engine", "page": "/settings/browser" },
+    {
+      "id": "pull-request-links-open-in-app",
+      "title": "Open pull requests in T3 Code",
+      "page": "/settings/diffs"
+    },
+    {
+      "id": "browser-auto-show-floating-preview",
+      "title": "Auto-show floating preview",
+      "page": "/settings/browser"
+    },
+    { "id": "automatic-pull", "title": "Automatically pull", "page": "/settings/source-control" },
+    {
+      "id": "remove-agent-credits-on-merge",
+      "title": "Remove agent credits when merging",
+      "page": "/settings/source-control"
+    },
+    {
+      "id": "pull-request-merge-method",
+      "title": "Default merge method",
+      "page": "/settings/source-control"
+    },
+    { "id": "issue-trackers", "title": "Issue trackers", "page": "/settings/source-control" },
+    { "id": "source-control", "title": "Source control", "page": "/settings/source-control" },
+    {
+      "id": "git-fetch-interval",
+      "title": "Git fetch interval",
+      "page": "/settings/maintenance",
+      "anchor": "background-activity"
+    },
+    {
+      "id": "worktree-branch-naming",
+      "title": "Worktree branch naming",
+      "page": "/settings/worktrees"
+    },
+    {
+      "id": "source-control-host-github",
+      "title": "GitHub accounts and token",
+      "page": "/settings/source-control"
+    },
+    {
+      "id": "source-control-host-gitcafe",
+      "title": "GitCafe credentials",
+      "page": "/settings/source-control"
+    },
+    {
+      "id": "source-control-host-bitbucket",
+      "title": "Bitbucket credentials",
+      "page": "/settings/source-control"
+    },
+    {
+      "id": "source-control-writing-style",
+      "title": "Commit and pull request writing",
+      "page": "/settings/source-control"
+    },
+    {
+      "id": "follow-change-request-templates",
+      "title": "Follow pull request templates",
+      "page": "/settings/source-control"
+    },
+    {
+      "id": "source-control-writer-model",
+      "title": "Source control writer model",
+      "page": "/settings/source-control"
+    },
+    { "id": "review-guides", "title": "Review guides (beta)", "page": "/settings/source-control" },
+    {
+      "id": "review-guide-model",
+      "title": "Review guide model",
+      "page": "/settings/source-control",
+      "anchor": "review-guides"
+    },
+    {
+      "id": "review-guide-instructions",
+      "title": "Review guide instructions",
+      "page": "/settings/source-control",
+      "anchor": "review-guides"
+    },
+    { "id": "project-actions", "title": "Actions", "page": "/settings/projects" },
+    {
+      "id": "environment-icon",
+      "title": "Environment icon",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    { "id": "local-environment", "title": "Local environment", "page": "/settings/connections" },
+    {
+      "id": "network-access",
+      "title": "Network access",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    {
+      "id": "tailscale-https",
+      "title": "Tailscale HTTPS",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    { "id": "wsl-backend", "title": "WSL backend", "page": "/settings/access" },
+    {
+      "id": "t3-connect",
+      "title": "T3 Connect",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    {
+      "id": "connect-device-approval",
+      "title": "Require approval for new devices",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    {
+      "id": "hold-webhooks-while-offline",
+      "title": "Hold webhooks while offline",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    {
+      "id": "publish-agent-activity",
+      "title": "Publish agent activity",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    {
+      "id": "preview-tunnel",
+      "title": "Preview tunnel",
+      "page": "/settings/access",
+      "anchor": "connections-environment"
+    },
+    { "id": "connections-environment", "title": "This machine", "page": "/settings/access" },
+    {
+      "id": "linked-environments",
+      "title": "Linked environments",
+      "page": "/settings/connections"
+    },
+    { "id": "remote-environments", "title": "Environments", "page": "/settings/connections" },
+    { "id": "load-balancing", "title": "Load balancing", "page": "/settings/connections" },
+    {
+      "id": "pull-request-routing",
+      "title": "Pull request sharing",
+      "page": "/settings/connections"
+    },
+    { "id": "secret-providers", "title": "Secret providers", "page": "/settings/secrets" },
+    {
+      "id": "secret-providers-add",
+      "title": "Add secret provider",
+      "page": "/settings/secrets",
+      "anchor": "secret-providers"
+    },
+    { "id": "archive", "title": "Archived threads", "page": "/settings/archived" }
+  ],
+  "providers": [
+    { "driver": "antigravity", "label": "Antigravity" },
+    { "driver": "codex", "label": "Codex" },
+    { "driver": "claudeAgent", "label": "Claude" },
+    { "driver": "cursor", "label": "Cursor" },
+    { "driver": "grok", "label": "Grok" },
+    { "driver": "fx", "label": "fx" },
+    { "driver": "kiro", "label": "Kiro" },
+    { "driver": "muse", "label": "Muse Code" },
+    { "driver": "acpRegistry", "label": "ACP Registry" },
+    { "driver": "pi", "label": "Pi" },
+    { "driver": "opencode", "label": "OpenCode" }
+  ]
+}
