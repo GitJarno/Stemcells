@@ -29,15 +29,11 @@ describe("the usage page's provider colours", () => {
     expect(tokenValue("--sc-provider-codex")).toBe("rgba(16, 163, 127, 1)");
   });
 
-  it("draws each branded provider in the colour its composer's light wears", () => {
-    expect(PROVIDER_PRESENTATION.claude.color).toBe(`var(${toneTokenOf("claudeAgent")})`);
-    expect(PROVIDER_PRESENTATION.codex.color).toBe(`var(${toneTokenOf("codex")})`);
-    expect(tokenValue("--sc-provider-claude")).not.toBeNull();
-  });
-
-  it("draws a provider with no colour of its own neutral", () => {
-    for (const provider of ["grok", "cursor", "opencode", "antigravity", "pi"] as const) {
-      expect(PROVIDER_PRESENTATION[provider].color, provider).toBe("var(--sc-dim)");
+  it("draws every provider in the colour its composer's light wears", () => {
+    for (const [provider, presentation] of Object.entries(PROVIDER_PRESENTATION)) {
+      const token = toneTokenOf(presentation.driverKind);
+      expect(presentation.color, provider).toBe(`var(${token})`);
+      expect(tokenValue(token), provider).not.toBeNull();
     }
   });
 

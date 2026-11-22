@@ -6,6 +6,14 @@
 const BRAND_BY_DRIVER: Readonly<Record<string, string>> = {
   claudeAgent: "--sc-provider-claude",
   codex: "--sc-provider-codex",
+  antigravity: "--sc-provider-antigravity",
+  cursor: "--sc-provider-cursor",
+  grok: "--sc-provider-grok",
+  opencode: "--sc-provider-opencode",
+  kiro: "--sc-provider-kiro",
+  muse: "--sc-provider-muse",
+  pi: "--sc-provider-pi",
+  fx: "--sc-provider-fx",
 };
 
 /** The provider's brand token, or `null` for a provider with none. */

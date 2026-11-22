@@ -27,5 +27,13 @@ export const GLOW = { pass: 3200, rest: 1000 } as const;
 export const TONES: Readonly<Record<string, string>> = {
   "--sc-provider-claude": "#D97757",
   "--sc-provider-codex": "#10A37F",
+  "--sc-provider-antigravity": "#A879E8",
+  "--sc-provider-cursor": "#22B8CF",
+  "--sc-provider-grok": "#E0479E",
+  "--sc-provider-opencode": "#84CC16",
+  "--sc-provider-kiro": "#9046FF",
+  "--sc-provider-muse": "#0081FB",
+  "--sc-provider-pi": "#F0567A",
+  "--sc-provider-fx": "#E879F9",
   "--sc-accent": "#3D40EE",
 };
