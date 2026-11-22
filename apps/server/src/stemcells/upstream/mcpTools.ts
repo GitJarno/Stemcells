@@ -9,6 +9,7 @@ import * as Needs from "../needs/Needs.ts";
 import { registerArcsTool } from "./arcsTool.ts";
 import { registerDiskTool } from "./diskTool.ts";
 import { registerPeerTool } from "./peerTool.ts";
+import { registerSettingsTool } from "./settingsTool.ts";
 import { registerStandingTool } from "./standingTool.ts";
 
 export const registerStemcellsTools = (register: typeof toolkitRegistration) =>
@@ -17,4 +18,5 @@ export const registerStemcellsTools = (register: typeof toolkitRegistration) =>
     registerDiskTool(register),
     registerStandingTool(register).pipe(Layer.provide(Needs.layer)),
     registerArcsTool(register),
+    registerSettingsTool(register),
   );
