@@ -4,12 +4,15 @@
  * own pages (Settings › Aski) use upstream's rows and switch, and a setting Aski shows in its
  * reply reads and writes through upstream's scope, as Settings does.
  */
+import { useAtomValue } from "@effect/atom-react";
 import {
+  AuthSettingsWriteScope,
   ClientSettingsSchema,
   EnvironmentId,
   PROVIDER_DISPLAY_NAMES,
   ProviderInstanceId,
   ServerSettings,
+  type ServerProvider,
 } from "@t3tools/contracts";
 import { decodeMsg } from "gt-react";
 
@@ -24,10 +27,19 @@ import {
   type SettingsSearchItemId,
 } from "../../components/settings/settingsSearch";
 import { m } from "../../i18n/messages";
+import { useEnvironment } from "../../state/environments";
+import { providersIgnoringCheckedAtAtom } from "../../state/server";
+import { useEnvironmentScope } from "../../state/session";
 import { NEVER_OFFERED_SETTINGS } from "../pages/settingsPages";
 import { SETTINGS_NAV_GROUPS } from "./substitutes/settingsSearch";
 
 export type { ServerSettings } from "@t3tools/contracts";
+export { ProviderAuthenticationSection } from "../../components/settings/ProviderAuthenticationSection";
+export {
+  getProviderStatusKey,
+  getProviderSummary,
+  PROVIDER_STATUS_STYLES,
+} from "../../components/settings/providerStatus";
 export { SettingsSidebarNav } from "../../components/settings/SettingsSidebarNav";
 export {
   SettingsPageContainer,
@@ -117,4 +129,20 @@ const FIELDS = {
 /** A setting's schema, on the server or this device, as a card reads its control; null if none. */
 export function settingAst(store: "server" | "client", key: string): SchemaAst | null {
   return Object.hasOwn(FIELDS[store], key) ? FIELDS[store][key]!.ast : null;
+}
+
+/** A provider's default instance on the chat's machine, as Settings › Providers shows it. */
+export function useMachineProvider(environmentId: string, driver: string) {
+  const id = EnvironmentId.make(environmentId);
+  const providers: ReadonlyArray<ServerProvider> = useAtomValue(providersIgnoringCheckedAtAtom(id));
+  const environment = useEnvironment(id);
+  const canWrite = useEnvironmentScope(id, AuthSettingsWriteScope);
+  return {
+    environmentId: id,
+    environmentLabel: environment?.label ?? "",
+    instanceId: ProviderInstanceId.make(driver),
+    // The default instance's id is its driver's.
+    provider: providers.find((each) => each.instanceId === driver) ?? null,
+    readOnly: !canWrite,
+  };
 }

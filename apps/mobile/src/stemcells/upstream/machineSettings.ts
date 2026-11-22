@@ -8,10 +8,13 @@ import {
   ServerSettings,
   type ServerSettingsPatch,
 } from "@t3tools/contracts";
+import { useAtomValue } from "@effect/atom-react";
 import { useMemo } from "react";
 
 import type { SchemaAst } from "../../../../../stemcells/settings/controls.ts";
+import type { ProviderFacts } from "../../../../../stemcells/settings/providers.ts";
 import { useEnvironments } from "../../state/environments";
+import { environmentPresentations } from "../../state/presentation";
 import { serverEnvironment } from "../../state/server";
 import { useEnvironmentsWithScope } from "../../state/session";
 import { useAtomCommand } from "../../state/use-atom-command";
@@ -64,4 +67,14 @@ export function useMachineSetting(environmentId: string, key: string): MachineSe
         input: { patch: { [key]: value } as ServerSettingsPatch },
       }),
   };
+}
+
+/** A provider's default instance on the chat's machine; null while the phone hasn't heard of it. */
+export function useMachineProvider(environmentId: string, driver: string): ProviderFacts | null {
+  const providers = useAtomValue(environmentPresentations.providersByEnvironmentAtom);
+  // The default instance's id is its driver's.
+  return (
+    providers.get(EnvironmentId.make(environmentId))?.find((each) => each.instanceId === driver) ??
+    null
+  );
 }

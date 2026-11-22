@@ -34,7 +34,7 @@ person answers, so a case grades the call, not what that stand-in leads to.
 
 `forms.ndjson` checks the forms text (`forms.ts`, `stemcells/tasks/forms-text.md`):
 numbers to compare come as a `chart` fence, a flow as a `mermaid` fence, a
-setting to change as a `setting` fence, a one-line answer stays words, and a
+setting to change, or a provider to sign in to, as a `setting` fence, a one-line answer stays words, and a
 visual no fence can draw still goes to `html_render`.
 
 ```sh
@@ -49,6 +49,7 @@ pnpm mcp-tool-use --cases ../stemcells/evals/forms.ndjson --model claude-haiku-5
 | `forms-one-line-stays-prose`            | control | not run  | not run  |
 | `forms-bespoke-visual-uses-html-render` | guard   | not run  | not run  |
 | `forms-setting-draws-a-card`            | bad     | not run  | not run  |
+| `forms-provider-sign-in-draws-a-card`   | bad     | not run  | not run  |
 
 **Not run yet.** The Mac these were written on (2026-11-10) had no
 `ANTHROPIC_API_KEY`, so only `--dry-run` was run: the four cases build, and

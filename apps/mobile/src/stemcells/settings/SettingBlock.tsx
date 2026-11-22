@@ -20,7 +20,17 @@ import { crumbsFor, type SettingsPlace } from "../../../../../stemcells/settings
 import type { ChartInk } from "../chart/ChartBlock";
 import { PHONE_PAGES } from "../chat/placeLinks";
 import { useChatInView } from "../chat/inView";
-import { serverSettingAst, ThemedSwitch, useMachineSetting } from "../upstream/machineSettings";
+import {
+  modelsLine,
+  offersSignIn,
+  providerStanding,
+} from "../../../../../stemcells/settings/providers.ts";
+import {
+  serverSettingAst,
+  ThemedSwitch,
+  useMachineProvider,
+  useMachineSetting,
+} from "../upstream/machineSettings";
 
 type Value = boolean | string | null;
 
@@ -101,6 +111,15 @@ function Line(props: {
         binding={binding}
         control={control}
         suggested={line.suggested}
+        environmentId={props.environmentId}
+        ink={ink}
+      />
+    );
+  if (line.place.kind === "provider" && props.environmentId !== null)
+    return (
+      <ProviderRow
+        title={title}
+        driver={line.place.driver}
         environmentId={props.environmentId}
         ink={ink}
       />
@@ -234,6 +253,35 @@ function MachineRow(props: {
       ) : status?.kind === "yours" ? (
         <Text style={quiet(ink)}>{YOURS}</Text>
       ) : null}
+    </>
+  );
+}
+
+// Signing in hands off to a browser or a code, which the phone's own page walks through.
+function ProviderRow(props: {
+  readonly title: string;
+  readonly driver: string;
+  readonly environmentId: string;
+  readonly ink: ChartInk;
+}) {
+  const { ink } = props;
+  const provider = useMachineProvider(props.environmentId, props.driver);
+  const page = PHONE_PAGES["/settings/providers"]!;
+  const models = provider === null ? null : modelsLine(provider);
+  const signsIn = provider !== null && offersSignIn(provider);
+  return (
+    <>
+      <Row title={props.title} ink={ink}>
+        <Pressable accessibilityRole="link" onPress={() => open(page)} hitSlop={8}>
+          <Text style={{ ...quiet(ink), color: ink.strong, fontFamily: ink.strongFamily }}>
+            {signsIn ? "Sign in" : "Open"}
+          </Text>
+        </Pressable>
+      </Row>
+      <Text style={quiet(ink)}>
+        {provider === null ? "Not on this machine" : providerStanding(provider)}
+      </Text>
+      {models === null ? null : <Text style={quiet(ink)}>{models}</Text>}
     </>
   );
 }

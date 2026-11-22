@@ -52,5 +52,7 @@ describe("the forms every agent is taught", () => {
     const id =
       line !== undefined && "place" in line && line.place.kind === "row" ? line.place.id : "";
     expect(BINDINGS[id]).toMatchObject({ store: "server" });
+    const [, provider] = /`(Providers › [^`]+)` draws its sign-in/.exec(forms)!;
+    expect(readSettingFence(provider!)).toMatchObject([{ place: { kind: "provider" } }]);
   });
 });

@@ -34,7 +34,7 @@ Each lands as its own pull request, on the Mac and the phone together.
 - [x] 2. **Cards.** A `setting` fence draws the setting as a card: its
       live control, a suggested value with Apply, Undo after. Forms
       teaches the fence, and Aski uses it in place of its own switch links.
-- [ ] 3. **Provider cards.** A provider's card says whether it is on,
+- [x] 3. **Provider cards.** A provider's card says whether it is on,
       whether the person is signed in (with Sign in), and which models it
       offers.
 - [ ] 4. **Cells check first.** A read-only tool tells an agent what a
@@ -116,3 +116,28 @@ Each lands as its own pull request, on the Mac and the phone together.
 - `forms.contract.test.ts`: the fence Forms teaches reads and binds;
   `setup.test.ts`: every path Aski's persona names draws with a control.
 - The phone: type check, the Hermes check over the fence reading.
+
+## Slice 3: a provider in a card
+
+- A fence line naming a provider (`Providers › Codex`) draws where it
+  stands on the chat's machine, the models it offers, and Open in
+  Settings, where turning it on and installing it stay.
+- On the Mac, the status is Settings' own words and dot, and while the
+  provider is signed out the card holds Settings' own sign-in
+  (`ProviderAuthenticationSection`), offered on the terms Settings offers
+  it (`offersSignIn`, shared): a provider whose CLI advertises no sign-in
+  gets none.
+- On the phone, sign-in hands off to a browser or a code, which its
+  Provider accounts page walks through, so the card's Sign in opens it.
+  The status is in that page's words (`providerStanding`).
+- Forms teaches the provider line; an eval case pins that a sign-in
+  question gets the card, not directions.
+
+## Verified (slice 3)
+
+- `providers.test.ts`: the models line, the phone's words, when sign-in
+  is offered.
+- `forms.contract.test.ts`: the taught provider line reads as a provider.
+- In the lab web client: a disabled and a broken provider draw their
+  status with Open in Settings, and no sign-in. A signed-out provider
+  with a real CLI wasn't available in the lab.
