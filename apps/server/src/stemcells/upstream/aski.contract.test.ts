@@ -19,6 +19,7 @@ import { ThreadToolkit } from "../../mcp/toolkits/thread/tools.ts";
 import * as ClaudeAdapterV2 from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
 import { codexAppServerArgs } from "../../provider/codexLaunchArgs.ts";
 import { ArcsToolkit } from "./arcsTool.ts";
+import { SettingsToolkit } from "./settingsTool.ts";
 import { StandingToolkit } from "./standingTool.ts";
 
 const DEFAULT_CLAUDE_SETTINGS = Schema.decodeSync(ClaudeSettings)({});
@@ -36,6 +37,7 @@ const offered: Record<string, Tool.Any> = {
   ...ThreadToolkit.tools,
   ...StandingToolkit.tools,
   ...ArcsToolkit.tools,
+  ...SettingsToolkit.tools,
 };
 
 type JsonSchema = {
