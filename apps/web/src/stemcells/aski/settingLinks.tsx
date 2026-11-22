@@ -67,14 +67,6 @@ const SERVER_SWITCHES = {
 type AskiId = keyof typeof ASKI_SWITCHES;
 type ServerId = keyof typeof SERVER_SWITCHES;
 
-/** Every id Aski may link, with its title. */
-export const SETTING_LINKS: ReadonlyMap<string, string> = new Map(
-  [...Object.entries(ASKI_SWITCHES), ...Object.entries(SERVER_SWITCHES)].map(([id, { title }]) => [
-    id,
-    title,
-  ]),
-);
-
 /** Settings' "all" scope: what the page writes to when it is opened plainly. */
 const ALL = {};
 const stay = () => {};

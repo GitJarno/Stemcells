@@ -121,6 +121,36 @@ describe("a setting in a reply", () => {
     );
   });
 
+  it("draws a setting fence as a card: a suggestion waits for Apply, and Undo puts it back", async () => {
+    setAskiPlans(true);
+    using _restore = { [Symbol.dispose]: () => setAskiPlans(true) };
+    const fence = [
+      "```setting",
+      "Aski › Aski divides the work = off",
+      "Labs › Guest links = on",
+      "```",
+    ].join("\n");
+    await using screen = await render(
+      <>
+        <ChatMarkdown cwd={undefined} text={`Here it is:\n\n${fence}`} />
+        <Plans />
+      </>,
+    );
+    const card = screen.getByRole("region", { name: "Settings" });
+    await expect.element(card.getByRole("switch", { name: "Aski divides the work" })).toBeChecked();
+    const words = card.element().textContent;
+    expect(words).toContain("Suggested: On → Off");
+    // Guest links widen what reaches the machine: shown, never suggested.
+    expect(words).toContain("Change this one yourself");
+    expect(card.getByRole("button", { name: "Apply" }).elements()).toHaveLength(1);
+    await userEvent.click(card.getByRole("button", { name: "Apply" }));
+    await expect.element(screen.getByRole("status")).toHaveTextContent("off");
+    await userEvent.click(card.getByRole("button", { name: "Undo" }));
+    await expect.element(screen.getByRole("status")).toHaveTextContent("on");
+    window.getSelection()?.selectAllChildren(screen.container);
+    expect(chatMarkdownClipboardPayload(window.getSelection()!)?.text).toContain(fence);
+  });
+
   it("leaves any other context link as its words", async () => {
     await using screen = await render(
       <ChatMarkdown

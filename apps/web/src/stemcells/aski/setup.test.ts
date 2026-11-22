@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import persona from "./persona.md?raw";
-import { SETTING_LINKS } from "./settingLinks";
+import { BINDINGS } from "../../../../../stemcells/settings/controls.ts";
+import { readSettingFence } from "../../../../../stemcells/settings/fence.ts";
 import {
   ASKI_INSTANCE_ID,
   askiChatAmong,
@@ -98,10 +99,19 @@ describe("the persona", () => {
     expect(personaFor("claudeAgent")).not.toContain("{");
   });
 
-  it("links every setting the chat draws as a switch, and only those", () => {
-    const listed = persona.slice(persona.indexOf("The ids:"), persona.indexOf("Any other setting"));
-    const ids = [...listed.matchAll(/([a-z][a-z-]*)\s+\(/g)].map((match) => match[1]);
-    expect(ids.toSorted()).toEqual([...SETTING_LINKS.keys()].toSorted());
+  it("names each setting as a card draws it, with its control", () => {
+    const named = persona.slice(
+      persona.indexOf("Asked about a setting"),
+      persona.indexOf("- Wait for"),
+    );
+    const paths = [...named.matchAll(/`([^`]+ › [^`]+)`/g)].map((match) => match[1]!);
+    expect(paths.length).toBeGreaterThan(5);
+    for (const path of paths) {
+      const [line] = readSettingFence(path) ?? [];
+      const id =
+        line !== undefined && "place" in line && line.place.kind === "row" ? line.place.id : "";
+      expect(BINDINGS[id], path).toBeDefined();
+    }
   });
 
   it("says Cell and Aski to the person", () => {

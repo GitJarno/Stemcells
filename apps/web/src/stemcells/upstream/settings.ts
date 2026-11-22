@@ -4,9 +4,16 @@
  * own pages (Settings › Aski) use upstream's rows and switch, and a setting Aski shows in its
  * reply reads and writes through upstream's scope, as Settings does.
  */
-import { EnvironmentId, PROVIDER_DISPLAY_NAMES, ProviderInstanceId } from "@t3tools/contracts";
+import {
+  ClientSettingsSchema,
+  EnvironmentId,
+  PROVIDER_DISPLAY_NAMES,
+  ProviderInstanceId,
+  ServerSettings,
+} from "@t3tools/contracts";
 import { decodeMsg } from "gt-react";
 
+import type { SchemaAst } from "../../../../../stemcells/settings/controls.ts";
 import type { SettingsCatalog } from "../../../../../stemcells/settings/places.ts";
 import {
   revealSettingsSearchTarget,
@@ -20,6 +27,7 @@ import { m } from "../../i18n/messages";
 import { NEVER_OFFERED_SETTINGS } from "../pages/settingsPages";
 import { SETTINGS_NAV_GROUPS } from "./substitutes/settingsSearch";
 
+export type { ServerSettings } from "@t3tools/contracts";
 export { SettingsSidebarNav } from "../../components/settings/SettingsSidebarNav";
 export {
   SettingsPageContainer,
@@ -34,6 +42,15 @@ export {
   useScopedSettings,
   useUpdateScopedSettings,
 } from "../../components/settings/useScopedSettings";
+export { updateClientSettings, useClientSettings } from "../../hooks/useSettings";
+export { setAppearanceMode, useTheme } from "../../hooks/useTheme";
+export {
+  Select,
+  SelectItem,
+  SelectPopup,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 export { Toggle, ToggleGroup } from "../../components/ui/toggle-group";
 export { useNavigateToMainApp } from "../../components/sidebar/mainAppLocation";
 export type { SettingsPath };
@@ -90,4 +107,14 @@ export function providerCardSearch(driver: string, environmentId: string | undef
   return environmentId === undefined
     ? { instanceId }
     : { environmentId: EnvironmentId.make(environmentId), instanceId };
+}
+
+const FIELDS = {
+  server: ServerSettings.fields,
+  client: ClientSettingsSchema.fields,
+} as unknown as Readonly<Record<"server" | "client", Readonly<Record<string, { ast: SchemaAst }>>>>;
+
+/** A setting's schema, on the server or this device, as a card reads its control; null if none. */
+export function settingAst(store: "server" | "client", key: string): SchemaAst | null {
+  return Object.hasOwn(FIELDS[store], key) ? FIELDS[store][key]!.ast : null;
 }

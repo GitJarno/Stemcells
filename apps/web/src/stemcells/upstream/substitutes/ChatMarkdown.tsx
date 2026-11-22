@@ -1,8 +1,8 @@
 /**
  * Replaces `components/ChatMarkdown.tsx` (`plugin.ts`): a reply draws Aski's setting links as
- * switches, places in Settings as links, other Cells as tokens, a closed `chart` fence as its
- * chart and a settled reply's close-out as a card. A view drawing its own context links keeps
- * its words.
+ * switches, places in Settings as links, other Cells as tokens, closed `chart` and `setting`
+ * fences as a chart and a card, and a settled reply's close-out as a card. A view drawing its
+ * own context links keeps its words.
  */
 import { type ComponentProps, memo, type ReactNode, use } from "react";
 
@@ -10,22 +10,31 @@ import { linkPlaces } from "../../../../../../stemcells/settings/places.ts";
 import UpstreamChatMarkdown from "../../../components/ChatMarkdown";
 import { renderContextLink, type ContextLink } from "../../aski/settingLinks";
 import { ChartFence } from "../../chart/ChartFence";
-import { CHART_LINK_KIND, mayHoldChart, remarkChartFence } from "../../chart/remarkChartFence";
+import { CHART_FENCE, CHART_LINK_KIND, mayHoldChart } from "../../chart/remarkChartFence";
 import { CloseOutCard, LatestShown } from "../../closeOut/CloseOutCard";
 import { cardOf, ReplyInView } from "../../closeOut/reply";
 import { CellToken } from "../../peers/CellToken";
 import { CELL_LINK_KIND, linkCellNames } from "../../peers/mentions";
+import { remarkFences } from "../../fences/remarkFence";
 import { PLACE_LINK_KIND, PlaceLink, placeHref } from "../../settings/PlaceLink";
+import {
+  mayHoldSetting,
+  SETTING_CARD_KIND,
+  SETTING_FENCE,
+  SettingCard,
+} from "../../settings/SettingCard";
 import { useNamedCells } from "../cellNames";
 
 export * from "../../../components/ChatMarkdown";
 
-// One list, so every reply with a chart shares upstream's renderer and its parse cache.
-const CHART_PLUGINS = [remarkChartFence];
+// One list, so every reply with a fence of ours shares upstream's renderer and its parse cache.
+const FENCE_PLUGINS = [remarkFences([CHART_FENCE, SETTING_FENCE])];
 
 const draw = (link: ContextLink, environmentId?: string): ReactNode =>
   link.kind === CHART_LINK_KIND ? (
     <ChartFence source={link.label} />
+  ) : link.kind === SETTING_CARD_KIND ? (
+    <SettingCard source={link.label} environmentId={environmentId} />
   ) : link.kind === PLACE_LINK_KIND ? (
     <PlaceLink placeKey={link.contextId} label={link.label} environmentId={environmentId} />
   ) : (
@@ -60,18 +69,18 @@ const Words = memo(function Words(props: Props) {
   const withCells = linkCellNames(props.text, named.names);
   const text = own === undefined ? linkPlaces(withCells, placeHref) : withCells;
   // The plugin costs a streaming reply upstream's block-by-block parse, so only a reply that
-  // may hold a closed chart runs it.
-  const charts =
+  // may hold a closed fence of ours runs it.
+  const fences =
     own === undefined &&
     props.inline !== true &&
     props.extraRemarkPlugins === undefined &&
-    mayHoldChart(text);
+    (mayHoldChart(text) || mayHoldSetting(text));
   return (
     <UpstreamChatMarkdown
       {...props}
       text={text}
       renderContextReference={own ?? rendererIn(ref?.environmentId)}
-      {...(charts ? { extraRemarkPlugins: CHART_PLUGINS } : null)}
+      {...(fences ? { extraRemarkPlugins: FENCE_PLUGINS } : null)}
     />
   );
 });

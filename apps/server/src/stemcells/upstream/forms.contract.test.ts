@@ -1,7 +1,7 @@
 /**
  * The forms text reaches every agent as one of upstream's instruction sections (`seams.md`, The
  * close-out), and teaches only what the clients draw. A failure names what moved: the section's
- * place, the tool it sends a bespoke visual to, or the chart fence's own limits.
+ * place, the tool it sends a bespoke visual to, or a fence's own reading.
  */
 import {
   T3_CODE_ORCHESTRATION_INSTRUCTIONS,
@@ -11,6 +11,8 @@ import { HTML_RENDER_TOOL_NAME } from "@t3tools/shared/htmlRender";
 import { describe, expect, it } from "vite-plus/test";
 
 import { MAX_SERIES, parseChart } from "../../../../../stemcells/chart/parse.ts";
+import { BINDINGS } from "../../../../../stemcells/settings/controls.ts";
+import { readSettingFence } from "../../../../../stemcells/settings/fence.ts";
 
 const at = T3_CODE_ORCHESTRATION_SECTIONS.findIndex((section) => section.startsWith("### Forms"));
 const forms = T3_CODE_ORCHESTRATION_SECTIONS[at] ?? "";
@@ -41,5 +43,14 @@ describe("the forms every agent is taught", () => {
       series: [{ name: "Time", unit: "ms" }],
     });
     expect(parseChart(taught.join("\n").replace("bar:", "line:"))?.kind).toBe("line");
+  });
+
+  it("teaches a setting fence the clients read, with a value they can apply", () => {
+    const [, path, value] = /a path a line as `([^`]+)`, with ` = (\w+)`/.exec(forms)!;
+    const [line] = readSettingFence(`${path} = ${value}`)!;
+    expect(line).toMatchObject({ place: { kind: "row" }, suggested: value });
+    const id =
+      line !== undefined && "place" in line && line.place.kind === "row" ? line.place.id : "";
+    expect(BINDINGS[id]).toMatchObject({ store: "server" });
   });
 });

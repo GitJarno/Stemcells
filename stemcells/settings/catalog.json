@@ -1433,6 +1433,36 @@
       "id": "archive",
       "title": "Archived threads",
       "page": "/settings/archived"
+    },
+    {
+      "id": "aski-tab-on",
+      "title": "Aski's tab",
+      "page": "/settings/aski"
+    },
+    {
+      "id": "aski-plans",
+      "title": "Aski divides the work",
+      "page": "/settings/aski"
+    },
+    {
+      "id": "aski-suggestions",
+      "title": "Suggest what to say next",
+      "page": "/settings/aski"
+    },
+    {
+      "id": "aski-takes-retry",
+      "title": "Retry a lost connection for you",
+      "page": "/settings/aski"
+    },
+    {
+      "id": "aski-takes-go-ahead",
+      "title": "Go ahead when a Cell stops short",
+      "page": "/settings/aski"
+    },
+    {
+      "id": "aski-takes-implement",
+      "title": "Build a ready plan for you",
+      "page": "/settings/aski"
     }
   ],
   "providers": [
