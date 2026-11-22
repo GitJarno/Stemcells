@@ -37,7 +37,7 @@ Each lands as its own pull request, on the Mac and the phone together.
 - [x] 3. **Provider cards.** A provider's card says whether it is on,
       whether the person is signed in (with Sign in), and which models it
       offers.
-- [ ] 4. **Cells check first.** A read-only tool tells an agent what a
+- [x] 4. **Cells check first.** A read-only tool tells an agent what a
       setting is set to, so a reply says "you're signed in" instead of
       guessing.
 
@@ -141,3 +141,24 @@ Each lands as its own pull request, on the Mac and the phone together.
 - In the lab web client: a disabled and a broken provider draw their
   status with Open in Settings, and no sign-in. A signed-out provider
   with a real CLI wasn't available in the lab.
+
+## Slice 4: a Cell reads before it answers
+
+- `stemcells_settings(paths)` reads each path as a card does and answers
+  what it's set to on the machine the Cell runs on: a server setting in
+  its card's words, a provider as on, signed in and its models. A setting
+  the person's own device keeps (the Mac's display settings, Aski's
+  switches) the server can't read, so it says so and points at the fence.
+- Read only, offered only inside the app (as the other tools of ours),
+  behind upstream's check that the caller is a live thread. A change stays
+  the person's tap on a card.
+- Aski's persona reads before it answers about a setting; every Cell sees
+  the tool's own description.
+
+## Verified (slice 4)
+
+- `report.test.ts`: each kind of path and what it answers.
+- `settingsTool.contract.test.ts`: a Cell calls it through upstream's MCP
+  server and reads upstream's settings, words from their schema, and its
+  provider registry.
+- Not run: the model evals (no `ANTHROPIC_API_KEY` on this Mac).
