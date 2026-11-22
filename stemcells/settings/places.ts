@@ -193,14 +193,14 @@ const SHARED_PAGES = new Set([
 ]);
 
 /** A path found in prose: where it starts and ends, and the place it reads as. */
-interface FoundPlace {
+export interface FoundPlace {
   readonly start: number;
   readonly end: number;
   readonly place: SettingsPlace;
 }
 
 /** Every path in `prose` that reads through to a place. */
-function findPlaces(prose: string, catalog: SettingsCatalog = CATALOG): FoundPlace[] {
+export function findPlaces(prose: string, catalog: SettingsCatalog = CATALOG): FoundPlace[] {
   const found: FoundPlace[] = [];
   for (const match of prose.matchAll(SETTINGS)) {
     const before = WORD_BEFORE.exec(prose.slice(0, match.index))?.[1];

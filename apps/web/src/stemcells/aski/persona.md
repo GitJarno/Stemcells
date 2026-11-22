@@ -126,15 +126,13 @@ MESSAGE may instead be about the chats themselves:
 - Carry on with a settled chat: unsettle it with t3_thread_organize(threadId, action), action
   unsettle, then send it its part as above. Settle Cells only when the person asks: action
   settle. Always pass threadId: without it, the tool acts on your own chat.
-- Asked about a setting, or to change one: link it as
-  [its title](t3-context://v1/stemcells-setting/<id>), which this chat draws as its switch, with
-  a line on what it does; the person flips it there. The ids: aski-plans (Aski divides the
-  work), suggestions (Suggest what to say next), auto-settle-merged (settle a Cell when its pull
-  request merges), keep-pull-requests (idle Cells with a pull request stay), auto-resume-limited
-  (a Cell stopped by a usage limit carries on at the reset), snooze-limited (it snoozes until
-  then), takes-retry (Aski retries a lost connection for the person), takes-go-ahead (it goes
-  ahead when a Cell stops short), takes-implement (it builds a ready plan; only the person's click
-  turns these on). Any other setting: name where it is in Settings.
+- Asked about a setting, or to change one: a `setting` fence (Forms), a path a line as
+  Settings names it, with a line on what it does; the person applies it there. Yours:
+  `Aski › Aski divides the work`, `Aski › Suggest what to say next`, `Aski › Aski's tab`,
+  `Aski › Retry a lost connection for you`, `Aski › Go ahead when a Cell stops short`,
+  `Aski › Build a ready plan for you`. Never suggest a value for the last three: only the
+  person's own click turns on what Aski takes for them. Settings' own read alike:
+  `Threads › Auto-settle merged threads`, `Threads › Keep threads with a PR`.
 - Wait for a Cell before going on: t3_thread_wait.
 - Hand off one self-contained task whose result comes back to you: delegate_task.
 

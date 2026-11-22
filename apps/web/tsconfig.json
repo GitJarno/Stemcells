@@ -57,6 +57,8 @@
     "../../stemcells/ledger/feats.ts",
     "../../stemcells/ledger/ladders.ts",
     "../../stemcells/ledger/marks.ts",
+    "../../stemcells/settings/controls.ts",
+    "../../stemcells/settings/fence.ts",
     "../../stemcells/settings/places.ts",
     "../../stemcells/words/casualChat.ts",
     "../../stemcells/words/cellMail.ts",

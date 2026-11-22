@@ -1,7 +1,7 @@
 // Replaces the `react-native-enriched-markdown` package for upstream's importers
-// (`substitutes.cjs`): a closed `chart` fence that reads as a chart draws as one, in the reply's
-// own type (`chart/ChartBlock.tsx`). Any other block, and a fence that doesn't read, is asked
-// of upstream's own renderer, so it draws as before.
+// (`substitutes.cjs`): a closed `chart` fence that reads draws as a chart (`chart/ChartBlock.tsx`),
+// a `setting` fence as its card (`settings/SettingBlock.tsx`), in the reply's own type. Any other
+// block, and a fence that doesn't read, is asked of upstream's own renderer, so it draws as before.
 import { useMemo } from "react";
 import {
   EnrichedMarkdownText as PackageMarkdownText,
@@ -9,7 +9,9 @@ import {
 } from "react-native-enriched-markdown";
 
 import { parseChart } from "../../../../../../stemcells/chart/parse.ts";
+import { readSettingFence } from "../../../../../../stemcells/settings/fence.ts";
 import { ChartBlock, type ChartInk } from "../../chart/ChartBlock";
+import { SettingBlock } from "../../settings/SettingBlock";
 
 export * from "react-native-enriched-markdown";
 
@@ -39,7 +41,10 @@ export const EnrichedMarkdownText: typeof PackageMarkdownText = (props) => {
     };
     return (block: MarkdownCodeBlock) => {
       const chart = block.isComplete && block.language === "chart" ? parseChart(block.code) : null;
-      return chart === null ? upstreamCode?.(block) : <ChartBlock chart={chart} ink={ink} />;
+      if (chart !== null) return <ChartBlock chart={chart} ink={ink} />;
+      const setting =
+        block.isComplete && block.language === "setting" ? readSettingFence(block.code) : null;
+      return setting === null ? upstreamCode?.(block) : <SettingBlock lines={setting} ink={ink} />;
     };
   }, [upstreamCode, color, strongColor, muted, rule, fontFamily, strongFamily, fontSize]);
   const renderers = useMemo(() => ({ ...given, code }), [given, code]);

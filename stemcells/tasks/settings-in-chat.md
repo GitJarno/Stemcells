@@ -31,9 +31,9 @@ Each lands as its own pull request, on the Mac and the phone together.
       becomes a chip that opens it: a row scrolls into view and pulses, a
       provider opens on its own card. The phone opens its own page for
       the place; one it has no page for stays as written.
-- [ ] 2. **Cards.** A `setting` fence draws the setting as a card: its
-      live control, a suggested value with Apply, Undo after. One list of
-      controls replaces Aski's own switches. Forms teaches the fence.
+- [x] 2. **Cards.** A `setting` fence draws the setting as a card: its
+      live control, a suggested value with Apply, Undo after. Forms
+      teaches the fence, and Aski uses it in place of its own switch links.
 - [ ] 3. **Provider cards.** A provider's card says whether it is on,
       whether the person is signed in (with Sign in), and which models it
       offers.
@@ -79,3 +79,40 @@ Each lands as its own pull request, on the Mac and the phone together.
 - In a lab web client on Replay: both chips drew, System Settings stayed
   text, Antigravity's chip opened its card, Auto-settle's scrolled to the
   row. Not run on the phone's simulator yet.
+
+## Slice 2: how a card draws
+
+- A `setting` fence holds a path a line, "Settings ›" optional, with
+  `= value` to suggest one (`stemcells/settings/fence.ts`). A line that
+  doesn't read stays in the card as its words; a fence with none that
+  reads stays the code it is.
+- `stemcells/settings/controls.ts` says where each setting a card can
+  change lives (the server's settings, the device's, or ours) by its
+  catalog row; its control comes from the setting's own schema, so a
+  boolean is a switch and fixed words a choice. A setting not on the list
+  draws with Open alone. The catalog's contract test fails on a binding to
+  a row or key that isn't there.
+- A suggestion never applies itself. A row that widens what reaches the
+  machine, or what agents do alone (guest links, device access, the
+  default permissions, what Aski takes for the person), is guarded: a
+  reply may show it but its suggestion never becomes an Apply, so text an
+  agent read can't talk the person into a wider door with one tap.
+- On the Mac, the row is Settings' own `SettingsRow`, in Settings' "all"
+  scope, under the same grants and organisation locks. On the phone, a
+  server setting is the chat's machine's, written as the phone's Settings
+  writes it; the Mac's own device settings and Aski's switches live on the
+  Mac, so the phone opens its own page for one or says it's on the Mac.
+- Aski's old `stemcells-setting` links still draw as switches in the
+  replies that hold them; new replies write the fence.
+
+## Verified (slice 2)
+
+- `fence.test.ts`: reading, suggestions in a reply's words, the guarded
+  list and its refused suggestion.
+- `settingsCatalog.contract.test.ts`: every binding is a catalog row and a
+  key with a switch or a choice.
+- `ChatMarkdown.browser.test.tsx`: a card's suggestion waits for Apply,
+  Undo puts it back, a guarded row's suggestion is refused.
+- `forms.contract.test.ts`: the fence Forms teaches reads and binds;
+  `setup.test.ts`: every path Aski's persona names draws with a control.
+- The phone: type check, the Hermes check over the fence reading.

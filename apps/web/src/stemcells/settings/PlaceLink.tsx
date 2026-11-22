@@ -27,31 +27,36 @@ export const placeHref = (place: SettingsPlace) =>
 
 export function PlaceLink(props: {
   readonly placeKey: string;
+  /** The reply's words for it, which it copies as. */
   readonly label: string;
   readonly environmentId?: string | undefined;
+  /** Words in place of its steps, as a card's Open. */
+  readonly children?: ReactNode;
 }) {
   const place = placeOf(props.placeKey);
   if (place === null) return <span>{props.label}</span>;
   const crumbs = crumbsFor(place);
   // A line breaks only after a step's "›": the icon keeps to the first, the "›" to its step.
-  const words: ReactNode = crumbs.map((crumb, index) => {
-    const last = index === crumbs.length - 1;
-    return (
-      // oxlint-disable-next-line react/no-array-index-key -- A path's steps, in order.
-      <Fragment key={index}>
-        {index === 0 ? null : " "}
-        <span data-place-crumb={last ? "last" : ""}>
-          {index === 0 ? <SettingsIcon aria-hidden="true" data-place-icon="" /> : null}
-          {crumb}
-          {last ? null : (
-            <span aria-hidden="true" data-place-separator="">
-              ›
-            </span>
-          )}
-        </span>
-      </Fragment>
-    );
-  });
+  const words: ReactNode =
+    props.children ??
+    crumbs.map((crumb, index) => {
+      const last = index === crumbs.length - 1;
+      return (
+        // oxlint-disable-next-line react/no-array-index-key -- A path's steps, in order.
+        <Fragment key={index}>
+          {index === 0 ? null : " "}
+          <span data-place-crumb={last ? "last" : ""}>
+            {index === 0 ? <SettingsIcon aria-hidden="true" data-place-icon="" /> : null}
+            {crumb}
+            {last ? null : (
+              <span aria-hidden="true" data-place-separator="">
+                ›
+              </span>
+            )}
+          </span>
+        </Fragment>
+      );
+    });
   const shared = { "data-stemcells-place": "", "data-markdown-copy": props.label };
   if (place.kind === "provider") {
     return (

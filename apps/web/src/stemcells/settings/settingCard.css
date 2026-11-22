@@ -1,0 +1,45 @@
+/* A `setting` fence as a card (SettingCard.tsx): a hairline round upstream's own rows, the
+   place they live at its top. Part of the reply, in its type; nothing here animates. */
+[data-stemcells-setting-card] {
+  min-inline-size: 0;
+  margin: 0.65rem 0;
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-card);
+  overflow: hidden;
+}
+[data-setting-card-head] {
+  display: flex;
+  align-items: center;
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  border-block-end: 1px solid var(--sc-hairline);
+  color: var(--sc-soft);
+  font-size: 0.8125rem;
+}
+[data-setting-card-words] {
+  margin: 0;
+  padding: var(--sc-space-sm) var(--sc-space-md);
+  color: var(--sc-soft);
+}
+[data-setting-card-status] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+[data-setting-card-status] strong {
+  color: var(--sc-text);
+  font-weight: 600;
+}
+/* A chat pane is narrower than Settings: a switch keeps beside its title at any width. */
+[data-stemcells-setting-card] [data-slot="settings-row"]:has([role="switch"]) > div:first-child {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sc-space-md);
+}
+[data-stemcells-setting-card]
+  [data-slot="settings-row"]:has([role="switch"])
+  > div:first-child
+  > div:last-child {
+  inline-size: auto;
+}
