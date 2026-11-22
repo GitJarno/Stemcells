@@ -1,33 +1,22 @@
+// @effect-diagnostics nodeBuiltinImport:off - reads and writes the shared catalog.
 // The shared catalog the Mac and the phone read paths with is upstream's settings index as it
-// is. When upstream adds, moves or renames a setting this fails; `vp test run -u` on this file
-// writes the catalog again.
+// is. When upstream adds, moves or renames a setting this fails; run it again with
+// STEMCELLS_WRITE_CATALOG=1 to write the catalog, which the formatter then lays out.
+import * as NodeFS from "node:fs";
+
 import { describe, expect, it } from "vite-plus/test";
 
 import { placeKey, placeOf, type SettingsPlace } from "../../../../../stemcells/settings/places.ts";
 import { settingsCatalog } from "./settings";
 
 const catalog = settingsCatalog();
-
-function written(): string {
-  const lines = (entries: ReadonlyArray<object>) =>
-    entries.map((entry) => `    ${JSON.stringify(entry)}`).join(",\n");
-  return `{
-  "pages": [
-${lines(catalog.pages)}
-  ],
-  "rows": [
-${lines(catalog.rows)}
-  ],
-  "providers": [
-${lines(catalog.providers)}
-  ]
-}
-`;
-}
+const FILE = new URL("../../../../../stemcells/settings/catalog.json", import.meta.url);
 
 describe("the settings catalog", () => {
-  it("is upstream's settings index, written out", async () => {
-    await expect(written()).toMatchFileSnapshot("../../../../../stemcells/settings/catalog.json");
+  it("is upstream's settings index, written out", () => {
+    if (process.env.STEMCELLS_WRITE_CATALOG === "1")
+      NodeFS.writeFileSync(FILE, `${JSON.stringify(catalog, null, 2)}\n`);
+    expect(JSON.parse(NodeFS.readFileSync(FILE, "utf8"))).toEqual(catalog);
   });
 
   it("names every place by a key a context link carries, and reads it back", () => {

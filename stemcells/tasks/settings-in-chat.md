@@ -47,7 +47,8 @@ Each lands as its own pull request, on the Mac and the phone together.
   out: its pages, the rows its search finds (privacy policy left out, as
   search leaves it), the providers. A web contract test writes and checks
   it, so the phone reads paths as the Mac does. Upstream adding a setting
-  fails that test; `vp test run -u` on it writes the catalog again.
+  fails that test; run it with `STEMCELLS_WRITE_CATALOG=1` to write the
+  catalog again.
 - `stemcells/settings/places.ts` reads a path: "Settings", then steps
   split by `›`, `→`, `>`, `»`, `▸` or `->`, each a page, a row or a
   provider, any case, a plural "s" either way. Only prose links
