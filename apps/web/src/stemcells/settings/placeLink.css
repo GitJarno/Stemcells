@@ -1,18 +1,14 @@
 /* A place in Settings a reply names (PlaceLink.tsx): its steps on one quiet chip in the line,
-   the last in full ink. The reply's link colour stays off it. Nothing here animates. */
+   the last in full ink, in the reply's link colour none of it takes. It flows as text, so the
+   punctuation after it stays on its line, and a long path breaks only between steps. */
 [data-stemcells-place] {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25em;
-  max-inline-size: 100%;
-  padding: 0 0.45em 0 0.4em;
+  padding: 0.05em 0.45em 0.05em 0.4em;
   border: 1px solid var(--sc-hairline);
   border-radius: 6px;
   background: color-mix(in srgb, var(--sc-text) 5%, transparent);
-  line-height: 1.45;
   text-decoration: none;
-  vertical-align: baseline;
-  white-space: nowrap;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 [data-stemcells-place]:hover {
   background: color-mix(in srgb, var(--sc-text) 10%, transparent);
@@ -27,18 +23,22 @@
   color: var(--sc-soft);
 }
 [data-place-icon] {
+  display: inline;
   inline-size: 0.85em;
   block-size: 0.85em;
-  flex: none;
+  margin-inline-end: 0.3em;
+  vertical-align: -0.1em;
   opacity: 0.7;
 }
 [data-place-separator] {
+  margin-inline-start: 0.3em;
   opacity: 0.5;
   font-size: 0.85em;
 }
+[data-place-crumb] {
+  white-space: nowrap;
+}
 [data-place-crumb="last"] {
-  overflow: hidden;
   color: var(--sc-text);
   font-weight: 500;
-  text-overflow: ellipsis;
 }

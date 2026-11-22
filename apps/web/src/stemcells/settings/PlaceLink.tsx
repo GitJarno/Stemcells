@@ -33,22 +33,25 @@ export function PlaceLink(props: {
   const place = placeOf(props.placeKey);
   if (place === null) return <span>{props.label}</span>;
   const crumbs = crumbsFor(place);
-  const words: ReactNode = (
-    <>
-      <SettingsIcon aria-hidden="true" data-place-icon="" />
-      {crumbs.map((crumb, index) => (
-        // oxlint-disable-next-line react/no-array-index-key -- A path's steps, in order.
-        <Fragment key={index}>
-          {index === 0 ? null : (
+  // A line breaks only after a step's "›": the icon keeps to the first, the "›" to its step.
+  const words: ReactNode = crumbs.map((crumb, index) => {
+    const last = index === crumbs.length - 1;
+    return (
+      // oxlint-disable-next-line react/no-array-index-key -- A path's steps, in order.
+      <Fragment key={index}>
+        {index === 0 ? null : " "}
+        <span data-place-crumb={last ? "last" : ""}>
+          {index === 0 ? <SettingsIcon aria-hidden="true" data-place-icon="" /> : null}
+          {crumb}
+          {last ? null : (
             <span aria-hidden="true" data-place-separator="">
               ›
             </span>
           )}
-          <span data-place-crumb={index === crumbs.length - 1 ? "last" : ""}>{crumb}</span>
-        </Fragment>
-      ))}
-    </>
-  );
+        </span>
+      </Fragment>
+    );
+  });
   const shared = { "data-stemcells-place": "", "data-markdown-copy": props.label };
   if (place.kind === "provider") {
     return (
