@@ -38,25 +38,29 @@ export function PlaceLink(props: {
   const crumbs = crumbsFor(place);
   // A line breaks only after a step's "›": the icon keeps to the first, the "›" to its step.
   const words: ReactNode =
-    props.children ??
-    crumbs.map((crumb, index) => {
-      const last = index === crumbs.length - 1;
-      return (
-        // oxlint-disable-next-line react/no-array-index-key -- A path's steps, in order.
-        <Fragment key={index}>
-          {index === 0 ? null : " "}
-          <span data-place-crumb={last ? "last" : ""}>
-            {index === 0 ? <SettingsIcon aria-hidden="true" data-place-icon="" /> : null}
-            {crumb}
-            {last ? null : (
-              <span aria-hidden="true" data-place-separator="">
-                ›
-              </span>
-            )}
-          </span>
-        </Fragment>
-      );
-    });
+    props.children === undefined ? (
+      crumbs.map((crumb, index) => {
+        const last = index === crumbs.length - 1;
+        return (
+          // oxlint-disable-next-line react/no-array-index-key -- A path's steps, in order.
+          <Fragment key={index}>
+            {index === 0 ? null : " "}
+            <span data-place-crumb={last ? "last" : ""}>
+              {index === 0 ? <SettingsIcon aria-hidden="true" data-place-icon="" /> : null}
+              {crumb}
+              {last ? null : (
+                <span aria-hidden="true" data-place-separator="">
+                  ›
+                </span>
+              )}
+            </span>
+          </Fragment>
+        );
+      })
+    ) : (
+      // Its own words wear the last step's ink, never the reply's link colour.
+      <span data-place-crumb="last">{props.children}</span>
+    );
   const shared = { "data-stemcells-place": "", "data-markdown-copy": props.label };
   if (place.kind === "provider") {
     return (

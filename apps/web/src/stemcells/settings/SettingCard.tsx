@@ -47,6 +47,7 @@ import {
 } from "../upstream/settings";
 import { Button } from "../upstream/ui";
 import { PlaceLink } from "./PlaceLink";
+import { ProviderRow } from "./ProviderRow";
 
 import "./settingCard.css";
 
@@ -104,6 +105,8 @@ function Line(props: { readonly line: FenceLine; readonly environmentId?: string
   const { line } = props;
   if ("words" in line) return <p data-setting-card-words="">{line.words}</p>;
   const title = crumbsFor(line.place).at(-1)!;
+  if (line.place.kind === "provider" && props.environmentId !== undefined)
+    return <ProviderRow place={line.place} title={title} environmentId={props.environmentId} />;
   const binding = line.place.kind === "row" ? BINDINGS[line.place.id] : undefined;
   const control = binding === undefined ? null : controlFor(binding);
   if (binding === undefined || control === null)
