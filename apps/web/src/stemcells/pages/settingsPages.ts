@@ -55,3 +55,6 @@ export const STEMCELLS_DEVICE_ONLY_PATHS: readonly StemcellsSettingsPath[] = [
   "/settings/lineage",
   "/settings/collection",
 ];
+
+/** Upstream's rows Stemcells never offers, by their search id: usage data it never sends. */
+export const NEVER_OFFERED_SETTINGS: ReadonlySet<string> = new Set(["privacy-policy"]);

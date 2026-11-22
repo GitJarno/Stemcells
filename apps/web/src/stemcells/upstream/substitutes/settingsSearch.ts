@@ -3,18 +3,15 @@
 // and its row is drawn hidden. Our own pages stand in its sidebar's groups, each where
 // `settingsPages.ts` places it.
 import * as Upstream from "../../../components/settings/settingsSearch";
-import { STEMCELLS_SETTINGS_NAV_AFTER } from "../../pages/settingsPages";
+import { NEVER_OFFERED_SETTINGS, STEMCELLS_SETTINGS_NAV_AFTER } from "../../pages/settingsPages";
 
 export * from "../../../components/settings/settingsSearch";
-
-/** Upstream's rows Stemcells never offers, by their search id, hidden through the props its row spreads on its root. */
-const NEVER_OFFERED: ReadonlySet<string> = new Set(["privacy-policy"]);
 
 export function useSearchableSetting(): ReturnType<typeof Upstream.useSearchableSetting> {
   const searchable = Upstream.useSearchableSetting();
   return (id) => {
     const props = searchable(id);
-    if (!NEVER_OFFERED.has(id)) return props;
+    if (!NEVER_OFFERED_SETTINGS.has(id)) return props;
     const hidden: typeof props & { readonly hidden: true } = { ...props, hidden: true };
     return hidden;
   };
@@ -23,14 +20,14 @@ export function useSearchableSetting(): ReturnType<typeof Upstream.useSearchable
 export function searchSettings(
   ...args: Parameters<typeof Upstream.searchSettings>
 ): ReturnType<typeof Upstream.searchSettings> {
-  return Upstream.searchSettings(...args).filter((item) => !NEVER_OFFERED.has(item.id));
+  return Upstream.searchSettings(...args).filter((item) => !NEVER_OFFERED_SETTINGS.has(item.id));
 }
 
 export function filterAvailableSettingsSearchItems(
   ...args: Parameters<typeof Upstream.filterAvailableSettingsSearchItems>
 ): ReturnType<typeof Upstream.filterAvailableSettingsSearchItems> {
   return Upstream.filterAvailableSettingsSearchItems(...args).filter(
-    (item) => !NEVER_OFFERED.has(item.id),
+    (item) => !NEVER_OFFERED_SETTINGS.has(item.id),
   );
 }
 

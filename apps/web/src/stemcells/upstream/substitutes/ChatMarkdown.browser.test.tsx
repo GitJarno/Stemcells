@@ -99,6 +99,28 @@ describe("a setting in a reply", () => {
     expect(screen.container.querySelectorAll("[data-stemcells-cell-token]")).toHaveLength(1);
   });
 
+  it("draws a place in Settings a reply names as a link there, which copies as its words", async () => {
+    const chat = { environmentId: "env", threadId: "thread-o" } as unknown as ScopedThreadRef;
+    await using screen = await render(
+      <ChatMarkdown
+        cwd={undefined}
+        threadRef={chat}
+        text="Open Settings → Providers → Antigravity, then Settings › Threads › Auto-settle merged threads. System Settings → General stays."
+      />,
+    );
+    await expect
+      .element(screen.getByRole("link", { name: "Settings Providers Antigravity" }))
+      .toHaveAttribute("href", "/settings/providers?environmentId=env&instanceId=antigravity");
+    await expect
+      .element(screen.getByRole("link", { name: "Settings Threads Auto-settle merged threads" }))
+      .toHaveAttribute("href", "/settings/threads#auto-settle-merged-threads");
+    expect(screen.container.querySelectorAll("[data-stemcells-place]")).toHaveLength(2);
+    window.getSelection()?.selectAllChildren(screen.container);
+    expect(chatMarkdownClipboardPayload(window.getSelection()!)?.text).toContain(
+      "Open Settings → Providers → Antigravity, then",
+    );
+  });
+
   it("leaves any other context link as its words", async () => {
     await using screen = await render(
       <ChatMarkdown
