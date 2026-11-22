@@ -38,7 +38,7 @@ const SettingsTool = Tool.make("stemcells_settings", {
   // It acts as the Cell that calls it, so a client outside the app is never offered it.
   .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients);
 
-const SettingsToolkit = Toolkit.make(SettingsTool);
+export const SettingsToolkit = Toolkit.make(SettingsTool);
 
 const FIELDS = ServerSettingsSchema.fields as unknown as Readonly<
   Record<string, { readonly ast: SchemaAst }>
