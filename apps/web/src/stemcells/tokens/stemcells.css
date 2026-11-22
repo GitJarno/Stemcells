@@ -1544,6 +1544,14 @@
 :root {
   --sc-provider-claude: rgba(217, 119, 87, 1);
   --sc-provider-codex: rgba(16, 163, 127, 1);
+  --sc-provider-antigravity: rgba(168, 121, 232, 1);
+  --sc-provider-cursor: rgba(34, 184, 207, 1);
+  --sc-provider-grok: rgba(224, 71, 158, 1);
+  --sc-provider-opencode: rgba(132, 204, 22, 1);
+  --sc-provider-kiro: rgba(144, 70, 255, 1);
+  --sc-provider-muse: rgba(0, 129, 251, 1);
+  --sc-provider-pi: rgba(240, 86, 122, 1);
+  --sc-provider-fx: rgba(232, 121, 249, 1);
 }
 
 /* A feat's rarity, the same in every skin: the colours an item's name wears in Diablo, magic

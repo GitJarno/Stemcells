@@ -25,9 +25,17 @@ import {
   stillOf,
 } from "./scene.ts";
 
-/** The body a provider's Cells wear (`kit/palette.json`): Codex, Kimi and Gemini their own, every other the coral Cell. */
+/** The body a provider's Cells wear (`kit.ts`); Claude and any provider without one, the coral Cell. */
 export function bodyOf(provider: string | null | undefined): string {
   switch (provider) {
+    case "cursor":
+    case "grok":
+    case "opencode":
+    case "kiro":
+    case "muse":
+    case "pi":
+    case "fx":
+      return provider;
     case "codex":
     case "openai":
     case "gpt":
@@ -37,6 +45,7 @@ export function bodyOf(provider: string | null | undefined): string {
       return "kimi";
     case "gemini":
     case "google":
+    case "antigravity":
       return "gemini";
     default:
       return "claude";

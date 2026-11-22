@@ -54,8 +54,25 @@ const drawn = (data: {
 /** A body's four roles: B body, b shade, L highlight, O contour. */
 export type BodyInks = Readonly<Record<"B" | "b" | "L" | "O", string>>;
 
-/** Each provider's body, by the name the kit gives it, and `frost` (a frozen Cell). */
-export const BODIES: Readonly<Record<string, BodyInks>> = paletteData.bodies;
+/**
+ * Bodies for providers the original app never drew. B is the provider's colour
+ * (`--sc-provider-*`); b, L and O keep the kit's bodies' average OKLCh steps from B.
+ */
+const PROVIDER_BODIES: Readonly<Record<string, BodyInks>> = {
+  cursor: { b: "#0091A4", B: "#22B8CF", L: "#8CDEF3", O: "#196A78" },
+  grok: { b: "#AF2A78", B: "#E0479E", L: "#FC8BBC", O: "#792051" },
+  opencode: { b: "#66A300", B: "#84CC16", L: "#B4F591", O: "#4E7B1E" },
+  kiro: { b: "#6C25C8", B: "#9046FF", L: "#B987FF", O: "#481984" },
+  muse: { b: "#005EC5", B: "#0081FB", L: "#75AEFF", O: "#013F86" },
+  pi: { b: "#BE395B", B: "#F0567A", L: "#FF98A4", O: "#852C3F" },
+  fx: { b: "#BA5BC9", B: "#E879F9", L: "#FFB5FF", O: "#8A4892" },
+};
+
+/** Each provider's body, by the name the kit or `PROVIDER_BODIES` gives it, and `frost` (a frozen Cell). */
+export const BODIES: Readonly<Record<string, BodyInks>> = {
+  ...paletteData.bodies,
+  ...PROVIDER_BODIES,
+};
 
 /** Every other role's colour, the same on every body. */
 export const INKS: Readonly<Record<string, string>> = paletteData.inks;

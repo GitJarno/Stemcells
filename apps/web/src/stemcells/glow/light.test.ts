@@ -63,7 +63,8 @@ describe("what the glass says", () => {
   it("wears the provider's brand, and the accent for a provider without one", () => {
     expect(toneTokenOf("claudeAgent")).toBe("--sc-provider-claude");
     expect(toneTokenOf("codex")).toBe("--sc-provider-codex");
-    expect(toneTokenOf("opencode")).toBe("--sc-accent");
+    expect(toneTokenOf("antigravity")).toBe("--sc-provider-antigravity");
+    expect(toneTokenOf("acpRegistry")).toBe("--sc-accent");
     expect(toneTokenOf(null)).toBe("--sc-accent");
   });
 });

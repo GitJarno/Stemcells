@@ -105,14 +105,23 @@ test("a 2× display draws the original's widest pieces whole, past the box, and 
   );
 });
 
-test("Codex, Kimi and Gemini wear their own bodies, every other provider the coral Cell", () => {
+test("a provider with a body wears it, Antigravity Gemini's, and any other the coral Cell", () => {
   NodeAssert.deepEqual(
-    ["codex", "openai", "kimi", "moonshot", "gemini", "google", "claudeAgent", "cursor", null].map(
-      bodyOf,
-    ),
-    ["codex", "codex", "kimi", "kimi", "gemini", "gemini", "claude", "claude", "claude"],
+    [
+      "codex",
+      "openai",
+      "moonshot",
+      "antigravity",
+      "cursor",
+      "claudeAgent",
+      "acpRegistry",
+      null,
+    ].map(bodyOf),
+    ["codex", "codex", "kimi", "gemini", "cursor", "claude", "claude", "claude"],
   );
-  for (const body of ["codex", "kimi", "gemini", "claude"]) NodeAssert.ok(body in BODIES, body);
+  for (const body of ["codex", "kimi", "gemini", "cursor", "claude"]) {
+    NodeAssert.ok(body in BODIES, body);
+  }
 });
 
 /** Whether `frame` is frame `index` of `scene`, eyes open or shut. */
