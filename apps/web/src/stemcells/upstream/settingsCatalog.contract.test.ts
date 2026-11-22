@@ -6,10 +6,12 @@ import * as NodeFS from "node:fs";
 
 import { describe, expect, it } from "vite-plus/test";
 
+import { withStemcellsName } from "../../../../../stemcells/brand/upstreamName.ts";
 import { placeKey, placeOf, type SettingsPlace } from "../../../../../stemcells/settings/places.ts";
 import { settingsCatalog } from "./settings";
 
-const catalog = settingsCatalog();
+// In the words the app shows: its build says our name where upstream's titles say theirs.
+const catalog = withStemcellsName(settingsCatalog());
 const FILE = new URL("../../../../../stemcells/settings/catalog.json", import.meta.url);
 
 describe("the settings catalog", () => {

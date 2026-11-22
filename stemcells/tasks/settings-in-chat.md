@@ -44,8 +44,9 @@ Each lands as its own pull request, on the Mac and the phone together.
 ## Slice 1: how a path reads
 
 - `stemcells/settings/catalog.json` is upstream's settings index written
-  out: its pages, the rows its search finds (privacy policy left out, as
-  search leaves it), the providers. A web contract test writes and checks
+  out in the words the app shows (our name for upstream's, as the build
+  renames it): its pages, the rows its search finds (privacy policy left
+  out, as search leaves it), the providers. A web contract test writes and checks
   it, so the phone reads paths as the Mac does. Upstream adding a setting
   fails that test; run it with `STEMCELLS_WRITE_CATALOG=1` to write the
   catalog again.
