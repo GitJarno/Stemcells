@@ -517,6 +517,11 @@
       "page": "/settings/chat"
     },
     {
+      "id": "side-thread-open-target",
+      "title": "Open subagents and side chats in",
+      "page": "/settings/chat"
+    },
+    {
       "id": "provider-update-checks",
       "title": "Provider update checks",
       "page": "/settings/maintenance"
@@ -1294,6 +1299,11 @@
       "page": "/settings/source-control"
     },
     {
+      "id": "source-control-host-tanstack-source",
+      "title": "TanStack Source accounts and token",
+      "page": "/settings/source-control"
+    },
+    {
       "id": "source-control-host-bitbucket",
       "title": "Bitbucket credentials",
       "page": "/settings/source-control"
@@ -1333,6 +1343,11 @@
     {
       "id": "project-actions",
       "title": "Actions",
+      "page": "/settings/projects"
+    },
+    {
+      "id": "project-repositories",
+      "title": "Repositories",
       "page": "/settings/projects"
     },
     {

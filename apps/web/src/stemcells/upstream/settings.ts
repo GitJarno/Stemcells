@@ -31,7 +31,8 @@ import { useEnvironment } from "../../state/environments";
 import { providersIgnoringCheckedAtAtom } from "../../state/server";
 import { useEnvironmentScope } from "../../state/session";
 import { NEVER_OFFERED_SETTINGS } from "../pages/settingsPages";
-import { SETTINGS_NAV_GROUPS } from "./substitutes/settingsSearch";
+import { useHasSecretProvidersEnvironment } from "../../components/settings/useAvailableSettingsSearchItems";
+import { settingsNavGroups } from "./substitutes/settingsSearch";
 
 export type { ServerSettings } from "@t3tools/contracts";
 export { ProviderAuthenticationSection } from "../../components/settings/ProviderAuthenticationSection";
@@ -68,12 +69,18 @@ export { useNavigateToMainApp } from "../../components/sidebar/mainAppLocation";
 export type { SettingsPath };
 export { revealSettingsSearchTarget };
 
+export type SettingsSection = { readonly to: SettingsPath; readonly label: string };
+
+const sectionsOf = (secrets: boolean): ReadonlyArray<SettingsSection> =>
+  settingsNavGroups(secrets)
+    .flatMap((group) => group.paths)
+    .map((to) => ({ to, label: SETTINGS_SECTION_LABELS[to] }));
+const SECTIONS = { true: sectionsOf(true), false: sectionsOf(false) };
+
 /** The sections upstream's sidebar lists, in its order, with ours where the substitute places them. */
-export const SETTINGS_SECTIONS: ReadonlyArray<{ to: SettingsPath; label: string }> =
-  SETTINGS_NAV_GROUPS.flatMap((group) => group.paths).map((to) => ({
-    to,
-    label: SETTINGS_SECTION_LABELS[to],
-  }));
+export function useSettingsSections(): ReadonlyArray<SettingsSection> {
+  return SECTIONS[`${useHasSecretProvidersEnvironment()}`];
+}
 
 /** A setting's search anchor and title, as upstream's own rows get them (`useSearchableSetting`). */
 export function searchableSetting(id: SettingsSearchItemId): {

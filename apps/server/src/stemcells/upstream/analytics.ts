@@ -17,7 +17,10 @@ export const noAnalytics: Layer.Layer<AnalyticsService> = Layer.succeed(
   AnalyticsService,
   AnalyticsService.of({
     // Untraced: every server feature calls these, and they do nothing to trace.
-    record: Effect.fnUntraced(function* () {}),
+    // False: nothing is queued to send, as upstream says when its telemetry is off.
+    record: Effect.fnUntraced(function* () {
+      return false;
+    }),
     flush: Effect.void,
     recordOwners: Effect.fnUntraced(function* () {}),
   }),

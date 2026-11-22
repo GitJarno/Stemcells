@@ -149,8 +149,10 @@ export function surfaceName(
       return /^\d+$/.test(surface.key) ? `#${surface.key}` : surface.key;
     case "device":
       return surface.title ?? surface.target?.name ?? "Device";
-    case "side-chat":
+    case "thread":
       return "Side chat";
+    case "linked-thread":
+      return `Chat on ${surface.label}`;
     case "preview":
       return browserName(surface.resourceId ? navStatusOf(surface.resourceId) : null);
   }

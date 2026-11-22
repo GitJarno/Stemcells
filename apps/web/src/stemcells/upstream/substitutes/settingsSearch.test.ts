@@ -9,7 +9,7 @@ import * as Upstream from "../../../components/settings/settingsSearch";
 import { STEMCELLS_SETTINGS_LABELS } from "../../pages/settingsPages";
 import {
   filterAvailableSettingsSearchItems,
-  SETTINGS_NAV_GROUPS,
+  settingsNavGroups,
   searchSettings,
 } from "./settingsSearch";
 
@@ -48,18 +48,18 @@ describe("Settings lists our pages in upstream's groups", () => {
   // Upstream's sidebar lists only what its groups name, and once took a path of ours for a
   // page of its own: each of our pages stands in the list once, beside all of upstream's.
   it("every page of ours, once, and every page of upstream's", () => {
-    const listed = SETTINGS_NAV_GROUPS.flatMap((group) => group.paths);
+    const listed = settingsNavGroups(true).flatMap((group) => group.paths);
     for (const path of Object.keys(STEMCELLS_SETTINGS_LABELS)) {
       expect(
         listed.filter((page) => page === path),
         path,
       ).toHaveLength(1);
     }
-    for (const path of Upstream.SETTINGS_NAV_GROUPS.flatMap((group) => group.paths)) {
+    for (const path of Upstream.settingsNavGroups(true).flatMap((group) => group.paths)) {
       expect(listed, path).toContain(path);
     }
-    expect(SETTINGS_NAV_GROUPS.map((group) => group.heading)).toEqual(
-      Upstream.SETTINGS_NAV_GROUPS.map((group) => group.heading),
+    expect(settingsNavGroups(false).map((group) => group.heading)).toEqual(
+      Upstream.settingsNavGroups(false).map((group) => group.heading),
     );
   });
 });

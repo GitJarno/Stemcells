@@ -61,7 +61,8 @@ import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
-import * as UpstreamSideChatPane from "../../../components/chat/SideChatPane";
+import * as UpstreamSideThreadPane from "../../../components/chat/SideThreadPane";
+import * as UpstreamMarkdownCodeBlock from "../../../components/chat/MarkdownCodeBlock";
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamAssistantRows from "../../../components/chat/TimelineAssistantRows";
@@ -129,7 +130,8 @@ import * as OurVisibleAnimation from "./visibleAnimation";
 import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
 import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
-import * as OurSideChatPane from "./SideChatPane";
+import * as OurSideThreadPane from "./SideThreadPane";
+import * as OurMarkdownCodeBlock from "./MarkdownCodeBlock";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
 import * as OurAssistantRows from "./TimelineAssistantRows";
@@ -831,11 +833,25 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
-  "apps/web/src/components/chat/SideChatPane.tsx": {
-    upstream: UpstreamSideChatPane,
-    substitute: OurSideChatPane satisfies typeof UpstreamSideChatPane,
+  "apps/web/src/components/chat/SideThreadPane.tsx": {
+    upstream: UpstreamSideThreadPane,
+    substitute: OurSideThreadPane satisfies typeof UpstreamSideThreadPane,
     importers: {
-      "apps/web/src/components/chat/RightPanelSurfaceContent.tsx": ["./SideChatPane", ["default"]],
+      "apps/web/src/components/chat/RightPanelSurfaceContent.tsx": [
+        "./SideThreadPane",
+        ["default"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/MarkdownCodeBlock.tsx": {
+    upstream: UpstreamMarkdownCodeBlock,
+    substitute: OurMarkdownCodeBlock satisfies typeof UpstreamMarkdownCodeBlock,
+    importers: {
+      // Every fenced block of a reply's markdown, so a closed fence of ours draws as ours.
+      "apps/web/src/components/ChatMarkdown.tsx": [
+        "./chat/MarkdownCodeBlock",
+        ["MarkdownCodeBlock", "SuspenseShikiCodeBlock"],
+      ],
     },
   },
   "apps/web/src/hooks/useThreadActions.ts": {

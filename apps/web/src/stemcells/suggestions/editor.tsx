@@ -44,7 +44,7 @@ export function useEditorSuggestion(props: ComposerPromptEditorProps): {
   if (shown === null) return { props: withHost, ghost: ghostWith(null) };
 
   const take = () => {
-    props.onChange(shown.text, shown.text.length, shown.text.length, false, []);
+    props.onChange(shown.text, shown.text.length, shown.text.length, false, [], true);
     props.editorRef.current?.focusAtEnd();
   };
   const onCommandKeyDown: ComposerPromptEditorProps["onCommandKeyDown"] = (

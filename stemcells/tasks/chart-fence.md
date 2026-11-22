@@ -60,17 +60,16 @@ bar: Files that conflicted in each sync
 
 ## The Mac
 
-Upstream's `ChatMarkdown.tsx` is hot and its fence switch is hard-coded, so
-nothing changes there. Our substitute for it (`upstream/substitutes/
-ChatMarkdown.tsx`) already draws context links upstream's markdown keeps. A
-remark plugin, handed over through upstream's own `extraRemarkPlugins`,
-turns a closed fence that reads as a chart into such a link carrying the
-fence's words, and the substitute's renderer draws `chart/ChartFence.tsx`.
+Upstream's `ChatMarkdown.tsx` is hot and draws every fence through
+`chat/MarkdownCodeBlock.tsx`, so nothing changes there. Our substitute for
+that module draws `chart/ChartFence.tsx` for a chart fence, and the
+`ChatMarkdown` substitute says which fences of ours the reply has closed
+(`fences/closedFences.ts`).
 
 - An unfinished fence is left alone, so it streams as the code block it is
   today and becomes the chart when its closing line arrives.
-- A list of extra plugins costs a streaming reply upstream's block-by-block
-  parse. So only a reply that may hold a closed chart fence gets the plugin.
+- Only a reply that may hold a fence of ours is scanned for closed ones, and
+  upstream's parse is untouched.
 - A hover says every series at that label; a Table button swaps the marks
   for upstream's own table, which copies as markdown or CSV.
 - Copied with the words round it, a chart is its fence again (upstream's

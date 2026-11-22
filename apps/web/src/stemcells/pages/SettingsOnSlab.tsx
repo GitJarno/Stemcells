@@ -2,7 +2,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDownIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { SETTINGS_SECTIONS, SettingsSidebarNav } from "../upstream/settings";
+import {
+  SettingsSidebarNav,
+  useSettingsSections,
+  type SettingsSection,
+} from "../upstream/settings";
 import {
   Button,
   Menu,
@@ -49,7 +53,8 @@ function SectionMenu(props: { pathname: string }) {
   const navigate = useNavigate();
   // A detail page lights the page that links to it, as upstream's list does.
   const pathname = DETAIL_PAGE_PARENTS[props.pathname] ?? props.pathname;
-  const current = SETTINGS_SECTIONS.find(
+  const sections = useSettingsSections();
+  const current = sections.find(
     (section) => pathname === section.to || pathname.startsWith(`${section.to}/`),
   );
   return (
@@ -61,11 +66,11 @@ function SectionMenu(props: { pathname: string }) {
       <MenuPopup align="start">
         <MenuRadioGroup
           value={current?.to ?? null}
-          onValueChange={(to: (typeof SETTINGS_SECTIONS)[number]["to"]) =>
+          onValueChange={(to: SettingsSection["to"]) =>
             void navigate({ to, hash: "", replace: true, hashScrollIntoView: false })
           }
         >
-          {SETTINGS_SECTIONS.map((section) => (
+          {sections.map((section) => (
             <MenuRadioItem key={section.to} value={section.to}>
               {section.label}
             </MenuRadioItem>

@@ -44,6 +44,7 @@ import * as ServerSettings from "../../serverSettings.ts";
 import * as TerminalManager from "../../terminal/Manager.ts";
 import * as TextGeneration from "../../textGeneration/TextGeneration.ts";
 import { DEFAULT_INSTANCES } from "./askiInstance.ts";
+import * as ProviderTurnStartTestkit from "../../orchestration-v2/ProviderTurnStartService.testkit.ts";
 
 const projectId = ProjectId.make("project:aski-instance");
 const askis = ProviderInstanceId.make("aski");
@@ -131,6 +132,7 @@ const launches = ThreadLaunch.layer.pipe(
     Layer.mock(ProjectCloneTracker.ProjectCloneTracker)({ get: () => Effect.succeed(null) }),
   ),
   Layer.provide(Layer.mock(WorktreeSetupTracker.WorktreeSetupTracker)({})),
+  Layer.provide(ProviderTurnStartTestkit.layerNoTaskFolders),
   Layer.provide(Layer.mock(TerminalManager.TerminalManager)({})),
   Layer.provide(Layer.mock(CheckpointStore.CheckpointStore)({})),
   Layer.provide(Layer.mock(GitWorkflow.GitWorkflowService)({})),

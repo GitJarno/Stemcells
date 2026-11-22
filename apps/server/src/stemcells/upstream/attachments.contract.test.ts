@@ -20,6 +20,7 @@ import { afterEach } from "vite-plus/test";
 import { ASSET_ROUTE_PREFIX, issueAssetUrl } from "../../assets/AssetAccess.ts";
 import * as AssetSigner from "../../assets/AssetSigner.ts";
 import * as NativeAppIconResolver from "../../assets/NativeAppIconResolver.ts";
+import * as WorkspacePreviewRevisions from "../../assets/WorkspacePreviewRevisions.ts";
 import {
   parseThreadSegmentFromAttachmentId,
   planAttachmentClaim,
@@ -107,6 +108,7 @@ const layerAssets = Layer.mergeAll(
     Layer.provide(T3ProjectFileLoader.layer),
   ),
   NativeAppIconResolver.layer.pipe(Layer.provide(layerConfig)),
+  WorkspacePreviewRevisions.layer,
   AssetSigner.layer.pipe(
     Layer.provideMerge(ServerSecretStore.layer.pipe(Layer.provide(layerConfig))),
   ),

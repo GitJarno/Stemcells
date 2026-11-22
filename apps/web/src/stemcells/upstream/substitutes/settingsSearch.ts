@@ -31,11 +31,10 @@ export function filterAvailableSettingsSearchItems(
   );
 }
 
-export const SETTINGS_NAV_GROUPS: typeof Upstream.SETTINGS_NAV_GROUPS = (() => {
-  const groups = Upstream.SETTINGS_NAV_GROUPS.map((group) => ({
-    ...group,
-    paths: [...group.paths],
-  }));
+function withOurPages(
+  upstream: ReturnType<typeof Upstream.settingsNavGroups>,
+): ReturnType<typeof Upstream.settingsNavGroups> {
+  const groups = upstream.map((group) => ({ ...group, paths: [...group.paths] }));
   for (const [path, after] of Object.entries(STEMCELLS_SETTINGS_NAV_AFTER) as Array<
     [keyof typeof STEMCELLS_SETTINGS_NAV_AFTER, string]
   >) {
@@ -45,4 +44,14 @@ export const SETTINGS_NAV_GROUPS: typeof Upstream.SETTINGS_NAV_GROUPS = (() => {
     group.paths.splice(index === -1 ? group.paths.length : index + 1, 0, path);
   }
   return groups;
-})();
+}
+
+// Upstream hands out one list per answer, so ours keep one each too.
+const WITH_SECRETS = withOurPages(Upstream.settingsNavGroups(true));
+const WITHOUT_SECRETS = withOurPages(Upstream.settingsNavGroups(false));
+
+export function settingsNavGroups(
+  hasSecretProvidersEnvironment: boolean,
+): ReturnType<typeof Upstream.settingsNavGroups> {
+  return hasSecretProvidersEnvironment ? WITH_SECRETS : WITHOUT_SECRETS;
+}

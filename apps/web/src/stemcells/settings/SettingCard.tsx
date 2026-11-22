@@ -22,7 +22,6 @@ import {
 import { setTaking, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { setAskiPlans, useAskiPlans } from "../aski/planning";
 import { setAskiTabOn, useAskiTabOn } from "../aski/tabSwitch";
-import { type FenceKind, mayHoldFence } from "../fences/remarkFence";
 import { setSuggestionsOn, useSuggestionsOn } from "../suggestions/switch";
 import {
   ScopedSwitch,
@@ -50,18 +49,6 @@ import { PlaceLink } from "./PlaceLink";
 import { ProviderRow } from "./ProviderRow";
 
 import "./settingCard.css";
-
-/** The context link's kind for a card: `t3-context://v1/stemcells-setting-card/fence`. */
-export const SETTING_CARD_KIND = "stemcells-setting-card";
-
-export const SETTING_FENCE: FenceKind = {
-  lang: "setting",
-  kind: SETTING_CARD_KIND,
-  reads: (source) => readSettingFence(source) !== null,
-};
-
-/** Whether `text` may hold a closed setting fence: only such a reply runs the plugin. */
-export const mayHoldSetting = mayHoldFence("setting");
 
 /** Settings' "all" scope: what the page writes to when it is opened plainly. */
 const ALL = {};

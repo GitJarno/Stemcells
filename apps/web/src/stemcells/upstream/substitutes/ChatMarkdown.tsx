@@ -9,33 +9,18 @@ import { type ComponentProps, memo, type ReactNode, use } from "react";
 import { linkPlaces } from "../../../../../../stemcells/settings/places.ts";
 import UpstreamChatMarkdown from "../../../components/ChatMarkdown";
 import { renderContextLink, type ContextLink } from "../../aski/settingLinks";
-import { ChartFence } from "../../chart/ChartFence";
-import { CHART_FENCE, CHART_LINK_KIND, mayHoldChart } from "../../chart/remarkChartFence";
 import { CloseOutCard, LatestShown } from "../../closeOut/CloseOutCard";
 import { cardOf, ReplyInView } from "../../closeOut/reply";
 import { CellToken } from "../../peers/CellToken";
 import { CELL_LINK_KIND, linkCellNames } from "../../peers/mentions";
-import { remarkFences } from "../../fences/remarkFence";
+import { closedFences, FencesInView } from "../../fences/closedFences";
 import { PLACE_LINK_KIND, PlaceLink, placeHref } from "../../settings/PlaceLink";
-import {
-  mayHoldSetting,
-  SETTING_CARD_KIND,
-  SETTING_FENCE,
-  SettingCard,
-} from "../../settings/SettingCard";
 import { useNamedCells } from "../cellNames";
 
 export * from "../../../components/ChatMarkdown";
 
-// One list, so every reply with a fence of ours shares upstream's renderer and its parse cache.
-const FENCE_PLUGINS = [remarkFences([CHART_FENCE, SETTING_FENCE])];
-
 const draw = (link: ContextLink, environmentId?: string): ReactNode =>
-  link.kind === CHART_LINK_KIND ? (
-    <ChartFence source={link.label} />
-  ) : link.kind === SETTING_CARD_KIND ? (
-    <SettingCard source={link.label} environmentId={environmentId} />
-  ) : link.kind === PLACE_LINK_KIND ? (
+  link.kind === PLACE_LINK_KIND ? (
     <PlaceLink placeKey={link.contextId} label={link.label} environmentId={environmentId} />
   ) : (
     renderContextLink(link)
@@ -62,26 +47,27 @@ function rendererIn(environmentId: string | undefined): (link: ContextLink) => R
 
 type Props = ComponentProps<typeof UpstreamChatMarkdown>;
 
+const NO_FENCES: ReadonlySet<string> = new Set();
+
 const Words = memo(function Words(props: Props) {
   const own = props.renderContextReference;
   const ref = own === undefined ? props.threadRef : undefined;
   const named = useNamedCells(ref);
   const withCells = linkCellNames(props.text, named.names);
   const text = own === undefined ? linkPlaces(withCells, placeHref) : withCells;
-  // The plugin costs a streaming reply upstream's block-by-block parse, so only a reply that
-  // may hold a closed fence of ours runs it.
-  const fences =
-    own === undefined &&
-    props.inline !== true &&
-    props.extraRemarkPlugins === undefined &&
-    (mayHoldChart(text) || mayHoldSetting(text));
-  return (
+  const words = (
     <UpstreamChatMarkdown
       {...props}
       text={text}
       renderContextReference={own ?? rendererIn(ref?.environmentId)}
-      {...(fences ? { extraRemarkPlugins: FENCE_PLUGINS } : null)}
     />
+  );
+  const closed = own === undefined && props.inline !== true ? closedFences(text) : NO_FENCES;
+  if (closed.size === 0) return words;
+  return (
+    <FencesInView value={{ closed, environmentId: props.threadRef?.environmentId }}>
+      {words}
+    </FencesInView>
   );
 });
 
