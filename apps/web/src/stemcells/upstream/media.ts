@@ -11,10 +11,7 @@ import {
   isWindowsDrivePathHref,
   normalizeMarkdownLinkDestination,
 } from "@t3tools/shared/markdownLinks";
-import { CHAT_MARKDOWN_REMARK_PLUGINS } from "@t3tools/shared/markdownPipeline";
-import { defaultUrlTransform } from "react-markdown";
-import remarkParse from "remark-parse";
-import { unified } from "unified";
+import { chatMarkdownImageSources } from "@t3tools/shared/markdownPipeline";
 
 import { useAssetUrlRefresh, useAssetUrlState, useAssetUrls } from "../../assets/assetUrls";
 import { expandedImagePreviewAtom } from "../../components/chat/ExpandedImageDialog";
@@ -190,58 +187,39 @@ export function entryMedia(
   return [...pictures, ...videos, ...markdownMedia(markdownSources(text), place)];
 }
 
-const markdownProcessor = unified().use(remarkParse).use(CHAT_MARKDOWN_REMARK_PLUGINS).freeze();
-
-interface MarkdownNode {
-  readonly type: string;
-  readonly url?: string;
-  readonly value?: string;
-  readonly identifier?: string;
-  readonly children?: readonly MarkdownNode[];
-}
-
-const HTML_IMAGE = /<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
-
 /**
- * The sources of the pictures and videos a message's markdown embeds, in
- * order, read with the chat's own markdown plugins: image syntax (inline and
- * by reference) and `<img>` tags. Links to media are links, not media.
+ * The sources of the pictures and videos a message's markdown embeds, in order, as the chat's
+ * own pipeline reads them: image syntax (inline and by reference) and `<img>` tags. Links to
+ * media are links, not media.
  */
 export function markdownMediaSources(markdown: string): string[] {
   if (!markdown.includes("![") && !/<img\b/i.test(markdown)) return [];
-  const tree = markdownProcessor.runSync(markdownProcessor.parse(markdown)) as MarkdownNode;
-  const definitions = new Map<string, string>();
-  const walk = (node: MarkdownNode, visit: (node: MarkdownNode) => void) => {
-    visit(node);
-    node.children?.forEach((child) => walk(child, visit));
+  return chatMarkdownImageSources(markdown);
+}
+
+// react-markdown's defaultUrlTransform, as `ChatMarkdown.tsx` keeps it: relative URLs, and
+// absolute ones with a safe protocol.
+const SAFE_PROTOCOL = /^(?:https?|ircs?|mailto|xmpp)$/i;
+function safeUrl(value: string): string {
+  const colon = value.indexOf(":");
+  const before = (character: string) => {
+    const at = value.indexOf(character);
+    return at !== -1 && colon > at;
   };
-  walk(tree, (node) => {
-    if (node.type === "definition" && node.identifier && node.url !== undefined) {
-      definitions.set(node.identifier, node.url);
-    }
-  });
-  const sources: string[] = [];
-  walk(tree, (node) => {
-    if (node.type === "image" && node.url) sources.push(node.url);
-    if (node.type === "imageReference" && node.identifier) {
-      const url = definitions.get(node.identifier);
-      if (url) sources.push(url);
-    }
-    if (node.type === "html" && node.value) {
-      for (const match of node.value.matchAll(HTML_IMAGE)) {
-        const src = match[1] ?? match[2] ?? match[3];
-        if (src) sources.push(src);
-      }
-    }
-  });
-  return sources;
+  return colon === -1 ||
+    before("/") ||
+    before("?") ||
+    before("#") ||
+    SAFE_PROTOCOL.test(value.slice(0, colon))
+    ? value
+    : "";
 }
 
 /** A markdown source as the chat's picture renderer reads it (`ChatMarkdown`'s URL transform). */
 function markdownHref(source: string): string {
   const href = isWindowsDrivePathHref(source)
     ? source
-    : (rewriteMarkdownFileUriHref(source) ?? defaultUrlTransform(source));
+    : (rewriteMarkdownFileUriHref(source) ?? safeUrl(source));
   const normalized = normalizeMarkdownLinkDestination(href);
   return isWindowsDrivePathHref(source) ? normalized.replaceAll("\\", "/") : normalized;
 }

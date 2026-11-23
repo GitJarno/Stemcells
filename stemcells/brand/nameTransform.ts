@@ -105,7 +105,7 @@ export const KEPT: ReadonlyArray<Kept> = [
   ...keep(
     /^apps\/server\/src\/orchestration-v2\/(?:PullRequestWatchReactor|pullRequestWatch)\.ts$/,
     `${FOR_THE_MODEL}: the text that wakes it; a person sees the notice's summary`,
-    "T3 Code stopped watching pull request #",
+    ["T3 Code stopped watching pull request #", 2],
     "so T3 Code stopped watching it.",
     "which T3 Code is watching for you:",
     "T3 Code stopped watching after",

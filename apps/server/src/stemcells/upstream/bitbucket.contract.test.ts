@@ -12,6 +12,7 @@ import * as SourceControlDrivers from "../../sourceControl/builtInDrivers.ts";
 import * as GitVcsDriver from "../../vcs/GitVcsDriver.ts";
 import * as VcsDriverRegistry from "../../vcs/VcsDriverRegistry.ts";
 import * as VcsProcess from "../../vcs/VcsProcess.ts";
+import * as FeatureFlags from "@t3tools/shared/FeatureFlags";
 
 // Contract: source control discovery (the server's drivers, as the command palette reads
 // them) asks Bitbucket who is signed in only when a Bitbucket token is configured. Without
@@ -66,6 +67,7 @@ const layerWith = (requests: Array<{ url: string; authorization: string | undefi
     ),
     Layer.provide(ConfigProvider.layer(ConfigProvider.fromEnv({ env: {} }))),
     Layer.provideMerge(ServerSettings.layerTest()),
+    Layer.provideMerge(FeatureFlags.layerTest()),
     Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
   );
 

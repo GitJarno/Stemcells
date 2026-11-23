@@ -106,14 +106,17 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/useChatShortcuts.ts": "useChatShortcuts.ts",
   "apps/web/src/components/chat/OpenInPicker.tsx": "OpenInPicker.tsx",
   "apps/web/src/components/chat/usePasteToFocusComposer.ts": "usePasteToFocusComposer.ts",
-  // A side chat, drawn inside its Cell's pane, is not that Cell: no line of the Cell's over it.
-  "apps/web/src/components/chat/SideChatPane.tsx": "SideChatPane.tsx",
+  // A side chat or a subagent's thread, drawn inside its Cell's pane, is not that Cell: no line
+  // of the Cell's over it.
+  "apps/web/src/components/chat/SideThreadPane.tsx": "SideThreadPane.tsx",
   // Windows: one window notifies of a chat's turns, the focused one or else the lead.
   "apps/web/src/components/ThreadNotificationCoordinator.tsx": "ThreadNotificationCoordinator.tsx",
   // A thread chip opens its chat in a new pane beside the one it is in.
   "apps/web/src/components/ThreadContextChip.tsx": "ThreadContextChip.tsx",
   // A setting Aski links in a reply draws as its live switch.
   "apps/web/src/components/ChatMarkdown.tsx": "ChatMarkdown.tsx",
+  // A reply's closed `chart` and `setting` fences draw as a chart and a card.
+  "apps/web/src/components/chat/MarkdownCodeBlock.tsx": "MarkdownCodeBlock.tsx",
   // An assistant reply's row says so, and its markdown draws the reply's close-out as a card.
   "apps/web/src/components/chat/TimelineAssistantRows.tsx": "TimelineAssistantRows.tsx",
   // The work verbs: the timeline hands its rows the chat's verbs in our

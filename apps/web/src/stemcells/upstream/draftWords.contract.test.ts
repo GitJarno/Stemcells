@@ -54,8 +54,12 @@ describe("the words' contracts with upstream's drafts", () => {
       /onSend: \(sendEvent\) => \{\s*providerInputRejectedRef\.current = false;\s*onSend\(/,
     );
     const send = body(composerSend, "onSend");
+    expect(send).toContain(
+      "let promptAtSend = detachedOverride ? detachedOverride.prompt : promptRef.current;",
+    );
+    expect(send.indexOf(": promptRef.current;")).toBeLessThan(send.indexOf("await "));
     expect(send.indexOf("composerRef.current?.getSendContext()")).toBeLessThan(
-      send.indexOf(": promptRef.current;"),
+      send.indexOf("await "),
     );
   });
 

@@ -22,13 +22,13 @@ import { compactAge } from "../upstream/cellRow";
 import { useMachineDisk, useOpenDiskCell } from "../upstream/disk";
 import {
   cellRef,
-  ChatMarkdown,
   observeResize,
   useNowMinuteMs,
   useOpenFromNeeds,
   usePrimaryEnvironmentId,
   useRepositoryUrl,
 } from "../upstream/needs";
+import { ChatMarkdown } from "../upstream/previews";
 import { useCellPlace } from "../upstream/thread";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { commandsFor, type Given } from "./actions";

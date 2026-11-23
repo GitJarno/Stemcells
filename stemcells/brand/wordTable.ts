@@ -111,7 +111,8 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within("No agents in this turn.", "agents", SUBCELL.many),
     within('<SheetHeader title={gt("Agents")}', "Agents", SUBCELL.many),
     within('"Provider-managed agent. Its work appears in the transcript."', "agent", SUBCELL.one),
-    within(`accessibilityHint={gt("Opens this agent's thread")}`, OPENS_AGENT, SUBCELL.one),
+    within(`? gt("Opens this agent's thread")`, OPENS_AGENT, SUBCELL.one),
+    within(`"Opens a read-only view of this agent's thread on {label}"`, OPENS_AGENT, SUBCELL.one),
   ),
   ...inFile(
     `${PHONE}/threads/ThreadBackgroundWorkSheet.tsx`,
@@ -157,7 +158,8 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within("one {{count} subagent}", "subagent", SUBCELL.one),
     within("other {{count} subagents}", "subagents", SUBCELL.many),
     within(`? gt("Opens this agent's thread")`, OPENS_AGENT, SUBCELL.one),
-    within(': gt("Provider-managed agent")', "agent", SUBCELL.one),
+    within(`"Opens a read-only view of this agent's thread on {label}"`, OPENS_AGENT, SUBCELL.one),
+    within('? gt("Provider-managed agent")', "agent", SUBCELL.one),
   ),
   ...inFile(
     `${PHONE}/threads/thread-work-log.tsx`,
@@ -204,7 +206,7 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${CHAT}/ThreadRelationshipsControl.tsx`,
-    within('msg("Open subagent in this chat")', "subagent", SUBCELL.one),
+    within('msg("Open subagent")', "subagent", SUBCELL.one),
     within('msg("Open parent agent in this chat")', "agent", CELL.one),
     within('props.agent.title ?? gt("Subagent")', "Subagent", SUBCELL.one),
     within('gt("Open parent agent on {label}"', "agent", CELL.one),

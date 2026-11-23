@@ -98,6 +98,7 @@ host codeberg.org the person's Forgejo
 host gitea.com the person's Forgejo
 host bitbucket.org the person's Bitbucket
 host api.bitbucket.org asked only when a Bitbucket token is configured
+host source.tanstack.com the person's TanStack Source, asked only for a repository whose remote is there; and its install and sign-in commands, shown for the person to run
 
 # The providers the person signs in to, for their sign-in, models and limits.
 host api.anthropic.com Claude credits and usage limits

@@ -102,7 +102,7 @@ describe("concise model names' contracts with upstream", () => {
     // A sync that resolved a conflict in upstream's favour would bring a
     // vendor word back to that view.
     expect(providerModelsSectionSource).toMatch(
-      /groupModelsForDisplay\(\s*\[\.\.\.models\.map\(withConciseName\),/,
+      /const listedModels = \[\.\.\.models\.map\(withConciseName\), \.\.\.unreportedFavoriteModels\];[\s\S]{0,400}groupModelsForDisplay\(listedModels,/,
     );
     // The rest read ours through substitutes of upstream's modules
     // (`substitutes/plugin.ts`); the substitutes contract test proves every

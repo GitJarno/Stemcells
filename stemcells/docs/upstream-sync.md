@@ -338,3 +338,20 @@ limit holds it until the limit lifts.
   `/logout` guard redundant; a seam that shadows upstream's check hides its
   tests' expectations, so read a failure there as ours first. Upstream
   wants Node 26.13.1 and Playwright's chromium 1248.
+- 2026-11-23 (416 commits): upstream's Markdown dropped remark (#27866), and
+  our remark fence plugins went with it: chart and setting fences now draw
+  through a `MarkdownCodeBlock` substitute. A plugin into a library upstream
+  can swap out is a seam on that library, so prefer a substitute of upstream's
+  own component. Upstream's browser `optimizeDeps.include` lags its new
+  imports (tiptap, `effect/reactivity/Atom`): on a cold cache Vite finds them
+  mid-run, reloads, and a shard dies at a different file each time. The
+  cache keeps what it learns, so run the browser shards until none reloads,
+  then the gate. A test run by hand outside the gates needs
+  `GIT_CONFIG_GLOBAL=/dev/null` as the gates set it, or a global
+  `core.hooksPath` fails upstream's git hook cases.
+  A browser shard that sits at `RUN` and never ends is a test file whose
+  import never finishes: a `vi.mock` factory awaiting `importOriginal` of a
+  module whose imports lead back to it waits on itself, with no timeout to
+  end it. Here `needs/stream` reached itself through the needs adapter's
+  `ChatMarkdown`. Find the file with `DEBUG=vitest:browser*` (the session
+  left busy), then break the cycle.

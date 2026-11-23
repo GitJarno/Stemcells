@@ -6,8 +6,8 @@ import { Kbd } from "../upstream/suggestions";
 /**
  * The suggestion where the composer's placeholder stands, in its place and
  * its look, with the key that takes it after the words: Tab where there is
- * a keyboard, a tap where there isn't. Drawn into the editor's own box,
- * over upstream's placeholder, which stays for screen readers.
+ * a keyboard, a tap where there isn't. Drawn into the editor's own grid,
+ * in the cell of upstream's placeholder, which stays for screen readers.
  */
 export function SuggestionGhost(props: {
   readonly host: HTMLElement;
@@ -21,7 +21,7 @@ export function SuggestionGhost(props: {
       aria-hidden
       data-stemcells-suggestion=""
       className={cn(
-        "pointer-events-none absolute inset-0 leading-relaxed text-placeholder",
+        "pointer-events-none relative col-start-1 row-start-1 leading-relaxed text-placeholder",
         props.className,
       )}
     >

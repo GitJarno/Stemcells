@@ -173,7 +173,11 @@ gate_upstream_server() {
     # tree on this Mac (checked at 747ed9c5b, 2026-11-17), as does the
     # server browser's title-change case. AntigravityInstallation's 16 KiB
     # page case kills a shell with SIGABRT, which a Mac reports as cancelled
-    # (df09ced76, 2026-11-20; nothing of ours is on that path).
+    # (df09ced76, 2026-11-20; nothing of ours is on that path). GitVcsDriver's
+    # background-lane case counts spawns one TestClock step after starting
+    # them, while each resolves git on PATH through real I/O; here one of
+    # four is still resolving (7103527dc, 2026-11-23; src/vcs and
+    # shared/shell are upstream's own).
     skip=$(skip_pattern "accepts the agy CLI without a harness sibling" \
       "explains that the linux-arm64 runtime needs 4 KiB pages when it aborts on a 16 KiB kernel" \
       "gives a synced namespace to an installed plugin, then the first synced row" \
@@ -182,7 +186,8 @@ gate_upstream_server() {
       "reports a nonzero completion for a syntax error" \
       "checkpoint bulk staging cleans operation-owned packs after" \
       "checkpoint publication falls back to rename where hardlinks are unavailable" \
-      "a page's title change without navigation reaches its session") || return 1
+      "a page's title change without navigation reaches its session" \
+      "runs background Git in its own lane so user commands never queue behind it") || return 1
     upstream_env pnpm --filter t3 exec vp test run -t "$skip"
   else
     skip=$(skip_pattern) || return 1

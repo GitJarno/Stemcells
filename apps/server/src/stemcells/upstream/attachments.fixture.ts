@@ -23,6 +23,7 @@ import * as HttpApiBuilder from "effect/http-api/HttpApiBuilder";
 import { issueAssetUrl } from "../../assets/AssetAccess.ts";
 import * as AssetSigner from "../../assets/AssetSigner.ts";
 import * as NativeAppIconResolver from "../../assets/NativeAppIconResolver.ts";
+import * as WorkspacePreviewRevisions from "../../assets/WorkspacePreviewRevisions.ts";
 import * as AuthHttp from "../../auth/http.ts";
 import * as EnvironmentAuth from "../../auth/EnvironmentAuth.ts";
 import * as ServerSecretStore from "../../auth/ServerSecretStore.ts";
@@ -86,6 +87,7 @@ export function makeImportRoute(input: {
       Layer.provide(T3ProjectFileLoader.layer),
     ),
     NativeAppIconResolver.layer.pipe(Layer.provide(layerConfig)),
+    WorkspacePreviewRevisions.layer,
   );
 
   const routesWith = (limits: AttachmentsHttp.Limits) =>
@@ -151,6 +153,7 @@ export function makeImportRoute(input: {
         | NativeAppIconResolver.NativeAppIconResolver
         | Orchestrator.OrchestratorV2
         | WorkspacePaths.WorkspacePaths
+        | WorkspacePreviewRevisions.WorkspacePreviewRevisions
       >();
 
       return yield* Effect.acquireUseRelease(

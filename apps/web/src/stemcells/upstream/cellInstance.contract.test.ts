@@ -161,7 +161,9 @@ describe("the composer's contracts with upstream", () => {
   });
 
   it("a send dispatches with the composer's own selection, unchecked against the thread's", () => {
-    expect(composerSend).toContain("const sendCtx = composerRef.current?.getSendContext();");
+    expect(composerSend).toMatch(
+      /let sendCtx = detachedOverride\s*\?\s*detachedOverride\.sendContext\s*:\s*composerRef\.current\?\.getSendContext\(\);/,
+    );
     expect(composerSend).toMatch(
       /selectedModelSelection: ctxSelectedModelSelection,\s*\} = sendCtx;/,
     );

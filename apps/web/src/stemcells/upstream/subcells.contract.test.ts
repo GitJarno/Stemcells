@@ -100,7 +100,7 @@ describe("Subcells in upstream's views", () => {
   it("the Subcells' controls say Subcell, never subagent or agent", () => {
     const controls = built("ThreadRelationshipsControl", relationships);
     for (const words of [
-      '? resolve(msg("Open Subcell in this chat"))',
+      '? resolve(msg("Open Subcell"))',
       ': resolve(msg("Open parent Cell in this chat"))',
       'title: props.agent.title ?? gt("Subcell"),',
       'label: gt("Previous Subcells")',
