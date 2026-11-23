@@ -269,10 +269,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within("<T>This thread is no longer available.</T>", "thread", CELL.one),
   ),
   ...inFile(
-    `${CHAT}/ThreadActivityBanners.tsx`,
-    within('msg("Subagent waiting")', "Subagent", SUBCELL.one),
-  ),
-  ...inFile(
     `${CHAT}/ThreadLineageWorkflowRow.tsx`,
     within("one {{settled}/{count} agent}", "agent", SUBCELL.one),
     within("other {{settled}/{count} agents}", "agents", SUBCELL.many),

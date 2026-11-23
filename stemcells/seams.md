@@ -469,6 +469,15 @@ upstream drew its provider's logo.
   of 3 Subcells flying"). The web's `TimelineSystemDivider` says "Subcell
   of" over a Subcell's thread, and its `TimelineOverlays` the jump-to-end
   summary ("Subcell waiting"), which `ChatView.tsx` writes at its budget.
+- **Where one opens** (a Subcell, a side chat, a linked machine's Cell) is
+  upstream's: its setting, modifiers, menus and panel tabs. Substitutes give
+  its "main view" our meaning: `sideChatPane` opens it as a pane beside its
+  Cell, or brings forward the pane, tab or window that shows it, and from
+  Aski's tab, whose chats draw no panel, everything opens there;
+  `useOpenSurfaceInMainView` does the same for a panel tab. A bare chat
+  offers no panel (`useSideThreadTrigger`) and starts no side chat
+  (`useSideChat`). A linked machine's Cell in the main view is upstream's
+  page over the slate, as no pane can show it.
 - Views that write the word inline are upstream's text: the builds say
   Subcell there from the word table (below), on the web and the phone.
 - Left as upstream's: the phone's card rows lead with upstream's status dot

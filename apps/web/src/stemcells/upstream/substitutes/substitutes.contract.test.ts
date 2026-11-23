@@ -884,7 +884,7 @@ const CASES: Readonly<Record<string, Case>> = {
         ["openLinkedThreadRead"],
       ],
       "apps/web/src/state/linkedThreadView.ts": ["../lib/sideChatPane", ["openLinkedThreadRead"]],
-      // A side chat's chip, and the way back to a parent.
+      // A thread's parent, and any other Cell of its family, which may be a side chat.
       "apps/web/src/components/ThreadContextChip.tsx": [
         "~/lib/sideChatPane",
         ["resolveThreadOpenRoute"],
