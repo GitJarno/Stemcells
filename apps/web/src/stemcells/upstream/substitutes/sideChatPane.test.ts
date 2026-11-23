@@ -7,7 +7,8 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { selectThreadRightPanelState, useRightPanelStore } from "../../../rightPanelStore";
 import { seatAski } from "../../tabs/askiTab";
-import { provideCellBeside } from "../../tabs/commands";
+import { cellPlaces } from "../../tabs/cellPlaces";
+import { provideCellBeside, provideCellPlaces } from "../../tabs/commands";
 import { EMPTY_WORKSPACE, focusPane, openTab, setCell, splitRight } from "../../tabs/layout";
 import { newIds, useWorkspaceStore } from "../../tabs/store";
 import { openLinkedThreadRead, openSideThread, resolveThreadOpenRoute } from "./sideChatPane";
@@ -29,10 +30,14 @@ function setup(focused: "parent" | "other" = "parent") {
   useWorkspaceStore.setState({ workspace });
   const beside: string[] = [];
   const routed: string[] = [];
-  const stop = provideCellBeside((opened) => beside.push(opened.threadId));
+  const focusedPanes: string[] = [];
+  const stopBeside = provideCellBeside((opened) => beside.push(opened.threadId));
+  const stopPlaces = provideCellPlaces(cellPlaces((paneId) => focusedPanes.push(paneId)));
   return {
     beside,
     routed,
+    focusedPanes,
+    parentPane: first.pane,
     surfaces: (threadId: string) =>
       selectThreadRightPanelState(
         useRightPanelStore.getState().byThreadKey,
@@ -47,7 +52,10 @@ function setup(focused: "parent" | "other" = "parent") {
       }),
     openAski: () =>
       useWorkspaceStore.setState({ workspace: seatAski(workspace, cell("aski"), newIds(), false) }),
-    [Symbol.dispose]: stop,
+    [Symbol.dispose]: () => {
+      stopBeside();
+      stopPlaces();
+    },
   };
 }
 
@@ -73,10 +81,10 @@ describe("opening a Subcell or a side chat", () => {
     expect(at.surfaces("parent")).toEqual(["thread:other"]);
   });
 
-  it("from a pane without focus takes focus there first: no other pane's panel shows", () => {
+  it("from a pane without focus focuses it: only the focused pane's panel shows", () => {
     using at = setup("other");
     expect(at.open("child", "primary")).toBe("panel");
-    expect(at.beside).toEqual(["parent"]);
+    expect(at.focusedPanes).toEqual([at.parentPane]);
     expect(at.surfaces("parent")).toEqual(["thread:child"]);
   });
 

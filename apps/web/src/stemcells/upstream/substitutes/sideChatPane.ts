@@ -16,11 +16,8 @@ import {
   selectThreadRightPanelState,
   useRightPanelStore,
 } from "../../../rightPanelStore";
-import { isAskiTab } from "../../tabs/askiTab";
-import { openCellBeside } from "../../tabs/commands";
-import { activeTab, panesOf, paneShowing, sameChat, type CellRef } from "../../tabs/layout";
-import { readWorkspace } from "../../tabs/store";
-import { shownElsewhere } from "../../windows/elsewhere";
+import { focusCellPanel, isCellOpen, openCellBeside } from "../../tabs/commands";
+import type { CellRef } from "../../tabs/layout";
 
 export { isInSideChatPane, type SideChatParentPanel } from "../../../lib/sideChatPane";
 
@@ -30,34 +27,19 @@ const cellOf = ({ environmentId, threadId }: ScopedThreadRef): CellRef => ({
   draftId: null,
 });
 
-/** Open as a Cell, in a pane here or in another window. */
-const openAsCell = (ref: ScopedThreadRef) =>
-  paneShowing(readWorkspace(), cellOf(ref)) !== null || shownElsewhere(cellOf(ref)) !== null;
-
-/** The thread whose panel a click in `panelRef` opens in; null where no panel would show. */
-function hostOf(panelRef: ScopedThreadRef | null): ScopedThreadRef | null {
-  return panelRef === null || isAskiTab(activeTab(readWorkspace()))
-    ? null
-    : rightPanelHostRef(panelRef);
-}
-
-/** Focuses the pane of `host`, whose panel shows only then: Enter on a row moves no focus. */
-function focusPaneOf(host: ScopedThreadRef) {
-  const tab = activeTab(readWorkspace());
-  const pane = tab
-    ? panesOf(tab).find((each) => each.cell !== null && sameChat(each.cell, cellOf(host)))
-    : undefined;
-  if (pane && pane.id !== tab?.focusedPaneId) openCellBeside(cellOf(host));
+/** The thread whose panel a click opens in, its pane focused: Enter on a row focuses none. */
+function panelHost(panelRef: ScopedThreadRef | null): ScopedThreadRef | null {
+  const host = panelRef === null ? null : rightPanelHostRef(panelRef);
+  return host !== null && focusCellPanel(cellOf(host)) ? host : null;
 }
 
 export function openSideThread(input: Parameters<typeof openUpstreamSideThread>[0]) {
   const { threadRef, intent } = input;
-  const host = hostOf(input.panelRef);
-  if (host) focusPaneOf(host);
+  const host = panelHost(input.panelRef);
   return openUpstreamSideThread({
     threadRef,
     panelRef: host,
-    intent: intent !== "panel" && openAsCell(threadRef) ? "main" : intent,
+    intent: intent !== "panel" && isCellOpen(cellOf(threadRef)) ? "main" : intent,
     navigate: (ref) => {
       if (!openCellBeside(cellOf(ref))) {
         input.navigate(ref);
@@ -76,13 +58,13 @@ export function openSideThread(input: Parameters<typeof openUpstreamSideThread>[
 }
 
 export function openLinkedThreadRead(input: Parameters<typeof openUpstreamLinkedThreadRead>[0]) {
-  const host = hostOf(input.panelRef);
-  if (host) focusPaneOf(host);
-  openUpstreamLinkedThreadRead({ ...input, panelRef: host });
+  openUpstreamLinkedThreadRead({ ...input, panelRef: panelHost(input.panelRef) });
 }
 
 export function resolveThreadOpenRoute(
   ...[threadRef, thread]: Parameters<typeof resolveUpstreamThreadOpenRoute>
 ) {
-  return openAsCell(threadRef) ? threadRef : resolveUpstreamThreadOpenRoute(threadRef, thread);
+  return isCellOpen(cellOf(threadRef))
+    ? threadRef
+    : resolveUpstreamThreadOpenRoute(threadRef, thread);
 }

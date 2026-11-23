@@ -60,7 +60,13 @@ import {
   splitRightOutsideAski,
 } from "./askiTab";
 import { DropWash } from "./DropWash";
-import { provideCellBeside, provideNewCellPane, provideNewCellTab } from "./commands";
+import { cellPlaces } from "./cellPlaces";
+import {
+  provideCellBeside,
+  provideCellPlaces,
+  provideNewCellPane,
+  provideNewCellTab,
+} from "./commands";
 import {
   activateTab,
   activeTab,
@@ -383,6 +389,10 @@ export function CellWorkspace(props: {
   const provideBeside = useEffectEvent(openBeside);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide the open-beside command while mounted.
   useEffect(() => provideCellBeside((cell) => provideBeside(cell)), []);
+
+  const focusFromOutside = useEffectEvent(focusPaneAndRoute);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide where the Cells are while mounted.
+  useEffect(() => provideCellPlaces(cellPlaces((paneId) => focusFromOutside(paneId))), []);
 
   /**
    * Aski's chat, once it exists, goes in Aski's tab, in the window that holds
