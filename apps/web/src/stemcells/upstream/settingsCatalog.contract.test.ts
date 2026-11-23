@@ -7,6 +7,7 @@ import * as NodeFS from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
 import { withStemcellsName } from "../../../../../stemcells/brand/upstreamName.ts";
+import { WORD_TABLE } from "../../../../../stemcells/brand/wordTable.ts";
 import { BINDINGS, controlOf } from "../../../../../stemcells/settings/controls.ts";
 import {
   placeKey,
@@ -17,9 +18,15 @@ import {
 import { OUR_ROWS } from "../settings/ourRows";
 import { settingAst, settingsCatalog } from "./settings";
 
-// In the words the app shows: its build says our name where upstream's titles say theirs.
+// In the words the app shows: its build says our name and words where upstream's titles say theirs.
 const upstream = withStemcellsName(settingsCatalog());
-const catalog: SettingsCatalog = { ...upstream, rows: [...upstream.rows, ...OUR_ROWS] };
+const swaps = WORD_TABLE.filter(({ file }) => file.endsWith("/settings/settingsSearch.ts"));
+const shown = (title: string) => {
+  const swap = swaps.find(({ words }) => words.includes(`"${title}"`));
+  return swap === undefined ? title : title.replace(swap.theirs, swap.ours);
+};
+const rows = upstream.rows.map((row) => ({ ...row, title: shown(row.title) }));
+const catalog: SettingsCatalog = { ...upstream, rows: [...rows, ...OUR_ROWS] };
 const FILE = new URL("../../../../../stemcells/settings/catalog.json", import.meta.url);
 
 describe("the settings catalog", () => {

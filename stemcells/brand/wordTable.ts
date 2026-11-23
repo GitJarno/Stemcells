@@ -71,6 +71,12 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('threads: msg("Search threads"),', "Search threads", `Search ${CELL.many}`),
   ),
   ...inFile(
+    `${PHONE}/threads/LinkedThreadSheet.tsx`,
+    within('gt("On {label} via {via} · Working"', "Working", FLYING),
+    within('gt("Thread on {label}"', "Thread", CELL.one),
+    within("<T>Nothing in this thread yet.</T>", "thread", CELL.one),
+  ),
+  ...inFile(
     `${PHONE}/threads/NewTaskContextPickerScreens.tsx`,
     within('? gt("Choose the repositories this thread works on.")', "thread", CELL.one),
     within(`: gt("Each gets its own worktree on the thread's branch.")`, "thread", CELL.one),
@@ -141,6 +147,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('gt("Subagent of {title}"', "Subagent", SUBCELL.one),
   ),
   ...inFile(
+    `${PHONE}/threads/thread-inspector-header.tsx`,
+    within('gt("Maximize thread")', "thread", CELL.one),
+    within('gt("Close thread")', "thread", CELL.one),
+  ),
+  ...inFile(
     `${PHONE}/threads/ThreadWorkflowGroup.tsx`,
     within("No agents yet", "agents", SUBCELL.many),
     within(`"Opens this agent's thread"`, OPENS_AGENT, SUBCELL.one),
@@ -187,6 +198,10 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   // The web.
   ...inFile(
+    "apps/web/src/components/ChatView.tsx",
+    within('gt("Subagent threads cannot start', "Subagent threads", SUBCELL.many),
+  ),
+  ...inFile(
     "apps/web/src/components/NoProjectsHero.tsx",
     whole("Start without a project", CASUAL_CHAT.start),
   ),
@@ -196,17 +211,66 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within(`: gt("Each gets its own worktree on the thread's branch")`, "thread", CELL.one),
   ),
   ...inFile(
+    `${CHAT}/BackgroundWorkDetails.tsx`,
+    within('gt("subagent", {', "subagent", SUBCELL.one),
+    within("<T>Open subagent</T>", "Open subagent", SUBCELL.open),
+  ),
+  ...inFile(
     `${CHAT}/DraftHeroHeadline.tsx`,
     whole("or start without a project", CASUAL_CHAT.offer),
     whole("What should we work on?", CASUAL_CHAT.headline),
+  ),
+  ...inFile(
+    "apps/web/src/components/RightPanelTabs.tsx",
+    // A Subcell's, a side chat's or a linked machine's Cell's panel tab, until its title loads.
+    within('resolve(msg("Thread"))', "Thread", CELL.one),
+    within('msg("Thread on {label}"', "Thread", CELL.one),
+  ),
+  ...inFile(
+    "apps/web/src/components/settings/SettingsPanels.tsx",
+    within('[gt("Open subagents and side chats in")]', "subagents", SUBCELL.many),
+    within('aria-label={gt("Open subagents and', "subagents", SUBCELL.many),
+    within('title={gt("Subagents and side chats")}', "Subagents", SUBCELL.many),
+    within('gt("Reset where subagents and side chats open', "subagents", SUBCELL.many),
+    within(
+      "opens a subagent, a side chat, or a thread on a linked environment.",
+      "a subagent, a side chat, or a thread",
+      `a ${SUBCELL.one}, a side chat, or a ${CELL.one}`,
+      2,
+    ),
+  ),
+  ...inFile(
+    "apps/web/src/components/settings/settingsSearch.ts",
+    within('msg("Open subagents and side chats in")', "subagents", SUBCELL.many),
   ),
   ...inFile(
     "apps/web/src/components/sidebar/SidebarFolderDrop.tsx",
     within('description: gt("Drop files on a thread to attach them.")', "thread", CELL.one),
   ),
   ...inFile(
+    `${CHAT}/LinkedThreadPane.tsx`,
+    within('gt("On {label} via {via} · Working"', "Working", FLYING),
+    within('gt("Open this thread on {label} to see', "thread", CELL.one),
+    within('gt("Thread on {label}"', "Thread", CELL.one),
+  ),
+  ...inFile(
+    `${CHAT}/MarkdownThreadLink.tsx`,
+    within('gt("Thread on {label}"', "Thread", CELL.one),
+    within('gt("Read the thread on {label}"', "thread", CELL.one),
+    within('|| gt("Thread")', "Thread", CELL.one),
+  ),
+  ...inFile(
     `${CHAT}/ProviderSubagentBar.tsx`,
     within('gt("{model} subagent: {status}"', "subagent", SUBCELL.one),
+  ),
+  ...inFile(
+    `${CHAT}/SideThreadPane.tsx`,
+    within(': gt("Subagent")', "Subagent", SUBCELL.one),
+    within("<T>This thread is no longer available.</T>", "thread", CELL.one),
+  ),
+  ...inFile(
+    `${CHAT}/ThreadActivityBanners.tsx`,
+    within('msg("Subagent waiting")', "Subagent", SUBCELL.one),
   ),
   ...inFile(
     `${CHAT}/ThreadLineageWorkflowRow.tsx`,
@@ -220,6 +284,7 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('msg("Open parent agent in this chat")', "agent", CELL.one),
     within('props.agent.title ?? gt("Subagent")', "Subagent", SUBCELL.one),
     within('gt("Open parent agent on {label}"', "agent", CELL.one),
+    within('gt("Read the thread on {label}"', "thread", CELL.one),
     within('label: gt("Previous agents")', "agents", SUBCELL.many),
     within('title: gt("Could not stop subagent")', "subagent", SUBCELL.one),
     within('aria-label={gt("Stop subagent {threadTitle}"', "subagent", SUBCELL.one),
@@ -240,5 +305,9 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within("{Failed to read thread “{title}”}", "thread", CELL.one),
     within("{Declined to read thread “{title}”}", "thread", CELL.one),
     within("{Stopped reading thread “{title}”}", "thread", CELL.one),
+  ),
+  ...inFile(
+    `${CHAT}/useThreadLifecycle.tsx`,
+    within('msg("This thread is no longer available")', "thread", CELL.one),
   ),
 ];
