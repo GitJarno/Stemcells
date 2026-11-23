@@ -17,10 +17,12 @@ export * from "../../../components/chat/MarkdownCodeBlock";
 export function MarkdownCodeBlock(props: ComponentProps<typeof UpstreamMarkdownCodeBlock>) {
   const fences = use(FencesInView);
   if (fences !== null && fences.closed.has(fenceKey(props.language, props.code))) {
-    if (props.language === "chart" && parseChart(props.code) !== null)
-      return <ChartFence source={props.code} />;
-    if (props.language === "setting" && readSettingFence(props.code) !== null)
-      return <SettingCard source={props.code} environmentId={fences.environmentId} />;
+    // Upstream's block keeps the fence's last newline; a card copies its source inside its own fence.
+    const source = props.code.replace(/\n+$/, "");
+    if (props.language === "chart" && parseChart(source) !== null)
+      return <ChartFence source={source} />;
+    if (props.language === "setting" && readSettingFence(source) !== null)
+      return <SettingCard source={source} environmentId={fences.environmentId} />;
   }
   return <UpstreamMarkdownCodeBlock {...props} />;
 }

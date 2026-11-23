@@ -349,3 +349,9 @@ limit holds it until the limit lifts.
   then the gate. A test run by hand outside the gates needs
   `GIT_CONFIG_GLOBAL=/dev/null` as the gates set it, or a global
   `core.hooksPath` fails upstream's git hook cases.
+  A browser shard that sits at `RUN` and never ends is a test file whose
+  import never finishes: a `vi.mock` factory awaiting `importOriginal` of a
+  module whose imports lead back to it waits on itself, with no timeout to
+  end it. Here `needs/stream` reached itself through the needs adapter's
+  `ChatMarkdown`. Find the file with `DEBUG=vitest:browser*` (the session
+  left busy), then break the cycle.
