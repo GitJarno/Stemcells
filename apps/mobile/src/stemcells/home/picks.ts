@@ -42,3 +42,34 @@ export function picksFrom(text: string | null): Picks {
     return NO_PICKS;
   }
 }
+
+/**
+ * The one machine and the one project the picks narrow the home to, as T3's list filter names
+ * them, for a new Cell to start there; null for none or several. As the header lists them, a
+ * project on none of the machines picked narrows nothing.
+ */
+export function oneOfEach(
+  picks: Picks,
+  projects: ReadonlyArray<{
+    readonly key: string;
+    readonly projectRefs: ReadonlyArray<{ readonly environmentId: string }>;
+  }>,
+): { readonly machine: string | null; readonly projectKey: string | null } {
+  const on = (project: (typeof projects)[number], machine: string) =>
+    project.projectRefs.some((ref) => String(ref.environmentId) === machine);
+  // A machine with no project can't hold a new Cell.
+  const machines = picks.machines.filter((machine) =>
+    projects.some((project) => on(project, machine)),
+  );
+  const listed = projects.filter(
+    (project) => machines.length === 0 || machines.some((machine) => on(project, machine)),
+  );
+  const chosen = inEffect(
+    picks.projects,
+    listed.map((project) => project.key),
+  );
+  return {
+    machine: machines.length === 1 ? (machines[0] ?? null) : null,
+    projectKey: chosen.length === 1 ? (chosen[0] ?? null) : null,
+  };
+}

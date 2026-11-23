@@ -1,3 +1,4 @@
+import { newTaskListFilters } from "../../stemcells/home/newTask";
 import { useGT } from "gt-react-native";
 import {
   WorkspaceColumnsRendererContext,
@@ -612,7 +613,7 @@ function AdaptiveWorkspaceLayoutContent(
     const preferences = appAtomRegistry.get(mobilePreferencesAtom);
     const saved = AsyncResult.isSuccess(preferences) ? preferences.value : undefined;
     // Resolve the thread list's filter as useHomeListOptions does: a removed connection's filter reads as all.
-    const listFilters = saved?.threadListFilters;
+    const listFilters = newTaskListFilters(saved?.threadListFilters, projects, projectGroupingMode);
     const listEnvironmentId =
       listFilters?.environmentId != null &&
       appAtomRegistry.get(savedConnectionsByIdAtom)[listFilters.environmentId] !== undefined
