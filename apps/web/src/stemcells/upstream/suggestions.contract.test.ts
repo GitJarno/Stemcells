@@ -13,7 +13,8 @@ import { SUBSTITUTES } from "./substitutes/plugin";
 import { DEFAULT_COMPOSER_PLACEHOLDER } from "../../composerPlaceholder";
 import { IDLE_PLACEHOLDER } from "./suggestions";
 
-const PLACEHOLDER_LOOK = "pointer-events-none absolute inset-0 leading-relaxed text-placeholder";
+const PLACEHOLDER_LOOK =
+  "pointer-events-none relative col-start-1 row-start-1 leading-relaxed text-placeholder";
 
 describe("the suggestion's contracts with upstream's web", () => {
   it("upstream's composer gives the idle hint last, after everything that asks of the person", () => {

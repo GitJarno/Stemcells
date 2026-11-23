@@ -3,16 +3,33 @@
 // now as the composer's "Resume thread" does. With Settings' auto-resume on, a line under it
 // says the reset carries the Cell on (`stemcells/limitResume/LimitActions.tsx`).
 import type * as Upstream from "../../../components/chat/UsageLimitRecoveryBanner";
-import { usageLimitRecoveryBannerItem as upstreamBannerItem } from "../../../components/chat/UsageLimitRecoveryBanner";
+import {
+  usageLimitRecoveryBannerItem as upstreamBannerItem,
+  useUsageLimitRecoveryBannerItem as useUpstreamBannerItem,
+} from "../../../components/chat/UsageLimitRecoveryBanner";
 
 import { CarriesOnLine, LimitActions, resetToWaitFor } from "../../limitResume/LimitActions";
 
 export * from "../../../components/chat/UsageLimitRecoveryBanner";
 
+type Props = Parameters<typeof Upstream.usageLimitRecoveryBannerItem>[0];
+type Item = ReturnType<typeof Upstream.usageLimitRecoveryBannerItem>;
+
 export const usageLimitRecoveryBannerItem: typeof Upstream.usageLimitRecoveryBannerItem = (
   props,
+  resolve,
+) => withOurs(upstreamBannerItem(props, resolve), props);
+
+// Upstream's hook calls its own item, past this module: wrap what it returns.
+export const useUsageLimitRecoveryBannerItem: typeof Upstream.useUsageLimitRecoveryBannerItem = (
+  props,
+  resolve,
 ) => {
-  const item = upstreamBannerItem(props);
+  const item = useUpstreamBannerItem(props, resolve);
+  return item === null || props === null ? null : withOurs(item, props);
+};
+
+function withOurs(item: Item, props: Props): Item {
   // "Cancel auto-resume" on this stop: nothing carries it on by itself.
   const cancelled =
     props.recovery?.runId === props.runId &&
@@ -34,4 +51,4 @@ export const usageLimitRecoveryBannerItem: typeof Upstream.usageLimitRecoveryBan
       </>
     ),
   };
-};
+}

@@ -643,6 +643,8 @@ const CASES: Readonly<Record<string, Case>> = {
         ["resolveT3McpToolDefinition"],
       ],
     },
+    serverKeepsUpstream:
+      "The server reads only the tools' ids (agent feedback, Antigravity's permission check), never the words ours changes.",
   },
   "packages/client-runtime/src/t3ToolSummary.ts": {
     upstream: UpstreamT3ToolSummary,
@@ -675,7 +677,7 @@ const CASES: Readonly<Record<string, Case>> = {
     importers: {
       "apps/web/src/components/ChatView.tsx": [
         "./chat/UsageLimitRecoveryBanner",
-        ["usageLimitRecoveryBannerItem"],
+        ["useUsageLimitRecoveryBannerItem"],
       ],
     },
   },

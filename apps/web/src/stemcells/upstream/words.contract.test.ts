@@ -115,7 +115,7 @@ describe("Enter can't send before the words are read", () => {
       /projectSelectionRequired=\{\s*isLocalDraftThread && activeProject === null\s*\}/,
     );
     expect(chatComposer).toMatch(
-      /<ComposerPromptEditor\b[\s\S]{0,4000}?\bdisabled=\{\s*projectSelectionRequired \|\|/,
+      /<ComposerPromptEditor\b[\s\S]{0,6000}?\bdisabled=\{\s*projectSelectionRequired \|\|/,
     );
   });
 
@@ -125,7 +125,7 @@ describe("Enter can't send before the words are read", () => {
     );
     // A send during dictation waits for it, then comes back through the same check.
     expect(chatComposer).toMatch(
-      /const submitComposer = \([\s\S]{0,200}?\) => \{\s*if \(voiceInputActive\) \{\s*event\?\.preventDefault\(\);\s*submitAfterDictation\(\(\) => submitComposerRef\.current\([^)]*\)\);\s*return false;\s*\}\s*if \(submissionBlocked \|\|/,
+      /const submitComposer = \([\s\S]{0,300}?\) => \{\s*if \(voiceInputActive && !options\?\.afterDictation\) \{\s*event\?\.preventDefault\(\);[\s\S]{0,1500}?submitAfterDictation\(\(transcribedText\) => \{[\s\S]{0,300}?if \(stillLive\) \{\s*submitComposerRef\.current\(dispatchMode, submissionIntent, \{ afterDictation: true \}\);[\s\S]{0,3000}?return false;\s*\}\s*if \(submissionBlocked \|\|/,
     );
     expect(chatComposer).toMatch(
       /const submissionBlocked = isComposerSubmissionBlocked\(\{\s*submissionTarget,\s*noProviderAvailable,/,
@@ -139,8 +139,8 @@ describe("Enter can't send before the words are read", () => {
         environmentUnavailable: false,
       }),
     ).toBe(true);
-    expect(chatComposer).toContain(
-      "submitComposerRef.current = (mode, intent) => submitComposerStable(undefined, mode, intent);",
+    expect(chatComposer).toMatch(
+      /submitComposerRef\.current = \(mode, intent, options\) =>\s*submitComposerStable\(undefined, mode, intent, options\);/,
     );
   });
 });

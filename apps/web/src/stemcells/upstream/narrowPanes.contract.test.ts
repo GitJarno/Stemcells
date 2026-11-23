@@ -38,7 +38,7 @@ describe("a chat in a narrow pane, against upstream", () => {
 
   it("the placeholder is one element the composer can keep to its one row", () => {
     expect(promptEditor).toMatch(
-      /\{isEmpty && contextRecords\.size === 0 && placeholder \? \(\s*<div\s*className=\{cn\(\s*"pointer-events-none absolute inset-0 leading-relaxed text-placeholder",/,
+      /\{isEmpty && contextRecords\.size === 0 && placeholder \? \(\s*<div\s*className=\{cn\(\s*"pointer-events-none relative col-start-1 row-start-1 leading-relaxed text-placeholder",/,
     );
     expect(chatComposer).toContain('data-chat-composer-body="true"');
     // workspace.css finds it by that colour class: a selector off by a class

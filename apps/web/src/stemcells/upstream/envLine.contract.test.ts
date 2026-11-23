@@ -42,7 +42,7 @@ describe("a Cell's env on its ledge", () => {
       /const showComposerContextStrip =\s*!embedded &&\s*shouldShowComposerContextStrip\(\{\s*isDraftHeroState,\s*persistInActiveThreads: settings\.persistComposerContextStrip,/,
     );
     expect(chatView).toMatch(
-      /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,200}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}\s*isServerThread=\{isServerThread\}\s*showGitControls=\{isGitRepo\}/,
+      /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,200}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}\s*isServerThread=\{isServerThread\}\s*showGitControls=\{\s*isGitRepo \|\| worktreeRepositoryChoices\.tracksGitRepositories\s*\}\s*showBranchControls=\{isGitRepo\}/,
     );
   });
 

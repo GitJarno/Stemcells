@@ -35,8 +35,6 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
       "worktreePath",
       "envMode",
       "startFromOrigin",
-      "envMode",
-      "newWorktreesStartFromOrigin",
       "runtimeMode",
       "carryInteractionMode",
     ]);
@@ -52,8 +50,6 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
       "worktreePath",
       "envMode",
       "startFromOrigin",
-      "envMode",
-      "newWorktreesStartFromOrigin",
       "runtimeMode",
       "carryInteractionMode",
     ]);
@@ -96,6 +92,8 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
     expect(newThread).toMatch(
       /resolveNewThreadEnvMode\(\{\s*projectSettings: resolveProjectSettings\(\s*targetServerSettings,\s*project\?\.id \?\? null,\s*project,\s*projectFile,\s*\),\s*workspaceRoot: project\?\.workspaceRoot \?\? null,\s*newProjectsRoot: environmentServerConfigs\.get\(projectRef\.environmentId\)\?\.newProjectsRoot,\s*projectHasThreads:/,
     );
+    // A project whose threads aren't loaded yet still has threads.
+    for (const source of [newThread, ours]) expect(source).toContain("readUnloadedThreadCount(");
   });
 
   it("the store drops a blank draft its key no longer names, and keeps one with words", () => {

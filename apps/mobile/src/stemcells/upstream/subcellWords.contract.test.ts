@@ -37,13 +37,15 @@ const SAID = {
     "name={props.item.childThreadId ?? props.item.subagentId}",
     "status={agent.status}",
     '? gt("Opens this Subcell")',
-    ': gt("Provider-managed Subcell")',
+    'gt("Opens a read-only view of this Subcell on {label}"',
+    '? gt("Provider-managed Subcell")',
   ],
   "ThreadAgentsSheet.tsx": [
     'title={gt("Subcells")}',
     "<T>No Subcells in this turn.</T>",
     'gt("Provider-managed Subcell. Its work appears in the transcript.")',
-    'accessibilityHint={gt("Opens this Subcell")}',
+    '? gt("Opens this Subcell")',
+    'gt("Opens a read-only view of this Subcell on {label}"',
   ],
   "threadAgentsPresentation.ts": [
     'if (prompt.length === 0) return resolve(msg("Subcell"));',

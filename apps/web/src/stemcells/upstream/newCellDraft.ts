@@ -22,6 +22,7 @@ import { resolveProjectDefaultProviderModelSelection } from "../../providerInsta
 import { newDraftId, newThreadId } from "../../lib/utils";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProjects, readThreadShell, readThreadShells } from "../../state/entities";
+import { readUnloadedThreadCount } from "../../state/olderSettledShelf";
 import { environmentSummaries } from "../../state/presentation";
 import { environmentServerConfigsAtom } from "../../state/server";
 import { resolveThreadRouteTarget } from "../../threadRoutes";
@@ -124,11 +125,20 @@ export function useNewCellDraftMaker(): {
       ),
       workspaceRoot: project?.workspaceRoot ?? null,
       newProjectsRoot: environmentServerConfigs.get(projectRef.environmentId)?.newProjectsRoot,
-      projectHasThreads: readThreadShells().some(
-        (thread) =>
-          thread.environmentId === projectRef.environmentId &&
-          thread.projectId === projectRef.projectId,
-      ),
+      projectHasThreads:
+        readThreadShells().some(
+          (thread) =>
+            thread.environmentId === projectRef.environmentId &&
+            thread.projectId === projectRef.projectId,
+        ) ||
+        readUnloadedThreadCount(
+          [{ environmentId: projectRef.environmentId, id: projectRef.projectId }],
+          [],
+        ) > 0,
+    });
+    const startFromOrigin = resolveNewDraftStartFromOrigin({
+      envMode,
+      newWorktreesStartFromOrigin: projectSettings.settings.newWorktreesStartFromOrigin,
     });
     const draftId = newDraftId();
     const threadId = newThreadId();
@@ -139,10 +149,7 @@ export function useNewCellDraftMaker(): {
       branch: null,
       worktreePath: null,
       envMode,
-      startFromOrigin: resolveNewDraftStartFromOrigin({
-        envMode,
-        newWorktreesStartFromOrigin: projectSettings.settings.newWorktreesStartFromOrigin,
-      }),
+      startFromOrigin,
       runtimeMode: projectSettings.settings.defaultRuntimeMode,
       ...(carryInteractionMode ? { interactionMode: carryInteractionMode } : {}),
     });
