@@ -1,6 +1,19 @@
-import { describe, expect, it } from "vite-plus/test";
+// @effect-diagnostics nodeBuiltinImport:off - a fake CLI on PATH.
+import * as NodeFS from "node:fs";
+import * as NodeOS from "node:os";
+import * as NodePath from "node:path";
 
-import { authUrlOf, consentUrlOf, phonesOf, stepOf } from "./cli.ts";
+import { describe, expect, it, vi } from "vite-plus/test";
+
+import {
+  authUrlOf,
+  consentUrlOf,
+  phonesOf,
+  runCli,
+  startServe,
+  stepOf,
+  type ServeOutcome,
+} from "./cli.ts";
 
 const ports = { localHost: "127.0.0.1", localPort: 3773, servePort: 443 };
 
@@ -125,5 +138,35 @@ describe("the phones on this computer's tailnet", () => {
 
   it("knows nothing without Tailscale's answer", () => {
     expect(phonesOf(null)).toEqual({ account: null, phones: [] });
+  });
+});
+
+describe("the Tailscale CLI from an app", () => {
+  // The Mac app's binary is the CLI under a shell's SHLVL or TERM, or when told to be: an app
+  // opened from the Dock has neither.
+  const setup = () => {
+    const dir = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "tailscale-cli-"));
+    NodeFS.writeFileSync(
+      NodePath.join(dir, "tailscale"),
+      '#!/bin/sh\n[ "$TAILSCALE_BE_CLI" = 1 ] || exit 1\necho \'{"BackendState":"Running"}\'\n',
+      { mode: 0o755 },
+    );
+    vi.stubEnv("PATH", `${dir}:/usr/bin:/bin`);
+    vi.stubEnv("TAILSCALE_BE_CLI", undefined);
+    return {
+      [Symbol.dispose]: () => {
+        vi.unstubAllEnvs();
+        NodeFS.rmSync(dir, { recursive: true, force: true });
+      },
+    };
+  };
+
+  it("is asked for by name, to read and to serve", async () => {
+    using _ = setup();
+    expect(await runCli(["status", "--json"], "linux")).toMatchObject({ ok: true });
+    const served = await new Promise<ServeOutcome>((resolve) => {
+      startServe(ports, "linux", resolve);
+    });
+    expect(served).toEqual({ kind: "served" });
   });
 });

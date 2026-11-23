@@ -28,12 +28,14 @@ export interface ServePorts {
 
 const MAC_APP = "/Applications/Tailscale.app";
 /**
- * The CLI, first one found: on a Mac the app's own binary, which answers as
- * the CLI. The `tailscale` the app installs on PATH is a shell script that
+ * The CLI, first one found: on a Mac the app's own binary (`cliEnv`). The `tailscale` the app installs on PATH is a shell script that
  * runs it as a child, which a timeout's kill of the script would leave behind.
  */
 const cliCandidates = (platform: string) =>
   platform === "darwin" ? [`${MAC_APP}/Contents/MacOS/Tailscale`, "tailscale"] : ["tailscale"];
+
+/** Outside a terminal the Mac app's binary starts as the app, and fails, unless told it's the CLI. */
+const cliEnv = () => ({ ...process.env, TAILSCALE_BE_CLI: "1" });
 
 const parse = (json: string | null): Record<string, unknown> | null => {
   if (json === null) return null;
@@ -189,7 +191,13 @@ const execOnce = (file: string, args: ReadonlyArray<string>, timeoutMs: number) 
       file,
       [...args],
       // SIGKILL: a child that ignores the gentler signal still ends at the timeout.
-      { timeout: timeoutMs, killSignal: "SIGKILL", maxBuffer: 1024 * 1024, windowsHide: true },
+      {
+        env: cliEnv(),
+        timeout: timeoutMs,
+        killSignal: "SIGKILL",
+        maxBuffer: 1024 * 1024,
+        windowsHide: true,
+      },
       (error, stdout) =>
         resolve({
           stdout: String(stdout),
@@ -268,7 +276,12 @@ export function startServe(
         `--https=${ports.servePort}`,
         `http://${ports.localHost}:${ports.localPort}`,
       ],
-      { stdio: ["ignore", "pipe", "pipe"], windowsHide: true, detached: true },
+      {
+        env: cliEnv(),
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+        detached: true,
+      },
     );
     child = started;
     started.stdout.on("data", read);
