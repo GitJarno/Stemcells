@@ -111,6 +111,12 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // A side chat or a subagent's thread, drawn inside its Cell's pane, is not that Cell: no line
   // of the Cell's over it.
   "apps/web/src/components/chat/SideThreadPane.tsx": "SideThreadPane.tsx",
+  // Where a Subcell, a side chat or a linked thread opens: the main view is a pane beside its
+  // Cell, one already open comes forward, and a chat without a panel offers none.
+  "apps/web/src/lib/sideChatPane.ts": "sideChatPane.ts",
+  "apps/web/src/hooks/useOpenSurfaceInMainView.ts": "useOpenSurfaceInMainView.ts",
+  "apps/web/src/hooks/useSideThreadTrigger.ts": "useSideThreadTrigger.ts",
+  "apps/web/src/components/chat/useSideChat.ts": "useSideChat.ts",
   // Windows: one window notifies of a chat's turns, the focused one or else the lead.
   "apps/web/src/components/ThreadNotificationCoordinator.tsx": "ThreadNotificationCoordinator.tsx",
   // A thread chip opens its chat in a new pane beside the one it is in.

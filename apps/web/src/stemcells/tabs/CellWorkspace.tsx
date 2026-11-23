@@ -358,7 +358,8 @@ export function CellWorkspace(props: {
 
   const inAskiTab = () => isAskiTab(activeTab(readWorkspace()));
 
-  const gridWidth = () => gridRef.current?.clientWidth ?? window.innerWidth;
+  // The page's, not the grid's: a new pane takes focus, which gives back an open workbench's share.
+  const gridWidth = () => gridRef.current?.parentElement?.clientWidth ?? window.innerWidth;
 
   const openNewTab = () => openCellInto((current) => openTab(current, newIds(), null));
   const provideNewTab = useEffectEvent(openNewTab);

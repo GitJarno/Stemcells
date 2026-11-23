@@ -56,9 +56,13 @@ import * as UpstreamTimelineOverlays from "../../../components/chat/TimelineOver
 import * as UpstreamUsageLimitRecoveryBanner from "../../../components/chat/UsageLimitRecoveryBanner";
 import * as UpstreamProviderIconUtils from "../../../components/chat/providerIconUtils";
 import * as UpstreamPanelInlineSize from "../../../hooks/usePreviewPanelInlineSize";
+import * as UpstreamOpenSurfaceInMainView from "../../../hooks/useOpenSurfaceInMainView";
+import * as UpstreamSideThreadTrigger from "../../../hooks/useSideThreadTrigger";
 import * as UpstreamChatThreadActions from "../../../lib/chatThreadActions";
+import * as UpstreamSideChatPane from "../../../lib/sideChatPane";
 import * as UpstreamVisibleAnimation from "../../../lib/visibleAnimation";
 import * as UpstreamUseChatShortcuts from "../../../components/chat/useChatShortcuts";
+import * as UpstreamUseSideChat from "../../../components/chat/useSideChat";
 import * as UpstreamOpenInPicker from "../../../components/chat/OpenInPicker";
 import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePasteToFocusComposer";
 import * as UpstreamSideThreadPane from "../../../components/chat/SideThreadPane";
@@ -133,6 +137,10 @@ import * as OurUseChatShortcuts from "./useChatShortcuts";
 import * as OurOpenInPicker from "./OpenInPicker";
 import * as OurPasteToFocusComposer from "./usePasteToFocusComposer";
 import * as OurSideThreadPane from "./SideThreadPane";
+import * as OurSideChatPane from "./sideChatPane";
+import * as OurOpenSurfaceInMainView from "./useOpenSurfaceInMainView";
+import * as OurSideThreadTrigger from "./useSideThreadTrigger";
+import * as OurUseSideChat from "./useSideChat";
 import * as OurMarkdownCodeBlock from "./MarkdownCodeBlock";
 import * as OurThreadActions from "./useThreadActions";
 import * as OurMessagesTimeline from "./MessagesTimeline";
@@ -855,6 +863,84 @@ const CASES: Readonly<Record<string, Case>> = {
         "./SideThreadPane",
         ["default"],
       ],
+    },
+  },
+  "apps/web/src/lib/sideChatPane.ts": {
+    upstream: UpstreamSideChatPane,
+    substitute: OurSideChatPane satisfies typeof UpstreamSideChatPane,
+    importers: {
+      // A Subcell's card and its row in the Agents list, a side chat's row in the details.
+      "apps/web/src/components/chat/useThreadLifecycle.tsx": [
+        "../../lib/sideChatPane",
+        ["openSideThread", "resolveThreadOpenRoute"],
+      ],
+      "apps/web/src/components/chat/ThreadRelationshipsControl.tsx": [
+        "../../lib/sideChatPane",
+        ["openSideThread", "resolveThreadOpenRoute"],
+      ],
+      // A thread on a linked machine: its chip, and the card of one a Cell started there.
+      "apps/web/src/components/chat/MarkdownThreadLink.tsx": [
+        "../../lib/sideChatPane",
+        ["openLinkedThreadRead"],
+      ],
+      "apps/web/src/state/linkedThreadView.ts": ["../lib/sideChatPane", ["openLinkedThreadRead"]],
+      // A side chat's chip, and the way back to a parent.
+      "apps/web/src/components/ThreadContextChip.tsx": [
+        "~/lib/sideChatPane",
+        ["resolveThreadOpenRoute"],
+      ],
+      "apps/web/src/components/ChatView.tsx": ["~/lib/sideChatPane", ["resolveThreadOpenRoute"]],
+    },
+  },
+  "apps/web/src/hooks/useOpenSurfaceInMainView.ts": {
+    upstream: UpstreamOpenSurfaceInMainView,
+    substitute: OurOpenSurfaceInMainView satisfies typeof UpstreamOpenSurfaceInMainView,
+    importers: {
+      // A panel tab's "Open in main view".
+      "apps/web/src/components/ChatView.tsx": [
+        "../hooks/useOpenSurfaceInMainView",
+        ["useOpenSurfaceInMainView"],
+      ],
+    },
+  },
+  "apps/web/src/hooks/useSideThreadTrigger.ts": {
+    upstream: UpstreamSideThreadTrigger,
+    substitute: OurSideThreadTrigger satisfies typeof UpstreamSideThreadTrigger,
+    importers: {
+      // Every row, card and chip that opens one.
+      "apps/web/src/components/chat/V2LifecycleRow.tsx": [
+        "../../hooks/useSideThreadTrigger",
+        ["SideThreadsOpenContext", "useSideThreadTrigger"],
+      ],
+      "apps/web/src/components/chat/ThreadRelationshipsControl.tsx": [
+        "../../hooks/useSideThreadTrigger",
+        ["useSideThreadTrigger"],
+      ],
+      "apps/web/src/components/chat/MarkdownThreadLink.tsx": [
+        "../../hooks/useSideThreadTrigger",
+        ["useSideThreadTrigger"],
+      ],
+      "apps/web/src/components/chat/ThreadLineageWorkflowRow.tsx": [
+        "../../hooks/useSideThreadTrigger",
+        ["useSideThreadTrigger"],
+      ],
+      "apps/web/src/components/chat/WorkflowOpeningBlock.tsx": [
+        "../../hooks/useSideThreadTrigger",
+        ["useSideThreadTrigger"],
+      ],
+      // Where none may open: ours hands on upstream's own context.
+      "apps/web/src/components/chat/ReadOnlyThreadTimeline.tsx": [
+        "~/hooks/useSideThreadTrigger",
+        ["SideThreadsOpenContext"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/useSideChat.ts": {
+    upstream: UpstreamUseSideChat,
+    substitute: OurUseSideChat satisfies typeof UpstreamUseSideChat,
+    importers: {
+      // `/side`, and "New side chat" in the panel and the details.
+      "apps/web/src/components/ChatView.tsx": ["./chat/useSideChat", ["useSideChat"]],
     },
   },
   "apps/web/src/components/chat/MarkdownCodeBlock.tsx": {

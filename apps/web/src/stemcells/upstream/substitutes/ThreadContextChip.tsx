@@ -1,11 +1,13 @@
 /**
  * Replaces `components/ThreadContextChip.tsx` (`plugin.ts`): a thread chip opens its chat in a
  * new pane beside its own, so the chat being read stays on screen, where upstream's route fills
- * the focused pane. A click with a modifier, or outside the workspace, does what upstream's does.
+ * the focused pane. A click with a modifier, outside the workspace, or on a side chat's chip,
+ * which opens as its parent's tab, does what upstream's does.
  */
 import type { ComponentProps, MouseEvent } from "react";
 
 import { ThreadContextChip as UpstreamThreadContextChip } from "../../../components/ThreadContextChip";
+import { readThreadShell } from "../../../state/entities";
 import { openCellBeside } from "../../tabs/commands";
 
 export * from "../../../components/ThreadContextChip";
@@ -17,6 +19,7 @@ export function ThreadContextChip(props: ComponentProps<typeof UpstreamThreadCon
     }
     if (!(event.target instanceof Element) || !event.target.closest("a")) return;
     const { environmentId, threadId } = props.record;
+    if (readThreadShell({ environmentId, threadId })?.lineage.sideChat === true) return;
     // Upstream's link stands down on a click already handled.
     if (openCellBeside({ environmentId, threadId, draftId: null })) event.preventDefault();
   };

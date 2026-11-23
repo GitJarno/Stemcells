@@ -4,6 +4,7 @@
  * in this adapter or in Look's stylesheet, not in the tabs.
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import { EnvironmentId, ThreadId } from "@t3tools/contracts";
 import { beforeEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
@@ -148,6 +149,34 @@ describe("Look's contracts with upstream's right panel", () => {
         title: "",
       })),
     ).toBe("localhost:5173");
+
+    // A Subcell's or side chat's tab is named by its thread, a linked one's by the title it opened
+    // with, as `SurfaceTab` and `surfaceTitle` name them.
+    expect(rightPanelTabs).toMatch(
+      /sideChatShell\.lineage\.sideChat === true\s*\? sideChatShell\.title\s*: formatSubagentDisplayTitle\(sideChatShell\.title\);/,
+    );
+    const opened = {
+      id: "thread:opened",
+      kind: "thread",
+      threadId: ThreadId.make("opened"),
+    } as const;
+    const named = (title: string, sideChat: boolean) =>
+      surfaceName(opened, noPreview, {
+        title,
+        lineage: { sideChat, parentThreadId: null, relationshipToParent: null },
+      } as never);
+    expect(named("Check totals", false)).toBe("Check totals");
+    expect(named("Why this layout?", true)).toBe("Why this layout?");
+    const linked = {
+      id: "linked-thread:opened",
+      kind: "linked-thread",
+      viaEnvironmentId: EnvironmentId.make("here"),
+      environmentId: EnvironmentId.make("there"),
+      threadId: ThreadId.make("opened"),
+      label: "Studio",
+    } as const;
+    expect(surfaceName({ ...linked, title: "Nightly build" }, noPreview)).toBe("Nightly build");
+    expect(surfaceName({ ...linked, title: null }, noPreview)).toBe("Cell on Studio");
   });
 
   it("the thread view puts its panel in a sheet below upstream's breakpoint, unless maximized", () => {

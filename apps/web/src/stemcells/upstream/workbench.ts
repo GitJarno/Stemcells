@@ -3,6 +3,7 @@
  * reopening it through upstream's store, whether the window fits the panel inline, and the focus
  * facts that say an Esc is someone else's.
  */
+import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import type { PreviewNavStatus } from "@t3tools/contracts";
 import { getTerminalLabel } from "@t3tools/shared/terminalLabels";
 
@@ -10,6 +11,7 @@ import { isCommandPaletteOpen } from "../../commandPaletteBus";
 import { isContextMenuOpen } from "../../contextMenuFallback";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { isTerminalFocused } from "../../lib/terminalFocus";
+import { linkedThreadTitle } from "../../linkedThreadSurface";
 import {
   browserMiniPlayerSource,
   previewMiniPlayerSourceKey,
@@ -26,9 +28,12 @@ import {
   useRightPanelStore,
   type RightPanelSurface,
 } from "../../rightPanelStore";
+import { useQuietThreadShell } from "../../state/entities";
+import { CELL } from "../../../../../stemcells/words/cells.ts";
 import type { CellRef } from "../tabs/layout";
 import { layerOpen } from "./layers";
 import { threadRefOf } from "./routes";
+import { formatSubagentDisplayTitle } from "./substitutes/subagentDisplay";
 
 /** Whether the Cell's right panel is open. Upstream keeps it per thread, a draft's under its thread. */
 export function useCellPanelOpen(cell: CellRef | null): boolean {
@@ -123,14 +128,23 @@ export function useCellSurfaceName(cell: CellRef | null): string | null {
     ref ? selectSelectedRightPanelSurface(state.byThreadKey, ref) : null,
   );
   const previews = useThreadPreviewState(surface?.kind === "preview" ? ref : null);
+  const thread = useQuietThreadShell(
+    ref && surface?.kind === "thread"
+      ? { environmentId: ref.environmentId, threadId: surface.threadId }
+      : null,
+  );
   if (surface === null) return null;
-  return surfaceName(surface, (id) => previews.sessions[id]?.navStatus ?? null);
+  return surfaceName(surface, (id) => previews.sessions[id]?.navStatus ?? null, thread);
 }
 
-/** Upstream's tab title for a surface (`RightPanelTabs`' `surfaceTitle`). */
+/**
+ * Upstream's tab title for a surface (`RightPanelTabs`' `surfaceTitle`, and its tab's own for a
+ * `thread` it knows).
+ */
 export function surfaceName(
   surface: RightPanelSurface,
   navStatusOf: (previewId: string) => PreviewNavStatus | null,
+  thread: Pick<EnvironmentThreadShell, "title" | "lineage"> | null = null,
 ): string {
   switch (surface.kind) {
     case "diff":
@@ -150,9 +164,12 @@ export function surfaceName(
     case "device":
       return surface.title ?? surface.target?.name ?? "Device";
     case "thread":
-      return "Side chat";
+      if (thread === null) return CELL.one;
+      return thread.lineage.sideChat === true
+        ? thread.title
+        : formatSubagentDisplayTitle(thread.title);
     case "linked-thread":
-      return `Chat on ${surface.label}`;
+      return linkedThreadTitle(surface, `${CELL.one} on ${surface.label}`);
     case "preview":
       return browserName(surface.resourceId ? navStatusOf(surface.resourceId) : null);
   }
