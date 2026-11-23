@@ -42,4 +42,12 @@ state) has all three as upstream ships them.
 - [x] Add project in the column's project menu
 - [x] The phone's New follows the home's picks, with its seam row
 - [x] Captures from the desktop lab
-- [ ] Gates, pull request, check-local
+- [x] Gates and the pull request
+
+## Review
+
+- Seen in the desktop lab: the menu's Add project opens upstream's palette,
+  and with the column on one project New Cell opened its draft there where it
+  had opened the focused draft's project.
+- The phone's change is tested in its logic and typechecked, not yet seen on
+  a phone: a simulator build needed more free disk than the Mac had.
