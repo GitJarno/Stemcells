@@ -19,7 +19,6 @@ import * as Privacy from "./privacy/telemetry.ts";
 import * as Defaults from "./defaults/defaults.ts";
 import * as DirectEndpoints from "./upstream/directEndpoints.ts";
 import * as SpendHttp from "./spend/http.ts";
-import * as SuggestionHttp from "./suggestions/http.ts";
 import * as TailscaleHttp from "./tailscale/http.ts";
 import * as ModelList from "./upstream/modelList.ts";
 import * as Triage from "./upstream/triage.ts";
@@ -42,7 +41,6 @@ export const layer = Layer.mergeAll(
   LimitResumeHttp.layer,
   PeersHttp.layer,
   OnTheWire.layer,
-  SuggestionHttp.layer,
   SpendHttp.layer,
   TailscaleHttp.layer,
   Look.layer,

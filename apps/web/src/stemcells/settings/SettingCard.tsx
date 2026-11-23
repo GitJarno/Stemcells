@@ -22,7 +22,6 @@ import {
 import { setTaking, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { setAskiPlans, useAskiPlans } from "../aski/planning";
 import { setAskiTabOn, useAskiTabOn } from "../aski/tabSwitch";
-import { setSuggestionsOn, useSuggestionsOn } from "../suggestions/switch";
 import {
   ScopedSwitch,
   Select,
@@ -183,8 +182,7 @@ const TAKES: Readonly<Record<string, Kind>> = {
 function OursRow(props: RowProps) {
   const { key } = props.binding;
   if (key === "appearanceMode") return <AppearanceRow {...props} />;
-  if (key === "askiTab" || key === "askiPlans" || key === "suggestions")
-    return <OurSwitch {...props} which={key} />;
+  if (key === "askiTab" || key === "askiPlans") return <OurSwitch {...props} which={key} />;
   const kind = TAKES[key];
   return kind === undefined ? null : <TakesRow {...props} kind={kind} />;
 }
@@ -205,15 +203,13 @@ function AppearanceRow(props: RowProps) {
 const OUR_SWITCHES = {
   askiTab: setAskiTabOn,
   askiPlans: setAskiPlans,
-  suggestions: setSuggestionsOn,
 } as const;
 
 function OurSwitch(props: RowProps & { readonly which: keyof typeof OUR_SWITCHES }) {
   // Each hook by its name: the compiler keeps a call to a hook it can't name.
   const tab = useAskiTabOn();
   const plans = useAskiPlans();
-  const suggestions = useSuggestionsOn();
-  const value = { askiTab: tab, askiPlans: plans, suggestions }[props.which];
+  const value = { askiTab: tab, askiPlans: plans }[props.which];
   const set = OUR_SWITCHES[props.which];
   return <CardRow {...props} value={value} set={(next) => void set(next === true)} />;
 }

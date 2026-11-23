@@ -21,7 +21,6 @@ import * as SubscriptionRef from "effect/SubscriptionRef";
 import { connectionAtomRuntime } from "~/connection/runtime";
 import { appAtomRegistry } from "~/rpc/atomRegistry";
 
-/** A suggestion waits on a model for up to half of this. */
 const ANSWER_WITHIN_MS = 60_000;
 
 const request = createEnvironmentCommand(connectionAtomRuntime, {

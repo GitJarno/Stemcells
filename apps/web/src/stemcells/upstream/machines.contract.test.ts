@@ -2,7 +2,7 @@
  * A device paired since upstream's `#37990` holds a token bound to its key, not a bearer token:
  * upstream's own client signs each request to that machine and renews its token with the machine
  * itself. Ours go the same way (`machineRequest.ts`). A failure here after a sync names what
- * moved: drives, Cell links, suggestions and settles of another machine would go dark.
+ * moved: drives, Cell links and settles of another machine would go dark.
  */
 import {
   BearerConnectionTarget,

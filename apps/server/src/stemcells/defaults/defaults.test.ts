@@ -16,21 +16,25 @@ const layerServer = () =>
   );
 
 it.layer(NodeServices.layer)("Stemcells' defaults, on start", (it) => {
-  it.effect("turn settling on merge off and auto-resume on, recorded as applied", () =>
-    Effect.gen(function* () {
-      const fs = yield* FileSystem.FileSystem;
-      assert.isTrue(yield* UpstreamDefaults.readSwitch("sidebarAutoSettleOnMerge"));
-      assert.isFalse(yield* UpstreamDefaults.readSwitch("autoResumeLimitedThreads"));
+  it.effect(
+    "turn settling on merge off, auto-resume and prompt suggestions on, recorded as applied",
+    () =>
+      Effect.gen(function* () {
+        const fs = yield* FileSystem.FileSystem;
+        assert.isTrue(yield* UpstreamDefaults.readSwitch("sidebarAutoSettleOnMerge"));
+        assert.isFalse(yield* UpstreamDefaults.readSwitch("autoResumeLimitedThreads"));
+        assert.isFalse(yield* UpstreamDefaults.readSwitch("promptSuggestionsEnabled"));
 
-      yield* applyDefaults();
-      assert.isFalse(yield* UpstreamDefaults.readSwitch("sidebarAutoSettleOnMerge"));
-      assert.isTrue(yield* UpstreamDefaults.readSwitch("autoResumeLimitedThreads"));
-      const applied = JSON.parse(
-        yield* fs.readFileString(yield* UpstreamDefaults.appliedDefaultsPath),
-      );
-      assert.isString(applied.sidebarAutoSettleOnMerge);
-      assert.isString(applied.autoResumeLimitedThreads);
-    }).pipe(Effect.provide(layerServer())),
+        yield* applyDefaults();
+        assert.isFalse(yield* UpstreamDefaults.readSwitch("sidebarAutoSettleOnMerge"));
+        assert.isTrue(yield* UpstreamDefaults.readSwitch("autoResumeLimitedThreads"));
+        assert.isTrue(yield* UpstreamDefaults.readSwitch("promptSuggestionsEnabled"));
+        const applied = JSON.parse(
+          yield* fs.readFileString(yield* UpstreamDefaults.appliedDefaultsPath),
+        );
+        assert.isString(applied.sidebarAutoSettleOnMerge);
+        assert.isString(applied.autoResumeLimitedThreads);
+      }).pipe(Effect.provide(layerServer())),
   );
 
   it.effect("keep what the person turns back", () =>

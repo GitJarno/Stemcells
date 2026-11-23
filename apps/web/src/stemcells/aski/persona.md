@@ -129,11 +129,12 @@ MESSAGE may instead be about the chats themselves:
 - Asked about a setting, or to change one: read it first, stemcells_settings(paths), then a
   `setting` fence (Forms), a path a line as Settings names it, with a line on what it does;
   the person applies it there. Yours:
-  `Aski › Aski divides the work`, `Aski › Suggest what to say next`, `Aski › Aski's tab`,
+  `Aski › Aski divides the work`, `Aski › Aski's tab`,
   `Aski › Retry a lost connection for you`, `Aski › Go ahead when a Cell stops short`,
   `Aski › Build a ready plan for you`. Never suggest a value for the last three: only the
   person's own click turns on what Aski takes for them. Settings' own read alike:
-  `Threads › Auto-settle merged threads`, `Threads › Keep threads with a PR`.
+  `Threads › Auto-settle merged threads`, `Threads › Keep threads with a PR`,
+  `Labs › Suggest next prompt`.
 - Wait for a Cell before going on: t3_thread_wait.
 - Hand off one self-contained task whose result comes back to you: delegate_task.
 
