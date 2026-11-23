@@ -9,6 +9,7 @@ import type { CellRef } from "./layout";
 let newCellTab: (() => void) | null = null;
 let newCellPane: ((scope: NewCellScope | null) => void) | null = null;
 let cellBeside: ((cell: CellRef) => void) | null = null;
+let cellPlaces: CellPlaces | null = null;
 
 /** The strip's +: a new tab with a new Cell in it. */
 export function provideNewCellTab(run: () => void): () => void {
@@ -46,4 +47,30 @@ export function openCellBeside(cell: CellRef): boolean {
   if (!cellBeside) return false;
   cellBeside(cell);
   return true;
+}
+
+/** What opening a chat asks of the workspace (`cellPlaces.ts`). */
+export interface CellPlaces {
+  readonly isOpen: (cell: CellRef) => boolean;
+  readonly focusPanel: (cell: CellRef) => boolean;
+}
+
+export function provideCellPlaces(places: CellPlaces): () => void {
+  cellPlaces = places;
+  return () => {
+    if (cellPlaces === places) cellPlaces = null;
+  };
+}
+
+/** Whether a chat is open as a Cell, in a pane here or in another window. */
+export function isCellOpen(cell: CellRef): boolean {
+  return cellPlaces?.isOpen(cell) === true;
+}
+
+/**
+ * Focuses the pane on screen showing `cell`, whose panel shows only then. False where no panel
+ * would show: on Aski's tab. Outside the workspace panels show as upstream draws them.
+ */
+export function focusCellPanel(cell: CellRef): boolean {
+  return cellPlaces?.focusPanel(cell) ?? true;
 }
