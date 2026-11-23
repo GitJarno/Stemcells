@@ -20,15 +20,24 @@ export interface LineSlot {
  */
 export const ComposerStashSlot = createContext<LineSlot | null>(null);
 
+/** What upstream's toolbar in the menu offers the ledge (`upstream/checkout.ts`, `envOfferOf`). */
+export interface EnvOffer {
+  /**
+   * Set for a folder of repositories that is none itself: it has no branch, so the ledge names
+   * what upstream's toolbar leads with there, its repositories or its workspace.
+   */
+  readonly folder: string | null;
+}
+
 /**
- * Where the Cell's line takes upstream's branch toolbar: the menu under the ledge's
- * "project · branch ⌄" (`upstream/substitutes/BranchToolbar.tsx`). `offered` while upstream
- * offers the controls in the composer and the checkout is known to be git; `open` is the
- * menu's, which upstream's branch shortcut opens too. Null outside a Cell's pane.
+ * Where the Cell's line takes upstream's branch toolbar: the menu under the ledge's "project ·
+ * branch ⌄" (`upstream/substitutes/BranchToolbar.tsx`). `offer` while upstream offers it in the
+ * composer, for known git or a folder's repositories; `open` is the menu's, which upstream's
+ * branch shortcut opens too. Null outside a Cell's pane.
  */
 export interface EnvSlot extends LineSlot {
-  readonly offered: boolean;
-  readonly setOffered: (offered: boolean) => void;
+  readonly offer: EnvOffer | null;
+  readonly setOffer: (offer: EnvOffer | null) => void;
   readonly open: boolean;
   readonly setOpen: (open: boolean) => void;
 }

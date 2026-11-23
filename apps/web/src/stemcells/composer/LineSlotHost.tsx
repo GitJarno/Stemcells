@@ -1,6 +1,6 @@
 import { type Context, type ReactNode, useState } from "react";
 
-import { ComposerEnvSlot, type LineSlot } from "./slot";
+import { ComposerEnvSlot, type EnvOffer, type LineSlot } from "./slot";
 
 /**
  * Holds one of the line's slots for a pane (`slot.ts`): the element the line
@@ -18,8 +18,8 @@ export function LineSlotHost(props: { slot: Context<LineSlot | null>; children: 
 /** Holds the line's env slot for a pane (`slot.ts`), as `LineSlotHost` holds the others. */
 export function EnvSlotHost(props: { children: ReactNode }) {
   const [element, setElement] = useState<HTMLElement | null>(null);
-  const [offered, setOffered] = useState(false);
+  const [offer, setOffer] = useState<EnvOffer | null>(null);
   const [open, setOpen] = useState(false);
-  const value = { element, setElement, offered, setOffered, open, setOpen };
+  const value = { element, setElement, offer, setOffer, open, setOpen };
   return <ComposerEnvSlot value={value}>{props.children}</ComposerEnvSlot>;
 }

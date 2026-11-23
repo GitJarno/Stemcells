@@ -170,6 +170,29 @@
 [data-stemcells-composer-line][data-draft] .composer-line-env-dot {
   display: none;
 }
+/* In its menu, a folder of repositories' checklist (upstream's composer
+   control) stands as one of upstream's panel rows over it, and the branch
+   its worktrees start from as a note under them. */
+[data-stemcells-env-menu] .composer-line-env-repositories > button {
+  width: 100%;
+  height: 2rem;
+  justify-content: flex-start;
+  gap: var(--sc-space-lg);
+  padding-inline: var(--sc-space-lg);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 500;
+}
+[data-stemcells-env-menu] .composer-line-env-repositories > button svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+}
+[data-stemcells-env-menu] .composer-line-env-base {
+  padding: var(--sc-space-xs) var(--sc-space-lg) var(--sc-space-sm);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
 
 [data-stemcells-composer-line] .composer-line-runs-on {
   display: inline-flex;

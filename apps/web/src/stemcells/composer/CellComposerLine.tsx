@@ -62,14 +62,18 @@ export function CellComposerLine() {
   /** Where the Cell was pressed: let go there, the press was a poke, not a carry. */
   const pressed = useRef<{ x: number; y: number } | null>(null);
   const hand = useRef<Stroking | undefined>(undefined);
-  const offered = env?.offered === true;
+  const offered = env?.offer != null;
+  // A folder of repositories, no checkout itself, has no branch: the line names its repositories.
+  const folder = env?.offer?.folder ?? null;
   // Where the menu offers a choice, a checkout on no branch reads as
   // upstream's picker reads it; elsewhere it names nothing.
   const branch = checkout.branch ?? (offered ? "Select ref" : null);
+  const label = folder ?? (checkout.knownRepo ? branch : null);
   const envLine =
-    !checkout.knownRepo || branch === null ? null : (
+    label === null ? null : (
       <LineEnv
-        branch={branch}
+        label={label}
+        repositories={folder !== null}
         offered={offered}
         open={env?.open === true}
         onOpenChange={(open) => env?.setOpen(open)}
