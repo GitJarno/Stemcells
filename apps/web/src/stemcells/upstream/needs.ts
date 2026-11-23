@@ -22,7 +22,6 @@ import {
   type ProviderApprovalDecision,
 } from "@t3tools/contracts";
 import { useNavigate } from "@tanstack/react-router";
-import * as Option from "effect/Option";
 
 import { composerDraftHasUserContent, useComposerDraftStore } from "~/composerDraftStore";
 import { useNowMinute } from "~/hooks/useNowMinute";
@@ -34,11 +33,12 @@ import { appAtomRegistry } from "~/rpc/atomRegistry";
 import { readThreadShell, useProject } from "~/state/entities";
 import { environmentPresentations, environmentSummaries } from "~/state/presentation";
 import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
-import { environmentSession, readEnvironmentScope } from "~/state/session";
+import { readEnvironmentScope } from "~/state/session";
 import { threadEnvironment } from "~/state/threads";
 
 import type { ThreadCommand } from "../needs/actions";
 import { selectionOnAccount } from "./accountSelection";
+import { requestMachine } from "./machineRequest";
 import { repositoryUrlOf } from "../needs/inline";
 import { markHandSettle, unmarkHandSettle } from "../tabs/handSettles";
 
@@ -98,31 +98,17 @@ export async function openPrimaryStream(pathname: string, signal: AbortSignal): 
 }
 
 /**
- * The same to any connected environment's server: the primary's as above, another's at its
- * address with the bearer token it paired with. Null for one not connected, or reached through
- * T3's relay, whose requests only upstream's own client signs.
+ * The same to any connected environment's server: the primary's as above, another's as
+ * `requestMachine` asks it. Null for one not connected, or reached through T3's relay.
  */
 export async function openEnvironmentStream(
   environmentId: string,
   pathname: string,
   signal: AbortSignal,
 ): Promise<Response | null> {
-  if (environmentId === appAtomRegistry.get(primaryEnvironmentIdAtom)) {
-    return openPrimaryStream(pathname, signal);
-  }
-  const prepared = Option.getOrNull(
-    appAtomRegistry.get(
-      environmentSession.preparedConnectionValueAtom(environmentId as EnvironmentId),
-    ),
-  );
-  if (prepared === null || prepared.httpAuthorization?._tag === "Dpop") return null;
-  const token =
-    prepared.httpAuthorization?._tag === "Bearer" ? prepared.httpAuthorization.token : null;
-  return fetch(new URL(pathname, prepared.httpBaseUrl).href, {
-    signal,
-    credentials: token === null ? "include" : "omit",
-    headers: token === null ? {} : { authorization: `Bearer ${token}` },
-  });
+  return environmentId === appAtomRegistry.get(primaryEnvironmentIdAtom)
+    ? openPrimaryStream(pathname, signal)
+    : requestMachine(environmentId as EnvironmentId, pathname, { signal });
 }
 
 /** Calls `listener` with the environments connected now, and again each time that changes. */

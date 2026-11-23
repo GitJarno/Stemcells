@@ -23,7 +23,7 @@ import {
 import { useWorkspaceEnvironments } from "../../state/workspace";
 import type { NewTaskDraftRouteParams } from "../../features/threads/thread-route-state";
 import { openDiskProject } from "../../../../../stemcells/disk/project.ts";
-import { isRelayManagedConnection } from "./push";
+import { type MachineConnection, machineConnectionOf } from "./machines";
 
 // Settings › Disk, the home's disk plate and a Cell the full disk stopped read each machine's
 // free space from its server and open a new Cell in that machine's Disk project; the phone
@@ -66,27 +66,10 @@ export function useMachines() {
     }));
 }
 
-/** Where a machine's own server answers and the token the phone paired with, as push reads it. */
-export function useMachineConnection(
-  environmentIdText: string,
-): { readonly httpBaseUrl: string; readonly bearerToken: string | null } | null {
-  return useSavedRemoteConnection(environmentIdText as EnvironmentId);
-}
-
-/** A machine's own server, reached directly with the token the phone paired with. */
-export interface MachineLine {
-  readonly httpBaseUrl: string;
-  readonly bearerToken: string;
-}
-
-/**
- * The line to a machine's own server for its drives; null without a bearer token, or through the
- * relay, whose signed requests only upstream's own client makes (the Mac's Settings › Disk alike).
- */
-export function useMachineLine(environmentIdText: string | null): MachineLine | null {
+/** How the phone reaches a machine it keeps a connection to; null for any other. */
+export function useMachineConnection(environmentIdText: string | null): MachineConnection | null {
   const saved = useSavedRemoteConnection(environmentIdText as EnvironmentId | null);
-  if (saved === null || saved.bearerToken === null || isRelayManagedConnection(saved)) return null;
-  return { httpBaseUrl: saved.httpBaseUrl, bearerToken: saved.bearerToken };
+  return saved === null ? null : machineConnectionOf(saved);
 }
 
 /** Whether the phone draws in dark, and the theme's amber and red, as hex or `rgb()`. */

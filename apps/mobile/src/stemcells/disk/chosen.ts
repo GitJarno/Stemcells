@@ -1,16 +1,12 @@
-// A choice the phone makes about a machine's disk, set on that machine's own server with the
-// token the phone paired with, as push registers. It stands on the phone for a minute, so the
-// card and the menus follow it before the machine's next figures carry it (they're read every
-// 30 s, from a snapshot cached for 5).
+// A choice the phone makes about a machine's disk, set on that machine's own server, as push
+// registers. It stands on the phone for a minute, so the card and the menus follow it before the
+// machine's next figures carry it (they're read every 30 s, from a snapshot cached for 5).
 
 import { useSyncExternalStore } from "react";
 
-const HOLD_MS = 60_000;
+import { askMachine, type MachineConnection } from "../upstream/machines";
 
-export type MachineConnection = {
-  readonly httpBaseUrl: string;
-  readonly bearerToken: string | null;
-};
+const HOLD_MS = 60_000;
 
 /** Each machine's choice of one kind, held while its machine's figures catch up. */
 export function createChoices<T>() {
@@ -64,17 +60,13 @@ export async function postToMachine(
   path: string,
   body: object,
 ): Promise<boolean> {
-  if (connection.bearerToken === null) return false;
   try {
-    const answer = await fetch(new URL(path, connection.httpBaseUrl).toString(), {
+    const answer = await askMachine(connection.environmentId, path, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${connection.bearerToken}`,
-        "content-type": "application/json",
-      },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });
-    return answer.ok;
+    return answer?.ok === true;
   } catch {
     return false;
   }

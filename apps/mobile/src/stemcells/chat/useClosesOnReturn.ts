@@ -7,8 +7,8 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { AppState } from "react-native";
 
 import { readNeeds, type Reading } from "../line/read";
-import { needsConnectionOf } from "../line/readings";
 import { useShowHome } from "../upstream/home";
+import { machineConnectionOf } from "../upstream/machines";
 import { useSavedConnection } from "../upstream/push";
 import { closesOnReturn } from "./closesOnReturn";
 import type { ChatRef } from "./inView";
@@ -69,7 +69,7 @@ export function useClosesOnReturn(chat: ChatRef): void {
   useEffect(() => {
     if (back === null || connection === null) return;
     let current = true;
-    void readNeeds(needsConnectionOf(connection), null).then((reading) => {
+    void readNeeds(machineConnectionOf(connection), null).then((reading) => {
       if (current) answered(reading, back);
     });
     return () => {

@@ -54,8 +54,8 @@ or anyone else's cloud.
 - [x] 3. Phone registration in `apps/mobile/src/stemcells/push/`: on
       start, when the saved Macs change and on each return to the front,
       with notifications allowed, the phone posts its token, APNs
-      environment, bundle id and name to each saved Mac (bearer
-      connections only). A Mac keeps a token's Apple service: a release
+      environment, bundle id and name to each saved Mac (never
+      through T3's relay). A Mac keeps a token's Apple service: a release
       build signed for development gets a sandbox token, so a
       `BadDeviceToken` is tried once on the other service. Settings › When a Cell needs you asks iOS, and
       says how many Macs took it. Mounted by a seam in `App.tsx`.

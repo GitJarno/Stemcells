@@ -7,10 +7,10 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { AppState } from "react-native";
 
 import { useMinute } from "../home/state";
-import { needsConnectionOf } from "../line/readings";
 import { useThreadShellsSelected } from "../upstream/cells";
 import { OverlayPortal } from "../upstream/collection";
-import { type SavedRemoteConnection, useSavedRemoteConnections } from "../upstream/push";
+import { askMachine, machineConnectionOf, type SavedRemoteConnection } from "../upstream/machines";
+import { useSavedRemoteConnections } from "../upstream/push";
 import { waitsOnPerson } from "./crew";
 import { FeatMoment } from "./FeatMoment";
 import { rungAbove, standings } from "./kit";
@@ -22,7 +22,13 @@ const LEDGER_WRITES_WITHIN = 2_500;
 
 function readEach(saved: ReadonlyArray<SavedRemoteConnection>): void {
   for (const each of saved)
-    void readCollectionOf(each.environmentId, needsConnectionOf(each), Date.now(), fetch, true);
+    void readCollectionOf(
+      each.environmentId,
+      machineConnectionOf(each),
+      Date.now(),
+      askMachine,
+      true,
+    );
 }
 
 export function FeatWatch() {
@@ -95,7 +101,7 @@ export function FeatWatch() {
       <FeatMoment
         key={momentKey(showing)}
         environmentId={showing.environmentId}
-        connection={saved === undefined ? null : needsConnectionOf(saved)}
+        connection={saved === undefined ? null : machineConnectionOf(saved)}
         standing={standing}
         worn={threadId === null ? [] : (held?.worn[threadId] ?? [])}
         next={held === undefined ? null : rungAbove(standing, held)}

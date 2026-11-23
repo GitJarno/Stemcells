@@ -4,13 +4,12 @@ import * as Notifications from "expo-notifications";
 import { useEffect, useSyncExternalStore } from "react";
 import { AppState, Linking, Platform } from "react-native";
 
+import { machineConnectionOf, type SavedRemoteConnection } from "../upstream/machines";
 import {
-  isRelayManagedConnection,
   requestAgentNotificationPermission,
   resolveApsEnvironment,
   supportsAgentAwarenessPush,
   useSavedRemoteConnections,
-  type SavedRemoteConnection,
 } from "../upstream/push";
 import { FeatWatch } from "../collection/FeatWatch";
 import { registerWith, type PhoneDevice, type Registered } from "./register";
@@ -68,8 +67,9 @@ async function registerAll(connections: ReadonlyArray<SavedRemoteConnection>): P
   const macs = new Map<string, Registered>();
   await Promise.all(
     connections
+      .map(machineConnectionOf)
       // A relay's connection belongs to T3's cloud, which Stemcells never uses.
-      .filter((connection) => !isRelayManagedConnection(connection))
+      .filter((connection) => connection.reach !== "relay")
       .map(async (connection) => {
         macs.set(connection.environmentId, await registerWith(connection, device));
       }),

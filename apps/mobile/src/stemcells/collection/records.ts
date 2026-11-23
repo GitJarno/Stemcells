@@ -4,9 +4,8 @@
 
 import { useEffect, useState } from "react";
 
-import type { NeedsConnection } from "../line/read";
+import { askMachine, type MachineConnection } from "../upstream/machines";
 import type { Award, CellRecords } from "./kit";
-import { authorised } from "./read";
 
 const NONE: ReadonlyMap<string, readonly Award[]> = new Map();
 
@@ -15,16 +14,14 @@ const NONE: ReadonlyMap<string, readonly Award[]> = new Map();
  * machine answers, and what it said last while it is asked again.
  */
 export function useRecords(
-  connection: NeedsConnection | null,
+  connection: MachineConnection | null,
   threadIds: readonly string[],
   stamp: number,
 ): ReadonlyMap<string, readonly Award[]> {
   const asked = threadIds.join(",");
   // One key for the effect: the Cells asked for, and the stamp that asks again.
   const again = `${stamp}:${asked}`;
-  const reachable = connection !== null && authorised(connection);
-  const base = reachable ? connection.httpBaseUrl : null;
-  const token = reachable ? connection.bearerToken : null;
+  const machine = connection?.reach === "direct" ? connection.environmentId : null;
   const [read, setRead] = useState<{
     readonly asked: string;
     readonly marks: ReadonlyMap<string, readonly Award[]>;
@@ -32,12 +29,13 @@ export function useRecords(
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Fetch the Cells' records as the screen lists them and when a landing or a merge may have added one, dropping an answer that arrives after the list changed.
   useEffect(() => {
     const threads = again.slice(again.indexOf(":") + 1);
-    if (threads === "" || base === null || token === null) return;
+    if (threads === "" || machine === null) return;
     let cancelled = false;
-    const url = new URL("/api/stemcells/collection/cells", base);
-    url.searchParams.set("threads", threads);
-    void fetch(url.toString(), { headers: { authorization: `Bearer ${token}` } })
-      .then(async (answer) => (answer.ok ? ((await answer.json()) as CellRecords) : null))
+    void askMachine(
+      machine,
+      `/api/stemcells/collection/cells?threads=${encodeURIComponent(threads)}`,
+    )
+      .then(async (answer) => (answer?.ok ? ((await answer.json()) as CellRecords) : null))
       .catch(() => null)
       .then((records) => {
         if (!cancelled && records !== null)
@@ -46,6 +44,6 @@ export function useRecords(
     return () => {
       cancelled = true;
     };
-  }, [again, base, token]);
+  }, [again, machine]);
   return read === null || read.asked !== asked ? NONE : read.marks;
 }

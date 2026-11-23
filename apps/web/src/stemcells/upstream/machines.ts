@@ -1,7 +1,7 @@
 // What Settings › Your devices takes from upstream: a request to any connected environment's server,
-// authenticated as upstream does (the primary's session or desktop token, a paired one's
-// bearer token), each environment's address as this device reaches it, and this desktop's own
-// network addresses (Settings › Sharing & access).
+// authenticated as upstream does (the primary's session or desktop token, a paired one's own:
+// `machineRequest.ts`), each environment's address as this device reaches it, and this desktop's
+// own network addresses (Settings › Sharing & access).
 
 import type { AdvertisedEndpoint, EnvironmentId } from "@t3tools/contracts";
 import * as Option from "effect/Option";
@@ -14,6 +14,8 @@ import { useEnvironment } from "~/state/environments";
 import { useEnvironmentQuery } from "~/state/query";
 import { primaryEnvironmentIdAtom } from "~/state/primaryEnvironment";
 import { environmentSession } from "~/state/session";
+
+import { requestMachine } from "./machineRequest";
 
 export type { EnvironmentId };
 export { useOtherMachines, usePrimaryEnvironmentId } from "./disk";
@@ -62,42 +64,34 @@ export async function callMachine(
   body: unknown = null,
   searchParams?: Record<string, string>,
 ): Promise<MachineAnswer> {
-  const init: RequestInit =
+  const init =
     body === null
-      ? { method: "GET" }
+      ? { method: "GET" as const }
       : {
-          method: "POST",
+          method: "POST" as const,
           headers: { "content-type": "application/json" },
           body: JSON.stringify(body),
         };
-  let url: string;
-  let authorization: string | null = null;
-  if (environmentId === appAtomRegistry.get(primaryEnvironmentIdAtom)) {
-    url = resolvePrimaryEnvironmentHttpUrl(pathname, searchParams);
-    const token = await readDesktopPrimaryBearerToken();
-    authorization = token ? `Bearer ${token}` : null;
-  } else {
-    const address = machineAddressOf(environmentId);
-    if (!("url" in address)) return { ok: false, reason: address.reason };
-    const prepared = Option.getOrNull(
-      appAtomRegistry.get(environmentSession.preparedConnectionValueAtom(environmentId)),
-    );
-    if (prepared?.httpAuthorization?._tag === "Dpop")
-      return { ok: false, reason: "it's reached through the relay" };
-    const remote = new URL(pathname, address.url);
-    remote.search = new URLSearchParams(searchParams).toString();
-    url = remote.href;
-    authorization =
-      prepared?.httpAuthorization?._tag === "Bearer"
-        ? `Bearer ${prepared.httpAuthorization.token}`
-        : null;
-  }
   try {
-    const response = await fetch(url, {
-      ...init,
-      credentials: authorization === null ? "include" : "omit",
-      headers: { ...init.headers, ...(authorization === null ? {} : { authorization }) },
-    });
+    let response: Response | null;
+    if (environmentId === appAtomRegistry.get(primaryEnvironmentIdAtom)) {
+      const token = await readDesktopPrimaryBearerToken();
+      response = await fetch(resolvePrimaryEnvironmentHttpUrl(pathname, searchParams), {
+        ...init,
+        credentials: token ? "omit" : "include",
+        headers: { ...init.headers, ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      });
+    } else {
+      const address = machineAddressOf(environmentId);
+      if (!("url" in address)) return { ok: false, reason: address.reason };
+      const search = new URLSearchParams(searchParams).toString();
+      response = await requestMachine(
+        environmentId,
+        search === "" ? pathname : `${pathname}?${search}`,
+        init,
+      );
+      if (response === null) return { ok: false, reason: "it isn't connected" };
+    }
     const text = await response.text();
     let parsed: unknown = null;
     try {

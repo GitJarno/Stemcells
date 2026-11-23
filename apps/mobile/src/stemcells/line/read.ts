@@ -1,8 +1,9 @@
-// A machine's asks and its Cells' stages, read from its own server (`GET /api/stemcells/needs`)
-// with the bearer token the phone paired with, as push registers (`push/register.ts`). T3's
-// relay has no bearer token and Stemcells never pairs through it, so a machine reached that
-// way, or one without the endpoint, has no line: its Cells stand where their records do.
+// A machine's asks and its Cells' stages, read from its own server (`GET /api/stemcells/needs`),
+// as push registers (`push/register.ts`). Stemcells never goes through T3's relay, so a machine
+// reached that way, or one without the endpoint, has no line: its Cells stand where their
+// records do.
 
+import { askMachine, type MachineConnection } from "../upstream/machines";
 import { needsListOf, type NeedsList } from "./kit";
 
 export type Reading =
@@ -13,40 +14,24 @@ export type Reading =
   /** Out of reach just now; what it said last, if anything, stands. */
   | { readonly state: "unreachable"; readonly list: NeedsList | null };
 
-/** A saved connection as the reader reads it. */
-export interface NeedsConnection {
-  readonly httpBaseUrl: string;
-  readonly bearerToken: string | null;
-  readonly relayManaged?: true;
-}
-
 const PATH = "/api/stemcells/needs";
 /** A machine asleep behind its tailnet can hold a request open; the next reason to read tries again. */
 const GIVE_UP_MS = 10_000;
 
 /** Reads one machine; `last` is what it said before, kept while it is out of reach. */
 export async function readNeeds(
-  connection: NeedsConnection,
+  connection: MachineConnection,
   last: NeedsList | null,
-  request: typeof fetch = fetch,
+  ask: typeof askMachine = askMachine,
 ): Promise<Reading> {
-  if (connection.relayManaged === true) return { state: "none" };
+  if (connection.reach === "relay") return { state: "none" };
   const away: Reading = { state: "unreachable", list: last };
-  // T3 hands a saved connection its token only once a route connects, again on every reconnect.
-  if (connection.bearerToken === null) return away;
-  let url: string;
-  try {
-    url = new URL(PATH, connection.httpBaseUrl).toString();
-  } catch {
-    return away;
-  }
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), GIVE_UP_MS);
   try {
-    const answer = await request(url, {
-      headers: { authorization: `Bearer ${connection.bearerToken}` },
-      signal: abort.signal,
-    });
+    const answer = await ask(connection.environmentId, PATH, { signal: abort.signal });
+    // No route is connected yet, or it is reconnecting.
+    if (answer === null) return away;
     // Upstream's server, or a Stemcells one from before the line.
     if (answer.status === 404) return { state: "none" };
     if (!answer.ok) return away;

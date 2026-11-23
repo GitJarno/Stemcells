@@ -2,11 +2,15 @@ import { expect, it, vi } from "vite-plus/test";
 
 import type { Collection } from "../../../../../stemcells/ledger/feats.ts";
 import { chosenLook } from "../../../../web/src/stemcells/cell/chosen.ts";
+import type { askMachine, MachineConnection } from "../upstream/machines";
 import { forgetCollectionOf, readCollectionOf } from "./read";
 
-const connection = (host: string) => ({
-  httpBaseUrl: `http://${host}.example.com:3773`,
-  bearerToken: "token",
+// What asks the machine is the adapter's, with its own test; each case here passes its own.
+vi.mock("../upstream/machines", () => ({ askMachine: null }));
+
+const connection = (environmentId: string): MachineConnection => ({
+  environmentId,
+  reach: "direct",
 });
 
 const saying = (worn: Collection["worn"]): Collection => ({
@@ -18,13 +22,13 @@ const saying = (worn: Collection["worn"]): Collection => ({
 });
 
 const answering = (status: number, body?: Collection) =>
-  vi.fn<typeof fetch>(async () => Response.json(body ?? null, { status }));
+  vi.fn<typeof askMachine>(async () => Response.json(body ?? null, { status }));
 
 it("wears what each machine's collection says, read at most once a gap, until the machine is gone", async () => {
   const mac = answering(200, saying({ pip: ["outfit:earned/crown"] }));
   await readCollectionOf("mac", connection("mac"), 0, mac);
   await readCollectionOf("mini", connection("mini"), 0, answering(200, saying({ otter: [] })));
-  expect(mac.mock.calls[0]?.[0]).toBe("http://mac.example.com:3773/api/stemcells/collection");
+  expect(mac.mock.calls[0]).toEqual(["mac", "/api/stemcells/collection"]);
   expect(chosenLook("pip")).toEqual(["outfit:earned/crown"]);
   expect(chosenLook("otter")).toEqual([]);
 
@@ -47,8 +51,13 @@ it("keeps what a machine said last when it can't be reached, and asks none throu
     throw new Error("offline");
   });
   expect(chosenLook("wren")).toEqual(["a"]);
-  const relay = answering(200, saying({}));
-  await readCollectionOf("far", { ...connection("far"), relayManaged: true }, 0, relay);
-  expect(relay).not.toHaveBeenCalled();
+  const far = answering(200, saying({ lark: [] }));
+  await readCollectionOf("far", { ...connection("far"), reach: "relay" }, 0, far);
+  expect(far).not.toHaveBeenCalled();
+  // One still connecting is asked as soon as it has, inside the gap too.
+  await readCollectionOf("far", { ...connection("far"), reach: "away" }, 0, far);
+  await readCollectionOf("far", connection("far"), 1, far);
+  expect(chosenLook("lark")).toEqual([]);
   forgetCollectionOf("den");
+  forgetCollectionOf("far");
 });

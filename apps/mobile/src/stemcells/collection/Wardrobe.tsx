@@ -11,7 +11,7 @@ import { useReducedMotion } from "react-native-reanimated";
 
 import { CellFigure } from "../cell/CellFigure";
 import { cellNameOf, clockSeconds, moment, play } from "../cell/kit";
-import type { NeedsConnection } from "../line/read";
+import type { MachineConnection } from "../upstream/machines";
 import { useThemeAppearance, useThreadShellsSelected } from "../upstream/cells";
 import { AppText } from "../upstream/disk";
 import { CellMini, useCellDriver, useLookOf } from "./CellMini";
@@ -70,7 +70,7 @@ function Stage(props: {
 /** Where the person dresses a Cell in what the feats unlocked, and has it show an act. */
 export function Wardrobe(props: {
   readonly environmentId: string;
-  readonly connection: NeedsConnection | null;
+  readonly connection: MachineConnection | null;
   readonly collection: Collection;
 }) {
   const { environmentId, connection, collection } = props;
