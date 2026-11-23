@@ -68,6 +68,7 @@ import {
   findPane,
   focusedPane,
   focusPane,
+  holdsOnePane,
   MIN_COLUMN_WIDTH,
   MIN_PANE_HEIGHT,
   nameTab,
@@ -80,6 +81,7 @@ import {
   setCell,
   sharesOf,
   showRoute,
+  staysOnIndex,
   type CellRef,
   type Column,
   type Pane,
@@ -257,8 +259,7 @@ export function CellWorkspace(props: {
     onRoute({ environmentId: routeEnvironmentId, threadId: routeThreadId, draftId: routeDraftId });
   }, [routeEnvironmentId, routeThreadId, routeDraftId]);
 
-  // On the index route, go back to the focused Cell if it still exists.
-  // Otherwise upstream's index starts a draft, which the focused pane takes.
+  // On the index route, go back to the focused Cell if it still exists (else `staysOnIndex`).
   const returnToFocused =
     props.target === null && isIndexRoute && focusedPresence.liveness === "alive";
   const goToFocused = useEffectEvent(routeToFocused);
@@ -421,11 +422,6 @@ export function CellWorkspace(props: {
     routeToFocused();
   };
 
-  const isLastPane = () => {
-    const current = readWorkspace();
-    return current.tabs.length === 1 && panesOf(current.tabs[0]!).length === 1;
-  };
-
   useWorkspaceKeys(
     {
       newCell: () => {
@@ -458,7 +454,7 @@ export function CellWorkspace(props: {
         }
         // The last pane of the last tab is left to upstream: on the desktop, ⌘W
         // closes the window.
-        if (!pane || isLastPane()) return false;
+        if (!pane || holdsOnePane(readWorkspace())) return false;
         closePaneAndRoute(pane.id);
         return true;
       },
@@ -508,7 +504,7 @@ export function CellWorkspace(props: {
   // rather than letting upstream's index start a draft beside it.
   const askiOnTheWay = askiOn && isIndexRoute && askiChat.status === "starting" && tab === null;
   const keepGrid =
-    isIndexRoute && ((tab !== null && focusedPresence.liveness !== "gone") || askiOnTheWay);
+    isIndexRoute && (staysOnIndex(workspace, focusedPresence.liveness === "gone") || askiOnTheWay);
   const keeper = (
     <>
       {askiOn ? <AskiKeeper onChat={onAskiChat} /> : null}
@@ -610,10 +606,7 @@ export function CellWorkspace(props: {
                       onFocus={focusPaneAndRoute}
                       onClose={
                         // Aski's pane never closes, nor the last pane of the last tab.
-                        isAskiTab(pageTab) ||
-                        (workspace.tabs.length === 1 && panesOf(pageTab).length === 1)
-                          ? null
-                          : closePaneAndRoute
+                        isAskiTab(pageTab) || holdsOnePane(workspace) ? null : closePaneAndRoute
                       }
                     />
                   </PagerPage>

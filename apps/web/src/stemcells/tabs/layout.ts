@@ -111,6 +111,20 @@ export function findPane(
   return null;
 }
 
+/** Whether the window holds one pane, which never closes. */
+export function holdsOnePane(workspace: Workspace): boolean {
+  return workspace.tabs.length === 1 && panesOf(workspace.tabs[0]!).length === 1;
+}
+
+/**
+ * Whether the workspace stays on the index route, where upstream's page would start a draft that
+ * lands in some other tab. A focused Cell that is `gone` has no route to go back to; its pane
+ * stays, to be closed or left, unless it is all the window holds.
+ */
+export function staysOnIndex(workspace: Workspace, gone: boolean): boolean {
+  return activeTab(workspace) !== null && !(gone && holdsOnePane(workspace));
+}
+
 export function paneShowing(workspace: Workspace, cell: CellRef): { tab: Tab; pane: Pane } | null {
   return findPane(workspace, (pane) => pane.cell !== null && sameChat(pane.cell, cell));
 }
