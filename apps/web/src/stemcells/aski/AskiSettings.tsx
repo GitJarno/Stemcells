@@ -1,15 +1,14 @@
 import { KINDS, setTaking, useAutonomy, type Kind } from "../autonomy/autonomy";
 import { PhoneSettings } from "../push/PhoneSettings";
 import { SettingsPageContainer, SettingsRow, SettingsSection, Switch } from "../upstream/settings";
-import { setSuggestionsOn, useSuggestionsOn } from "../suggestions/switch";
 import { AsksMeasure } from "./AsksMeasure";
 import { setAskiPlans, useAskiPlans } from "./planning";
 import { setAskiTabOn, useAskiTabOn } from "./tabSwitch";
 import { ASKI_SWITCHES } from "./settingLinks";
 
-// Settings › Aski: whether Aski divides the work, whether a finished Cell suggests what to say
-// next, what Aski takes for the person (stemcells/tasks/aski-autonomy.md), whether asks say
-// enough (stemcells/tasks/aski-asks.md), and pushes to their phone (stemcells/tasks/phone-push.md). The rest of the page comes with
+// Settings › Aski: whether Aski divides the work, what Aski takes for the person
+// (stemcells/tasks/aski-autonomy.md), whether asks say enough (stemcells/tasks/aski-asks.md), and
+// pushes to their phone (stemcells/tasks/phone-push.md). The rest of the page comes with
 // stemcells/tasks/prompting.md's slice 6.
 
 const TAKES: ReadonlyArray<{ readonly id: string; readonly kind: Kind; readonly what: string }> = [
@@ -36,7 +35,6 @@ const TAKES_HOW =
 export function AskiSettingsPanel() {
   const askiTab = useAskiTabOn();
   const plans = useAskiPlans();
-  const suggestions = useSuggestionsOn();
   const autonomy = useAutonomy();
   return (
     <SettingsPageContainer>
@@ -64,20 +62,6 @@ export function AskiSettingsPanel() {
               checked={plans}
               aria-label={ASKI_SWITCHES["aski-plans"].title}
               onCheckedChange={(checked) => setAskiPlans(checked)}
-            />
-          }
-        />
-      </SettingsSection>
-      <SettingsSection id="aski-next-prompt" title="Writing to a Cell">
-        <SettingsRow
-          id="aski-suggestions"
-          title={ASKI_SWITCHES.suggestions.title}
-          description="When a Cell finishes, its empty composer suggests your next words: Tab or → fills them in, Esc hides them. Claude Cells predict their own; others take one short call, only within an hour of a reply."
-          control={
-            <Switch
-              checked={suggestions}
-              aria-label={ASKI_SWITCHES.suggestions.title}
-              onCheckedChange={(checked) => setSuggestionsOn(checked)}
             />
           }
         />

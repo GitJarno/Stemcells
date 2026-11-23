@@ -1,4 +1,3 @@
-import { withPromptSuggestions } from "../stemcells/upstream/claudeSuggestions.ts";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Path from "effect/Path";
@@ -61,7 +60,7 @@ const resolveCursorWorkerLaunch = Effect.gen(function* () {
 
 /** Reuse the continuation worker's exact layer reference so memoization shares one queue. */
 export const layer = Layer.mergeAll(
-  withPromptSuggestions(ClaudeAdapterV2.layerQueryRunner),
+  ClaudeAdapterV2.layerQueryRunner,
   CodexAdapterV2.layerAppServerClientFactory,
   Layer.unwrap(
     Effect.gen(function* () {

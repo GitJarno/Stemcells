@@ -1460,11 +1460,6 @@
       "page": "/settings/aski"
     },
     {
-      "id": "aski-suggestions",
-      "title": "Suggest what to say next",
-      "page": "/settings/aski"
-    },
-    {
       "id": "aski-takes-retry",
       "title": "Retry a lost connection for you",
       "page": "/settings/aski"

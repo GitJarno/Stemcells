@@ -15,6 +15,8 @@ const DEFAULTS: Readonly<Record<UpstreamDefaults.Switch, boolean>> = {
   sidebarAutoSettleOnMerge: false,
   // A limit is the provider's wait, not the person's call (stemcells/tasks/unblocking.md, 1).
   autoResumeLimitedThreads: true,
+  // A finished Cell suggests what to say next (stemcells/seams.md, What to say next).
+  promptSuggestionsEnabled: true,
 };
 
 const AppliedDefaults = Schema.fromJsonString(Schema.Record(Schema.String, Schema.String));

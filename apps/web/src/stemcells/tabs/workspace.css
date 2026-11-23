@@ -300,8 +300,9 @@
   min-height: calc(var(--spacing) * 8);
 }
 /* Its placeholder keeps to that row at every width, so it never runs down
-   over the controls or under send. */
-[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder {
+   over the controls or under send. A suggested prompt wraps and grows the
+   field instead: cut, it would hide its own end and its Tab key. */
+[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder:not(:has(button)) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

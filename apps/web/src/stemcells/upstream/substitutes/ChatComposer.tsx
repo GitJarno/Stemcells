@@ -1,7 +1,7 @@
 // Replaces `components/chat/ChatComposer.tsx` (`plugin.ts`); upstream's composer and send stay.
 // Setup words go unsent; a send that starts several waits past the most for ⌘↵, read out in
-// the model picker's place (`stemcells/words`). Only Aski's chat offers Aski's instance; a replied
-// Cell suggests what's next; a windowless pane drops shortcuts; `/login` opens the sign-in card.
+// the model picker's place (`stemcells/words`). Only Aski's chat offers Aski's instance; a
+// windowless pane drops shortcuts; `/login` opens the sign-in card.
 import { memo, type ReactNode, useState } from "react";
 
 import {
@@ -10,10 +10,6 @@ import {
 } from "../../../components/chat/ChatComposer";
 import { type ShownReadout, WordsReadoutShown, WordsReadoutSlot } from "../../words/readoutSlot";
 import { oneSendAtATime, sendSlots, WordsSendSlot } from "../../words/send";
-import {
-  PromptSuggestionContext,
-  usePromptSuggestion,
-} from "../../suggestions/usePromptSuggestion";
 import { useComposerInstances } from "../cellInstance";
 import { useLoginPanel, withLoginCommand } from "../login";
 import { WindowInputGate } from "../windowInput";
@@ -23,7 +19,6 @@ export * from "../../../components/chat/ChatComposer";
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
   const [slots] = useState(sendSlots);
   const instances = useComposerInstances(props);
-  const suggestion = usePromptSuggestion(props);
   const login = useLoginPanel({
     environmentId: props.environmentId,
     target: props.composerDraftTarget,
@@ -55,19 +50,17 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   return (
     <WordsSendSlot value={slots.register}>
       <ReadoutSlot>
-        <PromptSuggestionContext value={suggestion}>
-          <WindowInputGate>
-            <UpstreamChatComposer
-              {...props}
-              {...instances}
-              providerStatuses={withLoginCommand(instances.providerStatuses)}
-              bannerItems={
-                login.banner === null ? props.bannerItems : [...props.bannerItems, login.banner]
-              }
-              onSend={send}
-            />
-          </WindowInputGate>
-        </PromptSuggestionContext>
+        <WindowInputGate>
+          <UpstreamChatComposer
+            {...props}
+            {...instances}
+            providerStatuses={withLoginCommand(instances.providerStatuses)}
+            bannerItems={
+              login.banner === null ? props.bannerItems : [...props.bannerItems, login.banner]
+            }
+            onSend={send}
+          />
+        </WindowInputGate>
       </ReadoutSlot>
     </WordsSendSlot>
   );

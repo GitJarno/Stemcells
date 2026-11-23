@@ -16,9 +16,13 @@ export const appliedDefaultsPath = Effect.gen(function* () {
 
 /**
  * Upstream's switches Stemcells sets differently: a thread settling as soon as its pull
- * request merges, and a thread a usage limit stopped resuming at the reset.
+ * request merges, one a usage limit stopped resuming at the reset, and the composer
+ * suggesting the next prompt.
  */
-export type Switch = "sidebarAutoSettleOnMerge" | "autoResumeLimitedThreads";
+export type Switch =
+  | "sidebarAutoSettleOnMerge"
+  | "autoResumeLimitedThreads"
+  | "promptSuggestionsEnabled";
 
 export const readSwitch = Effect.fn("UpstreamDefaults.readSwitch")(function* (key: Switch) {
   const settings = yield* ServerSettings.ServerSettingsService;

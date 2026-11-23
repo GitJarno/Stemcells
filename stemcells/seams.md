@@ -1043,45 +1043,12 @@ CLIs:
 
 ### What to say next
 
-When a Cell finishes, its empty composer shows what the person would most
-likely say next; Tab, → or a tap on its key fills it in, Esc hides it
-(`stemcells/tasks/prompt-suggestions.md`).
-
-- **Claude's own, when it makes one.** The Agent SDK's
-  `promptSuggestions` has Claude Code predict the next prompt after each
-  turn, on a fork that reads the turn's prompt cache, so it costs almost
-  nothing. The runner seam above turns it on for every query and keeps
-  the suggestion in memory (`suggestions/provider.ts`), dropping one that
-  comes after a newer prompt went; the route takes it only when no other
-  run began between its run and it, so a rolled-back turn's never shows.
-- **Everyone else's from one short call**, `POST
-  /api/stemcells/prompt-suggestion`: the last reply and the person's last
-  four messages, on the text generation model through `runLean`, in a
-  private temporary folder, for at most 20 s. A Claude run's own is waited
-  for until 10 s after the run completed; the call stands in only when
-  none came. No other provider predicts one: Codex's experimental
-  `thread/sample` isn't in our app-server schema, and ACP and OpenCode
-  have nothing. So a new provider has suggestions with no code of its
-  own, and one that predicts them hands its suggestion to
-  `offerProviderSuggestion`.
-- **Spent once, on a reply someone opens.** The page asks for the reply
-  its composer shows; the route answers each reply once however many
-  windows ask, and makes the call only for a completed run's reply within
-  an hour of it. It spends, so it takes the operate scope. Nothing is
-  stored: no event, projection or column (upstream closed its own attempt,
-  #8524, for storing them as activities).
-- **No line of the composer changes.** The composer's substitute asks and
-  hands the suggestion to the editor's, which draws it only where
-  upstream would say its idle hint (`suggestions.contract.test.ts` pins
-  the hint and the placeholder's look), and takes it as an edit, as
-  typing would.
-- Settings › Aski has the switch, on this device: off, the device asks
-  for none, so no short call is made for it. Claude still predicts its own
-  after each turn, as Claude Code does (its own `promptSuggestionEnabled`
-  setting turns that off). A wait for Claude's ends when a new prompt
-  goes, and no call is made for a reply the person has moved on from. The
-  phone's composer doesn't show suggestions yet; the route is ready for
-  it.
+Upstream's: when a Cell finishes, its empty composer shows what Claude or
+Codex predicts the person would say; Tab or a click on its key takes it, Esc
+hides it. Ours started first and was deleted for it. On by default
+(`defaults/defaults.ts`), where upstream's Labs switch starts off; a person
+who turns it off keeps it off. In a pane a suggestion wraps, where other
+placeholders keep to one line (`tabs/workspace.css`).
 
 ### Windows
 

@@ -44,7 +44,12 @@ describe("a chat in a narrow pane, against upstream", () => {
     // workspace.css finds it by that colour class: a selector off by a class
     // matches nothing, and the placeholder runs over the controls again.
     expect(workspaceCss).toContain(
-      '[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder {',
+      '[data-stemcells-pane] [data-chat-composer-body="true"] .text-placeholder:not(:has(button)) {',
+    );
+    // A suggested prompt wraps: its Tab key is the button inside the placeholder.
+    expect(promptEditor).toMatch(/\{placeholder\}\s*\{placeholderSuffix\}\s*<\/div>/);
+    expect(chatComposer).toMatch(
+      /placeholderSuffix=\{\s*offeredPromptSuggestion !== null \? \([\s\S]{0,200}<button/,
     );
   });
 

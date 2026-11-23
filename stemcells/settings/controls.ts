@@ -96,7 +96,6 @@ export const BINDINGS: Readonly<Record<string, Binding>> = {
   theme: ours("appearanceMode"),
   "aski-tab-on": ours("askiTab"),
   "aski-plans": ours("askiPlans"),
-  "aski-suggestions": ours("suggestions"),
   "aski-takes-retry": ours("takesRetry", true),
   "aski-takes-go-ahead": ours("takesGoAhead", true),
   "aski-takes-implement": ours("takesImplement", true),

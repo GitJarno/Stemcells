@@ -15,7 +15,6 @@ import {
   useScopedSettings,
   useUpdateScopedSettings,
 } from "../upstream/settings";
-import { setSuggestionsOn, useSuggestionsOn } from "../suggestions/switch";
 import { setAskiPlans, useAskiPlans } from "./planning";
 
 import "./settingLinks.css";
@@ -38,7 +37,6 @@ const takes = (kind: Kind) => ({
 /** Our switches, by the id Aski links them with. */
 export const ASKI_SWITCHES = {
   "aski-plans": { title: "Aski divides the work", set: setAskiPlans },
-  suggestions: { title: "Suggest what to say next", set: setSuggestionsOn },
   "takes-retry": takes("retry"),
   "takes-go-ahead": takes("goAhead"),
   "takes-implement": takes("implement"),
@@ -92,15 +90,9 @@ function AskiSwitch(props: { id: AskiId; label: string }) {
   const { title, set } = ASKI_SWITCHES[props.id];
   // Each hook by its name: the compiler keeps a call to a hook it can't name.
   const plans = useAskiPlans();
-  const suggestions = useSuggestionsOn();
   const autonomy = useAutonomy();
   const kind = TAKES_SWITCHES[props.id];
-  const on =
-    kind !== undefined
-      ? (autonomy?.granted.includes(kind) ?? false)
-      : props.id === "aski-plans"
-        ? plans
-        : suggestions;
+  const on = kind !== undefined ? (autonomy?.granted.includes(kind) ?? false) : plans;
   return (
     <span data-stemcells-setting="">
       {props.label}
