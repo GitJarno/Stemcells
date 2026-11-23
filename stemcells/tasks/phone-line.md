@@ -17,10 +17,10 @@ Research (2026-10-26) settled where things come from:
   three server stages (`GET /api/stemcells/needs`); Landed and Settled are
   the client's (`rail/moves.ts`). Each machine derives only its own Cells,
   so the phone reads every machine it holds, as Settings › Disk does. The
-  phone calls our endpoints with the saved bearer token, as push does
-  (`push/register.ts`). Stemcells never pairs through T3's relay, which has
-  no bearer token; a machine reached that way, or one without the endpoint,
-  keeps today's home.
+  phone calls our endpoints with the connection's own credentials, as push
+  does (`upstream/machines.ts`: the bearer token it paired with, or one bound
+  to the phone's key). Stemcells never goes through T3's relay; a machine
+  reached that way, or one without the endpoint, keeps today's home.
 - **The web's pure modules port.** `needs/wire.ts`, `card.ts`,
   `actions.ts`, `byHand.ts`, `rail/moves.ts` and `rail/filter.ts` import no
   React and no live state, so the phone imports them as it imports the
