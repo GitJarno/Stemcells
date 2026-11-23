@@ -1,7 +1,8 @@
 // Replaces `components/BranchToolbar.tsx` (`plugin.ts`): in a Cell's pane, upstream's toolbar
-// stands in panel layout in the menu under the ledge's "project · branch ⌄" (`composer/slot.ts`),
-// once the checkout is known to be git (`upstream/checkout.ts`); the branch shortcut opens that
-// menu, and a draft's permissions stay under the box. Elsewhere it is upstream's.
+// stands in panel layout, with its repositories checklist, in the menu under the ledge's "project
+// · branch ⌄" (`composer/slot.ts`, `upstream/checkout.ts`); the branch shortcut opens that menu,
+// and a draft's permissions stay under the box. Elsewhere it is upstream's.
+/* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (composer-line.css), outside upstream's Tailwind entry. */
 import {
   type ComponentProps,
   memo,
@@ -17,8 +18,9 @@ import {
   BranchToolbar as UpstreamBranchToolbar,
 } from "../../../components/BranchToolbar";
 import { ComposerSurface } from "../../../components/chat/ComposerSurface";
+import { WorktreeRepositoriesControl } from "../../../components/WorktreeRepositoriesControl";
 import { ComposerEnvSlot } from "../../composer/slot";
-import { useCheckoutKnownRepo } from "../checkout";
+import { envOfferOf, useCheckoutKnownRepo, useToolbarRepositories } from "../checkout";
 
 export * from "../../../components/BranchToolbar";
 
@@ -28,17 +30,26 @@ export const BranchToolbar = memo(function BranchToolbar({
 }: ComponentProps<typeof UpstreamBranchToolbar>) {
   const slot = use(ComposerEnvSlot);
   const knownRepo = useCheckoutKnownRepo(props);
+  const repositories = useToolbarRepositories(props);
   const ours = slot !== null && props.layout !== "panel";
-  const offered = ours && props.showGitControls && knownRepo;
+  const offer = ours
+    ? envOfferOf({
+        showGitControls: props.showGitControls,
+        showBranchControls: props.showBranchControls,
+        knownRepo,
+      })
+    : null;
+  // A folder of repositories has no branch of its own: the ledge names its repositories instead.
+  const folder = offer === "repositories" ? repositories.label : null;
   const inner = useRef<BranchToolbarHandle>(null);
-  const setOffered = slot?.setOffered;
+  const setOffer = slot?.setOffer;
   const setOpen = slot?.setOpen;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the ledge's slot the toolbar is offered while it is, and withdraw it on change or unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the ledge's slot what the toolbar offers while it does, and withdraw it on change or unmount.
   useLayoutEffect(() => {
-    if (!offered || setOffered === undefined) return;
-    setOffered(true);
-    return () => setOffered(false);
-  }, [offered, setOffered]);
+    if (offer === null || setOffer === undefined) return;
+    setOffer({ folder });
+    return () => setOffer(null);
+  }, [offer, folder, setOffer]);
   useImperativeHandle(ours ? ref : undefined, () => ({
     openBranchPicker: () => setOpen?.(true),
     usePreviousWorktree: () => inner.current?.usePreviousWorktree(),
@@ -52,10 +63,37 @@ export const BranchToolbar = memo(function BranchToolbar({
         {props.trailing}
       </ComposerSurface.ContextStrip>
     );
-  if (!offered || slot.element === null) return strip;
+  if (offer === null || slot.element === null) return strip;
   return (
     <>
-      {createPortal(<UpstreamBranchToolbar {...props} ref={inner} layout="panel" />, slot.element)}
+      {createPortal(
+        <>
+          <UpstreamBranchToolbar
+            {...props}
+            ref={inner}
+            layout="panel"
+            {...(offer === "repositories" ? { panelSection: "workspace" as const } : {})}
+          />
+          {/* Upstream's panel layout has no checklist; its composer strip draws this one. */}
+          {repositories.choice && repositories.project !== null ? (
+            <div className="composer-line-env-repositories">
+              <WorktreeRepositoriesControl
+                project={repositories.project}
+                draftTarget={repositories.draftTarget}
+                offersBaseBranch={offer === "repositories"}
+              />
+            </div>
+          ) : null}
+          {offer === "repositories" && repositories.startsNewWorktree ? (
+            <p className="composer-line-env-base text-muted-foreground">
+              {repositories.baseBranch === ""
+                ? "Each repository starts from its own default branch"
+                : `Repositories start from ${repositories.baseBranch} where they have it`}
+            </p>
+          ) : null}
+        </>,
+        slot.element,
+      )}
       {strip}
     </>
   );

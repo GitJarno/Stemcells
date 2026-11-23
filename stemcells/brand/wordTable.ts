@@ -71,6 +71,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('threads: msg("Search threads"),', "Search threads", `Search ${CELL.many}`),
   ),
   ...inFile(
+    `${PHONE}/threads/NewTaskContextPickerScreens.tsx`,
+    within('? gt("Choose the repositories this thread works on.")', "thread", CELL.one),
+    within(`: gt("Each gets its own worktree on the thread's branch.")`, "thread", CELL.one),
+  ),
+  ...inFile(
     `${PHONE}/threads/NewTaskDraftRouteScreen.tsx`,
     within('<AppBar title={gt("New thread")}', "thread", CELL.one),
   ),
@@ -184,6 +189,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ...inFile(
     "apps/web/src/components/NoProjectsHero.tsx",
     whole("Start without a project", CASUAL_CHAT.start),
+  ),
+  ...inFile(
+    "apps/web/src/components/WorktreeRepositoriesControl.tsx",
+    within('? gt("Choose the repositories this thread works on")', "thread", CELL.one),
+    within(`: gt("Each gets its own worktree on the thread's branch")`, "thread", CELL.one),
   ),
   ...inFile(
     `${CHAT}/DraftHeroHeadline.tsx`,
