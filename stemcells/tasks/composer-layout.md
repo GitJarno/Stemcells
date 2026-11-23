@@ -91,6 +91,7 @@ The bottom-centre pill in the reported shots is not Stemcells': it is another ap
   | Worktree                 | The same, plus the worktree mark among where it runs                         |
   | Draft                    | Only "branch ⌄" and the stash, since a draft still chooses where to run      |
   | Project without git      | No branch; a draft gets no ledge, and T3's stash tab stays on the box        |
+  | Folder of repositories   | Its repositories or workspace; ⌄ holds T3's picker and checklist             |
   | Git status not known yet | Nothing; it never assumes git, and shows nothing while the status is pending |
 
 - **The row under the composer goes.** A substitute for `BranchToolbar` portals upstream's toolbar into the menu's slot (`composer/slot.ts`, `ComposerEnvSlot`) inside a pane, and renders nothing under the box. The menu stays mounted, so the toolbar keeps its state. Outside a pane, and in the thread panel, upstream's toolbar is unchanged.
