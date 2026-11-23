@@ -20,6 +20,7 @@ import {
   showRoute,
   splitDown,
   splitRight,
+  staysOnIndex,
   type CellRef,
   type NewIds,
   type Workspace,
@@ -281,6 +282,19 @@ describe("routes", () => {
     // The new Cell turned out to be a chat the first pane already shows.
     workspace = showRoute(workspace, thread("a"), ids());
     expect(shape(workspace)).toEqual([[[["a"]]]]);
+  });
+});
+
+// A press in a gone Cell's pane routes to it, and upstream leaves that route for the index, whose
+// page started a draft that landed in another tab, under the pane's × still being pressed.
+describe("the index route", () => {
+  it("keeps the workspace, with a gone Cell focused too, unless its pane is the only one", () => {
+    expect(staysOnIndex(EMPTY_WORKSPACE, true)).toBe(false);
+    const one = showRoute(EMPTY_WORKSPACE, thread("a"), ids());
+    expect(staysOnIndex(one, false)).toBe(true);
+    expect(staysOnIndex(one, true)).toBe(false);
+    expect(staysOnIndex(fill(splitRight(one, ids(), 1200), thread("b")), true)).toBe(true);
+    expect(staysOnIndex(openTab(one, ids(), thread("b")), true)).toBe(true);
   });
 });
 
