@@ -1,8 +1,7 @@
 /**
- * A new Cell never starts on Aski's provider instance, which carries Aski's persona: upstream's
- * new chat takes its model from the chat on screen, else the model last picked, and neither may
- * be Aski's; any other chat's model still carries. Nor does it start in Aski's no-project, as
- * upstream's new chat takes the on-screen chat's project.
+ * A new Cell never starts on Aski's provider instance (its persona), though upstream's new chat
+ * takes the on-screen chat's or the last picked model; any other model still carries. Nor does
+ * it start in Aski's no-project; from the column showing one project, it starts there.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
@@ -12,6 +11,7 @@ import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { DraftId, useComposerDraftStore } from "../../composerDraftStore";
 import { ASKI_INSTANCE_ID } from "../aski/setup";
 import { startingModel } from "./draftWords";
+import { newCellProjectRef } from "./newCellProject";
 import {
   resolveNewThreadModelSelectionOverride,
   resolveThreadActionProjectRef,
@@ -78,6 +78,34 @@ describe("a new chat opened from Aski's chat", () => {
       });
     expect(from(shown("no-project", askis))).toEqual(projectRef);
     expect(from(shown("harbor", codex))).toEqual(
+      scopeProjectRef(environmentId, ProjectId.make("harbor")),
+    );
+  });
+
+  it("starts in the project the column shows, from any chat; on its machine from one of its own", () => {
+    const shown = (environment: string, projectId: string, modelSelection: typeof askis) => ({
+      environmentId: EnvironmentId.make(environment),
+      projectId: ProjectId.make(projectId),
+      modelSelection,
+    });
+    const shop = scopeProjectRef(environmentId, ProjectId.make("shop"));
+    const shopElsewhere = scopeProjectRef(EnvironmentId.make("env-mini"), ProjectId.make("shop"));
+    const column = {
+      environmentId,
+      id: ProjectId.make("shop"),
+      memberProjectRefs: [shop, shopElsewhere],
+    };
+    const from = (scope: typeof column | null, activeThread: ReturnType<typeof shown>) =>
+      newCellProjectRef(scope, {
+        activeThread,
+        activeDraftThread: null,
+        defaultProjectRef: projectRef,
+        handleNewThread: async () => undefined,
+      });
+    expect(from(column, shown("env-new-chat", "harbor", codex))).toEqual(shop);
+    expect(from(column, shown("env-new-chat", "no-project", askis))).toEqual(shop);
+    expect(from(column, shown("env-mini", "shop", codex))).toEqual(shopElsewhere);
+    expect(from(null, shown("env-new-chat", "harbor", codex))).toEqual(
       scopeProjectRef(environmentId, ProjectId.make("harbor")),
     );
   });

@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ChevronsLeftIcon,
+  FolderPlusIcon,
   ListIcon,
   PinIcon,
   SearchIcon,
@@ -28,6 +29,7 @@ import { useOpenCell, useSettledKeptBack, useShelves, type ShelvedCell } from ".
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
   isElectron,
+  openAddProject,
   openSearch,
   ProjectFavicon,
   SidebarUpdatePill,
@@ -39,6 +41,7 @@ import { useNavigateToMainApp } from "../upstream/settings";
 import {
   cn,
   Menu,
+  MenuItem,
   MenuPopup,
   MenuRadioGroup,
   MenuRadioItem,
@@ -175,7 +178,7 @@ export function Cells() {
             label="New Cell"
             detail="⌘T"
             onClick={() => {
-              if (!openNewCellPane()) void navigate({ to: "/" });
+              if (!openNewCellPane(project?.scope ?? null)) void navigate({ to: "/" });
             }}
           >
             <SquarePenIcon />
@@ -310,7 +313,10 @@ const rowOfShelved = (cell: ShelvedCell): Row => ({
   line: null,
 });
 
-/** Which project the column shows, quiet until it's pointed at; every one by default. */
+/**
+ * Which project the column shows, quiet until it's pointed at; every one by default. Adding a
+ * project starts here too, as upstream's sidebar's project menu does.
+ */
 function ProjectFilter(props: {
   projects: ReadonlyArray<RailProject>;
   project: RailProject | null;
@@ -326,6 +332,10 @@ function ProjectFilter(props: {
           <ChevronDownIcon aria-hidden />
         </MenuTrigger>
         <MenuPopup align="start">
+          <MenuItem onClick={openAddProject}>
+            <FolderPlusIcon />
+            Add project
+          </MenuItem>
           <MenuRadioGroup
             value={project?.key ?? ALL_PROJECTS}
             onValueChange={(key: string) => props.onPick(key === ALL_PROJECTS ? null : key)}

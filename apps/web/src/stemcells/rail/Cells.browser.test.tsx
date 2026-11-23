@@ -24,6 +24,7 @@ const spies = vi.hoisted(() => ({
   download: vi.fn(async () => true),
   install: vi.fn(async () => true),
   openLink: vi.fn(),
+  newCellPane: vi.fn(() => true),
   updateProviders: vi.fn(async () => [{ key: "mac:codex", failure: null }]),
 }));
 /** Tells the column the stream changed, as the live stream does. */
@@ -198,13 +199,30 @@ vi.mock("../upstream/cellRow", async () => {
 vi.mock("../upstream/rail", () => ({
   isElectron: false,
   openSearch: () => undefined,
+  openAddProject: () => undefined,
   SidebarUpdatePill: () => <li data-testid="upstream-update-pill" />,
   useShortcutLabel: () => "⌘K",
   ProjectFavicon: () => null,
   useRailProjects: () => [
-    { key: "harbor", name: "Harbor", record: {}, memberKeys: ["env:project-harbor"] },
-    { key: "shop", name: "Shop", record: {}, memberKeys: ["env:project-shop"] },
+    {
+      key: "harbor",
+      name: "Harbor",
+      record: {},
+      memberKeys: ["env:project-harbor"],
+      scope: { id: "project-harbor" },
+    },
+    {
+      key: "shop",
+      name: "Shop",
+      record: {},
+      memberKeys: ["env:project-shop"],
+      scope: { id: "project-shop" },
+    },
   ],
+}));
+vi.mock("../tabs/commands", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../tabs/commands")>()),
+  openNewCellPane: spies.newCellPane,
 }));
 vi.mock("../upstream/settings", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../upstream/settings")>()),
@@ -285,6 +303,7 @@ function setup(update: DesktopUpdateState | null, providers: ReadonlyArray<Provi
   spies.install.mockClear();
   spies.openLink.mockClear();
   spies.updateProviders.mockClear();
+  spies.newCellPane.mockClear();
 }
 
 const codex: ProviderOffer = {
@@ -484,7 +503,7 @@ async function swipe(column: HTMLElement, way: 1 | -1) {
 }
 
 describe("the column's project filter", () => {
-  it("shows one project's Cells, while Input counts every ask and says where they are", async () => {
+  it("shows one project's Cells, while Input counts every ask and says where they are; New Cell starts there", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: "All projects" }));
@@ -500,6 +519,8 @@ describe("the column's project filter", () => {
     await expect.element(screen.getByRole("button", { name: /Flying\s*1/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Settled\s*1/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Pinned\s*0/ })).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "New Cell" }));
+    expect(spies.newCellPane).toHaveBeenLastCalledWith({ id: "project-shop" });
 
     await userEvent.click(screen.getByRole("button", { name: "Also 2 in Harbor" }));
     await expect
@@ -507,6 +528,8 @@ describe("the column's project filter", () => {
       .toBeVisible();
     await expect.element(screen.getByRole("button", { name: "All projects" })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Pinned\s*1/ })).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "New Cell" }));
+    expect(spies.newCellPane).toHaveBeenLastCalledWith(null);
   });
 });
 

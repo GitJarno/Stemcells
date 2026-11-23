@@ -19,8 +19,7 @@ import type { CellRef } from "../tabs/layout";
 import { PaneCellContext } from "../tabs/paneCell";
 import { ChatPanelHostContext } from "./chatPanel";
 import { routeTargetForCell, threadRefOf, type ThreadRouteTarget } from "./routes";
-// Ours, as upstream's "new thread" gets it (`substitutes/plugin.ts`): this folder gets upstream's.
-import { resolveThreadActionProjectRef } from "./substitutes/chatThreadActions";
+import { newCellProjectRef, type NewCellScope } from "./newCellProject";
 
 type CellLiveness = "alive" | "gone" | "unknown";
 
@@ -74,15 +73,15 @@ export function useCellLastSent(cell: CellRef | null): string | null | undefined
 }
 
 /**
- * Opens a new draft in the project of the chat the route shows (else the
- * first project), through upstream's own "new thread", which also routes to
- * it. Null when there is no project or the user moved on meanwhile.
+ * Opens a new draft in `scope`'s project when given, else in the project of the chat the route
+ * shows (else the first project), through upstream's own "new thread", which also routes to it
+ * (`newCellProject.ts`). Null when there is no project or the user moved on meanwhile.
  */
-export function useOpenNewCell(): () => Promise<CellRef | null> {
+export function useOpenNewCell(): (scope?: NewCellScope | null) => Promise<CellRef | null> {
   const { activeDraftThread, activeThread, defaultProjectRef, handleNewThread } =
     useHandleNewThread();
-  return async () => {
-    const projectRef = resolveThreadActionProjectRef({
+  return async (scope = null) => {
+    const projectRef = newCellProjectRef(scope, {
       activeDraftThread,
       activeThread: activeThread ?? undefined,
       defaultProjectRef,

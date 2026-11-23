@@ -3,10 +3,11 @@
  * rail, a thread chip in a chat). The workspace provides each while it is
  * mounted.
  */
+import type { NewCellScope } from "../upstream/newCellProject";
 import type { CellRef } from "./layout";
 
 let newCellTab: (() => void) | null = null;
-let newCellPane: (() => void) | null = null;
+let newCellPane: ((scope: NewCellScope | null) => void) | null = null;
 let cellBeside: ((cell: CellRef) => void) | null = null;
 
 /** The strip's +: a new tab with a new Cell in it. */
@@ -17,8 +18,8 @@ export function provideNewCellTab(run: () => void): () => void {
   };
 }
 
-/** "New Cell" (⌘T): a new Cell in a pane of the tab on screen. */
-export function provideNewCellPane(run: () => void): () => void {
+/** "New Cell" (⌘T): a new Cell in a pane of the tab on screen, in `scope`'s project when given. */
+export function provideNewCellPane(run: (scope: NewCellScope | null) => void): () => void {
   newCellPane = run;
   return () => {
     if (newCellPane === run) newCellPane = null;
@@ -26,9 +27,9 @@ export function provideNewCellPane(run: () => void): () => void {
 }
 
 /** Opens a new Cell in the tab on screen; false while no workspace is mounted. */
-export function openNewCellPane(): boolean {
+export function openNewCellPane(scope: NewCellScope | null = null): boolean {
   if (!newCellPane) return false;
-  newCellPane();
+  newCellPane(scope);
   return true;
 }
 
