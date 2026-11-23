@@ -206,7 +206,10 @@ vi.mock("../upstream/rail", () => ({
     { key: "shop", name: "Shop", record: {}, memberKeys: ["env:project-shop"] },
   ],
 }));
-vi.mock("../upstream/settings", () => ({ useNavigateToMainApp: () => async () => undefined }));
+vi.mock("../upstream/settings", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../upstream/settings")>()),
+  useNavigateToMainApp: () => async () => undefined,
+}));
 vi.mock("../upstream/ui", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../upstream/ui")>()),
   useSidebar: () => ({ open: true, isMobile: false }),
