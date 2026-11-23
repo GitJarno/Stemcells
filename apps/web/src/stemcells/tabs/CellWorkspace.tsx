@@ -30,6 +30,7 @@ import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import "../upstream/firstProjectFacts";
 import { usePrimaryEnvironmentId } from "../upstream/needs";
+import type { NewCellScope } from "../upstream/newCellProject";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
 import { useSettleCell } from "../upstream/settle";
 import { useDetailsClosedAtFirst } from "../upstream/threadDetails";
@@ -315,13 +316,19 @@ export function CellWorkspace(props: {
     if (activeTab(readWorkspace())?.id !== activeTab(before)?.id) routeToFocused();
   };
 
-  /** Adds an empty pane (or tab) and opens a new Cell into it through upstream's new thread. */
-  const openCellNow = async (change: (current: Workspace) => Workspace) => {
+  /**
+   * Adds an empty pane (or tab) and opens a new Cell into it through upstream's new thread, in
+   * `scope`'s project when given.
+   */
+  const openCellNow = async (
+    change: (current: Workspace) => Workspace,
+    scope: NewCellScope | null,
+  ) => {
     const previousPaneId = focusedPane(readWorkspace())?.id ?? null;
     updateWorkspace(change);
     const paneId = focusedPane(readWorkspace())?.id;
     if (!paneId) return;
-    const cell = await openNewCell().catch(() => null);
+    const cell = await openNewCell(scope).catch(() => null);
     const current = readWorkspace();
     const stillEmpty = findPane(current, (pane) => pane.id === paneId)?.pane.cell === null;
     if (!cell) {
@@ -342,8 +349,11 @@ export function CellWorkspace(props: {
   // One at a time: upstream's new thread gives up when the route moves while
   // it works, so a second ⌘T pressed meanwhile waits for the first.
   const openQueue = useRef(Promise.resolve());
-  const openCellInto = (change: (current: Workspace) => Workspace) => {
-    openQueue.current = openQueue.current.then(() => openCellNow(change));
+  const openCellInto = (
+    change: (current: Workspace) => Workspace,
+    scope: NewCellScope | null = null,
+  ) => {
+    openQueue.current = openQueue.current.then(() => openCellNow(change, scope));
   };
 
   const inAskiTab = () => isAskiTab(activeTab(readWorkspace()));
@@ -355,11 +365,11 @@ export function CellWorkspace(props: {
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide the new-tab command while mounted.
   useEffect(() => provideNewCellTab(() => provideNewTab()), []);
 
-  const openNewPane = () =>
-    openCellInto((current) => addPaneOutsideAski(current, newIds(), gridWidth()));
+  const openNewPane = (scope: NewCellScope | null = null) =>
+    openCellInto((current) => addPaneOutsideAski(current, newIds(), gridWidth()), scope);
   const provideNewPane = useEffectEvent(openNewPane);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide the new-pane command while mounted.
-  useEffect(() => provideNewCellPane(() => provideNewPane()), []);
+  useEffect(() => provideNewCellPane((scope) => provideNewPane(scope)), []);
 
   const openBeside = (cell: CellRef) => {
     // A chat open in another window: that window comes forward. Aski comes here.

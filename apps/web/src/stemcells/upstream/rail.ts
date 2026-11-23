@@ -29,6 +29,7 @@ import { primaryEnvironmentIdAtom } from "../../state/primaryEnvironment";
 import { primaryServerKeybindingsAtom } from "../../state/server";
 import { useUiStateStore } from "../../uiStateStore";
 import type { CellRef } from "../tabs/layout";
+import type { NewCellScope } from "./newCellProject";
 import { threadRefOf } from "./routes";
 import { statusOfShell, type CellStatus } from "./status";
 
@@ -47,6 +48,8 @@ export interface RailProject {
   readonly mark: RailMark;
   /** Every project of the group, as `environmentId:projectId`. */
   readonly memberKeys: ReadonlyArray<string>;
+  /** Where a new Cell starts while the column shows this project (`newCellProject.ts`). */
+  readonly scope: NewCellScope;
 }
 
 /** Letters in a colour (the person's, or derived from the name), or upstream's icon or emoji. */
@@ -84,6 +87,7 @@ export function useRailProjects(): ReadonlyArray<RailProject> {
       record: group,
       mark,
       memberKeys: group.memberProjectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
+      scope: group,
     };
   });
 }
@@ -141,6 +145,11 @@ export function useShortcutLabel(command: KeybindingCommand): string | null {
 /** Upstream's search: the command palette, which finds chats and projects. */
 export function openSearch(): void {
   openCommandPalette();
+}
+
+/** Upstream's Add project, as its sidebar's project menu opens it. */
+export function openAddProject(): void {
+  openCommandPalette({ open: "add-project" });
 }
 
 /**

@@ -20,6 +20,7 @@ export {
 export {
   Menu,
   MenuCheckboxItem,
+  MenuItem,
   MenuPopup,
   MenuRadioGroup,
   MenuRadioItem,

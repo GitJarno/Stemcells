@@ -28,6 +28,11 @@ export function setPicks(next: Picks | ((now: Picks) => Picks)) {
   void writeKept(FILE, JSON.stringify(picks));
 }
 
+/** The picks as they stand, for a handler. */
+export function readPicks(): Picks {
+  return read();
+}
+
 export function usePicks(): Picks {
   return useSyncExternalStore(subscribe, read);
 }

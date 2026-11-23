@@ -16,6 +16,7 @@ const project = (key: string, ...memberKeys: string[]): RailProject => ({
   } as RailProject["record"],
   mark: { kind: "letters", text: key.slice(0, 2), colorClass: "text-blue-600" },
   memberKeys: memberKeys.length > 0 ? memberKeys : [`env:${key}`],
+  scope: { environmentId: "env" as never, id: key as never, memberProjectRefs: [] },
 });
 
 const chat = (
