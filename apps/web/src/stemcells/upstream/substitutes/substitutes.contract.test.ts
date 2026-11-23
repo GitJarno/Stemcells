@@ -1084,6 +1084,37 @@ describe("Stemcells' substitutes for upstream modules", () => {
     }
   });
 
+  it("a module upstream's tests automock is re-exported by name: Vitest can't automock `export *`", () => {
+    const webSource = NodePath.join(webRoot, "src");
+    const automocked = new Set(
+      NodeFS.readdirSync(webSource, { recursive: true })
+        .map(String)
+        .filter(
+          (file) => /\.test\.tsx?$/.test(file) && !file.startsWith(`stemcells${NodePath.sep}`),
+        )
+        .flatMap((file) => {
+          const source = NodeFS.readFileSync(NodePath.join(webSource, file), "utf8");
+          // No factory, or `{ spy: true }`: Vitest builds the mock from the module's exports.
+          return [
+            ...source.matchAll(
+              /vi\.mock\((?:import\(["']([.~][^"']+)["']\)|["']([.~][^"']+)["'])\s*(?:\)|,\s*\{\s*spy:\s*true)/g,
+            ),
+          ].map(([, imported, named]) => {
+            const specifier = (imported ?? named)!;
+            return specifier.startsWith("~/")
+              ? NodePath.join(webSource, specifier.slice(2))
+              : NodePath.resolve(NodePath.dirname(NodePath.join(webSource, file)), specifier);
+          });
+        }),
+    );
+    for (const upstream of Object.keys(SUBSTITUTES)) {
+      if (!automocked.has(fromRepo(upstream).replace(/\.tsx?$/, ""))) continue;
+      expect(NodeFS.readFileSync(substitutePath(upstream), "utf8"), upstream).not.toMatch(
+        /export \* from/,
+      );
+    }
+  });
+
   it("the web app's config builds every target with the substitutes", async () => {
     // Dev and the production build use the config's plugins; both test
     // projects (unit and browser) inherit them through `extends: true`.
