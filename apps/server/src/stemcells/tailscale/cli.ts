@@ -28,8 +28,9 @@ export interface ServePorts {
 
 const MAC_APP = "/Applications/Tailscale.app";
 /**
- * The CLI, first one found: on a Mac the app's own binary (`cliEnv`). The `tailscale` the app installs on PATH is a shell script that
- * runs it as a child, which a timeout's kill of the script would leave behind.
+ * The CLI, first one found: on a Mac the app's own binary (`cliEnv`).
+ * The `tailscale` the app installs on PATH is a shell script that runs it as
+ * a child, which a timeout's kill of the script would leave behind.
  */
 const cliCandidates = (platform: string) =>
   platform === "darwin" ? [`${MAC_APP}/Contents/MacOS/Tailscale`, "tailscale"] : ["tailscale"];
