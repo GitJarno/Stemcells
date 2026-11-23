@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { needsConnectionOf } from "../line/readings";
 import {
   AppText,
   ScreenScrollView,
@@ -15,6 +14,7 @@ import {
   SymbolView,
   useMachines,
 } from "../upstream/disk";
+import { askMachine, machineConnectionOf } from "../upstream/machines";
 import { useSavedRemoteConnections } from "../upstream/push";
 import { FeatsView } from "./FeatsView";
 import { COLLECTION } from "./kit";
@@ -41,7 +41,13 @@ export function CollectionScreen() {
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read each machine's collection as the screen opens, and again once a route hands the phone its token.
   useEffect(() => {
     for (const saved of Object.values(savedConnectionsById))
-      void readCollectionOf(saved.environmentId, needsConnectionOf(saved), Date.now(), fetch, true);
+      void readCollectionOf(
+        saved.environmentId,
+        machineConnectionOf(saved),
+        Date.now(),
+        askMachine,
+        true,
+      );
   }, [savedConnectionsById]);
 
   const having = machines.filter(
@@ -52,7 +58,7 @@ export function CollectionScreen() {
   const saved = Object.values(savedConnectionsById).find(
     (each) => each.environmentId === shown?.environmentId,
   );
-  const connection = saved === undefined ? null : needsConnectionOf(saved);
+  const connection = saved === undefined ? null : machineConnectionOf(saved);
   return (
     <SettingsScreen title={COLLECTION.title}>
       <ScreenScrollView

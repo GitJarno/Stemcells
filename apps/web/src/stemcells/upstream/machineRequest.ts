@@ -3,7 +3,11 @@
 // signed with a proof per request (`machines.contract.test.ts`).
 
 import { EnvironmentSupervisor } from "@t3tools/client-runtime/connection";
-import { executeConnectedEnvironmentHttpRequest } from "@t3tools/client-runtime/state/environmentHttpAuth";
+import { RemoteEnvironmentAuthFetchError } from "@t3tools/client-runtime/rpc";
+import {
+  type EnvironmentHttpAuthHeaders,
+  executeConnectedEnvironmentHttpRequest,
+} from "@t3tools/client-runtime/state/environmentHttpAuth";
 import {
   createEnvironmentCommand,
   runAtomCommand,
@@ -20,17 +24,17 @@ import { appAtomRegistry } from "~/rpc/atomRegistry";
 /** A suggestion waits on a model for up to half of this. */
 const ANSWER_WITHIN_MS = 60_000;
 
-interface Asked {
-  readonly path: string;
-  readonly method: "GET" | "POST";
-  readonly init: RequestInit;
-  /** The last answer to come, kept when upstream's request fails on it: a refusal renewing didn't help. */
-  answer: Response | null;
-}
-
-const send = createEnvironmentCommand(connectionAtomRuntime, {
+const request = createEnvironmentCommand(connectionAtomRuntime, {
   label: "stemcells:machine-request",
-  execute: Effect.fnUntraced(function* (asked: Asked) {
+  execute: Effect.fnUntraced(function* (asked: {
+    readonly path: string;
+    readonly method: "GET" | "POST";
+    readonly send: (
+      url: string,
+      headers: EnvironmentHttpAuthHeaders,
+      interrupted: AbortSignal,
+    ) => Promise<Response>;
+  }) {
     const supervisor = yield* EnvironmentSupervisor.EnvironmentSupervisor;
     const prepared = Option.getOrNull(yield* SubscriptionRef.get(supervisor.prepared));
     if (prepared === null || prepared.target._tag === "RelayConnectionTarget") return null;
@@ -41,16 +45,10 @@ const send = createEnvironmentCommand(connectionAtomRuntime, {
       url: () => url,
       timeoutMs: ANSWER_WITHIN_MS,
       request: ({ headers }) =>
-        Effect.tryPromise(async (interrupted) => {
-          const { signal } = asked.init;
-          asked.answer = await fetch(url, {
-            ...asked.init,
-            method: asked.method,
-            signal: signal ? AbortSignal.any([signal, interrupted]) : interrupted,
-            credentials: headers.authorization === undefined ? "include" : "omit",
-            headers: { ...asked.init.headers, ...headers },
-          });
-          return asked.answer;
+        Effect.tryPromise({
+          try: (interrupted) => asked.send(url, headers, interrupted),
+          catch: (cause) =>
+            new RemoteEnvironmentAuthFetchError({ message: "It couldn't be reached.", cause }),
         }),
       isUnauthorizedResponse: (response) => response.status === 401,
     });
@@ -70,14 +68,34 @@ export async function requestMachine(
     readonly headers?: Readonly<Record<string, string>>;
   } = {},
 ): Promise<Response | null> {
-  const asked: Asked = { path, method: init.method ?? "GET", init, answer: null };
+  const { method = "GET", signal } = init;
+  const answers: Response[] = [];
   const result = await runAtomCommand(
     appAtomRegistry,
-    send,
-    { environmentId, input: asked },
+    request,
+    {
+      environmentId,
+      input: {
+        path,
+        method,
+        send: async (url, headers, interrupted) => {
+          const answer = await fetch(url, {
+            ...init,
+            method,
+            signal: signal ? AbortSignal.any([signal, interrupted]) : interrupted,
+            credentials: headers.authorization === undefined ? "include" : "omit",
+            headers: { ...init.headers, ...headers },
+          });
+          answers.push(answer);
+          return answer;
+        },
+      },
+    },
     { reportFailure: false },
   );
   if (result._tag === "Success") return result.value;
-  if (asked.answer !== null) return asked.answer;
+  // What it said when it refused the renewed token too.
+  const refusal = answers.at(-1);
+  if (refusal !== undefined) return refusal;
   throw squashAtomCommandFailure(result);
 }

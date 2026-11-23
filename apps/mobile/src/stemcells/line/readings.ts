@@ -6,13 +6,10 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { AppState } from "react-native";
 
-import {
-  isRelayManagedConnection,
-  type SavedRemoteConnection,
-  useSavedRemoteConnections,
-} from "../upstream/push";
+import { machineConnectionOf, type SavedRemoteConnection } from "../upstream/machines";
+import { useSavedRemoteConnections } from "../upstream/push";
 import { forgetCollectionOf, readCollectionOf } from "../collection/read";
-import { readNeeds, type NeedsConnection, type Reading } from "./read";
+import { readNeeds, type Reading } from "./read";
 
 /** After a chat changes: its machine derives the asks from the same change. */
 const BEAT_MS = 400;
@@ -20,7 +17,7 @@ const BEAT_MS = 400;
 const GAP_MS = 1_500;
 
 let readings: ReadonlyMap<string, Reading> = new Map();
-const connections = new Map<string, NeedsConnection>();
+const connections = new Map<string, SavedRemoteConnection>();
 const reading = new Map<string, Promise<Reading>>();
 const waiting = new Map<string, ReturnType<typeof setTimeout>>();
 const lastRead = new Map<string, number>();
@@ -38,8 +35,9 @@ function publish(environmentId: string, next: Reading | null) {
 export function readMachine(environmentId: string): Promise<Reading | null> {
   const under = reading.get(environmentId);
   if (under !== undefined) return under;
-  const connection = connections.get(environmentId);
-  if (connection === undefined) return Promise.resolve(null);
+  const saved = connections.get(environmentId);
+  if (saved === undefined) return Promise.resolve(null);
+  const connection = machineConnectionOf(saved);
   const before = readings.get(environmentId);
   const last = before === undefined || before.state === "none" ? null : before.list;
   const read = readNeeds(connection, last).then((next) => {
@@ -70,15 +68,6 @@ function readSoon(environmentId: string) {
     Math.max(BEAT_MS, GAP_MS - since),
   );
   waiting.set(environmentId, timer);
-}
-
-/** A saved connection as the reader reads it, on the route it uses now. */
-export function needsConnectionOf(connection: SavedRemoteConnection): NeedsConnection {
-  return {
-    httpBaseUrl: connection.httpBaseUrl,
-    bearerToken: connection.bearerToken,
-    ...(isRelayManagedConnection(connection) ? { relayManaged: true as const } : {}),
-  };
 }
 
 const subscribe = (listener: () => void) => {
@@ -113,17 +102,11 @@ export function useKeepReading(
       }
     for (const connection of saved) {
       const before = connections.get(connection.environmentId);
-      const next = needsConnectionOf(connection);
-      connections.set(connection.environmentId, next);
+      connections.set(connection.environmentId, connection);
       if (!inFront) continue;
       if (before === undefined) void readMachine(connection.environmentId);
-      // A route that just connected, or another route taken: read it with what it carries now.
-      else if (
-        before.bearerToken !== next.bearerToken ||
-        before.httpBaseUrl !== next.httpBaseUrl ||
-        before.relayManaged !== next.relayManaged
-      )
-        readSoon(connection.environmentId);
+      // A route that just connected, or another route taken: read it through that one.
+      else if (before !== connection) readSoon(connection.environmentId);
     }
   }, [savedConnectionsById, inFront]);
 

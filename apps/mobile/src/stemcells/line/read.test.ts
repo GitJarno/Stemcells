@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
+import type { askMachine, MachineConnection } from "../upstream/machines";
 import { cardOf, type NeedsList } from "./kit";
-import { readNeeds, type NeedsConnection } from "./read";
+import { readNeeds } from "./read";
+
+// What asks the machine is the adapter's, with its own test; each case here passes its own.
+vi.mock("../upstream/machines", () => ({ askMachine: null }));
 
 const list: NeedsList = {
   needs: [
@@ -36,31 +40,29 @@ const list: NeedsList = {
   ],
 };
 
-const mac: NeedsConnection = { httpBaseUrl: "http://mac.example:3773/", bearerToken: "token" };
+const mac: MachineConnection = { environmentId: "mac", reach: "direct" };
 
-/** A fetch that answers `status` with `body`, and keeps what it was asked. */
+/** A machine that answers `status` with `body`, and keeps what it was asked. */
 function answering(status: number, body: unknown) {
-  const asked: Array<{ url: string; authorization: string | null }> = [];
-  const request = (async (url: string, init?: RequestInit) => {
-    asked.push({ url, authorization: new Headers(init?.headers).get("authorization") });
+  const asked: Array<readonly [environmentId: string, path: string]> = [];
+  const request: typeof askMachine = async (environmentId, path) => {
+    asked.push([environmentId, path]);
     return new Response(JSON.stringify(body), { status });
-  }) as typeof fetch;
+  };
   return { asked, request };
 }
 
 describe("what a machine says of its asks", () => {
-  it("is read from the machine's own server with the token the phone paired with", async () => {
+  it("is read from the machine's own server", async () => {
     const machine = answering(200, list);
     expect(await readNeeds(mac, null, machine.request)).toEqual({ state: "read", list });
-    expect(machine.asked).toEqual([
-      { url: "http://mac.example:3773/api/stemcells/needs", authorization: "Bearer token" },
-    ]);
+    expect(machine.asked).toEqual([["mac", "/api/stemcells/needs"]]);
   });
 
   it("has no line for T3's server, T3's relay, or one from before the stages", async () => {
     expect(await readNeeds(mac, null, answering(404, {}).request)).toEqual({ state: "none" });
     const relayed = answering(200, list);
-    expect(await readNeeds({ ...mac, relayManaged: true }, null, relayed.request)).toEqual({
+    expect(await readNeeds({ ...mac, reach: "relay" }, null, relayed.request)).toEqual({
       state: "none",
     });
     expect(relayed.asked).toEqual([]);
@@ -73,16 +75,15 @@ describe("what a machine says of its asks", () => {
       state: "unreachable",
       list,
     });
-    // Connecting, or reconnecting, T3's saved connection has no token yet.
-    const connecting = answering(200, list);
-    expect(await readNeeds({ ...mac, bearerToken: null }, list, connecting.request)).toEqual({
+    // Connecting, or reconnecting, it has no line to ask through.
+    const connecting = async () => null;
+    expect(await readNeeds({ ...mac, reach: "away" }, list, connecting)).toEqual({
       state: "unreachable",
       list,
     });
-    expect(connecting.asked).toEqual([]);
-    const offline = (async () => {
+    const offline = async () => {
       throw new TypeError("Network request failed");
-    }) as typeof fetch;
+    };
     expect(await readNeeds(mac, list, offline)).toEqual({ state: "unreachable", list });
   });
 

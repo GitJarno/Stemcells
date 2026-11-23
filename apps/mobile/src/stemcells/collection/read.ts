@@ -12,7 +12,7 @@ import {
   unlockedActs,
 } from "../../../../../stemcells/ledger/feats.ts";
 import { setChosen } from "../cell/kit";
-import type { NeedsConnection } from "../line/read";
+import { askMachine, type MachineConnection } from "../upstream/machines";
 import { type Baseline, baselineAfter, type Turns, turns } from "./kit";
 
 const PATH = "/api/stemcells/collection";
@@ -53,10 +53,6 @@ const without = (environmentId: string): Map<string, Collection> => {
   return next;
 };
 
-/** Whether the phone holds its own token for this machine: only then can it ask it directly. */
-export const authorised = (connection: NeedsConnection) =>
-  connection.relayManaged !== true && connection.bearerToken !== null;
-
 /**
  * Reads `environmentId`'s collection; `force` reads inside the gap too (the collection's own
  * screen, a change just made). A machine that can't be reached keeps what it said last; one
@@ -64,21 +60,19 @@ export const authorised = (connection: NeedsConnection) =>
  */
 export async function readCollectionOf(
   environmentId: string,
-  connection: NeedsConnection,
+  connection: MachineConnection,
   now: number = Date.now(),
-  request: typeof fetch = fetch,
+  ask: typeof askMachine = askMachine,
   force = false,
 ): Promise<void> {
-  if (!authorised(connection)) return;
+  if (connection.reach !== "direct") return;
   if (!force && now - (lastRead.get(environmentId) ?? -GAP_MS) < GAP_MS) return;
   lastRead.set(environmentId, now);
   const fresh = orderOf(environmentId).read();
   try {
-    const answer = await request(new URL(PATH, connection.httpBaseUrl).toString(), {
-      headers: { authorization: `Bearer ${connection.bearerToken}` },
-    });
-    if (answer.status === 404) publish(without(environmentId));
-    else if (answer.ok) {
+    const answer = await ask(environmentId, PATH);
+    if (answer?.status === 404) publish(without(environmentId));
+    else if (answer?.ok) {
       // Parsed before `held` is copied: another machine's read may land meanwhile.
       const next = (await answer.json()) as Collection;
       if (!fresh()) return;
@@ -98,18 +92,14 @@ export function forgetCollectionOf(environmentId: string): void {
   if (held.has(environmentId)) publish(without(environmentId));
 }
 
-async function change(connection: NeedsConnection, asked: CollectionChange): Promise<boolean> {
-  if (!authorised(connection)) return false;
+async function change(connection: MachineConnection, asked: CollectionChange): Promise<boolean> {
   try {
-    const answer = await fetch(new URL(PATH, connection.httpBaseUrl).toString(), {
+    const answer = await askMachine(connection.environmentId, PATH, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${connection.bearerToken}`,
-        "content-type": "application/json",
-      },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify(asked),
     });
-    return answer.ok;
+    return answer?.ok === true;
   } catch {
     return false;
   }
@@ -122,7 +112,7 @@ async function change(connection: NeedsConnection, asked: CollectionChange): Pro
  */
 export async function wear(
   environmentId: string,
-  connection: NeedsConnection,
+  connection: MachineConnection,
   threadId: string,
   worn: readonly string[],
 ): Promise<void> {
@@ -139,13 +129,13 @@ export async function wear(
   }
   await change(connection, { wear: { threadId, worn } });
   arrived();
-  await readCollectionOf(environmentId, connection, Date.now(), fetch, true);
+  await readCollectionOf(environmentId, connection, Date.now(), askMachine, true);
 }
 
 /** Notes that these feats have been shown to the person, here at once and on the machine. */
 export function markSeen(
   environmentId: string,
-  connection: NeedsConnection,
+  connection: MachineConnection,
   ids: readonly string[],
 ): void {
   if (ids.length === 0) return;
@@ -165,7 +155,7 @@ const told = new Set<string>();
 /** Tells the machine the person did `deed` to its Cell `threadId`, once a session; a feat may read it. */
 export function tellDeed(
   environmentId: string,
-  connection: NeedsConnection,
+  connection: MachineConnection,
   deed: Deed,
   threadId: string,
 ): void {
@@ -173,7 +163,7 @@ export function tellDeed(
   if (told.has(key)) return;
   told.add(key);
   void change(connection, { deed: { deed, threadId } }).then((kept) => {
-    if (kept) void readCollectionOf(environmentId, connection, Date.now(), fetch, true);
+    if (kept) void readCollectionOf(environmentId, connection, Date.now(), askMachine, true);
     else told.delete(key);
   });
 }

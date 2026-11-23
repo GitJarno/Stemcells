@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import type { askMachine, MachineConnection } from "../upstream/machines";
 import { ownTeam } from "./ownTeam";
 import { registerWith } from "./register";
+
+// What asks the machine is the adapter's, with its own test; each case here passes its own.
+vi.mock("../upstream/machines", () => ({ askMachine: null }));
 
 const device = {
   token: "aa11",
@@ -9,17 +13,17 @@ const device = {
   topic: "com.example.cells",
   label: "Phone",
 };
-const mac = { httpBaseUrl: "http://mac.example.ts.net:3773/", bearerToken: "paired" };
+const mac: MachineConnection = { environmentId: "mac", reach: "direct" };
 
 describe("registerWith", () => {
-  it("asks the Mac for pushes with the connection's own credentials", async () => {
-    const request = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
-    expect(await registerWith(mac, device, request)).toBe("registered");
-    const [url, init] = request.mock.calls[0] ?? [];
-    expect(url).toBe("http://mac.example.ts.net:3773/api/stemcells/push/devices");
-    expect(init?.method).toBe("POST");
-    expect(new Headers(init?.headers).get("authorization")).toBe("Bearer paired");
-    expect(init?.body).toBe(JSON.stringify(device));
+  it("asks the Mac for pushes to this phone", async () => {
+    const ask = vi.fn<typeof askMachine>(async () => new Response(null, { status: 204 }));
+    expect(await registerWith(mac, device, ask)).toBe("registered");
+    expect(ask).toHaveBeenCalledExactlyOnceWith("mac", "/api/stemcells/push/devices", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(device),
+    });
   });
 
   it("tells a server without pushes from one that refused, and one out of reach", async () => {
@@ -30,9 +34,8 @@ describe("registerWith", () => {
       throw new TypeError("Network request failed");
     };
     expect(await registerWith(mac, device, offline)).toBe("unreachable");
-    expect(await registerWith({ ...mac, bearerToken: null }, device, answering(204))).toBe(
-      "refused",
-    );
+    const connecting = async () => null;
+    expect(await registerWith({ ...mac, reach: "away" }, device, connecting)).toBe("unreachable");
   });
 });
 

@@ -23,7 +23,6 @@ import {
 import { ThreadCell } from "../cell/ThreadCell";
 import { tellDeed } from "../collection/read";
 import { ProjectMark } from "../home/RowCell";
-import { needsConnectionOf } from "../line/readings";
 import {
   AppText,
   type EnvironmentThreadShell,
@@ -31,6 +30,7 @@ import {
   useProject,
   useThreadShellsSelected,
 } from "../upstream/cells";
+import { machineConnectionOf } from "../upstream/machines";
 import { useSavedConnection } from "../upstream/push";
 
 /** The Cell's points per cell of its miniature: about the height of the two lines beside it. */
@@ -96,13 +96,13 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
             if (!stroked) return;
             hand.current.soothed = true;
             if (stroke(thread.id, at) !== undefined && saved !== null)
-              tellDeed(thread.environmentId, needsConnectionOf(saved), "stroked", thread.id);
+              tellDeed(thread.environmentId, machineConnectionOf(saved), "stroked", thread.id);
           }}
           onPress={() => {
             if (hand.current.soothed) return;
             // Poked until it sees stars is a deed a feat reads, told the first time.
             if (poke(thread.id, clockSeconds())?.key === "act/dazed" && saved !== null)
-              tellDeed(thread.environmentId, needsConnectionOf(saved), "dazed", thread.id);
+              tellDeed(thread.environmentId, machineConnectionOf(saved), "dazed", thread.id);
           }}
         >
           <ThreadCell

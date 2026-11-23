@@ -23,7 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FullWindowOverlay } from "react-native-screens";
 
 import { cellNameOf, clockSeconds, moment } from "../cell/kit";
-import type { NeedsConnection } from "../line/read";
+import type { MachineConnection } from "../upstream/machines";
 import { Button, openCollection } from "../upstream/collection";
 import { AppText, SymbolView } from "../upstream/disk";
 import { useCellDriver, useLookOf } from "./CellMini";
@@ -61,7 +61,7 @@ const LEAVES = FadeOut.duration(150).reduceMotion(ReduceMotion.System);
 
 export function FeatMoment(props: {
   readonly environmentId: string;
-  readonly connection: NeedsConnection | null;
+  readonly connection: MachineConnection | null;
   readonly standing: Standing;
   /** What the Cell that did it wears by the person's choice. */
   readonly worn: readonly string[];

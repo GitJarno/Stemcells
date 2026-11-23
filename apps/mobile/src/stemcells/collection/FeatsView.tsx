@@ -9,7 +9,7 @@ import Svg, { Circle } from "react-native-svg";
 import { useResolveClassNames } from "uniwind";
 
 import { cellNameOf } from "../cell/kit";
-import type { NeedsConnection } from "../line/read";
+import type { MachineConnection } from "../upstream/machines";
 import { AppText, SymbolView } from "../upstream/disk";
 import { CellMini } from "./CellMini";
 import { CellStill } from "./CellStill";
@@ -68,7 +68,7 @@ function RewardCell(props: {
 
 export function FeatsView(props: {
   readonly environmentId: string;
-  readonly connection: NeedsConnection | null;
+  readonly connection: MachineConnection | null;
   readonly collection: Collection;
 }) {
   const { environmentId, connection, collection } = props;

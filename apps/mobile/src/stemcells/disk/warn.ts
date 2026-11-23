@@ -1,7 +1,8 @@
 // How little free space warns about a machine: set on its own server (`POST
 // /api/stemcells/disk/warn`), and held on the phone meanwhile (`chosen.ts`).
 
-import { createChoices, type MachineConnection, postToMachine, useChoice } from "./chosen";
+import type { MachineConnection } from "../upstream/machines";
+import { createChoices, postToMachine, useChoice } from "./chosen";
 import { SOON_BELOW } from "./kit";
 
 const PATH = "/api/stemcells/disk/warn";

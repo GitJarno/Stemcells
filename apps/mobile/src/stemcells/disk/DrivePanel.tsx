@@ -10,9 +10,8 @@ import {
   RowPressable,
   SettingsSection,
   SymbolView,
+  useMachineConnection,
   useMachineDisk,
-  useMachineLine,
-  type MachineLine,
 } from "../upstream/disk";
 import { DriveHero } from "./DriveHero";
 import { setLookInside, useDriveReading, useDrives } from "./drives";
@@ -310,17 +309,17 @@ function PanelRow(props: {
 /** Opening a drive to be looked inside, or closing it again: a choice kept on its machine. */
 function useLookInside(
   environmentId: string,
-  line: MachineLine | null,
+  reached: boolean,
   drive: Drive | null,
   onChanged: () => void,
 ) {
   const [changing, setChanging] = useState(false);
-  if (line === null || drive === null) return null;
+  if (!reached || drive === null) return null;
   return {
     changing,
     change: async (on: boolean) => {
       setChanging(true);
-      const taken = await setLookInside(environmentId, line, drive.id, on);
+      const taken = await setLookInside(environmentId, drive.id, on);
       setChanging(false);
       if (taken) onChanged();
       else Dialog.alert(DRIVE_INSIDE.failed, "Try again in a moment.");
@@ -360,11 +359,12 @@ export function DrivePanel(props: {
   const driveId = drive?.id ?? (known.status === "known" ? STARTUP_DRIVE : props.wanted);
   const external = driveId !== STARTUP_DRIVE;
   const key = `${environmentId}/${driveId}`;
-  const line = useMachineLine(environmentId);
+  const reach = useMachineConnection(environmentId)?.reach;
+  const reached = reach === "direct";
   const { reading, failed, measureAgain } = useDriveReading(environmentId, driveId);
   const { colors, tones } = useFieldTheme();
   // Once the machine takes the choice, the drive it was made for is measured, if it still shows.
-  const lookInsideChoice = useLookInside(environmentId, line, drive, () => measureAgain(key));
+  const lookInsideChoice = useLookInside(environmentId, reached, drive, () => measureAgain(key));
   const [width, setWidth] = useState(0);
 
   const volume =
@@ -470,13 +470,13 @@ export function DrivePanel(props: {
         </ScrollView>
       ) : null}
 
-      {line === null ? (
+      {reach === "relay" ? (
         <AppText textRole="footnote" className="px-2 text-foreground-muted">
           {`Only free space shows for ${machineName}: the phone reaches it through the relay.`}
         </AppText>
       ) : null}
 
-      {line !== null && drive !== null && external && (!lookInside || denied) ? (
+      {reached && drive !== null && external && (!lookInside || denied) ? (
         <SettingsSection title="What's on it">
           {!lookInside ? (
             <PanelRow
@@ -509,7 +509,7 @@ export function DrivePanel(props: {
         </SettingsSection>
       ) : null}
 
-      {line !== null && lookInside && !denied ? (
+      {reached && lookInside && !denied ? (
         <SettingsSection
           title={external ? "What's on it" : "What's large"}
           trailing={

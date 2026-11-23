@@ -2,7 +2,8 @@
 // hidden on the machine's own server (`POST /api/stemcells/disk/notice`), so every phone hides
 // it and the Mac's Settings › Disk says so; held on the phone meanwhile (`chosen.ts`).
 
-import { createChoices, type MachineConnection, postToMachine, useChoice } from "./chosen";
+import type { MachineConnection } from "../upstream/machines";
+import { createChoices, postToMachine, useChoice } from "./chosen";
 
 const PATH = "/api/stemcells/disk/notice";
 
