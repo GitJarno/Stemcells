@@ -64,6 +64,7 @@ import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePaste
 import * as UpstreamSideThreadPane from "../../../components/chat/SideThreadPane";
 import * as UpstreamMarkdownCodeBlock from "../../../components/chat/MarkdownCodeBlock";
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
+import * as UpstreamHandleNewThread from "../../../hooks/useHandleNewThread";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamAssistantRows from "../../../components/chat/TimelineAssistantRows";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
@@ -124,6 +125,7 @@ import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurTimelineOverlays from "./TimelineOverlays";
 import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
+import * as OurHandleNewThread from "./useHandleNewThread";
 import * as OurUsageProviders from "./usageProviders";
 import * as OurUsageLimitsPooled from "./UsageLimitsPooled";
 import * as OurVisibleAnimation from "./visibleAnimation";
@@ -620,6 +622,16 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/web/src/hooks/useHandleNewThread.ts": {
+    upstream: UpstreamHandleNewThread,
+    substitute: OurHandleNewThread satisfies typeof UpstreamHandleNewThread,
+    importers: {
+      "apps/web/src/components/chat/useComposerSend.ts": [
+        "../../hooks/useHandleNewThread",
+        ["readPendingWorkspaceDefault"],
+      ],
+    },
+  },
   "apps/web/src/onboarding/welcomePage.logic.ts": {
     upstream: UpstreamWelcomePageLogic,
     substitute: OurWelcomePageLogic satisfies typeof UpstreamWelcomePageLogic,
@@ -1069,6 +1081,37 @@ describe("Stemcells' substitutes for upstream modules", () => {
           expect.arrayContaining([...names]),
         );
       }
+    }
+  });
+
+  it("a module upstream's tests automock is re-exported by name: Vitest can't automock `export *`", () => {
+    const webSource = NodePath.join(webRoot, "src");
+    const automocked = new Set(
+      NodeFS.readdirSync(webSource, { recursive: true })
+        .map(String)
+        .filter(
+          (file) => /\.test\.tsx?$/.test(file) && !file.startsWith(`stemcells${NodePath.sep}`),
+        )
+        .flatMap((file) => {
+          const source = NodeFS.readFileSync(NodePath.join(webSource, file), "utf8");
+          // No factory, or `{ spy: true }`: Vitest builds the mock from the module's exports.
+          return [
+            ...source.matchAll(
+              /vi\.mock\((?:import\(["']([.~][^"']+)["']\)|["']([.~][^"']+)["'])\s*(?:\)|,\s*\{\s*spy:\s*true)/g,
+            ),
+          ].map(([, imported, named]) => {
+            const specifier = (imported ?? named)!;
+            return specifier.startsWith("~/")
+              ? NodePath.join(webSource, specifier.slice(2))
+              : NodePath.resolve(NodePath.dirname(NodePath.join(webSource, file)), specifier);
+          });
+        }),
+    );
+    for (const upstream of Object.keys(SUBSTITUTES)) {
+      if (!automocked.has(fromRepo(upstream).replace(/\.tsx?$/, ""))) continue;
+      expect(NodeFS.readFileSync(substitutePath(upstream), "utf8"), upstream).not.toMatch(
+        /export \* from/,
+      );
     }
   });
 

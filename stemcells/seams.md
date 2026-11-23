@@ -48,6 +48,9 @@ place of upstream's: `apps/web/src/stemcells/upstream/substitutes/plugin.ts`
 lists each upstream module and its substitute, a file of the same name
 beside it. Our own folder still gets upstream's module, so a substitute
 re-exports it (`export * from …`) and replaces only the names it changes.
+Where upstream's tests automock the module (`vi.mock` with no factory, or
+`{ spy: true }`), it re-exports each name instead: Vitest can't automock
+`export *`, and the contract test holds that.
 
 - **Every build of the web.** Dev, the production build (which the desktop
   app ships) and both test projects take the plugin from the config.
