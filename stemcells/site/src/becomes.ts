@@ -102,10 +102,10 @@ export function becomes(root: HTMLElement): void {
         cells.style.width = `${f.width}px`;
         cells.style.height = `${f.height}px`;
       }
-      app.turn(TURNS.reduce((sum, at) => sum + ease.inOut(span(p, at, at + 0.05)), 0));
+      app.turn(TURNS.reduce((sum, at) => sum + span(p, at, at + 0.016), 0));
       // Close on the one fresh Cell while it grows, then back for the whole window as it fills.
       app.look(
-        between(VIEW.fresh, VIEW.whole, ease.inOut(span(p, TURNS[0] - 0.1, TURNS[0] + 0.02))),
+        between(VIEW.fresh, VIEW.whole, ease.inOut(span(p, TURNS[0] - 0.1, TURNS[0] - 0.01))),
       );
 
       // The ledge: the window's top edge, and a place on it for each of the crew.

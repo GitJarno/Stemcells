@@ -64,6 +64,8 @@ const AT = {
   settles: 0.825,
   settled: 0.95,
 } as const;
+/** How much of the scroll one screen takes to turn into the next: all but a cut. */
+const CUT = 0.016;
 /** Reduce Motion's still: landed and calm, the closing line up, both trails drawn. */
 const STILL = 0.786;
 /** Where an answer scrolls to: the second throw, just off the ground. */
@@ -415,27 +417,28 @@ export function arc(root: HTMLElement): void {
       asking = p >= AT.asks && p < AT.answered;
       app.frame.classList.toggle("asks", asking);
       app.frame.style.opacity = `${lerp(0.4, 1, span(p, AT.crouch, AT.thrown + 0.02))}`;
+      // A screen turns into the next in place, while the camera rests: never two screens under a moving camera.
       app.turn(
-        span(p, AT.short + 0.01, AT.asks) +
-          span(p, AT.answered, AT.thrownAgain) +
-          span(p, AT.landed, AT.landed + 0.03) +
-          span(p, AT.settles, AT.settles + 0.05),
+        span(p, AT.short + 0.012, AT.short + CUT + 0.012) +
+          span(p, AT.answered, AT.answered + CUT) +
+          span(p, AT.landed, AT.landed + CUT) +
+          span(p, AT.settles, AT.settles + CUT),
       );
-      // The camera goes where the app answers each stage: the list, the question, the closing line, the list.
+      // The camera goes where the app answers each stage: the chat, the question, the chat, the list.
       const view = views(f.form === "phone");
       app.look(
         along(
           [
             [AT.thrown, view.whole],
             [AT.thrown + 0.07, view.work],
-            [AT.short, view.work],
+            [AT.short + CUT + 0.012, view.work],
             [AT.asks + 0.03, view.ask],
-            [AT.answered, view.ask],
+            [AT.answered + CUT, view.ask],
             [AT.thrownAgain + 0.05, view.work],
-            [AT.landed, view.work],
-            [AT.landed + 0.05, view.landed],
-            [AT.hint, view.landed],
-            [AT.settles + 0.07, view.settled],
+            [AT.landed + CUT, view.work],
+            [AT.landed + CUT + 0.04, view.landed],
+            [AT.settles + CUT, view.landed],
+            [AT.settles + CUT + 0.07, view.settled],
           ],
           p,
         ),
