@@ -7,7 +7,9 @@ import { build } from "vite-plus";
 import { askiCloud, askiText } from "./src/text.ts";
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
-const dist = NodePath.join(here, "dist");
+// `--out <folder>` builds somewhere else: two builds at once each need their own.
+const out = process.argv.indexOf("--out");
+const dist = out > 0 ? NodePath.resolve(process.argv[out + 1]) : NodePath.join(here, "dist");
 
 await build({
   root: NodePath.join(here, "src"),
