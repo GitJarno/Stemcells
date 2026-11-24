@@ -24,6 +24,9 @@ export const ledgeWidth = (ledge: Ledge, d: number): number =>
 /** A word's height, CSS pixels. */
 export const ledgeHeight = (d: number): number => (CH * WORD_SCALE) / d;
 
+/** A stretch along the stage, device pixels: from, to. */
+export type Span = readonly [number, number];
+
 /** The stages a person reads, and the colour each is read in. */
 export const TONES = {
   flying: "#8393FF",
@@ -201,24 +204,51 @@ export class Actor {
     }
   }
 
-  /** Its name and stage over its head: the name in ink, the stage in its tone. */
-  drawLabel(context: CanvasRenderingContext2D, now: number, d: number): void {
-    if (this.label === "" || this.alpha <= 0) return;
-    context.globalAlpha = this.alpha;
-    const dots = this.tone === "flying" ? ".".repeat(Math.floor(now * 3) % 4) : "";
+  /**
+   * Its name and stage over its head: the name in ink, the stage in its tone. Where that would lie
+   * over a span in `taken` (device pixels along the stage) it is its name alone, or nothing.
+   */
+  drawLabel(
+    context: CanvasRenderingContext2D,
+    now: number,
+    d: number,
+    taken: readonly Span[] = [],
+  ): Span | null {
+    if (this.label === "" || this.alpha <= 0) return null;
+    const flying = this.tone === "flying";
+    const dots = flying ? ".".repeat(Math.floor(now * 3) % 4) : "";
     context.font = `${11 * d}px ui-monospace, "SF Mono", Menlo, monospace`;
     context.textAlign = "left";
-    const name = `${this.cell.name} · `;
-    const width = context.measureText(`${name}${this.label}...`).width;
-    // Kept whole inside the stage: a Cell at the edge of a phone still has its name.
-    const most = context.canvas.width - context.measureText(`${name}${this.label}`).width - 6 * d;
-    const left = Math.max(6 * d, Math.min(most, this.x * d - width / 2)),
-      base = Math.max(14, this.y - 14 * this.#points - 10) * d;
+    const name = this.cell.name,
+      stage = ` · ${this.label}`;
+    /** Where `text` starts, centred on the Cell and whole inside the stage; null where it would lie over a taken span. */
+    const placed = (text: string, room = ""): Span | null => {
+      const wide = context.measureText(text).width;
+      const most = context.canvas.width - wide - 6 * d;
+      const left = Math.max(
+        6 * d,
+        Math.min(most, this.x * d - context.measureText(text + room).width / 2),
+      );
+      const clear = taken.every(([from, to]) => left > to + 6 * d || left + wide < from - 6 * d);
+      return clear ? [left, left + wide] : null;
+    };
+    const whole = placed(name + stage, flying ? "..." : "");
+    const span = whole ?? placed(name);
+    if (span === null) return null;
+    const base = Math.max(14, this.y - 14 * this.#points - 10) * d;
+    context.globalAlpha = this.alpha;
     context.fillStyle = "rgba(237, 233, 224, 0.8)";
-    context.fillText(name, left, base);
-    context.fillStyle = TONES[this.tone];
-    context.fillText(`${this.label}${dots}`, left + context.measureText(name).width, base);
+    context.fillText(whole === null ? name : `${name} · `, span[0], base);
+    if (whole !== null) {
+      context.fillStyle = TONES[this.tone];
+      context.fillText(
+        `${this.label}${dots}`,
+        span[0] + context.measureText(`${name} · `).width,
+        base,
+      );
+    }
     context.globalAlpha = 1;
+    return span;
   }
 }
 

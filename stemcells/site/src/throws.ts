@@ -4,7 +4,7 @@
 // it comes apart into its letters and they go home into Aski.
 
 import { CELL_PALETTE } from "./app.ts";
-import { Actor } from "./actors.ts";
+import { Actor, type Span } from "./actors.ts";
 import { type Cell, crew, rasterOf } from "./cells.ts";
 import type { Hero } from "./hero.ts";
 import { CH, CW } from "./stagekit.ts";
@@ -293,7 +293,15 @@ export function throws(hero: Hero): void {
     step(now, dt);
     const context = stage.context;
     for (const { actor, due } of thrown) if (due < 0) actor.draw(context, now, stage.d);
-    for (const { actor, due } of thrown) if (due < 0) actor.drawLabel(context, now, stage.d);
+    // A name never lies over Aski or another name: the latest to land keeps its whole label.
+    const half = 140 * stage.fit.kx;
+    const taken: Span[] = [[(stage.fit.cx - half) * CW, (stage.fit.cx + half) * CW]];
+    for (const { actor, due } of thrown.toReversed()) {
+      if (due >= 0) continue;
+      const resting = !actor.flying && !actor.held;
+      const span = actor.drawLabel(context, now, stage.d, resting ? taken : []);
+      if (resting && span !== null) taken.push(span);
+    }
   };
 
   stage.onResize = ((before) => () => {
