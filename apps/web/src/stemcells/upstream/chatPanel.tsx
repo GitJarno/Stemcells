@@ -14,7 +14,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-import { RightPanelSheet } from "../../components/RightPanelSheet";
 import { RightPanelTabs } from "../../components/RightPanelTabs";
 import { useOwnedUntilRest } from "../surfaces/keep";
 import { ChatPanelHostContext } from "./chatPanelHost";
@@ -109,11 +108,4 @@ function useTellMaximized(maximized: boolean) {
     tell(true);
     return () => tell(false);
   }, [maximized, tell]);
-}
-
-/** Upstream's narrow-window sheet: a window overlay, so only the owning chat's opens. */
-export function ChatPanelSheet(props: ComponentProps<typeof RightPanelSheet>) {
-  const host = use(ChatPanelHostContext);
-  if (host !== null && (!host.owns || host.bare)) return null;
-  return <RightPanelSheet {...props} />;
 }
