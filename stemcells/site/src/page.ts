@@ -2,9 +2,11 @@
 
 import { arc } from "./arc.ts";
 import { becomes } from "./becomes.ts";
+import { devices } from "./devices.ts";
 import { get } from "./get.ts";
 import type { Hero } from "./hero.ts";
 import { shown } from "./shown.ts";
+import { stroll } from "./stroll.ts";
 import { throws } from "./throws.ts";
 
 export function page(hero: Hero): void {
@@ -13,5 +15,7 @@ export function page(hero: Hero): void {
   arc(scene("#arc"));
   shown(scene("#shown"));
   becomes(scene("#becomes"));
+  devices(scene("#devices"));
   get(scene("#get"));
+  stroll(document.querySelector<HTMLCanvasElement>(".stroll")!);
 }
