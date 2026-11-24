@@ -1,7 +1,7 @@
 import "./site.css";
 import { hero } from "./hero.ts";
 
-hero(document.querySelector<HTMLElement>("#hero")!);
+const stage = hero(document.querySelector<HTMLElement>("#hero")!);
 
-// The acts carry the Cells' art; they load once the hero is up.
-void import("./acts.ts").then(({ acts }) => acts());
+// The Cells' art and the scenes load once Aski is up.
+void import("./page.ts").then(({ page }) => page(stage));

@@ -6,13 +6,13 @@
     <title>Stemcells — words become things</title>
     <meta
       name="description"
-      content="Stemcells is a fun, efficient way to work with your agents, on your Mac. Tell Aski what you want; it divides the work into Cells and brings back only what needs you. Open source."
+      content="Stemcells makes it fun and effective to work with your agents. Throw a thought: it flies until it lands, answers in pictures, and takes the shape of your work. Open source, on your Mac and your phone."
     />
     <meta name="theme-color" content="#0B0B0C" />
     <meta property="og:title" content="Stemcells — words become things" />
     <meta
       property="og:description"
-      content="Talk to one. Run many. A fun, efficient way to work with your agents."
+      content="Stemcells makes it fun and effective to work with your agents. Throw a thought. It flies until it lands."
     />
     <meta property="og:url" content="https://stemcells.sh" />
     <meta property="og:image" content="https://stemcells.sh/og.png" />
@@ -28,7 +28,8 @@
         >stemcells<span class="cursor">█</span></a
       >
       <nav>
-        <a href="#how">How it works</a><a href="https://github.com/GitJarno/Stemcells">GitHub</a>
+        <a href="https://github.com/GitJarno/Stemcells">GitHub</a
+        ><a class="pill" href="#get">Get it</a>
       </nav>
     </header>
 
@@ -36,10 +37,23 @@
       <section id="hero" class="hero">
         <canvas class="field" aria-hidden="true"></canvas>
         <div class="hero-stage">
-          <div class="say" aria-live="polite"></div>
+          <form class="tell" autocomplete="off">
+            <label class="sr" for="tell">Throw a thought</label>
+            <input
+              id="tell"
+              maxlength="40"
+              placeholder="Throw a thought…"
+              spellcheck="false"
+              enterkeyhint="send"
+            />
+            <button type="submit" aria-label="Throw">↵</button>
+          </form>
+          <p class="hint" aria-hidden="true">
+            <span class="for-keys">Type one and press Return. Or pick a Cell up and throw it.</span
+            ><span class="for-touch">Type one, or flick a Cell.</span>
+          </p>
         </div>
         <div class="hero-copy">
-          <p class="eyebrow">A fun, efficient way to work with your agents</p>
           <h1>
             <span class="sr">Words become things.</span
             ><span class="swap" aria-hidden="true"
@@ -47,103 +61,107 @@
             >
           </h1>
           <p class="lede">
-            Tell Aski what you want. It divides the work into Cells, agents that each take a part,
-            and brings back only what needs you.
+            Stemcells makes it fun and effective to work with your agents. Throw a thought. It
+            flies until it lands.
           </p>
           <div class="ctas">
             <a class="btn primary" href="#get">Get Stemcells</a
-            ><a class="btn" href="#how">How it works</a>
+            ><a class="btn" href="#arc">See how it flies</a>
+          </div>
+          <p class="facts">Open source · Mac and iPhone · Claude Code, Codex, Cursor and more</p>
+        </div>
+      </section>
+
+      <section id="arc" class="scene" style="--len: 4.6">
+        <div class="pin">
+          <div class="say">
+            <p class="kicker">01 · The arc</p>
+            <h2>Thrown until it lands.</h2>
+            <p>
+              Every ask is a throw. It flies toward its goal and lands, or it falls short and asks
+              you one clear question. Your answer is the next throw.
+            </p>
+            <ol class="stages" aria-label="A Cell's stages">
+              <li data-stage="flying"><b>Flying</b><span>In the air. Your hands are free.</span></li>
+              <li data-stage="input"><b>Input</b><span>It fell short. One question, then it flies again.</span></li>
+              <li data-stage="landed"><b>Landed</b><span>It stuck the landing. Read it when you like.</span></li>
+              <li data-stage="settled"><b>Settled</b><span>Put away. Off your mind.</span></li>
+            </ol>
+          </div>
+          <div class="art"></div>
+        </div>
+      </section>
+
+      <section id="shown" class="scene" style="--len: 4">
+        <div class="pin">
+          <div class="say">
+            <p class="kicker">02 · Shown, not told</p>
+            <h2>Agents write walls. Stemcells answers in pictures.</h2>
+            <p>It teaches every agent to answer the way you read, and draws it.</p>
+            <ol class="forms" aria-label="The forms an answer takes">
+              <li data-form="chart"><b>A chart</b><span>for numbers.</span></li>
+              <li data-form="diagram"><b>A diagram</b><span>for a flow.</span></li>
+              <li data-form="choice"><b>A preview</b><span>for a choice.</span></li>
+              <li data-form="close"><b>One line</b><span>for where it stands.</span></li>
+            </ol>
+          </div>
+          <div class="art"></div>
+        </div>
+      </section>
+
+      <section id="becomes" class="scene" style="--len: 4">
+        <div class="pin">
+          <div class="say">
+            <p class="kicker">03 · Like a stem cell</p>
+            <h2>It becomes what you need.</h2>
+            <p>
+              A Cell starts plain and grows with the work. The app does the same: one chat or
+              twelve, tabs or panes, your Mac or your phone, any agent you already use.
+            </p>
+            <p class="beat" aria-live="polite"></p>
+          </div>
+          <div class="art"></div>
+        </div>
+      </section>
+
+      <section id="get" class="scene get" style="--len: 2.2">
+        <div class="pin">
+          <div class="say">
+            <p class="kicker">The shortest way from a thought to the thing</p>
+            <h2>Bring your own agents.</h2>
+            <p>
+              Stemcells runs the coding agents you already use, on your own accounts and your own
+              machine: Claude Code, Codex, Cursor, OpenCode and more. Your phone reaches your Mac
+              over your own network. No telemetry. Open source.
+            </p>
+            <div class="ctas">
+              <a class="btn primary" href="https://github.com/GitJarno/Stemcells#get-it"
+                >Get Stemcells for macOS</a
+              ><a class="btn" href="https://github.com/GitJarno/Stemcells">Read the source</a>
+            </div>
+            <p class="fine">
+              Built on <a href="https://github.com/pingdotgg/t3code">T3 Code</a>. MIT licensed. Not
+              affiliated with T3 Tools.
+            </p>
+          </div>
+          <div class="art">
+            <pre class="install sr">
+git clone https://github.com/GitJarno/Stemcells.git
+cd Stemcells
+stemcells/scripts/install-app</pre
+            >
+            <button class="copy" type="button">Copy</button>
           </div>
         </div>
-      </section>
-
-      <section id="how" class="act">
-        <div class="copy">
-          <p class="kicker">01 · Talk to one. Run many.</p>
-          <h2>One sentence in.<br />A crew out.</h2>
-          <p>
-            You talk to Aski. It divides your words into Cells, one for each part of the job, and
-            keeps them all moving.
-          </p>
-          <p>
-            Your context stays clear. Aski holds the whole crew in its head, so you don't have to.
-          </p>
-        </div>
-        <div class="stage" id="birth">
-          <form class="tell" autocomplete="off">
-            <label class="sr" for="tell">Tell Aski</label>
-            <input id="tell" maxlength="48" placeholder="Tell Aski…" spellcheck="false" />
-            <button type="submit" aria-label="Send">↵</button>
-          </form>
-        </div>
-      </section>
-
-      <section class="act flip">
-        <div class="copy">
-          <p class="kicker">02 · Grow your agents</p>
-          <h2>The longer they work alone, the stronger they get.</h2>
-          <p>
-            A frontier model is pluripotent. Give it a repo, a brief, tests and memory, and it
-            becomes a builder, a reviewer, a researcher: whatever its niche asks for.
-          </p>
-          <p>
-            Stemcells tends that niche. Month by month your Cells need you less, and you can watch
-            them grow.
-          </p>
-        </div>
-        <div class="stage short" id="grow"></div>
-      </section>
-
-      <section class="act">
-        <div class="copy">
-          <p class="kicker">03 · Only what needs you</p>
-          <h2>You still make the calls.</h2>
-          <p>
-            When a Cell falls short, it waits for your word, and Aski brings you the question.
-            Everything else keeps flying.
-          </p>
-          <p class="aside">
-            ASCII 7 is <code>BEL</code>, the one character made to call a human. Stemcells rings it
-            only when it should.
-          </p>
-        </div>
-        <div class="stage short" id="calls"></div>
-      </section>
-
-      <section class="act flip">
-        <div class="copy">
-          <p class="kicker">04 · Nothing is lost</p>
-          <h2>Every character comes home.</h2>
-          <p>
-            When a Cell is done, it says its last words, comes apart into letters, and the letters
-            go home to Aski.
-          </p>
-          <p>The next Cell is made from them.</p>
-        </div>
-        <div class="stage" id="home"></div>
-      </section>
-
-      <section id="get" class="get">
-        <h2>Bring your own agents.</h2>
-        <p>
-          Stemcells runs the coding agents you already use, on your subscriptions and your machine:
-          Claude Code, Codex, Cursor, OpenCode and more. No telemetry. Open source.
-        </p>
-        <div class="ctas">
-          <a class="btn primary" href="https://github.com/GitJarno/Stemcells#get-it"
-            >Get Stemcells for macOS</a
-          ><a class="btn" href="https://github.com/GitJarno/Stemcells">Read the source</a>
-        </div>
-        <p class="fine">
-          Built on <a href="https://github.com/pingdotgg/t3code">T3 Code</a>. MIT licensed.
-        </p>
       </section>
     </main>
 
     <footer class="foot">
-      <span>stemcells.sh</span><span>made of 95 characters</span
+      <span>stemcells.sh</span><span>try <code>curl stemcells.sh</code></span
       ><a href="https://github.com/GitJarno/Stemcells">GitHub</a>
     </footer>
+
+    <canvas class="stroll" aria-hidden="true"></canvas>
 
     <script type="module" src="./main.ts"></script>
   </body>

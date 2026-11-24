@@ -8,11 +8,13 @@ import {
   type Hit,
   type MiniFrame,
   type Toss,
-  TOSS_GRAVITY,
   tossFrame,
 } from "./app-cells.ts";
 import { type Cell, drawCell, frameAt } from "./cells.ts";
 import { CH, CW, glyphOf } from "./stagekit.ts";
+
+/** A toss falls this fast, CSS px a second², as the app's own (`cell/toss.ts`). */
+const TOSS_GRAVITY = 1400;
 
 /** A word a Cell can land on: the problem it was thrown at. */
 export interface Ledge {
@@ -50,6 +52,8 @@ export class Actor {
   vx = 0;
   vy = 0;
   flying = false;
+  /** In the hand: it hangs from the pointer. */
+  held = false;
   hits: Hit[] = [];
   landedAt = -1;
   dizzyUntil = -1;
@@ -157,7 +161,7 @@ export class Actor {
 
   #toss(): Toss {
     return {
-      held: false,
+      held: this.held,
       vx: this.vx,
       vy: this.vy,
       grounded: !this.flying,
@@ -168,7 +172,8 @@ export class Actor {
 
   /** In flight, or still feeling a landing or dizzy: the toss's pose; else its scene. */
   frame(now: number): MiniFrame {
-    const tossed = this.flying || now - this.landedAt < SETTLE || now < this.dizzyUntil;
+    const tossed =
+      this.held || this.flying || now - this.landedAt < SETTLE || now < this.dizzyUntil;
     return tossed
       ? tossFrame(this.cell.look, this.#toss(), now * 1000, this.#points)
       : frameAt(this.cell, this.key, now - this.since);

@@ -1,13 +1,19 @@
-/* Ink on night. The page is a grid of characters; text sits in the holes it leaves. */
+/* Ink on night, one grid of characters. A scene is pinned while the scroll
+   plays it; the words stand beside the art on a desk and under it in a hand
+   (stemcells/brand/book.md). */
 :root {
   --night: #0b0b0c;
   --ink: #ede9e0;
-  --dim: rgba(237, 233, 224, 0.66);
+  --dim: rgba(237, 233, 224, 0.68);
   --faint: rgba(237, 233, 224, 0.42);
   --line: rgba(237, 233, 224, 0.16);
   --raised: #151514;
+  --amber: #fdbe48;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease: cubic-bezier(0.65, 0, 0.35, 1);
+  /* The strip Aski strolls along, kept clear at the foot of every scene. */
+  --foot: 92px;
+  --edge: 5vw;
 }
 * {
   box-sizing: border-box;
@@ -16,12 +22,13 @@ html {
   background: var(--night);
   color: var(--ink);
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 body {
   margin: 0;
   font: 15px/1.6 var(--mono);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 ::selection {
   background: var(--ink);
@@ -30,6 +37,10 @@ body {
 a {
   color: var(--ink);
   text-underline-offset: 3px;
+}
+code {
+  font: inherit;
+  color: var(--ink);
 }
 .sr {
   position: absolute;
@@ -50,18 +61,19 @@ a {
   }
 }
 
+/* ── Top ──────────────────────────────────────────────────────────────────── */
 .top {
   position: fixed;
-  z-index: 10;
+  z-index: 20;
   top: 0;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 5vw 26px;
+  padding: 16px var(--edge) 26px;
   pointer-events: none;
-  background: linear-gradient(var(--night) 40%, rgba(11, 11, 12, 0));
+  background: linear-gradient(var(--night) 38%, rgba(11, 11, 12, 0));
 }
 .top a {
   pointer-events: auto;
@@ -73,7 +85,8 @@ a {
 }
 .top nav {
   display: flex;
-  gap: 22px;
+  align-items: center;
+  gap: 20px;
   font-size: 13px;
 }
 .top nav a {
@@ -83,74 +96,19 @@ a {
 .top nav a:hover {
   color: var(--ink);
 }
-
-/* ── Hero ─────────────────────────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  height: 100vh;
-  height: 100svh;
-  min-height: 600px;
-  overflow: hidden;
-}
-.field {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: opacity 2.4s var(--ease);
-  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.35), #000 50%);
-}
-.field.on {
-  opacity: 1;
-}
-.hero-stage {
-  position: absolute;
-  top: 72px;
-  right: 3vw;
-  bottom: 6vh;
-  width: 58vw;
-  cursor: pointer;
-}
-.hero-stage canvas,
-.stage canvas {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  display: block;
-}
-.hero-copy {
-  position: absolute;
-  left: 5vw;
-  bottom: 12vh;
-  max-width: min(40vw, 560px);
-}
-.eyebrow {
-  color: var(--faint);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin: 0 0 0.4em;
-  display: inline-block;
-}
-h1 {
-  font-size: clamp(34px, 3.9vw, 64px);
-  line-height: 1.04;
+.top nav .pill {
+  color: var(--night);
+  background: var(--ink);
   font-weight: 700;
-  letter-spacing: -0.035em;
-  margin: 0 0 0.35em;
-  white-space: nowrap;
+  padding: 0.4em 0.85em;
+  border-radius: 8px;
 }
-h1 {
-  display: table;
+.top nav .pill:hover {
+  color: var(--night);
+  background: #fff;
 }
-.lede {
-  color: var(--dim);
-  font-size: clamp(15px, 1.15vw, 18px);
-  max-width: 34em;
-  margin: 0 0 1.6em;
-  display: table;
-}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 .ctas {
   display: flex;
   gap: 12px;
@@ -183,106 +141,96 @@ h1 {
 .btn.primary:hover {
   background: #fff;
 }
-.say {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translate(-50%, 6px);
-  padding: 9px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--night);
-  font-size: 14px;
-  line-height: 1.4;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.6s var(--ease),
-    transform 0.6s var(--ease);
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 620px;
+  overflow: hidden;
 }
-.say.on {
-  opacity: 1;
-  transform: translate(-50%, 0);
+.field {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 2.4s var(--ease);
+  mask-image: linear-gradient(90deg, transparent 32%, #000 64%);
+}
+.field.on {
+  opacity: 0.55;
+}
+.hero-stage {
+  position: absolute;
+  top: 64px;
+  right: 2vw;
+  bottom: 4vh;
+  width: 60vw;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.hero-stage.holding {
+  cursor: grabbing;
+}
+.hero-stage canvas {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+}
+.hero-copy {
+  position: absolute;
+  left: var(--edge);
+  bottom: 11vh;
+  max-width: min(36vw, 540px);
+}
+h1 {
+  display: table;
+  font-size: clamp(32px, 3.1vw, 54px);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  margin: 0 0 0.4em;
+  white-space: nowrap;
 }
 .swap .w {
   display: inline-block;
   transition: transform 1.1s var(--ease);
 }
-
-/* ── Acts ─────────────────────────────────────────────────────────────────── */
-.act {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 4vw;
-  align-items: center;
-  padding: 16vh 5vw;
+.lede {
+  color: var(--dim);
+  font-size: clamp(15px, 1.15vw, 18px);
+  max-width: 30em;
+  margin: 0 0 1.6em;
 }
-.act.flip {
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-}
-.act.flip .copy {
-  order: 2;
-}
-.copy {
-  max-width: 32em;
-}
-.kicker {
+.facts {
   color: var(--faint);
   font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin: 0 0 0.8em;
-}
-h2 {
-  font-size: clamp(26px, 2.9vw, 44px);
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  margin: 0 0 0.7em;
-}
-.copy p:not(.kicker) {
-  color: var(--dim);
-  margin: 0 0 1em;
-}
-.aside {
-  font-size: 13px;
-  border-left: 1px solid var(--line);
-  padding-left: 14px;
-  margin-top: 1.6em !important;
-}
-code {
-  font: inherit;
-  color: var(--ink);
-}
-.stage {
-  position: relative;
-  height: 440px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  overflow: hidden;
-  background: var(--night);
-}
-.stage.short {
-  height: 360px;
+  margin: 1.8em 0 0;
 }
 .tell {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 18px;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px 10px 16px;
+  padding: 9px 10px 9px 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--raised);
+  transition: border-color 0.2s;
+}
+.tell:focus-within {
+  border-color: var(--faint);
 }
 .tell input {
   flex: 1;
   min-width: 0;
-  font: 15px var(--mono);
+  /* 16px keeps a phone from zooming into the field. */
+  font: 16px var(--mono);
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -298,87 +246,436 @@ code {
   background: var(--ink);
   border: 0;
   border-radius: 7px;
-  width: 30px;
-  height: 26px;
+  width: 34px;
+  height: 28px;
   cursor: pointer;
+}
+.hint {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  color: var(--faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.for-touch {
+  display: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .for-keys {
+    display: none;
+  }
+  .for-touch {
+    display: inline;
+  }
+}
+
+/* ── Scenes ───────────────────────────────────────────────────────────────── */
+.scene {
+  position: relative;
+  height: calc(var(--len, 3) * 100vh);
+  height: calc(var(--len, 3) * 100svh);
+}
+.pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(300px, 4.4fr) 7.6fr;
+  gap: 3vw;
+  align-items: center;
+  padding: 72px var(--edge) var(--foot);
+}
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  pointer-events: none;
+}
+.say {
+  position: relative;
+  z-index: 2;
+  max-width: 30em;
+}
+.art {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+.kicker {
+  color: var(--faint);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 0.9em;
+}
+h2 {
+  font-size: clamp(26px, 2.7vw, 44px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.6em;
+  text-wrap: balance;
+}
+.say p:not(.kicker) {
+  color: var(--dim);
+  margin: 0 0 1em;
+  text-wrap: pretty;
+}
+
+/* The stages, as the Mac's column lists them; the forms an answer takes. */
+.stages,
+.forms {
+  list-style: none;
+  margin: 1.8em 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.stages li,
+.forms li {
+  display: grid;
+  grid-template-columns: 6.2em 1fr;
+  gap: 0 1em;
+  align-items: baseline;
+  padding: 0.62em 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--faint);
+  transition: color 0.35s var(--ease);
+}
+.forms li {
+  grid-template-columns: 7em 1fr;
+}
+.stages b,
+.forms b {
+  font-weight: 700;
+}
+.stages li.on,
+.forms li.on {
+  color: var(--ink);
+}
+.stages li.on span,
+.forms li.on span {
+  color: var(--dim);
+}
+.stages li[data-stage="input"].on b {
+  color: var(--amber);
+}
+.beat {
+  min-height: 1.6em;
+  color: var(--ink) !important;
+  font-size: 13px;
+  margin-top: 1.6em !important;
+}
+
+/* A Cell's one question: the question first, the options in a row, the
+   recommended one filled, a number key to pick. */
+.ask {
+  position: absolute;
+  z-index: 3;
+  width: min(340px, calc(100% - 16px));
+  padding: 14px;
+  border: 1px solid rgba(253, 190, 72, 0.5);
+  border-radius: 14px;
+  background: var(--night);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition:
+    opacity 0.3s var(--ease),
+    transform 0.3s var(--ease);
+}
+.ask.on {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.ask .who {
+  margin: 0 0 0.3em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.ask .q {
+  margin: 0 0 0.9em;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--ink);
+}
+.ask .options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ask button {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  font: 12px var(--mono);
+  text-align: left;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.ask button:hover {
+  border-color: var(--ink);
+}
+.ask button.best {
+  color: var(--night);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.ask button kbd {
+  font: inherit;
+  opacity: 0.55;
+  margin-right: 0.5em;
+}
+.ask .peek {
+  display: block;
+  height: 44px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
 }
 
 /* ── Get it ───────────────────────────────────────────────────────────────── */
-.get {
-  padding: 18vh 5vw 14vh;
-  max-width: 900px;
+.get .say {
+  max-width: 34em;
 }
 .get h2 {
-  font-size: clamp(32px, 4vw, 60px);
-}
-.get p {
-  color: var(--dim);
-  max-width: 38em;
+  font-size: clamp(30px, 3.4vw, 54px);
 }
 .get .ctas {
-  margin: 2em 0 2.4em;
+  margin: 1.8em 0 1.6em;
 }
 .fine {
   color: var(--faint) !important;
-  font-size: 13px;
+  font-size: 12px;
+}
+.fine a {
+  color: var(--faint);
+}
+.copy {
+  position: absolute;
+  z-index: 3;
+  font: 12px var(--mono);
+  color: var(--dim);
+  background: var(--night);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 4px 9px;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.3s var(--ease),
+    color 0.2s,
+    border-color 0.2s;
+}
+.copy.on {
+  opacity: 1;
+}
+.copy:hover {
+  color: var(--ink);
+  border-color: var(--ink);
 }
 .foot {
+  position: relative;
+  z-index: 6;
   display: flex;
   gap: 28px;
   flex-wrap: wrap;
-  padding: 28px 5vw 40px;
+  padding: 24px var(--edge) 34px;
   border-top: 1px solid var(--line);
+  background: var(--night);
   color: var(--faint);
   font-size: 12px;
 }
 .foot a {
   color: var(--faint);
 }
+.foot code {
+  color: var(--dim);
+}
 
-@media (max-width: 760px) {
-  .top {
-    padding: 14px 6vw;
+/* Aski, strolling the foot of the page: where it stands is how far the story has come. */
+.stroll {
+  position: fixed;
+  z-index: 5;
+  left: 0;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.stroll.on {
+  opacity: 1;
+}
+
+/* ── iPad ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 1099px), (hover: none) and (orientation: portrait) {
+  :root {
+    --foot: 84px;
+    --edge: 6vw;
   }
-  .hero-copy {
-    left: 6vw;
-    right: 6vw;
-    bottom: 6vh;
-    max-width: none;
-  }
-  h1 {
-    font-size: 7.6vw;
-  }
-  .act.flip {
+  .pin {
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 18px;
+    padding-top: 64px;
   }
-  .act {
-    grid-template-columns: 1fr;
-    padding: 11vh 6vw;
-    gap: 28px;
+  .art {
+    order: -1;
   }
-  .act.flip .copy {
-    order: 0;
+  .say {
+    max-width: 40em;
   }
-  .stage {
-    height: 360px;
+  .say > p:not(.kicker):not(.beat) {
+    max-width: 34em;
   }
-  .stage.short {
-    height: 300px;
+  h2 {
+    font-size: clamp(26px, 4.4vw, 40px);
   }
-  .field {
-    mask-image: linear-gradient(#000 45%, rgba(0, 0, 0, 0.2) 68%);
+  .stages,
+  .forms {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: relative;
+    margin-top: 1.2em;
+    padding-bottom: 2.6em;
+    border-bottom: 1px solid var(--line);
+  }
+  .stages li,
+  .forms li {
+    display: block;
+    border-bottom: 0;
+    text-align: center;
+    padding: 0.7em 0;
+  }
+  /* One row of words, as the phone's own four tabs; the lit one's line under them. */
+  .stages li span,
+  .forms li span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.7em;
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+  }
+  .stages li.on span,
+  .forms li.on span {
+    opacity: 1;
   }
   .hero-stage {
     top: 56px;
     left: 0;
     right: 0;
-    bottom: 46vh;
+    bottom: auto;
     width: auto;
+    height: 54svh;
   }
-  .say {
-    font-size: 13px;
+  .hero-copy {
+    left: var(--edge);
+    right: var(--edge);
+    top: calc(56px + 54svh + 14px);
+    bottom: auto;
+    max-width: 40em;
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 56px);
+  }
+  .field {
+    mask-image: linear-gradient(#000 28%, transparent 54%);
   }
 }
+
+/* ── Phone ────────────────────────────────────────────────────────────────── */
+@media (max-width: 699px) {
+  :root {
+    --foot: 64px;
+  }
+  body {
+    font-size: 14px;
+  }
+  .top {
+    padding: 12px var(--edge) 22px;
+  }
+  .top nav {
+    gap: 14px;
+  }
+  .hero {
+    min-height: 0;
+  }
+  .hero-stage {
+    top: 48px;
+    height: 50svh;
+  }
+  .hero-copy {
+    top: calc(48px + 50svh + 8px);
+  }
+  h1 {
+    font-size: 7.2vw;
+    margin-bottom: 0.35em;
+  }
+  .lede {
+    font-size: 14px;
+    margin-bottom: 1.1em;
+  }
+  .facts {
+    display: none;
+  }
+  .btn {
+    padding: 0.66em 0.95em;
+    font-size: 13px;
+  }
+  .pin {
+    padding-top: 52px;
+    gap: 12px;
+  }
+  h2 {
+    font-size: 6.4vw;
+    margin-bottom: 0.45em;
+  }
+  .kicker {
+    font-size: 11px;
+    margin-bottom: 0.6em;
+  }
+  .say p:not(.kicker) {
+    margin-bottom: 0.6em;
+  }
+  .stages,
+  .forms {
+    margin-top: 0.8em;
+  }
+  .stages li,
+  .forms li {
+    font-size: 12px;
+  }
+  .forms li b {
+    display: block;
+  }
+  .get .ctas {
+    margin: 1.1em 0 1em;
+  }
+  .foot {
+    gap: 16px;
+  }
+  .ask {
+    padding: 11px;
+  }
+  .ask .peek {
+    height: 34px;
+  }
+}
+
+/* ── Reduce Motion: each scene is its still, at its own height. ───────────── */
 @media (prefers-reduced-motion: reduce) {
   .cursor {
     animation: none;
@@ -386,91 +683,14 @@ code {
   html {
     scroll-behavior: auto;
   }
-}
-.ask {
-  position: absolute;
-  z-index: 2;
-  transform: translate(0, calc(-100% + 6px));
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 8px 8px 12px;
-  border: 1px solid rgba(253, 190, 72, 0.5);
-  border-radius: 10px;
-  background: var(--night);
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.35s var(--ease),
-    transform 0.35s var(--ease);
-}
-.ask.on {
-  opacity: 1;
-  transform: translate(0, -100%);
-  pointer-events: auto;
-}
-.ask p {
-  margin: 0;
-  color: var(--dim);
-}
-.ask p {
-  line-height: 1.5;
-}
-.bel {
-  color: #fdbe48;
-  animation: ring 1.2s steps(2) 3;
-}
-@keyframes ring {
-  50% {
-    opacity: 0.25;
+  .scene {
+    height: auto;
   }
-}
-.ask b {
-  color: #fdbe48;
-  font-weight: 700;
-}
-.ask button {
-  font: 700 12px var(--mono);
-  color: var(--night);
-  background: #fdbe48;
-  border: 0;
-  border-radius: 6px;
-  padding: 5px 9px;
-  cursor: pointer;
-}
-.stage .say {
-  bottom: auto;
-  font-size: 12px;
-  transform: translate(-50%, calc(-100% + 6px));
-}
-.stage .say.on {
-  transform: translate(-50%, -100%);
-}
-.meter {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: var(--faint);
-  white-space: nowrap;
-}
-.meter b {
-  font-weight: 400;
-  color: #ff8154;
-}
-.meter i {
-  font-style: normal;
-  color: var(--line);
-}
-.tell {
-  z-index: 2;
-}
-.ask.corner,
-.ask.corner.on {
-  transform: none;
-  font-size: 11px;
-  padding: 6px 6px 6px 10px;
+  .pin {
+    position: relative;
+    min-height: 620px;
+  }
+  .stroll {
+    display: none;
+  }
 }
