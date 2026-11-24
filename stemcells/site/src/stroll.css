@@ -1,0 +1,5 @@
+/* Aski leaves quicker than it arrives: when a scene lets go, the next one's
+   words are already on their way up through its strip. */
+.stroll:not(.on) {
+  transition-duration: 0.2s;
+}

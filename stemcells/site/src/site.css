@@ -1,13 +1,24 @@
-/* Ink on night. The page is a grid of characters; text sits in the holes it leaves. */
+/* Night and ink. Words to read are set in the app's own type; the mark, labels
+   and anything made of characters in one monospace. What the app does is shown
+   on the app itself: real screens in a window's frame (stemcells/brand/book.md). */
 :root {
   --night: #0b0b0c;
   --ink: #ede9e0;
   --dim: rgba(237, 233, 224, 0.66);
   --faint: rgba(237, 233, 224, 0.42);
-  --line: rgba(237, 233, 224, 0.16);
+  --line: rgba(237, 233, 224, 0.14);
   --raised: #151514;
+  /* The stages' own colours, as the app's list dots them. */
+  --amber: #fdbe48;
+  --flying: #8393ff;
+  --landed: #2ad394;
+  --settled: #818181;
+  --sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease: cubic-bezier(0.65, 0, 0.35, 1);
+  /* The strip Aski strolls along, kept clear at the foot of every scene. */
+  --foot: 92px;
+  --edge: 5vw;
 }
 * {
   box-sizing: border-box;
@@ -16,12 +27,13 @@ html {
   background: var(--night);
   color: var(--ink);
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 body {
   margin: 0;
-  font: 15px/1.6 var(--mono);
+  font: 16px/1.55 var(--sans);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 ::selection {
   background: var(--ink);
@@ -30,6 +42,15 @@ body {
 a {
   color: var(--ink);
   text-underline-offset: 3px;
+}
+code,
+pre,
+kbd {
+  font-family: var(--mono);
+}
+code {
+  font-size: 0.92em;
+  color: var(--ink);
 }
 .sr {
   position: absolute;
@@ -50,31 +71,35 @@ a {
   }
 }
 
+/* ── Top ──────────────────────────────────────────────────────────────────── */
 .top {
   position: fixed;
-  z-index: 10;
+  z-index: 20;
   top: 0;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 5vw 26px;
+  padding: 16px var(--edge) 26px;
   pointer-events: none;
-  background: linear-gradient(var(--night) 40%, rgba(11, 11, 12, 0));
+  background: linear-gradient(var(--night) 38%, rgba(11, 11, 12, 0));
 }
 .top a {
   pointer-events: auto;
 }
 .mark {
+  font-family: var(--mono);
+  font-size: 15px;
   font-weight: 700;
   text-decoration: none;
   letter-spacing: -0.01em;
 }
 .top nav {
   display: flex;
+  align-items: center;
   gap: 22px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .top nav a {
   color: var(--dim);
@@ -83,74 +108,19 @@ a {
 .top nav a:hover {
   color: var(--ink);
 }
+.top nav .pill {
+  color: var(--night);
+  background: var(--ink);
+  font-weight: 600;
+  padding: 0.42em 0.9em;
+  border-radius: 9px;
+}
+.top nav .pill:hover {
+  color: var(--night);
+  background: #fff;
+}
 
-/* ── Hero ─────────────────────────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  height: 100vh;
-  height: 100svh;
-  min-height: 600px;
-  overflow: hidden;
-}
-.field {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: opacity 2.4s var(--ease);
-  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.35), #000 50%);
-}
-.field.on {
-  opacity: 1;
-}
-.hero-stage {
-  position: absolute;
-  top: 72px;
-  right: 3vw;
-  bottom: 6vh;
-  width: 58vw;
-  cursor: pointer;
-}
-.hero-stage canvas,
-.stage canvas {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  display: block;
-}
-.hero-copy {
-  position: absolute;
-  left: 5vw;
-  bottom: 12vh;
-  max-width: min(40vw, 560px);
-}
-.eyebrow {
-  color: var(--faint);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin: 0 0 0.4em;
-  display: inline-block;
-}
-h1 {
-  font-size: clamp(34px, 3.9vw, 64px);
-  line-height: 1.04;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  margin: 0 0 0.35em;
-  white-space: nowrap;
-}
-h1 {
-  display: table;
-}
-.lede {
-  color: var(--dim);
-  font-size: clamp(15px, 1.15vw, 18px);
-  max-width: 34em;
-  margin: 0 0 1.6em;
-  display: table;
-}
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 .ctas {
   display: flex;
   gap: 12px;
@@ -160,11 +130,12 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  padding: 0.72em 1.15em;
+  padding: 0.72em 1.2em;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 11px;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   background: var(--night);
   transition:
     background 0.2s,
@@ -178,111 +149,108 @@ h1 {
   background: var(--ink);
   color: var(--night);
   border-color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 .btn.primary:hover {
   background: #fff;
 }
-.say {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translate(-50%, 6px);
-  padding: 9px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--night);
-  font-size: 14px;
-  line-height: 1.4;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.6s var(--ease),
-    transform 0.6s var(--ease);
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding-bottom: 12vh;
 }
-.say.on {
-  opacity: 1;
-  transform: translate(-50%, 0);
+.hero-top {
+  position: relative;
+  height: 70vh;
+  height: 70svh;
+  min-height: 540px;
+  max-height: 840px;
+}
+/* The stage's foot is the top edge of the window under it. */
+.hero-stage {
+  position: absolute;
+  left: var(--edge);
+  right: var(--edge);
+  top: 56px;
+  bottom: 0;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.hero-stage.holding {
+  cursor: grabbing;
+}
+.hero-stage canvas {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+}
+.hero-copy {
+  position: absolute;
+  z-index: 2;
+  left: var(--edge);
+  top: 56px;
+  bottom: 0;
+  width: min(46vw, 640px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+.hero-copy > * {
+  pointer-events: auto;
+}
+h1 {
+  display: table;
+  font-size: clamp(38px, 4.5vw, 78px);
+  line-height: 1.02;
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  margin: 0 0 0.32em;
+  white-space: nowrap;
 }
 .swap .w {
   display: inline-block;
   transition: transform 1.1s var(--ease);
 }
-
-/* ── Acts ─────────────────────────────────────────────────────────────────── */
-.act {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 4vw;
-  align-items: center;
-  padding: 16vh 5vw;
-}
-.act.flip {
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-}
-.act.flip .copy {
-  order: 2;
-}
-.copy {
-  max-width: 32em;
-}
-.kicker {
-  color: var(--faint);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin: 0 0 0.8em;
-}
-h2 {
-  font-size: clamp(26px, 2.9vw, 44px);
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  margin: 0 0 0.7em;
-}
-.copy p:not(.kicker) {
+.lede {
   color: var(--dim);
-  margin: 0 0 1em;
+  font-size: clamp(17px, 1.38vw, 22px);
+  line-height: 1.42;
+  letter-spacing: -0.01em;
+  max-width: 23em;
+  margin: 0 0 1.5em;
+  text-wrap: balance;
 }
-.aside {
-  font-size: 13px;
-  border-left: 1px solid var(--line);
-  padding-left: 14px;
-  margin-top: 1.6em !important;
-}
-code {
-  font: inherit;
-  color: var(--ink);
-}
-.stage {
-  position: relative;
-  height: 440px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  overflow: hidden;
-  background: var(--night);
-}
-.stage.short {
-  height: 360px;
+.facts {
+  color: var(--faint);
+  font: 12px var(--mono);
+  margin: 1.7em 0 0;
 }
 .tell {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 18px;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px 10px 16px;
+  width: min(100%, 440px);
+  padding: 9px 10px 9px 16px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--raised);
+  transition: border-color 0.2s;
+}
+.tell:focus-within {
+  border-color: var(--faint);
 }
 .tell input {
   flex: 1;
   min-width: 0;
-  font: 15px var(--mono);
+  /* 16px keeps a phone from zooming into the field. */
+  font: 16px var(--mono);
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -297,88 +265,624 @@ code {
   color: var(--night);
   background: var(--ink);
   border: 0;
-  border-radius: 7px;
-  width: 30px;
-  height: 26px;
+  border-radius: 8px;
+  width: 36px;
+  height: 30px;
   cursor: pointer;
+}
+.hint {
+  margin: 10px 0 0 4px;
+  color: var(--faint);
+  font: 12px var(--mono);
+}
+.hero .ctas {
+  margin-top: 1.7em;
+}
+.for-touch {
+  display: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .for-keys {
+    display: none;
+  }
+  .for-touch {
+    display: inline;
+  }
+}
+.hero-app {
+  margin: 0 var(--edge);
+}
+
+/* ── The app, shown: real screens in a window's frame ─────────────────────── */
+.exhibit {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  aspect-ratio: 1440 / 900;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0a0a0a;
+}
+/* A scene staged twice shows the window its screen calls for: a Mac's here, a phone's on a phone. */
+.exhibit.on-hand,
+.exhibit.on-pad {
+  display: none;
+}
+.exhibit .film {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.exhibit img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* The spotlight: everything but one part of the screen steps back. */
+.exhibit .spot {
+  position: absolute;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4000px rgba(8, 8, 9, var(--dim, 0));
+  outline: 1px solid rgba(237, 233, 224, var(--ring, 0));
+  opacity: 0;
+  pointer-events: none;
+}
+.exhibit .edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ink);
+  opacity: 0;
+}
+
+/* ── Scenes ───────────────────────────────────────────────────────────────── */
+.scene {
+  position: relative;
+  height: calc(var(--len, 3) * 100vh);
+  height: calc(var(--len, 3) * 100svh);
+}
+.pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(300px, 4fr) 8fr;
+  gap: 4vw;
+  align-items: center;
+  padding: 72px var(--edge) var(--foot);
+}
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  pointer-events: none;
+}
+.say {
+  position: relative;
+  z-index: 2;
+  max-width: 27em;
+}
+.art {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+/* What a scene shows: a band of air its creatures move in, over the app's window. */
+.show {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  container-type: size;
+  --band: 130px;
+}
+.show .art {
+  flex: 1 1 0;
+  align-self: auto;
+  min-height: var(--band);
+  max-height: 300px;
+}
+.show .window {
+  flex: none;
+  display: flex;
+  justify-content: center;
+}
+.show .exhibit {
+  width: min(100cqw, calc((100cqh - var(--band)) * 1.6));
+}
+.kicker {
+  color: var(--faint);
+  font: 12px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 1em;
+}
+h2 {
+  font-size: clamp(28px, 3vw, 50px);
+  line-height: 1.04;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+.say p:not(.kicker) {
+  color: var(--dim);
+  font-size: clamp(16px, 1.2vw, 19px);
+  line-height: 1.45;
+  margin: 0 0 1em;
+  text-wrap: pretty;
+}
+
+/* The stages, as the app's own list dots them; the forms an answer takes. */
+.stages,
+.forms {
+  list-style: none;
+  margin: 1.8em 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.stages li,
+.forms li {
+  display: grid;
+  grid-template-columns: 7em 1fr;
+  gap: 0 1em;
+  align-items: baseline;
+  padding: 0.62em 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--faint);
+  transition: color 0.35s var(--ease);
+}
+.stages b,
+.forms b {
+  font-weight: 600;
+}
+.stages b::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.75em;
+  border-radius: 50%;
+  vertical-align: 1px;
+  background: var(--settled);
+}
+.stages li[data-stage="input"] b::before {
+  background: var(--amber);
+}
+.stages li[data-stage="flying"] b::before {
+  background: var(--flying);
+}
+.stages li[data-stage="landed"] b::before {
+  background: var(--landed);
+}
+.stages li.on,
+.forms li.on {
+  color: var(--ink);
+}
+.stages li.on span,
+.forms li.on span {
+  color: var(--dim);
+}
+.beat {
+  min-height: 1.6em;
+  color: var(--ink) !important;
+  font-size: 14px !important;
+  margin-top: 1.6em !important;
+}
+/* How many words are left to read. */
+.count {
+  margin: 0 0 12px;
+  color: var(--faint);
+  font: 12px var(--mono);
+}
+.count b {
+  color: var(--ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The machines: each a frame round the app as it looks there ───────────── */
+.layer.over {
+  z-index: 3;
+}
+.room {
+  position: absolute;
+  inset: 0;
+}
+.machine {
+  position: absolute;
+  margin: 0;
+}
+.machine .body {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--amber) calc(var(--asked, 0) * 70%), var(--line));
+  background: #0e0e0e;
+}
+.machine .exhibit {
+  border: 0;
+  border-radius: 5px;
+}
+.machine.book .body {
+  padding: 1.3% 1.3% 1.7%;
+  border-radius: 11px 11px 0 0;
+}
+/* The laptop's base: a thin slab wider than its lid. */
+.machine.book .body::after {
+  content: "";
+  position: absolute;
+  left: -7%;
+  right: -7%;
+  top: 100%;
+  height: 9px;
+  border: 1px solid var(--line);
+  border-radius: 1px 1px 10px 10px;
+  background: #121212;
+}
+.machine.pad .body {
+  padding: 4%;
+  border-radius: 13px;
+}
+.machine.pad .exhibit {
+  border-radius: 6px;
+}
+.machine.phone .body {
+  padding: 5%;
+  border-radius: 17px;
+}
+.machine.phone .exhibit {
+  border-radius: 11px;
+}
+.machine figcaption {
+  margin-top: 18px;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--faint);
+  font: 11px var(--mono);
+}
+.machine.near figcaption {
+  color: var(--ink);
+}
+.machine figcaption b {
+  font-weight: 400;
+  color: var(--faint);
+}
+.mini {
+  position: absolute;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #121212;
+}
+.shelf {
+  position: absolute;
+  height: 1px;
+  background: var(--line);
+}
+.closet {
+  position: absolute;
+  text-align: center;
+  color: var(--faint);
+  font: 11px var(--mono);
+}
+.room[data-form="phone"] .mini {
+  height: 14px;
+  border-radius: 4px;
+}
+.room[data-form="phone"] .machine figcaption {
+  margin-top: 12px;
+  font-size: 10px;
 }
 
 /* ── Get it ───────────────────────────────────────────────────────────────── */
-.get {
-  padding: 18vh 5vw 14vh;
-  max-width: 900px;
-}
-.get h2 {
-  font-size: clamp(32px, 4vw, 60px);
-}
-.get p {
-  color: var(--dim);
-  max-width: 38em;
+.get .say {
+  max-width: 30em;
 }
 .get .ctas {
-  margin: 2em 0 2.4em;
+  margin: 1.8em 0 1.6em;
 }
 .fine {
   color: var(--faint) !important;
-  font-size: 13px;
+  font-size: 13px !important;
+}
+.fine a {
+  color: var(--faint);
+}
+/* The terminal the install lines stand in: a thing, drawn solid under their characters. */
+.term {
+  position: absolute;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  opacity: 0;
+  pointer-events: none;
+}
+.term span {
+  position: absolute;
+  top: 13px;
+  left: 22px;
+  font: 11px var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.copy {
+  position: absolute;
+  z-index: 3;
+  font: 12px var(--mono);
+  color: var(--dim);
+  background: var(--night);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 4px 9px;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.3s var(--ease),
+    color 0.2s,
+    border-color 0.2s;
+}
+.copy.on {
+  opacity: 1;
+}
+.copy:disabled {
+  pointer-events: none;
+}
+.copy:hover {
+  color: var(--ink);
+  border-color: var(--ink);
 }
 .foot {
+  position: relative;
+  z-index: 6;
   display: flex;
   gap: 28px;
   flex-wrap: wrap;
-  padding: 28px 5vw 40px;
+  padding: 24px var(--edge) 34px;
   border-top: 1px solid var(--line);
+  background: var(--night);
   color: var(--faint);
-  font-size: 12px;
+  font: 12px var(--mono);
 }
 .foot a {
   color: var(--faint);
 }
+.foot code {
+  color: var(--dim);
+}
 
-@media (max-width: 760px) {
-  .top {
-    padding: 14px 6vw;
+/* Aski, strolling the foot of the page: where it stands is how far the story has come. */
+.stroll {
+  position: fixed;
+  z-index: 5;
+  left: 0;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.stroll.on {
+  opacity: 1;
+}
+
+/* ── iPad: the words under the picture, the hero's words over its stage ───── */
+@media (max-width: 1099px), (hover: none) and (orientation: portrait) {
+  :root {
+    --foot: 84px;
+    --edge: 6vw;
   }
-  .hero-copy {
-    left: 6vw;
-    right: 6vw;
-    bottom: 6vh;
-    max-width: none;
-  }
-  h1 {
-    font-size: 7.6vw;
-  }
-  .act.flip {
-    grid-template-columns: 1fr;
-  }
-  .act {
-    grid-template-columns: 1fr;
-    padding: 11vh 6vw;
-    gap: 28px;
-  }
-  .act.flip .copy {
-    order: 0;
-  }
-  .stage {
-    height: 360px;
-  }
-  .stage.short {
-    height: 300px;
-  }
-  .field {
-    mask-image: linear-gradient(#000 45%, rgba(0, 0, 0, 0.2) 68%);
+  .hero-top {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 96px 0 34vh;
+    padding-bottom: 34svh;
   }
   .hero-stage {
-    top: 56px;
-    left: 0;
-    right: 0;
-    bottom: 46vh;
+    top: 0;
+  }
+  .hero-copy {
+    position: relative;
+    left: auto;
+    top: auto;
     width: auto;
+    margin: 0 var(--edge);
+    align-items: center;
+    text-align: center;
+  }
+  h1 {
+    font-size: clamp(34px, 7.4vw, 68px);
+  }
+  .hero .ctas {
+    justify-content: center;
+  }
+  .pin {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 18px;
+    padding-top: 64px;
+  }
+  .art,
+  .show {
+    order: -1;
+  }
+  /* The hero's window is the app at this width, from its top, cut where the fold would cut it. */
+  .hero-app .exhibit.on-desk {
+    display: none;
+  }
+  .exhibit.on-pad {
+    display: block;
+    aspect-ratio: 834 / 940;
   }
   .say {
-    font-size: 13px;
+    max-width: 40em;
+  }
+  .say > p:not(.kicker):not(.beat) {
+    max-width: 30em;
+  }
+  h2 {
+    font-size: clamp(27px, 4.6vw, 42px);
+  }
+  .stages,
+  .forms {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: relative;
+    margin-top: 1.2em;
+    padding-bottom: 2.6em;
+    border-bottom: 1px solid var(--line);
+  }
+  .stages li,
+  .forms li {
+    display: block;
+    border-bottom: 0;
+    text-align: center;
+    padding: 0.7em 0;
+  }
+  /* One row of words, as the phone's own four tabs; the lit one's line under them. */
+  .stages li span,
+  .forms li span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.7em;
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+  }
+  .stages li.on span,
+  .forms li.on span {
+    opacity: 1;
   }
 }
+
+/* ── Phone: the window is a frame of any shape, and the camera fills it ───── */
+@media (max-width: 699px) {
+  :root {
+    --foot: 64px;
+  }
+  body {
+    font-size: 15px;
+  }
+  .top {
+    padding: 12px var(--edge) 22px;
+  }
+  .top nav {
+    gap: 14px;
+  }
+  .hero-top {
+    padding-top: 78px;
+  }
+  h1 {
+    font-size: clamp(28px, 8.6vw, 34px);
+  }
+  .lede {
+    margin-bottom: 1.2em;
+  }
+  .facts {
+    display: none;
+  }
+  .btn {
+    padding: 0.66em 1em;
+    font-size: 14px;
+  }
+  .pin {
+    padding-top: 52px;
+    gap: 12px;
+  }
+  .show {
+    --band: 116px;
+  }
+  .show .art {
+    flex: 0 0 var(--band);
+  }
+  .show .window {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .show .exhibit {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .exhibit.on-desk,
+  .exhibit.on-pad {
+    display: none;
+  }
+  .exhibit.on-hand {
+    display: block;
+  }
+  .hero-app .exhibit.on-hand {
+    aspect-ratio: 393 / 620;
+  }
+  /* A scene about the window's whole shape keeps the window whole. */
+  .whole .show .art {
+    flex: 1 1 0;
+  }
+  .whole .show .window {
+    flex: none;
+  }
+  .whole .show .exhibit {
+    height: auto;
+    aspect-ratio: 1440 / 900;
+  }
+  h2 {
+    font-size: 7vw;
+    margin-bottom: 0.4em;
+  }
+  .kicker {
+    font-size: 11px;
+    margin-bottom: 0.6em;
+  }
+  .say p:not(.kicker) {
+    margin-bottom: 0.6em;
+  }
+  .stages,
+  .forms {
+    margin-top: 0.8em;
+  }
+  .stages li,
+  .forms li {
+    font-size: 13px;
+  }
+  .stages b::before {
+    margin-right: 0.45em;
+  }
+  .forms li b {
+    display: block;
+  }
+  .get .ctas {
+    margin: 1.1em 0 1em;
+  }
+  .foot {
+    gap: 16px;
+  }
+}
+
+/* A short phone: the picture keeps its room, so the heading speaks alone. */
+@media (max-width: 699px) and (max-height: 620px) {
+  .scene:not(.get) .say > p:not(.kicker):not(.beat),
+  .get .kicker,
+  .get .btn:not(.primary) {
+    display: none;
+  }
+}
+
+/* ── Reduce Motion: each scene is its still, at its own height. ───────────── */
 @media (prefers-reduced-motion: reduce) {
   .cursor {
     animation: none;
@@ -386,91 +890,14 @@ code {
   html {
     scroll-behavior: auto;
   }
-}
-.ask {
-  position: absolute;
-  z-index: 2;
-  transform: translate(0, calc(-100% + 6px));
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 8px 8px 12px;
-  border: 1px solid rgba(253, 190, 72, 0.5);
-  border-radius: 10px;
-  background: var(--night);
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.35s var(--ease),
-    transform 0.35s var(--ease);
-}
-.ask.on {
-  opacity: 1;
-  transform: translate(0, -100%);
-  pointer-events: auto;
-}
-.ask p {
-  margin: 0;
-  color: var(--dim);
-}
-.ask p {
-  line-height: 1.5;
-}
-.bel {
-  color: #fdbe48;
-  animation: ring 1.2s steps(2) 3;
-}
-@keyframes ring {
-  50% {
-    opacity: 0.25;
+  .scene {
+    height: auto;
   }
-}
-.ask b {
-  color: #fdbe48;
-  font-weight: 700;
-}
-.ask button {
-  font: 700 12px var(--mono);
-  color: var(--night);
-  background: #fdbe48;
-  border: 0;
-  border-radius: 6px;
-  padding: 5px 9px;
-  cursor: pointer;
-}
-.stage .say {
-  bottom: auto;
-  font-size: 12px;
-  transform: translate(-50%, calc(-100% + 6px));
-}
-.stage .say.on {
-  transform: translate(-50%, -100%);
-}
-.meter {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: var(--faint);
-  white-space: nowrap;
-}
-.meter b {
-  font-weight: 400;
-  color: #ff8154;
-}
-.meter i {
-  font-style: normal;
-  color: var(--line);
-}
-.tell {
-  z-index: 2;
-}
-.ask.corner,
-.ask.corner.on {
-  transform: none;
-  font-size: 11px;
-  padding: 6px 6px 6px 10px;
+  .pin {
+    position: relative;
+    min-height: 620px;
+  }
+  .stroll {
+    display: none;
+  }
 }

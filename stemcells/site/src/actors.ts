@@ -2,17 +2,12 @@
 // thrown, with the faces and springs the app gives a tossed Cell (`tossFrame`).
 // Positions are CSS pixels on the stage; drawing turns them into device pixels.
 
-import {
-  BONK,
-  dizzyStars,
-  type Hit,
-  type MiniFrame,
-  type Toss,
-  TOSS_GRAVITY,
-  tossFrame,
-} from "./app-cells.ts";
+import { BONK, dizzyStars, type Hit, type MiniFrame, type Toss, tossFrame } from "./app-cells.ts";
 import { type Cell, drawCell, frameAt } from "./cells.ts";
 import { CH, CW, glyphOf } from "./stagekit.ts";
+
+/** A toss falls this fast, CSS px a second², as the app's own (`cell/toss.ts`). */
+const TOSS_GRAVITY = 1400;
 
 /** A word a Cell can land on: the problem it was thrown at. */
 export interface Ledge {
@@ -29,12 +24,15 @@ export const ledgeWidth = (ledge: Ledge, d: number): number =>
 /** A word's height, CSS pixels. */
 export const ledgeHeight = (d: number): number => (CH * WORD_SCALE) / d;
 
+/** A stretch along the stage, device pixels: from, to. */
+export type Span = readonly [number, number];
+
 /** The stages a person reads, and the colour each is read in. */
 export const TONES = {
-  flying: "rgba(237, 233, 224, 0.55)",
-  landed: "#EDE9E0",
+  flying: "#8393FF",
+  landed: "#2AD394",
   needsYou: "#FDBE48",
-  settled: "rgba(237, 233, 224, 0.35)",
+  settled: "#818181",
 } as const;
 export type Tone = keyof typeof TONES;
 
@@ -50,6 +48,8 @@ export class Actor {
   vx = 0;
   vy = 0;
   flying = false;
+  /** In the hand: it hangs from the pointer. */
+  held = false;
   hits: Hit[] = [];
   landedAt = -1;
   dizzyUntil = -1;
@@ -157,7 +157,7 @@ export class Actor {
 
   #toss(): Toss {
     return {
-      held: false,
+      held: this.held,
       vx: this.vx,
       vy: this.vy,
       grounded: !this.flying,
@@ -168,7 +168,8 @@ export class Actor {
 
   /** In flight, or still feeling a landing or dizzy: the toss's pose; else its scene. */
   frame(now: number): MiniFrame {
-    const tossed = this.flying || now - this.landedAt < SETTLE || now < this.dizzyUntil;
+    const tossed =
+      this.held || this.flying || now - this.landedAt < SETTLE || now < this.dizzyUntil;
     return tossed
       ? tossFrame(this.cell.look, this.#toss(), now * 1000, this.#points)
       : frameAt(this.cell, this.key, now - this.since);
@@ -203,22 +204,48 @@ export class Actor {
     }
   }
 
-  /** Its name and stage over its head: the name in ink, the stage in its tone. */
-  drawLabel(context: CanvasRenderingContext2D, now: number, d: number): void {
-    if (this.label === "" || this.alpha <= 0) return;
-    context.globalAlpha = this.alpha;
-    const dots = this.tone === "flying" ? ".".repeat(Math.floor(now * 3) % 4) : "";
+  /**
+   * Its name and stage over its head: the name in ink, the stage in its tone. Where that would lie
+   * over a span in `taken` (device pixels along the stage) it is its name alone, or nothing.
+   */
+  drawLabel(
+    context: CanvasRenderingContext2D,
+    now: number,
+    d: number,
+    taken: readonly Span[] = [],
+  ): Span | null {
+    if (this.label === "" || this.alpha <= 0) return null;
+    const flying = this.tone === "flying";
+    const dots = flying ? ".".repeat(Math.floor(now * 3) % 4) : "";
     context.font = `${11 * d}px ui-monospace, "SF Mono", Menlo, monospace`;
     context.textAlign = "left";
-    const name = `${this.cell.name} · `;
-    const width = context.measureText(`${name}${this.label}...`).width;
-    const left = this.x * d - width / 2,
-      base = Math.max(14, this.y - 14 * this.#points - 10) * d;
+    const name = this.cell.name,
+      stage = ` · ${this.label}`;
+    /** Where `text` starts, centred on the Cell and whole inside the stage; null where it would lie over a taken span. */
+    const placed = (text: string, room = ""): Span | null => {
+      const wide = context.measureText(text + room).width;
+      const most = context.canvas.width - wide - 6 * d;
+      const left = Math.max(6 * d, Math.min(most, this.x * d - wide / 2));
+      const clear = taken.every(([from, to]) => left > to + 6 * d || left + wide < from - 6 * d);
+      return clear ? [left, left + wide] : null;
+    };
+    const whole = placed(name + stage, flying ? "..." : "");
+    const span = whole ?? placed(name);
+    if (span === null) return null;
+    const base = Math.max(14, this.y - 14 * this.#points - 10) * d;
+    context.globalAlpha = this.alpha;
     context.fillStyle = "rgba(237, 233, 224, 0.8)";
-    context.fillText(name, left, base);
-    context.fillStyle = TONES[this.tone];
-    context.fillText(`${this.label}${dots}`, left + context.measureText(name).width, base);
+    context.fillText(whole === null ? name : `${name} · `, span[0], base);
+    if (whole !== null) {
+      context.fillStyle = TONES[this.tone];
+      context.fillText(
+        `${this.label}${dots}`,
+        span[0] + context.measureText(`${name} · `).width,
+        base,
+      );
+    }
     context.globalAlpha = 1;
+    return span;
   }
 }
 

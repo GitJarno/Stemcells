@@ -19,6 +19,5 @@ export {
   dizzyStars,
   type Hit,
   type Toss,
-  TOSS_GRAVITY,
   tossFrame,
 } from "../../../apps/web/src/stemcells/cell/toss.ts";

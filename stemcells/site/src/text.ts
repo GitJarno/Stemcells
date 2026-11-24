@@ -8,10 +8,10 @@ import { cellToCanon, cloudAtRest, homeFit } from "../../../apps/web/src/stemcel
 const HELLO = `
   Hey there. I'm Aski.
 
-  Words become things. Tell me what you want,
-  and I'll divide it into Cells that make it real.
+  Words become things. Throw a thought,
+  and a Cell flies until it lands.
 
-  Stemcells: a fun, efficient way to work with your agents.
+  Stemcells makes it fun and effective to work with your agents.
   https://github.com/GitJarno/Stemcells
 `;
 
