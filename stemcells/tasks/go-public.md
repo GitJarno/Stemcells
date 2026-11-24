@@ -3,7 +3,7 @@
 The repository opens to everyone, history and pull requests included, and
 the person keeps working on it in the open with their Cells.
 
-- [x] Front page (`.github/README.md`) says what Stemcells is about: words
+- [x] Front page (`README.md`) says what Stemcells is about: words
       become things; talk to one, run many; grow your agents; only what
       needs you; bring your own agents.
 - [x] Our own security policy, contributing guide and issue contact link,

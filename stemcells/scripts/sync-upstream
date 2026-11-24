@@ -342,6 +342,19 @@ generated_files() {
   for row in "${GENERATED[@]}"; do tr ' ' '\n' <<< "${row%%|*}"; done
 }
 
+# ------------------------------------------------------------ files all ours
+# Files ours replaces whole, with nothing of upstream's left in them. A sync
+# keeps ours, conflict or not: a merge could also splice upstream's lines in.
+OURS=(README.md)
+
+keep_ours() {
+  local file
+  git rev-parse -q --verify MERGE_HEAD > /dev/null || return 0
+  for file in "${OURS[@]}"; do
+    git checkout -q HEAD -- "$file"
+  done
+}
+
 take_upstreams_generated() {
   local file
   for file in $(generated_files); do
@@ -357,6 +370,7 @@ take_upstreams_generated() {
 
 regenerate() {
   local row files run file left
+  keep_ours
   take_upstreams_generated
   # A generator reads the merged tree, so it waits for the last conflict.
   left=$(git diff --name-only --diff-filter=U)
@@ -472,12 +486,16 @@ report() {
   if [ -z "$conflicts" ]; then
     echo "None: the merge was clean."
   else
-    echo "Merging into main conflicts in these; tests resolve themselves (\`resolve-test-seams.mjs\`), generated files are written again (\`sync-upstream --regenerate\`), the rest were resolved by hand, upstream's logic first:"
+    echo "Merging into main conflicts in these; tests resolve themselves (\`resolve-test-seams.mjs\`), generated files are written again (\`sync-upstream --regenerate\`), files all ours are kept, the rest were resolved by hand, upstream's logic first:"
     echo
     echo '```'
     { node stemcells/scripts/resolve-test-seams.mjs --preview origin/main "$target" || true; } |
-      awk -v generated="$(generated_files | tr '\n' ' ')" '
-        BEGIN { split(generated, names, " "); for (i in names) is[names[i]] = 1 }
+      awk -v generated="$(generated_files | tr '\n' ' ')" -v ours="${OURS[*]}" '
+        BEGIN {
+          split(generated, names, " "); for (i in names) is[names[i]] = 1
+          split(ours, kept, " "); for (i in kept) mine[kept[i]] = 1
+        }
+        $1 == "left" && ($2 in mine) { print "ours      " $2 "  (kept whole)"; next }
         $1 == "left" && ($2 in is) { print "generated " $2 "  (upstream\047s, then its generator)"; next }
         { print }'
     echo '```'
@@ -719,9 +737,10 @@ git switch -q -C "$branch" origin/main
 merged="cleanly"
 if ! git merge -q --no-commit --no-ff -m "Take upstream at $short" "$target" > /dev/null; then
   echo "sync: the merge conflicts; generated files take upstream's side, and upstream's tests resolve themselves"
+  keep_ours
   take_upstreams_generated
   node stemcells/scripts/resolve-test-seams.mjs || true
-  merged="its conflicts were in upstream's tests and generated files, and each resolved"
+  merged="its conflicts were in upstream's tests, generated files and files all ours, and each resolved"
 fi
 code=0
 regenerate || code=$?
