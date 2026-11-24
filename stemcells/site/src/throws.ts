@@ -296,7 +296,7 @@ export function throws(hero: Hero): void {
     // A name never lies over Aski or another name: the latest to land keeps its whole label.
     const half = 140 * stage.fit.kx;
     const taken: Span[] = [[(stage.fit.cx - half) * CW, (stage.fit.cx + half) * CW]];
-    for (const { actor, due } of thrown.toReversed()) {
+    for (const { actor, due } of [...thrown].reverse()) {
       if (due >= 0) continue;
       const resting = !actor.flying && !actor.held;
       const span = actor.drawLabel(context, now, stage.d, resting ? taken : []);

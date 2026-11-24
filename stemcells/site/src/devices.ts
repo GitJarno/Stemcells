@@ -151,6 +151,8 @@ export function devices(root: HTMLElement): void {
     const near = NEAR[f.form];
     room.dataset.form = f.form;
     for (const { kind, box, app } of machines) {
+      // Measured where it rests, not part-way through coming in.
+      box.style.transform = "";
       const [cx, w] = where.at[kind];
       const wide = Math.round(aw * w);
       box.style.width = `${wide}px`;

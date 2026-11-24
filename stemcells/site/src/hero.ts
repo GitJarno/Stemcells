@@ -64,15 +64,18 @@ export function hero(root: HTMLElement): Hero {
       ky,
     };
   });
-  const form_ = formOf(innerWidth, innerHeight);
-  const app = new Exhibit(
-    root.querySelector<HTMLElement>(".hero-app")!,
-    [form_ === "phone" ? "narrow-phone" : form_ === "tablet" ? "narrow-tablet" : "crew"],
-    { eager: true },
-  );
-  // In a hand the window is the app at that width, from its top: its own shape, cut where the fold would cut it.
-  if (form_ !== "desk") app.frame.style.aspectRatio = form_ === "phone" ? "393 / 620" : "834 / 940";
-  app.look(form_ === "desk" ? null : { x: 0, y: 0, w: app.screen.w, h: 10 });
+  // The window under the stage, as each kind of screen shows the app: the stylesheet shows one, and only that one loads.
+  const host = root.querySelector<HTMLElement>(".hero-app")!;
+  const first = { desk: "desk", tablet: "pad", phone: "hand" }[formOf(innerWidth, innerHeight)];
+  for (const [on, shot] of [
+    ["desk", "crew"],
+    ["pad", "narrow-tablet"],
+    ["hand", "narrow-phone"],
+  ] as const) {
+    const app = new Exhibit(host, [shot], { on, eager: on === first });
+    // In a hand the window is the app at that width, from its top, cut where the fold would cut it.
+    app.look(on === "desk" ? null : { x: 0, y: 0, w: app.screen.w, h: 10 });
+  }
 
   let clock = 0;
   let nextBlink = 2.5;

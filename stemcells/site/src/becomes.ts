@@ -108,7 +108,7 @@ export function becomes(root: HTMLElement): void {
         between(VIEW.fresh, VIEW.whole, ease.inOut(span(p, TURNS[0] - 0.1, TURNS[0] - 0.01))),
       );
 
-      // The ledge: the window's top edge, and a place on it for each of the crew.
+      // The ledge: the window's top edge, read each frame since a longer line under it moves the window.
       const frame = app.frame.getBoundingClientRect(),
         box = pin.getBoundingClientRect();
       const left = frame.left - box.left,

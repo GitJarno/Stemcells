@@ -33,8 +33,8 @@ export const around = (box: Box, by: number): Box => ({
 export interface ExhibitLook {
   /** The first screen loads with the page, not when it nears. */
   readonly eager?: boolean;
-  /** One of a scene's two windows: the stylesheet shows a Mac's on a wide screen and a phone's on a phone. */
-  readonly on?: "desk" | "hand";
+  /** One of several windows in one place: the stylesheet shows the one the visitor's screen calls for. */
+  readonly on?: "desk" | "pad" | "hand";
 }
 
 export class Exhibit {
@@ -75,7 +75,20 @@ export class Exhibit {
     this.#film.append(this.#spot, this.#edge);
     this.frame.append(this.#film);
     host.append(this.frame);
-    new ResizeObserver(() => this.look(this.#looking)).observe(this.frame);
+    new ResizeObserver(() => {
+      this.#size = { w: this.frame.clientWidth, h: this.frame.clientHeight };
+      this.look(this.#looking);
+    }).observe(this.frame);
+  }
+
+  /** The frame's inner size as last observed: none until it is first laid out, or while it is not shown. */
+  #size = { w: 0, h: 0 };
+  /** Which screen the frame's label last described. */
+  #said = 0;
+  #say(n: number): void {
+    if (n === this.#said || this.#layers[n] === undefined) return;
+    this.#said = n;
+    this.frame.setAttribute("aria-label", ALT[this.#layers[n][0]]);
   }
 
   #looking: Box | null = null;
@@ -90,6 +103,7 @@ export class Exhibit {
       image.style.clipPath = "";
     });
     this.#edge.style.opacity = "0";
+    this.#say(Math.round(clamp(at, 0, this.#layers.length - 1)));
   }
 
   /** The screen at `over` drawn across the one before it from the left, up to `to` of the screen's width. */
@@ -102,6 +116,7 @@ export class Exhibit {
     });
     this.#edge.style.opacity = to <= 0 || to >= 1 ? "0" : "1";
     this.#edge.style.left = `${to * this.screen.w}px`;
+    this.#say(to < 0.5 ? over - 1 : over);
   }
 
   /** The camera: the part of the screen the frame shows, whole, and never past the screen's edge. Null shows all of it. */
@@ -111,15 +126,16 @@ export class Exhibit {
     if (view === null) return;
     this.#view = view;
     this.#film.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.s})`;
-    const sizes = `${Math.ceil(this.screen.w * view.s)}px`;
+    // In steps, so a moving camera does not make the browser choose a source again every frame.
+    const sizes = `${Math.ceil((this.screen.w * view.s) / 240) * 240}px`;
     for (const [, image] of this.#layers) if (image.sizes !== sizes) image.sizes = sizes;
   }
 
   /** How the screen lies in the frame when the camera is on `at`: its scale and where its corner is. */
   #fit(at: Box | null): { s: number; x: number; y: number } | null {
     const { w, h } = this.screen;
-    const fw = this.frame.clientWidth,
-      fh = this.frame.clientHeight;
+    const fw = this.#size.w || this.frame.clientWidth,
+      fh = this.#size.h || this.frame.clientHeight;
     if (fw === 0 || fh === 0) return null;
     const box = at ?? { x: 0, y: 0, w, h };
     const s = Math.max(Math.min(fw / box.w, fh / box.h), fw / w, fh / h);

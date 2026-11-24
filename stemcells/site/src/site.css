@@ -305,7 +305,8 @@ h1 {
   background: #0a0a0a;
 }
 /* A scene staged twice shows the window its screen calls for: a Mac's here, a phone's on a phone. */
-.exhibit.on-hand {
+.exhibit.on-hand,
+.exhibit.on-pad {
   display: none;
 }
 .exhibit .film {
@@ -720,6 +721,14 @@ h2 {
   .show {
     order: -1;
   }
+  /* The hero's window is the app at this width, from its top, cut where the fold would cut it. */
+  .hero-app .exhibit.on-desk {
+    display: none;
+  }
+  .exhibit.on-pad {
+    display: block;
+    aspect-ratio: 834 / 940;
+  }
   .say {
     max-width: 40em;
   }
@@ -810,11 +819,15 @@ h2 {
     height: 100%;
     aspect-ratio: auto;
   }
-  .exhibit.on-desk {
+  .exhibit.on-desk,
+  .exhibit.on-pad {
     display: none;
   }
   .exhibit.on-hand {
     display: block;
+  }
+  .hero-app .exhibit.on-hand {
+    aspect-ratio: 393 / 620;
   }
   /* A scene about the window's whole shape keeps the window whole. */
   .whole .show .art {

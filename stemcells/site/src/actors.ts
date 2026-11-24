@@ -223,12 +223,9 @@ export class Actor {
       stage = ` · ${this.label}`;
     /** Where `text` starts, centred on the Cell and whole inside the stage; null where it would lie over a taken span. */
     const placed = (text: string, room = ""): Span | null => {
-      const wide = context.measureText(text).width;
+      const wide = context.measureText(text + room).width;
       const most = context.canvas.width - wide - 6 * d;
-      const left = Math.max(
-        6 * d,
-        Math.min(most, this.x * d - context.measureText(text + room).width / 2),
-      );
+      const left = Math.max(6 * d, Math.min(most, this.x * d - wide / 2));
       const clear = taken.every(([from, to]) => left > to + 6 * d || left + wide < from - 6 * d);
       return clear ? [left, left + wide] : null;
     };
