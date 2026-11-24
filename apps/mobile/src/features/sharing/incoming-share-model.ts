@@ -93,6 +93,34 @@ export function isShareFileUriUnderOwnedRoots(
   });
 }
 
+/**
+ * On Android only the native resolver's `shared-<uuid>` copies are this app's to delete; other
+ * shared URIs are not copies.
+ */
+export function isOwnedShareFileUri(
+  uri: string,
+  owned: {
+    readonly platform: string;
+    readonly cacheUri: string;
+    readonly otherRootUris: ReadonlyArray<string>;
+  },
+): boolean {
+  if (owned.platform !== "android") {
+    return isShareFileUriUnderOwnedRoots(uri, [owned.cacheUri, ...owned.otherRootUris]);
+  }
+  // The resolver reports its copy by canonical path, where `/data/user/0` is `/data/data`.
+  const canonical = (fileUri: string) =>
+    normalizedFileUriPath(fileUri)?.replace(/^\/data\/user\/0\//, "/data/data/");
+  const path = canonical(uri);
+  const cachePath = canonical(owned.cacheUri)?.replace(/\/*$/, "/");
+  return (
+    path !== undefined &&
+    cachePath !== undefined &&
+    path.startsWith(cachePath) &&
+    /^shared-[\da-f-]{36}\/[^/]+$/i.test(path.slice(cachePath.length))
+  );
+}
+
 export interface IncomingShareFileReader {
   readonly readBase64: (uri: string) => Promise<string>;
   readonly removeOwnedFile: (uri: string) => Promise<void> | void;
@@ -347,9 +375,7 @@ export async function buildIncomingShareDraft(input: {
             continue;
           }
           if (sizeBytes > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
-            warnings.push(
-              fileAttachmentTooLargeMessage(name, FILE_ATTACHMENT_MAX_UPLOAD_BYTES, m),
-            );
+            warnings.push(fileAttachmentTooLargeMessage(name, FILE_ATTACHMENT_MAX_UPLOAD_BYTES, m));
             await releaseOwnedFiles(input.fileReader, [persistedFileUri]);
             continue;
           }
