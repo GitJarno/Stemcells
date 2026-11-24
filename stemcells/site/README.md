@@ -7,15 +7,20 @@ flight from `apps/web/src/stemcells/`, so the page can't drift from the app.
 
 What the page adds:
 
-- `src/kit/`: the engine. Words are characters and things are solid (the
-  book, How it looks). One WebGL2 layer draws every character from a glyph
-  atlas (`glyphs.ts`); a body is words as characters, which travel to become
-  the next thing (`bodies.ts`); each scene draws its things on a canvas; a
-  scene is pinned while the scroll plays it, each frame a pure function of
-  the scroll's progress (`scenes.ts`); the page is staged apart for a
-  phone, a tablet and a desk (`form.ts`).
+- `public/app/` and `src/shots.ts`: real screens of the app, and where
+  things are on each. The page shows the app as itself, never a drawing of
+  it (the book, How it looks). `shots/README.md` says how they are taken.
+- `src/kit/`: the engine. An exhibit is the app's screens in a window's
+  frame, with a camera and a spotlight (`exhibit.ts`); one WebGL2 layer
+  draws every character from a glyph atlas (`glyphs.ts`); a body is words as
+  characters, which travel to become the next thing (`bodies.ts`); a throw
+  is a flight in closed form (`flight.ts`); a scene is pinned while the
+  scroll plays it, each frame a pure function of the scroll's progress
+  (`scenes.ts`); the page is staged apart for a phone, a tablet and a desk
+  (`form.ts`).
 - The hero (`hero.ts`, its thrown Cells in `throws.ts`) and one file a
-  scene: `arc.ts`, `shown.ts`, `becomes.ts`, `devices.ts`, `get.ts`.
+  scene: `arc.ts`, `shown.ts`, `becomes.ts`, `devices.ts`, `get.ts`. Aski
+  and the Cells stand on the windows: a window's top edge is their ground.
 - `stroll.ts`: Aski walks the foot of the page as it scrolls.
 
 Working on it:
@@ -27,6 +32,6 @@ Working on it:
   `file://`.
 - `site.test.ts` builds and typechecks the page with the rest of our tests:
   the site is no workspace package, so nothing else would notice an app
-  export it imports going away.
+  export it imports going away, or a screen it shows going missing.
 - Deploys are the maintainer's: `node deploy.mjs` builds and puts it on
   stemcells.sh (`vercel link` once first).

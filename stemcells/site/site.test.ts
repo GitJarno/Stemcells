@@ -11,6 +11,8 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
+import { shots } from "./src/shots.ts";
+
 const site = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
 const root = NodePath.resolve(site, "../..");
 const out = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "stemcells-site-"));
@@ -35,6 +37,12 @@ describe("stemcells.sh", () => {
     expect(NodeFS.readFileSync(NodePath.join(out, "404.html"), "utf8")).not.toContain(
       "<!-- aski -->",
     );
+    // Every screen of the app the page shows ships with it, with its half-size copy where one is named.
+    const shipped = new Set(NodeFS.readdirSync(NodePath.join(out, "app")));
+    const named = Object.entries(shots).flatMap(([name, shot]) =>
+      shot.small ? [`${name}.webp`, `${name}-1440.webp`] : [`${name}.webp`],
+    );
+    expect(named.filter((file) => !shipped.has(file))).toEqual([]);
   });
 
   it("typechecks", () => {

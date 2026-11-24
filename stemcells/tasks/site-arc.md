@@ -19,16 +19,37 @@ acted out.
 - It no longer built: an app export it imported had been removed, and
   nothing checked the site. A test now builds it.
 
+## What upstream's page does well
+
+The first pass drew the app: windows, charts and machines as clean outlines.
+It read as a mock-up. T3 Code's own landing page was the lesson in
+presentation:
+
+- The product is the picture. The real window sits right under the claim,
+  and every feature section shows real UI.
+- One claim, one sentence, one button a screen. A visitor skims it in
+  fifteen seconds.
+- Plain type, hairlines, a lot of air.
+
+We took those, and kept what is ours: Aski and the Cells are alive on the
+page, the throw is playable, and the scroll plays each idea.
+
 ## The system
 
-- Two materials, as the book has it: words are characters, things are
-  solid. What is still an idea (prose, words in flight, a trail) is a
-  **body** of characters (`src/kit/bodies.ts`); what has become a thing (a
-  window, a chart, a card, a machine) is drawn clean on a 2D canvas, and the
-  characters travel into it.
-- The characters are drawn by one WebGL2 layer from a glyph atlas
-  (`src/kit/glyphs.ts`), with a 2D canvas where WebGL2 is missing.
-- Aski and the Cells stay the app's own (`src/app.ts`, `src/app-cells.ts`).
+- **The app is shown as itself.** `public/app/` holds real screens of the
+  app, taken in a lab with made-up work (`shots/README.md`); `src/shots.ts`
+  says where things are on each. An exhibit (`src/kit/exhibit.ts`) is those
+  screens in a window's frame: they turn into each other in place, a camera
+  moves over them and a spotlight says where to look.
+- **Creatures stand on things.** A window's top edge is the ground Aski and
+  the Cells stand on, in the hero and in every scene.
+- **Words are characters.** What is still an idea (words in flight, a trail)
+  is a body of characters (`src/kit/bodies.ts`), drawn by one WebGL2 layer
+  from a glyph atlas (`src/kit/glyphs.ts`), with a 2D canvas where WebGL2 is
+  missing.
+- The page reads in the app's own type and the stages wear the app's own
+  colours. Aski and the Cells stay the app's own (`src/app.ts`,
+  `src/app-cells.ts`).
 - A scene is pinned while its story is scrubbed by the scroll: every frame
   is a pure function of the scroll's progress and the clock
   (`src/kit/scenes.ts`). Reduce Motion gets each scene's still.
@@ -37,49 +58,32 @@ acted out.
 
 ## The page
 
-| Scene    | Says                               | Shows                                                                                                      |
-| -------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Hero     | Words become things                | Aski at home; type a thought, it is thrown, flies and lands; pick a Cell up and throw it                   |
-| The arc  | Thrown until it lands              | One Cell scrubbed along its arc: Flying, Input (one question with previews), Landed, Settled               |
-| Shown    | Agents write walls                 | A wall of text turns into a chart, a diagram, a choice and one closing line; a count of words left to read |
-| Becomes  | It becomes what you need           | A plain Cell grows nubs, arms, biceps; a window goes from one chat to a crew to a phone                    |
-| Machines | One crew, on every machine you own | Six machines in depth; Cells thrown from the one in your hand to the far ones; every screen says the same  |
-| Get it   | Bring your own agents              | "a thought" turns into the three install lines                                                             |
+| Scene    | Says                               | Shows                                                                                                          |
+| -------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Hero     | Words become things                | Aski on the app's window; type a thought, it is thrown and lands on the window; pick a Cell up and throw it    |
+| The arc  | Thrown until it lands              | A Cell flies along the window's top edge while the window shows each stage: Flying, Input, Landed, Settled     |
+| Shown    | Agents write walls                 | A real reply as a wall of text is wiped into the same answer as a chart, then a diagram, a choice, one line    |
+| Becomes  | It becomes what you need           | A Cell grows nubs, arms, biceps on the window; the window goes from one chat to two to a crew, a Cell for each |
+| Machines | One crew, on every machine you own | Laptop, tablet and phone each showing the app as it looks there; Cells thrown to the far Macs; one asks        |
+| Get it   | Bring your own agents              | "a thought" turns into the three install lines; a Cell in each provider's colours lands on them                |
 
-Each scene is staged apart for a desk, a tablet and a phone: the stage list
-is the Mac's column on a desk and the phone's four tabs in a hand, the
-machine "in your hand" in the last scene is the one the visitor holds, and
-the window scene ends on the other device.
+Each scene is staged apart for a desk, a tablet and a phone: a desk shows
+the whole window with a spotlight, a phone sends the camera to the part that
+counts; the stage list is the Mac's column on a desk and the phone's four
+tabs in a hand; the machine "in your hand" is the one the visitor holds.
 
 ## Plan
 
 - [x] Brand book: `stemcells/brand/book.md`
 - [x] Kit: glyph layer, bodies, scenes, form factors
-- [x] Hero
-- [x] The arc
-- [x] Shown
-- [x] Becomes
-- [x] Machines
-- [x] Get it, the stroll, the 404 and `aski.txt`
-- [x] Phone, iPad and desktop passes; Reduce Motion; no WebGL
+- [x] Hero, the arc, shown, becomes, machines, get it, the stroll
 - [x] A test that builds the site
 - [x] The readme says what the book says
+- [x] Study upstream's page; rebuild every scene on real screens (`exhibit.ts`)
+- [ ] The real screens: taken in the lab, placed, checked for anything private
+- [ ] Phone, iPad and desktop passes on the real screens; Reduce Motion
+- [ ] The phone app's own screens (needs a simulator; the phone and tablet show the app in a browser until then)
 
 ## Review
 
-- The page says the book's five ideas in six scenes, and each scene is one
-  picture with one short sentence. The first draft said too much in words and
-  drew everything in characters; both were cut back. The rule that came out
-  of it is the book's: words are characters, things are solid.
-- Checked by eye at 1440×900, 834×1194, 393×852 and 320×568, with Reduce
-  Motion and without WebGL2. A short phone drops each scene's sentence so the
-  picture keeps its room.
-- An independent review found six real problems (a claim too broad, the
-  hero's own typing writing over a visitor's, Reduce Motion ignoring Return,
-  a button reachable while hidden, three collisions on the smallest phone).
-  All are fixed.
-- The site uses the app's own Aski, eyes included; when the eyes change in
-  the app, the site follows at its next build.
-- Left for later: the page's second chunk is about 130 KB gzipped, most of it
-  the app's Cell painter. It loads after the hero, so the first paint doesn't
-  wait for it.
+Pending.

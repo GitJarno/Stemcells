@@ -30,8 +30,9 @@ step, wait, click and paragraph between the thought and the thing is ours to
 remove. When a choice is unclear, pick the one with less in between.
 
 The core line says it: **Words become things.** It is true of the product
-(a sentence becomes a feature), of the art (every picture here is made of
-characters) and of the name (a stem cell becomes whatever is asked of it).
+(a sentence becomes a feature), of the art (Aski is made of characters, and
+what it throws becomes a thing) and of the name (a stem cell becomes whatever
+is asked of it).
 
 ## Who it is for
 
@@ -210,29 +211,34 @@ lines, one at a time, and the best of it is literally true on screen.
 
 ## How it looks
 
-**Two materials: words are characters, things are solid.** That is the core
-line, drawn.
+**Words are characters. The app is itself.** That is the core line, drawn.
 
 - **Characters** are for what is still an idea: Aski, words in flight, a
-  wall of text, a trail through the air. They sit on a grid of cells, one
-  wide to two tall, and density is life: `. : - = + * # % @ █`. Lighter is
-  looser and can still become anything.
-- **Solid drawings** are for what has become a thing: a Cell, a window, a
-  chart, a card, a machine. They are drawn clean, the way the app draws
-  them: a hairline of ink, a quiet fill, rounded corners, real type.
-- **One turns into the other.** Characters travel, gather, and the thing
-  resolves where they land. A picture is never decorated with characters,
+  trail through the air. They sit on a grid of cells, one wide to two tall,
+  and density is life: `. : - = + * # % @ █`. Lighter is looser and can still
+  become anything.
+- **The app is shown as itself.** Wherever the product appears, it is a real
+  screen of the app in its window's frame, never a drawing of one. A camera
+  moves over it and a spotlight says where to look. If the app changes, the
+  screens are taken again (`stemcells/site/shots/`).
+- **Cells are pixels,** from the app's own painter, in a colour and a look of
+  their own. They stand on things: a window's top edge is their ground.
+- **One turns into the other.** Characters travel and gather, and the thing
+  is there where they land. A real screen is never decorated with characters,
   and an idea is never boxed in chrome.
 
-The rest holds for both:
+The rest holds everywhere:
 
 - **Night and ink.** Night `#0B0B0C`, ink `#EDE9E0`, a raised surface
   `#151514`. On paper: `#F4F1EA` and `#141414`.
-- **Colour belongs to the Cells.** Each Cell wears its own. Aski, the brand
-  and every drawing stay in ink. Amber `#FDBE48` means Input and nothing
-  else.
-- **One monospace** for the brand, and the wordmark is `stemcells` with a
-  block cursor.
+- **Two voices of type.** What a person reads is set in the app's own type,
+  the system's sans, tight and plain. One monospace is for the mark
+  (`stemcells` with a block cursor), small labels, code, and anything made of
+  characters.
+- **Colour means something.** Each Cell wears its own. A stage wears the dot
+  the app gives it: Input amber `#FDBE48`, Flying, Landed and Settled as the
+  app's list shows them. Amber means Input and nothing else. Aski, the brand
+  and every line of type stay in ink.
 - **Nothing for show.** No gradients, no glow, no shadows, no coloured edge
   stripes. A border is one hairline of ink. Depth is said by size and by
   how faint a thing is.
@@ -259,14 +265,14 @@ One story, staged for the hand that holds it. The ideas, the words and the
 order never change; the layout and the gesture do. This is how the site
 does it:
 
-|               | Desktop                               | iPad                    | Phone                                        |
-| ------------- | ------------------------------------- | ----------------------- | -------------------------------------------- |
-| Layout        | Art and words side by side            | Art above, words below  | Art above, words below, one thought a screen |
-| You throw by  | Typing and Return, or dragging a Cell | Dragging a Cell         | Flicking a Cell                              |
-| You answer by | A click or a number key               | A tap                   | A tap                                        |
-| It mirrors    | The Mac's column of stages            | The phone's four tabs   | The phone's four tabs                        |
-| In your hand  | The MacBook                           | The iPad                | The iPhone                                   |
-| The pointer   | Stirs the characters; Aski watches it | Aski watches what flies | Aski watches what flies                      |
+|                  | Desktop                               | iPad                       | Phone                                   |
+| ---------------- | ------------------------------------- | -------------------------- | --------------------------------------- |
+| Layout           | Words beside the window               | The window above the words | The window above the words              |
+| The window shows | The whole app, a spotlight on a part  | The whole app, a spotlight | The camera goes to the part that counts |
+| You throw by     | Typing and Return, or dragging a Cell | Dragging a Cell            | Flicking a Cell                         |
+| It mirrors       | The Mac's list of stages              | The phone's four tabs      | The phone's four tabs                   |
+| In your hand     | The MacBook                           | The iPad                   | The iPhone                              |
+| The pointer      | Stirs Aski's characters; it watches   | Aski watches what flies    | Aski watches what flies                 |
 
 ## Before it ships
 
