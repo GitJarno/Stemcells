@@ -33,6 +33,8 @@ export const around = (box: Box, by: number): Box => ({
 export interface ExhibitLook {
   /** The first screen loads with the page, not when it nears. */
   readonly eager?: boolean;
+  /** One of a scene's two windows: the stylesheet shows a Mac's on a wide screen and a phone's on a phone. */
+  readonly on?: "desk" | "hand";
 }
 
 export class Exhibit {
@@ -48,7 +50,7 @@ export class Exhibit {
   constructor(host: HTMLElement, names: readonly ShotName[], look: ExhibitLook = {}) {
     const first = sizeOf(names[0]!);
     this.screen = { w: first.w, h: first.h };
-    this.frame.className = "exhibit";
+    this.frame.className = look.on === undefined ? "exhibit" : `exhibit on-${look.on}`;
     this.frame.setAttribute("role", "img");
     this.frame.setAttribute("aria-label", ALT[names[0]!]);
     this.#film.className = "film";
@@ -150,6 +152,11 @@ export class Exhibit {
       box = of.getBoundingClientRect();
     const view = (at === undefined ? null : this.#fit(at)) ?? this.#view;
     return [frame.left - box.left + view.x + x * view.s, frame.top - box.top + view.y + y * view.s];
+  }
+
+  /** Whether the stylesheet shows this one. */
+  get showing(): boolean {
+    return this.frame.clientWidth > 0;
   }
 
   /** CSS pixels a screen pixel is drawn at. */

@@ -26,10 +26,10 @@ export const ledgeHeight = (d: number): number => (CH * WORD_SCALE) / d;
 
 /** The stages a person reads, and the colour each is read in. */
 export const TONES = {
-  flying: "#8B93F8",
-  landed: "#5FD08A",
+  flying: "#8393FF",
+  landed: "#2AD394",
   needsYou: "#FDBE48",
-  settled: "#8A8A86",
+  settled: "#818181",
 } as const;
 export type Tone = keyof typeof TONES;
 

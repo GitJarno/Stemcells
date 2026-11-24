@@ -30,6 +30,17 @@ export const ALT: Readonly<Record<ShotName, string>> = {
   "shape-four": "Four tabs, and four Cells at work in the open one.",
   "narrow-tablet": "Stemcells in a browser on a tablet.",
   "narrow-phone": "Stemcells in a browser on a phone.",
+  "arc-flying-tablet": "On a tablet: the Cell at work, listed under Flying.",
+  "arc-input-tablet": "On a tablet: the Cell's question, in the list and in the chat.",
+  "arc-flying-phone": "On a phone: a Cell at work on dark mode.",
+  "arc-input-phone": "On a phone: the Cell asks one question, with a preview of each answer.",
+  "arc-landed-phone": "On a phone: the Cell has landed, and one closing line says what is done.",
+  "arc-settled-phone": "On a phone: the Cell is settled.",
+  "shown-wall-phone": "On a phone: a reply written as a wall of text about search speed.",
+  "shown-chart-phone": "On a phone: the same reply as a chart of search latency.",
+  "shown-diagram-phone": "On a phone: how a search query travels, drawn as a diagram.",
+  "shown-choice-phone": "On a phone: a question with a preview of its first option.",
+  "shown-closeout-phone": "On a phone: one closing card, what is done and what is left.",
 };
 
 export const sizeOf = (shot: ShotName): { readonly w: number; readonly h: number } => SHOTS[shot];
@@ -54,10 +65,13 @@ export const VIEW = {
   /** The foot of the open Cell: its question or its composer. */
   foot: framed(450, 388, 796),
   /** The stages' list at the foot of the column, and the line that says it is settled. */
-  stages: framed(0, 346, 800),
+  stages: framed(0, 376, 800),
   /** A fresh Cell: Aski over the composer. */
   fresh: framed(388, 318, 920),
 } as const;
+
+/** A framing on a phone's screen: a phone's frame shows the screen at its full width, so a framing is how far down it looks. */
+export const band = (y: number, h: number): Box => ({ x: 0, y, w: 393, h });
 
 /** The words a person reads in one answer told two ways: as the Cell's prose, and as its sentence with a chart's labels. */
 export const WORDS: Partial<Record<ShotName, number>> = {

@@ -18,8 +18,16 @@ const MACHINES: Readonly<
   Record<Kind, { name: string; ratio: number; shots: readonly ShotName[] }>
 > = {
   book: { name: "MacBook", ratio: 1440 / 900, shots: ["arc-flying", "arc-input", "arc-flying"] },
-  pad: { name: "iPad", ratio: 834 / 1194, shots: ["narrow-tablet"] },
-  phone: { name: "iPhone", ratio: 393 / 852, shots: ["narrow-phone"] },
+  pad: {
+    name: "iPad",
+    ratio: 834 / 1194,
+    shots: ["arc-flying-tablet", "arc-input-tablet", "arc-flying-tablet"],
+  },
+  phone: {
+    name: "iPhone",
+    ratio: 393 / 852,
+    shots: ["arc-flying-phone", "arc-input-phone", "arc-flying-phone"],
+  },
 };
 /** The machine in your hand, and the one the answer comes from. */
 const NEAR: Readonly<Record<Form, Kind>> = { desk: "book", tablet: "pad", phone: "phone" };
@@ -178,7 +186,8 @@ export function devices(root: HTMLElement): void {
       const top = mini.getBoundingClientRect();
       const x1 = top.left + top.width / 2 - pinBox.left,
         y1 = top.top - pinBox.top;
-      const apex = Math.max(f.art.y + 8, Math.min(y0, y1) - 60 - n * 22);
+      // The highest still clears the bar over the page by a Cell's own height.
+      const apex = Math.max(f.art.y + 48, Math.min(y0, y1) - 60 - n * 22);
       return flightOver(x0, y0, x1, y1, apex);
     });
     const answering = machines.find((machine) => machine.kind === ANSWERS[near])!;
@@ -225,8 +234,8 @@ export function devices(root: HTMLElement): void {
       // Every screen says the same: calm, then asked, then calm again once it is answered.
       const asked = ease.inOut(span(p, AT.asks, AT.asks + 0.04)),
         answered = ease.inOut(span(p, AT.answered, AT.answered + 0.04));
-      for (const { app, kind, box } of machines) {
-        app.turn(MACHINES[kind].shots.length > 1 ? asked + answered : 0);
+      for (const { app, box } of machines) {
+        app.turn(asked + answered);
         // Amber means Input: every machine's outline wears it while the question stands.
         box.style.setProperty("--asked", `${asked * (1 - answered)}`);
       }

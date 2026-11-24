@@ -10,9 +10,9 @@
   --raised: #151514;
   /* The stages' own colours, as the app's list dots them. */
   --amber: #fdbe48;
-  --flying: #8b93f8;
-  --landed: #5fd08a;
-  --settled: #8a8a86;
+  --flying: #8393ff;
+  --landed: #2ad394;
+  --settled: #818181;
   --sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease: cubic-bezier(0.65, 0, 0.35, 1);
@@ -303,6 +303,10 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #0a0a0a;
+}
+/* A scene staged twice shows the window its screen calls for: a Mac's here, a phone's on a phone. */
+.exhibit.on-hand {
+  display: none;
 }
 .exhibit .film {
   position: absolute;
@@ -789,7 +793,7 @@ h2 {
     gap: 12px;
   }
   .show {
-    --band: 104px;
+    --band: 116px;
   }
   .show .art {
     flex: 0 0 var(--band);
@@ -802,6 +806,12 @@ h2 {
     width: 100%;
     height: 100%;
     aspect-ratio: auto;
+  }
+  .exhibit.on-desk {
+    display: none;
+  }
+  .exhibit.on-hand {
+    display: block;
   }
   /* A scene about the window's whole shape keeps the window whole. */
   .whole .show .art {

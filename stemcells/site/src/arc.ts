@@ -15,7 +15,7 @@ import {
 } from "./app-cells.ts";
 import { BELOW, type Cell, crew, drawCell, frameAt, lengthOf } from "./cells.ts";
 import { type Body, drawBody, type Mark, Morph, textBody } from "./kit/bodies.ts";
-import { along, around, Exhibit } from "./kit/exhibit.ts";
+import { along, Exhibit } from "./kit/exhibit.ts";
 import { clamp, density, ease, lerp, reduced, span, touch } from "./kit/form.ts";
 import { Glyphs, INK } from "./kit/glyphs.ts";
 import {
@@ -27,7 +27,7 @@ import {
   type TrailDot as Dot,
 } from "./kit/flight.ts";
 import { layerIn, scene, type SceneFrame } from "./kit/scenes.ts";
-import { type Box as Part, part, VIEW } from "./shots.ts";
+import { band, type Box as Part, part, type ShotName, VIEW } from "./shots.ts";
 
 type Stage = "flying" | "input" | "landed" | "settled";
 const TONE: Readonly<Record<Stage, string>> = {
@@ -46,6 +46,57 @@ const GOAL = "dark mode";
 const SETTLE_BY = touch ? "swipe to settle" : "close it to settle";
 const FONT =
   'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+
+/** The window under the Cell, as one kind of screen shows the story. */
+interface Staging {
+  /** Its screens in the story's order: in the air, asking, in the air again, landed, settled. */
+  readonly shots: readonly ShotName[];
+  /** The camera's framings: before the throw, at work, asking, landed, settled. */
+  readonly view: Readonly<Record<"whole" | "work" | "ask" | "landed" | "settled", Part>>;
+  /** What the spotlight picks out: the question, the closing line, where the app says it is settled. */
+  readonly lit: Readonly<Record<"ask" | "landed" | "settled", Part>>;
+  /** Where on the screen its letters go when it is settled. */
+  readonly rest: readonly [x: number, y: number];
+}
+const ROW = part("arc-settled", "stage.settled");
+/** A Mac's window: the question is in the column too, and settled is a row of its list. */
+const DESK: Staging = {
+  shots: ["arc-flying", "arc-input", "arc-flying", "arc-landed", "arc-settled"],
+  view: {
+    whole: VIEW.whole,
+    work: VIEW.answer,
+    ask: VIEW.ask,
+    landed: VIEW.answer,
+    settled: VIEW.stages,
+  },
+  lit: { ask: part("arc-input", "askCard"), landed: part("arc-landed", "closeOut"), settled: ROW },
+  rest: [ROW.x + 44, ROW.y + ROW.h / 2],
+};
+/** The line a phone's chat ends on once it is settled; the capture does not measure it. */
+const SAID: Part = { x: 20, y: 544, w: 192, h: 28 };
+/** A phone's screen: one Cell fills it, so the camera only looks further down the chat. */
+const HAND: Staging = {
+  shots: [
+    "arc-flying-phone",
+    "arc-input-phone",
+    "arc-flying-phone",
+    "arc-landed-phone",
+    "arc-settled-phone",
+  ],
+  view: {
+    whole: band(0, 300),
+    work: band(170, 195),
+    ask: band(part("arc-input-phone", "question").y - 10, 250),
+    landed: band(part("arc-landed-phone", "reply").y, part("arc-landed-phone", "reply").h),
+    settled: band(part("arc-settled-phone", "closeOut").y, 230),
+  },
+  lit: {
+    ask: part("arc-input-phone", "question"),
+    landed: part("arc-landed-phone", "closeOut"),
+    settled: SAID,
+  },
+  rest: [SAID.x + 28, SAID.y + SAID.h / 2],
+};
 
 /** The story's beats along the scroll. */
 const AT = {
@@ -164,6 +215,9 @@ function clearOf(box: Box, x: number, y: number, soft = 9): number {
 }
 
 interface Layout {
+  /** The window in use, and how it is staged. */
+  readonly app: Exhibit;
+  readonly staged: Staging;
   /** CSS pixels an art pixel of the Cell. */
   readonly scale: number;
   readonly ground: number;
@@ -191,31 +245,12 @@ export function arc(root: HTMLElement): void {
   const [cell] = crew([["Otter", "claude"]]) as [Cell];
   const stages = [...root.querySelectorAll<HTMLElement>(".stages li")];
 
-  // The window's screens in the story's order: in the air, asking, in the air again, landed, settled.
-  const app = new Exhibit(root.querySelector<HTMLElement>(".window")!, [
-    "arc-flying",
-    "arc-input",
-    "arc-flying",
-    "arc-landed",
-    "arc-settled",
-  ]);
-  /** The camera's framings, on a desk and in a hand: at work, asking, landed, settled. */
-  const views = (hand: boolean) =>
-    hand
-      ? {
-          whole: VIEW.answer,
-          work: { x: 476, y: 118, w: 420, h: 150 },
-          ask: around(part("arc-input", "askCard"), 10),
-          landed: { x: 476, y: 150, w: 430, h: 140 },
-          settled: around(part("arc-settled", "stageList"), 10),
-        }
-      : {
-          whole: VIEW.whole,
-          work: VIEW.answer,
-          ask: VIEW.ask,
-          landed: VIEW.answer,
-          settled: VIEW.stages,
-        };
+  // A Mac's window and a phone's screen: only the one this visitor's screen calls for shows, and loads.
+  const host = root.querySelector<HTMLElement>(".window")!;
+  const windows = [
+    [DESK, new Exhibit(host, DESK.shots, { on: "desk" })],
+    [HAND, new Exhibit(host, HAND.shots, { on: "hand" })],
+  ] as const;
 
   /** The answer taken by hand, until the question is asked again. */
   let asking = false;
@@ -231,7 +266,7 @@ export function arc(root: HTMLElement): void {
       behavior: "smooth",
     });
   };
-  app.frame.addEventListener("click", answer);
+  for (const [, { frame }] of windows) frame.addEventListener("click", answer);
   addEventListener("keydown", (event) => {
     if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
     const on = event.target instanceof HTMLElement ? event.target : null;
@@ -250,6 +285,7 @@ export function arc(root: HTMLElement): void {
     const { x: ax, y: ay, width: aw, height: ah } = f.art;
     const d = density();
     const phone = f.form === "phone";
+    const [staged, app] = windows[windows[1][1].showing ? 1 : 0];
     const scale = phone || ah < 420 ? 2 : 3;
     const small = phone ? 12 : 13;
     const goalH = phone ? 24 : 32;
@@ -284,8 +320,8 @@ export function arc(root: HTMLElement): void {
     const x0 = wordsLeft + wordsW / 2,
       x1 = Math.round((wordsLeft + wordsW + goalLeft) / 2),
       x2 = goalLeft + goalW / 2;
-    // As high as the box lets its label go, and no higher than reads as a throw.
-    const room = floor - ay - label.over - size - 4;
+    // As high as the box lets its label go (it rides higher while the Cell stretches), and no higher than reads as a throw.
+    const room = floor - ay - label.over - size - 12;
     const apex = Math.max(
       40,
       Math.min(room, 440, aw * { desk: 0.5, tablet: 0.6, phone: 0.7 }[f.form]),
@@ -294,12 +330,13 @@ export function arc(root: HTMLElement): void {
     const second = flightOver(x1, floor, x2, standOn(goalH), floor - apex);
 
     // Settled, its letters go where the app keeps a settled Cell: the Settled row of its list.
-    const row = part("arc-settled", "stage.settled");
-    const [rowX, rowY] = app.point(row.x + 44, row.y + row.h / 2, pin, views(phone).settled);
+    const [rowX, rowY] = app.point(...staged.rest, pin, staged.view.settled);
     const settled = textBody("settled", { x: rowX, y: rowY - small / 2, h: small, a: 0 });
     const apart = lettersOf(cell, frameAt(cell, "idle", 0), x2, second.y1, scale);
 
     return {
+      app,
+      staged,
       scale,
       ground,
       words,
@@ -344,7 +381,8 @@ export function arc(root: HTMLElement): void {
         cells.style.height = `${f.height}px`;
       }
       if (f.fresh || lay === null) lay = layout(f);
-      const { scale, ground, first, second, clock, label } = lay;
+      const { app, scale, ground, first, second, clock, label } = lay;
+      const { view, lit: parts } = lay.staged;
       const { p } = f;
       const tau = clock.at(p),
         ms = tau * 1000;
@@ -425,7 +463,6 @@ export function arc(root: HTMLElement): void {
           span(p, AT.settles, AT.settles + CUT),
       );
       // The camera goes where the app answers each stage: the chat, the question, the chat, the list.
-      const view = views(f.form === "phone");
       app.look(
         along(
           [
@@ -445,15 +482,12 @@ export function arc(root: HTMLElement): void {
       );
       // And a spotlight says which part: the question, the closing line, the row it is settled in.
       const lights: readonly (readonly [Part, number])[] = [
+        [parts.ask, span(p, AT.asks + 0.01, AT.asks + 0.04) * (1 - span(p, AT.taken, AT.answered))],
         [
-          part("arc-input", "askCard"),
-          span(p, AT.asks + 0.01, AT.asks + 0.04) * (1 - span(p, AT.taken, AT.answered)),
-        ],
-        [
-          part("arc-landed", "closeOut"),
+          parts.landed,
           span(p, AT.landed + 0.04, AT.cheers + 0.02) * (1 - span(p, AT.hint, AT.settles)),
         ],
-        [part("arc-settled", "stage.settled"), span(p, AT.settles + 0.06, AT.settled)],
+        [parts.settled, span(p, AT.settles + 0.06, AT.settled)],
       ];
       const [spot, much] = lights.reduce((a, b) => (b[1] > a[1] ? b : a));
       app.spot(much > 0 ? spot : null, ease.inOut(much));
