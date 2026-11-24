@@ -1,7 +1,7 @@
 // The third scene: it becomes what you need. A Cell grows with the time it
-// works alone, at the app's own marks (`cell/growth.ts`). Then the app: one
-// chat, two side by side, a crew in tabs and panes, a phone. A phone is shown
-// its own shape first and ends on the Mac.
+// works alone, at the app's own marks (`cell/growth.ts`). Then the app, drawn
+// solid: one chat, two side by side, a crew in tabs and panes, a phone. A
+// phone is shown its own shape first and ends on the Mac.
 
 import {
   type CellLook,
@@ -11,9 +11,8 @@ import {
   type Strength,
   tossFrame,
 } from "./app-cells.ts";
-import { type Cell, crew, drawCell, frameAt } from "./cells.ts";
-import { type Body, drawBody, type Mark, textBody } from "./kit/bodies.ts";
-import { density, ease, hash, lerp, span } from "./kit/form.ts";
+import { BELOW, type Cell, crew, drawCell, frameAt } from "./cells.ts";
+import { clamp, density, ease, hash, lerp, span } from "./kit/form.ts";
 import { Glyphs, INK, NIGHT, type Rgb } from "./kit/glyphs.ts";
 import { layerIn, scene, type SceneFrame } from "./kit/scenes.ts";
 
@@ -51,6 +50,8 @@ const TIERS: readonly {
     beat: "Two hours. Look at those arms.",
   },
 ];
+/** The minutes alone that grow a strength: the meter's ticks, a third of its track apart. */
+const MARKS = TIERS.slice(1).map((tier) => tier.minutes);
 /** How much of the story the meter takes to fill up to a mark, and a new strength's bounce to settle. */
 const FILL = 0.04,
   BOUNCE = 0.03;
@@ -83,476 +84,370 @@ const SHAPED = {
   ],
 } as const;
 const STAGES = ["Input", "Flying", "Landed", "Settled"] as const;
+/** Every chat shown is at work: the open tab of the phone. */
+const OPEN = "Flying";
+/** The tab strip after the open tab: a second tab, and the button for one more. */
+const TABS = ["New Cell", "+"] as const;
 
-/**
- * Ink thinned to a share of itself, as a colour and not as see-through ink:
- * two hairlines that cross on their way stay one hairline's grey.
- */
-const thin = (share: number): Rgb => [
-  lerp(NIGHT[0], INK[0], share),
-  lerp(NIGHT[1], INK[1], share),
-  lerp(NIGHT[2], INK[2], share),
+/** The solid look: a raised surface on the night, ink, and the page's monospace. */
+const RAISED = "#151514",
+  PAGE = "#0B0B0C",
+  MONO = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace';
+const ink = (alpha: number): string => `rgba(237, 233, 224, ${alpha})`;
+const type = (size: number, bold = false): string => `${bold ? "700 " : ""}${size}px ${MONO}`;
+/** A hairline: ink at 0.22 on the raised surface, as a colour, so two that cross stay one hairline's grey. */
+const HAIR = "#454441";
+/** The open tab's fill: the raised surface, a little brighter. */
+const LIFTED = "#222220";
+/** The ground's dots, the one part still made of characters. */
+const QUIET: Rgb = [
+  lerp(NIGHT[0], INK[0], 0.55),
+  lerp(NIGHT[1], INK[1], 0.55),
+  lerp(NIGHT[2], INK[2], 0.55),
 ];
-/** Ink for the chrome's hairlines, a quiet label, and what a chat says. */
-const HAIR = thin(0.36),
-  QUIET = thin(0.55),
-  SAID = thin(0.3);
-/** A paragraph's lines as shares of the chat's width; 0 is the gap between two. */
-const LINES = [1, 0.8, 0.55, 0, 0.9, 0.6, 0, 1, 0.75, 0.9, 0.45, 0] as const;
+/** What a chat has said: a paragraph's lines as shares of its width; 0 is the gap between two. */
+const SAID = [0.95, 0.8, 0.5, 0, 0.9, 0.6, 0, 1, 0.75, 0.45] as const;
 /** The ground's dots sit this far under a Cell's feet, CSS pixels. */
 const FEET = 3;
 /** A Cell's art above its feet and across, art pixels. */
 const ABOVE = 30,
   ACROSS = 34;
 
+/** When in a turn a pane has made room, a divider draws, and a newcomer comes into sight. */
+const ROOM = [0, 0.4],
+  DRAWN = [0.28, 0.68],
+  COMES = [0.6, 1];
+/** When in a turn between two outlines the first one's insides have gone, and the next one's come. */
+const GONE = [0, 0.25],
+  LANDS = [0.75, 1];
+/** When in the first turn the app's outline fades up, growing to its size from this share of it. */
+const RISES = [0.15, 0.75],
+  SMALL = 0.96;
+/** How much of that turn the Cells take to stack into the phone's list, counted from the window's end of it. */
+const STACKS = 0.6;
+
+interface Rect {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+interface Outline extends Rect {
+  readonly r: number;
+}
+/** A hairline from a point, along a row or down a column. */
+interface Rule {
+  readonly x: number;
+  readonly y: number;
+  readonly length: number;
+  readonly down: boolean;
+}
 /** Where a Cell stands: its feet, CSS pixels, and CSS pixels an art pixel. */
 interface Seat {
   readonly x: number;
   readonly y: number;
   readonly px: number;
 }
-/**
- * One shape the app takes: where each of the crew stands in it, if it does,
- * and its characters by the part they play (`top`, `bar`, `name0`, …), so a
- * part can turn into the same part of the next shape.
- */
-interface Shape {
-  readonly seats: readonly (Seat | undefined)[];
-  readonly parts: ReadonlyMap<string, Body>;
-}
-/** A drawing's grid: its corner, CSS pixels, its cells, and how large its Cells stand. */
-interface Box {
-  readonly x: number;
-  readonly y: number;
-  readonly cols: number;
-  readonly rows: number;
-  readonly h: number;
-  readonly small: number;
-  /** Columns between a chat's edge and what is in it: the same however the box is divided. */
+/** What a thing's parts measure, CSS pixels, by how large its Cells stand. */
+interface Metrics {
+  readonly px: 1 | 2 | 3;
   readonly inset: number;
-  /** Rows of air over a Cell's head: the same however the box is divided, so a chat that divides stays put. */
-  readonly air: number;
+  /** A name's type, and the fine print's. */
+  readonly type: number;
+  readonly fine: number;
+  /** A message bar's height: the gap to the next, too. */
+  readonly bar: number;
+  /** How tall the bar along the top is, the phone's tabs are, and a composer is. */
+  readonly head: number;
+  readonly foot: number;
+  readonly composer: number;
+  /** The widest a chat's lines run. */
+  readonly column: number;
+  /** The narrowest phone that fits the four stages, and the tallest one drawn beside a window. */
+  readonly pocket: readonly [narrowest: number, tallest: number];
+  /** The smallest pane a chat this size fits, and the height that holds one paragraph of it and no more. */
+  readonly pane: readonly [narrowest: number, shortest: number, snug: number];
 }
-type Pairs = readonly (readonly [Mark, Mark])[];
-/**
- * One shape turning into the next: what both share holds still, what keeps
- * its characters rides to its new place, and what has no counterpart comes or
- * goes in a wave. The kit's `Morph` reads as noise between two line drawings.
- */
-interface Turn {
-  readonly still: Body;
-  readonly swaps: Pairs;
-  readonly rides: Pairs;
-  readonly lines: readonly (readonly [Body, Body])[];
-  readonly blocks: readonly (readonly [Body, Body])[];
-  readonly enters: readonly Passing[];
-  readonly leaves: readonly Passing[];
-}
-type Passing = readonly [mark: Mark, from: number, to: number];
-
-/** A grid of characters, each playing a part, with hairlines that join where they meet. */
-class Sheet {
-  readonly #cols: number;
-  readonly #text = new Map<number, readonly [string, Rgb]>();
-  readonly #lines = new Map<number, number>();
-  readonly #parts = new Map<number, string>();
-
-  constructor(cols: number) {
-    this.#cols = cols;
-  }
-
-  /** A hairline along a row or a column, from (c0, r0) to (c1, r1). Where two meet, the first's part keeps the joint. */
-  line(part: string, c0: number, r0: number, c1: number, r1: number): this {
-    for (let r = r0; r <= r1; r++)
-      for (let c = c0; c <= c1; c++) {
-        const at = r * this.#cols + c;
-        const joins = (r > r0 ? 1 : 0) | (c < c1 ? 2 : 0) | (r < r1 ? 4 : 0) | (c > c0 ? 8 : 0);
-        this.#lines.set(at, (this.#lines.get(at) ?? 0) | joins);
-        if (!this.#parts.has(at)) this.#parts.set(at, part);
-      }
-    return this;
-  }
-
-  write(part: string, c: number, r: number, text: string, rgb: Rgb): this {
-    [...text].forEach((ch, n) => {
-      if (ch === " ") return;
-      this.#text.set(r * this.#cols + c + n, [ch, rgb]);
-      this.#parts.set(r * this.#cols + c + n, part);
-    });
-    return this;
-  }
-
-  /** The sheet laid out in `box`, its marks by part, each part in reading order. */
-  shape(box: Box, seats: readonly (Seat | undefined)[]): Shape {
-    const { h } = box;
-    // Up, right, down and left as bits: the character that joins them.
-    const joint = " │─└││┌├─┘─┴┐┤┬┼";
-    const parts = new Map<string, Mark[]>();
-    for (const [at, part] of [...this.#parts].sort(([a], [b]) => a - b)) {
-      const [ch, rgb] = this.#text.get(at) ?? [joint[this.#lines.get(at)!]!, HAIR];
-      const marks = parts.get(part) ?? [];
-      marks.push({
-        x: box.x + ((at % this.#cols) + 0.5) * (h / 2),
-        y: box.y + (Math.floor(at / this.#cols) + 0.5) * h,
-        ch,
-        h,
-        rgb,
-        a: 1,
-      });
-      parts.set(part, marks);
-    }
-    return { seats, parts };
-  }
-}
-
-const spoken = new Map<number, boolean[]>();
-/**
- * Whether column `c` of row `r` has ink when something is said there: rules a
- * few columns long for its words. The same wherever a chat's share falls, so a
- * chat that divides keeps its lines where they are.
- */
-function inked(c: number, r: number): boolean {
-  let row = spoken.get(r);
-  if (row === undefined) {
-    row = [];
-    for (let n = 0; row.length < 200; n++) {
-      const word = 3 + Math.floor(hash(n, r * 7 + 1) * 7);
-      for (let i = 0; i < word; i++) row.push(true);
-      row.push(false);
-    }
-    spoken.set(r, row);
-  }
-  return row[c] ?? false;
-}
-
-/** A line said on row `r` from column `c`, `limit` wide: it starts on a word, and no stub of one ends it. */
-function said(c: number, r: number, limit: number): string {
-  const line = Array.from({ length: Math.max(0, limit) }, (_, n) => inked(c + n, r));
-  const first = line.indexOf(false),
-    last = line.lastIndexOf(false);
-  if (first >= 0 && first < 3) line[first] = true;
-  if (last >= 0 && line.length - 1 - last < 3) line.fill(false, last);
-  return line.map((ink) => (ink ? "─" : " ")).join("");
-}
-
-const cut = (n: number, of: number, from: number, to: number): number =>
-  from + Math.round((n * (to - from)) / of);
-/** Rows from the top of a chat's share to the ground its Cell stands on, its head at the very top. */
-const headed = (h: number, small: number): number => Math.ceil((ABOVE * small + FEET - h / 2) / h);
-
-/**
- * A chat in its share of a sheet: the Cell on a few dots of ground, its name and
- * its last line beside it, and what it said before under them, as far as the
- * share goes and no more than `most` rows. Returns where the Cell stands.
- */
-function chat(
-  sheet: Sheet,
-  box: Box,
-  who: number,
-  c0: number,
-  r0: number,
-  cols: number,
-  rows: number,
-  most: number,
-): Seat {
-  const { h, small, inset } = box,
-    w = h / 2;
-  const dots = Math.ceil((ACROSS * small) / w / 2);
-  const ground = r0 + headed(h, small) + box.air;
-  const left = c0 + inset,
-    beside = left + dots * 2,
-    right = c0 + cols - inset;
-  for (let n = 0; n < dots; n++) sheet.write(`ground${who}`, left + n * 2, ground, "·", HAIR);
-  sheet.write(`name${who}`, beside, ground - 2, CREW[who]![0], INK);
-  const words = `said${who}`;
-  sheet.write(
-    words,
-    beside,
-    ground - 1,
-    said(beside, ground - 1, Math.min(16, right - beside)),
-    SAID,
-  );
-  for (let r = ground + 2, n = 0; r < r0 + rows - 1 && n < most; r++, n++) {
-    const share = LINES[n % LINES.length]!;
-    if (share > 0)
-      sheet.write(words, left, r, said(left, r, Math.floor((right - left) * share)), SAID);
-  }
-  return { x: box.x + (left + dots - 0.5) * w, y: box.y + (ground + 0.5) * h - FEET, px: small };
-}
-
-/**
- * A sheet with the outline both the window and the phone have: four sides, and
- * the rule of its bar on row `bar`, which keeps the joints where it meets them.
- */
-function outlined(box: Box, bar: number): Sheet {
-  const { cols, rows } = box;
-  return new Sheet(cols)
-    .line("top", 0, 0, cols - 1, 0)
-    .line("bottom", 0, rows - 1, cols - 1, rows - 1)
-    .line("bar", 0, bar, cols - 1, bar)
-    .line("left", 0, 0, 0, rows - 1)
-    .line("right", cols - 1, 0, cols - 1, rows - 1);
-}
-
-/** The Mac's window: its bar on top, and its panes as rows of who sits in each. More than two get the tab strip. */
-function windowOf(box: Box, panes: readonly (readonly number[])[]): Shape {
-  const { cols, rows } = box;
-  const sheet = outlined(box, 2).write("knob", 2, 1, "• • •", HAIR);
-  const count = panes.flat().length;
-  // A tab is named for its focused Cell and counts its panes, as the app's does.
-  if (count > 2)
-    sheet
-      .write("words", 10, 1, `${CREW[0][0]} · ${count}`, INK)
-      .write("words", 23, 1, "New Cell", QUIET)
-      .write("words", 34, 1, "+", QUIET);
-  const seats: (Seat | undefined)[] = CREW.map(() => undefined);
-  panes.forEach((row, j) => {
-    const r0 = cut(j, panes.length, 2, rows - 1),
-      r1 = cut(j + 1, panes.length, 2, rows - 1);
-    row.forEach((who, i) => {
-      const c0 = cut(i, row.length, 0, cols - 1),
-        c1 = cut(i + 1, row.length, 0, cols - 1);
-      if (i > 0) sheet.line("split", c0, r0, c0, r1);
-      if (j > 0) sheet.line("split", c0, r0, c1, r0);
-      seats[who] = chat(sheet, box, who, c0 + 1, r0 + 1, c1 - c0 - 1, r1 - r0 - 1, 11);
-    });
-  });
-  return sheet.shape(box, seats);
-}
-
-/** The phone: a tall outline, the chats of `order` sharing its screen, the four stages as the tabs at its foot. */
-function phoneOf(box: Box, order: readonly number[]): Shape {
-  const { cols, rows } = box;
-  const sheet = outlined(box, rows - 3).write("knob", Math.floor(cols / 2) - 3, 1, "▀▀▀▀▀▀", HAIR);
-  let c = 1 + Math.floor((cols - 2 - STAGES.join(" ").length) / 2);
-  for (const stage of STAGES) {
-    // Every chat on it is at work: the Flying tab is the open one.
-    sheet.write("words", c, rows - 2, stage, stage === "Flying" ? INK : QUIET);
-    c += stage.length + 1;
-  }
-  const seats: (Seat | undefined)[] = CREW.map(() => undefined);
-  order.forEach((who, n) => {
-    const r0 = cut(n, order.length, 2, rows - 3),
-      r1 = cut(n + 1, order.length, 2, rows - 3);
-    seats[who] = chat(sheet, box, who, 1, r0, cols - 2, r1 - r0, 6);
-  });
-  return sheet.shape(box, seats);
-}
-
-const placeOf = (m: Mark): string => `${Math.round(m.x * 4)}|${Math.round(m.y * 4)}`;
-const same = (a: Mark, b: Mark): boolean => a.ch === b.ch && a.h === b.h && a.rgb === b.rgb;
-const reading = (m: Mark, n: Mark): number => m.y - n.y || m.x - n.x;
-const mix = (a: Rgb, b: Rgb, u: number): Rgb => [
-  lerp(a[0], b[0], u),
-  lerp(a[1], b[1], u),
-  lerp(a[2], b[2], u),
+const METRICS: readonly Metrics[] = [
+  {
+    px: 1,
+    inset: 10,
+    type: 11,
+    fine: 10,
+    bar: 5,
+    head: 26,
+    foot: 32,
+    composer: 20,
+    column: 240,
+    pocket: [188, 300],
+    pane: [0, 0, 112],
+  },
+  {
+    px: 2,
+    inset: 16,
+    type: 13,
+    fine: 11,
+    bar: 8,
+    head: 36,
+    foot: 44,
+    composer: 28,
+    column: 400,
+    pocket: [212, 520],
+    pane: [150, 160, 188],
+  },
+  {
+    px: 3,
+    inset: 20,
+    type: 15,
+    fine: 13,
+    bar: 10,
+    head: 44,
+    foot: 54,
+    composer: 34,
+    column: 520,
+    pocket: [252, 640],
+    pane: [216, 270, 250],
+  },
 ];
 
-/** `body` passing in a wave between `from` and `to` of a turn, in reading order, each mark taking `each` of it. */
-function wave(body: Body, from: number, to: number, each: number): Passing[] {
-  const order = [...body].sort(reading);
-  return order.map((m, n) => {
-    const starts = lerp(from, to - each, n / Math.max(1, order.length - 1));
-    return [m, starts, starts + each] as const;
+/**
+ * One shape the app takes: its outline, each of the crew's share of it (a pane,
+ * or a row of the phone's list) if it has one, and the hairlines between them.
+ */
+interface Shape {
+  readonly kind: "window" | "phone";
+  readonly frame: Outline;
+  readonly rooms: readonly (Rect | undefined)[];
+  readonly rules: readonly Rule[];
+  /** How many panes its tab counts; 0 while it has no tab strip. */
+  readonly tabs: number;
+}
+
+/** The Mac's window: a bar along its top, and its panes as rows of who sits in each. More than two get the tab strip. */
+function windowOf(at: Rect, panes: readonly (readonly number[])[], m: Metrics): Shape {
+  const top = at.y + m.head,
+    across = panes[0]!.length,
+    count = panes.length * across;
+  const xs = (i: number): number => at.x + Math.round((i * at.w) / across),
+    ys = (j: number): number => top + Math.round((j * (at.h - m.head)) / panes.length);
+  const rooms: (Rect | undefined)[] = CREW.map(() => undefined);
+  panes.forEach((row, j) =>
+    row.forEach((who, i) => {
+      rooms[who] = { x: xs(i), y: ys(j), w: xs(i + 1) - xs(i), h: ys(j + 1) - ys(j) };
+    }),
+  );
+  const rules: Rule[] = [];
+  for (let i = 1; i < across; i++)
+    rules.push({ x: xs(i), y: top + 1, length: at.h - m.head - 2, down: true });
+  for (let j = 1; j < panes.length; j++)
+    rules.push({ x: at.x + 1, y: ys(j), length: at.w - 2, down: false });
+  // A tab is named for its focused Cell and counts its panes, as the app's does.
+  return { kind: "window", frame: { ...at, r: 12 }, rooms, rules, tabs: count > 2 ? count : 0 };
+}
+
+/** The phone: a tall outline, the Cells of `order` listed down its screen, the four stages as the tabs at its foot. */
+function phoneOf(at: Rect, order: readonly number[], m: Metrics): Shape {
+  const row = Math.floor((at.h - m.head - m.foot) / CREW.length);
+  const rooms: (Rect | undefined)[] = CREW.map(() => undefined);
+  order.forEach((who, n) => {
+    rooms[who] = { x: at.x, y: at.y + m.head + n * row, w: at.w, h: row };
+  });
+  const rules = order.slice(1).map((_, n) => ({
+    x: at.x + m.inset,
+    y: at.y + m.head + (n + 1) * row,
+    length: at.w - 2 * m.inset,
+    down: false,
+  }));
+  return {
+    kind: "phone",
+    frame: { ...at, r: Math.min(28, Math.round(at.w * 0.12)) },
+    rooms,
+    rules,
+    tabs: 0,
+  };
+}
+
+/** Where a Cell stands in its share: at the head of a pane, halfway down a row of the list. */
+const seatOf = (shape: Shape, room: Rect, m: Metrics): Seat => ({
+  x: room.x + m.inset + (ACROSS / 2) * m.px,
+  y:
+    shape.kind === "window"
+      ? room.y + Math.round(m.inset * 0.75) + ABOVE * m.px
+      : room.y + Math.round((room.h + (ABOVE - BELOW) * m.px) / 2),
+  px: m.px,
+});
+
+const between = (a: Rect, b: Rect, u: number): Rect => ({
+  x: lerp(a.x, b.x, u),
+  y: lerp(a.y, b.y, u),
+  w: lerp(a.w, b.w, u),
+  h: lerp(a.h, b.h, u),
+});
+/** `rect` of the outline `from`, where it falls once that outline has become `to`. */
+const carried = (rect: Rect, from: Rect, to: Rect): Rect => ({
+  x: to.x + ((rect.x - from.x) * to.w) / from.w,
+  y: to.y + ((rect.y - from.y) * to.h) / from.h,
+  w: (rect.w * to.w) / from.w,
+  h: (rect.h * to.h) / from.h,
+});
+
+type Pen = CanvasRenderingContext2D;
+
+/** A surface: the raised fill inside one hairline, on whole pixels. */
+function plate(c: Pen, at: Outline, alpha: number, fill = RAISED): void {
+  if (alpha <= 0 || at.w < 2 || at.h < 2) return;
+  c.globalAlpha = alpha;
+  c.beginPath();
+  c.roundRect(at.x + 0.5, at.y + 0.5, at.w - 1, at.h - 1, Math.min(at.r, at.w / 2, at.h / 2));
+  c.fillStyle = fill;
+  c.fill();
+  c.lineWidth = 1;
+  c.strokeStyle = HAIR;
+  c.stroke();
+}
+
+/** A hairline, as far as it is `drawn`. */
+function rule(c: Pen, at: Rule, alpha: number, drawn = 1): void {
+  if (alpha <= 0 || drawn <= 0) return;
+  c.globalAlpha = alpha;
+  c.fillStyle = HAIR;
+  if (at.down) c.fillRect(at.x, at.y, 1, at.length * drawn);
+  else c.fillRect(at.x, at.y, at.length * drawn, 1);
+}
+
+/** A bar of ink with round ends: a line someone wrote. */
+function bar(c: Pen, at: Rect, shade: number, alpha: number): void {
+  if (alpha <= 0 || at.w <= 0) return;
+  c.globalAlpha = alpha;
+  c.beginPath();
+  c.roundRect(at.x, at.y, at.w, at.h, Math.min(at.h, at.w) / 2);
+  c.fillStyle = ink(shade);
+  c.fill();
+}
+
+/** How wide `text` stands at `size`: the pen keeps that type. */
+function measured(c: Pen, text: string, size: number, bold = false): number {
+  c.font = type(size, bold);
+  return c.measureText(text).width;
+}
+
+/** `text` from `x`, its middle on `y`. */
+function write(
+  c: Pen,
+  text: string,
+  x: number,
+  y: number,
+  size: number,
+  shade: number,
+  alpha: number,
+  bold = false,
+): void {
+  if (alpha <= 0) return;
+  c.font = type(size, bold);
+  c.textBaseline = "middle";
+  c.globalAlpha = alpha;
+  c.fillStyle = ink(shade);
+  c.fillText(text, x, y + size * 0.04);
+}
+
+/** A Cell's name beside it, and under the name the line it is on, as long as a share `wide` leaves room for. */
+function named(c: Pen, who: number, seat: Seat, wide: number, m: Metrics, alpha: number): void {
+  const reach = (ACROSS / 2) * m.px,
+    x = seat.x + reach + m.bar + 2;
+  write(c, CREW[who]![0], x, seat.y - 15 * m.px, m.type, 1, alpha, true);
+  const room = Math.min(seat.x - reach + wide - m.inset * 2 - x, m.type * 8);
+  const long = Math.round(room * (0.6 + 0.4 * hash(who, 9)));
+  bar(c, { x, y: seat.y - 9 * m.px, w: long, h: m.bar - 2 }, 0.16, alpha);
+}
+
+/**
+ * A pane's chat under its Cell: what was said as bars, as far down as the
+ * composer at its foot leaves room. A bar the composer nears fades, so a pane
+ * that is made shorter loses its last lines smoothly.
+ */
+function chat(c: Pen, who: number, room: Rect, m: Metrics, alpha: number): void {
+  if (alpha <= 0) return;
+  const edge = Math.round(m.inset * 0.75);
+  const left = room.x + m.inset,
+    width = room.w - 2 * m.inset,
+    foot = room.y + room.h - edge - m.composer;
+  plate(c, { x: left, y: foot, w: width, h: m.composer, r: 8 }, alpha, PAGE);
+  c.globalAlpha = alpha;
+  c.beginPath();
+  c.arc(left + width - m.composer / 2, foot + m.composer / 2, m.composer * 0.16, 0, Math.PI * 2);
+  c.fillStyle = ink(0.42);
+  c.fill();
+  const reach = Math.min(width, m.column);
+  let y = room.y + edge + (ABOVE + BELOW) * m.px + Math.round(m.bar * 1.75);
+  SAID.forEach((share, n) => {
+    if (share > 0) {
+      const long = Math.round(reach * share * (0.8 + 0.2 * hash(n, who + 3)));
+      const spare = foot - m.bar * 1.5 - (y + m.bar);
+      bar(c, { x: left, y, w: long, h: m.bar }, 0.13, alpha * span(spare, 0, m.bar));
+    }
+    y += share > 0 ? m.bar * 2 : m.bar;
   });
 }
-/** When in a turn what goes has gone, and what comes starts to: the Cells' own stretches. */
-const GONE = 0.45,
-  COMES = 0.55;
 
-/** A joint's line without its branch, for the stretch where what it joined is on its way. */
-const plain = (ch: string): string => ("├┤".includes(ch) ? "│" : "┬┴┼".includes(ch) ? "─" : ch);
-
-/**
- * A line sliding onto its next self: its ends travel, and it is drawn between
- * them a cell a step, so it is one unbroken line all the way. A joint's
- * branch goes as what it joined goes, and comes as it comes.
- */
-function slide(g: Glyphs, was: Body, is: Body, u: number): void {
-  const e = ease.inOut(u),
-    turned = span(e, 0.3, 0.7);
-  const x0 = lerp(was[0]!.x, is[0]!.x, e),
-    y0 = lerp(was[0]!.y, is[0]!.y, e),
-    x1 = lerp(was.at(-1)!.x, is.at(-1)!.x, e),
-    y1 = lerp(was.at(-1)!.y, is.at(-1)!.y, e);
-  const h = lerp(was[0]!.h, is[0]!.h, e);
-  const flat = Math.abs(is.at(-1)!.x - is[0]!.x) >= Math.abs(is.at(-1)!.y - is[0]!.y);
-  const steps = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / (flat ? h / 2 : h) - 0.01);
-  const put = (a: Mark, b: Mark, along: number, joint: boolean): void => {
-    const x = lerp(x0, x1, along),
-      y = lerp(y0, y1, along),
-      alpha = lerp(a.a, b.a, e),
-      rgb = mix(a.rgb, b.rgb, e);
-    if (a.ch === b.ch) g.put(a.ch, x, y, h, rgb, alpha);
-    else if (plain(a.ch) !== plain(b.ch)) {
-      g.put(a.ch, x, y, h, rgb, alpha * (1 - turned));
-      g.put(b.ch, x, y, h, rgb, alpha * turned);
-    } else {
-      if (!joint) g.put(plain(a.ch), x, y, h, rgb, alpha);
-      if (a.ch !== plain(a.ch)) g.put(a.ch, x, y, h, rgb, alpha * (1 - span(u, 0, GONE)));
-      if (b.ch !== plain(b.ch)) g.put(b.ch, x, y, h, rgb, alpha * span(u, COMES, 1));
-    }
-  };
-  // The run between the ends is the line's own character; its joints ride where they stood along it.
-  const inner = (body: Body): Mark => {
-    const m = body[Math.min(1, body.length - 1)]!;
-    return { ...m, ch: plain(m.ch) };
-  };
-  // Measured, not counted: where another line keeps the joint, this one has no mark.
-  const along = (body: Body, m: Mark): number => {
-    const from = body[0]!,
-      to = body.at(-1)!;
-    const length = Math.hypot(to.x - from.x, to.y - from.y);
-    return length === 0 ? 0 : Math.hypot(m.x - from.x, m.y - from.y) / length;
-  };
-  for (let n = 1; n < steps; n++) put(inner(was), inner(is), n / steps, false);
-  put(was[0]!, is[0]!, 0, false);
-  if (steps > 0) put(was.at(-1)!, is.at(-1)!, 1, false);
-  for (const [body, other] of [
-    [was, is],
-    [is, was],
-  ] as const)
-    body.forEach((m, n) => {
-      if (n === 0 || n === body.length - 1 || m.ch === plain(m.ch)) return;
-      const line = inner(other);
-      put(body === was ? m : line, body === was ? line : m, along(body, m), true);
-    });
-}
-
-/**
- * A block of text moving onto another, mark for mark in reading order and all
- * together, so its lines stay lines on the way and its words turn in formation.
- */
-function reflow(g: Glyphs, was: Body, is: Body, u: number): void {
-  const e = ease.inOut(u),
-    turned = span(e, 0.3, 0.7);
-  const count = Math.max(was.length, is.length);
-  for (let k = 0; k < count; k++) {
-    const a = was[Math.floor((k * was.length) / count)]!,
-      b = is[Math.floor((k * is.length) / count)]!;
-    const x = lerp(a.x, b.x, e),
-      y = lerp(a.y, b.y, e),
-      h = lerp(a.h, b.h, e),
-      rgb = mix(a.rgb, b.rgb, e);
-    if (a.ch === b.ch) g.put(a.ch, x, y, h, rgb, lerp(a.a, b.a, e));
-    else {
-      g.put(a.ch, x, y, h, rgb, a.a * (1 - turned));
-      g.put(b.ch, x, y, h, rgb, b.a * turned);
-    }
+/** The window's bar: three knobs, and its tabs once it has them, `tabbed` of the way slid in. */
+function titled(c: Pen, at: Rect, m: Metrics, alpha: number, tabs: number, tabbed: number): void {
+  if (alpha <= 0) return;
+  const mid = at.y + m.head / 2,
+    knob = Math.round(m.head / 9);
+  c.globalAlpha = alpha;
+  c.lineWidth = 1;
+  c.strokeStyle = ink(0.42);
+  for (let n = 0; n < 3; n++) {
+    c.beginPath();
+    c.arc(at.x + m.inset + knob + n * knob * 3.5, mid, knob - 0.5, 0, Math.PI * 2);
+    c.stroke();
   }
-}
-
-/**
- * A shape dividing within the same outline: a divider draws down the middle
- * and the newcomer comes into the half that opened. Nothing travels, so every
- * moment on the way is a window one could have.
- */
-function divided(a: Shape, b: Shape): Turn {
-  const comes = new Set(
-    b.seats.flatMap((seat, who) =>
-      seat === undefined || a.seats[who] !== undefined
-        ? []
-        : ["ground", "name", "said"].flatMap((part) => b.parts.get(`${part}${who}`) ?? []),
-    ),
-  );
-  const next = new Map(
-    [...b.parts.values()]
-      .flat()
-      .filter((m) => !comes.has(m))
-      .map((m) => [placeOf(m), m]),
-  );
-  const drawn = new Set(b.parts.get("split"));
-  const still: Mark[] = [],
-    swaps: (readonly [Mark, Mark])[] = [],
-    gone: Mark[] = [];
-  const met = new Set<Mark>();
-  for (const m of [...a.parts.values()].flat()) {
-    const there = next.get(placeOf(m));
-    if (there !== undefined && same(m, there)) {
-      met.add(there);
-      still.push(m);
-    } else if (there !== undefined && m.rgb === HAIR && there.rgb === HAIR) {
-      // A hairline a divider now meets: it stays, and the joint is drawn over it with the divider.
-      drawn.add(there);
-      still.push(m);
-    } else if (there !== undefined && !drawn.has(there)) {
-      met.add(there);
-      swaps.push([m, there]);
-    } else gone.push(m);
-  }
-  return {
-    still,
-    swaps,
-    rides: [],
-    lines: [],
-    blocks: [],
-    enters: [
-      ...wave([...drawn], 0.05, 0.6, 0.15),
-      ...wave(
-        [...b.parts.values()].flat().filter((m) => !met.has(m) && !drawn.has(m)),
-        COMES,
-        1,
-        0.2,
-      ),
-    ],
-    leaves: wave(gone, 0, GONE, 0.2),
-  };
-}
-
-/** `body` not yet there, or no longer: what slides out of it comes into sight on the way, what slides into it goes. */
-const unseen = (body: Body): Mark[] => body.map((m) => ({ ...m, a: 0 }));
-
-/** The side of its outline a shape's bar lies along: a window's along its top, a phone's along its foot. */
-function barSide(shape: Shape): "top" | "bottom" {
-  const y = (part: string): number => shape.parts.get(part)?.[0]?.y ?? 0;
-  return y("bar") - y("top") <= y("bottom") - y("bar") ? "top" : "bottom";
-}
-
-/**
- * A shape becoming one with another outline: each side slides onto the same
- * side, a bar onto its bar, and a Cell that stays takes its name, its ground
- * and its lines along.
- */
-function reshaped(a: Shape, b: Shape): Turn {
-  const rides: (readonly [Mark, Mark])[] = [],
-    lines: (readonly [Body, Body])[] = [],
-    blocks: (readonly [Body, Body])[] = [],
-    enters: Mark[] = [],
-    leaves: Mark[] = [];
-  const turn = (part: string, line = false): void => {
-    const was = a.parts.get(part) ?? [],
-      is = b.parts.get(part) ?? [];
-    if (was.length === 0) enters.push(...is);
-    else if (is.length === 0) leaves.push(...was);
-    else if (was.length === is.length && was.every((m, n) => m.ch === is[n]!.ch))
-      was.forEach((m, n) => rides.push([m, is[n]!]));
-    else (line ? lines : blocks).push([was, is]);
-  };
-  for (const part of ["top", "bottom", "left", "right", "split"]) turn(part, true);
-  const bar = a.parts.get("bar") ?? [],
-    next = b.parts.get("bar") ?? [];
-  if (barSide(a) === barSide(b) || bar.length === 0 || next.length === 0) {
-    turn("bar", true);
-    turn("words");
-  } else {
-    lines.push([bar, unseen(b.parts.get(barSide(a))!)], [unseen(a.parts.get(barSide(b))!), next]);
-    leaves.push(...(a.parts.get("words") ?? []));
-    enters.push(...(b.parts.get("words") ?? []));
-  }
-  turn("knob");
-  CREW.forEach((_, who) => {
-    for (const part of ["name", "ground", "said"]) turn(`${part}${who}`);
+  if (tabs === 0 || tabbed <= 0) return;
+  const high = m.head - Math.round(m.inset * 0.75),
+    pad = Math.round(m.fine * 0.9);
+  let x = at.x + m.inset * 2 + knob * 9 + lerp(-m.inset, 0, ease.out(tabbed));
+  [`${CREW[0][0]} · ${tabs}`, ...TABS].forEach((tab, n) => {
+    const wide = Math.round(measured(c, tab, m.fine)) + pad * 2;
+    if (n === 0) plate(c, { x, y: mid - high / 2, w: wide, h: high, r: 8 }, alpha * tabbed, LIFTED);
+    write(c, tab, x + pad, mid, m.fine, n === 0 ? 1 : 0.42, alpha * tabbed);
+    x += wide + 2;
   });
-  return {
-    still: [],
-    swaps: [],
-    rides,
-    lines,
-    blocks,
-    // What only one of the two has goes before the outline has moved far, and comes once it is nearly there.
-    enters: wave(enters, 0.78, 1, 0.15),
-    leaves: wave(leaves, 0, 0.32, 0.15),
-  };
+}
+
+/** The phone's own parts: the pill at its top, and the four stages as tabs along its foot, the open one in ink. */
+function pocketed(c: Pen, at: Rect, m: Metrics, alpha: number): void {
+  if (alpha <= 0) return;
+  const pill = { w: Math.round(at.w * 0.22), h: Math.round(m.head / 3.6) };
+  plate(
+    c,
+    {
+      x: Math.round(at.x + (at.w - pill.w) / 2),
+      y: Math.round(at.y + (m.head - pill.h) / 2),
+      ...pill,
+      r: pill.h,
+    },
+    alpha,
+    PAGE,
+  );
+  rule(c, { x: at.x + 1, y: at.y + at.h - m.foot, length: at.w - 2, down: false }, alpha);
+  const wide = STAGES.map((stage) => measured(c, stage, m.fine));
+  const gap = (at.w - m.inset * 2 - wide.reduce((a, b) => a + b, 0)) / (STAGES.length - 1);
+  let x = at.x + m.inset;
+  STAGES.forEach((stage, n) => {
+    const open = stage === OPEN;
+    write(c, stage, x, at.y + at.h - m.foot / 2, m.fine, open ? 1 : 0.42, alpha, open);
+    x += wide[n]! + gap;
+  });
+}
+
+/** How far along the meter's track `minutes` alone reach: each stretch between two marks is as long. */
+function reached(minutes: number): number {
+  let from = 0;
+  for (const [n, mark] of MARKS.entries()) {
+    if (minutes <= mark) return (n + span(minutes, from, mark)) / MARKS.length;
+    from = mark;
+  }
+  return 1;
 }
 
 const told = (minutes: number): string =>
@@ -562,17 +457,41 @@ const told = (minutes: number): string =>
       ? `${minutes / 60} h`
       : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 
+/** The time alone as a thing: a track that fills with ink, a tick at each strength's mark, lit once passed. */
+function meter(c: Pen, at: Rect, minutes: number, alpha: number): void {
+  if (alpha <= 0) return;
+  const full = reached(minutes);
+  plate(c, { ...at, r: at.h / 2 }, alpha);
+  c.save();
+  c.beginPath();
+  c.roundRect(at.x, at.y, at.w, at.h, at.h / 2);
+  c.clip();
+  c.fillStyle = ink(1);
+  c.fillRect(at.x, at.y, at.w * full, at.h);
+  c.restore();
+  MARKS.forEach((_, n) => {
+    const mark = (n + 1) / MARKS.length;
+    c.globalAlpha = alpha;
+    c.fillStyle = ink(lerp(0.3, 1, span(full, mark - 0.03, mark)));
+    c.fillRect(at.x + Math.round(at.w * mark) - 2, at.y + at.h + 4, 2, 4);
+  });
+  const mid = at.y + at.h / 2;
+  write(c, "alone", at.x - 10 - measured(c, "alone", 13), mid, 13, 0.68, alpha);
+  write(c, told(Math.round(minutes)), at.x + at.w + 10, mid, 13, 1, alpha);
+}
+
 /** The scene laid out for one box: the growing Cell's place and meter, and the app's shapes in order. */
 interface Plan {
   /** False when the box is too small to stage any of it: then only the lines are said. */
   readonly fits: boolean;
   readonly d: number;
+  readonly m: Metrics;
   readonly big: Seat;
-  readonly bar: number;
-  readonly ground: Body;
-  readonly meter: (filled: number, minutes: number) => Mark[];
+  /** The ground's dots: where each stands, and their cell's height. */
+  readonly dots: readonly number[];
+  readonly h: number;
+  readonly meter: Rect;
   readonly shapes: readonly Shape[];
-  readonly turns: readonly Turn[];
 }
 
 function lay(f: SceneFrame): Plan {
@@ -580,24 +499,12 @@ function lay(f: SceneFrame): Plan {
   const phone = form === "phone";
   const h = phone ? 14 : 16,
     w = h / 2;
-  const colsFit = Math.floor(art.width / w),
-    rowsFit = Math.floor(art.height / h);
-  // A tablet held upright has the height for panes stacked two by two.
-  const upright = form === "tablet" && art.height >= 640;
-  const small = phone && rowsFit < 26 ? 1 : 2;
-  // `share` is the rows of the smallest share the box is ever cut into: air only where that has them.
-  const box = (cols: number, rows: number, share: number, inset = 2): Box => ({
-    x: Math.round(art.x + (art.width - cols * w) / 2),
-    y: Math.round(art.y + (art.height - rows * h) / 2),
-    cols,
-    rows,
-    h,
-    small,
-    inset,
-    air: share > headed(h, small) + 3 ? 1 : 0,
+  const centred = (wide: number, high: number): Rect => ({
+    x: Math.round(art.x + (art.width - wide) / 2),
+    y: Math.round(art.y + (art.height - high) / 2),
+    w: wide,
+    h: high,
   });
-  const listed = (rows: number, chats: number): number => Math.floor((rows - 5) / chats),
-    stacked = (rows: number): number => Math.floor((rows - 3) / 2) - 1;
 
   // As large as the box takes with room for its ground and meter: whole CSS pixels an art pixel.
   const roomy = phone ? art.height >= 420 : art.width >= 700 && art.height >= 600;
@@ -605,61 +512,52 @@ function lay(f: SceneFrame): Plan {
     2,
     Math.min((phone ? 4 : 5) + (roomy ? 1 : 0), Math.floor((art.height - h * 3) / ABOVE)),
   );
-  const bar = phone ? 8 : 12;
   const cx = Math.round(art.x + art.width * (form === "desk" ? 0.46 : 0.5));
   const stands = ABOVE * px + FEET + h * 2.75;
   const big: Seat = { x: cx, y: Math.round(art.y + (art.height - stands) / 2 + ABOVE * px), px };
   const reach = Math.ceil(((ACROSS / 2) * px + w * 2) / w);
-  const ground: Mark[] = [];
-  for (let n = -reach; n <= reach; n++)
-    ground.push({ x: cx + n * w, y: big.y + FEET, ch: "·", h, rgb: QUIET, a: 1 });
-  const top = big.y + FEET + h * 1.25,
-    from = cx - (bar * w) / 2;
-  const meter = (filled: number, minutes: number): Mark[] => [
-    ...textBody("alone", { x: from - 6 * w, y: top, h, rgb: QUIET }),
-    ...textBody(`${"█".repeat(filled)}${"░".repeat(bar - filled)} ${told(minutes)}`, {
-      x: from,
-      y: top,
-      h,
-    }),
-  ];
-  // The ground becomes the outline's foot, and the rest of the outline rises out of it;
-  // the meter is its words: said, and gone before the outline has opened far.
-  const first: Shape = {
-    seats: [big],
-    parts: new Map([
-      ["bottom", ground],
-      ["top", unseen(ground)],
-      ["bar", unseen(ground)],
-      ["left", unseen(ground.slice(0, 1))],
-      ["right", unseen(ground.slice(-1))],
-      ["words", meter(bar, 120)],
-    ]),
-  };
+  const track = phone ? 104 : 144;
 
-  let shapes: Shape[];
+  let m: Metrics, shapes: Shape[];
   if (phone) {
-    const tall = Math.max(17, Math.min(31, rowsFit - 1)),
-      wide = Math.max(12, Math.min(23, rowsFit - 1));
-    const pocket = box(31, tall, listed(tall, CREW.length));
-    const mac = box(colsFit - ((colsFit + 1) % 2), wide, stacked(wide));
+    const tall = Math.min(Math.floor(art.height) - 8, 500);
+    // The larger Cells, where the list's four rows each hold one and the Mac's panes fit two abreast.
+    const large = METRICS[1]!,
+      listed = large.head + large.foot + CREW.length * (ABOVE + BELOW) * large.px;
+    m = tall >= listed && art.width / 2 >= large.pane[0] ? large : METRICS[0]!;
+    const pocket = centred(clamp(Math.round(tall * 0.5), m.pocket[0], Math.floor(art.width)), tall);
+    const mac = centred(
+      Math.min(Math.floor(art.width), 380),
+      Math.min(tall, m.head + 2 * m.pane[2]),
+    );
     shapes = [
-      first,
-      phoneOf(pocket, [0]),
-      phoneOf(pocket, [0, 1]),
-      phoneOf(pocket, [0, 2, 1, 3]),
-      windowOf(mac, [
-        [0, 2],
-        [1, 3],
-      ]),
+      phoneOf(pocket, [0], m),
+      phoneOf(pocket, [0, 1], m),
+      phoneOf(pocket, [0, 1, 2, 3], m),
+      windowOf(
+        mac,
+        [
+          [0, 1],
+          [2, 3],
+        ],
+        m,
+      ),
     ];
   } else {
-    const cols = Math.min(84, colsFit - 2);
-    // Four panes abreast want a wide window; a narrower one stacks them two by two.
-    const abreast = !upright && cols >= 80;
-    const rows = Math.max(12, Math.min(upright ? 34 : abreast ? 18 : 26, rowsFit - 2));
-    const mac = box(cols, rows, abreast ? rows - 4 : stacked(rows), abreast && cols < 84 ? 1 : 2);
-    const tall = Math.max(14, Math.min(33, rowsFit - 2));
+    // A box taller than wide has the height for panes stacked two by two; so has a window too narrow for four abreast.
+    const upright = art.height >= art.width;
+    const wide = Math.min(Math.round(art.width * (upright ? 0.9 : 0.85)), upright ? 700 : 960);
+    const abreast = !upright && wide >= 640;
+    const high = Math.min(
+      Math.floor(art.height) - 24,
+      Math.round(wide * (abreast ? 0.66 : upright ? 0.95 : 0.84)),
+    );
+    const body = high - METRICS[1]!.head;
+    const pane = abreast ? [wide / 4, body] : [wide / 2, body / 2];
+    // As large as its Cells stand with a whole chat in the smallest pane.
+    m = METRICS.findLast(({ pane: [w, h] }) => pane[0]! >= w && pane[1]! >= h)!;
+    const mac = centred(wide, high);
+    const tall = Math.min(Math.floor(art.height) - 24, m.pocket[1]);
     // A pane divides in two, and the newcomer takes the half that opens: no one changes places.
     const crowd = abreast
       ? [[0, 2, 1, 3]]
@@ -668,33 +566,30 @@ function lay(f: SceneFrame): Plan {
           [2, 3],
         ];
     shapes = [
-      first,
-      windowOf(mac, [[0]]),
-      windowOf(mac, [[0, 1]]),
-      windowOf(mac, crowd),
-      phoneOf(box(31, tall, listed(tall, 1)), [0]),
+      windowOf(mac, [[0]], m),
+      windowOf(mac, [[0, 1]], m),
+      windowOf(mac, crowd, m),
+      phoneOf(centred(Math.max(Math.round(tall * 0.49), m.pocket[0]), tall), crowd.flat(), m),
     ];
   }
   return {
-    fits: art.height >= (phone ? 252 : 230) && art.width >= 31 * w,
+    fits: art.height >= (phone ? 250 : 240) && art.width >= (phone ? 200 : 320),
     d: density(),
+    m,
     big,
-    bar,
-    ground,
-    meter,
+    dots: Array.from({ length: reach * 2 + 1 }, (_, n) => cx + (n - reach) * w),
+    h,
+    meter: { x: cx - track / 2, y: Math.round(big.y + FEET + h * 1.75) - 4, w: track, h: 8 },
     shapes,
-    turns: shapes
-      .slice(1)
-      .map((shape, n) =>
-        n === 0 || n === 3 ? reshaped(shapes[n]!, shape) : divided(shapes[n]!, shape),
-      ),
   };
 }
 
 export function becomes(root: HTMLElement): void {
   const cells = layerIn(root, "cells");
+  const things = layerIn(root, "things");
   const glyphs = new Glyphs(layerIn(root, "glyphs"));
   const context = cells.getContext("2d")!;
+  const c = things.getContext("2d")!;
   const beat = root.querySelector<HTMLElement>(".beat")!;
   // One deal for the whole scene, so the Cell that grew is the Cell in the first pane.
   const cast: Cell[] = crew(CREW);
@@ -733,20 +628,29 @@ export function becomes(root: HTMLElement): void {
     return flex[5 + Math.min(5, Math.floor(t * 12) % 18)]!;
   };
 
+  const stood = (cell: Cell, frame: MiniFrame, seat: Seat, d: number, alpha = 1): void =>
+    drawCell(context, cell, frame, {
+      x: seat.x * d,
+      y: seat.y * d,
+      px: Math.max(1, Math.round(seat.px * d)),
+      alpha,
+    });
+  /** One of the crew at work in its chat. */
+  const working = (who: number, seat: Seat, t: number, plan: Plan, alpha = 1): void => {
+    const cell = panes[who]!;
+    stood(cell, frameAt(cell, WORK[who]!, t + who * 0.7), seat, plan.d, alpha);
+  };
+  const ground = (plan: Plan, alpha: number): void => {
+    for (const x of plan.dots) glyphs.put("·", x, plan.big.y + FEET, plan.h, QUIET, alpha);
+  };
+
   const grow = (p: number, t: number, plan: Plan): void => {
     const n = TIERS.findLastIndex((tier) => p >= tier.at);
     const tier = TIERS[n]!,
       next = TIERS[n + 1];
     const filling = next === undefined ? 0 : span(p, next.at - FILL, next.at);
-    const level = (at: number) => ((at + 1) * plan.bar) / TIERS.length;
-    drawBody(glyphs, plan.ground);
-    drawBody(
-      glyphs,
-      plan.meter(
-        Math.round(lerp(level(n), level(n + 1), filling)),
-        Math.round(lerp(tier.minutes, next?.minutes ?? tier.minutes, filling)),
-      ),
-    );
+    ground(plan, 1);
+    meter(c, plan.meter, lerp(tier.minutes, next?.minutes ?? tier.minutes, filling), 1);
     const cell = tiers[n]!;
     const since = (p - tier.at) / BOUNCE;
     const frame =
@@ -755,55 +659,138 @@ export function becomes(root: HTMLElement): void {
         : n === 3
           ? flexing(p, t)
           : frameAt(cell, tier.doing, t);
-    drawCell(context, cell, frame, {
-      x: plan.big.x * plan.d,
-      y: plan.big.y * plan.d,
-      px: Math.round(plan.big.px * plan.d),
+    stood(cell, frame, plan.big, plan.d);
+  };
+
+  /** A shape's outline and what is its own along its edges, its tabs `tabbed` of the way in. */
+  const framed = (shape: Shape, at: Outline, m: Metrics, alpha: number, tabbed = 1): void => {
+    plate(c, at, alpha);
+    rule(c, { x: at.x + 1, y: at.y + m.head, length: at.w - 2, down: false }, alpha);
+    if (shape.kind === "window") titled(c, at, m, alpha, shape.tabs, tabbed);
+    else pocketed(c, at, m, alpha);
+  };
+
+  /** The meter and the ground give way to the app's first shape, and the Cell that grew takes its seat in it. */
+  const opened = (u: number, t: number, plan: Plan): void => {
+    const { m, big } = plan;
+    const shape = plan.shapes[0]!,
+      room = shape.rooms[0]!,
+      seat = seatOf(shape, room, m);
+    const gone = 1 - span(u, GONE[0]!, GONE[1]!);
+    ground(plan, gone);
+    meter(c, plan.meter, MARKS.at(-1)!, gone);
+    const up = span(u, RISES[0]!, RISES[1]!),
+      size = lerp(SMALL, 1, ease.out(up));
+    const { frame } = shape;
+    c.save();
+    c.translate(frame.x + frame.w / 2, frame.y + frame.h / 2);
+    c.scale(size, size);
+    c.translate(-frame.x - frame.w / 2, -frame.y - frame.h / 2);
+    framed(shape, frame, m, up);
+    c.restore();
+    // Its chat resolves once the Cell is nearly seated, so the Cell never rides over its own lines.
+    const lands = span(u, LANDS[0]!, LANDS[1]!);
+    named(c, 0, seat, room.w, m, lands);
+    if (shape.kind === "window") chat(c, 0, room, m, lands);
+    const e = ease.inOut(u);
+    working(
+      0,
+      { x: lerp(big.x, seat.x, e), y: lerp(big.y, seat.y, e), px: lerp(big.px, seat.px, e) },
+      t,
+      plan,
+    );
+  };
+
+  /**
+   * A shape dividing within the same outline: who is there makes room, a
+   * divider draws, and the newcomer comes into the share that opened. No one
+   * changes places, so every moment on the way is a window one could have.
+   */
+  const divided = (u: number, t: number, a: Shape, b: Shape, plan: Plan): void => {
+    const { m } = plan;
+    const comes = span(u, COMES[0]!, COMES[1]!);
+    framed(b, b.frame, m, 1, a.tabs > 0 ? 1 : comes);
+    const drawn = ease.inOut(span(u, DRAWN[0]!, DRAWN[1]!));
+    for (const line of b.rules) {
+      const known = a.rules.some((r) => r.x === line.x && r.y === line.y && r.down === line.down);
+      rule(c, line, 1, known ? 1 : drawn);
+    }
+    const made = ease.inOut(span(u, ROOM[0]!, ROOM[1]!));
+    b.rooms.forEach((is, who) => {
+      if (is === undefined) return;
+      const was = a.rooms[who];
+      const room = was === undefined ? is : between(was, is, made),
+        alpha = was === undefined ? comes : 1;
+      const seat = seatOf(b, room, m);
+      named(c, who, seat, room.w, m, alpha);
+      if (b.kind === "window") chat(c, who, room, m, alpha);
+      working(who, seat, t, plan, alpha);
     });
   };
 
-  const shape = (p: number, t: number, k: number, plan: Plan): void => {
-    const [from, to] = TURNS[k]!;
-    const u = span(p, from, to),
-      e = ease.inOut(u);
-    const turn = plan.turns[k]!,
-      a = plan.shapes[k]!,
-      b = plan.shapes[k + 1]!;
-    drawBody(glyphs, turn.still);
-    for (const [was, is] of turn.swaps) {
-      glyphs.put(was.ch, was.x, was.y, was.h, was.rgb, was.a * (1 - e));
-      glyphs.put(is.ch, is.x, is.y, is.h, is.rgb, is.a * e);
+  /**
+   * A shape becoming one with another outline: the outline eases its place,
+   * its size and its corners, each Cell rides to its new seat under its name,
+   * and what only one of the two has fades with that one, inside the outline.
+   */
+  const reshaped = (u: number, t: number, a: Shape, b: Shape, plan: Plan): void => {
+    const { m } = plan;
+    const e = ease.inOut(u);
+    const frame: Outline = {
+      ...between(a.frame, b.frame, e),
+      r: lerp(a.frame.r, b.frame.r, e),
+    };
+    plate(c, frame, 1);
+    rule(c, { x: frame.x + 1, y: frame.y + m.head, length: frame.w - 2, down: false }, 1);
+    c.save();
+    c.beginPath();
+    c.roundRect(frame.x + 1, frame.y + 1, frame.w - 2, frame.h - 2, Math.max(0, frame.r - 1));
+    c.clip();
+    for (const [shape, alpha] of [
+      [a, 1 - span(u, GONE[0]!, GONE[1]!)],
+      [b, span(u, LANDS[0]!, LANDS[1]!)],
+    ] as const) {
+      if (alpha <= 0) continue;
+      if (shape.kind === "window") titled(c, frame, m, alpha, shape.tabs, 1);
+      else pocketed(c, frame, m, alpha);
+      for (const line of shape.rules) {
+        const at = carried({ ...line, w: line.length, h: line.length }, shape.frame, frame);
+        rule(c, { ...line, x: at.x, y: at.y, length: line.down ? at.h : at.w }, alpha);
+      }
+      if (shape.kind === "window")
+        shape.rooms.forEach((room, who) => {
+          if (room !== undefined) chat(c, who, carried(room, shape.frame, frame), m, alpha);
+        });
     }
-    for (const [was, is] of turn.rides)
-      glyphs.put(
-        is.ch,
-        lerp(was.x, is.x, e),
-        lerp(was.y, is.y, e),
-        lerp(was.h, is.h, e),
-        is.rgb,
-        is.a,
-      );
-    for (const [was, is] of turn.lines) slide(glyphs, was, is, u);
-    for (const [was, is] of turn.blocks) reflow(glyphs, was, is, u);
-    for (const [m, from, to] of turn.leaves)
-      glyphs.put(m.ch, m.x, m.y, m.h, m.rgb, m.a * (1 - span(u, from, to)));
-    for (const [m, from, to] of turn.enters)
-      glyphs.put(m.ch, m.x, m.y, m.h, m.rgb, m.a * span(u, from, to));
-    panes.forEach((cell, n) => {
-      const here = a.seats[n],
-        there = b.seats[n];
-      const seat = there ?? here;
-      if (seat === undefined) return;
-      const moves = here !== undefined && there !== undefined;
-      // A newcomer comes into sight as its pane arrives; one that leaves goes as its pane does.
-      const alpha = moves ? 1 : there === undefined ? 1 - span(u, 0, GONE) : span(u, COMES, 1);
-      drawCell(context, cell, frameAt(cell, WORK[n]!, t + n * 0.7), {
-        x: (moves ? lerp(here.x, there.x, e) : seat.x) * plan.d,
-        y: (moves ? lerp(here.y, there.y, e) : seat.y) * plan.d,
-        px: Math.max(1, Math.round((moves ? lerp(here.px, there.px, e) : seat.px) * plan.d)),
-        alpha,
-      });
+    c.restore();
+    // Across, a Cell keeps pace with the outline. Down, it is in its column while the outline
+    // is still wide, so no Cell crosses another's name on the way.
+    const stacked = ease.inOut(span(b.kind === "phone" ? u : 1 - u, 0, STACKS)),
+      down = b.kind === "phone" ? stacked : 1 - stacked;
+    a.rooms.forEach((was, who) => {
+      const is = b.rooms[who];
+      if (was === undefined || is === undefined) return;
+      const from = seatOf(a, was, m),
+        to = seatOf(b, is, m);
+      const seat = {
+        x: lerp(from.x, to.x, e),
+        y: frame.y + lerp(from.y - a.frame.y, to.y - b.frame.y, down),
+        px: m.px,
+      };
+      named(c, who, seat, lerp(was.w, is.w, e), m, 1);
+      working(who, seat, t, plan);
     });
+  };
+
+  const fit = (canvas: HTMLCanvasElement, f: SceneFrame, d: number): void => {
+    const width = Math.round(f.width * d),
+      height = Math.round(f.height * d);
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+    canvas.style.width = `${f.width}px`;
+    canvas.style.height = `${f.height}px`;
   };
 
   scene(
@@ -812,21 +799,23 @@ export function becomes(root: HTMLElement): void {
       glyphs.size(f.width, f.height);
       if (f.fresh || plan === null) {
         plan = lay(f);
-        const width = Math.round(f.width * plan.d),
-          height = Math.round(f.height * plan.d);
-        if (cells.width !== width || cells.height !== height) {
-          cells.width = width;
-          cells.height = height;
-        }
-        cells.style.width = `${f.width}px`;
-        cells.style.height = `${f.height}px`;
+        fit(cells, f, plan.d);
+        fit(things, f, plan.d);
       }
       glyphs.clear();
       context.clearRect(0, 0, cells.width, cells.height);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.clearRect(0, 0, things.width, things.height);
+      c.setTransform(plan.d, 0, 0, plan.d, 0, 0);
       const k = TURNS.findLastIndex(([from]) => f.p >= from);
       if (plan.fits) {
-        if (k < 0) grow(f.p, f.t, plan);
-        else shape(f.p, f.t, k, plan);
+        const u = k < 0 ? 0 : span(f.p, TURNS[k]![0], TURNS[k]![1]);
+        const a = plan.shapes[k - 1],
+          b = plan.shapes[k];
+        if (b === undefined) grow(f.p, f.t, plan);
+        else if (a === undefined) opened(u, f.t, plan);
+        else if (a.kind === b.kind) divided(u, f.t, a, b, plan);
+        else reshaped(u, f.t, a, b, plan);
       }
       glyphs.flush();
 
