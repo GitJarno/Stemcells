@@ -79,6 +79,9 @@ timing out under the load; `check-local` and the nightly set it themselves.
      of each. Generators read the merged tree, so they wait for the last
      conflict: once it is resolved, `stemcells/scripts/sync-upstream
      --regenerate` writes and stages them.
+   - Never a file that is all ours (`OURS` in `sync-upstream`: the readme):
+     the merge already kept it. What upstream changed in its own is worth a
+     read (the report lists it as a touched seam), never a merge.
    - Never rebase or squash: `git add` the files and `git commit` keeps the
      merge.
 

@@ -102,6 +102,54 @@ function replay() {
   return { work, git, conflicted, regenerate, pnpmRan, read };
 }
 
+describe("a sync's files all ours", () => {
+  it.each([
+    ["that conflict", "# Theirs"],
+    ["that merge cleanly", "# Upstream"],
+  ])("are kept whole, %s", (_, title) => {
+    const root = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "sync-ours-"));
+    scratch.push(root);
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      GIT_DIR: undefined,
+      GIT_WORK_TREE: undefined,
+      GIT_INDEX_FILE: undefined,
+      GIT_CONFIG_GLOBAL: "/dev/null",
+      GIT_AUTHOR_NAME: "Example",
+      GIT_AUTHOR_EMAIL: "example@example.com",
+      GIT_COMMITTER_NAME: "Example",
+      GIT_COMMITTER_EMAIL: "example@example.com",
+    };
+    const git = (...args: string[]) =>
+      NodeChildProcess.spawnSync("git", args, { cwd: root, encoding: "utf8", env }).stdout.trim();
+    const commit = (readme: string, seam: string) => {
+      NodeFS.writeFileSync(NodePath.join(root, "README.md"), readme);
+      NodeFS.writeFileSync(NodePath.join(root, "seam.ts"), seam);
+      git("add", "-A");
+      git("commit", "-q", "-m", "change");
+    };
+    const ours = "# Stemcells\n\na\n\nb\n\nlicense\n";
+    git("init", "-q", "-b", "main");
+    commit("# Upstream\n\na\n\nb\n\nlicense\n", "base\n");
+    git("switch", "-q", "-c", "upstream");
+    commit(`${title}\n\na\n\nb\n\nlicense\n\ntrademarks\n`, "theirs\n");
+    git("switch", "-q", "main");
+    commit(ours, "ours\n");
+    git("merge", "-q", "--no-commit", "--no-ff", "upstream");
+
+    // The seam's conflict holds the generators back; the readme is settled before it.
+    const result = NodeChildProcess.spawnSync("bash", [syncUpstream, "--regenerate"], {
+      cwd: root,
+      encoding: "utf8",
+      env,
+    });
+    expect(result.status).toBe(3);
+    expect(git("diff", "--name-only", "--diff-filter=U")).toBe("seam.ts");
+    expect(NodeFS.readFileSync(NodePath.join(root, "README.md"), "utf8")).toBe(ours);
+    expect(git("diff", "--cached", "--name-only", "HEAD", "--", "README.md")).toBe("");
+  });
+});
+
 describe("a sync's generated files", () => {
   it("take upstream's side, then are written again once the rest is resolved", () => {
     const repo = replay();
