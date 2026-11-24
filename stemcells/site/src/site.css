@@ -778,6 +778,9 @@ h2 {
   .hero-top {
     padding-top: 78px;
   }
+  h1 {
+    font-size: clamp(28px, 8.6vw, 34px);
+  }
   .lede {
     margin-bottom: 1.2em;
   }

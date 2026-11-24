@@ -68,8 +68,9 @@ page, the throw is playable, and the scroll plays each idea.
 | Get it   | Bring your own agents              | "a thought" turns into the three install lines; a Cell in each provider's colours lands on them                |
 
 Each scene is staged apart for a desk, a tablet and a phone: a desk shows
-the whole window with a spotlight, a phone sends the camera to the part that
-counts; the stage list is the Mac's column on a desk and the phone's four
+the Mac's whole window with a spotlight; a phone shows the app as it is at
+a phone's width, one Cell to the screen, and the camera only looks down the
+chat. The stage list is the Mac's column on a desk and the phone's four
 tabs in a hand; the machine "in your hand" is the one the visitor holds.
 
 ## Plan
@@ -80,10 +81,23 @@ tabs in a hand; the machine "in your hand" is the one the visitor holds.
 - [x] A test that builds the site
 - [x] The readme says what the book says
 - [x] Study upstream's page; rebuild every scene on real screens (`exhibit.ts`)
-- [ ] The real screens: taken in the lab, placed, checked for anything private
-- [ ] Phone, iPad and desktop passes on the real screens; Reduce Motion
+- [x] The real screens: taken in the lab at three widths, placed, each checked by eye for anything private
+- [x] The rig that takes them, in the repository (`stemcells/site/shots/`)
+- [x] Phone, iPad and desktop passes on the real screens; Reduce Motion
 - [ ] The phone app's own screens (needs a simulator; the phone and tablet show the app in a browser until then)
 
 ## Review
 
-Pending.
+- The page now shows the product: 26 real screens at a Mac's, a tablet's and
+  a phone's width, each scene one window with a camera and a spotlight.
+  Nothing on it is a drawing of the app.
+- A screen changes only while the camera rests; the first cut crossfaded
+  under a moving camera and read as a double exposure.
+- A phone could not read a Mac's window scaled down, so the phone staging
+  got its own pictures of the same moments. The stylesheet picks which
+  window a scene shows, so the unused one never loads.
+- Stage colours and type are the app's measured values, not picked by eye.
+- Open: the phone app's own screens. No simulator runtime is installed, so
+  the phone and tablet frames show the web app at their widths.
+- A retake rolls new creatures and working words; every picture is looked
+  at before it is committed (`stemcells/site/shots/README.md`).

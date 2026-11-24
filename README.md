@@ -30,6 +30,10 @@
   <a href="https://stemcells.sh">stemcells.sh</a> · <a href="#get-it">Get it</a> · <a href="#how-it-works">How it works</a>
 </p>
 
+<p align="center">
+  <img src="stemcells/site/public/app/crew-1440.webp" width="900" alt="Stemcells on a Mac: Cells listed by stage, one question waiting with a preview of each answer, and two chats at work, one answering with a chart.">
+</p>
+
 ---
 
 You type a sentence, and an agent makes the thing it describes: an app, a

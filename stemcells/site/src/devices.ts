@@ -157,8 +157,9 @@ export function devices(root: HTMLElement): void {
       box.style.left = `${Math.round(aw * cx - wide / 2)}px`;
       box.style.bottom = `${Math.round(ah * (1 - where.floor))}px`;
       box.classList.toggle("near", kind === near);
+      // The smallest phone has room for the machines' names alone.
       box.querySelector("b")!.textContent =
-        kind !== near ? "" : kind === "book" ? " · on your desk" : " · in your hand";
+        kind !== near || aw < 340 ? "" : kind === "book" ? " · on your desk" : " · in your hand";
       app.look(null);
     }
     const [sy, from, to] = where.shelf;

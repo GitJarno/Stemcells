@@ -265,14 +265,14 @@ One story, staged for the hand that holds it. The ideas, the words and the
 order never change; the layout and the gesture do. This is how the site
 does it:
 
-|                  | Desktop                               | iPad                       | Phone                                   |
-| ---------------- | ------------------------------------- | -------------------------- | --------------------------------------- |
-| Layout           | Words beside the window               | The window above the words | The window above the words              |
-| The window shows | The whole app, a spotlight on a part  | The whole app, a spotlight | The camera goes to the part that counts |
-| You throw by     | Typing and Return, or dragging a Cell | Dragging a Cell            | Flicking a Cell                         |
-| It mirrors       | The Mac's list of stages              | The phone's four tabs      | The phone's four tabs                   |
-| In your hand     | The MacBook                           | The iPad                   | The iPhone                              |
-| The pointer      | Stirs Aski's characters; it watches   | Aski watches what flies    | Aski watches what flies                 |
+|                  | Desktop                               | iPad                       | Phone                                |
+| ---------------- | ------------------------------------- | -------------------------- | ------------------------------------ |
+| Layout           | Words beside the window               | The window above the words | The window above the words           |
+| The window shows | The whole app, a spotlight on a part  | The whole app, a spotlight | The app at a phone's width, one Cell |
+| You throw by     | Typing and Return, or dragging a Cell | Dragging a Cell            | Flicking a Cell                      |
+| It mirrors       | The Mac's list of stages              | The phone's four tabs      | The phone's four tabs                |
+| In your hand     | The MacBook                           | The iPad                   | The iPhone                           |
+| The pointer      | Stirs Aski's characters; it watches   | Aski watches what flies    | Aski watches what flies              |
 
 ## Before it ships
 
