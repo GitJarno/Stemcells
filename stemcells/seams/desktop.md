@@ -17,6 +17,7 @@ line with no padding, so a new row changes no other line.
 | `apps/desktop/src/app/DesktopStatePaths.ts` | State in `~/.stemcells` | Own database, never `~/.t3` |
 | `apps/desktop/src/app/DesktopUserData.ts` | Profile folder `sh.stemcells.app(.dev)` | Never opens T3 Code's Electron profile |
 | `apps/desktop/src/main.ts` | Imports `./stemcells/scrollPhases.ts` (for its side effect) after its own imports | Scroll phases (below): the tab swipe reads macOS's own phases for trackpad scrolls, which wheel events lack |
+| `apps/desktop/src/main.ts` (closed) | Imports `./stemcells/privacy/closed.ts` (for its side effect) on its first line | Closed to T3 (No telemetry, below): the same first act as the server's (`seams/server.md`, `bin.ts`), for the app's main process |
 | `apps/desktop/src/main.ts` (updates) | Provides `./stemcells/updates/SourceUpdater.ts`'s `layer` to `DesktopUpdates.layer`, in electron-updater's place | Updates from the repository (below): upstream's updater runs unchanged on the repository the app was installed from |
 | `apps/desktop/src/main.ts` (windows) | Imports `./stemcells/windows/WindowsHost.ts` and adds its `layer` to `layerDesktopApplication` | Windows (below): more than one app window, kept by the main process |
 | `apps/desktop/src/preload.ts` | Imports `./stemcells/scrollPhasesPreload.ts` (for its side effect) after its own imports | Same: hands the phases to the page |

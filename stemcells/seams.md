@@ -684,12 +684,34 @@ calls, and hashes of the Codex, Claude and T3 Connect accounts it finds.
   (`apps/mobile/package.json`), and upstream's importers get a no-op
   (`apps/mobile/src/stemcells/upstream/substitutes/expo-observe.ts`).
   `crashReporter.contract.test.ts` fails when either is linked again.
+- Closed to T3, whatever the environment says. The variables that switch on
+  upstream's hosted services (its relay and Clerk sign-in, tracing to an
+  address a variable names, PostHog, the phone's updates from T3's Expo
+  project) are one list, `stemcells/privacy/switches.ts`. Every build reads
+  its public configuration through `scripts/lib/public-config.ts`, which
+  hands on none of them, and the server and the desktop's main process take
+  them out of their own environment as their first import. So a `.env`
+  copied from `.env.example`, or a variable left in a shell, changes
+  nothing. `T3CODE_TELEMETRY_ENABLED` is always `false`.
+- No Stemcells process resolves T3's hosts or the vendors upstream reports
+  to (`stemcells/privacy/closed.ts`, `REFUSED`): the last line of defence,
+  under every gate that keeps such code out. A refused lookup warns once,
+  so code that tries shows in the log. It holds for the server and the
+  desktop's main process, not for a page's own requests or the phone, which
+  the build's closed switches and the gates cover.
+- A built app holds none of T3's own identifiers:
+  `stemcells/scripts/check-app-name.ts` reads them from upstream's
+  `.env.example` and fails the `build` gate and `install-app` on one.
+- `stemcells/privacy/closed.test.ts` holds all three, with every line of
+  `.env.example` switched on.
 - `analytics.contract.test.ts`, `outbound.contract.test.ts` and
   `privacy/noTelemetry.test.ts` fail when a sync brings any of it back:
   upstream's service provided anywhere, its endpoint or a PostHog key or
   client in the tree, an analytics id in the web client, the usage-data
   words anywhere but the hidden privacy row (`privacyRow.browser.test.tsx`
-  holds it hidden), or the owners read again.
+  holds it hidden), the owners read again, a variable that could turn
+  reporting on that is neither closed nor listed, or a reporting package
+  anywhere in the lockfile.
 
 ### No in-app triage
 

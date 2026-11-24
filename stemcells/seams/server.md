@@ -11,6 +11,7 @@ line with no padding, so a new row changes no other line.
 | File | Change | Why |
 | --- | --- | --- |
 | `apps/server/src/auth/McpOAuth.ts` | Imports `stemcells/upstream/mcpClients.ts` on its first line; the client `layerMcpClientAuthenticator` builds passes through `Stemcells.withoutHostedApp` (an import and two lines) | Copy Cell (below): an outside MCP client's thread links are the `t3-thread://` links Stemcells' own clients read, never upstream's through T3's hosted app. The server has no bundler to substitute `threadLinks.ts` through, so its client is cut where it is made |
+| `apps/server/src/bin.ts` | Imports `./stemcells/privacy/closed.ts` (for its side effect) first, before its own imports | Closed to T3 (No telemetry, below): before any module reads the environment, no cloud switch is left in it and no lookup of T3's hosts answers |
 | `apps/server/src/binCli.ts` | No `update` subcommand, and no `updateCommand` import | Same: `t3 update` lists T3's GitHub releases and installs one |
 | `apps/server/src/cli/browser.ts` | `sudo` home falls back to `~/.stemcells` | Same, under `sudo` on Linux |
 | `apps/server/src/cli/theme.ts` | Exports `publishThemeFile` and `writeDefaultTheme` | Stemcells publishes its theme and makes it a fresh server's default through the same guarded writes `t3 theme set` uses (`stemcells/upstream/theme.ts`) |

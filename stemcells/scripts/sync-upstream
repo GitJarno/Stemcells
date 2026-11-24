@@ -67,7 +67,8 @@ gate_drift() { stemcells/scripts/drift; }
 gate_outbound() {
   pnpm exec vp test run apps/server/src/stemcells/privacy \
     apps/server/src/stemcells/upstream/outbound.contract.test.ts \
-    apps/server/src/stemcells/upstream/analytics.contract.test.ts
+    apps/server/src/stemcells/upstream/analytics.contract.test.ts &&
+    pnpm exec vp test run --project root stemcells/privacy
 }
 gate_typecheck() { pnpm exec vp run -r --concurrency-limit 4 typecheck; }
 gate_lint() { pnpm lint; }
