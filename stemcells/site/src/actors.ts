@@ -210,7 +210,9 @@ export class Actor {
     context.textAlign = "left";
     const name = `${this.cell.name} · `;
     const width = context.measureText(`${name}${this.label}...`).width;
-    const left = this.x * d - width / 2,
+    // Kept whole inside the stage: a Cell at the edge of a phone still has its name.
+    const most = context.canvas.width - context.measureText(`${name}${this.label}`).width - 6 * d;
+    const left = Math.max(6 * d, Math.min(most, this.x * d - width / 2)),
       base = Math.max(14, this.y - 14 * this.#points - 10) * d;
     context.fillStyle = "rgba(237, 233, 224, 0.8)";
     context.fillText(name, left, base);

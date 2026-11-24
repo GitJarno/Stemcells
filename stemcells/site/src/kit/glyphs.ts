@@ -163,16 +163,24 @@ export class Glyphs {
   #buffer: WebGLBuffer | null = null;
   #res: WebGLUniformLocation | null = null;
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
-    canvas.setAttribute("aria-hidden", "true");
+  constructor(given: HTMLCanvasElement) {
+    let canvas = given;
     const gl = canvas.getContext("webgl2", {
       alpha: true,
       antialias: false,
       premultipliedAlpha: true,
     });
     if (gl !== null && this.#start(gl)) this.#gl = gl;
-    else this.#context = canvas.getContext("2d");
+    else {
+      // A canvas that gave a WebGL context can't give a 2D one: a new one takes its place.
+      if (gl !== null) {
+        canvas = given.cloneNode(false) as HTMLCanvasElement;
+        given.replaceWith(canvas);
+      }
+      this.#context = canvas.getContext("2d");
+    }
+    this.canvas = canvas;
+    canvas.setAttribute("aria-hidden", "true");
     canvas.addEventListener("webglcontextlost", (event) => event.preventDefault());
     canvas.addEventListener("webglcontextrestored", () => {
       if (this.#gl !== null) this.#start(this.#gl);

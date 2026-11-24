@@ -47,6 +47,8 @@ export function throws(hero: Hero): void {
   /** When the page next throws on its own, and what it is typing meanwhile. */
   let next = 0.9;
   let typing: { text: string; from: number } | null = null;
+  /** What the page last typed into the composer: anything else there is the visitor's. */
+  let ours = "";
   let touched = -100;
 
   const narrow = () => box.clientWidth < NARROW;
@@ -74,11 +76,36 @@ export function throws(hero: Hero): void {
     thrown.push({ actor, words: text, slot: slotAt(dealt), due: poured + 0.12, leaving: -1 });
     dealt += 1;
   };
+  /** Under Reduce Motion a sent thought has simply landed. */
+  const land = (text: string) => {
+    const standing = thrown.filter((it) => it.leaving < 0);
+    if (standing.length >= room()) thrown.splice(thrown.indexOf(standing[0]!), 1);
+    const actor = new Actor(cells[dealt % cells.length]!, slotAt(dealt), hero.floor());
+    actor.scale = scale();
+    actor.say("Landed", "landed");
+    thrown.push({ actor, words: text, slot: slotAt(dealt), due: -1, leaving: -1 });
+    dealt += 1;
+    hero.redraw();
+  };
   hero.onSend = (text) => {
     touched = hero.now();
     typing = null;
-    send(text);
+    ours = "";
+    if (reduced) land(text);
+    else send(text);
   };
+  // The visitor's own typing ends the page's: what it had typed goes, what they type stays.
+  input.addEventListener("focus", () => {
+    if (typing !== null || (ours !== "" && input.value === ours)) input.value = "";
+    typing = null;
+    ours = "";
+    touched = hero.now();
+  });
+  input.addEventListener("input", () => {
+    typing = null;
+    ours = "";
+    touched = hero.now();
+  });
 
   /** The Cell's picture as letters, one wherever its art covers a grid cell, in the art's colour there. */
   const apart = (it: Thrown, now: number) => {
@@ -186,12 +213,15 @@ export function throws(hero: Hero): void {
   const step = (now: number, dt: number) => {
     const floor = hero.floor();
     // The page throws on its own until someone takes over, and again once they rest.
-    if (now - touched > 14 && document.activeElement !== input && held === null) {
+    const free = document.activeElement !== input && held === null && input.value === ours;
+    if (!reduced && now - touched > 14 && free) {
       if (typing === null && now > next) typing = { text: ASKS[dealt % ASKS.length]!, from: now };
       if (typing !== null) {
         const shown = Math.floor((now - typing.from) * 16);
-        input.value = typing.text.slice(0, shown);
+        ours = typing.text.slice(0, shown);
+        input.value = ours;
         if (shown > typing.text.length + 5) {
+          ours = "";
           input.value = "";
           send(typing.text);
           typing = null;
@@ -286,10 +316,7 @@ export function throws(hero: Hero): void {
       actor.say("Landed", "landed");
       thrown.push({ actor, words, slot: slotAt(n), due: -1, leaving: -1 });
     });
-    requestAnimationFrame(() => {
-      stage.clear();
-      for (const { actor } of thrown) actor.draw(stage.context, 0, stage.d);
-      for (const { actor } of thrown) actor.drawLabel(stage.context, 0, stage.d);
-    });
+    dealt = 2;
+    requestAnimationFrame(() => hero.redraw());
   }
 }

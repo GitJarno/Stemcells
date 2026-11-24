@@ -44,7 +44,7 @@ anyone who works with agents.
 | What it is       | An open-source app for the coding agents you already use, on your Mac and your phone                |
 | What it replaces | A terminal tab per agent, a chat list you keep re-reading, a question buried in a transcript        |
 | Why it wins      | Every ask has an arc you read at a glance; answers come as pictures; the tool bends to how you work |
-| What it runs on  | Your own subscriptions and machines. Nothing goes through anyone's cloud, and nothing is reported   |
+| What it runs on  | Your own subscriptions and machines. Stemcells adds no cloud of its own and reports nothing         |
 
 ## The five ideas
 
@@ -113,10 +113,9 @@ it explains it. If a paragraph can be a picture, it is one.
 ### 4. It becomes what you need
 
 A stem cell is plain until it is asked for something; then it becomes that.
-So does a Cell: the same model becomes a builder, a reviewer or a
-researcher from the work it is handed, and grows the longer it flies alone.
-So does the app: one chat or twelve, tabs or panes, the Mac or the phone,
-any agent you already pay for.
+So does a Cell: the same model becomes whatever the work in front of it asks
+for, and grows the longer it flies alone. So does the app: one chat or
+twelve, tabs or panes, the Mac or the phone, any agent you already pay for.
 
 Stemcells never asks you to work its way. It takes the shape of yours.
 
@@ -157,7 +156,7 @@ Lead with the idea, then the proof. One claim per sentence.
 | Becoming        | It becomes what you need.                                      | Cells grow with the time they fly alone; tabs, panes and windows; Mac and phone                           |
 | Every machine   | One crew, on every machine you own.                            | Phone, tablet and other Macs reach your Mac over your own network; a settle or an answer shows everywhere |
 | Yours           | Bring your own agents.                                         | Claude Code, Codex, Cursor, OpenCode and more, on your accounts and your machine                          |
-| Private         | Nothing leaves.                                                | No telemetry, no analytics, no crash reports; your phone reaches your Mac over your own network           |
+| Private         | Stemcells reports nothing.                                     | No telemetry, no analytics, no crash reports; your phone reaches your Mac over your own network           |
 
 Say only what the product does today. A plan is not a proof.
 
@@ -257,16 +256,17 @@ Motion explains; it never decorates. A move that teaches nothing is cut.
 ## Every screen is the first screen
 
 One story, staged for the hand that holds it. The ideas, the words and the
-order never change; the layout and the gesture do.
+order never change; the layout and the gesture do. This is how the site
+does it:
 
-|               | Desktop                               | iPad                                           | Phone                                        |
-| ------------- | ------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
-| Layout        | Art and words side by side            | Side by side in landscape, stacked in portrait | Art above, words below, one thought a screen |
-| You throw by  | Typing and Return, or dragging a Cell | Dragging a Cell                                | Flicking a Cell                              |
-| You answer by | A click or a number key               | A tap                                          | A tap                                        |
-| You settle by | A click                               | A swipe                                        | A swipe                                      |
-| It mirrors    | The Mac's column of stages            | The Mac's column of stages                     | The phone's four tabs                        |
-| The pointer   | Stirs the characters; Aski watches it | Aski watches your touch                        | Aski watches your touch                      |
+|               | Desktop                               | iPad                    | Phone                                        |
+| ------------- | ------------------------------------- | ----------------------- | -------------------------------------------- |
+| Layout        | Art and words side by side            | Art above, words below  | Art above, words below, one thought a screen |
+| You throw by  | Typing and Return, or dragging a Cell | Dragging a Cell         | Flicking a Cell                              |
+| You answer by | A click or a number key               | A tap                   | A tap                                        |
+| It mirrors    | The Mac's column of stages            | The phone's four tabs   | The phone's four tabs                        |
+| In your hand  | The MacBook                           | The iPad                | The iPhone                                   |
+| The pointer   | Stirs the characters; Aski watches it | Aski watches what flies | Aski watches what flies                      |
 
 ## Before it ships
 

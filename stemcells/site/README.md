@@ -7,9 +7,10 @@ flight from `apps/web/src/stemcells/`, so the page can't drift from the app.
 
 What the page adds:
 
-- `src/kit/`: the engine. One WebGL2 layer draws every character from a
-  glyph atlas (`glyphs.ts`); a body is a thing made of characters, and one
-  body turns into the next by its characters travelling (`bodies.ts`); a
+- `src/kit/`: the engine. Words are characters and things are solid (the
+  book, How it looks). One WebGL2 layer draws every character from a glyph
+  atlas (`glyphs.ts`); a body is words as characters, which travel to become
+  the next thing (`bodies.ts`); each scene draws its things on a canvas; a
   scene is pinned while the scroll plays it, each frame a pure function of
   the scroll's progress (`scenes.ts`); the page is staged apart for a
   phone, a tablet and a desk (`form.ts`).

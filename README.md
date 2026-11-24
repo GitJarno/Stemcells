@@ -103,8 +103,8 @@ iPhone app builds from this repository too).
 
 Cells run on the coding CLIs you already use, Claude Code, Codex, Cursor,
 OpenCode and more, signed in with your own accounts on your own machine.
-Nothing goes through anyone's cloud, and Stemcells sends nothing about you
-anywhere: no telemetry, no analytics, no crash reports.
+Stemcells adds no cloud of its own and sends nothing about you anywhere: no
+telemetry, no analytics, no crash reports.
 
 How Stemcells talks, looks and moves is written down in
 [the brand book](stemcells/brand/book.md).

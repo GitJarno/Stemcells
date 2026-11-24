@@ -21,10 +21,11 @@ acted out.
 
 ## The system
 
-- One grid of characters. Everything that is not Aski or a Cell is a
-  **body**: a set of characters with a place and an ink. One body turns into
-  the next by its characters travelling, never by a cut
-  (`src/kit/bodies.ts`).
+- Two materials, as the book has it: words are characters, things are
+  solid. What is still an idea (prose, words in flight, a trail) is a
+  **body** of characters (`src/kit/bodies.ts`); what has become a thing (a
+  window, a chart, a card, a machine) is drawn clean on a 2D canvas, and the
+  characters travel into it.
 - The characters are drawn by one WebGL2 layer from a glyph atlas
   (`src/kit/glyphs.ts`), with a 2D canvas where WebGL2 is missing.
 - Aski and the Cells stay the app's own (`src/app.ts`, `src/app-cells.ts`).
@@ -66,4 +67,19 @@ the window scene ends on the other device.
 
 ## Review
 
-Pending the pull request.
+- The page says the book's five ideas in six scenes, and each scene is one
+  picture with one short sentence. The first draft said too much in words and
+  drew everything in characters; both were cut back. The rule that came out
+  of it is the book's: words are characters, things are solid.
+- Checked by eye at 1440×900, 834×1194, 393×852 and 320×568, with Reduce
+  Motion and without WebGL2. A short phone drops each scene's sentence so the
+  picture keeps its room.
+- An independent review found six real problems (a claim too broad, the
+  hero's own typing writing over a visitor's, Reduce Motion ignoring Return,
+  a button reachable while hidden, three collisions on the smallest phone).
+  All are fixed.
+- The site uses the app's own Aski, eyes included; when the eyes change in
+  the app, the site follows at its next build.
+- Left for later: the page's second chunk is about 130 KB gzipped, most of it
+  the app's Cell painter. It loads after the hero, so the first paint doesn't
+  wait for it.

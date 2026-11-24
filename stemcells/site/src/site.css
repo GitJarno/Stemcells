@@ -463,6 +463,24 @@ h2 {
 .fine a {
   color: var(--faint);
 }
+/* The terminal the install lines stand in: a thing, drawn solid under their characters. */
+.term {
+  position: absolute;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  opacity: 0;
+  pointer-events: none;
+}
+.term span {
+  position: absolute;
+  top: 13px;
+  left: 22px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
 .copy {
   position: absolute;
   z-index: 3;
@@ -481,6 +499,9 @@ h2 {
 }
 .copy.on {
   opacity: 1;
+}
+.copy:disabled {
+  pointer-events: none;
 }
 .copy:hover {
   color: var(--ink);
@@ -672,6 +693,18 @@ h2 {
   }
   .ask .peek {
     height: 34px;
+  }
+}
+
+/* A short phone: the picture keeps its room, so the heading speaks alone. */
+@media (max-width: 699px) and (max-height: 620px) {
+  .scene:not(.get) .say > p:not(.kicker):not(.beat),
+  .get .kicker,
+  .get .btn:not(.primary) {
+    display: none;
+  }
+  .ask .peek {
+    height: 22px;
   }
 }
 

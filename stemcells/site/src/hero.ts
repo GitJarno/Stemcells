@@ -37,6 +37,8 @@ export interface Hero {
   throwAt(at: number): void;
   /** The headline's two words trade places, once. */
   swapTitle(): void;
+  /** Draws the stage once more as it stands: Reduce Motion's still, after something changed. */
+  redraw(): void;
   /** Drawn each frame over the cleared stage, under Aski's letters. */
   onFrame: (now: number, dt: number) => void;
   /** Called with what the composer sent. */
@@ -207,6 +209,7 @@ export function hero(root: HTMLElement): Hero {
       throwsAt.push(at);
     },
     swapTitle,
+    redraw: () => frame(clock, 0),
     onFrame: () => {},
     onSend: null,
     watch: () => null,
