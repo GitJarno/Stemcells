@@ -211,19 +211,32 @@ lines, one at a time, and the best of it is literally true on screen.
 
 ## How it looks
 
-- **One grid.** Everything sits on a grid of character cells, about one
-  wide to two tall. A picture is made of characters; a Cell is the densest
-  of them, the solid block.
-- **Density is life.** `. : - = + * # % @ █` Lighter is looser and can
-  still become anything; denser has committed.
-- **Night and ink.** Night `#0B0B0C`, ink `#EDE9E0`. On paper: `#F4F1EA`
-  and `#141414`.
-- **Colour belongs to the Cells.** Each Cell wears its own. Aski and the
-  brand stay in ink. Amber `#FDBE48` means Input and nothing else.
+**Two materials: words are characters, things are solid.** That is the core
+line, drawn.
+
+- **Characters** are for what is still an idea: Aski, words in flight, a
+  wall of text, a trail through the air. They sit on a grid of cells, one
+  wide to two tall, and density is life: `. : - = + * # % @ █`. Lighter is
+  looser and can still become anything.
+- **Solid drawings** are for what has become a thing: a Cell, a window, a
+  chart, a card, a machine. They are drawn clean, the way the app draws
+  them: a hairline of ink, a quiet fill, rounded corners, real type.
+- **One turns into the other.** Characters travel, gather, and the thing
+  resolves where they land. A picture is never decorated with characters,
+  and an idea is never boxed in chrome.
+
+The rest holds for both:
+
+- **Night and ink.** Night `#0B0B0C`, ink `#EDE9E0`, a raised surface
+  `#151514`. On paper: `#F4F1EA` and `#141414`.
+- **Colour belongs to the Cells.** Each Cell wears its own. Aski, the brand
+  and every drawing stay in ink. Amber `#FDBE48` means Input and nothing
+  else.
 - **One monospace** for the brand, and the wordmark is `stemcells` with a
   block cursor.
-- **No chrome for its own sake.** No coloured edge stripes, no gradients,
-  no glow. A border is one hairline of ink.
+- **Nothing for show.** No gradients, no glow, no shadows, no coloured edge
+  stripes. A border is one hairline of ink. Depth is said by size and by
+  how faint a thing is.
 
 ## How it moves
 
