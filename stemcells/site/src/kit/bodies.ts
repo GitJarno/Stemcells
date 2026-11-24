@@ -158,9 +158,15 @@ export class Morph {
       const e = ease.inOut(local);
       const far = Math.hypot(b.x - a.x, b.y - a.y);
       const x = lerp(a.x, b.x, e),
-        y = lerp(a.y, b.y, e) - Math.sin(Math.PI * e) * Math.min(lift, far * 0.35) * (0.5 + hash(k, seed + 7));
+        y =
+          lerp(a.y, b.y, e) -
+          Math.sin(Math.PI * e) * Math.min(lift, far * 0.35) * (0.5 + hash(k, seed + 7));
       const h = lerp(a.h, b.h, e);
-      const rgb: Rgb = [lerp(a.rgb[0], b.rgb[0], e), lerp(a.rgb[1], b.rgb[1], e), lerp(a.rgb[2], b.rgb[2], e)];
+      const rgb: Rgb = [
+        lerp(a.rgb[0], b.rgb[0], e),
+        lerp(a.rgb[1], b.rgb[1], e),
+        lerp(a.rgb[2], b.rgb[2], e),
+      ];
       // A traveller that shares its mark stays unseen until it has left it.
       const leaving = this.#first[k * 2] === 1 ? 1 : Math.min(1, e * 5),
         arriving = this.#first[k * 2 + 1] === 1 ? 1 : Math.min(1, (1 - e) * 5);

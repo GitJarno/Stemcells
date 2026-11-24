@@ -124,7 +124,11 @@ export function throws(hero: Hero): void {
       const half = 13 * actor.scale,
         tall = 28 * actor.scale;
       return (
-        due < 0 && leaving < 0 && Math.abs(x - actor.x) < half && y < actor.y + 8 && y > actor.y - tall
+        due < 0 &&
+        leaving < 0 &&
+        Math.abs(x - actor.x) < half &&
+        y < actor.y + 8 &&
+        y > actor.y - tall
       );
     });
   box.addEventListener("pointerdown", (event) => {

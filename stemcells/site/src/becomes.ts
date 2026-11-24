@@ -1,10 +1,7 @@
-// The third scene: it becomes what you need. First a Cell: plain and at work,
-// it grows with the time it works alone, at the app's own marks (nubs at ten
-// minutes, arms at thirty, biceps at two hours, `cell/growth.ts`), and flexes.
-// Then the app: the ground the Cell stood on opens into a window with one
-// chat, which divides into two side by side, then a crew in tabs and panes,
-// and the window stands up as a phone. A phone is shown its own shape first
-// and ends on the Mac.
+// The third scene: it becomes what you need. A Cell grows with the time it
+// works alone, at the app's own marks (`cell/growth.ts`). Then the app: one
+// chat, two side by side, a crew in tabs and panes, a phone. A phone is shown
+// its own shape first and ends on the Mac.
 
 import {
   type CellLook,
@@ -138,16 +135,9 @@ interface Box {
 }
 type Pairs = readonly (readonly [Mark, Mark])[];
 /**
- * One shape turning into the next. What both share holds still; a character
- * that only changes does so in place; what keeps its characters rides to its
- * new place; a line slides onto its next self and a block of text onto its,
- * in step with the Cells; and what has no counterpart comes or goes in a
- * wave, each character over its own stretch of the turn.
- *
- * The kit's `Morph` pairs characters along a curve and sends them off one
- * after another on arcs, which suits a word bursting into a picture. Here the
- * bodies are hairlines and rows of rules: paired in their own order and moved
- * together, a line stays a line and a box a box all the way.
+ * One shape turning into the next: what both share holds still, what keeps
+ * its characters rides to its new place, and what has no counterpart comes or
+ * goes in a wave. The kit's `Morph` reads as noise between two line drawings.
  */
 interface Turn {
   readonly still: Body;
@@ -453,11 +443,9 @@ function reflow(g: Glyphs, was: Body, is: Body, u: number): void {
 }
 
 /**
- * A shape dividing within the same outline: what stays holds still. A chat
- * gives up the half its lines ran into, a divider draws itself down the
- * middle from its joint, and the newcomer comes into the half that opened,
- * its name and its lines with its Cell. Nothing travels, so every moment on
- * the way is a window one could have.
+ * A shape dividing within the same outline: a divider draws down the middle
+ * and the newcomer comes into the half that opened. Nothing travels, so every
+ * moment on the way is a window one could have.
  */
 function divided(a: Shape, b: Shape): Turn {
   const comes = new Set(
@@ -522,9 +510,7 @@ function barSide(shape: Shape): "top" | "bottom" {
 
 /**
  * A shape becoming one with another outline: each side slides onto the same
- * side; a bar along the same side slides onto the bar, its words turning into
- * the other's, and one along the other side closes into its own side while
- * the new one opens out of its; a Cell that stays takes its name, its ground
+ * side, a bar onto its bar, and a Cell that stays takes its name, its ground
  * and its lines along.
  */
 function reshaped(a: Shape, b: Shape): Turn {

@@ -39,14 +39,14 @@ People who run several coding agents at once and want to hold all of it in
 their head without trying. Developers first. The words stay plain enough for
 anyone who works with agents.
 
-|                  |                                                                                                    |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| What it is       | An open-source app for the coding agents you already use, on your Mac and your phone               |
-| What it replaces | A terminal tab per agent, a chat list you keep re-reading, a question buried in a transcript       |
+|                  |                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| What it is       | An open-source app for the coding agents you already use, on your Mac and your phone                |
+| What it replaces | A terminal tab per agent, a chat list you keep re-reading, a question buried in a transcript        |
 | Why it wins      | Every ask has an arc you read at a glance; answers come as pictures; the tool bends to how you work |
 | What it runs on  | Your own subscriptions and machines. Nothing goes through anyone's cloud, and nothing is reported   |
 
-## The four ideas
+## The five ideas
 
 Everything Stemcells says comes back to one of these. Each is a thing the
 product does, so each can be shown.
@@ -77,22 +77,22 @@ lands.
 
 Two questions cover every Cell: _is it in the air?_ and _is it off my mind?_
 
-|                 | Still on your mind              | Off your mind                    |
-| --------------- | ------------------------------- | -------------------------------- |
-| **In the air**  | Flying                          | (it comes back when it lands)    |
-| **On the ground** | Input: it asks. Landed: read it | Settled: read, done, put away    |
+|                   | Still on your mind              | Off your mind                 |
+| ----------------- | ------------------------------- | ----------------------------- |
+| **In the air**    | Flying                          | (it comes back when it lands) |
+| **On the ground** | Input: it asks. Landed: read it | Settled: read, done, put away |
 
 Landing is the agent's finish. Settling is yours. A settled Cell is put
 away, not deleted: write to it and it flies again.
 
 The four words a person reads, everywhere, in this order:
 
-| Stage       | Means                                  | You                  |
-| ----------- | -------------------------------------- | -------------------- |
-| **Input**   | It fell short and waits for your word  | Answer; it flies     |
-| **Flying**  | In the air, on its way                 | Nothing. Hands free  |
-| **Landed**  | It stuck the landing                   | Read it              |
-| **Settled** | Put away by you                        | Nothing, ever again  |
+| Stage       | Means                                 | You                 |
+| ----------- | ------------------------------------- | ------------------- |
+| **Input**   | It fell short and waits for your word | Answer; it flies    |
+| **Flying**  | In the air, on its way                | Nothing. Hands free |
+| **Landed**  | It stuck the landing                  | Read it             |
+| **Settled** | Put away by you                       | Nothing, ever again |
 
 ### 3. Shown, not told
 
@@ -100,12 +100,12 @@ Agents answer in text, and a lot of it. People read pictures faster. So
 Stemcells teaches every agent to pick the form a person reads fastest, and
 draws it:
 
-| What it has to say   | The form                                     |
-| -------------------- | -------------------------------------------- |
-| Numbers to compare   | A chart                                      |
-| A flow or structure  | A diagram                                    |
-| A choice to make     | One question, with a preview of each option  |
-| Where it stands      | One closing line: what is done, what is left |
+| What it has to say  | The form                                     |
+| ------------------- | -------------------------------------------- |
+| Numbers to compare  | A chart                                      |
+| A flow or structure | A diagram                                    |
+| A choice to make    | One question, with a preview of each option  |
+| Where it stands     | One closing line: what is done, what is left |
 
 This rule binds us too. Anything Stemcells publishes shows the idea before
 it explains it. If a paragraph can be a picture, it is one.
@@ -120,13 +120,23 @@ any agent you already pay for.
 
 Stemcells never asks you to work its way. It takes the shape of yours.
 
+### 5. One crew, on every machine
+
+Your agents run on whatever you own: the laptop, the phone, the tablet, the
+Macs in the closet. Stemcells makes them one room. Throw from the device in
+your hand and it flies on the machine with the power. When one asks, every
+screen knows, and you answer from whichever is closest.
+
+Every screen says the same thing, because there is one crew, not one per
+machine.
+
 ## The cast
 
-| Who       | What                                                                 | Made of                                    |
-| --------- | -------------------------------------------------------------------- | ------------------------------------------ |
+| Who       | What                                                                              | Made of                                          |
+| --------- | --------------------------------------------------------------------------------- | ------------------------------------------------ |
 | **Aski**  | The one you talk to. It starts Cells, reads them and tells you where things stand | Characters: a soft cloud spelled in its own name |
-| **Cells** | Your agents. Every chat is one, with a creature of its own           | Pixels, in a colour and a look of their own |
-| **You**   | Throw, answer, settle                                                |                                            |
+| **Cells** | Your agents. Every chat is one, with a creature of its own                        | Pixels, in a colour and a look of their own      |
+| **You**   | Throw, answer, settle                                                             |                                                  |
 
 Aski is light and can become anything; a Cell is solid and has become
 something. Character is not decoration here: a Cell's face is its state, so
@@ -136,17 +146,18 @@ a glance at the creature is a glance at the work.
 
 Lead with the idea, then the proof. One claim per sentence.
 
-| Idea                     | The line                              | What backs it in the product                                                          |
-| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------- |
-| The whole thing          | Words become things.                  | You type; an agent builds it                                                          |
-| What it is               | Stemcells makes it fun and effective to work with your agents. | Everything below                                              |
-| The arc                  | Thrown until it lands.                | The four stages, on the Mac's column and the phone's tabs                             |
-| Falling short            | One clear question. Your answer is the next throw. | One ask at a time, the question first, options with previews, a number key to answer |
-| Settling                 | Landed is its finish. Settled is yours. | Settle from anywhere; a swipe on the phone; write to it and it flies again           |
-| Shown, not told          | Agents write walls. Stemcells answers in pictures. | Charts, diagrams, previews and the closing line, drawn on the Mac and the phone |
-| Becoming                 | It becomes what you need.             | Cells grow with the time they fly alone; tabs, panes and windows; Mac and phone       |
-| Yours                    | Bring your own agents.                | Claude Code, Codex, Cursor, OpenCode and more, on your accounts and your machine      |
-| Private                  | Nothing leaves.                       | No telemetry, no analytics, no crash reports; your phone reaches your Mac over your own network |
+| Idea            | The line                                                       | What backs it in the product                                                                              |
+| --------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| The whole thing | Words become things.                                           | You type; an agent builds it                                                                              |
+| What it is      | Stemcells makes it fun and effective to work with your agents. | Everything below                                                                                          |
+| The arc         | Thrown until it lands.                                         | The four stages, on the Mac's column and the phone's tabs                                                 |
+| Falling short   | One clear question. Your answer is the next throw.             | One ask at a time, the question first, options with previews, a number key to answer                      |
+| Settling        | Landed is its finish. Settled is yours.                        | Settle from anywhere; a swipe on the phone; write to it and it flies again                                |
+| Shown, not told | Agents write walls. Stemcells answers in pictures.             | Charts, diagrams, previews and the closing line, drawn on the Mac and the phone                           |
+| Becoming        | It becomes what you need.                                      | Cells grow with the time they fly alone; tabs, panes and windows; Mac and phone                           |
+| Every machine   | One crew, on every machine you own.                            | Phone, tablet and other Macs reach your Mac over your own network; a settle or an answer shows everywhere |
+| Yours           | Bring your own agents.                                         | Claude Code, Codex, Cursor, OpenCode and more, on your accounts and your machine                          |
+| Private         | Nothing leaves.                                                | No telemetry, no analytics, no crash reports; your phone reaches your Mac over your own network           |
 
 Say only what the product does today. A plan is not a proof.
 
@@ -165,15 +176,15 @@ time. The wit is in what we notice, not in decoration.
   emoji, no exclamation mark.
 - **Kind.** We tease the code and ourselves, never the person.
 
-| Instead of                                          | Write                                    |
-| --------------------------------------------------- | ---------------------------------------- |
+| Instead of                                          | Write                                         |
+| --------------------------------------------------- | --------------------------------------------- |
 | An AI-powered agentic orchestration platform        | A fun, effective way to work with your agents |
-| Seamlessly supercharge your workflow                | Throw it. It lands.                      |
-| The agent is currently working on your request      | Flying                                   |
-| The agent requires your input to proceed            | Input                                    |
-| Task completed successfully!                        | Landed                                   |
-| Archive conversation                                | Settle                                   |
-| Here is a detailed summary of the changes I made... | Done: tests pass, pull request open      |
+| Seamlessly supercharge your workflow                | Throw it. It lands.                           |
+| The agent is currently working on your request      | Flying                                        |
+| The agent requires your input to proceed            | Input                                         |
+| Task completed successfully!                        | Landed                                        |
+| Archive conversation                                | Settle                                        |
+| Here is a detailed summary of the changes I made... | Done: tests pass, pull request open           |
 
 Words we don't use: _AI-powered, agentic, seamless, frictionless,
 supercharge, unleash, empower, orchestrate, workflow, revolutionary_. They
@@ -185,15 +196,15 @@ a metaphor for becoming, never for medicine.
 
 ### The words
 
-| Word      | Means                                                        |
-| --------- | ------------------------------------------------------------ |
-| Stemcells | The app. One word                                            |
-| Cell      | An agent: one chat, one job                                  |
-| Aski      | The one you talk to, who runs the others                     |
-| Subcell   | A helper a Cell starts                                       |
-| throw     | Send an ask                                                  |
-| Input, Flying, Landed, Settled | A Cell's stage, as a person reads it    |
-| settle    | Put a Cell away                                              |
+| Word                           | Means                                    |
+| ------------------------------ | ---------------------------------------- |
+| Stemcells                      | The app. One word                        |
+| Cell                           | An agent: one chat, one job              |
+| Aski                           | The one you talk to, who runs the others |
+| Subcell                        | A helper a Cell starts                   |
+| throw                          | Send an ask                              |
+| Input, Flying, Landed, Settled | A Cell's stage, as a person reads it     |
+| settle                         | Put a Cell away                          |
 
 Labels and buttons stay plain. Wordplay lives in Aski's and the Cells' own
 lines, one at a time, and the best of it is literally true on screen.
@@ -235,14 +246,14 @@ Motion explains; it never decorates. A move that teaches nothing is cut.
 One story, staged for the hand that holds it. The ideas, the words and the
 order never change; the layout and the gesture do.
 
-|               | Desktop                              | iPad                                 | Phone                               |
-| ------------- | ------------------------------------ | ------------------------------------ | ----------------------------------- |
-| Layout        | Art and words side by side           | Side by side in landscape, stacked in portrait | Art above, words below, one thought a screen |
-| You throw by  | Typing and Return, or dragging a Cell | Dragging a Cell                      | Flicking a Cell                     |
-| You answer by | A click or a number key              | A tap                                | A tap                               |
-| You settle by | A click                              | A swipe                              | A swipe                             |
-| It mirrors    | The Mac's column of stages           | The Mac's column of stages           | The phone's four tabs               |
-| The pointer   | Stirs the characters; Aski watches it | Aski watches your touch              | Aski watches your touch             |
+|               | Desktop                               | iPad                                           | Phone                                        |
+| ------------- | ------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
+| Layout        | Art and words side by side            | Side by side in landscape, stacked in portrait | Art above, words below, one thought a screen |
+| You throw by  | Typing and Return, or dragging a Cell | Dragging a Cell                                | Flicking a Cell                              |
+| You answer by | A click or a number key               | A tap                                          | A tap                                        |
+| You settle by | A click                               | A swipe                                        | A swipe                                      |
+| It mirrors    | The Mac's column of stages            | The Mac's column of stages                     | The phone's four tabs                        |
+| The pointer   | Stirs the characters; Aski watches it | Aski watches your touch                        | Aski watches your touch                      |
 
 ## Before it ships
 

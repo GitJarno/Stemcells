@@ -2,14 +2,7 @@
 // thrown, with the faces and springs the app gives a tossed Cell (`tossFrame`).
 // Positions are CSS pixels on the stage; drawing turns them into device pixels.
 
-import {
-  BONK,
-  dizzyStars,
-  type Hit,
-  type MiniFrame,
-  type Toss,
-  tossFrame,
-} from "./app-cells.ts";
+import { BONK, dizzyStars, type Hit, type MiniFrame, type Toss, tossFrame } from "./app-cells.ts";
 import { type Cell, drawCell, frameAt } from "./cells.ts";
 import { CH, CW, glyphOf } from "./stagekit.ts";
 

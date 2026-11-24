@@ -1,8 +1,7 @@
 // A scene is pinned while the scroll plays it: `p` is how far the page has
-// scrolled through its section, 0 to 1, eased a little so a wheel's steps read
-// as one move. Every frame is drawn from `p` and the clock alone, so a scene
-// can be scrubbed both ways, stopped anywhere, and shown as a still. A scene
-// draws only while it is in sight.
+// scrolled through its section, eased so a wheel's steps read as one move.
+// Every frame is drawn from `p` and the clock alone, so a scene scrubs both
+// ways, stops anywhere and has a still. It draws only while in sight.
 
 import { type Form, formOf, reduced } from "./form.ts";
 
@@ -17,7 +16,12 @@ export interface SceneFrame {
   readonly height: number;
   readonly form: Form;
   /** Where the art may stand: the `.art` box, in the pinned box's own pixels. */
-  readonly art: { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly art: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
   /** True on the first frame and after a resize: lay out again. */
   readonly fresh: boolean;
 }
@@ -28,7 +32,11 @@ export interface SceneLook {
 }
 
 /** Plays `draw` on `root`, a `.scene` with a `.pin` and an `.art` inside. */
-export function scene(root: HTMLElement, draw: (frame: SceneFrame) => void, look: SceneLook = {}): void {
+export function scene(
+  root: HTMLElement,
+  draw: (frame: SceneFrame) => void,
+  look: SceneLook = {},
+): void {
   const pin = root.querySelector<HTMLElement>(".pin")!;
   const artBox = root.querySelector<HTMLElement>(".art") ?? pin;
   let raf = 0,

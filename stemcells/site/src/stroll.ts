@@ -1,9 +1,7 @@
 // Aski strolls the foot of the page: where it stands is how far the story has
-// come, from the first scene's start at the left to the last one's end at the
-// right. It is the app's own Aski, rigged and drawn by the app (`app-walk.ts`).
-// This module only tells the rig how far Aski has walked and which way, as the
-// app's walk act would, and lays the track under its feet. It shows while a
-// scene is pinned: only then is the strip at the foot of the screen kept clear.
+// come. It is the app's own Aski, rigged and drawn by the app (`app-walk.ts`);
+// this only tells the rig how far it has walked and which way. It shows while
+// a scene is pinned: only then is the strip at the foot kept clear.
 
 import {
   Aski,

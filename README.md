@@ -25,8 +25,8 @@
 <p align="center"><b>Words become things.</b></p>
 
 <p align="center">
-  A fun, efficient way to work with your agents. Talk to one. Run many.<br>
-  An open-source Mac app for Claude Code, Codex and the other coding agents you use.<br>
+  Stemcells makes it fun and effective to work with your agents.<br>
+  An open-source app for Claude Code, Codex and the other coding agents you use, on your Mac and your phone.<br>
   <a href="https://stemcells.sh">stemcells.sh</a> · <a href="#get-it">Get it</a> · <a href="#how-it-works">How it works</a>
 </p>
 
@@ -34,43 +34,80 @@
 
 You type a sentence, and an agent makes the thing it describes: an app, a
 fix, a page, a feature. The code isn't the hard part anymore. What runs out
-is you: your attention, your context, the tabs you keep checking.
+is you: your attention, the tabs you keep checking, the walls of text you
+skim for the one line that matters.
 
-Stemcells is built on one promise: **nothing between the idea and the
-thing.** You tell **Aski** what you want. Aski divides the work into
-**Cells**, coding agents that each take a part, keeps them moving, and
-brings back only what needs you.
+Stemcells is the shortest way from a thought to the thing. It takes the
+shape of your work and gets out of the way.
 
 ## How it works
 
-**Talk to one. Run many.** Aski is the one you talk to. It starts Cells,
-reads them, steers them and answers for them, across all your projects.
-Ask "what did the design session decide?" or "tell the billing one to use
-the new tokens", and Aski finds the right Cell. Aski holds the whole crew in
-its head, so your head stays clear.
+Every chat is a **Cell**: one agent, one job, with a small creature of its
+own that shows what it's doing. **Aski** is the one you talk to about all of
+them: it starts Cells, reads them and tells you where things stand.
 
-**Cells do the work.** Every chat is a Cell: one agent, one job, with a
-small creature of its own that shows what it's doing. A Cell is _Flying_
-while it works, at _Input_ when it waits on your word, _Landed_ when it's
-done. Keep many open: tabs, panes, ⌘T for a new one, ⌘D to put one beside.
+### Thrown until it lands
 
-**Grow your agents.** A frontier model is pluripotent. Give it a repo, a
-brief, tests and memory, and it becomes a builder, a reviewer, a
-researcher: whatever its niche asks for, like a stem cell. Stemcells tends
-that niche and sends each Cell the right work, so month by month your Cells
-go longer without you.
+An ask is a throw. It flies toward its goal and lands, or it falls short
+and asks you one clear question. Your answer is the next throw.
 
-**Only what needs you.** When a Cell falls short, it waits for your word,
-and Aski brings you the question, on your Mac or your phone. Everything else
-keeps flying.
+```
+                     . · ˙ ˙ · .
+                 . ˙      Flying   ˙ .
+              . ˙                      ˙ .
+   your     ˙                             ˙        the
+   words  █                  Input         █      thing
+  ─────────────────────────── ? ───────────────────────
+           throw      falls short, asks,      Landed
+                        flies again
+```
 
-**Bring your own agents.** Cells run on the coding CLIs you already use,
-Claude Code, Codex, Cursor, OpenCode and more, signed in with your own
-accounts on your own machine. Your phone and your other computers reach it
-over your own Tailscale network (the iPhone app builds from this repository
-too). Nothing goes through anyone's cloud, and
-Stemcells sends nothing about you anywhere: no telemetry, no analytics, no
-crash reports.
+| Stage       | Means                                 | You                 |
+| ----------- | ------------------------------------- | ------------------- |
+| **Input**   | It fell short and waits for your word | Answer; it flies    |
+| **Flying**  | In the air, on its way                | Nothing. Hands free |
+| **Landed**  | It stuck the landing                  | Read it             |
+| **Settled** | Put away by you                       | Nothing, ever again |
+
+Landing is the agent's finish. Settling is yours: a click on the Mac, a
+swipe on the phone. A settled Cell is put away, not deleted; write to it and
+it flies again.
+
+### Shown, not told
+
+Agents answer in walls of text. People read pictures faster. Stemcells
+teaches every agent to pick the form you read fastest, and draws it:
+
+| What it has to say  | The form                                     |
+| ------------------- | -------------------------------------------- |
+| Numbers to compare  | A chart                                      |
+| A flow or structure | A diagram                                    |
+| A choice to make    | One question, with a preview of each option  |
+| Where it stands     | One closing line: what is done, what is left |
+
+### It becomes what you need
+
+A stem cell is plain until something is asked of it. A Cell is the same: it
+grows the longer it flies on its own (nubs after ten minutes, arms after
+thirty, biceps after two hours). So is the app: one chat or twelve, tabs,
+panes and windows, ⌘T for a new Cell and ⌘D to put one beside.
+
+### One crew, on every machine you own
+
+Throw from your phone; it flies on the Mac in the closet. When a Cell asks,
+every screen knows, and you answer from whichever is closest. Your phone and
+your other computers reach each other over your own Tailscale network (the
+iPhone app builds from this repository too).
+
+### Bring your own agents
+
+Cells run on the coding CLIs you already use, Claude Code, Codex, Cursor,
+OpenCode and more, signed in with your own accounts on your own machine.
+Nothing goes through anyone's cloud, and Stemcells sends nothing about you
+anywhere: no telemetry, no analytics, no crash reports.
+
+How Stemcells talks, looks and moves is written down in
+[the brand book](stemcells/brand/book.md).
 
 ## Get it
 

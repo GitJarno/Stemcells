@@ -159,7 +159,7 @@ code {
   mask-image: linear-gradient(90deg, transparent 32%, #000 64%);
 }
 .field.on {
-  opacity: 0.55;
+  opacity: 0.34;
 }
 .hero-stage {
   position: absolute;

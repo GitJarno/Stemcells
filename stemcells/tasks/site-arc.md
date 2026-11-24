@@ -36,27 +36,34 @@ acted out.
 
 ## The page
 
-| Scene | Says | Shows |
-| --- | --- | --- |
-| Hero | Words become things | Aski at home; type a thought, it is thrown, flies and lands |
-| The arc | Thrown until it lands | One Cell scrubbed along its arc: Flying, Input (one question), Landed, Settled, beside the app's own column |
-| Shown | Shown, not told | A wall of text turns into a chart, a diagram, a choice and a close-out line |
-| Becomes | It becomes what you need | A plain Cell grows what the work asks for; the workspace takes the shape of the work |
-| Get it | Bring your own agents | The install lines, what it runs on, what it never sends |
+| Scene    | Says                               | Shows                                                                                                      |
+| -------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Hero     | Words become things                | Aski at home; type a thought, it is thrown, flies and lands; pick a Cell up and throw it                   |
+| The arc  | Thrown until it lands              | One Cell scrubbed along its arc: Flying, Input (one question with previews), Landed, Settled               |
+| Shown    | Agents write walls                 | A wall of text turns into a chart, a diagram, a choice and one closing line; a count of words left to read |
+| Becomes  | It becomes what you need           | A plain Cell grows nubs, arms, biceps; a window goes from one chat to a crew to a phone                    |
+| Machines | One crew, on every machine you own | Six machines in depth; Cells thrown from the one in your hand to the far ones; every screen says the same  |
+| Get it   | Bring your own agents              | "a thought" turns into the three install lines                                                             |
+
+Each scene is staged apart for a desk, a tablet and a phone: the stage list
+is the Mac's column on a desk and the phone's four tabs in a hand, the
+machine "in your hand" in the last scene is the one the visitor holds, and
+the window scene ends on the other device.
 
 ## Plan
 
-- [ ] Brand book: `stemcells/brand/book.md`
-- [ ] Kit: glyph layer, bodies, scenes, form factors
-- [ ] Hero
-- [ ] The arc
-- [ ] Shown
-- [ ] Becomes
-- [ ] Get it, the stroll, the 404 and `aski.txt`
-- [ ] Phone, iPad and desktop passes; Reduce Motion; no WebGL
-- [ ] A test that builds the site
-- [ ] The readme says what the book says
+- [x] Brand book: `stemcells/brand/book.md`
+- [x] Kit: glyph layer, bodies, scenes, form factors
+- [x] Hero
+- [x] The arc
+- [x] Shown
+- [x] Becomes
+- [x] Machines
+- [x] Get it, the stroll, the 404 and `aski.txt`
+- [x] Phone, iPad and desktop passes; Reduce Motion; no WebGL
+- [x] A test that builds the site
+- [x] The readme says what the book says
 
 ## Review
 
-Pending.
+Pending the pull request.

@@ -12,7 +12,8 @@ export const NIGHT: Rgb = [11, 11, 12];
 /** Input's amber, and nothing else's. */
 export const AMBER: Rgb = [253, 190, 72];
 
-const FONT = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+const FONT =
+  'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 const RULED = "█▓▒░▁▂▃▄▅▆▇▀▌▐─│┌┐└┘├┤┬┴┼·•";
 const TYPED = (() => {
   let all = "";
@@ -165,7 +166,11 @@ export class Glyphs {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     canvas.setAttribute("aria-hidden", "true");
-    const gl = canvas.getContext("webgl2", { alpha: true, antialias: false, premultipliedAlpha: true });
+    const gl = canvas.getContext("webgl2", {
+      alpha: true,
+      antialias: false,
+      premultipliedAlpha: true,
+    });
     if (gl !== null && this.#start(gl)) this.#gl = gl;
     else this.#context = canvas.getContext("2d");
     canvas.addEventListener("webglcontextlost", (event) => event.preventDefault());
