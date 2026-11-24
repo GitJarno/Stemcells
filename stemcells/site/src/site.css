@@ -203,7 +203,7 @@ h1 {
 .lede {
   color: var(--dim);
   font-size: clamp(15px, 1.15vw, 18px);
-  max-width: 30em;
+  max-width: 26em;
   margin: 0 0 1.6em;
 }
 .facts {
@@ -608,6 +608,9 @@ h2 {
     top: calc(56px + 54svh + 14px);
     bottom: auto;
     max-width: 40em;
+  }
+  .lede {
+    max-width: 30em;
   }
   h1 {
     font-size: clamp(34px, 6vw, 56px);
