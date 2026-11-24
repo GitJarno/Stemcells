@@ -79,7 +79,9 @@ export function scene(root: HTMLElement, draw: (frame: SceneFrame) => void, look
     raf = requestAnimationFrame(tick);
   };
   new IntersectionObserver(
-    ([entry]) => {
+    (entries) => {
+      // The last entry is how it stands now: a batch can hold an out and an in.
+      const entry = entries.at(-1);
       if (entry?.isIntersecting && raf === 0) {
         last = 0;
         raf = requestAnimationFrame(tick);
